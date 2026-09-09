@@ -1,0 +1,2 @@
+import type { ReactNode } from "react";
+export function ContentPage({ eyebrow, title, intro, children }: { eyebrow: string; title: string; intro: string; children: ReactNode }) { return <><section className="page-hero"><div className="container"><p className="eyebrow">{eyebrow}</p><h1>{title}</h1><p className="lead">{intro}</p></div></section><section className="section"><article className="container prose">{children}</article></section></>; }
