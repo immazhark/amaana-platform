@@ -17,14 +17,16 @@ const permissions = [
   ["assistance.update", "Update request status and internal notes"],
   ["assistance.approve", "Approve or reject verified assistance requests"],
   ["appeal.create", "Convert approved requests into draft appeals"],
+  ["appeal.view", "View draft and published appeals"],
+  ["appeal.update", "Edit appeal content and submit it for approval"],
   ["appeal.approve", "Approve appeals for publication"],
   ["rbac.manage", "Manage staff access and permissions"],
 ];
 
 const roles = {
   PRIMARY_APPROVER: permissions.map(([key]) => key),
-  BACKUP_APPROVER: ["assistance.view", "assistance.assign", "assistance.update", "assistance.approve", "appeal.create", "appeal.approve"],
-  REVIEWER: ["assistance.view", "assistance.update"],
+  BACKUP_APPROVER: ["assistance.view", "assistance.assign", "assistance.update", "assistance.approve", "appeal.create", "appeal.view", "appeal.update", "appeal.approve"],
+  REVIEWER: ["assistance.view", "assistance.update", "appeal.view", "appeal.update"],
 };
 
 for (const [key, description] of permissions) await prisma.permission.upsert({ where: { key }, update: { description }, create: { key, description } });
