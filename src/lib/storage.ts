@@ -12,7 +12,7 @@ function getClient() {
   const accessKeyId = process.env.S3_ACCESS_KEY_ID;
   const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
   if (!region || !bucket || !accessKeyId || !secretAccessKey) throw new Error("Document storage is not configured");
-  return { bucket, client: new S3Client({ region, endpoint: process.env.S3_ENDPOINT || undefined, forcePathStyle: Boolean(process.env.S3_ENDPOINT), credentials: { accessKeyId, secretAccessKey } }) };
+  return { bucket, client: new S3Client({ region, endpoint: process.env.S3_ENDPOINT || undefined, forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true", credentials: { accessKeyId, secretAccessKey } }) };
 }
 
 export async function uploadPrivateDocument(file: File, requestId: string) {
@@ -21,7 +21,7 @@ export async function uploadPrivateDocument(file: File, requestId: string) {
   const safeExtension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
   const objectKey = `assistance/${requestId}/${randomUUID()}.${safeExtension}`;
   const { bucket, client } = getClient();
-  await client.send(new PutObjectCommand({ Bucket: bucket, Key: objectKey, Body: Buffer.from(await file.arrayBuffer()), ContentType: file.type, ServerSideEncryption: "AES256", Metadata: { requestId } }));
+  await client.send(new PutObjectCommand({ Bucket: bucket, Key: objectKey, Body: Buffer.from(await file.arrayBuffer()), ContentType: file.type, Metadata: { requestId } }));
   return { objectKey, originalName: file.name.slice(0, 255), mimeType: file.type, sizeBytes: file.size };
 }
 
