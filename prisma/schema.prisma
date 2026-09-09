@@ -240,6 +240,14 @@ model DailyPageView {
   @@index([date])
 }
 
+model LoginAttempt {
+  id         String   @id @default(cuid())
+  subjectHash String
+  succeeded  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  @@index([subjectHash, createdAt])
+}
+
 model AppealUpdate {
   id          String   @id @default(cuid())
   appealId    String

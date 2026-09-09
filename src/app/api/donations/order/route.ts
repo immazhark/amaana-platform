@@ -3,9 +3,11 @@ import { createDonationReference, createReceiptToken, donationSchema, hashReceip
 import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder } from "@/lib/razorpay";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
+import { validateProductionEnvironment } from "@/lib/env";
 
 export async function POST(request: Request) {
   try {
+    validateProductionEnvironment();
     if (!isSameOrigin(request)) return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
     if (!(await enforceDonationRateLimit(request))) return NextResponse.json({ error: "Too many checkout attempts. Please try again later." }, { status: 429 });
     const parsed = donationSchema.safeParse(await request.json());

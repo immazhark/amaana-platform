@@ -15,4 +15,8 @@ export const assistanceSchema = z.object({
 
 export const createReferenceNumber = () => `AF-${new Date().getUTCFullYear()}-${randomInt(100000, 1000000)}`;
 export const createTrackingToken = () => randomBytes(24).toString("base64url");
-export const hashTrackingToken = (token: string) => createHash("sha256").update(`${token}:${process.env.ASSISTANCE_TOKEN_PEPPER ?? "development-only"}`).digest("hex");
+export const hashTrackingToken = (token: string) => {
+  const pepper = process.env.ASSISTANCE_TOKEN_PEPPER;
+  if (!pepper && process.env.NODE_ENV === "production") throw new Error("Assistance token pepper is not configured");
+  return createHash("sha256").update(`${token}:${pepper ?? "development-only"}`).digest("hex");
+};

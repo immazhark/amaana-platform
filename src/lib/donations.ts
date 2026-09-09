@@ -13,5 +13,9 @@ export const donationSchema = z.object({
 
 export const createDonationReference = () => `AFD-${new Date().getUTCFullYear()}-${randomInt(10000000, 100000000)}`;
 export const createReceiptToken = () => randomBytes(24).toString("base64url");
-export const hashReceiptToken = (token: string) => createHash("sha256").update(`${token}:${process.env.DONATION_TOKEN_PEPPER ?? "development-only"}`).digest("hex");
+export const hashReceiptToken = (token: string) => {
+  const pepper = process.env.DONATION_TOKEN_PEPPER;
+  if (!pepper && process.env.NODE_ENV === "production") throw new Error("Donation token pepper is not configured");
+  return createHash("sha256").update(`${token}:${pepper ?? "development-only"}`).digest("hex");
+};
 export const createReceiptNumber = (reference: string) => `ACK-${reference}`;

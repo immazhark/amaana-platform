@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { captureDonation } from "@/lib/payment-processing";
 import { prisma } from "@/lib/prisma";
 import { verifyWebhookSignature } from "@/lib/razorpay";
+import { validateProductionEnvironment } from "@/lib/env";
 
 type RazorpayEntity = { id: string; order_id?: string; payment_id?: string; amount: number; currency?: string; status?: string };
 type RazorpayWebhook = { event: string; payload?: { payment?: { entity: RazorpayEntity }; refund?: { entity: RazorpayEntity } } };
@@ -10,6 +11,7 @@ type RazorpayWebhook = { event: string; payload?: { payment?: { entity: Razorpay
 export async function POST(request: Request) {
   const rawBody = await request.text(); const signature = request.headers.get("x-razorpay-signature") ?? "";
   try {
+    validateProductionEnvironment();
     if (!verifyWebhookSignature(rawBody, signature)) return new NextResponse("Invalid signature", { status: 401 });
     const event = JSON.parse(rawBody) as RazorpayWebhook;
     const providerEventId = request.headers.get("x-razorpay-event-id") ?? createHash("sha256").update(rawBody).digest("hex");

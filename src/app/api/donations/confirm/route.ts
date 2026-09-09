@@ -5,10 +5,12 @@ import { captureDonation } from "@/lib/payment-processing";
 import { prisma } from "@/lib/prisma";
 import { fetchRazorpayPayment, verifyCheckoutSignature } from "@/lib/razorpay";
 import { isSameOrigin } from "@/lib/request-security";
+import { validateProductionEnvironment } from "@/lib/env";
 
 const schema = z.object({ razorpay_order_id: z.string().min(1), razorpay_payment_id: z.string().min(1), razorpay_signature: z.string().min(1), receiptToken: z.string().min(20) });
 export async function POST(request: Request) {
   try {
+    validateProductionEnvironment();
     if (!isSameOrigin(request)) return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
     const parsed = schema.safeParse(await request.json()); if (!parsed.success) return NextResponse.json({ error: "Invalid payment confirmation." }, { status: 400 });
     const input = parsed.data; if (!verifyCheckoutSignature(input.razorpay_order_id, input.razorpay_payment_id, input.razorpay_signature)) return NextResponse.json({ error: "Payment signature verification failed." }, { status: 400 });

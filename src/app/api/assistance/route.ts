@@ -4,11 +4,13 @@ import { NextResponse } from "next/server";
 import { assistanceSchema, createReferenceNumber, createTrackingToken, hashTrackingToken } from "@/lib/assistance";
 import { prisma } from "@/lib/prisma";
 import { MAX_FILES, uploadPrivateDocument } from "@/lib/storage";
+import { validateProductionEnvironment } from "@/lib/env";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
+    validateProductionEnvironment();
     const formData = await request.formData();
     const parsed = assistanceSchema.safeParse(Object.fromEntries(formData.entries()));
     if (!parsed.success) return NextResponse.json({ error: "Please check the highlighted information and try again.", fields: parsed.error.flatten().fieldErrors }, { status: 400 });
