@@ -58,6 +58,14 @@ enum NotificationStatus {
   CANCELLED
 }
 
+enum DonationStatus {
+  CREATED
+  AUTHORIZED
+  CAPTURED
+  FAILED
+  REFUNDED
+}
+
 model User {
   id                    String              @id @default(cuid())
   name                  String
@@ -168,10 +176,59 @@ model Appeal {
   assistanceRequest    AssistanceRequest?
   notifications        Notification[]
   updates              AppealUpdate[]
+  donations            Donation[]
   createdAt            DateTime       @default(now())
   updatedAt            DateTime       @updatedAt
   @@index([status, publishedAt])
   @@index([category])
+}
+
+model Donation {
+  id                String         @id @default(cuid())
+  referenceNumber   String         @unique
+  appealId          String
+  donorName         String
+  donorEmail        String
+  donorPhone        String?
+  isAnonymous       Boolean        @default(false)
+  domesticConfirmedAt DateTime
+  amount            Decimal        @db.Decimal(12, 2)
+  refundedAmount    Decimal        @default(0) @db.Decimal(12, 2)
+  currency          String         @default("INR")
+  status            DonationStatus @default(CREATED)
+  provider          String         @default("RAZORPAY")
+  providerOrderId   String         @unique
+  providerPaymentId String?        @unique
+  receiptNumber     String?        @unique
+  receiptTokenHash  String
+  capturedAt        DateTime?
+  failedAt          DateTime?
+  refundedAt        DateTime?
+  appeal            Appeal         @relation(fields: [appealId], references: [id])
+  events            PaymentEvent[]
+  notifications     Notification[]
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @updatedAt
+  @@index([appealId, status, createdAt])
+  @@index([donorEmail, createdAt])
+}
+
+model PaymentEvent {
+  id              String   @id @default(cuid())
+  providerEventId String   @unique
+  eventType       String
+  donationId      String?
+  payload         Json
+  donation        Donation? @relation(fields: [donationId], references: [id], onDelete: SetNull)
+  processedAt     DateTime  @default(now())
+  @@index([donationId, processedAt])
+}
+
+model DonationAttempt {
+  id        String   @id @default(cuid())
+  clientHash String
+  createdAt DateTime @default(now())
+  @@index([clientHash, createdAt])
 }
 
 model AppealUpdate {
@@ -241,9 +298,11 @@ model Notification {
   userId              String?
   appealId            String?
   assistanceRequestId String?
+  donationId          String?
   user                User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
   appeal              Appeal?              @relation(fields: [appealId], references: [id], onDelete: SetNull)
   assistanceRequest   AssistanceRequest?   @relation(fields: [assistanceRequestId], references: [id], onDelete: SetNull)
+  donation            Donation?            @relation(fields: [donationId], references: [id], onDelete: SetNull)
   createdAt           DateTime             @default(now())
   updatedAt           DateTime             @updatedAt
   @@index([status, scheduledFor])

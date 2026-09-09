@@ -20,12 +20,13 @@ const permissions = [
   ["appeal.view", "View draft and published appeals"],
   ["appeal.update", "Edit appeal content and submit it for approval"],
   ["appeal.approve", "Approve appeals for publication"],
+  ["donation.view", "View donation and payment reconciliation records"],
   ["rbac.manage", "Manage staff access and permissions"],
 ];
 
 const roles = {
   PRIMARY_APPROVER: permissions.map(([key]) => key),
-  BACKUP_APPROVER: ["assistance.view", "assistance.assign", "assistance.update", "assistance.approve", "appeal.create", "appeal.view", "appeal.update", "appeal.approve"],
+  BACKUP_APPROVER: ["assistance.view", "assistance.assign", "assistance.update", "assistance.approve", "appeal.create", "appeal.view", "appeal.update", "appeal.approve", "donation.view"],
   REVIEWER: ["assistance.view", "assistance.update", "appeal.view", "appeal.update"],
 };
 
