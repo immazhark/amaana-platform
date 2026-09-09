@@ -6,25 +6,28 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "check": "npm run lint && npm run typecheck && npm run build",
     "prisma:generate": "prisma generate",
+    "prisma:validate": "prisma validate",
     "prisma:migrate": "prisma migrate dev"
   },
   "dependencies": {
-    "@prisma/client": "latest",
-    "next": "latest",
-    "react": "latest",
-    "react-dom": "latest",
-    "zod": "latest"
+    "@prisma/client": "6.16.1",
+    "next": "15.5.25",
+    "react": "19.1.1",
+    "react-dom": "19.1.1",
+    "zod": "4.1.5"
   },
   "devDependencies": {
-    "@types/node": "latest",
-    "@types/react": "latest",
-    "@types/react-dom": "latest",
-    "eslint": "latest",
-    "eslint-config-next": "latest",
-    "prisma": "latest",
-    "typescript": "latest"
+    "@eslint/eslintrc": "3.3.1",
+    "@types/node": "22.18.1",
+    "@types/react": "19.1.12",
+    "@types/react-dom": "19.1.9",
+    "eslint": "9.35.0",
+    "eslint-config-next": "15.5.25",
+    "prisma": "6.16.1",
+    "typescript": "5.9.2"
   }
 }
