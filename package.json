@@ -11,10 +11,12 @@
     "check": "npm run lint && npm run typecheck && npm run build",
     "prisma:generate": "prisma generate",
     "prisma:validate": "prisma validate",
-    "prisma:migrate": "prisma migrate dev"
+    "prisma:migrate": "prisma migrate dev",
+    "seed:rbac": "node prisma/seed.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1128.0",
+    "@aws-sdk/s3-request-presigner": "3.1128.0",
     "@prisma/client": "6.19.3",
     "next": "16.3.4",
     "react": "19.1.1",

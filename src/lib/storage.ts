@@ -1,4 +1,5 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomUUID } from "node:crypto";
 
 const allowedTypes = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
@@ -22,4 +23,9 @@ export async function uploadPrivateDocument(file: File, requestId: string) {
   const { bucket, client } = getClient();
   await client.send(new PutObjectCommand({ Bucket: bucket, Key: objectKey, Body: Buffer.from(await file.arrayBuffer()), ContentType: file.type, ServerSideEncryption: "AES256", Metadata: { requestId } }));
   return { objectKey, originalName: file.name.slice(0, 255), mimeType: file.type, sizeBytes: file.size };
+}
+
+export async function getPrivateDocumentUrl(objectKey: string) {
+  const { bucket, client } = getClient();
+  return getSignedUrl(client, new GetObjectCommand({ Bucket: bucket, Key: objectKey }), { expiresIn: 60 });
 }
