@@ -77,6 +77,9 @@ input, select, textarea { width: 100%; padding: .8rem .9rem; border: 1px solid #
 textarea { min-height: 9rem; resize: vertical; }
 .checkbox { display: flex; align-items: flex-start; gap: .7rem; }
 .checkbox input { width: auto; margin-top: .35rem; }
+.form-error { grid-column: 1 / -1; margin-bottom: 1rem; padding: .8rem 1rem; border-left: 4px solid #a72727; background: #fff0f0; color: #711b1b; }
+.reference { display: inline-block; margin-block: 1rem; padding: .7rem 1rem; border-radius: var(--radius-sm); background: var(--color-accent-soft); }
+.button:disabled { cursor: wait; opacity: .65; }
 .detail-layout { display: grid; grid-template-columns: 1fr 20rem; gap: 2rem; align-items: start; }
 .donation-panel { position: sticky; top: 6.5rem; }
 

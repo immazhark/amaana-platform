@@ -144,6 +144,7 @@ model AssistanceRequest {
   category        AppealCategory
   description     String
   consentGivenAt  DateTime
+  trackingTokenHash String
   status          AssistanceStatus @default(SUBMITTED)
   internalNotes   String?
   assignedToId    String?
@@ -151,10 +152,23 @@ model AssistanceRequest {
   assignedTo      User?            @relation("AssistanceAssignee", fields: [assignedToId], references: [id])
   appeal           Appeal?          @relation(fields: [appealId], references: [id])
   notifications   Notification[]
+  documents       AssistanceDocument[]
   createdAt       DateTime          @default(now())
   updatedAt       DateTime          @updatedAt
   @@index([status, createdAt])
   @@index([phone])
+}
+
+model AssistanceDocument {
+  id                  String            @id @default(cuid())
+  assistanceRequestId String
+  objectKey           String            @unique
+  originalName        String
+  mimeType            String
+  sizeBytes           Int
+  assistanceRequest   AssistanceRequest @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
+  createdAt           DateTime          @default(now())
+  @@index([assistanceRequestId])
 }
 
 model Notification {
