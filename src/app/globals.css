@@ -115,6 +115,11 @@ dd { margin: .25rem 0 0; white-space: pre-wrap; }
 .update-list { display: grid; gap: 1rem; margin-top: 1.5rem; }
 .update-list article { padding-top: 1rem; border-top: 1px solid var(--color-border); }
 .update-list small { color: var(--color-muted); }
+.prose { max-width: 52rem; }
+.prose h2 { margin-top: 2.5rem; font-size: clamp(1.5rem, 3vw, 2.1rem); }
+.prose .stats { max-width: var(--max-width); margin-block: 2rem; }
+.inline-link { color: var(--color-primary); text-decoration: underline; text-underline-offset: .2em; }
+.policy-note { margin-top: 2rem; padding: 1rem; border-left: 4px solid var(--color-accent); background: var(--color-accent-soft); }
 .acknowledgement { max-width: 52rem; margin-inline: auto; }
 .receipt-details { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-block: 2rem; }
 .receipt-details div { padding: .8rem 0; border-bottom: 1px solid var(--color-border); }

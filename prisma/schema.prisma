@@ -231,6 +231,15 @@ model DonationAttempt {
   @@index([clientHash, createdAt])
 }
 
+model DailyPageView {
+  id        String   @id @default(cuid())
+  path      String
+  date      DateTime
+  views     Int      @default(0)
+  @@unique([path, date])
+  @@index([date])
+}
+
 model AppealUpdate {
   id          String   @id @default(cuid())
   appealId    String
