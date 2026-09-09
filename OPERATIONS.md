@@ -24,7 +24,7 @@
 
 - Railway deploys the repository Dockerfile. Stay on the trial/free allowance until a public launch is approved.
 - Neon hosts PostgreSQL in Singapore on its free plan. Use the pooled connection string as `DATABASE_URL` and never paste it into chat, Git, screenshots or logs.
-- Cloudflare R2 stores assistance documents in a private bucket. Public access must remain disabled; set `S3_REGION=auto` and use the account-specific S3 API endpoint.
+- A private Railway storage bucket stores assistance documents. Reference its `BUCKET`, `ENDPOINT`, `REGION`, `ACCESS_KEY_ID` and `SECRET_ACCESS_KEY` variables from the application service; keep `S3_FORCE_PATH_STYLE=false` for current virtual-hosted-style buckets.
 - Resend delivers queued email. Until the official domain is available, use Resend's test sender only with an approved test recipient; do not impersonate `amaanafoundation.org`.
 - Trigger `POST /api/jobs/notifications` with `Authorization: Bearer <CRON_SECRET>`. Do not put the secret in a URL.
 - Razorpay must remain in test mode until KYC, staging reconciliation and compliance review are complete.
