@@ -6,7 +6,7 @@ export const metadata = {
 };
 
 const topics = [
-  "Qur'an",
+  "Qur’an",
   "Hadith",
   "Sadaqah",
   "Zakat",
@@ -29,13 +29,13 @@ export default function FaithAndReflectionsPage() {
             <p className="v2-section-label">Faith & Reflections</p>
             <h1 className="v2-display" style={{ maxWidth: "8ch" }}>A place for the heart to return.</h1>
             <p className="v2-hero-copy" style={{ marginTop: "2rem" }}>
-              A growing library of Islamic articles, reminders and videos centred on compassion, generosity, gratitude, service and the values that inspire Amaana's work.
+              A growing library of Islamic articles, reminders and videos centred on compassion, generosity, gratitude, service and the values that inspire Amaana’s work.
             </p>
           </div>
           <div className="v2-reminder">
             <span className="v2-reminder-label">Editorial standard</span>
             <blockquote>Beneficial reminders deserve the same care as every other trust.</blockquote>
-            <p>Qur'an citations, translations, hadith references and religious claims will be verified before publication. Amaana will share beneficial content without presenting itself as a scholarly authority.</p>
+            <p>Qur’an citations, translations, hadith references and religious claims will be verified before publication. Amaana will share beneficial content without presenting itself as a scholarly authority.</p>
           </div>
         </div>
       </section>
