@@ -19,9 +19,8 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <nav className="container nav" aria-label="Primary navigation">
-        <Link className="brand" href="/" aria-label="Amaana Foundation home" onClick={closeMenu}>
-          <span className="brand-mark" aria-hidden="true" />
-          <span>Amaana Foundation</span>
+        <Link className="brand brand-wordmark" href="/" aria-label="Amaana Foundation home" onClick={closeMenu}>
+          Amaana Foundation
         </Link>
 
         <button
@@ -46,6 +45,8 @@ export function SiteHeader() {
           {primaryLinks.map(([label, href]) => <Link href={href} key={href} onClick={closeMenu}>{label}</Link>)}
           <Link href="/request-assistance" onClick={closeMenu}>Request assistance</Link>
           <Link href="/how-we-verify" onClick={closeMenu}>How we work</Link>
+          <Link href="/compliance" onClick={closeMenu}>Transparency</Link>
+          <Link href="/contact" onClick={closeMenu}>Contact</Link>
           <Link className="button" href="/appeals" onClick={closeMenu}>Donate</Link>
         </div>
       </div>
