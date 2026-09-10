@@ -1,0 +1,90 @@
+:root {
+  --amaana-blue: #466FAA;
+  --amaana-gold: #E0B318;
+  --amaana-blue-deep: #1D3150;
+  --amaana-blue-ink: #122239;
+  --amaana-blue-soft: #E9EFF8;
+  --amaana-gold-soft: #F4E9B5;
+  --amaana-ivory: #F7F3EB;
+  --amaana-paper: #FFFDF8;
+  --amaana-sand: #EDE4D6;
+  --amaana-charcoal: #172231;
+}
+
+/* Public brand layer. Exact logo colours act as anchors; supporting tints/shades
+   are deliberately derived so the site feels branded without becoming a flat
+   two-colour template. */
+.site-header {
+  border-bottom-color: rgb(70 111 170 / 16%);
+  background: rgb(247 243 235 / 92%);
+}
+
+.brand {
+  color: var(--amaana-blue-ink);
+  letter-spacing: -.015em;
+}
+
+.brand-mark {
+  width: .72rem;
+  height: .72rem;
+  border-radius: 999px;
+  background: var(--amaana-gold);
+  box-shadow: 0 0 0 .28rem rgb(70 111 170 / 10%);
+  color: transparent;
+  overflow: hidden;
+}
+
+.nav-links a:hover,
+.mobile-menu-inner a:hover {
+  color: var(--amaana-blue);
+}
+
+.nav-links .button,
+.mobile-menu-inner .button {
+  background: var(--amaana-blue);
+  color: white;
+}
+
+.nav-links .button:hover,
+.mobile-menu-inner .button:hover {
+  background: var(--amaana-blue-deep);
+}
+
+.v2-home {
+  --v2-ivory: var(--amaana-ivory);
+  --v2-ink: var(--amaana-blue-ink);
+  --v2-ink-soft: var(--amaana-blue-deep);
+  --v2-gold: var(--amaana-gold);
+  --v2-gold-soft: var(--amaana-gold-soft);
+  --v2-sand: var(--amaana-sand);
+  --v2-paper: var(--amaana-paper);
+}
+
+.v2-hero {
+  background:
+    radial-gradient(circle at 82% 14%, rgb(224 179 24 / 20%), transparent 28%),
+    radial-gradient(circle at 16% 72%, rgb(70 111 170 / 22%), transparent 34%),
+    linear-gradient(145deg, #101F35 0%, #1D3150 48%, #274E80 100%);
+}
+
+.v2-work-card:nth-child(1) {
+  background:
+    radial-gradient(circle at 78% 10%, rgb(224 179 24 / 12%), transparent 30%),
+    linear-gradient(145deg, #122239, #274E80);
+}
+
+.v2-closing {
+  background:
+    radial-gradient(circle at 20% 15%, rgb(70 111 170 / 12%), transparent 28%),
+    radial-gradient(circle at 82% 78%, rgb(224 179 24 / 12%), transparent 24%),
+    linear-gradient(145deg, #F2EEE6, #FBF8F2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-button,
+  .v2-text-link,
+  .v2-work-card {
+    transition: none !important;
+    transform: none !important;
+  }
+}
