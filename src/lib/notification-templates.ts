@@ -24,6 +24,17 @@ export function renderNotificationEmail(templateKey: string, payload: TemplatePa
     return { subject, text: `Assalamu alaikum,\n\nWe received your assistance request. Reference: ${reference}. Keep your tracking details private.\n\nJazakAllah khair,\nAmaana Foundation`, html: wrap(`<p>We received your assistance request.</p><p><strong>Reference:</strong> ${safeReference}</p><p>Please keep your tracking details private. Our team will contact you if more information is required.</p>`) };
   }
 
+  if (templateKey === "assistance-staff-alert") {
+    const city = value(payload, "city");
+    const category = value(payload, "category").replaceAll("_", " ").toLowerCase();
+    const subject = configuredSubject || `New Amaana assistance request: ${reference}`;
+    return {
+      subject,
+      text: `Assalamu alaikum,\n\nA new assistance request requires staff review. Reference: ${reference}. Category: ${category}. City: ${city}. Open the secure admin area to review the request and private documents. Do not forward sensitive information by email.\n\nJazakAllah khair,\nAmaana Foundation`,
+      html: wrap(`<p>A new assistance request requires staff review.</p><p><strong>Reference:</strong> ${safeReference}<br><strong>Category:</strong> ${escapeHtml(category)}<br><strong>City:</strong> ${escapeHtml(city)}</p><p>Please use the secure admin area to review the request and any private documents. Do not forward sensitive information by email.</p>`),
+    };
+  }
+
   if (templateKey === "assistance-status-updated") {
     const status = value(payload, "status").replaceAll("_", " ").toLowerCase();
     const subject = configuredSubject || "Your Amaana request status was updated";
