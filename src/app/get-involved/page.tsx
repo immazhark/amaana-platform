@@ -2,7 +2,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: "Get Involved",
-  description: "Ways to support, follow and participate in Amaana Foundation's work.",
+  description: "Ways to support, follow and participate in Amaana Foundation’s work.",
 };
 
 export default function GetInvolvedPage() {
@@ -13,7 +13,7 @@ export default function GetInvolvedPage() {
           <p className="v2-section-label">Get involved</p>
           <h1 className="v2-display" style={{ maxWidth: "9ch" }}>There is more than one way to stand with good work.</h1>
           <p className="v2-hero-copy" style={{ marginTop: "2rem" }}>
-            Support an active verified appeal, follow Amaana's ongoing work, share a genuine need, or connect with the team about volunteering and collaboration.
+            Support an active verified appeal, follow Amaana’s ongoing work, share a genuine need, or connect with the team about volunteering and collaboration.
           </p>
         </div>
       </section>
