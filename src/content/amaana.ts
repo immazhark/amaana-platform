@@ -18,7 +18,7 @@ export const initiatives: AmaanaInitiative[] = [
     metric: "710",
     metricLabel: "Eid Gift Kits in 2026",
     years: "2020–2026",
-    href: "/our-work/eid-gift-kits",
+    href: "/our-work#eid-gift-kits",
   },
   {
     slug: "qurbani-meat-distribution",
@@ -28,7 +28,7 @@ export const initiatives: AmaanaInitiative[] = [
     metric: "350+",
     metricLabel: "families reached in 2026",
     years: "2025–2026",
-    href: "/our-work/qurbani-meat-distribution",
+    href: "/our-work#qurbani-meat-distribution",
   },
   {
     slug: "taleem",
@@ -37,7 +37,7 @@ export const initiatives: AmaanaInitiative[] = [
     summary: "Stationery and learning essentials prepared and distributed to children, including a documented activity reaching 50 orphan children.",
     metric: "50",
     metricLabel: "children in a documented Taleem activity",
-    href: "/our-work/taleem",
+    href: "/our-work#taleem",
   },
   {
     slug: "winter-relief",
@@ -47,7 +47,7 @@ export const initiatives: AmaanaInitiative[] = [
     metric: "234+",
     metricLabel: "campaign-reported beneficiaries",
     years: "2025–26",
-    href: "/our-work/winter-relief",
+    href: "/our-work#winter-relief",
   },
   {
     slug: "dates-distribution",
@@ -56,7 +56,7 @@ export const initiatives: AmaanaInitiative[] = [
     summary: "A community-supported distribution of premium dates during Ramadan.",
     metric: "162 kg",
     metricLabel: "dates distributed",
-    href: "/our-work/dates-distribution",
+    href: "/our-work#dates-distribution",
   },
   {
     slug: "medical-financial-assistance",
@@ -65,7 +65,7 @@ export const initiatives: AmaanaInitiative[] = [
     summary: "Case-led support for medical emergencies, livelihood needs and financial hardship after review of supporting information.",
     metric: "₹4.82L",
     metricLabel: "raised in one documented medical appeal",
-    href: "/our-work/medical-financial-assistance",
+    href: "/our-work#medical-financial-assistance",
   },
   {
     slug: "hyderabad-flood-relief-2020",
@@ -74,7 +74,7 @@ export const initiatives: AmaanaInitiative[] = [
     summary: "Relief work from Amaana's earliest grassroots period during the Hyderabad floods of 2020.",
     metric: "2020",
     metricLabel: "early community relief",
-    href: "/our-work/hyderabad-flood-relief-2020",
+    href: "/our-work#hyderabad-flood-relief-2020",
   },
 ];
 
