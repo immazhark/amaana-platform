@@ -44,6 +44,43 @@ export async function POST(request: Request) {
     const trackingToken = createTrackingToken();
     const email = parsed.data.email || null;
 
+    const staffRecipients = await prisma.user.findMany({
+      where: {
+        status: "ACTIVE",
+        roles: {
+          some: {
+            role: {
+              permissions: {
+                some: { permission: { key: "assistance.view" } },
+              },
+            },
+          },
+        },
+      },
+      select: { id: true, email: true },
+    });
+
+    const applicantNotification = {
+      channel: email ? NotificationChannel.EMAIL : NotificationChannel.SMS,
+      recipient: email ?? parsed.data.phone,
+      templateKey: "assistance-request-received",
+      subject: email ? "We received your Amaana assistance request" : null,
+      payload: { referenceNumber },
+    };
+
+    const staffNotifications = staffRecipients.map(staff => ({
+      channel: NotificationChannel.EMAIL,
+      recipient: staff.email,
+      templateKey: "assistance-staff-alert",
+      subject: `New Amaana assistance request: ${referenceNumber}`,
+      payload: {
+        referenceNumber,
+        city: parsed.data.city,
+        category: parsed.data.category,
+      },
+      userId: staff.id,
+    }));
+
     await prisma.assistanceRequest.create({
       data: {
         id,
@@ -58,13 +95,7 @@ export async function POST(request: Request) {
         trackingTokenHash: hashTrackingToken(trackingToken),
         documents: { create: documents },
         notifications: {
-          create: [{
-            channel: email ? NotificationChannel.EMAIL : NotificationChannel.SMS,
-            recipient: email ?? parsed.data.phone,
-            templateKey: "assistance-request-received",
-            subject: email ? "We received your Amaana assistance request" : null,
-            payload: { referenceNumber },
-          }],
+          create: [applicantNotification, ...staffNotifications],
         },
       },
     });
