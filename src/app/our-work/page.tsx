@@ -14,7 +14,7 @@ export default function OurWorkPage() {
           <p className="v2-section-label">Our Work</p>
           <h1 className="v2-display" style={{ maxWidth: "8ch" }}>Service that grows with the need.</h1>
           <p className="v2-hero-copy" style={{ marginTop: "2rem" }}>
-            Amaana's initiatives have grown from a family-led Ramadan effort into recurring food, education, seasonal, emergency, medical and livelihood support across Hyderabad.
+            Amaana’s initiatives have grown from a family-led Ramadan effort into recurring food, education, seasonal, emergency, medical and livelihood support across Hyderabad.
           </p>
         </div>
       </section>
