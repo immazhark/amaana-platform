@@ -59,7 +59,7 @@ export default async function HomePage() {
             </div>
             <div>
               <p className="v2-section-intro">
-                Amaana's work has grown across seasonal giving, food support, education, emergency relief, medical assistance and livelihood needs. Each initiative carries its own story, evidence and people behind it.
+                Amaana’s work has grown across seasonal giving, food support, education, emergency relief, medical assistance and livelihood needs. Each initiative carries its own story, evidence and people behind it.
               </p>
               <Link className="v2-text-link" href="/our-work">Explore all initiatives →</Link>
             </div>
@@ -90,7 +90,7 @@ export default async function HomePage() {
             </div>
             <div>
               <p className="v2-section-intro">
-                A Ramadan effort that began around one family table became a recurring community tradition. The full story will bring together every year's photos, kit contents, financial records and distribution moments.
+                A Ramadan effort that began around one family table became a recurring community tradition. The full story will bring together every year’s photos, kit contents, financial records and distribution moments.
               </p>
               <Link className="v2-text-link" href="/our-work/eid-gift-kits">Explore the seven-year story →</Link>
             </div>
