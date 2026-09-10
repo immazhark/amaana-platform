@@ -3,7 +3,10 @@ name: CI
 on:
   pull_request:
   push:
-    branches: [main, "build/**"]
+    branches:
+      - main
+      - "build/**"
+      - phase-public-site-rebuild
 
 permissions:
   contents: read
@@ -15,6 +18,7 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/amaana?schema=public
       NEXT_PUBLIC_APP_URL: https://amaanafoundation.org
+      NEXT_PUBLIC_ALLOW_INDEXING: "false"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
