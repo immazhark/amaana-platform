@@ -11,9 +11,9 @@
   --amaana-charcoal: #172231;
 }
 
-/* Public brand layer. Exact logo colours act as anchors; supporting tints/shades
-   are deliberately derived so the site feels branded without becoming a flat
-   two-colour template. */
+/* Amaana's exact logo colours are anchors, not restrictions. Supporting tones
+   are derived so the site feels unmistakably branded without becoming a flat
+   blue-and-gold template. */
 .site-header {
   border-bottom-color: rgb(70 111 170 / 16%);
   background: rgb(247 243 235 / 92%);
@@ -24,14 +24,9 @@
   letter-spacing: -.015em;
 }
 
-.brand-mark {
-  width: .72rem;
-  height: .72rem;
-  border-radius: 999px;
-  background: var(--amaana-gold);
-  box-shadow: 0 0 0 .28rem rgb(70 111 170 / 10%);
-  color: transparent;
-  overflow: hidden;
+.brand-wordmark {
+  font-weight: 850;
+  letter-spacing: -.025em;
 }
 
 .nav-links a:hover,
@@ -48,6 +43,50 @@
 .nav-links .button:hover,
 .mobile-menu-inner .button:hover {
   background: var(--amaana-blue-deep);
+}
+
+.site-footer {
+  background:
+    radial-gradient(circle at 10% 20%, rgb(70 111 170 / 18%), transparent 28%),
+    linear-gradient(145deg, #0f1d31, #1d3150);
+}
+
+.footer-grid-v2 {
+  grid-template-columns: minmax(18rem, 2fr) repeat(3, minmax(9rem, 1fr));
+}
+
+.footer-intro p {
+  max-width: 35rem;
+  margin-top: 1rem;
+  color: rgb(255 255 255 / 72%);
+}
+
+.footer-wordmark {
+  display: inline-block;
+  color: white;
+  font-size: 1.2rem;
+}
+
+.footer-grid-v2 h3 {
+  color: var(--amaana-gold-soft);
+  font-size: .82rem;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.footer-grid-v2 .footer-links a {
+  color: rgb(255 255 255 / 78%);
+}
+
+.footer-grid-v2 .footer-links a:hover {
+  color: white;
+}
+
+.footer-note {
+  display: flex;
+  flex-wrap: wrap;
+  gap: .6rem 1.2rem;
+  color: rgb(255 255 255 / 62%);
 }
 
 .v2-home {
@@ -78,6 +117,30 @@
     radial-gradient(circle at 20% 15%, rgb(70 111 170 / 12%), transparent 28%),
     radial-gradient(circle at 82% 78%, rgb(224 179 24 / 12%), transparent 24%),
     linear-gradient(145deg, #F2EEE6, #FBF8F2);
+}
+
+@media (max-width: 960px) {
+  .footer-grid-v2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .footer-intro {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .footer-grid-v2 {
+    grid-template-columns: 1fr;
+  }
+
+  .footer-intro {
+    grid-column: auto;
+  }
+
+  .footer-note {
+    display: grid;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
