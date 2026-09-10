@@ -6,11 +6,13 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Analytics } from "@/components/analytics";
 import { StructuredData } from "@/components/structured-data";
+import { shouldAllowIndexing } from "@/lib/site-indexing";
 
-const allowIndexing = process.env.NEXT_PUBLIC_ALLOW_INDEXING === "true";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
+const allowIndexing = shouldAllowIndexing(appUrl, process.env.NEXT_PUBLIC_ALLOW_INDEXING);
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org"),
+  metadataBase: new URL(appUrl),
   title: { default: "Amaana Foundation", template: "%s | Amaana Foundation" },
   description: "Faith-inspired service, dignified assistance and transparent community action from Amaana Foundation in Hyderabad.",
   openGraph: {
