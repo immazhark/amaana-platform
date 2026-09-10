@@ -12,20 +12,84 @@ function getClient() {
   const accessKeyId = process.env.S3_ACCESS_KEY_ID;
   const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
   if (!region || !bucket || !accessKeyId || !secretAccessKey) throw new Error("Document storage is not configured");
-  return { bucket, client: new S3Client({ region, endpoint: process.env.S3_ENDPOINT || undefined, forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true", credentials: { accessKeyId, secretAccessKey } }) };
+  return {
+    bucket,
+    client: new S3Client({
+      region,
+      endpoint: process.env.S3_ENDPOINT || undefined,
+      forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
+      credentials: { accessKeyId, secretAccessKey },
+    }),
+  };
+}
+
+function hasValidSignature(bytes: Buffer, mimeType: string) {
+  if (mimeType === "application/pdf") {
+    return bytes.subarray(0, 5).toString("ascii") === "%PDF-";
+  }
+
+  if (mimeType === "image/jpeg") {
+    return bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  }
+
+  if (mimeType === "image/png") {
+    const pngSignature = Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]);
+    return bytes.length >= pngSignature.length && bytes.subarray(0, pngSignature.length).equals(pngSignature);
+  }
+
+  if (mimeType === "image/webp") {
+    return bytes.length >= 12
+      && bytes.subarray(0, 4).toString("ascii") === "RIFF"
+      && bytes.subarray(8, 12).toString("ascii") === "WEBP";
+  }
+
+  return false;
+}
+
+function extensionForMimeType(mimeType: string) {
+  if (mimeType === "application/pdf") return "pdf";
+  if (mimeType === "image/jpeg") return "jpg";
+  if (mimeType === "image/png") return "png";
+  if (mimeType === "image/webp") return "webp";
+  throw new Error("Unsupported document type");
 }
 
 export async function uploadPrivateDocument(file: File, requestId: string) {
   if (!allowedTypes.has(file.type)) throw new Error("Only PDF, JPEG, PNG and WebP documents are accepted");
   if (file.size > MAX_FILE_BYTES) throw new Error("Each document must be 5 MB or smaller");
-  const safeExtension = file.name.split(".").pop()?.toLowerCase().replace(/[^a-z0-9]/g, "") || "bin";
+
+  const bytes = Buffer.from(await file.arrayBuffer());
+  if (!hasValidSignature(bytes, file.type)) {
+    throw new Error("The uploaded document does not match its declared file type");
+  }
+
+  // Derive the stored extension from verified MIME content rather than trusting
+  // the user-supplied filename. The original filename is retained only as metadata.
+  const safeExtension = extensionForMimeType(file.type);
   const objectKey = `assistance/${requestId}/${randomUUID()}.${safeExtension}`;
   const { bucket, client } = getClient();
-  await client.send(new PutObjectCommand({ Bucket: bucket, Key: objectKey, Body: Buffer.from(await file.arrayBuffer()), ContentType: file.type, Metadata: { requestId } }));
-  return { objectKey, originalName: file.name.slice(0, 255), mimeType: file.type, sizeBytes: file.size };
+
+  await client.send(new PutObjectCommand({
+    Bucket: bucket,
+    Key: objectKey,
+    Body: bytes,
+    ContentType: file.type,
+    Metadata: { requestId },
+  }));
+
+  return {
+    objectKey,
+    originalName: file.name.slice(0, 255),
+    mimeType: file.type,
+    sizeBytes: file.size,
+  };
 }
 
 export async function getPrivateDocumentUrl(objectKey: string) {
+  if (!objectKey.startsWith("assistance/") || objectKey.includes("..")) {
+    throw new Error("Invalid private document key");
+  }
+
   const { bucket, client } = getClient();
   return getSignedUrl(client, new GetObjectCommand({ Bucket: bucket, Key: objectKey }), { expiresIn: 60 });
 }
