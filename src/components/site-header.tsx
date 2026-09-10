@@ -20,7 +20,7 @@ export function SiteHeader() {
     <header className="site-header">
       <nav className="container nav" aria-label="Primary navigation">
         <Link className="brand" href="/" aria-label="Amaana Foundation home" onClick={closeMenu}>
-          <span className="brand-mark" aria-hidden="true">A</span>
+          <span className="brand-mark" aria-hidden="true" />
           <span>Amaana Foundation</span>
         </Link>
 
