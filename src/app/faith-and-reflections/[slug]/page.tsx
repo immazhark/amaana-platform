@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicMedia } from "@/components/public-media";
-import { getPublishedFaithContentBySlug } from "@/lib/public-content";
+import { getFaithPageData } from "@/lib/public-page-data";
 
 type Props = { params: Promise<{ slug: string }> };
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const item = await getPublishedFaithContentBySlug(slug);
+  const item = await getFaithPageData(slug);
   if (!item) return { title: "Reflection not found" };
 
   const canonical = `/faith-and-reflections/${item.slug}`;
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function FaithDetailPage({ params }: Props) {
   const { slug } = await params;
-  const item = await getPublishedFaithContentBySlug(slug);
+  const item = await getFaithPageData(slug);
   if (!item) notFound();
 
   const publishedDate = item.publishedAt
