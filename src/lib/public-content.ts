@@ -78,6 +78,24 @@ export async function getPublishedStories() {
   });
 }
 
+export async function getPublishedStoryBySlug(slug: string) {
+  return prisma.story.findFirst({
+    where: {
+      slug,
+      status: "PUBLISHED",
+      privacyApprovedAt: { not: null },
+    },
+    include: {
+      cause: true,
+      initiative: true,
+      mediaAssets: {
+        where: { isPublic: true, privacyApprovedAt: { not: null } },
+        orderBy: { sortOrder: "asc" },
+      },
+    },
+  });
+}
+
 export async function getPublishedFaithContent() {
   return prisma.faithContent.findMany({
     where: {
