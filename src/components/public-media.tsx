@@ -56,11 +56,12 @@ export function PublicMedia({ asset, priority = false }: PublicMediaProps) {
     );
   }
 
+  const linkTitle = asset.title ?? asset.caption ?? "approved source";
   return (
     <article className="v2-media-link">
       <small>{asset.kind === "DOCUMENT" ? "Document" : "Video"}{asset.sourceYear ? ` · ${asset.sourceYear}` : ""}</small>
       <h3>{asset.title ?? asset.caption ?? "View approved source"}</h3>
-      <a href={url} target="_blank" rel="noreferrer">Open approved source ↗</a>
+      <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`Open ${linkTitle} in a new tab`}>Open approved source ↗</a>
     </article>
   );
 }
