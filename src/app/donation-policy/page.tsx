@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-export const metadata: Metadata = { title: "Donation Policy", description: "How domestic donations are accepted, recorded and acknowledged by Amaana Foundation." };
+export const metadata: Metadata = {
+  title: "Donation Policy",
+  description: "How domestic donations are accepted, recorded and acknowledged by Amaana Foundation.",
+  alternates: { canonical: "/donation-policy" },
+  openGraph: { type: "website", url: "/donation-policy", title: "Donation Policy | Amaana Foundation", description: "How domestic donations are accepted, recorded and acknowledged by Amaana Foundation." },
+  twitter: { card: "summary", title: "Donation Policy | Amaana Foundation", description: "How domestic donations are accepted, recorded and acknowledged by Amaana Foundation." },
+};
 const sections=[
 ["01","Who may donate",<>The checkout requires confirmation that funds are being contributed from an Indian source through a domestic payment method. <strong>Foreign contributions are not accepted.</strong></>],
 ["02","Payment confirmation",<>Razorpay processes checkout. A donation is recorded as successful only after cryptographic verification and confirmation of the captured payment. Failed, abandoned or unverified orders are not added to an appeal&apos;s collected total.</>],
