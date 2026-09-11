@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation";
 
 type RazorpayResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
 type RazorpayOptions = { key: string; amount: number; currency: string; name: string; description: string; order_id: string; prefill: { name: string; email: string; contact?: string }; handler: (response: RazorpayResponse) => Promise<void>; modal: { ondismiss: () => void }; theme: { color: string } };
-type CheckoutPhase = "loading" | "ready" | "opening" | "verifying";
+type CheckoutPhase = "loading" | "ready" | "opening" | "verifying" | "reconciliation";
 declare global { interface Window { Razorpay: new (options: RazorpayOptions) => { open(): void } } }
 
 export function DonationForm({ appealId, appealTitle }: { appealId: string; appealTitle: string }) {
@@ -15,6 +15,7 @@ export function DonationForm({ appealId, appealTitle }: { appealId: string; appe
   const [phase, setPhase] = useState<CheckoutPhase>("loading");
 
   const busy = phase === "opening" || phase === "verifying";
+  const lockedForReconciliation = phase === "reconciliation";
   const scriptReady = phase !== "loading";
   const statusText = phase === "loading"
     ? "Preparing secure checkout."
@@ -22,11 +23,17 @@ export function DonationForm({ appealId, appealTitle }: { appealId: string; appe
       ? "Opening Razorpay secure checkout."
       : phase === "verifying"
         ? "Payment received. Verifying your donation with Amaana."
-        : "Secure checkout is ready.";
+        : phase === "reconciliation"
+          ? "Payment verification needs follow-up. Please do not submit another payment for this donation."
+          : "Secure checkout is ready.";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    if (lockedForReconciliation) {
+      setError("Please do not submit another payment while this donation is being reconciled.");
+      return;
+    }
     if (!scriptReady || !window.Razorpay) {
       setError("Secure checkout is still loading. Please try again.");
       return;
@@ -72,14 +79,14 @@ export function DonationForm({ appealId, appealTitle }: { appealId: string; appe
             });
             const result = await confirmation.json();
             if (!confirmation.ok) {
-              setError(result.error ?? "Payment verification is pending. Please retain your Razorpay payment confirmation.");
-              setPhase("ready");
+              setError(result.error ?? "Payment verification is pending. Please retain your Razorpay payment confirmation and do not submit another payment.");
+              setPhase("reconciliation");
               return;
             }
             router.push(`/donations/${encodeURIComponent(result.referenceNumber)}/acknowledgement?token=${encodeURIComponent(order.receiptToken)}`);
           } catch {
-            setError("We could not complete payment verification in this browser. Please retain your Razorpay payment confirmation; Amaana can reconcile the payment without asking for your OTP, UPI PIN or card credentials.");
-            setPhase("ready");
+            setError("We could not complete payment verification in this browser. Please retain your Razorpay payment confirmation and do not submit another payment. Amaana can reconcile the payment without asking for your OTP, UPI PIN or card credentials.");
+            setPhase("reconciliation");
           }
         },
       });
@@ -94,10 +101,10 @@ export function DonationForm({ appealId, appealTitle }: { appealId: string; appe
     <Script
       src="https://checkout.razorpay.com/v1/checkout.js"
       strategy="lazyOnload"
-      onLoad={() => setPhase("ready")}
+      onLoad={() => setPhase(current => current === "reconciliation" ? current : "ready")}
       onError={() => {
-        setPhase("loading");
-        setError("Secure checkout could not load. Please refresh and try again.");
+        setPhase(current => current === "reconciliation" ? current : "loading");
+        setError(current => current || "Secure checkout could not load. Please refresh and try again.");
       }}
     />
     <form className="v2-premium-form v2-donation-form" onSubmit={submit} aria-busy={busy} aria-describedby="donation-form-description donation-checkout-status">
@@ -105,13 +112,13 @@ export function DonationForm({ appealId, appealTitle }: { appealId: string; appe
       <p id="donation-checkout-status" className="muted" role="status" aria-live="polite">{statusText}</p>
       {error && <div className="form-error" role="alert" aria-live="assertive">{error}</div>}
       <div className="form-grid">
-        <div className="field full v2-amount-field"><label htmlFor="amount">Donation amount <span>INR</span></label><div className="v2-amount-input"><b aria-hidden="true">₹</b><input id="amount" name="amount" type="number" min="10" max="1000000" step="1" inputMode="numeric" placeholder="Enter amount" required/></div></div>
-        <div className="field"><label htmlFor="donorName">Full name</label><input id="donorName" name="donorName" autoComplete="name" minLength={2} required/></div>
-        <div className="field"><label htmlFor="donorEmail">Email</label><input id="donorEmail" name="donorEmail" type="email" autoComplete="email" required/></div>
-        <div className="field full"><label htmlFor="donorPhone">Phone <span className="muted">optional</span></label><input id="donorPhone" name="donorPhone" type="tel" autoComplete="tel"/></div>
-        <div className="field full v2-form-choice"><label className="checkbox"><input name="isAnonymous" type="checkbox"/><span><strong>Keep my public identity private</strong><small>Do not show my name in any public donor listing.</small></span></label></div>
-        <div className="field full v2-form-choice"><label className="checkbox"><input name="domesticConfirmed" type="checkbox" required/><span><strong>Domestic contribution confirmation</strong><small>I confirm this donation is from an Indian source using a domestic payment method.</small></span></label></div>
-        <div className="field full v2-form-submit"><button className="v2-button" type="submit" disabled={busy || !scriptReady}>{phase === "opening" ? "Opening secure checkout…" : phase === "verifying" ? "Verifying donation…" : scriptReady ? "Continue securely →" : "Preparing secure checkout…"}</button><small>Next: Razorpay secure checkout. Your Amaana acknowledgement follows successful payment verification and is not an 80G tax-deduction certificate.</small></div>
+        <div className="field full v2-amount-field"><label htmlFor="amount">Donation amount <span>INR</span></label><div className="v2-amount-input"><b aria-hidden="true">₹</b><input id="amount" name="amount" type="number" min="10" max="1000000" step="1" inputMode="numeric" placeholder="Enter amount" required disabled={lockedForReconciliation}/></div></div>
+        <div className="field"><label htmlFor="donorName">Full name</label><input id="donorName" name="donorName" autoComplete="name" minLength={2} required disabled={lockedForReconciliation}/></div>
+        <div className="field"><label htmlFor="donorEmail">Email</label><input id="donorEmail" name="donorEmail" type="email" autoComplete="email" required disabled={lockedForReconciliation}/></div>
+        <div className="field full"><label htmlFor="donorPhone">Phone <span className="muted">optional</span></label><input id="donorPhone" name="donorPhone" type="tel" autoComplete="tel" disabled={lockedForReconciliation}/></div>
+        <div className="field full v2-form-choice"><label className="checkbox"><input name="isAnonymous" type="checkbox" disabled={lockedForReconciliation}/><span><strong>Keep my public identity private</strong><small>Do not show my name in any public donor listing.</small></span></label></div>
+        <div className="field full v2-form-choice"><label className="checkbox"><input name="domesticConfirmed" type="checkbox" required disabled={lockedForReconciliation}/><span><strong>Domestic contribution confirmation</strong><small>I confirm this donation is from an Indian source using a domestic payment method.</small></span></label></div>
+        <div className="field full v2-form-submit"><button className="v2-button" type="submit" disabled={busy || !scriptReady || lockedForReconciliation}>{phase === "opening" ? "Opening secure checkout…" : phase === "verifying" ? "Verifying donation…" : phase === "reconciliation" ? "Verification follow-up required" : scriptReady ? "Continue securely →" : "Preparing secure checkout…"}</button><small>{lockedForReconciliation ? "Do not submit another payment for this donation. Keep your Razorpay confirmation so the payment can be reconciled safely." : "Next: Razorpay secure checkout. Your Amaana acknowledgement follows successful payment verification and is not an 80G tax-deduction certificate."}</small></div>
       </div>
     </form>
   </>;
