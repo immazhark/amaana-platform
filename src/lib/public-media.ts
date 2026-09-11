@@ -33,5 +33,13 @@ export function canRenderPublicMedia(asset: PublicMediaCandidate) {
     return Boolean(asset.altText?.trim());
   }
 
+  // Hosted video currently has no modelled synchronized-caption track.
+  // Failing closed prevents an approver from publishing inaccessible video
+  // merely because a safe media URL exists. Re-enable only when caption-track
+  // metadata and rendering are implemented and verified.
+  if (asset.kind === "VIDEO") {
+    return false;
+  }
+
   return true;
 }
