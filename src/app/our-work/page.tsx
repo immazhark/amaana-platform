@@ -54,7 +54,7 @@ export default async function OurWorkPage() {
         <div className="v2-shell">
           <div className="v2-section-head">
             <div><p className="v2-section-label">Explore by need</p><h2 className="v2-section-title">A living portfolio of service.</h2></div>
-            <p className="v2-section-intro">The structure can grow as Amaana&apos;s work grows. New verified causes and initiatives appear through the publication system rather than requiring a redesigned public page.</p>
+            <p className="v2-section-intro">As Amaana responds to new verified needs, this public record can grow with the work — keeping each initiative connected to its evidence, stories and known outcomes.</p>
           </div>
 
           {causes.length > 0 ? (
