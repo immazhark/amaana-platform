@@ -103,11 +103,20 @@ Appeal-card styling is separated from the much larger appeal-detail experience.
 - The closed mobile navigation is removed from the focus/accessibility tree with `hidden`.
 - Escape closes an open menu.
 - Menu state is tied to the pathname rather than synchronously resetting state in an effect, so route changes close the menu without React's set-state-in-effect performance/lint problem.
+- Opening now moves focus into the mobile menu and Escape returns focus to the menu toggle.
 
 ### Loading and transition states
 - The App Router now has a lightweight global `loading.tsx` fallback so dynamic navigation is never an unexplained blank state.
 - The loading experience is semantic, announced politely to assistive technology and uses a reduced-motion-safe progress treatment.
 - The state deliberately avoids heavy skeleton DOM or media placeholders that would add unnecessary layout/render cost.
+
+### Design-system and responsive continuity hardening
+- A later audit found that the legacy root stylesheet still carried generic NGO-green shared tokens beneath the new Amaana experience layer. The final refinement layer now remaps those generic shared variables and surviving shared gradients to the current working Amaana blue/gold/deep-ink/editorial-neutral system so untouched states cannot silently fall back to the old identity.
+- This does **not** certify the exact master brand colours; final colour/logo certification remains blocked on direct inspection of the branding archive.
+- Public-shell vertical overflow is no longer globally hidden merely to suppress horizontal layout issues; vertical focus/sticky/long-content behaviour remains available while horizontal overflow is clipped at the public experience boundary.
+- Very narrow viewports now receive smaller shell gutters, tighter brand-label spacing, safe text wrapping and hero-action wrapping without shrinking the established 3rem interactive-height baseline.
+- Global smooth scrolling is disabled under `prefers-reduced-motion: reduce`.
+- A first narrow-screen draft briefly reduced shared button height to 2.75rem; it was immediately reverted to 3rem and recorded in the Mistake & Lessons Log before certification.
 
 ## SEO / discoverability work implemented
 
@@ -131,6 +140,7 @@ The sitemap now includes the real public information architecture rather than on
 - Governance
 - Compliance
 - Contact
+- Request Assistance
 - policy pages
 - published initiative detail pages
 - privacy-approved published story detail pages
@@ -160,6 +170,14 @@ The homepage now also declares its explicit canonical URL rather than relying on
 - The structured-data URL follows the configured app URL rather than silently hard-coding production into every environment.
 - Logo schema remains intentionally absent until the original isolated branding asset is successfully recovered and verified.
 
+## Backend/storage hardening added during Phase 6 continuity review
+
+- Public-media upload now has a compensation path for the storage-upload/database-create boundary.
+- If an uploaded managed public-media object is successfully stored but creation of its `MediaAsset` record fails, the application attempts to delete that exact newly uploaded object before rethrowing the original DB error.
+- Cleanup is restricted to the application's managed `YEAR/UUID.ext` object-key shape rather than exposing arbitrary public-bucket deletion.
+- A failed cleanup is logged, while the original record-creation error remains the user-visible failure.
+- This reduces the orphan-object risk in code; staging-provider verification is still required before the risk is marked closed.
+
 ## CI checkpoints
 
 Verified successful checkpoints include:
@@ -177,10 +195,14 @@ Verified successful checkpoints include:
 - #225 — corrected mobile navigation plus discovery-performance batch
 - #244 — assistance-form semantics and labelled form region
 - #251 — global loading-state plus policy metadata checkpoint
+- #265 — Contact/external-link accessibility checkpoint
+- #275 — active release-risk register checkpoint
+- #276 — initial Mistake & Lessons Log checkpoint
+- #280 — narrow-screen touch-target correction checkpoint
 
 CI #218 exposed a React lint issue in the first route-change menu implementation (`setState` directly inside an effect). The implementation was corrected immediately by deriving open state from the current pathname rather than suppressing the lint rule. The corrected implementation is included in later green CI.
 
-The newest Impact/Stories/Faith discovery-refinement commits require their own CI completion before being certified.
+Newer palette/reflow/storage-hardening documentation and code require their own CI completion before being certified.
 
 ## Remaining Phase 6 / 7 performance work
 
@@ -195,6 +217,7 @@ The newest Impact/Stories/Faith discovery-refinement commits require their own C
 - Run final crawl for orphan pages, redirects, broken links and sitemap parity.
 - Add official logo/schema/social-preview imagery only after the original branding archive has been successfully inspected.
 - Continue the creative-director pass through Impact, Stories, Faith, Appeals/Donate and trust/utility journeys.
+- Exercise public-media DB-failure compensation against staging storage before closing the orphan-object risk.
 
 ## Important boundary
 
