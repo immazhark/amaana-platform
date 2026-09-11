@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 export const metadata: Metadata = {
   title: "Private Assistance Request Tracking",
   robots: { index: false, follow: false },
+  referrer: "no-referrer",
 };
 
 type Props = { searchParams: Promise<{ reference?: string; token?: string }> };
