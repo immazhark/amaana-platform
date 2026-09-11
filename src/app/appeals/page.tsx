@@ -1,20 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AppealCard } from "@/components/appeal-card";
-import { prisma } from "@/lib/prisma";
+import { getAppealsIndexData } from "@/lib/public-page-data";
 
 export const metadata: Metadata = {
-  title: "Appeals",
-  description: "Explore current verified support appeals from Amaana Foundation.",
+  title: "Verified Appeals",
+  description: "Explore current reviewed support appeals from Amaana Foundation in Hyderabad, with public-safe context and clear donation boundaries.",
+  alternates: { canonical: "/appeals" },
+  openGraph: {
+    type: "website",
+    url: "/appeals",
+    title: "Verified Appeals | Amaana Foundation",
+    description: "Explore current reviewed support appeals from Amaana Foundation in Hyderabad, with public-safe context and clear donation boundaries.",
+  },
+  twitter: {
+    card: "summary",
+    title: "Verified Appeals | Amaana Foundation",
+    description: "Explore current reviewed support appeals from Amaana Foundation in Hyderabad.",
+  },
 };
 
 export const dynamic = "force-dynamic";
 
 export default async function AppealsPage() {
-  const appeals = await prisma.appeal.findMany({
-    where: { status: { in: ["PUBLISHED", "FUNDED"] } },
-    orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
-  });
+  const appeals = await getAppealsIndexData();
 
   return (
     <div className="v2-home v2-appeals-page">
@@ -30,7 +39,7 @@ export default async function AppealsPage() {
         </div>
       </section>
 
-      <section className="v2-appeals-trustline"><div className="v2-shell"><span>Need received</span><b>→</b><span>Information reviewed</span><b>→</b><span>Decision made</span><b>→</b><span>Public-safe appeal</span><b>→</b><span>Known outcome recorded</span></div></section>
+      <section className="v2-appeals-trustline" aria-label="Appeal review journey"><div className="v2-shell"><span>Need received</span><b aria-hidden="true">→</b><span>Information reviewed</span><b aria-hidden="true">→</b><span>Decision made</span><b aria-hidden="true">→</b><span>Public-safe appeal</span><b aria-hidden="true">→</b><span>Known outcome recorded</span></div></section>
 
       <section className="v2-section paper" id="current-appeals">
         <div className="v2-shell">
