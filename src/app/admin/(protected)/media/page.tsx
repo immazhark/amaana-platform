@@ -1,11 +1,13 @@
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { getPublicMediaStorageReadiness } from "@/lib/storage";
 import { createMediaAsset, setMediaPublication, updateMediaAsset } from "./actions";
 
 export default async function AdminMediaPage() {
   const user = await requirePermission("content.view");
   const canEdit = hasPermission(user, "content.update");
   const canApprove = hasPermission(user, "content.approve");
+  const storage = getPublicMediaStorageReadiness();
 
   const [assets, causes, initiatives, stories, faith] = await Promise.all([
     prisma.mediaAsset.findMany({ include: { cause: true, initiative: true, story: true, faithContent: true }, orderBy: [{ isPublic: "asc" }, { sourceYear: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }] }),
@@ -19,6 +21,19 @@ export default async function AdminMediaPage() {
 
   return <>
     <div className="admin-heading"><div><p className="eyebrow">Content evidence</p><h1>Media review</h1><p className="lead">Upload and document authentic Amaana material here. Nothing appears publicly until an approver explicitly publishes it.</p></div></div>
+
+    <section className="admin-card" style={{ marginBottom: "2rem" }}>
+      <div className="admin-heading">
+        <div><p className="eyebrow">Infrastructure preflight</p><h2>Public media readiness</h2></div>
+        <span className="status-badge">{storage.deliveryReady ? "READY" : storage.uploadReady ? "STORAGE READY" : "CONFIG NEEDED"}</span>
+      </div>
+      <div className="admin-media-readiness">
+        <div><strong>{storage.separateBucketConfigured ? "✓" : "—"} Separate public bucket</strong><small>{storage.separateBucketConfigured ? "Public campaign media is isolated from assistance documents." : "Configure PUBLIC_MEDIA_S3_BUCKET and do not reuse the private assistance bucket."}</small></div>
+        <div><strong>{storage.uploadReady ? "✓" : "—"} Upload credentials</strong><small>{storage.uploadReady ? `Storage uploads are configured${storage.usingFallbackCredentials ? " using the shared provider credentials." : " with dedicated public-media credentials."}` : "Region, bucket and storage credentials are not yet complete."}</small></div>
+        <div><strong>{storage.deliveryReady ? "✓" : "—"} HTTPS public delivery</strong><small>{storage.deliveryReady ? "Approved uploads can receive a renderable public URL." : storage.baseUrlConfigured && !storage.baseUrlSecure ? "PUBLIC_MEDIA_BASE_URL is set but must use HTTPS." : "Set PUBLIC_MEDIA_BASE_URL to the HTTPS CDN or public bucket origin before publication."}</small></div>
+      </div>
+      {!storage.deliveryReady && <p className="muted" style={{ marginTop: "1rem" }}>You may continue documenting existing reviewed public URLs. Direct file uploads should not be treated as publication-ready until the preflight is fully green.</p>}
+    </section>
 
     {canEdit && <section className="admin-card" style={{ marginBottom: "2rem" }}>
       <h2>Add reviewed media</h2>
