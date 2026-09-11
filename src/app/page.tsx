@@ -1,3 +1,4 @@
+import "./home-experience.css";
 import Link from "next/link";
 import { AppealCard } from "@/components/appeal-card";
 import { getHomepagePublicContent } from "@/lib/public-content";
