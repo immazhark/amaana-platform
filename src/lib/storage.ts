@@ -1,4 +1,4 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { randomUUID } from "node:crypto";
 
@@ -136,6 +136,16 @@ export function getPublicMediaStorageReadiness(): PublicMediaStorageReadiness {
 export function validatePublicMediaFile(file: File) {
   if (!publicMediaTypes.has(file.type)) throw new Error("Public media upload accepts PDF, JPEG, PNG and WebP files");
   if (file.size <= 0 || file.size > MAX_FILE_BYTES) throw new Error("Public media files must be between 1 byte and 5 MB");
+}
+
+function isManagedPublicMediaKey(objectKey: string) {
+  return /^\d{4}\/[0-9a-f-]{36}\.(?:pdf|jpg|png|webp)$/i.test(objectKey);
+}
+
+export async function deletePublicMediaObject(objectKey: string) {
+  if (!isManagedPublicMediaKey(objectKey)) throw new Error("Invalid managed public media key");
+  const { bucket, client } = getPublicMediaStorage();
+  await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: objectKey }));
 }
 
 export async function uploadPublicMediaFile(file: File) {
