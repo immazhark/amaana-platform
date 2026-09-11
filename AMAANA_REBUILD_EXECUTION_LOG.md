@@ -1,197 +1,152 @@
 # Amaana Foundation — Public Site Rebuild Execution Log
 
-This file is the durable implementation record for the `phase-public-site-rebuild` branch. It records what was actually changed, the release boundary, and what remains. A phase is not marked release-ready merely because code exists or CI passes.
+This is the durable implementation record for `phase-public-site-rebuild`. Code or green CI alone does not make a phase release-ready.
 
 ## Working rules
 
 - Creative direction: **Living Amanah — Faith. Dignity. Action.**
+- Two-Wow objective: first the experience, then the depth and evidence of Amaana's work.
 - Authentic Amaana material is preferred over stock or generated beneficiary imagery.
 - No invented programmes, statistics, religious claims, compliance claims, donation categories, urgency or beneficiary stories.
-- Private verification material stays private; publication requires a separate public-safe decision.
-- Amaana currently accepts domestic contributions only and is not FCRA-registered.
-- Provisional 80G status must never be represented as final/permanent approval; 12AB/12A remains subject to professional confirmation.
-- No merge to `main` until content, media, visual, responsive, accessibility, workflow, privacy and release QA are complete.
+- Private verification material stays private; public rendering requires a separate public-safe/privacy decision.
+- Domestic contributions only; Amaana is not FCRA-registered.
+- Provisional 80G must never be represented as final/permanent; 12AB/12A remains subject to professional confirmation.
+- No merge to `main` until content, media, visual, responsive, accessibility, workflow, privacy, performance and release QA are complete.
+- Official logo/source brand colours are not considered certified until the original branding archive can be inspected successfully.
 
 ## Phase 0 — Safety and content architecture — IMPLEMENTED
 
-- Next.js/TypeScript/Prisma platform retained rather than restarted.
+- Existing Next.js/TypeScript/Prisma platform retained.
 - Dynamic Cause, Initiative, Story, FaithContent and MediaAsset architecture added.
-- Privacy-gated public stories and media rendering.
-- Religious-review gating for Faith & Reflections.
-- Validated Eid Kits evidence parser and tests; inconsistent totals fail closed.
-- Donation/payment safety states, assistance abuse controls, private document handling, notification hardening and indexing controls retained/audited.
+- Privacy-gated public stories/media and religious-review gating retained.
+- Eid evidence validation fails closed on inconsistent totals.
+- Donation/payment, assistance abuse controls, private-document handling, notifications and indexing safeguards retained/audited.
 
 ## Phase 1 — Core public journeys — IMPLEMENTED
 
-- Homepage rebuilt around visitor intent, real work, impact, stories, faith and appeals.
-- About / Our Story rebuilt around the documented 2020 origin and continuity.
-- Our Work discovery and dynamic initiative detail experience rebuilt.
-- Eid Gift Kits rebuilt as the flagship evidence/story experience.
-- Impact rebuilt as an evidence journey.
-- Stories rebuilt as a privacy-gated field journal.
-- Faith & Reflections rebuilt while retaining religious verification gates.
-- Get Involved and Contact rebuilt.
-- Appeals index/detail rebuilt around verified need and dignity.
-- Donation checkout rebuilt around context, domestic-source confirmation and Razorpay handoff.
-- Request Assistance rebuilt as a private dignity-first submission journey.
-- Donation acknowledgement, assistance receipt and assistance tracking states redesigned.
+Rebuilt: Home, About, Our Work, initiative detail, Eid flagship, Impact, Stories, Faith & Reflections, Get Involved, Contact, Appeals, Donate, Request Assistance, acknowledgement/receipt/tracking states.
+
+Faith now includes a verified detail route rather than an index-only library.
 
 ## Phase 2 — Trust architecture — IMPLEMENTED / CI VERIFIED
 
-- How We Verify rebuilt as a dedicated verification narrative.
-- Transparency rebuilt around the evidence chain and the principle **Public evidence. Private proofs.**
-- Compliance & Registration rebuilt with explicit domestic/FCRA, provisional 80G and unresolved 12AB/12A boundaries.
-- Dedicated trust visual system added.
-- CI run #104 passed install, Prisma generation/validation, lint, typecheck, tests/coverage and production build.
+- How We Verify.
+- Transparency around `Public evidence. Private proofs.`
+- Compliance with domestic/FCRA/provisional-80G/12AB boundaries.
+- Dedicated trust visual system.
 
 ## Phase 3 — Policy and utility experience — IMPLEMENTED / CI VERIFIED
 
-- Privacy Policy moved off the generic ContentPage treatment into a dignity/privacy editorial experience.
-- Donation Policy rebuilt around domestic-source, captured-payment, reconciliation and acknowledgement rules.
-- Refund Policy rebuilt around secure evidence-based review and original-method refunds.
-- Terms of Use rebuilt around honesty, platform boundaries and security.
-- 404 page rebuilt as a branded recovery journey rather than a dead end.
-- Dedicated responsive policy/utility visual system added.
-- CI run #111 for head `3958754d346c46f7a0f2e3998a2c3fd24ec13cc3` completed successfully.
+- Privacy, Donation Policy, Refund Policy and Terms rebuilt editorially.
+- 404, error and global-error states rebuilt.
+- Global App Router loading state added later in Phase 6.
 
-## Phase 4 — Team / Governance / organizational trust — IMPLEMENTED / CI VERIFIED
+## Phase 4 — Governance / organizational trust — IMPLEMENTED / CI VERIFIED
 
-Goal: create a public organizational-trust experience only from verified source material.
+Verified public facts used:
+- Amaana Foundation, Trust.
+- DARPAN ID `TS/2024/0403215`.
+- DARPAN registration 21-05-2024.
+- Registration `BK-4, CS No 59/2024`.
+- Sub-Registrar / Registration Act 1908.
+- Hyderabad, Telangana.
+- Entity registration date 23-02-2024.
+- Trustees: Mohammed Ather Khan, Mohammed Mazhar Khan, Syed Iqba Ali.
 
-### Source audit completed
-
-Source used: Government of India NGO DARPAN record supplied for Amaana Foundation.
-
-Verified public facts used in the website:
-- Entity name: Amaana Foundation.
-- NPO type: Trust.
-- DARPAN ID: `TS/2024/0403215`.
-- DARPAN registration date: 21-05-2024.
-- Registration number: `BK-4, CS No 59/2024`.
-- Registered with: Sub-Registrar.
-- Act name: Registration Act 1908.
-- City / State: Hyderabad, Telangana.
-- Entity registration date shown in the DARPAN record: 23-02-2024.
-- DARPAN office bearers: Mohammed Ather Khan — Trustee; Mohammed Mazhar Khan — Trustee; Syed Iqba Ali — Trustee.
-
-Sensitive source fields intentionally excluded from the public page:
-- street/home/office address detail beyond city/state;
-- masked/mobile contact data;
-- personal contact email from the registration record;
-- signatures, identity numbers or unredacted underlying legal paperwork.
-
-Separate verified tax source retained on the Compliance page:
-- Form 10AC names Amaana Foundation and records provisional Section 80G approval dated 26-01-2026 for AY 2026-27 through AY 2028-29.
-- This remains described as provisional, not final/permanent.
-
-### Implementation completed
-
-- Added `/governance` as a dedicated public organizational-trust page.
-- Added a registration snapshot, verified trustees, registration record and role-boundary explanation.
-- Explicitly separated legal governance from public operations and internal platform administration.
-- Added Governance to footer trust navigation and mobile secondary navigation.
-- Added dedicated responsive governance visual system.
-- Updated About so its governance handoff points directly to the verified governance experience.
-- No team biographies or portraits were fabricated; these remain future content enhancements only when approved source material exists.
-- CI run #119 for head `7ecf89c6b7b84ce91401a9e895415618606a484b` passed install, Prisma generation/validation, lint, typecheck, tests/coverage and production build.
+Sensitive addresses, IDs, signatures and unredacted legal material remain excluded.
 
 ## Phase 5 — Authentic content and media population — IN PROGRESS
 
-### Documentation foundation
+Implemented:
+- `AMAANA_CONTENT_ASSET_REGISTER.md`.
+- Admin Media Review workspace and RBAC permissions.
+- Explicit publication/privacy approval gate.
+- Separate mandatory public-media bucket boundary; private assistance storage remains private.
+- Public media type/size/signature validation and HTTPS delivery requirements.
+- Public-media readiness reporting and operational preflight documentation.
+- Eid and Qurbani original-photo candidates inventoried with evidence-limited alt/caption guidance.
 
-- Created `AMAANA_CONTENT_ASSET_REGISTER.md` as the durable source/media register.
-- The register records source, campaign/year, factual support, privacy status, discrepancy notes, media suitability and intended website placement.
-- Initial entries cover governance/compliance, Eid Gift Kits, Qurbani, brand/contact material, payment material and faith-content review boundaries.
-- The register explicitly excludes model-generated media from documentary evidence slots and prevents historical QR/payment details from becoming current donation methods.
+Open Phase 5 gates:
+- actual target-environment public-media configuration;
+- explicit approval/publication of selected originals;
+- remaining archive enumeration and campaign-by-campaign inventory;
+- official isolated logo/master colour recovery.
 
-### Eid Gift Kits 2026 original-media inventory
+`Branding & Logo.zip` has been found and materialized, but runtime ZIP enumeration/extraction continues to time out. No approximation is allowed to become the master logo.
 
-- Located and visually inspected a set of original native 2026 photographs separately from the designed social graphics.
-- Inspected images include kit contents, packed branded bags, room-scale preparation, car transport and vehicle-load logistics.
-- The inspected set contains no visible beneficiaries or identifiable people. These are therefore strong public-safe candidates, while still requiring explicit provenance/public-use approval.
-- Preferred narrative sequence recorded in the Content & Asset Register:
-  1. `IMG_0138.jpg` — flagship hero / preparation scale.
-  2. `IMG_0252.JPG.jpeg` — physical kit contents.
-  3. `IMG_0238.jpg` — branded 2026 kit detail.
-  4. `IMG_0134.jpg` or `IMG_0165.jpg` — preparation / scale.
-  5. `IMG_0182.jpg` — transport transition.
-  6. `IMG_0160.jpg` — delivery logistics / closing gallery.
-- Draft descriptive alt text is recorded for each candidate. Captions remain evidence-limited and do not infer beneficiaries, destinations or outcomes that the image itself does not establish.
-- Near-duplicate preparation frames are intentionally not all selected; the target is a concise editorial sequence, not a file dump.
+## Phase 6 — Whole-site senior UX / creative / performance pass — ACTIVE
 
-### Media review and publication workflow implemented
+Quality standard is locked in `AMAANA_PHASE6_EXPERIENCE_QUALITY_STANDARD.md` and detailed work is recorded in `AMAANA_PHASE6_IMPLEMENTATION_LOG.md`.
 
-- Added dedicated admin `Media review` workspace.
-- Added `content.view`, `content.update` and `content.approve` permissions.
-- Primary and backup approvers can publish; reviewers can prepare metadata but cannot make material public.
-- New media records always start unpublished.
-- Images require meaningful alt text before publication.
-- Public URLs are restricted to HTTPS or safe root-relative paths.
-- Publishing sets `privacyApprovedAt` and is a separate explicit approval action.
-- Audit events record media creation, metadata changes, publication and unpublication.
-- Public pages continue to render only `MediaAsset` records where `isPublic=true` and `privacyApprovedAt` is present.
+Implemented during the active Phase 6 pass:
+- Homepage first-Wow editorial hero with authentic approved-media support and evidence-led fallback.
+- Our Work documentary discovery recomposition.
+- Lean public data projections across Home, Our Work, Impact, Stories, Faith, Appeals and donation context.
+- Request-level memoization where metadata and page rendering can share a public record.
+- Progressive route-scoping of large CSS payloads.
+- Razorpay script deferred until after important page work.
+- Public analytics deferred to idle time and excluded from sensitive journeys.
+- Media geometry reservation, lazy below-fold media and explicit priority only for genuine above-fold media.
+- Robots/indexing gate alignment, expanded sitemap, canonical/social metadata coverage and conservative Organization/WebSite structured data.
+- Mobile navigation accessibility correction and Escape handling.
+- Assistance and donation form semantics/live state improvements.
+- Global loading state.
+- Repeated inline presentation cleanup across audited major pages.
+- Stronger focus-visible, anchor scroll-offset and overflow behaviour in the shared refinement layer.
 
-### Storage boundary hardened
+Phase 6 is **not certified complete**. Authentic photography and official brand assets are still required for final creative certification.
 
-- Assistance-document storage remains on the existing private S3 bucket and must never be publicly exposed.
-- Public campaign media now requires a **separate** `PUBLIC_MEDIA_S3_BUCKET`.
-- Public-media credentials may reuse the same provider account, but the bucket itself is deliberately mandatory and separate.
-- `PUBLIC_MEDIA_BASE_URL` must be HTTPS before uploaded objects receive a renderable public URL.
-- Media upload validates type, size and file signature.
-- User metadata validation now occurs before object upload to avoid preventable orphaned files when a record is rejected.
-- A file upload without public delivery configuration can remain stored/unpublished; the publication gate will reject it until a safe public URL exists.
+## Phase 7 — UX, motion and accessibility refinement — ACTIVE IN PARALLEL
 
-### Deployment requirement introduced by Phase 5
+Work already underway:
+- keyboard-visible skip link;
+- mobile navigation focus-tree behaviour;
+- focus-visible treatment across high-value discovery patterns;
+- semantic progress indicators;
+- labelled form regions and live error/loading feedback;
+- specific accessible names for ambiguous actions;
+- reduced-motion handling in major experience CSS;
+- fixed-header anchor scroll offset;
+- removal of broad vertical overflow clipping from the public experience.
 
-- `npm run seed:rbac` must be rerun in the target environment after deployment so the three new content permissions are created and assigned to existing roles.
-- Configure a separate public-media bucket and `PUBLIC_MEDIA_BASE_URL` before using admin file uploads for live public media.
-- Do **not** make the existing assistance-document bucket public as a shortcut.
-
-### Active Phase 5 sequence
-
-1. **Eid Gift Kits media batch:** original discovered 2026 preparation/content/logistics set is inventoried; next step is population through the reviewed media workflow once public-media storage is configured.
-2. **Qurbani 2025/2026 batch:** separate original documentary photography from designed posts and reconcile animal/sheep terminology before final copy.
-3. **Taleem, Winter, Dates, Flood/COVID, Medical/Financial batches:** inventory each campaign independently, with stricter privacy rules for children and medical cases.
-4. **Brand/social/contact batch:** confirm official logo asset and current public handles/contact data before replacing text-only brand substitutes or exposing social/contact information.
-5. Populate only approved material through the existing `MediaAsset` publication/privacy gates.
-
-Important boundary: Phase 5 is not complete until the archives are actually enumerated file-by-file and selected media is approved/populated. The register is a controlled source record, not a claim that every source has been reviewed.
-
-## Phase 6 — Whole-site second creative pass — PENDING
-
-- Recompose pages around the actual approved media rather than placeholders.
-- Remove remaining generic/repetitive patterns and implementation-facing copy.
-- Revisit story detail, faith detail needs, secondary initiative parity and page-to-page visual rhythm.
-- Audit legacy hard-coded colours and component leftovers.
-
-## Phase 7 — UX, motion and accessibility refinement — PENDING
-
-- Navigation/mobile navigation, focus states, keyboard flows and skip link.
-- Motion/hover/transition consistency with reduced-motion alternatives.
-- Form loading/error/success states and touch targets.
-- Typography, spacing and responsive breakpoints across representative device widths.
+Still open:
+- full keyboard traversal;
+- screen-reader spot checks;
+- contrast audit;
+- touch-target audit;
+- browser zoom/reflow;
+- representative desktop/tablet/mobile visual QA;
+- real-device motion/performance review.
 
 ## Phase 8 — Full QA and release hardening — PENDING
 
-- Content/factual/religious/compliance review.
-- Privacy and public-media gate review.
-- Donation and Razorpay workflow QA.
-- Assistance submission/document/tracking QA.
-- Desktop/tablet/mobile and browser visual QA.
-- Accessibility, performance, SEO/indexing and dead-link review.
-- Independent public-site review against the locked design standard.
+Required:
+- factual/religious/compliance review;
+- privacy/public-media gate review;
+- Razorpay staging reconciliation and failure-state tests;
+- Assistance submission/document/tracking E2E;
+- Core Web Vitals and route transfer budgets on production-like infrastructure;
+- browser/device visual QA;
+- accessibility verification;
+- rendered metadata/canonical/structured-data review;
+- full dead-link/orphan/sitemap crawl;
+- independent public-site review against the locked design standard.
 
 ## Phase 9 — Staging acceptance and merge — PENDING
 
 - Deploy/verify staging candidate.
 - User acceptance review.
 - Resolve release blockers.
+- Enable production indexing only as an explicit release action.
 - Merge to `main` only after explicit approval.
 
 ## Current checkpoint
 
 - Branch: `phase-public-site-rebuild`.
-- Phase 4 governance CI: green at `7ecf89c6b7b84ce91401a9e895415618606a484b` (run #119).
-- Phase 5 Content & Asset Register introduced and expanded with original 2026 Eid photography.
-- Reviewed-media admin workflow and separate public-media storage boundary are implemented; CI verification is the next checkpoint.
-- After that checkpoint, active content work moves to Qurbani original-media/source inventory while public-media infrastructure is prepared for actual Eid population.
+- CI #265 passed on `b4ea64be5f72305ffbaeeada8f5bb3bc2c81844d` before the latest audit/refinement commits.
+- Phase 5 remains active for authentic media and official brand recovery.
+- Phase 6 is active and is re-auditing previous public work rather than assuming earlier code is final.
+- Phase 7 accessibility/responsive refinement is running in parallel where issues are discovered.
+- Latest continuity audit corrected an important documentation overstatement: current blue/gold values are provisional until master branding assets are successfully inspected.
+- Latest shared refinement removes broad vertical clipping, strengthens keyboard focus visibility and reserves scroll offset for fixed-header anchor navigation.
+- Nothing in Phase 8/9 is considered complete yet.
