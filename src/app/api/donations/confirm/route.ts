@@ -34,7 +34,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Payment signature verification failed." }, { status: 400, headers: privateHeaders });
     }
 
-    const donation = await prisma.donation.findUnique({ where: { providerOrderId: input.razorpay_order_id } });
+    const donation = await prisma.donation.findUnique({
+      where: { providerOrderId: input.razorpay_order_id },
+      select: { id: true, receiptTokenHash: true, referenceNumber: true, status: true },
+    });
     if (!donation || donation.receiptTokenHash !== hashReceiptToken(input.receiptToken)) {
       return NextResponse.json({ error: "Donation record not found." }, { status: 404, headers: privateHeaders });
     }
