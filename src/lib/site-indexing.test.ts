@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { shouldAllowIndexing } from "@/lib/site-indexing";
+import { shouldAllowIndexing } from "./site-indexing";
 
 describe("shouldAllowIndexing", () => {
   it("allows indexing only when explicitly enabled on the official HTTPS domain", () => {
