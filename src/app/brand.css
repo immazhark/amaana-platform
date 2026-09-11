@@ -1,24 +1,30 @@
 :root {
   --amaana-blue: #466FAA;
-  --amaana-gold: #E0B318;
+  --amaana-blue-mid: #2F4C7A;
   --amaana-blue-deep: #1D3150;
   --amaana-blue-ink: #122239;
   --amaana-blue-soft: #E9EFF8;
+  --amaana-gold: #E0B318;
+  --amaana-gold-deep: #B8890E;
   --amaana-gold-soft: #F4E9B5;
-  --amaana-ivory: #F7F3EB;
+  --amaana-cream: #FAF6EC;
+  --amaana-cream-muted: #F3EDDD;
+  --amaana-ivory: #FAF6EC;
   --amaana-paper: #FFFDF8;
-  --amaana-sand: #EDE4D6;
-  --amaana-charcoal: #172231;
+  --amaana-sand: #F3EDDD;
+  --amaana-charcoal: #26303D;
+  --amaana-ink-soft: #5B6472;
+  --amaana-border-warm: #E6DCC3;
 }
 
 .site-header {
   border-bottom-color: rgb(70 111 170 / 16%);
-  background: rgb(247 243 235 / 92%);
+  background: rgb(250 246 236 / 92%);
   backdrop-filter: blur(16px);
 }
 
 .brand {
-  color: var(--amaana-blue-ink);
+  color: var(--amaana-blue-mid);
   letter-spacing: -.015em;
 }
 
@@ -34,7 +40,7 @@
 .brand-name { font-size: 1rem; }
 .brand-location {
   margin-top: .24rem;
-  color: var(--amaana-blue);
+  color: var(--amaana-gold-deep);
   font-size: .58rem;
   font-weight: 800;
   letter-spacing: .14em;
@@ -75,7 +81,7 @@
 
 .nav-links .button:hover,
 .mobile-menu-inner .button:hover {
-  background: var(--amaana-blue-deep);
+  background: var(--amaana-blue-mid);
 }
 
 .nav-donate {
@@ -94,12 +100,12 @@
   border-top: 1px solid rgb(70 111 170 / 14%);
 }
 
-.mobile-menu-secondary a { color: #596777; }
+.mobile-menu-secondary a { color: var(--amaana-ink-soft); }
 
 .site-footer {
   background:
     radial-gradient(circle at 10% 20%, rgb(70 111 170 / 18%), transparent 28%),
-    linear-gradient(145deg, #0f1d31, #1d3150);
+    linear-gradient(145deg, #0f1d31, #1d3150 58%, #2f4c7a);
 }
 
 .footer-lead {
@@ -209,31 +215,34 @@
 }
 
 .v2-home {
-  --v2-ivory: var(--amaana-ivory);
+  --v2-ivory: var(--amaana-cream);
   --v2-ink: var(--amaana-blue-ink);
-  --v2-ink-soft: var(--amaana-blue-deep);
+  --v2-ink-soft: var(--amaana-ink-soft);
   --v2-gold: var(--amaana-gold);
+  --v2-gold-deep: var(--amaana-gold-deep);
   --v2-gold-soft: var(--amaana-gold-soft);
-  --v2-sand: var(--amaana-sand);
+  --v2-blue-mid: var(--amaana-blue-mid);
+  --v2-sand: var(--amaana-cream-muted);
   --v2-paper: var(--amaana-paper);
+  --v2-border-warm: var(--amaana-border-warm);
 }
 
 .v2-hero {
   background:
     radial-gradient(circle at 82% 14%, rgb(224 179 24 / 20%), transparent 28%),
     radial-gradient(circle at 16% 72%, rgb(70 111 170 / 22%), transparent 34%),
-    linear-gradient(145deg, #101F35 0%, #1D3150 48%, #274E80 100%);
+    linear-gradient(145deg, #101F35 0%, #1D3150 45%, #2F4C7A 100%);
 }
 
 .v2-work-card:nth-child(1) {
   background:
     radial-gradient(circle at 78% 10%, rgb(224 179 24 / 12%), transparent 30%),
-    linear-gradient(145deg, #122239, #274E80);
+    linear-gradient(145deg, #122239, #2F4C7A);
 }
 
 .v2-contact-social-section {
   padding: clamp(4rem, 8vw, 7rem) 0;
-  background: linear-gradient(135deg, #e9eff8, #f7f3eb 65%);
+  background: linear-gradient(135deg, #e9eff8, #faf6ec 65%);
 }
 
 .v2-contact-social-grid {
@@ -255,12 +264,12 @@
 
 .v2-contact-social-grid > div:first-child > p:last-child {
   max-width: 38rem;
-  color: #617080;
+  color: var(--amaana-ink-soft);
   line-height: 1.75;
 }
 
 .v2-contact-social-links {
-  border-top: 1px solid rgb(18 34 57 / 18%);
+  border-top: 1px solid rgb(38 48 61 / 16%);
 }
 
 .v2-contact-social-links a {
@@ -270,8 +279,8 @@
   align-items: center;
   min-height: 6.8rem;
   padding: 1.25rem 0;
-  border-bottom: 1px solid rgb(18 34 57 / 18%);
-  color: var(--amaana-blue-ink);
+  border-bottom: 1px solid rgb(38 48 61 / 16%);
+  color: var(--amaana-blue-mid);
   transition: padding .22s ease, color .22s ease;
 }
 
@@ -281,7 +290,7 @@
 }
 
 .v2-contact-social-links span {
-  color: #7a6d59;
+  color: var(--amaana-gold-deep);
   font-size: .7rem;
   font-weight: 850;
   letter-spacing: .12em;
@@ -302,9 +311,9 @@
 
 .v2-closing {
   background:
-    radial-gradient(circle at 20% 15%, rgb(70 111 170 / 12%), transparent 28%),
+    radial-gradient(circle at 20% 15%, rgb(70 111 170 / 10%), transparent 28%),
     radial-gradient(circle at 82% 78%, rgb(224 179 24 / 12%), transparent 24%),
-    linear-gradient(145deg, #F2EEE6, #FBF8F2);
+    linear-gradient(145deg, #F3EDDD, #FAF6EC 58%, #FFFDF8);
 }
 
 @media (max-width: 960px) {
