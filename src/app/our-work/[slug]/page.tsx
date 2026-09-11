@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PublicMedia } from "@/components/public-media";
 import { getPublishedInitiativeBySlug } from "@/lib/public-content";
 
 export const dynamic = "force-dynamic";
@@ -38,18 +39,12 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
             <p className="v2-section-intro">{initiative.story}</p>
           </div>
 
-          {initiative.mediaAssets.length > 0 && (
-            <div className="v2-work-grid" aria-label={`${initiative.title} media`}>
-              {initiative.mediaAssets.map(asset => (
-                <article className="v2-work-card" key={asset.id}>
-                  <small>{asset.kind.toLowerCase()}</small>
-                  <div>
-                    <h3>{asset.title ?? initiative.title}</h3>
-                    {asset.caption && <p>{asset.caption}</p>}
-                  </div>
-                </article>
-              ))}
+          {initiative.mediaAssets.length > 0 ? (
+            <div className="v2-media-grid" aria-label={`${initiative.title} approved media`}>
+              {initiative.mediaAssets.map(asset => <PublicMedia asset={asset} key={asset.id} />)}
             </div>
+          ) : (
+            <p className="v2-section-intro">No media is shown until provenance, privacy and public-use approval are recorded.</p>
           )}
         </div>
       </section>
@@ -61,10 +56,10 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
             <h2 className="v2-section-title">Documented moments from this work.</h2>
             <div className="v2-work-grid" style={{ marginTop: "2rem" }}>
               {initiative.stories.map(story => (
-                <article className="v2-work-card" key={story.id}>
+                <Link className="v2-work-card" href={`/stories/${story.slug}`} key={story.id}>
                   <small>Story</small>
                   <div><h3>{story.title}</h3><p>{story.summary}</p></div>
-                </article>
+                </Link>
               ))}
             </div>
           </div>
