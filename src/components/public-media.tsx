@@ -11,7 +11,12 @@ type PublicMediaAsset = {
   sourceYear: number | null;
 };
 
-export function PublicMedia({ asset }: { asset: PublicMediaAsset }) {
+type PublicMediaProps = {
+  asset: PublicMediaAsset;
+  priority?: boolean;
+};
+
+export function PublicMedia({ asset, priority = false }: PublicMediaProps) {
   if (!canRenderPublicMedia(asset)) return null;
   const url = resolvePublicMediaUrl(asset);
   if (!url) return null;
@@ -19,9 +24,15 @@ export function PublicMedia({ asset }: { asset: PublicMediaAsset }) {
   if (asset.kind === "IMAGE") {
     return (
       <figure className="v2-media-item">
-        {/* Approved assets may be served from multiple S3-compatible/CDN hosts, so this public-safe renderer validates URLs before using a native image element. */}
+        {/* Approved assets may be served from multiple S3-compatible/CDN hosts. The public-safe renderer validates URLs before rendering. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={url} alt={asset.altText ?? ""} loading="lazy" />
+        <img
+          src={url}
+          alt={asset.altText ?? ""}
+          loading={priority ? "eager" : "lazy"}
+          fetchPriority={priority ? "high" : "auto"}
+          decoding="async"
+        />
         {(asset.caption || asset.sourceYear) && (
           <figcaption>{asset.caption}{asset.caption && asset.sourceYear ? " · " : ""}{asset.sourceYear ?? ""}</figcaption>
         )}
