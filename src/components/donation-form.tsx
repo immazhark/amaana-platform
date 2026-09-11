@@ -64,18 +64,23 @@ export function DonationForm({ appealId, appealTitle }: { appealId: string; appe
         modal: { ondismiss: () => setPhase("ready") },
         handler: async payment => {
           setPhase("verifying");
-          const confirmation = await fetch("/api/donations/confirm", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ ...payment, receiptToken: order.receiptToken }),
-          });
-          const result = await confirmation.json();
-          if (!confirmation.ok) {
-            setError(result.error ?? "Payment verification is pending.");
+          try {
+            const confirmation = await fetch("/api/donations/confirm", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ ...payment, receiptToken: order.receiptToken }),
+            });
+            const result = await confirmation.json();
+            if (!confirmation.ok) {
+              setError(result.error ?? "Payment verification is pending. Please retain your Razorpay payment confirmation.");
+              setPhase("ready");
+              return;
+            }
+            router.push(`/donations/${encodeURIComponent(result.referenceNumber)}/acknowledgement?token=${encodeURIComponent(order.receiptToken)}`);
+          } catch {
+            setError("We could not complete payment verification in this browser. Please retain your Razorpay payment confirmation; Amaana can reconcile the payment without asking for your OTP, UPI PIN or card credentials.");
             setPhase("ready");
-            return;
           }
-          router.push(`/donations/${encodeURIComponent(result.referenceNumber)}/acknowledgement?token=${encodeURIComponent(order.receiptToken)}`);
         },
       });
       checkout.open();
