@@ -51,11 +51,11 @@ export default async function AppealDetailPage({ params }: Props) {
             <h1>{appeal.title}</h1>
             <p>{appeal.summary}</p>
           </div>
-          <aside className="v2-appeal-donation-panel">
+          <aside className="v2-appeal-donation-panel" aria-label="Appeal funding status">
             <small>Appeal progress</small>
             <strong>{formatINR(raised)}</strong>
             <p>raised of {formatINR(goal)}</p>
-            <div className="v2-appeal-progress" aria-label={`${progress}% funded`}><span style={{ width: `${progress}%` }} /></div>
+            <div className="v2-appeal-progress" role="progressbar" aria-label={`${appeal.title} funding progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span style={{ width: `${progress}%` }} /></div>
             <div className="v2-appeal-progress-foot"><span>{progress}% supported</span><span>INR · India only</span></div>
             {isOpen ? <Link className="v2-button v2-appeal-donate-button" href={`/donate/${appeal.slug}`}>Support this appeal</Link> : <span className="v2-appeal-closed">This appeal is closed</span>}
             <p className="v2-appeal-secure-note">Domestic INR donations are processed securely through Razorpay. Amaana does not accept foreign contributions.</p>
@@ -63,7 +63,7 @@ export default async function AppealDetailPage({ params }: Props) {
         </div>
       </section>
 
-      <section className="v2-appeal-context-strip"><div className="v2-shell"><div><span>01</span><strong>Reviewed need</strong><small>Information assessed before publication</small></div><div><span>02</span><strong>Public-safe story</strong><small>Private proofs remain private</small></div><div><span>03</span><strong>Tracked support</strong><small>Progress stays attached to this appeal</small></div><div><span>04</span><strong>Known updates</strong><small>Only confirmed outcomes are published</small></div></div></section>
+      <section className="v2-appeal-context-strip" aria-label="How this appeal is handled"><div className="v2-shell"><div><span>01</span><strong>Reviewed need</strong><small>Information assessed before publication</small></div><div><span>02</span><strong>Public-safe story</strong><small>Private proofs remain private</small></div><div><span>03</span><strong>Tracked support</strong><small>Progress stays attached to this appeal</small></div><div><span>04</span><strong>Known updates</strong><small>Only confirmed outcomes are published</small></div></div></section>
 
       <section className="v2-section paper">
         <div className="v2-shell v2-appeal-story-grid">
