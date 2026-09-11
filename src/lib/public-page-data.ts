@@ -27,3 +27,31 @@ export const getAppealPageData = cache(async (slug: string) => {
     },
   });
 });
+
+export const getHomepageHeroMedia = cache(async () => {
+  return prisma.mediaAsset.findFirst({
+    where: {
+      kind: "IMAGE",
+      isPublic: true,
+      privacyApprovedAt: { not: null },
+      publicUrl: { not: null },
+      OR: [
+        { initiative: { status: "PUBLISHED" } },
+        { story: { status: "PUBLISHED", privacyApprovedAt: { not: null } } },
+      ],
+    },
+    orderBy: [{ sourceYear: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }],
+    select: {
+      id: true,
+      kind: true,
+      title: true,
+      publicUrl: true,
+      externalUrl: true,
+      altText: true,
+      caption: true,
+      sourceYear: true,
+      initiative: { select: { slug: true, title: true } },
+      story: { select: { slug: true, title: true } },
+    },
+  });
+});
