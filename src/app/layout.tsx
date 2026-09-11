@@ -8,6 +8,7 @@ import "./our-work.css";
 import "./initiative-experience.css";
 import "./impact.css";
 import "./stories.css";
+import "./faith.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Analytics } from "@/components/analytics";
