@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicMedia } from "@/components/public-media";
@@ -10,6 +11,34 @@ function formatYears(startYear: number | null, endYear: number | null, year: num
   if (startYear && endYear) return startYear === endYear ? String(startYear) : `${startYear}–${endYear}`;
   if (startYear) return `${startYear} onward`;
   return "Documented initiative";
+}
+
+export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
+  const { slug } = await params;
+  const initiative = await getPublishedInitiativeBySlug(slug);
+  if (!initiative) return { title: "Initiative not found" };
+
+  const canonical = `/our-work/${initiative.slug}`;
+  const leadImage = initiative.mediaAssets.find(asset => asset.kind === "IMAGE" && asset.publicUrl)?.publicUrl ?? undefined;
+
+  return {
+    title: initiative.title,
+    description: initiative.summary,
+    alternates: { canonical },
+    openGraph: {
+      type: "article",
+      url: canonical,
+      title: initiative.title,
+      description: initiative.summary,
+      images: leadImage ? [{ url: leadImage, alt: initiative.mediaAssets.find(asset => asset.publicUrl === leadImage)?.altText ?? initiative.title }] : undefined,
+    },
+    twitter: {
+      card: leadImage ? "summary_large_image" : "summary",
+      title: initiative.title,
+      description: initiative.summary,
+      images: leadImage ? [leadImage] : undefined,
+    },
+  };
 }
 
 export default async function InitiativePage({ params }: { params: Promise<{ slug: string }> }) {
@@ -37,7 +66,7 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
 
           <div className="v2-initiative-hero-evidence">
             {leadMedia ? (
-              <PublicMedia asset={leadMedia} />
+              <PublicMedia asset={leadMedia} priority />
             ) : (
               <div className="v2-initiative-evidence-panel">
                 <span>{initiative.cause.title}</span>
