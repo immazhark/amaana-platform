@@ -62,7 +62,7 @@ export default function ContactPage() {
         <div className="v2-shell v2-contact-hero">
           <div>
             <p className="v2-section-label">Contact Amaana</p>
-            <h1 className="v2-display" style={{ maxWidth: "8ch" }}>Start with the right conversation.</h1>
+            <h1 className="v2-display v2-display-narrow">Start with the right conversation.</h1>
           </div>
           <div>
             <p className="v2-hero-copy">
@@ -90,7 +90,7 @@ export default function ContactPage() {
 
           <div className="v2-intent-grid">
             {contactPaths.map(path => (
-              <Link className="v2-intent-card" href={path.href} key={path.marker}>
+              <Link className="v2-intent-card" href={path.href} key={path.marker} aria-label={`${path.title}: ${path.action}`}>
                 <span className="v2-intent-marker" aria-hidden="true">{path.marker}</span>
                 <div>
                   <h3>{path.title}</h3>
@@ -113,7 +113,7 @@ export default function ContactPage() {
           </div>
           <div className="v2-contact-social-links">
             {socialLinks.map(link => (
-              <a href={link.href} target="_blank" rel="noreferrer" key={link.label}>
+              <a href={link.href} target="_blank" rel="noreferrer" key={link.label} aria-label={`Open Amaana Foundation on ${link.label} in a new tab`}>
                 <span>{link.label}</span>
                 <strong>{link.handle}</strong>
                 <i aria-hidden="true">↗</i>
@@ -148,7 +148,7 @@ export default function ContactPage() {
           <p>
             General enquiries can be sent to <a className="v2-text-link" href="mailto:amaanafoundation24@gmail.com">amaanafoundation24@gmail.com</a>.
           </p>
-          <div className="v2-hero-actions" style={{ justifyContent: "center" }}>
+          <div className="v2-hero-actions v2-actions-center">
             <Link className="v2-button" href="/our-work">Explore our work</Link>
             <Link className="v2-text-link" href="/transparency">See how trust is handled →</Link>
           </div>
