@@ -1,4 +1,10 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Assistance Request Received",
+  robots: { index: false, follow: false },
+};
 
 type Props = { searchParams: Promise<{ reference?: string; token?: string }> };
 
