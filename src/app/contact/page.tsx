@@ -37,6 +37,12 @@ const contactPaths = [
   },
 ] as const;
 
+const socialLinks = [
+  { label: "Instagram", handle: "@amaanafoundation", href: "https://www.instagram.com/amaanafoundation/" },
+  { label: "Facebook", handle: "amaanafoundation24", href: "https://www.facebook.com/amaanafoundation24/" },
+  { label: "YouTube", handle: "@amaanafoundation", href: "https://www.youtube.com/@amaanafoundation" },
+] as const;
+
 export default function ContactPage() {
   return (
     <div className="v2-home">
@@ -81,6 +87,25 @@ export default function ContactPage() {
                 </div>
                 <span className="v2-intent-arrow" aria-hidden="true">↗</span>
               </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="v2-contact-social-section">
+        <div className="v2-shell v2-contact-social-grid">
+          <div>
+            <p className="v2-section-label">Stay connected</p>
+            <h2>Follow the work where Amaana shares it.</h2>
+            <p>These public channels are the social identities shown in Amaana&apos;s supplied 2026 branded contact material. Instagram is also corroborated by recent public posts under the same handle.</p>
+          </div>
+          <div className="v2-contact-social-links">
+            {socialLinks.map(link => (
+              <a href={link.href} target="_blank" rel="noreferrer" key={link.label}>
+                <span>{link.label}</span>
+                <strong>{link.handle}</strong>
+                <i aria-hidden="true">↗</i>
+              </a>
             ))}
           </div>
         </div>
