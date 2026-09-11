@@ -8,19 +8,20 @@ import { validateProductionEnvironment } from "@/lib/env";
 import { enforceAssistanceRateLimit, isSameOrigin } from "@/lib/request-security";
 
 export const runtime = "nodejs";
+const privateHeaders = { "Cache-Control": "no-store, private" };
 
 export async function POST(request: Request) {
   try {
     validateProductionEnvironment();
 
     if (!isSameOrigin(request)) {
-      return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
+      return NextResponse.json({ error: "Invalid request origin." }, { status: 403, headers: privateHeaders });
     }
 
     if (!(await enforceAssistanceRateLimit(request))) {
       return NextResponse.json(
         { error: "Too many assistance requests were submitted from this connection. Please wait before trying again." },
-        { status: 429, headers: { "Retry-After": "3600", "Cache-Control": "no-store" } },
+        { status: 429, headers: { ...privateHeaders, "Retry-After": "3600" } },
       );
     }
 
@@ -29,13 +30,13 @@ export async function POST(request: Request) {
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Please check the highlighted information and try again.", fields: parsed.error.flatten().fieldErrors },
-        { status: 400 },
+        { status: 400, headers: privateHeaders },
       );
     }
 
     const files = formData.getAll("documents").filter((entry): entry is File => entry instanceof File && entry.size > 0);
     if (files.length > MAX_FILES) {
-      return NextResponse.json({ error: `You can upload up to ${MAX_FILES} documents.` }, { status: 400 });
+      return NextResponse.json({ error: `You can upload up to ${MAX_FILES} documents.` }, { status: 400, headers: privateHeaders });
     }
 
     const id = randomUUID();
@@ -110,7 +111,7 @@ export async function POST(request: Request) {
 
       return NextResponse.json(
         { referenceNumber, trackingToken },
-        { status: 201, headers: { "Cache-Control": "no-store" } },
+        { status: 201, headers: privateHeaders },
       );
     } catch (submissionError) {
       const cleanupResults = await Promise.allSettled(
@@ -130,7 +131,7 @@ export async function POST(request: Request) {
     console.error("Assistance submission failed", error);
     return NextResponse.json(
       { error: "We could not securely submit your request. Please try again later." },
-      { status: 500, headers: { "Cache-Control": "no-store" } },
+      { status: 500, headers: privateHeaders },
     );
   }
 }
