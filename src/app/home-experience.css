@@ -183,6 +183,59 @@
 .v2-light-reminder .v2-reminder-label { color: var(--v2-gold); }
 .v2-light-reminder p { color: #68717a; }
 
+.v2-contact-hero,
+.v2-contact-safety {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(18rem, .9fr);
+  gap: clamp(2rem, 7vw, 7rem);
+  align-items: end;
+}
+
+.v2-contact-location {
+  margin-top: 2.5rem;
+  padding-top: 1.25rem;
+  border-top: 1px solid rgb(221 199 161 / 35%);
+}
+
+.v2-contact-location span {
+  display: block;
+  margin-bottom: .35rem;
+  color: var(--v2-gold-soft);
+  font-size: .75rem;
+  font-weight: 800;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+}
+
+.v2-contact-location strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.5rem, 2.5vw, 2.5rem);
+  font-weight: 500;
+}
+
+.v2-contact-safety {
+  align-items: start;
+}
+
+.v2-contact-safety .v2-section-title {
+  max-width: 11ch;
+}
+
+.v2-contact-safety-copy {
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+  border-left: 1px solid rgb(15 27 43 / 12%);
+}
+
+.v2-contact-safety-copy p {
+  margin: 0 0 1.25rem;
+  color: #68717a;
+  line-height: 1.7;
+}
+
+.v2-contact-safety-copy .v2-button {
+  margin-top: .5rem;
+}
+
 @keyframes v2-rise-in {
   from { opacity: 0; transform: translateY(1.25rem); }
   to { opacity: 1; transform: translateY(0); }
@@ -191,11 +244,15 @@
 @media (prefers-reduced-motion: no-preference) {
   .v2-hero-inner > *,
   .v2-intent-heading,
-  .v2-intent-card {
+  .v2-intent-card,
+  .v2-contact-hero > *,
+  .v2-contact-safety > * {
     animation: v2-rise-in .7s both cubic-bezier(.22, 1, .36, 1);
   }
 
-  .v2-hero-inner > :nth-child(2) { animation-delay: .09s; }
+  .v2-hero-inner > :nth-child(2),
+  .v2-contact-hero > :nth-child(2),
+  .v2-contact-safety > :nth-child(2) { animation-delay: .09s; }
   .v2-intent-heading { animation-delay: .12s; }
   .v2-intent-card:nth-child(1) { animation-delay: .08s; }
   .v2-intent-card:nth-child(2) { animation-delay: .14s; }
@@ -204,12 +261,15 @@
 }
 
 @media (max-width: 900px) {
-  .v2-intent-heading { grid-template-columns: 1fr; }
+  .v2-intent-heading,
+  .v2-contact-hero,
+  .v2-contact-safety { grid-template-columns: 1fr; }
   .v2-intent-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .v2-intent-card:nth-child(2) { border-right: 0; }
   .v2-intent-card:nth-child(-n+2) { border-bottom: 1px solid rgb(15 27 43 / 12%); }
   .v2-field-grid { grid-template-columns: 1fr 1fr; }
   .v2-field-story:first-child { grid-column: 1 / -1; }
+  .v2-contact-safety-copy { padding-left: 0; border-left: 0; border-top: 1px solid rgb(15 27 43 / 12%); }
 }
 
 @media (max-width: 620px) {
