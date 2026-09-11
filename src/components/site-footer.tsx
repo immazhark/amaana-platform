@@ -1,5 +1,11 @@
 import Link from "next/link";
 
+const socialLinks = [
+  ["Instagram", "https://www.instagram.com/amaanafoundation/"],
+  ["Facebook", "https://www.facebook.com/amaanafoundation24/"],
+  ["YouTube", "https://www.youtube.com/@amaanafoundation"],
+] as const;
+
 export function SiteFooter() {
   return (
     <footer className="site-footer">
@@ -19,6 +25,11 @@ export function SiteFooter() {
             <p>
               Faith-inspired service rooted in dignity, compassion and responsible stewardship — documenting real work, known outcomes and the journey behind every act of care.
             </p>
+            <div className="footer-socials" aria-label="Amaana Foundation social channels">
+              {socialLinks.map(([label, href]) => (
+                <a href={href} key={label} target="_blank" rel="noreferrer">{label} ↗</a>
+              ))}
+            </div>
           </div>
 
           <div>
