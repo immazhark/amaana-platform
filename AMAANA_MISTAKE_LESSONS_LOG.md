@@ -154,6 +154,15 @@ For every future mistake or regression:
 
 **Prevention rule:** A redesign is not complete while old brand tokens remain active underneath it. Every design-system migration must audit root variables, generic components, empty/error/admin/shared states and hard-coded legacy colours—not only the newly redesigned pages. Final brand values remain provisional until master artwork is directly verified.
 
+### 16. Narrow-screen refinement briefly reduced the established button height
+**Mistake:** During the narrow/reflow hardening pass, a mobile override briefly changed shared buttons from the established `3rem` minimum height to `2.75rem`.
+
+**Why it happened:** The reflow pass focused on fitting content into very narrow viewports and changed a size that did not need to be reduced.
+
+**Correction:** The next commit immediately restored the full `3rem` minimum touch target before the batch was certified.
+
+**Prevention rule:** Reflow must solve width, wrapping and spacing problems without shrinking established interactive target sizes. Any responsive override touching buttons, links, toggles or inputs must be checked against the interaction-size baseline before it is retained.
+
 ## Cross-project prevention checklist
 
 Before closing any future batch, ask:
@@ -168,5 +177,6 @@ Before closing any future batch, ask:
 - Did a fix address the same class of issue elsewhere, not only the reported instance?
 - Is the new state actually verified, or only implemented?
 - Did any legacy design token, copy pattern or interaction survive beneath the new system and create a future leak path?
+- Did a responsive change preserve established touch targets rather than trading usability for fit?
 
 This file should grow when we learn something new. Repeating a documented class of mistake without checking this log is itself a process failure.
