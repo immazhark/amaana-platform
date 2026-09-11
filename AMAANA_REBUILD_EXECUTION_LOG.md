@@ -104,23 +104,58 @@ Separate verified tax source retained on the Compliance page:
 - Initial entries cover governance/compliance, Eid Gift Kits, Qurbani, brand/contact material, payment material and faith-content review boundaries.
 - The register explicitly excludes model-generated media from documentary evidence slots and prevents historical QR/payment details from becoming current donation methods.
 
-### Initial content findings recorded
+### Eid Gift Kits 2026 original-media inventory
 
-- Eid Gift Kits source documents support the 2020 COVID/Ramadan origin, first 85-family distribution, annual continuity and 2020–2025 historical figures.
-- The 2026 Eid graphic contains a category discrepancy (17 medical/disability) relative to the approved validated web evidence (18); graphics therefore cannot override canonical data.
-- Several Eid/Qurbani designed posts contain embedded real campaign photographs and are candidates for historical/campaign collateral after privacy and quality review.
-- A Library asset marked model-generated is excluded from documentary use even though its subject is relevant.
-- Faith graphics remain gated for independent religious verification before publication.
+- Located and visually inspected a set of original native 2026 photographs separately from the designed social graphics.
+- Inspected images include kit contents, packed branded bags, room-scale preparation, car transport and vehicle-load logistics.
+- The inspected set contains no visible beneficiaries or identifiable people. These are therefore strong public-safe candidates, while still requiring explicit provenance/public-use approval.
+- Preferred narrative sequence recorded in the Content & Asset Register:
+  1. `IMG_0138.jpg` — flagship hero / preparation scale.
+  2. `IMG_0252.JPG.jpeg` — physical kit contents.
+  3. `IMG_0238.jpg` — branded 2026 kit detail.
+  4. `IMG_0134.jpg` or `IMG_0165.jpg` — preparation / scale.
+  5. `IMG_0182.jpg` — transport transition.
+  6. `IMG_0160.jpg` — delivery logistics / closing gallery.
+- Draft descriptive alt text is recorded for each candidate. Captions remain evidence-limited and do not infer beneficiaries, destinations or outcomes that the image itself does not establish.
+- Near-duplicate preparation frames are intentionally not all selected; the target is a concise editorial sequence, not a file dump.
+
+### Media review and publication workflow implemented
+
+- Added dedicated admin `Media review` workspace.
+- Added `content.view`, `content.update` and `content.approve` permissions.
+- Primary and backup approvers can publish; reviewers can prepare metadata but cannot make material public.
+- New media records always start unpublished.
+- Images require meaningful alt text before publication.
+- Public URLs are restricted to HTTPS or safe root-relative paths.
+- Publishing sets `privacyApprovedAt` and is a separate explicit approval action.
+- Audit events record media creation, metadata changes, publication and unpublication.
+- Public pages continue to render only `MediaAsset` records where `isPublic=true` and `privacyApprovedAt` is present.
+
+### Storage boundary hardened
+
+- Assistance-document storage remains on the existing private S3 bucket and must never be publicly exposed.
+- Public campaign media now requires a **separate** `PUBLIC_MEDIA_S3_BUCKET`.
+- Public-media credentials may reuse the same provider account, but the bucket itself is deliberately mandatory and separate.
+- `PUBLIC_MEDIA_BASE_URL` must be HTTPS before uploaded objects receive a renderable public URL.
+- Media upload validates type, size and file signature.
+- User metadata validation now occurs before object upload to avoid preventable orphaned files when a record is rejected.
+- A file upload without public delivery configuration can remain stored/unpublished; the publication gate will reject it until a safe public URL exists.
+
+### Deployment requirement introduced by Phase 5
+
+- `npm run seed:rbac` must be rerun in the target environment after deployment so the three new content permissions are created and assigned to existing roles.
+- Configure a separate public-media bucket and `PUBLIC_MEDIA_BASE_URL` before using admin file uploads for live public media.
+- Do **not** make the existing assistance-document bucket public as a shortcut.
 
 ### Active Phase 5 sequence
 
-1. **Eid Gift Kits media batch:** locate original 2026 photographs separately from designed carousel composites; classify hero/preparation/contents/distribution/gallery candidates; assign captions, alt text, year and privacy status.
+1. **Eid Gift Kits media batch:** original discovered 2026 preparation/content/logistics set is inventoried; next step is population through the reviewed media workflow once public-media storage is configured.
 2. **Qurbani 2025/2026 batch:** separate original documentary photography from designed posts and reconcile animal/sheep terminology before final copy.
 3. **Taleem, Winter, Dates, Flood/COVID, Medical/Financial batches:** inventory each campaign independently, with stricter privacy rules for children and medical cases.
 4. **Brand/social/contact batch:** confirm official logo asset and current public handles/contact data before replacing text-only brand substitutes or exposing social/contact information.
 5. Populate only approved material through the existing `MediaAsset` publication/privacy gates.
 
-Important boundary: Phase 5 is not complete until the archives are actually enumerated file-by-file. The initial register is a controlled starting point, not a claim that every source has been reviewed.
+Important boundary: Phase 5 is not complete until the archives are actually enumerated file-by-file and selected media is approved/populated. The register is a controlled source record, not a claim that every source has been reviewed.
 
 ## Phase 6 — Whole-site second creative pass — PENDING
 
@@ -157,5 +192,6 @@ Important boundary: Phase 5 is not complete until the archives are actually enum
 
 - Branch: `phase-public-site-rebuild`.
 - Phase 4 governance CI: green at `7ecf89c6b7b84ce91401a9e895415618606a484b` (run #119).
-- Phase 5 Content & Asset Register introduced at `3b20724649a9c2bb845297c1bca0f40ba05fca0d`.
-- Next active work: Eid Gift Kits original-media inventory and classification.
+- Phase 5 Content & Asset Register introduced and expanded with original 2026 Eid photography.
+- Reviewed-media admin workflow and separate public-media storage boundary are implemented; CI verification is the next checkpoint.
+- After that checkpoint, active content work moves to Qurbani original-media/source inventory while public-media infrastructure is prepared for actual Eid population.
