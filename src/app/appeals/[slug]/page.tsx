@@ -2,17 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { formatINR } from "@/lib/appeals";
-import { prisma } from "@/lib/prisma";
+import { getAppealPageData } from "@/lib/public-page-data";
 
 type Props = { params: Promise<{ slug: string }> };
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const appeal = await prisma.appeal.findFirst({
-    where: { slug, status: { in: ["PUBLISHED", "FUNDED", "CLOSED"] } },
-    select: { slug: true, title: true, summary: true, status: true, publishedAt: true },
-  });
+  const appeal = await getAppealPageData(slug);
   if (!appeal) return { title: "Appeal not found" };
 
   const canonical = `/appeals/${appeal.slug}`;
@@ -37,10 +34,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AppealDetailPage({ params }: Props) {
   const { slug } = await params;
-  const appeal = await prisma.appeal.findFirst({
-    where: { slug, status: { in: ["PUBLISHED", "FUNDED", "CLOSED"] } },
-    include: { updates: { where: { isPublic: true }, orderBy: { publishedAt: "desc" } } },
-  });
+  const appeal = await getAppealPageData(slug);
   if (!appeal) notFound();
 
   const raised = appeal.amountRaised.toNumber();
