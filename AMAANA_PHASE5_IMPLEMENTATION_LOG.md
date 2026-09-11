@@ -79,7 +79,7 @@ A page being implemented or CI passing does **not** mean its media population is
 - Therefore **no standalone COVID relief initiative page is being created yet**. Doing so would turn remembered context into a stronger public claim than the inspected sources support.
 - If the original COVID-ration archive is recovered later, it will be inventoried as a separate Phase 5 batch and only then added as its own initiative or historical story.
 
-## Batch I — Brand / social / contact audit — ACTIVE
+## Batch I — Brand / social / contact audit
 
 - Inspected Amaana's supplied branded contact graphic `Thank you for your trust and hope.png`.
 - The graphic visibly carries the blue/gold Amaana identity, Arabic/calligraphic emblem, the phrase **Upholding Trust**, `amaanafoundation.org`, `amaanafoundation24@gmail.com`, Facebook identity `amaanafoundation24`, Instagram `amaanafoundation`, YouTube `amaanafoundation`, and a phone number.
@@ -89,15 +89,42 @@ A page being implemented or CI passing does **not** mean its media population is
 - The phone number shown in the branded graphic is **not being added yet** because the current-source check has not independently confirmed that it remains the preferred public phone contact.
 - The current email remains the published general-contact route.
 - The official isolated logo file is still required. A logo embedded inside a social graphic will not be cropped, redrawn or AI-recreated and silently treated as the master brand asset.
+- CI #160 passed for the brand/social/COVID reconciliation checkpoint.
+
+## Batch J — Public-media infrastructure preflight — ACTIVE
+
+- Added a server-side public-media readiness evaluator without exposing secret values.
+- The readiness state separately reports storage-upload readiness and public-delivery readiness.
+- The preflight fails closed when `PUBLIC_MEDIA_S3_BUCKET` matches the private assistance `S3_BUCKET`.
+- An HTTPS `PUBLIC_MEDIA_BASE_URL` is mandatory before storage-backed uploads are considered public-delivery ready.
+- Reusing the same provider-account credentials remains allowed for cost efficiency, but the public and private buckets must remain different.
+- Added automated tests for the ready path, the forbidden same-bucket path and an insecure HTTP delivery origin.
+- Added an Admin → Media review preflight card showing Separate public bucket / Upload credentials / HTTPS public delivery without rendering credentials or bucket secrets.
+- Expanded `OPERATIONS.md` with the exact deployment sequence, non-sensitive test upload, publish/unpublish verification and `npm run seed:rbac` requirement.
+- CI #162 passed for the readiness tests. CI #163 is the checkpoint for the complete admin preflight batch and is still running at the time of this log update.
+
+### Current infrastructure boundary
+
+Code readiness is no longer the blocker for public-media publication. The remaining environment action is to configure a real **separate** public-media bucket and HTTPS public/CDN origin in the deployment environment, then verify the admin preflight is fully green. Until that environment configuration exists, authentic originals may continue to be inventoried and metadata-prepared but must not be described as publicly populated.
+
+### Official logo archive blocker
+
+- `Branding & Logo.zip` is present in the user's Library and has been materialized for inspection.
+- The current container runtime repeatedly times out when attempting to enumerate/extract the ZIP.
+- Semantic search does not expose the archive's internal filenames.
+- Therefore the isolated official logo has **not** yet been recovered from the archive.
+- We will not crop the logo from social artwork or regenerate it with AI and label that result as the official master logo.
+- This blocker does not stop non-logo work or the media pipeline hardening.
 
 ## Remaining Phase 5 sequence
 
-1. Complete current brand/social/contact CI checkpoint.
-2. Recover or identify the official isolated Amaana logo asset and publish it without AI reconstruction.
+1. Verify CI #163 for the public-media preflight batch; fix immediately if it fails.
+2. Recover or identify the official isolated Amaana logo asset when archive extraction becomes available and wire it into header/footer/metadata without reconstruction.
 3. Finish file-by-file media source inventory for remaining campaign archives and select approved originals.
-4. Configure public-media delivery, run RBAC seed where needed, then populate approved media through the admin publication workflow.
-5. Confirm whether the supplied phone number is still the intended public contact before publishing it.
-6. Close Phase 5 only after authentic approved media is actually rendered, not merely inventoried.
+4. Configure the deployment public-media bucket/base URL, rerun the RBAC seed, and execute the non-sensitive upload/publish/unpublish preflight.
+5. Populate approved Eid/Qurbani/Taleem/Winter/Dates media through the publication workflow.
+6. Confirm whether the supplied phone number is still the intended public contact before publishing it.
+7. Close Phase 5 only after authentic approved media is actually rendered, not merely inventoried.
 
 ## Current release boundary
 
