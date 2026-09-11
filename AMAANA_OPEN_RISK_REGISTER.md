@@ -34,14 +34,18 @@ Purpose: prevent unresolved quality, privacy, accessibility, performance or sour
 **Status:** OPEN
 
 - Razorpay UX/security structure exists and checkout script is deferred.
-- `/donate/*` responses are now explicitly non-cacheable.
+- Donation order/confirmation responses are explicitly `no-store, private`, including validation/authentication/failure responses.
+- Transactional donation checkout and private acknowledgement routes are explicitly excluded from indexing; the acknowledgement query now selects only fields rendered by the private receipt experience.
 - Staging order creation, checkout, capture verification, acknowledgement, failure, retry, refund/reconciliation and duplicate/idempotency paths still require E2E verification.
 
 ### 5. Assistance workflow verification
 **Status:** OPEN
 
 - Private upload controls, rate limiting, tracking and accessibility semantics are implemented.
-- Full staging submission, file validation, receipt, tracking, reviewer access and error/recovery journeys remain an E2E release gate.
+- Receipt/tracking routes are explicitly `noindex,nofollow`, and assistance submission/tracking API responses are explicitly `no-store, private`.
+- Field-level server validation now reaches the matching form controls with visible messages plus `aria-invalid`/descriptions instead of collapsing into a generic banner.
+- Successfully uploaded private documents are tracked and compensated with narrowly scoped deletion if a later upload, recipient lookup or request database write fails.
+- Full staging submission, file validation, cleanup failure-path verification, receipt, tracking, reviewer access and error/recovery journeys remain an E2E release gate.
 
 ### 6. Real performance certification
 **Status:** OPEN
@@ -53,7 +57,7 @@ Purpose: prevent unresolved quality, privacy, accessibility, performance or sour
 ### 7. Accessibility certification
 **Status:** OPEN / ACTIVE
 
-Implemented improvements include skip navigation, focus-visible treatment, mobile menu focus management, semantic progress indicators, labelled forms/live errors, reduced-motion rules, accessible external-link wording and narrow-screen reflow safeguards that preserve the established 3rem interaction-height baseline.
+Implemented improvements include skip navigation, focus-visible treatment, mobile menu focus management, semantic progress indicators, labelled forms/live errors, field-associated assistance validation, reduced-motion rules, accessible external-link wording and narrow-screen reflow safeguards that preserve the established 3rem interaction-height baseline.
 
 Still required:
 - keyboard traversal across every major journey;
@@ -61,7 +65,7 @@ Still required:
 - contrast review;
 - 200%/400% zoom and reflow in real browsers;
 - touch-target audit beyond source-level safeguards;
-- form error announcement review;
+- form error announcement review on real assistive technology;
 - mobile menu focus containment/escape behaviour on real browsers;
 - video captions/transcript strategy before publishing meaningful video content.
 
@@ -75,7 +79,8 @@ Still required:
 **Status:** OPEN
 
 - Robots, sitemap, canonicals and structured data are implemented conservatively.
-- Request Assistance is now included in the public sitemap while private receipt/status routes stay excluded.
+- Request Assistance is now included in the public sitemap while private receipt/status routes stay excluded and explicitly noindexed.
+- Private donation acknowledgement routes are also explicitly noindexed rather than relying on obscurity/tokenized URLs.
 - Production indexing must remain an explicit release action.
 - Final crawl, rendered metadata/structured-data validation, Search Console submission and index monitoring remain open.
 
@@ -98,6 +103,16 @@ Still required:
 
 Remaining verification: exercise the failure path against the configured staging S3-compatible provider and confirm object deletion behavior before calling this risk CLOSED.
 
+### Private assistance orphan documents
+**Status:** MITIGATED IN CODE / STAGING VERIFICATION OPEN
+
+- Assistance documents are uploaded sequentially so each successfully persisted object is known before the request transaction proceeds.
+- If a later upload, staff-recipient lookup or assistance-request database create fails, the application attempts to delete every private object already stored for that request before rethrowing the original failure.
+- Cleanup accepts only the managed `assistance/<request-id>/<UUID>.(pdf|jpg|png|webp)` key shape and requires the matching request id, avoiding an arbitrary private-bucket deletion primitive.
+- Cleanup failures are logged without replacing the original submission failure.
+
+Remaining verification: deliberately exercise a post-upload failure against staging storage and confirm the private objects are removed before closing this risk.
+
 ### Video accessibility
 **Status:** RESIDUAL / PUBLICATION GATE FOR VIDEO
 
@@ -119,8 +134,11 @@ Current CI covers install, Prisma generation/validation, lint, typecheck, unit/c
 - Corrected earlier documentation that called the working blue/gold hex values `official`; they are now explicitly provisional pending master branding inspection.
 - Corrected public layout overflow behaviour so vertical content/focus/sticky behaviour is not globally clipped simply to suppress horizontal overflow.
 - Added shared focus-visible treatment and fixed-header anchor scroll offset.
-- Added checkout `no-store` response policy.
-- Added Request Assistance to the sitemap while keeping private receipt/status pages disallowed.
+- Added checkout `no-store` response policy and later strengthened sensitive donation/assistance API responses to `no-store, private` consistently.
+- Added Request Assistance to the sitemap while keeping private receipt/status pages disallowed and explicitly noindexed.
+- Added private donation acknowledgement noindex handling and a lean receipt projection.
+- Added assistance field-associated validation recovery instead of a generic unlinked error banner.
+- Added scoped compensation cleanup for private assistance documents when post-upload submission work fails.
 - Added focus transfer into the mobile menu and focus return to the toggle on Escape.
 - Remapped legacy shared green tokens/gradients to the working Amaana blue/gold/editorial-neutral system so untouched shared states cannot silently regress to the old generic NGO palette.
 - Added narrow-screen wrapping/gutter safeguards while explicitly preserving the existing 3rem button/touch-target baseline.
