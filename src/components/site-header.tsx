@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 const primaryLinks = [
   ["Our Work", "/our-work"],
@@ -21,13 +21,21 @@ export function SiteHeader() {
   const [openForPath, setOpenForPath] = useState<string | null>(null);
   const pathname = usePathname();
   const open = openForPath === pathname;
+  const toggleRef = useRef<HTMLButtonElement>(null);
+  const mobileNavRef = useRef<HTMLElement>(null);
   const closeMenu = () => setOpenForPath(null);
 
   useEffect(() => {
     if (!open) return;
+    const firstLink = mobileNavRef.current?.querySelector<HTMLElement>("a");
+    firstLink?.focus();
+
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpenForPath(null);
+      if (event.key !== "Escape") return;
+      setOpenForPath(null);
+      requestAnimationFrame(() => toggleRef.current?.focus());
     };
+
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
   }, [open]);
@@ -41,6 +49,7 @@ export function SiteHeader() {
         </Link>
 
         <button
+          ref={toggleRef}
           className="menu-toggle"
           type="button"
           aria-expanded={open}
@@ -64,7 +73,7 @@ export function SiteHeader() {
         </div>
       </nav>
 
-      <nav id="mobile-navigation" className={`mobile-menu${open ? " open" : ""}`} aria-label="Mobile navigation" hidden={!open}>
+      <nav ref={mobileNavRef} id="mobile-navigation" className={`mobile-menu${open ? " open" : ""}`} aria-label="Mobile navigation" hidden={!open}>
         <div className="container mobile-menu-inner">
           <div className="mobile-menu-primary">
             {primaryLinks.map(([label, href]) => {
