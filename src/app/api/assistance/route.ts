@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { assistanceSchema, createReferenceNumber, createTrackingToken, hashTrackingToken } from "@/lib/assistance";
 import { prisma } from "@/lib/prisma";
-import { MAX_FILES, uploadPrivateDocument } from "@/lib/storage";
+import { deletePrivateDocumentObject, MAX_FILES, uploadPrivateDocument } from "@/lib/storage";
 import { validateProductionEnvironment } from "@/lib/env";
 import { enforceAssistanceRateLimit, isSameOrigin } from "@/lib/request-security";
 
@@ -39,71 +39,93 @@ export async function POST(request: Request) {
     }
 
     const id = randomUUID();
-    const documents = await Promise.all(files.map(file => uploadPrivateDocument(file, id)));
-    const referenceNumber = createReferenceNumber();
-    const trackingToken = createTrackingToken();
-    const email = parsed.data.email || null;
+    const documents: Awaited<ReturnType<typeof uploadPrivateDocument>>[] = [];
 
-    const staffRecipients = await prisma.user.findMany({
-      where: {
-        status: "ACTIVE",
-        roles: {
-          some: {
-            role: {
-              permissions: {
-                some: { permission: { key: "assistance.view" } },
+    try {
+      // Upload sequentially so every successfully stored object is known and can be
+      // compensated if a later upload, recipient lookup or database write fails.
+      for (const file of files) {
+        documents.push(await uploadPrivateDocument(file, id));
+      }
+
+      const referenceNumber = createReferenceNumber();
+      const trackingToken = createTrackingToken();
+      const email = parsed.data.email || null;
+
+      const staffRecipients = await prisma.user.findMany({
+        where: {
+          status: "ACTIVE",
+          roles: {
+            some: {
+              role: {
+                permissions: {
+                  some: { permission: { key: "assistance.view" } },
+                },
               },
             },
           },
         },
-      },
-      select: { id: true, email: true },
-    });
+        select: { id: true, email: true },
+      });
 
-    const applicantNotification = {
-      channel: email ? NotificationChannel.EMAIL : NotificationChannel.SMS,
-      recipient: email ?? parsed.data.phone,
-      templateKey: "assistance-request-received",
-      subject: email ? "We received your Amaana assistance request" : null,
-      payload: { referenceNumber },
-    };
+      const applicantNotification = {
+        channel: email ? NotificationChannel.EMAIL : NotificationChannel.SMS,
+        recipient: email ?? parsed.data.phone,
+        templateKey: "assistance-request-received",
+        subject: email ? "We received your Amaana assistance request" : null,
+        payload: { referenceNumber },
+      };
 
-    const staffNotifications = staffRecipients.map(staff => ({
-      channel: NotificationChannel.EMAIL,
-      recipient: staff.email,
-      templateKey: "assistance-staff-alert",
-      subject: `New Amaana assistance request: ${referenceNumber}`,
-      payload: {
-        referenceNumber,
-        city: parsed.data.city,
-        category: parsed.data.category,
-      },
-      userId: staff.id,
-    }));
-
-    await prisma.assistanceRequest.create({
-      data: {
-        id,
-        referenceNumber,
-        applicantName: parsed.data.applicantName,
-        phone: parsed.data.phone,
-        email,
-        city: parsed.data.city,
-        category: parsed.data.category as AppealCategory,
-        description: parsed.data.description,
-        consentGivenAt: new Date(),
-        trackingTokenHash: hashTrackingToken(trackingToken),
-        documents: { create: documents },
-        notifications: {
-          create: [applicantNotification, ...staffNotifications],
+      const staffNotifications = staffRecipients.map(staff => ({
+        channel: NotificationChannel.EMAIL,
+        recipient: staff.email,
+        templateKey: "assistance-staff-alert",
+        subject: `New Amaana assistance request: ${referenceNumber}`,
+        payload: {
+          referenceNumber,
+          city: parsed.data.city,
+          category: parsed.data.category,
         },
-      },
-    });
+        userId: staff.id,
+      }));
 
-    return NextResponse.json(
-      { referenceNumber, trackingToken },
-      { status: 201, headers: { "Cache-Control": "no-store" } },
-    );
+      await prisma.assistanceRequest.create({
+        data: {
+          id,
+          referenceNumber,
+          applicantName: parsed.data.applicantName,
+          phone: parsed.data.phone,
+          email,
+          city: parsed.data.city,
+          category: parsed.data.category as AppealCategory,
+          description: parsed.data.description,
+          consentGivenAt: new Date(),
+          trackingTokenHash: hashTrackingToken(trackingToken),
+          documents: { create: documents },
+          notifications: {
+            create: [applicantNotification, ...staffNotifications],
+          },
+        },
+      });
+
+      return NextResponse.json(
+        { referenceNumber, trackingToken },
+        { status: 201, headers: { "Cache-Control": "no-store" } },
+      );
+    } catch (submissionError) {
+      const cleanupResults = await Promise.allSettled(
+        documents.map(document => deletePrivateDocumentObject(document.objectKey, id)),
+      );
+      cleanupResults.forEach((result, index) => {
+        if (result.status === "rejected") {
+          console.error("Assistance private-document cleanup failed", {
+            objectKey: documents[index]?.objectKey,
+            error: result.reason,
+          });
+        }
+      });
+      throw submissionError;
+    }
   } catch (error) {
     console.error("Assistance submission failed", error);
     return NextResponse.json(
