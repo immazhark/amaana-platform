@@ -94,6 +94,11 @@ Appeal-card styling is separated from the much larger appeal-detail experience.
 - Escape closes an open menu.
 - Menu state is tied to the pathname rather than synchronously resetting state in an effect, so route changes close the menu without React's set-state-in-effect performance/lint problem.
 
+### Loading and transition states
+- The App Router now has a lightweight global `loading.tsx` fallback so dynamic navigation is never an unexplained blank state.
+- The loading experience is semantic, announced politely to assistive technology and uses a reduced-motion-safe progress treatment.
+- The state deliberately avoids heavy skeleton DOM or media placeholders that would add unnecessary layout/render cost.
+
 ## SEO / discoverability work implemented
 
 ### Robots/indexing
@@ -134,6 +139,8 @@ The homepage now also declares its explicit canonical URL rather than relying on
 ### Discovery metadata
 - `/our-work`, `/impact`, `/stories`, `/faith-and-reflections` and `/appeals` now declare explicit canonical URLs and Open Graph metadata rather than relying only on inherited defaults.
 - Transactional `/donate/[slug]` routes have page-specific metadata but remain intentionally excluded from indexing in favor of the corresponding public appeal page.
+- Trust/utility routes now have stronger page-specific canonical/social metadata, including About, Governance, Compliance, Transparency, How We Verify, Get Involved, Contact and Request Assistance.
+- Privacy Policy, Donation Policy, Refund Policy and Terms now have explicit canonical, Open Graph and Twitter metadata rather than relying on root defaults.
 
 ### Structured data
 - Organization schema has been expanded into a graph containing the Amaana organization and website entities.
@@ -157,10 +164,11 @@ Verified successful checkpoints include:
 - #214 — cached page data, structured data and homepage first-Wow pass
 - #217 — documentary Our Work discovery system
 - #225 — corrected mobile navigation plus discovery-performance batch
+- #244 — assistance-form semantics and labelled form region
 
 CI #218 exposed a React lint issue in the first route-change menu implementation (`setState` directly inside an effect). The implementation was corrected immediately by deriving open state from the current pathname rather than suppressing the lint rule. The corrected implementation is included in later green CI.
 
-The latest Appeals/Donate accessibility/performance batch is still undergoing CI and must pass before being certified.
+The newest loading-state and policy-metadata commits require their own CI completion before being certified.
 
 ## Remaining Phase 6 / 7 performance work
 
