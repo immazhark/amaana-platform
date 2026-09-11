@@ -29,7 +29,7 @@ export default function AboutPage() {
           </div>
           <div>
             <p className="v2-hero-copy">Amaana began during Ramadan 2020, when a family response to a difficult time grew through the generosity of relatives, friends and the wider community.</p>
-            <div className="v2-hero-proof about-proof" style={{ marginTop: "2.5rem" }}>
+            <div className="v2-hero-proof about-proof v2-space-top-lg">
               <div><span className="v2-proof-number">2020</span><span className="v2-proof-copy">the year the grassroots Ramadan effort began</span></div>
               <div><span className="v2-proof-number">85</span><span className="v2-proof-copy">families reached through the first Eid Kits distribution</span></div>
               <div><span className="v2-proof-number">710</span><span className="v2-proof-copy">Eid Gift Kits distributed in 2026</span></div>
@@ -112,7 +112,7 @@ export default function AboutPage() {
           </div>
           <div className="v2-reminder v2-light-reminder">
             <span className="v2-reminder-label">Verified governance</span>
-            <h3 style={{ marginTop: "1rem" }}>Legal governance has its own public record.</h3>
+            <h3 className="v2-reminder-title">Legal governance has its own public record.</h3>
             <p>Amaana&apos;s registered trustees and registration facts are presented separately from internal website administration. Private source details remain protected.</p>
             <Link className="v2-text-link" href="/governance">See governance →</Link>
           </div>
@@ -124,7 +124,7 @@ export default function AboutPage() {
           <p className="v2-section-label">The story continues through the work</p>
           <h2>See what the amanah became.</h2>
           <p>The clearest way to understand Amaana is through the initiatives, evidence and stories that followed that first Ramadan effort.</p>
-          <div className="v2-hero-actions" style={{ justifyContent: "center" }}><Link className="v2-button" href="/our-work">Explore our work</Link><Link className="v2-text-link" href="/impact">See the impact →</Link></div>
+          <div className="v2-hero-actions v2-actions-center"><Link className="v2-button" href="/our-work">Explore our work</Link><Link className="v2-text-link" href="/impact">See the impact →</Link></div>
         </div>
       </section>
     </div>
