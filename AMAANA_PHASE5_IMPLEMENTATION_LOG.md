@@ -51,9 +51,8 @@ A page being implemented or CI passing does **not** mean its media population is
 - Designed graphics are treated as supporting collateral; original Amaana photography is preferred for documentary slots.
 - Gallery remains behind the same media publication/privacy gate as the rest of Phase 5.
 - Dedicated Dates Distribution visual system added.
-- CI checkpoint is running for the Dates implementation/documentation chain.
 
-## Batch F — Medical & Financial Assistance — ACTIVE
+## Batch F — Medical & Financial Assistance
 
 - Dedicated `/our-work/medical-financial-assistance` experience implemented instead of using the generic initiative template.
 - The page is deliberately case-process-led rather than a gallery of vulnerable people or diagnoses.
@@ -62,15 +61,43 @@ A page being implemented or CI passing does **not** mean its media population is
 - Raw medical records, identity documents, banking information and family circumstances are categorically treated as private verification material, not public-media assets.
 - Public-safe content is limited to approved summaries, fundraising figures, general context and non-sensitive outcomes where separately cleared.
 - Dedicated Medical & Financial Assistance visual system added with a high-privacy publication gate.
-- CI checkpoint pending for the medical implementation head.
 
-## Remaining Phase 5 campaign sequence
+## Batch G — Hyderabad Flood Relief 2020
 
-1. Finish Dates/Medical CI checkpoints and source-media reconciliation.
-2. Hyderabad Flood Relief 2020 — reconcile early grassroots context and usable documentary material.
-3. COVID-era relief material — only if distinct, source-supported content exists beyond the documented founding/Eid context.
-4. Brand/logo/social/contact audit and authentic asset population.
-5. Populate approved media through the admin publication workflow once public-media delivery configuration is available.
+- Dedicated `/our-work/hyderabad-flood-relief-2020` origin-era experience implemented.
+- Public copy deliberately distinguishes the 2020 grassroots response from the later legally registered Amaana Foundation.
+- No beneficiary, household, expenditure or material-distribution totals are invented where the retrievable archive has not established them.
+- Historical media remains behind the normal provenance/privacy publication gate.
+- Dedicated Flood Relief visual system added.
+- CI #155 passed install, Prisma generation/validation, lint, typecheck, tests/coverage and production build for the flood-relief head.
+
+## Batch H — COVID-era relief reconciliation
+
+- Conversation and Library search was repeated specifically for `COVID`, `lockdown`, `ration kits`, `COVID relief` and related Amaana wording.
+- The directly retrievable source confirms the **2020 COVID-19 pandemic as the context that moved the family to begin the Ramadan/Eid response**, leading to the first documented 85-family Eid Gift Kits activity.
+- The current retrievable source set does **not** establish a distinct COVID ration-kit campaign with reliable counts, dates, expenditure or a separate evidence record.
+- Therefore **no standalone COVID relief initiative page is being created yet**. Doing so would turn remembered context into a stronger public claim than the inspected sources support.
+- If the original COVID-ration archive is recovered later, it will be inventoried as a separate Phase 5 batch and only then added as its own initiative or historical story.
+
+## Batch I — Brand / social / contact audit — ACTIVE
+
+- Inspected Amaana's supplied branded contact graphic `Thank you for your trust and hope.png`.
+- The graphic visibly carries the blue/gold Amaana identity, Arabic/calligraphic emblem, the phrase **Upholding Trust**, `amaanafoundation.org`, `amaanafoundation24@gmail.com`, Facebook identity `amaanafoundation24`, Instagram `amaanafoundation`, YouTube `amaanafoundation`, and a phone number.
+- The Instagram handle is additionally corroborated by recent public posts under `@amaanafoundation`.
+- Footer and Contact now expose the supplied Instagram, Facebook and YouTube identities as public social paths.
+- Header text fallback now uses `Upholding Trust · Hyderabad` beneath the foundation name so it aligns more closely with supplied branding while the exact isolated logo asset remains unresolved.
+- The phone number shown in the branded graphic is **not being added yet** because the current-source check has not independently confirmed that it remains the preferred public phone contact.
+- The current email remains the published general-contact route.
+- The official isolated logo file is still required. A logo embedded inside a social graphic will not be cropped, redrawn or AI-recreated and silently treated as the master brand asset.
+
+## Remaining Phase 5 sequence
+
+1. Complete current brand/social/contact CI checkpoint.
+2. Recover or identify the official isolated Amaana logo asset and publish it without AI reconstruction.
+3. Finish file-by-file media source inventory for remaining campaign archives and select approved originals.
+4. Configure public-media delivery, run RBAC seed where needed, then populate approved media through the admin publication workflow.
+5. Confirm whether the supplied phone number is still the intended public contact before publishing it.
+6. Close Phase 5 only after authentic approved media is actually rendered, not merely inventoried.
 
 ## Current release boundary
 
