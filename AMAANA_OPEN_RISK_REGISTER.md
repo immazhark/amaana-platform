@@ -35,14 +35,15 @@ Purpose: prevent unresolved quality, privacy, accessibility, performance or sour
 
 - Razorpay UX/security structure exists and checkout script is deferred.
 - Donation order/confirmation responses are explicitly `no-store, private`, including validation/authentication/failure responses.
-- Transactional donation checkout and private acknowledgement routes are explicitly excluded from indexing; the acknowledgement query now selects only fields rendered by the private receipt experience.
+- Transactional donation checkout and private acknowledgement routes are explicitly excluded from indexing; token-bearing acknowledgement pages also apply a `no-referrer` policy so receipt tokens are not propagated through subsequent navigation.
+- Donation order creation, confirmation, capture reconciliation and acknowledgement now use deliberately lean database projections rather than loading unrelated donor/payment fields.
 - Staging order creation, checkout, capture verification, acknowledgement, failure, retry, refund/reconciliation and duplicate/idempotency paths still require E2E verification.
 
 ### 5. Assistance workflow verification
 **Status:** OPEN
 
 - Private upload controls, rate limiting, tracking and accessibility semantics are implemented.
-- Receipt/tracking routes are explicitly `noindex,nofollow`, and assistance submission/tracking API responses are explicitly `no-store, private`.
+- Receipt/tracking routes are explicitly `noindex,nofollow`, assistance submission/tracking API responses are explicitly `no-store, private`, and token-bearing receipt/tracking pages apply `no-referrer` to prevent tracking-token propagation through navigation.
 - Field-level server validation now reaches the matching form controls with visible messages plus `aria-invalid`/descriptions instead of collapsing into a generic banner.
 - Successfully uploaded private documents are tracked and compensated with narrowly scoped deletion if a later upload, recipient lookup or request database write fails.
 - Full staging submission, file validation, cleanup failure-path verification, receipt, tracking, reviewer access and error/recovery journeys remain an E2E release gate.
@@ -136,7 +137,8 @@ Current CI covers install, Prisma generation/validation, lint, typecheck, unit/c
 - Added shared focus-visible treatment and fixed-header anchor scroll offset.
 - Added checkout `no-store` response policy and later strengthened sensitive donation/assistance API responses to `no-store, private` consistently.
 - Added Request Assistance to the sitemap while keeping private receipt/status pages disallowed and explicitly noindexed.
-- Added private donation acknowledgement noindex handling and a lean receipt projection.
+- Added `no-referrer` protection to token-bearing assistance receipt/tracking and donation acknowledgement pages.
+- Added private donation acknowledgement noindex handling and lean payment-path projections across order creation, confirmation, capture reconciliation and acknowledgement.
 - Added assistance field-associated validation recovery instead of a generic unlinked error banner.
 - Added scoped compensation cleanup for private assistance documents when post-upload submission work fails.
 - Added focus transfer into the mobile menu and focus return to the toggle on Escape.
