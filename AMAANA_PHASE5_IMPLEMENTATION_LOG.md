@@ -42,7 +42,7 @@ A page being implemented or CI passing does **not** mean its media population is
 - Dedicated Winter visual system implemented rather than reusing generic initiative cards.
 - CI #144 passed install, Prisma generation/validation, lint, typecheck, tests/coverage and production build.
 
-## Batch E — Dates Distribution — ACTIVE
+## Batch E — Dates Distribution
 
 - Dedicated `/our-work/dates-distribution` initiative experience implemented.
 - Public factual claim is intentionally narrow: **162 kg of dates distributed** during the documented Ramadan initiative.
@@ -51,16 +51,26 @@ A page being implemented or CI passing does **not** mean its media population is
 - Designed graphics are treated as supporting collateral; original Amaana photography is preferred for documentary slots.
 - Gallery remains behind the same media publication/privacy gate as the rest of Phase 5.
 - Dedicated Dates Distribution visual system added.
-- CI checkpoint pending for the current Dates head.
+- CI checkpoint is running for the Dates implementation/documentation chain.
+
+## Batch F — Medical & Financial Assistance — ACTIVE
+
+- Dedicated `/our-work/medical-financial-assistance` experience implemented instead of using the generic initiative template.
+- The page is deliberately case-process-led rather than a gallery of vulnerable people or diagnoses.
+- Public metric remains narrowly described as **₹4.82L raised in one documented medical appeal** from the approved initiative record; it is not presented as an aggregate of all assistance.
+- Request → Evidence → Review → Decision → Closure is presented as the operating journey, with an explicit boundary that not every request becomes a public appeal.
+- Raw medical records, identity documents, banking information and family circumstances are categorically treated as private verification material, not public-media assets.
+- Public-safe content is limited to approved summaries, fundraising figures, general context and non-sensitive outcomes where separately cleared.
+- Dedicated Medical & Financial Assistance visual system added with a high-privacy publication gate.
+- CI checkpoint pending for the medical implementation head.
 
 ## Remaining Phase 5 campaign sequence
 
-1. Finish Dates CI/source-media reconciliation.
-2. Medical & Financial Assistance — highest privacy threshold; case facts and media must be reviewed case by case.
-3. Hyderabad Flood Relief 2020 — reconcile early grassroots context and usable documentary material.
-4. COVID-era relief material — only if distinct, source-supported content exists beyond the documented founding/Eid context.
-5. Brand/logo/social/contact audit and authentic asset population.
-6. Populate approved media through the admin publication workflow once public-media delivery configuration is available.
+1. Finish Dates/Medical CI checkpoints and source-media reconciliation.
+2. Hyderabad Flood Relief 2020 — reconcile early grassroots context and usable documentary material.
+3. COVID-era relief material — only if distinct, source-supported content exists beyond the documented founding/Eid context.
+4. Brand/logo/social/contact audit and authentic asset population.
+5. Populate approved media through the admin publication workflow once public-media delivery configuration is available.
 
 ## Current release boundary
 
