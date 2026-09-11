@@ -99,9 +99,10 @@ export default function AboutPage() {
             <div className="v2-hero-actions"><Link className="v2-button" href="/how-we-verify">How Amaana works</Link><Link className="v2-text-link" href="/transparency">Transparency →</Link></div>
           </div>
           <div className="v2-reminder v2-light-reminder">
-            <span className="v2-reminder-label">Public team information</span>
-            <h3 style={{ marginTop: "1rem" }}>Team and governance will be presented separately.</h3>
-            <p>Public names, roles, photographs and biographies will be added only from the approved team material. Legal trusteeship will not be confused with internal website administration roles.</p>
+            <span className="v2-reminder-label">Verified governance</span>
+            <h3 style={{ marginTop: "1rem" }}>Legal governance has its own public record.</h3>
+            <p>Amaana&apos;s registered trustees and registration facts are presented separately from internal website administration. Private source details remain protected.</p>
+            <Link className="v2-text-link" href="/governance">See governance →</Link>
           </div>
         </div>
       </section>
