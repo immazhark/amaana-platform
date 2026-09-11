@@ -122,7 +122,11 @@ export async function setMediaPublication(formData: FormData) {
   const publish = formData.get("publish") === "true";
   const asset = await prisma.mediaAsset.findUniqueOrThrow({ where: { id } });
 
-  if (publish && !canRenderPublicMedia(asset)) throw new Error("Media needs a safe public URL and, for images, meaningful alt text before publication");
+  if (publish && !canRenderPublicMedia(asset)) {
+    throw new Error(asset.kind === "VIDEO"
+      ? "Hosted video publication is disabled until synchronized caption tracks are supported and verified."
+      : "Media needs a safe public URL and, for images, meaningful alt text before publication.");
+  }
 
   await prisma.$transaction([
     prisma.mediaAsset.update({ where: { id }, data: { isPublic: publish, privacyApprovedAt: publish ? new Date() : null } }),
