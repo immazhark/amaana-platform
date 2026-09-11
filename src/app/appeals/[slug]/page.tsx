@@ -34,7 +34,7 @@ export default async function AppealDetailPage({ params }: Props) {
       <section className="v2-appeal-detail-hero">
         <div className="v2-shell v2-appeal-detail-hero-grid">
           <div className="v2-appeal-detail-copy">
-            <div className="v2-appeal-detail-meta"><span>{appeal.category.replaceAll("_", " ")}</span><span>{appeal.beneficiaryLocation || "Hyderabad"}</span><span>{isOpen ? "Open appeal" : "Appeal closed"}</span></div>
+            <div className="v2-appeal-detail-meta"><span>{appeal.category.replaceAll("_", " ")}</span><span>{appeal.beneficiaryLocation || "Location withheld"}</span><span>{isOpen ? "Open appeal" : "Appeal closed"}</span></div>
             <h1>{appeal.title}</h1>
             <p>{appeal.summary}</p>
           </div>
