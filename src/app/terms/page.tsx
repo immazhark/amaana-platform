@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-export const metadata: Metadata = { title: "Terms of Use", description: "Terms governing use of the Amaana Foundation platform." };
+export const metadata: Metadata = {
+  title: "Terms of Use",
+  description: "Terms governing use of the Amaana Foundation platform.",
+  alternates: { canonical: "/terms" },
+  openGraph: { type: "website", url: "/terms", title: "Terms of Use | Amaana Foundation", description: "Terms governing use of the Amaana Foundation platform." },
+  twitter: { card: "summary", title: "Terms of Use | Amaana Foundation", description: "Terms governing use of the Amaana Foundation platform." },
+};
 const sections=[
 ["01","Platform purpose",<>The platform provides information about Amaana Foundation, receives assistance requests and enables domestic donations to approved appeals.</>],
 ["02","No guaranteed assistance",<>Submitting a request does not guarantee verification, approval, publication, funding or assistance. Decisions depend on available information, resources and the organization&apos;s review.</>],
