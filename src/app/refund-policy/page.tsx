@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-export const metadata: Metadata = { title: "Refund Policy", description: "How to report an erroneous or duplicate donation to Amaana Foundation." };
+export const metadata: Metadata = {
+  title: "Refund Policy",
+  description: "How to report an erroneous or duplicate donation to Amaana Foundation.",
+  alternates: { canonical: "/refund-policy" },
+  openGraph: { type: "website", url: "/refund-policy", title: "Refund Policy | Amaana Foundation", description: "How to report an erroneous or duplicate donation to Amaana Foundation." },
+  twitter: { card: "summary", title: "Refund Policy | Amaana Foundation", description: "How to report an erroneous or duplicate donation to Amaana Foundation." },
+};
 const sections=[
 ["01","Requesting review",<>If you believe a donation was duplicated, entered incorrectly or processed without authorization, contact <a href="mailto:amaanafoundation24@gmail.com">amaanafoundation24@gmail.com</a> promptly with the Amaana donation reference and Razorpay payment ID.</>],
 ["02","Assessment",<>Each request is reviewed against platform and payment records. Amaana may request reasonable information needed to verify the payer and transaction. <strong>Never send a card number, UPI PIN, banking password or OTP.</strong></>],
