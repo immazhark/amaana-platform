@@ -11,9 +11,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const appeal = await prisma.appeal.findFirst({
     where: { slug, status: { in: ["PUBLISHED", "FUNDED", "CLOSED"] } },
-    select: { title: true, summary: true },
+    select: { slug: true, title: true, summary: true, status: true, publishedAt: true },
   });
-  return appeal ? { title: appeal.title, description: appeal.summary } : {};
+  if (!appeal) return { title: "Appeal not found" };
+
+  const canonical = `/appeals/${appeal.slug}`;
+  return {
+    title: appeal.title,
+    description: appeal.summary,
+    alternates: { canonical },
+    openGraph: {
+      type: "article",
+      url: canonical,
+      title: appeal.title,
+      description: appeal.summary,
+      publishedTime: appeal.publishedAt?.toISOString(),
+    },
+    twitter: {
+      card: "summary",
+      title: appeal.title,
+      description: appeal.summary,
+    },
+  };
 }
 
 export default async function AppealDetailPage({ params }: Props) {
