@@ -31,9 +31,34 @@ export function SiteHeader() {
     firstLink?.focus();
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== "Escape") return;
-      setOpenForPath(null);
-      requestAnimationFrame(() => toggleRef.current?.focus());
+      if (event.key === "Escape") {
+        setOpenForPath(null);
+        requestAnimationFrame(() => toggleRef.current?.focus());
+        return;
+      }
+
+      if (event.key !== "Tab") return;
+      const nav = mobileNavRef.current;
+      const toggle = toggleRef.current;
+      if (!nav || !toggle) return;
+
+      const focusable = [
+        toggle,
+        ...Array.from(nav.querySelectorAll<HTMLElement>("a[href], button:not([disabled])")),
+      ].filter(element => element.getClientRects().length > 0);
+
+      if (focusable.length < 2) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      const active = document.activeElement;
+
+      if (event.shiftKey && active === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && active === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
 
     window.addEventListener("keydown", onKeyDown);
