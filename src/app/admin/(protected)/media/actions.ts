@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canRenderPublicMedia } from "@/lib/public-media";
-import { uploadPublicMediaFile, validatePublicMediaFile } from "@/lib/storage";
+import { deletePublicMediaObject, uploadPublicMediaFile, validatePublicMediaFile } from "@/lib/storage";
 
 type TargetFields = { causeId?: string; initiativeId?: string; storyId?: string; faithContentId?: string };
 
@@ -60,21 +60,33 @@ export async function createMediaAsset(formData: FormData) {
   // record does not leave a preventable orphan in public media storage.
   const uploaded = file ? await uploadPublicMediaFile(file) : null;
 
-  const asset = await prisma.mediaAsset.create({
-    data: {
-      kind: inferredKind,
-      title: optionalText(formData.get("title"), 160),
-      publicUrl: manualUrl ?? uploaded?.publicUrl ?? null,
-      storageKey: uploaded?.objectKey ?? null,
-      altText,
-      caption: optionalText(formData.get("caption"), 1000),
-      sourcePath: optionalText(formData.get("sourcePath"), 500) ?? uploaded?.originalName ?? null,
-      sourceYear: Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null,
-      sortOrder: Number.isInteger(sortOrderRaw) ? sortOrderRaw : 0,
-      isPublic: false,
-      ...target,
-    },
-  });
+  let asset;
+  try {
+    asset = await prisma.mediaAsset.create({
+      data: {
+        kind: inferredKind,
+        title: optionalText(formData.get("title"), 160),
+        publicUrl: manualUrl ?? uploaded?.publicUrl ?? null,
+        storageKey: uploaded?.objectKey ?? null,
+        altText,
+        caption: optionalText(formData.get("caption"), 1000),
+        sourcePath: optionalText(formData.get("sourcePath"), 500) ?? uploaded?.originalName ?? null,
+        sourceYear: Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null,
+        sortOrder: Number.isInteger(sortOrderRaw) ? sortOrderRaw : 0,
+        isPublic: false,
+        ...target,
+      },
+    });
+  } catch (error) {
+    if (uploaded?.objectKey) {
+      try {
+        await deletePublicMediaObject(uploaded.objectKey);
+      } catch (cleanupError) {
+        console.error("Public media record creation failed and uploaded-object cleanup also failed", cleanupError);
+      }
+    }
+    throw error;
+  }
 
   await prisma.auditEvent.create({ data: { actorId: user.id, action: "media.created", entityType: "MediaAsset", entityId: asset.id, metadata: { target, uploaded: Boolean(uploaded), hasPublicUrl: Boolean(asset.publicUrl) } } });
   revalidatePath("/admin/media");
