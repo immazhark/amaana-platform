@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
+import { PUBLIC_STATIC_ROUTES } from "@/lib/public-routing";
 import { shouldAllowIndexing } from "@/lib/site-indexing";
 
 const configuredBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
@@ -29,26 +30,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   ]);
 
-  const staticPages: MetadataRoute.Sitemap = [
-    { url: `${base}/`, changeFrequency: "weekly", priority: 1 },
-    { url: `${base}/our-work`, changeFrequency: "weekly", priority: 0.95 },
-    { url: `${base}/impact`, changeFrequency: "weekly", priority: 0.9 },
-    { url: `${base}/stories`, changeFrequency: "weekly", priority: 0.85 },
-    { url: `${base}/faith-and-reflections`, changeFrequency: "weekly", priority: 0.8 },
-    { url: `${base}/appeals`, changeFrequency: "daily", priority: 0.95 },
-    { url: `${base}/about`, changeFrequency: "monthly", priority: 0.8 },
-    { url: `${base}/get-involved`, changeFrequency: "monthly", priority: 0.75 },
-    { url: `${base}/request-assistance`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${base}/how-we-verify`, changeFrequency: "monthly", priority: 0.75 },
-    { url: `${base}/transparency`, changeFrequency: "monthly", priority: 0.75 },
-    { url: `${base}/governance`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${base}/compliance`, changeFrequency: "monthly", priority: 0.7 },
-    { url: `${base}/contact`, changeFrequency: "monthly", priority: 0.6 },
-    { url: `${base}/privacy`, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${base}/terms`, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${base}/donation-policy`, changeFrequency: "yearly", priority: 0.35 },
-    { url: `${base}/refund-policy`, changeFrequency: "yearly", priority: 0.35 },
-  ];
+  const staticPages: MetadataRoute.Sitemap = PUBLIC_STATIC_ROUTES.map(route => ({
+    url: `${base}${route.path}`,
+    changeFrequency: route.changeFrequency,
+    priority: route.priority,
+  }));
 
   return [
     ...staticPages,
