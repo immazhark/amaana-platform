@@ -1,8 +1,21 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Get Involved",
-  description: "Ways to support, follow and participate in Amaana Foundation’s work.",
+  description: "Ways to support, follow and participate in Amaana Foundation’s work in Hyderabad through verified appeals, volunteering, responsible sharing and assistance referrals.",
+  alternates: { canonical: "/get-involved" },
+  openGraph: {
+    type: "website",
+    url: "/get-involved",
+    title: "Get Involved | Amaana Foundation",
+    description: "Support Amaana through verified appeals, volunteering, responsible sharing and assistance referrals.",
+  },
+  twitter: {
+    card: "summary",
+    title: "Get Involved | Amaana Foundation",
+    description: "Practical ways to support and participate in Amaana Foundation's work.",
+  },
 };
 
 const waysToHelp = [
