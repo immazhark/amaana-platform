@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { timingSafeEqual } from "node:crypto";
 import { hashTrackingToken } from "@/lib/assistance";
 import { prisma } from "@/lib/prisma";
+
+export const metadata: Metadata = {
+  title: "Private Assistance Request Tracking",
+  robots: { index: false, follow: false },
+};
 
 type Props = { searchParams: Promise<{ reference?: string; token?: string }> };
 const statusLabels: Record<string, string> = { SUBMITTED: "Submitted", DOCUMENTS_REQUESTED: "Documents requested", UNDER_VERIFICATION: "Under verification", APPROVED: "Approved", REJECTED: "Not approved", CONVERTED_TO_APPEAL: "Converted to appeal", CLOSED: "Closed" };
