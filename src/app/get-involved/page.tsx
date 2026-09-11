@@ -79,7 +79,7 @@ export default function GetInvolvedPage() {
           </div>
           <div className="v2-intent-grid">
             {waysToHelp.map(item => (
-              <Link className="v2-intent-card" href={item.href} key={item.number}>
+              <Link className="v2-intent-card" href={item.href} key={item.number} aria-label={`${item.title}: ${item.action}`}>
                 <span className="v2-intent-marker" aria-hidden="true">{item.number}</span>
                 <div><h3>{item.title}</h3><p>{item.copy}</p></div>
                 <span className="v2-intent-arrow">{item.action} ↗</span>
@@ -113,7 +113,7 @@ export default function GetInvolvedPage() {
           <p className="v2-section-label">Start a conversation</p>
           <h2>Tell us how you would like to help.</h2>
           <p>Amaana can then guide you toward what is useful, appropriate and currently needed.</p>
-          <div className="v2-hero-actions" style={{ justifyContent: "center" }}>
+          <div className="v2-hero-actions v2-actions-center">
             <Link className="v2-button" href="/contact">Contact Amaana</Link>
             <Link className="v2-text-link" href="/our-work">Explore the work →</Link>
           </div>
