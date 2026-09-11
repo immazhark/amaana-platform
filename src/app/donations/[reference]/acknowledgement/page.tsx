@@ -10,6 +10,7 @@ import { PrintButton } from "@/components/print-button";
 export const metadata: Metadata = {
   title: "Private Donation Acknowledgement",
   robots: { index: false, follow: false },
+  referrer: "no-referrer",
 };
 
 type Props = { params: Promise<{ reference: string }>; searchParams: Promise<{ token?: string }> };
