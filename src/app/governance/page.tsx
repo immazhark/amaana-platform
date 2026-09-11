@@ -4,6 +4,18 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Governance",
   description: "Verified governance and registration information for Amaana Foundation, with clear boundaries between legal governance, public operations and platform administration.",
+  alternates: { canonical: "/governance" },
+  openGraph: {
+    type: "website",
+    url: "/governance",
+    title: "Governance | Amaana Foundation",
+    description: "Verified governance and registration information for Amaana Foundation in Hyderabad.",
+  },
+  twitter: {
+    card: "summary",
+    title: "Governance | Amaana Foundation",
+    description: "Amaana Foundation's verified governance and public registration record.",
+  },
 };
 
 const trustees = ["Mohammed Ather Khan", "Mohammed Mazhar Khan", "Syed Iqba Ali"] as const;
