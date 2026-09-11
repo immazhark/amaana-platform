@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { PRIVATE_ROUTE_PREFIXES } from "@/lib/public-routing";
 import { shouldAllowIndexing } from "@/lib/site-indexing";
 
 export default function robots(): MetadataRoute.Robots {
@@ -16,7 +17,7 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/admin/", "/api/", "/donate/", "/donations/", "/request-assistance/status", "/request-assistance/received"],
+      disallow: [...PRIVATE_ROUTE_PREFIXES],
     },
     sitemap: `${base}/sitemap.xml`,
     host: base,
