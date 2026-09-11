@@ -1,11 +1,43 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicMedia } from "@/components/public-media";
 import { getPublishedStoryBySlug } from "@/lib/public-content";
 
+type Props = { params: Promise<{ slug: string }> };
 export const dynamic = "force-dynamic";
 
-export default async function StoryPage({ params }: { params: Promise<{ slug: string }> }) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const story = await getPublishedStoryBySlug(slug);
+  if (!story) return { title: "Story not found" };
+
+  const canonical = `/stories/${story.slug}`;
+  const leadImage = story.mediaAssets.find(asset => asset.kind === "IMAGE" && asset.publicUrl)?.publicUrl ?? undefined;
+  const leadAlt = leadImage ? story.mediaAssets.find(asset => asset.publicUrl === leadImage)?.altText ?? story.title : undefined;
+
+  return {
+    title: story.title,
+    description: story.summary,
+    alternates: { canonical },
+    openGraph: {
+      type: "article",
+      url: canonical,
+      title: story.title,
+      description: story.summary,
+      publishedTime: story.publishedAt?.toISOString(),
+      images: leadImage ? [{ url: leadImage, alt: leadAlt }] : undefined,
+    },
+    twitter: {
+      card: leadImage ? "summary_large_image" : "summary",
+      title: story.title,
+      description: story.summary,
+      images: leadImage ? [leadImage] : undefined,
+    },
+  };
+}
+
+export default async function StoryPage({ params }: Props) {
   const { slug } = await params;
   const story = await getPublishedStoryBySlug(slug);
   if (!story) notFound();
@@ -39,7 +71,7 @@ export default async function StoryPage({ params }: { params: Promise<{ slug: st
       <section className="v2-story-detail-lead">
         <div className="v2-shell">
           {leadMedia ? (
-            <div className="v2-story-detail-lead-media"><PublicMedia asset={leadMedia} /></div>
+            <div className="v2-story-detail-lead-media"><PublicMedia asset={leadMedia} priority /></div>
           ) : (
             <div className="v2-story-detail-no-media">
               <span>Privacy can be part of the evidence.</span>
