@@ -26,7 +26,7 @@ This is the durable implementation record for `phase-public-site-rebuild`. Code 
 
 Rebuilt: Home, About, Our Work, initiative detail, Eid flagship, Impact, Stories, Faith & Reflections, Get Involved, Contact, Appeals, Donate, Request Assistance, acknowledgement/receipt/tracking states.
 
-Faith now includes a verified detail route rather than an index-only library.
+Faith includes a verified detail route rather than an index-only library.
 
 ## Phase 2 — Trust architecture — IMPLEMENTED / CI VERIFIED
 
@@ -93,60 +93,85 @@ Implemented during the active Phase 6 pass:
 - Global loading state.
 - Repeated inline presentation cleanup across audited major pages.
 - Stronger focus-visible, anchor scroll-offset and overflow behaviour in the shared refinement layer.
+- Transparency hero moved away from repeated orbit/circle visual language into an evidence-folio composition to reduce cross-page creative repetition.
 
 Phase 6 is **not certified complete**. Authentic photography and official brand assets are still required for final creative certification.
 
-## Phase 7 — UX, motion and accessibility refinement — ACTIVE IN PARALLEL
+## Phase 7 — UX, motion and accessibility refinement — ACTIVE / SOURCE-HARDENED
 
-Work already underway:
+Implemented source-level safeguards now include:
 - keyboard-visible skip link;
-- mobile navigation focus-tree behaviour;
+- mobile navigation focus transfer, Escape return and Tab/Shift+Tab containment while expanded;
 - focus-visible treatment across high-value discovery patterns;
 - semantic progress indicators;
 - labelled form regions and live error/loading feedback;
+- assistance server errors associated to their controls and focus moved to the first invalid field;
 - specific accessible names for ambiguous actions;
-- reduced-motion handling in major experience CSS;
+- global reduced-motion handling for smooth scrolling, animation and transition timing;
+- forced-colors focus/control safeguards;
 - fixed-header anchor scroll offset;
-- removal of broad vertical overflow clipping from the public experience.
+- removal of broad vertical overflow clipping from the public experience;
+- hosted `VIDEO` media fails closed until synchronized caption support is modeled and verified;
+- trust-page small informational labels on light surfaces use an accessible blue role instead of low-contrast working gold.
 
 Still open:
-- full keyboard traversal;
+- complete real-browser keyboard traversal;
 - screen-reader spot checks;
-- contrast audit;
+- rendered contrast verification;
 - touch-target audit;
-- browser zoom/reflow;
+- 200%/400% browser zoom/reflow;
 - representative desktop/tablet/mobile visual QA;
-- real-device motion/performance review.
+- real-device motion/performance review;
+- caption architecture/content verification before hosted video can be enabled.
 
-## Phase 8 — Full QA and release hardening — PENDING
+## Phase 8 — Full QA and release hardening — ACTIVE / SOURCE-AUTOMATION ADVANCED
+
+Implemented during this phase:
+- centralized public/static and private/transactional route-publication policy used by both sitemap and robots;
+- segment-safe private-route matching plus CI regression tests;
+- sensitive `/api/*` caching fails closed globally with `private, no-store`;
+- production build is started inside CI after compilation and smoke-tested for liveness, key public route rendering, Request Assistance rendering, no-store behavior and critical security headers;
+- running-server smoke gate verified green in CI #340;
+- aggregate built static JavaScript/CSS sizes are measured in CI and budgeted;
+- first measured output: 616,855 B JavaScript / 196,210 B CSS;
+- regression budgets tightened to 800 KiB JavaScript / 256 KiB CSS based on measured output rather than arbitrary multi-megabyte ceilings;
+- donation browser verification failure now has a reconciliation state that blocks a second checkout attempt after Razorpay has returned a payment response;
+- production indexing remains explicitly disabled in CI/staging-like builds unless the official HTTPS-domain release flag is intentionally enabled.
+
+Still open before Phase 8 certification:
+- browser-level E2E with stable production-like fixtures;
+- staged Razorpay success/failure/reconciliation/refund/duplicate paths;
+- staged Assistance upload/receipt/tracking/reviewer/cleanup-failure paths;
+- rendered crawl/canonical/structured-data validation against deployed staging;
+- Core Web Vitals (LCP, INP, CLS), route transfer profiling and slow-network review;
+- Chrome/Safari/Firefox and representative mobile/tablet/desktop visual QA;
+- assistive-technology verification;
+- factual/religious/compliance professional review where required;
+- independent public-site creative review against the locked quality standard.
+
+## Phase 9 — Staging acceptance and merge — BLOCKED ON REAL ENVIRONMENT ACCESS / USER APPROVAL
 
 Required:
-- factual/religious/compliance review;
-- privacy/public-media gate review;
-- Razorpay staging reconciliation and failure-state tests;
-- Assistance submission/document/tracking E2E;
-- Core Web Vitals and route transfer budgets on production-like infrastructure;
-- browser/device visual QA;
-- accessibility verification;
-- rendered metadata/canonical/structured-data review;
-- full dead-link/orphan/sitemap crawl;
-- independent public-site review against the locked design standard.
+- identify/access the actual staging deployment and provider configuration;
+- verify database migrations/readiness, public/private storage separation, notifications and public-media preflight;
+- execute Razorpay test-mode donation/reconciliation/refund journeys;
+- execute Assistance submission/document/tracking/reviewer journeys;
+- run real browser/device/accessibility/performance acceptance checks;
+- user acceptance review;
+- resolve remaining release blockers;
+- enable production indexing only as an explicit release action;
+- merge to `main` only after explicit approval.
 
-## Phase 9 — Staging acceptance and merge — PENDING
-
-- Deploy/verify staging candidate.
-- User acceptance review.
-- Resolve release blockers.
-- Enable production indexing only as an explicit release action.
-- Merge to `main` only after explicit approval.
+Repository inspection alone is not evidence that these production-like checks passed.
 
 ## Current checkpoint
 
 - Branch: `phase-public-site-rebuild`.
-- CI #265 passed on `b4ea64be5f72305ffbaeeada8f5bb3bc2c81844d` before the latest audit/refinement commits.
+- CI #340 verified install, Prisma generation/validation, lint, typecheck, coverage, production build and the new running-server smoke/header gate.
+- First aggregate bundle measurement subsequently passed at 616,855 B JavaScript / 196,210 B CSS; tighter 800 KiB / 256 KiB budgets are now the active CI thresholds.
 - Phase 5 remains active for authentic media and official brand recovery.
-- Phase 6 is active and is re-auditing previous public work rather than assuming earlier code is final.
-- Phase 7 accessibility/responsive refinement is running in parallel where issues are discovered.
-- Latest continuity audit corrected an important documentation overstatement: current blue/gold values are provisional until master branding assets are successfully inspected.
-- Latest shared refinement removes broad vertical clipping, strengthens keyboard focus visibility and reserves scroll offset for fixed-header anchor navigation.
-- Nothing in Phase 8/9 is considered complete yet.
+- Phase 6 remains active pending authentic photography, master identity and final rendered creative review.
+- Phase 7 is source-hardened but still requires real-browser/device/assistive-technology certification.
+- Phase 8 is active with materially stronger automated release gates; production-like/browser certification remains open.
+- Phase 9 cannot be honestly certified from source inspection because no staging URL/provider control plane is available in this working context.
+- `main` remains untouched.
