@@ -1,16 +1,24 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicMedia } from "@/components/public-media";
-import { getPublishedStories } from "@/lib/public-content";
+import { getStoriesDiscoveryData } from "@/lib/public-discovery-data";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Stories of Amanah",
   description: "Dignified, privacy-reviewed accounts of Amaana Foundation's completed assistance and community work.",
+  alternates: { canonical: "/stories" },
+  openGraph: {
+    type: "website",
+    url: "/stories",
+    title: "Stories of Amanah | Amaana Foundation",
+    description: "Dignified, privacy-reviewed accounts from Amaana Foundation's community work and completed assistance.",
+  },
 };
 
 export default async function StoriesPage() {
-  const stories = await getPublishedStories();
+  const stories = await getStoriesDiscoveryData();
   const leadStory = stories[0];
   const remainingStories = stories.slice(1);
 
