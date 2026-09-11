@@ -25,10 +25,13 @@ export function PublicMedia({ asset, priority = false }: PublicMediaProps) {
     return (
       <figure className="v2-media-item">
         {/* Approved assets may be served from multiple S3-compatible/CDN hosts. The public-safe renderer validates URLs before rendering. */}
+        {/* Width/height reserve the editorial 4:3 media slot before bytes arrive; CSS controls responsive sizing/cropping. */}
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img
           src={url}
           alt={asset.altText ?? ""}
+          width={1600}
+          height={1200}
           loading={priority ? "eager" : "lazy"}
           fetchPriority={priority ? "high" : "auto"}
           decoding="async"
@@ -43,7 +46,7 @@ export function PublicMedia({ asset, priority = false }: PublicMediaProps) {
   if (asset.kind === "VIDEO") {
     return (
       <figure className="v2-media-item">
-        <video controls preload="metadata" aria-label={asset.title ?? asset.caption ?? "Amaana Foundation video"}>
+        <video controls preload="none" playsInline aria-label={asset.title ?? asset.caption ?? "Amaana Foundation video"}>
           <source src={url} />
         </video>
         {(asset.caption || asset.sourceYear) && (
