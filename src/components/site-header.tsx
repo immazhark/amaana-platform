@@ -18,18 +18,15 @@ function isActivePath(pathname: string, href: string) {
 }
 
 export function SiteHeader() {
-  const [open, setOpen] = useState(false);
+  const [openForPath, setOpenForPath] = useState<string | null>(null);
   const pathname = usePathname();
-  const closeMenu = () => setOpen(false);
-
-  useEffect(() => {
-    setOpen(false);
-  }, [pathname]);
+  const open = openForPath === pathname;
+  const closeMenu = () => setOpenForPath(null);
 
   useEffect(() => {
     if (!open) return;
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") setOpenForPath(null);
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -49,7 +46,7 @@ export function SiteHeader() {
           aria-expanded={open}
           aria-controls="mobile-navigation"
           aria-label={open ? "Close navigation menu" : "Open navigation menu"}
-          onClick={() => setOpen(value => !value)}
+          onClick={() => setOpenForPath(current => current === pathname ? null : pathname)}
         >
           <span aria-hidden="true">{open ? "×" : "☰"}</span>
         </button>
