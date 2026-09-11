@@ -1,5 +1,6 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
+import { isEmailDeliveryEnabled } from "@/lib/env";
 import { processPendingEmailNotifications } from "@/lib/notifications";
 
 export const runtime = "nodejs";
@@ -14,6 +15,8 @@ function isAuthorized(request: Request) {
 
 export async function POST(request: Request) {
   if (!isAuthorized(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: { "Cache-Control": "no-store" } });
+  if (!isEmailDeliveryEnabled()) return NextResponse.json({ status: "disabled" }, { headers: { "Cache-Control": "no-store" } });
+
   try {
     const result = await processPendingEmailNotifications();
     return NextResponse.json({ status: "ok", ...result }, { headers: { "Cache-Control": "no-store" } });
