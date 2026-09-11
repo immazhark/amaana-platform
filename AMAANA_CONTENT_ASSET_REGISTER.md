@@ -65,6 +65,33 @@ Avoid publishing near-duplicate frames simply because they exist. The page shoul
 | `Upholding trust through Qurbani service.png` | branded graphic with real embedded photos | sacrifice/preparation, weighing, packing, labelled distribution boxes | Candidate for campaign-context use after privacy/quality review. Graphic language such as hygiene/quality claims must be checked against source evidence before being repeated as factual site copy. | Qurbani initiative media candidate |
 | `Upholding trust in food distribution.png` / `Upholding trust in meat distribution.png` | branded graphic with real embedded photos | weighing, gloved handling, packed trays, workers | Candidate after privacy/quality review. Do not infer independent certification or standards from marketing wording. | Qurbani initiative / story media candidate |
 
+### Qurbani / Meat Distribution 2026 — original media inspection
+
+A group of non-model-generated native JPEGs uploaded together on 29 June 2026 has now been visually inspected. The files clearly document the 2026 Meat Distribution Drive environment, preparation and packing. They do **not**, by themselves, establish the final animal count, exact total meat weight, beneficiary count or species terminology. Those facts remain tied to separate primary campaign records and are not inferred from photographs.
+
+| Original file | Visible content only | Public-use assessment | Draft alt text / handling note |
+|---|---|---|---|
+| `AFE30408-8190-4E25-801B-0C0E0E63742A.jpeg` | Four sealed brown transport boxes with Amaana Meat Distribution Drive labels positioned before the 2026 campaign banner | **Strong public-safe hero/context candidate.** Mostly object/brand evidence; only partial people at frame edges. Crop can avoid incidental bodies. | `Sealed Amaana Meat Distribution Drive boxes positioned in front of the 2026 campaign banner.` |
+| `9B549E19-79EE-4408-87AB-0870BDEDDF57.jpeg` | Near-duplicate box/banner frame | Secondary only; do not publish if stronger adjacent frame is used | `Packed boxes prepared for Amaana Foundation's 2026 Meat Distribution Drive.` |
+| `E0CEFD29-E7B3-4CC5-AD62-88954CC70B08.jpeg` | Close view of a sealed clear meat container with Amaana 2026 label | **Strong packing/detail candidate.** No identifiable face. | `Close view of a labelled container prepared for Amaana Foundation's 2026 Meat Distribution Drive.` |
+| `7667B562-BA01-445F-A6C8-8B23E7BCA9F3.jpeg` | Stacks of sealed labelled meat containers inside an insulated box/cooler | **Strong logistics / packed-output candidate.** No identifiable beneficiary. | `Stacks of labelled meat containers arranged inside an insulated box for the 2026 distribution drive.` |
+| `505D4805-E326-4C6A-9285-C6672A477F0D.jpeg` | Gloved hands handling a labelled container on a digital weighing scale; another container behind | **Strong process/evidence candidate**, but do not convert the momentary scale display into a campaign-wide weight claim. | `Gloved hands weighing a labelled meat container during preparation for the 2026 distribution drive.` |
+| `078A519F-083F-424A-B857-EA4659D9D587.jpeg` | Packaging materials, transport boxes, a pot and a meat container on a digital scale; partial workers visible | Useful process context; secondary to cleaner weighing/packed frames | `Packaging materials and a meat container on a digital scale during the 2026 preparation process.` |
+| `48A9567F-1505-4EAC-95BA-B6803E9C28BC.jpeg` / `9AFFC858-C550-4F81-9E1E-6997860ABB01.jpeg` / `F600E2C0-CE25-4AB0-989F-43F41185B043.jpeg` | Slaughter/butchery preparation with carcasses and a worker using a knife | **Do not use as default hero/gallery media.** Graphic slaughter content is documentary but unsuitable for general visitor surfaces. Consider archive-only or a clearly contextualised process record if ever needed. | Mark as graphic-content media; not selected for normal public presentation. |
+| `A75A88D9-58C1-4F3A-9666-47DA26492301.jpeg` and related preparation frames | Workers processing meat in the preparation area | Potential documentary process evidence, but identifiable workers and graphic meat handling require stricter consent/privacy review | Do not publish until worker public-use consent/provenance is confirmed. |
+
+Several additional vertical JPEGs appear to be exported frames carrying overlaid `Meat distribution drive 2026` text/watermark. They may be historical social collateral, but original clean stills are preferred whenever available.
+
+### Proposed Qurbani/Meat visual sequence
+
+1. **Hero/context:** sealed campaign boxes + 2026 banner (`AFE30408…`).
+2. **Preparation without graphic spectacle:** weighing frame (`505D4805…`).
+3. **Packing detail:** labelled container (`E0CEFD29…`).
+4. **Cold/transport organisation:** stacked containers in insulated box (`7667B562…`).
+5. **Optional field/process context:** only non-identifying or consent-cleared worker frames.
+
+**Terminology remains unresolved from the currently retrieved primary text.** The photographs show multiple sheep/goat-like animals, but visual identification must not be used to decide whether the website says “28 sheep” or “28 animals.” Until a primary campaign source is located and reconciled, use neutral wording such as `Qurbani animals` or avoid the species count in newly written copy.
+
 ## Brand and contact material
 
 | Source | Type | Supported content | Status | Intended placement |
@@ -90,6 +117,7 @@ Avoid publishing near-duplicate frames simply because they exist. The page shoul
 8. Every discrepancy is resolved in text/data before visual publication; screenshots do not override canonical validated evidence.
 9. Public campaign media must use storage that is separate from the private assistance-document bucket.
 10. Uploading a file is not approval. New media records start unpublished and require an explicit `content.approve` action before public rendering.
+11. Graphic slaughter/preparation imagery is not a default engagement asset; documentary relevance does not automatically make an image suitable for broad public presentation.
 
 ## Phase 5 work queue
 
@@ -100,10 +128,13 @@ Avoid publishing near-duplicate frames simply because they exist. The page shoul
 - Admin media-review workflow now supports source/year/caption/alt metadata and an explicit privacy/publication gate.
 - Actual public rendering still requires the selected originals to be placed in dedicated public-media storage and explicitly approved.
 
-### Batch B — Qurbani 2025/2026
-- Separate original photography from designed posts.
-- Reconcile “animals” vs “sheep” terminology against primary source before final copy.
-- Map safe preparation/packing/delivery media to the initiative detail page.
+### Batch B — Qurbani 2025/2026 — 2026 ORIGINAL SET PARTIALLY INVENTORIED
+- Original 2026 preparation/packing JPEGs have been separated from designed/model-generated collateral for the inspected set.
+- Safer public-facing candidates are identified: boxed campaign context, weighing, labelled containers and insulated transport/storage.
+- Graphic slaughter frames are excluded from default public presentation.
+- Worker-identifying frames require consent/provenance review before public use.
+- “animals” vs “sheep” terminology remains pending a textual primary-source reconciliation; photographs will not be used to decide that factual wording.
+- 2025 media/source inventory remains pending.
 
 ### Batch C — Taleem, Winter, Dates, Flood/COVID, Medical/Financial
 - Inventory each campaign independently.
@@ -116,4 +147,4 @@ Avoid publishing near-duplicate frames simply because they exist. The page shoul
 
 ## Current register boundary
 
-This register now contains a concrete inventory of the discovered original 2026 Eid preparation/content/logistics photographs, but it is **not** a claim that every Amaana archive has been enumerated. Archive ZIP/file-by-file completion and beneficiary/distribution-photo review remain pending and must be recorded here as each source is actually inspected.
+This register now contains concrete inventories for the discovered original 2026 Eid preparation/content/logistics set and an initial original 2026 Meat Distribution preparation/packing set. It is **not** a claim that every Amaana archive has been enumerated. Remaining archive ZIP/file-by-file completion, 2025 Qurbani, beneficiary/distribution-photo review and other campaign inventories are still pending.
