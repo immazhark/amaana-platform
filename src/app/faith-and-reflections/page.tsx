@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { PublicMedia } from "@/components/public-media";
 import { getPublishedFaithContent } from "@/lib/public-content";
 
 export const dynamic = "force-dynamic";
@@ -10,113 +11,40 @@ export const metadata = {
 
 export default async function FaithAndReflectionsPage() {
   const content = await getPublishedFaithContent();
-  const topics = Array.from(
-    new Map(
-      content.flatMap(item => item.topics.map(link => [link.topic.slug, link.topic.name] as const)),
-    ).entries(),
-  );
+  const topics = Array.from(new Map(content.flatMap(item => item.topics.map(link => [link.topic.slug, link.topic.name] as const))).entries());
   const articles = content.filter(item => item.type === "ARTICLE");
   const reminders = content.filter(item => item.type === "REMINDER");
   const videos = content.filter(item => item.type === "VIDEO");
+  const lead = content[0];
+  const rest = content.slice(1);
 
   return (
-    <div className="v2-home">
-      <section className="v2-section dark v2-faith">
-        <div className="v2-shell v2-faith-grid">
-          <div>
-            <p className="v2-section-label">Faith & Reflections</p>
-            <h1 className="v2-display" style={{ maxWidth: "8ch" }}>A place for the heart to return.</h1>
-            <p className="v2-hero-copy" style={{ marginTop: "2rem" }}>
-              A reviewed library of Islamic articles, reminders and videos centred on compassion, generosity, gratitude, service and the values that inspire Amaana&apos;s work.
-            </p>
-          </div>
-          <div className="v2-reminder">
-            <span className="v2-reminder-label">Editorial standard</span>
-            <blockquote>Beneficial reminders deserve the same care as every other trust.</blockquote>
-            <p>Qur&apos;an citations, translations, hadith references and religious claims are kept out of the public library until their review state is verified. Amaana shares beneficial content without presenting itself as a scholarly authority.</p>
-          </div>
+    <div className="v2-home v2-faith-page">
+      <section className="v2-faith-hero">
+        <div className="v2-shell v2-faith-hero-grid">
+          <div className="v2-faith-hero-copy"><p className="v2-section-label">Faith & Reflections</p><h1>A place for the heart to return.</h1><p>A reviewed library of Islamic articles, reminders and videos centred on compassion, generosity, gratitude, service and the values that inspire Amaana&apos;s work.</p><div className="v2-hero-actions"><a className="v2-button" href="#library">Explore the library</a><Link className="v2-text-link" href="/our-work">See faith in action →</Link></div></div>
+          <div className="v2-faith-hero-symbol" aria-hidden="true"><span>Reflect</span><div></div><strong>أمانة</strong><span>Serve</span></div>
         </div>
       </section>
 
-      <section className="v2-section paper">
+      <section className="v2-faith-standard">
+        <div className="v2-shell v2-faith-standard-grid"><div><p className="v2-section-label">Editorial trust</p><h2>Religious content should be handled with care.</h2></div><div><p>Qur&apos;an citations, translations, hadith references and religious claims stay out of the public library until their review state is verified.</p><p>Amaana shares beneficial material without presenting itself as a scholarly authority.</p></div></div>
+      </section>
+
+      <section className="v2-section paper" id="library">
         <div className="v2-shell">
-          <div className="v2-section-head">
-            <div>
-              <p className="v2-section-label">Explore</p>
-              <h2 className="v2-section-title">Read. Reflect. Watch.</h2>
-            </div>
-            <p className="v2-section-intro">
-              {content.length > 0
-                ? `${content.length} verified item${content.length === 1 ? "" : "s"} currently published across articles, reminders and videos.`
-                : "No religious content is currently published. Drafts and unverified material remain private until review is complete."}
-            </p>
-          </div>
-
-          <div className="v2-work-grid">
-            <article className="v2-work-card">
-              <small>Articles</small>
-              <div><span className="v2-metric">{articles.length}</span><p>verified long-form items</p><h3>Articles</h3><p>Thoughtful reading with source and religious-review metadata built into the publishing workflow.</p></div>
-            </article>
-            <article className="v2-work-card">
-              <small>Short form</small>
-              <div><span className="v2-metric">{reminders.length}</span><p>verified reminders</p><h3>Islamic Reminders</h3><p>Concise reminders designed for reflection rather than engagement bait.</p></div>
-            </article>
-            <article className="v2-work-card">
-              <small>Watch</small>
-              <div><span className="v2-metric">{videos.length}</span><p>verified video items</p><h3>Videos</h3><p>A home for approved video content with attribution, context and links to related initiatives when available.</p></div>
-            </article>
-          </div>
+          <div className="v2-section-head"><div><p className="v2-section-label">The library</p><h2 className="v2-section-title">Read. Reflect. Watch.</h2></div><p className="v2-section-intro">{content.length > 0 ? `${content.length} verified item${content.length === 1 ? "" : "s"} are currently published.` : "No religious content is currently published. Drafts and unverified material remain private until review is complete."}</p></div>
+          <div className="v2-faith-format-grid"><article><span>01</span><strong>{articles.length}</strong><h3>Articles</h3><p>Long-form reflection with source and review context.</p></article><article><span>02</span><strong>{reminders.length}</strong><h3>Reminders</h3><p>Concise, purposeful reflection without engagement bait.</p></article><article><span>03</span><strong>{videos.length}</strong><h3>Videos</h3><p>Reviewed visual content with attribution and context.</p></article></div>
         </div>
       </section>
 
-      {content.length > 0 && (
-        <section className="v2-section">
-          <div className="v2-shell">
-            <div className="v2-section-head">
-              <div><p className="v2-section-label">Published library</p><h2 className="v2-section-title">Verified before it reaches you.</h2></div>
-              <p className="v2-section-intro">Only records with both public publication status and verified religious review reach this page.</p>
-            </div>
-            <div className="v2-work-grid">
-              {content.map(item => (
-                <article className="v2-work-card" key={item.id}>
-                  <small>{item.type.toLowerCase()}</small>
-                  <div>
-                    <h3>{item.title}</h3>
-                    <p>{item.excerpt}</p>
-                    {item.sourceCitation && <p><strong>Source:</strong> {item.sourceCitation}</p>}
-                  </div>
-                </article>
-              ))}
-            </div>
-          </div>
-        </section>
-      )}
+      {lead && <section className="v2-section dark v2-faith-feature"><div className="v2-shell v2-faith-feature-grid"><div className="v2-faith-feature-copy"><p className="v2-section-label">Featured reflection</p><small>{lead.type.toLowerCase()}</small><h2>{lead.title}</h2><p>{lead.excerpt}</p>{lead.sourceCitation && <div className="v2-faith-source"><span>Reviewed source</span><p>{lead.sourceCitation}</p></div>}</div><div className="v2-faith-feature-media">{lead.mediaAssets[0] ? <PublicMedia asset={lead.mediaAssets[0]} /> : <div className="v2-faith-feature-placeholder"><span>Reviewed content</span><strong>{lead.title}</strong><small>Visual media appears only when separately approved for public use.</small></div>}</div></div></section>}
 
-      <section className="v2-section">
-        <div className="v2-shell">
-          <div className="v2-section-head">
-            <div><p className="v2-section-label">Topics</p><h2 className="v2-section-title">A library that can grow naturally.</h2></div>
-            <p className="v2-section-intro">Topics are generated from the published editorial taxonomy rather than being hard-coded into navigation.</p>
-          </div>
-          {topics.length > 0 ? (
-            <div className="actions">{topics.map(([slug, name]) => <span className="tag" key={slug}>{name}</span>)}</div>
-          ) : (
-            <p className="v2-section-intro">Topic links will appear when reviewed Faith content is published.</p>
-          )}
-        </div>
-      </section>
+      {rest.length > 0 && <section className="v2-section v2-faith-archive"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Published reflections</p><h2 className="v2-section-title">Verified before it reaches you.</h2></div><p className="v2-section-intro">Every public item has both publication approval and verified religious review.</p></div><div className="v2-faith-library-grid">{rest.map((item,index)=><article className={`v2-faith-library-item ${index===0?"wide":""}`} key={item.id}><span>{String(index+2).padStart(2,"0")}</span><small>{item.type.toLowerCase()}</small><h3>{item.title}</h3><p>{item.excerpt}</p>{item.sourceCitation && <div><b>Source</b><p>{item.sourceCitation}</p></div>}</article>)}</div></div></section>}
 
-      <section className="v2-closing">
-        <div className="v2-shell">
-          <p className="v2-section-label">Connected to service</p>
-          <h2>Reflection should lead to good.</h2>
-          <p>Where appropriate, reviewed content can connect naturally to real Amaana initiatives so visitors can understand both the value and the action it inspires.</p>
-          <div className="v2-hero-actions" style={{ justifyContent: "center" }}>
-            <Link className="v2-button" href="/our-work">Explore our work</Link>
-            <Link className="v2-text-link" href="/about">Our story →</Link>
-          </div>
-        </div>
-      </section>
+      <section className="v2-section paper v2-faith-topics"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Themes</p><h2 className="v2-section-title">A library that grows with meaning.</h2></div><p className="v2-section-intro">Topics come from the reviewed editorial taxonomy rather than decorative hard-coded labels.</p></div>{topics.length > 0 ? <div className="v2-faith-topic-cloud">{topics.map(([slug,name],index)=><span key={slug}><b>{String(index+1).padStart(2,"0")}</b>{name}</span>)}</div> : <p className="v2-section-intro">Topics will appear when reviewed Faith content is published.</p>}</div></section>
+
+      <section className="v2-section dark v2-faith-action"><div className="v2-shell v2-faith-action-grid"><div><p className="v2-section-label">Reflection into service</p><h2 className="v2-section-title">Faith is not only read. It is lived.</h2></div><div><p>Where appropriate, reviewed content connects naturally to Amaana&apos;s real initiatives so visitors can move from understanding a value to seeing how that value is carried into service.</p><div className="v2-hero-actions"><Link className="v2-button" href="/our-work">Explore our work</Link><Link className="v2-text-link" href="/about">Our story →</Link></div></div></div></section>
     </div>
   );
 }
