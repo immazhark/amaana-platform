@@ -19,7 +19,10 @@ export async function POST(request: Request) {
     const referenceNumber = createDonationReference(); const receiptToken = createReceiptToken(); const amountPaise = parsed.data.amount * 100;
     const order = await createRazorpayOrder({ amountPaise, receipt: referenceNumber, appealId: appeal.id });
     if (order.amount !== amountPaise || order.currency !== "INR") throw new Error("Unexpected order response");
-    const donation = await prisma.donation.create({ data: { referenceNumber, appealId: appeal.id, donorName: parsed.data.donorName, donorEmail: parsed.data.donorEmail.toLowerCase(), donorPhone: parsed.data.donorPhone || null, isAnonymous: parsed.data.isAnonymous, domesticConfirmedAt: new Date(), amount: parsed.data.amount, providerOrderId: order.id, receiptTokenHash: hashReceiptToken(receiptToken) } });
+    const donation = await prisma.donation.create({
+      data: { referenceNumber, appealId: appeal.id, donorName: parsed.data.donorName, donorEmail: parsed.data.donorEmail.toLowerCase(), donorPhone: parsed.data.donorPhone || null, isAnonymous: parsed.data.isAnonymous, domesticConfirmedAt: new Date(), amount: parsed.data.amount, providerOrderId: order.id, receiptTokenHash: hashReceiptToken(receiptToken) },
+      select: { id: true, donorName: true, donorEmail: true, donorPhone: true },
+    });
     return NextResponse.json({ donationId: donation.id, orderId: order.id, amount: amountPaise, currency: "INR", keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, appealTitle: appeal.title, donor: { name: donation.donorName, email: donation.donorEmail, contact: donation.donorPhone }, receiptToken }, { status: 201, headers: privateHeaders });
   } catch (error) { console.error("Donation order creation failed", error); return NextResponse.json({ error: "We could not start the secure payment. Please try again." }, { status: 500, headers: privateHeaders }); }
 }
