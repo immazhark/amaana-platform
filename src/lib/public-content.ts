@@ -151,3 +151,71 @@ export async function getFeaturedFaithContent() {
     orderBy: { publishedAt: "desc" },
   });
 }
+
+/**
+ * Homepage-only projection.
+ *
+ * The homepage is intentionally dynamic, but it should not pull full initiative,
+ * story, faith or appeal records when only a small subset is rendered. Keeping
+ * this projection narrow lowers database work, serialization and server render
+ * cost while preserving the publication/privacy gates used elsewhere.
+ */
+export async function getHomepagePublicContent() {
+  const [appeals, initiatives, featuredFaith, stories] = await Promise.all([
+    prisma.appeal.findMany({
+      where: { status: { in: ["PUBLISHED", "FUNDED"] } },
+      orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
+      take: 3,
+      select: {
+        slug: true,
+        title: true,
+        summary: true,
+        category: true,
+        beneficiaryLocation: true,
+        goalAmount: true,
+        amountRaised: true,
+      },
+    }),
+    prisma.initiative.findMany({
+      where: publishedWhere,
+      orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
+      take: 7,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        summary: true,
+        primaryMetric: true,
+        primaryMetricLabel: true,
+        cause: { select: { title: true } },
+      },
+    }),
+    prisma.faithContent.findFirst({
+      where: {
+        status: "PUBLISHED",
+        religiousReviewStatus: "VERIFIED",
+        isFeatured: true,
+      },
+      orderBy: { publishedAt: "desc" },
+      select: {
+        type: true,
+        title: true,
+        excerpt: true,
+      },
+    }),
+    prisma.story.findMany({
+      where: { status: "PUBLISHED", privacyApprovedAt: { not: null } },
+      orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }],
+      take: 3,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        summary: true,
+        publishedAt: true,
+      },
+    }),
+  ]);
+
+  return { appeals, initiatives, featuredFaith, stories };
+}
