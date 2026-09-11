@@ -45,7 +45,7 @@ export function SiteHeader() {
           {primaryLinks.map(([label, href]) => <Link href={href} key={href} onClick={closeMenu}>{label}</Link>)}
           <Link href="/request-assistance" onClick={closeMenu}>Request assistance</Link>
           <Link href="/how-we-verify" onClick={closeMenu}>How we work</Link>
-          <Link href="/compliance" onClick={closeMenu}>Transparency</Link>
+          <Link href="/transparency" onClick={closeMenu}>Transparency</Link>
           <Link href="/contact" onClick={closeMenu}>Contact</Link>
           <Link className="button" href="/appeals" onClick={closeMenu}>Donate</Link>
         </div>
