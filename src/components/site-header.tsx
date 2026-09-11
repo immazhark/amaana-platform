@@ -27,7 +27,7 @@ export function SiteHeader() {
       <nav className="container nav" aria-label="Primary navigation">
         <Link className="brand brand-wordmark" href="/" aria-label="Amaana Foundation home" onClick={closeMenu}>
           <span className="brand-name">Amaana Foundation</span>
-          <span className="brand-location">Hyderabad</span>
+          <span className="brand-location">Upholding Trust · Hyderabad</span>
         </Link>
 
         <button
