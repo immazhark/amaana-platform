@@ -32,3 +32,38 @@ jobs:
       - run: npm run typecheck
       - run: npm run test:coverage
       - run: npm run build
+      - name: Run post-build server smoke checks
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm run start > /tmp/amaana-next.log 2>&1 &
+          SERVER_PID=$!
+          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+
+          READY=0
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/api/health/live > /tmp/health.json; then
+              READY=1
+              break
+            fi
+            sleep 1
+          done
+
+          if [ "$READY" -ne 1 ]; then
+            cat /tmp/amaana-next.log
+            exit 1
+          fi
+
+          grep -q '"status":"ok"' /tmp/health.json
+          curl --fail --silent --show-error http://127.0.0.1:3000/about > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:3000/request-assistance > /dev/null
+
+          curl --fail --silent --show-error -D /tmp/health.headers -o /dev/null http://127.0.0.1:3000/api/health/live
+          tr -d '\r' < /tmp/health.headers > /tmp/health.normalized
+          grep -qi '^cache-control: .*no-store' /tmp/health.normalized
+          grep -qi '^x-content-type-options: nosniff$' /tmp/health.normalized
+          grep -qi '^x-frame-options: DENY$' /tmp/health.normalized
+
+          curl --fail --silent --show-error -D /tmp/assistance.headers -o /dev/null http://127.0.0.1:3000/request-assistance
+          tr -d '\r' < /tmp/assistance.headers > /tmp/assistance.normalized
+          grep -qi '^cache-control: .*no-store' /tmp/assistance.normalized
