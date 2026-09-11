@@ -3,7 +3,7 @@ import "./globals.css";
 import "./v2.css";
 import "./brand.css";
 import "./media.css";
-import "./appeals.css";
+import "./appeal-card.css";
 import "./state-experience.css";
 import "./policy-experience.css";
 import "./refinement.css";
