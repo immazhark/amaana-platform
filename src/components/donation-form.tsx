@@ -97,7 +97,7 @@ export function DonationForm({ appealId, appealTitle }: { appealId: string; appe
     />
     <form className="v2-premium-form v2-donation-form" onSubmit={submit} aria-busy={busy} aria-describedby="donation-form-description donation-checkout-status">
       <div className="v2-form-heading"><span>Secure contribution</span><h2 id="donation-form-heading">Choose how you would like to support.</h2><p id="donation-form-description">Only the information needed to process and acknowledge your contribution is requested.</p></div>
-      <p id="donation-checkout-status" className="v2-checkout-status" role="status" aria-live="polite">{statusText}</p>
+      <p id="donation-checkout-status" className="muted" role="status" aria-live="polite">{statusText}</p>
       {error && <div className="form-error" role="alert" aria-live="assertive">{error}</div>}
       <div className="form-grid">
         <div className="field full v2-amount-field"><label htmlFor="amount">Donation amount <span>INR</span></label><div className="v2-amount-input"><b aria-hidden="true">₹</b><input id="amount" name="amount" type="number" min="10" max="1000000" step="1" inputMode="numeric" placeholder="Enter amount" required/></div></div>
