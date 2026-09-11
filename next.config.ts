@@ -22,6 +22,7 @@ const nextConfig: NextConfig = {
   async headers() {
     return [
       { source: "/(.*)", headers: securityHeaders },
+      { source: "/api/:path*", headers: noStoreHeaders },
       { source: "/admin/:path*", headers: noStoreHeaders },
       { source: "/donate/:path*", headers: noStoreHeaders },
       { source: "/donations/:path*", headers: noStoreHeaders },
