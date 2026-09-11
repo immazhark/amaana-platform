@@ -145,6 +145,15 @@ For every future mistake or regression:
 
 **Prevention rule:** No meaningful video content is certified accessible merely because native controls work. Captions/transcript strategy must be reviewed before publication.
 
+### 15. Legacy green design tokens survived beneath the V2 layer
+**Mistake:** The legacy global stylesheet still defined the public primary system with generic NGO green tokens and green-tinted gradients even after the Amaana blue/gold V2 system had been introduced.
+
+**Why it happened:** New experience CSS visually overrode many public pages, but the underlying global shell/admin/shared components were not re-audited as one complete token system. This allowed an old design language to remain available and potentially leak into untouched states or components.
+
+**Correction:** The final global refinement layer now remaps the shared legacy tokens and remaining shared public gradients to the current Amaana working blue/gold/deep-ink/editorial-neutral system. Reduced-motion handling was also extended to disable global smooth scrolling when the user requests reduced motion.
+
+**Prevention rule:** A redesign is not complete while old brand tokens remain active underneath it. Every design-system migration must audit root variables, generic components, empty/error/admin/shared states and hard-coded legacy colours—not only the newly redesigned pages. Final brand values remain provisional until master artwork is directly verified.
+
 ## Cross-project prevention checklist
 
 Before closing any future batch, ask:
@@ -158,5 +167,6 @@ Before closing any future batch, ask:
 - Did documentation remain synchronized with implementation?
 - Did a fix address the same class of issue elsewhere, not only the reported instance?
 - Is the new state actually verified, or only implemented?
+- Did any legacy design token, copy pattern or interaction survive beneath the new system and create a future leak path?
 
 This file should grow when we learn something new. Repeating a documented class of mistake without checking this log is itself a process failure.
