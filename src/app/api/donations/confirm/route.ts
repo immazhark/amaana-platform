@@ -7,6 +7,8 @@ import { fetchRazorpayPayment, verifyCheckoutSignature } from "@/lib/razorpay";
 import { isSameOrigin } from "@/lib/request-security";
 import { validateProductionEnvironment } from "@/lib/env";
 
+const privateHeaders = { "Cache-Control": "no-store, private" };
+
 const schema = z.object({
   razorpay_order_id: z.string().min(1),
   razorpay_payment_id: z.string().min(1),
@@ -19,22 +21,22 @@ export async function POST(request: Request) {
     validateProductionEnvironment();
 
     if (!isSameOrigin(request)) {
-      return NextResponse.json({ error: "Invalid request origin." }, { status: 403 });
+      return NextResponse.json({ error: "Invalid request origin." }, { status: 403, headers: privateHeaders });
     }
 
     const parsed = schema.safeParse(await request.json());
     if (!parsed.success) {
-      return NextResponse.json({ error: "Invalid payment confirmation." }, { status: 400 });
+      return NextResponse.json({ error: "Invalid payment confirmation." }, { status: 400, headers: privateHeaders });
     }
 
     const input = parsed.data;
     if (!verifyCheckoutSignature(input.razorpay_order_id, input.razorpay_payment_id, input.razorpay_signature)) {
-      return NextResponse.json({ error: "Payment signature verification failed." }, { status: 400 });
+      return NextResponse.json({ error: "Payment signature verification failed." }, { status: 400, headers: privateHeaders });
     }
 
     const donation = await prisma.donation.findUnique({ where: { providerOrderId: input.razorpay_order_id } });
     if (!donation || donation.receiptTokenHash !== hashReceiptToken(input.receiptToken)) {
-      return NextResponse.json({ error: "Donation record not found." }, { status: 404 });
+      return NextResponse.json({ error: "Donation record not found." }, { status: 404, headers: privateHeaders });
     }
 
     const payment = await fetchRazorpayPayment(input.razorpay_payment_id);
@@ -59,13 +61,13 @@ export async function POST(request: Request) {
         referenceNumber: donation.referenceNumber,
         status: isCaptured ? "CAPTURED" : payment.status === "authorized" ? "AUTHORIZED" : donation.status,
       },
-      { headers: { "Cache-Control": "no-store" } },
+      { headers: privateHeaders },
     );
   } catch (error) {
     console.error("Donation confirmation failed", error);
     return NextResponse.json(
       { error: "Payment is being verified. Please retain your payment confirmation." },
-      { status: 500, headers: { "Cache-Control": "no-store" } },
+      { status: 500, headers: privateHeaders },
     );
   }
 }
