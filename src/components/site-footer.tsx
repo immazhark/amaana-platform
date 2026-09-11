@@ -47,6 +47,7 @@ export function SiteFooter() {
             <h3>Trust & policies</h3>
             <div className="footer-links">
               <Link href="/transparency">Transparency</Link>
+              <Link href="/governance">Governance</Link>
               <Link href="/compliance">Registration & Compliance</Link>
               <Link href="/donation-policy">Donation Policy</Link>
               <Link href="/refund-policy">Refund Policy</Link>
