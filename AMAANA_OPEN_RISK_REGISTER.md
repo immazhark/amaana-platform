@@ -53,14 +53,14 @@ Purpose: prevent unresolved quality, privacy, accessibility, performance or sour
 ### 7. Accessibility certification
 **Status:** OPEN / ACTIVE
 
-Implemented improvements include skip navigation, focus-visible treatment, mobile menu focus management, semantic progress indicators, labelled forms/live errors, reduced-motion rules and accessible external-link wording.
+Implemented improvements include skip navigation, focus-visible treatment, mobile menu focus management, semantic progress indicators, labelled forms/live errors, reduced-motion rules, accessible external-link wording and narrow-screen reflow safeguards that preserve the established 3rem interaction-height baseline.
 
 Still required:
 - keyboard traversal across every major journey;
 - screen-reader spot checks;
 - contrast review;
-- 200%/400% zoom and reflow;
-- touch-target audit;
+- 200%/400% zoom and reflow in real browsers;
+- touch-target audit beyond source-level safeguards;
 - form error announcement review;
 - mobile menu focus containment/escape behaviour on real browsers;
 - video captions/transcript strategy before publishing meaningful video content.
@@ -68,7 +68,7 @@ Still required:
 ### 8. Responsive/browser visual QA
 **Status:** OPEN
 
-- CSS contains responsive design work, but source inspection is not visual certification.
+- CSS contains responsive design work and additional narrow-screen wrapping/gutter safeguards, but source inspection is not visual certification.
 - Representative iOS/Android widths, tablet, laptop, wide desktop and Chrome/Safari/Firefox must be reviewed for overflow, clipping, line wrapping, image cropping, sticky behaviour and focus visibility.
 
 ### 9. SEO/indexing production verification
@@ -89,9 +89,14 @@ Still required:
 ## Active technical hardening risks
 
 ### Public-media orphan objects
-**Status:** RESIDUAL
+**Status:** MITIGATED IN CODE / STAGING VERIFICATION OPEN
 
-Metadata validation occurs before upload, but a storage upload followed by a failed database create can still leave an orphaned object. Add cleanup/compensation or an operational cleanup mechanism before high-volume media use.
+- Metadata validation already occurs before storage upload.
+- Managed public-media uploads now have a compensation path: if the subsequent `MediaAsset` database create fails, the just-uploaded managed object is deleted from the public bucket before the original database error is re-thrown.
+- Cleanup accepts only the application's managed `YEAR/UUID.ext` key pattern so it cannot be used as a general arbitrary-object deletion primitive.
+- If both DB creation and cleanup fail, the cleanup failure is logged without hiding the original creation failure.
+
+Remaining verification: exercise the failure path against the configured staging S3-compatible provider and confirm object deletion behavior before calling this risk CLOSED.
 
 ### Video accessibility
 **Status:** RESIDUAL / PUBLICATION GATE FOR VIDEO
@@ -117,6 +122,8 @@ Current CI covers install, Prisma generation/validation, lint, typecheck, unit/c
 - Added checkout `no-store` response policy.
 - Added Request Assistance to the sitemap while keeping private receipt/status pages disallowed.
 - Added focus transfer into the mobile menu and focus return to the toggle on Escape.
+- Remapped legacy shared green tokens/gradients to the working Amaana blue/gold/editorial-neutral system so untouched shared states cannot silently regress to the old generic NGO palette.
+- Added narrow-screen wrapping/gutter safeguards while explicitly preserving the existing 3rem button/touch-target baseline.
 
 ## Rule for closing risks
 
