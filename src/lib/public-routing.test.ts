@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isPrivateRoute, PRIVATE_ROUTE_PREFIXES, PUBLIC_STATIC_ROUTES } from "@/lib/public-routing";
+import { isPrivateRoute, PRIVATE_ROUTE_PREFIXES, PUBLIC_STATIC_ROUTES } from "./public-routing";
 
 describe("public route publication policy", () => {
   it("keeps transactional and private routes out of the public static route set", () => {
