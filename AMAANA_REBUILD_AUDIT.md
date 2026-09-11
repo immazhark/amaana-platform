@@ -21,8 +21,9 @@ Passing CI is necessary but is not used as proof of visual, factual or release q
 - Introduced the `Living Amanah — Faith. Dignity. Action.` creative direction.
 - Added dedicated visual systems for Home, Our Work, initiative detail, Eid Gift Kits, Qurbani, Taleem, Winter, Dates, Medical/Financial Assistance, Flood Relief, Impact, Stories, Faith, Appeals, forms, state pages, trust pages, policy pages and Governance.
 - Replaced generic page/card patterns with editorial, evidence-led layouts and different page rhythms.
+- Phase 6 is now actively re-auditing the major public journeys instead of treating earlier implementation as final.
 
-**Status:** **Partially resolved.** The structural/template problem is corrected. Final certification waits for authentic media population and the whole-site second creative pass.
+**Status:** **Partially resolved.** The structural/template problem is corrected. Final certification waits for authentic media population, official brand certification and completion of the whole-site creative QA pass.
 
 ### 2. Homepage lacked identity, photography and clear visitor purpose
 **Earlier problem:** no meaningful photography, weak hierarchy, oversized empty areas and no strong explanation of what Amaana does.
@@ -31,8 +32,9 @@ Passing CI is necessary but is not used as proof of visual, factual or release q
 - Rebuilt hero and visitor-intent journeys.
 - Added work, impact, stories, appeals, faith and participation pathways.
 - Dynamic initiative/story architecture allows authentic approved media to populate the homepage.
+- Phase 6 recomposed the opening into a stronger asymmetric editorial hero which can use approved documentary media and falls back to an evidence-led composition rather than stock imagery.
 
-**Status:** **Resolved in architecture, awaiting content/media.** The homepage is no longer structurally thin, but real photography still has to replace all remaining no-media states.
+**Status:** **Resolved in architecture, awaiting content/media.** The homepage is no longer structurally thin, but real photography still has to replace remaining no-media states before final creative certification.
 
 ### 3. Donate journey reached a dead end
 **Earlier problem:** Donate could lead to `No active appeals` with no useful visitor journey.
@@ -42,8 +44,9 @@ Passing CI is necessary but is not used as proof of visual, factual or release q
 - Appeal detail pages rebuilt with context, privacy boundaries, progress and known updates.
 - Donation checkout now keeps the selected appeal context and explicitly hands off to Razorpay.
 - Donation acknowledgement and failure/recovery states redesigned.
+- Transactional donation routes are intentionally excluded from indexing in favour of the public appeal pages.
 
-**Status:** **Resolved in code.** Final release still requires live/test Razorpay workflow QA.
+**Status:** **Resolved in code.** Final release still requires staging/live Razorpay workflow QA.
 
 ### 4. Impact was reduced to a few numbers
 **Earlier problem:** metrics appeared without enough initiative context, media, evidence or narrative.
@@ -52,8 +55,9 @@ Passing CI is necessary but is not used as proof of visual, factual or release q
 - Impact rebuilt as an evidence journey tied to published initiatives.
 - Metrics remain attached to the initiative/cause they describe instead of being combined into unsupported totals.
 - Approved documentary media can be rendered through the public-media gate.
+- Phase 6 reduced over-fetching and strengthened semantic/focus behaviour on the evidence and witness journeys.
 
-**Status:** **Resolved in architecture, awaiting media population.**
+**Status:** **Resolved in architecture, awaiting media population and final visual QA.**
 
 ### 5. About did not properly tell Amaana's story
 **Earlier problem:** internal publishing/admin language displaced the human origin story.
@@ -62,6 +66,7 @@ Passing CI is necessary but is not used as proof of visual, factual or release q
 - Rebuilt About around the documented 2020 family-led response, first 85 families, continuity and growth.
 - Added timeline/story progression and handoff to verified Governance.
 - Legal registration timing is kept separate from 2020 grassroots activity.
+- Phase 6 removed presentation-only inline styling from audited sections so the design system controls responsive behaviour.
 
 **Status:** **Resolved in code**, subject to final copy QA and approved historical media.
 
@@ -70,8 +75,9 @@ Passing CI is necessary but is not used as proof of visual, factual or release q
 
 **Corrections:**
 - Added/rebuilt Our Work, flagship initiative experiences, Impact, Stories, Faith & Reflections, Get Involved, Appeals, Transparency, Governance, How We Verify, Compliance and policy journeys.
+- Faith & Reflections now has a verified detail route instead of an index-only experience.
 
-**Status:** **Resolved in structure.** Phase 6 will test page-to-page pacing and remove remaining repetition.
+**Status:** **Resolved in structure.** Phase 6/7 continues to test page-to-page pacing, responsive behaviour and repetition.
 
 ### 7. Assistance request was functional but not humane
 **Earlier problem:** request page was essentially a heading and a form.
@@ -81,6 +87,7 @@ Passing CI is necessary but is not used as proof of visual, factual or release q
 - Supporting files are described as private evidence, not public content.
 - Receipt/tracking states were redesigned.
 - Existing abuse/rate-limit/document protections remain intact.
+- Phase 6 added stronger form semantics, `aria-busy`, live errors, help-text associations and a labelled form region.
 
 **Status:** **Resolved in code.** End-to-end staging QA remains open.
 
@@ -117,6 +124,7 @@ Passing CI is necessary but is not used as proof of visual, factual or release q
 - Children/Taleem and medical cases use stricter publication thresholds.
 - Raw medical/identity/banking/supporting documents remain private.
 - Graphic Qurbani/slaughter imagery is excluded from default public presentation.
+- SEO/social metadata uses only fields already permitted by the public record and does not bypass privacy gates.
 
 **Status:** **Resolved in architecture; individual-media approvals remain open work.**
 
@@ -128,19 +136,21 @@ Passing CI is necessary but is not used as proof of visual, factual or release q
 - Added separate public-media storage boundary and admin publication workflow.
 - Original Eid and Qurbani documentary candidates have been inventoried; several other campaign pages are prepared for approved media.
 - Model-generated imagery is excluded from documentary evidence slots.
+- Public media now supports explicit above-the-fold priority loading while below-fold media remains lazy.
 
 **Status:** **Open / active Phase 5 blocker.** Architecture is complete, but selected originals still need storage configuration, approval and actual public rendering.
 
 ### 12. Official logo / brand asset not yet wired
 **Earlier problem:** text fallback cannot substitute indefinitely for the real Amaana mark.
 
-**Corrections:**
-- Exact blue/gold brand palette and `Upholding Trust` language are reflected in the current system.
-- The Library contains `Branding & Logo.zip`.
-- The archive has been materialized, but the current runtime repeatedly times out while enumerating/extracting the ZIP.
+**Corrections and boundary:**
+- Amaana's blue/gold identity and `Upholding Trust` language are visible in supplied branded campaign/contact material and have guided the provisional design direction.
+- The Library contains the actual `Branding & Logo.zip`, and the archive has been materialized successfully.
+- The current runtime repeatedly times out while enumerating/extracting that ZIP.
+- Therefore the current website colour values are **provisional approximations derived from supplied branded material, not certified master brand values**.
 - No cropped, redrawn or AI-recreated logo is being passed off as the official master asset.
 
-**Status:** **Open.** Recover the isolated original logo before final brand certification.
+**Status:** **Open / hard brand-certification gate.** Recover and inspect the isolated original logo files and source colour values before final brand certification, logo schema or production identity lock.
 
 ### 13. Policies and error states felt like leftovers
 **Earlier problem:** Privacy, Terms, Donation/Refund policies, 404 and failure states looked like generic utility pages.
@@ -149,8 +159,10 @@ Passing CI is necessary but is not used as proof of visual, factual or release q
 - Dedicated editorial policy system added.
 - 404 rebuilt as a branded recovery journey.
 - Route and global error states rebuilt and CI-verified.
+- Global App Router loading state added, with lightweight accessible progress rather than heavy skeleton markup.
+- Policy routes now have explicit canonical/social metadata.
 
-**Status:** **Resolved in code.**
+**Status:** **Resolved in code**, pending final device/browser visual QA.
 
 ### 14. Navigation / dead-end risk
 **Earlier problem:** navigation did not expose enough of the public journey and some pages had nowhere useful to go next.
@@ -159,8 +171,9 @@ Passing CI is necessary but is not used as proof of visual, factual or release q
 - Header/footer reorganized around visitor journeys, work, trust and participation.
 - Most major pages now end with contextual next actions.
 - Governance, Transparency, Appeals, Assistance and Get Involved are connected into the journey.
+- Mobile menu is removed from the focus/accessibility tree while closed, closes with Escape and closes safely across route changes without a set-state-in-effect regression.
 
-**Status:** **Partially resolved.** Full link/dead-end crawl is Phase 8.
+**Status:** **Partially resolved.** Full link/dead-end crawl is still a Phase 8 gate.
 
 ### 15. Accessibility refinements
 **Earlier problem:** accessibility had not received a dedicated release pass.
@@ -171,12 +184,38 @@ Passing CI is necessary but is not used as proof of visual, factual or release q
 - Reduced-motion handling in dedicated experience CSS.
 - Form labels, alerts and useful input types/autocomplete.
 - Public images require alt text before publication.
+- Keyboard-visible skip link.
+- More specific accessible names across appeals, stories, faith, Get Involved and contact journeys.
+- Progress indicators exposed as semantic progress bars.
+- Global anchor targets now reserve fixed-header scroll offset and the public experience no longer relies on broad vertical overflow clipping.
 
-**New audit correction:**
-- The previous skip link was visually parked at `left:-9999px` with no dedicated focus treatment. It has now been converted to a keyboard-visible skip link.
-- `Get Involved` reused `.v2-intent-arrow` for long action phrases at `1.5rem`; audit refinement now treats these as compact action labels rather than giant arrow text.
+**Status:** **Partially resolved.** Keyboard, screen-reader, contrast, touch-target, zoom/reflow and representative-device testing remain Phase 7/8 work.
 
-**Status:** **Partially resolved.** Keyboard, screen-reader, contrast, touch-target and responsive testing remain Phase 7/8 work.
+### 16. Performance / delivery quality
+**Earlier risk:** a visually ambitious rebuild could regress speed through large CSS bundles, broad database reads, third-party scripts or eager media.
+
+**Corrections:**
+- Large experience styles progressively route-scoped instead of universally loaded.
+- Homepage, Our Work, Impact, Stories, Faith, Appeals and donation discovery use leaner public database projections.
+- Dynamic detail metadata/page rendering reuses request-memoized public records where applicable.
+- Razorpay loads lazily and remains unavailable until the provider is ready.
+- Public analytics is deferred to browser idle time and excluded from sensitive journeys.
+- Images reserve geometry; non-priority media remains lazy.
+- Sitemap is revalidated rather than recomputed from PostgreSQL on every crawler request.
+
+**Status:** **Partially resolved.** Source-level performance is materially improved, but production-like Core Web Vitals, route transfer budgets and real-device measurements are still required before performance certification.
+
+### 17. SEO / visibility / semantic discoverability
+**Earlier risk:** good public content could remain difficult for crawlers and social previews to understand.
+
+**Corrections:**
+- Robots and page-level indexing share the same fail-closed production gate.
+- Sitemap covers the actual public information architecture and respects publication/privacy/religious-review gates.
+- Major static/discovery/dynamic routes now have explicit canonical and social metadata.
+- Transactional donation pages remain out of search results in favour of public appeal pages.
+- Organization/WebSite structured data added conservatively; logo schema remains intentionally absent until the real master logo is verified.
+
+**Status:** **Partially resolved.** Final crawl, rendered metadata validation, Search Console/indexing setup and post-launch content/traffic measurement remain open.
 
 ## What is currently safe to say is complete
 
@@ -187,22 +226,24 @@ Passing CI is necessary but is not used as proof of visual, factual or release q
 - Assistance submission/tracking structure.
 - Trust, compliance and governance architecture.
 - Major initiative storytelling templates and flagship pages.
-- Policy/error-state redesign.
+- Policy/error/loading-state redesign in code.
 - CI/build/test baseline for implemented batches.
 
 ## What must NOT be called complete yet
 
 - File-by-file source/archive inventory.
 - Final authentic-media population.
-- Official isolated logo deployment.
-- Whole-site creative recomposition after real media is present.
+- Official isolated logo deployment and certified master colour values.
+- Whole-site creative certification after real media is present.
 - Final accessibility/device/browser testing.
+- Production-like Core Web Vitals and transfer-budget validation.
+- Full dead-link/orphan/crawl QA.
 - Razorpay staging/live reconciliation.
 - Assistance end-to-end staging validation.
 - CA/legal final review of compliance/policy positions where required.
-- Production indexing enablement.
+- Production indexing enablement and Search Console validation.
 - Production merge/release.
 
 ## Current audit conclusion
 
-The earlier site-level failures have largely been corrected at the architecture, narrative and interaction-design level. The remaining release risk is no longer that the site is a thin generic shell; it is that a strong architecture could still ship before authentic content/media, final accessibility, payment/assistance workflow verification and independent visual QA are complete. Those items remain hard release gates.
+The earlier site-level failures have largely been corrected at the architecture, narrative, performance-foundation and interaction-design level. Phase 6 is actively challenging previous work rather than accepting it as finished. The largest remaining release risks are authentic media/brand completion, real rendered visual QA, accessibility/device testing, production-like performance measurement, payment/assistance workflow verification, archive completeness and independent final review. Those remain hard release gates.
