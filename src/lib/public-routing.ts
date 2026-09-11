@@ -1,8 +1,8 @@
 export const PRIVATE_ROUTE_PREFIXES = [
-  "/admin/",
-  "/api/",
-  "/donate/",
-  "/donations/",
+  "/admin",
+  "/api",
+  "/donate",
+  "/donations",
   "/request-assistance/status",
   "/request-assistance/received",
 ] as const;
@@ -29,5 +29,5 @@ export const PUBLIC_STATIC_ROUTES = [
 ] as const;
 
 export function isPrivateRoute(path: string) {
-  return PRIVATE_ROUTE_PREFIXES.some(prefix => path === prefix.replace(/\/$/, "") || path.startsWith(prefix));
+  return PRIVATE_ROUTE_PREFIXES.some(prefix => path === prefix || path.startsWith(`${prefix}/`));
 }
