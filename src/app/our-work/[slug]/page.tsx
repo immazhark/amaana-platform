@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicMedia } from "@/components/public-media";
-import { getPublishedInitiativeBySlug } from "@/lib/public-content";
+import { getInitiativePageData } from "@/lib/public-page-data";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +15,7 @@ function formatYears(startYear: number | null, endYear: number | null, year: num
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const initiative = await getPublishedInitiativeBySlug(slug);
+  const initiative = await getInitiativePageData(slug);
   if (!initiative) return { title: "Initiative not found" };
 
   const canonical = `/our-work/${initiative.slug}`;
@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function InitiativePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const initiative = await getPublishedInitiativeBySlug(slug);
+  const initiative = await getInitiativePageData(slug);
   if (!initiative) notFound();
 
   const leadMedia = initiative.mediaAssets[0];
