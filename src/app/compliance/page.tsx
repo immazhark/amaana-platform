@@ -32,6 +32,6 @@ export default function CompliancePage() {
 
     <section className="v2-compliance-note"><div className="v2-shell"><strong>Tax note</strong><p>Donors should obtain independent tax advice for their individual circumstances.</p></div></section>
 
-    <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Trust should be inspectable</p><h2>See the work, the evidence and the boundaries together.</h2><p>Compliance is one part of trust. Continue into Amaana&apos;s verification and transparency journeys for the wider accountability picture.</p><div className="v2-hero-actions" style={{justifyContent:"center"}}><Link className="v2-button" href="/transparency">Explore transparency</Link><Link className="v2-text-link" href="/how-we-verify">How we verify →</Link></div></div></section>
+    <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Trust should be inspectable</p><h2>See the work, the evidence and the boundaries together.</h2><p>Compliance is one part of trust. Continue into Amaana&apos;s verification and transparency journeys for the wider accountability picture.</p><div className="v2-hero-actions v2-actions-center"><Link className="v2-button" href="/transparency">Explore transparency</Link><Link className="v2-text-link" href="/how-we-verify">How we verify →</Link></div></div></section>
   </div>;
 }
