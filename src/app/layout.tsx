@@ -21,6 +21,7 @@ import "./state-experience.css";
 import "./trust-experience.css";
 import "./policy-experience.css";
 import "./governance.css";
+import "./refinement.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Analytics } from "@/components/analytics";
@@ -56,7 +57,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en">
       <body>
-        <a href="#main" style={{ position: "absolute", left: "-9999px" }}>Skip to content</a>
+        <a className="v2-skip-link" href="#main">Skip to content</a>
         <StructuredData />
         <Analytics />
         <SiteHeader />
