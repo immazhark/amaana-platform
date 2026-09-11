@@ -38,8 +38,8 @@ jobs:
           set -euo pipefail
           JS_BYTES=$(find .next/static -type f -name '*.js' -printf '%s\n' | awk '{sum += $1} END {print sum + 0}')
           CSS_BYTES=$(find .next/static -type f -name '*.css' -printf '%s\n' | awk '{sum += $1} END {print sum + 0}')
-          JS_BUDGET=$((5 * 1024 * 1024))
-          CSS_BUDGET=$((1536 * 1024))
+          JS_BUDGET=$((800 * 1024))
+          CSS_BUDGET=$((256 * 1024))
 
           echo "Built static JavaScript: ${JS_BYTES} bytes (budget ${JS_BUDGET})"
           echo "Built static CSS: ${CSS_BYTES} bytes (budget ${CSS_BUDGET})"
