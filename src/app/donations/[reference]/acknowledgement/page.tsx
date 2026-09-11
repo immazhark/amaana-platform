@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { timingSafeEqual } from "node:crypto";
 import { notFound } from "next/navigation";
@@ -6,13 +7,32 @@ import { formatINR } from "@/lib/appeals";
 import { prisma } from "@/lib/prisma";
 import { PrintButton } from "@/components/print-button";
 
+export const metadata: Metadata = {
+  title: "Private Donation Acknowledgement",
+  robots: { index: false, follow: false },
+};
+
 type Props = { params: Promise<{ reference: string }>; searchParams: Promise<{ token?: string }> };
 export const dynamic = "force-dynamic";
 
 export default async function AcknowledgementPage({ params, searchParams }: Props) {
   const { reference } = await params;
   const { token = "" } = await searchParams;
-  const donation = await prisma.donation.findUnique({ where: { referenceNumber: reference }, include: { appeal: { select: { title: true, slug: true } } } });
+  const donation = await prisma.donation.findUnique({
+    where: { referenceNumber: reference },
+    select: {
+      receiptTokenHash: true,
+      status: true,
+      amount: true,
+      receiptNumber: true,
+      referenceNumber: true,
+      donorName: true,
+      capturedAt: true,
+      createdAt: true,
+      providerPaymentId: true,
+      appeal: { select: { title: true, slug: true } },
+    },
+  });
   const supplied = Buffer.from(hashReceiptToken(token));
   const expected = Buffer.from(donation?.receiptTokenHash ?? "0".repeat(64));
   if (!donation || supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) notFound();
