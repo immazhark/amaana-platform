@@ -1,7 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "How We Verify", description: "Understand Amaana Foundation’s assistance review and appeal-verification process." };
+export const metadata: Metadata = {
+  title: "How We Verify",
+  description: "Understand Amaana Foundation’s assistance review and appeal-verification process, including privacy boundaries before public fundraising.",
+  alternates: { canonical: "/how-we-verify" },
+  openGraph: {
+    type: "website",
+    url: "/how-we-verify",
+    title: "How We Verify | Amaana Foundation",
+    description: "Understand how Amaana reviews assistance requests before a public appeal is approved.",
+  },
+  twitter: {
+    card: "summary",
+    title: "How We Verify | Amaana Foundation",
+    description: "A clear view of Amaana Foundation's review, privacy and publication process.",
+  },
+};
 
 const steps = [
   ["01", "Initial request", "We collect contact details, a clear description of the need and consent to conduct verification."],
