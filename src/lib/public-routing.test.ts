@@ -10,7 +10,9 @@ describe("public route publication policy", () => {
 
   it("protects the known private and transactional route families", () => {
     const protectedExamples = [
+      "/admin",
       "/admin/appeals",
+      "/api",
       "/api/donations/order",
       "/donate/example-appeal",
       "/donations/AF-EXAMPLE/acknowledgement",
@@ -21,6 +23,12 @@ describe("public route publication policy", () => {
     for (const path of protectedExamples) {
       expect(isPrivateRoute(path), `${path} must remain private`).toBe(true);
     }
+  });
+
+  it("matches route segments without swallowing similarly named public paths", () => {
+    expect(isPrivateRoute("/apiary")).toBe(false);
+    expect(isPrivateRoute("/administrator")).toBe(false);
+    expect(isPrivateRoute("/donations-info")).toBe(false);
   });
 
   it("does not allow duplicate publication rules", () => {
