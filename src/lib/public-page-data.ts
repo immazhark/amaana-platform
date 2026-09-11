@@ -152,3 +152,41 @@ export const getImpactPageData = cache(async () => {
     },
   });
 });
+
+/**
+ * Appeals index projection. The card grid needs only public fundraising fields;
+ * it should not serialize the private-facing story, internal notes or updates.
+ */
+export const getAppealsIndexData = cache(async () => {
+  return prisma.appeal.findMany({
+    where: { status: { in: ["PUBLISHED", "FUNDED"] } },
+    orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
+    select: {
+      slug: true,
+      title: true,
+      summary: true,
+      category: true,
+      beneficiaryLocation: true,
+      goalAmount: true,
+      amountRaised: true,
+    },
+  });
+});
+
+/**
+ * Donation page projection. Checkout is available only for currently published
+ * appeals and receives the minimum context required to explain the donation.
+ */
+export const getDonationPageData = cache(async (slug: string) => {
+  return prisma.appeal.findFirst({
+    where: { slug, status: "PUBLISHED" },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      summary: true,
+      beneficiaryLocation: true,
+      category: true,
+    },
+  });
+});
