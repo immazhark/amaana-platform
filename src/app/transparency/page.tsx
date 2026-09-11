@@ -21,12 +21,14 @@ export const metadata: Metadata = {
   },
 };
 
+const evidencePath = ["Need", "Support", "Preparation", "Delivery", "Outcome"] as const;
+
 export default async function TransparencyPage() {
   const initiatives = await getTransparencyPageData();
   const withMetrics = initiatives.filter(item => item.primaryMetric && item.primaryMetricLabel);
 
   return <div className="v2-home v2-transparency-page">
-    <section className="v2-transparency-hero"><div className="v2-shell v2-transparency-hero-grid"><div><p className="v2-section-label">Transparency · without exposure</p><h1>See what<br />your trust<br />became.</h1><p>Transparency should connect a published need or initiative to what was prepared, delivered and responsibly documented — without turning private verification material into public content.</p><div className="v2-hero-actions"><a className="v2-button" href="#evidence-chain">Follow the evidence chain</a><Link className="v2-text-link" href="/compliance">Compliance position →</Link></div></div><div className="v2-transparency-orbit"><strong>Public<br />evidence</strong><span>Need</span><span>Support</span><span>Preparation</span><span>Delivery</span><span>Outcome</span></div></div></section>
+    <section className="v2-transparency-hero"><div className="v2-shell v2-transparency-hero-grid"><div><p className="v2-section-label">Transparency · without exposure</p><h1>See what<br />your trust<br />became.</h1><p>Transparency should connect a published need or initiative to what was prepared, delivered and responsibly documented — without turning private verification material into public content.</p><div className="v2-hero-actions"><a className="v2-button" href="#evidence-chain">Follow the evidence chain</a><Link className="v2-text-link" href="/compliance">Compliance position →</Link></div></div><div className="v2-transparency-folio" aria-label="Public evidence record from need to known outcome"><article className="v2-transparency-folio-sheet"><div className="v2-transparency-folio-head"><span>Evidence record</span><small>Public-safe · inspectable</small></div><div className="v2-transparency-folio-path">{evidencePath.map((label,index)=><div className="v2-transparency-folio-step" key={label}><span>{String(index+1).padStart(2,"0")}</span><strong>{label}</strong><i aria-hidden="true" /></div>)}</div><div className="v2-transparency-folio-foot"><span>Private proofs stay protected</span><b aria-hidden="true">→</b><span>Public record stays accountable</span></div></article><div className="v2-transparency-folio-stamp" aria-hidden="true">Evidence<br />not<br />exposure</div></div></div></section>
 
     <section className="v2-transparency-manifesto"><div className="v2-shell"><small>The rule</small><blockquote>Public evidence.<br />Private proofs.</blockquote><p>Accountability and dignity are not opposites. The public record should explain the work while keeping sensitive source documents protected.</p></div></section>
 
