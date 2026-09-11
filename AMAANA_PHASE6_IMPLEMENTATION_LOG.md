@@ -78,6 +78,16 @@ Appeal-card styling is separated from the much larger appeal-detail experience.
 - Cause-led discovery stays intact, but initiative rows now support one authentic approved thumbnail without loading full galleries.
 - Wide-desktop, tablet and mobile layouts have distinct compositions; reduced-motion behavior is retained.
 
+### Impact / Stories / Faith discovery refinement
+- Impact now exposes stronger section labelling for published signals, initiative evidence and documentary witness areas.
+- Documentary witness links carry specific accessible names and have visible keyboard focus states.
+- Stories now gives the featured field note and living archive explicit section relationships, specific accessible link names and visible focus treatment equal to hover treatment.
+- Faith library sections now expose explicit labelled relationships for editorial review, library, featured content and published reflections.
+- Interactive Faith library items receive specific accessible names and visible keyboard focus treatment.
+- Reduced-motion rules suppress focus-induced movement while preserving visible focus indication.
+- Discovery-page Twitter metadata now matches the canonical/Open Graph coverage already in place for Impact, Stories and Faith.
+- Repeated inline centering for closing CTAs is being replaced by a shared presentation utility rather than page-local style attributes.
+
 ### Appeals and donation journey
 - Appeals discovery now has explicit canonical/Open Graph/Twitter metadata and keeps domestic/FCRA boundaries visible before donation intent.
 - Appeal progress is exposed as a real progressbar to assistive technology on both cards and detail pages.
@@ -138,6 +148,7 @@ The homepage now also declares its explicit canonical URL rather than relying on
 
 ### Discovery metadata
 - `/our-work`, `/impact`, `/stories`, `/faith-and-reflections` and `/appeals` now declare explicit canonical URLs and Open Graph metadata rather than relying only on inherited defaults.
+- Impact, Stories and Faith discovery pages now also carry explicit Twitter card metadata.
 - Transactional `/donate/[slug]` routes have page-specific metadata but remain intentionally excluded from indexing in favor of the corresponding public appeal page.
 - Trust/utility routes now have stronger page-specific canonical/social metadata, including About, Governance, Compliance, Transparency, How We Verify, Get Involved, Contact and Request Assistance.
 - Privacy Policy, Donation Policy, Refund Policy and Terms now have explicit canonical, Open Graph and Twitter metadata rather than relying on root defaults.
@@ -165,10 +176,11 @@ Verified successful checkpoints include:
 - #217 — documentary Our Work discovery system
 - #225 — corrected mobile navigation plus discovery-performance batch
 - #244 — assistance-form semantics and labelled form region
+- #251 — global loading-state plus policy metadata checkpoint
 
 CI #218 exposed a React lint issue in the first route-change menu implementation (`setState` directly inside an effect). The implementation was corrected immediately by deriving open state from the current pathname rather than suppressing the lint rule. The corrected implementation is included in later green CI.
 
-The newest loading-state and policy-metadata commits require their own CI completion before being certified.
+The newest Impact/Stories/Faith discovery-refinement commits require their own CI completion before being certified.
 
 ## Remaining Phase 6 / 7 performance work
 
