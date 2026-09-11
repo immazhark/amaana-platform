@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { PublicMedia } from "@/components/public-media";
 import { parseEidKitsEvidence } from "@/lib/eid-kits-evidence";
 import { getPublishedInitiativeBySlug } from "@/lib/public-content";
 
@@ -153,17 +154,26 @@ export default async function EidGiftKitsPage() {
       </section>
 
       <section className="v2-section dark v2-faith">
-        <div className="v2-shell v2-faith-grid">
-          <div>
-            <p className="v2-section-label">Media & evidence</p>
-            <h2 className="v2-section-title">Real Amaana material will live here.</h2>
-            <p className="v2-section-intro">The page structure is ready for year-by-year photography, packing moments, kit contents, historical creatives, video and report links. No placeholder beneficiary imagery or invented media is being used while source archives are still under asset-level review.</p>
+        <div className="v2-shell">
+          <div className="v2-section-head">
+            <div>
+              <p className="v2-section-label">Media & evidence</p>
+              <h2 className="v2-section-title">Authentic Amaana material only.</h2>
+            </div>
+            <p className="v2-section-intro">Approved photography, video and public-safe reports appear here only after provenance, privacy and public-use review. Placeholder beneficiary imagery is never substituted.</p>
           </div>
-          <div className="v2-reminder">
-            <span className="v2-reminder-label">Publication gate</span>
-            <blockquote>Authentic media only.</blockquote>
-            <p>Assets will appear only after provenance, privacy and public-use approval are recorded.</p>
-          </div>
+
+          {initiative.mediaAssets.length > 0 ? (
+            <div className="v2-media-grid" aria-label="Approved Eid Gift Kits media and evidence">
+              {initiative.mediaAssets.map(asset => <PublicMedia asset={asset} key={asset.id} />)}
+            </div>
+          ) : (
+            <div className="v2-reminder">
+              <span className="v2-reminder-label">Publication gate active</span>
+              <blockquote>Authentic media only.</blockquote>
+              <p>No asset is displayed until its provenance, privacy and public-use approval are recorded.</p>
+            </div>
+          )}
         </div>
       </section>
 
