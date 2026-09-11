@@ -55,3 +55,59 @@ export const getHomepageHeroMedia = cache(async () => {
     },
   });
 });
+
+/**
+ * Lean discovery projection for /our-work.
+ *
+ * The index only needs public cause copy, initiative summaries/metrics and one
+ * approved documentary image per initiative. It deliberately avoids loading
+ * stories, appeals, faith content, financial summaries and full media galleries.
+ */
+export const getOurWorkIndexData = cache(async () => {
+  return prisma.cause.findMany({
+    where: { status: "PUBLISHED" },
+    orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      summary: true,
+      initiatives: {
+        where: { status: "PUBLISHED" },
+        orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
+        select: {
+          id: true,
+          slug: true,
+          title: true,
+          summary: true,
+          year: true,
+          startYear: true,
+          endYear: true,
+          isFeatured: true,
+          primaryMetric: true,
+          primaryMetricLabel: true,
+          mediaAssets: {
+            where: {
+              kind: "IMAGE",
+              isPublic: true,
+              privacyApprovedAt: { not: null },
+              publicUrl: { not: null },
+            },
+            orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
+            take: 1,
+            select: {
+              id: true,
+              kind: true,
+              title: true,
+              publicUrl: true,
+              externalUrl: true,
+              altText: true,
+              caption: true,
+              sourceYear: true,
+            },
+          },
+        },
+      },
+    },
+  });
+});
