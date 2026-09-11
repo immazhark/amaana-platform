@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { PublicMedia } from "@/components/public-media";
-import { getPublishedStoryBySlug } from "@/lib/public-content";
+import { getStoryPageData } from "@/lib/public-page-data";
 
 type Props = { params: Promise<{ slug: string }> };
 export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const story = await getPublishedStoryBySlug(slug);
+  const story = await getStoryPageData(slug);
   if (!story) return { title: "Story not found" };
 
   const canonical = `/stories/${story.slug}`;
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function StoryPage({ params }: Props) {
   const { slug } = await params;
-  const story = await getPublishedStoryBySlug(slug);
+  const story = await getStoryPageData(slug);
   if (!story) notFound();
 
   const publishedDate = story.publishedAt
