@@ -27,6 +27,9 @@ Two-Wow standard:
 - Impact now uses a dedicated lean projection limited to the identity, summary, metric, cause and first eligible witness image required by the page.
 - Stories discovery now fetches only the public archive fields, related labels and one approved media asset per story rather than full story bodies/media collections.
 - Faith discovery now fetches only the verified library fields, topic labels, source citation and one approved media asset per item rather than detail-only relations/content.
+- Appeals discovery now fetches only card-level public fundraising fields rather than full appeal records.
+- Appeal detail now selects only the public fields and approved public update fields rendered by the page.
+- Donation pages now use a dedicated minimal checkout-context projection rather than querying directly from the route.
 - Existing Prisma indexes were reviewed rather than adding speculative indexes with unnecessary write/storage cost.
 
 ### CSS delivery
@@ -75,6 +78,17 @@ Appeal-card styling is separated from the much larger appeal-detail experience.
 - Cause-led discovery stays intact, but initiative rows now support one authentic approved thumbnail without loading full galleries.
 - Wide-desktop, tablet and mobile layouts have distinct compositions; reduced-motion behavior is retained.
 
+### Appeals and donation journey
+- Appeals discovery now has explicit canonical/Open Graph/Twitter metadata and keeps domestic/FCRA boundaries visible before donation intent.
+- Appeal progress is exposed as a real progressbar to assistive technology on both cards and detail pages.
+- Appeal-card links now carry specific accessible names instead of relying only on generic visible link text.
+- Appeal detail exposes funding status and process strips with clearer landmark/label semantics.
+- Donation pages reuse one request-memoized minimal public record for metadata and rendering.
+- Donation routes are explicitly `noindex,follow`: the public appeal remains the search landing page while the transactional checkout route stays out of search results.
+- Donation context, form region and assurance strip now have explicit semantic labels.
+- Donation form state exposes `aria-busy`, assertive provider/checkout errors, an identified form heading/description and an explicit submit button.
+- Razorpay remains lazy-loaded and checkout remains unavailable until the provider script is ready.
+
 ### Mobile navigation accessibility
 - The closed mobile navigation is removed from the focus/accessibility tree with `hidden`.
 - Escape closes an open menu.
@@ -118,7 +132,8 @@ Initiative, story, verified Faith and appeal detail routes now generate page-spe
 The homepage now also declares its explicit canonical URL rather than relying only on root defaults.
 
 ### Discovery metadata
-- `/our-work`, `/impact`, `/stories` and `/faith-and-reflections` now declare explicit canonical URLs and Open Graph metadata rather than relying only on inherited defaults.
+- `/our-work`, `/impact`, `/stories`, `/faith-and-reflections` and `/appeals` now declare explicit canonical URLs and Open Graph metadata rather than relying only on inherited defaults.
+- Transactional `/donate/[slug]` routes have page-specific metadata but remain intentionally excluded from indexing in favor of the corresponding public appeal page.
 
 ### Structured data
 - Organization schema has been expanded into a graph containing the Amaana organization and website entities.
@@ -141,8 +156,11 @@ Verified successful checkpoints include:
 - #204 — Faith gallery media remains correctly lazy
 - #214 — cached page data, structured data and homepage first-Wow pass
 - #217 — documentary Our Work discovery system
+- #225 — corrected mobile navigation plus discovery-performance batch
 
-CI #218 exposed a React lint issue in the first route-change menu implementation (`setState` directly inside an effect). The implementation was corrected immediately by deriving open state from the current pathname rather than suppressing the lint rule. Later runs include that correction; they must complete before the newest batch is certified green.
+CI #218 exposed a React lint issue in the first route-change menu implementation (`setState` directly inside an effect). The implementation was corrected immediately by deriving open state from the current pathname rather than suppressing the lint rule. The corrected implementation is included in later green CI.
+
+The latest Appeals/Donate accessibility/performance batch is still undergoing CI and must pass before being certified.
 
 ## Remaining Phase 6 / 7 performance work
 
