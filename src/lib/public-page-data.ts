@@ -207,3 +207,23 @@ export const getDonationPageData = cache(async (slug: string) => {
     },
   });
 });
+
+/**
+ * Transparency needs initiative identity, cause context and published metrics,
+ * but not galleries, appeals, stories or financial-summary relations.
+ */
+export const getTransparencyPageData = cache(async () => {
+  return prisma.initiative.findMany({
+    where: { status: "PUBLISHED" },
+    orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      summary: true,
+      primaryMetric: true,
+      primaryMetricLabel: true,
+      cause: { select: { title: true } },
+    },
+  });
+});
