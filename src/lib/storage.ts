@@ -76,6 +76,11 @@ function extensionForMimeType(mimeType: string) {
   throw new Error("Unsupported document type");
 }
 
+function isManagedPrivateDocumentKey(objectKey: string, requestId: string) {
+  const escapedRequestId = requestId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  return new RegExp(`^assistance/${escapedRequestId}/[0-9a-f-]{36}\\.(?:pdf|jpg|png|webp)$`, "i").test(objectKey);
+}
+
 export async function uploadPrivateDocument(file: File, requestId: string) {
   if (!allowedTypes.has(file.type)) throw new Error("Only PDF, JPEG, PNG and WebP documents are accepted");
   if (file.size > MAX_FILE_BYTES) throw new Error("Each document must be 5 MB or smaller");
@@ -86,6 +91,12 @@ export async function uploadPrivateDocument(file: File, requestId: string) {
   const { bucket, client } = getPrivateStorage();
   await client.send(new PutObjectCommand({ Bucket: bucket, Key: objectKey, Body: bytes, ContentType: file.type, Metadata: { requestId } }));
   return { objectKey, originalName: file.name.slice(0, 255), mimeType: file.type, sizeBytes: file.size };
+}
+
+export async function deletePrivateDocumentObject(objectKey: string, requestId: string) {
+  if (!isManagedPrivateDocumentKey(objectKey, requestId)) throw new Error("Invalid managed private document key");
+  const { bucket, client } = getPrivateStorage();
+  await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: objectKey }));
 }
 
 export async function getPrivateDocumentUrl(objectKey: string) {
