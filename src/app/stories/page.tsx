@@ -15,6 +15,11 @@ export const metadata: Metadata = {
     title: "Stories of Amanah | Amaana Foundation",
     description: "Dignified, privacy-reviewed accounts from Amaana Foundation's community work and completed assistance.",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Stories of Amanah | Amaana Foundation",
+    description: "Privacy-reviewed field accounts from Amaana Foundation's completed assistance and community work.",
+  },
 };
 
 export default async function StoriesPage() {
@@ -37,15 +42,15 @@ export default async function StoriesPage() {
       </section>
 
       {leadStory && (
-        <section className="v2-stories-feature" id="journal">
+        <section className="v2-stories-feature" id="journal" aria-labelledby="featured-story-title">
           <div className="v2-shell v2-stories-feature-grid">
-            <Link className="v2-stories-feature-media" href={`/stories/${leadStory.slug}`}>
+            <Link className="v2-stories-feature-media" href={`/stories/${leadStory.slug}`} aria-label={`Read ${leadStory.title}`}>
               {leadStory.mediaAssets[0] ? <PublicMedia asset={leadStory.mediaAssets[0]} /> : <div className="v2-stories-feature-placeholder"><span>Privacy-reviewed story</span><strong>{leadStory.title}</strong></div>}
             </Link>
             <div className="v2-stories-feature-copy">
               <p className="v2-section-label">Featured field note</p>
               <small>{leadStory.initiative?.title ?? leadStory.cause?.title ?? "Story of Amanah"}</small>
-              <h2>{leadStory.title}</h2>
+              <h2 id="featured-story-title">{leadStory.title}</h2>
               <p>{leadStory.summary}</p>
               <Link className="v2-text-link" href={`/stories/${leadStory.slug}`}>Read the documented account →</Link>
             </div>
@@ -53,14 +58,14 @@ export default async function StoriesPage() {
         </section>
       )}
 
-      <section className="v2-section paper v2-stories-archive">
+      <section className="v2-section paper v2-stories-archive" aria-labelledby="stories-archive-title">
         <div className="v2-shell">
-          <div className="v2-section-head"><div><p className="v2-section-label">Living archive</p><h2 className="v2-section-title">Circumstance. Verification. Action. Outcome.</h2></div><p className="v2-section-intro">This archive is designed to preserve continuity. A completed act of service should not disappear once an appeal closes or a distribution day passes.</p></div>
+          <div className="v2-section-head"><div><p className="v2-section-label">Living archive</p><h2 className="v2-section-title" id="stories-archive-title">Circumstance. Verification. Action. Outcome.</h2></div><p className="v2-section-intro">This archive is designed to preserve continuity. A completed act of service should not disappear once an appeal closes or a distribution day passes.</p></div>
 
           {remainingStories.length > 0 ? (
             <div className="v2-stories-grid">
               {remainingStories.map((story, index) => (
-                <Link className={`v2-stories-card ${index % 5 === 0 ? "wide" : ""}`} href={`/stories/${story.slug}`} key={story.id}>
+                <Link className={`v2-stories-card ${index % 5 === 0 ? "wide" : ""}`} href={`/stories/${story.slug}`} key={story.id} aria-label={`Read ${story.title}`}>
                   {story.mediaAssets[0] && <div className="v2-stories-card-media"><PublicMedia asset={story.mediaAssets[0]} /></div>}
                   <div className="v2-stories-card-copy"><span>{String(index + 2).padStart(2, "0")}</span><small>{story.initiative?.title ?? story.cause?.title ?? "Story of Amanah"}</small><h3>{story.title}</h3><p>{story.summary}</p><b>Read story ↗</b></div>
                 </Link>
@@ -81,7 +86,7 @@ export default async function StoriesPage() {
         </div>
       </section>
 
-      <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Stories lead back to action</p><h2>See the work behind every account.</h2><p>The field journal connects back to initiatives, evidence and the wider record of Amaana&apos;s service.</p><div className="v2-hero-actions" style={{ justifyContent: "center" }}><Link className="v2-button" href="/our-work">Explore our work</Link><Link className="v2-text-link" href="/impact">See impact →</Link></div></div></section>
+      <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Stories lead back to action</p><h2>See the work behind every account.</h2><p>The field journal connects back to initiatives, evidence and the wider record of Amaana&apos;s service.</p><div className="v2-hero-actions v2-actions-center"><Link className="v2-button" href="/our-work">Explore our work</Link><Link className="v2-text-link" href="/impact">See impact →</Link></div></div></section>
     </div>
   );
 }
