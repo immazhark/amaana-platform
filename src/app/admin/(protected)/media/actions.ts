@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { canRenderPublicMedia } from "@/lib/public-media";
-import { uploadPublicMediaFile } from "@/lib/storage";
+import { uploadPublicMediaFile, validatePublicMediaFile } from "@/lib/storage";
 
 type TargetFields = { causeId?: string; initiativeId?: string; storyId?: string; faithContentId?: string };
 
@@ -23,9 +23,13 @@ function safePublicUrl(value: FormDataEntryValue | null) {
   const raw = String(value ?? "").trim();
   if (!raw) return null;
   if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
-  const url = new URL(raw);
-  if (url.protocol !== "https:") throw new Error("Public media URL must use HTTPS or a root-relative path");
-  return url.toString();
+  try {
+    const url = new URL(raw);
+    if (url.protocol !== "https:") throw new Error();
+    return url.toString();
+  } catch {
+    throw new Error("Public media URL must use HTTPS or a root-relative path");
+  }
 }
 
 function optionalText(value: FormDataEntryValue | null, max: number) {
@@ -41,16 +45,24 @@ export async function createMediaAsset(formData: FormData) {
   const manualUrl = safePublicUrl(formData.get("publicUrl"));
   if (!file && !manualUrl) throw new Error("Upload a file or provide an approved public URL");
 
-  const uploaded = file ? await uploadPublicMediaFile(file) : null;
-  const kind: MediaKind = file?.type === "application/pdf" ? "DOCUMENT" : "IMAGE";
+  const requestedKind = String(formData.get("kind") ?? "IMAGE");
+  const inferredKind: MediaKind = file?.type === "application/pdf" ? "DOCUMENT" : requestedKind === "DOCUMENT" ? "DOCUMENT" : "IMAGE";
+  if (file) validatePublicMediaFile(file);
+  if (file && inferredKind === "DOCUMENT" && file.type !== "application/pdf") throw new Error("Document media must be uploaded as PDF");
+  if (file && inferredKind === "IMAGE" && file.type === "application/pdf") throw new Error("Image media must use JPEG, PNG or WebP");
+
   const altText = optionalText(formData.get("altText"), 300);
-  if (kind === "IMAGE" && !altText) throw new Error("Image alt text is required");
+  if (inferredKind === "IMAGE" && !altText) throw new Error("Image alt text is required");
   const sourceYearRaw = Number(formData.get("sourceYear"));
   const sortOrderRaw = Number(formData.get("sortOrder"));
 
+  // Upload only after all user-entered metadata has passed validation so a rejected
+  // record does not leave a preventable orphan in public media storage.
+  const uploaded = file ? await uploadPublicMediaFile(file) : null;
+
   const asset = await prisma.mediaAsset.create({
     data: {
-      kind,
+      kind: inferredKind,
       title: optionalText(formData.get("title"), 160),
       publicUrl: manualUrl ?? uploaded?.publicUrl ?? null,
       storageKey: uploaded?.objectKey ?? null,
