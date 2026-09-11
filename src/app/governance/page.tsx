@@ -120,7 +120,7 @@ export default function GovernancePage() {
         <div className="v2-shell">
           <p className="v2-section-label">Continue through the trust record</p>
           <h2>Structure, evidence and accountability belong together.</h2>
-          <div className="v2-hero-actions" style={{ justifyContent: "center" }}>
+          <div className="v2-hero-actions v2-actions-center">
             <Link className="v2-button" href="/compliance">Registration & compliance</Link>
             <Link className="v2-text-link" href="/transparency">Transparency →</Link>
           </div>
