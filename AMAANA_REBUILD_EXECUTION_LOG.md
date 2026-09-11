@@ -54,22 +54,51 @@ This file is the durable implementation record for the `phase-public-site-rebuil
 - Dedicated responsive policy/utility visual system added.
 - CI run #111 for head `3958754d346c46f7a0f2e3998a2c3fd24ec13cc3` completed successfully.
 
-## Phase 4 — Team / Governance / organizational trust — NEXT
+## Phase 4 — Team / Governance / organizational trust — IN PROGRESS
 
 Goal: create a public organizational-trust experience only from verified source material.
 
-Required distinction:
-- Website/software administrators are not automatically legal trustees or public office bearers.
-- Known legal/governance material must be reconciled before publishing roles.
-- Do not publish private addresses, signatures, Aadhaar details or unredacted trust documents.
-- Do not fabricate biographies, titles or photographs.
+### Source audit completed
 
-Implementation sequence:
-1. Audit current public About/navigation/footer references to team/governance.
-2. Build a source-safe governance page from verified public facts only.
-3. Add a clear boundary between governance, operational/public contact and platform administration.
-4. Add approved team photographs/bios later only when source inventory supports them.
-5. CI checkpoint.
+Source used: Government of India NGO DARPAN record supplied for Amaana Foundation.
+
+Verified public facts used in the website:
+- Entity name: Amaana Foundation.
+- NPO type: Trust.
+- DARPAN ID: `TS/2024/0403215`.
+- DARPAN registration date: 21-05-2024.
+- Registration number: `BK-4, CS No 59/2024`.
+- Registered with: Sub-Registrar.
+- Act name: Registration Act 1908.
+- City / State: Hyderabad, Telangana.
+- Entity registration date shown in the DARPAN record: 23-02-2024.
+- DARPAN office bearers: Mohammed Ather Khan — Trustee; Mohammed Mazhar Khan — Trustee; Syed Iqba Ali — Trustee.
+
+Sensitive source fields intentionally excluded from the public page:
+- street/home/office address detail beyond city/state;
+- masked/mobile contact data;
+- personal contact email from the registration record;
+- signatures, identity numbers or unredacted underlying legal paperwork.
+
+Separate verified tax source retained on the Compliance page:
+- Form 10AC names Amaana Foundation and records provisional Section 80G approval dated 26-01-2026 for AY 2026-27 through AY 2028-29.
+- This remains described as provisional, not final/permanent.
+
+### Implementation completed so far
+
+- Added `/governance` as a dedicated public organizational-trust page.
+- Added a registration snapshot, verified trustees, registration record and role-boundary explanation.
+- Explicitly separated legal governance from public operations and internal platform administration.
+- Added Governance to footer trust navigation and mobile secondary navigation.
+- Added dedicated responsive governance visual system.
+- No team biographies or portraits have been fabricated; these remain pending approved source inventory.
+
+### Remaining Phase 4 work
+
+1. Reconcile/update the About-page governance handoff so it links directly to the new verified governance experience.
+2. Review any remaining public copy that might confuse software admins with trustees/office bearers.
+3. Run CI checkpoint for the governance batch and fix any failure immediately.
+4. Mark Phase 4 implemented only after the CI checkpoint; biographies/photos can remain a later content-population enhancement if verified source material is not yet available.
 
 ## Phase 5 — Authentic content and media population — PENDING
 
@@ -112,7 +141,7 @@ Implementation sequence:
 
 ## Current checkpoint
 
-- Branch: `phase-public-site-rebuild`
+- Branch: `phase-public-site-rebuild`.
 - Phase 3 CI: green at `3958754d346c46f7a0f2e3998a2c3fd24ec13cc3` (run #111).
-- Execution log introduced immediately after that checkpoint.
-- Next active work: Phase 4 governance/source audit.
+- Phase 4 governance page and navigation are now implemented from the verified DARPAN record.
+- Next active work: About handoff audit, role-copy audit, then Phase 4 CI checkpoint.
