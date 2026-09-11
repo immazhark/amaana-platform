@@ -115,6 +115,25 @@ export async function getPublishedFaithContent() {
   });
 }
 
+export async function getPublishedFaithContentBySlug(slug: string) {
+  return prisma.faithContent.findFirst({
+    where: {
+      slug,
+      status: "PUBLISHED",
+      religiousReviewStatus: "VERIFIED",
+    },
+    include: {
+      topics: { include: { topic: true } },
+      cause: true,
+      initiative: true,
+      mediaAssets: {
+        where: { isPublic: true, privacyApprovedAt: { not: null } },
+        orderBy: { sortOrder: "asc" },
+      },
+    },
+  });
+}
+
 export async function getFeaturedFaithContent() {
   return prisma.faithContent.findFirst({
     where: {
