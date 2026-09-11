@@ -1,17 +1,24 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicMedia } from "@/components/public-media";
-import { getPublishedInitiatives } from "@/lib/public-content";
+import { getImpactPageData } from "@/lib/public-page-data";
 
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Our Impact",
   description: "Explore Amaana Foundation's documented initiative outcomes, stories and evidence.",
+  alternates: { canonical: "/impact" },
+  openGraph: {
+    type: "website",
+    url: "/impact",
+    title: "Our Impact | Amaana Foundation",
+    description: "Explore Amaana Foundation's documented initiative outcomes, stories and evidence.",
+  },
 };
 
 export default async function ImpactPage() {
-  const initiatives = await getPublishedInitiatives();
+  const initiatives = await getImpactPageData();
   const initiativesWithMetrics = initiatives.filter(item => item.primaryMetric && item.primaryMetricLabel);
   const initiativesWithMedia = initiatives.filter(item => item.mediaAssets.length > 0);
 
@@ -36,7 +43,7 @@ export default async function ImpactPage() {
       <section className="v2-section paper" id="evidence">
         <div className="v2-shell">
           <div className="v2-section-head"><div><p className="v2-section-label">Evidence by initiative</p><h2 className="v2-section-title">Every number has a home.</h2></div><p className="v2-section-intro">Rather than collapse unlike forms of help into one oversized total, Amaana keeps public figures connected to the initiative that produced them.</p></div>
-          {initiatives.length > 0 ? <div className="v2-impact-ledger">{initiatives.map((item, index) => <Link href={`/our-work/${item.slug}`} className="v2-impact-ledger-row" key={item.id}><span className="v2-impact-ledger-index">{String(index + 1).padStart(2, "0")}</span><div><small>{item.cause.title}</small><h3>{item.title}</h3></div><p>{item.summary}</p><div className="v2-impact-ledger-metric">{item.primaryMetric ? <><strong>{item.primaryMetric}</strong><span>{item.primaryMetricLabel}</span></> : <><strong>View</strong><span>documented initiative</span></>}</div><span className="v2-impact-ledger-arrow">↗</span></Link>)}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Evidence gate active</span><h3>No published initiative evidence yet.</h3><p>Nothing is invented to fill the space.</p></div>}
+          {initiatives.length > 0 ? <div className="v2-impact-ledger">{initiatives.map((item, index) => <Link href={`/our-work/${item.slug}`} className="v2-impact-ledger-row" key={item.id}><span className="v2-impact-ledger-index">{String(index + 1).padStart(2, "0")}</span><div><small>{item.cause.title}</small><h3>{item.title}</h3></div><p>{item.summary}</p><div className="v2-impact-ledger-metric">{item.primaryMetric ? <><strong>{item.primaryMetric}</strong><span>{item.primaryMetricLabel}</span></> : <><strong>View</strong><span>documented initiative</span></>}</div><span className="v2-impact-ledger-arrow" aria-hidden="true">↗</span></Link>)}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Evidence gate active</span><h3>No published initiative evidence yet.</h3><p>Nothing is invented to fill the space.</p></div>}
         </div>
       </section>
 
