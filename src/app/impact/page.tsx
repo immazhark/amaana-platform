@@ -15,6 +15,11 @@ export const metadata: Metadata = {
     title: "Our Impact | Amaana Foundation",
     description: "Explore Amaana Foundation's documented initiative outcomes, stories and evidence.",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Our Impact | Amaana Foundation",
+    description: "Documented outcomes, initiative-level evidence and privacy-safe field records from Amaana Foundation.",
+  },
 };
 
 export default async function ImpactPage() {
@@ -36,18 +41,19 @@ export default async function ImpactPage() {
         </div>
       </section>
 
-      <section className="v2-impact-marquee" aria-label="Published impact figures">
+      <section className="v2-impact-marquee" aria-labelledby="impact-signals-title">
+        <h2 id="impact-signals-title" className="sr-only">Published impact figures</h2>
         {initiativesWithMetrics.length > 0 ? <div className="v2-impact-marquee-track">{initiativesWithMetrics.map((item, index) => <div className="v2-impact-marquee-item" key={item.id}><small>{String(index + 1).padStart(2, "0")} · {item.cause.title}</small><strong>{item.primaryMetric}</strong><span>{item.primaryMetricLabel}</span></div>)}</div> : <div className="v2-shell"><p>Impact figures appear only when their initiatives are published.</p></div>}
       </section>
 
-      <section className="v2-section paper" id="evidence">
+      <section className="v2-section paper" id="evidence" aria-labelledby="evidence-title">
         <div className="v2-shell">
-          <div className="v2-section-head"><div><p className="v2-section-label">Evidence by initiative</p><h2 className="v2-section-title">Every number has a home.</h2></div><p className="v2-section-intro">Rather than collapse unlike forms of help into one oversized total, Amaana keeps public figures connected to the initiative that produced them.</p></div>
+          <div className="v2-section-head"><div><p className="v2-section-label">Evidence by initiative</p><h2 className="v2-section-title" id="evidence-title">Every number has a home.</h2></div><p className="v2-section-intro">Rather than collapse unlike forms of help into one oversized total, Amaana keeps public figures connected to the initiative that produced them.</p></div>
           {initiatives.length > 0 ? <div className="v2-impact-ledger">{initiatives.map((item, index) => <Link href={`/our-work/${item.slug}`} className="v2-impact-ledger-row" key={item.id}><span className="v2-impact-ledger-index">{String(index + 1).padStart(2, "0")}</span><div><small>{item.cause.title}</small><h3>{item.title}</h3></div><p>{item.summary}</p><div className="v2-impact-ledger-metric">{item.primaryMetric ? <><strong>{item.primaryMetric}</strong><span>{item.primaryMetricLabel}</span></> : <><strong>View</strong><span>documented initiative</span></>}</div><span className="v2-impact-ledger-arrow" aria-hidden="true">↗</span></Link>)}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Evidence gate active</span><h3>No published initiative evidence yet.</h3><p>Nothing is invented to fill the space.</p></div>}
         </div>
       </section>
 
-      {initiativesWithMedia.length > 0 && <section className="v2-section dark v2-impact-witness"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p><h2 className="v2-section-title">Evidence can be seen, not just counted.</h2></div><p className="v2-section-intro">Only privacy-approved, public-safe material is shown. The people Amaana serves are never treated as proof objects.</p></div><div className="v2-impact-witness-grid">{initiativesWithMedia.slice(0, 4).map((item, index) => <Link href={`/our-work/${item.slug}`} className={`v2-impact-witness-item ${index === 0 ? "lead" : ""}`} key={item.id}><PublicMedia asset={item.mediaAssets[0]} /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Enter the field record →</span></div></Link>)}</div></div></section>}
+      {initiativesWithMedia.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p><h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2></div><p className="v2-section-intro">Only privacy-approved, public-safe material is shown. The people Amaana serves are never treated as proof objects.</p></div><div className="v2-impact-witness-grid">{initiativesWithMedia.slice(0, 4).map((item, index) => <Link href={`/our-work/${item.slug}`} className={`v2-impact-witness-item ${index === 0 ? "lead" : ""}`} key={item.id} aria-label={`Open ${item.title} initiative record`}><PublicMedia asset={item.mediaAssets[0]} /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Enter the field record →</span></div></Link>)}</div></div></section>}
 
       <section className="v2-section v2-impact-philosophy">
         <div className="v2-shell v2-impact-philosophy-grid">
