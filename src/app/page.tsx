@@ -1,16 +1,21 @@
 import Link from "next/link";
 import { AppealCard } from "@/components/appeal-card";
 import { prisma } from "@/lib/prisma";
-import { eidGrowth, foundingStory, homepageImpact, initiatives } from "@/content/amaana";
+import { getFeaturedFaithContent, getPublishedInitiatives } from "@/lib/public-content";
+import { eidGrowth, foundingStory, homepageImpact } from "@/content/amaana";
 
 export const dynamic = "force-dynamic";
 
 export default async function HomePage() {
-  const appeals = await prisma.appeal.findMany({
-    where: { status: { in: ["PUBLISHED", "FUNDED"] } },
-    orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
-    take: 3,
-  });
+  const [appeals, initiatives, featuredFaith] = await Promise.all([
+    prisma.appeal.findMany({
+      where: { status: { in: ["PUBLISHED", "FUNDED"] } },
+      orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
+      take: 3,
+    }),
+    getPublishedInitiatives(),
+    getFeaturedFaithContent(),
+  ]);
 
   return (
     <div className="v2-home">
@@ -59,25 +64,33 @@ export default async function HomePage() {
             </div>
             <div>
               <p className="v2-section-intro">
-                Amaana’s work has grown across seasonal giving, food support, education, emergency relief, medical assistance and livelihood needs. Each initiative carries its own story, evidence and people behind it.
+                Amaana&apos;s published work is drawn from the public content library, so future causes and initiatives can appear without hard-coding a new homepage layout.
               </p>
               <Link className="v2-text-link" href="/our-work">Explore all initiatives →</Link>
             </div>
           </div>
 
-          <div className="v2-work-grid">
-            {initiatives.map(initiative => (
-              <Link className="v2-work-card" href={initiative.href} key={initiative.slug}>
-                <small>{initiative.eyebrow}</small>
-                <div>
-                  <span className="v2-metric">{initiative.metric}</span>
-                  <p>{initiative.metricLabel}</p>
-                  <h3>{initiative.title}</h3>
-                  <p>{initiative.summary}</p>
-                </div>
-              </Link>
-            ))}
-          </div>
+          {initiatives.length > 0 ? (
+            <div className="v2-work-grid">
+              {initiatives.slice(0, 7).map(initiative => (
+                <Link className="v2-work-card" href={`/our-work/${initiative.slug}`} key={initiative.id}>
+                  <small>{initiative.cause.title}</small>
+                  <div>
+                    {initiative.primaryMetric && <span className="v2-metric">{initiative.primaryMetric}</span>}
+                    {initiative.primaryMetricLabel && <p>{initiative.primaryMetricLabel}</p>}
+                    <h3>{initiative.title}</h3>
+                    <p>{initiative.summary}</p>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          ) : (
+            <div className="v2-reminder" style={{ color: "var(--v2-ink)", borderColor: "rgb(15 27 43 / 12%)", background: "#fffdf8" }}>
+              <span className="v2-reminder-label" style={{ color: "var(--v2-gold)" }}>Publication gate active</span>
+              <h3 style={{ marginTop: "1rem" }}>Verified initiatives are being prepared for publication.</h3>
+              <p style={{ color: "#68717a" }}>The homepage does not expose draft causes or initiatives.</p>
+            </div>
+          )}
         </div>
       </section>
 
@@ -90,7 +103,7 @@ export default async function HomePage() {
             </div>
             <div>
               <p className="v2-section-intro">
-                A Ramadan effort that began around one family table became a recurring community tradition. The full story will bring together every year’s photos, kit contents, financial records and distribution moments.
+                A Ramadan effort that began around one family table became a recurring community tradition. The flagship story preserves the documented growth while the authentic photo and report archive is reviewed for publication.
               </p>
               <Link className="v2-text-link" href="/our-work/eid-gift-kits">Explore the seven-year story →</Link>
             </div>
@@ -116,7 +129,7 @@ export default async function HomePage() {
               <h2 className="v2-section-title">Every figure belongs to a story.</h2>
             </div>
             <p className="v2-section-intro">
-              We are rebuilding impact around evidence: initiative records, real photographs, reports, updates and known outcomes — not isolated counters.
+              Impact is being rebuilt around evidence: initiative records, real photographs, reports, updates and known outcomes — not isolated counters.
             </p>
           </div>
 
@@ -158,15 +171,23 @@ export default async function HomePage() {
             <p className="v2-section-label">Faith & Reflections</p>
             <h2 className="v2-section-title">Faith inspires our service.</h2>
             <p className="v2-section-intro">
-              A growing editorial space for verified Islamic articles, reminders and videos on compassion, sadaqah, Ramadan, Qurbani, gratitude, service and the values that inspire good works.
+              A growing editorial space for reviewed Islamic articles, reminders and videos on compassion, sadaqah, Ramadan, Qurbani, gratitude, service and the values that inspire good works.
             </p>
             <Link className="v2-button ghost" href="/faith-and-reflections">Explore Faith & Reflections</Link>
           </div>
-          <div className="v2-reminder">
-            <span className="v2-reminder-label">A reminder for the heart</span>
-            <blockquote>Give with sincerity. Serve with dignity. Leave the outcome to Allah.</blockquote>
-            <p>This homepage space will surface a verified published reminder, article or video from the editorial library rather than hard-code religious quotations.</p>
-          </div>
+          {featuredFaith ? (
+            <div className="v2-reminder">
+              <span className="v2-reminder-label">{featuredFaith.type.toLowerCase()}</span>
+              <blockquote>{featuredFaith.title}</blockquote>
+              <p>{featuredFaith.excerpt}</p>
+            </div>
+          ) : (
+            <div className="v2-reminder">
+              <span className="v2-reminder-label">Religious review gate active</span>
+              <blockquote>Verified content will appear here.</blockquote>
+              <p>No Qur&apos;an, hadith or religious claim is surfaced from the editorial library until its review state is verified.</p>
+            </div>
+          )}
         </div>
       </section>
 
