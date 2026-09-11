@@ -4,6 +4,7 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "Assistance Request Received",
   robots: { index: false, follow: false },
+  referrer: "no-referrer",
 };
 
 type Props = { searchParams: Promise<{ reference?: string; token?: string }> };
