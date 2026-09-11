@@ -10,94 +10,99 @@ export const metadata = {
 
 export default async function OurWorkPage() {
   const causes = await getPublishedCauses();
-  const initiativeCount = causes.reduce((total, cause) => total + cause.initiatives.length, 0);
+  const initiatives = causes.flatMap(cause => cause.initiatives.map(initiative => ({ ...initiative, causeTitle: cause.title })));
+  const initiativeCount = initiatives.length;
+  const featured = initiatives[0];
 
   return (
-    <div className="v2-home">
-      <section className="v2-section dark">
-        <div className="v2-shell">
-          <p className="v2-section-label">Our Work</p>
-          <h1 className="v2-display" style={{ maxWidth: "8ch" }}>Service that grows with the need.</h1>
-          <p className="v2-hero-copy" style={{ marginTop: "2rem" }}>
-            Amaana&apos;s work is organised around causes, with each published initiative carrying its own story, evidence, media and related appeals as those records are approved for public use.
-          </p>
+    <div className="v2-home v2-work-index">
+      <section className="v2-hero v2-work-index-hero">
+        <div className="v2-shell v2-hero-inner">
+          <div>
+            <p className="v2-kicker">Our Work · Hyderabad</p>
+            <h1 className="v2-display">Different needs. One amanah to serve.</h1>
+          </div>
+          <div>
+            <p className="v2-hero-copy">Explore Amaana&apos;s published initiatives by the need they respond to. Each record connects the story, documented figures, approved media and related updates without reducing the work to a list of programmes.</p>
+            <div className="v2-hero-proof" style={{ marginTop: "2.5rem" }}>
+              <div><span className="v2-proof-number">{initiativeCount}</span><span className="v2-proof-copy">published initiatives currently available</span></div>
+              <div><span className="v2-proof-number">{causes.length}</span><span className="v2-proof-copy">cause areas represented in the public library</span></div>
+            </div>
+          </div>
         </div>
       </section>
+
+      {featured && (
+        <section className="v2-section v2-work-featured">
+          <div className="v2-shell v2-work-featured-grid">
+            <div>
+              <p className="v2-section-label">Begin with one story</p>
+              <h2>{featured.title}</h2>
+            </div>
+            <div>
+              <p className="v2-work-featured-cause">{featured.causeTitle}</p>
+              {featured.primaryMetric && <strong className="v2-work-featured-metric">{featured.primaryMetric}</strong>}
+              {featured.primaryMetricLabel && <span className="v2-work-featured-label">{featured.primaryMetricLabel}</span>}
+              <p>{featured.summary}</p>
+              <Link className="v2-button" href={`/our-work/${featured.slug}`}>Explore this initiative</Link>
+            </div>
+          </div>
+        </section>
+      )}
 
       <section className="v2-section paper">
         <div className="v2-shell">
           <div className="v2-section-head">
-            <div>
-              <p className="v2-section-label">Published work</p>
-              <h2 className="v2-section-title">A living portfolio of service.</h2>
-            </div>
-            <p className="v2-section-intro">
-              {initiativeCount > 0
-                ? `${initiativeCount} published initiative${initiativeCount === 1 ? "" : "s"} across ${causes.length} cause${causes.length === 1 ? "" : "s"}. New verified work can be added without redesigning this page.`
-                : "There are no published initiatives in the public content library yet. Content remains private until it passes the publication gate."}
-            </p>
+            <div><p className="v2-section-label">Explore by need</p><h2 className="v2-section-title">A living portfolio of service.</h2></div>
+            <p className="v2-section-intro">The structure can grow as Amaana&apos;s work grows. New verified causes and initiatives appear through the publication system rather than requiring a redesigned public page.</p>
           </div>
 
           {causes.length > 0 ? (
-            <div style={{ display: "grid", gap: "5rem", marginTop: "3rem" }}>
-              {causes.map(cause => (
-                <section key={cause.id} aria-labelledby={`cause-${cause.slug}`}>
-                  <div className="v2-section-head">
-                    <div>
-                      <p className="v2-section-label">Cause</p>
-                      <h2 className="v2-section-title" id={`cause-${cause.slug}`}>{cause.title}</h2>
-                    </div>
-                    <p className="v2-section-intro">{cause.summary}</p>
+            <div className="v2-cause-stack">
+              {causes.map((cause, causeIndex) => (
+                <section className="v2-cause-section" key={cause.id} aria-labelledby={`cause-${cause.slug}`}>
+                  <div className="v2-cause-heading">
+                    <span className="v2-cause-number">{String(causeIndex + 1).padStart(2, "0")}</span>
+                    <div><p className="v2-section-label">Cause</p><h2 id={`cause-${cause.slug}`}>{cause.title}</h2></div>
+                    <p>{cause.summary}</p>
                   </div>
 
                   {cause.initiatives.length > 0 ? (
-                    <div className="v2-work-grid" style={{ marginTop: "2rem" }}>
-                      {cause.initiatives.map(initiative => (
-                        <Link className="v2-work-card" href={`/our-work/${initiative.slug}`} key={initiative.id}>
-                          <small>
-                            {initiative.year
-                              ? initiative.year
-                              : initiative.startYear && initiative.endYear
-                                ? `${initiative.startYear}–${initiative.endYear}`
-                                : "Initiative"}
-                          </small>
-                          <div>
-                            {initiative.primaryMetric && <span className="v2-metric">{initiative.primaryMetric}</span>}
-                            {initiative.primaryMetricLabel && <p>{initiative.primaryMetricLabel}</p>}
+                    <div className="v2-initiative-list">
+                      {cause.initiatives.map((initiative, index) => (
+                        <Link className="v2-initiative-row" href={`/our-work/${initiative.slug}`} key={initiative.id}>
+                          <span className="v2-initiative-index">{String(index + 1).padStart(2, "0")}</span>
+                          <div className="v2-initiative-copy">
+                            <small>{initiative.year ?? (initiative.startYear && initiative.endYear ? `${initiative.startYear}–${initiative.endYear}` : "Initiative")}</small>
                             <h3>{initiative.title}</h3>
                             <p>{initiative.summary}</p>
-                            <span className="v2-text-link">Explore initiative →</span>
                           </div>
+                          <div className="v2-initiative-proof">
+                            {initiative.primaryMetric && <strong>{initiative.primaryMetric}</strong>}
+                            {initiative.primaryMetricLabel && <span>{initiative.primaryMetricLabel}</span>}
+                          </div>
+                          <span className="v2-initiative-arrow" aria-hidden="true">↗</span>
                         </Link>
                       ))}
                     </div>
-                  ) : (
-                    <p className="v2-section-intro" style={{ marginTop: "2rem" }}>No initiatives from this cause are currently published.</p>
-                  )}
+                  ) : <p className="v2-section-intro">No initiatives from this cause are currently published.</p>}
                 </section>
               ))}
             </div>
           ) : (
-            <div className="v2-reminder" style={{ color: "var(--v2-ink)", borderColor: "rgb(15 27 43 / 12%)", background: "#fffdf8", marginTop: "2rem" }}>
-              <span className="v2-reminder-label" style={{ color: "var(--v2-gold)" }}>Publication gate active</span>
-              <h3 style={{ marginTop: "1rem" }}>Our verified initiative library is being prepared.</h3>
-              <p style={{ color: "#68717a" }}>Nothing is exposed publicly merely because it exists in the database. Causes and initiatives must be explicitly published first.</p>
-            </div>
+            <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Publication gate active</span><h3>Our verified initiative library is being prepared.</h3><p>Nothing is exposed publicly merely because it exists in the database. Causes and initiatives must be explicitly published first.</p></div>
           )}
         </div>
       </section>
 
-      <section className="v2-closing">
-        <div className="v2-shell">
-          <p className="v2-section-label">Explore further</p>
-          <h2>Follow the evidence behind the work.</h2>
-          <p>Impact, stories and appeals will connect back to the causes and initiatives they belong to as their records are approved for publication.</p>
-          <div className="v2-hero-actions" style={{ justifyContent: "center" }}>
-            <Link className="v2-button" href="/impact">Explore impact</Link>
-            <Link className="v2-text-link" href="/get-involved">Get involved →</Link>
-          </div>
+      <section className="v2-section dark">
+        <div className="v2-shell v2-faith-grid">
+          <div><p className="v2-section-label">See the evidence</p><h2 className="v2-section-title">The work does not end at the initiative page.</h2><p className="v2-section-intro">Impact, stories, public-safe media and transparency records continue the journey so visitors can understand what happened after support was given.</p></div>
+          <div className="v2-reminder"><span className="v2-reminder-label">Follow the trail</span><blockquote>Work → evidence → story → known outcome.</blockquote><div className="v2-hero-actions"><Link className="v2-button ghost" href="/impact">Explore impact</Link><Link className="v2-text-link" href="/stories">Read stories →</Link></div></div>
         </div>
       </section>
+
+      <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Take the next step</p><h2>Understand first. Then decide how to stand with the work.</h2><p>Explore completed work, read the stories behind it, or see whether a verified public appeal is currently active.</p><div className="v2-hero-actions" style={{ justifyContent: "center" }}><Link className="v2-button" href="/appeals">Support a verified need</Link><Link className="v2-text-link" href="/get-involved">Other ways to get involved →</Link></div></div></section>
     </div>
   );
 }
