@@ -1,15 +1,28 @@
+import type { Metadata } from "next";
 import Link from "next/link";
-import { getPublishedInitiatives } from "@/lib/public-content";
+import { getTransparencyPageData } from "@/lib/public-page-data";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Transparency",
   description: "See how Amaana Foundation connects published initiatives, evidence, updates and privacy-safe reporting.",
+  alternates: { canonical: "/transparency" },
+  openGraph: {
+    type: "website",
+    url: "/transparency",
+    title: "Transparency | Amaana Foundation",
+    description: "See how Amaana Foundation connects published initiatives, evidence, updates and privacy-safe reporting.",
+  },
+  twitter: {
+    card: "summary",
+    title: "Transparency | Amaana Foundation",
+    description: "Follow Amaana Foundation's public evidence approach without exposing private proofs.",
+  },
 };
 
 export default async function TransparencyPage() {
-  const initiatives = await getPublishedInitiatives();
+  const initiatives = await getTransparencyPageData();
   const withMetrics = initiatives.filter(item => item.primaryMetric && item.primaryMetricLabel);
 
   return <div className="v2-home v2-transparency-page">
