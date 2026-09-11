@@ -15,6 +15,11 @@ export const metadata: Metadata = {
     title: "Faith & Reflections | Amaana Foundation",
     description: "Reviewed Islamic articles, reminders and videos connecting faith, compassion and service.",
   },
+  twitter: {
+    card: "summary_large_image",
+    title: "Faith & Reflections | Amaana Foundation",
+    description: "Reviewed Islamic reflections connecting compassion, generosity, service and Amaana's work.",
+  },
 };
 
 export default async function FaithAndReflectionsPage() {
@@ -35,20 +40,20 @@ export default async function FaithAndReflectionsPage() {
         </div>
       </section>
 
-      <section className="v2-faith-standard">
-        <div className="v2-shell v2-faith-standard-grid"><div><p className="v2-section-label">Editorial trust</p><h2>Religious content should be handled with care.</h2></div><div><p>Qur&apos;an citations, translations, hadith references and religious claims stay out of the public library until their review state is verified.</p><p>Amaana shares beneficial material without presenting itself as a scholarly authority.</p></div></div>
+      <section className="v2-faith-standard" aria-labelledby="faith-standard-title">
+        <div className="v2-shell v2-faith-standard-grid"><div><p className="v2-section-label">Editorial trust</p><h2 id="faith-standard-title">Religious content should be handled with care.</h2></div><div><p>Qur&apos;an citations, translations, hadith references and religious claims stay out of the public library until their review state is verified.</p><p>Amaana shares beneficial material without presenting itself as a scholarly authority.</p></div></div>
       </section>
 
-      <section className="v2-section paper" id="library">
+      <section className="v2-section paper" id="library" aria-labelledby="faith-library-title">
         <div className="v2-shell">
-          <div className="v2-section-head"><div><p className="v2-section-label">The library</p><h2 className="v2-section-title">Read. Reflect. Watch.</h2></div><p className="v2-section-intro">{content.length > 0 ? `${content.length} verified item${content.length === 1 ? "" : "s"} are currently published.` : "No religious content is currently published. Drafts and unverified material remain private until review is complete."}</p></div>
+          <div className="v2-section-head"><div><p className="v2-section-label">The library</p><h2 className="v2-section-title" id="faith-library-title">Read. Reflect. Watch.</h2></div><p className="v2-section-intro">{content.length > 0 ? `${content.length} verified item${content.length === 1 ? "" : "s"} are currently published.` : "No religious content is currently published. Drafts and unverified material remain private until review is complete."}</p></div>
           <div className="v2-faith-format-grid"><article><span>01</span><strong>{articles.length}</strong><h3>Articles</h3><p>Long-form reflection with source and review context.</p></article><article><span>02</span><strong>{reminders.length}</strong><h3>Reminders</h3><p>Concise, purposeful reflection without engagement bait.</p></article><article><span>03</span><strong>{videos.length}</strong><h3>Videos</h3><p>Reviewed visual content with attribution and context.</p></article></div>
         </div>
       </section>
 
-      {lead && <section className="v2-section dark v2-faith-feature"><div className="v2-shell v2-faith-feature-grid"><div className="v2-faith-feature-copy"><p className="v2-section-label">Featured reflection</p><small>{lead.type.toLowerCase()}</small><h2>{lead.title}</h2><p>{lead.excerpt}</p>{lead.sourceCitation && <div className="v2-faith-source"><span>Reviewed source</span><p>{lead.sourceCitation}</p></div>}<Link className="v2-button ghost" href={`/faith-and-reflections/${lead.slug}`}>Read the reviewed reflection</Link></div><div className="v2-faith-feature-media">{lead.mediaAssets[0] ? <PublicMedia asset={lead.mediaAssets[0]} /> : <div className="v2-faith-feature-placeholder"><span>Reviewed content</span><strong>{lead.title}</strong><small>Visual media appears only when separately approved for public use.</small></div>}</div></div></section>}
+      {lead && <section className="v2-section dark v2-faith-feature" aria-labelledby="featured-reflection-title"><div className="v2-shell v2-faith-feature-grid"><div className="v2-faith-feature-copy"><p className="v2-section-label">Featured reflection</p><small>{lead.type.toLowerCase()}</small><h2 id="featured-reflection-title">{lead.title}</h2><p>{lead.excerpt}</p>{lead.sourceCitation && <div className="v2-faith-source"><span>Reviewed source</span><p>{lead.sourceCitation}</p></div>}<Link className="v2-button ghost" href={`/faith-and-reflections/${lead.slug}`}>Read the reviewed reflection</Link></div><div className="v2-faith-feature-media">{lead.mediaAssets[0] ? <PublicMedia asset={lead.mediaAssets[0]} /> : <div className="v2-faith-feature-placeholder"><span>Reviewed content</span><strong>{lead.title}</strong><small>Visual media appears only when separately approved for public use.</small></div>}</div></div></section>}
 
-      {rest.length > 0 && <section className="v2-section v2-faith-archive"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Published reflections</p><h2 className="v2-section-title">Verified before it reaches you.</h2></div><p className="v2-section-intro">Every public item has both publication approval and verified religious review.</p></div><div className="v2-faith-library-grid">{rest.map((item,index)=><Link className={`v2-faith-library-item ${index===0?"wide":""}`} href={`/faith-and-reflections/${item.slug}`} key={item.id}><span>{String(index+2).padStart(2,"0")}</span><small>{item.type.toLowerCase()}</small><h3>{item.title}</h3><p>{item.excerpt}</p>{item.sourceCitation && <div><b>Source</b><p>{item.sourceCitation}</p></div>}<strong className="v2-faith-library-action">Open reflection ↗</strong></Link>)}</div></div></section>}
+      {rest.length > 0 && <section className="v2-section v2-faith-archive" aria-labelledby="published-reflections-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Published reflections</p><h2 className="v2-section-title" id="published-reflections-title">Verified before it reaches you.</h2></div><p className="v2-section-intro">Every public item has both publication approval and verified religious review.</p></div><div className="v2-faith-library-grid">{rest.map((item,index)=><Link className={`v2-faith-library-item ${index===0?"wide":""}`} href={`/faith-and-reflections/${item.slug}`} key={item.id} aria-label={`Open ${item.title}`}><span>{String(index+2).padStart(2,"0")}</span><small>{item.type.toLowerCase()}</small><h3>{item.title}</h3><p>{item.excerpt}</p>{item.sourceCitation && <div><b>Source</b><p>{item.sourceCitation}</p></div>}<strong className="v2-faith-library-action">Open reflection ↗</strong></Link>)}</div></div></section>}
 
       <section className="v2-section paper v2-faith-topics"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Themes</p><h2 className="v2-section-title">A library that grows with meaning.</h2></div><p className="v2-section-intro">Topics come from the reviewed editorial taxonomy rather than decorative hard-coded labels.</p></div>{topics.length > 0 ? <div className="v2-faith-topic-cloud">{topics.map(([slug,name],index)=><span key={slug}><b>{String(index+1).padStart(2,"0")}</b>{name}</span>)}</div> : <p className="v2-section-intro">Topics will appear when reviewed Faith content is published.</p>}</div></section>
 
