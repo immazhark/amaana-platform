@@ -30,7 +30,7 @@ export function DonationForm({ appealId, appealTitle }: { appealId: string; appe
     } catch (caught) { setError(caught instanceof Error ? caught.message : "Could not start checkout"); setBusy(false); }
   }
 
-  return <><Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="afterInteractive" onLoad={() => setScriptReady(true)}/><form className="v2-premium-form v2-donation-form" onSubmit={submit}>
+  return <><Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" onLoad={() => setScriptReady(true)} onError={() => setError("Secure checkout could not load. Please refresh and try again.")}/><form className="v2-premium-form v2-donation-form" onSubmit={submit}>
     <div className="v2-form-heading"><span>Secure contribution</span><h2>Choose how you would like to support.</h2><p>Only the information needed to process and acknowledge your contribution is requested.</p></div>
     {error && <div className="form-error" role="alert">{error}</div>}
     <div className="form-grid">
