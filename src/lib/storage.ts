@@ -7,20 +7,42 @@ const publicMediaTypes = new Set(["application/pdf", "image/jpeg", "image/png", 
 export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 export const MAX_FILES = 5;
 
-function getClient() {
+type StorageConfig = {
+  bucket: string;
+  client: S3Client;
+};
+
+function createClient(region: string, endpoint: string | undefined, forcePathStyle: boolean, accessKeyId: string, secretAccessKey: string) {
+  return new S3Client({ region, endpoint, forcePathStyle, credentials: { accessKeyId, secretAccessKey } });
+}
+
+function getPrivateStorage(): StorageConfig {
   const region = process.env.S3_REGION;
   const bucket = process.env.S3_BUCKET;
   const accessKeyId = process.env.S3_ACCESS_KEY_ID;
   const secretAccessKey = process.env.S3_SECRET_ACCESS_KEY;
-  if (!region || !bucket || !accessKeyId || !secretAccessKey) throw new Error("Document storage is not configured");
+  if (!region || !bucket || !accessKeyId || !secretAccessKey) throw new Error("Private document storage is not configured");
   return {
     bucket,
-    client: new S3Client({
+    client: createClient(region, process.env.S3_ENDPOINT || undefined, process.env.S3_FORCE_PATH_STYLE === "true", accessKeyId, secretAccessKey),
+  };
+}
+
+function getPublicMediaStorage(): StorageConfig {
+  const region = process.env.PUBLIC_MEDIA_S3_REGION || process.env.S3_REGION;
+  const bucket = process.env.PUBLIC_MEDIA_S3_BUCKET;
+  const accessKeyId = process.env.PUBLIC_MEDIA_S3_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY;
+  if (!region || !bucket || !accessKeyId || !secretAccessKey) throw new Error("Public media storage is not configured");
+  return {
+    bucket,
+    client: createClient(
       region,
-      endpoint: process.env.S3_ENDPOINT || undefined,
-      forcePathStyle: process.env.S3_FORCE_PATH_STYLE === "true",
-      credentials: { accessKeyId, secretAccessKey },
-    }),
+      process.env.PUBLIC_MEDIA_S3_ENDPOINT || process.env.S3_ENDPOINT || undefined,
+      (process.env.PUBLIC_MEDIA_S3_FORCE_PATH_STYLE || process.env.S3_FORCE_PATH_STYLE) === "true",
+      accessKeyId,
+      secretAccessKey,
+    ),
   };
 }
 
@@ -52,34 +74,38 @@ export async function uploadPrivateDocument(file: File, requestId: string) {
   if (!hasValidSignature(bytes, file.type)) throw new Error("The uploaded document does not match its declared file type");
   const safeExtension = extensionForMimeType(file.type);
   const objectKey = `assistance/${requestId}/${randomUUID()}.${safeExtension}`;
-  const { bucket, client } = getClient();
+  const { bucket, client } = getPrivateStorage();
   await client.send(new PutObjectCommand({ Bucket: bucket, Key: objectKey, Body: bytes, ContentType: file.type, Metadata: { requestId } }));
   return { objectKey, originalName: file.name.slice(0, 255), mimeType: file.type, sizeBytes: file.size };
 }
 
 export async function getPrivateDocumentUrl(objectKey: string) {
   if (!objectKey.startsWith("assistance/") || objectKey.includes("..")) throw new Error("Invalid private document key");
-  const { bucket, client } = getClient();
+  const { bucket, client } = getPrivateStorage();
   return getSignedUrl(client, new GetObjectCommand({ Bucket: bucket, Key: objectKey }), { expiresIn: 60 });
 }
 
 function normalizePublicBaseUrl() {
-  const value = process.env.S3_PUBLIC_BASE_URL?.trim();
+  const value = process.env.PUBLIC_MEDIA_BASE_URL?.trim();
   if (!value) return null;
   const url = new URL(value);
-  if (url.protocol !== "https:") throw new Error("S3_PUBLIC_BASE_URL must use HTTPS");
+  if (url.protocol !== "https:") throw new Error("PUBLIC_MEDIA_BASE_URL must use HTTPS");
   return url.toString().replace(/\/$/, "");
 }
 
-export async function uploadPublicMediaFile(file: File) {
+export function validatePublicMediaFile(file: File) {
   if (!publicMediaTypes.has(file.type)) throw new Error("Public media upload accepts PDF, JPEG, PNG and WebP files");
   if (file.size <= 0 || file.size > MAX_FILE_BYTES) throw new Error("Public media files must be between 1 byte and 5 MB");
+}
+
+export async function uploadPublicMediaFile(file: File) {
+  validatePublicMediaFile(file);
   const bytes = Buffer.from(await file.arrayBuffer());
   if (!hasValidSignature(bytes, file.type)) throw new Error("The uploaded media does not match its declared file type");
 
   const safeExtension = extensionForMimeType(file.type);
-  const objectKey = `public-media/${new Date().getUTCFullYear()}/${randomUUID()}.${safeExtension}`;
-  const { bucket, client } = getClient();
+  const objectKey = `${new Date().getUTCFullYear()}/${randomUUID()}.${safeExtension}`;
+  const { bucket, client } = getPublicMediaStorage();
   await client.send(new PutObjectCommand({
     Bucket: bucket,
     Key: objectKey,
