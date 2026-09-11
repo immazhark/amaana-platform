@@ -12,6 +12,8 @@ type AssistanceResponse = {
   trackingToken?: string;
 };
 
+const assistanceFieldOrder: AssistanceField[] = ["applicantName", "phone", "email", "city", "category", "description", "consent"];
+
 export function AssistanceForm() {
   const router = useRouter();
   const [error, setError] = useState("");
@@ -28,15 +30,24 @@ export function AssistanceForm() {
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    const form = event.currentTarget;
     setError("");
     setFieldErrors({});
     setSubmitting(true);
 
     try {
-      const response = await fetch("/api/assistance", { method: "POST", body: new FormData(event.currentTarget) });
+      const response = await fetch("/api/assistance", { method: "POST", body: new FormData(form) });
       const result = await response.json() as AssistanceResponse;
       if (!response.ok) {
-        setFieldErrors(result.fields ?? {});
+        const nextFieldErrors = result.fields ?? {};
+        setFieldErrors(nextFieldErrors);
+        const firstInvalidField = assistanceFieldOrder.find(field => nextFieldErrors[field]?.length);
+        if (firstInvalidField) {
+          requestAnimationFrame(() => {
+            const control = form.elements.namedItem(firstInvalidField);
+            if (control instanceof HTMLElement) control.focus();
+          });
+        }
         throw new Error(result.error ?? "Submission failed");
       }
       if (!result.referenceNumber || !result.trackingToken) throw new Error("Submission succeeded but the tracking reference could not be prepared.");
