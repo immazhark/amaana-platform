@@ -37,6 +37,7 @@ Purpose: prevent unresolved quality, privacy, accessibility, performance or sour
 - Donation order/confirmation responses are explicitly `no-store, private`, including validation/authentication/failure responses.
 - Transactional donation checkout and private acknowledgement routes are explicitly excluded from indexing; token-bearing acknowledgement pages also apply a `no-referrer` policy so receipt tokens are not propagated through subsequent navigation.
 - Donation order creation, confirmation, capture reconciliation and acknowledgement now use deliberately lean database projections rather than loading unrelated donor/payment fields.
+- Global `/api/*` responses also receive a `private, no-store` header fallback so a future endpoint does not become cacheable merely because its handler omitted a local header.
 - Staging order creation, checkout, capture verification, acknowledgement, failure, retry, refund/reconciliation and duplicate/idempotency paths still require E2E verification.
 
 ### 5. Assistance workflow verification
@@ -58,17 +59,23 @@ Purpose: prevent unresolved quality, privacy, accessibility, performance or sour
 ### 7. Accessibility certification
 **Status:** OPEN / ACTIVE
 
-Implemented improvements include skip navigation, focus-visible treatment, mobile menu focus management, semantic progress indicators, labelled forms/live errors, field-associated assistance validation, reduced-motion rules, accessible external-link wording and narrow-screen reflow safeguards that preserve the established 3rem interaction-height baseline.
+Implemented improvements include skip navigation, focus-visible treatment, mobile menu focus management, semantic progress indicators, labelled forms/live errors, field-associated assistance validation, global reduced-motion safeguards, accessible external-link wording and narrow-screen reflow safeguards that preserve the established 3rem interaction-height baseline.
+
+Additional Phase 7 hardening now in source:
+- reduced-motion collapses smooth scrolling plus animation/transition timing globally rather than relying on individual route styles;
+- forced-colors mode receives explicit focus/control boundaries;
+- expanded mobile navigation contains Tab/Shift+Tab focus across the menu and toggle while retaining Escape-to-close and focus return;
+- hosted `VIDEO` media fails closed at the public render/publication gate until synchronized caption-track support is modeled and verified.
 
 Still required:
-- keyboard traversal across every major journey;
+- keyboard traversal across every major journey in real browsers;
 - screen-reader spot checks;
 - contrast review;
 - 200%/400% zoom and reflow in real browsers;
 - touch-target audit beyond source-level safeguards;
 - form error announcement review on real assistive technology;
-- mobile menu focus containment/escape behaviour on real browsers;
-- video captions/transcript strategy before publishing meaningful video content.
+- mobile menu focus containment/escape behaviour verification on real browsers;
+- synchronized-caption architecture/content verification before hosted video is enabled, plus review of external-provider video accessibility.
 
 ### 8. Responsive/browser visual QA
 **Status:** OPEN
@@ -77,13 +84,16 @@ Still required:
 - Representative iOS/Android widths, tablet, laptop, wide desktop and Chrome/Safari/Firefox must be reviewed for overflow, clipping, line wrapping, image cropping, sticky behaviour and focus visibility.
 
 ### 9. SEO/indexing production verification
-**Status:** OPEN
+**Status:** OPEN / HARDENED IN SOURCE
 
 - Robots, sitemap, canonicals and structured data are implemented conservatively.
-- Request Assistance is now included in the public sitemap while private receipt/status routes stay excluded and explicitly noindexed.
-- Private donation acknowledgement routes are also explicitly noindexed rather than relying on obscurity/tokenized URLs.
-- Production indexing must remain an explicit release action.
-- Final crawl, rendered metadata/structured-data validation, Search Console submission and index monitoring remain open.
+- Public static sitemap routes and private/transactional route families now share one central publication policy instead of separate hard-coded route lists.
+- CI includes a guard that fails if the static publication set intersects a known private route family or duplicate publication rules are introduced.
+- Request Assistance is included in the public sitemap while private receipt/status routes stay excluded and explicitly noindexed.
+- Private donation acknowledgement routes are explicitly noindexed rather than relying on obscurity/tokenized URLs.
+- Structured data still does not publish an official logo claim while master branding remains unresolved.
+- Production indexing remains an explicit release action and is still gated by the official HTTPS-domain allow flag.
+- Final rendered crawl, metadata/structured-data validation, Search Console submission and index monitoring remain open.
 
 ### 10. Compliance/legal confirmation
 **Status:** OPEN WHERE PROFESSIONAL CONFIRMATION IS REQUIRED
@@ -115,9 +125,12 @@ Remaining verification: exercise the failure path against the configured staging
 Remaining verification: deliberately exercise a post-upload failure against staging storage and confirm the private objects are removed before closing this risk.
 
 ### Video accessibility
-**Status:** RESIDUAL / PUBLICATION GATE FOR VIDEO
+**Status:** FAIL-CLOSED IN CODE / CAPTION ARCHITECTURE STILL OPEN
 
-`PublicMedia` can render public video, but the current media model/renderer does not yet guarantee captions or a transcript. Do not treat video accessibility as complete merely because controls and labels exist.
+- Hosted `VIDEO` assets can no longer pass `canRenderPublicMedia`, and the admin publication action gives a specific caption-support error rather than allowing an inaccessible hosted video to become public.
+- The existing renderer still contains video support, but the publication/render gate prevents it from receiving an approved hosted `VIDEO` record under the current model.
+- Re-enabling hosted video requires modeled synchronized-caption metadata, safe caption-track rendering and real caption-quality verification.
+- External video links remain subject to separate provider/content accessibility review.
 
 ### CSP hardening
 **Status:** RESIDUAL
@@ -127,21 +140,24 @@ Security headers are present and restrictive in important areas, but Next.js/Raz
 ### Automated E2E coverage
 **Status:** OPEN FOR PHASE 8
 
-Current CI covers install, Prisma generation/validation, lint, typecheck, unit/coverage tests and production build. Browser-level E2E tests are not yet part of CI and should be added for release-critical journeys when staging fixtures are stable.
+Current CI covers install, Prisma generation/validation, lint, typecheck, unit/coverage tests and production build. Browser-level E2E tests are not yet part of CI. Phase 8 now adds deterministic route-publication/crawl boundary tests, but release-critical browser journeys still require a production-like environment and stable fixtures before browser E2E can be called a reliable gate.
 
-## Continuity corrections made during Phase 6
+## Continuity corrections made during Phase 6/7/8
 
 - Corrected stale execution documentation that still described Phase 6/7 as pending.
 - Corrected earlier documentation that called the working blue/gold hex values `official`; they are now explicitly provisional pending master branding inspection.
 - Corrected public layout overflow behaviour so vertical content/focus/sticky behaviour is not globally clipped simply to suppress horizontal overflow.
 - Added shared focus-visible treatment and fixed-header anchor scroll offset.
 - Added checkout `no-store` response policy and later strengthened sensitive donation/assistance API responses to `no-store, private` consistently.
+- Added a global `/api/*` no-store fallback in Next.js headers.
 - Added Request Assistance to the sitemap while keeping private receipt/status pages disallowed and explicitly noindexed.
 - Added `no-referrer` protection to token-bearing assistance receipt/tracking and donation acknowledgement pages.
 - Added private donation acknowledgement noindex handling and lean payment-path projections across order creation, confirmation, capture reconciliation and acknowledgement.
 - Added assistance field-associated validation recovery instead of a generic unlinked error banner.
 - Added scoped compensation cleanup for private assistance documents when post-upload submission work fails.
-- Added focus transfer into the mobile menu and focus return to the toggle on Escape.
+- Added focus transfer into the mobile menu, focus return on Escape and source-level Tab/Shift+Tab containment while the mobile menu is expanded.
+- Added global reduced-motion and forced-colors safeguards.
+- Centralized sitemap/robots public-private route policy and added a CI publication-boundary guard.
 - Remapped legacy shared green tokens/gradients to the working Amaana blue/gold/editorial-neutral system so untouched shared states cannot silently regress to the old generic NGO palette.
 - Added narrow-screen wrapping/gutter safeguards while explicitly preserving the existing 3rem button/touch-target baseline.
 
