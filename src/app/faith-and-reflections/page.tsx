@@ -1,16 +1,24 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicMedia } from "@/components/public-media";
-import { getPublishedFaithContent } from "@/lib/public-content";
+import { getFaithDiscoveryData } from "@/lib/public-discovery-data";
 
 export const dynamic = "force-dynamic";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Faith & Reflections",
   description: "Reviewed Islamic articles, reminders and videos that connect faith, compassion and service.",
+  alternates: { canonical: "/faith-and-reflections" },
+  openGraph: {
+    type: "website",
+    url: "/faith-and-reflections",
+    title: "Faith & Reflections | Amaana Foundation",
+    description: "Reviewed Islamic articles, reminders and videos connecting faith, compassion and service.",
+  },
 };
 
 export default async function FaithAndReflectionsPage() {
-  const content = await getPublishedFaithContent();
+  const content = await getFaithDiscoveryData();
   const topics = Array.from(new Map(content.flatMap(item => item.topics.map(link => [link.topic.slug, link.topic.name] as const))).entries());
   const articles = content.filter(item => item.type === "ARTICLE");
   const reminders = content.filter(item => item.type === "REMINDER");
