@@ -1,7 +1,6 @@
 import Link from "next/link";
 import { AppealCard } from "@/components/appeal-card";
-import { prisma } from "@/lib/prisma";
-import { getFeaturedFaithContent, getPublishedInitiatives, getPublishedStories } from "@/lib/public-content";
+import { getHomepagePublicContent } from "@/lib/public-content";
 import { eidGrowth, foundingStory, homepageImpact } from "@/content/amaana";
 
 export const dynamic = "force-dynamic";
@@ -14,16 +13,7 @@ const visitorActions = [
 ] as const;
 
 export default async function HomePage() {
-  const [appeals, initiatives, featuredFaith, stories] = await Promise.all([
-    prisma.appeal.findMany({
-      where: { status: { in: ["PUBLISHED", "FUNDED"] } },
-      orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
-      take: 3,
-    }),
-    getPublishedInitiatives(),
-    getFeaturedFaithContent(),
-    getPublishedStories(),
-  ]);
+  const { appeals, initiatives, featuredFaith, stories } = await getHomepagePublicContent();
 
   return (
     <div className="v2-home">
@@ -73,7 +63,7 @@ export default async function HomePage() {
       <section className="v2-section paper">
         <div className="v2-shell">
           <div className="v2-section-head"><div><p className="v2-section-label">Our work</p><h2 className="v2-section-title">Different needs. One amanah to serve.</h2></div><div><p className="v2-section-intro">Explore Amaana&apos;s published initiatives and the documented work behind them.</p><Link className="v2-text-link" href="/our-work">Explore all initiatives →</Link></div></div>
-          {initiatives.length > 0 ? <div className="v2-work-grid">{initiatives.slice(0, 7).map(initiative => <Link className="v2-work-card" href={`/our-work/${initiative.slug}`} key={initiative.id}><small>{initiative.cause.title}</small><div>{initiative.primaryMetric && <span className="v2-metric">{initiative.primaryMetric}</span>}{initiative.primaryMetricLabel && <p>{initiative.primaryMetricLabel}</p>}<h3>{initiative.title}</h3><p>{initiative.summary}</p></div></Link>)}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Publication gate active</span><h3>Verified initiatives are being prepared for publication.</h3><p>The homepage does not expose draft causes or initiatives.</p></div>}
+          {initiatives.length > 0 ? <div className="v2-work-grid">{initiatives.map(initiative => <Link className="v2-work-card" href={`/our-work/${initiative.slug}`} key={initiative.id}><small>{initiative.cause.title}</small><div>{initiative.primaryMetric && <span className="v2-metric">{initiative.primaryMetric}</span>}{initiative.primaryMetricLabel && <p>{initiative.primaryMetricLabel}</p>}<h3>{initiative.title}</h3><p>{initiative.summary}</p></div></Link>)}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Publication gate active</span><h3>Verified initiatives are being prepared for publication.</h3><p>The homepage does not expose draft causes or initiatives.</p></div>}
         </div>
       </section>
 
@@ -96,7 +86,7 @@ export default async function HomePage() {
         <section className="v2-section paper">
           <div className="v2-shell">
             <div className="v2-section-head"><div><p className="v2-section-label">From the field</p><h2 className="v2-section-title">The work keeps moving.</h2></div><div><p className="v2-section-intro">Published, privacy-approved moments from Amaana&apos;s work — a living record rather than a static brochure.</p><Link className="v2-text-link" href="/stories">All Stories of Amanah →</Link></div></div>
-            <div className="v2-field-grid">{stories.slice(0, 3).map(story => <Link className="v2-field-story" href={`/stories/${story.slug}`} key={story.id}><span className="v2-field-date">{story.publishedAt ? new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(story.publishedAt) : "Published story"}</span><h3>{story.title}</h3><p>{story.summary}</p><span className="v2-text-link">Read the story →</span></Link>)}</div>
+            <div className="v2-field-grid">{stories.map(story => <Link className="v2-field-story" href={`/stories/${story.slug}`} key={story.id}><span className="v2-field-date">{story.publishedAt ? new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric" }).format(story.publishedAt) : "Published story"}</span><h3>{story.title}</h3><p>{story.summary}</p><span className="v2-text-link">Read the story →</span></Link>)}</div>
           </div>
         </section>
       )}
