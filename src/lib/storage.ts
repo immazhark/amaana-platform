@@ -12,6 +12,15 @@ type StorageConfig = {
   client: S3Client;
 };
 
+export type PublicMediaStorageReadiness = {
+  uploadReady: boolean;
+  deliveryReady: boolean;
+  separateBucketConfigured: boolean;
+  usingFallbackCredentials: boolean;
+  baseUrlConfigured: boolean;
+  baseUrlSecure: boolean;
+};
+
 function createClient(region: string, endpoint: string | undefined, forcePathStyle: boolean, accessKeyId: string, secretAccessKey: string) {
   return new S3Client({ region, endpoint, forcePathStyle, credentials: { accessKeyId, secretAccessKey } });
 }
@@ -91,6 +100,37 @@ function normalizePublicBaseUrl() {
   const url = new URL(value);
   if (url.protocol !== "https:") throw new Error("PUBLIC_MEDIA_BASE_URL must use HTTPS");
   return url.toString().replace(/\/$/, "");
+}
+
+export function getPublicMediaStorageReadiness(): PublicMediaStorageReadiness {
+  const bucket = process.env.PUBLIC_MEDIA_S3_BUCKET?.trim();
+  const privateBucket = process.env.S3_BUCKET?.trim();
+  const region = process.env.PUBLIC_MEDIA_S3_REGION || process.env.S3_REGION;
+  const accessKeyId = process.env.PUBLIC_MEDIA_S3_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY;
+  const baseUrl = process.env.PUBLIC_MEDIA_BASE_URL?.trim();
+
+  let baseUrlSecure = false;
+  if (baseUrl) {
+    try {
+      baseUrlSecure = new URL(baseUrl).protocol === "https:";
+    } catch {
+      baseUrlSecure = false;
+    }
+  }
+
+  const separateBucketConfigured = Boolean(bucket && (!privateBucket || bucket !== privateBucket));
+  const uploadReady = Boolean(region && bucket && accessKeyId && secretAccessKey && separateBucketConfigured);
+  const deliveryReady = Boolean(uploadReady && baseUrl && baseUrlSecure);
+
+  return {
+    uploadReady,
+    deliveryReady,
+    separateBucketConfigured,
+    usingFallbackCredentials: !process.env.PUBLIC_MEDIA_S3_ACCESS_KEY_ID || !process.env.PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY,
+    baseUrlConfigured: Boolean(baseUrl),
+    baseUrlSecure,
+  };
 }
 
 export function validatePublicMediaFile(file: File) {
