@@ -1,6 +1,8 @@
 import { z } from "zod";
 
 const productionSchema = z.object({
+  APP_ENVIRONMENT: z.enum(["production", "staging"]).default("production"),
+  EMAIL_DELIVERY_MODE: z.enum(["live", "disabled"]).default("live"),
   DATABASE_URL: z.string().url(),
   NEXT_PUBLIC_APP_URL: z.string().url().refine(value => value.startsWith("https://"), "Production URL must use HTTPS"),
   EMAIL_FROM: z.string().min(3),
@@ -17,9 +19,31 @@ const productionSchema = z.object({
   RAZORPAY_WEBHOOK_SECRET: z.string().min(16),
   DONATION_TOKEN_PEPPER: z.string().min(32),
   AUTH_RATE_LIMIT_PEPPER: z.string().min(32),
+}).superRefine((env, ctx) => {
+  if (env.APP_ENVIRONMENT !== "staging") return;
+
+  if (!env.NEXT_PUBLIC_RAZORPAY_KEY_ID.startsWith("rzp_test_")) {
+    ctx.addIssue({
+      code: "custom",
+      path: ["NEXT_PUBLIC_RAZORPAY_KEY_ID"],
+      message: "Staging must use a Razorpay test key",
+    });
+  }
+
+  if (env.EMAIL_DELIVERY_MODE !== "disabled") {
+    ctx.addIssue({
+      code: "custom",
+      path: ["EMAIL_DELIVERY_MODE"],
+      message: "Staging email delivery must be disabled",
+    });
+  }
 });
 
 export function validateProductionEnvironment() {
   if (process.env.NODE_ENV !== "production") return;
   productionSchema.parse(process.env);
+}
+
+export function isEmailDeliveryEnabled() {
+  return process.env.EMAIL_DELIVERY_MODE !== "disabled";
 }
