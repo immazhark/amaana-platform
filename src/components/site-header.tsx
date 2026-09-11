@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const primaryLinks = [
   ["Our Work", "/our-work"],
@@ -21,6 +21,19 @@ export function SiteHeader() {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const closeMenu = () => setOpen(false);
+
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [open]);
 
   return (
     <header className="site-header">
@@ -54,7 +67,7 @@ export function SiteHeader() {
         </div>
       </nav>
 
-      <div id="mobile-navigation" className={`mobile-menu${open ? " open" : ""}`}>
+      <nav id="mobile-navigation" className={`mobile-menu${open ? " open" : ""}`} aria-label="Mobile navigation" hidden={!open}>
         <div className="container mobile-menu-inner">
           <div className="mobile-menu-primary">
             {primaryLinks.map(([label, href]) => {
@@ -75,7 +88,7 @@ export function SiteHeader() {
           </div>
           <Link className="button" href="/appeals" onClick={closeMenu}>Support a verified need</Link>
         </div>
-      </div>
+      </nav>
     </header>
   );
 }
