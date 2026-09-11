@@ -13,7 +13,18 @@ import { prisma } from "@/lib/prisma";
  */
 export async function captureDonation(providerOrderId: string, providerPaymentId: string, amountPaise: number) {
   return prisma.$transaction(async tx => {
-    const donation = await tx.donation.findUnique({ where: { providerOrderId } });
+    const donation = await tx.donation.findUnique({
+      where: { providerOrderId },
+      select: {
+        id: true,
+        currency: true,
+        amount: true,
+        referenceNumber: true,
+        appealId: true,
+        donorEmail: true,
+        receiptTokenHash: true,
+      },
+    });
     if (!donation || donation.currency !== "INR" || donation.amount.mul(100).toNumber() !== amountPaise) {
       throw new Error("Payment does not match donation order");
     }
