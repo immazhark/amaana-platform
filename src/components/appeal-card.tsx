@@ -10,7 +10,7 @@ export function AppealCard({ appeal }: { appeal: PublicAppeal }) {
     <article className="v2-appeal-card">
       <div className="v2-appeal-card-head">
         <span>{appeal.category.replaceAll("_", " ")}</span>
-        <small>{appeal.beneficiaryLocation || "Hyderabad"}</small>
+        <small>{appeal.beneficiaryLocation || "Location withheld"}</small>
       </div>
       <div className="v2-appeal-card-body">
         <div>
