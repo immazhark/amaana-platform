@@ -61,13 +61,15 @@ Avoid publishing near-duplicate frames simply because they exist. The page shoul
 
 | Source | Type | Supported content | Status | Intended placement |
 |---|---|---|---|---|
-| `2026 Qurbani meat distribution drive.png` | image/post | campaign visual | Needs media approval; model-generated flag exists in Library metadata, so do **not** use as documentary evidence. | Exclude from authentic-photo slots |
+| `2026 Qurbani meat distribution drive.png` | image/post | campaign visual; 350 boxes; 350+ families | Needs media approval; model-generated flag exists in Library metadata, so do **not** use as documentary evidence or as the sole factual source. | Exclude from authentic-photo slots |
+| `Delivering hope through meat distribution.png` | branded campaign graphic with real packed-box photography | Explicit campaign stats: **28 sheep sacrificed**, 350 meat boxes prepared, 1 kg per box, 350+ families benefited | Useful corroborating campaign-published record. Keep separate from original photography and do not repeat its aspirational marketing wording as measured impact. | Qurbani factual reconciliation + historical collateral |
+| `Thank you for your support 2026.png` | branded campaign graphic | Repeats **28 sheep**, 350 meat boxes, 1 kg per box and 350+ families | Corroborates the same published 2026 figures. Religious quotations inside this graphic are not automatically approved for website use. | Factual reconciliation only unless separately reviewed |
 | `Upholding trust through Qurbani service.png` | branded graphic with real embedded photos | sacrifice/preparation, weighing, packing, labelled distribution boxes | Candidate for campaign-context use after privacy/quality review. Graphic language such as hygiene/quality claims must be checked against source evidence before being repeated as factual site copy. | Qurbani initiative media candidate |
 | `Upholding trust in food distribution.png` / `Upholding trust in meat distribution.png` | branded graphic with real embedded photos | weighing, gloved handling, packed trays, workers | Candidate after privacy/quality review. Do not infer independent certification or standards from marketing wording. | Qurbani initiative / story media candidate |
 
 ### Qurbani / Meat Distribution 2026 — original media inspection
 
-A group of non-model-generated native JPEGs uploaded together on 29 June 2026 has now been visually inspected. The files clearly document the 2026 Meat Distribution Drive environment, preparation and packing. They do **not**, by themselves, establish the final animal count, exact total meat weight, beneficiary count or species terminology. Those facts remain tied to separate primary campaign records and are not inferred from photographs.
+A group of non-model-generated native JPEGs uploaded together on 29 June 2026 has now been visually inspected. The files clearly document the 2026 Meat Distribution Drive environment, preparation and packing. They do **not**, by themselves, establish the final animal count, exact total meat weight, beneficiary count or species terminology. Those facts are kept separate from visual inference.
 
 | Original file | Visible content only | Public-use assessment | Draft alt text / handling note |
 |---|---|---|---|
@@ -90,7 +92,21 @@ Several additional vertical JPEGs appear to be exported frames carrying overlaid
 4. **Cold/transport organisation:** stacked containers in insulated box (`7667B562…`).
 5. **Optional field/process context:** only non-identifying or consent-cleared worker frames.
 
-**Terminology remains unresolved from the currently retrieved primary text.** The photographs show multiple sheep/goat-like animals, but visual identification must not be used to decide whether the website says “28 sheep” or “28 animals.” Until a primary campaign source is located and reconciled, use neutral wording such as `Qurbani animals` or avoid the species count in newly written copy.
+### Qurbani terminology reconciliation
+
+The earlier `animals` vs `sheep` uncertainty is now narrower. Multiple Amaana campaign-published 2026 graphics independently state **28 sheep sacrificed**, alongside 350 meat boxes, approximately 1 kg per box and 350+ families. The original photographs are *not* being used to identify species; the wording comes from campaign records. For 2026 public copy, `28 sheep` is therefore the currently supported wording unless a stronger primary record later contradicts it.
+
+The **2025 pilot remains source-incomplete in the currently retrievable archive**. Searches for the remembered `15 animals / 150+ families` wording did not surface an inspectable primary campaign document or original post. Until that source is retrieved, do not upgrade those remembered figures to a newly published evidence claim merely because they already appear in internal planning context.
+
+## Taleem Initiative
+
+Current implementation seed text says the Taleem initiative included a documented activity reaching **50 children** with stationery/learning essentials. This seed is an implementation record, not an independent source of truth. The present Library/conversation retrieval did not surface the underlying Taleem source document or original post when searched by `Taleem`, `stationery`, `orphans`, `Al Khair` and `Borabanda`.
+
+Therefore:
+
+- keep the existing 50-child figure in the current build only as previously approved/seeded content;
+- do **not** expand it with new claims about orphan status, donor count, venue or collaboration until the supporting source is directly inspected in this Phase 5 register;
+- when Taleem photographs are found, apply child-privacy rules more strictly than ordinary campaign logistics imagery: no identifiable child image is public-ready merely because it was used in an internal or social post.
 
 ## Brand and contact material
 
@@ -118,6 +134,7 @@ Several additional vertical JPEGs appear to be exported frames carrying overlaid
 9. Public campaign media must use storage that is separate from the private assistance-document bucket.
 10. Uploading a file is not approval. New media records start unpublished and require an explicit `content.approve` action before public rendering.
 11. Graphic slaughter/preparation imagery is not a default engagement asset; documentary relevance does not automatically make an image suitable for broad public presentation.
+12. A database seed or existing website value is not promoted to `verified factual source` unless its underlying Amaana source is also identified.
 
 ## Phase 5 work queue
 
@@ -128,17 +145,18 @@ Several additional vertical JPEGs appear to be exported frames carrying overlaid
 - Admin media-review workflow now supports source/year/caption/alt metadata and an explicit privacy/publication gate.
 - Actual public rendering still requires the selected originals to be placed in dedicated public-media storage and explicitly approved.
 
-### Batch B — Qurbani 2025/2026 — 2026 ORIGINAL SET PARTIALLY INVENTORIED
+### Batch B — Qurbani 2025/2026 — 2026 MEDIA INVENTORIED; 2025 SOURCE STILL PENDING
 - Original 2026 preparation/packing JPEGs have been separated from designed/model-generated collateral for the inspected set.
 - Safer public-facing candidates are identified: boxed campaign context, weighing, labelled containers and insulated transport/storage.
 - Graphic slaughter frames are excluded from default public presentation.
 - Worker-identifying frames require consent/provenance review before public use.
-- “animals” vs “sheep” terminology remains pending a textual primary-source reconciliation; photographs will not be used to decide that factual wording.
-- 2025 media/source inventory remains pending.
+- 2026 campaign-published materials consistently support `28 sheep`, 350 boxes, ~1 kg per box and 350+ families; photographs are not used to infer species.
+- 2025 `15 animals / 150+ families` remains pending direct primary-source retrieval.
 
-### Batch C — Taleem, Winter, Dates, Flood/COVID, Medical/Financial
+### Batch C — Taleem, Winter, Dates, Flood/COVID, Medical/Financial — IN PROGRESS
+- Taleem retrieval has started; current seed contains a 50-child figure but the underlying source is not yet retrieved in this phase.
 - Inventory each campaign independently.
-- Establish exact count/status/source before adding to public metrics.
+- Establish exact count/status/source before adding or expanding public metrics.
 - Apply stricter privacy review for children and medical-assistance material.
 
 ### Batch D — brand/social/contact
@@ -147,4 +165,4 @@ Several additional vertical JPEGs appear to be exported frames carrying overlaid
 
 ## Current register boundary
 
-This register now contains concrete inventories for the discovered original 2026 Eid preparation/content/logistics set and an initial original 2026 Meat Distribution preparation/packing set. It is **not** a claim that every Amaana archive has been enumerated. Remaining archive ZIP/file-by-file completion, 2025 Qurbani, beneficiary/distribution-photo review and other campaign inventories are still pending.
+This register now contains concrete inventories for the discovered original 2026 Eid preparation/content/logistics set and the inspected original 2026 Meat Distribution preparation/packing set, plus a campaign-record reconciliation supporting the 2026 `28 sheep` wording. It is **not** a claim that every Amaana archive has been enumerated. Remaining archive ZIP/file-by-file completion, 2025 Qurbani, Taleem source retrieval, beneficiary/distribution-photo review and the other campaign inventories are still pending.
