@@ -1,6 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-export const metadata: Metadata = { title: "Privacy Policy", description: "How Amaana Foundation collects, uses and protects personal information." };
+export const metadata: Metadata = {
+  title: "Privacy Policy",
+  description: "How Amaana Foundation collects, uses and protects personal information.",
+  alternates: { canonical: "/privacy" },
+  openGraph: { type: "website", url: "/privacy", title: "Privacy Policy | Amaana Foundation", description: "How Amaana Foundation collects, uses and protects personal information." },
+  twitter: { card: "summary", title: "Privacy Policy | Amaana Foundation", description: "How Amaana Foundation collects, uses and protects personal information." },
+};
 const sections=[
 ["01","Information we collect",<>Assistance applicants may provide names, contact information, location, descriptions of need and supporting documents. Donors provide a name, email address, optional phone number, donation amount and payment references. Staff accounts contain identity, access-role and audit information.</>],
 ["02","How information is used",<>Information is used to verify requests, administer appeals, process and reconcile donations, communicate status changes, prevent misuse, maintain audit records and meet applicable obligations.</>],
