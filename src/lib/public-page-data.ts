@@ -111,3 +111,44 @@ export const getOurWorkIndexData = cache(async () => {
     },
   });
 });
+
+/**
+ * Impact only needs public initiative identity, cause context, metrics and a
+ * single approved witness image. Keeping this separate avoids serializing full
+ * initiative stories and complete media galleries on the evidence index.
+ */
+export const getImpactPageData = cache(async () => {
+  return prisma.initiative.findMany({
+    where: { status: "PUBLISHED" },
+    orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      summary: true,
+      primaryMetric: true,
+      primaryMetricLabel: true,
+      cause: { select: { title: true } },
+      mediaAssets: {
+        where: {
+          kind: "IMAGE",
+          isPublic: true,
+          privacyApprovedAt: { not: null },
+          publicUrl: { not: null },
+        },
+        orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
+        take: 1,
+        select: {
+          id: true,
+          kind: true,
+          title: true,
+          publicUrl: true,
+          externalUrl: true,
+          altText: true,
+          caption: true,
+          sourceYear: true,
+        },
+      },
+    },
+  });
+});
