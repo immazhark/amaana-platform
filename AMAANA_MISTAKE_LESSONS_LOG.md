@@ -1,0 +1,162 @@
+# Amaana Foundation — Mistake & Lessons Log
+
+Status: ACTIVE / APPEND-ONLY PRACTICE
+Branch: `phase-public-site-rebuild`
+
+Purpose: prevent known mistakes from being repeated as the rebuild grows. Every meaningful mistake, regression, incorrect assumption or process failure must be recorded with: what happened, why it happened, how it was corrected, and the permanent prevention rule.
+
+A mistake is not considered learned from until the prevention rule is reflected in subsequent work.
+
+## Permanent operating rule
+
+For every future mistake or regression:
+1. record the mistake here;
+2. identify the root cause rather than only the symptom;
+3. record the corrective change;
+4. define a prevention rule or release gate;
+5. check related pages/workflows for the same class of defect;
+6. do not mark the issue resolved until the correction is verified.
+
+## Lessons already established
+
+### 1. Prematurely calling phases/pages complete
+**Mistake:** Earlier work sometimes treated code completion or a green build as equivalent to a finished public experience.
+
+**Why it happened:** Engineering completion was being used as a proxy for visual, factual, accessibility and workflow quality.
+
+**Correction:** Rebuild audit, Phase 6 quality standard and Open Risk Register now explicitly separate implementation from certification.
+
+**Prevention rule:** No public page or phase is called complete from CI alone. Final certification requires source/content review, brand review, visual/responsive QA, accessibility, performance, SEO, privacy/compliance and workflow verification where applicable.
+
+### 2. Generic/early-framework public design
+**Mistake:** The original public site felt like a sparse framework with generic hierarchy, little authentic media and weak Amaana identity.
+
+**Why it happened:** Functional page construction preceded strong art direction, documentary storytelling and visitor-journey design.
+
+**Correction:** `Living Amanah — Faith. Dignity. Action.` creative direction; two-Wow objective; dedicated page systems; editorial/asymmetric layouts; documentary-media architecture.
+
+**Prevention rule:** Every public page must pass the Phase 6 senior UX questions. Reusable components may not force visual sameness. Design exists to create Wow 1 while revealing the real work for Wow 2.
+
+### 3. Treating provisional brand colours as certified source values
+**Mistake:** Documentation at one point called working blue/gold hex values official before the master branding archive had been successfully inspected.
+
+**Why it happened:** Values observed/derived from supplied campaign material were promoted into source-of-truth language too early.
+
+**Correction:** Brand documentation now treats current values as provisional/working until the isolated logo/source artwork is inspected.
+
+**Prevention rule:** Visual inference never becomes a certified brand fact. Logo variants, source colours and production brand assets require direct inspection of the master branding source.
+
+### 4. Risk of overstating archive/source review
+**Mistake:** The project could have implied that archives had been fully reviewed despite ZIP enumeration/extraction failures.
+
+**Why it happened:** High-level files and some retrievable assets were available while complete file-by-file inventory was not.
+
+**Correction:** Phase 5 log and risk register explicitly distinguish inventoried material from inaccessible/unreviewed archive contents.
+
+**Prevention rule:** Never say `reviewed everything` without real file-by-file inventory. Missing/inaccessible source remains a visible blocker rather than being filled from memory.
+
+### 5. Fabricated location fallback on appeals
+**Mistake:** Appeal UI previously used `Hyderabad` when beneficiary location was absent.
+
+**Why it happened:** A visually convenient fallback silently became a factual claim.
+
+**Correction:** Missing location now renders as `Location withheld` rather than invented geography.
+
+**Prevention rule:** Fallback copy must never create facts. Unknown/private values must be represented as unknown, withheld or omitted.
+
+### 6. Mechanically prioritizing the first Faith image
+**Mistake:** The first Faith media item was briefly priority-loaded because it was the first item, despite appearing below the editorial body.
+
+**Why it happened:** Media ordering was confused with viewport/LCP importance.
+
+**Correction:** Faith gallery media returned to lazy loading.
+
+**Prevention rule:** Eager/priority media is determined by actual above-the-fold placement and LCP value, never array position.
+
+### 7. React mobile-menu state reset via effect
+**Mistake:** The first route-change menu implementation synchronously called `setState` inside an effect, triggering a CI/lint failure.
+
+**Why it happened:** Route-change behavior was implemented imperatively rather than deriving state from pathname.
+
+**Correction:** Open state became pathname-aware; route navigation naturally closes the menu without effect-driven state reset.
+
+**Prevention rule:** Prefer derived state over effects for values that can be expressed from current props/router state. Never suppress a valid lint warning to preserve a flawed pattern.
+
+### 8. Mobile menu focus was not fully managed
+**Mistake:** A menu could close while keyboard focus remained inside content that became hidden.
+
+**Why it happened:** Visibility/ARIA behavior was corrected before focus lifecycle was fully audited.
+
+**Correction:** Opening transfers focus into the menu; Escape closes and returns focus to the toggle.
+
+**Prevention rule:** Any show/hide interaction requires a keyboard focus-entry, focus-exit and Escape/recovery review, not only `aria-expanded`/`hidden` semantics.
+
+### 9. Global `overflow:hidden` risk
+**Mistake:** The v2 public shell used broad overflow hiding, potentially masking vertical focus outlines, sticky elements or long-content behavior merely to suppress horizontal overflow.
+
+**Why it happened:** A layout containment shortcut was applied too broadly.
+
+**Correction:** Horizontal-only clipping/refinement and explicit focus/anchor behavior were introduced.
+
+**Prevention rule:** Never use broad overflow suppression as a substitute for finding the element causing overflow. Responsive QA must inspect the root cause.
+
+### 10. Checkout route cache-control gap
+**Mistake:** `/donations/*` had private/no-store headers, while the actual `/donate/*` checkout route was not covered by the same explicit response policy.
+
+**Why it happened:** Similar route names caused an incomplete security/cache boundary.
+
+**Correction:** Checkout responses are explicitly private/no-store.
+
+**Prevention rule:** Security/privacy controls must be mapped to real route inventory, not inferred from naming. Phase 8 must crawl every sensitive route class.
+
+### 11. Request Assistance sitemap parity gap
+**Mistake:** Request Assistance had indexable metadata but was absent from the public sitemap.
+
+**Why it happened:** Metadata and sitemap coverage were improved in separate passes.
+
+**Correction:** The legitimate public assistance-intake route was added while private receipt/status routes stay excluded.
+
+**Prevention rule:** Final SEO QA compares actual public route inventory against canonicals, robots, sitemap and indexing intent as one matrix.
+
+### 12. Stale execution documentation
+**Mistake:** The main execution log still described Phase 6/7 as pending after those phases were actively underway.
+
+**Why it happened:** Implementation moved faster than durable status documentation.
+
+**Correction:** Current checkpoint/status was refreshed; risk and implementation logs were introduced.
+
+**Prevention rule:** At every meaningful checkpoint, update durable execution state before declaring phase progress. Stale docs are treated as a project risk because they can cause duplicate or skipped work.
+
+### 13. Public-media upload can orphan storage objects
+**Mistake/risk:** Validation-before-upload was improved, but a successful object upload followed by a failed DB create can still leave an orphaned object.
+
+**Why it remains:** Storage and database operations are not transactional together.
+
+**Current correction:** Recorded explicitly in the risk register instead of pretending the upload lifecycle is fully hardened.
+
+**Prevention rule:** Add compensation/cleanup before high-volume use; do not call media storage lifecycle complete until failure cleanup is verified.
+
+### 14. Video rendering is not the same as video accessibility
+**Mistake/risk:** A labelled `<video controls>` element could be mistaken for a complete accessible video experience.
+
+**Why it matters:** Meaningful video may require captions/transcript support not represented by current media data.
+
+**Current correction:** Video accessibility remains a publication/release gate.
+
+**Prevention rule:** No meaningful video content is certified accessible merely because native controls work. Captions/transcript strategy must be reviewed before publication.
+
+## Cross-project prevention checklist
+
+Before closing any future batch, ask:
+- Did we introduce or infer any fact not supported by source?
+- Did we confuse code completion with user-visible certification?
+- Did we preserve privacy/publication/religious/compliance gates?
+- Did we introduce a responsive or focus issue to achieve a visual effect?
+- Did we optimize based on assumption rather than actual viewport/data use?
+- Did metadata, robots, sitemap and route intent stay aligned?
+- Did security/cache controls cover the real route, not a similarly named route?
+- Did documentation remain synchronized with implementation?
+- Did a fix address the same class of issue elsewhere, not only the reported instance?
+- Is the new state actually verified, or only implemented?
+
+This file should grow when we learn something new. Repeating a documented class of mistake without checking this log is itself a process failure.
