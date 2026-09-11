@@ -70,6 +70,7 @@ export function SiteHeader() {
             <Link href="/request-assistance" onClick={closeMenu}>Request assistance</Link>
             <Link href="/how-we-verify" onClick={closeMenu}>How we work</Link>
             <Link href="/transparency" onClick={closeMenu}>Transparency</Link>
+            <Link href="/governance" onClick={closeMenu}>Governance</Link>
             <Link href="/contact" onClick={closeMenu}>Contact</Link>
           </div>
           <Link className="button" href="/appeals" onClick={closeMenu}>Support a verified need</Link>
