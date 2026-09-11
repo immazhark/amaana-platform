@@ -6,6 +6,7 @@ import "./media.css";
 import "./home-experience.css";
 import "./our-work.css";
 import "./initiative-experience.css";
+import "./qurbani.css";
 import "./impact.css";
 import "./stories.css";
 import "./faith.css";
