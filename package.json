@@ -13,6 +13,7 @@
     "prisma:validate": "prisma validate",
     "prisma:migrate": "prisma migrate dev",
     "seed:rbac": "node prisma/seed.mjs",
+    "seed:public-content": "node prisma/seed-public-content.mjs",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
