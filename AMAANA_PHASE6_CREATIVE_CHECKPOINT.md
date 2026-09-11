@@ -55,6 +55,22 @@ A route-scoped `faith-wow.css` layer now strengthens serenity and visual identit
 
 Verified-only religious publication rules remain unchanged. No verse, hadith or religious claim was added or inferred.
 
+## Transparency creative refinement
+
+The visual-repetition audit found that Transparency still opened with another circular/orbit composition even though Impact, Stories and Faith already use related circular geometry. That repetition was treated as a design-system warning rather than accepted as brand consistency.
+
+A route-scoped `transparency-wow.css` layer now gives Transparency a distinct evidence-record personality without adding client JavaScript:
+- the previous hero orbit has been replaced by a layered documentary/evidence folio;
+- the folio traces `Need → Support → Preparation → Delivery → Outcome` as a public-safe record rather than decorative navigation;
+- overlapping paper/record planes create depth without turning the page into another generic card layout;
+- an `Evidence, not exposure` stamp reinforces the page-specific trust principle;
+- the folio is exposed as a labelled semantic group while decorative connectors/stamp are hidden from assistive technology where appropriate;
+- mobile collapses the composition into a compact document rather than squeezing the desktop treatment;
+- reduced-motion removes entrance choreography;
+- the existing evidence ledger, public/private boundary, verified initiative data and privacy gates remain unchanged.
+
+This deliberately moves Transparency away from the repeated orbit vocabulary while keeping coherent Amaana typography, blue/gold identity and evidence-first design DNA.
+
 ## Certification boundary
 
 These changes are implementation, not final visual certification. They still require real rendered desktop/mobile/browser review, contrast/reflow checks, authentic-media population where available and Phase 8 performance/accessibility measurement before the routes can be called complete.
