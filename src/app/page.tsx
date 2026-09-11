@@ -1,10 +1,26 @@
 import "./home-experience.css";
+import "./home-wow.css";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { AppealCard } from "@/components/appeal-card";
+import { PublicMedia } from "@/components/public-media";
 import { getHomepagePublicContent } from "@/lib/public-content";
+import { getHomepageHeroMedia } from "@/lib/public-page-data";
 import { eidGrowth, foundingStory, homepageImpact } from "@/content/amaana";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Amaana Foundation",
+  description: "Faith-inspired service, dignified assistance and transparent community action from Amaana Foundation in Hyderabad.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    title: "Amaana Foundation",
+    description: "Faith-inspired service, dignified assistance and transparent community action from Hyderabad, India.",
+  },
+};
 
 const visitorActions = [
   { title: "See the work", copy: "Explore documented initiatives, distributions and the people-centred stories behind the numbers.", href: "/our-work", marker: "01" },
@@ -14,26 +30,48 @@ const visitorActions = [
 ] as const;
 
 export default async function HomePage() {
-  const { appeals, initiatives, featuredFaith, stories } = await getHomepagePublicContent();
+  const [{ appeals, initiatives, featuredFaith, stories }, heroMedia] = await Promise.all([
+    getHomepagePublicContent(),
+    getHomepageHeroMedia(),
+  ]);
+
+  const heroContext = heroMedia?.initiative
+    ? { label: "Documented initiative", title: heroMedia.initiative.title, href: `/our-work/${heroMedia.initiative.slug}` }
+    : heroMedia?.story
+      ? { label: "Story of Amanah", title: heroMedia.story.title, href: `/stories/${heroMedia.story.slug}` }
+      : null;
 
   return (
     <div className="v2-home">
-      <section className="v2-hero">
-        <div className="v2-shell v2-hero-inner">
-          <div>
+      <section className="v2-hero v2-home-hero">
+        <div className="v2-shell v2-home-hero-grid">
+          <div className="v2-home-hero-copy">
             <p className="v2-kicker">Amaana Foundation · Hyderabad</p>
             <h1 className="v2-display">Faith. Dignity. Action.</h1>
-          </div>
-          <div>
             <p className="v2-hero-copy">What began as a family-led Ramadan effort in 2020 has grown into years of community-supported service — carrying care from hearts to homes with dignity, transparency and dua.</p>
             <div className="v2-hero-actions">
               <Link className="v2-button" href="/our-work">Explore our work</Link>
               <Link className="v2-button ghost" href="/about">Our story</Link>
             </div>
-            <div className="v2-hero-proof" style={{ marginTop: "2.5rem" }}>
+            <div className="v2-home-hero-proof">
               <div><span className="v2-proof-number">710</span><span className="v2-proof-copy">Eid Gift Kits distributed in 2026</span></div>
               <div><span className="v2-proof-number">7</span><span className="v2-proof-copy">consecutive years of Eid Kits, from 2020 through 2026</span></div>
             </div>
+          </div>
+
+          <div className="v2-home-hero-visual" aria-label="Amaana Foundation documented work">
+            {heroMedia ? (
+              <>
+                <PublicMedia asset={heroMedia} priority />
+                {heroContext && <Link className="v2-home-hero-context" href={heroContext.href}><span>{heroContext.label}</span><span>{heroContext.title} →</span></Link>}
+              </>
+            ) : (
+              <div className="v2-home-hero-placeholder">
+                <small>Living Amanah · 2020—2026</small>
+                <strong>From 85 to 710.</strong>
+                <p>Authentic field photography will occupy this space only after provenance, privacy and public-use approval. The story remains real even while that gate is active.</p>
+              </div>
+            )}
           </div>
         </div>
       </section>
