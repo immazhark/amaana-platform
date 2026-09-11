@@ -15,6 +15,7 @@ import "./flood.css";
 import "./impact.css";
 import "./stories.css";
 import "./faith.css";
+import "./faith-detail.css";
 import "./appeals.css";
 import "./forms-experience.css";
 import "./state-experience.css";
