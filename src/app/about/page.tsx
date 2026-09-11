@@ -4,6 +4,18 @@ import Link from "next/link";
 export const metadata: Metadata = {
   title: "About",
   description: "Learn how a family-led Ramadan effort in Hyderabad grew into Amaana Foundation and its continuing work of faith-inspired, dignified service.",
+  alternates: { canonical: "/about" },
+  openGraph: {
+    type: "website",
+    url: "/about",
+    title: "About Amaana Foundation",
+    description: "From a family-led Ramadan effort in Hyderabad to a continuing commitment to faith-inspired, dignified service.",
+  },
+  twitter: {
+    card: "summary",
+    title: "About Amaana Foundation",
+    description: "Discover how Amaana's work grew from a family-led Ramadan effort in Hyderabad.",
+  },
 };
 
 export default function AboutPage() {
