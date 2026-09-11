@@ -13,37 +13,90 @@ export default async function StoryPage({ params }: { params: Promise<{ slug: st
   const publishedDate = story.publishedAt
     ? new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(story.publishedAt)
     : null;
+  const leadMedia = story.mediaAssets[0] ?? null;
+  const remainingMedia = story.mediaAssets.slice(1);
+  const context = story.initiative?.title ?? story.cause?.title ?? "Amaana field journal";
 
   return (
-    <div className="v2-home">
-      <section className="v2-section dark">
-        <div className="v2-shell">
-          <p className="v2-section-label">Stories of Amanah{publishedDate ? ` · ${publishedDate}` : ""}</p>
-          <h1 className="v2-display" style={{ maxWidth: "10ch" }}>{story.title}</h1>
-          <p className="v2-hero-copy" style={{ marginTop: "2rem" }}>{story.summary}</p>
-        </div>
-      </section>
-
-      <section className="v2-section paper">
-        <div className="v2-shell">
-          <div className="v2-section-head">
-            <div><p className="v2-section-label">Documented account</p><h2 className="v2-section-title">What Amaana knows and can responsibly share.</h2></div>
-            <p className="v2-section-intro">{story.body}</p>
+    <div className="v2-home v2-story-detail-page">
+      <section className="v2-story-detail-hero">
+        <div className="v2-shell v2-story-detail-hero-grid">
+          <div className="v2-story-detail-heading">
+            <Link href="/stories" className="v2-story-detail-back">← Field journal</Link>
+            <p className="v2-section-label">Stories of Amanah{publishedDate ? ` · ${publishedDate}` : ""}</p>
+            <h1>{story.title}</h1>
+            <p>{story.summary}</p>
           </div>
-
-          {story.mediaAssets.length > 0 ? (
-            <div className="v2-media-grid" aria-label={`${story.title} approved media`}>
-              {story.mediaAssets.map(asset => <PublicMedia asset={asset} key={asset.id} />)}
-            </div>
-          ) : (
-            <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Privacy first</span><h3>No public media is attached to this story.</h3><p>A story can be published without exposing a person&apos;s image or private documents. Media appears only when its own public-use and privacy gates are satisfied.</p></div>
-          )}
-
-          {story.sourceNote && <p className="v2-section-intro" style={{ marginTop: "2rem" }}>Source note: {story.sourceNote}</p>}
+          <aside className="v2-story-detail-context" aria-label="Story context">
+            <span>Field note</span>
+            <strong>{context}</strong>
+            <div><small>Publication</small><b>Privacy reviewed</b></div>
+            <div><small>Media</small><b>{story.mediaAssets.length > 0 ? `${story.mediaAssets.length} approved ${story.mediaAssets.length === 1 ? "asset" : "assets"}` : "No public media"}</b></div>
+          </aside>
         </div>
       </section>
 
-      <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Continue exploring</p><h2>See the wider work around this story.</h2><div className="v2-hero-actions" style={{ justifyContent: "center" }}>{story.initiative && <Link className="v2-button" href={`/our-work/${story.initiative.slug}`}>View initiative</Link>}<Link className="v2-text-link" href="/stories">All stories →</Link></div></div></section>
+      <section className="v2-story-detail-lead">
+        <div className="v2-shell">
+          {leadMedia ? (
+            <div className="v2-story-detail-lead-media"><PublicMedia asset={leadMedia} /></div>
+          ) : (
+            <div className="v2-story-detail-no-media">
+              <span>Privacy can be part of the evidence.</span>
+              <strong>This account does not need a person&apos;s image to be worth documenting.</strong>
+              <p>Amaana publishes media only when the asset has passed its own public-use and privacy review.</p>
+            </div>
+          )}
+        </div>
+      </section>
+
+      <section className="v2-story-detail-body">
+        <div className="v2-shell v2-story-detail-body-grid">
+          <aside>
+            <p className="v2-section-label">Documented account</p>
+            <h2>What Amaana knows and can responsibly share.</h2>
+            <div className="v2-story-detail-rule"><span>Fact</span><p>Keep the account attached to documented information.</p></div>
+            <div className="v2-story-detail-rule"><span>Dignity</span><p>Leave private proofs and unnecessary identity details outside the public story.</p></div>
+          </aside>
+          <article className="v2-story-detail-prose">
+            <div className="v2-story-detail-dropcap" aria-hidden="true">A</div>
+            <p>{story.body}</p>
+            {story.sourceNote && <div className="v2-story-source-note"><span>Source note</span><p>{story.sourceNote}</p></div>}
+          </article>
+        </div>
+      </section>
+
+      {remainingMedia.length > 0 && (
+        <section className="v2-story-detail-gallery">
+          <div className="v2-shell">
+            <div className="v2-section-head">
+              <div><p className="v2-section-label">Approved field record</p><h2 className="v2-section-title">Only what cleared the public-use gate.</h2></div>
+              <p className="v2-section-intro">These assets belong to the documented account and have been separately cleared for public display.</p>
+            </div>
+            <div className="v2-story-detail-media-grid" aria-label={`${story.title} approved media`}>
+              {remainingMedia.map(asset => <PublicMedia asset={asset} key={asset.id} />)}
+            </div>
+          </div>
+        </section>
+      )}
+
+      <section className="v2-story-detail-ethic">
+        <div className="v2-shell v2-story-detail-ethic-grid">
+          <div><p className="v2-section-label">Editorial boundary</p><h2>Evidence without exposure.</h2></div>
+          <p>Stories can explain the work without turning vulnerability into spectacle. Private documents stay private, identity details are minimized, and public media is optional rather than assumed.</p>
+        </div>
+      </section>
+
+      <section className="v2-closing">
+        <div className="v2-shell">
+          <p className="v2-section-label">Continue the journey</p>
+          <h2>One account belongs to a wider body of work.</h2>
+          <div className="v2-hero-actions" style={{ justifyContent: "center" }}>
+            {story.initiative && <Link className="v2-button" href={`/our-work/${story.initiative.slug}`}>View this initiative</Link>}
+            <Link className="v2-text-link" href="/stories">Return to the field journal →</Link>
+          </div>
+        </div>
+      </section>
     </div>
   );
 }
