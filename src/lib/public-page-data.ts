@@ -19,10 +19,27 @@ export const getFaithPageData = cache(getPublishedFaithContentBySlug);
 export const getAppealPageData = cache(async (slug: string) => {
   return prisma.appeal.findFirst({
     where: { slug, status: { in: ["PUBLISHED", "FUNDED", "CLOSED"] } },
-    include: {
+    select: {
+      slug: true,
+      title: true,
+      summary: true,
+      category: true,
+      beneficiaryLocation: true,
+      beneficiaryDisplayName: true,
+      story: true,
+      status: true,
+      goalAmount: true,
+      amountRaised: true,
+      publishedAt: true,
       updates: {
         where: { isPublic: true },
         orderBy: { publishedAt: "desc" },
+        select: {
+          id: true,
+          title: true,
+          content: true,
+          publishedAt: true,
+        },
       },
     },
   });
