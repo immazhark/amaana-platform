@@ -14,6 +14,7 @@ import "./forms-experience.css";
 import "./state-experience.css";
 import "./trust-experience.css";
 import "./policy-experience.css";
+import "./governance.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { Analytics } from "@/components/analytics";
