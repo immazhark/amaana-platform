@@ -1,7 +1,22 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-export const metadata: Metadata = { title: "Compliance and Registration", description: "Current donation and tax-approval disclosures for Amaana Foundation." };
+export const metadata: Metadata = {
+  title: "Compliance and Registration",
+  description: "Current donation, FCRA and provisional 80G disclosures for Amaana Foundation, stated conservatively from confirmed records.",
+  alternates: { canonical: "/compliance" },
+  openGraph: {
+    type: "website",
+    url: "/compliance",
+    title: "Compliance and Registration | Amaana Foundation",
+    description: "Current donation, FCRA and provisional 80G disclosures for Amaana Foundation.",
+  },
+  twitter: {
+    card: "summary",
+    title: "Compliance and Registration | Amaana Foundation",
+    description: "Amaana Foundation's current public compliance position and donation boundaries.",
+  },
+};
 
 export default function CompliancePage() {
   return <div className="v2-home v2-compliance-page">
