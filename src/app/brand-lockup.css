@@ -1,0 +1,21 @@
+.brand-official {
+  min-width: 7.25rem;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+}
+
+.brand-official .brand-lockup {
+  display: block;
+  width: auto;
+  height: 4.35rem;
+  object-fit: contain;
+}
+
+@media (max-width: 760px) {
+  .brand-official .brand-lockup { height: 3.85rem; }
+}
+
+@media (max-width: 420px) {
+  .brand-official .brand-lockup { height: 3.45rem; }
+}
