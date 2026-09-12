@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
@@ -36,22 +37,16 @@ export function SiteHeader() {
         requestAnimationFrame(() => toggleRef.current?.focus());
         return;
       }
-
       if (event.key !== "Tab") return;
       const nav = mobileNavRef.current;
       const toggle = toggleRef.current;
       if (!nav || !toggle) return;
-
-      const focusable = [
-        toggle,
-        ...Array.from(nav.querySelectorAll<HTMLElement>("a[href], button:not([disabled])")),
-      ].filter(element => element.getClientRects().length > 0);
-
+      const focusable = [toggle, ...Array.from(nav.querySelectorAll<HTMLElement>("a[href], button:not([disabled])"))]
+        .filter(element => element.getClientRects().length > 0);
       if (focusable.length < 2) return;
       const first = focusable[0];
       const last = focusable[focusable.length - 1];
       const active = document.activeElement;
-
       if (event.shiftKey && active === first) {
         event.preventDefault();
         last.focus();
@@ -68,31 +63,23 @@ export function SiteHeader() {
   return (
     <header className="site-header">
       <nav className="container nav" aria-label="Primary navigation">
-        <Link className="brand brand-wordmark" href="/" aria-label="Amaana Foundation home" onClick={closeMenu}>
-          <span className="brand-name">Amaana Foundation</span>
-          <span className="brand-location">Upholding Trust · Hyderabad</span>
+        <Link className="brand brand-official" href="/" aria-label="Amaana Foundation home" onClick={closeMenu}>
+          <Image className="brand-mark" src="/brand/amaana-mark.svg" width={58} height={58} alt="" priority />
+          <span className="brand-copy">
+            <span className="brand-name">AMAANA</span>
+            <span className="brand-foundation">FOUNDATION</span>
+            <span className="brand-location">Upholding Trust · Hyderabad</span>
+          </span>
         </Link>
 
-        <button
-          ref={toggleRef}
-          className="menu-toggle"
-          type="button"
-          aria-expanded={open}
-          aria-controls="mobile-navigation"
-          aria-label={open ? "Close navigation menu" : "Open navigation menu"}
-          onClick={() => setOpenForPath(current => current === pathname ? null : pathname)}
-        >
+        <button ref={toggleRef} className="menu-toggle" type="button" aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? "Close navigation menu" : "Open navigation menu"} onClick={() => setOpenForPath(current => current === pathname ? null : pathname)}>
           <span aria-hidden="true">{open ? "×" : "☰"}</span>
         </button>
 
         <div className="nav-links">
           {primaryLinks.map(([label, href]) => {
             const active = isActivePath(pathname, href);
-            return (
-              <Link className={active ? "nav-link active" : "nav-link"} href={href} key={href} aria-current={active ? "page" : undefined}>
-                {label}
-              </Link>
-            );
+            return <Link className={active ? "nav-link active" : "nav-link"} href={href} key={href} aria-current={active ? "page" : undefined}>{label}</Link>;
           })}
           <Link className="button nav-donate" href="/appeals">Support a need</Link>
         </div>
@@ -103,11 +90,7 @@ export function SiteHeader() {
           <div className="mobile-menu-primary">
             {primaryLinks.map(([label, href]) => {
               const active = isActivePath(pathname, href);
-              return (
-                <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMenu} aria-current={active ? "page" : undefined}>
-                  {label}
-                </Link>
-              );
+              return <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMenu} aria-current={active ? "page" : undefined}>{label}</Link>;
             })}
           </div>
           <div className="mobile-menu-secondary" aria-label="More ways to connect">
