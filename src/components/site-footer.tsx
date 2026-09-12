@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 
 const socialLinks = [
@@ -21,7 +22,15 @@ export function SiteFooter() {
 
         <div className="footer-grid footer-grid-v2">
           <div className="footer-intro">
-            <Link className="brand brand-wordmark footer-wordmark" href="/">Amaana Foundation</Link>
+            <Link className="footer-brand-lockup" href="/" aria-label="Amaana Foundation home">
+              <span className="footer-brand-mark" aria-hidden="true">
+                <Image src="/brand/amaana-mark.svg" alt="" width={88} height={88} />
+              </span>
+              <span className="footer-brand-copy">
+                <strong>AMAANA</strong>
+                <small>FOUNDATION</small>
+              </span>
+            </Link>
             <p>
               Faith-inspired service rooted in dignity, compassion and responsible stewardship — documenting real work, known outcomes and the journey behind every act of care.
             </p>
