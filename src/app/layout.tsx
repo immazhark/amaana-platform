@@ -13,6 +13,7 @@ import "./loading-experience.css";
 import "./world-class-polish.css";
 import "./home-media-polish.css";
 import "./experience-finish.css";
+import "./islamic-backdrops.css";
 import "./islamic-companion.css";
 import "./accessibility.css";
 import { SiteFooter } from "@/components/site-footer";
