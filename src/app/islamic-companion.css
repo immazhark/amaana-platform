@@ -1,0 +1,114 @@
+.islamic-companion {
+  position: fixed;
+  z-index: 40;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  pointer-events: none;
+}
+
+.islamic-companion-tab,
+.islamic-companion-panel { pointer-events: auto; }
+
+.islamic-companion-tab {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: .65rem;
+  align-items: center;
+  min-width: 11rem;
+  min-height: 4.6rem;
+  padding: .7rem .9rem .7rem .75rem;
+  border: 1px solid rgb(224 179 24 / 55%);
+  border-right: 0;
+  border-radius: 1.2rem 0 0 1.2rem;
+  background: linear-gradient(145deg, rgb(29 49 80 / 96%), rgb(18 34 57 / 98%));
+  color: #fffdf8;
+  box-shadow: 0 18px 50px rgb(18 34 57 / 24%);
+  cursor: pointer;
+  text-align: left;
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+.islamic-companion-tab:hover { transform: translateX(-.25rem); box-shadow: 0 24px 64px rgb(18 34 57 / 30%); }
+.islamic-companion-crescent { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border: 1px solid rgb(224 179 24 / 55%); border-radius: 50%; color: #f0d56b; font-size: 1.25rem; }
+.islamic-companion-tab-copy { display: grid; gap: .16rem; }
+.islamic-companion-tab-copy small { color: #f0d56b; font-size: .62rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
+.islamic-companion-tab-copy strong { font-family: Georgia,"Times New Roman",serif; font-size: .98rem; font-weight: 500; white-space: nowrap; }
+
+.islamic-companion-panel {
+  width: min(26rem, calc(100vw - 1rem));
+  max-height: min(46rem, calc(100vh - 2rem));
+  overflow-y: auto;
+  margin-right: .7rem;
+  padding: clamp(1.3rem,3vw,2rem);
+  border: 1px solid rgb(224 179 24 / 30%);
+  border-radius: 1.5rem;
+  background:
+    radial-gradient(circle at 90% 0%, rgb(224 179 24 / 12%), transparent 30%),
+    #fffdf8;
+  color: #122239;
+  box-shadow: 0 30px 90px rgb(18 34 57 / 30%);
+  animation: companion-in .35s cubic-bezier(.2,.75,.2,1) both;
+}
+
+.islamic-companion-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding-bottom: 1.2rem; border-bottom: 1px solid #e6dcc3; }
+.islamic-companion-head small { color: #b8890e; font-size: .68rem; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
+.islamic-companion-head h2 { margin: .35rem 0 0; font-family: Georgia,"Times New Roman",serif; font-size: 1.9rem; font-weight: 500; line-height: 1; }
+.islamic-companion-close { width: 2.25rem; height: 2.25rem; border: 1px solid #e6dcc3; border-radius: 50%; background: transparent; color: #1d3150; font-size: 1.35rem; cursor: pointer; }
+
+.islamic-companion-empty { display: grid; justify-items: start; gap: 1rem; padding-block: 2rem .25rem; }
+.islamic-companion-empty p { margin: 0; color: #5b6472; line-height: 1.6; }
+.islamic-companion-empty > small { color: #737b86; line-height: 1.5; }
+.islamic-companion-orbit { display: grid; place-items: center; width: 5rem; height: 5rem; border: 1px solid rgb(70 111 170 / 22%); border-radius: 50%; color: #e0b318; font-size: 2rem; box-shadow: 0 0 0 1rem rgb(70 111 170 / 4%),0 0 0 2rem rgb(224 179 24 / 3%); }
+
+.islamic-companion-date { display: grid; gap: .2rem; padding-block: 1.35rem; border-bottom: 1px solid #e6dcc3; }
+.islamic-companion-date span { color: #466faa; font-size: .68rem; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
+.islamic-companion-date strong { font-family: Georgia,"Times New Roman",serif; font-size: 1.65rem; font-weight: 500; }
+.islamic-companion-date small { color: #737b86; }
+
+.islamic-companion-next { position: relative; display: grid; grid-template-columns: 1fr auto; gap: .25rem 1rem; margin-block: 1.25rem; padding: 1.15rem 1.2rem; overflow: hidden; border-radius: 1rem; background: linear-gradient(135deg,#1d3150,#2f4c7a); color: #fffdf8; }
+.islamic-companion-next::after { content: "☾"; position: absolute; right: -1rem; top: -1.8rem; color: rgb(224 179 24 / 13%); font-size: 7rem; }
+.islamic-companion-next span { grid-column: 1 / -1; color: #f0d56b; font-size: .65rem; font-weight: 850; letter-spacing: .13em; text-transform: uppercase; }
+.islamic-companion-next strong { position: relative; z-index: 1; font-family: Georgia,"Times New Roman",serif; font-size: 2rem; font-weight: 500; }
+.islamic-companion-next b { position: relative; z-index: 1; align-self: end; color: #f0d56b; font-size: 1.15rem; }
+
+.islamic-companion-times { display: grid; }
+.islamic-companion-times > div { display: flex; justify-content: space-between; gap: 1rem; padding: .7rem .1rem; border-bottom: 1px solid #eee5d3; }
+.islamic-companion-times > div.next { color: #1d3150; font-weight: 850; }
+.islamic-companion-times > div.next::before { content: "•"; color: #e0b318; margin-right: -.25rem; }
+.islamic-companion-times span { flex: 1; }
+.islamic-companion-times strong { font-variant-numeric: tabular-nums; }
+
+.islamic-companion-reminder { margin-top: 1.3rem; padding: 1rem; border-left: 3px solid #e0b318; background: #faf6ec; }
+.islamic-companion-reminder small { color: #b8890e; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
+.islamic-companion-reminder p { margin: .35rem 0 0; color: #5b6472; font-size: .88rem; line-height: 1.55; }
+.islamic-companion-method { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: 1rem; }
+.islamic-companion-method span { padding: .28rem .5rem; border: 1px solid #e6dcc3; border-radius: 999px; color: #5b6472; font-size: .65rem; }
+.islamic-companion-method p { flex-basis: 100%; margin: .3rem 0 0; color: #7a8089; font-size: .72rem; line-height: 1.5; }
+
+@keyframes companion-in { from { opacity: 0; transform: translateX(1rem) scale(.98); } to { opacity: 1; transform: translateX(0) scale(1); } }
+
+@media (min-width: 900px) {
+  .islamic-companion.open .islamic-companion-tab { display: none; }
+}
+
+@media (max-width: 899px) {
+  .islamic-companion { top: auto; right: .75rem; bottom: .75rem; transform: none; align-items: flex-end; flex-direction: column-reverse; gap: .5rem; }
+  .islamic-companion-tab { min-width: auto; min-height: 3.7rem; border-right: 1px solid rgb(224 179 24 / 55%); border-radius: 999px; padding: .55rem .8rem; }
+  .islamic-companion-tab-copy small { display: none; }
+  .islamic-companion-panel { margin: 0; max-height: min(40rem, calc(100vh - 6rem)); }
+}
+
+@media (max-width: 520px) {
+  .islamic-companion { left: .5rem; right: .5rem; bottom: .5rem; align-items: stretch; }
+  .islamic-companion-panel { width: 100%; border-radius: 1.2rem; }
+  .islamic-companion-tab { align-self: flex-end; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .islamic-companion-panel { animation: none; }
+  .islamic-companion-tab { transition: none; }
+}
