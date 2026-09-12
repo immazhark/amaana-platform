@@ -44,7 +44,7 @@ export default async function HomePage() {
           <div className="v3-hero-media" aria-label="Amaana Foundation documented field work">
             <div className="v3-hero-photo">
               <Image
-                src="/media/qurbani-meat-distribution-2026.jpg"
+                src="/media/qurbani-meat-distribution-2026.webp"
                 alt="Amaana Foundation Meat Distribution Drive 2026 labelled distribution boxes prepared for delivery"
                 fill
                 priority
@@ -89,7 +89,7 @@ export default async function HomePage() {
             <Link className="v3-field-card v3-field-card-wide" href="/our-work#qurbani-meat-distribution">
               <div className="v3-field-image">
                 <Image
-                  src="/media/qurbani-meat-distribution-2026.jpg"
+                  src="/media/qurbani-meat-distribution-2026.webp"
                   alt="Amaana Foundation Meat Distribution Drive 2026 labelled distribution boxes"
                   fill
                   sizes="(max-width: 760px) 100vw, 62vw"
@@ -105,7 +105,7 @@ export default async function HomePage() {
             <Link className="v3-field-card v3-field-card-tall" href="/our-work#dates-distribution">
               <div className="v3-field-image">
                 <Image
-                  src="/media/dates-distribution.jpg"
+                  src="/media/dates-distribution-2026.webp"
                   alt="Amaana Foundation Dates Distribution Drive 2026 packages"
                   fill
                   sizes="(max-width: 760px) 100vw, 38vw"
