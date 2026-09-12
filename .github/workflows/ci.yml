@@ -26,6 +26,10 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Decode and validate public campaign media
+        run: |
+          node --test scripts/test-public-media.mjs
+          node scripts/check-public-media.mjs
       - run: npm run prisma:generate
       - run: npm run prisma:validate
       - run: npm run lint

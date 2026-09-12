@@ -180,3 +180,13 @@ Before closing any future batch, ask:
 - Did a responsive change preserve established touch targets rather than trading usability for fit?
 
 This file should grow when we learn something new. Repeating a documented class of mistake without checking this log is itself a process failure.
+
+
+### 17. Successful builds shipped corrupt campaign photography
+**Observed:** On 13 September 2026, all three campaign-photo placements on the rebuild homepage had zero decoded dimensions, while the SVG logo loaded. The committed JPEG/WebP campaign files were approximately 15 KB and were not valid images.
+
+**Cause boundary:** The deployed files contained invalid image bytes. The mechanism that originally produced those bytes has not been established. Existing CI validated code and selected HTTP routes, but did not decode public media.
+
+**Correction:** Download the two exact user-approved Drive originals through the authenticated browser; visually inspect campaign labels; preserve aspect ratios; generate real JPEG/WebP files; verify complete decoding and compare locally calculated Git blob hashes with upload responses before updating the branch. See `AMAANA_MEDIA_REPAIR_2026-09-13.md`.
+
+**Prevention:** CI now rejects invalid raster images, extension mismatches and truncated data using full decoding. Validator regression tests cover valid, mislabeled, corrupt and truncated fixtures. A successful deployment still requires browser verification that actual campaign photographs have nonzero decoded dimensions and acceptable crops; green CI alone is not visual certification.
