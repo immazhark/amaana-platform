@@ -62,9 +62,9 @@ export default async function OurWorkPage() {
                 <PublicMedia asset={featuredMedia} priority />
               ) : (
                 <div className="v2-work-featured-placeholder">
-                  <span>Approved media pending</span>
-                  <strong>{featured.primaryMetric ?? "Documented work"}</strong>
-                  <p>{featured.primaryMetricLabel ?? "The initiative remains discoverable while its documentary media clears the public-use gate."}</p>
+                  <span>Documented initiative</span>
+                  <strong>{featured.primaryMetric ?? "Amaana Foundation"}</strong>
+                  <p>{featured.primaryMetricLabel ?? "Explore the initiative story, documented figures and public updates."}</p>
                 </div>
               )}
             </div>
@@ -111,12 +111,12 @@ export default async function OurWorkPage() {
                         );
                       })}
                     </div>
-                  ) : <p className="v2-section-intro">No initiatives from this cause are currently published.</p>}
+                  ) : <p className="v2-section-intro">No public initiative is currently listed in this cause area.</p>}
                 </section>
               ))}
             </div>
           ) : (
-            <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Publication gate active</span><h3>Our verified initiative library is being prepared.</h3><p>Nothing is exposed publicly merely because it exists in the database. Causes and initiatives must be explicitly published first.</p></div>
+            <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Our work</span><h3>Explore Amaana&apos;s documented initiatives.</h3><p>Initiative stories and evidence will appear here as public records are available.</p></div>
           )}
         </div>
       </section>
