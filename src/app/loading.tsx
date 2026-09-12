@@ -1,12 +1,26 @@
+import Image from "next/image";
+
 export default function Loading() {
   return (
-    <section className="v2-loading-page" aria-labelledby="page-loading-title" aria-live="polite">
-      <div className="v2-shell v2-loading-shell">
-        <p className="v2-section-label">Amaana Foundation</p>
-        <h1 id="page-loading-title">Preparing the next page.</h1>
-        <p className="v2-loading-copy">Please stay on this page while the next experience is prepared.</p>
-        <div className="v2-loading-track" aria-hidden="true"><span /></div>
+    <div className="amaana-loading" role="status" aria-live="polite" aria-label="Loading Amaana Foundation">
+      <div className="amaana-loading-inner">
+        <div className="amaana-loading-mark-wrap" aria-hidden="true">
+          <Image
+            className="amaana-loading-mark"
+            src="/brand/amaana-mark.svg"
+            alt=""
+            width={96}
+            height={96}
+            priority
+          />
+        </div>
+        <div className="amaana-loading-wordmark" aria-hidden="true">
+          <strong>AMAANA</strong>
+          <span>FOUNDATION</span>
+        </div>
+        <div className="amaana-loading-track" aria-hidden="true" />
+        <p className="amaana-loading-copy">Carrying care with dignity.</p>
       </div>
-    </section>
+    </div>
   );
 }
