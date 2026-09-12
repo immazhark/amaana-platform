@@ -45,7 +45,7 @@ export default async function HomePage() {
             <div className="v3-hero-photo">
               <Image
                 src="/media/qurbani-meat-distribution-2026.jpg"
-                alt="Amaana Foundation Meat Distribution Drive 2026 meal boxes prepared for distribution"
+                alt="Amaana Foundation Meat Distribution Drive 2026 labelled distribution boxes prepared for delivery"
                 fill
                 priority
                 sizes="(max-width: 900px) 100vw, 48vw"
@@ -90,7 +90,7 @@ export default async function HomePage() {
               <div className="v3-field-image">
                 <Image
                   src="/media/qurbani-meat-distribution-2026.jpg"
-                  alt="Amaana Foundation Meat Distribution Drive 2026 labelled meal boxes"
+                  alt="Amaana Foundation Meat Distribution Drive 2026 labelled distribution boxes"
                   fill
                   sizes="(max-width: 760px) 100vw, 62vw"
                 />
