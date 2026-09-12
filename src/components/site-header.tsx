@@ -64,12 +64,7 @@ export function SiteHeader() {
     <header className="site-header">
       <nav className="container nav" aria-label="Primary navigation">
         <Link className="brand brand-official" href="/" aria-label="Amaana Foundation home" onClick={closeMenu}>
-          <Image className="brand-mark" src="/brand/amaana-mark.svg" width={58} height={58} alt="" priority />
-          <span className="brand-copy">
-            <span className="brand-name">AMAANA</span>
-            <span className="brand-foundation">FOUNDATION</span>
-            <span className="brand-location">Upholding Trust · Hyderabad</span>
-          </span>
+          <Image className="brand-lockup" src="/brand/amaana-mark.svg" width={108} height={108} alt="Amaana Foundation — Upholding Trust" priority />
         </Link>
 
         <button ref={toggleRef} className="menu-toggle" type="button" aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? "Close navigation menu" : "Open navigation menu"} onClick={() => setOpenForPath(current => current === pathname ? null : pathname)}>
