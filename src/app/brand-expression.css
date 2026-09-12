@@ -1,0 +1,142 @@
+/* Amaana visual expression — derived from the official blue/gold identity. */
+:root {
+  --amaana-blue-bright: #4b78b7;
+  --amaana-blue: #466faa;
+  --amaana-blue-mid: #2f4c7a;
+  --amaana-blue-deep: #1d3150;
+  --amaana-ink: #122239;
+  --amaana-gold-bright: #f0c928;
+  --amaana-gold: #e0b318;
+  --amaana-gold-deep: #b8890e;
+  --amaana-cream: #faf6ec;
+  --amaana-paper: #fffdf8;
+  --amaana-brand-gradient: linear-gradient(105deg, #4b78b7 0%, #466faa 27%, #e0b318 63%, #f0c928 82%, #b8890e 100%);
+  --amaana-blue-gradient: linear-gradient(125deg, #122239 0%, #1d3150 38%, #466faa 100%);
+  --amaana-gold-gradient: linear-gradient(110deg, #b8890e 0%, #e0b318 48%, #f0c928 100%);
+}
+
+/* The primary statement should feel like the identity, not generic white type. */
+.v2-home .v2-display {
+  color: #fffdf8;
+  background-image: linear-gradient(105deg, #fffdf8 2%, #fffdf8 28%, #f0d56b 55%, #e0b318 78%, #fff1ad 100%);
+  background-size: 180% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-shadow: 0 18px 55px rgb(0 0 0 / 18%);
+  animation: amaana-gradient-drift 10s ease-in-out infinite alternate;
+}
+
+/* Editorial headings carry a restrained brand signature. */
+.v2-home .v2-section-title,
+.v2-home .v2-origin h2,
+.v2-home .v2-intent-heading h2,
+.v2-closing h2 {
+  color: var(--amaana-blue-deep);
+}
+
+.v2-home .dark .v2-section-title,
+.v2-home .v2-faith .v2-section-title {
+  color: #fffdf8;
+}
+
+/* Gold emphasis can be applied without changing semantic markup. */
+.v2-home .v2-section-title::selection,
+.v2-home .v2-display::selection {
+  background: var(--amaana-gold);
+  color: var(--amaana-ink);
+  -webkit-text-fill-color: var(--amaana-ink);
+}
+
+.v2-home .v2-text-link {
+  background-image: var(--amaana-gold-gradient);
+  background-size: 100% 1px;
+  background-repeat: no-repeat;
+  background-position: 0 100%;
+  color: var(--amaana-gold-deep);
+  transition: background-size .25s ease, color .25s ease;
+}
+
+.v2-home .dark .v2-text-link,
+.v2-home-hero-context .v2-text-link {
+  color: #f0d56b;
+}
+
+.v2-home .v2-button:not(.ghost) {
+  border-color: transparent;
+  background: var(--amaana-gold-gradient);
+  color: var(--amaana-ink);
+  box-shadow: 0 10px 34px rgb(224 179 24 / 18%);
+}
+
+.v2-home .v2-button:not(.ghost):hover {
+  background: linear-gradient(110deg, #e0b318 0%, #f6d95e 52%, #c9970f 100%);
+  box-shadow: 0 16px 42px rgb(224 179 24 / 26%);
+}
+
+.v2-home .v2-kicker,
+.v2-home .v2-section-label {
+  color: var(--amaana-gold-deep);
+}
+
+.v2-home .dark .v2-section-label,
+.v2-home .v2-home-hero .v2-kicker {
+  color: #f0d56b;
+}
+
+/* Reusable brand wash for photographic/editorial surfaces. */
+.amaana-brand-wash {
+  position: relative;
+  isolation: isolate;
+}
+
+.amaana-brand-wash::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background:
+    linear-gradient(135deg, rgb(70 111 170 / 14%), transparent 42%),
+    linear-gradient(315deg, rgb(224 179 24 / 12%), transparent 46%);
+  mix-blend-mode: soft-light;
+}
+
+/* Thin gradient rule: a recurring signature borrowed from the logo's two-color relationship. */
+.v2-section-head::after,
+.v2-intent-heading::after {
+  content: "";
+  display: block;
+  width: clamp(4rem, 9vw, 8rem);
+  height: 2px;
+  margin-top: 1.4rem;
+  border-radius: 999px;
+  background: var(--amaana-brand-gradient);
+}
+
+/* Statistics should feel authored rather than browser-default. */
+.v2-home .v2-metric,
+.v2-home .v2-impact-item strong,
+.v2-home .v2-evidence-ribbon strong {
+  background-image: linear-gradient(120deg, #1d3150 8%, #466faa 46%, #b8890e 82%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.v2-home .dark .v2-metric,
+.v2-home .dark .v2-year span {
+  background-image: linear-gradient(105deg, #fff1ad, #e0b318 58%, #f6df83);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes amaana-gradient-drift {
+  from { background-position: 0% 50%; }
+  to { background-position: 100% 50%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .v2-home .v2-display { animation: none; background-position: 50% 50%; }
+}
