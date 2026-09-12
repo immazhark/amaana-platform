@@ -1,12 +1,13 @@
 import "./home-experience.css";
 import "./home-wow.css";
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { AppealCard } from "@/components/appeal-card";
 import { PublicMedia } from "@/components/public-media";
 import { getHomepagePublicContent } from "@/lib/public-content";
 import { getHomepageHeroMedia } from "@/lib/public-page-data";
-import { eidGrowth, foundingStory, homepageImpact } from "@/content/amaana";
+import { eidGrowth, foundingStory, homepageImpact, initiatives as documentedInitiatives } from "@/content/amaana";
 
 export const dynamic = "force-dynamic";
 
@@ -66,11 +67,13 @@ export default async function HomePage() {
                 {heroContext && <Link className="v2-home-hero-context" href={heroContext.href}><span>{heroContext.label}</span><span>{heroContext.title} →</span></Link>}
               </>
             ) : (
-              <div className="v2-home-hero-placeholder">
-                <small>Living Amanah · 2020—2026</small>
-                <strong>From 85 to 710.</strong>
-                <p>Authentic field photography will occupy this space only after provenance, privacy and public-use approval. The story remains real even while that gate is active.</p>
-              </div>
+              <figure className="v2-documentary-fallback">
+                <Image src="/media/qurbani-meat-distribution-2026.jpg" alt="Amaana Foundation Qurbani Meat Distribution 2026 boxes prepared for distribution" fill priority sizes="(max-width: 900px) 100vw, 50vw" />
+                <figcaption className="v2-documentary-caption">
+                  <span><small>Documented work · 2026</small><strong>Qurbani boxes prepared for dignified distribution.</strong></span>
+                  <Link className="v2-text-link" href="/our-work#qurbani-meat-distribution">See the initiative →</Link>
+                </figcaption>
+              </figure>
             )}
           </div>
         </div>
@@ -99,10 +102,36 @@ export default async function HomePage() {
         <div className="v2-shell"><p className="v2-section-label">{foundingStory.eyebrow}</p><h2>{foundingStory.headline}</h2><p>{foundingStory.body}</p></div>
       </section>
 
+      <section className="v2-documentary-strip" aria-labelledby="documentary-work-title">
+        <div className="v2-shell">
+          <div className="v2-section-head">
+            <div><p className="v2-section-label">Seen in the work</p><h2 className="v2-section-title" id="documentary-work-title">Amanah is something you should be able to see.</h2></div>
+            <p className="v2-section-intro">Real preparation, real distributions and real campaign records. The public site is becoming a documentary record of Amaana&apos;s work, while private beneficiary proofs remain private.</p>
+          </div>
+          <div className="v2-documentary-grid">
+            <Link className="v2-documentary-card" href="/our-work#qurbani-meat-distribution">
+              <Image src="/media/qurbani-meat-distribution-2026.jpg" alt="Rows of Amaana Foundation Qurbani Meat Distribution 2026 boxes" fill sizes="(max-width: 820px) 100vw, 65vw" />
+              <div className="v2-documentary-card-copy"><small>Qurbani · 2026</small><h3>350+ families reached.</h3><p>Prepared and packed for distribution across Hyderabad with dignity and care.</p></div>
+            </Link>
+            <Link className="v2-documentary-card secondary" href="/our-work#dates-distribution">
+              <Image src="/media/dates-distribution.jpg" alt="Amaana Foundation dates distribution" fill sizes="(max-width: 820px) 100vw, 35vw" />
+              <div className="v2-documentary-card-copy"><small>Ramadan giving</small><h3>162 kg of dates distributed.</h3><p>A documented community-supported Ramadan initiative.</p></div>
+            </Link>
+          </div>
+          <div className="v2-evidence-ribbon" aria-label="Selected documented Amaana impact">
+            {homepageImpact.map(item => <div key={item.label}><strong>{item.value}</strong><span>{item.label}</span></div>)}
+          </div>
+        </div>
+      </section>
+
       <section className="v2-section paper">
         <div className="v2-shell">
-          <div className="v2-section-head"><div><p className="v2-section-label">Our work</p><h2 className="v2-section-title">Different needs. One amanah to serve.</h2></div><div><p className="v2-section-intro">Explore Amaana&apos;s published initiatives and the documented work behind them.</p><Link className="v2-text-link" href="/our-work">Explore all initiatives →</Link></div></div>
-          {initiatives.length > 0 ? <div className="v2-work-grid">{initiatives.map(initiative => <Link className="v2-work-card" href={`/our-work/${initiative.slug}`} key={initiative.id}><small>{initiative.cause.title}</small><div>{initiative.primaryMetric && <span className="v2-metric">{initiative.primaryMetric}</span>}{initiative.primaryMetricLabel && <p>{initiative.primaryMetricLabel}</p>}<h3>{initiative.title}</h3><p>{initiative.summary}</p></div></Link>)}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Publication gate active</span><h3>Verified initiatives are being prepared for publication.</h3><p>The homepage does not expose draft causes or initiatives.</p></div>}
+          <div className="v2-section-head"><div><p className="v2-section-label">Our work</p><h2 className="v2-section-title">Different needs. One amanah to serve.</h2></div><div><p className="v2-section-intro">Explore Amaana&apos;s initiatives and the documented work behind them.</p><Link className="v2-text-link" href="/our-work">Explore all initiatives →</Link></div></div>
+          {initiatives.length > 0 ? (
+            <div className="v2-work-grid">{initiatives.map(initiative => <Link className="v2-work-card" href={`/our-work/${initiative.slug}`} key={initiative.id}><small>{initiative.cause.title}</small><div>{initiative.primaryMetric && <span className="v2-metric">{initiative.primaryMetric}</span>}{initiative.primaryMetricLabel && <p>{initiative.primaryMetricLabel}</p>}<h3>{initiative.title}</h3><p>{initiative.summary}</p></div></Link>)}</div>
+          ) : (
+            <div className="v2-work-grid">{documentedInitiatives.slice(0, 6).map(initiative => <Link className="v2-work-card" href={initiative.href} key={initiative.slug}><small>{initiative.eyebrow}</small><div><span className="v2-metric">{initiative.metric}</span><p>{initiative.metricLabel}</p><h3>{initiative.title}</h3><p>{initiative.summary}</p></div></Link>)}</div>
+          )}
         </div>
       </section>
 
@@ -138,9 +167,9 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="v2-section dark v2-faith"><div className="v2-shell v2-faith-grid"><div><p className="v2-section-label">Faith & Reflections</p><h2 className="v2-section-title">Faith inspires our service.</h2><p className="v2-section-intro">A growing editorial space for reviewed Islamic articles, reminders and videos on compassion, sadaqah, Ramadan, Qurbani, gratitude and service.</p><Link className="v2-button ghost" href="/faith-and-reflections">Explore Faith & Reflections</Link></div>{featuredFaith ? <div className="v2-reminder"><span className="v2-reminder-label">{featuredFaith.type.toLowerCase()}</span><blockquote>{featuredFaith.title}</blockquote><p>{featuredFaith.excerpt}</p></div> : <div className="v2-reminder"><span className="v2-reminder-label">Religious review gate active</span><blockquote>Verified content will appear here.</blockquote><p>No Qur&apos;an, hadith or religious claim is surfaced from the editorial library until its review state is verified.</p></div>}</div></section>
+      <section className="v2-section dark v2-faith"><div className="v2-shell v2-faith-grid"><div><p className="v2-section-label">Faith & Reflections</p><h2 className="v2-section-title">Faith inspires our service.</h2><p className="v2-section-intro">A growing editorial space for reviewed Islamic articles, reminders and videos on compassion, sadaqah, Ramadan, Qurbani, gratitude and service.</p><Link className="v2-button ghost" href="/faith-and-reflections">Explore Faith & Reflections</Link></div>{featuredFaith ? <div className="v2-reminder"><span className="v2-reminder-label">{featuredFaith.type.toLowerCase()}</span><blockquote>{featuredFaith.title}</blockquote><p>{featuredFaith.excerpt}</p></div> : <div className="v2-reminder"><span className="v2-reminder-label">Editorial review</span><blockquote>Faith belongs in the experience with care.</blockquote><p>Only reviewed religious material is published; meanwhile, Amaana&apos;s service, history and verified work remain fully explorable.</p></div>}</div></section>
 
-      <section className="v2-section paper"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Current verified appeals</p><h2 className="v2-section-title">When there is a need, we share it responsibly.</h2></div><Link className="v2-text-link" href="/appeals">View appeals →</Link></div>{appeals.length ? <div className="grid appeal-grid">{appeals.map(appeal => <AppealCard key={appeal.slug} appeal={appeal} />)}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">No active public appeal right now</span><h3>There is still meaningful work to explore.</h3><p>See completed initiatives and past assistance stories to understand where community support has already made a difference.</p><div className="v2-hero-actions"><Link className="v2-button" href="/our-work">Explore our work</Link><Link className="v2-text-link" href="/stories">Read stories →</Link></div></div>}</div></section>
+      <section className="v2-section paper"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Current verified appeals</p><h2 className="v2-section-title">When there is a need, we share it responsibly.</h2></div><Link className="v2-text-link" href="/appeals">View appeals →</Link></div>{appeals.length ? <div className="grid appeal-grid">{appeals.map(appeal => <AppealCard key={appeal.slug} appeal={appeal} />)}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">No active public appeal right now</span><h3>Explore the work already carried out.</h3><p>Completed initiatives and campaign records remain available even when Amaana is not actively fundraising for a public appeal.</p><div className="v2-hero-actions"><Link className="v2-button" href="/our-work">Explore our work</Link><Link className="v2-text-link" href="/impact">See documented impact →</Link></div></div>}</div></section>
 
       <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Amaana Foundation</p><h2>From our hearts to their homes.</h2><p>Follow the work, understand the stories, request assistance when needed, or stand with a verified cause when one is active.</p><div className="v2-hero-actions" style={{ justifyContent: "center" }}><Link className="v2-button" href="/get-involved">Get involved</Link><Link className="v2-text-link" href="/request-assistance">Request assistance →</Link></div></div></section>
     </div>
