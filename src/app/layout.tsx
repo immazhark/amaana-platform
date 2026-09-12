@@ -8,9 +8,11 @@ import "./error-experience.css";
 import "./refinement.css";
 import "./iteration-three.css";
 import "./brand-lockup.css";
+import "./islamic-companion.css";
 import "./accessibility.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
+import { IslamicCompanion } from "@/components/islamic-companion";
 import { Analytics } from "@/components/analytics";
 import { StructuredData } from "@/components/structured-data";
 import { shouldAllowIndexing } from "@/lib/site-indexing";
@@ -49,6 +51,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <Analytics />
         <SiteHeader />
         <main id="main">{children}</main>
+        <IslamicCompanion />
         <SiteFooter />
       </body>
     </html>
