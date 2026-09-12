@@ -1,0 +1,151 @@
+/* Amaana Foundation — restrained Islamic architecture / jali backdrop language */
+:root{
+  --amaana-pattern-gold: rgba(224,179,24,.12);
+  --amaana-pattern-blue: rgba(70,111,170,.08);
+  --amaana-pattern-ink: rgba(18,34,57,.06);
+}
+
+/* A pointed-arch / jali linework tile built entirely in CSS so it stays crisp at every DPI. */
+.v3-hero::after,
+.v3-eid::after,
+.v3-closing::before,
+.site-footer::after,
+.v2-hero::after,
+.v2-section.dark::after,
+.v2-closing::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  pointer-events:none;
+  background-image:
+    linear-gradient(45deg, transparent 47.5%, rgba(240,201,40,.105) 48%, rgba(240,201,40,.105) 52%, transparent 52.5%),
+    linear-gradient(-45deg, transparent 47.5%, rgba(240,201,40,.105) 48%, rgba(240,201,40,.105) 52%, transparent 52.5%);
+  background-size:72px 72px;
+  background-position:0 0,36px 36px;
+  opacity:.42;
+  -webkit-mask-image:linear-gradient(to bottom,rgba(0,0,0,.92),rgba(0,0,0,.28) 64%,transparent 96%);
+  mask-image:linear-gradient(to bottom,rgba(0,0,0,.92),rgba(0,0,0,.28) 64%,transparent 96%);
+}
+
+/* Monumental mihrab-like arch silhouette — deliberately abstract, not mosque clip-art. */
+.v3-hero::before,
+.v3-eid::before,
+.v3-closing::after{
+  content:"";
+  position:absolute;
+  pointer-events:none;
+}
+
+.v3-hero::before{
+  width:min(48vw,44rem);
+  height:min(76vh,46rem);
+  right:-7vw;
+  bottom:-18%;
+  border:1px solid rgba(240,201,40,.18);
+  border-bottom:0;
+  border-radius:50% 50% 0 0 / 34% 34% 0 0;
+  box-shadow:
+    0 0 0 34px rgba(255,255,255,.018),
+    0 0 0 68px rgba(224,179,24,.018),
+    inset 0 0 90px rgba(224,179,24,.025);
+  transform:perspective(1000px) rotateY(-7deg);
+  opacity:.8;
+}
+
+.v3-eid::before{
+  inset:0;
+  background:
+    radial-gradient(circle at 82% 15%,rgba(224,179,24,.16),transparent 24%),
+    linear-gradient(120deg,rgba(70,111,170,.12),transparent 45%);
+}
+
+.v3-eid::after{
+  opacity:.3;
+  background-size:90px 90px;
+  background-position:0 0,45px 45px;
+  -webkit-mask-image:radial-gradient(circle at 72% 50%,black 0 38%,transparent 75%);
+  mask-image:radial-gradient(circle at 72% 50%,black 0 38%,transparent 75%);
+}
+
+.v3-closing{position:relative;isolation:isolate;overflow:hidden}
+.v3-closing::before{z-index:-1;opacity:.32;background-size:86px 86px;background-position:0 0,43px 43px}
+.v3-closing::after{
+  z-index:-1;
+  width:min(72vw,62rem);
+  height:130%;
+  left:50%;
+  bottom:-76%;
+  transform:translateX(-50%);
+  border:1px solid rgba(240,201,40,.17);
+  border-radius:50% 50% 0 0 / 32% 32% 0 0;
+  box-shadow:0 0 0 42px rgba(255,255,255,.018),0 0 0 84px rgba(224,179,24,.018);
+}
+
+/* Light sections get a much quieter mashrabiya shadow rather than a visible pattern wallpaper. */
+.v3-proof,
+.v3-work,
+.v3-origin,
+.v3-appeals,
+.v3-field,
+.paper{
+  position:relative;
+  isolation:isolate;
+}
+
+.v3-proof::before,
+.v3-work::before,
+.v3-origin::before,
+.v3-appeals::before,
+.paper::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background-image:
+    linear-gradient(30deg, transparent 47%, rgba(184,137,14,.055) 48%, rgba(184,137,14,.055) 52%, transparent 53%),
+    linear-gradient(150deg, transparent 47%, rgba(70,111,170,.038) 48%, rgba(70,111,170,.038) 52%, transparent 53%);
+  background-size:96px 56px;
+  opacity:.7;
+  -webkit-mask-image:radial-gradient(ellipse at 86% 12%,black 0 8%,rgba(0,0,0,.58) 25%,transparent 58%);
+  mask-image:radial-gradient(ellipse at 86% 12%,black 0 8%,rgba(0,0,0,.58) 25%,transparent 58%);
+}
+
+.v3-origin::before{
+  -webkit-mask-image:radial-gradient(ellipse at 8% 58%,black 0 10%,rgba(0,0,0,.55) 30%,transparent 66%);
+  mask-image:radial-gradient(ellipse at 8% 58%,black 0 10%,rgba(0,0,0,.55) 30%,transparent 66%);
+}
+
+/* A soft filtered-light treatment for cream/gold surfaces. */
+.v3-work::after,
+.v3-origin::after,
+.v3-appeals::after{
+  content:"";
+  position:absolute;
+  inset:0;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 94% 16%,rgba(224,179,24,.09),transparent 19rem),
+    radial-gradient(circle at 5% 84%,rgba(70,111,170,.055),transparent 22rem);
+}
+
+.site-footer{isolation:isolate}
+.site-footer::after{
+  z-index:-1;
+  opacity:.26;
+  background-size:82px 82px;
+  background-position:0 0,41px 41px;
+  -webkit-mask-image:radial-gradient(ellipse at 88% 15%,black 0 20%,transparent 72%);
+  mask-image:radial-gradient(ellipse at 88% 15%,black 0 20%,transparent 72%);
+}
+
+@media(max-width:760px){
+  .v3-hero::before{width:88vw;height:42rem;right:-46vw;bottom:-26%}
+  .v3-hero::after,.v3-eid::after,.v3-closing::before,.site-footer::after{background-size:62px 62px;background-position:0 0,31px 31px}
+  .v3-proof::before,.v3-work::before,.v3-origin::before,.v3-appeals::before,.paper::before{background-size:74px 44px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .v3-hero::before{transform:none}
+}
