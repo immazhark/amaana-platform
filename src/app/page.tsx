@@ -29,7 +29,7 @@ export default async function HomePage() {
     <div className="v3-home">
       <section className="v3-hero" aria-labelledby="amaana-home-title">
         <div className="v3-shell v3-hero-grid">
-          <div>
+          <div className="v3-hero-copy">
             <p className="v3-kicker">Amaana Foundation · Hyderabad</p>
             <h1 className="v3-title" id="amaana-home-title">Faith. Dignity. Action.</h1>
             <p className="v3-lead">
@@ -41,10 +41,24 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="v3-brand-stage" aria-label="Amaana Foundation brand mark">
-            <div className="v3-brand-orbit" aria-hidden="true" />
-            <div className="v3-brand-card">
-              <Image src="/brand/amaana-mark.svg" alt="Amaana Foundation" width={420} height={420} priority />
+          <div className="v3-hero-media" aria-label="Amaana Foundation documented field work">
+            <div className="v3-hero-photo">
+              <Image
+                src="/media/qurbani-meat-distribution-2026.jpg"
+                alt="Amaana Foundation Meat Distribution Drive 2026 meal boxes prepared for distribution"
+                fill
+                priority
+                sizes="(max-width: 900px) 100vw, 48vw"
+              />
+            </div>
+            <div className="v3-hero-media-shade" aria-hidden="true" />
+            <div className="v3-hero-media-caption">
+              <span>Documented work · 2026</span>
+              <strong>Prepared with care. Shared with dignity.</strong>
+              <Link href="/our-work#qurbani-meat-distribution">Meat Distribution Drive →</Link>
+            </div>
+            <div className="v3-hero-seal" aria-hidden="true">
+              <Image src="/brand/amaana-mark.svg" alt="" width={112} height={112} />
             </div>
           </div>
         </div>
@@ -58,6 +72,52 @@ export default async function HomePage() {
               <span>{item.label}</span>
             </div>
           ))}
+        </div>
+      </section>
+
+      <section className="v3-section v3-field" aria-labelledby="field-title">
+        <div className="v3-shell">
+          <div className="v3-section-head">
+            <div>
+              <p className="v3-label">Seen in the work</p>
+              <h2 className="v3-heading" id="field-title">Amanah should be visible.</h2>
+            </div>
+            <p className="v3-intro">Real preparation, real campaign material and real initiative records — shown from the correct source folders, without stretching, relabelling or decorative substitutes.</p>
+          </div>
+
+          <div className="v3-field-grid">
+            <Link className="v3-field-card v3-field-card-wide" href="/our-work#qurbani-meat-distribution">
+              <div className="v3-field-image">
+                <Image
+                  src="/media/qurbani-meat-distribution-2026.jpg"
+                  alt="Amaana Foundation Meat Distribution Drive 2026 labelled meal boxes"
+                  fill
+                  sizes="(max-width: 760px) 100vw, 62vw"
+                />
+              </div>
+              <div className="v3-field-copy">
+                <span>Meat Distribution Drive · 2026</span>
+                <h3>Preparation before distribution.</h3>
+                <p>A verified initiative image from Amaana&apos;s 2026 Meat Distribution Drive archive.</p>
+              </div>
+            </Link>
+
+            <Link className="v3-field-card v3-field-card-tall" href="/our-work#dates-distribution">
+              <div className="v3-field-image">
+                <Image
+                  src="/media/dates-distribution.jpg"
+                  alt="Amaana Foundation Dates Distribution Drive 2026 packages"
+                  fill
+                  sizes="(max-width: 760px) 100vw, 38vw"
+                />
+              </div>
+              <div className="v3-field-copy">
+                <span>Ramadan · 2026</span>
+                <h3>162 kg of dates distributed.</h3>
+                <p>Documented Ramadan giving, sourced from the Dates Distribution 2026 archive.</p>
+              </div>
+            </Link>
+          </div>
         </div>
       </section>
 
