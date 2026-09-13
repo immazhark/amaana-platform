@@ -1,6 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { PrismaClient } from "@prisma/client";
 import { importReviewedCampaigns } from "./reviewed-campaign-import.mjs";
+import { applyReviewedCampaignRevisions } from "./reviewed-campaign-revisions.mjs";
 
 // This rollout is explicitly preview-only. Existing records are never overwritten.
 if (process.env.RAILWAY_PUBLIC_DOMAIN !== "amaana-rebuild-preview-production.up.railway.app") {
@@ -10,7 +11,9 @@ if (process.env.RAILWAY_PUBLIC_DOMAIN !== "amaana-rebuild-preview-production.up.
   const prisma = new PrismaClient();
   try {
     const created = await importReviewedCampaigns(prisma, campaigns);
-    console.log(`Reviewed campaign import: ${created} new editions; existing records preserved.`);
+    const revisions = JSON.parse(await readFile(new URL("./campaign-revisions.json", import.meta.url), "utf8"));
+    const revised = await applyReviewedCampaignRevisions(prisma, revisions);
+    console.log(`Reviewed campaign import: ${created} new editions; ${revised} source-guarded revisions.`);
   } finally {
     await prisma.$disconnect();
   }
