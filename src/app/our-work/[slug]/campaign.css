@@ -8,7 +8,7 @@
 .campaign-summary { max-width: 48ch; font-size: clamp(1.05rem, 1.5vw, 1.2rem); line-height: 1.65; color: #edf2fa; }
 .campaign-hero .v2-text-link { color: #fffdf8; }
 .campaign-lead { min-width: 0; }
-.campaign-lead .v2-media-item { margin: 0; }
+.campaign-lead .v2-media-item { margin: 0; background: transparent; border: 0; border-radius: 0; overflow: visible; }
 .campaign-lead .v2-media-item img { display: block; width: 100%; height: clamp(280px, 31vw, 470px); object-fit: contain; background: #122239; }
 .campaign-lead figcaption { color: #edf2fa; font-size: .85rem; line-height: 1.5; padding: 12px 0 0; }
 .campaign-story { display: grid; grid-template-columns: 1fr 1.65fr; gap: clamp(28px, 6vw, 90px); padding-block: clamp(40px, 6vw, 80px); }
@@ -31,6 +31,7 @@
 .campaign-related { padding-block: 48px; }
 .campaign-next { padding-block: clamp(36px, 5vw, 72px); background: #e9eef6; }
 .campaign-next p { max-width: 65ch; line-height: 1.7; }
+.campaign-next .v2-text-link { color: #2f4c7a; }
 .campaign-appeals { margin-top: 32px; }
 .campaign-page a:focus-visible { outline: 3px solid #b08500; outline-offset: 5px; }
 .campaign-page ::selection { background: #e0b318; color: #122239; }
