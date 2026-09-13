@@ -24,7 +24,7 @@ export async function importReviewedCampaigns(prisma, campaigns) {
         ...campaign, causeId: targetCause.id, status: "PUBLISHED", publishedAt: new Date(), isFeatured: true,
         mediaAssets: { create: media.map((asset, sortOrder) => ({
           kind: "IMAGE", title: asset.alt, publicUrl: asset.url, altText: asset.alt, caption: asset.caption,
-          sourcePath: `https://drive.google.com/file/d/${asset.id}/view`, sourceYear: campaign.year, sortOrder,
+          sourcePath: asset.source ?? `https://drive.google.com/file/d/${asset.id}/view`, sourceYear: campaign.year ?? campaign.startYear, sortOrder,
           isPublic: true, privacyApprovedAt: new Date("2026-09-13T00:00:00.000Z"),
         })) },
       } });

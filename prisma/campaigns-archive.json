@@ -19,5 +19,23 @@
       { "id": "18aYdx9Fi-urxxfvuXusZc2h760Qsnu9Y", "url": "/media/taleem-2025-update.webp", "alt": "Amaana donor appreciation graphic reporting support reaching 50 orphan children", "caption": "Amaana's donor update reports support reaching 50 orphan children; the donor remains unnamed." },
       { "id": "14OyZ2OOaE3xoJxFD7tQpPr5SUH9gA32F", "url": "/media/taleem-2025-cover.webp", "alt": "Original Amaana Taleem Initiative social carousel cover", "caption": "The original Taleem Initiative carousel cover from the 2025 archive." }
     ]
+  },
+  {
+    "slug": "winter-drive-2025-26",
+    "title": "Winter Drive 2025–26",
+    "summary": "A winter-kit distribution for people in need, with Amaana's impact update reporting 234 kits distributed.",
+    "story": "Amaana's Winter Drive 2025–26 provided winter kits to people in need. The campaign's impact update reports 234 kits distributed, each including a sweater or jacket, a blanket and a beanie cap.\n\nThe original photographs show the preparation stage: patterned bags arranged together with folded winter items visible inside. No recipients appear in the two selected field photographs. Amaana's separate thank-you update describes many of those reached as madrasah students, orphan children, widows, labourers and domestic workers.\n\nThe impact graphic also refers to dates and carpets. Those are distinct activities and are not counted as part of this page's winter-kit result. This page uses Amaana's reported figure and does not infer additional recipients, expenditure or outcomes from the photographs.",
+    "year": null,
+    "startYear": 2025,
+    "endYear": 2026,
+    "primaryMetric": "234 kits",
+    "primaryMetricLabel": "distributed · campaign-reported",
+    "displayOrder": 1,
+    "media": [
+      { "id": "local-winter-preparation-1", "source": "user-upload:winter-2025-26/WhatsApp Image 2026-02-18 at 1.02.01 PM (1).jpeg", "url": "/media/winter-2025-26-preparation.webp", "alt": "Winter kits arranged in patterned bags with folded clothing and blankets visible", "caption": "Winter kits arranged during preparation; no recipients appear in this photograph." },
+      { "id": "local-winter-preparation-3", "source": "user-upload:winter-2025-26/WhatsApp Image 2026-02-18 at 1.02.01 PM (3).jpeg", "url": "/media/winter-2025-26-preparation-wide.webp", "alt": "Rows of patterned Winter Drive bags with folded blankets and clothing visible", "caption": "A wider view of prepared winter kits before distribution." },
+      { "id": "1EP9MoK2xJrXgR8O20jr3LWaKv8dxaO2Z", "url": "/media/winter-2025-26-impact.webp", "alt": "Amaana Winter Drive impact update reporting 234 winter kits distributed", "caption": "Campaign impact update: 234 winter kits, each reported to include a sweater or jacket, blanket and beanie cap." },
+      { "id": "1C7x5v0zG6M4AeQ6Zgbw1aBKdbRl3KZjj", "url": "/media/winter-2025-26-banner.webp", "alt": "Original Amaana Winter Drive campaign banner", "caption": "The original Amaana Winter Drive campaign banner from the supplied 2025–26 archive." }
+    ]
   }
 ]

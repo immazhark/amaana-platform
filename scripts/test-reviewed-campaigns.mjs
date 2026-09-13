@@ -66,3 +66,14 @@ test("historical education edition uses its own cause and media year", async () 
   assert.ok(db.writes[0].mediaAssets.create.every(asset => asset.sourceYear === 2025));
   assert.equal(db.writes[0].cause, undefined);
 });
+test("multi-year archive edition uses its starting year for media provenance", async () => {
+  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+  const winter = historical.filter(campaign => campaign.slug === "winter-drive-2025-26");
+  const db = database();
+  await importReviewedCampaigns(db.prisma, winter);
+  assert.equal(db.writes[0].startYear, 2025);
+  assert.equal(db.writes[0].endYear, 2026);
+  assert.ok(db.writes[0].mediaAssets.create.every(asset => asset.sourceYear === 2025));
+  assert.equal(db.writes[0].mediaAssets.create.length, 4);
+  assert.ok(db.writes[0].mediaAssets.create.slice(0, 2).every(asset => asset.sourcePath.startsWith("user-upload:winter-2025-26/")));
+});
