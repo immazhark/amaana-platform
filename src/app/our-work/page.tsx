@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicMedia } from "@/components/public-media";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
+import { filterWork, type WorkSearch } from "@/lib/work-filters";
+import "./work-filters.css";
 
 export const dynamic = "force-dynamic";
 
@@ -17,8 +19,9 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function OurWorkPage() {
+export default async function OurWorkPage({ searchParams }: { searchParams: Promise<WorkSearch> }) {
   const causes = await getOurWorkIndexData();
+  const filters = filterWork(causes, await searchParams);
   const initiatives = causes.flatMap(cause => cause.initiatives.map(initiative => ({ ...initiative, causeTitle: cause.title })));
   const initiativeCount = initiatives.length;
   const featured = initiatives.find(initiative => initiative.isFeatured && initiative.mediaAssets.length > 0) ?? initiatives.find(initiative => initiative.mediaAssets.length > 0) ?? initiatives[0];
@@ -42,7 +45,7 @@ export default async function OurWorkPage() {
         </div>
       </section>
 
-      {featured && (
+      {featured && !filters.active && (
         <section className="v2-section v2-work-featured">
           <div className="v2-shell v2-work-featured-stage">
             <div className="v2-work-featured-copy">
@@ -72,16 +75,36 @@ export default async function OurWorkPage() {
         </section>
       )}
 
-      <section className="v2-section paper">
+      <section className="v2-section paper" id="work-results">
         <div className="v2-shell">
           <div className="v2-section-head">
             <div><p className="v2-section-label">Explore by need</p><h2 className="v2-section-title">A living portfolio of service.</h2></div>
             <p className="v2-section-intro">Each cause area opens into its own set of published initiatives, evidence and stories. Browse by the need first, then follow the work as deeply as you choose.</p>
           </div>
 
-          {causes.length > 0 ? (
+          <form className="work-filters" action="/our-work#work-results" method="get" aria-label="Filter published initiatives">
+            <label htmlFor="work-programme">Programme
+              <select id="work-programme" name="programme" defaultValue={filters.programme}>
+                <option value="">All programmes</option>
+                {filters.programme && !causes.some(cause => cause.slug === filters.programme) && <option value={filters.programme}>Unavailable programme</option>}
+                {causes.filter(cause => cause.initiatives.length > 0).map(cause => <option key={cause.slug} value={cause.slug}>{cause.title}</option>)}
+              </select>
+            </label>
+            <label htmlFor="work-year">Year
+              <select id="work-year" name="year" defaultValue={filters.year}>
+                <option value="">All years</option>
+                {filters.year && !filters.years.some(year => String(year) === filters.year) && <option value={filters.year}>Unavailable year</option>}
+                {filters.years.map(year => <option key={year} value={year}>{year}</option>)}
+              </select>
+            </label>
+            <button className="v2-button" type="submit">Apply filters</button>
+            {filters.active && <Link href="/our-work#work-results">Clear filters</Link>}
+          </form>
+          <p className="work-results-count">{filters.count} published {filters.count === 1 ? "initiative" : "initiatives"}{filters.active ? " matching these filters" : " available to explore"}.</p>
+
+          {filters.results.length > 0 ? (
             <div className="v2-cause-stack">
-              {causes.map((cause, causeIndex) => (
+              {filters.results.map((cause, causeIndex) => (
                 <section className="v2-cause-section" key={cause.id} aria-labelledby={`cause-${cause.slug}`}>
                   <div className="v2-cause-heading">
                     <span className="v2-cause-number">{String(causeIndex + 1).padStart(2, "0")}</span>
@@ -116,7 +139,7 @@ export default async function OurWorkPage() {
               ))}
             </div>
           ) : (
-            <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Our work</span><h3>Explore Amaana&apos;s documented initiatives.</h3><p>Initiative stories and evidence will appear here as public records are available.</p></div>
+            <div className="v2-reminder v2-light-reminder"><h3>{filters.active ? "No published initiatives match these filters." : "The public archive is being prepared."}</h3><p>{filters.active ? "Choose another programme or year, or clear the filters to see all available work." : "Initiative stories and evidence will appear here as public records are available."}</p></div>
           )}
         </div>
       </section>

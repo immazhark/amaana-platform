@@ -2,6 +2,8 @@
 
 ## Direction contract
 
+Archive filter extension (14 September): Operate mode within the existing discovery page. Help visitors narrow published records by programme and recorded year with a labelled native GET form, readable result count, shareable URL and clear reset. Preserve current colours, type, photographs and database privacy projection. No new images, dependencies, motion or invented campaign entries. Validate combined filters, multi-year records, empty results and malformed links; inspect desktop/mobile in one bounded pass.
+
 THESIS: Let a visitor see and understand a particular drive, not a generic programme promise. Preserve existing systems and source-backed facts.
 
 OWN-WORLD: Extend Amaana's existing navy, blue, warm cream and gold identity with its official mark, established typefaces, generous photographs and compact reading sections.
