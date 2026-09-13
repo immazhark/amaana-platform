@@ -21,7 +21,7 @@ export default async function OurWorkPage() {
   const causes = await getOurWorkIndexData();
   const initiatives = causes.flatMap(cause => cause.initiatives.map(initiative => ({ ...initiative, causeTitle: cause.title })));
   const initiativeCount = initiatives.length;
-  const featured = initiatives.find(initiative => initiative.isFeatured) ?? initiatives[0];
+  const featured = initiatives.find(initiative => initiative.isFeatured && initiative.mediaAssets.length > 0) ?? initiatives.find(initiative => initiative.mediaAssets.length > 0) ?? initiatives[0];
   const featuredMedia = featured?.mediaAssets[0] ?? null;
 
   return (
@@ -33,7 +33,7 @@ export default async function OurWorkPage() {
             <h1 className="v2-display">Different needs. One amanah to serve.</h1>
           </div>
           <div>
-            <p className="v2-hero-copy">Explore Amaana&apos;s published initiatives by the need they respond to. Each record connects the story, documented figures, approved media and related updates without reducing the work to a list of programmes.</p>
+            <p className="v2-hero-copy">Explore food distributions, education support and community assistance. Open a drive to see its photographs, campaign updates and the work behind it.</p>
             <div className="v2-work-index-proof">
               <div><span className="v2-proof-number">{initiativeCount}</span><span className="v2-proof-copy">published initiatives currently available</span></div>
               <div><span className="v2-proof-number">{causes.length}</span><span className="v2-proof-copy">cause areas represented in the public library</span></div>
@@ -94,7 +94,7 @@ export default async function OurWorkPage() {
                       {cause.initiatives.map((initiative, index) => {
                         const thumbnail = initiative.mediaAssets[0] ?? null;
                         return (
-                          <Link className={`v2-initiative-row${thumbnail ? " has-media" : ""}`} href={`/our-work/${initiative.slug}`} key={initiative.id}>
+                          <Link id={initiative.slug} className={`v2-initiative-row${thumbnail ? " has-media" : ""}`} href={`/our-work/${initiative.slug}`} key={initiative.id}>
                             <span className="v2-initiative-index">{String(index + 1).padStart(2, "0")}</span>
                             {thumbnail && <div className="v2-initiative-thumb"><PublicMedia asset={thumbnail} /></div>}
                             <div className="v2-initiative-copy">

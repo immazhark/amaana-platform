@@ -1,10 +1,12 @@
 import "./home-showcase.css";
+import "./campaign-home.css";
 import type { Metadata } from "next";
-import Image from "next/image";
 import Link from "next/link";
 import { AppealCard } from "@/components/appeal-card";
 import { getHomepagePublicContent } from "@/lib/public-content";
-import { eidGrowth, foundingStory, homepageImpact, initiatives } from "@/content/amaana";
+import { eidGrowth, foundingStory, homepageImpact } from "@/content/amaana";
+import { getOurWorkIndexData } from "@/lib/public-page-data";
+import { PublicMedia } from "@/components/public-media";
 
 export const dynamic = "force-dynamic";
 
@@ -14,16 +16,12 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const featured = initiatives.filter(item => [
-  "eid-gift-kits",
-  "qurbani-meat-distribution",
-  "dates-distribution",
-  "winter-relief",
-  "taleem",
-].includes(item.slug));
-
 export default async function HomePage() {
-  const { appeals } = await getHomepagePublicContent();
+  const [{ appeals }, causes] = await Promise.all([getHomepagePublicContent(), getOurWorkIndexData()]);
+  const featured = causes.flatMap(cause => cause.initiatives.map(item => ({ ...item, causeTitle: cause.title })));
+  const fieldDrives = featured.filter(item => ["qurbani-meat-distribution-2026", "dates-distribution-2026"].includes(item.slug));
+  const heroDrive = fieldDrives.find(item => item.slug === "qurbani-meat-distribution-2026");
+  const heroMedia = heroDrive?.mediaAssets[0];
 
   return (
     <div className="v3-home">
@@ -41,26 +39,11 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="v3-hero-media" aria-label="Amaana Foundation documented field work">
-            <div className="v3-hero-photo">
-              <Image
-                src="/media/qurbani-meat-distribution-2026.webp"
-                alt="Amaana Foundation Meat Distribution Drive 2026 labelled distribution boxes prepared for delivery"
-                fill
-                priority
-                sizes="(max-width: 900px) 100vw, 48vw"
-              />
-            </div>
+          {heroDrive && heroMedia && <div className="v3-hero-media" aria-label={heroDrive.title}>
+            <div className="v3-hero-photo"><PublicMedia asset={heroMedia} priority /></div>
             <div className="v3-hero-media-shade" aria-hidden="true" />
-            <div className="v3-hero-media-caption">
-              <span>Documented work · 2026</span>
-              <strong>Prepared with care. Shared with dignity.</strong>
-              <Link href="/our-work#qurbani-meat-distribution">Meat Distribution Drive →</Link>
-            </div>
-            <div className="v3-hero-seal" aria-hidden="true">
-              <Image src="/brand/amaana-mark.svg" alt="" width={112} height={112} />
-            </div>
-          </div>
+            <div className="v3-hero-media-caption"><span>{heroDrive.year}</span><strong>{heroDrive.title}</strong><Link href={`/our-work/${heroDrive.slug}`}>See the drive</Link></div>
+          </div>}
         </div>
       </section>
 
@@ -82,41 +65,16 @@ export default async function HomePage() {
               <p className="v3-label">Seen in the work</p>
               <h2 className="v3-heading" id="field-title">Amanah should be visible.</h2>
             </div>
-            <p className="v3-intro">Real preparation, real campaign material and real initiative records — shown from the correct source folders, without stretching, relabelling or decorative substitutes.</p>
+            <p className="v3-intro">See the preparation, photographs and campaign updates behind Amaana’s recent drives.</p>
           </div>
 
           <div className="v3-field-grid">
-            <Link className="v3-field-card v3-field-card-wide" href="/our-work#qurbani-meat-distribution">
-              <div className="v3-field-image">
-                <Image
-                  src="/media/qurbani-meat-distribution-2026.webp"
-                  alt="Amaana Foundation Meat Distribution Drive 2026 labelled distribution boxes"
-                  fill
-                  sizes="(max-width: 760px) 100vw, 62vw"
-                />
-              </div>
-              <div className="v3-field-copy">
-                <span>Meat Distribution Drive · 2026</span>
-                <h3>Preparation before distribution.</h3>
-                <p>A verified initiative image from Amaana&apos;s 2026 Meat Distribution Drive archive.</p>
-              </div>
-            </Link>
-
-            <Link className="v3-field-card v3-field-card-tall" href="/our-work#dates-distribution">
-              <div className="v3-field-image">
-                <Image
-                  src="/media/dates-distribution-2026.webp"
-                  alt="Amaana Foundation Dates Distribution Drive 2026 packages"
-                  fill
-                  sizes="(max-width: 760px) 100vw, 38vw"
-                />
-              </div>
-              <div className="v3-field-copy">
-                <span>Ramadan · 2026</span>
-                <h3>162 kg of dates distributed.</h3>
-                <p>Documented Ramadan giving, sourced from the Dates Distribution 2026 archive.</p>
-              </div>
-            </Link>
+            {fieldDrives.map((drive, index) => (
+              <Link className={`v3-field-card ${index === 0 ? "v3-field-card-wide" : "v3-field-card-tall"}`} href={`/our-work/${drive.slug}`} key={drive.id}>
+                {drive.mediaAssets[0] && <div className="v3-field-image"><PublicMedia asset={drive.mediaAssets[0]} /></div>}
+                <div className="v3-field-copy"><span>{drive.year}</span><h3>{drive.title}</h3><p>{drive.summary}</p></div>
+              </Link>
+            ))}
           </div>
         </div>
       </section>
@@ -128,17 +86,17 @@ export default async function HomePage() {
               <p className="v3-label">Documented work</p>
               <h2 className="v3-heading" id="featured-work-title">Different needs. One amanah to serve.</h2>
             </div>
-            <p className="v3-intro">A focused view of Amaana&apos;s recurring and documented initiatives. Each programme is being rebuilt around verified records, source-linked figures and correctly mapped media.</p>
+            <p className="v3-intro">Food support, education, emergency relief and individual assistance. Explore the work and the people it serves.</p>
           </div>
 
           <div className="v3-work-list">
-            {featured.map((initiative, index) => (
-              <Link className="v3-work-row" href={initiative.href} key={initiative.slug}>
-                <small>{String(index + 1).padStart(2, "0")} · {initiative.eyebrow}</small>
+            {featured.map((initiative) => (
+              <Link className="v3-work-row" href={`/our-work/${initiative.slug}`} key={initiative.slug}>
+                <small>{initiative.causeTitle}{initiative.year ? ` · ${initiative.year}` : ""}</small>
                 <h3>{initiative.title}</h3>
                 <div className="v3-work-metric">
-                  <strong>{initiative.metric}</strong>
-                  <span>{initiative.metricLabel}</span>
+                  <strong>{initiative.primaryMetric}</strong>
+                  <span>{initiative.primaryMetricLabel}</span>
                 </div>
                 <span className="v3-arrow" aria-hidden="true">↗</span>
               </Link>
