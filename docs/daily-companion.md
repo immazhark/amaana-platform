@@ -46,6 +46,8 @@ Prayer provider: https://aladhan.com/calculation-methods and https://aladhan.com
 
 ## Verification
 
-`node --experimental-strip-types --test scripts/test-daily-companion.mjs` covers deterministic local-day selection, weekday and time-window boundaries, known prohibited fasting dates, next-day Fajr, stale-day refusal, malformed times, moon-announcement expiry and date arithmetic. CI runs this before the existing lint/typecheck/test/build checks.
+`node --experimental-strip-types --test scripts/test-daily-companion.mjs scripts/test-daily-companion-api.mjs` runs 15 tests covering deterministic local-day selection, weekday and time-window boundaries, known prohibited fasting dates, next-day Fajr, stale-day refusal, malformed times, moon-announcement expiry, date arithmetic and API failure paths. CI runs these before the existing lint/typecheck/test/build checks.
 
-Deployment and browser verification are recorded separately once completed. The remaining campaign archive stays at 23 of 366 files visually reviewed; this widget work does not advance that count.
+The independent review in `daily-companion-review.md` recommends shipping the scoped preview with its clearly labelled Hijri estimate. The nonblocking mobile gutter finding is corrected by using percentage width instead of viewport-unit width. Source build 8afcf2d passed CI 34771361782 and Railway deployment 3eaf14af-3733-44b0-9138-a9fe24142282. The live API was independently checked on September 14: both Asr schools returned HTTP 200 with September 14/15 timings, and an invalid school returned HTTP 400. The pending final validation commit adds the API tests and gutter correction.
+
+The remaining campaign archive stays at 23 of 366 files visually reviewed; this widget work does not advance that count.

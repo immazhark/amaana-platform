@@ -69,7 +69,7 @@ body { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
   .amaana-reminder-schedule dl { grid-template-columns: 1fr; }
   .amaana-companion-dock { right: 12px; left: 12px; justify-content: center; }
   .amaana-companion-dock > button { padding: 11px 10px; gap: 6px; font-size: 12px; min-height: 46px; min-width: 0; }
-  .amaana-companion-panel { right: 12px; width: calc(100vw - 24px); padding: 22px; }
+  .amaana-companion-panel { right: 12px; width: calc(100% - 24px); padding: 22px; }
   .amaana-companion-head h2 { font-size: 26px; }
 }
 @media print { .amaana-companion, .amaana-reminders { display: none; } body { padding-bottom: 0; } }
