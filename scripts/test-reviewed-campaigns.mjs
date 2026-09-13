@@ -4,12 +4,15 @@ import { readFile } from "node:fs/promises";
 import { importReviewedCampaigns } from "../prisma/reviewed-campaign-import.mjs";
 
 const campaigns = JSON.parse(await readFile(new URL("../prisma/campaigns-2026.json", import.meta.url), "utf8"));
-function database({ cause = true, existing = [] } = {}) {
+function database({ cause = "PUBLISHED", existing = [] } = {}) {
   const records = new Map(existing.map(slug => [slug, { id: slug, status: "ARCHIVED" }]));
   const writes = [];
   const tx = {
     $executeRaw: async () => 1,
-    cause: { findFirst: async () => cause ? { id: "seasonal-cause" } : null },
+    cause: {
+      findUnique: async () => cause ? { id: "seasonal-cause", status: cause } : null,
+      create: async ({ data }) => ({ id: "seasonal-cause", ...data }),
+    },
     initiative: {
       findUnique: async ({ where }) => records.get(where.slug) ?? null,
       create: async ({ data }) => { writes.push(data); records.set(data.slug, { id: data.slug, ...data }); },
@@ -40,9 +43,14 @@ test("an existing archived record remains archived and untouched", async () => {
   assert.equal(db.records.get(slug).status, "ARCHIVED");
   assert.equal(db.writes.length, 1);
 });
-test("missing public cause fails without creating orphan campaigns", async () => {
+test("missing cause is created without depending on a destructive seed", async () => {
   const db = database({ cause: false });
-  await assert.rejects(importReviewedCampaigns(db.prisma, campaigns), /Published seasonal/);
+  assert.equal(await importReviewedCampaigns(db.prisma, campaigns), 2);
+  assert.ok(db.writes.every(row => row.causeId === "seasonal-cause"));
+});
+test("an unpublished cause is not silently republished", async () => {
+  const db = database({ cause: "ARCHIVED" });
+  assert.equal(await importReviewedCampaigns(db.prisma, campaigns), 0);
   assert.equal(db.writes.length, 0);
 });
 test("campaign media identifiers and URLs are unique within this import", () => {
@@ -50,3 +58,4 @@ test("campaign media identifiers and URLs are unique within this import", () => 
   assert.equal(new Set(media.map(asset => asset.id)).size, media.length);
   assert.equal(new Set(media.map(asset => asset.url)).size, media.length);
 });
+

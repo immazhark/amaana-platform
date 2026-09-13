@@ -1,8 +1,14 @@
 export async function importReviewedCampaigns(prisma, campaigns) {
   return prisma.$transaction(async tx => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(2026091301)`;
-    const cause = await tx.cause.findFirst({ where: { slug: "seasonal-food-support", status: "PUBLISHED" } });
-    if (!cause) throw new Error("Published seasonal-food-support cause required before campaign import.");
+    let cause = await tx.cause.findUnique({ where: { slug: "seasonal-food-support" } });
+    if (cause && cause.status !== "PUBLISHED") return 0;
+    if (!cause) cause = await tx.cause.create({ data: {
+      slug: "seasonal-food-support", title: "Seasonal & Food Support",
+      summary: "Community-supported food distributions during Ramadan and Eid.",
+      description: "Explore Amaana's dates and meat distribution drives, their photographs and campaign updates.",
+      status: "PUBLISHED", displayOrder: 1, publishedAt: new Date(),
+    } });
     let created = 0;
     for (const { media, ...campaign } of campaigns) {
       if (await tx.initiative.findUnique({ where: { slug: campaign.slug }, select: { id: true } })) continue;
@@ -19,3 +25,4 @@ export async function importReviewedCampaigns(prisma, campaigns) {
     return created;
   });
 }
+
