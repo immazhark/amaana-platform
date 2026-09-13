@@ -21,7 +21,7 @@ export function IslamicCompanion() {
   const [requestVersion, setRequestVersion] = useState(0);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const [paused, setPaused] = useState(false);
+  const [paused, setPaused] = useState(true);
   const [reducedMotion, setReducedMotion] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
@@ -68,11 +68,11 @@ export function IslamicCompanion() {
 
   useEffect(() => {
     if (!panel) return;
-    panelRef.current?.focus();
+    panelRef.current?.focus({ preventScroll: true });
     const escape = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setPanel(null);
-        (panel === "readings" ? readingsButton : prayersButton).current?.focus();
+        (panel === "readings" ? readingsButton : prayersButton).current?.focus({ preventScroll: true });
       }
     };
     document.addEventListener("keydown", escape);
@@ -99,7 +99,7 @@ export function IslamicCompanion() {
 
   function closePanel() {
     setPanel(null);
-    (panel === "readings" ? readingsButton : prayersButton).current?.focus();
+    (panel === "readings" ? readingsButton : prayersButton).current?.focus({ preventScroll: true });
   }
 
   async function copyReading() {
@@ -121,7 +121,7 @@ export function IslamicCompanion() {
           {activeReminder && <div className="amaana-reminder-links"><a href={activeReminder.source} target="_blank" rel="noopener noreferrer">{activeReminder.reference}</a>{activeReminder.readUrl && <a href={activeReminder.readUrl} target="_blank" rel="noopener noreferrer">Read the surah</a>}</div>}
         </div>
         <div className="amaana-reminder-controls">
-          <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused} disabled={reducedMotion}>{reducedMotion ? "Motion off" : paused ? "Resume" : "Pause"}</button>
+          <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={!paused} disabled={reducedMotion}>{reducedMotion ? "Motion off" : paused ? "Auto-play" : "Pause"}</button>
           <button type="button" onClick={() => { setPaused(true); setReminderIndex(index => index + 1); }} aria-label="Next reminder">Next</button>
           <button type="button" onClick={() => setShowSchedule(value => !value)} aria-expanded={showSchedule} aria-controls="companion-schedule">Schedule</button>
         </div>

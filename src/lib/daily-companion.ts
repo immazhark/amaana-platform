@@ -95,12 +95,22 @@ export function dailyReading(now: Date) {
 }
 
 export type Reminder = { id: string; title: string; text: string; reference: string; source: string; readUrl?: string };
+function avoidVoluntaryFast(date: string, confirmed: { day: number; month: number } | null) {
+  const excluded = ({ day, month }: { day: number; month: number }) => month === 9 || (month === 10 && day === 1) || (month === 12 && day >= 10 && day <= 13);
+  if (confirmed) return excluded(confirmed);
+  // In the absence of a local announcement, suppress prompts near estimated
+  // Ramadan/Eid/Tashreeq dates too. This does not certify the fallback calendar.
+  const formatter = new Intl.DateTimeFormat("en-GB-u-ca-islamic-civil", { timeZone: "UTC", day: "numeric", month: "numeric" });
+  return [-1, 0, 1].some(offset => {
+    const parts = Object.fromEntries(formatter.formatToParts(new Date(`${shiftDate(date, offset)}T12:00:00Z`)).map(p => [p.type, p.value]));
+    return excluded({ day: Number(parts.day), month: Number(parts.month) });
+  });
+}
 export function remindersFor(now: Date, hijri: { day: number; month: number } | null = null): Reminder[] {
-  const { weekday, minutes } = hyderabadClock(now);
+  const { date, weekday, minutes } = hyderabadClock(now);
   const reminders: Reminder[] = [];
   // Clock windows are editorial reminders, not religious definitions of prayer/adhkar times.
-  const festival = hijri && ((hijri.month === 10 && hijri.day === 1) || (hijri.month === 12 && hijri.day >= 10 && hijri.day <= 13));
-  if ((weekday === 1 || weekday === 4) && minutes < 18 * 60 && !festival && hijri?.month !== 9) {
+  if ((weekday === 1 || weekday === 4) && minutes < 18 * 60 && !avoidVoluntaryFast(date, hijri)) {
     reminders.push({ id: "fasting", title: "Monday & Thursday fasting", text: "A reminder for those able to observe a voluntary fast, when permissible. Never fast on Eid; follow local guidance for festival days and personal circumstances.", reference: "Tirmidhi 747 · Hasan", source: "https://sunnah.com/tirmidhi:747" });
   }
   if (weekday === 5) {

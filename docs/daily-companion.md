@@ -12,7 +12,7 @@ STORY: Read a sourced ayah and hadith, check Hyderabad prayer times, and recogni
 
 FIRST VIEWPORT: A compact reminder section below navigation; two labelled bottom-corner controls open one nonmodal, scrollable panel at a time. Campaign imagery remains the main-page subject.
 
-FORM: Precisely requested extension, code-led; no concept seed or replacement-world exercise. Reminders rotate at 14-second intervals with explicit pause, focus/hover pause, and no automatic rotation under reduced-motion preference. Escape closes a panel and restores its trigger focus.
+FORM: Precisely requested extension, code-led; no concept seed or replacement-world exercise. Reminders are initially still, with opt-in 14-second auto-play, explicit pause, focus/hover pause, and no automatic rotation under reduced-motion preference. Escape closes a panel and restores its trigger focus without scrolling.
 
 FINISH: unreviewed and undocumented is unfinished; this build ends with the finish review, the verdict, DESIGN.md, and every shipping raster carrying its provenance
 
@@ -24,7 +24,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 - Fixed Hyderabad coordinates 17.3850, 78.4867. No geolocation request or collection. AlAdhan method 1; Hanafi default with Standard Asr option. Provider responses are cached for an hour, but validated against the requested civil date and timezone. Today/tomorrow fetched in parallel. No fabricated next-day Fajr.
 - API failures retain daily readings and an explicitly labelled civil-calendar estimate; timings offer retry and advise the local masjid. API failures never produce fake prayer times.
 - Reminders: Monday/Thursday before 18:00; Friday; night 20:00–04:00; morning 04:00–10:00; evening 16:00–20:00; general dhikr always. These are editorial IST display windows, not fiqh definitions. No push notifications or background scheduling.
-- A confirmed Ramadan, Eid or Tashreeq civil date suppresses voluntary-fasting prompts. Otherwise prompts are conditional on permissibility and explicitly exclude Eid; visitors should follow local guidance.
+- A confirmed Ramadan, Eid or Tashreeq civil date suppresses voluntary-fasting prompts. Without confirmation, the estimated date plus a one-day buffer suppresses them too. Otherwise prompts are conditional on permissibility and explicitly exclude Eid; visitors should follow local guidance.
 
 ## Hyderabad moonsighting — unresolved input, not a computed offset
 

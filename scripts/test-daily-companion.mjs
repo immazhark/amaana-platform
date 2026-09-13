@@ -22,6 +22,9 @@ test("known Eid, Tashreeq and Ramadan suppress voluntary fasting prompts", () =>
     assert.ok(!remindersFor(at("2026-09-14", "08:00"), hijri).some(r => r.id === "fasting"));
   }
 });
+test("estimated Ramadan also suppresses optional-fast reminders without an announcement", () => {
+  assert.ok(!remindersFor(at("2026-02-23", "08:00")).some(r => r.id === "fasting"));
+});
 test("night and morning/evening windows include the correct boundaries", () => {
   const ids = time => remindersFor(at("2026-09-15", time)).map(r => r.id);
   assert.ok(!ids("19:59").includes("baqarah"));
