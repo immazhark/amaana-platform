@@ -56,10 +56,11 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <StructuredData />
         <Analytics />
         <SiteHeader />
-        <main id="main">{children}</main>
         <IslamicCompanion />
+        <main id="main">{children}</main>
         <SiteFooter />
       </body>
     </html>
   );
 }
+

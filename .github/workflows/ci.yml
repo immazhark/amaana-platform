@@ -32,6 +32,8 @@ jobs:
           node scripts/check-public-media.mjs
       - name: Verify non-destructive campaign import
         run: node --test scripts/test-reviewed-campaigns.mjs
+      - name: Verify daily readings, reminder windows and local calendar boundaries
+        run: node --experimental-strip-types --test scripts/test-daily-companion.mjs
       - run: npm run prisma:generate
       - run: npm run prisma:validate
       - run: npm run lint

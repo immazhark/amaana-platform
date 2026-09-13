@@ -1,114 +1,75 @@
-.islamic-companion {
-  position: fixed;
-  z-index: 40;
-  right: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  display: flex;
-  align-items: center;
-  pointer-events: none;
+/* Companion surfaces inherit Amaana's ink, cream and restrained gold. */
+.amaana-reminders { background: #f4efe3; color: #203b43; border-bottom: 1px solid #d7cfbc; }
+.amaana-reminder-inner { max-width: 1320px; margin: auto; padding: 14px 32px; display: flex; gap: 28px; align-items: center; justify-content: space-between; }
+.amaana-reminder-content { max-width: 82ch; min-width: 0; }
+.amaana-reminder-content strong { font-size: 15px; line-height: 1.4; }
+.amaana-reminder-content p { margin: 3px 0; font-size: 13px; line-height: 1.55; }
+.amaana-reminder-links { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12px; }
+.amaana-reminders a, .amaana-companion a { color: #234e67; text-decoration: underline; text-underline-offset: 3px; }
+.amaana-reminder-controls { display: flex; gap: 6px; flex-shrink: 0; }
+.amaana-reminders button, .amaana-companion button, .amaana-companion select { font: inherit; cursor: pointer; }
+.amaana-reminder-controls button, .amaana-reminder-schedule > button { min-height: 44px; padding: 8px 12px; border: 1px solid #9b927c; border-radius: 6px; color: #203b43; background: transparent; font-size: 12px; }
+.amaana-reminders button:hover { background: #e7ddc8; }
+.amaana-reminders button:disabled { opacity: .7; cursor: default; }
+.amaana-reminder-schedule { max-width: 1320px; margin: auto; padding: 8px 32px 24px; }
+.amaana-reminder-schedule h2 { font: 26px/1.3 Georgia, serif; margin: 12px 0 20px; }
+.amaana-reminder-schedule dl { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 32px; margin: 0; }
+.amaana-reminder-schedule dt { font-weight: 700; font-size: 14px; }
+.amaana-reminder-schedule dd { margin: 4px 0 0; font-size: 14px; }
+.amaana-reminder-schedule > p { font-size: 12px; margin: 20px 0; }
+.amaana-companion { color: #203b43; }
+.amaana-companion-dock { position: fixed; bottom: max(16px, env(safe-area-inset-bottom)); right: max(20px, env(safe-area-inset-right)); display: flex; gap: 8px; z-index: 70; }
+.amaana-companion-dock > button { display: flex; align-items: center; gap: 9px; min-height: 48px; padding: 12px 16px; border: 1px solid #476069; border-radius: 8px; background: #173e47; color: #fffaf0; box-shadow: 0 6px 22px #122e3926; font-size: 13px; font-weight: 650; }
+.amaana-companion-dock > button:hover, .amaana-companion-dock > button[aria-expanded="true"] { background: #285763; }
+.amaana-companion-panel { position: fixed; z-index: 71; bottom: calc(max(16px, env(safe-area-inset-bottom)) + 60px); right: max(20px, env(safe-area-inset-right)); width: min(440px, calc(100vw - 32px)); max-height: calc(100dvh - 112px); overflow-y: auto; overscroll-behavior: contain; padding: 24px; border: 1px solid #d4c9b4; border-radius: 14px; background: #fffcf5; box-shadow: 0 18px 60px #102e3940; scrollbar-color: #75857d #f0eadf; scrollbar-width: thin; }
+.amaana-companion-head { display: flex; gap: 12px; justify-content: space-between; align-items: start; }
+.amaana-companion-head h2 { font: 28px/1.15 Georgia, serif; margin: 2px 0 12px; color: #173e47; letter-spacing: -.02em; }
+.amaana-companion-head button { flex: 0 0 44px; width: 44px; height: 44px; display: grid; place-items: center; margin: -8px -10px 0 0; border: 0; border-radius: 6px; background: transparent; color: #203b43; }
+.amaana-companion-head button:hover { background: #eee6d5; }
+.amaana-companion-panel p { font-size: 15px; line-height: 1.65; }
+.amaana-companion-panel .amaana-companion-note { font-size: 12px; line-height: 1.55; color: #50605c; margin: 8px 0 14px; }
+.amaana-daily-ayah { margin-top: 28px; }
+.amaana-companion-panel h3 { font-size: 14px; margin: 0 0 14px; color: #294e54; }
+.amaana-companion-panel .amaana-arabic { font-family: "Noto Naskh Arabic", "Traditional Arabic", "Geeza Pro", serif; font-size: 30px; line-height: 1.95; font-weight: 400; text-align: right; margin: 20px 0; }
+.amaana-daily-ayah blockquote { margin: 0; font: 20px/1.55 Georgia, serif; color: #203b43; }
+.amaana-daily-ayah > a, .amaana-daily-hadith > a { display: inline-block; font-size: 13px; line-height: 1.6; padding: 6px 0; }
+.amaana-daily-hadith { border-top: 1px solid #ded5c5; padding-top: 24px; margin-top: 28px; }
+.amaana-daily-hadith h4 { font: 22px/1.3 Georgia, serif; margin: 0 0 12px; }
+.amaana-companion-action, .amaana-companion-error button { display: inline-block; min-height: 44px; padding: 10px 16px; margin-top: 20px; background: #173e47; color: #fffaf0; border: 1px solid #173e47; border-radius: 6px; font-size: 13px; }
+.amaana-companion-action:hover, .amaana-companion-error button:hover { background: #285763; }
+.amaana-companion-details { margin-top: 20px; padding-top: 16px; border-top: 1px solid #ded5c5; font-size: 13px; }
+.amaana-companion-details summary { min-height: 32px; cursor: pointer; color: #234e67; }
+.amaana-companion-details p { font-size: 13px; }
+.amaana-companion-location { margin: 0 0 24px; font-weight: 650; }
+.amaana-companion-location span { display: block; margin-top: 3px; font-size: 12px; font-weight: 400; }
+.amaana-hijri { padding: 20px 0; border-top: 1px solid #ded5c5; border-bottom: 1px solid #ded5c5; }
+.amaana-hijri strong { font: 25px/1.35 Georgia, serif; display: block; }
+.amaana-hijri p { font-size: 13px; margin: 10px 0 6px; }
+.amaana-hijri small { font-size: 11px; line-height: 1.6; display: block; color: #50605c; }
+.amaana-asr-choice { display: block; margin: 22px 0; font-size: 13px; }
+.amaana-asr-choice select { display: block; width: 100%; margin-top: 8px; min-height: 44px; background: #fffdf8; color: #203b43; border: 1px solid #a69c86; border-radius: 5px; padding: 10px; font-size: 14px; }
+.amaana-next-salah { background: #173e47; color: #fffaf0; padding: 18px; border-radius: 8px; }
+.amaana-next-salah span { display: block; font-size: 12px; margin-bottom: 8px; }
+.amaana-next-salah strong { display: flex; justify-content: space-between; gap: 16px; font: 27px/1.3 Georgia, serif; }
+.amaana-salah-times { margin: 16px 0; font-variant-numeric: tabular-nums; }
+.amaana-salah-times > div { display: flex; justify-content: space-between; gap: 16px; padding: 11px 4px; border-bottom: 1px solid #e4dccc; font-size: 14px; }
+.amaana-salah-times dd { margin: 0; font-weight: 650; }
+.amaana-salah-times .is-next { color: #164f42; font-weight: 750; }
+.amaana-companion-error p { color: #853b26; }
+.amaana-reminders :focus-visible, .amaana-companion :focus-visible { outline: 3px solid #8f691e; outline-offset: 4px; }
+.amaana-reminders ::selection, .amaana-companion ::selection { background: #d9c18b; color: #173e47; }
+/* Reserve the dock's height so footer actions can scroll fully above it. */
+body { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+@media (max-width: 640px) {
+  .amaana-reminder-inner { padding: 14px 18px; gap: 10px; flex-wrap: wrap; }
+  .amaana-reminder-content { width: 100%; min-height: 106px; }
+  .amaana-reminder-controls { width: 100%; justify-content: flex-end; }
+  .amaana-reminder-controls button { min-height: 36px; }
+  .amaana-reminder-schedule { padding: 8px 18px 24px; }
+  .amaana-reminder-schedule dl { grid-template-columns: 1fr; }
+  .amaana-companion-dock { right: 12px; left: 12px; justify-content: center; }
+  .amaana-companion-dock > button { padding: 11px 14px; font-size: 12px; min-height: 46px; }
+  .amaana-companion-panel { right: 12px; width: calc(100vw - 24px); padding: 22px; }
+  .amaana-companion-head h2 { font-size: 26px; }
 }
-
-.islamic-companion-tab,
-.islamic-companion-panel { pointer-events: auto; }
-
-.islamic-companion-tab {
-  position: relative;
-  z-index: 2;
-  display: grid;
-  grid-template-columns: auto 1fr;
-  gap: .65rem;
-  align-items: center;
-  min-width: 11rem;
-  min-height: 4.6rem;
-  padding: .7rem .9rem .7rem .75rem;
-  border: 1px solid rgb(224 179 24 / 55%);
-  border-right: 0;
-  border-radius: 1.2rem 0 0 1.2rem;
-  background: linear-gradient(145deg, rgb(29 49 80 / 96%), rgb(18 34 57 / 98%));
-  color: #fffdf8;
-  box-shadow: 0 18px 50px rgb(18 34 57 / 24%);
-  cursor: pointer;
-  text-align: left;
-  transition: transform .3s ease, box-shadow .3s ease;
-}
-.islamic-companion-tab:hover { transform: translateX(-.25rem); box-shadow: 0 24px 64px rgb(18 34 57 / 30%); }
-.islamic-companion-crescent { display: grid; place-items: center; width: 2.2rem; height: 2.2rem; border: 1px solid rgb(224 179 24 / 55%); border-radius: 50%; color: #f0d56b; font-size: 1.25rem; }
-.islamic-companion-tab-copy { display: grid; gap: .16rem; }
-.islamic-companion-tab-copy small { color: #f0d56b; font-size: .62rem; font-weight: 850; letter-spacing: .08em; text-transform: uppercase; }
-.islamic-companion-tab-copy strong { font-family: Georgia,"Times New Roman",serif; font-size: .98rem; font-weight: 500; white-space: nowrap; }
-
-.islamic-companion-panel {
-  width: min(26rem, calc(100vw - 1rem));
-  max-height: min(46rem, calc(100vh - 2rem));
-  overflow-y: auto;
-  margin-right: .7rem;
-  padding: clamp(1.3rem,3vw,2rem);
-  border: 1px solid rgb(224 179 24 / 30%);
-  border-radius: 1.5rem;
-  background:
-    radial-gradient(circle at 90% 0%, rgb(224 179 24 / 12%), transparent 30%),
-    #fffdf8;
-  color: #122239;
-  box-shadow: 0 30px 90px rgb(18 34 57 / 30%);
-  animation: companion-in .35s cubic-bezier(.2,.75,.2,1) both;
-}
-
-.islamic-companion-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding-bottom: 1.2rem; border-bottom: 1px solid #e6dcc3; }
-.islamic-companion-head small { color: #b8890e; font-size: .68rem; font-weight: 900; letter-spacing: .14em; text-transform: uppercase; }
-.islamic-companion-head h2 { margin: .35rem 0 0; font-family: Georgia,"Times New Roman",serif; font-size: 1.9rem; font-weight: 500; line-height: 1; }
-.islamic-companion-close { width: 2.25rem; height: 2.25rem; border: 1px solid #e6dcc3; border-radius: 50%; background: transparent; color: #1d3150; font-size: 1.35rem; cursor: pointer; }
-
-.islamic-companion-empty { display: grid; justify-items: start; gap: 1rem; padding-block: 2rem .25rem; }
-.islamic-companion-empty p { margin: 0; color: #5b6472; line-height: 1.6; }
-.islamic-companion-empty > small { color: #737b86; line-height: 1.5; }
-.islamic-companion-orbit { display: grid; place-items: center; width: 5rem; height: 5rem; border: 1px solid rgb(70 111 170 / 22%); border-radius: 50%; color: #e0b318; font-size: 2rem; box-shadow: 0 0 0 1rem rgb(70 111 170 / 4%),0 0 0 2rem rgb(224 179 24 / 3%); }
-
-.islamic-companion-date { display: grid; gap: .2rem; padding-block: 1.35rem; border-bottom: 1px solid #e6dcc3; }
-.islamic-companion-date span { color: #466faa; font-size: .68rem; font-weight: 850; letter-spacing: .12em; text-transform: uppercase; }
-.islamic-companion-date strong { font-family: Georgia,"Times New Roman",serif; font-size: 1.65rem; font-weight: 500; }
-.islamic-companion-date small { color: #737b86; }
-
-.islamic-companion-next { position: relative; display: grid; grid-template-columns: 1fr auto; gap: .25rem 1rem; margin-block: 1.25rem; padding: 1.15rem 1.2rem; overflow: hidden; border-radius: 1rem; background: linear-gradient(135deg,#1d3150,#2f4c7a); color: #fffdf8; }
-.islamic-companion-next::after { content: "☾"; position: absolute; right: -1rem; top: -1.8rem; color: rgb(224 179 24 / 13%); font-size: 7rem; }
-.islamic-companion-next span { grid-column: 1 / -1; color: #f0d56b; font-size: .65rem; font-weight: 850; letter-spacing: .13em; text-transform: uppercase; }
-.islamic-companion-next strong { position: relative; z-index: 1; font-family: Georgia,"Times New Roman",serif; font-size: 2rem; font-weight: 500; }
-.islamic-companion-next b { position: relative; z-index: 1; align-self: end; color: #f0d56b; font-size: 1.15rem; }
-
-.islamic-companion-times { display: grid; }
-.islamic-companion-times > div { display: flex; justify-content: space-between; gap: 1rem; padding: .7rem .1rem; border-bottom: 1px solid #eee5d3; }
-.islamic-companion-times > div.next { color: #1d3150; font-weight: 850; }
-.islamic-companion-times > div.next::before { content: "•"; color: #e0b318; margin-right: -.25rem; }
-.islamic-companion-times span { flex: 1; }
-.islamic-companion-times strong { font-variant-numeric: tabular-nums; }
-
-.islamic-companion-reminder { margin-top: 1.3rem; padding: 1rem; border-left: 3px solid #e0b318; background: #faf6ec; }
-.islamic-companion-reminder small { color: #b8890e; font-weight: 850; letter-spacing: .1em; text-transform: uppercase; }
-.islamic-companion-reminder p { margin: .35rem 0 0; color: #5b6472; font-size: .88rem; line-height: 1.55; }
-.islamic-companion-method { display: flex; flex-wrap: wrap; gap: .4rem; margin-top: 1rem; }
-.islamic-companion-method span { padding: .28rem .5rem; border: 1px solid #e6dcc3; border-radius: 999px; color: #5b6472; font-size: .65rem; }
-.islamic-companion-method p { flex-basis: 100%; margin: .3rem 0 0; color: #7a8089; font-size: .72rem; line-height: 1.5; }
-
-@keyframes companion-in { from { opacity: 0; transform: translateX(1rem) scale(.98); } to { opacity: 1; transform: translateX(0) scale(1); } }
-
-@media (min-width: 900px) {
-  .islamic-companion.open .islamic-companion-tab { display: none; }
-}
-
-@media (max-width: 899px) {
-  .islamic-companion { top: auto; right: .75rem; bottom: .75rem; transform: none; align-items: flex-end; flex-direction: column-reverse; gap: .5rem; }
-  .islamic-companion-tab { min-width: auto; min-height: 3.7rem; border-right: 1px solid rgb(224 179 24 / 55%); border-radius: 999px; padding: .55rem .8rem; }
-  .islamic-companion-tab-copy small { display: none; }
-  .islamic-companion-panel { margin: 0; max-height: min(40rem, calc(100vh - 6rem)); }
-}
-
-@media (max-width: 520px) {
-  .islamic-companion { left: .5rem; right: .5rem; bottom: .5rem; align-items: stretch; }
-  .islamic-companion-panel { width: 100%; border-radius: 1.2rem; }
-  .islamic-companion-tab { align-self: flex-end; }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .islamic-companion-panel { animation: none; }
-  .islamic-companion-tab { transition: none; }
-}
+@media print { .amaana-companion, .amaana-reminders { display: none; } body { padding-bottom: 0; } }
