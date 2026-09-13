@@ -1,0 +1,23 @@
+[
+  {
+    "slug": "taleem-initiative-2025",
+    "title": "Taleem Initiative 2025",
+    "summary": "Educational-kit support for students, with Amaana's donor update reporting support reaching 50 orphan children.",
+    "story": "Amaana's Taleem Initiative is an educational-kit distribution drive for students. The original campaign banner states that purpose, and the supplied archive places this edition in 2025.\n\nA donor appreciation update thanks an individual supporter whose contribution, Amaana reports, helped bring joy to 50 orphan children. This is the campaign's reported figure, not a separately audited beneficiary count. The donor is not named in the update.\n\nThe gallery preserves the original campaign banner, donor update and carousel cover. These are campaign graphics, not photographs of distribution. The available records do not specify the kit contents, expenditure, distribution date or subsequent educational outcomes; those details have not been inferred.",
+    "year": 2025,
+    "primaryMetric": "50 children",
+    "primaryMetricLabel": "supported · campaign-reported",
+    "displayOrder": 2,
+    "cause": {
+      "slug": "education-support",
+      "title": "Education Support",
+      "summary": "Educational support for students through Amaana's Taleem Initiative.",
+      "description": "Explore the Taleem educational-kit drive and its original campaign updates."
+    },
+    "media": [
+      { "id": "1bi1n3KNP475Y1kh0jyV5lU8t6jgYIiZr", "url": "/media/taleem-2025-banner.webp", "alt": "Original Amaana Taleem Initiative banner describing an educational kits distribution drive for students", "caption": "Original campaign banner: educational-kit distribution for students. This is a campaign graphic." },
+      { "id": "18aYdx9Fi-urxxfvuXusZc2h760Qsnu9Y", "url": "/media/taleem-2025-update.webp", "alt": "Amaana donor appreciation graphic reporting support reaching 50 orphan children", "caption": "Amaana's donor update reports support reaching 50 orphan children; the donor remains unnamed." },
+      { "id": "14OyZ2OOaE3xoJxFD7tQpPr5SUH9gA32F", "url": "/media/taleem-2025-cover.webp", "alt": "Original Amaana Taleem Initiative social carousel cover", "caption": "The original Taleem Initiative carousel cover from the 2025 archive." }
+    ]
+  }
+]

@@ -58,4 +58,11 @@ test("campaign media identifiers and URLs are unique within this import", () => 
   assert.equal(new Set(media.map(asset => asset.id)).size, media.length);
   assert.equal(new Set(media.map(asset => asset.url)).size, media.length);
 });
-
+test("historical education edition uses its own cause and media year", async () => {
+  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+  const db = database();
+  await importReviewedCampaigns(db.prisma, historical);
+  assert.equal(db.writes[0].year, 2025);
+  assert.ok(db.writes[0].mediaAssets.create.every(asset => asset.sourceYear === 2025));
+  assert.equal(db.writes[0].cause, undefined);
+});
