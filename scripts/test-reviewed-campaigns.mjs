@@ -95,3 +95,21 @@ test("meat distribution editions preserve reported family reach and local media"
   assert.deepEqual(db.writes.map(row => row.primaryMetric), ["350 families", "150 families"]);
   assert.ok(db.writes.flatMap(row => row.mediaAssets.create).every(asset => asset.sourcePath.startsWith("user-upload:meat-")));
 });
+test("completed aid appeals preserve exact reported amounts and a dedicated cause", async () => {
+  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+  const aid = historical.filter(campaign => campaign.cause?.slug === "medical-financial-aid");
+  const db = database();
+  assert.equal(await importReviewedCampaigns(db.prisma, aid), 5);
+  assert.deepEqual(db.writes.map(row => row.primaryMetric), ["₹95,000", "₹1,07,520", "₹3,19,000", "₹72,000", "₹4,82,700"]);
+  assert.ok(db.writes.every(row => row.causeId === "seasonal-cause"));
+  assert.ok(db.writes.flatMap(row => row.mediaAssets.create).every(asset => asset.sourcePath.startsWith("user-upload:")));
+});
+test("completed aid archive excludes live payment cards and marks privacy derivatives", async () => {
+  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+  const aid = historical.filter(campaign => campaign.cause?.slug === "medical-financial-aid");
+  const sources = aid.flatMap(campaign => campaign.media.map(asset => asset.source));
+  assert.ok(!sources.some(source => source.includes("3 (2).png")));
+  assert.ok(sources.some(source => source.includes("payment-details-omitted")));
+  assert.ok(sources.some(source => source.includes("faces-blurred")));
+  assert.ok(sources.some(source => source.includes("contact-details-redacted")));
+});

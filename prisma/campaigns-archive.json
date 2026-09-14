@@ -119,5 +119,91 @@
       { "id": "local-meat-2025-6", "source": "user-upload:meat-2025/WhatsApp Image 2025-06-11 at 10.48.45 PM (5).jpeg", "url": "/media/meat-2025-portions.webp", "alt": "Many meat portions arranged in clear containers during Amaana's 2025 drive", "caption": "Individual portions arranged during the packing process." },
       { "id": "local-meat-2025-7", "source": "user-upload:meat-2025/WhatsApp Image 2025-06-13 at 12.01.44 AM.jpeg", "url": "/media/meat-2025-distribution-site.webp", "alt": "Amaana Meat Distribution Drive 2025 preparation site with packed portions", "caption": "The preparation site with packed portions ready for the drive." }
     ]
+  },
+  {
+    "slug": "financial-aid-auto-rickshaw-2025",
+    "title": "Financial Aid for an Auto-Rickshaw",
+    "summary": "Livelihood support that funded an auto-rickshaw, with Amaana reporting ₹95,000 raised and the vehicle handed over.",
+    "story": "Amaana organised this completed financial-aid appeal to help a young sole breadwinner obtain an auto-rickshaw and build a more dependable livelihood.\n\nThe campaign update reports that ₹95,000 was raised. Amaana then assisted with procuring the vehicle, handed it over and provided an additional amount intended to ease the recipient's immediate monthly financial burden.\n\nThe photographs document the vehicle and handover. The recipient's face has been deliberately blurred for public display. The archive contains no claim about later earnings, so no longer-term financial outcome has been inferred.",
+    "year": 2025,
+    "primaryMetric": "₹95,000",
+    "primaryMetricLabel": "raised · campaign-reported",
+    "displayOrder": 8,
+    "cause": {
+      "slug": "medical-financial-aid",
+      "title": "Medical & Financial Aid",
+      "summary": "Completed medical and livelihood-support appeals documented through privacy-reviewed campaign evidence.",
+      "description": "Explore completed aid appeals, campaign-reported amounts and privacy-protected handover records. Historical donation details are omitted."
+    },
+    "media": [
+      { "id": "local-aid-auto-rickshaw", "source": "user-upload:financial-aid-auto/WhatsApp Image 2025-08-03 at 1.25.08 AM.jpeg", "url": "/media/aid-auto-rickshaw.webp", "alt": "Yellow auto-rickshaw procured through Amaana's livelihood-support appeal", "caption": "The auto-rickshaw documented before handover." },
+      { "id": "local-aid-auto-handover", "source": "user-upload:financial-aid-auto/WhatsApp Image 2025-08-03 at 1.25.09 AM.jpeg#face-blurred", "url": "/media/aid-auto-handover-blurred.webp", "alt": "Privacy-protected photograph of the recipient beside the funded auto-rickshaw", "caption": "The recipient beside the vehicle; his face has been blurred." },
+      { "id": "local-aid-auto-update", "source": "user-upload:financial-aid-auto/WhatsApp Image 2026-09-09 at 4.05.36 AM.jpeg", "url": "/media/aid-auto-update.webp", "alt": "Amaana update reporting ₹95,000 raised and an auto-rickshaw handed over", "caption": "Campaign update reporting the amount raised and completed handover." }
+    ]
+  },
+  {
+    "slug": "medical-aid-eight-day-old-baby",
+    "title": "Medical Aid for an Eight-Day-Old Baby",
+    "summary": "Emergency neonatal treatment support, with Amaana reporting ₹1,07,520 raised and handed to the family.",
+    "story": "This completed emergency appeal concerned an eight-day-old baby who required oxygen-supported hospital care. The family reported having exhausted its available resources while meeting recent medical costs and caring responsibilities.\n\nThe original appeal estimated that a further ₹1.2 lakh would be needed through discharge. Amaana's subsequent update reports that ₹1,07,520 was raised and handed to the family for treatment.\n\nThe supplied records do not state the baby's eventual clinical outcome. This archive therefore documents the appeal and financial handover without making a recovery claim.",
+    "year": null,
+    "primaryMetric": "₹1,07,520",
+    "primaryMetricLabel": "raised and handed over · campaign-reported",
+    "displayOrder": 9,
+    "cause": { "slug": "medical-financial-aid", "title": "Medical & Financial Aid", "summary": "Completed medical and livelihood-support appeals documented through privacy-reviewed campaign evidence.", "description": "Explore completed aid appeals, campaign-reported amounts and privacy-protected handover records. Historical donation details are omitted." },
+    "media": [
+      { "id": "local-aid-baby-appeal", "source": "user-upload:medical-aid-eight-day-old-baby/appeal-poster", "url": "/media/aid-baby-appeal.webp", "alt": "Original emergency appeal describing hospital care for an eight-day-old baby", "caption": "The original appeal; its requested amount was an estimate at the time." },
+      { "id": "local-aid-baby-update", "source": "user-upload:medical-aid-eight-day-old-baby/impact-update", "url": "/media/aid-baby-update.webp", "alt": "Amaana update reporting ₹1,07,520 raised for the baby's treatment", "caption": "Campaign update reporting the amount raised and handed to the family." },
+      { "id": "local-aid-baby-handover", "source": "user-upload:medical-aid-eight-day-old-baby/handover-graphic", "url": "/media/aid-baby-handover.webp", "alt": "Amaana impact graphic documenting a cash handover for medical treatment", "caption": "Handover evidence supplied with the completed campaign archive." }
+    ]
+  },
+  {
+    "slug": "medical-aid-stage-three-cancer-2025",
+    "title": "Medical Aid for a Cancer Patient",
+    "summary": "Surgery support for a patient with stage-three oral cancer, with Amaana reporting ₹3,19,000 raised and handed to his wife.",
+    "story": "Amaana organised this medical-aid appeal for a patient reported to have stage-three oral cancer and to need surgery in Hyderabad in May 2025.\n\nThe campaign's impact update reports that friends and family contributed ₹3,19,000 and that the amount was handed to the patient's wife. A photograph supplied with the update documents the cash handover.\n\nThe concluded appeal's bank account, QR code and payment phone number have been omitted from the public archive. No post-treatment clinical outcome appears in the supplied records, so none has been inferred.",
+    "year": 2025,
+    "primaryMetric": "₹3,19,000",
+    "primaryMetricLabel": "raised and handed over · campaign-reported",
+    "displayOrder": 10,
+    "cause": { "slug": "medical-financial-aid", "title": "Medical & Financial Aid", "summary": "Completed medical and livelihood-support appeals documented through privacy-reviewed campaign evidence.", "description": "Explore completed aid appeals, campaign-reported amounts and privacy-protected handover records. Historical donation details are omitted." },
+    "media": [
+      { "id": "local-aid-cancer-appeal", "source": "user-upload:medical-aid-cancer/Amaana Fundraisers Appeals.png#payment-details-omitted", "url": "/media/aid-cancer-appeal-cropped.webp", "alt": "Cropped historical appeal describing surgery support for a patient with stage-three oral cancer", "caption": "Historical appeal narrative; obsolete banking, QR and phone details were omitted." },
+      { "id": "local-aid-cancer-update", "source": "user-upload:medical-aid-cancer/3.png", "url": "/media/aid-cancer-update.webp", "alt": "Amaana update reporting ₹3,19,000 raised for a stage-three cancer patient", "caption": "Campaign update reporting the amount raised and handed to the patient's wife." },
+      { "id": "local-aid-cancer-handover", "source": "user-upload:medical-aid-cancer/WhatsApp Image 2026-09-09 at 4.07.10 AM.jpeg", "url": "/media/aid-cancer-handover.webp", "alt": "Cash handover documented for the completed cancer-treatment appeal", "caption": "Handover evidence supplied with the completed campaign archive." },
+      { "id": "local-aid-cancer-closing", "source": "user-upload:medical-aid-cancer/4.png", "url": "/media/aid-cancer-closing.webp", "alt": "Amaana closing message offering prayers for people undergoing treatment", "caption": "The campaign's original closing message." }
+    ]
+  },
+  {
+    "slug": "medical-aid-ailing-mother",
+    "title": "Medical Aid for an Ailing Mother",
+    "summary": "Treatment support for a mother with severe burn injuries, with Amaana reporting ₹72,000 raised and handed to her daughter.",
+    "story": "This appeal supported a mother reported to have suffered burns over 45% of her body. Her daughter approached Amaana after the family had already spent ₹4.2 lakh and exhausted its available resources.\n\nAmaana's impact update describes the patient as a single mother of two and reports that ₹72,000 was raised for treatment. The update states that the amount was handed directly to her daughter.\n\nThe supplied archive documents the request and handover but does not state a later clinical outcome. This page therefore makes no recovery claim.",
+    "year": null,
+    "primaryMetric": "₹72,000",
+    "primaryMetricLabel": "raised and handed over · campaign-reported",
+    "displayOrder": 11,
+    "cause": { "slug": "medical-financial-aid", "title": "Medical & Financial Aid", "summary": "Completed medical and livelihood-support appeals documented through privacy-reviewed campaign evidence.", "description": "Explore completed aid appeals, campaign-reported amounts and privacy-protected handover records. Historical donation details are omitted." },
+    "media": [
+      { "id": "local-aid-mother-appeal", "source": "user-upload:medical-aid-mother/Amaana Fundraisers Appeals.png", "url": "/media/aid-mother-appeal.webp", "alt": "Historical appeal describing treatment needs for a mother with severe burn injuries", "caption": "The original appeal describing the family's reported treatment costs and need." },
+      { "id": "local-aid-mother-update", "source": "user-upload:medical-aid-mother/Untitled Design.png", "url": "/media/aid-mother-update.webp", "alt": "Amaana update reporting ₹72,000 raised for the mother's treatment", "caption": "Campaign update reporting the amount raised and handed to the patient's daughter." },
+      { "id": "local-aid-mother-handover", "source": "user-upload:medical-aid-mother/1.jpg", "url": "/media/aid-mother-handover.webp", "alt": "Amaana impact graphic documenting a cash handover for the mother's treatment", "caption": "Handover evidence supplied with the completed campaign archive." }
+    ]
+  },
+  {
+    "slug": "medical-aid-aliza-ards-2026",
+    "title": "Medical Aid for Aliza — ARDS",
+    "summary": "Critical-care support for Aliza during treatment for ARDS, with Amaana reporting ₹4,82,700 raised and handed over.",
+    "story": "Amaana opened this medical-aid appeal after Aliza was reported to have developed severe pneumonia that progressed to Acute Respiratory Distress Syndrome (ARDS) with refractory hypoxemia. The campaign materials describe escalation from high-frequency ventilation to ECMO and mechanical ventilation in paediatric intensive care.\n\nAmaana's impact update reports that ₹4,82,700 was raised for treatment and that a cheque was handed to the family. A message supplied by Aliza's father acknowledges receipt and thanks donors for their support and prayers.\n\nFor public display, Aliza's face has been heavily blurred and the family's phone and contact details have been redacted. The archived donation card and its bank account, QR code and payment phone number are not published. The materials express hope for recovery but do not establish a final clinical outcome, so none is claimed here.",
+    "year": 2026,
+    "primaryMetric": "₹4,82,700",
+    "primaryMetricLabel": "raised and handed over · campaign-reported",
+    "displayOrder": 12,
+    "cause": { "slug": "medical-financial-aid", "title": "Medical & Financial Aid", "summary": "Completed medical and livelihood-support appeals documented through privacy-reviewed campaign evidence.", "description": "Explore completed aid appeals, campaign-reported amounts and privacy-protected handover records. Historical donation details are omitted." },
+    "media": [
+      { "id": "local-aid-aliza-update", "source": "user-upload:medical-aid-aliza/2.png", "url": "/media/aid-aliza-update.webp", "alt": "Amaana update reporting ₹4,82,700 raised and a cheque handed to Aliza's family", "caption": "Campaign update reporting the amount raised and completed handover." },
+      { "id": "local-aid-aliza-photos", "source": "user-upload:medical-aid-aliza/2 (2).png#faces-blurred-and-name-line-omitted", "url": "/media/aid-aliza-photos-blurred.webp", "alt": "Two privacy-protected photographs of Aliza before and during hospital treatment", "caption": "Campaign photographs with Aliza's face heavily blurred and the full-name line omitted." },
+      { "id": "local-aid-aliza-message", "source": "user-upload:medical-aid-aliza/Amaana Thanks and Impact review (4).png#contact-details-redacted", "url": "/media/aid-aliza-family-message-redacted.webp", "alt": "Redacted message from Aliza's father acknowledging receipt of the treatment funds", "caption": "The father's acknowledgement; phone and contact details have been redacted." }
+    ]
   }
 ]
