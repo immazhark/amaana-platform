@@ -47,18 +47,19 @@ export default async function AppealDetailPage({ params }: Props) {
       <section className="v2-appeal-detail-hero">
         <div className="v2-shell v2-appeal-detail-hero-grid">
           <div className="v2-appeal-detail-copy">
+            <Link className="v2-text-link" href="/appeals">← Back to current appeals</Link>
             <div className="v2-appeal-detail-meta"><span>{appeal.category.replaceAll("_", " ")}</span><span>{appeal.beneficiaryLocation || "Location withheld"}</span><span>{isOpen ? "Open appeal" : "Appeal closed"}</span></div>
             <h1>{appeal.title}</h1>
             <p>{appeal.summary}</p>
           </div>
-          <aside className="v2-appeal-donation-panel" aria-label="Appeal funding status">
+          <aside className="v2-appeal-donation-panel" aria-label="Appeal funding status" aria-describedby="appeal-payment-boundary">
             <small>Appeal progress</small>
             <strong>{formatINR(raised)}</strong>
             <p>raised of {formatINR(goal)}</p>
-            <div className="v2-appeal-progress" role="progressbar" aria-label={`${appeal.title} funding progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span style={{ width: `${progress}%` }} /></div>
+            <div className="v2-appeal-progress" role="progressbar" aria-label={`${appeal.title} funding progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-valuetext={`${formatINR(raised)} raised of ${formatINR(goal)}; ${progress}% supported`}><span style={{ width: `${progress}%` }} /></div>
             <div className="v2-appeal-progress-foot"><span>{progress}% supported</span><span>INR · India only</span></div>
             {isOpen ? <Link className="v2-button v2-appeal-donate-button" href={`/donate/${appeal.slug}`}>Support this appeal</Link> : <span className="v2-appeal-closed">This appeal is closed</span>}
-            <p className="v2-appeal-secure-note">Domestic INR donations are processed securely through Razorpay. Amaana does not accept foreign contributions.</p>
+            <p className="v2-appeal-secure-note" id="appeal-payment-boundary">Domestic INR donations are processed securely through Razorpay. Amaana does not accept foreign contributions.</p>
           </aside>
         </div>
       </section>
