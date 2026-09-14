@@ -190,3 +190,12 @@ This file should grow when we learn something new. Repeating a documented class 
 **Correction:** Download the two exact user-approved Drive originals through the authenticated browser; visually inspect campaign labels; preserve aspect ratios; generate real JPEG/WebP files; verify complete decoding and compare locally calculated Git blob hashes with upload responses before updating the branch. See `AMAANA_MEDIA_REPAIR_2026-09-13.md`.
 
 **Prevention:** CI now rejects invalid raster images, extension mismatches and truncated data using full decoding. Validator regression tests cover valid, mislabeled, corrupt and truncated fixtures. A successful deployment still requires browser verification that actual campaign photographs have nonzero decoded dimensions and acceptable crops; green CI alone is not visual certification.
+
+### 18. Reviewed archive imports accidentally competed for featured placement
+**Mistake:** The reviewed-campaign importer forced every imported historical edition to `isFeatured: true`. Once the archive grew to many annual Eid, dates, meat and assistance records, those records could compete with flagship initiatives for featured hero/discovery placement and flatten the intended hierarchy.
+
+**Why it happened:** The first import batch was small, so `isFeatured: true` looked harmless. The same default was then reused as the archive expanded, even though “published evidence record” and “featured programme” are different editorial concepts.
+
+**Correction:** New reviewed imports now default to non-featured unless a campaign explicitly opts in. Existing preview records are normalized through a source-guarded startup pass that only clears the feature flag when the published record still matches the reviewed campaign summary; editorially changed or archived records are left untouched. CI now tests this normalization behavior.
+
+**Prevention rule:** Publication status and editorial prominence must never be coupled by default. Importers should preserve discoverability without promoting every record into primary navigation/hero hierarchy, and any startup correction of existing content must be source-guarded so it cannot overwrite subsequent editorial work.
