@@ -113,3 +113,25 @@ test("completed aid archive excludes live payment cards and marks privacy deriva
   assert.ok(sources.some(source => source.includes("faces-blurred")));
   assert.ok(sources.some(source => source.includes("contact-details-redacted")));
 });
+
+test("Eid Gift Kits archive preserves all seven annual editions and reviewed local media", async () => {
+  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+  const eid = historical.filter(campaign => campaign.slug.startsWith("eid-gift-kits-"));
+  const db = database();
+  assert.equal(await importReviewedCampaigns(db.prisma, eid), 7);
+  assert.deepEqual(db.writes.map(row => row.year), [2020, 2021, 2022, 2023, 2024, 2025, 2026]);
+  assert.deepEqual(db.writes.map(row => row.primaryMetric ?? null), ["85 families", "171 kits", "351 kits", null, "467 kits", "650 kits", "710 families"]);
+  assert.ok(db.writes.every(row => row.causeId === "seasonal-cause"));
+  assert.ok(db.writes.flatMap(row => row.mediaAssets.create).every(asset => asset.sourcePath.startsWith("user-upload:eid-kits-")));
+  assert.equal(db.writes.flatMap(row => row.mediaAssets.create).length, 15);
+});
+
+test("Eid Gift Kits archive does not infer a 2023 total and labels every published metric as campaign-reported", async () => {
+  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+  const eid = historical.filter(campaign => campaign.slug.startsWith("eid-gift-kits-"));
+  assert.equal(eid.find(campaign => campaign.year === 2023).primaryMetric, undefined);
+  assert.ok(eid.filter(campaign => campaign.primaryMetric).every(campaign => campaign.primaryMetricLabel.includes("campaign-reported")));
+  const media = eid.flatMap(campaign => campaign.media);
+  assert.equal(new Set(media.map(asset => asset.id)).size, media.length);
+  assert.equal(new Set(media.map(asset => asset.url)).size, media.length);
+});

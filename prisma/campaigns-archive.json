@@ -205,5 +205,109 @@
       { "id": "local-aid-aliza-photos", "source": "user-upload:medical-aid-aliza/2 (2).png#faces-blurred-and-name-line-omitted", "url": "/media/aid-aliza-photos-blurred.webp", "alt": "Two privacy-protected photographs of Aliza before and during hospital treatment", "caption": "Campaign photographs with Aliza's face heavily blurred and the full-name line omitted." },
       { "id": "local-aid-aliza-message", "source": "user-upload:medical-aid-aliza/Amaana Thanks and Impact review (4).png#contact-details-redacted", "url": "/media/aid-aliza-family-message-redacted.webp", "alt": "Redacted message from Aliza's father acknowledging receipt of the treatment funds", "caption": "The father's acknowledgement; phone and contact details have been redacted." }
     ]
+  },
+  {
+    "slug": "eid-gift-kits-2020",
+    "title": "Eid Gift Kits 2020",
+    "summary": "The first documented Eid Gift Kits edition, with Amaana's existing campaign record reporting support for 85 families.",
+    "story": "Amaana's 2020 Eid Gift Kits drive prepared festive food support for families ahead of Eid. The photographs document the kit contents and the completed white gift bags, each finished with an Eid greeting and campaign label.\n\nAmaana's existing campaign record reports that this first edition supported 85 families. This is a campaign-reported figure rather than a separately audited household count.\n\nNo expenditure total, detailed distribution location or recipient list was supplied for this edition. Those details have not been inferred from the visible bags.",
+    "year": 2020,
+    "primaryMetric": "85 families",
+    "primaryMetricLabel": "supported · campaign-reported",
+    "displayOrder": 20,
+    "cause": { "slug": "eid-gift-kits", "title": "Eid Gift Kits", "summary": "Festive food kits prepared for families around Eid.", "description": "Explore Amaana's annual Eid Gift Kits editions, their reported reach and original preparation photographs." },
+    "media": [
+      { "id": "local-eid-kits-2020-contents", "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.50.53 AM.jpeg", "url": "/media/eid-kits-2020-contents.webp", "alt": "Food staples and festive ingredients assembled for Amaana's 2020 Eid Gift Kits", "caption": "A representative kit displayed before packing." },
+      { "id": "local-eid-kits-2020-prepared", "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.51.02 AM.jpeg", "url": "/media/eid-kits-2020-prepared.webp", "alt": "Rows of white Eid Gift Kit bags prepared by Amaana in 2020", "caption": "Prepared gift bags carrying the original 2020 campaign labels." }
+    ]
+  },
+  {
+    "slug": "eid-gift-kits-2021",
+    "title": "Eid Gift Kits 2021",
+    "summary": "A festive food-kit distribution with 171 kits recorded in Amaana's 2021 expenditure summary.",
+    "story": "Amaana's 2021 Eid Gift Kits edition assembled staple foods, cooking ingredients, spices, dry fruits, milk and a cash allowance for meat and curd. The selected photographs show both a representative set of contents and the completed labelled bags.\n\nThe supplied summary records 171 kits at ₹1,327 per kit. It reports ₹230,027 in total expenditure, including packaging and transport. These are Amaana's campaign records and have not been independently audited.\n\nThe page preserves preparation evidence without publishing donor or recipient lists, and does not estimate additional reach from the photographs.",
+    "year": 2021,
+    "primaryMetric": "171 kits",
+    "primaryMetricLabel": "prepared · campaign-reported",
+    "displayOrder": 19,
+    "cause": { "slug": "eid-gift-kits", "title": "Eid Gift Kits", "summary": "Festive food kits prepared for families around Eid.", "description": "Explore Amaana's annual Eid Gift Kits editions, their reported reach and original preparation photographs." },
+    "media": [
+      { "id": "local-eid-kits-2021-contents", "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.40.50 AM.jpeg", "url": "/media/eid-kits-2021-contents.webp", "alt": "Food staples and festive ingredients assembled for Amaana's 2021 Eid Gift Kits", "caption": "A representative 2021 kit before packing." },
+      { "id": "local-eid-kits-2021-prepared", "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.58.04 AM (2).jpeg", "url": "/media/eid-kits-2021-prepared.webp", "alt": "Rows of completed white Eid Gift Kit bags prepared in 2021", "caption": "The completed 2021 kits arranged before distribution." }
+    ]
+  },
+  {
+    "slug": "eid-gift-kits-2022",
+    "title": "Eid Gift Kits 2022",
+    "summary": "Amaana's 2022 records document 339 standard kits and 12 customized kits prepared for Eid.",
+    "story": "Amaana's 2022 drive prepared Eid food kits containing staple foods, cooking ingredients, spices, dry fruits and a cash allowance for meat and curd. The photographs document the kit contents, finished bags and dispatch preparation.\n\nThe supplied summary records 339 standard kits at ₹1,430 each, plus 12 customized kits. It reports total expenditure of ₹506,130, including the customized kits, packaging and transport. These figures are reproduced from Amaana's campaign summary and are not independently audited.\n\nNo recipient identities or detailed delivery locations are published, and the page does not estimate reach by counting visible bags.",
+    "year": 2022,
+    "primaryMetric": "351 kits",
+    "primaryMetricLabel": "339 standard + 12 customized · campaign-reported",
+    "displayOrder": 18,
+    "cause": { "slug": "eid-gift-kits", "title": "Eid Gift Kits", "summary": "Festive food kits prepared for families around Eid.", "description": "Explore Amaana's annual Eid Gift Kits editions, their reported reach and original preparation photographs." },
+    "media": [
+      { "id": "local-eid-kits-2022-contents", "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.48.41 AM.jpeg", "url": "/media/eid-kits-2022-contents.webp", "alt": "A representative selection of foods, spices and dry fruits from Amaana's 2022 Eid Gift Kits", "caption": "A representative 2022 kit and its original greeting cards." },
+      { "id": "local-eid-kits-2022-prepared", "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.45.02 AM (2).jpeg", "url": "/media/eid-kits-2022-prepared.webp", "alt": "Completed white Eid Gift Kit bags tied with blue ribbon in 2022", "caption": "Completed 2022 kits arranged before dispatch." }
+    ]
+  },
+  {
+    "slug": "eid-gift-kits-2023",
+    "title": "Eid Gift Kits 2023",
+    "summary": "Festive food kits documented from their contents through the completed preparation stage in 2023.",
+    "story": "Amaana's 2023 Eid Gift Kits edition brought together rice, flour, cooking oil, spices, dry fruits, milk and other festive essentials. A representative basket records the contents, while the wider photograph shows the prepared kits arranged in rows.\n\nEach completed bag carried Amaana's campaign label and an Eid greeting. Some kits also included an envelope for meat and curd expenses.\n\nThe materials supplied for this page do not establish an authoritative kit total or expenditure figure. The page therefore documents the preparation without estimating reach from the number of visible bags.",
+    "year": 2023,
+    "displayOrder": 17,
+    "cause": { "slug": "eid-gift-kits", "title": "Eid Gift Kits", "summary": "Festive food kits prepared for families around Eid.", "description": "Explore Amaana's annual Eid Gift Kits editions, their reported reach and original preparation photographs." },
+    "media": [
+      { "id": "local-eid-kits-2023-contents", "source": "user-upload:eid-kits-2023/IMG_3550.JPG", "url": "/media/eid-kits-2023-contents.webp", "alt": "A representative basket of foods and festive ingredients from Amaana's 2023 Eid Gift Kits", "caption": "A representative 2023 kit before packing." },
+      { "id": "local-eid-kits-2023-prepared", "source": "user-upload:eid-kits-2023/WhatsApp Image 2026-09-09 at 3.02.40 AM.jpeg", "url": "/media/eid-kits-2023-prepared.webp", "alt": "A room filled with prepared Eid Gift Kit bags in 2023", "caption": "The 2023 preparation area with completed kits arranged for dispatch." }
+    ]
+  },
+  {
+    "slug": "eid-gift-kits-2024",
+    "title": "Eid Gift Kits 2024",
+    "summary": "A 467-kit Eid distribution documented in Amaana's 2024 campaign summary and preparation photographs.",
+    "story": "Amaana's 2024 edition prepared food kits with staple groceries, cooking ingredients, spices, dry fruits, milk, tea and a cash allowance for meat and curd. The selected images show a representative kit and the completed Amaana-labelled bags.\n\nThe supplied summary records 467 kits at ₹1,500 each and total expenditure of ₹710,500 including packaging and transport. These are campaign-reported figures and have not been independently audited.\n\nThe public record focuses on the preparation itself. It does not publish beneficiary identities or infer additional recipients from the photographs.",
+    "year": 2024,
+    "primaryMetric": "467 kits",
+    "primaryMetricLabel": "prepared · campaign-reported",
+    "displayOrder": 16,
+    "cause": { "slug": "eid-gift-kits", "title": "Eid Gift Kits", "summary": "Festive food kits prepared for families around Eid.", "description": "Explore Amaana's annual Eid Gift Kits editions, their reported reach and original preparation photographs." },
+    "media": [
+      { "id": "local-eid-kits-2024-contents", "source": "user-upload:eid-kits-2024/IMG_3762.JPG", "url": "/media/eid-kits-2024-contents.webp", "alt": "A representative basket of foods and festive ingredients from Amaana's 2024 Eid Gift Kits", "caption": "A representative 2024 kit before packing." },
+      { "id": "local-eid-kits-2024-prepared", "source": "user-upload:eid-kits-2024/IMG_3626.JPG", "url": "/media/eid-kits-2024-prepared.webp", "alt": "Rows of Amaana Eid Gift Kit bags tied with black ribbon in 2024", "caption": "Completed 2024 kits arranged before distribution." }
+    ]
+  },
+  {
+    "slug": "eid-gift-kits-2025",
+    "title": "Eid Gift Kits 2025",
+    "summary": "Amaana's 2025 summary records 650 Eid Gift Kits prepared with staple and festive foods.",
+    "story": "Amaana's 2025 Eid Gift Kits combined staple groceries, cooking oil, spices, dry fruits, milk and a cash allowance for meat and curd. The archive documents the kit contents, the packing stages and the completed Amaana-labelled bags.\n\nThe supplied summary records 650 kits at ₹1,709 each. It reports ₹1,125,742.53 in total expenditure, with packaging and transport explicitly described as not taken from donations. These are Amaana's campaign records and have not been independently audited.\n\nThe selected photographs contain no recipients. The page does not publish donor lists or infer any additional reach.",
+    "year": 2025,
+    "primaryMetric": "650 kits",
+    "primaryMetricLabel": "prepared · campaign-reported",
+    "displayOrder": 15,
+    "cause": { "slug": "eid-gift-kits", "title": "Eid Gift Kits", "summary": "Festive food kits prepared for families around Eid.", "description": "Explore Amaana's annual Eid Gift Kits editions, their reported reach and original preparation photographs." },
+    "media": [
+      { "id": "local-eid-kits-2025-contents", "source": "user-upload:eid-kits-2025/2025Eid Kit.jpeg", "url": "/media/eid-kits-2025-contents.webp", "alt": "Food staples and festive ingredients assembled for Amaana's 2025 Eid Gift Kits", "caption": "A representative 2025 kit before packing." },
+      { "id": "local-eid-kits-2025-prepared", "source": "user-upload:eid-kits-2025/afterPacking.jpeg", "url": "/media/eid-kits-2025-prepared.webp", "alt": "Completed white Eid Gift Kit bags beneath Amaana's distribution banner in 2025", "caption": "Completed 2025 kits arranged after packing." }
+    ]
+  },
+  {
+    "slug": "eid-gift-kits-2026",
+    "title": "Eid Gift Kits 2026",
+    "summary": "Amaana's 2026 impact graphic reports 710 families supported through the Eid Gift Kits distribution.",
+    "story": "Amaana's 2026 Eid Gift Kits edition assembled staple groceries, cooking ingredients, milk, spices and festive foods in individually labelled bags. The photographs document a representative kit, rows of completed bags and transport preparation.\n\nAmaana's supplied impact graphic reports 710 families supported. It also presents a category breakdown covering women-led households facing hardship, children and vulnerable students, masjid-linked beneficiaries, financially vulnerable households, workers, widows, drivers and people facing medical hardship or disability. These categories and the overall reach are campaign-reported and have not been independently audited.\n\nNo recipient identities are shown in the selected public photographs, and the page does not infer expenditure or additional reach beyond the supplied campaign record.",
+    "year": 2026,
+    "primaryMetric": "710 families",
+    "primaryMetricLabel": "supported · campaign-reported",
+    "displayOrder": 14,
+    "cause": { "slug": "eid-gift-kits", "title": "Eid Gift Kits", "summary": "Festive food kits prepared for families around Eid.", "description": "Explore Amaana's annual Eid Gift Kits editions, their reported reach and original preparation photographs." },
+    "media": [
+      { "id": "local-eid-kits-2026-contents", "source": "user-upload:eid-kits-2026/IMG_0251.JPG.jpeg", "url": "/media/eid-kits-2026-contents.webp", "alt": "A representative basket of foods and festive ingredients from Amaana's 2026 Eid Gift Kits", "caption": "A representative 2026 kit before packing." },
+      { "id": "local-eid-kits-2026-prepared", "source": "user-upload:eid-kits-2026/IMG_0138.jpg", "url": "/media/eid-kits-2026-prepared.webp", "alt": "Rows of completed Amaana Eid Gift Kit bags in 2026", "caption": "Completed 2026 kits arranged before distribution." },
+      { "id": "local-eid-kits-2026-impact", "source": "user-upload:eid-kits-2026/ChatGPT Image Jun 22, 2026, 03_25_38 PM.png", "url": "/media/eid-kits-2026-impact.webp", "alt": "Amaana impact graphic reporting 710 families supported in the 2026 Eid Kits distribution", "caption": "Amaana's supplied campaign graphic reporting the 2026 reach and beneficiary categories." }
+    ]
   }
 ]
