@@ -12,10 +12,11 @@ export async function applyReviewedCampaignRevisions(prisma, revisions) {
       } });
       for (const [index, asset] of revision.media.entries()) {
         if (await tx.mediaAsset.findFirst({ where: { initiativeId: initiative.id, sourcePath: asset.source }, select: { id: true } })) continue;
+        const hostedVideo = (asset.kind ?? "IMAGE") === "VIDEO";
         await tx.mediaAsset.create({ data: {
           initiativeId: initiative.id, kind: asset.kind ?? "IMAGE", title: asset.alt, publicUrl: asset.url,
           altText: asset.alt, caption: asset.caption, sourcePath: asset.source, sourceYear: asset.sourceYear ?? 2025,
-          sortOrder: -10 + index, isPublic: true, privacyApprovedAt: new Date("2026-09-14T00:00:00.000Z"),
+          sortOrder: -10 + index, isPublic: !hostedVideo, privacyApprovedAt: hostedVideo ? null : new Date("2026-09-14T00:00:00.000Z"),
         } });
       }
       changed++;
