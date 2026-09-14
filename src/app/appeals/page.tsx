@@ -27,11 +27,11 @@ export default async function AppealsPage() {
 
   return (
     <div className="v2-home v2-appeals-page">
-      <section className="v2-appeals-hero">
+      <section className="v2-appeals-hero" aria-labelledby="appeals-hero-title">
         <div className="v2-shell v2-appeals-hero-grid">
           <div>
             <p className="v2-section-label">Verified appeals · Hyderabad</p>
-            <h1>Understand the need before you give.</h1>
+            <h1 id="appeals-hero-title">Understand the need before you give.</h1>
             <p>Amaana does not publish every request it receives. Public appeals are the final step of a private review process, with only the information needed to understand the case made visible.</p>
             <div className="v2-hero-actions"><a className="v2-button" href="#current-appeals">See current appeals</a><Link className="v2-text-link" href="/how-we-verify">How verification works →</Link></div>
           </div>
@@ -41,10 +41,10 @@ export default async function AppealsPage() {
 
       <section className="v2-appeals-trustline" aria-label="Appeal review journey"><div className="v2-shell"><span>Need received</span><b aria-hidden="true">→</b><span>Information reviewed</span><b aria-hidden="true">→</b><span>Decision made</span><b aria-hidden="true">→</b><span>Public-safe appeal</span><b aria-hidden="true">→</b><span>Known outcome recorded</span></div></section>
 
-      <section className="v2-section paper" id="current-appeals">
+      <section className="v2-section paper" id="current-appeals" aria-labelledby="current-appeals-title">
         <div className="v2-shell">
           <div className="v2-section-head">
-            <div><p className="v2-section-label">Current appeals</p><h2 className="v2-section-title">Give where a reviewed need is active.</h2></div>
+            <div><p className="v2-section-label">Current appeals</p><h2 className="v2-section-title" id="current-appeals-title">Give where a reviewed need is active.</h2></div>
             <p className="v2-section-intro">Donations are currently limited to India. Amaana does not accept foreign contributions because the Foundation is not FCRA-registered.</p>
           </div>
 
@@ -52,9 +52,9 @@ export default async function AppealsPage() {
         </div>
       </section>
 
-      <section className="v2-section dark v2-appeal-method">
+      <section className="v2-section dark v2-appeal-method" aria-labelledby="appeal-method-title">
         <div className="v2-shell">
-          <div className="v2-section-head"><div><p className="v2-section-label">Before fundraising</p><h2 className="v2-section-title">A request becomes an appeal only after review.</h2></div><p className="v2-section-intro">The public should be able to understand how a case reached the fundraising stage without the beneficiary having to surrender their privacy to prove their need.</p></div>
+          <div className="v2-section-head"><div><p className="v2-section-label">Before fundraising</p><h2 className="v2-section-title" id="appeal-method-title">A request becomes an appeal only after review.</h2></div><p className="v2-section-intro">The public should be able to understand how a case reached the fundraising stage without the beneficiary having to surrender their privacy to prove their need.</p></div>
           <div className="v2-appeal-method-grid">
             <article><span>01</span><h3>Request</h3><p>The circumstances and requested assistance are received privately.</p></article>
             <article><span>02</span><h3>Review</h3><p>Relevant supporting information and known circumstances are checked.</p></article>
@@ -65,7 +65,7 @@ export default async function AppealsPage() {
         </div>
       </section>
 
-      <section className="v2-section v2-appeals-boundary"><div className="v2-shell v2-appeals-boundary-grid"><div><p className="v2-section-label">Dignity boundary</p><h2 className="v2-section-title">Proof does not have to become spectacle.</h2></div><div><p>Medical records, identity documents, bank details and other private verification material stay outside the public experience. The website should establish trust through process, context, approved outcomes and accountable reporting — not by exposing people at vulnerable moments.</p><Link className="v2-text-link" href="/transparency">See our transparency approach →</Link></div></div></section>
+      <section className="v2-section v2-appeals-boundary" aria-labelledby="appeals-boundary-title"><div className="v2-shell v2-appeals-boundary-grid"><div><p className="v2-section-label">Dignity boundary</p><h2 className="v2-section-title" id="appeals-boundary-title">Proof does not have to become spectacle.</h2></div><div><p>Medical records, identity documents, bank details and other private verification material stay outside the public experience. The website should establish trust through process, context, approved outcomes and accountable reporting — not by exposing people at vulnerable moments.</p><Link className="v2-text-link" href="/transparency">See our transparency approach →</Link></div></div></section>
 
       <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Need assistance?</p><h2>Requests begin privately, not as public appeals.</h2><p>If you or someone you know needs support, start with the assistance request journey. Publication is never the starting point.</p><div className="v2-hero-actions v2-hero-actions-centered"><Link className="v2-button" href="/request-assistance">Request assistance</Link><Link className="v2-text-link" href="/get-involved">Other ways to help →</Link></div></div></section>
     </div>
