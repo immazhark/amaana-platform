@@ -31,7 +31,7 @@ jobs:
           node --test scripts/test-public-media.mjs
           node scripts/check-public-media.mjs
       - name: Verify non-destructive campaign import
-        run: node --test scripts/test-reviewed-campaigns.mjs scripts/test-reviewed-campaign-revisions.mjs
+        run: node --test scripts/test-reviewed-campaigns.mjs scripts/test-reviewed-campaign-revisions.mjs scripts/test-reviewed-campaign-feature-normalization.mjs
       - name: Verify archive filters
         run: node --experimental-strip-types --test scripts/test-work-filters.mjs
       - name: Verify daily readings, reminder windows and local calendar boundaries
@@ -58,7 +58,6 @@ jobs:
             echo "JavaScript bundle budget exceeded."
             exit 1
           fi
-
           if [ "$CSS_BYTES" -gt "$CSS_BUDGET" ]; then
             echo "CSS bundle budget exceeded."
             exit 1
