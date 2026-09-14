@@ -5,6 +5,7 @@ import { applyReviewedCampaignRevisions } from "../prisma/reviewed-campaign-revi
 const revisions = JSON.parse(await readFile(new URL("../prisma/campaign-revisions.json", import.meta.url), "utf8"));
 const taleem = revisions.find(revision => revision.slug === "taleem-initiative-2025");
 const dates = revisions.find(revision => revision.slug === "dates-distribution-2026");
+const dates2023 = revisions.find(revision => revision.slug === "dates-distribution-2023");
 function database({ revision = taleem, summary = revision.expectedSummary, status = "PUBLISHED", existing = [] } = {}) {
   const media = new Set(existing), writes = [], updates = [];
   const tx = { $executeRaw: async () => 1,
@@ -35,4 +36,10 @@ test("dates revision adds images and one preparation video with 2026 provenance"
   assert.equal(db.writes.length, 11);
   assert.equal(db.writes.filter(row => row.kind === "VIDEO").length, 1);
   assert.ok(db.writes.every(row => row.sourceYear === 2026 && row.sourcePath.startsWith("user-upload:dates-2026/")));
+});
+test("dates 2023 correction updates the reported weight without adding media", async () => {
+  const db = database({ revision: dates2023 });
+  assert.equal(await applyReviewedCampaignRevisions(db.prisma, [dates2023]), 1);
+  assert.equal(db.writes.length, 0);
+  assert.equal(db.updates[0].primaryMetric, "78 kg");
 });

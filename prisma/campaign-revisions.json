@@ -28,5 +28,13 @@
       { "sourceYear": 2026, "source": "user-upload:dates-2026/WhatsApp Image 2026-02-26 at 4.00.05 PM.jpeg#face-blurred", "url": "/media/dates-2026-handover-6.webp", "alt": "Privacy-blurred participant accepting a 2026 dates package", "caption": "A prepared package being handed to a participant." },
       { "sourceYear": 2026, "kind": "VIDEO", "source": "user-upload:dates-2026/Dates distribution 2026.mp4", "url": "/media/dates-2026-preparation.mp4", "alt": "Video showing Amaana's prepared dates containers in 2026", "caption": "A short preparation video showing packed dates containers before distribution." }
     ]
+  },
+  {
+    "slug": "dates-distribution-2023",
+    "expectedSummary": "Amaana's 2023 Ramadan dates drive, documented through prepared cartons and a privacy-protected handover video; 90 kg reported.",
+    "summary": "Amaana's 2023 Ramadan dates drive, documented through prepared cartons and a privacy-protected handover video; 78 kg reported.",
+    "story": "Amaana's 2023 Dates Distribution prepared and distributed 78 kg of dates during Ramadan. The supplied photograph shows the original wholesale cartons assembled for the drive.\n\nThe short selected video records the handover activity. Identifiable faces in both the photograph and video have been blurred for public display. Two substantially longer videos supplied for reference were intentionally omitted in favour of this concise 38-second record.\n\nNo beneficiary count, expenditure figure or detailed location is stated in the supplied material. The 78 kg result is presented as Amaana's campaign-reported quantity without further estimation.",
+    "primaryMetric": "78 kg",
+    "media": []
   }
 ]

@@ -83,7 +83,15 @@ test("historical dates editions preserve reported weights and video media kinds"
   const db = database();
   assert.equal(await importReviewedCampaigns(db.prisma, dates), 3);
   assert.deepEqual(db.writes.map(row => row.year), [2025, 2024, 2023]);
-  assert.ok(db.writes.every(row => row.primaryMetric === "90 kg"));
+  assert.deepEqual(db.writes.map(row => row.primaryMetric), ["90 kg", "90 kg", "78 kg"]);
   assert.equal(db.writes.find(row => row.year === 2024).mediaAssets.create.at(-1).kind, "VIDEO");
   assert.equal(db.writes.find(row => row.year === 2023).mediaAssets.create.at(-1).kind, "VIDEO");
+});
+test("meat distribution editions preserve reported family reach and local media", async () => {
+  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+  const meat = historical.filter(campaign => campaign.slug.startsWith("meat-distribution-"));
+  const db = database();
+  assert.equal(await importReviewedCampaigns(db.prisma, meat), 2);
+  assert.deepEqual(db.writes.map(row => row.primaryMetric), ["350 families", "150+ families"]);
+  assert.ok(db.writes.flatMap(row => row.mediaAssets.create).every(asset => asset.sourcePath.startsWith("user-upload:meat-")));
 });

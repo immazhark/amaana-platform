@@ -5,7 +5,11 @@ export async function applyReviewedCampaignRevisions(prisma, revisions) {
     for (const revision of revisions) {
       const initiative = await tx.initiative.findUnique({ where: { slug: revision.slug }, select: { id: true, status: true, summary: true } });
       if (!initiative || initiative.status !== "PUBLISHED" || initiative.summary !== revision.expectedSummary) continue;
-      await tx.initiative.update({ where: { id: initiative.id }, data: { summary: revision.summary, story: revision.story } });
+      await tx.initiative.update({ where: { id: initiative.id }, data: {
+        summary: revision.summary,
+        story: revision.story,
+        ...(revision.primaryMetric ? { primaryMetric: revision.primaryMetric } : {}),
+      } });
       for (const [index, asset] of revision.media.entries()) {
         if (await tx.mediaAsset.findFirst({ where: { initiativeId: initiative.id, sourcePath: asset.source }, select: { id: true } })) continue;
         await tx.mediaAsset.create({ data: {

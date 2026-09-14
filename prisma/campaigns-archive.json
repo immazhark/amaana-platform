@@ -71,15 +71,53 @@
   {
     "slug": "dates-distribution-2023",
     "title": "Dates Distribution 2023",
-    "summary": "Amaana's 2023 Ramadan dates drive, documented through prepared cartons and a privacy-protected handover video; 90 kg reported.",
-    "story": "Amaana's 2023 Dates Distribution prepared and distributed 90 kg of dates during Ramadan. The supplied photograph shows the original wholesale cartons assembled for the drive.\n\nThe short selected video records the handover activity. Identifiable faces in both the photograph and video have been blurred for public display. Two substantially longer videos supplied for reference were intentionally omitted in favour of this concise 38-second record.\n\nNo beneficiary count, expenditure figure or detailed location is stated in the supplied material. The 90 kg result is presented as Amaana's campaign-reported quantity without further estimation.",
+    "summary": "Amaana's 2023 Ramadan dates drive, documented through prepared cartons and a privacy-protected handover video; 78 kg reported.",
+    "story": "Amaana's 2023 Dates Distribution prepared and distributed 78 kg of dates during Ramadan. The supplied photograph shows the original wholesale cartons assembled for the drive.\n\nThe short selected video records the handover activity. Identifiable faces in both the photograph and video have been blurred for public display. Two substantially longer videos supplied for reference were intentionally omitted in favour of this concise 38-second record.\n\nNo beneficiary count, expenditure figure or detailed location is stated in the supplied material. The 78 kg result is presented as Amaana's campaign-reported quantity without further estimation.",
     "year": 2023,
-    "primaryMetric": "90 kg",
+    "primaryMetric": "78 kg",
     "primaryMetricLabel": "dates distributed · campaign-reported",
     "displayOrder": 5,
     "media": [
       { "id": "local-dates-2023-photo", "source": "user-upload:dates-2023/WhatsApp Image 2026-09-14 at 3.30.17 AM.jpeg#face-blurred", "url": "/media/dates-2023-cartons-blurred.webp", "alt": "Wholesale dates cartons from Amaana's 2023 drive with an identifiable face blurred", "caption": "Cartons prepared for the 2023 drive; the visible face has been blurred." },
       { "id": "local-dates-2023-video", "kind": "VIDEO", "source": "user-upload:dates-2023/WhatsApp Video 2026-09-14 at 3.32.09 AM (2).mp4#face-blurred", "url": "/media/dates-2023-distribution-3-blurred.mp4", "alt": "Privacy-blurred video documenting Amaana's 2023 dates handover", "caption": "Selected 38-second handover video; identifiable faces have been blurred." }
+    ]
+  },
+  {
+    "slug": "meat-distribution-2026",
+    "title": "Meat Distribution Drive 2026",
+    "summary": "An Eid al-Adha meat distribution documented from livestock and preparation through packed portions, with Amaana reporting support for 350 families.",
+    "story": "Amaana's 2026 Meat Distribution Drive prepared meat portions for families around Eid al-Adha. The supplied archive documents livestock assembled for the drive, weighing and packing, labelled containers, insulated transport boxes and cartons prepared for dispatch.\n\nAmaana reports that this edition supported 350 families. This is the campaign-reported reach; the photographs do not provide an independently auditable recipient list or expenditure figure.\n\nOne distant identifiable person in the livestock photograph has been deliberately blurred for public display. No additional locations, quantities or outcomes have been inferred from the images.",
+    "year": 2026,
+    "primaryMetric": "350 families",
+    "primaryMetricLabel": "supported · campaign-reported",
+    "displayOrder": 6,
+    "media": [
+      { "id": "local-meat-2026-1", "source": "user-upload:meat-2026/image (2).png", "url": "/media/meat-2026-cold-box.webp", "alt": "Amaana-labelled meat portions stored inside an insulated box for the 2026 drive", "caption": "Packed portions placed in insulated storage during preparation." },
+      { "id": "local-meat-2026-2", "source": "user-upload:meat-2026/image (3).png", "url": "/media/meat-2026-labelled-packs.webp", "alt": "Rows of labelled meat containers prepared for Amaana's 2026 distribution", "caption": "Labelled meat containers arranged before dispatch." },
+      { "id": "local-meat-2026-3", "source": "user-upload:meat-2026/image (4).png", "url": "/media/meat-2026-weighing.webp", "alt": "A packaged meat portion being weighed during Amaana's 2026 preparation", "caption": "A portion being checked on the weighing scale." },
+      { "id": "local-meat-2026-4", "source": "user-upload:meat-2026/image (8).png", "url": "/media/meat-2026-cartons.webp", "alt": "Sealed cartons displayed beneath Amaana's Meat Distribution Drive 2026 banner", "caption": "Sealed cartons assembled for the 2026 drive." },
+      { "id": "local-meat-2026-5", "source": "user-upload:meat-2026/WhatsApp Image 2026-06-05 at 10.02.44 PM (2).jpeg", "url": "/media/meat-2026-livestock.webp", "alt": "Livestock assembled beneath Amaana's Meat Distribution Drive banner in 2026", "caption": "Livestock documented before preparation." },
+      { "id": "local-meat-2026-6", "source": "user-upload:meat-2026/WhatsApp Image 2026-07-04 at 10.58.23 PM (3).jpeg#face-blurred", "url": "/media/meat-2026-livestock-blurred.webp", "alt": "Livestock assembled for Amaana's 2026 drive with a distant person's face blurred", "caption": "Livestock at the preparation site; the visible person's identity is protected." },
+      { "id": "local-meat-2026-7", "source": "user-upload:meat-2026/WhatsApp Image 2026-07-04 at 11.02.01 PM.jpeg", "url": "/media/meat-2026-pack-closeup.webp", "alt": "Close view of an Amaana Meat Distribution Drive 2026 labelled container", "caption": "The original 2026 campaign label on a prepared container." }
+    ]
+  },
+  {
+    "slug": "meat-distribution-2025",
+    "title": "Meat Distribution Drive 2025",
+    "summary": "An Eid al-Adha meat distribution documented through preparation and packing, with Amaana reporting support reaching more than 150 families.",
+    "story": "Amaana's 2025 Meat Distribution Drive prepared individually packed meat portions around Eid al-Adha. The supplied photographs document livestock, portioning, labelled containers and the distribution preparation site.\n\nAmaana's donor update states that the drive brought support to more than 150 families. This is the campaign-reported figure, not a separately audited household count.\n\nThe archive does not state the total meat weight, expenditure or a detailed distribution location. Those details have not been inferred from the number of visible packs or photographs.",
+    "year": 2025,
+    "primaryMetric": "150+ families",
+    "primaryMetricLabel": "supported · campaign-reported",
+    "displayOrder": 7,
+    "media": [
+      { "id": "local-meat-2025-1", "source": "user-upload:meat-2025/MDD 2.png", "url": "/media/meat-2025-donor-update.webp", "alt": "Amaana donor appreciation graphic reporting support for more than 150 families in 2025", "caption": "Campaign update thanking donors and reporting support for more than 150 families." },
+      { "id": "local-meat-2025-2", "source": "user-upload:meat-2025/WhatsApp Image 2025-06-11 at 10.48.44 PM (2).jpeg", "url": "/media/meat-2025-labelled-packs.webp", "alt": "Rows of Amaana-labelled meat containers prepared for the 2025 drive", "caption": "Labelled meat portions arranged during preparation." },
+      { "id": "local-meat-2025-3", "source": "user-upload:meat-2025/WhatsApp Image 2025-06-11 at 10.48.45 PM (1).jpeg", "url": "/media/meat-2025-pack-closeup.webp", "alt": "Close view of an Amaana Meat Distribution Drive 2025 container", "caption": "A prepared portion carrying the original campaign label." },
+      { "id": "local-meat-2025-4", "source": "user-upload:meat-2025/WhatsApp Image 2025-06-11 at 10.48.45 PM (2).jpeg", "url": "/media/meat-2025-preparation.webp", "alt": "Prepared meat containers beneath Amaana's 2025 campaign banner", "caption": "The packing area during preparation for distribution." },
+      { "id": "local-meat-2025-5", "source": "user-upload:meat-2025/WhatsApp Image 2025-06-11 at 10.48.45 PM (3).jpeg", "url": "/media/meat-2025-livestock.webp", "alt": "Livestock assembled for Amaana's 2025 Meat Distribution Drive", "caption": "Livestock documented before preparation." },
+      { "id": "local-meat-2025-6", "source": "user-upload:meat-2025/WhatsApp Image 2025-06-11 at 10.48.45 PM (5).jpeg", "url": "/media/meat-2025-portions.webp", "alt": "Many meat portions arranged in clear containers during Amaana's 2025 drive", "caption": "Individual portions arranged during the packing process." },
+      { "id": "local-meat-2025-7", "source": "user-upload:meat-2025/WhatsApp Image 2025-06-13 at 12.01.44 AM.jpeg", "url": "/media/meat-2025-distribution-site.webp", "alt": "Amaana Meat Distribution Drive 2025 preparation site with packed portions", "caption": "The preparation site with packed portions ready for the drive." }
     ]
   }
 ]
