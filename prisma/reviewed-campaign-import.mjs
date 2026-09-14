@@ -31,5 +31,5 @@ export async function importReviewedCampaigns(prisma, campaigns) {
       created++;
     }
     return created;
-  });
+  }, { maxWait: 10_000, timeout: 180_000 });
 }

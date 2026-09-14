@@ -17,5 +17,5 @@ export async function applyReviewedCampaignRevisions(prisma, revisions) {
       changed++;
     }
     return changed;
-  });
+  }, { maxWait: 10_000, timeout: 180_000 });
 }
