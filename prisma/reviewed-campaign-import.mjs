@@ -21,7 +21,7 @@ export async function importReviewedCampaigns(prisma, campaigns) {
         } });
       }
       await tx.initiative.create({ data: {
-        ...campaign, causeId: targetCause.id, status: "PUBLISHED", publishedAt: new Date(), isFeatured: true,
+        ...campaign, causeId: targetCause.id, status: "PUBLISHED", publishedAt: new Date(), isFeatured: campaign.isFeatured === true,
         mediaAssets: { create: media.map((asset, sortOrder) => ({
           kind: asset.kind ?? "IMAGE", title: asset.alt, publicUrl: asset.url, altText: asset.alt, caption: asset.caption,
           sourcePath: asset.source ?? `https://drive.google.com/file/d/${asset.id}/view`, sourceYear: campaign.year ?? campaign.startYear, sortOrder,
