@@ -199,3 +199,14 @@ This file should grow when we learn something new. Repeating a documented class 
 **Correction:** New reviewed imports now default to non-featured unless a campaign explicitly opts in. Existing preview records are normalized through a source-guarded startup pass that only clears the feature flag when the published record still matches the reviewed campaign summary; editorially changed or archived records are left untouched. CI now tests this normalization behavior.
 
 **Prevention rule:** Publication status and editorial prominence must never be coupled by default. Importers should preserve discoverability without promoting every record into primary navigation/hero hierarchy, and any startup correction of existing content must be source-guarded so it cannot overwrite subsequent editorial work.
+
+
+### 19. Route activation exceeded the aggregate CSS budget
+
+**Mistake:** The dignity-led Request Assistance refinement was committed in one step and activated in the next, but activation pushed aggregate production CSS 2,537 bytes above the enforced 256 KiB budget.
+
+**Why it happened:** Route-scoping prevented the styles from burdening unrelated pages, but aggregate build output was not measured before the new layer was activated. Repeated colour selectors and low-value decorative motion consumed budget without adding equivalent visitor value.
+
+**Correction:** The layer was consolidated in measured passes. Repeated selectors and decorative duplication were removed while retaining the asymmetric hero, Amaana palette, form-stage differentiation, trust hierarchy, mobile behaviour and reduced-motion safeguards. CI #444 passed on `242bfb02` without relaxing the budget.
+
+**Prevention rule:** A new route-scoped experience layer must be judged both by route isolation and aggregate compiled output. Preserve interaction, hierarchy and accessibility first; remove redundant declarations and autonomous decoration before considering any budget change.
