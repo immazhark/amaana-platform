@@ -6,16 +6,19 @@ Seven annual editions were supplied directly by the user. The 2021, 2022, 2024 a
 
 - 2020: 85 families, campaign-reported in Amaana's existing public record.
 - 2021: 171 kits; ₹230,027 total expenditure reported in the supplied summary.
-- 2022: 339 standard kits plus 12 customized kits; ₹506,130 total expenditure reported.
-- 2023: preparation documented; no total published.
+- 2022: 339 kits in the canonical campaign history; the expenditure summary separately documents 12 customized kits and ₹506,130 total expenditure.
+- 2023: 408 kits in the canonical campaign history.
 - 2024: 467 kits; ₹710,500 total expenditure reported.
 - 2025: 650 kits; ₹1,125,742.53 total expenditure reported, with packaging and transport described as not taken from donations.
-- 2026: 710 families supported, campaign-reported in the supplied impact graphic.
+- 2026: 710 families supported, with the canonical breakdown recording 55 widows and 18 people facing medical or disability hardship. The kits were funded through non-Zakat contributions.
 
 ## Media selection and privacy
 
-Fifteen original assets were selected: one kit-content view and one preparation view per year, plus the 2026 impact graphic. The selected photographs contain no identifiable recipients. Originals remain unchanged; public WebP derivatives are resized without enlargement, carry no EXIF/GPS metadata and were fully decoded after conversion. Photographs containing peripheral people were excluded. Visible currency is retained only where it forms part of a representative kit and does not disclose account or donor information.
+The publication set now preserves every user-selected photograph available at its supplied local path: 16 from 2020, 17 from 2021, 24 from 2022, 19 from 2023, 8 from 2024, 8 from 2025 and 13 from 2026. Three additionally named 2026 files were unavailable at their supplied paths during processing and remain an explicit source gap: `20260319_224506.jpg.jpeg`, `IMG_0137.jpg` and `IMG_0182.jpg`.
+
+Originals remain unchanged. Public WebP derivatives are resized without enlargement, strip source metadata and are decoded after conversion. The supplied 2026 impact graphic is retained through a corrected derivative that changes the two outdated counts—56 widows to 55 and 17 medical/disability cases to 18—without changing the canonical total of 710.
 
 ## Publication rules
 
 Each year is a separate initiative under the dedicated Eid Gift Kits cause. All numerical claims are described as campaign-reported. Kit counts are never estimated from photographs, donor and beneficiary lists are not published, and no delivery location or downstream outcome is inferred. The import remains preview-only, idempotent and cannot overwrite an existing editorial record.
+
