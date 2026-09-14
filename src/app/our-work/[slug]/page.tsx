@@ -68,7 +68,7 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
             <p className="campaign-summary">{initiative.summary}</p>
             <div className="v2-hero-actions">
               <a className="v2-button" href="#campaign-story">Read about the drive</a>
-              {gallery.length > 0 && <a className="v2-text-link" href="#campaign-gallery">View photographs and updates</a>}
+              {gallery.length > 0 && <a className="v2-text-link" href="#campaign-gallery">View media and updates</a>}
             </div>
           </div>
           {leadMedia && <div className="campaign-lead"><PublicMedia asset={leadMedia} priority /></div>}
@@ -86,7 +86,7 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
       {gallery.length > 0 && (
         <section className="campaign-gallery" id="campaign-gallery">
           <div className="v2-shell">
-            <div className="campaign-section-heading"><h2>From the drive</h2><p>Original photographs and campaign updates. Open an image to see it in full.</p></div>
+            <div className="campaign-section-heading"><h2>From the drive</h2><p>Original photographs, privacy-protected videos and campaign updates from this edition.</p></div>
             <div className="campaign-gallery-grid">
               {gallery.map(asset => {
                 const url = resolvePublicMediaUrl(asset);

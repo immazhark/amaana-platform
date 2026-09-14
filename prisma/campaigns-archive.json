@@ -37,5 +37,49 @@
       { "id": "1EP9MoK2xJrXgR8O20jr3LWaKv8dxaO2Z", "url": "/media/winter-2025-26-impact.webp", "alt": "Amaana Winter Drive impact update reporting 234 winter kits distributed", "caption": "Campaign impact update: 234 winter kits, each reported to include a sweater or jacket, blanket and beanie cap." },
       { "id": "1C7x5v0zG6M4AeQ6Zgbw1aBKdbRl3KZjj", "url": "/media/winter-2025-26-banner.webp", "alt": "Original Amaana Winter Drive campaign banner", "caption": "The original Amaana Winter Drive campaign banner from the supplied 2025–26 archive." }
     ]
+  },
+  {
+    "slug": "dates-distribution-2025",
+    "title": "Dates Distribution 2025",
+    "summary": "Ramadan dates prepared for community distribution, with Amaana reporting 90 kg distributed in this 2025 edition.",
+    "story": "Amaana's 2025 Dates Distribution brought together 90 kg of dates for Ramadan community support. The supplied photographs document the preparation stage: wholesale cartons, individually packed containers and Amaana's Ramadan 1446 Hijri labels.\n\nThe photographs show the dates being organized before handover. No recipient total, expenditure figure or list of distribution locations appears in the supplied records, so those details have not been inferred.\n\nThe 90 kg quantity is Amaana's campaign-reported figure. This edition is preserved separately from the 2023, 2024 and 2026 drives so each year's evidence remains clear.",
+    "year": 2025,
+    "primaryMetric": "90 kg",
+    "primaryMetricLabel": "dates distributed · campaign-reported",
+    "displayOrder": 3,
+    "media": [
+      { "id": "local-dates-2025-1", "source": "user-upload:dates-2025/DDD20251.jpeg", "url": "/media/dates-2025-packs-in-carton.webp", "alt": "Amaana-labelled dates containers arranged inside an open carton for the 2025 drive", "caption": "Individually labelled dates containers arranged during preparation." },
+      { "id": "local-dates-2025-2", "source": "user-upload:dates-2025/DDD20252.jpeg", "url": "/media/dates-2025-labelled-pack.webp", "alt": "Amaana Ramadan 1446 Hijri dates container displayed with wholesale cartons", "caption": "An Amaana-labelled pack shown with the wholesale date cartons." },
+      { "id": "local-dates-2025-3", "source": "user-upload:dates-2025/DDD20253.jpeg", "url": "/media/dates-2025-cartons.webp", "alt": "Stack of wholesale Kimia dates cartons prepared for Amaana's 2025 distribution", "caption": "Wholesale cartons brought together for the 90 kg drive." },
+      { "id": "local-dates-2025-4", "source": "user-upload:dates-2025/WhatsApp Image 2026-09-14 at 5.30.07 AM.jpeg", "url": "/media/dates-2025-pack-closeup.webp", "alt": "Close view of an Amaana Foundation Ramadan dates container for 1446 Hijri", "caption": "The original 2025 campaign packaging and Ramadan label." }
+    ]
+  },
+  {
+    "slug": "dates-distribution-2024",
+    "title": "Dates Distribution 2024",
+    "summary": "A Ramadan dates handover documented in Amaana's archive, with 90 kg reported for the 2024 edition.",
+    "story": "Amaana's 2024 Dates Distribution provided 90 kg of dates during Ramadan. The surviving source for this edition is a distribution video showing date boxes being presented to children.\n\nFor public use, identifiable faces in the video and its poster frame have been deliberately blurred. The edited derivative preserves the handover activity while protecting the identity of the children shown; the supplied original remains unchanged.\n\nThe archive does not state a recipient count, expenditure total or detailed location. The page therefore records the campaign-reported weight without estimating reach from the footage.",
+    "year": 2024,
+    "primaryMetric": "90 kg",
+    "primaryMetricLabel": "dates distributed · campaign-reported",
+    "displayOrder": 4,
+    "media": [
+      { "id": "local-dates-2024-poster", "source": "user-upload:dates-2024/video-poster-derived-and-face-blurred", "url": "/media/dates-2024-video-poster.webp", "alt": "Privacy-blurred still from Amaana's 2024 Dates Distribution video", "caption": "A privacy-protected still from the 2024 distribution." },
+      { "id": "local-dates-2024-video", "kind": "VIDEO", "source": "user-upload:dates-2024/WhatsApp Video 2026-09-14 at 3.30.45 AM.mp4#face-blurred", "url": "/media/dates-2024-distribution-blurred.mp4", "alt": "Privacy-blurred video documenting the 2024 dates handover", "caption": "Documentary video of the 2024 handover; identifiable faces have been blurred." }
+    ]
+  },
+  {
+    "slug": "dates-distribution-2023",
+    "title": "Dates Distribution 2023",
+    "summary": "Amaana's 2023 Ramadan dates drive, documented through prepared cartons and a privacy-protected handover video; 90 kg reported.",
+    "story": "Amaana's 2023 Dates Distribution prepared and distributed 90 kg of dates during Ramadan. The supplied photograph shows the original wholesale cartons assembled for the drive.\n\nThe short selected video records the handover activity. Identifiable faces in both the photograph and video have been blurred for public display. Two substantially longer videos supplied for reference were intentionally omitted in favour of this concise 38-second record.\n\nNo beneficiary count, expenditure figure or detailed location is stated in the supplied material. The 90 kg result is presented as Amaana's campaign-reported quantity without further estimation.",
+    "year": 2023,
+    "primaryMetric": "90 kg",
+    "primaryMetricLabel": "dates distributed · campaign-reported",
+    "displayOrder": 5,
+    "media": [
+      { "id": "local-dates-2023-photo", "source": "user-upload:dates-2023/WhatsApp Image 2026-09-14 at 3.30.17 AM.jpeg#face-blurred", "url": "/media/dates-2023-cartons-blurred.webp", "alt": "Wholesale dates cartons from Amaana's 2023 drive with an identifiable face blurred", "caption": "Cartons prepared for the 2023 drive; the visible face has been blurred." },
+      { "id": "local-dates-2023-video", "kind": "VIDEO", "source": "user-upload:dates-2023/WhatsApp Video 2026-09-14 at 3.32.09 AM (2).mp4#face-blurred", "url": "/media/dates-2023-distribution-3-blurred.mp4", "alt": "Privacy-blurred video documenting Amaana's 2023 dates handover", "caption": "Selected 38-second handover video; identifiable faces have been blurred." }
+    ]
   }
 ]

@@ -77,3 +77,13 @@ test("multi-year archive edition uses its starting year for media provenance", a
   assert.equal(db.writes[0].mediaAssets.create.length, 4);
   assert.ok(db.writes[0].mediaAssets.create.slice(0, 2).every(asset => asset.sourcePath.startsWith("user-upload:winter-2025-26/")));
 });
+test("historical dates editions preserve reported weights and video media kinds", async () => {
+  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+  const dates = historical.filter(campaign => campaign.slug.startsWith("dates-distribution-"));
+  const db = database();
+  assert.equal(await importReviewedCampaigns(db.prisma, dates), 3);
+  assert.deepEqual(db.writes.map(row => row.year), [2025, 2024, 2023]);
+  assert.ok(db.writes.every(row => row.primaryMetric === "90 kg"));
+  assert.equal(db.writes.find(row => row.year === 2024).mediaAssets.create.at(-1).kind, "VIDEO");
+  assert.equal(db.writes.find(row => row.year === 2023).mediaAssets.create.at(-1).kind, "VIDEO");
+});
