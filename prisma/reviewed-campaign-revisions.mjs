@@ -9,6 +9,13 @@ export async function applyReviewedCampaignRevisions(prisma, revisions, campaign
       if (!source) continue;
       const initiative = await tx.initiative.findUnique({ where: { slug: revision.slug }, select: { id: true, status: true, summary: true } });
       if (!initiative || initiative.status !== "PUBLISHED" || initiative.summary !== revision.expectedSummary) continue;
+      if (revision.replaceMedia) {
+        const desiredSources = source.media.map(asset => asset.source);
+        const matchingMedia = await tx.mediaAsset.count({
+          where: { initiativeId: initiative.id, sourcePath: { in: desiredSources } },
+        });
+        if (matchingMedia === desiredSources.length) continue;
+      }
       await tx.initiative.update({ where: { id: initiative.id }, data: {
         summary: source.summary,
         story: source.story,
@@ -20,7 +27,7 @@ export async function applyReviewedCampaignRevisions(prisma, revisions, campaign
         if (await tx.mediaAsset.findFirst({ where: { initiativeId: initiative.id, sourcePath: asset.source }, select: { id: true } })) continue;
         await tx.mediaAsset.create({ data: {
           initiativeId: initiative.id, kind: asset.kind ?? "IMAGE", title: asset.alt, publicUrl: asset.url,
-          altText: asset.alt, caption: asset.caption, sourcePath: asset.source, sourceYear: asset.sourceYear ?? 2025,
+          altText: asset.alt, caption: asset.caption, sourcePath: asset.source, sourceYear: asset.sourceYear ?? source.year ?? source.startYear ?? 2025,
           sortOrder: revision.replaceMedia ? index : -10 + index, isPublic: true, privacyApprovedAt: new Date("2026-09-14T00:00:00.000Z"),
         } });
       }

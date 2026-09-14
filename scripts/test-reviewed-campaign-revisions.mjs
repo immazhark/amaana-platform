@@ -12,7 +12,7 @@ function database({ revision = taleem, summary = revision.expectedSummary, statu
   const media = new Set(existing), writes = [], updates = [], deletions = [];
   const tx = { $executeRaw: async () => 1,
     initiative: { findUnique: async () => summary === null ? null : ({ id: "taleem", status, summary }), update: async ({ data }) => updates.push(data) },
-    mediaAsset: { findFirst: async ({ where }) => media.has(where.sourcePath) ? { id: where.sourcePath } : null, create: async ({ data }) => { writes.push(data); media.add(data.sourcePath); }, deleteMany: async ({ where }) => { deletions.push(where); media.clear(); } },
+    mediaAsset: { findFirst: async ({ where }) => media.has(where.sourcePath) ? { id: where.sourcePath } : null, count: async ({ where }) => where.sourcePath.in.filter(source => media.has(source)).length, create: async ({ data }) => { writes.push(data); media.add(data.sourcePath); }, deleteMany: async ({ where }) => { deletions.push(where); media.clear(); } },
   };
   return { prisma: { $transaction: async callback => callback(tx) }, writes, updates, deletions };
 }
@@ -59,6 +59,16 @@ test("Eid revisions replace only the source-guarded gallery with the complete ca
   assert.equal(db.deletions.length, 1);
   assert.equal(db.writes.length, 8);
   assert.deepEqual(db.writes.map(row => row.sortOrder), [0, 1, 2, 3, 4, 5, 6, 7]);
+  assert.ok(db.writes.every(row => row.sourceYear === 2024));
   assert.equal(db.updates[0].summary, campaign.summary);
+});
+test("completed Eid gallery replacement is idempotent", async () => {
+  const revision = revisions.find(item => item.slug === "eid-gift-kits-2024");
+  const campaign = archive.find(item => item.slug === revision.slug);
+  const db = database({ revision, existing: campaign.media.map(asset => asset.source) });
+  assert.equal(await applyReviewedCampaignRevisions(db.prisma, [revision], archive), 0);
+  assert.equal(db.deletions.length, 0);
+  assert.equal(db.writes.length, 0);
+  assert.equal(db.updates.length, 0);
 });
 
