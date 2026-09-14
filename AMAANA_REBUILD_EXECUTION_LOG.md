@@ -186,3 +186,27 @@ Repository inspection alone is not evidence that these production-like checks pa
 - The regression and permanent prevention rule are recorded as Lesson 19 in `AMAANA_MISTAKE_LESSONS_LOG.md`.
 - Next implementation sequence remains: audit Appeals → Donate → Assistance as one rendered visitor journey; continue remaining authentic-media/content reconciliation; then perform production-like browser, accessibility, Razorpay and Assistance E2E validation before staging acceptance.
 - `main` remains untouched.
+
+
+## Plugin-assisted development protocol
+
+The user has explicitly requested that the installed development, UI and UX plugins be used throughout the remaining rebuild.
+
+Required working sequence for suitable implementation batches:
+1. UX critique — evaluate visitor intent, comprehension, trust, dignity and friction across the complete journey.
+2. High-end visual direction — challenge hierarchy, composition, typography, rhythm, originality and Amaana-specific art direction.
+3. Frontend UI engineering — implement accessible, responsive, production-quality React/Next.js changes.
+4. Motion design — add purposeful choreography and micro-interactions with reduced-motion fallbacks; never add motion merely as decoration.
+5. UI audit — review rendered hierarchy, accessibility, responsive behavior, repetition, contrast, focus, error/empty/loading states and visual consistency.
+6. React/Next.js review — check performance, hydration, component boundaries and framework best practices after substantial TSX work.
+7. Verification — run the repository's complete applicable checks, inspect CI, record failures and corrections, then update the durable checkpoint.
+
+Plugin output is advisory within Amaana's locked constraints. It must not:
+- restart the established design or technology architecture;
+- overwrite stronger current implementation;
+- introduce generic templates, repetitive card grids or a plugin's default visual identity;
+- fabricate content, statistics, religious material, registrations or urgency;
+- weaken privacy, dignity, publication, accessibility, payment, security or domestic-donation safeguards;
+- treat source implementation or green CI as rendered experience certification.
+
+Lumen UI or any component-library guidance may be used selectively only where it strengthens the existing Amaana design system without requiring a framework migration or flattening page-specific visual personalities.
