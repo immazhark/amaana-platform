@@ -54,6 +54,7 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
   const period = formatYears(initiative.startYear, initiative.endYear, initiative.year);
   const paragraphs = initiative.story.split(/\n\s*\n/).filter(Boolean);
   const activeAppeals = initiative.appeals.filter(appeal => appeal.status === "PUBLISHED");
+  const isTaleemInitiative = initiative.slug.startsWith("taleem-");
 
   return (
     <div className="v2-home campaign-page">
@@ -110,6 +111,14 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
       )}
       {initiative.faithContent.length > 0 && (
         <section className="campaign-related v2-shell"><h2>Faith and reflections</h2>{initiative.faithContent.map(item => <article key={item.id}><h3>{item.title}</h3><p>{item.excerpt}</p><Link href={`/faith-and-reflections/${item.slug}`}>Read reflection</Link></article>)}</section>
+      )}
+      {isTaleemInitiative && (
+        <section className="campaign-related v2-shell">
+          <p className="v2-section-label">Continue the work</p>
+          <h2>Sponsor a student through Amaana Taleem.</h2>
+          <p>Explore sponsorship for Hifdh, Quran Nazira, or a child’s school or college education.</p>
+          <Link className="v2-button" href="/get-involved/sponsor-education">Explore education sponsorship</Link>
+        </section>
       )}
       <section className="campaign-next">
         <div className="v2-shell">
