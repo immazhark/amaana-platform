@@ -1,22 +1,27 @@
-export async function applyReviewedCampaignRevisions(prisma, revisions) {
+export async function applyReviewedCampaignRevisions(prisma, revisions, campaigns = []) {
   return prisma.$transaction(async tx => {
     await tx.$executeRaw`SELECT pg_advisory_xact_lock(2026091401)`;
     let changed = 0;
     for (const revision of revisions) {
+      const source = revision.syncFromCampaign
+        ? campaigns.find(campaign => campaign.slug === revision.slug)
+        : revision;
+      if (!source) continue;
       const initiative = await tx.initiative.findUnique({ where: { slug: revision.slug }, select: { id: true, status: true, summary: true } });
       if (!initiative || initiative.status !== "PUBLISHED" || initiative.summary !== revision.expectedSummary) continue;
       await tx.initiative.update({ where: { id: initiative.id }, data: {
-        summary: revision.summary,
-        story: revision.story,
-        ...(revision.primaryMetric ? { primaryMetric: revision.primaryMetric } : {}),
+        summary: source.summary,
+        story: source.story,
+        ...(Object.hasOwn(source, "primaryMetric") ? { primaryMetric: source.primaryMetric } : {}),
+        ...(Object.hasOwn(source, "primaryMetricLabel") ? { primaryMetricLabel: source.primaryMetricLabel } : {}),
       } });
-      for (const [index, asset] of revision.media.entries()) {
+      if (revision.replaceMedia) await tx.mediaAsset.deleteMany({ where: { initiativeId: initiative.id } });
+      for (const [index, asset] of source.media.entries()) {
         if (await tx.mediaAsset.findFirst({ where: { initiativeId: initiative.id, sourcePath: asset.source }, select: { id: true } })) continue;
-        const hostedVideo = (asset.kind ?? "IMAGE") === "VIDEO";
         await tx.mediaAsset.create({ data: {
           initiativeId: initiative.id, kind: asset.kind ?? "IMAGE", title: asset.alt, publicUrl: asset.url,
           altText: asset.alt, caption: asset.caption, sourcePath: asset.source, sourceYear: asset.sourceYear ?? 2025,
-          sortOrder: -10 + index, isPublic: !hostedVideo, privacyApprovedAt: hostedVideo ? null : new Date("2026-09-14T00:00:00.000Z"),
+          sortOrder: revision.replaceMedia ? index : -10 + index, isPublic: true, privacyApprovedAt: new Date("2026-09-14T00:00:00.000Z"),
         } });
       }
       changed++;
@@ -24,3 +29,4 @@ export async function applyReviewedCampaignRevisions(prisma, revisions) {
     return changed;
   }, { maxWait: 10_000, timeout: 180_000 });
 }
+

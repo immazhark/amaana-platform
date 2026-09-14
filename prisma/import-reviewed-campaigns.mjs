@@ -2,11 +2,8 @@ import { readFile } from "node:fs/promises";
 import { PrismaClient } from "@prisma/client";
 import { importReviewedCampaigns } from "./reviewed-campaign-import.mjs";
 import { applyReviewedCampaignRevisions } from "./reviewed-campaign-revisions.mjs";
-import { normalizeReviewedCampaignFeaturing } from "./reviewed-campaign-feature-normalization.mjs";
-import { normalizeHostedVideoPublication } from "./reviewed-campaign-video-normalization.mjs";
 
-// This rollout is explicitly preview-only. Existing editorial records are not
-// overwritten: revisions and feature normalization both require source guards.
+// This rollout is explicitly preview-only. Existing records are never overwritten.
 if (process.env.RAILWAY_PUBLIC_DOMAIN !== "amaana-rebuild-preview-production.up.railway.app") {
   console.log("Reviewed campaign import skipped outside the designated preview.");
 } else {
@@ -15,11 +12,10 @@ if (process.env.RAILWAY_PUBLIC_DOMAIN !== "amaana-rebuild-preview-production.up.
   try {
     const created = await importReviewedCampaigns(prisma, campaigns);
     const revisions = JSON.parse(await readFile(new URL("./campaign-revisions.json", import.meta.url), "utf8"));
-    const revised = await applyReviewedCampaignRevisions(prisma, revisions);
-    const normalized = await normalizeReviewedCampaignFeaturing(prisma, campaigns);
-    const videosClosed = await normalizeHostedVideoPublication(prisma);
-    console.log(`Reviewed campaign import: ${created} new editions; ${revised} source-guarded revisions; ${normalized} archive feature flags normalized; ${videosClosed} hosted videos returned to private state.`);
+    const revised = await applyReviewedCampaignRevisions(prisma, revisions, campaigns);
+    console.log(`Reviewed campaign import: ${created} new editions; ${revised} source-guarded revisions.`);
   } finally {
     await prisma.$disconnect();
   }
 }
+

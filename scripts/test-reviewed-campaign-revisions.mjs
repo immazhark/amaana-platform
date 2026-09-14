@@ -3,17 +3,18 @@ import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import { applyReviewedCampaignRevisions } from "../prisma/reviewed-campaign-revisions.mjs";
 const revisions = JSON.parse(await readFile(new URL("../prisma/campaign-revisions.json", import.meta.url), "utf8"));
+const archive = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
 const taleem = revisions.find(revision => revision.slug === "taleem-initiative-2025");
 const dates = revisions.find(revision => revision.slug === "dates-distribution-2026");
 const dates2023 = revisions.find(revision => revision.slug === "dates-distribution-2023");
 const meat2025 = revisions.find(revision => revision.slug === "meat-distribution-2025");
 function database({ revision = taleem, summary = revision.expectedSummary, status = "PUBLISHED", existing = [] } = {}) {
-  const media = new Set(existing), writes = [], updates = [];
+  const media = new Set(existing), writes = [], updates = [], deletions = [];
   const tx = { $executeRaw: async () => 1,
     initiative: { findUnique: async () => summary === null ? null : ({ id: "taleem", status, summary }), update: async ({ data }) => updates.push(data) },
-    mediaAsset: { findFirst: async ({ where }) => media.has(where.sourcePath) ? { id: where.sourcePath } : null, create: async ({ data }) => { writes.push(data); media.add(data.sourcePath); } },
+    mediaAsset: { findFirst: async ({ where }) => media.has(where.sourcePath) ? { id: where.sourcePath } : null, create: async ({ data }) => { writes.push(data); media.add(data.sourcePath); }, deleteMany: async ({ where }) => { deletions.push(where); media.clear(); } },
   };
-  return { prisma: { $transaction: async callback => callback(tx) }, writes, updates };
+  return { prisma: { $transaction: async callback => callback(tx) }, writes, updates, deletions };
 }
 test("adds three reviewed images and revises only the expected authored record", async () => {
   const db = database();
@@ -50,3 +51,14 @@ test("meat 2025 correction follows the user-provided family count", async () => 
   assert.equal(db.writes.length, 0);
   assert.equal(db.updates[0].primaryMetric, "150 families");
 });
+test("Eid revisions replace only the source-guarded gallery with the complete campaign selection", async () => {
+  const revision = revisions.find(item => item.slug === "eid-gift-kits-2024");
+  const campaign = archive.find(item => item.slug === revision.slug);
+  const db = database({ revision, existing: ["legacy-eid-photo"] });
+  assert.equal(await applyReviewedCampaignRevisions(db.prisma, [revision], archive), 1);
+  assert.equal(db.deletions.length, 1);
+  assert.equal(db.writes.length, 8);
+  assert.deepEqual(db.writes.map(row => row.sortOrder), [0, 1, 2, 3, 4, 5, 6, 7]);
+  assert.equal(db.updates[0].summary, campaign.summary);
+});
+

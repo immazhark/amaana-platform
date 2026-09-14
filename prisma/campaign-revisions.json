@@ -44,5 +44,48 @@
     "story": "Amaana's 2025 Meat Distribution Drive prepared individually packed meat portions around Eid al-Adha. The supplied photographs document livestock, portioning, labelled containers and the distribution preparation site.\n\nAmaana reports that the drive supported 150 families. This is the campaign-reported figure, not a separately audited household count.\n\nThe archive does not state the total meat weight, expenditure or a detailed distribution location. Those details have not been inferred from the number of visible packs or photographs.",
     "primaryMetric": "150 families",
     "media": []
+  },
+  {
+    "slug": "eid-gift-kits-2020",
+    "expectedSummary": "The first documented Eid Gift Kits edition, with Amaana's existing campaign record reporting support for 85 families.",
+    "syncFromCampaign": true,
+    "replaceMedia": true
+  },
+  {
+    "slug": "eid-gift-kits-2021",
+    "expectedSummary": "A festive food-kit distribution with 171 kits recorded in Amaana's 2021 expenditure summary.",
+    "syncFromCampaign": true,
+    "replaceMedia": true
+  },
+  {
+    "slug": "eid-gift-kits-2022",
+    "expectedSummary": "Amaana's 2022 records document 339 standard kits and 12 customized kits prepared for Eid.",
+    "syncFromCampaign": true,
+    "replaceMedia": true
+  },
+  {
+    "slug": "eid-gift-kits-2023",
+    "expectedSummary": "Festive food kits documented from their contents through the completed preparation stage in 2023.",
+    "syncFromCampaign": true,
+    "replaceMedia": true
+  },
+  {
+    "slug": "eid-gift-kits-2024",
+    "expectedSummary": "A 467-kit Eid distribution documented in Amaana's 2024 campaign summary and preparation photographs.",
+    "syncFromCampaign": true,
+    "replaceMedia": true
+  },
+  {
+    "slug": "eid-gift-kits-2025",
+    "expectedSummary": "Amaana's 2025 summary records 650 Eid Gift Kits prepared with staple and festive foods.",
+    "syncFromCampaign": true,
+    "replaceMedia": true
+  },
+  {
+    "slug": "eid-gift-kits-2026",
+    "expectedSummary": "Amaana's 2026 impact graphic reports 710 families supported through the Eid Gift Kits distribution.",
+    "syncFromCampaign": true,
+    "replaceMedia": true
   }
 ]
+
