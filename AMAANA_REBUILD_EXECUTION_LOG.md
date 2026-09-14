@@ -175,3 +175,14 @@ Repository inspection alone is not evidence that these production-like checks pa
 - Phase 8 is active with materially stronger automated release gates; production-like/browser certification remains open.
 - Phase 9 cannot be honestly certified from source inspection because no staging URL/provider control plane is available in this working context.
 - `main` remains untouched.
+
+
+## Continuation checkpoint — Assistance experience performance recovery
+
+- Request Assistance received its dignity-led route-specific creative layer without changing the private-document, validation, rate-limit, tracking or publication boundaries.
+- Initial activation at `aa5a6238` exceeded the aggregate CSS budget by 2,537 bytes; lint, typecheck, tests, coverage and production compilation were otherwise green.
+- The visual layer was consolidated through measured reductions rather than raising the 256 KiB CSS ceiling.
+- CI #444 passed on `242bfb02`, restoring the full gate while preserving the page’s Amaana palette, editorial hierarchy, differentiated form journey, mobile fallback and reduced-motion behavior.
+- The regression and permanent prevention rule are recorded as Lesson 19 in `AMAANA_MISTAKE_LESSONS_LOG.md`.
+- Next implementation sequence remains: audit Appeals → Donate → Assistance as one rendered visitor journey; continue remaining authentic-media/content reconciliation; then perform production-like browser, accessibility, Razorpay and Assistance E2E validation before staging acceptance.
+- `main` remains untouched.
