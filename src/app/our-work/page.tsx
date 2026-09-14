@@ -150,7 +150,7 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
       <section className="v2-section dark">
         <div className="v2-shell v2-faith-grid">
           <div><p className="v2-section-label">See the evidence</p><h2 className="v2-section-title">The work does not end at the initiative page.</h2><p className="v2-section-intro">Impact, stories, public-safe media and transparency records continue the journey so visitors can understand what happened after support was given.</p></div>
-          <div className="v2-reminder"><span className="v2-reminder-label">Follow the trail</span><blockquote>Work → evidence → story → known outcome.</blockquote><div className="v2-hero-actions"><Link className="v2-button ghost" href="/impact">Explore impact</Link><Link className="v2-text-link" href="/stories">Read stories →</Link></div></div></section>
+          <div className="v2-reminder"><span className="v2-reminder-label">Follow the trail</span><blockquote>Work → evidence → story → known outcome.</blockquote><div className="v2-hero-actions"><Link className="v2-button ghost" href="/impact">Explore impact</Link><Link className="v2-text-link" href="/stories">Read stories →</Link></div></div>
         </div>
       </section>
 
