@@ -19,7 +19,7 @@ export function AppealCard({ appeal }: { appeal: PublicAppeal }) {
         </div>
         <div className="v2-appeal-card-progress">
           <div className="v2-appeal-progress-meta"><strong>{formatINR(raised)}</strong><span>of {formatINR(goal)}</span></div>
-          <div className="v2-appeal-progress" role="progressbar" aria-label={`${appeal.title} funding progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress}><span style={{ width: `${progress}%` }} /></div>
+          <div className="v2-appeal-progress" role="progressbar" aria-label={`${appeal.title} funding progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-valuetext={`${formatINR(raised)} raised of ${formatINR(goal)}; ${progress}% supported`}><span style={{ width: `${progress}%` }} /></div>
           <div className="v2-appeal-progress-foot"><span>{progress}% supported</span><span>Verified appeal</span></div>
         </div>
       </div>
