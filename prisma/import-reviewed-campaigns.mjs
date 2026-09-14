@@ -3,6 +3,7 @@ import { PrismaClient } from "@prisma/client";
 import { importReviewedCampaigns } from "./reviewed-campaign-import.mjs";
 import { applyReviewedCampaignRevisions } from "./reviewed-campaign-revisions.mjs";
 import { normalizeReviewedCampaignFeaturing } from "./reviewed-campaign-feature-normalization.mjs";
+import { normalizeHostedVideoPublication } from "./reviewed-campaign-video-normalization.mjs";
 
 // This rollout is explicitly preview-only. Existing editorial records are not
 // overwritten: revisions and feature normalization both require source guards.
@@ -16,7 +17,8 @@ if (process.env.RAILWAY_PUBLIC_DOMAIN !== "amaana-rebuild-preview-production.up.
     const revisions = JSON.parse(await readFile(new URL("./campaign-revisions.json", import.meta.url), "utf8"));
     const revised = await applyReviewedCampaignRevisions(prisma, revisions);
     const normalized = await normalizeReviewedCampaignFeaturing(prisma, campaigns);
-    console.log(`Reviewed campaign import: ${created} new editions; ${revised} source-guarded revisions; ${normalized} archive feature flags normalized.`);
+    const videosClosed = await normalizeHostedVideoPublication(prisma);
+    console.log(`Reviewed campaign import: ${created} new editions; ${revised} source-guarded revisions; ${normalized} archive feature flags normalized; ${videosClosed} hosted videos returned to private state.`);
   } finally {
     await prisma.$disconnect();
   }
