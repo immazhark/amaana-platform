@@ -29,7 +29,11 @@ export function canRenderPublicMedia(asset: PublicMediaCandidate) {
   const url = resolvePublicMediaUrl(asset);
   if (!url) return false;
 
-  if (asset.kind === "IMAGE" || asset.kind === "VIDEO") {
+  // Hosted video remains fail-closed until the model can carry a verified,
+  // synchronized caption track. Alt/label text alone is not a caption substitute.
+  if (asset.kind === "VIDEO") return false;
+
+  if (asset.kind === "IMAGE") {
     return Boolean(asset.altText?.trim());
   }
 
