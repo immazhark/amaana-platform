@@ -6,6 +6,7 @@ const revisions = JSON.parse(await readFile(new URL("../prisma/campaign-revision
 const taleem = revisions.find(revision => revision.slug === "taleem-initiative-2025");
 const dates = revisions.find(revision => revision.slug === "dates-distribution-2026");
 const dates2023 = revisions.find(revision => revision.slug === "dates-distribution-2023");
+const meat2025 = revisions.find(revision => revision.slug === "meat-distribution-2025");
 function database({ revision = taleem, summary = revision.expectedSummary, status = "PUBLISHED", existing = [] } = {}) {
   const media = new Set(existing), writes = [], updates = [];
   const tx = { $executeRaw: async () => 1,
@@ -42,4 +43,10 @@ test("dates 2023 correction updates the reported weight without adding media", a
   assert.equal(await applyReviewedCampaignRevisions(db.prisma, [dates2023]), 1);
   assert.equal(db.writes.length, 0);
   assert.equal(db.updates[0].primaryMetric, "78 kg");
+});
+test("meat 2025 correction follows the user-provided family count", async () => {
+  const db = database({ revision: meat2025 });
+  assert.equal(await applyReviewedCampaignRevisions(db.prisma, [meat2025]), 1);
+  assert.equal(db.writes.length, 0);
+  assert.equal(db.updates[0].primaryMetric, "150 families");
 });

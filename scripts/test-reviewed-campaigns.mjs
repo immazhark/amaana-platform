@@ -92,6 +92,6 @@ test("meat distribution editions preserve reported family reach and local media"
   const meat = historical.filter(campaign => campaign.slug.startsWith("meat-distribution-"));
   const db = database();
   assert.equal(await importReviewedCampaigns(db.prisma, meat), 2);
-  assert.deepEqual(db.writes.map(row => row.primaryMetric), ["350 families", "150+ families"]);
+  assert.deepEqual(db.writes.map(row => row.primaryMetric), ["350 families", "150 families"]);
   assert.ok(db.writes.flatMap(row => row.mediaAssets.create).every(asset => asset.sourcePath.startsWith("user-upload:meat-")));
 });
