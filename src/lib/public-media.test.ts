@@ -19,8 +19,9 @@ describe("public media safety", () => {
     expect(canRenderPublicMedia({ kind: "IMAGE", publicUrl: "/media/photo.jpg", altText: "Eid Kit packing" })).toBe(true);
   });
 
-  it("fails closed for hosted video until synchronized caption tracks are modelled", () => {
+  it("fails closed for hosted video even when descriptive text exists", () => {
     expect(canRenderPublicMedia({ kind: "VIDEO", publicUrl: "https://cdn.example.org/update.mp4" })).toBe(false);
+    expect(canRenderPublicMedia({ kind: "VIDEO", publicUrl: "https://cdn.example.org/update.mp4", altText: "Packing video" })).toBe(false);
   });
 
   it("uses only the external URL for external video records", () => {
