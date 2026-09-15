@@ -1,4 +1,4 @@
-import { getPublicAppealVerificationIssues } from "@/lib/assistance";
+import { getPublicAppealVerificationIssues } from "./assistance";
 
 type VerificationLike = Parameters<typeof getPublicAppealVerificationIssues>[0];
 type AmountLike = { toNumber(): number } | number | string | null | undefined;
