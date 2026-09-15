@@ -1,9 +1,9 @@
 import Link from "next/link";
-import { formatINR, type PublicAppeal } from "@/lib/appeals";
+import { amountToNumber, formatINR, type PublicAppeal } from "@/lib/appeals";
 
 export function AppealCard({ appeal }: { appeal: PublicAppeal }) {
-  const raised = typeof appeal.amountRaised === "number" ? appeal.amountRaised : appeal.amountRaised.toNumber();
-  const goal = typeof appeal.goalAmount === "number" ? appeal.goalAmount : appeal.goalAmount.toNumber();
+  const raised = amountToNumber(appeal.amountRaised);
+  const goal = amountToNumber(appeal.goalAmount);
   const progress = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
 
   return (
