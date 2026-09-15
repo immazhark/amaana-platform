@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
+import { publicFaithWhere } from "@/lib/faith-publication";
 
 const publishedWhere = {
   status: "PUBLISHED" as const,
@@ -54,10 +55,7 @@ export async function getPublishedInitiativeBySlug(slug: string) {
         orderBy: { publishedAt: "desc" },
       },
       faithContent: {
-        where: {
-          status: "PUBLISHED",
-          religiousReviewStatus: "VERIFIED",
-        },
+        where: publicFaithWhere,
         orderBy: { publishedAt: "desc" },
       },
     },
@@ -99,10 +97,7 @@ export async function getPublishedStoryBySlug(slug: string) {
 
 export async function getPublishedFaithContent() {
   return prisma.faithContent.findMany({
-    where: {
-      status: "PUBLISHED",
-      religiousReviewStatus: "VERIFIED",
-    },
+    where: publicFaithWhere,
     include: {
       topics: { include: { topic: true } },
       cause: true,
@@ -120,8 +115,7 @@ export async function getPublishedFaithContentBySlug(slug: string) {
   return prisma.faithContent.findFirst({
     where: {
       slug,
-      status: "PUBLISHED",
-      religiousReviewStatus: "VERIFIED",
+      ...publicFaithWhere,
     },
     include: {
       topics: { include: { topic: true } },
@@ -138,8 +132,7 @@ export async function getPublishedFaithContentBySlug(slug: string) {
 export async function getFeaturedFaithContent() {
   return prisma.faithContent.findFirst({
     where: {
-      status: "PUBLISHED",
-      religiousReviewStatus: "VERIFIED",
+      ...publicFaithWhere,
       isFeatured: true,
     },
     include: {
@@ -194,8 +187,7 @@ export async function getHomepagePublicContent() {
     }),
     prisma.faithContent.findFirst({
       where: {
-        status: "PUBLISHED",
-        religiousReviewStatus: "VERIFIED",
+        ...publicFaithWhere,
         isFeatured: true,
       },
       orderBy: { publishedAt: "desc" },
