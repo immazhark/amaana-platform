@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { prisma } from "@/lib/prisma";
+import { prisma } from "./prisma";
 
 type RateLimitPurpose = "donation" | "assistance";
 
