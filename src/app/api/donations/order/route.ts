@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
-import { isAppealOpenForDonations } from "@/lib/appeals";
-import { createDonationReference, createReceiptToken, donationSchema, hashReceiptToken } from "@/lib/donations";
+import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
+import { createDonationReference, createReceiptToken, donationSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder } from "@/lib/razorpay";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
@@ -27,6 +27,28 @@ export async function POST(request: Request) {
       },
     });
     if (!appeal || !isAppealOpenForDonations(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+
+    const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
+    if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) {
+      if (parsed.data.amount > remainingAmount) {
+        return NextResponse.json(
+          {
+            error: `This appeal currently needs up to ₹${remainingAmount.toLocaleString("en-IN")} more. Please reduce the donation amount.`,
+            remainingAmount,
+          },
+          { status: 409, headers: privateHeaders },
+        );
+      }
+
+      return NextResponse.json(
+        {
+          error: `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}, unless a smaller exact amount is all that remains to complete the appeal.`,
+          remainingAmount,
+        },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+
     const referenceNumber = createDonationReference(); const receiptToken = createReceiptToken(); const amountPaise = parsed.data.amount * 100;
     const order = await createRazorpayOrder({ amountPaise, receipt: referenceNumber, appealId: appeal.id });
     if (order.amount !== amountPaise || order.currency !== "INR") throw new Error("Unexpected order response");

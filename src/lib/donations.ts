@@ -1,15 +1,24 @@
 import { createHash, randomBytes, randomInt } from "node:crypto";
 import { z } from "zod";
 
+export const MIN_DONATION_AMOUNT = 10;
+export const MAX_DONATION_AMOUNT = 1_000_000;
+
 export const donationSchema = z.object({
   appealId: z.string().cuid(),
   donorName: z.string().trim().min(2).max(120),
   donorEmail: z.string().trim().email().max(254),
   donorPhone: z.union([z.literal(""), z.string().trim().regex(/^\+?[0-9][0-9\s-]{7,16}$/)]).optional(),
-  amount: z.coerce.number().int().min(10).max(1000000),
+  amount: z.coerce.number().int().min(1).max(MAX_DONATION_AMOUNT),
   isAnonymous: z.boolean().optional().default(false),
   domesticConfirmed: z.literal(true),
 });
+
+export function isDonationAmountAllowedForRemaining(amount: number, remainingAmount: number) {
+  if (!Number.isInteger(amount) || amount < 1 || amount > MAX_DONATION_AMOUNT) return false;
+  if (amount > remainingAmount) return false;
+  return amount >= MIN_DONATION_AMOUNT || amount === remainingAmount;
+}
 
 export const createDonationReference = () => `AFD-${new Date().getUTCFullYear()}-${randomInt(10000000, 100000000)}`;
 export const createReceiptToken = () => randomBytes(24).toString("base64url");

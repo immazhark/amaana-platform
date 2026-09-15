@@ -24,6 +24,13 @@ export const amountToNumber = (amount: AmountLike) => {
   return amount.toNumber();
 };
 
+export function getRemainingAppealAmount(
+  amountRaised: AmountLike,
+  goalAmount: AmountLike,
+) {
+  return Math.max(0, amountToNumber(goalAmount) - amountToNumber(amountRaised));
+}
+
 export function shouldMarkAppealFunded(
   status: string,
   amountRaised: AmountLike,
