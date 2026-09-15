@@ -24,12 +24,20 @@ export const amountToNumber = (amount: AmountLike) => {
   return amount.toNumber();
 };
 
+export function shouldMarkAppealFunded(
+  status: string,
+  amountRaised: AmountLike,
+  goalAmount: AmountLike,
+) {
+  return status === "PUBLISHED" && amountToNumber(amountRaised) >= amountToNumber(goalAmount);
+}
+
 export function isAppealOpenForDonations(
   appeal: AppealFundraisingState,
   now: Date = new Date(),
 ) {
   if (appeal.status !== "PUBLISHED") return false;
-  if (amountToNumber(appeal.amountRaised) >= amountToNumber(appeal.goalAmount)) return false;
+  if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) return false;
   if (appeal.closesAt && new Date(appeal.closesAt).getTime() <= now.getTime()) return false;
   return true;
 }
