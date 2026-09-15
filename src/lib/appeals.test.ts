@@ -1,8 +1,18 @@
 import { describe, expect, it } from "vitest";
-import { isAppealOpenForDonations, shouldMarkAppealFunded } from "./appeals";
+import { getRemainingAppealAmount, isAppealOpenForDonations, shouldMarkAppealFunded } from "./appeals";
 
 const decimalLike = (value: number) => ({ toNumber: () => value });
 const now = new Date("2026-09-15T12:00:00.000Z");
+
+describe("getRemainingAppealAmount", () => {
+  it("returns the exact remaining need across decimal-like and string values", () => {
+    expect(getRemainingAppealAmount(decimalLike(74_900), "75000")).toBe(100);
+  });
+
+  it("never returns a negative remaining amount", () => {
+    expect(getRemainingAppealAmount(80_000, 75_000)).toBe(0);
+  });
+});
 
 describe("isAppealOpenForDonations", () => {
   it("accepts a published appeal below target with no close date", () => {
