@@ -5,7 +5,11 @@ import { hashTrackingToken } from "@/lib/assistance";
 import { prisma } from "@/lib/prisma";
 import { isSameOrigin } from "@/lib/request-security";
 
-const privateHeaders = { "Cache-Control": "no-store, private" };
+const privateHeaders = {
+  "Cache-Control": "no-store, private",
+  "Referrer-Policy": "no-referrer",
+  "X-Robots-Tag": "noindex, nofollow, noarchive",
+};
 const schema = z.object({
   reference: z.string().trim().min(1).max(64),
   token: z.string().min(20).max(256),

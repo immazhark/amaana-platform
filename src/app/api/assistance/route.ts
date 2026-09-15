@@ -8,7 +8,11 @@ import { validateProductionEnvironment } from "@/lib/env";
 import { enforceAssistanceRateLimit, isSameOrigin } from "@/lib/request-security";
 
 export const runtime = "nodejs";
-const privateHeaders = { "Cache-Control": "no-store, private" };
+const privateHeaders = {
+  "Cache-Control": "no-store, private",
+  "Referrer-Policy": "no-referrer",
+  "X-Robots-Tag": "noindex, nofollow, noarchive",
+};
 
 export async function POST(request: Request) {
   try {
