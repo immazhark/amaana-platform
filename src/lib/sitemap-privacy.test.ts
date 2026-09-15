@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canListAppealInSitemap } from "@/lib/sitemap-privacy";
+import { canListAppealInSitemap } from "./sitemap-privacy";
 
 describe("sitemap appeal privacy", () => {
   it("excludes highly sensitive appeals from search discovery", () => {
