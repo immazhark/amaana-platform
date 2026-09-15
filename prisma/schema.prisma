@@ -43,6 +43,35 @@ enum AssistanceStatus {
   CLOSED
 }
 
+enum AssistanceVerificationDecision {
+  PENDING
+  APPROVED_PUBLIC
+  APPROVED_PRIVATE
+  APPROVED_PARTIAL
+  REFERRED
+  DECLINED
+}
+
+enum ConsentDecision {
+  UNCONFIRMED
+  ALLOWED
+  NOT_ALLOWED
+  NOT_APPLICABLE
+}
+
+enum ZakatReviewStatus {
+  UNREVIEWED
+  ELIGIBLE
+  NOT_ELIGIBLE
+  NOT_APPLICABLE
+}
+
+enum ConfidentialityLevel {
+  STANDARD
+  CONFIDENTIAL
+  HIGHLY_SENSITIVE
+}
+
 enum NotificationChannel {
   EMAIL
   SMS
@@ -94,22 +123,23 @@ enum MediaKind {
 }
 
 model User {
-  id                    String              @id @default(cuid())
-  name                  String
-  email                 String              @unique
-  phone                 String?
-  status                UserStatus          @default(INVITED)
-  roles                 UserRole[]
-  createdAppeals        Appeal[]            @relation("AppealCreator")
-  reviewedAppeals       Appeal[]            @relation("AppealReviewer")
-  assistanceAssignments AssistanceRequest[] @relation("AssistanceAssignee")
-  notifications         Notification[]
-  credential            PasswordCredential?
-  sessions              Session[]
-  auditEvents           AuditEvent[]        @relation("AuditActor")
-  appealUpdates         AppealUpdate[]
-  createdAt             DateTime            @default(now())
-  updatedAt             DateTime            @updatedAt
+  id                      String                   @id @default(cuid())
+  name                    String
+  email                   String                   @unique
+  phone                   String?
+  status                  UserStatus               @default(INVITED)
+  roles                   UserRole[]
+  createdAppeals          Appeal[]                 @relation("AppealCreator")
+  reviewedAppeals         Appeal[]                 @relation("AppealReviewer")
+  assistanceAssignments   AssistanceRequest[]      @relation("AssistanceAssignee")
+  assistanceVerifications AssistanceVerification[] @relation("AssistanceVerifier")
+  notifications           Notification[]
+  credential              PasswordCredential?
+  sessions                Session[]
+  auditEvents             AuditEvent[]             @relation("AuditActor")
+  appealUpdates           AppealUpdate[]
+  createdAt               DateTime                 @default(now())
+  updatedAt               DateTime                 @updatedAt
 }
 
 model PasswordCredential {
@@ -200,29 +230,29 @@ model Cause {
 }
 
 model Initiative {
-  id                String        @id @default(cuid())
-  slug              String        @unique
-  title             String
-  summary           String
-  story             String
-  year              Int?
-  startYear         Int?
-  endYear           Int?
-  status            ContentStatus @default(DRAFT)
-  isFeatured        Boolean       @default(false)
-  displayOrder      Int?
-  primaryMetric     String?
+  id                 String        @id @default(cuid())
+  slug               String        @unique
+  title              String
+  summary            String
+  story              String
+  year               Int?
+  startYear          Int?
+  endYear            Int?
+  status             ContentStatus @default(DRAFT)
+  isFeatured         Boolean       @default(false)
+  displayOrder       Int?
+  primaryMetric      String?
   primaryMetricLabel String?
-  financialSummary Json?
-  publishedAt       DateTime?
-  causeId           String
-  cause             Cause         @relation(fields: [causeId], references: [id], onDelete: Restrict)
-  appeals           Appeal[]
-  stories           Story[]
-  mediaAssets       MediaAsset[]
-  faithContent      FaithContent[]
-  createdAt         DateTime      @default(now())
-  updatedAt         DateTime      @updatedAt
+  financialSummary  Json?
+  publishedAt        DateTime?
+  causeId            String
+  cause              Cause         @relation(fields: [causeId], references: [id], onDelete: Restrict)
+  appeals            Appeal[]
+  stories            Story[]
+  mediaAssets        MediaAsset[]
+  faithContent       FaithContent[]
+  createdAt          DateTime      @default(now())
+  updatedAt          DateTime      @updatedAt
   @@index([causeId, status, publishedAt])
   @@index([isFeatured, displayOrder])
   @@index([year])
@@ -241,38 +271,38 @@ model Story {
   privacyApprovedAt DateTime?
   causeId           String?
   initiativeId      String?
-  cause              Cause?       @relation(fields: [causeId], references: [id], onDelete: SetNull)
-  initiative         Initiative?  @relation(fields: [initiativeId], references: [id], onDelete: SetNull)
-  mediaAssets        MediaAsset[]
-  createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @updatedAt
+  cause             Cause?       @relation(fields: [causeId], references: [id], onDelete: SetNull)
+  initiative        Initiative?  @relation(fields: [initiativeId], references: [id], onDelete: SetNull)
+  mediaAssets       MediaAsset[]
+  createdAt         DateTime     @default(now())
+  updatedAt         DateTime     @updatedAt
   @@index([status, publishedAt])
   @@index([causeId])
   @@index([initiativeId])
 }
 
 model FaithContent {
-  id                    String                 @id @default(cuid())
-  slug                  String                 @unique
+  id                    String                @id @default(cuid())
+  slug                  String                @unique
   type                  FaithContentType
   title                 String
   excerpt               String
   body                  String?
   videoUrl              String?
-  status                ContentStatus          @default(DRAFT)
-  religiousReviewStatus ReligiousReviewStatus  @default(NEEDS_REVIEW)
+  status                ContentStatus         @default(DRAFT)
+  religiousReviewStatus ReligiousReviewStatus @default(NEEDS_REVIEW)
   sourceCitation        String?
   verifiedAt            DateTime?
-  isFeatured            Boolean                @default(false)
+  isFeatured            Boolean               @default(false)
   publishedAt           DateTime?
   causeId               String?
   initiativeId          String?
-  cause                 Cause?                  @relation(fields: [causeId], references: [id], onDelete: SetNull)
-  initiative            Initiative?             @relation(fields: [initiativeId], references: [id], onDelete: SetNull)
+  cause                 Cause?                 @relation(fields: [causeId], references: [id], onDelete: SetNull)
+  initiative            Initiative?            @relation(fields: [initiativeId], references: [id], onDelete: SetNull)
   topics                FaithContentTopic[]
   mediaAssets           MediaAsset[]
-  createdAt             DateTime                @default(now())
-  updatedAt             DateTime                @updatedAt
+  createdAt             DateTime               @default(now())
+  updatedAt             DateTime               @updatedAt
   @@index([type, status, publishedAt])
   @@index([religiousReviewStatus])
   @@index([causeId])
@@ -327,37 +357,37 @@ model MediaAsset {
 }
 
 model Appeal {
-  id                     String         @id @default(cuid())
-  slug                   String         @unique
+  id                     String       @id @default(cuid())
+  slug                   String       @unique
   title                  String
   summary                String
   story                  String
   category               AppealCategory
-  status                 AppealStatus   @default(DRAFT)
+  status                 AppealStatus @default(DRAFT)
   beneficiaryName        String
   beneficiaryDisplayName String?
   beneficiaryLocation    String?
   coverImageUrl          String?
-  isFeatured             Boolean        @default(false)
+  isFeatured             Boolean      @default(false)
   featuredOrder          Int?
-  goalAmount             Decimal        @db.Decimal(12, 2)
-  amountRaised           Decimal        @default(0) @db.Decimal(12, 2)
+  goalAmount             Decimal      @db.Decimal(12, 2)
+  amountRaised           Decimal      @default(0) @db.Decimal(12, 2)
   publishedAt            DateTime?
   closesAt               DateTime?
   causeId                String?
   initiativeId           String?
   createdById            String
   reviewedById           String?
-  cause                   Cause?          @relation(fields: [causeId], references: [id], onDelete: SetNull)
-  initiative              Initiative?     @relation(fields: [initiativeId], references: [id], onDelete: SetNull)
-  createdBy               User            @relation("AppealCreator", fields: [createdById], references: [id])
-  reviewedBy              User?           @relation("AppealReviewer", fields: [reviewedById], references: [id])
-  assistanceRequest       AssistanceRequest?
-  notifications           Notification[]
-  updates                 AppealUpdate[]
-  donations               Donation[]
-  createdAt               DateTime         @default(now())
-  updatedAt               DateTime         @updatedAt
+  cause                  Cause?       @relation(fields: [causeId], references: [id], onDelete: SetNull)
+  initiative             Initiative?  @relation(fields: [initiativeId], references: [id], onDelete: SetNull)
+  createdBy              User         @relation("AppealCreator", fields: [createdById], references: [id])
+  reviewedBy             User?        @relation("AppealReviewer", fields: [reviewedById], references: [id])
+  assistanceRequest      AssistanceRequest?
+  notifications          Notification[]
+  updates                AppealUpdate[]
+  donations              Donation[]
+  createdAt              DateTime     @default(now())
+  updatedAt              DateTime     @updatedAt
   @@index([status, publishedAt])
   @@index([category])
   @@index([causeId])
@@ -445,8 +475,8 @@ model AppealUpdate {
 }
 
 model AssistanceRequest {
-  id                String           @id @default(cuid())
-  referenceNumber   String           @unique
+  id                String                  @id @default(cuid())
+  referenceNumber   String                  @unique
   applicantName     String
   email             String?
   phone             String
@@ -455,18 +485,48 @@ model AssistanceRequest {
   description       String
   consentGivenAt    DateTime
   trackingTokenHash String
-  status            AssistanceStatus @default(SUBMITTED)
+  status            AssistanceStatus        @default(SUBMITTED)
   internalNotes     String?
   assignedToId      String?
-  appealId          String?          @unique
-  assignedTo        User?            @relation("AssistanceAssignee", fields: [assignedToId], references: [id])
-  appeal             Appeal?          @relation(fields: [appealId], references: [id])
+  appealId          String?                 @unique
+  assignedTo        User?                   @relation("AssistanceAssignee", fields: [assignedToId], references: [id])
+  appeal             Appeal?                 @relation(fields: [appealId], references: [id])
+  verification       AssistanceVerification?
   notifications     Notification[]
   documents         AssistanceDocument[]
-  createdAt         DateTime          @default(now())
-  updatedAt         DateTime          @updatedAt
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
   @@index([status, createdAt])
   @@index([phone])
+}
+
+model AssistanceVerification {
+  id                       String                         @id @default(cuid())
+  assistanceRequestId      String                         @unique
+  needConfirmed            Boolean                        @default(false)
+  evidenceReviewed         Boolean                        @default(false)
+  verifiedNeedAmount       Decimal?                       @db.Decimal(12, 2)
+  approvedPublicTarget     Decimal?                       @db.Decimal(12, 2)
+  paymentDestination       String?
+  otherFundingChecked      Boolean                        @default(false)
+  otherFundingNotes        String?
+  verificationSummary      String?
+  decision                 AssistanceVerificationDecision @default(PENDING)
+  confidentialityLevel     ConfidentialityLevel           @default(CONFIDENTIAL)
+  publicNameConsent        ConsentDecision                @default(UNCONFIRMED)
+  photoConsent             ConsentDecision                @default(UNCONFIRMED)
+  medicalDetailsConsent    ConsentDecision                @default(UNCONFIRMED)
+  institutionNameConsent  ConsentDecision                @default(UNCONFIRMED)
+  archiveConsent           ConsentDecision                @default(UNCONFIRMED)
+  zakatStatus              ZakatReviewStatus              @default(UNREVIEWED)
+  reviewedById             String?
+  completedAt              DateTime?
+  assistanceRequest        AssistanceRequest              @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
+  reviewedBy               User?                          @relation("AssistanceVerifier", fields: [reviewedById], references: [id], onDelete: SetNull)
+  createdAt                DateTime                       @default(now())
+  updatedAt                DateTime                       @updatedAt
+  @@index([decision, completedAt])
+  @@index([reviewedById])
 }
 
 model AssistanceDocument {
@@ -482,26 +542,26 @@ model AssistanceDocument {
 }
 
 model Notification {
-  id                  String              @id @default(cuid())
+  id                  String             @id @default(cuid())
   channel             NotificationChannel
-  status              NotificationStatus  @default(PENDING)
+  status              NotificationStatus @default(PENDING)
   recipient           String
   templateKey         String
   subject             String?
   payload             Json
-  scheduledFor        DateTime             @default(now())
+  scheduledFor        DateTime           @default(now())
   sentAt              DateTime?
   failureReason       String?
-  attempts            Int                  @default(0)
+  attempts            Int                @default(0)
   userId              String?
   appealId            String?
   assistanceRequestId String?
   donationId          String?
-  user                User?                @relation(fields: [userId], references: [id], onDelete: SetNull)
-  appeal              Appeal?              @relation(fields: [appealId], references: [id], onDelete: SetNull)
-  assistanceRequest   AssistanceRequest?   @relation(fields: [assistanceRequestId], references: [id], onDelete: SetNull)
-  donation            Donation?            @relation(fields: [donationId], references: [id], onDelete: SetNull)
-  createdAt           DateTime             @default(now())
-  updatedAt           DateTime             @updatedAt
+  user                User?              @relation(fields: [userId], references: [id], onDelete: SetNull)
+  appeal              Appeal?            @relation(fields: [appealId], references: [id], onDelete: SetNull)
+  assistanceRequest   AssistanceRequest? @relation(fields: [assistanceRequestId], references: [id], onDelete: SetNull)
+  donation            Donation?          @relation(fields: [donationId], references: [id], onDelete: SetNull)
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
   @@index([status, scheduledFor])
 }
