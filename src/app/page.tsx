@@ -3,6 +3,7 @@ import "./campaign-home.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AppealCard } from "@/components/appeal-card";
+import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getHomepagePublicContent } from "@/lib/public-content";
 import { eidGrowth, foundingStory, homepageImpact } from "@/content/amaana";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
@@ -84,7 +85,7 @@ export default async function HomePage() {
           <div className="v3-field-grid">
             {fieldDrives.map((drive, index) => (
               <Link className={`v3-field-card ${index === 0 ? "v3-field-card-wide" : "v3-field-card-tall"}`} href={`/our-work/${drive.slug}`} key={drive.id}>
-                {drive.mediaAssets[0] && <div className="v3-field-image"><PublicMedia asset={drive.mediaAssets[0]} /></div>}
+                {drive.mediaAssets[0] ? <div className="v3-field-image"><PublicMedia asset={drive.mediaAssets[0]} /></div> : <div className="v3-field-image"><WorkVisualPlaceholder label={drive.title} /></div>}
                 <div className="v3-field-copy"><span>{drive.year}</span><h3>{drive.title}</h3><p>{drive.summary}</p></div>
               </Link>
             ))}
@@ -105,6 +106,7 @@ export default async function HomePage() {
           <div className="v3-work-list">
             {programmeCategories.map((category, index) => (
               <Link className="v3-work-row" href={programmeCategoryPath(category.slug)} key={category.slug}>
+                <div className="work-thumb"><WorkVisualPlaceholder label={category.title} /></div>
                 <small>{String(index + 1).padStart(2, '0')} · Our Work</small>
                 <h3>{category.title}</h3>
                 <div className="v3-work-metric">
