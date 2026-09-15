@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
-import { createDonationReference, createReceiptToken, donationSchema, hashReceiptToken } from "@/lib/donations";
+import { createDonationReference, createReceiptToken, donationSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder } from "@/lib/razorpay";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
@@ -29,13 +29,23 @@ export async function POST(request: Request) {
     if (!appeal || !isAppealOpenForDonations(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
 
     const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
-    if (parsed.data.amount > remainingAmount) {
+    if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) {
+      if (parsed.data.amount > remainingAmount) {
+        return NextResponse.json(
+          {
+            error: `This appeal currently needs up to ₹${remainingAmount.toLocaleString("en-IN")} more. Please reduce the donation amount.`,
+            remainingAmount,
+          },
+          { status: 409, headers: privateHeaders },
+        );
+      }
+
       return NextResponse.json(
         {
-          error: `This appeal currently needs up to ₹${remainingAmount.toLocaleString("en-IN")} more. Please reduce the donation amount.`,
+          error: `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}, unless a smaller exact amount is all that remains to complete the appeal.`,
           remainingAmount,
         },
-        { status: 409, headers: privateHeaders },
+        { status: 400, headers: privateHeaders },
       );
     }
 
