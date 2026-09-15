@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { isAppealOpenForDonations } from "@/lib/appeals";
 
 const publishedWhere = {
   status: "PUBLISHED" as const,
@@ -163,17 +164,18 @@ export async function getFeaturedFaithContent() {
 export async function getHomepagePublicContent() {
   const [appeals, initiatives, featuredFaith, stories] = await Promise.all([
     prisma.appeal.findMany({
-      where: { status: { in: ["PUBLISHED", "FUNDED"] } },
+      where: { status: "PUBLISHED" },
       orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
-      take: 3,
       select: {
         slug: true,
         title: true,
         summary: true,
         category: true,
         beneficiaryLocation: true,
+        status: true,
         goalAmount: true,
         amountRaised: true,
+        closesAt: true,
       },
     }),
     prisma.initiative.findMany({
@@ -217,5 +219,10 @@ export async function getHomepagePublicContent() {
     }),
   ]);
 
-  return { appeals, initiatives, featuredFaith, stories };
+  return {
+    appeals: appeals.filter(isAppealOpenForDonations).slice(0, 3),
+    initiatives,
+    featuredFaith,
+    stories,
+  };
 }
