@@ -21,43 +21,38 @@ ChatGPT
 - PR #10 hardened appeal target/expiry closure; squash-merged as `df2ec8ed60c85ecf4402cea9080f6f3e31bb80f7` after full green CI.
 - PR #11 capped new designated donations to the current remaining need; squash-merged as `7f8eba057ddeec511bd4088cfece91a2e58d9eac` after full green CI.
 - PR #12 corrected private acknowledgement semantics for captured, pending, failed and refunded payment states; squash-merged as `dd5bddf8960ca2b5f638103b4ad8d82deab6a2d5` after full green CI.
+- PR #13 hardened assistance status transitions, assignment eligibility and conversion permissions; squash-merged as `547eacbafc15d9c1b98749e30f165b11a45df17f` after full green CI.
 
 ## Current implementation task
 
-Harden the private assistance admin workflow so state transitions and assignments cannot bypass the intended request → approval → appeal conversion process through direct server-action invocation.
+Harden access to private beneficiary-supporting documents so each authorized retrieval is auditable and the redirect response itself is explicitly private/non-cacheable.
 
 ## Current task branch / PR
 
-- Branch: `fix/assistance-admin-workflow-guards`
-- Base SHA: `dd5bddf8960ca2b5f638103b4ad8d82deab6a2d5`
+- Branch: `fix/private-document-access-audit`
+- Base SHA: `547eacbafc15d9c1b98749e30f165b11a45df17f`
 - PR: not opened yet at this checkpoint
 
-## Problems found during assistance-workflow audit
+## Problem found during privacy/admin audit
 
-- `CONVERTED_TO_APPEAL` was offered as a normal manually selectable assistance status even though conversion is supposed to be performed atomically by the dedicated appeal-creation workflow.
-- A converted request could subsequently be moved away from the linked-appeal state through the generic review action.
-- `convertToAppeal` required `appeal.create` but did not independently require access/update permission for the private assistance request it consumes.
-- The assignment action trusted the posted user id; the UI offered only eligible reviewers, but direct invocation could attempt to assign the request to a user who cannot access assistance records.
-- The admin textarea had a 10,000-character limit only in the browser, not in the server action.
+The private-document route correctly required `assistance.view` and generated a 60-second signed storage URL, but it did not record that a staff member accessed a sensitive document. The redirect response also did not explicitly carry `private, no-store`, no-referrer or noarchive headers.
 
 ## Implemented on current task branch
 
-- Added centralized manual assistance statuses and `isManualAssistanceStatusAllowed` in `src/lib/assistance.ts`.
-- Reserved `CONVERTED_TO_APPEAL` for the linked conversion workflow rather than manual status selection.
-- Made a linked/converted request status immutable through generic review while still allowing internal-note updates.
-- Added server-side internal-note length enforcement.
-- Added server-side assignee eligibility validation requiring an active user with `assistance.view` permission.
-- Required both private assistance access/update permissions in addition to `appeal.create` before converting an approved request into a draft appeal.
-- Added a status-update notification inside the conversion transaction so the applicant-facing tracked status and notification lifecycle stay aligned.
-- Updated the admin UI to show converted status as workflow-owned and remove it from ordinary manual transitions.
-- Added regression tests for manual/converted status boundaries.
+- Replaced the opaque `redirect()` response with an explicit `NextResponse.redirect` so privacy headers can be attached.
+- Added `Cache-Control: private, no-store`.
+- Added `Referrer-Policy: no-referrer`.
+- Added `X-Robots-Tag: noindex, nofollow, noarchive`.
+- Added an `assistance.document_viewed` audit event before releasing the signed URL.
+- Attached the audit event to the parent `AssistanceRequest` with the document id in metadata so the access appears in the request's existing audit history.
+- Preserved the existing permission check and short-lived 60-second private-storage URL.
 
 ## Exact next action
 
-1. Open a focused PR for `fix/assistance-admin-workflow-guards`.
+1. Open a focused PR for `fix/private-document-access-audit`.
 2. Run full CI and repair any regression found.
 3. Merge only when green.
-4. Continue source-level assistance/privacy/admin audit, then provider/browser E2E release gates.
+4. Continue private-data/admin/source audit, then move into staging/browser E2E release gates.
 
 ## Repository areas currently sensitive
 
