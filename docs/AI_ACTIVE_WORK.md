@@ -18,40 +18,44 @@ ChatGPT
 
 - PR #8 locked the corrected Winter/newborn facts with regression protection; squash-merged as `2a7a4cd0bb454fb0d8e8380188bab6647b03672e` after full green CI.
 - PR #9 reconciled official brand/media/governance source state; squash-merged as `bcc7246a8c9a90d02f76991ac980747647f41df9` after full green CI.
-- PR #10 hardened appeal target/expiry closure across listing, detail, direct checkout, order creation and capture reconciliation; squash-merged as `df2ec8ed60c85ecf4402cea9080f6f3e31bb80f7` after CI #475 passed the complete pipeline.
+- PR #10 hardened appeal target/expiry closure; squash-merged as `df2ec8ed60c85ecf4402cea9080f6f3e31bb80f7` after full green CI.
+- PR #11 capped new designated donations to the appeal's current remaining need while preserving a normal ₹10 minimum and allowing an exact smaller final amount; squash-merged as `7f8eba057ddeec511bd4088cfece91a2e58d9eac` after full green CI.
 
 ## Current implementation task
 
-Prevent a donor from intentionally submitting a single designated donation above the appeal's remaining need while preserving safe reconciliation for already-created payment orders.
+Make the private donation acknowledgement accurately represent every payment lifecycle state instead of describing every non-captured record as merely "being verified."
 
 ## Current task branch / PR
 
-- Branch: `fix/donation-remaining-cap`
-- Base SHA: `df2ec8ed60c85ecf4402cea9080f6f3e31bb80f7`
+- Branch: `fix/donation-acknowledgement-states`
+- Base SHA: `7f8eba057ddeec511bd4088cfece91a2e58d9eac`
 - PR: not opened yet at this checkpoint
 
 ## Problem found during continued donor-journey audit
 
-After PR #10, new checkout stops once an appeal is already at target. However, while an appeal is still below target, the order endpoint previously accepted any schema-valid donation up to ₹10,00,000 without comparing the requested amount with the appeal's remaining need. Example: if only ₹100 remains, a donor could request ₹50,000 and create a Razorpay order that materially exceeds the designated target.
+The private acknowledgement page previously treated only `CAPTURED` as a special state. `FAILED`, `REFUNDED`, `AUTHORIZED`, and still-`CREATED` records all received the same "payment is being verified" message. That is inaccurate for a failed payment and materially misleading for a refunded donation. Partial refunds also remained invisible because a partially refunded donation keeps `CAPTURED` status while `refundedAmount` increases.
 
 ## Implemented on current task branch
 
-- Added `getRemainingAppealAmount` in `src/lib/appeals.ts`, reusing the shared Decimal/string/number amount handling.
-- Updated `/api/donations/order` to reject a requested amount above the latest remaining need immediately before Razorpay order creation and return the current remaining amount.
-- Updated `/donate/[slug]` to show the live remaining need and pass a transaction cap into the donation form.
-- Updated `DonationForm` to set the browser-side amount maximum to the lower of the appeal's remaining need and the existing ₹10,00,000 per-transaction schema maximum.
-- Added regression tests for exact remaining-need calculation and non-negative clamping.
-
-## Important concurrency boundary
-
-This change blocks deliberate over-target order creation using the current database state. Multiple donors can still create valid below-target orders concurrently before any one of them captures. Existing in-flight orders remain reconcilable by design. Eliminating all concurrent overfunding would require reservation/hold semantics or provider-aware capacity accounting and should be treated as a separate architectural decision rather than silently bolted onto checkout.
+- Added `getDonationAcknowledgementPresentation` in `src/lib/donations.ts` with explicit user-facing semantics for:
+  - `CAPTURED`;
+  - captured + partially refunded;
+  - `REFUNDED` / fully refunded;
+  - `FAILED`;
+  - `AUTHORIZED`;
+  - `CREATED` / fallback pending state.
+- Updated the private acknowledgement query to include `refundedAmount` and `refundedAt`.
+- Updated the acknowledgement page to show accurate headings/status copy, original amount, refunded amount when applicable, and a record date based on the most relevant lifecycle event.
+- Reframed the printable sheet as a private transaction record so failed/refunded attempts are not presented as completed-donation receipts.
+- Kept the existing noindex/no-referrer and token verification protections intact.
+- Added regression tests covering captured, partial refund, full refund, failed, authorized and created states.
 
 ## Exact next action
 
-1. Open a focused PR for `fix/donation-remaining-cap`.
+1. Open a focused PR for `fix/donation-acknowledgement-states`.
 2. Run full CI and repair any regression found.
 3. Merge only when green.
-4. Continue the source-level donation/assistance journey audit, then move into provider/browser E2E release gates.
+4. Continue source-level payment/refund/assistance audit and then provider/browser E2E release gates.
 
 ## Repository areas currently sensitive
 
