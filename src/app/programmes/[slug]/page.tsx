@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { BreadcrumbStructuredData } from '@/components/breadcrumb-structured-data';
+import { WorkVisualPlaceholder } from '@/components/work-visual-placeholder';
 import { programmeCategories, programmes } from '@/lib/master-copy';
 import {
   legacyProgrammeCategoryDestination,
@@ -95,7 +96,7 @@ export default async function Page({ params }: Props) {
         {items.map(item => {
           const photo = records.find(record => record.slug === item.slug)?.mediaAssets[0];
           return <article key={item.slug}>
-            {photo && <PublicMedia asset={photo} />}
+            <div className="canonical-pathway-visual">{photo ? <PublicMedia asset={photo} /> : <WorkVisualPlaceholder label={item.title} />}</div>
             <h2><Link href={`/our-work/${item.slug}`}>{item.title}</Link></h2>
             <p>{item.summary}</p>
             <Link className="v2-text-link" href={`/our-work/${item.slug}`}>See the documented work →</Link>
