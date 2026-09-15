@@ -68,11 +68,47 @@ Reapply the two confirmed factual locks cleanly on the fresh branch:
 - Add regression verification.
 - Open focused PR, inspect CI, then merge only when green.
 
-### Known follow-up cleanup after factual lock
+---
 
-- Official brand source is now present as `public/brand/amaana-mark.svg`; older “brand archive blocked / colours provisional” documentation is stale.
-- User has confirmed all available programme/initiative media and data images are uploaded; older “missing upload” risk language must be separated from actual publication/staging-provider verification.
-- Older durable logs contain the typo `Syed Iqba Ali`; current public source correctly uses `Syed Uqba Ali`.
+## 2026-09-15 — ChatGPT factual/source reconciliation completed; donor lifecycle audit started
+
+**Outgoing:** ChatGPT (previous atomic tasks)  
+**Incoming:** ChatGPT  
+**State:** `CHATGPT_ACTIVE`  
+**Integration branch:** `phase-public-site-rebuild`  
+**Task branch:** `fix/appeal-target-closure`  
+**Base SHA:** `bcc7246a8c9a90d02f76991ac980747647f41df9`
+
+### Completed before this task
+
+- PR #8 passed the full CI pipeline and was squash-merged as `2a7a4cd0bb454fb0d8e8380188bab6647b03672e`, locking:
+  - newborn case = ₹107,520;
+  - Winter = 234 Winter Kits distributed to 234 beneficiaries.
+- PR #9 passed the full CI pipeline and was squash-merged as `bcc7246a8c9a90d02f76991ac980747647f41df9`, reconciling:
+  - official source colours #466FAA / #E0B318;
+  - all currently available programme/initiative media inputs uploaded;
+  - canonical governance spelling Syed Uqba Ali;
+  - incoming-agent source reconciliation requirements.
+
+### Risk discovered in donor journey
+
+The public appeals index hid an appeal when its raised amount reached target, but direct donation surfaces and server-side Razorpay order creation only required `status === PUBLISHED`. Capture reconciliation also incremented `amountRaised` without moving the appeal to `FUNDED`. This meant a fully funded or elapsed PUBLISHED appeal could remain directly donatable even though it no longer appeared in the active-appeals list.
+
+### Implemented on current branch
+
+- Added shared appeal fundraising eligibility/threshold helpers.
+- Unified `/appeals` active filtering with donation eligibility.
+- Made `/donate/[slug]` data fail closed for at/over-target or expired appeals.
+- Added the same server-side check immediately before Razorpay order creation.
+- On successful captured donation, an appeal that reaches/exceeds target is moved from `PUBLISHED` to `FUNDED` transactionally.
+- Preserved existing in-flight payment reconciliation rather than incorrectly rejecting a payment already initiated before target closure.
+- Added Vitest coverage for active/funded/closed/expired/target-boundary states and Decimal-like amounts.
+
+### Next exact action
+
+- Open the focused PR for `fix/appeal-target-closure`.
+- Run the full CI pipeline and merge only when green.
+- Resume donor/assistance source audit from the new integration head.
 
 ---
 
