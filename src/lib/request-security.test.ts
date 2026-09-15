@@ -42,7 +42,7 @@ describe("rate-limit client hashing", () => {
   });
 
   it("fails closed in production when the workflow-specific pepper is missing", () => {
-    process.env.NODE_ENV = "production";
+    process.env = { ...process.env, NODE_ENV: "production" };
     delete process.env.ASSISTANCE_TOKEN_PEPPER;
 
     expect(() => getRateLimitClientHash(requestFor("203.0.113.10"), "assistance")).toThrow(
