@@ -16,49 +16,51 @@ ChatGPT
 
 ## Current integration checkpoint
 
-- PR #8 locked the corrected Winter/newborn facts with regression protection; squash-merged as `2a7a4cd0bb454fb0d8e8380188bab6647b03672e` after full green CI.
-- PR #9 reconciled official brand/media/governance source state; squash-merged as `bcc7246a8c9a90d02f76991ac980747647f41df9` after full green CI.
 - PR #10 hardened appeal target/expiry closure; squash-merged as `df2ec8ed60c85ecf4402cea9080f6f3e31bb80f7` after full green CI.
 - PR #11 capped new designated donations to the current remaining need; squash-merged as `7f8eba057ddeec511bd4088cfece91a2e58d9eac` after full green CI.
 - PR #12 corrected private acknowledgement semantics for captured, pending, failed and refunded payment states; squash-merged as `dd5bddf8960ca2b5f638103b4ad8d82deab6a2d5` after full green CI.
 - PR #13 hardened assistance status transitions, assignment eligibility and conversion permissions; squash-merged as `547eacbafc15d9c1b98749e30f165b11a45df17f` after full green CI.
 - PR #14 added auditable, no-store/no-referrer private-document access; squash-merged as `4a598acf16b7635387e44ff964a92f5efcc2c949` after full green CI.
+- PR #15 stopped queueing applicant SMS notifications that have no delivery implementation while preserving browser tracking and supported email notifications; squash-merged as `a2fc02c2142cf3869c064f5e2450f3806600c193` after full green CI and successful Railway deployment.
 
 ## Current implementation task
 
-Stop creating assistance SMS notification records that the application cannot currently deliver, while preserving browser tracking and supported email notifications.
+Add a structured assistance verification/privacy/Zakat gate before an approved case can become a public appeal. The implementation is grounded in the generated Appeal Verification-to-Closure SOP, Admin & Data Governance Blueprint and Admin Operational Workflow Simulation Pack rather than inferred ad hoc from the existing UI.
 
 ## Current task branch / PR
 
-- Branch: `fix/assistance-notification-channel`
-- Base SHA: `4a598acf16b7635387e44ff964a92f5efcc2c949`
-- PR: not opened yet at this checkpoint
+- Branch: `feat/assistance-verification-gate`
+- Base SHA: `a2fc02c2142cf3869c064f5e2450f3806600c193`
+- PR: to be opened after this checkpoint update
 
-## Problem found during notification audit
+## Problem found during document-to-implementation alignment
 
-The notification worker currently processes only `EMAIL`. Assistance intake and status-change code nevertheless created `SMS` notification rows whenever an applicant did not provide an email address. Those rows had no delivery implementation, so they could remain pending indefinitely and create a false internal impression that an applicant notification was queued for delivery.
-
-The public assistance journey already returns the private reference and tracking token in the successful browser response, so phone-only applicants still receive their tracking path without pretending an SMS delivery capability exists.
+The current assistance model had status and free-form internal notes but no structured verification record for verified need, target, payment destination, duplicate funding, disclosure permissions or Zakat review. A request could be marked approved and converted to a draft appeal without those operational gates. The conversion action also copied the private intake description directly into public appeal summary/story fields, contrary to Amaana's rule that public copy must not be auto-generated from raw sensitive notes.
 
 ## Implemented on current task branch
 
-- Assistance intake now queues an applicant receipt notification only when an email address was supplied.
-- Staff alerts remain email-only and unchanged.
-- Assistance status changes now queue applicant notifications only when the request has an email address.
-- Request-to-appeal conversion now follows the same supported-channel rule.
-- Removed creation of new undeliverable SMS applicant-notification records; no SMS provider or SMS-delivery promise has been invented.
-- Browser receipt/tracking behavior remains unchanged for every applicant, including phone-only requests.
+- Added an `AssistanceVerification` one-to-one record with explicit verification decision, verified need, approved public target, payment destination, other-funding review, confidentiality, disclosure permissions, Zakat review, approving reviewer and completion timestamp.
+- Added a forward-only Prisma migration for the new verification record and enums.
+- Added reusable publication-gate validation in `src/lib/assistance.ts`.
+- Generic request approval now requires a completed approved verification; rejection requires a completed declined verification.
+- Public appeal conversion requires a completed `APPROVED_PUBLIC` verification with all public disclosure/Zakat fields resolved.
+- The public fundraising target is taken from the approved verification record and cannot exceed verified need.
+- Raw private intake text is no longer copied into public appeal copy. Conversion requires new privacy-safe public title, summary and story fields.
+- Beneficiary location is no longer copied automatically from intake into the public appeal.
+- The admin request screen now contains a private verification/publication gate, records reviewer/completion state, shows public-appeal readiness issues, and keeps non-public support decisions out of the public appeal workflow.
+- Added regression tests covering target bounds, unresolved privacy/Zakat state and approval readiness.
 
 ## Exact next action
 
-1. Open a focused PR for `fix/assistance-notification-channel`.
-2. Run full CI and repair any regression found.
-3. Merge only when green.
-4. Continue source-level notification/admin/privacy audit, then move into staging/browser E2E release gates.
+1. Open a focused PR for `feat/assistance-verification-gate`.
+2. Run the complete CI pipeline and repair any Prisma/type/build/test regression.
+3. Merge only when fully green.
+4. Confirm Railway applies the new migration non-destructively and the preview healthcheck succeeds.
+5. Continue document-led implementation audit: policy routes → SEO/privacy metadata → media consent/provenance → retention/deletion workflow → browser acceptance journeys.
 
 ## Repository areas currently sensitive
 
-- private assistance records/documents and applicant communications
+- private assistance records, verification, consent and appeal conversion
 - donation/payment reconciliation and appeal lifecycle
 - canonical programme/factual sources
 - public programme/media provenance data
