@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isAppealOpenForDonations, shouldMarkAppealFunded } from "@/lib/appeals";
+import { isAppealOpenForDonations, shouldMarkAppealFunded } from "./appeals";
 
 const decimalLike = (value: number) => ({ toNumber: () => value });
 const now = new Date("2026-09-15T12:00:00.000Z");
