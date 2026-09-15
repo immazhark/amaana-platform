@@ -1,5 +1,14 @@
 import { readFile } from 'node:fs/promises';
 
+const LEGACY_CATEGORY_TARGETS = {
+  'seasonal-food-support': 'ramadan-eid',
+  education: 'amaana-taleem',
+  'education-support': 'amaana-taleem',
+  'medical-financial-assistance': 'medical-financial-relief',
+  'emergency-relief': 'emergency-humanitarian-relief',
+  'seasonal-support': 'seasonal-relief',
+};
+
 async function readJson(relativePath) {
   return JSON.parse(await readFile(new URL(relativePath, import.meta.url), 'utf8'));
 }
@@ -43,6 +52,21 @@ async function applyCanonicalFactualLocks(tx, locks) {
   }
 }
 
+async function reconcileLegacyCategories(tx) {
+  for (const [oldSlug, targetSlug] of Object.entries(LEGACY_CATEGORY_TARGETS)) {
+    const [category, target] = await Promise.all([
+      tx.cause.findUnique({ where: { slug: oldSlug } }),
+      tx.cause.findUnique({ where: { slug: targetSlug } }),
+    ]);
+    if (!category || !target || category.id === target.id) continue;
+
+    await tx.initiative.updateMany({ where: { causeId: category.id }, data: { causeId: target.id } });
+    await tx.appeal.updateMany({ where: { causeId: category.id }, data: { causeId: target.id } });
+    await tx.story.updateMany({ where: { causeId: category.id }, data: { causeId: target.id } });
+    await tx.cause.update({ where: { id: category.id }, data: { status: 'ARCHIVED' } });
+  }
+}
+
 export async function applyMasterContent(prisma) {
   const master = await readJson('./master-programmes.json');
   const factualLocks = await readJson('./canonical-factual-locks.json');
@@ -55,10 +79,8 @@ export async function applyMasterContent(prisma) {
         where: { slug: 'auto-rickshaw-livelihood-support' },
       });
 
-      // Factual locks are intentionally evaluated even when the broader master
-      // version is already seeded. User-confirmed corrections must not remain
-      // stale merely because the structural content version did not change.
       if (marker?.financialSummary?.contentVersion === master.version) {
+        await reconcileLegacyCategories(tx);
         await applyCanonicalFactualLocks(tx, factualLocks);
         return 0;
       }
@@ -97,36 +119,8 @@ export async function applyMasterContent(prisma) {
         });
       }
 
-      // Preserve IDs and media. Move only known legacy categories into the new umbrellas.
-      const legacy = {
-        'seasonal-food-support': 'ramadan-eid',
-        education: 'amaana-taleem',
-        'education-support': 'amaana-taleem',
-        'medical-financial-assistance': 'medical-financial-relief',
-        'emergency-relief': 'emergency-humanitarian-relief',
-        'seasonal-support': 'seasonal-relief',
-      };
-      for (const [oldSlug, targetSlug] of Object.entries(legacy)) {
-        const category = await tx.cause.findUnique({ where: { slug: oldSlug } });
-        if (!category) continue;
-        await tx.initiative.updateMany({
-          where: { causeId: category.id },
-          data: { causeId: ids.get(targetSlug) },
-        });
-        await tx.appeal.updateMany({
-          where: { causeId: category.id },
-          data: { causeId: ids.get(targetSlug) },
-        });
-        await tx.story.updateMany({
-          where: { causeId: category.id },
-          data: { causeId: ids.get(targetSlug) },
-        });
-        await tx.cause.update({ where: { id: category.id }, data: { status: 'ARCHIVED' } });
-      }
+      await reconcileLegacyCategories(tx);
 
-      // Keep legacy Winter records under the seasonal umbrella while their media
-      // is consolidated into the canonical Winter initiative. Final public facts
-      // are applied from canonical-factual-locks.json below.
       const canonicalWinter = master.initiatives.find((item) => item.slug === 'winter-relief');
       await tx.initiative.updateMany({
         where: { slug: { in: ['winter-drive-2025-26', 'winter-relief-2025-26'] } },
@@ -152,11 +146,7 @@ export async function applyMasterContent(prisma) {
       for (const [sortIndex, asset] of assets.entries()) {
         const initiative = await tx.initiative.findUnique({ where: { slug: asset.slug } });
         if (!initiative) continue;
-        if (
-          await tx.mediaAsset.findFirst({
-            where: { initiativeId: initiative.id, publicUrl: asset.url },
-          })
-        ) {
+        if (await tx.mediaAsset.findFirst({ where: { initiativeId: initiative.id, publicUrl: asset.url } })) {
           continue;
         }
         await tx.mediaAsset.create({
