@@ -1,0 +1,70 @@
+/* Amaana Foundation — iteration four consistency pass */
+:root{--af-blue:#466faa;--af-blue-deep:#1d3150;--af-gold:#e0b318;--af-paper:#fffdf8;--af-ink:#122239}
+
+/* Restore the companion launchers to the unobtrusive bottom-right dock. */
+.amaana-companion{position:fixed;right:max(16px,env(safe-area-inset-right));bottom:max(14px,env(safe-area-inset-bottom));z-index:1000;width:auto;background:transparent;border:0;pointer-events:none}
+.amaana-companion-dock{max-width:none;margin:0;padding:0;justify-content:flex-end;pointer-events:auto}
+.amaana-companion-panel{pointer-events:auto}
+
+/* Branded focus treatment: clearly visible without the raw browser outline look. */
+:where(input,select,textarea):focus-visible{outline:2px solid transparent!important;border-color:var(--af-blue)!important;box-shadow:0 0 0 4px rgb(70 111 170 / 22%),0 0 0 1px var(--af-blue)!important}
+:where(a,button,[role="button"]):focus-visible{outline:2px solid var(--af-gold)!important;outline-offset:4px!important;box-shadow:0 0 0 4px rgb(224 179 24 / 14%)}
+
+/* One visual language for primary page heroes. */
+:is(.v2-work-index-hero,.v2-impact-hero,.v2-stories-hero,.v2-faith-hero,.v2-hero){background:radial-gradient(circle at 78% 18%,rgb(224 179 24 / 20%),transparent 29%),linear-gradient(145deg,#1d3150 0%,#2f4c7a 52%,#122239 100%);color:#fffdf8}
+:is(.v2-work-index-hero,.v2-impact-hero,.v2-stories-hero,.v2-faith-hero,.v2-hero) :is(.v2-kicker,.v2-section-label){color:var(--af-gold);font-size:.76rem;font-weight:800;letter-spacing:.16em;text-transform:uppercase;line-height:1.35}
+:is(.v2-work-index-hero .v2-display,.v2-impact-hero h1,.v2-stories-hero h1,.v2-faith-hero h1,.v2-hero .v2-display){background:linear-gradient(105deg,#fffdf8 0%,#fffdf8 35%,#f1cf52 54%,#fffdf8 72%,#fffdf8 100%);background-size:220% auto;-webkit-background-clip:text;background-clip:text;color:transparent;animation:amaana-title-sheen 9s linear infinite}
+@keyframes amaana-title-sheen{to{background-position:220% center}}
+@media(prefers-reduced-motion:reduce){:is(.v2-work-index-hero .v2-display,.v2-impact-hero h1,.v2-stories-hero h1,.v2-faith-hero h1,.v2-hero .v2-display){animation:none;background-position:50% center}}
+
+/* Consistent section-title accent used across long-form pages. */
+.v2-section-title{position:relative;display:inline-block;padding-bottom:.55rem}
+.v2-section-title:after{content:"";position:absolute;left:0;bottom:0;width:22%;min-width:3.5rem;height:3px;border-radius:999px;background:linear-gradient(90deg,var(--af-gold),var(--af-blue))}
+
+/* Our Work: every initiative row gets a stable thumbnail slot. */
+.v2-initiative-row{grid-template-columns:3rem 7.5rem minmax(0,1fr) minmax(9rem,.32fr) 1.5rem!important;align-items:center}
+.v2-initiative-thumb{display:block;width:7.5rem;aspect-ratio:4/3;overflow:hidden;border-radius:.85rem;background:#dfe7f1}
+.v2-initiative-thumb>*{width:100%;height:100%}
+.v2-initiative-thumb img{width:100%;height:100%;object-fit:cover}
+.v2-initiative-thumb-fallback{display:grid;place-items:center;position:relative;isolation:isolate;background:linear-gradient(145deg,#203b62,#466faa 58%,#e0b318);color:#fffdf8}
+.v2-initiative-thumb-fallback:before,.v2-initiative-thumb-fallback:after{content:"";position:absolute;border:1px solid rgb(255 255 255 / 24%);border-radius:50%;z-index:-1}
+.v2-initiative-thumb-fallback:before{width:5.5rem;height:5.5rem;right:-2rem;top:-2rem}.v2-initiative-thumb-fallback:after{width:4rem;height:4rem;left:-1.5rem;bottom:-1.5rem}
+.v2-initiative-thumb-fallback span{font:700 1.35rem/1 Georgia,serif;letter-spacing:.08em}
+.v2-taleem-highlights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1rem}
+.v2-taleem-highlight{padding:1.25rem;border:1px solid #e6dcc3;border-radius:1rem;background:#fffaf0}
+.v2-taleem-highlight strong{display:block;font:600 clamp(1.5rem,3vw,2.2rem)/1.05 Georgia,serif;color:#1d3150;margin-bottom:.35rem}
+.v2-taleem-highlight span{color:#5b6472}
+
+/* Impact: keep the metric rail inside the readable container and scroll when needed. */
+.v2-impact-marquee{overflow:hidden;padding-block:1.25rem;background:#fffdf8;border-block:1px solid #e6dcc3}
+.v2-impact-marquee-track{width:min(calc(100% - 2rem),78rem);margin-inline:auto;display:flex!important;gap:1rem;overflow-x:auto!important;overscroll-behavior-inline:contain;scroll-snap-type:x proximity;padding:.5rem 0 1rem;scrollbar-width:thin}
+.v2-impact-marquee-item{flex:0 0 clamp(15rem,24vw,19rem)!important;min-width:0!important;scroll-snap-align:start;padding:1.15rem 1.25rem;border:1px solid #e6dcc3;border-radius:1rem;background:#fffdf8}
+.v2-impact-marquee-item strong,.v2-impact-ledger-metric strong{white-space:nowrap!important;font-variant-numeric:tabular-nums}
+.v2-impact-ledger-row{min-width:0}
+.v2-impact-ledger-row>*{min-width:0}
+.v2-impact-ledger-metric{min-width:9.5rem;text-align:right}
+
+/* Empty story state: readable, intentional and visually distinct. */
+.v2-stories-archive .v2-light-reminder{position:relative;overflow:hidden;padding:clamp(1.5rem,4vw,2.4rem);border:1px solid rgb(70 111 170 / 20%);border-radius:1.25rem;background:linear-gradient(135deg,#fffaf0 0%,#f2f6fb 100%);color:var(--af-ink);box-shadow:0 18px 50px rgb(18 34 57 / 7%)}
+.v2-stories-archive .v2-light-reminder:after{content:"";position:absolute;width:11rem;aspect-ratio:1;right:-4rem;bottom:-6rem;border-radius:50%;background:radial-gradient(circle,rgb(224 179 24 / 18%),transparent 68%);pointer-events:none}
+.v2-stories-archive .v2-light-reminder .v2-reminder-label{color:#8a660f}.v2-stories-archive .v2-light-reminder h3{color:#1d3150}.v2-stories-archive .v2-light-reminder p{color:#4d5d72;max-width:58rem}.v2-stories-archive .v2-light-reminder .v2-text-link{position:relative;z-index:1}
+
+/* Participation journey: line begins and ends exactly at the first/last node. */
+.v2-journey{position:relative;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:clamp(.8rem,2vw,1.5rem)}
+.v2-journey:before{content:"";position:absolute;top:.62rem;left:10%;right:10%;height:2px;background:linear-gradient(90deg,var(--af-gold),var(--af-blue))}
+.v2-journey-step{position:relative;padding-top:2.15rem;min-width:0}
+.v2-journey-step:before{content:"";position:absolute;top:.15rem;left:calc(50% - .48rem);width:.96rem;height:.96rem;border-radius:50%;background:var(--af-gold);border:3px solid #fffdf8;box-shadow:0 0 0 1px rgb(29 49 80 / 18%)}
+
+/* Temporary factual visual when a programme has no approved photograph yet. */
+.campaign-lead-placeholder{min-height:24rem;display:flex;flex-direction:column;justify-content:flex-end;padding:2rem;position:relative;overflow:hidden;background:linear-gradient(145deg,#1d3150,#466faa 62%,#b8890e);color:#fffdf8}
+.campaign-lead-placeholder:before,.campaign-lead-placeholder:after{content:"";position:absolute;border-radius:50%;border:1px solid rgb(255 255 255 / 22%)}
+.campaign-lead-placeholder:before{width:22rem;height:22rem;right:-8rem;top:-8rem}.campaign-lead-placeholder:after{width:13rem;height:13rem;left:-4rem;bottom:-5rem}
+.campaign-lead-placeholder span{position:relative;font-size:.72rem;letter-spacing:.15em;text-transform:uppercase;color:#f1cf52;font-weight:800}.campaign-lead-placeholder strong{position:relative;display:block;margin:.5rem 0;font:600 clamp(2.2rem,5vw,4.2rem)/.95 Georgia,serif;max-width:8ch}.campaign-lead-placeholder p{position:relative;max-width:27rem;color:rgb(255 253 248 / 78%)}
+
+/* Back-to-top: right side, raised above the companion dock. */
+.amaana-back-to-top{position:fixed;z-index:990;right:max(20px,env(safe-area-inset-right));bottom:8.6rem;width:3.2rem;height:3.2rem;border:1px solid rgb(224 179 24 / 65%);border-radius:50%;display:grid;place-items:center;background:#1d3150;color:#fffdf8;box-shadow:0 12px 34px rgb(18 34 57 / 24%);cursor:pointer;font-size:1.3rem;transition:transform .2s ease,background .2s ease}.amaana-back-to-top:hover{transform:translateY(-2px);background:#2f4c7a}
+
+@media(max-width:900px){.v2-initiative-row{grid-template-columns:6rem minmax(0,1fr) minmax(8rem,.3fr) 1.25rem!important}.v2-initiative-index{display:none}.v2-initiative-thumb{width:6rem}.v2-impact-ledger-metric{min-width:8rem}}
+@media(max-width:760px){.v2-initiative-row{grid-template-columns:5.5rem minmax(0,1fr) 1.2rem!important}.v2-initiative-thumb{width:5.5rem}.v2-initiative-proof{grid-column:2/3}.v2-taleem-highlights{grid-template-columns:1fr}.v2-impact-ledger-metric{text-align:left;min-width:0}.v2-journey{grid-template-columns:1fr;gap:1.25rem;padding-left:1.75rem}.v2-journey:before{top:.5rem;bottom:.5rem;left:.46rem;right:auto;width:2px;height:auto}.v2-journey-step{padding:0 0 0 .5rem}.v2-journey-step:before{left:-1.76rem;top:.22rem}.amaana-companion{right:12px;bottom:12px}.amaana-companion-dock{justify-content:flex-end}.amaana-companion-dock>button{min-height:44px}.amaana-back-to-top{right:16px;bottom:7.7rem}}
+@media(max-width:520px){.v2-initiative-row{grid-template-columns:1fr 1.2rem!important}.v2-initiative-thumb{grid-column:1/-1;width:100%;aspect-ratio:16/7}.v2-initiative-copy{grid-column:1/2}.v2-initiative-proof{grid-column:1/2}.v2-initiative-arrow{grid-column:2/3;grid-row:2/4}.v2-impact-marquee-track{width:min(calc(100% - 1.25rem),78rem)}.amaana-companion-dock>button span{display:none}.amaana-companion-dock>button{width:46px;justify-content:center;padding:0}.amaana-back-to-top{bottom:4.9rem}}
+@media(prefers-reduced-motion:reduce){.amaana-back-to-top{transition:none}.amaana-back-to-top:hover{transform:none}}
