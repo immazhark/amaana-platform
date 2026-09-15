@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { privateTrackingPath } from "@/lib/private-tracking";
 
 type AssistanceField = "applicantName" | "phone" | "email" | "city" | "category" | "description" | "consent";
@@ -11,12 +11,14 @@ const assistanceFieldOrder: AssistanceField[] = ["applicantName", "phone", "emai
 
 export function AssistanceForm() {
   const router = useRouter();
+  const errorRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<FieldErrors>({});
   const [submitting, setSubmitting] = useState(false);
 
   function clearFieldError(field: AssistanceField) { setFieldErrors(current => current[field] ? { ...current, [field]: undefined } : current); }
   function firstFieldError(field: AssistanceField) { return fieldErrors[field]?.[0]; }
+  function focusErrorSummary() { requestAnimationFrame(() => errorRef.current?.focus()); }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -27,24 +29,35 @@ export function AssistanceForm() {
       const result = await response.json() as AssistanceResponse;
       if (!response.ok) {
         const nextFieldErrors = result.fields ?? {};
+        const message = result.error ?? "Submission failed";
         setFieldErrors(nextFieldErrors);
+        setError(message);
+        setSubmitting(false);
         const firstInvalidField = assistanceFieldOrder.find(field => nextFieldErrors[field]?.length);
-        if (firstInvalidField) requestAnimationFrame(() => { const control = form.elements.namedItem(firstInvalidField); if (control instanceof HTMLElement) control.focus(); });
-        throw new Error(result.error ?? "Submission failed");
+        if (firstInvalidField) {
+          requestAnimationFrame(() => {
+            const control = form.elements.namedItem(firstInvalidField);
+            if (control instanceof HTMLElement) control.focus();
+          });
+        } else {
+          focusErrorSummary();
+        }
+        return;
       }
       if (!result.referenceNumber || !result.trackingToken) throw new Error("Submission succeeded but the tracking reference could not be prepared.");
       router.push(privateTrackingPath("/request-assistance/received", { reference: result.referenceNumber, token: result.trackingToken }));
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Submission failed");
       setSubmitting(false);
+      focusErrorSummary();
     }
   }
 
   const nameError = firstFieldError("applicantName"); const phoneError = firstFieldError("phone"); const emailError = firstFieldError("email"); const cityError = firstFieldError("city"); const categoryError = firstFieldError("category"); const descriptionError = firstFieldError("description"); const consentError = firstFieldError("consent");
 
-  return <form className="v2-premium-form v2-assistance-form" onSubmit={submit} encType="multipart/form-data" aria-busy={submitting} aria-describedby="assistance-form-description">
+  return <form className="v2-premium-form v2-assistance-form" onSubmit={submit} encType="multipart/form-data" aria-busy={submitting} aria-labelledby="assistance-form-heading" aria-describedby="assistance-form-description">
     <div className="v2-form-heading"><span>Private submission</span><h2 id="assistance-form-heading">Tell us about the request.</h2><p id="assistance-form-description">Fields marked as required help the team identify and review the request. Optional information can be left out.</p></div>
-    {error && <div className="form-error" role="alert" aria-live="assertive">{error}</div>}
+    {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}</div>}
     <fieldset><legend><span>01</span> Contact</legend><div className="form-grid">
       <div className="field"><label htmlFor="name">Applicant name</label><input id="name" name="applicantName" autoComplete="name" minLength={2} maxLength={120} required aria-invalid={Boolean(nameError) || undefined} aria-describedby={nameError ? "name-error" : undefined} onChange={() => clearFieldError("applicantName")} />{nameError && <small id="name-error" className="v2-field-error">{nameError}</small>}</div>
       <div className="field"><label htmlFor="phone">Phone number</label><input id="phone" name="phone" type="tel" autoComplete="tel" required aria-invalid={Boolean(phoneError) || undefined} aria-describedby={phoneError ? "phone-error" : undefined} onChange={() => clearFieldError("phone")} />{phoneError && <small id="phone-error" className="v2-field-error">{phoneError}</small>}</div>
