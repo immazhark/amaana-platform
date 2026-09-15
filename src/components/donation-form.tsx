@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
 
@@ -12,6 +12,7 @@ declare global { interface Window { Razorpay: new (options: RazorpayOptions) => 
 
 export function DonationForm({ appealId, appealTitle, maxAmount }: { appealId: string; appealTitle: string; maxAmount: number }) {
   const router = useRouter();
+  const errorRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState("");
   const [phase, setPhase] = useState<CheckoutPhase>("loading");
   const transactionMax = Math.min(maxAmount, 1_000_000);
@@ -30,15 +31,20 @@ export function DonationForm({ appealId, appealTitle, maxAmount }: { appealId: s
           ? "Payment verification needs follow-up. Please do not submit another payment for this donation."
           : "Secure checkout is ready.";
 
+  function showError(message: string) {
+    setError(message);
+    requestAnimationFrame(() => errorRef.current?.focus());
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
     if (lockedForReconciliation) {
-      setError("Please do not submit another payment while this donation is being reconciled.");
+      showError("Please do not submit another payment while this donation is being reconciled.");
       return;
     }
     if (!scriptReady || !window.Razorpay) {
-      setError("Secure checkout is still loading. Please try again.");
+      showError("Secure checkout is still loading. Please try again.");
       return;
     }
 
@@ -82,20 +88,20 @@ export function DonationForm({ appealId, appealTitle, maxAmount }: { appealId: s
             });
             const result = await confirmation.json();
             if (!confirmation.ok) {
-              setError(result.error ?? "Payment verification is pending. Please retain your Razorpay payment confirmation and do not submit another payment.");
+              showError(result.error ?? "Payment verification is pending. Please retain your Razorpay payment confirmation and do not submit another payment.");
               setPhase("reconciliation");
               return;
             }
             router.push(privateDonationAcknowledgementPath(result.referenceNumber, order.receiptToken));
           } catch {
-            setError("We could not complete payment verification in this browser. Please retain your Razorpay payment confirmation and do not submit another payment. Amaana can reconcile the payment without asking for your OTP, UPI PIN or card credentials.");
+            showError("We could not complete payment verification in this browser. Please retain your Razorpay payment confirmation and do not submit another payment. Amaana can reconcile the payment without asking for your OTP, UPI PIN or card credentials.");
             setPhase("reconciliation");
           }
         },
       });
       checkout.open();
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "Could not start checkout");
+      showError(caught instanceof Error ? caught.message : "Could not start checkout");
       setPhase("ready");
     }
   }
@@ -107,13 +113,13 @@ export function DonationForm({ appealId, appealTitle, maxAmount }: { appealId: s
       onLoad={() => setPhase(current => current === "reconciliation" ? current : "ready")}
       onError={() => {
         setPhase(current => current === "reconciliation" ? current : "loading");
-        setError(current => current || "Secure checkout could not load. Please refresh and try again.");
+        showError("Secure checkout could not load. Please refresh and try again.");
       }}
     />
-    <form className="v2-premium-form v2-donation-form" onSubmit={submit} aria-busy={busy} aria-describedby="donation-form-description donation-checkout-status">
+    <form className="v2-premium-form v2-donation-form" onSubmit={submit} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
       <div className="v2-form-heading"><span>Secure contribution</span><h2 id="donation-form-heading">Choose how you would like to support.</h2><p id="donation-form-description">Only the information needed to process and acknowledge your contribution is requested.</p></div>
       <p id="donation-checkout-status" className="muted" role="status" aria-live="polite">{statusText}</p>
-      {error && <div className="form-error" role="alert" aria-live="assertive">{error}</div>}
+      {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}</div>}
       <div className="form-grid">
         <div className="field full v2-amount-field"><label htmlFor="amount">Donation amount <span>INR</span></label><div className="v2-amount-input"><b aria-hidden="true">₹</b><input id="amount" name="amount" type="number" min={transactionMin} max={transactionMax} step="1" inputMode="numeric" placeholder="Enter amount" required disabled={lockedForReconciliation}/></div><small className="muted">{transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small></div>
         <div className="field"><label htmlFor="donorName">Full name</label><input id="donorName" name="donorName" autoComplete="name" minLength={2} required disabled={lockedForReconciliation}/></div>
