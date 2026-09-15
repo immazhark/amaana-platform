@@ -105,7 +105,7 @@ export async function checkPublicMedia(root) {
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  checkPublicMedia(path.resolve(process.argv[2] ?? 'public')).catch(error => {
+  checkPublicMedia(path.resolve(process.argv[2] ?? 'public/media')).catch(error => {
     console.error(error.message);
     process.exitCode = 1;
   });
