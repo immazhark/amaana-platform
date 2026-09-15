@@ -11,7 +11,7 @@ ChatGPT — continuing launch-hardening after the visual-consistency merge.
 - Current integration head: `a3a864e0141da39ce0d225f33eb131e7e51b69b1`
 - PR #42 (`Standardize visual media and top-banner geometry`) is merged.
 - PR #42 CI completed successfully, including public-media validation, factual locks, Prisma validation, lint, typecheck, 121+ unit tests, production build, CSS/JS bundle budgets and post-build smoke checks.
-- Railway staging deployment `672089e4-386e-42f8-bf25-36c5a49e3f18` is currently deploying; do not claim SUCCESS until Railway confirms it.
+- Railway staging deployment `672089e4-386e-42f8-bf25-36c5a49e3f18` is confirmed SUCCESS for integration commit `a3a864e0141da39ce0d225f33eb131e7e51b69b1`.
 
 ## Current task branch
 - Branch: `fix/sitemap-sensitive-appeals`
@@ -36,7 +36,7 @@ ChatGPT — continuing launch-hardening after the visual-consistency merge.
 ## Next actions
 1. Run CI for the sitemap privacy branch and repair any regression.
 2. Merge only when all gates are green.
-3. Verify the PR #42 Railway deployment, then verify the privacy-hardening deployment after merge.
+3. Verify the privacy-hardening Railway deployment after merge.
 4. Continue the launch-hardening queue without waiting for user prompts unless a decision or external confirmation is required.
 
 ## Remaining launch-hardening queue
