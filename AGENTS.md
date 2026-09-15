@@ -7,6 +7,7 @@ Before making any repo change, every agent MUST read:
 1. `docs/AI_CONTINUITY_PROTOCOL.md`
 2. `docs/AI_ACTIVE_WORK.md`
 3. `docs/AI_HANDOFF_LEDGER.md`
+4. `docs/CURRENT_SOURCE_RECONCILIATION_2026-09-15.md`
 
 ## Hard rules
 
@@ -19,6 +20,7 @@ Before making any repo change, every agent MUST read:
 - Before handoff, finish or safely stop the current atomic task, commit all intended changes, run available checks, and update `docs/AI_ACTIVE_WORK.md` plus `docs/AI_HANDOFF_LEDGER.md`.
 - Never silently overwrite another agent's branch. If continuing an existing branch, first verify its current head SHA and read its PR/CI status.
 - Preserve the user's locked factual corrections and canonical content rules. Newer explicit user corrections override older repo content.
+- When older durable logs conflict with `CURRENT_SOURCE_RECONCILIATION_2026-09-15.md`, treat the reconciliation file as the newer project-state authority until the old section is rewritten.
 - Do not restart or redesign the project from scratch. Continue the current architecture unless a verified requirement demands a change.
 
 ## Ownership states
@@ -35,7 +37,7 @@ Before making any repo change, every agent MUST read:
 
 ## Incoming-agent checklist
 
-1. Read the three coordination files.
+1. Read the four required coordination/source-state files.
 2. Inspect the latest integration-branch commit.
 3. Inspect open PRs and CI.
 4. Confirm the task already in progress before starting a new one.

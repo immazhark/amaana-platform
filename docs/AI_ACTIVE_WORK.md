@@ -16,55 +16,53 @@ ChatGPT
 
 ## Current integration checkpoint
 
-- Integration head when this task branch was created: `fd6476710b0a99b6a83997e3c823f9f8d94b6ee0`.
-- PR #7 (pre-existing lint + measured bundle-gate repair) was squash-merged as `69c3b0636cfaebabc311475b5a0dc83386a8680a`.
-- Integration CI #463 passed media validation, reviewed-campaign tests, archive filters, daily-companion tests, Prisma generate/validate, lint, typecheck, coverage, production build, bundle budgets and post-build server smoke checks.
-- PR #6 (Codex ↔ ChatGPT continuity protocol) was squash-merged as `fd6476710b0a99b6a83997e3c823f9f8d94b6ee0`.
-- Old PR #5 was closed without merge because its base had become stale.
+- PR #7 repaired the pre-existing lint gate and recalibrated the measured CSS budget; squash-merged as `69c3b0636cfaebabc311475b5a0dc83386a8680a`.
+- Integration CI #463 passed the full verification pipeline after PR #7.
+- PR #6 added the Codex ↔ ChatGPT single-writer continuity protocol; squash-merged as `fd6476710b0a99b6a83997e3c823f9f8d94b6ee0`.
+- PR #8 locked the corrected Winter/newborn facts with structured regression protection; CI #466 passed the full pipeline and the PR was squash-merged as `2a7a4cd0bb454fb0d8e8380188bab6647b03672e`.
+- Old PR #5 was closed without merge and is superseded by PR #8.
 
 ## Current implementation task
 
-Lock the two user-confirmed factual corrections into the current implementation without disturbing the existing visual direction:
-
-1. 8-day-old newborn medical-aid case = **₹107,520**.
-2. Winter Drive 2025–26 = **234 Winter Kits distributed to 234 beneficiaries**.
-
-Phase 1 `96 madrasa students` and Phase 2 `101 Winter Kits` remain supporting sub-measures only and must not be added to 234.
+Reconcile stale durable project-state documentation so Codex/ChatGPT do not keep reopening already-resolved inputs or old factual errors.
 
 ## Current task branch / PR
 
-- Branch: `fix/canonical-factual-locks-v2`
-- Base: `phase-public-site-rebuild`
-- PR: **#8 — Lock corrected Winter and newborn facts on current rebuild**
-- PR head at open: `e11ca94d363b980cf9c3247438684d4b1d36cbc5`
-- CI: run **#465** currently executing at this checkpoint.
+- Branch: `docs/reconcile-current-project-state`
+- Base SHA: `2a7a4cd0bb454fb0d8e8380188bab6647b03672e`
+- PR: not opened yet at this checkpoint
 
-## Implemented on PR #8
+## Implemented on current task branch
 
-- Added `prisma/canonical-factual-locks.json` as the structured correction layer.
-- Updated `prisma/apply-master-content.mjs` so user-confirmed factual locks are applied even when the broader master content version is already seeded.
-- Kept legacy Winter records aligned with the corrected overall metric while retaining phase figures as supporting context.
-- Added `scripts/test-canonical-factual-locks.mjs`.
-- Added the factual-lock test to CI.
-- Added `docs/canonical-factual-locks-2026-09-15.md` documenting precedence over the older stale values still present in `prisma/master-programmes.json`.
-- Updated the repo-native ChatGPT/Codex implementation ledger.
+- Updated `AMAANA_BRAND_FOUNDATION.md` to recognize the supplied official SVG as source artwork and lock the verified colours:
+  - Blue `#466FAA`
+  - Gold `#E0B318`
+- Preserved the user's instruction that this source verification must **not** trigger another palette redesign.
+- Added `docs/CURRENT_SOURCE_RECONCILIATION_2026-09-15.md` to supersede stale older notes about:
+  - brand ZIP extraction being a blocker;
+  - missing programme/initiative media uploads;
+  - governance spelling `Syed Iqba Ali` instead of `Syed Uqba Ali`;
+  - stale Winter/newborn values.
+- Updated `AGENTS.md` so every incoming implementation agent must read the reconciliation file before writing to the repo.
 
 ## Exact next action
 
-1. Inspect CI #465.
-2. If green, merge PR #8 into `phase-public-site-rebuild`.
-3. Start a separate atomic cleanup branch for stale durable repo facts:
-   - official logo/brand source is now available;
-   - all available programme/initiative media and data images have been uploaded;
-   - old governance typo `Syed Iqba Ali` should be corrected in durable logs.
-4. Continue remaining factual/content correction queue against the current integration head.
+1. Open a focused documentation/state-reconciliation PR.
+2. Run CI and merge when green.
+3. Continue the remaining correction/release queue from the latest integration head, prioritizing actual release gates rather than stale asset-collection work:
+   - payment E2E;
+   - assistance E2E;
+   - responsive/browser QA;
+   - accessibility verification;
+   - production-like performance/CWV;
+   - rendered SEO/crawl validation;
+   - CA/legal confirmation inputs.
 
 ## Repository areas currently sensitive
 
-- `prisma/master-programmes.json`
-- `prisma/apply-master-content.mjs`
+- canonical programme/factual sources
 - public programme/media provenance data
-- canonical governance/compliance copy
+- governance/compliance copy
 - donation/payment and assistance workflows
 - current visual/colour direction — do not redesign without explicit user request
 
@@ -79,14 +77,8 @@ Phase 1 `96 madrasa students` and Phase 2 `101 Winter Kits` remain supporting su
 - 80G remains **provisional**; 12A/12AB remains pending CA confirmation in public copy.
 - Amaana is not FCRA-registered; public fundraising remains domestic only.
 
-## Known stale documentation/content to address after this atomic task
-
-- Older repo documentation still describes official brand/logo extraction as blocked, but `public/brand/amaana-mark.svg` is present and contains the verified blue `#466FAA` and gold `#E0B318` fills.
-- Older risk documentation still treats authentic media population/source completeness as missing uploads; the user has confirmed all available drive/initiative images and data images have now been uploaded. Publication/provider verification remains a separate issue.
-- Some older implementation logs still contain `Syed Iqba Ali`; current public governance source correctly uses **Syed Uqba Ali**.
-
 ## Handoff instruction
 
-When the user switches repo implementation back to Codex, ChatGPT must stop repo writes, update this file to `HANDOFF_PENDING`, append the transition to `AI_HANDOFF_LEDGER.md`, and provide Codex the current branch/PR/SHA/CI/next-action summary.
+When the user switches repo implementation back to Codex, ChatGPT must stop repo writes, update this file to `HANDOFF_PENDING`, append the transition to `AI_HANDOFF_LEDGER.md`, and leave the exact current branch/PR/SHA/CI/next-action summary.
 
-When Codex limits are exhausted again, ChatGPT should inspect GitHub first, reconcile any newer commits/PRs, update this file, then resume from the existing implementation boundary rather than recreating work.
+When Codex limits are exhausted again, ChatGPT must inspect GitHub first and continue from the recorded boundary rather than recreating work.
