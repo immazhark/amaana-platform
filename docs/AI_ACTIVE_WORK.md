@@ -4,59 +4,47 @@
 **CHATGPT_ACTIVE**
 
 ## Active implementation owner
-ChatGPT — user-directed takeover after Codex limit exhaustion on 16 September 2026.
+ChatGPT — continuing the user-directed launch-hardening pass after PR #41.
 
 ## Integration checkpoint
-- Branch: `phase-public-site-rebuild`
-- Latest stable merged implementation before the current UI pass: PR #39, `4922ec318be25685894028f55feccfc9f9466104`, Railway SUCCESS.
-- PR #37 added staging launch-acceptance fixtures/smoke coverage.
-- PR #38 protected public appeal updates and completed archives.
-- PR #39 retired query-string assistance tracking tokens.
+- Integration branch: `phase-public-site-rebuild`
+- Current integration head: `1540c8dfa08c57e2fa6d986b9ff0b6c54680224b`
+- PR #41 (`Reconcile public work and standardize cross-site UI`) is merged.
+- Railway staging deployment for that commit is confirmed SUCCESS: deployment `129b1ee9-355c-4004-986a-bed821d769eb`.
 
-## Current user-directed correction pass
-The user reviewed the deployed public site page-by-page and requested a single cohesive UI/content reconciliation iteration:
-- restore Ayah/Hadith and Salah/Hijri launchers to an unobtrusive bottom-right position;
-- keep the top reminder strip uncluttered;
-- reconcile `/our-work` to the canonical five umbrella categories and remove renamed/year-child duplication;
-- show Taleem's two documented strands: 25 Nazira+Hifdh students combined and 50 orphan children receiving stationery kits;
-- ensure each Our Work row has a thumbnail treatment, using approved original media when present and a neutral Amaana fallback until a final thumbnail is selected;
-- remove the same legacy/year-child duplication from `/impact`;
-- contain the impact metric rail, allow horizontal scrolling, and keep amounts on one line;
-- standardize top-page hero label/title treatment and the animated gradient across Our Work, Impact, Stories, Faith & Reflections and shared v2 pages;
-- standardize section-title accent treatment;
-- redesign the Stories privacy-gate empty state for legibility;
-- repair the Get Involved journey connector;
-- preserve visible keyboard focus but replace the raw browser-looking form outline with a branded accessible focus ring;
-- add an accessible Back to Top control for long pages;
-- ensure programme detail heroes, including Qurbani, never have an empty visual column when no approved photograph is currently linked.
+## Current task branch
+- Branch: `audit/post-pr41-launch-hardening`
+- Base: `1540c8dfa08c57e2fa6d986b9ff0b6c54680224b`
+- Purpose: execute the remaining launch-readiness work one item at a time, beginning with the post-PR41 rendered/UX/UI acceptance pass and then moving through performance, browser E2E/accessibility, donation and assistance E2E, editorial, SEO/social, media-storage privacy, admin operations and launch rehearsal.
 
-## Current task branch / PR
-- Branch: `fix/ui-consistency-dedupe-v2`
-- PR: #41 — Reconcile public work and standardize cross-site UI
-- PR #40 was closed unmerged after a branch-base cleanup conflict; #41 is the clean replacement based on the current integration head.
+## Completed before this pass
+- Canonical five-category public programme taxonomy is implemented.
+- Our Work duplication/year-child reconciliation is implemented.
+- Impact duplicate filtering and amount-safe rail are implemented.
+- Cross-site hero/section consistency layer is implemented.
+- Back-to-top control, branded focus-visible treatment and companion launcher positioning are implemented.
+- Stories empty state and Get Involved connector were corrected.
+- Programme detail visual fallbacks were added where approved lead media is unavailable.
+- Appeal publication/update privacy gates, assistance verification gate, private tracking, retention workflow and media-governance gate are implemented.
+- Canonical factual locks are active for sensitive programme/case facts.
+- SEO/indexing foundations, canonical redirects, security headers and staging noindex protections are implemented.
 
-## Implementation completed on this branch
-- Added `iteration-four.css` as the final visual consistency override layer.
-- Added reduced-motion-aware global Back to Top control.
-- Restored companion launcher dock to bottom-right and coordinated its position with Back to Top.
-- Added branded focus-visible states for form controls and interactive elements.
-- Unified hero gradient/eyebrow/title treatment across major v2 public screens.
-- Added consistent partial gradient accents to section titles.
-- Regrouped Our Work records from canonical master taxonomy instead of raw Cause rows so the five umbrella categories cannot duplicate because of stale DB cause names.
-- Default Our Work view now keeps year-child editions under their parent programme; year filtering can still expose specific editions.
-- Added temporary Amaana thumbnail fallbacks for initiative rows lacking approved media.
-- Added Taleem's two verified public highlights without inventing separate historical programmes.
-- Impact now filters through the canonical programme registry and hides annual child editions from the main evidence ledger.
-- Impact metric rail is centered, horizontally scrollable and amount-safe.
-- Programme detail pages use a restrained factual visual fallback where approved lead media is unavailable.
-- Stories privacy-gate empty state and Get Involved journey connector are restyled through the consistency layer.
+## Current launch-hardening queue
+1. Post-PR41 rendered/UX/UI acceptance across representative public routes and viewport classes.
+2. Performance remediation: global CSS consolidation, image delivery, client hydration/network work and caching.
+3. Add durable browser E2E + accessibility coverage.
+4. Donation journey E2E and production-gateway readiness checks.
+5. Assistance journey E2E including upload/status/admin lifecycle.
+6. Full public editorial/grammar/CTA consistency pass.
+7. Final SEO/social-sharing/canonical/schema audit.
+8. Public-media storage/privacy audit: only intentionally public-safe assets may remain directly addressable under `/public`.
+9. Admin operational simulation from intake through closure/retention.
+10. External compliance/business closures and production launch rehearsal.
 
-## Next actions
-1. Complete PR #41 CI; repair any lint/type/build/regression failures before merge.
-2. Merge only when all CI gates are green.
-3. Verify Railway deployment for the merged commit.
-4. Run rendered checks on `/our-work`, `/impact`, `/stories`, `/faith-and-reflections`, `/get-involved`, Qurbani detail and representative mobile widths.
-5. Continue launch acceptance only after this user-review iteration is verified.
+## Current acceptance constraints
+- Browser-level pixel/geometry inspection requires an actual browser-capable execution surface. Source/static checks and Railway/API acceptance can continue here; any browser-only visual assertions must not be claimed without rendered verification.
+- No real donation is to be attempted without explicit user authorization.
+- No private beneficiary data or restricted media may be introduced into public fixtures.
 
 ## Factual and release locks
 Read `docs/CURRENT_SOURCE_RECONCILIATION_2026-09-15.md` and `docs/canonical-factual-locks-2026-09-15.md`. Newborn ₹107,520; Winter 234 kits/234 beneficiaries with phase subsets; Taleem 25 combined. Canonical taxonomy contains exactly five categories. Main/production promotion remains gated.
