@@ -1,0 +1,93 @@
+import assert from "node:assert/strict";
+
+const rawBaseUrl = process.env.STAGING_BASE_URL;
+if (!rawBaseUrl) {
+  throw new Error("STAGING_BASE_URL is required, for example https://<staging-host>");
+}
+
+const baseUrl = new URL(rawBaseUrl);
+const productionHosts = new Set(["amaanafoundation.org", "www.amaanafoundation.org"]);
+if (productionHosts.has(baseUrl.hostname)) {
+  throw new Error("Refusing to run staging acceptance checks against the production Amaana domain");
+}
+
+const syntheticSlug = "staging-checkout-acceptance";
+let checks = 0;
+
+function pass(message) {
+  checks += 1;
+  console.log(`✓ ${message}`);
+}
+
+async function get(path, options = {}) {
+  const response = await fetch(new URL(path, baseUrl), {
+    redirect: "follow",
+    headers: { "user-agent": "Amaana-Staging-Acceptance/1.0" },
+    ...options,
+  });
+  assert.equal(response.status, 200, `${path} returned ${response.status}`);
+  return response;
+}
+
+async function getHtml(path) {
+  const response = await get(path);
+  const contentType = response.headers.get("content-type") ?? "";
+  assert.match(contentType, /text\/html/i, `${path} did not return HTML`);
+  return { response, html: await response.text() };
+}
+
+function expectText(html, text, context) {
+  assert.ok(html.includes(text), `${context} is missing expected text: ${text}`);
+  pass(`${context}: ${text}`);
+}
+
+function expectHeader(response, name, pattern, context) {
+  const value = response.headers.get(name) ?? "";
+  assert.match(value, pattern, `${context} header ${name} was ${JSON.stringify(value)}`);
+  pass(`${context}: ${name}`);
+}
+
+console.log(`Running Amaana staging acceptance checks against ${baseUrl.origin}`);
+
+const health = await get("/api/health/live");
+const healthPayload = await health.json();
+assert.equal(healthPayload.status, "ok", "Live health endpoint did not return status=ok");
+pass("live health endpoint");
+expectHeader(health, "cache-control", /no-store/i, "health endpoint");
+expectHeader(health, "x-content-type-options", /^nosniff$/i, "health endpoint");
+expectHeader(health, "x-frame-options", /^DENY$/i, "health endpoint");
+
+const home = await getHtml("/");
+expectText(home.html, "Amaana Foundation", "homepage identity");
+assert.match(home.html, /name=["']robots["'][^>]*noindex|content=["'][^"']*noindex[^"']*["'][^>]*name=["']robots["']/i, "Staging homepage is not explicitly noindex");
+pass("staging homepage remains noindex");
+
+for (const path of ["/about", "/our-work", "/privacy", "/transparency", "/donate"]) {
+  await getHtml(path);
+  pass(`public route ${path}`);
+}
+
+const appeals = await getHtml("/appeals");
+expectText(appeals.html, "Verified Needs. Clear Purpose. Responsible Support.", "appeals page");
+expectText(appeals.html, "Amaana does not accept foreign contributions", "appeals domestic-only boundary");
+expectText(appeals.html, "STAGING TEST", "synthetic appeal listing");
+
+const appeal = await getHtml(`/appeals/${syntheticSlug}`);
+expectText(appeal.html, "STAGING TEST — Checkout acceptance", "synthetic appeal detail");
+expectText(appeal.html, "INR · India only", "synthetic appeal donation boundary");
+expectText(appeal.html, "Supporting documents used during review remain private", "synthetic appeal privacy boundary");
+
+const donation = await getHtml(`/donate/${syntheticSlug}`);
+expectText(donation.html, "Domestic contribution confirmation", "donation form domestic-source confirmation");
+expectText(donation.html, "Razorpay", "donation form payment provider disclosure");
+expectText(donation.html, "not an 80G tax-deduction certificate", "donation acknowledgement boundary");
+
+const assistance = await getHtml("/request-assistance");
+expectHeader(assistance.response, "cache-control", /no-store/i, "assistance page");
+expectHeader(assistance.response, "x-content-type-options", /^nosniff$/i, "assistance page");
+expectHeader(assistance.response, "x-frame-options", /^DENY$/i, "assistance page");
+expectText(assistance.html, "Private submission", "assistance privacy framing");
+expectText(assistance.html, "submission does not guarantee assistance or public fundraising", "assistance expectation boundary");
+expectText(assistance.html, "Uploading a document does not give Amaana permission to publish it", "assistance document consent boundary");
+
+console.log(`\nAmaana staging launch acceptance passed: ${checks} checks.`);
