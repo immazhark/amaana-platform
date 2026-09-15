@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getFirstPublicationIssues } from "./appeal-publication";
+import { getFirstPublicationIssues, goalMatchesApprovedPublicTarget } from "./appeal-publication";
 
 const approvedVerification = {
   needConfirmed: true,
@@ -24,6 +24,7 @@ describe("first appeal publication gate", () => {
     expect(getFirstPublicationIssues({
       fromStatus: "UNDER_REVIEW",
       toStatus: "PUBLISHED",
+      goalAmount: 75000,
       verification: approvedVerification,
     })).toEqual([]);
   });
@@ -32,6 +33,7 @@ describe("first appeal publication gate", () => {
     expect(getFirstPublicationIssues({
       fromStatus: "UNDER_REVIEW",
       toStatus: "PUBLISHED",
+      goalAmount: 75000,
       verification: null,
     })).toContain("Verification record is required.");
   });
@@ -40,14 +42,26 @@ describe("first appeal publication gate", () => {
     const issues = getFirstPublicationIssues({
       fromStatus: "UNDER_REVIEW",
       toStatus: "PUBLISHED",
+      goalAmount: 75000,
       verification: { ...approvedVerification, archiveConsent: "UNCONFIRMED", zakatStatus: "UNREVIEWED" },
     });
     expect(issues).toContain("Public archive consent must be resolved.");
     expect(issues).toContain("Zakat review must be recorded as eligible, not eligible, or not applicable.");
   });
 
+  it("locks the appeal goal to the approved public fundraising target", () => {
+    expect(goalMatchesApprovedPublicTarget(75000, approvedVerification)).toBe(true);
+    expect(goalMatchesApprovedPublicTarget(80000, approvedVerification)).toBe(false);
+    expect(getFirstPublicationIssues({
+      fromStatus: "UNDER_REVIEW",
+      toStatus: "PUBLISHED",
+      goalAmount: 80000,
+      verification: approvedVerification,
+    })).toContain("Appeal goal must match the approved public fundraising target.");
+  });
+
   it("does not block lifecycle transitions for appeals that were already public", () => {
-    expect(getFirstPublicationIssues({ fromStatus: "PAUSED", toStatus: "PUBLISHED", verification: null })).toEqual([]);
-    expect(getFirstPublicationIssues({ fromStatus: "PUBLISHED", toStatus: "FUNDED", verification: null })).toEqual([]);
+    expect(getFirstPublicationIssues({ fromStatus: "PAUSED", toStatus: "PUBLISHED", goalAmount: 1, verification: null })).toEqual([]);
+    expect(getFirstPublicationIssues({ fromStatus: "PUBLISHED", toStatus: "FUNDED", goalAmount: 1, verification: null })).toEqual([]);
   });
 });
