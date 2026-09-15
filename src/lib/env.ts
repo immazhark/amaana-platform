@@ -1,5 +1,9 @@
 import { z } from "zod";
 
+export function isRazorpayKeyValidForEnvironment(environment: "production" | "staging", keyId: string) {
+  return environment === "staging" ? keyId.startsWith("rzp_test_") : keyId.startsWith("rzp_live_");
+}
+
 const productionSchema = z.object({
   APP_ENVIRONMENT: z.enum(["production", "staging"]).default("production"),
   EMAIL_DELIVERY_MODE: z.enum(["live", "disabled"]).default("live"),
@@ -20,30 +24,21 @@ const productionSchema = z.object({
   DONATION_TOKEN_PEPPER: z.string().min(32),
   AUTH_RATE_LIMIT_PEPPER: z.string().min(32),
 }).superRefine((env, ctx) => {
-  if (env.APP_ENVIRONMENT === "staging") {
-    if (!env.NEXT_PUBLIC_RAZORPAY_KEY_ID.startsWith("rzp_test_")) {
-      ctx.addIssue({
-        code: "custom",
-        path: ["NEXT_PUBLIC_RAZORPAY_KEY_ID"],
-        message: "Staging must use a Razorpay test key",
-      });
-    }
-
-    if (env.EMAIL_DELIVERY_MODE !== "disabled") {
-      ctx.addIssue({
-        code: "custom",
-        path: ["EMAIL_DELIVERY_MODE"],
-        message: "Staging email delivery must be disabled",
-      });
-    }
-    return;
-  }
-
-  if (!env.NEXT_PUBLIC_RAZORPAY_KEY_ID.startsWith("rzp_live_")) {
+  if (!isRazorpayKeyValidForEnvironment(env.APP_ENVIRONMENT, env.NEXT_PUBLIC_RAZORPAY_KEY_ID)) {
     ctx.addIssue({
       code: "custom",
       path: ["NEXT_PUBLIC_RAZORPAY_KEY_ID"],
-      message: "Production must use a Razorpay live key",
+      message: env.APP_ENVIRONMENT === "staging"
+        ? "Staging must use a Razorpay test key"
+        : "Production must use a Razorpay live key",
+    });
+  }
+
+  if (env.APP_ENVIRONMENT === "staging" && env.EMAIL_DELIVERY_MODE !== "disabled") {
+    ctx.addIssue({
+      code: "custom",
+      path: ["EMAIL_DELIVERY_MODE"],
+      message: "Staging email delivery must be disabled",
     });
   }
 });
