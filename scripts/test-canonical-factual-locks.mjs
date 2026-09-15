@@ -55,6 +55,6 @@ test('runtime programme copy applies the same factual-lock source before renderi
 });
 
 test('convenience Winter content does not reintroduce the superseded 234+ wording', () => {
-  assert.match(convenienceContentSource, /234 Winter Kits distributed to 234 beneficiaries/);
+  assert.match(convenienceContentSource, /distributed 234 Winter Kits to 234 beneficiaries/);
   assert.doesNotMatch(convenienceContentSource, /234\+.*campaign-reported beneficiaries/);
 });
