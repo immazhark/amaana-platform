@@ -1,29 +1,47 @@
 # Amaana Platform — Active Implementation State
 
 ## State
-**CODEX_ACTIVE**
+**CHATGPT_ACTIVE**
 
 ## Active implementation owner
-Codex — explicit user handoff on 15 September 2026.
+ChatGPT — user-directed takeover after Codex limit exhaustion on 16 September 2026.
 
 ## Integration checkpoint
-- Branch: phase-public-site-rebuild
-- HEAD: 1d2bdf1119d7a71674ab5d15a40b930d84c3b179
-- PR #22 merged; full CI passed according to handoff.
-- Railway deployment 906b9744-c300-4997-aafe-0589caada641 verified SUCCESS.
-- No open PRs at takeover. Prior retention workflow ownership note was stale relative to Git history.
+- Branch: `phase-public-site-rebuild`
+- HEAD: `52176da7a64f9ca4901210dd39eb081bed34f4b9`
+- PR #23 (`Fix shared responsive navigation and companion overlap`) passed GitHub CI and was squash-merged by ChatGPT after takeover.
+- Railway deployment for `52176da7...` is currently building; prior PR #22 deployment is verified SUCCESS.
 
-## Current task
-Cross-screen rendered responsive/visual acceptance sweep. Preserve existing design, colours, canonical copy, privacy gates and PR #22 reconciliation.
+## What Codex completed before exhaustion
+- Performed a rendered responsive acceptance sweep across 21 priority public routes at 1440, 1024, 768, 430, 390 and 360px (126 combinations).
+- Found and fixed persistent Islamic companion launcher overlap by keeping launchers in document flow.
+- Fixed desktop/tablet navigation crowding by switching the whole navigation before labels collide, preserving the desktop hamburger hidden state and making the open mobile menu internally scrollable.
+- Restored 44px mobile reminder/touch targets.
+- Added three shared layout regression tests and `docs/RESPONSIVE_ACCEPTANCE_2026-09-16.md`.
+- Local lint, TypeScript, existing tests and new regressions passed; GitHub CI for PR #23 subsequently completed successfully.
+
+## Current implementation task
+Resolve the runtime `/our-work` taxonomy discrepancy Codex recorded during rendered QA: the page still reported six cause areas, including a legacy Medical & Financial Aid category, even though the canonical taxonomy contains exactly five categories.
 
 ## Task branch
-fix/responsive-acceptance-sweep
+`fix/canonical-cause-runtime-reconciliation`
 
-## Next actions
-Inspect priority routes at 1440, 1024, 768, 430, 390 and 360 pixels. Record P0 overlap, P1 responsive and P2 refinement issues; fix root causes in a focused PR. Run current repository checks and verify deployment after merge.
+## Root cause under review
+`prisma/apply-master-content.mjs` performs legacy-category migration only during a full master-content seed. Once the content-version marker matches, the function returns early after factual locks, so any stale published legacy Cause rows can survive indefinitely. The public `/our-work` query currently accepts every published cause rather than fail-closing to the five canonical slugs.
+
+## Planned fix
+1. Make legacy-category reconciliation idempotent and run it even when the master-content version is already current.
+2. Add a public read-side canonical cause allowlist so stale/legacy rows cannot reappear on `/our-work` while database reconciliation catches up.
+3. Add regression coverage protecting the five-category public taxonomy.
+4. Run full CI, merge only when green, then verify Railway and rendered `/our-work`.
+5. Continue launch-readiness acceptance from the generated QA/user-journey documents: payments, privacy-sensitive routes, accessibility/keyboard, dead links/redirects, faith review safeguards and admin/security boundaries.
 
 ## Factual and release locks
-Read docs/CURRENT_SOURCE_RECONCILIATION_2026-09-15.md and docs/canonical-factual-locks-2026-09-15.md. Newborn ₹107,520; Winter 234 kits/234 beneficiaries with phase subsets; Taleem 25 combined. No factual or payment readiness expansion in this visual task. Main/production promotion remains gated.
+Read `docs/CURRENT_SOURCE_RECONCILIATION_2026-09-15.md` and `docs/canonical-factual-locks-2026-09-15.md`. Newborn ₹107,520; Winter 234 kits/234 beneficiaries with phase subsets; Taleem 25 combined. No factual or payment-readiness expansion without verified evidence. Main/production promotion remains gated.
 
-## Environment
-Shell GitHub connectivity unavailable. Use authenticated GitHub connector against exact current SHAs; never reuse the stale master-integration patch as current source.
+## Do-not-touch without explicit need
+- Current Amaana colour direction / premium visual language
+- Canonical five-category taxonomy
+- Private beneficiary evidence, media consent gates and retention controls
+- Donation/payment/refund lifecycle except for focused verified defects
+- Compliance claims still awaiting CA/legal/payment confirmation
