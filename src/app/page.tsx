@@ -8,6 +8,7 @@ import { eidGrowth, foundingStory, homepageImpact } from "@/content/amaana";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
 import { programmeCategories } from '@/lib/master-copy';
+import { programmeCategoryPath } from '@/lib/programme-category-routing';
 
 export const dynamic = "force-dynamic";
 
@@ -103,7 +104,7 @@ export default async function HomePage() {
 
           <div className="v3-work-list">
             {programmeCategories.map((category, index) => (
-              <Link className="v3-work-row" href={category.slug==='amaana-taleem'?'/our-work/taleem':`/programmes/${category.slug==='seasonal-relief'?'seasonal-essentials':category.slug}`} key={category.slug}>
+              <Link className="v3-work-row" href={programmeCategoryPath(category.slug)} key={category.slug}>
                 <small>{String(index + 1).padStart(2, '0')} · Our Work</small>
                 <h3>{category.title}</h3>
                 <div className="v3-work-metric">
