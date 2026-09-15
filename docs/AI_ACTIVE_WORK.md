@@ -16,57 +16,55 @@ ChatGPT
 
 ## Current integration checkpoint
 
-- PR #15 stopped queueing applicant SMS notifications that have no delivery implementation; squash-merged as `a2fc02c2142cf3869c064f5e2450f3806600c193` after full green CI and successful Railway deployment.
-- PR #16 added the structured assistance verification/privacy/Zakat gate and stopped raw private intake copy from becoming public appeal copy; squash-merged as `84397fa331ea263ade725286e4d83884b5c0e3d1` after full green CI. Railway applied `20260915220500_assistance_verification_gate` successfully and started healthy.
-- PR #17 aligned assistance, privacy, donation, refund and terms notices with the generated governance masters without overstating review-pending legal wording; squash-merged as `ac5d14c08bef0b70e3b8467c19fb384aa767cef9` after full green CI. Railway deployment is in progress.
+- PR #16 added the structured assistance verification/privacy/Zakat gate; squash-merged as `84397fa331ea263ade725286e4d83884b5c0e3d1` after full green CI. Railway applied the migration successfully.
+- PR #17 aligned assistance/privacy/donation/refund/terms notices with the generated governance masters; squash-merged as `ac5d14c08bef0b70e3b8467c19fb384aa767cef9` after full green CI and successful Railway deployment.
+- PR #18 aligned SEO metadata, structured breadcrumbs, sensitive-case indexing and redirect governance; squash-merged as `b8271d1c1d5adae2972266371ea7377a3cd865a4` after full green CI. Railway deployment is in progress.
 
 ## Current implementation task
 
-Align search metadata, structured data, breadcrumb schema, sensitive-case indexing and redirect governance with the generated SEO/Search/Social Sharing Master and Launch Content & Trust QA Checklist while preserving the existing staging noindex safeguards and approved-media gates.
+Strengthen the media publication gate using the generated Beneficiary Dignity, Consent & Media Policy, Media Reconciliation Manifest, Operational Forms and Admin/Data Governance Blueprint without disrupting already-published pages or the current visual direction.
 
 ## Current task branch / PR
 
-- Branch: `align/seo-structured-data`
-- Base SHA: `ac5d14c08bef0b70e3b8467c19fb384aa767cef9`
-- PR: to be opened after this checkpoint update
+- Branch: `feat/media-consent-governance`
+- Base SHA: `b8271d1c1d5adae2972266371ea7377a3cd865a4`
+- PR: to be opened after CI-ready checkpoint
 
-## Document-led findings
+## Document-led gap
 
-- Staging indexing is already fail-closed: only the official HTTPS Amaana domains can become indexable and only when explicitly enabled.
-- Sitemap already derives from published public content; stories require privacy approval and faith content requires religious verification.
-- Initiative/story Open Graph images already come only from public, privacy-approved media records.
-- Sitewide organization metadata used a generic charitable-organization description instead of the canonical `registered charitable trust` descriptor.
-- Dynamic programme, appeal and story pages lacked BreadcrumbList structured data.
-- Search metadata had no content-driven privacy response for a future `HIGHLY_SENSITIVE` verified assistance case.
-- Known Winter legacy redirects existed at route level but there was no maintained repository redirect map.
+The existing media model records `isPublic` and `privacyApprovedAt`, and publication previously required only a safe URL plus meaningful image alt text. That is not enough to capture the generated governance requirements around consent, child/patient context, private-document presence, source provenance, approved usage channels or hero suitability.
+
+A database schema expansion is intentionally deferred in this focused step because existing published media must not be silently reclassified or broken. The first gate records structured review decisions in the existing immutable audit trail, keeps legacy public assets visible, and marks them for explicit governance review before reuse or hero promotion.
 
 ## Implemented on current task branch
 
-- Added reusable `BreadcrumbStructuredData` and wired it to programme/initiative, appeal and story detail routes.
-- Aligned Organization/WebSite structured-data description with the canonical registered-charitable-trust descriptor and added public contact details without publishing a private street address.
-- Aligned root and homepage metadata with the canonical SEO master, including the recommended homepage title/description direction.
-- Added a search-privacy lookup for appeal-linked verification records. `HIGHLY_SENSITIVE` cases remain accessible as public accountability pages when intentionally published but receive `noindex`, generic search/social title and generic description rather than sensitive case metadata.
-- Preserved the existing rule that initiative/story social images must already be public and privacy-approved.
-- Centralized the two known Winter legacy permanent redirects in `next.config.ts`.
-- Added `docs/SEO_REDIRECT_MAP.md` so route changes have a durable redirect record instead of ad hoc redirects.
-- Corrected an intermediate homepage edit on the task branch so the complete current homepage content is preserved; only its metadata changes in this task.
+- Added reusable fail-closed media publication validation.
+- General website publication requires GREEN public-use classification, confirmed provenance and explicit website-channel approval.
+- AMBER/RED material cannot pass the broad website publication gate.
+- Media containing private identity/medical/bank/loan/document data cannot pass publication.
+- Identifiable child or patient media requires documented publication consent.
+- Consent/provenance/privacy/hero decisions and reviewer identity are recorded in `AuditEvent` as `media.privacy_reviewed` before `media.published`.
+- Admin media review now exposes the consent/privacy/provenance checklist and distinguishes publication permission from hero eligibility.
+- Existing public assets without a structured review event are labelled as legacy public assets needing re-review rather than being silently blessed or automatically removed.
+- Added regression tests for the publication gate.
 
 ## Exact next action
 
-1. Open a focused PR for `align/seo-structured-data`.
-2. Run full CI and repair any type/build/test/bundle regression.
-3. Merge only when fully green and verify Railway deployment.
-4. Continue document-led implementation audit with the Beneficiary Dignity/Consent/Media Policy and Admin/Data Governance Blueprint: strengthen media consent/provenance metadata and publication gates without changing the visual direction.
-5. Then implement retention/deletion workflow controls from the Data Retention & Access Control Policy and proceed to staging/browser acceptance journeys.
+1. Open focused PR for `feat/media-consent-governance`.
+2. Run complete CI and repair any lint/type/test/build regression.
+3. Merge only when fully green and verify Railway.
+4. Audit/review legacy public media against the generated reconciliation manifest inside the admin workflow.
+5. Then implement retention/deletion workflow controls from the Data Retention & Access Control Policy.
+6. Proceed to browser/mobile/accessibility/SEO/payment/assistance acceptance journeys against staging.
 
 ## Repository areas currently sensitive
 
 - private assistance records, verification, consent and appeal conversion
+- public media consent/provenance/privacy review
 - sensitive-case search/social metadata
 - donation/payment/refund lifecycle
 - public policy/compliance copy awaiting professional review where noted
 - canonical programme/factual sources
-- public programme/media provenance data
 - current visual/colour direction — do not redesign without explicit user request
 
 ## Locked facts relevant to implementation
