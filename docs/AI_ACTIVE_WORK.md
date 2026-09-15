@@ -16,55 +16,57 @@ ChatGPT
 
 ## Current integration checkpoint
 
-- PR #16 added the structured assistance verification/privacy/Zakat gate; squash-merged as `84397fa331ea263ade725286e4d83884b5c0e3d1` after full green CI. Railway applied the migration successfully.
 - PR #17 aligned assistance/privacy/donation/refund/terms notices with the generated governance masters; squash-merged as `ac5d14c08bef0b70e3b8467c19fb384aa767cef9` after full green CI and successful Railway deployment.
-- PR #18 aligned SEO metadata, structured breadcrumbs, sensitive-case indexing and redirect governance; squash-merged as `b8271d1c1d5adae2972266371ea7377a3cd865a4` after full green CI. Railway deployment is in progress.
+- PR #18 aligned SEO metadata, structured breadcrumbs, sensitive-case indexing and redirect governance; squash-merged as `b8271d1c1d5adae2972266371ea7377a3cd865a4` after full green CI and successful Railway deployment.
+- PR #19 added a fail-closed media consent/provenance/privacy publication gate and structured review audit records; squash-merged as `069c80a07620e41abb4642288e90e9abcec03cbb` after full green CI. Railway deployment is in progress.
 
 ## Current implementation task
 
-Strengthen the media publication gate using the generated Beneficiary Dignity, Consent & Media Policy, Media Reconciliation Manifest, Operational Forms and Admin/Data Governance Blueprint without disrupting already-published pages or the current visual direction.
+Implement an auditable private-evidence retention/deletion workflow from the generated Data Retention & Access Control Policy without inventing statutory retention periods that still require CA/legal/safeguarding confirmation.
 
 ## Current task branch / PR
 
-- Branch: `feat/media-consent-governance`
-- Base SHA: `b8271d1c1d5adae2972266371ea7377a3cd865a4`
+- Branch: `feat/retention-review-workflow`
+- Base SHA: `069c80a07620e41abb4642288e90e9abcec03cbb`
 - PR: to be opened after CI-ready checkpoint
 
-## Document-led gap
+## Document-led requirements
 
-The existing media model records `isPublic` and `privacyApprovedAt`, and publication previously required only a safe URL plus meaningful image alt text. That is not enough to capture the generated governance requirements around consent, child/patient context, private-document presence, source provenance, approved usage channels or hero suitability.
-
-A database schema expansion is intentionally deferred in this focused step because existing published media must not be silently reclassified or broken. The first gate records structured review decisions in the existing immutable audit trail, keeps legacy public assets visible, and marks them for explicit governance review before reuse or hero promotion.
+- Retain only for operational, verification, accounting/audit, compliance, safeguarding, dispute or institutional-history need.
+- Closed beneficiary cases should periodically review whether raw evidence is still necessary.
+- Deletion of sensitive evidence must be authorised and logged.
+- Legal/audit/investigation/safeguarding holds suspend normal deletion.
+- Exact statutory periods must not be invented before professional confirmation.
+- Private-file links remain short-lived and access-controlled; public completion pages may remain even if raw verification proof is later removed.
 
 ## Implemented on current task branch
 
-- Added reusable fail-closed media publication validation.
-- General website publication requires GREEN public-use classification, confirmed provenance and explicit website-channel approval.
-- AMBER/RED material cannot pass the broad website publication gate.
-- Media containing private identity/medical/bank/loan/document data cannot pass publication.
-- Identifiable child or patient media requires documented publication consent.
-- Consent/provenance/privacy/hero decisions and reviewer identity are recorded in `AuditEvent` as `media.privacy_reviewed` before `media.published`.
-- Admin media review now exposes the consent/privacy/provenance checklist and distinguishes publication permission from hero eligibility.
-- Existing public assets without a structured review event are labelled as legacy public assets needing re-review rather than being silently blessed or automatically removed.
-- Added regression tests for the publication gate.
+- Added `/admin/retention`, restricted to users with `assistance.approve`.
+- Lists current private assistance documents with request/appeal status and prior retention/hold history.
+- Supports `Retain and review later`, `Place hold`, `Release hold`, and `Permanently delete raw evidence` decisions.
+- Every decision requires a reason and is recorded in `AuditEvent`; optional future review dates are internal metadata only, not claimed legal deadlines.
+- Deletion is blocked while a legal/audit/safeguarding hold is active.
+- Deletion is blocked while the request or linked appeal remains active; it becomes technically eligible only after request closure/rejection or linked appeal closure.
+- Physical private-storage deletion is performed before deleting the corresponding database record, prioritising removal of sensitive bytes if persistence cleanup later fails.
+- Deleted-document audit records preserve only the operational deletion record and basic file metadata, not the document contents.
+- Added an authorised Retention review navigation entry; ordinary assistance viewers do not see it.
 
 ## Exact next action
 
-1. Open focused PR for `feat/media-consent-governance`.
-2. Run complete CI and repair any lint/type/test/build regression.
+1. Open focused PR for `feat/retention-review-workflow`.
+2. Run complete CI and repair any Prisma/type/lint/build regression.
 3. Merge only when fully green and verify Railway.
-4. Audit/review legacy public media against the generated reconciliation manifest inside the admin workflow.
-5. Then implement retention/deletion workflow controls from the Data Retention & Access Control Policy.
-6. Proceed to browser/mobile/accessibility/SEO/payment/assistance acceptance journeys against staging.
+4. Then move into staging/browser acceptance journeys using the generated Launch Content & Trust QA checklist: assistance, payment, no-active-appeal, completed appeal, privacy, mobile, accessibility, SEO and broken-link paths.
+5. Any browser-discovered defect becomes a focused repair PR; do not restart design.
 
 ## Repository areas currently sensitive
 
-- private assistance records, verification, consent and appeal conversion
-- public media consent/provenance/privacy review
+- private assistance records and raw verification files
+- retention/legal-hold/deletion audit trail
+- media consent/provenance/privacy review
 - sensitive-case search/social metadata
 - donation/payment/refund lifecycle
 - public policy/compliance copy awaiting professional review where noted
-- canonical programme/factual sources
 - current visual/colour direction — do not redesign without explicit user request
 
 ## Locked facts relevant to implementation
