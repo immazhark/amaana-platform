@@ -1,3 +1,4 @@
+import { publicFaithWhere } from "@/lib/faith-publication";
 import { prisma } from "@/lib/prisma";
 
 const publicMediaSelect = {
@@ -35,10 +36,7 @@ export async function getStoriesDiscoveryData() {
 
 export async function getFaithDiscoveryData() {
   return prisma.faithContent.findMany({
-    where: {
-      status: "PUBLISHED",
-      religiousReviewStatus: "VERIFIED",
-    },
+    where: publicFaithWhere,
     orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }],
     select: {
       id: true,
@@ -47,6 +45,7 @@ export async function getFaithDiscoveryData() {
       title: true,
       excerpt: true,
       sourceCitation: true,
+      verifiedAt: true,
       topics: {
         select: {
           topic: { select: { slug: true, name: true } },
