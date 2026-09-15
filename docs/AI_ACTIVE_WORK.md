@@ -4,7 +4,7 @@
 **CHATGPT_ACTIVE**
 
 ## Active implementation owner
-ChatGPT — continuing the user-directed launch-hardening pass after PR #41.
+ChatGPT — continuing the user-directed launch-hardening and visual-consistency pass after PR #41.
 
 ## Integration checkpoint
 - Integration branch: `phase-public-site-rebuild`
@@ -15,31 +15,46 @@ ChatGPT — continuing the user-directed launch-hardening pass after PR #41.
 ## Current task branch
 - Branch: `audit/post-pr41-launch-hardening`
 - Base: `1540c8dfa08c57e2fa6d986b9ff0b6c54680224b`
-- Purpose: execute the remaining launch-readiness work one item at a time, beginning with the post-PR41 rendered/UX/UI acceptance pass and then moving through performance, browser E2E/accessibility, donation and assistance E2E, editorial, SEO/social, media-storage privacy, admin operations and launch rehearsal.
+- Purpose: complete the user-requested site-wide visual consistency pass before moving to Lighthouse/performance work.
 
-## Completed before this pass
-- Canonical five-category public programme taxonomy is implemented.
-- Our Work duplication/year-child reconciliation is implemented.
-- Impact duplicate filtering and amount-safe rail are implemented.
-- Cross-site hero/section consistency layer is implemented.
-- Back-to-top control, branded focus-visible treatment and companion launcher positioning are implemented.
-- Stories empty state and Get Involved connector were corrected.
-- Programme detail visual fallbacks were added where approved lead media is unavailable.
-- Appeal publication/update privacy gates, assistance verification gate, private tracking, retention workflow and media-governance gate are implemented.
-- Canonical factual locks are active for sensitive programme/case facts.
-- SEO/indexing foundations, canonical redirects, security headers and staging noindex protections are implemented.
+## Current user-directed visual rules
+- Wherever a cause, drive, initiative or work item appears in a list/grid/card/row, it must have a predictable thumbnail slot.
+- Real approved Amaana media is preferred. If none is available, use a neutral branded placeholder; do not invent beneficiary imagery.
+- Specific cause/drive/programme/appeal detail pages use a large left-copy/right-visual hero pattern. Empty visual columns are not allowed.
+- Public interior top banners use one desktop/tablet height system. Longer copy must adapt through constrained typography/copy length rather than changing banner geometry or overflowing its container.
+- Mobile banners become content-led so text and controls never clip.
+- No text, button, image or grid child may render outside its container; no text/button or image/text overlaps.
+- Back-to-top is icon-only visually, with an accessible name retained for assistive technology.
 
-## Current launch-hardening queue
-1. Post-PR41 rendered/UX/UI acceptance across representative public routes and viewport classes.
-2. Performance remediation: global CSS consolidation, image delivery, client hydration/network work and caching.
-3. Add durable browser E2E + accessibility coverage.
-4. Donation journey E2E and production-gateway readiness checks.
-5. Assistance journey E2E including upload/status/admin lifecycle.
-6. Full public editorial/grammar/CTA consistency pass.
-7. Final SEO/social-sharing/canonical/schema audit.
-8. Public-media storage/privacy audit: only intentionally public-safe assets may remain directly addressable under `/public`.
-9. Admin operational simulation from intake through closure/retention.
-10. External compliance/business closures and production launch rehearsal.
+## Implemented on the current branch
+- Added reusable `WorkVisualPlaceholder`.
+- Added visual slots to homepage work rows, Our Work/Impact listings, programme-category grids, appeal cards, completed appeal outcomes and story cards.
+- Initiative and programme detail heroes now always render a right-side approved image or branded placeholder.
+- Appeal detail hero now uses the same left-copy/right-visual pattern; funding progress follows immediately below in a contained decision panel.
+- Programme detail hero copy is concise; the full programme story is moved below the hero so banner geometry remains stable.
+- Contact page now uses the shared interior hero system.
+- Added `launch-hardening.css` for work thumbnails, hero media geometry, containment and the icon-only back-to-top treatment.
+- Added temporary `banner-consistency.css` as the final QA override layer for identical desktop/tablet banner geometry across generic, Impact, Stories, Faith, campaign, appeals, assistance and Taleem hero families. This file should be consolidated after rendered acceptance rather than left as another permanent CSS layer.
+- Added strict max-width/min-width/overflow-wrap protections for common content and action groups.
+
+## Next actions for this pass
+1. Run PR CI and repair type/lint/build/bundle/regression failures.
+2. Inspect the PR diff for selector/markup regressions, especially responsive Impact/Appeal grids.
+3. Merge only when all gates are green.
+4. Verify Railway staging deployment for the merged commit.
+5. User reviews the deployed visual system and assigns preferred real images per cause/drive/page.
+6. Continue the remaining launch-hardening queue after user visual review.
+
+## Remaining launch-hardening queue after this visual pass
+1. Lighthouse/performance remediation: consolidate legacy/global CSS, optimize image delivery, hydration/network work and caching.
+2. Add durable browser E2E + accessibility coverage.
+3. Donation journey E2E and production-gateway readiness checks.
+4. Assistance journey E2E including upload/status/admin lifecycle.
+5. Full public editorial/grammar/CTA consistency pass.
+6. Final SEO/social-sharing/canonical/schema audit.
+7. Public-media storage/privacy audit: only intentionally public-safe assets may remain directly addressable under `/public`.
+8. Admin operational simulation from intake through closure/retention.
+9. External compliance/business closures and production launch rehearsal.
 
 ## Current acceptance constraints
 - Browser-level pixel/geometry inspection requires an actual browser-capable execution surface. Source/static checks and Railway/API acceptance can continue here; any browser-only visual assertions must not be claimed without rendered verification.
