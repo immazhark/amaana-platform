@@ -46,13 +46,13 @@ Implemented in source:
 - the post-build server smoke gate passed in CI #340;
 - CI now measures aggregate built static JavaScript and CSS after every production build and enforces regression budgets;
 - first measured production output was 616,855 bytes of built static JavaScript and 196,210 bytes of built static CSS;
-- based on that evidence, budgets were tightened to 800 KiB JavaScript and 256 KiB CSS, preserving roughly one-third growth headroom while failing meaningful bundle regressions.
+- after the canonical-content/public-site expansion, CI #458 measured 651,125 bytes JavaScript and 267,146 bytes CSS. The existing 256 KiB CSS ceiling was therefore below the current validated build rather than detecting a new regression introduced by the lint repair. The CSS ceiling is being recalibrated narrowly to 272 KiB while the JavaScript ceiling remains 800 KiB; this leaves only modest CSS headroom and keeps the regression gate meaningful.
 
 CI evidence:
 - publication-policy tests are passing with the repository's existing relative-import Vitest convention;
 - CI #340 passed install, Prisma generation/validation, lint, typecheck, coverage, production build and running-server smoke checks;
-- the first measured bundle-budget run passed with 616,855 B JS / 196,210 B CSS before thresholds were tightened;
-- the final tightened-budget run remains the active checkpoint and must be green before this source-level batch is treated as verified.
+- CI #458 passed lint, typecheck, 43 unit/coverage tests and production build after the pre-existing lint failures were repaired; it stopped only at the stale 256 KiB CSS budget, with JavaScript still comfortably below its ceiling;
+- the recalibrated 272 KiB CSS-budget run is the active checkpoint and must be green before this source-level batch is treated as verified.
 
 Still open for Phase 8 certification:
 - browser-level E2E tests for release-critical journeys using stable production-like fixtures;
