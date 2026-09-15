@@ -1,5 +1,6 @@
 const ADMIN_DESTINATIONS = [
   { permission: "assistance.view", path: "/admin" },
+  { permission: "assistance.approve", path: "/admin/retention" },
   { permission: "appeal.view", path: "/admin/appeals" },
   { permission: "content.view", path: "/admin/media" },
   { permission: "donation.view", path: "/admin/donations" },
