@@ -29,11 +29,12 @@ Harden the active appeal → donation lifecycle so a fully funded or expired app
 
 - Branch: `fix/appeal-target-closure`
 - Base SHA: `bcc7246a8c9a90d02f76991ac980747647f41df9`
-- PR: not opened yet at this checkpoint
+- PR: **#10 — Stop designated checkout when an appeal reaches target**
+- Latest task head at this checkpoint includes the public appeal-detail CTA fix after the PR was opened.
 
 ## Problem found during source-level journey audit
 
-The appeals index hid records once `amountRaised >= goalAmount`, but donation-page and order-creation logic only checked `status === PUBLISHED`. Because capture reconciliation incremented `amountRaised` without changing the appeal to `FUNDED`, a direct `/donate/[slug]` path could continue accepting a designated donation after the target had already been reached. Appeals with an elapsed `closesAt` could also remain directly donatable if an admin had not manually changed status.
+The appeals index hid records once `amountRaised >= goalAmount`, but donation-page and order-creation logic only checked `status === PUBLISHED`. Because capture reconciliation incremented `amountRaised` without changing the appeal to `FUNDED`, a direct `/donate/[slug]` path could continue accepting a designated donation after the target had already been reached. Appeals with an elapsed `closesAt` could also remain directly donatable if an admin had not manually changed status. A subsequent read-only audit also found the public appeal-detail page used status alone for its Donate CTA, so it needed the same shared eligibility rule.
 
 ## Implemented on current task branch
 
@@ -42,6 +43,7 @@ The appeals index hid records once `amountRaised >= goalAmount`, but donation-pa
   - `shouldMarkAppealFunded`
   - shared amount conversion handling Prisma Decimal-like values.
 - Updated `/appeals` to use the same eligibility rule as checkout instead of a separate amount-only filter.
+- Updated public appeal-detail data to include `closesAt` and changed both appeal-detail Donate CTAs/status display to use the shared active-fundraising rule.
 - Updated `getDonationPageData` to fail closed when a PUBLISHED appeal is at/above target or its close time has passed.
 - Updated `/api/donations/order` to re-check target/close eligibility immediately before creating a Razorpay order.
 - Updated capture reconciliation so the first captured payment that takes a PUBLISHED appeal to or above target moves it to `FUNDED` within the same transaction.
@@ -50,10 +52,9 @@ The appeals index hid records once `amountRaised >= goalAmount`, but donation-pa
 
 ## Exact next action
 
-1. Open a focused PR for `fix/appeal-target-closure`.
-2. Run full CI.
-3. If green, merge into `phase-public-site-rebuild`.
-4. Continue the source-level donor/assistance journey audit from the new integration head, then move into provider/browser E2E release gates.
+1. Let the latest PR #10 CI run complete after the appeal-detail surface fix.
+2. If green, merge PR #10 into `phase-public-site-rebuild`.
+3. Continue the source-level donor/assistance journey audit from the new integration head, then move into provider/browser E2E release gates.
 
 ## Repository areas currently sensitive
 
