@@ -14,6 +14,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount }: { appealId: s
   const [error, setError] = useState("");
   const [phase, setPhase] = useState<CheckoutPhase>("loading");
   const transactionMax = Math.min(maxAmount, 1_000_000);
+  const transactionMin = transactionMax < 10 ? transactionMax : 10;
 
   const busy = phase === "opening" || phase === "verifying";
   const lockedForReconciliation = phase === "reconciliation";
@@ -113,7 +114,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount }: { appealId: s
       <p id="donation-checkout-status" className="muted" role="status" aria-live="polite">{statusText}</p>
       {error && <div className="form-error" role="alert" aria-live="assertive">{error}</div>}
       <div className="form-grid">
-        <div className="field full v2-amount-field"><label htmlFor="amount">Donation amount <span>INR</span></label><div className="v2-amount-input"><b aria-hidden="true">₹</b><input id="amount" name="amount" type="number" min="10" max={transactionMax} step="1" inputMode="numeric" placeholder="Enter amount" required disabled={lockedForReconciliation}/></div><small className="muted">Maximum available for this transaction: ₹{transactionMax.toLocaleString("en-IN")}.</small></div>
+        <div className="field full v2-amount-field"><label htmlFor="amount">Donation amount <span>INR</span></label><div className="v2-amount-input"><b aria-hidden="true">₹</b><input id="amount" name="amount" type="number" min={transactionMin} max={transactionMax} step="1" inputMode="numeric" placeholder="Enter amount" required disabled={lockedForReconciliation}/></div><small className="muted">{transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small></div>
         <div className="field"><label htmlFor="donorName">Full name</label><input id="donorName" name="donorName" autoComplete="name" minLength={2} required disabled={lockedForReconciliation}/></div>
         <div className="field"><label htmlFor="donorEmail">Email</label><input id="donorEmail" name="donorEmail" type="email" autoComplete="email" required disabled={lockedForReconciliation}/></div>
         <div className="field full"><label htmlFor="donorPhone">Phone <span className="muted">optional</span></label><input id="donorPhone" name="donorPhone" type="tel" autoComplete="tel" disabled={lockedForReconciliation}/></div>
