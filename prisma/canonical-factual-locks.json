@@ -1,0 +1,34 @@
+{
+  "version": "facts-2026-09-15-v1",
+  "initiatives": [
+    {
+      "slug": "emergency-neonatal-medical-aid",
+      "primaryMetric": "₹107,520",
+      "primaryMetricLabel": "raised toward this case",
+      "textReplacements": [
+        {
+          "from": "₹107,200",
+          "to": "₹107,520"
+        }
+      ]
+    },
+    {
+      "slug": "winter-relief",
+      "legacySlugs": [
+        "winter-drive-2025-26",
+        "winter-relief-2025-26"
+      ],
+      "primaryMetric": "234 Winter Kits",
+      "primaryMetricLabel": "distributed to 234 beneficiaries",
+      "summary": "During the 2025–26 winter season, Amaana Foundation distributed 234 Winter Kits to 234 beneficiaries through a multi-phase Winter Drive. The support included sweaters, blankets and beanie caps for madrasa students, orphan children, widows, daily-wage labourers, domestic workers and other people facing seasonal hardship.",
+      "story": "During the 2025–26 winter season, Amaana Foundation distributed 234 Winter Kits to 234 beneficiaries through a multi-phase Winter Drive. The support included sweaters, blankets and beanie caps for madrasa students, orphan children, widows, daily-wage labourers, domestic workers and other people facing seasonal hardship.\n\nIn Phase 1, support was distributed at Al Madarsatul Islamia LiTahfizil Quranil Kareem, FeelKhana, Mallepally, reaching 96 madrasa students, including boys and girls from approximately ages 2 to 18 and underprivileged orphan children. In Phase 2, Amaana worked in collaboration with Al Khair Society at Al Khair Masjid, Hyderabad, where 101 Winter Kits were distributed. These phase figures are supporting sub-measures within the overall drive and must not be added to the overall total of 234 Winter Kits distributed to 234 beneficiaries.",
+      "facts": [
+        "Overall: 234 Winter Kits distributed to 234 beneficiaries.",
+        "Phase 1: 96 madrasa students.",
+        "Phase 2: 101 Winter Kits.",
+        "Phase figures are supporting sub-measures within the overall drive and must not be added to 234."
+      ],
+      "dataCaveat": null
+    }
+  ]
+}
