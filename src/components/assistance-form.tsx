@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { privateTrackingPath } from "@/lib/private-tracking";
 
 type AssistanceField = "applicantName" | "phone" | "email" | "city" | "category" | "description" | "consent";
 type FieldErrors = Partial<Record<AssistanceField, string[]>>;
@@ -32,7 +33,7 @@ export function AssistanceForm() {
         throw new Error(result.error ?? "Submission failed");
       }
       if (!result.referenceNumber || !result.trackingToken) throw new Error("Submission succeeded but the tracking reference could not be prepared.");
-      router.push(`/request-assistance/received?reference=${encodeURIComponent(result.referenceNumber)}&token=${encodeURIComponent(result.trackingToken)}`);
+      router.push(privateTrackingPath("/request-assistance/received", { reference: result.referenceNumber, token: result.trackingToken }));
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Submission failed");
       setSubmitting(false);
