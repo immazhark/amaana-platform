@@ -31,6 +31,7 @@ export const getAppealPageData = cache(async (slug: string) => {
       status: true,
       goalAmount: true,
       amountRaised: true,
+      closesAt: true,
       publishedAt: true,
       updates: {
         where: { isPublic: true },
