@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 const privateHeaders = {
   "Cache-Control": "no-store, private",
   "Referrer-Policy": "no-referrer",
+  "X-Robots-Tag": "noindex, nofollow, noarchive",
 };
 
 /**
