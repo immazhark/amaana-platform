@@ -28,15 +28,51 @@ Append-only record of implementation ownership changes between Codex and ChatGPT
 
 ### CI finding at handoff-record creation
 
-Lint fails in:
+Lint failed in:
 - `scripts/verify-master-content.cjs` — forbidden CommonJS `require()` imports.
 - `src/app/not-found.tsx` — unescaped apostrophe.
 
-Those files are outside PR #5's factual-lock diff; base-branch reproduction still needs to be verified before final classification.
+Those files were outside PR #5's factual-lock diff.
 
-### Next atomic action
+---
 
-Verify whether lint failures are pre-existing on the integration branch, then repair/resolve CI without mixing unrelated changes. Afterwards, complete/merge PR #5 safely and continue the correction queue.
+## 2026-09-15 — ChatGPT repository recovery and continuity checkpoint
+
+**Outgoing:** ChatGPT (earlier task state)  
+**Incoming:** ChatGPT (resumed after full repo inspection)  
+**State:** `CHATGPT_ACTIVE`  
+**Integration branch:** `phase-public-site-rebuild`  
+**Task branch:** `fix/canonical-factual-locks-v2`  
+**PR:** not yet opened for v2 at this checkpoint  
+**Base SHA:** `fd6476710b0a99b6a83997e3c823f9f8d94b6ee0`
+
+### Completed since the first entry
+
+- Verified the CI failures were baseline/rebuild issues rather than factual-lock changes.
+- Repaired the lint gate and narrowly recalibrated the CSS bundle ceiling to the measured canonical-content baseline.
+- PR #7 passed CI and was squash-merged as `69c3b0636cfaebabc311475b5a0dc83386a8680a`.
+- Push CI #463 on the integration branch passed the full pipeline: media validation, reviewed-campaign tests, archive filters, daily-companion tests, Prisma generate/validate, lint, typecheck, coverage, production build, bundle budgets and server smoke checks.
+- Added and merged the Codex ↔ ChatGPT single-writer continuity protocol in PR #6 as `fd6476710b0a99b6a83997e3c823f9f8d94b6ee0`.
+- Closed old PR #5 without merge because its base was stale after these integration advances.
+- Created fresh branch `fix/canonical-factual-locks-v2` from the current integration head.
+
+### In progress
+
+Reapply the two confirmed factual locks cleanly on the fresh branch:
+- newborn medical-aid amount = **₹107,520**;
+- Winter Drive = **234 Winter Kits distributed to 234 beneficiaries**, with 96 students and 101 kits retained only as phase-level sub-measures.
+
+### Next exact action
+
+- Add structured factual-lock data and migration behavior that also runs when the master content version is already present.
+- Add regression verification.
+- Open focused PR, inspect CI, then merge only when green.
+
+### Known follow-up cleanup after factual lock
+
+- Official brand source is now present as `public/brand/amaana-mark.svg`; older “brand archive blocked / colours provisional” documentation is stale.
+- User has confirmed all available programme/initiative media and data images are uploaded; older “missing upload” risk language must be separated from actual publication/staging-provider verification.
+- Older durable logs contain the typo `Syed Iqba Ali`; current public source correctly uses `Syed Uqba Ali`.
 
 ---
 
