@@ -9,6 +9,14 @@ const migrationSource = await readFile(
   new URL('../prisma/apply-master-content.mjs', import.meta.url),
   'utf8',
 );
+const runtimeMasterSource = await readFile(
+  new URL('../src/lib/master-copy.ts', import.meta.url),
+  'utf8',
+);
+const convenienceContentSource = await readFile(
+  new URL('../src/content/amaana.ts', import.meta.url),
+  'utf8',
+);
 
 const bySlug = new Map(locks.initiatives.map((item) => [item.slug, item]));
 
@@ -38,4 +46,15 @@ test('canonical migration reapplies factual locks even when master content is al
     /if \(marker\?\.financialSummary\?\.contentVersion === master\.version\) \{[\s\S]*?applyCanonicalFactualLocks\(tx, factualLocks\);[\s\S]*?return 0;/,
   );
   assert.match(migrationSource, /await applyCanonicalFactualLocks\(tx, factualLocks\);/);
+});
+
+test('runtime programme copy applies the same factual-lock source before rendering', () => {
+  assert.match(runtimeMasterSource, /canonical-factual-locks\.json/);
+  assert.match(runtimeMasterSource, /textReplacements/);
+  assert.match(runtimeMasterSource, /lockBySlug\.get\(item\.slug\)/);
+});
+
+test('convenience Winter content does not reintroduce the superseded 234+ wording', () => {
+  assert.match(convenienceContentSource, /234 Winter Kits distributed to 234 beneficiaries/);
+  assert.doesNotMatch(convenienceContentSource, /234\+.*campaign-reported beneficiaries/);
 });
