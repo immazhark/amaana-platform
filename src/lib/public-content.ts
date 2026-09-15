@@ -220,7 +220,7 @@ export async function getHomepagePublicContent() {
   ]);
 
   return {
-    appeals: appeals.filter(isAppealOpenForDonations).slice(0, 3),
+    appeals: appeals.filter(appeal => isAppealOpenForDonations(appeal)).slice(0, 3),
     initiatives,
     featuredFaith,
     stories,
