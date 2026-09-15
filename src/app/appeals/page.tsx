@@ -3,6 +3,7 @@ import "@/app/canonical-content.css";
 import Link from "next/link";
 import { programmes } from "@/lib/master-copy";
 import { AppealCard } from "@/components/appeal-card";
+import { isAppealOpenForDonations } from "@/lib/appeals";
 import { getAppealsIndexData } from "@/lib/public-page-data";
 
 export const metadata: Metadata = {
@@ -25,7 +26,7 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AppealsPage() {
-  const appeals = (await getAppealsIndexData()).filter(appeal => Number(appeal.amountRaised) < Number(appeal.goalAmount));
+  const appeals = (await getAppealsIndexData()).filter(appeal => isAppealOpenForDonations(appeal));
 
   return (
     <div className="v2-home v2-appeals-page">
