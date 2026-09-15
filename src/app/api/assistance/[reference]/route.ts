@@ -1,17 +1,26 @@
-import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
-import { hashTrackingToken } from "@/lib/assistance";
-import { prisma } from "@/lib/prisma";
 
-type Props = { params: Promise<{ reference: string }> };
-const privateHeaders = { "Cache-Control": "no-store, private" };
+const privateHeaders = {
+  "Cache-Control": "no-store, private",
+  "Referrer-Policy": "no-referrer",
+};
 
-export async function GET(request: Request, { params }: Props) {
-  const { reference } = await params;
-  const token = new URL(request.url).searchParams.get("token") ?? "";
-  const record = await prisma.assistanceRequest.findUnique({ where: { referenceNumber: reference }, select: { trackingTokenHash: true, status: true, createdAt: true, updatedAt: true } });
-  const supplied = Buffer.from(hashTrackingToken(token));
-  const expected = Buffer.from(record?.trackingTokenHash ?? "0".repeat(64));
-  if (!record || supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) return NextResponse.json({ error: "Request not found." }, { status: 404, headers: privateHeaders });
-  return NextResponse.json({ referenceNumber: reference, status: record.status, submittedAt: record.createdAt, updatedAt: record.updatedAt }, { headers: privateHeaders });
+/**
+ * Legacy endpoint retired.
+ *
+ * Older preview builds accepted a tracking token in this GET URL's query
+ * string. Query credentials can be copied into browser history, proxy logs and
+ * referrer surfaces, so private tracking now happens only in the browser via
+ * a URL fragment and a same-origin POST to /api/assistance/status.
+ *
+ * Keep this route as a non-disclosing tombstone instead of silently supporting
+ * the unsafe credential transport again.
+ */
+export async function GET() {
+  return NextResponse.json(
+    {
+      error: "This private tracking endpoint has been retired. Use the latest Amaana tracking link.",
+    },
+    { status: 410, headers: privateHeaders },
+  );
 }
