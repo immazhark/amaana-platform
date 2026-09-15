@@ -31,9 +31,9 @@ The user reviewed the deployed public site page-by-page and requested a single c
 - ensure programme detail heroes, including Qurbani, never have an empty visual column when no approved photograph is currently linked.
 
 ## Current task branch / PR
-- Branch: `fix/ui-consistency-dedupe`
-- PR: #40 — Reconcile public work and standardize cross-site UI
-- Current head: `107062abd20d9e8b1d21f0e079b0ac4b1a75527e`
+- Branch: `fix/ui-consistency-dedupe-v2`
+- PR: #41 — Reconcile public work and standardize cross-site UI
+- PR #40 was closed unmerged after a branch-base cleanup conflict; #41 is the clean replacement based on the current integration head.
 
 ## Implementation completed on this branch
 - Added `iteration-four.css` as the final visual consistency override layer.
@@ -52,7 +52,7 @@ The user reviewed the deployed public site page-by-page and requested a single c
 - Stories privacy-gate empty state and Get Involved journey connector are restyled through the consistency layer.
 
 ## Next actions
-1. Complete PR #40 CI; repair any lint/type/build/regression failures before merge.
+1. Complete PR #41 CI; repair any lint/type/build/regression failures before merge.
 2. Merge only when all CI gates are green.
 3. Verify Railway deployment for the merged commit.
 4. Run rendered checks on `/our-work`, `/impact`, `/stories`, `/faith-and-reflections`, `/get-involved`, Qurbani detail and representative mobile widths.
