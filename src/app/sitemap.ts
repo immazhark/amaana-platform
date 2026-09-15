@@ -6,6 +6,12 @@ import { shouldAllowIndexing } from "@/lib/site-indexing";
 const configuredBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
 const base = configuredBase.replace(/\/$/, "");
 
+const redirectedLegacyInitiativeSlugs = [
+  "medical-financial-assistance",
+  "winter-drive-2025-26",
+  "winter-relief-2025-26",
+];
+
 export const revalidate = 3600;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -17,7 +23,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { slug: true, updatedAt: true },
     }),
     prisma.initiative.findMany({
-      where: { status: "PUBLISHED" },
+      where: {
+        status: "PUBLISHED",
+        slug: { notIn: redirectedLegacyInitiativeSlugs },
+      },
       select: { slug: true, updatedAt: true },
     }),
     prisma.story.findMany({
