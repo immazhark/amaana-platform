@@ -1,4 +1,5 @@
 import "./campaign.css";
+import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
 import { ProgrammeDetail } from "@/components/programme-detail";
 import { programmeBySlug } from "@/lib/master-copy";
 import { canRenderPublicMedia, resolvePublicMediaUrl } from "@/lib/public-media";
@@ -62,6 +63,11 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
 
   return (
     <div className="v2-home campaign-page">
+      <BreadcrumbStructuredData items={[
+        { name: "Home", path: "/" },
+        { name: "Our Work", path: "/our-work" },
+        { name: initiative.title, path: `/our-work/${initiative.slug}` },
+      ]} />
       <div className="v2-shell campaign-breadcrumb">
         <nav aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true"> / </span><Link href="/our-work">Our work</Link><span aria-hidden="true"> / </span><span>{initiative.title}</span></nav>
       </div>

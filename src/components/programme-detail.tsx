@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { BreadcrumbStructuredData } from '@/components/breadcrumb-structured-data';
 import { getPublishedInitiativeBySlug } from '@/lib/public-content';
 import { programmeBySlug, programmeChildren } from '@/lib/master-copy';
 import { PublicMedia } from '@/components/public-media';
@@ -20,7 +21,14 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const statusLabel=canonical?.causeSlug==='medical-financial-relief'?(slug==='jewellery-loan-intervention'?'Assistance completed':'Fundraising completed'):status==='EXPANDING'?'Developing pathway':status==='ONGOING'?'Ongoing sponsorship':status==='HISTORICAL'?'Historical response':status==='COMPLETED'?'Completed work':'Recurring programme';
  const parent=canonical?.parentSlug?programmeBySlug(canonical.parentSlug):undefined;
  const facts=canonical&&'facts' in canonical?canonical.facts:[];
+ const breadcrumbItems=[
+  {name:'Home',path:'/'},
+  {name:'Our Work',path:'/our-work'},
+  ...(parent?[{name:parent.title,path:`/our-work/${parent.slug}`}]:[]),
+  {name:title,path:`/our-work/${slug}`},
+ ];
  return <div className="v2-home campaign-page canonical-programme">
+  <BreadcrumbStructuredData items={breadcrumbItems}/>
   <div className="v2-shell campaign-breadcrumb"><nav aria-label="Breadcrumb"><Link href="/our-work">Our Work</Link> / {parent?<><Link href={`/our-work/${parent.slug}`}>{parent.title}</Link> / </>:null}<span>{title}</span></nav></div>
   <section className="campaign-hero"><div className="v2-shell campaign-hero-grid"><div className="campaign-heading"><p className="v2-kicker">{record.cause.title} · {statusLabel}</p><h1>{title}</h1><div className="campaign-summary">{story.split(/\n\n/).map((p,i)=><p key={i}>{p}</p>)}</div><div className="v2-hero-actions">{children.length>0?<a className="v2-button" href="#programme-pathways">{slug==='taleem'?'Explore Taleem Programmes':'View Year-by-Year Impact'}</a>:<Link className="v2-button" href="/our-work">Explore Our Work</Link>}{media.length>0&&<a className="v2-text-link" href="#campaign-gallery">View photographs</a>}</div></div>{lead?<div className="campaign-lead"><PublicMedia asset={lead} priority /></div>:<aside className="canonical-fact"><span>{record.year??(record.startYear?`${record.startYear}–${record.endYear??'present'}`:'Amaana Foundation')}</span><strong>{canonical?.primaryMetric??record.primaryMetric??'Amaana'}</strong><p>{canonical?.primaryMetricLabel??record.primaryMetricLabel??'Verified need. Responsible support. Dignified impact.'}</p></aside>}</div></section>
   {facts&&facts.length>0&&<section className="v2-section paper"><div className="v2-shell"><h2>Programme details</h2><ol className="canonical-facts">{facts.map(f=><li key={f}>{f}</li>)}</ol></div></section>}

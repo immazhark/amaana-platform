@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
 import { PublicMedia } from "@/components/public-media";
 import { getStoryPageData } from "@/lib/public-page-data";
 
@@ -51,6 +52,11 @@ export default async function StoryPage({ params }: Props) {
 
   return (
     <div className="v2-home v2-story-detail-page">
+      <BreadcrumbStructuredData items={[
+        { name: "Home", path: "/" },
+        { name: "Stories", path: "/stories" },
+        { name: story.title, path: `/stories/${story.slug}` },
+      ]} />
       <section className="v2-story-detail-hero">
         <div className="v2-shell v2-story-detail-hero-grid">
           <div className="v2-story-detail-heading">

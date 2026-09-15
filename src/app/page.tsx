@@ -12,9 +12,20 @@ import { programmeCategories } from '@/lib/master-copy';
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Amaana Foundation",
-  description: "Faith-inspired service, dignified assistance and transparent community action from Amaana Foundation in Hyderabad.",
+  title: { absolute: "Amaana Foundation | Verified Relief, Education & Community Support in Hyderabad" },
+  description: "Amaana Foundation is a Hyderabad-based registered charitable trust supporting verified needs through Eid Gift Kits, Taleem, Qurbani, seasonal relief, emergency response and medical or financial assistance.",
   alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "/",
+    title: "Amaana Foundation | Verified Relief, Education & Community Support in Hyderabad",
+    description: "A Hyderabad-based registered charitable trust supporting verified community needs through relief, education, seasonal programmes and case-led assistance.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Amaana Foundation | Verified Relief, Education & Community Support in Hyderabad",
+    description: "A Hyderabad-based registered charitable trust supporting verified community needs through relief, education, seasonal programmes and case-led assistance.",
+  },
 };
 
 export default async function HomePage() {

@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
+import { getAppealSearchPrivacy } from "@/lib/appeal-search-privacy";
 import { formatINR, isAppealOpenForDonations } from "@/lib/appeals";
 import { getAppealPageData } from "@/lib/public-page-data";
 
@@ -9,25 +11,32 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const appeal = await getAppealPageData(slug);
+  const [appeal, confidentialityLevel] = await Promise.all([getAppealPageData(slug), getAppealSearchPrivacy(slug)]);
   if (!appeal) return { title: "Appeal not found" };
 
   const canonical = `/appeals/${appeal.slug}`;
+  const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE";
+  const metadataTitle = highlySensitive ? "Verified Support Appeal" : appeal.title;
+  const metadataDescription = highlySensitive
+    ? "A privacy-sensitive verified support appeal from Amaana Foundation. Public details are intentionally limited."
+    : appeal.summary;
+
   return {
-    title: appeal.title,
-    description: appeal.summary,
+    title: metadataTitle,
+    description: metadataDescription,
     alternates: { canonical },
+    robots: highlySensitive ? { index: false, follow: true, nocache: true } : undefined,
     openGraph: {
       type: "article",
       url: canonical,
-      title: appeal.title,
-      description: appeal.summary,
+      title: metadataTitle,
+      description: metadataDescription,
       publishedTime: appeal.publishedAt?.toISOString(),
     },
     twitter: {
       card: "summary",
-      title: appeal.title,
-      description: appeal.summary,
+      title: metadataTitle,
+      description: metadataDescription,
     },
   };
 }
@@ -44,6 +53,11 @@ export default async function AppealDetailPage({ params }: Props) {
 
   return (
     <div className="v2-home v2-appeal-detail-page">
+      <BreadcrumbStructuredData items={[
+        { name: "Home", path: "/" },
+        { name: "Verified Appeals", path: "/appeals" },
+        { name: appeal.title, path: `/appeals/${appeal.slug}` },
+      ]} />
       <section className="v2-appeal-detail-hero">
         <div className="v2-shell v2-appeal-detail-hero-grid">
           <div className="v2-appeal-detail-copy">
