@@ -60,7 +60,8 @@ export const getAppealPageData = cache(async (slug: string) => {
     archiveConsent: appeal.assistanceRequest?.verification?.archiveConsent,
   })) return null;
 
-  const { assistanceRequest: _privateVerificationContext, ...publicAppeal } = appeal;
+  const { assistanceRequest: privateVerificationContext, ...publicAppeal } = appeal;
+  void privateVerificationContext;
   return publicAppeal;
 });
 
