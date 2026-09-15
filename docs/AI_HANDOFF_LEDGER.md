@@ -141,3 +141,13 @@ The public appeals index hid an appeal when its raised amount reached target, bu
 
 **Relevant locked facts:**
 - 
+
+
+## 2026-09-15 — User-directed ChatGPT → Codex takeover
+
+**Incoming:** Codex  
+**State:** CODEX_ACTIVE  
+**Integration HEAD:** 1d2bdf1119d7a71674ab5d15a40b930d84c3b179  
+**Task branch:** fix/responsive-acceptance-sweep
+
+PR #22 and its Railway deployment are verified complete. No open PRs exist. Prior active-work retention task note is stale and is superseded by this user handoff. Continue responsive visual acceptance across six widths; do not redo completed content reconciliation. Older uncommitted local mapping work is excluded.
