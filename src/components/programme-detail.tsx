@@ -14,6 +14,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const canonical=programmeBySlug(slug);
  const title=canonical?.title??record.title;
  const story=canonical?.story??record.story;
+ const summary=canonical?.summary??record.summary;
  const children=programmeChildren(slug);
  const media=record.mediaAssets.filter(canRenderPublicMedia);
  const lead=media.find(m=>m.kind==='IMAGE');
@@ -22,6 +23,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const statusLabel=canonical?.causeSlug==='medical-financial-relief'?(slug==='jewellery-loan-intervention'?'Assistance completed':'Fundraising completed'):status==='EXPANDING'?'Developing pathway':status==='ONGOING'?'Ongoing sponsorship':status==='HISTORICAL'?'Historical response':status==='COMPLETED'?'Completed work':'Recurring programme';
  const parent=canonical?.parentSlug?programmeBySlug(canonical.parentSlug):undefined;
  const facts=canonical&&'facts' in canonical?canonical.facts:[];
+ const storyParagraphs=story.split(/\n\s*\n/).filter(Boolean);
  const breadcrumbItems=[
   {name:'Home',path:'/'},
   {name:'Our Work',path:'/our-work'},
@@ -31,7 +33,8 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  return <div className="v2-home campaign-page canonical-programme">
   <BreadcrumbStructuredData items={breadcrumbItems}/>
   <div className="v2-shell campaign-breadcrumb"><nav aria-label="Breadcrumb"><Link href="/our-work">Our Work</Link> / {parent?<><Link href={`/our-work/${parent.slug}`}>{parent.title}</Link> / </>:null}<span>{title}</span></nav></div>
-  <section className="campaign-hero"><div className="v2-shell campaign-hero-grid"><div className="campaign-heading"><p className="v2-kicker">{record.cause.title} · {statusLabel}</p><h1>{title}</h1><div className="campaign-summary">{story.split(/\n\n/).map((p,i)=><p key={i}>{p}</p>)}</div><div className="v2-hero-actions">{children.length>0?<a className="v2-button" href="#programme-pathways">{slug==='taleem'?'Explore Taleem Programmes':'View Year-by-Year Impact'}</a>:<Link className="v2-button" href="/our-work">Explore Our Work</Link>}{media.length>0&&<a className="v2-text-link" href="#campaign-gallery">View photographs</a>}</div></div><div className="campaign-lead">{lead?<PublicMedia asset={lead} priority />:<WorkVisualPlaceholder label={title} className="campaign-lead-placeholder" />}</div></div></section>
+  <section className="campaign-hero"><div className="v2-shell campaign-hero-grid"><div className="campaign-heading"><p className="v2-kicker">{record.cause.title} · {statusLabel}</p><h1>{title}</h1><p className="campaign-summary">{summary}</p><div className="v2-hero-actions">{children.length>0?<a className="v2-button" href="#programme-pathways">{slug==='taleem'?'Explore Taleem Programmes':'View Year-by-Year Impact'}</a>:<a className="v2-button" href="#programme-story">Read about this work</a>}{media.length>0&&<a className="v2-text-link" href="#campaign-gallery">View photographs</a>}</div></div><div className="campaign-lead">{lead?<PublicMedia asset={lead} priority />:<WorkVisualPlaceholder label={title} className="campaign-lead-placeholder" />}</div></div></section>
+  <section className="campaign-story v2-shell" id="programme-story"><div><p className="v2-section-label">The work</p><h2>What happened</h2></div><div className="campaign-story-copy">{storyParagraphs.map((paragraph,index)=><p key={index}>{paragraph}</p>)}</div></section>
   {facts&&facts.length>0&&<section className="v2-section paper"><div className="v2-shell"><h2>Programme details</h2><ol className="canonical-facts">{facts.map(f=><li key={f}>{f}</li>)}</ol></div></section>}
   {children.length>0&&<section className="v2-section paper" id="programme-pathways"><div className="v2-shell"><h2>{slug==='taleem'?'One Initiative. Different Pathways to Learning.':'View Year-by-Year Impact'}</h2><div className="canonical-pathways">{children.map(child=><article key={child.slug}><div className="canonical-pathway-visual"><WorkVisualPlaceholder label={child.title}/></div><p className="v2-section-label">{'year' in child?child.year:child.programmeStatus==='EXPANDING'?'Developing pathway':'Continuing sponsorship'}</p><h3><Link href={`/our-work/${child.slug}`}>{child.title}</Link></h3><p>{child.summary}</p><Link className="v2-text-link" href={`/our-work/${child.slug}`}>Explore this {child.programmeStatus==='EXPANDING'?'pathway':'programme'} →</Link></article>)}</div></div></section>}
   {media.length>0&&<section className="campaign-gallery" id="campaign-gallery"><div className="v2-shell"><div className="campaign-section-heading"><h2>Real Work. Shared Responsibly.</h2><p>Original photographs from this programme. Personal documents remain private.</p></div><div className="campaign-gallery-grid">{(gallery.length?gallery:media).map(asset=><div key={asset.id}><PublicMedia asset={asset}/>{asset.kind==='IMAGE'&&<a href={resolvePublicMediaUrl(asset)??'#'} target="_blank" rel="noopener noreferrer">View full image</a>}</div>)}</div></div></section>}
