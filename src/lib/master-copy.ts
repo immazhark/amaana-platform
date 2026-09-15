@@ -1,5 +1,27 @@
 import master from '@/content/master-copy.json';
-export const programmes = master.initiatives;
+import factualLocks from '../../prisma/canonical-factual-locks.json';
+
+function applyTextReplacements(value: string, replacements: readonly { from: string; to: string }[] = []) {
+ return replacements.reduce((current, replacement) => current.replaceAll(replacement.from, replacement.to), value);
+}
+
+const lockBySlug = new Map(factualLocks.initiatives.map(item => [item.slug, item]));
+
+export const programmes = master.initiatives.map(item => {
+ const lock = lockBySlug.get(item.slug);
+ if (!lock) return item;
+ const replacements = 'textReplacements' in lock ? lock.textReplacements : [];
+ return {
+  ...item,
+  ...('primaryMetric' in lock ? { primaryMetric: lock.primaryMetric } : {}),
+  ...('primaryMetricLabel' in lock ? { primaryMetricLabel: lock.primaryMetricLabel } : {}),
+  ...('summary' in lock ? { summary: lock.summary } : { summary: applyTextReplacements(item.summary, replacements) }),
+  ...('story' in lock ? { story: lock.story } : { story: applyTextReplacements(item.story, replacements) }),
+  ...('facts' in lock ? { facts: lock.facts } : {}),
+  ...('dataCaveat' in lock ? { dataCaveat: lock.dataCaveat } : {}),
+ };
+}) as typeof master.initiatives;
+
 export const programmeCategories = master.categories;
 export const programmeBySlug = (slug: string) => programmes.find(item => item.slug === slug);
 export const programmeChildren = (slug: string) => programmes.filter(item => 'parentSlug' in item && item.parentSlug === slug);
