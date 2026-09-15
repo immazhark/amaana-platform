@@ -16,16 +16,35 @@ export function goalMatchesApprovedPublicTarget(goalAmount: AmountLike, verifica
   return goal !== null && target !== null && Number.isFinite(goal) && Number.isFinite(target) && goal === target;
 }
 
+export function getAppealConsentContentIssues(input: {
+  verification: VerificationLike;
+  beneficiaryDisplayName?: string | null;
+  coverImageUrl?: string | null;
+}) {
+  if (!input.verification) return [];
+  const issues: string[] = [];
+  if (input.beneficiaryDisplayName?.trim() && input.verification.publicNameConsent !== "ALLOWED") {
+    issues.push("A public beneficiary name requires explicit public-name consent.");
+  }
+  if (input.coverImageUrl?.trim() && input.verification.photoConsent === "NOT_ALLOWED") {
+    issues.push("A beneficiary-related cover image cannot be used when photo/media consent is not allowed.");
+  }
+  return issues;
+}
+
 export function getFirstPublicationIssues(input: {
   fromStatus: string;
   toStatus: string;
   goalAmount: AmountLike;
   verification: VerificationLike;
+  beneficiaryDisplayName?: string | null;
+  coverImageUrl?: string | null;
 }) {
   if (input.fromStatus !== "UNDER_REVIEW" || input.toStatus !== "PUBLISHED") return [];
   const issues = getPublicAppealVerificationIssues(input.verification);
   if (input.verification && !goalMatchesApprovedPublicTarget(input.goalAmount, input.verification)) {
     issues.push("Appeal goal must match the approved public fundraising target.");
   }
+  issues.push(...getAppealConsentContentIssues(input));
   return issues;
 }
