@@ -25,23 +25,24 @@ import { shouldAllowIndexing } from "@/lib/site-indexing";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
 const allowIndexing = shouldAllowIndexing(appUrl, process.env.NEXT_PUBLIC_ALLOW_INDEXING);
+const organizationDescription = "Amaana Foundation is a Hyderabad-based registered charitable trust supporting verified community needs through relief, education, seasonal programmes and case-led assistance with dignity, transparency and accountability.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
   title: { default: "Amaana Foundation", template: "%s | Amaana Foundation" },
-  description: "Faith-inspired service, dignified assistance and transparent community action from Amaana Foundation in Hyderabad.",
+  description: organizationDescription,
   openGraph: {
     type: "website",
     locale: "en_IN",
     siteName: "Amaana Foundation",
     title: "Amaana Foundation",
-    description: "Faith-inspired service, dignified assistance and transparent community action from Hyderabad, India.",
+    description: organizationDescription,
     url: "/",
   },
   twitter: {
     card: "summary_large_image",
     title: "Amaana Foundation",
-    description: "Faith-inspired service, dignified assistance and transparent community action.",
+    description: organizationDescription,
   },
   robots: allowIndexing
     ? { index: true, follow: true }
@@ -63,4 +64,3 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
     </html>
   );
 }
-
