@@ -1,6 +1,7 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
+import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
 import {
   getPublishedFaithContentBySlug,
   getPublishedInitiativeBySlug,
@@ -18,7 +19,7 @@ export const getStoryPageData = cache(getPublishedStoryBySlug);
 export const getFaithPageData = cache(getPublishedFaithContentBySlug);
 
 export const getAppealPageData = cache(async (slug: string) => {
-  return prisma.appeal.findFirst({
+  const appeal = await prisma.appeal.findFirst({
     where: { slug, status: { in: ["PUBLISHED", "FUNDED", "CLOSED"] } },
     select: {
       slug: true,
@@ -33,6 +34,12 @@ export const getAppealPageData = cache(async (slug: string) => {
       amountRaised: true,
       closesAt: true,
       publishedAt: true,
+      assistanceRequest: {
+        select: {
+          id: true,
+          verification: { select: { archiveConsent: true } },
+        },
+      },
       updates: {
         where: { isPublic: true },
         orderBy: { publishedAt: "desc" },
@@ -45,6 +52,16 @@ export const getAppealPageData = cache(async (slug: string) => {
       },
     },
   });
+
+  if (!appeal) return null;
+  if (!canExposeAppealArchive({
+    appealStatus: appeal.status,
+    hasAssistanceRequest: Boolean(appeal.assistanceRequest),
+    archiveConsent: appeal.assistanceRequest?.verification?.archiveConsent,
+  })) return null;
+
+  const { assistanceRequest: _privateVerificationContext, ...publicAppeal } = appeal;
+  return publicAppeal;
 });
 
 export const getHomepageHeroMedia = cache(async () => {
