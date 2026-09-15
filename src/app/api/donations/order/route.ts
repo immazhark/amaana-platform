@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { isAppealOpenForDonations } from "@/lib/appeals";
 import { createDonationReference, createReceiptToken, donationSchema, hashReceiptToken } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder } from "@/lib/razorpay";
@@ -14,8 +15,18 @@ export async function POST(request: Request) {
     if (!(await enforceDonationRateLimit(request))) return NextResponse.json({ error: "Too many checkout attempts. Please try again later." }, { status: 429, headers: { ...privateHeaders, "Retry-After": "3600" } });
     const parsed = donationSchema.safeParse(await request.json());
     if (!parsed.success) return NextResponse.json({ error: "Please check the donation information." }, { status: 400, headers: privateHeaders });
-    const appeal = await prisma.appeal.findFirst({ where: { id: parsed.data.appealId, status: "PUBLISHED" }, select: { id: true, title: true } });
-    if (!appeal) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+    const appeal = await prisma.appeal.findFirst({
+      where: { id: parsed.data.appealId, status: "PUBLISHED" },
+      select: {
+        id: true,
+        title: true,
+        status: true,
+        goalAmount: true,
+        amountRaised: true,
+        closesAt: true,
+      },
+    });
+    if (!appeal || !isAppealOpenForDonations(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
     const referenceNumber = createDonationReference(); const receiptToken = createReceiptToken(); const amountPaise = parsed.data.amount * 100;
     const order = await createRazorpayOrder({ amountPaise, receipt: referenceNumber, appealId: appeal.id });
     if (order.amount !== amountPaise || order.currency !== "INR") throw new Error("Unexpected order response");
