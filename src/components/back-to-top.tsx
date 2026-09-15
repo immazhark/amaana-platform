@@ -20,7 +20,10 @@ export function BackToTop() {
       type="button"
       aria-label="Back to top"
       title="Back to top"
-      onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+      onClick={() => {
+        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
+      }}
     >
       <span aria-hidden="true">↑</span>
       <span className="sr-only">Back to top</span>
