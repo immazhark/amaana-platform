@@ -10,7 +10,7 @@ ChatGPT — continuing launch-hardening without parallel repo writers.
 - Integration branch: `phase-public-site-rebuild`
 - Current integration head: `16e34fc9cad3315d536608cddaa27628894e4183`
 - PR #42 visual/media/banner consistency is merged and deployed successfully on Railway (`672089e4-386e-42f8-bf25-36c5a49e3f18`).
-- PR #43 sitemap privacy hardening is merged after full green CI. Its Railway deployment `7e595cf3-5c71-4b7a-b4e5-6a4bcde65d62` must be confirmed SUCCESS before claiming deployed.
+- PR #43 sitemap privacy hardening is merged after full green CI and deployed successfully on Railway (`7e595cf3-5c71-4b7a-b4e5-6a4bcde65d62`).
 
 ## Current task branch
 - Branch: `fix/private-assistance-response-headers`
@@ -24,7 +24,7 @@ ChatGPT — continuing launch-hardening without parallel repo writers.
 - Existing same-origin, token verification, rate limits and private-document behavior are unchanged.
 
 ## Next actions
-1. Open PR and run full CI for this focused privacy hardening.
+1. Run full CI for this focused privacy hardening.
 2. Merge only when all gates are green and verify Railway staging.
 3. Continue with donation/assistance lifecycle acceptance, performance, editorial, SEO/schema, public-media storage/privacy, admin simulation and launch rehearsal.
 
