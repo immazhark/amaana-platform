@@ -1,0 +1,41 @@
+/* Final banner normalization layer for public interior pages. Kept separate during the current QA pass; consolidate with launch-hardening after visual acceptance. */
+:root{--af-banner-height:32rem;--af-banner-pad:clamp(2.75rem,5vw,4.5rem)}
+
+:is(.v2-hero,.v2-impact-hero,.v2-stories-hero,.v2-faith-hero,.campaign-hero,.v2-appeals-hero,.v2-appeal-detail-hero,.v2-assistance-hero,.taleem-hero){height:var(--af-banner-height)!important;min-height:var(--af-banner-height)!important;max-height:var(--af-banner-height)!important;box-sizing:border-box!important;overflow:hidden!important}
+:is(.v2-hero-inner,.v2-impact-hero-grid,.v2-stories-hero-grid,.v2-faith-hero-grid,.campaign-hero-grid,.v2-appeals-hero-grid,.v2-appeal-detail-hero-grid,.v2-assistance-hero-grid,.taleem-hero-grid){height:100%!important;min-height:0!important;max-height:100%!important;padding-block:var(--af-banner-pad)!important;box-sizing:border-box!important;align-items:center!important}
+:is(.v2-hero-inner,.v2-impact-hero-grid,.v2-stories-hero-grid,.v2-faith-hero-grid,.campaign-hero-grid,.v2-appeals-hero-grid,.v2-appeal-detail-hero-grid,.v2-assistance-hero-grid,.taleem-hero-grid)>*{min-width:0!important;max-width:100%!important}
+
+:is(.v2-display,.v2-impact-hero h1,.v2-stories-hero h1,.v2-faith-hero h1,.campaign-heading h1,.v2-appeals-hero h1,.v2-appeal-detail-copy h1,.v2-assistance-hero h1,.taleem-hero h1){font-size:clamp(2.55rem,4.5vw,4.85rem)!important;line-height:.98!important;letter-spacing:-.045em!important;max-width:15ch!important;margin-top:.65rem!important;overflow-wrap:anywhere!important;text-wrap:balance!important}
+:is(.v2-hero-copy,.v2-impact-hero-copy>p,.v2-stories-hero-copy>p,.v2-faith-hero-copy>p,.campaign-summary,.v2-appeals-hero p:not(.v2-section-label),.v2-appeal-detail-copy>p,.v2-assistance-hero-grid>div:first-child>p:not(.v2-section-label),.taleem-hero-grid>div:last-child>p){font-size:clamp(.98rem,1.35vw,1.15rem)!important;line-height:1.65!important;max-width:50ch!important;overflow-wrap:anywhere!important}
+
+/* Decorative/right-side objects must remain inside the same banner geometry. */
+:is(.v2-impact-hero-orbit,.v2-stories-hero-mark,.v2-faith-hero-symbol,.v2-appeals-hero-seal,.v2-assistance-promise){max-width:min(100%,25rem)!important;max-height:25rem!important;justify-self:center!important;align-self:center!important;box-sizing:border-box!important}
+.v2-appeals-hero-seal{width:min(22rem,100%)!important;margin:0!important}
+.v2-assistance-promise{overflow:auto!important}
+.taleem-hero{padding-block:0!important}
+
+/* Strict containment: no heading, button, media or grid child may exceed its column/container. */
+:is(.v2-home,.v3-home) :is(section,article,div,nav,form,fieldset,header,footer,aside){min-width:0}
+:is(.v2-home,.v3-home) :is(h1,h2,h3,h4,p,a,button,label,span,strong,small){max-width:100%;overflow-wrap:anywhere}
+:is(.v2-home,.v3-home) :is(img,video,iframe,svg){max-width:100%}
+:is(.v2-home,.v3-home) :is(.v2-hero-actions,.v3-actions){min-width:0;max-width:100%;flex-wrap:wrap}
+:is(.v2-home,.v3-home) :is(.v2-button,.v3-btn,.button){min-width:0;max-width:100%;height:auto;white-space:normal}
+
+@media(max-width:900px) and (min-width:761px){
+  :root{--af-banner-height:30rem;--af-banner-pad:clamp(2.25rem,5vw,3.5rem)}
+  :is(.v2-display,.v2-impact-hero h1,.v2-stories-hero h1,.v2-faith-hero h1,.campaign-heading h1,.v2-appeals-hero h1,.v2-appeal-detail-copy h1,.v2-assistance-hero h1,.taleem-hero h1){font-size:clamp(2.35rem,5vw,4rem)!important}
+  :is(.v2-impact-hero-orbit,.v2-stories-hero-mark,.v2-faith-hero-symbol,.v2-appeals-hero-seal,.v2-assistance-promise){max-width:19rem!important;max-height:19rem!important}
+}
+
+@media(max-width:760px){
+  :root{--af-banner-pad:clamp(2.5rem,9vw,4rem)}
+  :is(.v2-hero,.v2-impact-hero,.v2-stories-hero,.v2-faith-hero,.campaign-hero,.v2-appeals-hero,.v2-appeal-detail-hero,.v2-assistance-hero,.taleem-hero){height:auto!important;min-height:0!important;max-height:none!important;overflow:hidden!important}
+  :is(.v2-hero-inner,.v2-impact-hero-grid,.v2-stories-hero-grid,.v2-faith-hero-grid,.campaign-hero-grid,.v2-appeals-hero-grid,.v2-appeal-detail-hero-grid,.v2-assistance-hero-grid,.taleem-hero-grid){height:auto!important;max-height:none!important;grid-template-columns:1fr!important;padding-block:var(--af-banner-pad)!important;gap:clamp(1.5rem,6vw,2.5rem)!important}
+  :is(.v2-display,.v2-impact-hero h1,.v2-stories-hero h1,.v2-faith-hero h1,.campaign-heading h1,.v2-appeals-hero h1,.v2-appeal-detail-copy h1,.v2-assistance-hero h1,.taleem-hero h1){font-size:clamp(2.35rem,11vw,3.8rem)!important;max-width:16ch!important}
+  :is(.v2-impact-hero-orbit,.v2-stories-hero-mark,.v2-faith-hero-symbol,.v2-appeals-hero-seal,.v2-assistance-promise){width:min(100%,22rem)!important;max-width:22rem!important;max-height:none!important;margin-inline:auto!important}
+}
+
+@media(max-width:420px){
+  :is(.v2-display,.v2-impact-hero h1,.v2-stories-hero h1,.v2-faith-hero h1,.campaign-heading h1,.v2-appeals-hero h1,.v2-appeal-detail-copy h1,.v2-assistance-hero h1,.taleem-hero h1){font-size:clamp(2.15rem,10.5vw,3.1rem)!important}
+  :is(.v2-home,.v3-home) :is(.v2-button,.v3-btn,.button){width:100%}
+}
