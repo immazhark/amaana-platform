@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { amountToNumber, formatINR, type PublicAppeal } from "@/lib/appeals";
 
 export function AppealCard({ appeal }: { appeal: PublicAppeal }) {
@@ -8,6 +9,7 @@ export function AppealCard({ appeal }: { appeal: PublicAppeal }) {
 
   return (
     <article className="v2-appeal-card">
+      <div className="v2-appeal-card-visual"><WorkVisualPlaceholder label={appeal.title} /></div>
       <div className="v2-appeal-card-head">
         <span>{appeal.category.replaceAll("_", " ")}</span>
         <small>{appeal.beneficiaryLocation || "Location withheld"}</small>
