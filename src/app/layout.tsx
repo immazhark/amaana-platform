@@ -16,11 +16,13 @@ import "./experience-finish.css";
 import "./islamic-backdrops.css";
 import "./islamic-companion.css";
 import "./accessibility.css";
+import "./iteration-four.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { IslamicCompanion } from "@/components/islamic-companion";
 import { Analytics } from "@/components/analytics";
 import { StructuredData } from "@/components/structured-data";
+import { BackToTop } from "@/components/back-to-top";
 import { shouldAllowIndexing } from "@/lib/site-indexing";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
@@ -59,6 +61,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <SiteHeader />
         <IslamicCompanion />
         <main id="main">{children}</main>
+        <BackToTop />
         <SiteFooter />
       </body>
     </html>
