@@ -69,13 +69,13 @@ export async function POST(request: Request) {
         select: { id: true, email: true },
       });
 
-      const applicantNotification = {
-        channel: email ? NotificationChannel.EMAIL : NotificationChannel.SMS,
-        recipient: email ?? parsed.data.phone,
+      const applicantNotifications = email ? [{
+        channel: NotificationChannel.EMAIL,
+        recipient: email,
         templateKey: "assistance-request-received",
-        subject: email ? "We received your Amaana assistance request" : null,
+        subject: "We received your Amaana assistance request",
         payload: { referenceNumber },
-      };
+      }] : [];
 
       const staffNotifications = staffRecipients.map(staff => ({
         channel: NotificationChannel.EMAIL,
@@ -104,7 +104,7 @@ export async function POST(request: Request) {
           trackingTokenHash: hashTrackingToken(trackingToken),
           documents: { create: documents },
           notifications: {
-            create: [applicantNotification, ...staffNotifications],
+            create: [...applicantNotifications, ...staffNotifications],
           },
         },
       });

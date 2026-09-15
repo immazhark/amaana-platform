@@ -14,13 +14,13 @@ export async function updateRequest(formData: FormData) {
   const id = String(formData.get("id")); const status = String(formData.get("status")) as AssistanceStatus; const internalNotes = String(formData.get("internalNotes") ?? "").trim();
   if (!statuses.has(status)) throw new Error("Invalid status");
   if (internalNotes.length > ASSISTANCE_INTERNAL_NOTES_MAX_LENGTH) throw new Error("Internal notes are too long");
-  const previous = await prisma.assistanceRequest.findUniqueOrThrow({ where: { id }, select: { id: true, status: true, appealId: true, email: true, phone: true, referenceNumber: true } });
+  const previous = await prisma.assistanceRequest.findUniqueOrThrow({ where: { id }, select: { id: true, status: true, appealId: true, email: true, referenceNumber: true } });
   if (!isManualAssistanceStatusAllowed(previous.status, status, Boolean(previous.appealId))) throw new Error("This status can only be changed by the linked appeal workflow");
   if ((status === AssistanceStatus.APPROVED || status === AssistanceStatus.REJECTED) && previous.status !== status && !hasPermission(user, "assistance.approve")) throw new Error("Approval permission is required");
   await prisma.$transaction([
     prisma.assistanceRequest.update({ where: { id }, data: { status, internalNotes: internalNotes || null } }),
     prisma.auditEvent.create({ data: { actorId: user.id, action: "assistance.updated", entityType: "AssistanceRequest", entityId: id, metadata: { previousStatus: previous.status, status } } }),
-    ...(previous.status !== status ? [prisma.notification.create({ data: { channel: previous.email ? NotificationChannel.EMAIL : NotificationChannel.SMS, recipient: previous.email ?? previous.phone, templateKey: "assistance-status-updated", subject: previous.email ? "Your Amaana request status was updated" : null, payload: { referenceNumber: previous.referenceNumber, status }, assistanceRequestId: id } })] : []),
+    ...(previous.status !== status && previous.email ? [prisma.notification.create({ data: { channel: NotificationChannel.EMAIL, recipient: previous.email, templateKey: "assistance-status-updated", subject: "Your Amaana request status was updated", payload: { referenceNumber: previous.referenceNumber, status }, assistanceRequestId: id } })] : []),
   ]);
   revalidatePath(`/admin/requests/${id}`); revalidatePath("/admin");
 }
@@ -54,7 +54,9 @@ export async function convertToAppeal(formData: FormData) {
     const appeal = await tx.appeal.create({ data: { slug, title, summary: request.description.slice(0, 240), story: request.description, category: request.category as AppealCategory, beneficiaryName: request.applicantName, beneficiaryLocation: request.city, goalAmount, createdById: user.id, assistanceRequest: { connect: { id } } } });
     await tx.assistanceRequest.update({ where: { id }, data: { status: "CONVERTED_TO_APPEAL" } });
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.created_from_assistance", entityType: "Appeal", entityId: appeal.id, metadata: { assistanceRequestId: id } } });
-    await tx.notification.create({ data: { channel: request.email ? NotificationChannel.EMAIL : NotificationChannel.SMS, recipient: request.email ?? request.phone, templateKey: "assistance-status-updated", subject: request.email ? "Your Amaana request status was updated" : null, payload: { referenceNumber: request.referenceNumber, status: "CONVERTED_TO_APPEAL" }, assistanceRequestId: id } });
+    if (request.email) {
+      await tx.notification.create({ data: { channel: NotificationChannel.EMAIL, recipient: request.email, templateKey: "assistance-status-updated", subject: "Your Amaana request status was updated", payload: { referenceNumber: request.referenceNumber, status: "CONVERTED_TO_APPEAL" }, assistanceRequestId: id } });
+    }
   });
   redirect(`/admin/requests/${id}`);
 }
