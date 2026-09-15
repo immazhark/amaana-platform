@@ -25,9 +25,9 @@ export async function GET(_: Request, { params }: Props) {
     data: {
       actorId: user.id,
       action: "assistance.document_viewed",
-      entityType: "AssistanceDocument",
-      entityId: document.id,
-      metadata: { assistanceRequestId: document.assistanceRequestId },
+      entityType: "AssistanceRequest",
+      entityId: document.assistanceRequestId,
+      metadata: { documentId: document.id },
     },
   });
 
