@@ -19,46 +19,49 @@ ChatGPT
 - PR #8 locked the corrected Winter/newborn facts with regression protection; squash-merged as `2a7a4cd0bb454fb0d8e8380188bab6647b03672e` after full green CI.
 - PR #9 reconciled official brand/media/governance source state; squash-merged as `bcc7246a8c9a90d02f76991ac980747647f41df9` after full green CI.
 - PR #10 hardened appeal target/expiry closure; squash-merged as `df2ec8ed60c85ecf4402cea9080f6f3e31bb80f7` after full green CI.
-- PR #11 capped new designated donations to the appeal's current remaining need while preserving a normal ₹10 minimum and allowing an exact smaller final amount; squash-merged as `7f8eba057ddeec511bd4088cfece91a2e58d9eac` after full green CI.
+- PR #11 capped new designated donations to the current remaining need; squash-merged as `7f8eba057ddeec511bd4088cfece91a2e58d9eac` after full green CI.
+- PR #12 corrected private acknowledgement semantics for captured, pending, failed and refunded payment states; squash-merged as `dd5bddf8960ca2b5f638103b4ad8d82deab6a2d5` after full green CI.
 
 ## Current implementation task
 
-Make the private donation acknowledgement accurately represent every payment lifecycle state instead of describing every non-captured record as merely "being verified."
+Harden the private assistance admin workflow so state transitions and assignments cannot bypass the intended request → approval → appeal conversion process through direct server-action invocation.
 
 ## Current task branch / PR
 
-- Branch: `fix/donation-acknowledgement-states`
-- Base SHA: `7f8eba057ddeec511bd4088cfece91a2e58d9eac`
+- Branch: `fix/assistance-admin-workflow-guards`
+- Base SHA: `dd5bddf8960ca2b5f638103b4ad8d82deab6a2d5`
 - PR: not opened yet at this checkpoint
 
-## Problem found during continued donor-journey audit
+## Problems found during assistance-workflow audit
 
-The private acknowledgement page previously treated only `CAPTURED` as a special state. `FAILED`, `REFUNDED`, `AUTHORIZED`, and still-`CREATED` records all received the same "payment is being verified" message. That is inaccurate for a failed payment and materially misleading for a refunded donation. Partial refunds also remained invisible because a partially refunded donation keeps `CAPTURED` status while `refundedAmount` increases.
+- `CONVERTED_TO_APPEAL` was offered as a normal manually selectable assistance status even though conversion is supposed to be performed atomically by the dedicated appeal-creation workflow.
+- A converted request could subsequently be moved away from the linked-appeal state through the generic review action.
+- `convertToAppeal` required `appeal.create` but did not independently require access/update permission for the private assistance request it consumes.
+- The assignment action trusted the posted user id; the UI offered only eligible reviewers, but direct invocation could attempt to assign the request to a user who cannot access assistance records.
+- The admin textarea had a 10,000-character limit only in the browser, not in the server action.
 
 ## Implemented on current task branch
 
-- Added `getDonationAcknowledgementPresentation` in `src/lib/donations.ts` with explicit user-facing semantics for:
-  - `CAPTURED`;
-  - captured + partially refunded;
-  - `REFUNDED` / fully refunded;
-  - `FAILED`;
-  - `AUTHORIZED`;
-  - `CREATED` / fallback pending state.
-- Updated the private acknowledgement query to include `refundedAmount` and `refundedAt`.
-- Updated the acknowledgement page to show accurate headings/status copy, original amount, refunded amount when applicable, and a record date based on the most relevant lifecycle event.
-- Reframed the printable sheet as a private transaction record so failed/refunded attempts are not presented as completed-donation receipts.
-- Kept the existing noindex/no-referrer and token verification protections intact.
-- Added regression tests covering captured, partial refund, full refund, failed, authorized and created states.
+- Added centralized manual assistance statuses and `isManualAssistanceStatusAllowed` in `src/lib/assistance.ts`.
+- Reserved `CONVERTED_TO_APPEAL` for the linked conversion workflow rather than manual status selection.
+- Made a linked/converted request status immutable through generic review while still allowing internal-note updates.
+- Added server-side internal-note length enforcement.
+- Added server-side assignee eligibility validation requiring an active user with `assistance.view` permission.
+- Required both private assistance access/update permissions in addition to `appeal.create` before converting an approved request into a draft appeal.
+- Added a status-update notification inside the conversion transaction so the applicant-facing tracked status and notification lifecycle stay aligned.
+- Updated the admin UI to show converted status as workflow-owned and remove it from ordinary manual transitions.
+- Added regression tests for manual/converted status boundaries.
 
 ## Exact next action
 
-1. Open a focused PR for `fix/donation-acknowledgement-states`.
+1. Open a focused PR for `fix/assistance-admin-workflow-guards`.
 2. Run full CI and repair any regression found.
 3. Merge only when green.
-4. Continue source-level payment/refund/assistance audit and then provider/browser E2E release gates.
+4. Continue source-level assistance/privacy/admin audit, then provider/browser E2E release gates.
 
 ## Repository areas currently sensitive
 
+- private assistance records/documents and appeal conversion
 - donation/payment reconciliation and appeal lifecycle
 - canonical programme/factual sources
 - public programme/media provenance data
