@@ -23,6 +23,8 @@ const nextConfig: NextConfig = {
     return [
       { source: "/our-work/winter-drive-2025-26", destination: "/our-work/winter-relief", permanent: true },
       { source: "/our-work/winter-relief-2025-26", destination: "/our-work/winter-relief", permanent: true },
+      { source: "/programmes/emergency-humanitarian-relief", destination: "/programmes/emergency-relief", permanent: true },
+      { source: "/programmes/seasonal-essentials", destination: "/programmes/seasonal-relief", permanent: true },
     ];
   },
   async headers() {

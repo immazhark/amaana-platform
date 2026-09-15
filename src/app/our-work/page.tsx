@@ -20,18 +20,33 @@ export const metadata: Metadata = {
   },
 };
 
+const hiddenLegacySlugs = new Set([
+  'medical-financial-assistance',
+  'winter-drive-2025-26',
+  'winter-relief-2025-26',
+]);
+
 export default async function OurWorkPage({ searchParams }: { searchParams: Promise<WorkSearch> }) {
   const causes = await getOurWorkIndexData();
   const search = await searchParams;
-  const visibleCauses = causes.map(cause => ({...cause, initiatives:cause.initiatives.filter(item => !['medical-financial-assistance','winter-drive-2025-26','winter-relief-2025-26'].includes(item.slug) && (!programmeBySlug(item.slug)?.parentSlug || Boolean(search.year)))}));
+
+  // The default index shows each programme once. Year-specific child records are
+  // revealed only when a visitor explicitly filters by year, so annual editions
+  // do not duplicate their parent programme on the main discovery screen.
+  const visibleCauses = causes
+    .map(cause => ({
+      ...cause,
+      initiatives: cause.initiatives.filter(item => {
+        if (hiddenLegacySlugs.has(item.slug)) return false;
+        const canonical = programmeBySlug(item.slug);
+        return !canonical?.parentSlug || Boolean(search.year);
+      }),
+    }))
+    .filter(cause => cause.initiatives.length > 0);
+
   const filters = filterWork(visibleCauses, search);
-  const initiatives = causes.flatMap(cause => cause.initiatives.map(initiative => ({ ...initiative, causeTitle: cause.title })));
-  const initiativeCount = initiatives.length;
-  // Editorial prominence outranks media availability. A featured flagship with no
-  // approved image keeps its intentional evidence-led fallback rather than being
-  // displaced by a historical archive edition merely because that edition has media.
-  const featured = initiatives.find(initiative => initiative.isFeatured) ?? initiatives.find(initiative => initiative.mediaAssets.length > 0) ?? initiatives[0];
-  const featuredMedia = featured?.mediaAssets[0] ?? null;
+  const initiativeCount = visibleCauses.reduce((total, cause) => total + cause.initiatives.length, 0);
+  const causeCount = visibleCauses.length;
 
   return (
     <div className="v2-home v2-work-index">
@@ -44,56 +59,26 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
           <div>
             <p className="v2-hero-copy">Some needs return every year. Others arrive without warning. Explore Amaana’s medical and financial relief, emergency response, Ramadan and Eid initiatives, Taleem education support and seasonal relief.</p>
             <div className="v2-work-index-proof">
-              <div><span className="v2-proof-number">{initiativeCount}</span><span className="v2-proof-copy">published initiatives currently available</span></div>
-              <div><span className="v2-proof-number">{causes.length}</span><span className="v2-proof-copy">cause areas represented in the public library</span></div>
+              <div><span className="v2-proof-number">{initiativeCount}</span><span className="v2-proof-copy">published programmes and case records available to explore</span></div>
+              <div><span className="v2-proof-number">{causeCount}</span><span className="v2-proof-copy">cause areas represented in the public library</span></div>
             </div>
           </div>
         </div>
       </section>
 
-      {featured && !filters.active && (
-        <section className="v2-section v2-work-featured">
-          <div className="v2-shell v2-work-featured-stage">
-            <div className="v2-work-featured-copy">
-              <p className="v2-section-label">Begin with one story</p>
-              <p className="v2-work-featured-cause">{featured.causeTitle}</p>
-              <h2>{featured.title}</h2>
-              <p className="v2-work-featured-summary">{featured.summary}</p>
-              <div className="v2-work-featured-evidence">
-                {featured.primaryMetric && <strong className="v2-work-featured-metric">{featured.primaryMetric}</strong>}
-                {featured.primaryMetricLabel && <span className="v2-work-featured-label">{featured.primaryMetricLabel}</span>}
-              </div>
-              <Link className="v2-button" href={`/our-work/${featured.slug}`}>Explore this initiative</Link>
-            </div>
-
-            <div className="v2-work-featured-visual" aria-label={`${featured.title} documentary record`}>
-              {featuredMedia ? (
-                <PublicMedia asset={featuredMedia} priority />
-              ) : (
-                <div className="v2-work-featured-placeholder">
-                  <span>Documented initiative</span>
-                  <strong>{featured.primaryMetric ?? "Amaana Foundation"}</strong>
-                  <p>{featured.primaryMetricLabel ?? "Explore the initiative story, documented figures and public updates."}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </section>
-      )}
-
       <section className="v2-section paper" id="work-results">
         <div className="v2-shell">
           <div className="v2-section-head">
             <div><p className="v2-section-label">Explore by need</p><h2 className="v2-section-title">A living portfolio of service.</h2></div>
-            <p className="v2-section-intro">Each cause area opens into its own set of published initiatives, evidence and stories. Browse by the need first, then follow the work as deeply as you choose.</p>
+            <p className="v2-section-intro">Each cause area opens into its own set of published initiatives, evidence and stories. Parent programmes appear once on the main index; use the year filter when you want to inspect a specific annual edition.</p>
           </div>
 
           <form className="work-filters" action="/our-work#work-results" method="get" aria-label="Filter published initiatives">
             <label htmlFor="work-programme">Programme
               <select id="work-programme" name="programme" defaultValue={filters.programme}>
                 <option value="">All programmes</option>
-                {filters.programme && !causes.some(cause => cause.slug === filters.programme) && <option value={filters.programme}>Unavailable programme</option>}
-                {causes.filter(cause => cause.initiatives.length > 0).map(cause => <option key={cause.slug} value={cause.slug}>{cause.title}</option>)}
+                {filters.programme && !visibleCauses.some(cause => cause.slug === filters.programme) && <option value={filters.programme}>Unavailable programme</option>}
+                {visibleCauses.map(cause => <option key={cause.slug} value={cause.slug}>{cause.title}</option>)}
               </select>
             </label>
             <label htmlFor="work-year">Year
@@ -118,29 +103,27 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
                     <p>{cause.summary}</p>
                   </div>
 
-                  {cause.initiatives.length > 0 ? (
-                    <div className="v2-initiative-list">
-                      {cause.initiatives.map((initiative, index) => {
-                        const thumbnail = initiative.mediaAssets[0] ?? null;
-                        return (
-                          <Link id={initiative.slug} className={`v2-initiative-row${thumbnail ? " has-media" : ""}`} href={`/our-work/${initiative.slug}`} key={initiative.id}>
-                            <span className="v2-initiative-index">{String(index + 1).padStart(2, "0")}</span>
-                            {thumbnail && <div className="v2-initiative-thumb"><PublicMedia asset={thumbnail} /></div>}
-                            <div className="v2-initiative-copy">
-                              <small>{initiative.year ?? (initiative.startYear && initiative.endYear ? `${initiative.startYear}–${initiative.endYear}` : "Initiative")}</small>
-                              <h3>{initiative.title}</h3>
-                              <p>{initiative.summary}</p>
-                            </div>
-                            <div className="v2-initiative-proof">
-                              {initiative.primaryMetric && <strong>{initiative.primaryMetric}</strong>}
-                              {initiative.primaryMetricLabel && <span>{initiative.primaryMetricLabel}</span>}
-                            </div>
-                            <span className="v2-initiative-arrow" aria-hidden="true">↗</span>
-                          </Link>
-                        );
-                      })}
-                    </div>
-                  ) : <p className="v2-section-intro">No public initiative is currently listed in this cause area.</p>}
+                  <div className="v2-initiative-list">
+                    {cause.initiatives.map((initiative, index) => {
+                      const thumbnail = initiative.mediaAssets[0] ?? null;
+                      return (
+                        <Link id={initiative.slug} className={`v2-initiative-row${thumbnail ? " has-media" : ""}`} href={`/our-work/${initiative.slug}`} key={initiative.id}>
+                          <span className="v2-initiative-index">{String(index + 1).padStart(2, "0")}</span>
+                          {thumbnail && <div className="v2-initiative-thumb"><PublicMedia asset={thumbnail} /></div>}
+                          <div className="v2-initiative-copy">
+                            <small>{initiative.year ?? (initiative.startYear && initiative.endYear ? `${initiative.startYear}–${initiative.endYear}` : "Initiative")}</small>
+                            <h3>{initiative.title}</h3>
+                            <p>{initiative.summary}</p>
+                          </div>
+                          <div className="v2-initiative-proof">
+                            {initiative.primaryMetric && <strong>{initiative.primaryMetric}</strong>}
+                            {initiative.primaryMetricLabel && <span>{initiative.primaryMetricLabel}</span>}
+                          </div>
+                          <span className="v2-initiative-arrow" aria-hidden="true">↗</span>
+                        </Link>
+                      );
+                    })}
+                  </div>
                 </section>
               ))}
             </div>

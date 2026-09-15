@@ -16,7 +16,7 @@ export const PUBLIC_STATIC_ROUTES = [
   { path: "/programmes/medical-financial-relief", changeFrequency: "monthly", priority: 0.8 },
   { path: "/programmes/emergency-relief", changeFrequency: "monthly", priority: 0.8 },
   { path: "/programmes/ramadan-eid", changeFrequency: "monthly", priority: 0.8 },
-  { path: "/programmes/seasonal-essentials", changeFrequency: "monthly", priority: 0.8 },
+  { path: "/programmes/seasonal-relief", changeFrequency: "monthly", priority: 0.8 },
   { path: "/impact", changeFrequency: "weekly", priority: 0.9 },
   { path: "/stories", changeFrequency: "weekly", priority: 0.85 },
   { path: "/faith-and-reflections", changeFrequency: "weekly", priority: 0.8 },
