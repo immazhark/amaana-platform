@@ -4,50 +4,44 @@
 **CHATGPT_ACTIVE**
 
 ## Active implementation owner
-ChatGPT — continuing the user-directed launch-hardening and visual-consistency pass after PR #41.
+ChatGPT — continuing launch-hardening after the visual-consistency merge.
 
 ## Integration checkpoint
 - Integration branch: `phase-public-site-rebuild`
-- Current integration head: `1540c8dfa08c57e2fa6d986b9ff0b6c54680224b`
-- PR #41 (`Reconcile public work and standardize cross-site UI`) is merged.
-- Railway staging deployment for that commit is confirmed SUCCESS: deployment `129b1ee9-355c-4004-986a-bed821d769eb`.
+- Current integration head: `a3a864e0141da39ce0d225f33eb131e7e51b69b1`
+- PR #42 (`Standardize visual media and top-banner geometry`) is merged.
+- PR #42 CI completed successfully, including public-media validation, factual locks, Prisma validation, lint, typecheck, 121+ unit tests, production build, CSS/JS bundle budgets and post-build smoke checks.
+- Railway staging deployment `672089e4-386e-42f8-bf25-36c5a49e3f18` is currently deploying; do not claim SUCCESS until Railway confirms it.
 
 ## Current task branch
-- Branch: `audit/post-pr41-launch-hardening`
-- Base: `1540c8dfa08c57e2fa6d986b9ff0b6c54680224b`
-- Purpose: complete the user-requested site-wide visual consistency pass before moving to Lighthouse/performance work.
+- Branch: `fix/sitemap-sensitive-appeals`
+- Base: `a3a864e0141da39ce0d225f33eb131e7e51b69b1`
+- Purpose: close the remaining search-discovery privacy gap so highly sensitive assistance-linked appeals are never promoted through the XML sitemap.
 
-## Current user-directed visual rules
-- Wherever a cause, drive, initiative or work item appears in a list/grid/card/row, it must have a predictable thumbnail slot.
-- Real approved Amaana media is preferred. If none is available, use a neutral branded placeholder; do not invent beneficiary imagery.
-- Specific cause/drive/programme/appeal detail pages use a large left-copy/right-visual hero pattern. Empty visual columns are not allowed.
-- Public interior top banners use one desktop/tablet height system. Longer copy must adapt through constrained typography/copy length rather than changing banner geometry or overflowing its container.
-- Mobile banners become content-led so text and controls never clip.
-- No text, button, image or grid child may render outside its container; no text/button or image/text overlaps.
-- Back-to-top is icon-only visually, with an accessible name retained for assistive technology.
+## Visual-system rules now merged
+- Public interior top banners use one desktop/tablet height language and content-led mobile geometry.
+- Longer banner copy adapts through typography/line wrapping rather than pushing elements outside the banner.
+- Shared containment rules prevent text, buttons and media from escaping their columns.
+- Work/cause/initiative lists have predictable visual slots; approved real Amaana media remains preferred over placeholders.
+- Specific programme/initiative/appeal detail pages use left-copy/right-visual hero geometry.
+- Back-to-top is visually icon-only with an accessible name.
+- Obsolete legacy v2 homepage CSS was pruned instead of weakening the production bundle budget.
 
-## Implemented on the current branch
-- Added reusable `WorkVisualPlaceholder`.
-- Added visual slots to homepage work rows, Our Work/Impact listings, programme-category grids, appeal cards, completed appeal outcomes and story cards.
-- Initiative and programme detail heroes now always render a right-side approved image or branded placeholder.
-- Appeal detail hero now uses the same left-copy/right-visual pattern; funding progress follows immediately below in a contained decision panel.
-- Programme detail hero copy is concise; the full programme story is moved below the hero so banner geometry remains stable.
-- Contact page now uses the shared interior hero system.
-- Added `launch-hardening.css` for work thumbnails, hero media geometry, containment and the icon-only back-to-top treatment.
-- Added temporary `banner-consistency.css` as the final QA override layer for identical desktop/tablet banner geometry across generic, Impact, Stories, Faith, campaign, appeals, assistance and Taleem hero families. This file should be consolidated after rendered acceptance rather than left as another permanent CSS layer.
-- Added strict max-width/min-width/overflow-wrap protections for common content and action groups.
+## Current privacy hardening
+- `src/app/sitemap.ts` now reads the linked assistance verification confidentiality level for public appeals.
+- `HIGHLY_SENSITIVE` appeals remain directly reachable only where public accountability rules permit, but are excluded from search-discovery sitemap output.
+- Standard, confidential and non-assistance-linked public appeals remain sitemap-eligible.
+- A dedicated unit-tested helper enforces this search-discovery boundary.
 
-## Next actions for this pass
-1. Run PR CI and repair type/lint/build/bundle/regression failures.
-2. Inspect the PR diff for selector/markup regressions, especially responsive Impact/Appeal grids.
-3. Merge only when all gates are green.
-4. Verify Railway staging deployment for the merged commit.
-5. User reviews the deployed visual system and assigns preferred real images per cause/drive/page.
-6. Continue the remaining launch-hardening queue after user visual review.
+## Next actions
+1. Run CI for the sitemap privacy branch and repair any regression.
+2. Merge only when all gates are green.
+3. Verify the PR #42 Railway deployment, then verify the privacy-hardening deployment after merge.
+4. Continue the launch-hardening queue without waiting for user prompts unless a decision or external confirmation is required.
 
-## Remaining launch-hardening queue after this visual pass
-1. Lighthouse/performance remediation: consolidate legacy/global CSS, optimize image delivery, hydration/network work and caching.
-2. Add durable browser E2E + accessibility coverage.
+## Remaining launch-hardening queue
+1. Performance remediation: continue consolidating global CSS, image delivery, hydration/network work and caching.
+2. Add durable browser E2E + accessibility coverage when a browser-capable execution surface is available.
 3. Donation journey E2E and production-gateway readiness checks.
 4. Assistance journey E2E including upload/status/admin lifecycle.
 5. Full public editorial/grammar/CTA consistency pass.
@@ -57,7 +51,7 @@ ChatGPT — continuing the user-directed launch-hardening and visual-consistency
 9. External compliance/business closures and production launch rehearsal.
 
 ## Current acceptance constraints
-- Browser-level pixel/geometry inspection requires an actual browser-capable execution surface. Source/static checks and Railway/API acceptance can continue here; any browser-only visual assertions must not be claimed without rendered verification.
+- Browser-level pixel/geometry inspection requires an actual browser-capable execution surface. Source/static checks and Railway/API acceptance can continue here; browser-only visual assertions must not be claimed without rendered verification.
 - No real donation is to be attempted without explicit user authorization.
 - No private beneficiary data or restricted media may be introduced into public fixtures.
 
