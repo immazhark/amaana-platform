@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { isAppealOpenForDonations } from "@/lib/appeals";
+import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
 import { createDonationReference, createReceiptToken, donationSchema, hashReceiptToken } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder } from "@/lib/razorpay";
@@ -27,6 +27,18 @@ export async function POST(request: Request) {
       },
     });
     if (!appeal || !isAppealOpenForDonations(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+
+    const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
+    if (parsed.data.amount > remainingAmount) {
+      return NextResponse.json(
+        {
+          error: `This appeal currently needs up to ₹${remainingAmount.toLocaleString("en-IN")} more. Please reduce the donation amount.`,
+          remainingAmount,
+        },
+        { status: 409, headers: privateHeaders },
+      );
+    }
+
     const referenceNumber = createDonationReference(); const receiptToken = createReceiptToken(); const amountPaise = parsed.data.amount * 100;
     const order = await createRazorpayOrder({ amountPaise, receipt: referenceNumber, appealId: appeal.id });
     if (order.amount !== amountPaise || order.currency !== "INR") throw new Error("Unexpected order response");
