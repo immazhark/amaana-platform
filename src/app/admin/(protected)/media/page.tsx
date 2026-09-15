@@ -3,19 +3,37 @@ import { prisma } from "@/lib/prisma";
 import { getPublicMediaStorageReadiness } from "@/lib/storage";
 import { createMediaAsset, setMediaPublication, updateMediaAsset } from "./actions";
 
+type ReviewMetadata = {
+  privacyClass?: string;
+  consentStatus?: string;
+  websiteApproved?: boolean;
+  containsMinor?: boolean;
+  containsPatient?: boolean;
+  containsPrivateDocument?: boolean;
+  heroEligible?: boolean;
+  provenanceConfirmed?: boolean;
+  reviewNotes?: string | null;
+};
+
 export default async function AdminMediaPage() {
   const user = await requirePermission("content.view");
   const canEdit = hasPermission(user, "content.update");
   const canApprove = hasPermission(user, "content.approve");
   const storage = getPublicMediaStorageReadiness();
 
-  const [assets, causes, initiatives, stories, faith] = await Promise.all([
+  const [assets, causes, initiatives, stories, faith, reviewEvents] = await Promise.all([
     prisma.mediaAsset.findMany({ include: { cause: true, initiative: true, story: true, faithContent: true }, orderBy: [{ isPublic: "asc" }, { sourceYear: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }] }),
     prisma.cause.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
     prisma.initiative.findMany({ orderBy: [{ startYear: "desc" }, { title: "asc" }], select: { id: true, title: true } }),
     prisma.story.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
     prisma.faithContent.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
+    prisma.auditEvent.findMany({ where: { entityType: "MediaAsset", action: "media.privacy_reviewed" }, orderBy: { createdAt: "desc" }, select: { entityId: true, metadata: true, createdAt: true, actor: { select: { name: true } } } }),
   ]);
+
+  const latestReview = new Map<string, { metadata: ReviewMetadata; createdAt: Date; reviewer: string }>();
+  for (const event of reviewEvents) {
+    if (!latestReview.has(event.entityId)) latestReview.set(event.entityId, { metadata: (event.metadata ?? {}) as ReviewMetadata, createdAt: event.createdAt, reviewer: event.actor.name });
+  }
 
   const targetLabel = (asset: (typeof assets)[number]) => asset.initiative?.title ?? asset.story?.title ?? asset.cause?.title ?? asset.faithContent?.title ?? "Unlinked";
 
@@ -37,7 +55,7 @@ export default async function AdminMediaPage() {
 
     {canEdit && <section className="admin-card" style={{ marginBottom: "2rem" }}>
       <h2>Add reviewed media</h2>
-      <p className="muted">Use original campaign files where possible. Uploading creates an unpublished record first; publication is a separate approval action.</p>
+      <p className="muted">Use original campaign files where possible. Uploading creates an unpublished record first; publication is a separate privacy, consent and provenance review.</p>
       <form action={createMediaAsset} encType="multipart/form-data" className="form-grid">
         <div className="field full"><label htmlFor="target">Attach to</label><select id="target" name="target" required defaultValue=""><option value="" disabled>Select a cause, initiative, story or reflection</option><optgroup label="Initiatives">{initiatives.map(item => <option key={item.id} value={`initiative:${item.id}`}>{item.title}</option>)}</optgroup><optgroup label="Stories">{stories.map(item => <option key={item.id} value={`story:${item.id}`}>{item.title}</option>)}</optgroup><optgroup label="Causes">{causes.map(item => <option key={item.id} value={`cause:${item.id}`}>{item.title}</option>)}</optgroup><optgroup label="Faith & Reflections">{faith.map(item => <option key={item.id} value={`faith:${item.id}`}>{item.title}</option>)}</optgroup></select></div>
         <div className="field"><label htmlFor="kind">Media type</label><select id="kind" name="kind" defaultValue="IMAGE"><option value="IMAGE">Image</option><option value="DOCUMENT">Document</option></select></div>
@@ -55,11 +73,29 @@ export default async function AdminMediaPage() {
 
     <section className="admin-card">
       <div className="admin-heading"><div><p className="eyebrow">Publication gate</p><h2>Media library</h2></div><span className="status-badge">{assets.length} records</span></div>
-      {assets.length === 0 ? <p className="empty-state">No media records yet.</p> : <div className="admin-media-list">{assets.map(asset => <article className="admin-media-item" key={asset.id}>
-        <div className="admin-media-summary"><div><span className="status-badge">{asset.isPublic ? "PUBLIC" : "PRIVATE REVIEW"}</span><small>{asset.kind.replaceAll("_", " ")} · {asset.sourceYear ?? "year not set"}</small></div><h3>{asset.title || asset.altText || asset.sourcePath || "Untitled media"}</h3><p>{targetLabel(asset)}</p>{asset.publicUrl ? <a href={asset.publicUrl} target="_blank" rel="noreferrer">Open public asset ↗</a> : <small>No public URL yet{asset.storageKey ? " — file is stored but needs PUBLIC_MEDIA_BASE_URL or a reviewed URL" : ""}.</small>}</div>
-        {canEdit && <form action={updateMediaAsset} className="form-grid admin-media-edit"><input type="hidden" name="id" value={asset.id}/><div className="field"><label>Title</label><input name="title" defaultValue={asset.title ?? ""} maxLength={160}/></div><div className="field"><label>Source year</label><input name="sourceYear" type="number" min="2000" max="2100" defaultValue={asset.sourceYear ?? ""}/></div><div className="field full"><label>Public URL</label><input name="publicUrl" defaultValue={asset.publicUrl ?? ""}/></div><div className="field full"><label>Alt text</label><input name="altText" defaultValue={asset.altText ?? ""} maxLength={300}/></div><div className="field full"><label>Caption</label><textarea name="caption" defaultValue={asset.caption ?? ""} maxLength={1000}/></div><div className="field"><label>Source reference</label><input name="sourcePath" defaultValue={asset.sourcePath ?? ""} maxLength={500}/></div><div className="field"><label>Display order</label><input name="sortOrder" type="number" defaultValue={asset.sortOrder}/></div><div className="field full"><button className="button secondary" type="submit">Save metadata</button></div></form>}
-        {canApprove && <form action={setMediaPublication} className="admin-media-publish"><input type="hidden" name="id" value={asset.id}/><input type="hidden" name="publish" value={asset.isPublic ? "false" : "true"}/><button className={asset.isPublic ? "text-button" : "button"} type="submit">{asset.isPublic ? "Unpublish" : "Approve & publish"}</button>{!asset.isPublic && <small>Publication records privacy approval time and makes the asset eligible for public rendering.</small>}</form>}
-      </article>)}</div>}
+      <p className="muted">Public evidence is different from private proof. Website publication now requires GREEN classification, confirmed provenance, an approved website channel, and consent that matches the people and context shown.</p>
+      {assets.length === 0 ? <p className="empty-state">No media records yet.</p> : <div className="admin-media-list">{assets.map(asset => {
+        const review = latestReview.get(asset.id);
+        return <article className="admin-media-item" key={asset.id}>
+          <div className="admin-media-summary"><div><span className="status-badge">{asset.isPublic ? "PUBLIC" : "PRIVATE REVIEW"}</span><small>{asset.kind.replaceAll("_", " ")} · {asset.sourceYear ?? "year not set"}</small></div><h3>{asset.title || asset.altText || asset.sourcePath || "Untitled media"}</h3><p>{targetLabel(asset)}</p>{asset.publicUrl ? <a href={asset.publicUrl} target="_blank" rel="noreferrer">Open public asset ↗</a> : <small>No public URL yet{asset.storageKey ? " — file is stored but needs PUBLIC_MEDIA_BASE_URL or a reviewed URL" : ""}.</small>}
+          {review ? <div className="admin-media-review-summary"><strong>{review.metadata.privacyClass ?? "Reviewed"} · {review.metadata.consentStatus ?? "consent recorded"}</strong><small>Reviewed by {review.reviewer} on {review.createdAt.toLocaleDateString("en-IN")}. {review.metadata.heroEligible ? "Hero eligible." : "Not approved as a hero asset."}</small></div> : asset.isPublic ? <div className="admin-media-review-summary"><strong>Legacy public asset — structured governance review pending</strong><small>This asset predates the structured consent/provenance gate. It remains visible to avoid silently breaking published pages, but should be re-reviewed before reuse or hero promotion.</small></div> : null}
+          </div>
+          {canEdit && <form action={updateMediaAsset} className="form-grid admin-media-edit"><input type="hidden" name="id" value={asset.id}/><div className="field"><label>Title</label><input name="title" defaultValue={asset.title ?? ""} maxLength={160}/></div><div className="field"><label>Source year</label><input name="sourceYear" type="number" min="2000" max="2100" defaultValue={asset.sourceYear ?? ""}/></div><div className="field full"><label>Public URL</label><input name="publicUrl" defaultValue={asset.publicUrl ?? ""}/></div><div className="field full"><label>Alt text</label><input name="altText" defaultValue={asset.altText ?? ""} maxLength={300}/></div><div className="field full"><label>Caption</label><textarea name="caption" defaultValue={asset.caption ?? ""} maxLength={1000}/></div><div className="field"><label>Source reference</label><input name="sourcePath" defaultValue={asset.sourcePath ?? ""} maxLength={500}/></div><div className="field"><label>Display order</label><input name="sortOrder" type="number" defaultValue={asset.sortOrder}/></div><div className="field full"><button className="button secondary" type="submit">Save metadata</button></div></form>}
+          {canApprove && !asset.isPublic && <form action={setMediaPublication} className="form-grid admin-media-publish"><input type="hidden" name="id" value={asset.id}/><input type="hidden" name="publish" value="true"/>
+            <div className="field"><label>Privacy classification</label><select name="privacyClass" required defaultValue=""><option value="" disabled>Choose classification</option><option value="GREEN_PUBLIC">GREEN — approved public use</option><option value="AMBER_RESTRICTED">AMBER — restricted/contextual</option><option value="RED_PRIVATE">RED — private / do not publish</option></select></div>
+            <div className="field"><label>Consent status</label><select name="consentStatus" required defaultValue=""><option value="" disabled>Choose consent status</option><option value="DOCUMENTED">Documented</option><option value="NOT_APPLICABLE">Not applicable</option><option value="RESTRICTED">Restricted</option><option value="NOT_APPROVED">Not approved</option></select></div>
+            <div className="field full"><label className="checkbox"><input type="checkbox" name="provenanceConfirmed"/><span><strong>Source/provenance confirmed</strong><small>The programme/year/source association has been checked.</small></span></label></div>
+            <div className="field full"><label className="checkbox"><input type="checkbox" name="websiteApproved"/><span><strong>Website is an approved usage channel</strong><small>Do not infer website permission from social-media publication alone.</small></span></label></div>
+            <div className="field"><label className="checkbox"><input type="checkbox" name="containsMinor"/><span>Contains identifiable minor</span></label></div>
+            <div className="field"><label className="checkbox"><input type="checkbox" name="containsPatient"/><span>Contains identifiable patient</span></label></div>
+            <div className="field full"><label className="checkbox"><input type="checkbox" name="containsPrivateDocument"/><span><strong>Contains private document/data</strong><small>Checking this blocks publication.</small></span></label></div>
+            <div className="field full"><label className="checkbox"><input type="checkbox" name="heroEligible"/><span><strong>Hero use approved</strong><small>Optional. Publication does not automatically make an asset suitable for high-prominence placement.</small></span></label></div>
+            <div className="field full"><label>Review notes</label><textarea name="reviewNotes" maxLength={2000} placeholder="Consent source, crop restriction, provenance note or other publication context."/></div>
+            <div className="field full"><button className="button" type="submit">Approve privacy gate & publish</button><small>AMBER/RED classifications, restricted consent, unconfirmed provenance, private documents, or child/patient media without documented consent will fail closed.</small></div>
+          </form>}
+          {canApprove && asset.isPublic && <form action={setMediaPublication} className="admin-media-publish"><input type="hidden" name="id" value={asset.id}/><input type="hidden" name="publish" value="false"/><button className="text-button" type="submit">Unpublish</button></form>}
+        </article>;
+      })}</div>}
     </section>
   </>;
 }
