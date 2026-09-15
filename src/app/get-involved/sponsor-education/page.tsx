@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { programmeBySlug } from "@/lib/master-copy";
 import "./sponsor-education.css";
 
 export const metadata: Metadata = {
@@ -17,14 +18,14 @@ export const metadata: Metadata = {
 const islamicPaths = [
   {
     marker: "01",
-    title: "Sponsor Hifdh",
-    copy: "Help a student continue the committed study and memorisation of the Qur’an through an eligible Hifdh programme.",
+    title: "Sponsor a Hifdh Student",
+    copy: programmeBySlug("taleem-hifdh-sponsorship")!.story,
     subject: "Amaana Taleem – Sponsor Hifdh",
   },
   {
     marker: "02",
-    title: "Sponsor Quran Nazira",
-    copy: "Support a student learning to read the Qur’an with accuracy, consistency and guided instruction.",
+    title: "Sponsor Qur’an Nazira Education",
+    copy: programmeBySlug("taleem-nazira-sponsorship")!.story,
     subject: "Amaana Taleem – Sponsor Quran Nazira",
   },
 ] as const;
@@ -38,12 +39,12 @@ export default function SponsorEducationPage() {
 
       <section className="taleem-hero">
         <div className="v2-shell taleem-hero-grid">
-          <div><p className="v2-kicker">Amaana Taleem Initiative</p><h1>Help learning continue.</h1></div>
-          <div><p>Choose between Islamic education sponsorship and a child’s school or college education. Amaana confirms the learner, institution and current need before a sponsorship is arranged.</p><a className="v2-button" href="#sponsorship-paths">Choose a sponsorship path</a></div>
+          <div><p className="v2-kicker">Amaana Taleem Initiative</p><h1>Knowledge should open doors.</h1></div>
+          <div><p>As of September 2026, 25 students across Qur’an Nazira and Hifdh were being sponsored through Amaana by multiple donors. School and college sponsorship is a developing pathway.</p><a className="v2-button" href="#sponsorship-paths">Choose a sponsorship path</a></div>
         </div>
       </section>
 
-      <main id="sponsorship-paths" className="taleem-paths">
+      <div id="sponsorship-paths" className="taleem-paths">
         <section className="v2-shell taleem-programme" aria-labelledby="islamic-education-title">
           <header className="taleem-section-head"><div><span className="taleem-section-number">01</span><p className="v2-section-label">Islamic education</p><h2 id="islamic-education-title">Sponsor Islamic Education</h2></div><p>Support sustained Qur’anic learning through one of two defined study paths.</p></header>
           <div className="taleem-islamic-grid">
@@ -53,8 +54,8 @@ export default function SponsorEducationPage() {
 
         <section className="taleem-school" aria-labelledby="child-education-title">
           <div className="v2-shell taleem-school-grid">
-            <div><span className="taleem-section-number">02</span><p className="v2-section-label">School and college</p><h2 id="child-education-title">Sponsor a Child’s Education</h2></div>
-            <div><p className="taleem-school-lead">Help a child or young person continue their formal education at school or college.</p><p>The exact support is based on a verified learner’s current educational need. Amaana will share the available scope before you commit, without publishing private student information.</p><a className="v2-button" href={emailHref("Amaana Taleem – Sponsor a Child's Education")}>Ask about school or college sponsorship</a></div>
+            <div><span className="taleem-section-number">02</span><p className="v2-section-label">School and college</p><h2 id="child-education-title">Sponsor a Student’s School or College Education</h2></div>
+            <div><p className="taleem-school-lead">Developing pathway — verified school and college education support.</p><p>Amaana Taleem Initiative is designed to extend educational assistance to verified students from financially vulnerable households whose schooling or college education may be at risk because of fees or other essential academic costs. Support under this pathway will be matched to a clearly identified educational need, with verification and responsible follow-through before assistance is provided.</p><a className="v2-button" href={emailHref("Amaana Taleem – Sponsor a Child's Education")}>Ask about school or college sponsorship</a></div>
           </div>
         </section>
 
@@ -67,9 +68,9 @@ export default function SponsorEducationPage() {
             <li><span>04</span><div><h3>Follow responsibly</h3><p>Updates are shared in a way that protects the dignity and privacy of the student.</p></div></li>
           </ol>
         </section>
-      </main>
+      </div>
 
-      <section className="taleem-closing"><div className="v2-shell"><p className="v2-section-label">Start here</p><h2>Which learning journey would you like to support?</h2><div className="v2-hero-actions"><a className="v2-button" href={emailHref("Amaana Taleem – Education sponsorship enquiry")}>Contact Amaana about sponsorship</a><Link className="v2-text-link" href="/our-work/taleem-initiative-2025">Explore the Taleem Initiative →</Link></div></div></section>
+      <section className="taleem-closing"><div className="v2-shell"><p className="v2-section-label">Start here</p><h2>Which learning journey would you like to support?</h2><div className="v2-hero-actions"><a className="v2-button" href={emailHref("Amaana Taleem – Education sponsorship enquiry")}>Contact Amaana about sponsorship</a><Link className="v2-text-link" href="/our-work/taleem">Explore the Taleem Initiative →</Link></div></div></section>
     </div>
   );
 }

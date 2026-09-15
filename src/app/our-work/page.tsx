@@ -4,6 +4,7 @@ import { PublicMedia } from "@/components/public-media";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
 import { filterWork, type WorkSearch } from "@/lib/work-filters";
 import "./work-filters.css";
+import { programmeBySlug } from '@/lib/master-copy';
 
 export const dynamic = "force-dynamic";
 
@@ -21,7 +22,9 @@ export const metadata: Metadata = {
 
 export default async function OurWorkPage({ searchParams }: { searchParams: Promise<WorkSearch> }) {
   const causes = await getOurWorkIndexData();
-  const filters = filterWork(causes, await searchParams);
+  const search = await searchParams;
+  const visibleCauses = causes.map(cause => ({...cause, initiatives:cause.initiatives.filter(item => !['medical-financial-assistance','winter-drive-2025-26','winter-relief-2025-26'].includes(item.slug) && (!programmeBySlug(item.slug)?.parentSlug || Boolean(search.year)))}));
+  const filters = filterWork(visibleCauses, search);
   const initiatives = causes.flatMap(cause => cause.initiatives.map(initiative => ({ ...initiative, causeTitle: cause.title })));
   const initiativeCount = initiatives.length;
   // Editorial prominence outranks media availability. A featured flagship with no
@@ -36,10 +39,10 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
         <div className="v2-shell v2-hero-inner">
           <div>
             <p className="v2-kicker">Our Work · Hyderabad</p>
-            <h1 className="v2-display">Different needs. One amanah to serve.</h1>
+            <h1 className="v2-display">Different Needs. One Standard of Care.</h1>
           </div>
           <div>
-            <p className="v2-hero-copy">Explore food distributions, education support and community assistance. Open a drive to see its photographs, campaign updates and the work behind it.</p>
+            <p className="v2-hero-copy">Some needs return every year. Others arrive without warning. Explore Amaana’s medical and financial relief, emergency response, Ramadan and Eid initiatives, Taleem education support and seasonal relief.</p>
             <div className="v2-work-index-proof">
               <div><span className="v2-proof-number">{initiativeCount}</span><span className="v2-proof-copy">published initiatives currently available</span></div>
               <div><span className="v2-proof-number">{causes.length}</span><span className="v2-proof-copy">cause areas represented in the public library</span></div>

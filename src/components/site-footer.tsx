@@ -12,8 +12,8 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="container">
         <div className="footer-lead">
-          <p className="footer-kicker">Faith. Dignity. Action.</p>
-          <h2>Follow the work. Understand the evidence. Take the next right step.</h2>
+          <p className="footer-kicker">Verified need. Responsible support. Dignified impact.</p>
+          <h2>Upholding Trust. Serving With Compassion, Dignity and Accountability.</h2>
           <div className="footer-lead-actions">
             <Link href="/our-work">Explore our work →</Link>
             <Link href="/appeals">Support a verified need →</Link>
@@ -32,7 +32,7 @@ export function SiteFooter() {
               </span>
             </Link>
             <p>
-              Faith-inspired service rooted in dignity, compassion and responsible stewardship — documenting real work, known outcomes and the journey behind every act of care.
+              A Hyderabad-based registered charitable trust supporting verified community needs through recurring initiatives, case-led assistance, education and relief.
             </p>
             <div className="footer-socials" aria-label="Amaana Foundation social channels">
               {socialLinks.map(([label, href]) => (
@@ -56,7 +56,7 @@ export function SiteFooter() {
             <h3>Take part</h3>
             <div className="footer-links">
               <Link href="/appeals">Current Appeals</Link>
-              <Link href="/get-involved">Get Involved</Link>
+              <Link href="/get-involved">Get Involved</Link><Link href="/donate">Donate</Link><Link href="/our-work/taleem">Taleem</Link><Link href="/recognition">Awards & Recognition</Link><Link href="/partner">Partner</Link>
               <Link href="/request-assistance">Request Assistance</Link>
               <Link href="/how-we-verify">How Amaana Works</Link>
               <Link href="/contact">Contact</Link>

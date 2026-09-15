@@ -1,8 +1,10 @@
 import "./campaign.css";
+import { ProgrammeDetail } from "@/components/programme-detail";
+import { programmeBySlug } from "@/lib/master-copy";
 import { canRenderPublicMedia, resolvePublicMediaUrl } from "@/lib/public-media";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, permanentRedirect } from "next/navigation";
 import { PublicMedia } from "@/components/public-media";
 import { getInitiativePageData } from "@/lib/public-page-data";
 
@@ -45,6 +47,8 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function InitiativePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
+  if (['winter-drive-2025-26','winter-relief-2025-26'].includes(slug)) permanentRedirect('/our-work/winter-relief');
+  if (programmeBySlug(slug)) return <ProgrammeDetail slug={slug} />;
   const initiative = await getInitiativePageData(slug);
   if (!initiative) notFound();
 

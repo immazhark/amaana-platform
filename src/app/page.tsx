@@ -7,6 +7,7 @@ import { getHomepagePublicContent } from "@/lib/public-content";
 import { eidGrowth, foundingStory, homepageImpact } from "@/content/amaana";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
+import { programmeCategories } from '@/lib/master-copy';
 
 export const dynamic = "force-dynamic";
 
@@ -29,13 +30,13 @@ export default async function HomePage() {
         <div className="v3-shell v3-hero-grid">
           <div className="v3-hero-copy">
             <p className="v3-kicker">Amaana Foundation · Hyderabad</p>
-            <h1 className="v3-title" id="amaana-home-title">Faith. Dignity. Action.</h1>
+            <h1 className="v3-title" id="amaana-home-title">Trust, Turned Into Action.</h1>
             <p className="v3-lead">
-              What began with 85 families during Ramadan 2020 has grown into a community-supported journey of service — carrying care with dignity, transparency and trust.
+              Amaana Foundation is a Hyderabad-based charitable trust helping families through verified medical and financial assistance, education support, Ramadan and Eid initiatives, seasonal relief and emergency response. We believe every contribution is an amaana—a trust to be handled with dignity, transparency and responsibility.
             </p>
             <div className="v3-actions">
               <Link className="v3-btn" href="/our-work">Explore our work</Link>
-              <Link className="v3-btn secondary" href="/about">Our story</Link>
+              <Link className="v3-btn secondary" href="/donate">Support a Verified Need</Link>
             </div>
           </div>
 
@@ -63,9 +64,9 @@ export default async function HomePage() {
           <div className="v3-section-head">
             <div>
               <p className="v3-label">Seen in the work</p>
-              <h2 className="v3-heading" id="field-title">Amanah should be visible.</h2>
+              <h2 className="v3-heading" id="field-title">Impact We Can Stand Behind</h2>
             </div>
-            <p className="v3-intro">See the preparation, photographs and campaign updates behind Amaana’s recent drives.</p>
+            <p className="v3-intro">We would rather show programme-level evidence than publish one oversized number that cannot be responsibly audited. Our impact reporting focuses on documented annual reach, quantities distributed, verified cases completed and what donor support enabled.</p>
           </div>
 
           <div className="v3-field-grid">
@@ -84,19 +85,18 @@ export default async function HomePage() {
           <div className="v3-section-head">
             <div>
               <p className="v3-label">Documented work</p>
-              <h2 className="v3-heading" id="featured-work-title">Different needs. One amanah to serve.</h2>
+              <h2 className="v3-heading" id="featured-work-title">Different Needs. One Standard of Care.</h2>
             </div>
-            <p className="v3-intro">Food support, education, emergency relief and individual assistance. Explore the work and the people it serves.</p>
+            <p className="v3-intro">Some needs return every year. Others arrive without warning. Amaana’s work therefore combines recurring programmes with verified case-led assistance—from Eid Gift Kits and Qurbani distribution to Taleem, winter relief, emergency response and urgent medical or financial support.</p>
           </div>
 
           <div className="v3-work-list">
-            {featured.map((initiative) => (
-              <Link className="v3-work-row" href={`/our-work/${initiative.slug}`} key={initiative.slug}>
-                <small>{initiative.causeTitle}{initiative.year ? ` · ${initiative.year}` : ""}</small>
-                <h3>{initiative.title}</h3>
+            {programmeCategories.map((category, index) => (
+              <Link className="v3-work-row" href={category.slug==='amaana-taleem'?'/our-work/taleem':`/programmes/${category.slug==='seasonal-relief'?'seasonal-essentials':category.slug}`} key={category.slug}>
+                <small>{String(index + 1).padStart(2, '0')} · Our Work</small>
+                <h3>{category.title}</h3>
                 <div className="v3-work-metric">
-                  <strong>{initiative.primaryMetric}</strong>
-                  <span>{initiative.primaryMetricLabel}</span>
+                  <span>{category.summary}</span>
                 </div>
                 <span className="v3-arrow" aria-hidden="true">↗</span>
               </Link>
@@ -110,7 +110,7 @@ export default async function HomePage() {
           <div className="v3-section-head">
             <div>
               <p className="v3-label">Seven years of Eid Gift Kits</p>
-              <h2 className="v3-heading" id="eid-growth-title">From 85 families to 710 Eid Gift Kits.</h2>
+              <h2 className="v3-heading" id="eid-growth-title">From 85 families in 2020 to 710 in 2026.</h2>
             </div>
             <p className="v3-intro">A Ramadan effort that began around one family table became a recurring community tradition. The growth below follows the documented year-by-year record.</p>
           </div>
@@ -120,7 +120,7 @@ export default async function HomePage() {
               <div className="v3-year" key={item.year}>
                 <strong>{item.year}</strong>
                 <span>{item.families}</span>
-                <small>{item.year === "2026" ? "kits" : "families"}</small>
+                <small>families</small>
               </div>
             ))}
           </div>
@@ -147,8 +147,8 @@ export default async function HomePage() {
         <div className="v3-shell v3-trust-grid">
           <div className="v3-trust-panel">
             <p className="v3-label">Trust is part of the work</p>
-            <h2 id="trust-title">Public evidence. Private proofs.</h2>
-            <p>We share what can responsibly be made public while protecting beneficiary documents, personal circumstances and sensitive supporting information.</p>
+            <h2 id="trust-title">Compassion With Accountability</h2>
+            <p>Good intentions matter. So does what happens next. Amaana Foundation works close to the communities it serves, reviews needs before mobilising support, protects sensitive beneficiary information, and reports documented outcomes wherever records permit. Our responsibility is not only to collect support, but to ensure that it is directed toward the purpose for which it was entrusted.</p>
             <div className="v3-actions">
               <Link className="v3-btn" href="/transparency">Explore transparency</Link>
               <Link className="v3-btn secondary" href="/how-we-verify">How Amaana works</Link>
@@ -185,8 +185,8 @@ export default async function HomePage() {
           ) : (
             <div className="v3-empty">
               <div>
-                <h3>No active public appeal right now.</h3>
-                <p>Explore completed initiatives, documented impact and Amaana&apos;s continuing work.</p>
+                <h3>No Public Appeal Is Open Right Now</h3>
+                <p>That does not mean the work has stopped. You can explore completed cases or ask about Amaana’s recurring initiatives. New urgent appeals will appear here after verification.</p>
               </div>
               <div className="v3-actions">
                 <Link className="v3-btn" href="/our-work">Explore our work</Link>
@@ -199,7 +199,7 @@ export default async function HomePage() {
       <section className="v3-closing">
         <div className="v3-shell">
           <p className="v3-label">Amaana Foundation</p>
-          <h2>From our hearts to their homes.</h2>
+          <h2>Upholding Trust. Serving With Compassion, Dignity and Accountability.</h2>
           <p>Follow the work, understand the evidence and take the next step with confidence.</p>
           <div className="v3-actions">
             <Link className="v3-btn" href="/our-work">See the work</Link>

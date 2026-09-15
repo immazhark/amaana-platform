@@ -1,0 +1,397 @@
+{
+  "version": "master-2026-09-15-v1",
+  "categories": [
+    {
+      "slug": "medical-financial-relief",
+      "title": "Medical & Financial Relief",
+      "displayOrder": 0,
+      "summary": "Verified help when an illness, debt or sudden financial crisis becomes too heavy for a family to carry alone.",
+      "description": "When a medical emergency or sudden financial hardship pushes a family beyond what it can manage alone, Amaana Foundation steps in with carefully verified, case-specific support. Depending on the need, assistance may help with urgent treatment costs, debt relief, livelihood recovery, or other essential financial burdens. Whether support is raised publicly or arranged privately, our focus remains the same: respond with dignity, use funds responsibly, and provide clear accountability for how assistance reaches the intended family."
+    },
+    {
+      "slug": "emergency-humanitarian-relief",
+      "title": "Emergency & Humanitarian Relief",
+      "displayOrder": 1,
+      "summary": "From floods to community-wide emergencies, we respond with practical support, trusted local coordination and clear accountability.",
+      "description": "From floods to community-wide emergencies, we respond with practical support, trusted local coordination and clear accountability."
+    },
+    {
+      "slug": "ramadan-eid",
+      "title": "Ramadan & Eid Initiatives",
+      "displayOrder": 2,
+      "summary": "Recurring programmes that turn the spirit of Ramadan, Eid and Qurbani into thoughtful support for families facing financial hardship.",
+      "description": "Recurring programmes that turn the spirit of Ramadan, Eid and Qurbani into thoughtful support for families facing financial hardship."
+    },
+    {
+      "slug": "amaana-taleem",
+      "title": "Amaana Taleem Initiative",
+      "displayOrder": 3,
+      "summary": "Helping learners continue with dignity through educational essentials, Qur'anic learning and verified sponsorship pathways.",
+      "description": "Amaana Taleem Initiative brings together practical educational assistance and faith-based learning sponsorship for children and young people whose families may struggle to meet the cost of learning. The initiative began with identifiable, verifiable needs — including stationery kits for 50 orphan children in Borabanda, Hyderabad, in 2025 — and now also facilitates continuing sponsorship for Qur'an Nazira and Hifdh day scholars. As of September 2026, 25 students across Nazira and Hifdh were being sponsored through Amaana by multiple donors. As the initiative develops, Amaana also aims to extend verified support to school and college students whose education may otherwise be disrupted by financial hardship."
+    },
+    {
+      "slug": "seasonal-relief",
+      "title": "Seasonal Relief & Essentials",
+      "displayOrder": 4,
+      "summary": "Timely, practical support for seasonal needs that can place additional pressure on already vulnerable households.",
+      "description": "Amaana Foundation's Seasonal Relief & Essentials programme responds to predictable hardships that become more severe at particular times of the year. The focus is simple: identify a genuine seasonal need, reach people who are least equipped to absorb the added burden, and provide useful essentials at the time they are most needed. Winter support currently forms the programme's documented starting point, with future seasonal responses able to sit within the same framework as needs are verified."
+    }
+  ],
+  "initiatives": [
+    {
+      "slug": "auto-rickshaw-livelihood-support",
+      "title": "A Livelihood on Wheels",
+      "summary": "Sometimes the most meaningful assistance is not temporary relief, but the means to move forward independently. Through the collective support of our donors, ₹95,000 was raised to help provide an auto-rickshaw and essential start-up support—creating an opportunity for sustained income, greater stability, and a more dignified path forward.",
+      "story": "Sometimes the most meaningful assistance is not temporary relief, but the means to move forward independently. Through the collective support of our donors, ₹95,000 was raised to help provide an auto-rickshaw and essential start-up support—creating an opportunity for sustained income, greater stability, and a more dignified path forward.",
+      "causeSlug": "medical-financial-relief",
+      "primaryMetric": "₹95,000",
+      "primaryMetricLabel": "raised toward this case",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "emergency-neonatal-medical-aid",
+      "title": "Together for a Newborn’s Recovery",
+      "summary": "In the first days of life, one family found itself facing an unexpected medical emergency. Their eight-day-old baby boy required hospital care and C-PAP respiratory support while mounting treatment costs placed the family under severe financial strain. Amaana Foundation mobilized a medical-aid appeal, and donors responded with compassion and urgency, helping raise ₹107,200 to support the family’s medical expenses. The child later improved and was discharged from hospital—a completed appeal made possible by timely community support.",
+      "story": "In the first days of life, one family found itself facing an unexpected medical emergency. Their eight-day-old baby boy required hospital care and C-PAP respiratory support while mounting treatment costs placed the family under severe financial strain. Amaana Foundation mobilized a medical-aid appeal, and donors responded with compassion and urgency, helping raise ₹107,200 to support the family’s medical expenses. The child later improved and was discharged from hospital—a completed appeal made possible by timely community support.",
+      "causeSlug": "medical-financial-relief",
+      "primaryMetric": "₹107,200",
+      "primaryMetricLabel": "raised toward this case",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "oral-cancer-surgery-support",
+      "title": "Standing With Him Through Cancer Surgery",
+      "summary": "Facing stage 3 oral cancer, a patient in Hyderabad required urgent surgery at Mythri Hospital in May 2025. Amaana Foundation mobilized community support for the medical need, and donors came together to contribute ₹319,000 toward his surgery. The appeal reflects what timely collective giving can achieve when a family is confronted with a serious medical crisis.",
+      "story": "Facing stage 3 oral cancer, a patient in Hyderabad required urgent surgery at Mythri Hospital in May 2025. Amaana Foundation mobilized community support for the medical need, and donors came together to contribute ₹319,000 toward his surgery. The appeal reflects what timely collective giving can achieve when a family is confronted with a serious medical crisis.",
+      "causeSlug": "medical-financial-relief",
+      "primaryMetric": "₹319,000",
+      "primaryMetricLabel": "raised toward this case",
+      "programmeStatus": "COMPLETED",
+      "year": 2025
+    },
+    {
+      "slug": "aliza-critical-care-support",
+      "title": "Standing With Aliza Through Critical Care",
+      "summary": "Baby Aliza Fatima Quadri developed severe pneumonia that progressed to Acute Respiratory Distress Syndrome (ARDS) with refractory hypoxemia, leaving her in need of advanced respiratory and intensive care. After High Frequency Oscillatory Ventilation (HFOV) was unable to stabilise her condition, she required veno-venous ECMO support, mechanical ventilation, IV antibiotics, and continued treatment in the Pediatric Intensive Care Unit at KIMS Hospitals. Amaana Foundation mobilized an urgent medical-aid appeal and, through the generosity of donors, raised ₹482,700 toward her treatment. The Foundation team personally delivered the support to her family, who confirmed receipt and expressed their gratitude to everyone who stood with them during this critical period. At the time of the appeal update, Aliza remained under intensive treatment, so the fundraising appeal was completed while her medical recovery was still ongoing.",
+      "story": "Baby Aliza Fatima Quadri developed severe pneumonia that progressed to Acute Respiratory Distress Syndrome (ARDS) with refractory hypoxemia, leaving her in need of advanced respiratory and intensive care. After High Frequency Oscillatory Ventilation (HFOV) was unable to stabilise her condition, she required veno-venous ECMO support, mechanical ventilation, IV antibiotics, and continued treatment in the Pediatric Intensive Care Unit at KIMS Hospitals. Amaana Foundation mobilized an urgent medical-aid appeal and, through the generosity of donors, raised ₹482,700 toward her treatment. The Foundation team personally delivered the support to her family, who confirmed receipt and expressed their gratitude to everyone who stood with them during this critical period. At the time of the appeal update, Aliza remained under intensive treatment, so the fundraising appeal was completed while her medical recovery was still ongoing.",
+      "causeSlug": "medical-financial-relief",
+      "primaryMetric": "₹482,700",
+      "primaryMetricLabel": "raised toward this case",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "severe-burn-treatment-support",
+      "title": "Supporting a Mother Through Severe Burn Treatment",
+      "summary": "After suffering 45% severe burn injuries, a single mother of two required continued medical treatment at a time when her family had already exhausted much of its financial capacity. Around ₹4.2 lakh had already been spent on her care before the family approached Amaana Foundation for support. After reviewing the documents and verifying the case, Amaana mobilized a medical-aid appeal and raised ₹72,000. The amount was handed directly to the patient’s daughter to support the ongoing treatment need.",
+      "story": "After suffering 45% severe burn injuries, a single mother of two required continued medical treatment at a time when her family had already exhausted much of its financial capacity. Around ₹4.2 lakh had already been spent on her care before the family approached Amaana Foundation for support. After reviewing the documents and verifying the case, Amaana mobilized a medical-aid appeal and raised ₹72,000. The amount was handed directly to the patient’s daughter to support the ongoing treatment need.",
+      "causeSlug": "medical-financial-relief",
+      "primaryMetric": "₹72,000",
+      "primaryMetricLabel": "raised toward this case",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "jewellery-loan-intervention",
+      "title": "Restoring Financial Breathing Room for an Auto Driver’s Family",
+      "summary": "An auto-rickshaw driver and father of two, was supporting his family on a modest and uncertain household income while living in rented accommodation. One son relied on irregular daily-wage work with no permanent employment, while his younger son had ongoing medical needs. Medical and household pressures had forced the family to pledge jewellery and take on debt, with interest continuing to increase the burden. After reviewing the loan paperwork and verifying the situation, Amaana Foundation chose to resolve the case privately rather than launch a public appeal. ₹138,300 was pooled by Amaana team members and friends, the outstanding loan was cleared, and the family’s pledged jewellery was released and returned.",
+      "story": "An auto-rickshaw driver and father of two, was supporting his family on a modest and uncertain household income while living in rented accommodation. One son relied on irregular daily-wage work with no permanent employment, while his younger son had ongoing medical needs. Medical and household pressures had forced the family to pledge jewellery and take on debt, with interest continuing to increase the burden. After reviewing the loan paperwork and verifying the situation, Amaana Foundation chose to resolve the case privately rather than launch a public appeal. ₹138,300 was pooled by Amaana team members and friends, the outstanding loan was cleared, and the family’s pledged jewellery was released and returned.",
+      "causeSlug": "medical-financial-relief",
+      "primaryMetric": "₹138,300",
+      "primaryMetricLabel": "privately pooled · debt cleared",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "hyderabad-flood-relief-2020",
+      "title": "When Hyderabad Flooded, Our Community Responded",
+      "summary": "In October–November 2020, during Amaana’s early grassroots phase and before the Foundation was formally registered, the team responded to families affected by the Hyderabad floods through a three-phase relief effort. Support included ration and expanded relief kits, direct assistance to affected households, and coordinated help through trusted local organisations. Across the first two phases, 82 ration kits were distributed in Baba Nagar and Balapur and a further 60 expanded relief kits were provided for assessed flood-affected families, with Safa Baitul Maal supporting on-ground assessment and beneficiary coordination. A third phase included a designated ₹50,000 donor transfer for further relief support.",
+      "story": "In October–November 2020, during Amaana’s early grassroots phase and before the Foundation was formally registered, the team responded to families affected by the Hyderabad floods through a three-phase relief effort. Support included ration and expanded relief kits, direct assistance to affected households, and coordinated help through trusted local organisations. Across the first two phases, 82 ration kits were distributed in Baba Nagar and Balapur and a further 60 expanded relief kits were provided for assessed flood-affected families, with Safa Baitul Maal supporting on-ground assessment and beneficiary coordination. A third phase included a designated ₹50,000 donor transfer for further relief support.",
+      "causeSlug": "emergency-humanitarian-relief",
+      "primaryMetric": "3 phases",
+      "primaryMetricLabel": "October–November 2020",
+      "year": 2020,
+      "programmeStatus": "HISTORICAL",
+      "facts": [
+        "Phase 1: approximately ₹125,000 raised; 82 ration kits worth approximately ₹60,000 distributed in Baba Nagar and Balapur.",
+        "Phase 1 also supported affected households directly and through HHF, Sakina Foundation, Deccanistan and Jamaat-e-Islami Hind.",
+        "Phase 2: 60 expanded relief kits worth over ₹100,000 handed to Safa Baitul Maal for assessed families.",
+        "Phase 3: a designated ₹50,000 donor contribution transferred to Safa Baitul Maal.",
+        "These activities were carried out by the founding team before formal registration. No exact unique-beneficiary total is available."
+      ]
+    },
+    {
+      "slug": "covid-essential-support-2020",
+      "title": "Responding to Families During the COVID-19 Crisis",
+      "summary": "During the COVID-19 crisis in 2020, the family-led effort that would later become Amaana Foundation responded to households facing sudden income loss, food insecurity and severe uncertainty. Alongside the first Eid Gift Kits initiative, the founding team provided ration and essential-support assistance to families in need through its local community network.",
+      "story": "During the COVID-19 crisis in 2020, the family-led effort that would later become Amaana Foundation responded to households facing sudden income loss, food insecurity and severe uncertainty. Alongside the first Eid Gift Kits initiative, the founding team provided ration and essential-support assistance to families in need through its local community network.\n\nThese early distributions took place before Amaana had formal organizational systems and standardized annual reporting. The work forms an important part of Amaana's grassroots history, but complete beneficiary and financial totals are not available today. Rather than reconstruct figures that cannot be verified, Amaana records the initiative honestly as part of its early emergency response.",
+      "causeSlug": "emergency-humanitarian-relief",
+      "primaryMetric": null,
+      "primaryMetricLabel": null,
+      "year": 2020,
+      "programmeStatus": "HISTORICAL"
+    },
+    {
+      "slug": "dates-distribution",
+      "title": "Sharing the Blessing of Iftar",
+      "summary": "Dates are a simple but meaningful part of Ramadan and the breaking of the fast. Through Amaana Foundation’s Dates Distribution initiative, this small act of giving has been carried forward year after year as part of our seasonal community support. Across the four documented years from 2023 to 2026, 420 kg of dates were distributed, with the programme growing from 78 kg in 2023 to 162 kg in 2026.",
+      "story": "Dates are a simple but meaningful part of Ramadan and the breaking of the fast. Through Amaana Foundation’s Dates Distribution initiative, this small act of giving has been carried forward year after year as part of our seasonal community support. Across the four documented years from 2023 to 2026, 420 kg of dates were distributed, with the programme growing from 78 kg in 2023 to 162 kg in 2026.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "420 kg",
+      "primaryMetricLabel": "dates distributed · 2023–2026",
+      "startYear": 2023,
+      "endYear": 2026,
+      "programmeStatus": "RECURRING"
+    },
+    {
+      "slug": "dates-distribution-2023",
+      "title": "2023 — The First Documented Dates Distribution",
+      "summary": "In 2023, Amaana Foundation distributed 78 kg of dates as part of its Ramadan seasonal outreach. This is the earliest year for which a confirmed Dates Distribution quantity is currently available in the Foundation’s records, forming the starting point of the documented four-year initiative.",
+      "story": "In 2023, Amaana Foundation distributed 78 kg of dates as part of its Ramadan seasonal outreach. This is the earliest year for which a confirmed Dates Distribution quantity is currently available in the Foundation’s records, forming the starting point of the documented four-year initiative.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "78 kg",
+      "primaryMetricLabel": "dates distributed in 2023",
+      "year": 2023,
+      "parentSlug": "dates-distribution",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "dates-distribution-2024",
+      "title": "2024 — Growing the Distribution",
+      "summary": "The Dates Distribution initiative continued in 2024 with 90 kg of dates distributed during the Ramadan season. The increase from the previous year reflected the continuation and gradual growth of a simple, recurring form of community support.",
+      "story": "The Dates Distribution initiative continued in 2024 with 90 kg of dates distributed during the Ramadan season. The increase from the previous year reflected the continuation and gradual growth of a simple, recurring form of community support.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "90 kg",
+      "primaryMetricLabel": "dates distributed in 2024",
+      "year": 2024,
+      "parentSlug": "dates-distribution",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "dates-distribution-2025",
+      "title": "2025 — Continuing the Ramadan Tradition",
+      "summary": "In 2025, Amaana Foundation again distributed 90 kg of dates, maintaining the initiative as part of its recurring Ramadan outreach. The year represents continuity: sustaining a dependable seasonal programme alongside Amaana’s other Ramadan and community-support efforts.",
+      "story": "In 2025, Amaana Foundation again distributed 90 kg of dates, maintaining the initiative as part of its recurring Ramadan outreach. The year represents continuity: sustaining a dependable seasonal programme alongside Amaana’s other Ramadan and community-support efforts.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "90 kg",
+      "primaryMetricLabel": "dates distributed in 2025",
+      "year": 2025,
+      "parentSlug": "dates-distribution",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "dates-distribution-2026",
+      "title": "2026 — Our Largest Documented Dates Distribution Yet",
+      "summary": "The initiative expanded significantly in 2026, with 162 kg of dates distributed — the highest documented annual quantity between 2023 and 2026. This brought Amaana Foundation’s four-year documented Dates Distribution total to 420 kg.",
+      "story": "The initiative expanded significantly in 2026, with 162 kg of dates distributed — the highest documented annual quantity between 2023 and 2026. This brought Amaana Foundation’s four-year documented Dates Distribution total to 420 kg.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "162 kg",
+      "primaryMetricLabel": "dates distributed in 2026",
+      "year": 2026,
+      "parentSlug": "dates-distribution",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "qurbani-meat-distribution",
+      "title": "Qurbani Meat Distribution",
+      "summary": "Amaana Foundation’s Qurbani Meat Distribution initiative connects the spirit of sacrifice with practical community care by helping fresh meat reach families and individuals who may otherwise have limited access to it. Across the documented 2025 and 2026 drives, 43 sacrificial animals contributed to distributions that reached 500+ families, with beneficiaries selected from vulnerable and lower-income households.",
+      "story": "Amaana Foundation’s Qurbani Meat Distribution initiative connects the spirit of sacrifice with practical community care by helping fresh meat reach families and individuals who may otherwise have limited access to it. Across the documented 2025 and 2026 drives, 43 sacrificial animals contributed to distributions that reached 500+ families, with beneficiaries selected from vulnerable and lower-income households.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "500+",
+      "primaryMetricLabel": "family distributions · 2025–2026",
+      "startYear": 2025,
+      "endYear": 2026,
+      "programmeStatus": "RECURRING"
+    },
+    {
+      "slug": "qurbani-meat-distribution-2025",
+      "title": "2025 — Qurbani Meat Distribution",
+      "summary": "In 2025, Amaana Foundation carried out a Qurbani Meat Distribution drive using 15 sacrificial animals. Meat was distributed to 150+ families, with beneficiaries identified before distribution so that the support could be directed toward households facing genuine need. The drive was made possible through donor participation and community support.",
+      "story": "In 2025, Amaana Foundation carried out a Qurbani Meat Distribution drive using 15 sacrificial animals. Meat was distributed to 150+ families, with beneficiaries identified before distribution so that the support could be directed toward households facing genuine need. The drive was made possible through donor participation and community support.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "150+",
+      "primaryMetricLabel": "families reached in 2025",
+      "year": 2025,
+      "parentSlug": "qurbani-meat-distribution",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "qurbani-meat-distribution-2026",
+      "title": "2026 — Qurbani Meat Distribution",
+      "summary": "Amaana Foundation expanded its Qurbani Meat Distribution in 2026 with 28 sheep. Approximately 380 kg was handled overall, with unusable portions removed during preparation before the meat was packed into 350 clean boxes of roughly 1 kg each. The distribution reached 350+ families, including daily-wage earners, labourers, residents of lower-income settlements, widows, orphans, madrasa and Hifdh students, house helps, and other households facing financial hardship.",
+      "story": "Amaana Foundation expanded its Qurbani Meat Distribution in 2026 with 28 sheep. Approximately 380 kg was handled overall, with unusable portions removed during preparation before the meat was packed into 350 clean boxes of roughly 1 kg each. The distribution reached 350+ families, including daily-wage earners, labourers, residents of lower-income settlements, widows, orphans, madrasa and Hifdh students, house helps, and other households facing financial hardship.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "350+",
+      "primaryMetricLabel": "families reached in 2026",
+      "year": 2026,
+      "parentSlug": "qurbani-meat-distribution",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "eid-gift-kits",
+      "title": "Eid Gift Kits — Celebrating Eid With Dignity",
+      "summary": "Amaana Foundation’s Eid Gift Kits initiative is its longest-running annual programme, beginning in Ramadan 2020 as a family-led response during the COVID period in Hyderabad. Each year, carefully assembled household packages are provided to financially vulnerable families so they can prepare for Eid with greater dignity and ease. The contents and cost of each kit are adjusted to market conditions and household needs. From 85 families in 2020 to 710 families in 2026, the initiative has recorded 2,830 family distributions across seven annual drives.",
+      "story": "Amaana Foundation’s Eid Gift Kits initiative is its longest-running annual programme, beginning in Ramadan 2020 as a family-led response during the COVID period in Hyderabad. Each year, carefully assembled household packages are provided to financially vulnerable families so they can prepare for Eid with greater dignity and ease. The contents and cost of each kit are adjusted to market conditions and household needs. From 85 families in 2020 to 710 families in 2026, the initiative has recorded 2,830 family distributions across seven annual drives.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "2,830",
+      "primaryMetricLabel": "family distributions · seven annual drives",
+      "startYear": 2020,
+      "endYear": 2026,
+      "programmeStatus": "RECURRING"
+    },
+    {
+      "slug": "eid-gift-kits-2020",
+      "title": "2020 — Where the Eid Gift Kits Journey Began",
+      "summary": "In Ramadan 2020, during the uncertainty of the COVID period, the family-led effort that would later become Amaana Foundation began its Eid support programme by preparing and distributing gift kits to 85 families in Hyderabad. Each kit was valued at approximately ₹797 and contained practical household and festive essentials intended to help families prepare for Eid with dignity. This first drive became the foundation for what would grow into Amaana’s flagship annual initiative.",
+      "story": "In Ramadan 2020, during the uncertainty of the COVID period, the family-led effort that would later become Amaana Foundation began its Eid support programme by preparing and distributing gift kits to 85 families in Hyderabad. Each kit was valued at approximately ₹797 and contained practical household and festive essentials intended to help families prepare for Eid with dignity. This first drive became the foundation for what would grow into Amaana’s flagship annual initiative.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "85",
+      "primaryMetricLabel": "families reached in 2020",
+      "year": 2020,
+      "parentSlug": "eid-gift-kits",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "eid-gift-kits-2021",
+      "title": "2021 — Growing Beyond the First Year",
+      "summary": "The Eid Gift Kits initiative continued in 2021 and more than doubled its first-year reach. 171 families received Eid support, with each kit valued at approximately ₹1,327. The growth reflected increasing community participation and strengthened the team’s commitment to making the programme an annual effort rather than a one-time response.",
+      "story": "The Eid Gift Kits initiative continued in 2021 and more than doubled its first-year reach. 171 families received Eid support, with each kit valued at approximately ₹1,327. The growth reflected increasing community participation and strengthened the team’s commitment to making the programme an annual effort rather than a one-time response.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "171",
+      "primaryMetricLabel": "families reached in 2021",
+      "year": 2021,
+      "parentSlug": "eid-gift-kits",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "eid-gift-kits-2022",
+      "title": "2022 — Expanding Reach and Responding to Individual Needs",
+      "summary": "In 2022, the programme expanded significantly to support 339 families, with the standard kit valued at approximately ₹1,430. Records from the year also note 12 customised kits, reflecting an effort to respond to particular household needs rather than treating every family identically. The drive marked another major step in the programme’s scale and organisation.",
+      "story": "In 2022, the programme expanded significantly to support 339 families, with the standard kit valued at approximately ₹1,430. Records from the year also note 12 customised kits, reflecting an effort to respond to particular household needs rather than treating every family identically. The drive marked another major step in the programme’s scale and organisation.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "339",
+      "primaryMetricLabel": "families reached in 2022",
+      "year": 2022,
+      "parentSlug": "eid-gift-kits",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "eid-gift-kits-2023",
+      "title": "2023 — More Than 400 Families Supported",
+      "summary": "Amaana’s Eid Gift Kits drive reached 408 families in 2023. The actual kit cost was recorded at approximately ₹1,519, while the programme worked with a rounded/discounted figure of about ₹1,500 per kit. By this stage, the initiative had grown from a small family-led effort into a recurring community programme supporting hundreds of households each Ramadan.",
+      "story": "Amaana’s Eid Gift Kits drive reached 408 families in 2023. The actual kit cost was recorded at approximately ₹1,519, while the programme worked with a rounded/discounted figure of about ₹1,500 per kit. By this stage, the initiative had grown from a small family-led effort into a recurring community programme supporting hundreds of households each Ramadan.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "408",
+      "primaryMetricLabel": "families reached in 2023",
+      "year": 2023,
+      "parentSlug": "eid-gift-kits",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "eid-gift-kits-2024",
+      "title": "2024 — Sustaining a Growing Annual Commitment",
+      "summary": "In 2024, Amaana Foundation provided Eid Gift Kits to 467 families, with each kit valued at approximately ₹1,500. The drive continued the initiative’s steady year-on-year growth while preserving its original purpose: helping financially vulnerable households prepare for Eid with useful, dignified support.",
+      "story": "In 2024, Amaana Foundation provided Eid Gift Kits to 467 families, with each kit valued at approximately ₹1,500. The drive continued the initiative’s steady year-on-year growth while preserving its original purpose: helping financially vulnerable households prepare for Eid with useful, dignified support.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "467",
+      "primaryMetricLabel": "families reached in 2024",
+      "year": 2024,
+      "parentSlug": "eid-gift-kits",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "eid-gift-kits-2025",
+      "title": "2025 — Reaching 650 Families",
+      "summary": "The 2025 Eid Gift Kits drive marked another major expansion, reaching 650 families. Each kit was valued at approximately ₹1,709, with the programme continuing to combine staple and festive household essentials for Eid. Separate records also show that approximately ₹15,000 in packaging and transport costs was covered outside the main donations, helping preserve donor contributions for the intended kit distribution.",
+      "story": "The 2025 Eid Gift Kits drive marked another major expansion, reaching 650 families. Each kit was valued at approximately ₹1,709, with the programme continuing to combine staple and festive household essentials for Eid. Separate records also show that approximately ₹15,000 in packaging and transport costs was covered outside the main donations, helping preserve donor contributions for the intended kit distribution.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "650",
+      "primaryMetricLabel": "families reached in 2025",
+      "year": 2025,
+      "parentSlug": "eid-gift-kits",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "eid-gift-kits-2026",
+      "title": "2026 — The Largest Eid Gift Kits Drive Yet",
+      "summary": "In 2026, Amaana Foundation’s Eid Gift Kits initiative reached its largest documented scale to date, supporting 710 families. Each kit was valued at approximately ₹1,783 and was designed to help households prepare for Eid with a meaningful combination of staple and festive essentials. The year reflected the programme’s growth from 85 families in 2020 to 710 families in 2026, while retaining the same principle at its core: support should preserve dignity and respond to genuine household need.",
+      "story": "In 2026, Amaana Foundation’s Eid Gift Kits initiative reached its largest documented scale to date, supporting 710 families. Each kit was valued at approximately ₹1,783 and was designed to help households prepare for Eid with a meaningful combination of staple and festive essentials. The year reflected the programme’s growth from 85 families in 2020 to 710 families in 2026, while retaining the same principle at its core: support should preserve dignity and respond to genuine household need.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "710",
+      "primaryMetricLabel": "families reached in 2026",
+      "year": 2026,
+      "parentSlug": "eid-gift-kits",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "taleem",
+      "title": "Amaana Taleem Initiative — Education Support With Purpose and Accountability",
+      "summary": "Amaana Taleem Initiative brings together practical educational assistance and faith-based learning sponsorship for children and young people whose families may struggle to meet the cost of learning. The initiative began with identifiable, verifiable needs — including stationery kits for 50 orphan children in Borabanda, Hyderabad, in 2025 — and now also facilitates continuing sponsorship for Qur'an Nazira and Hifdh day scholars. As of September 2026, 25 students across Nazira and Hifdh were being sponsored through Amaana by multiple donors. As the initiative develops, Amaana also aims to extend verified support to school and college students whose education may otherwise be disrupted by financial hardship.",
+      "story": "Amaana Taleem Initiative brings together practical educational assistance and faith-based learning sponsorship for children and young people whose families may struggle to meet the cost of learning. The initiative began with identifiable, verifiable needs — including stationery kits for 50 orphan children in Borabanda, Hyderabad, in 2025 — and now also facilitates continuing sponsorship for Qur'an Nazira and Hifdh day scholars. As of September 2026, 25 students across Nazira and Hifdh were being sponsored through Amaana by multiple donors. As the initiative develops, Amaana also aims to extend verified support to school and college students whose education may otherwise be disrupted by financial hardship.",
+      "causeSlug": "amaana-taleem",
+      "primaryMetric": "25",
+      "primaryMetricLabel": "Nazira / Hifdh students combined · September 2026",
+      "programmeStatus": "RECURRING"
+    },
+    {
+      "slug": "taleem-initiative-2025",
+      "title": "Stationery Kits for Orphan Students",
+      "summary": "In 2025, Amaana Taleem Initiative provided stationery kits to 50 orphan children through the Al Khair community/masjid network in Borabanda, Hyderabad. The distribution focused on a simple but important educational need: ensuring children had essential learning materials available for their studies. The support was practical, identifiable and directly delivered to the intended students.",
+      "story": "In 2025, Amaana Taleem Initiative provided stationery kits to 50 orphan children through the Al Khair community/masjid network in Borabanda, Hyderabad. The distribution focused on a simple but important educational need: ensuring children had essential learning materials available for their studies. The support was practical, identifiable and directly delivered to the intended students.",
+      "causeSlug": "amaana-taleem",
+      "primaryMetric": "50",
+      "primaryMetricLabel": "orphan children · Borabanda, Hyderabad",
+      "parentSlug": "taleem",
+      "programmeStatus": "COMPLETED",
+      "year": 2025
+    },
+    {
+      "slug": "taleem-hifdh-sponsorship",
+      "title": "Sponsor a Hifdh Student",
+      "summary": "Through Amaana Taleem Initiative, donors can support day scholars engaged in Hifdh — the memorisation of the Qur'an — at Al Madarsatul Islamia Lithafizil Quranil Kareem. The sponsorship pathway is intended to help students continue their Qur'anic education while easing part of the financial pressure on families that may otherwise struggle to sustain it. As of September 2026, 25 students across Amaana's Qur'an Nazira and Hifdh sponsorships were being supported by multiple donors.",
+      "story": "Through Amaana Taleem Initiative, donors can support day scholars engaged in Hifdh — the memorisation of the Qur'an — at Al Madarsatul Islamia Lithafizil Quranil Kareem. The sponsorship pathway is intended to help students continue their Qur'anic education while easing part of the financial pressure on families that may otherwise struggle to sustain it. As of September 2026, 25 students across Amaana's Qur'an Nazira and Hifdh sponsorships were being supported by multiple donors.",
+      "causeSlug": "amaana-taleem",
+      "primaryMetric": null,
+      "primaryMetricLabel": null,
+      "parentSlug": "taleem",
+      "programmeStatus": "ONGOING"
+    },
+    {
+      "slug": "taleem-nazira-sponsorship",
+      "title": "Sponsor Qur’an Nazira Education",
+      "summary": "Amaana Taleem Initiative facilitates sponsorship for students learning Qur'an Nazira — the guided reading of the Qur'an with regular instruction and practice — at Al Madarsatul Islamia Lithafizil Quranil Kareem. Donor support helps students continue their Qur'anic learning where household finances may otherwise make regular education difficult. As of September 2026, 25 students across Amaana's Nazira and Hifdh sponsorships were being supported through multiple donors.",
+      "story": "Amaana Taleem Initiative facilitates sponsorship for students learning Qur'an Nazira — the guided reading of the Qur'an with regular instruction and practice — at Al Madarsatul Islamia Lithafizil Quranil Kareem. Donor support helps students continue their Qur'anic learning where household finances may otherwise make regular education difficult. As of September 2026, 25 students across Amaana's Nazira and Hifdh sponsorships were being supported through multiple donors.",
+      "causeSlug": "amaana-taleem",
+      "primaryMetric": null,
+      "primaryMetricLabel": null,
+      "parentSlug": "taleem",
+      "programmeStatus": "ONGOING"
+    },
+    {
+      "slug": "taleem-school-college-sponsorship",
+      "title": "Sponsor a Student’s School or College Education",
+      "summary": "Amaana Taleem Initiative is designed to extend educational assistance to verified students from financially vulnerable households whose schooling or college education may be at risk because of fees or other essential academic costs. Support under this pathway will be matched to a clearly identified educational need, with verification and responsible follow-through before assistance is provided.",
+      "story": "Amaana Taleem Initiative is designed to extend educational assistance to verified students from financially vulnerable households whose schooling or college education may be at risk because of fees or other essential academic costs. Support under this pathway will be matched to a clearly identified educational need, with verification and responsible follow-through before assistance is provided.",
+      "causeSlug": "amaana-taleem",
+      "primaryMetric": null,
+      "primaryMetricLabel": null,
+      "parentSlug": "taleem",
+      "programmeStatus": "EXPANDING"
+    },
+    {
+      "slug": "winter-relief",
+      "title": "Winter Drive 2025–26 — Warmth for Children and Vulnerable Families",
+      "summary": "During the 2025–26 winter season, Amaana Foundation carried out a multi-phase Winter Drive to provide practical cold-weather essentials to children and families facing winter without adequate protection. The support included sweaters, blankets and beanie caps and reached madrasa students, orphan children, widows, daily-wage labourers, domestic workers and other people in need.",
+      "story": "During the 2025–26 winter season, Amaana Foundation carried out a multi-phase Winter Drive to provide practical cold-weather essentials to children and families facing winter without adequate protection. The support included sweaters, blankets and beanie caps and reached madrasa students, orphan children, widows, daily-wage labourers, domestic workers and other people in need.\n\nIn Phase 1, support was distributed at Al Madarsatul Islamia LiTahfizil Quranil Kareem, FeelKhana, Mallepally, reaching 96 madrasa students, including boys and girls from approximately ages 2 to 18 and underprivileged orphan children. In Phase 2, Amaana worked in collaboration with Al Khair Society at Al Khair Masjid, Hyderabad, where 101 Winter Kits were distributed. The phase records use different measures and are reported separately.",
+      "causeSlug": "seasonal-relief",
+      "primaryMetric": "96 students",
+      "primaryMetricLabel": "Phase 1 · 101 Winter Kits in Phase 2",
+      "startYear": 2025,
+      "endYear": 2026,
+      "programmeStatus": "COMPLETED",
+      "facts": [
+        "Phase 1: 96 madrasa students.",
+        "Phase 2: 101 Winter Kits.",
+        "These are separate phase measures, not one combined beneficiary total."
+      ],
+      "dataCaveat": "Broader 234 figure has unresolved people/kit terminology; not approved as a definitive public metric."
+    }
+  ]
+}

@@ -89,10 +89,10 @@ export const eidGrowth = [
 ] as const;
 
 export const homepageImpact = [
-  { value: "710", label: "Eid Gift Kits distributed in 2026" },
-  { value: "350+", label: "families reached through Qurbani Meat Distribution 2026" },
-  { value: "234+", label: "campaign-reported Winter Drive beneficiaries" },
-  { value: "162 kg", label: "dates distributed" },
+  { value: "2,830", label: "family distributions · seven Eid Gift Kit drives, 2020–2026" },
+  { value: "500+", label: "family distributions · Qurbani drives, 2025–2026" },
+  { value: "420 kg", label: "dates distributed · Ramadan drives, 2023–2026" },
+  { value: "25", label: "Nazira / Hifdh students combined · September 2026" },
 ] as const;
 
 export const foundingStory = {

@@ -176,7 +176,7 @@ export const getImpactPageData = cache(async () => {
  */
 export const getAppealsIndexData = cache(async () => {
   return prisma.appeal.findMany({
-    where: { status: { in: ["PUBLISHED", "FUNDED"] } },
+    where: { status: "PUBLISHED" },
     orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
     select: {
       slug: true,

@@ -33,8 +33,8 @@ export default async function ImpactPage() {
         <div className="v2-shell v2-impact-hero-grid">
           <div className="v2-impact-hero-copy">
             <p className="v2-section-label">Impact · evidence · continuity</p>
-            <h1>Impact is not<br />one number.</h1>
-            <p>It is a chain: a need understood, support entrusted, work carried out, and a known outcome documented with enough context to mean something.</p>
+            <h1>Impact, Without Inflated Numbers</h1>
+            <p>Every number on an impact page should be able to answer a second question: what does it represent? Amaana therefore reports programme-level and case-level outcomes rather than collapsing unrelated activities into one marketing total.</p>
             <div className="v2-hero-actions"><a className="v2-button" href="#evidence">Follow the evidence</a><Link className="v2-text-link" href="/transparency">How we report →</Link></div>
           </div>
           <div className="v2-impact-hero-orbit" aria-hidden="true"><span>Need</span><span>Trust</span><strong>Amanah</strong><span>Action</span><span>Outcome</span></div>
