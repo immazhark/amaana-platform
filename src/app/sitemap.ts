@@ -2,6 +2,7 @@ import type { MetadataRoute } from "next";
 import { prisma } from "@/lib/prisma";
 import { PUBLIC_STATIC_ROUTES } from "@/lib/public-routing";
 import { shouldAllowIndexing } from "@/lib/site-indexing";
+import { canListAppealInSitemap } from "@/lib/sitemap-privacy";
 
 const configuredBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
 const base = configuredBase.replace(/\/$/, "");
@@ -20,7 +21,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const [appeals, initiatives, stories, faithContent] = await Promise.all([
     prisma.appeal.findMany({
       where: { status: { in: ["PUBLISHED", "FUNDED", "CLOSED"] } },
-      select: { slug: true, updatedAt: true },
+      select: {
+        slug: true,
+        updatedAt: true,
+        assistanceRequest: {
+          select: {
+            verification: { select: { confidentialityLevel: true } },
+          },
+        },
+      },
     }),
     prisma.initiative.findMany({
       where: {
@@ -45,11 +54,15 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: route.priority,
   }));
 
+  const searchableAppeals = appeals.filter(item =>
+    canListAppealInSitemap(item.assistanceRequest?.verification?.confidentialityLevel),
+  );
+
   return [
     ...staticPages,
     ...initiatives.map(item => ({ url: `${base}/our-work/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.8 })),
     ...stories.map(item => ({ url: `${base}/stories/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.75 })),
     ...faithContent.map(item => ({ url: `${base}/faith-and-reflections/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.7 })),
-    ...appeals.map(item => ({ url: `${base}/appeals/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "weekly" as const, priority: 0.85 })),
+    ...searchableAppeals.map(item => ({ url: `${base}/appeals/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "weekly" as const, priority: 0.85 })),
   ];
 }
