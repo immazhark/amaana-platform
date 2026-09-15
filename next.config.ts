@@ -19,6 +19,12 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,
+  async redirects() {
+    return [
+      { source: "/our-work/winter-drive-2025-26", destination: "/our-work/winter-relief", permanent: true },
+      { source: "/our-work/winter-relief-2025-26", destination: "/our-work/winter-relief", permanent: true },
+    ];
+  },
   async headers() {
     return [
       { source: "/(.*)", headers: securityHeaders },
