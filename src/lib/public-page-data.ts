@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
+import { isAppealOpenForDonations } from "@/lib/appeals";
 import {
   getPublishedFaithContentBySlug,
   getPublishedInitiativeBySlug,
@@ -30,6 +31,7 @@ export const getAppealPageData = cache(async (slug: string) => {
       status: true,
       goalAmount: true,
       amountRaised: true,
+      closesAt: true,
       publishedAt: true,
       updates: {
         where: { isPublic: true },
@@ -184,18 +186,20 @@ export const getAppealsIndexData = cache(async () => {
       summary: true,
       category: true,
       beneficiaryLocation: true,
+      status: true,
       goalAmount: true,
       amountRaised: true,
+      closesAt: true,
     },
   });
 });
 
 /**
- * Donation page projection. Checkout is available only for currently published
- * appeals and receives the minimum context required to explain the donation.
+ * Donation page projection. Checkout is available only while the appeal is
+ * published, below target and inside any configured fundraising window.
  */
 export const getDonationPageData = cache(async (slug: string) => {
-  return prisma.appeal.findFirst({
+  const appeal = await prisma.appeal.findFirst({
     where: { slug, status: "PUBLISHED" },
     select: {
       id: true,
@@ -204,8 +208,15 @@ export const getDonationPageData = cache(async (slug: string) => {
       summary: true,
       beneficiaryLocation: true,
       category: true,
+      status: true,
+      goalAmount: true,
+      amountRaised: true,
+      closesAt: true,
     },
   });
+
+  if (!appeal || !isAppealOpenForDonations(appeal)) return null;
+  return appeal;
 });
 
 /**

@@ -17,53 +17,51 @@ ChatGPT
 ## Current integration checkpoint
 
 - PR #7 repaired the pre-existing lint gate and recalibrated the measured CSS budget; squash-merged as `69c3b0636cfaebabc311475b5a0dc83386a8680a`.
-- Integration CI #463 passed the full verification pipeline after PR #7.
 - PR #6 added the Codex ↔ ChatGPT single-writer continuity protocol; squash-merged as `fd6476710b0a99b6a83997e3c823f9f8d94b6ee0`.
-- PR #8 locked the corrected Winter/newborn facts with structured regression protection; CI #466 passed the full pipeline and the PR was squash-merged as `2a7a4cd0bb454fb0d8e8380188bab6647b03672e`.
-- Old PR #5 was closed without merge and is superseded by PR #8.
+- PR #8 locked the corrected Winter/newborn facts with regression protection; squash-merged as `2a7a4cd0bb454fb0d8e8380188bab6647b03672e` after full green CI.
+- PR #9 reconciled official brand/media/governance source state; squash-merged as `bcc7246a8c9a90d02f76991ac980747647f41df9` after full green CI.
 
 ## Current implementation task
 
-Reconcile stale durable project-state documentation so Codex/ChatGPT do not keep reopening already-resolved inputs or old factual errors.
+Harden the active appeal → donation lifecycle so a fully funded or expired appeal cannot continue accepting designated donations through a direct checkout URL, while preserving completed/funded appeals as public accountability records.
 
 ## Current task branch / PR
 
-- Branch: `docs/reconcile-current-project-state`
-- Base SHA: `2a7a4cd0bb454fb0d8e8380188bab6647b03672e`
-- PR: not opened yet at this checkpoint
+- Branch: `fix/appeal-target-closure`
+- Base SHA: `bcc7246a8c9a90d02f76991ac980747647f41df9`
+- PR: **#10 — Stop designated checkout when an appeal reaches target**
+- Latest task head at this checkpoint includes the public appeal-detail CTA fix after the PR was opened.
+
+## Problem found during source-level journey audit
+
+The appeals index hid records once `amountRaised >= goalAmount`, but donation-page and order-creation logic only checked `status === PUBLISHED`. Because capture reconciliation incremented `amountRaised` without changing the appeal to `FUNDED`, a direct `/donate/[slug]` path could continue accepting a designated donation after the target had already been reached. Appeals with an elapsed `closesAt` could also remain directly donatable if an admin had not manually changed status. A subsequent read-only audit also found the public appeal-detail page used status alone for its Donate CTA, so it needed the same shared eligibility rule.
 
 ## Implemented on current task branch
 
-- Updated `AMAANA_BRAND_FOUNDATION.md` to recognize the supplied official SVG as source artwork and lock the verified colours:
-  - Blue `#466FAA`
-  - Gold `#E0B318`
-- Preserved the user's instruction that this source verification must **not** trigger another palette redesign.
-- Added `docs/CURRENT_SOURCE_RECONCILIATION_2026-09-15.md` to supersede stale older notes about:
-  - brand ZIP extraction being a blocker;
-  - missing programme/initiative media uploads;
-  - governance spelling `Syed Iqba Ali` instead of `Syed Uqba Ali`;
-  - stale Winter/newborn values.
-- Updated `AGENTS.md` so every incoming implementation agent must read the reconciliation file before writing to the repo.
+- Added shared fundraising-state helpers in `src/lib/appeals.ts`:
+  - `isAppealOpenForDonations`
+  - `shouldMarkAppealFunded`
+  - shared amount conversion handling Prisma Decimal-like values.
+- Updated `/appeals` to use the same eligibility rule as checkout instead of a separate amount-only filter.
+- Updated public appeal-detail data to include `closesAt` and changed both appeal-detail Donate CTAs/status display to use the shared active-fundraising rule.
+- Updated `getDonationPageData` to fail closed when a PUBLISHED appeal is at/above target or its close time has passed.
+- Updated `/api/donations/order` to re-check target/close eligibility immediately before creating a Razorpay order.
+- Updated capture reconciliation so the first captured payment that takes a PUBLISHED appeal to or above target moves it to `FUNDED` within the same transaction.
+- Existing in-flight orders remain reconcilable; the change blocks new checkout creation once target closure is known rather than pretending payment races cannot occur.
+- Added `src/lib/appeals.test.ts` covering published/open, at-target, over-target, closed/funded/paused, future/past close dates, Decimal-like values and funded transition threshold logic.
 
 ## Exact next action
 
-1. Open a focused documentation/state-reconciliation PR.
-2. Run CI and merge when green.
-3. Continue the remaining correction/release queue from the latest integration head, prioritizing actual release gates rather than stale asset-collection work:
-   - payment E2E;
-   - assistance E2E;
-   - responsive/browser QA;
-   - accessibility verification;
-   - production-like performance/CWV;
-   - rendered SEO/crawl validation;
-   - CA/legal confirmation inputs.
+1. Let the latest PR #10 CI run complete after the appeal-detail surface fix.
+2. If green, merge PR #10 into `phase-public-site-rebuild`.
+3. Continue the source-level donor/assistance journey audit from the new integration head, then move into provider/browser E2E release gates.
 
 ## Repository areas currently sensitive
 
+- donation/payment reconciliation and appeal lifecycle
 - canonical programme/factual sources
 - public programme/media provenance data
 - governance/compliance copy
-- donation/payment and assistance workflows
 - current visual/colour direction — do not redesign without explicit user request
 
 ## Locked facts relevant to implementation

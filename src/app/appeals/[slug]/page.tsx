@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { formatINR } from "@/lib/appeals";
+import { formatINR, isAppealOpenForDonations } from "@/lib/appeals";
 import { getAppealPageData } from "@/lib/public-page-data";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -40,7 +40,7 @@ export default async function AppealDetailPage({ params }: Props) {
   const raised = appeal.amountRaised.toNumber();
   const goal = appeal.goalAmount.toNumber();
   const progress = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
-  const isOpen = appeal.status === "PUBLISHED";
+  const isOpen = isAppealOpenForDonations(appeal);
 
   return (
     <div className="v2-home v2-appeal-detail-page">

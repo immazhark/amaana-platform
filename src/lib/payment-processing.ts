@@ -1,4 +1,5 @@
 import { NotificationChannel } from "@prisma/client";
+import { shouldMarkAppealFunded } from "@/lib/appeals";
 import { createReceiptNumber } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 
@@ -41,10 +42,23 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
     });
 
     if (changed.count === 1) {
-      await tx.appeal.update({
+      const appeal = await tx.appeal.update({
         where: { id: donation.appealId },
         data: { amountRaised: { increment: donation.amount } },
+        select: {
+          id: true,
+          status: true,
+          goalAmount: true,
+          amountRaised: true,
+        },
       });
+
+      if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) {
+        await tx.appeal.updateMany({
+          where: { id: appeal.id, status: "PUBLISHED" },
+          data: { status: "FUNDED" },
+        });
+      }
 
       await tx.notification.create({
         data: {
