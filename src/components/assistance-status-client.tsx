@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { parsePrivateTrackingFragment } from "@/lib/private-tracking";
+import { parsePrivateTrackingLocation, privateTrackingFragment } from "@/lib/private-tracking";
 
 type TrackingRecord = {
   found: true;
@@ -39,10 +39,14 @@ export function AssistanceStatusClient() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const credentials = parsePrivateTrackingFragment(window.location.hash);
+    const credentials = parsePrivateTrackingLocation(window.location.search, window.location.hash);
     if (!credentials) {
       setLoading(false);
       return;
+    }
+
+    if (window.location.search) {
+      window.history.replaceState(null, "", `${window.location.pathname}${privateTrackingFragment(credentials)}`);
     }
 
     setReference(credentials.reference);
