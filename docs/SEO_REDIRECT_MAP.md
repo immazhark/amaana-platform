@@ -6,6 +6,8 @@ This file records intentional permanent redirects for legacy or superseded publi
 | --- | --- | --- |
 | `/our-work/winter-drive-2025-26` | `/our-work/winter-relief` | Consolidated Winter Drive naming under the canonical seasonal-relief programme record. |
 | `/our-work/winter-relief-2025-26` | `/our-work/winter-relief` | Consolidated year/status variant into the stable canonical programme URL. |
+| `/programmes/emergency-humanitarian-relief` | `/programmes/emergency-relief` | Keep the public category URL concise and aligned with the SEO master while the internal category slug remains `emergency-humanitarian-relief`. |
+| `/programmes/seasonal-essentials` | `/programmes/seasonal-relief` | Align the category landing URL with the SEO master and remove a second indexable route for the same content. |
 
 ## Rules
 
