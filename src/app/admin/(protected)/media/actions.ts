@@ -3,6 +3,7 @@
 import { MediaKind } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { hasPermission, requirePermission } from "@/lib/auth";
+import { mediaPublicationIssues, parseMediaPublicationReview } from "@/lib/media-governance";
 import { prisma } from "@/lib/prisma";
 import { canRenderPublicMedia } from "@/lib/public-media";
 import { deletePublicMediaObject, uploadPublicMediaFile, validatePublicMediaFile } from "@/lib/storage";
@@ -56,8 +57,6 @@ export async function createMediaAsset(formData: FormData) {
   const sourceYearRaw = Number(formData.get("sourceYear"));
   const sortOrderRaw = Number(formData.get("sortOrder"));
 
-  // Upload only after all user-entered metadata has passed validation so a rejected
-  // record does not leave a preventable orphan in public media storage.
   const uploaded = file ? await uploadPublicMediaFile(file) : null;
 
   let asset;
@@ -111,7 +110,7 @@ export async function updateMediaAsset(formData: FormData) {
       sourceYear: Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null,
       sortOrder: Number.isInteger(sortOrderRaw) ? sortOrderRaw : 0,
     } }),
-    prisma.auditEvent.create({ data: { actorId: user.id, action: "media.metadata_updated", entityType: "MediaAsset", entityId: id } }),
+    prisma.auditEvent.create({ data: { actorId: user.id, action: "media.metadata_updated", entityType: "MediaAsset", entityId: id, metadata: { wasPublic: asset.isPublic } } }),
   ]);
   revalidatePath("/admin/media");
 }
@@ -128,10 +127,28 @@ export async function setMediaPublication(formData: FormData) {
       : "Media needs a safe public URL and, for images, meaningful alt text before publication.");
   }
 
-  await prisma.$transaction([
-    prisma.mediaAsset.update({ where: { id }, data: { isPublic: publish, privacyApprovedAt: publish ? new Date() : null } }),
-    prisma.auditEvent.create({ data: { actorId: user.id, action: publish ? "media.published" : "media.unpublished", entityType: "MediaAsset", entityId: id } }),
-  ]);
+  if (publish) {
+    const review = parseMediaPublicationReview(formData);
+    const issues = mediaPublicationIssues(review);
+    if (issues.length) throw new Error(issues.join(" "));
+
+    await prisma.$transaction([
+      prisma.mediaAsset.update({ where: { id }, data: { isPublic: true, privacyApprovedAt: new Date() } }),
+      prisma.auditEvent.create({ data: {
+        actorId: user.id,
+        action: "media.privacy_reviewed",
+        entityType: "MediaAsset",
+        entityId: id,
+        metadata: review,
+      } }),
+      prisma.auditEvent.create({ data: { actorId: user.id, action: "media.published", entityType: "MediaAsset", entityId: id, metadata: { privacyGate: "passed" } } }),
+    ]);
+  } else {
+    await prisma.$transaction([
+      prisma.mediaAsset.update({ where: { id }, data: { isPublic: false, privacyApprovedAt: null } }),
+      prisma.auditEvent.create({ data: { actorId: user.id, action: "media.unpublished", entityType: "MediaAsset", entityId: id } }),
+    ]);
+  }
 
   revalidatePath("/admin/media");
   revalidatePath("/");
