@@ -4,7 +4,7 @@ import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { validateImage } from './check-public-media.mjs';
+import { validateImage, validatePublicMediaBoundaryPath } from './check-public-media.mjs';
 
 const require = createRequire(import.meta.url);
 const sharp = createRequire(require.resolve('next/package.json'))('sharp');
@@ -26,3 +26,37 @@ test('public media validation accepts real pixels and rejects corruption', async
   await assert.rejects(validateImage(truncated));
 });
 
+test('public media boundary rejects obvious private evidence and raw sensitive sources', () => {
+  assert.throws(
+    () => validatePublicMediaBoundaryPath('aid/case/aadhaar-card.webp'),
+    /identity, banking, payment-route or medical-document/i,
+  );
+  assert.throws(
+    () => validatePublicMediaBoundaryPath('medical/case/hospital-bill.jpg'),
+    /identity, banking, payment-route or medical-document/i,
+  );
+  assert.throws(
+    () => validatePublicMediaBoundaryPath('aid/case/patient-original.webp'),
+    /raw\/original-source naming/i,
+  );
+  assert.throws(
+    () => validatePublicMediaBoundaryPath('restricted/case/photo.webp'),
+    /Private\/restricted evidence directories/i,
+  );
+  assert.throws(
+    () => validatePublicMediaBoundaryPath('aid/case/supporting-document.pdf'),
+    /belongs outside public\/media/i,
+  );
+  assert.throws(
+    () => validatePublicMediaBoundaryPath('.DS_Store'),
+    /Operating-system metadata/i,
+  );
+});
+
+test('public media boundary allows reviewed derivative naming and ordinary field media', () => {
+  assert.doesNotThrow(() => validatePublicMediaBoundaryPath('aid-aliza-family-message-redacted.webp'));
+  assert.doesNotThrow(() => validatePublicMediaBoundaryPath('aid/auto-handover-blurred.webp'));
+  assert.doesNotThrow(() => validatePublicMediaBoundaryPath('qurbani/2026/raw-meat-preparation.jpg'));
+  assert.doesNotThrow(() => validatePublicMediaBoundaryPath('eid/2026/event-cover.jpg'));
+  assert.doesNotThrow(() => validatePublicMediaBoundaryPath('dates/2026/preparation.mp4'));
+});
