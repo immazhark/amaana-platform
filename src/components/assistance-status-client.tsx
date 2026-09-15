@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useSyncExternalStore } from "react";
 import { parsePrivateTrackingLocation, privateTrackingFragment } from "@/lib/private-tracking";
 
 type TrackingRecord = {
@@ -12,6 +12,10 @@ type TrackingRecord = {
 };
 
 type TrackingResponse = TrackingRecord | { found: false };
+
+const subscribeLocation = () => () => undefined;
+const serverLocation = () => "__server__";
+const browserLocation = () => `${window.location.search}\n${window.location.hash}`;
 
 const statusLabels: Record<string, string> = {
   SUBMITTED: "Submitted",
@@ -34,22 +38,18 @@ const statusCopy: Record<string, string> = {
 };
 
 export function AssistanceStatusClient() {
-  const [reference, setReference] = useState<string | null>(null);
-  const [record, setRecord] = useState<TrackingRecord | null>(null);
-  const [loading, setLoading] = useState(true);
+  const locationSnapshot = useSyncExternalStore(subscribeLocation, browserLocation, serverLocation);
+  const hydrated = locationSnapshot !== "__server__";
+  const [search = "", hash = ""] = hydrated ? locationSnapshot.split("\n", 2) : ["", ""];
+  const credentials = hydrated ? parsePrivateTrackingLocation(search, hash) : null;
+  const [record, setRecord] = useState<TrackingRecord | null | undefined>(undefined);
 
   useEffect(() => {
-    const credentials = parsePrivateTrackingLocation(window.location.search, window.location.hash);
-    if (!credentials) {
-      setLoading(false);
-      return;
-    }
-
-    if (window.location.search) {
+    if (!credentials) return;
+    if (search) {
       window.history.replaceState(null, "", `${window.location.pathname}${privateTrackingFragment(credentials)}`);
     }
 
-    setReference(credentials.reference);
     const controller = new AbortController();
     void fetch("/api/assistance/status", {
       method: "POST",
@@ -59,16 +59,20 @@ export function AssistanceStatusClient() {
       signal: controller.signal,
     })
       .then(async response => response.ok ? await response.json() as TrackingResponse : { found: false } as TrackingResponse)
-      .then(result => {
-        if (result.found) setRecord(result);
-      })
-      .catch(() => undefined)
-      .finally(() => setLoading(false));
+      .then(result => setRecord(result.found ? result : null))
+      .catch(error => {
+        if (!(error instanceof DOMException && error.name === "AbortError")) setRecord(null);
+      });
 
     return () => controller.abort();
-  }, []);
+  }, [credentials, search]);
 
-  const title = loading ? "Checking your private request…" : record ? statusLabels[record.status] ?? record.status : "Tracking link unavailable";
+  const loading = !hydrated || (Boolean(credentials) && record === undefined);
+  const title = loading
+    ? "Checking your private request…"
+    : record
+      ? statusLabels[record.status] ?? record.status
+      : "Tracking link unavailable";
 
-  return <div className="v2-home v2-state-page"><section className="v2-state-hero"><div className="v2-shell v2-state-grid"><div><p className="v2-section-label">Private request tracking</p><h1>{title}</h1>{loading ? <p>Confirming the private tracking details in this browser.</p> : record ? <><p>{statusCopy[record.status] ?? "Your request status has been updated."}</p><div className="v2-reference-block"><span>Reference</span><strong>{reference}</strong><small>Submitted {new Date(record.createdAt).toLocaleDateString("en-IN", { dateStyle: "long" })} · Last updated {new Date(record.updatedAt).toLocaleDateString("en-IN", { dateStyle: "long" })}</small></div></> : <p>This tracking link is incomplete, invalid or no longer available. For privacy, no request details are shown without a valid reference and token.</p>}<div className="v2-hero-actions"><Link className="v2-button" href="/request-assistance">Request assistance</Link><Link className="v2-text-link" href="/how-we-verify">Understand the review process →</Link></div></div><aside className="v2-state-steps"><span>Review path</span><ol><li><b>01</b><div><strong>Submitted</strong><p>Request and consent recorded.</p></div></li><li><b>02</b><div><strong>Verification</strong><p>Details and relevant supporting information reviewed.</p></div></li><li><b>03</b><div><strong>Decision</strong><p>Outcome communicated without exposing private material.</p></div></li></ol></aside></div></section></div>;
+  return <div className="v2-home v2-state-page"><section className="v2-state-hero"><div className="v2-shell v2-state-grid"><div><p className="v2-section-label">Private request tracking</p><h1>{title}</h1>{loading ? <p>Confirming the private tracking details in this browser.</p> : record ? <><p>{statusCopy[record.status] ?? "Your request status has been updated."}</p><div className="v2-reference-block"><span>Reference</span><strong>{credentials?.reference}</strong><small>Submitted {new Date(record.createdAt).toLocaleDateString("en-IN", { dateStyle: "long" })} · Last updated {new Date(record.updatedAt).toLocaleDateString("en-IN", { dateStyle: "long" })}</small></div></> : <p>This tracking link is incomplete, invalid or no longer available. For privacy, no request details are shown without a valid reference and token.</p>}<div className="v2-hero-actions"><Link className="v2-button" href="/request-assistance">Request assistance</Link><Link className="v2-text-link" href="/how-we-verify">Understand the review process →</Link></div></div><aside className="v2-state-steps"><span>Review path</span><ol><li><b>01</b><div><strong>Submitted</strong><p>Request and consent recorded.</p></div></li><li><b>02</b><div><strong>Verification</strong><p>Details and relevant supporting information reviewed.</p></div></li><li><b>03</b><div><strong>Decision</strong><p>Outcome communicated without exposing private material.</p></div></li></ol></aside></div></section></div>;
 }
