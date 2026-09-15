@@ -28,20 +28,27 @@ const contactPaths = [
   },
   {
     marker: "02",
+    title: "Call or WhatsApp",
+    copy: "For a direct public contact route, reach Amaana Foundation on its official phone and WhatsApp number.",
+    action: "+91-9908002694",
+    href: "tel:+919908002694",
+  },
+  {
+    marker: "03",
     title: "Request assistance",
     copy: "If you or someone you know needs support, use the dedicated private intake route so the request reaches the right review process.",
     action: "Request assistance",
     href: "/request-assistance",
   },
   {
-    marker: "03",
+    marker: "04",
     title: "Volunteer or collaborate",
     copy: "If you want to contribute time, skills, resources or explore a genuine collaboration, start with our Get Involved journey.",
     action: "Get involved",
     href: "/get-involved",
   },
   {
-    marker: "04",
+    marker: "05",
     title: "Donation support",
     copy: "For a payment or donation query, contact the team with your Amaana reference or Razorpay payment ID only. Never share PINs, OTPs or card credentials.",
     action: "Email donation support",
@@ -109,7 +116,7 @@ export default function ContactPage() {
           <div>
             <p className="v2-section-label">Stay connected</p>
             <h2>Follow the work where Amaana shares it.</h2>
-            <p>These public channels are the social identities shown in Amaana&apos;s supplied 2026 branded contact material. Instagram is also corroborated by recent public posts under the same handle.</p>
+            <p>Use Amaana Foundation&apos;s official public channels for programme updates, campaign notices and documented community work.</p>
           </div>
           <div className="v2-contact-social-links">
             {socialLinks.map(link => (
@@ -146,7 +153,7 @@ export default function ContactPage() {
           <p className="v2-section-label">Amaana Foundation</p>
           <h2>Listen first. Respond with care.</h2>
           <p>
-            General enquiries can be sent to <a className="v2-text-link" href="mailto:amaanafoundation24@gmail.com">amaanafoundation24@gmail.com</a>.
+            Email <a className="v2-text-link" href="mailto:amaanafoundation24@gmail.com">amaanafoundation24@gmail.com</a> or call <a className="v2-text-link" href="tel:+919908002694">+91-9908002694</a>.
           </p>
           <div className="v2-hero-actions v2-actions-center">
             <Link className="v2-button" href="/our-work">Explore our work</Link>
