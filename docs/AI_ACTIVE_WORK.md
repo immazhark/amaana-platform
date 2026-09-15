@@ -8,23 +8,23 @@ ChatGPT — continuing launch-hardening without parallel repo writers.
 
 ## Integration checkpoint
 - Integration branch: `phase-public-site-rebuild`
-- Current integration head: `16e34fc9cad3315d536608cddaa27628894e4183`
-- PR #42 visual/media/banner consistency is merged and deployed successfully on Railway (`672089e4-386e-42f8-bf25-36c5a49e3f18`).
-- PR #43 sitemap privacy hardening is merged after full green CI and deployed successfully on Railway (`7e595cf3-5c71-4b7a-b4e5-6a4bcde65d62`).
+- Current integration head: `5978f57328e5e0c2b778da8f5fe8acf98168d791`
+- PR #42 visual/media/banner consistency is merged and deployed successfully.
+- PR #43 sitemap privacy hardening is merged and deployed successfully.
+- PR #44 private assistance response-header hardening is merged after full green CI and deployed successfully on Railway (`a576fe6d-dbe2-4d68-a260-93b0d0c8a5ed`).
 
 ## Current task branch
-- Branch: `fix/private-assistance-response-headers`
-- Base: `16e34fc9cad3315d536608cddaa27628894e4183`
-- Purpose: harden private assistance API responses against caching, referrer leakage and search/archive discovery.
+- Branch: `fix/public-page-data-lint-cleanup`
+- Base: `5978f57328e5e0c2b778da8f5fe8acf98168d791`
+- Purpose: remove the remaining public-page-data lint warning without changing the privacy-gated public appeal projection.
 
 ## Current implementation
-- Assistance submission responses now send `Cache-Control: no-store, private`, `Referrer-Policy: no-referrer`, and `X-Robots-Tag: noindex, nofollow, noarchive`.
-- Private assistance status responses use the same privacy headers.
-- The retired legacy query-token endpoint now also sends explicit robots/archive exclusion.
-- Existing same-origin, token verification, rate limits and private-document behavior are unchanged.
+- Keeps `assistanceRequest` available only long enough to enforce the appeal archive-consent/privacy gate.
+- Explicitly consumes the private verification context before returning the public projection so it is not exposed and ESLint no longer reports it as unused.
+- No query shape, publication rule, archive-consent rule, public payload field or route behavior is otherwise changed.
 
 ## Next actions
-1. Run full CI for this focused privacy hardening.
+1. Run full CI and verify the warning is gone without type/build regressions.
 2. Merge only when all gates are green and verify Railway staging.
 3. Continue with donation/assistance lifecycle acceptance, performance, editorial, SEO/schema, public-media storage/privacy, admin simulation and launch rehearsal.
 
