@@ -3,6 +3,7 @@
 import Script from "next/script";
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
+import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
 
 type RazorpayResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
 type RazorpayOptions = { key: string; amount: number; currency: string; name: string; description: string; order_id: string; prefill: { name: string; email: string; contact?: string }; handler: (response: RazorpayResponse) => Promise<void>; modal: { ondismiss: () => void }; theme: { color: string } };
@@ -85,7 +86,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount }: { appealId: s
               setPhase("reconciliation");
               return;
             }
-            router.push(`/donations/${encodeURIComponent(result.referenceNumber)}/acknowledgement?token=${encodeURIComponent(order.receiptToken)}`);
+            router.push(privateDonationAcknowledgementPath(result.referenceNumber, order.receiptToken));
           } catch {
             setError("We could not complete payment verification in this browser. Please retain your Razorpay payment confirmation and do not submit another payment. Amaana can reconcile the payment without asking for your OTP, UPI PIN or card credentials.");
             setPhase("reconciliation");
