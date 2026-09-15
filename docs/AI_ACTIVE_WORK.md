@@ -8,37 +8,55 @@ ChatGPT — user-directed takeover after Codex limit exhaustion on 16 September 
 
 ## Integration checkpoint
 - Branch: `phase-public-site-rebuild`
-- Latest merged checkpoint before this task: `6e2d5d6406ecb30b4257a9abf4c3c18560e23ab1` (PR #26).
-- PR #23 responsive acceptance fixes are merged and Railway-verified.
-- PR #24 stale legacy Cause reconciliation passed full CI, merged as `a8ec8b2c887bb7537c3999591d599a34ea319bed`, and Railway deployed successfully. The preview startup ran canonical reconciliation even though the content version was already current.
-- PR #25 production/staging Razorpay mode guard passed full CI, merged as `32695d0b19a3730b86366a8382e9ed41f251e0df`, and Railway deployed successfully.
-- PR #26 sitemap legacy-initiative exclusion passed full CI and merged as `6e2d5d6406ecb30b4257a9abf4c3c18560e23ab1`; Railway verification follows the normal deployment queue.
+- Latest stable merged implementation before the current UI pass: PR #39, `4922ec318be25685894028f55feccfc9f9466104`, Railway SUCCESS.
+- PR #37 added staging launch-acceptance fixtures/smoke coverage.
+- PR #38 protected public appeal updates and completed archives.
+- PR #39 retired query-string assistance tracking tokens.
 
-## What Codex completed before exhaustion
-- Rendered responsive acceptance sweep across 21 priority public routes at 1440, 1024, 768, 430, 390 and 360px (126 combinations).
-- Fixed Islamic companion launcher overlap, desktop/tablet navigation crowding, mobile-menu scrolling and 44px mobile reminder/touch targets.
-- Added shared layout regression tests and `docs/RESPONSIVE_ACCEPTANCE_2026-09-16.md`.
+## Current user-directed correction pass
+The user reviewed the deployed public site page-by-page and requested a single cohesive UI/content reconciliation iteration:
+- restore Ayah/Hadith and Salah/Hijri launchers to an unobtrusive bottom-right position;
+- keep the top reminder strip uncluttered;
+- reconcile `/our-work` to the canonical five umbrella categories and remove renamed/year-child duplication;
+- show Taleem's two documented strands: 25 Nazira+Hifdh students combined and 50 orphan children receiving stationery kits;
+- ensure each Our Work row has a thumbnail treatment, using approved original media when present and a neutral Amaana fallback until a final thumbnail is selected;
+- remove the same legacy/year-child duplication from `/impact`;
+- contain the impact metric rail, allow horizontal scrolling, and keep amounts on one line;
+- standardize top-page hero label/title treatment and the animated gradient across Our Work, Impact, Stories, Faith & Reflections and shared v2 pages;
+- standardize section-title accent treatment;
+- redesign the Stories privacy-gate empty state for legibility;
+- repair the Get Involved journey connector;
+- preserve visible keyboard focus but replace the raw browser-looking form outline with a branded accessible focus ring;
+- add an accessible Back to Top control for long pages;
+- ensure programme detail heroes, including Qurbani, never have an empty visual column when no approved photograph is currently linked.
 
-## ChatGPT work after takeover
-- Resolved the six-cause `/our-work` runtime discrepancy at its write-side root: known legacy Cause relations are now reconciled and obsolete Cause rows archived on every preview master-content run, even when the master version marker is already current.
-- Verified the reconciliation deploy reached Railway successfully and canonical content startup completed without pending migrations.
-- Hardened payment environment safety so staging requires Razorpay test mode while production requires Razorpay live mode. This is a technical fail-closed guard only; it does not assert KYC/live-account launch readiness.
-- Removed known redirected legacy initiative URLs from sitemap generation.
-- Audited homepage fundraising and found a separate donor-journey mismatch: the `Current verified appeals` section could include FUNDED records. A focused fix is now in PR #27.
+## Current task branch / PR
+- Branch: `fix/ui-consistency-dedupe`
+- PR: #40 — Reconcile public work and standardize cross-site UI
+- Current head: `107062abd20d9e8b1d21f0e079b0ac4b1a75527e`
 
-## Current task
-Ensure the homepage shows only appeals that are actively eligible for fundraising: PUBLISHED, below target and within any configured fundraising window. Completed/funded appeals remain public accountability records but must not appear as current fundraising.
-
-## Task branch / PR
-- Branch: `fix/homepage-active-appeals-only`
-- PR: #27
-- Head before this documentation refresh: `ace20099f9bde3ccd0abd5e4596bb59765a518c5`
+## Implementation completed on this branch
+- Added `iteration-four.css` as the final visual consistency override layer.
+- Added reduced-motion-aware global Back to Top control.
+- Restored companion launcher dock to bottom-right and coordinated its position with Back to Top.
+- Added branded focus-visible states for form controls and interactive elements.
+- Unified hero gradient/eyebrow/title treatment across major v2 public screens.
+- Added consistent partial gradient accents to section titles.
+- Regrouped Our Work records from canonical master taxonomy instead of raw Cause rows so the five umbrella categories cannot duplicate because of stale DB cause names.
+- Default Our Work view now keeps year-child editions under their parent programme; year filtering can still expose specific editions.
+- Added temporary Amaana thumbnail fallbacks for initiative rows lacking approved media.
+- Added Taleem's two verified public highlights without inventing separate historical programmes.
+- Impact now filters through the canonical programme registry and hides annual child editions from the main evidence ledger.
+- Impact metric rail is centered, horizontally scrollable and amount-safe.
+- Programme detail pages use a restrained factual visual fallback where approved lead media is unavailable.
+- Stories privacy-gate empty state and Get Involved journey connector are restyled through the consistency layer.
 
 ## Next actions
-1. Complete PR #27 full CI and merge only when green.
-2. Verify Railway deployment.
-3. Continue generated launch-QA/user-journey acceptance in this order: privacy-sensitive route behavior, dead links/redirects/canonical surfaces, accessibility/keyboard/form behavior, faith-review safeguards, admin/security boundaries, then soft-launch readiness.
-4. Keep payment/compliance claims conservative until external confirmations exist for Razorpay KYC/live credentials, receipt operations, refund process, 12A/12AB, Zakat handling and unrestricted giving.
+1. Complete PR #40 CI; repair any lint/type/build/regression failures before merge.
+2. Merge only when all CI gates are green.
+3. Verify Railway deployment for the merged commit.
+4. Run rendered checks on `/our-work`, `/impact`, `/stories`, `/faith-and-reflections`, `/get-involved`, Qurbani detail and representative mobile widths.
+5. Continue launch acceptance only after this user-review iteration is verified.
 
 ## Factual and release locks
 Read `docs/CURRENT_SOURCE_RECONCILIATION_2026-09-15.md` and `docs/canonical-factual-locks-2026-09-15.md`. Newborn ₹107,520; Winter 234 kits/234 beneficiaries with phase subsets; Taleem 25 combined. Canonical taxonomy contains exactly five categories. Main/production promotion remains gated.
