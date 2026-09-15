@@ -8,36 +8,40 @@ ChatGPT — user-directed takeover after Codex limit exhaustion on 16 September 
 
 ## Integration checkpoint
 - Branch: `phase-public-site-rebuild`
-- HEAD: `52176da7a64f9ca4901210dd39eb081bed34f4b9`
-- PR #23 (`Fix shared responsive navigation and companion overlap`) passed GitHub CI and was squash-merged by ChatGPT after takeover.
-- Railway deployment for `52176da7...` is currently building; prior PR #22 deployment is verified SUCCESS.
+- Latest merged checkpoint before this task: `6e2d5d6406ecb30b4257a9abf4c3c18560e23ab1` (PR #26).
+- PR #23 responsive acceptance fixes are merged and Railway-verified.
+- PR #24 stale legacy Cause reconciliation passed full CI, merged as `a8ec8b2c887bb7537c3999591d599a34ea319bed`, and Railway deployed successfully. The preview startup ran canonical reconciliation even though the content version was already current.
+- PR #25 production/staging Razorpay mode guard passed full CI, merged as `32695d0b19a3730b86366a8382e9ed41f251e0df`, and Railway deployed successfully.
+- PR #26 sitemap legacy-initiative exclusion passed full CI and merged as `6e2d5d6406ecb30b4257a9abf4c3c18560e23ab1`; Railway verification follows the normal deployment queue.
 
 ## What Codex completed before exhaustion
-- Performed a rendered responsive acceptance sweep across 21 priority public routes at 1440, 1024, 768, 430, 390 and 360px (126 combinations).
-- Found and fixed persistent Islamic companion launcher overlap by keeping launchers in document flow.
-- Fixed desktop/tablet navigation crowding by switching the whole navigation before labels collide, preserving the desktop hamburger hidden state and making the open mobile menu internally scrollable.
-- Restored 44px mobile reminder/touch targets.
-- Added three shared layout regression tests and `docs/RESPONSIVE_ACCEPTANCE_2026-09-16.md`.
-- Local lint, TypeScript, existing tests and new regressions passed; GitHub CI for PR #23 subsequently completed successfully.
+- Rendered responsive acceptance sweep across 21 priority public routes at 1440, 1024, 768, 430, 390 and 360px (126 combinations).
+- Fixed Islamic companion launcher overlap, desktop/tablet navigation crowding, mobile-menu scrolling and 44px mobile reminder/touch targets.
+- Added shared layout regression tests and `docs/RESPONSIVE_ACCEPTANCE_2026-09-16.md`.
 
-## Current implementation task
-Resolve the runtime `/our-work` taxonomy discrepancy Codex recorded during rendered QA: the page still reported six cause areas, including a legacy Medical & Financial Aid category, even though the canonical taxonomy contains exactly five categories.
+## ChatGPT work after takeover
+- Resolved the six-cause `/our-work` runtime discrepancy at its write-side root: known legacy Cause relations are now reconciled and obsolete Cause rows archived on every preview master-content run, even when the master version marker is already current.
+- Verified the reconciliation deploy reached Railway successfully and canonical content startup completed without pending migrations.
+- Hardened payment environment safety so staging requires Razorpay test mode while production requires Razorpay live mode. This is a technical fail-closed guard only; it does not assert KYC/live-account launch readiness.
+- Removed known redirected legacy initiative URLs from sitemap generation.
+- Audited homepage fundraising and found a separate donor-journey mismatch: the `Current verified appeals` section could include FUNDED records. A focused fix is now in PR #27.
 
-## Task branch
-`fix/canonical-cause-runtime-reconciliation`
+## Current task
+Ensure the homepage shows only appeals that are actively eligible for fundraising: PUBLISHED, below target and within any configured fundraising window. Completed/funded appeals remain public accountability records but must not appear as current fundraising.
 
-## Root cause under review
-`prisma/apply-master-content.mjs` performs legacy-category migration only during a full master-content seed. Once the content-version marker matches, the function returns early after factual locks, so any stale published legacy Cause rows can survive indefinitely. The public `/our-work` query currently accepts every published cause rather than fail-closing to the five canonical slugs.
+## Task branch / PR
+- Branch: `fix/homepage-active-appeals-only`
+- PR: #27
+- Head before this documentation refresh: `ace20099f9bde3ccd0abd5e4596bb59765a518c5`
 
-## Planned fix
-1. Make legacy-category reconciliation idempotent and run it even when the master-content version is already current.
-2. Add a public read-side canonical cause allowlist so stale/legacy rows cannot reappear on `/our-work` while database reconciliation catches up.
-3. Add regression coverage protecting the five-category public taxonomy.
-4. Run full CI, merge only when green, then verify Railway and rendered `/our-work`.
-5. Continue launch-readiness acceptance from the generated QA/user-journey documents: payments, privacy-sensitive routes, accessibility/keyboard, dead links/redirects, faith review safeguards and admin/security boundaries.
+## Next actions
+1. Complete PR #27 full CI and merge only when green.
+2. Verify Railway deployment.
+3. Continue generated launch-QA/user-journey acceptance in this order: privacy-sensitive route behavior, dead links/redirects/canonical surfaces, accessibility/keyboard/form behavior, faith-review safeguards, admin/security boundaries, then soft-launch readiness.
+4. Keep payment/compliance claims conservative until external confirmations exist for Razorpay KYC/live credentials, receipt operations, refund process, 12A/12AB, Zakat handling and unrestricted giving.
 
 ## Factual and release locks
-Read `docs/CURRENT_SOURCE_RECONCILIATION_2026-09-15.md` and `docs/canonical-factual-locks-2026-09-15.md`. Newborn ₹107,520; Winter 234 kits/234 beneficiaries with phase subsets; Taleem 25 combined. No factual or payment-readiness expansion without verified evidence. Main/production promotion remains gated.
+Read `docs/CURRENT_SOURCE_RECONCILIATION_2026-09-15.md` and `docs/canonical-factual-locks-2026-09-15.md`. Newborn ₹107,520; Winter 234 kits/234 beneficiaries with phase subsets; Taleem 25 combined. Canonical taxonomy contains exactly five categories. Main/production promotion remains gated.
 
 ## Do-not-touch without explicit need
 - Current Amaana colour direction / premium visual language
