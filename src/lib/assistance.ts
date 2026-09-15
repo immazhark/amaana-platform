@@ -2,6 +2,8 @@ import { createHash, randomBytes, randomInt } from "node:crypto";
 import { z } from "zod";
 
 export const assistanceCategories = ["MEDICAL", "EDUCATION", "LIVELIHOOD", "FOOD_HARDSHIP", "HOUSING", "EMERGENCY", "OTHER"] as const;
+export const MANUAL_ASSISTANCE_STATUSES = ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION", "APPROVED", "REJECTED", "CLOSED"] as const;
+export const ASSISTANCE_INTERNAL_NOTES_MAX_LENGTH = 10_000;
 
 export const assistanceSchema = z.object({
   applicantName: z.string().trim().min(2).max(120),
@@ -12,6 +14,17 @@ export const assistanceSchema = z.object({
   description: z.string().trim().min(40).max(5000),
   consent: z.literal("on"),
 });
+
+export function isManualAssistanceStatusAllowed(
+  previousStatus: string,
+  nextStatus: string,
+  hasLinkedAppeal: boolean,
+) {
+  if (previousStatus === "CONVERTED_TO_APPEAL" || hasLinkedAppeal) {
+    return nextStatus === "CONVERTED_TO_APPEAL";
+  }
+  return (MANUAL_ASSISTANCE_STATUSES as readonly string[]).includes(nextStatus);
+}
 
 export const createReferenceNumber = () => `AF-${new Date().getUTCFullYear()}-${randomInt(100000, 1000000)}`;
 export const createTrackingToken = () => randomBytes(24).toString("base64url");
