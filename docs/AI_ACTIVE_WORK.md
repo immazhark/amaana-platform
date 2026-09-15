@@ -16,11 +16,11 @@ ChatGPT
 
 ## Current integration checkpoint
 
-- Integration head when this task branch was created: `fd6476710b0a99b6a83997e3c823f9f8d94b6ee0`
+- Integration head when this task branch was created: `fd6476710b0a99b6a83997e3c823f9f8d94b6ee0`.
 - PR #7 (pre-existing lint + measured bundle-gate repair) was squash-merged as `69c3b0636cfaebabc311475b5a0dc83386a8680a`.
 - Integration CI #463 passed media validation, reviewed-campaign tests, archive filters, daily-companion tests, Prisma generate/validate, lint, typecheck, coverage, production build, bundle budgets and post-build server smoke checks.
 - PR #6 (Codex ↔ ChatGPT continuity protocol) was squash-merged as `fd6476710b0a99b6a83997e3c823f9f8d94b6ee0`.
-- Old PR #5 was closed without merge because its base had become stale; the factual corrections are being reapplied cleanly from the current integration head.
+- Old PR #5 was closed without merge because its base had become stale.
 
 ## Current implementation task
 
@@ -35,15 +35,29 @@ Phase 1 `96 madrasa students` and Phase 2 `101 Winter Kits` remain supporting su
 
 - Branch: `fix/canonical-factual-locks-v2`
 - Base: `phase-public-site-rebuild`
-- PR: not opened yet at this checkpoint
+- PR: **#8 — Lock corrected Winter and newborn facts on current rebuild**
+- PR head at open: `e11ca94d363b980cf9c3247438684d4b1d36cbc5`
+- CI: run **#465** currently executing at this checkpoint.
+
+## Implemented on PR #8
+
+- Added `prisma/canonical-factual-locks.json` as the structured correction layer.
+- Updated `prisma/apply-master-content.mjs` so user-confirmed factual locks are applied even when the broader master content version is already seeded.
+- Kept legacy Winter records aligned with the corrected overall metric while retaining phase figures as supporting context.
+- Added `scripts/test-canonical-factual-locks.mjs`.
+- Added the factual-lock test to CI.
+- Added `docs/canonical-factual-locks-2026-09-15.md` documenting precedence over the older stale values still present in `prisma/master-programmes.json`.
+- Updated the repo-native ChatGPT/Codex implementation ledger.
 
 ## Exact next action
 
-1. Add a structured factual-lock source so confirmed corrections are not scattered as ad-hoc page edits.
-2. Apply those locks during canonical-content migration even when the existing master content version has already been seeded.
-3. Add regression verification for the locked values.
-4. Open a focused PR, run CI and merge only when green.
-5. Then continue stale-risk/document cleanup (official logo/brand source, completed media-upload status, old governance typo) as a separate atomic task.
+1. Inspect CI #465.
+2. If green, merge PR #8 into `phase-public-site-rebuild`.
+3. Start a separate atomic cleanup branch for stale durable repo facts:
+   - official logo/brand source is now available;
+   - all available programme/initiative media and data images have been uploaded;
+   - old governance typo `Syed Iqba Ali` should be corrected in durable logs.
+4. Continue remaining factual/content correction queue against the current integration head.
 
 ## Repository areas currently sensitive
 
@@ -68,7 +82,7 @@ Phase 1 `96 madrasa students` and Phase 2 `101 Winter Kits` remain supporting su
 ## Known stale documentation/content to address after this atomic task
 
 - Older repo documentation still describes official brand/logo extraction as blocked, but `public/brand/amaana-mark.svg` is present and contains the verified blue `#466FAA` and gold `#E0B318` fills.
-- Older risk documentation still treats authentic media population/source completeness as missing uploads; the user has confirmed all available drive/initiative images and data images have now been uploaded to Codex/repo workflow. Publication/provider verification remains a separate issue.
+- Older risk documentation still treats authentic media population/source completeness as missing uploads; the user has confirmed all available drive/initiative images and data images have now been uploaded. Publication/provider verification remains a separate issue.
 - Some older implementation logs still contain `Syed Iqba Ali`; current public governance source correctly uses **Syed Uqba Ali**.
 
 ## Handoff instruction
