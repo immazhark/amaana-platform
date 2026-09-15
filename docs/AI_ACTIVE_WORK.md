@@ -4,59 +4,62 @@
 **CHATGPT_ACTIVE**
 
 ## Active implementation owner
-ChatGPT — user-directed takeover after Codex limit exhaustion on 16 September 2026.
+ChatGPT — continuing the user-directed launch-hardening and visual-consistency pass after PR #41.
 
 ## Integration checkpoint
-- Branch: `phase-public-site-rebuild`
-- Latest stable merged implementation before the current UI pass: PR #39, `4922ec318be25685894028f55feccfc9f9466104`, Railway SUCCESS.
-- PR #37 added staging launch-acceptance fixtures/smoke coverage.
-- PR #38 protected public appeal updates and completed archives.
-- PR #39 retired query-string assistance tracking tokens.
+- Integration branch: `phase-public-site-rebuild`
+- Current integration head: `1540c8dfa08c57e2fa6d986b9ff0b6c54680224b`
+- PR #41 (`Reconcile public work and standardize cross-site UI`) is merged.
+- Railway staging deployment for that commit is confirmed SUCCESS: deployment `129b1ee9-355c-4004-986a-bed821d769eb`.
 
-## Current user-directed correction pass
-The user reviewed the deployed public site page-by-page and requested a single cohesive UI/content reconciliation iteration:
-- restore Ayah/Hadith and Salah/Hijri launchers to an unobtrusive bottom-right position;
-- keep the top reminder strip uncluttered;
-- reconcile `/our-work` to the canonical five umbrella categories and remove renamed/year-child duplication;
-- show Taleem's two documented strands: 25 Nazira+Hifdh students combined and 50 orphan children receiving stationery kits;
-- ensure each Our Work row has a thumbnail treatment, using approved original media when present and a neutral Amaana fallback until a final thumbnail is selected;
-- remove the same legacy/year-child duplication from `/impact`;
-- contain the impact metric rail, allow horizontal scrolling, and keep amounts on one line;
-- standardize top-page hero label/title treatment and the animated gradient across Our Work, Impact, Stories, Faith & Reflections and shared v2 pages;
-- standardize section-title accent treatment;
-- redesign the Stories privacy-gate empty state for legibility;
-- repair the Get Involved journey connector;
-- preserve visible keyboard focus but replace the raw browser-looking form outline with a branded accessible focus ring;
-- add an accessible Back to Top control for long pages;
-- ensure programme detail heroes, including Qurbani, never have an empty visual column when no approved photograph is currently linked.
+## Current task branch
+- Branch: `audit/post-pr41-launch-hardening`
+- Base: `1540c8dfa08c57e2fa6d986b9ff0b6c54680224b`
+- Purpose: complete the user-requested site-wide visual consistency pass before moving to Lighthouse/performance work.
 
-## Current task branch / PR
-- Branch: `fix/ui-consistency-dedupe-v2`
-- PR: #41 — Reconcile public work and standardize cross-site UI
-- PR #40 was closed unmerged after a branch-base cleanup conflict; #41 is the clean replacement based on the current integration head.
+## Current user-directed visual rules
+- Wherever a cause, drive, initiative or work item appears in a list/grid/card/row, it must have a predictable thumbnail slot.
+- Real approved Amaana media is preferred. If none is available, use a neutral branded placeholder; do not invent beneficiary imagery.
+- Specific cause/drive/programme/appeal detail pages use a large left-copy/right-visual hero pattern. Empty visual columns are not allowed.
+- Public interior top banners use one desktop/tablet height system. Longer copy must adapt through constrained typography/copy length rather than changing banner geometry or overflowing its container.
+- Mobile banners become content-led so text and controls never clip.
+- No text, button, image or grid child may render outside its container; no text/button or image/text overlaps.
+- Back-to-top is icon-only visually, with an accessible name retained for assistive technology.
 
-## Implementation completed on this branch
-- Added `iteration-four.css` as the final visual consistency override layer.
-- Added reduced-motion-aware global Back to Top control.
-- Restored companion launcher dock to bottom-right and coordinated its position with Back to Top.
-- Added branded focus-visible states for form controls and interactive elements.
-- Unified hero gradient/eyebrow/title treatment across major v2 public screens.
-- Added consistent partial gradient accents to section titles.
-- Regrouped Our Work records from canonical master taxonomy instead of raw Cause rows so the five umbrella categories cannot duplicate because of stale DB cause names.
-- Default Our Work view now keeps year-child editions under their parent programme; year filtering can still expose specific editions.
-- Added temporary Amaana thumbnail fallbacks for initiative rows lacking approved media.
-- Added Taleem's two verified public highlights without inventing separate historical programmes.
-- Impact now filters through the canonical programme registry and hides annual child editions from the main evidence ledger.
-- Impact metric rail is centered, horizontally scrollable and amount-safe.
-- Programme detail pages use a restrained factual visual fallback where approved lead media is unavailable.
-- Stories privacy-gate empty state and Get Involved journey connector are restyled through the consistency layer.
+## Implemented on the current branch
+- Added reusable `WorkVisualPlaceholder`.
+- Added visual slots to homepage work rows, Our Work/Impact listings, programme-category grids, appeal cards, completed appeal outcomes and story cards.
+- Initiative and programme detail heroes now always render a right-side approved image or branded placeholder.
+- Appeal detail hero now uses the same left-copy/right-visual pattern; funding progress follows immediately below in a contained decision panel.
+- Programme detail hero copy is concise; the full programme story is moved below the hero so banner geometry remains stable.
+- Contact page now uses the shared interior hero system.
+- Added `launch-hardening.css` for work thumbnails, hero media geometry, containment and the icon-only back-to-top treatment.
+- Added temporary `banner-consistency.css` as the final QA override layer for identical desktop/tablet banner geometry across generic, Impact, Stories, Faith, campaign, appeals, assistance and Taleem hero families. This file should be consolidated after rendered acceptance rather than left as another permanent CSS layer.
+- Added strict max-width/min-width/overflow-wrap protections for common content and action groups.
 
-## Next actions
-1. Complete PR #41 CI; repair any lint/type/build/regression failures before merge.
-2. Merge only when all CI gates are green.
-3. Verify Railway deployment for the merged commit.
-4. Run rendered checks on `/our-work`, `/impact`, `/stories`, `/faith-and-reflections`, `/get-involved`, Qurbani detail and representative mobile widths.
-5. Continue launch acceptance only after this user-review iteration is verified.
+## Next actions for this pass
+1. Run PR CI and repair type/lint/build/bundle/regression failures.
+2. Inspect the PR diff for selector/markup regressions, especially responsive Impact/Appeal grids.
+3. Merge only when all gates are green.
+4. Verify Railway staging deployment for the merged commit.
+5. User reviews the deployed visual system and assigns preferred real images per cause/drive/page.
+6. Continue the remaining launch-hardening queue after user visual review.
+
+## Remaining launch-hardening queue after this visual pass
+1. Lighthouse/performance remediation: consolidate legacy/global CSS, optimize image delivery, hydration/network work and caching.
+2. Add durable browser E2E + accessibility coverage.
+3. Donation journey E2E and production-gateway readiness checks.
+4. Assistance journey E2E including upload/status/admin lifecycle.
+5. Full public editorial/grammar/CTA consistency pass.
+6. Final SEO/social-sharing/canonical/schema audit.
+7. Public-media storage/privacy audit: only intentionally public-safe assets may remain directly addressable under `/public`.
+8. Admin operational simulation from intake through closure/retention.
+9. External compliance/business closures and production launch rehearsal.
+
+## Current acceptance constraints
+- Browser-level pixel/geometry inspection requires an actual browser-capable execution surface. Source/static checks and Railway/API acceptance can continue here; any browser-only visual assertions must not be claimed without rendered verification.
+- No real donation is to be attempted without explicit user authorization.
+- No private beneficiary data or restricted media may be introduced into public fixtures.
 
 ## Factual and release locks
 Read `docs/CURRENT_SOURCE_RECONCILIATION_2026-09-15.md` and `docs/canonical-factual-locks-2026-09-15.md`. Newborn ₹107,520; Winter 234 kits/234 beneficiaries with phase subsets; Taleem 25 combined. Canonical taxonomy contains exactly five categories. Main/production promotion remains gated.

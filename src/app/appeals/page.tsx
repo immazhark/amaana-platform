@@ -3,6 +3,7 @@ import "@/app/canonical-content.css";
 import Link from "next/link";
 import { programmes } from "@/lib/master-copy";
 import { AppealCard } from "@/components/appeal-card";
+import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { getAppealsIndexData } from "@/lib/public-page-data";
 
@@ -55,7 +56,7 @@ export default async function AppealsPage() {
         </div>
       </section>
 
-      <section className="v2-section" id="completed-causes"><div className="v2-shell"><h2>See What Support Made Possible</h2><p>Completed appeals should not disappear when fundraising closes. Keeping the verified need, amount raised and documented outcome visible helps donors see how community support translated into action.</p><div className="canonical-pathways">{programmes.filter(p=>p.causeSlug==="medical-financial-relief").map(p=><article key={p.slug}><h3><Link href={`/our-work/${p.slug}`}>{p.title}</Link></h3><p>{p.primaryMetric} · {p.primaryMetricLabel}</p><Link href={`/our-work/${p.slug}`}>View the documented outcome →</Link></article>)}</div></div></section>
+      <section className="v2-section" id="completed-causes"><div className="v2-shell"><h2>See What Support Made Possible</h2><p>Completed appeals should not disappear when fundraising closes. Keeping the verified need, amount raised and documented outcome visible helps donors see how community support translated into action.</p><div className="canonical-pathways">{programmes.filter(p=>p.causeSlug==="medical-financial-relief").map(p=><article key={p.slug}><div className="canonical-pathway-visual"><WorkVisualPlaceholder label={p.title}/></div><h3><Link href={`/our-work/${p.slug}`}>{p.title}</Link></h3><p>{p.primaryMetric} · {p.primaryMetricLabel}</p><Link href={`/our-work/${p.slug}`}>View the documented outcome →</Link></article>)}</div></div></section>
       <section className="v2-section dark v2-appeal-method" aria-labelledby="appeal-method-title">
         <div className="v2-shell">
           <div className="v2-section-head"><div><p className="v2-section-label">Before fundraising</p><h2 className="v2-section-title" id="appeal-method-title">A request becomes an appeal only after review.</h2></div><p className="v2-section-intro">The public should be able to understand how a case reached the fundraising stage without the beneficiary having to surrender their privacy to prove their need.</p></div>

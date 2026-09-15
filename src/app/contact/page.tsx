@@ -65,10 +65,10 @@ const socialLinks = [
 export default function ContactPage() {
   return (
     <div className="v2-home">
-      <section className="v2-section dark">
-        <div className="v2-shell v2-contact-hero">
+      <section className="v2-hero v2-contact-page-hero">
+        <div className="v2-shell v2-hero-inner v2-contact-hero">
           <div>
-            <p className="v2-section-label">Contact Amaana</p>
+            <p className="v2-kicker">Contact Amaana</p>
             <h1 className="v2-display v2-display-narrow">Start with the right conversation.</h1>
           </div>
           <div>

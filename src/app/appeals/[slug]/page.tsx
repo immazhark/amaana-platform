@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
+import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getAppealSearchPrivacy } from "@/lib/appeal-search-privacy";
 import { formatINR, isAppealOpenForDonations } from "@/lib/appeals";
 import { getAppealPageData } from "@/lib/public-page-data";
@@ -66,14 +67,16 @@ export default async function AppealDetailPage({ params }: Props) {
             <h1>{appeal.title}</h1>
             <p>{appeal.summary}</p>
           </div>
-          <aside className="v2-appeal-donation-panel" aria-label="Appeal funding status" aria-describedby="appeal-payment-boundary">
-            <small>Appeal progress</small>
-            <strong>{formatINR(raised)}</strong>
-            <p>raised of {formatINR(goal)}</p>
-            <div className="v2-appeal-progress" role="progressbar" aria-label={`${appeal.title} funding progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-valuetext={`${formatINR(raised)} raised of ${formatINR(goal)}; ${progress}% supported`}><span style={{ width: `${progress}%` }} /></div>
-            <div className="v2-appeal-progress-foot"><span>{progress}% supported</span><span>INR · India only</span></div>
-            {isOpen ? <Link className="v2-button v2-appeal-donate-button" href={`/donate/${appeal.slug}`}>Support this appeal</Link> : <span className="v2-appeal-closed">This appeal is closed</span>}
-            <p className="v2-appeal-secure-note" id="appeal-payment-boundary">Domestic INR donations are processed securely through Razorpay. Amaana does not accept foreign contributions.</p>
+          <div className="v2-appeal-detail-visual"><WorkVisualPlaceholder label={appeal.title} /></div>
+        </div>
+      </section>
+
+      <section className="v2-appeal-funding-strip" aria-label="Appeal funding status">
+        <div className="v2-shell">
+          <aside className="v2-appeal-donation-panel" aria-describedby="appeal-payment-boundary">
+            <div><small>Appeal progress</small><strong>{formatINR(raised)}</strong><p>raised of {formatINR(goal)}</p></div>
+            <div className="v2-appeal-funding-progress"><div className="v2-appeal-progress" role="progressbar" aria-label={`${appeal.title} funding progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-valuetext={`${formatINR(raised)} raised of ${formatINR(goal)}; ${progress}% supported`}><span style={{ width: `${progress}%` }} /></div><div className="v2-appeal-progress-foot"><span>{progress}% supported</span><span>INR · India only</span></div></div>
+            <div>{isOpen ? <Link className="v2-button v2-appeal-donate-button" href={`/donate/${appeal.slug}`}>Support this appeal</Link> : <span className="v2-appeal-closed">This appeal is closed</span>}<p className="v2-appeal-secure-note" id="appeal-payment-boundary">Domestic INR donations are processed securely through Razorpay. Amaana does not accept foreign contributions.</p></div>
           </aside>
         </div>
       </section>
@@ -82,10 +85,7 @@ export default async function AppealDetailPage({ params }: Props) {
 
       <section className="v2-section paper">
         <div className="v2-shell v2-appeal-story-grid">
-          <div>
-            <p className="v2-section-label">The need</p>
-            <h2>{appeal.beneficiaryDisplayName ?? "A verified request for support"}</h2>
-          </div>
+          <div><p className="v2-section-label">The need</p><h2>{appeal.beneficiaryDisplayName ?? "A verified request for support"}</h2></div>
           <div className="v2-appeal-story-copy"><div className="v2-appeal-story">{appeal.story}</div><div className="v2-appeal-privacy-note"><span>Privacy boundary</span><p>Only information approved for public sharing appears here. Supporting documents used during review remain private.</p></div></div>
         </div>
       </section>
