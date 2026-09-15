@@ -22,41 +22,43 @@ ChatGPT
 - PR #11 capped new designated donations to the current remaining need; squash-merged as `7f8eba057ddeec511bd4088cfece91a2e58d9eac` after full green CI.
 - PR #12 corrected private acknowledgement semantics for captured, pending, failed and refunded payment states; squash-merged as `dd5bddf8960ca2b5f638103b4ad8d82deab6a2d5` after full green CI.
 - PR #13 hardened assistance status transitions, assignment eligibility and conversion permissions; squash-merged as `547eacbafc15d9c1b98749e30f165b11a45df17f` after full green CI.
+- PR #14 added auditable, no-store/no-referrer private-document access; squash-merged as `4a598acf16b7635387e44ff964a92f5efcc2c949` after full green CI.
 
 ## Current implementation task
 
-Harden access to private beneficiary-supporting documents so each authorized retrieval is auditable and the redirect response itself is explicitly private/non-cacheable.
+Stop creating assistance SMS notification records that the application cannot currently deliver, while preserving browser tracking and supported email notifications.
 
 ## Current task branch / PR
 
-- Branch: `fix/private-document-access-audit`
-- Base SHA: `547eacbafc15d9c1b98749e30f165b11a45df17f`
+- Branch: `fix/assistance-notification-channel`
+- Base SHA: `4a598acf16b7635387e44ff964a92f5efcc2c949`
 - PR: not opened yet at this checkpoint
 
-## Problem found during privacy/admin audit
+## Problem found during notification audit
 
-The private-document route correctly required `assistance.view` and generated a 60-second signed storage URL, but it did not record that a staff member accessed a sensitive document. The redirect response also did not explicitly carry `private, no-store`, no-referrer or noarchive headers.
+The notification worker currently processes only `EMAIL`. Assistance intake and status-change code nevertheless created `SMS` notification rows whenever an applicant did not provide an email address. Those rows had no delivery implementation, so they could remain pending indefinitely and create a false internal impression that an applicant notification was queued for delivery.
+
+The public assistance journey already returns the private reference and tracking token in the successful browser response, so phone-only applicants still receive their tracking path without pretending an SMS delivery capability exists.
 
 ## Implemented on current task branch
 
-- Replaced the opaque `redirect()` response with an explicit `NextResponse.redirect` so privacy headers can be attached.
-- Added `Cache-Control: private, no-store`.
-- Added `Referrer-Policy: no-referrer`.
-- Added `X-Robots-Tag: noindex, nofollow, noarchive`.
-- Added an `assistance.document_viewed` audit event before releasing the signed URL.
-- Attached the audit event to the parent `AssistanceRequest` with the document id in metadata so the access appears in the request's existing audit history.
-- Preserved the existing permission check and short-lived 60-second private-storage URL.
+- Assistance intake now queues an applicant receipt notification only when an email address was supplied.
+- Staff alerts remain email-only and unchanged.
+- Assistance status changes now queue applicant notifications only when the request has an email address.
+- Request-to-appeal conversion now follows the same supported-channel rule.
+- Removed creation of new undeliverable SMS applicant-notification records; no SMS provider or SMS-delivery promise has been invented.
+- Browser receipt/tracking behavior remains unchanged for every applicant, including phone-only requests.
 
 ## Exact next action
 
-1. Open a focused PR for `fix/private-document-access-audit`.
+1. Open a focused PR for `fix/assistance-notification-channel`.
 2. Run full CI and repair any regression found.
 3. Merge only when green.
-4. Continue private-data/admin/source audit, then move into staging/browser E2E release gates.
+4. Continue source-level notification/admin/privacy audit, then move into staging/browser E2E release gates.
 
 ## Repository areas currently sensitive
 
-- private assistance records/documents and appeal conversion
+- private assistance records/documents and applicant communications
 - donation/payment reconciliation and appeal lifecycle
 - canonical programme/factual sources
 - public programme/media provenance data
