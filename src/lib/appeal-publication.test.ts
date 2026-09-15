@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getFirstPublicationIssues, goalMatchesApprovedPublicTarget } from "./appeal-publication";
+import { getAppealConsentContentIssues, getFirstPublicationIssues, goalMatchesApprovedPublicTarget } from "./appeal-publication";
 
 const approvedVerification = {
   needConfirmed: true,
@@ -58,6 +58,36 @@ describe("first appeal publication gate", () => {
       goalAmount: 80000,
       verification: approvedVerification,
     })).toContain("Appeal goal must match the approved public fundraising target.");
+  });
+
+  it("requires explicit public-name consent before showing a beneficiary name", () => {
+    expect(getAppealConsentContentIssues({
+      verification: { ...approvedVerification, publicNameConsent: "NOT_ALLOWED" },
+      beneficiaryDisplayName: "Public name",
+    })).toContain("A public beneficiary name requires explicit public-name consent.");
+    expect(getAppealConsentContentIssues({
+      verification: { ...approvedVerification, publicNameConsent: "NOT_APPLICABLE" },
+      beneficiaryDisplayName: "Public name",
+    })).toContain("A public beneficiary name requires explicit public-name consent.");
+    expect(getAppealConsentContentIssues({
+      verification: { ...approvedVerification, publicNameConsent: "ALLOWED" },
+      beneficiaryDisplayName: "Public name",
+    })).toEqual([]);
+  });
+
+  it("blocks beneficiary-related cover media when photo/media consent is denied", () => {
+    expect(getAppealConsentContentIssues({
+      verification: { ...approvedVerification, photoConsent: "NOT_ALLOWED" },
+      coverImageUrl: "https://example.org/beneficiary.jpg",
+    })).toContain("A beneficiary-related cover image cannot be used when photo/media consent is not allowed.");
+    expect(getAppealConsentContentIssues({
+      verification: { ...approvedVerification, photoConsent: "ALLOWED" },
+      coverImageUrl: "https://example.org/beneficiary.jpg",
+    })).toEqual([]);
+    expect(getAppealConsentContentIssues({
+      verification: { ...approvedVerification, photoConsent: "NOT_APPLICABLE" },
+      coverImageUrl: "https://example.org/context-only.jpg",
+    })).toEqual([]);
   });
 
   it("does not block lifecycle transitions for appeals that were already public", () => {
