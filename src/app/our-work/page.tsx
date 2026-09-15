@@ -4,7 +4,7 @@ import { PublicMedia } from "@/components/public-media";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
 import { filterWork, type WorkSearch } from "@/lib/work-filters";
 import "./work-filters.css";
-import { programmeBySlug } from '@/lib/master-copy';
+import { programmeBySlug, programmeCategories } from '@/lib/master-copy';
 
 export const dynamic = "force-dynamic";
 
@@ -20,27 +20,25 @@ export const metadata: Metadata = {
   },
 };
 
-const hiddenLegacySlugs = new Set([
-  'medical-financial-assistance',
-  'winter-drive-2025-26',
-  'winter-relief-2025-26',
-]);
-
 export default async function OurWorkPage({ searchParams }: { searchParams: Promise<WorkSearch> }) {
-  const causes = await getOurWorkIndexData();
+  const rawCauses = await getOurWorkIndexData();
   const search = await searchParams;
+  const allInitiatives = rawCauses.flatMap(cause => cause.initiatives);
 
-  // The default index shows each programme once. Year-specific child records are
-  // revealed only when a visitor explicitly filters by year, so annual editions
-  // do not duplicate their parent programme on the main discovery screen.
-  const visibleCauses = causes
-    .map(cause => ({
-      ...cause,
-      initiatives: cause.initiatives.filter(item => {
-        if (hiddenLegacySlugs.has(item.slug)) return false;
-        const canonical = programmeBySlug(item.slug);
-        return !canonical?.parentSlug || Boolean(search.year);
-      }),
+  const canonicalInitiatives = allInitiatives.filter(item => {
+    const canonical = programmeBySlug(item.slug);
+    if (!canonical) return false;
+    const isChild = 'parentSlug' in canonical && Boolean(canonical.parentSlug);
+    return Boolean(search.year) || !isChild;
+  });
+
+  const visibleCauses = programmeCategories
+    .map(category => ({
+      id: category.slug,
+      slug: category.slug,
+      title: category.title,
+      summary: category.summary,
+      initiatives: canonicalInitiatives.filter(item => programmeBySlug(item.slug)?.causeSlug === category.slug),
     }))
     .filter(cause => cause.initiatives.length > 0);
 
@@ -60,7 +58,7 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
             <p className="v2-hero-copy">Some needs return every year. Others arrive without warning. Explore Amaana’s medical and financial relief, emergency response, Ramadan and Eid initiatives, Taleem education support and seasonal relief.</p>
             <div className="v2-work-index-proof">
               <div><span className="v2-proof-number">{initiativeCount}</span><span className="v2-proof-copy">published programmes and case records available to explore</span></div>
-              <div><span className="v2-proof-number">{causeCount}</span><span className="v2-proof-copy">cause areas represented in the public library</span></div>
+              <div><span className="v2-proof-number">{causeCount}</span><span className="v2-proof-copy">canonical cause areas represented in the public library</span></div>
             </div>
           </div>
         </div>
@@ -70,7 +68,7 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
         <div className="v2-shell">
           <div className="v2-section-head">
             <div><p className="v2-section-label">Explore by need</p><h2 className="v2-section-title">A living portfolio of service.</h2></div>
-            <p className="v2-section-intro">Each cause area opens into its own set of published initiatives, evidence and stories. Parent programmes appear once on the main index; use the year filter when you want to inspect a specific annual edition.</p>
+            <p className="v2-section-intro">The five umbrella programmes stay consistent across the site. Parent programmes appear once on the main index; use the year filter when you want to inspect a specific annual edition.</p>
           </div>
 
           <form className="work-filters" action="/our-work#work-results" method="get" aria-label="Filter published initiatives">
@@ -99,7 +97,7 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
                 <section className="v2-cause-section" key={cause.id} aria-labelledby={`cause-${cause.slug}`}>
                   <div className="v2-cause-heading">
                     <span className="v2-cause-number">{String(causeIndex + 1).padStart(2, "0")}</span>
-                    <div><p className="v2-section-label">Cause</p><h2 id={`cause-${cause.slug}`}>{cause.title}</h2></div>
+                    <div><p className="v2-section-label">Umbrella programme</p><h2 id={`cause-${cause.slug}`}>{cause.title}</h2></div>
                     <p>{cause.summary}</p>
                   </div>
 
@@ -107,9 +105,11 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
                     {cause.initiatives.map((initiative, index) => {
                       const thumbnail = initiative.mediaAssets[0] ?? null;
                       return (
-                        <Link id={initiative.slug} className={`v2-initiative-row${thumbnail ? " has-media" : ""}`} href={`/our-work/${initiative.slug}`} key={initiative.id}>
+                        <Link id={initiative.slug} className="v2-initiative-row has-media" href={`/our-work/${initiative.slug}`} key={initiative.id}>
                           <span className="v2-initiative-index">{String(index + 1).padStart(2, "0")}</span>
-                          {thumbnail && <div className="v2-initiative-thumb"><PublicMedia asset={thumbnail} /></div>}
+                          <div className={`v2-initiative-thumb${thumbnail ? "" : " v2-initiative-thumb-fallback"}`}>
+                            {thumbnail ? <PublicMedia asset={thumbnail} /> : <span>AF</span>}
+                          </div>
                           <div className="v2-initiative-copy">
                             <small>{initiative.year ?? (initiative.startYear && initiative.endYear ? `${initiative.startYear}–${initiative.endYear}` : "Initiative")}</small>
                             <h3>{initiative.title}</h3>
@@ -124,6 +124,13 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
                       );
                     })}
                   </div>
+
+                  {cause.slug === "amaana-taleem" && !search.year && (
+                    <div className="v2-taleem-highlights" aria-label="Amaana Taleem documented pathways">
+                      <div className="v2-taleem-highlight"><strong>25 students</strong><span>Qur’an Nazira and Hifdh students sponsored combined, as of September 2026.</span></div>
+                      <div className="v2-taleem-highlight"><strong>50 children</strong><span>Stationery kits provided to orphan children through the 2025 Taleem initiative.</span></div>
+                    </div>
+                  )}
                 </section>
               ))}
             </div>

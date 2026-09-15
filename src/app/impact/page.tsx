@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PublicMedia } from "@/components/public-media";
+import { programmeBySlug } from "@/lib/master-copy";
 import { getImpactPageData } from "@/lib/public-page-data";
 
 export const dynamic = "force-dynamic";
@@ -23,7 +24,11 @@ export const metadata: Metadata = {
 };
 
 export default async function ImpactPage() {
-  const initiatives = await getImpactPageData();
+  const rawInitiatives = await getImpactPageData();
+  const initiatives = rawInitiatives.filter(item => {
+    const canonical = programmeBySlug(item.slug);
+    return Boolean(canonical) && !(canonical && 'parentSlug' in canonical && canonical.parentSlug);
+  });
   const initiativesWithMetrics = initiatives.filter(item => item.primaryMetric && item.primaryMetricLabel);
   const initiativesWithMedia = initiatives.filter(item => item.mediaAssets.length > 0);
 
@@ -48,7 +53,7 @@ export default async function ImpactPage() {
 
       <section className="v2-section paper" id="evidence" aria-labelledby="evidence-title">
         <div className="v2-shell">
-          <div className="v2-section-head"><div><p className="v2-section-label">Evidence by initiative</p><h2 className="v2-section-title" id="evidence-title">Every number has a home.</h2></div><p className="v2-section-intro">Rather than collapse unlike forms of help into one oversized total, Amaana keeps public figures connected to the initiative that produced them.</p></div>
+          <div className="v2-section-head"><div><p className="v2-section-label">Evidence by initiative</p><h2 className="v2-section-title" id="evidence-title">Every number has a home.</h2></div><p className="v2-section-intro">Each underlying case or parent programme appears once. Annual editions remain available from their programme record instead of being repeated as separate impact entries.</p></div>
           {initiatives.length > 0 ? <div className="v2-impact-ledger">{initiatives.map((item, index) => <Link href={`/our-work/${item.slug}`} className="v2-impact-ledger-row" key={item.id}><span className="v2-impact-ledger-index">{String(index + 1).padStart(2, "0")}</span><div><small>{item.cause.title}</small><h3>{item.title}</h3></div><p>{item.summary}</p><div className="v2-impact-ledger-metric">{item.primaryMetric ? <><strong>{item.primaryMetric}</strong><span>{item.primaryMetricLabel}</span></> : <><strong>View</strong><span>documented initiative</span></>}</div><span className="v2-impact-ledger-arrow" aria-hidden="true">↗</span></Link>)}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Evidence gate active</span><h3>No published initiative evidence yet.</h3><p>Nothing is invented to fill the space.</p></div>}
         </div>
       </section>
