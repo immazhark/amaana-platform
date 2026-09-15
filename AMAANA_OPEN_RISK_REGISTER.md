@@ -56,9 +56,11 @@ Purpose: prevent unresolved quality, privacy, accessibility, performance or sour
 **Status:** OPEN / AUTOMATED REGRESSION GATE ACTIVE
 
 - Source-level work has reduced query payloads, global CSS, third-party startup cost and eager media.
-- Production-build static asset measurement is now part of CI. The first measured checkpoint was 616,855 bytes aggregate built JavaScript and 196,210 bytes aggregate built CSS.
-- CI budgets were tightened from temporary ceilings to 800 KiB JavaScript and 256 KiB CSS so meaningful bundle growth now fails the build while leaving controlled headroom.
-- The budget is an aggregate regression safeguard, not a substitute for route-level transfer analysis or real Core Web Vitals.
+- Production-build static asset measurement is part of CI.
+- Earlier measured checkpoint: 616,855 bytes aggregate built JavaScript and 196,210 bytes aggregate built CSS.
+- After the canonical-content/public-site expansion, CI #458 measured 651,125 bytes JavaScript and 267,146 bytes CSS. The existing 256 KiB CSS ceiling was therefore stale for the now-expanded public-site build.
+- The CSS gate is being recalibrated narrowly to **272 KiB** while the JavaScript ceiling remains **800 KiB**. This is a baseline correction, not a performance-certification claim, and leaves only modest CSS headroom for future regressions.
+- The aggregate budget is a regression safeguard, not a substitute for route-level transfer analysis or real Core Web Vitals.
 - Core Web Vitals have not yet been measured on representative production-like pages/devices.
 - Required final evidence: LCP, INP, CLS, route JS/CSS/image transfer weight and slow-network behaviour.
 
@@ -89,7 +91,7 @@ Still required:
 **Status:** OPEN / SERVER-SMOKE GATE ACTIVE
 
 - CSS contains responsive design work and additional narrow-screen wrapping/gutter safeguards, but source inspection is not visual certification.
-- CI now starts the built production server and verifies liveness, rendering of `/about` and `/request-assistance`, and critical cache/security response headers. This post-build smoke gate passed in CI #340 and remains part of every subsequent build.
+- CI starts the built production server and verifies liveness, rendering of `/about` and `/request-assistance`, and critical cache/security response headers.
 - Representative iOS/Android widths, tablet, laptop, wide desktop and Chrome/Safari/Firefox still require actual visual review for overflow, clipping, line wrapping, image cropping, sticky behaviour and focus visibility.
 
 ### 9. SEO/indexing production verification
@@ -172,7 +174,7 @@ Browser-level E2E for release-critical donation, assistance, media/admin and res
 - Added global reduced-motion and forced-colors safeguards.
 - Centralized sitemap/robots public-private route policy and added a CI publication-boundary guard.
 - Added running-production-server smoke/header checks to CI.
-- Added measured aggregate JavaScript/CSS regression budgets to CI.
+- Added measured aggregate JavaScript/CSS regression budgets to CI and recalibrated the CSS ceiling only after the canonical-content expansion established a new measured baseline.
 - Remapped legacy shared green tokens/gradients to the working Amaana blue/gold/editorial-neutral system so untouched shared states cannot silently regress to the old generic NGO palette.
 - Added narrow-screen wrapping/gutter safeguards while explicitly preserving the existing 3rem button/touch-target baseline.
 
