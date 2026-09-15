@@ -151,3 +151,59 @@ The public appeals index hid an appeal when its raised amount reached target, bu
 **Task branch:** fix/responsive-acceptance-sweep
 
 PR #22 and its Railway deployment are verified complete. No open PRs exist. Prior active-work retention task note is stale and is superseded by this user handoff. Continue responsive visual acceptance across six widths; do not redo completed content reconciliation. Older uncommitted local mapping work is excluded.
+
+---
+
+## 2026-09-16 — ChatGPT takeover reconciled through PR #46
+
+**Outgoing:** ChatGPT (previous conversation state reconstructed from repository)  
+**Incoming:** ChatGPT (current conversation)  
+**State:** `CHATGPT_ACTIVE`  
+**Integration branch:** `phase-public-site-rebuild`  
+**Task branch:** `chore/continuity-after-pr46`  
+**PR:** continuity-only PR to be opened after this ledger update  
+**Verified integration HEAD:** `2d99aeea6337b058fd2f5b741b876d1435ae0192`
+
+### Completed
+
+- Reconstructed actual repository state instead of relying on the stale pasted checkpoint.
+- Confirmed PR #42 was already merged and its formerly pending CI run `35034152258` had completed successfully, including the CSS bundle-budget gate without raising the budget.
+- Confirmed subsequent PRs #43, #44 and #45 were also merged before this conversation resumed implementation.
+- Added PR #46, `Harden static public media privacy boundary`, to guard directly addressable `public/media` paths against obvious identity/banking/payment-route/medical-document material, restricted evidence directories, document/archive files and raw/original naming for sensitive subject media while preserving pixel decoding checks.
+- Corrected the first PR #46 CI failure after verifying it was a scope false positive caused by the validator scanning all of `public/` and encountering the intentionally public AMP certificate PDF; narrowed the default scan to `public/media` without weakening sensitive-media rules.
+- PR #46 final CI run `35037240704` passed every gate and the PR was merged.
+- Post-merge integration CI run `35037373927` passed every gate.
+- Railway deployment `4a10c7a8-6011-471d-a04b-fca301447a4d` reached SUCCESS on exact integration SHA `2d99aeea6337b058fd2f5b741b876d1435ae0192`.
+
+### In progress
+
+- Reconcile stale continuity files with the verified post-PR46 repository/CI/Railway state.
+- Keep full human privacy/consent/provenance review of existing public media open; the new structural guard is not a content certification.
+- Keep browser-level rendered acceptance open because this ChatGPT environment does not currently provide a browser-execution/screenshot surface for arbitrary Railway pages.
+
+### Next exact action
+
+- Merge this continuity-only update after green CI.
+- Continue the remaining launch-hardening queue from the resulting integration head, prioritizing verifiable acceptance/performance/SEO-accessibility work without redesigning the approved public visual system.
+
+### Checks run / CI
+
+- PR #46 final head: `8ce54e97173db7be851450268e389b8c3af77181`
+- PR #46 CI: `35037240704` — SUCCESS
+- Merge: `2d99aeea6337b058fd2f5b741b876d1435ae0192`
+- Integration CI: `35037373927` — SUCCESS
+- Railway: `4a10c7a8-6011-471d-a04b-fca301447a4d` — SUCCESS
+
+### Known risks / do-not-touch areas
+
+- Do not claim pixel-level visual acceptance until rendered browser testing is actually executed.
+- Do not treat the static path guard as approval of every public image.
+- Do not weaken bundle budgets to hide redundant CSS.
+- Do not perform real donations, destructive production operations or `main` cutover without explicit user authorization.
+
+### Relevant locked facts
+
+- Newborn medical-aid amount: ₹107,520.
+- Winter Drive: 234 Winter Kits / 234 beneficiaries; phase figures are subsets only.
+- Taleem Nazira + Hifdh: 25 students combined as of September 2026.
+- Canonical programme taxonomy contains exactly five umbrella categories.
