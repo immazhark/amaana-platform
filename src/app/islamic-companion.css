@@ -17,8 +17,9 @@
 .amaana-reminder-schedule dt { font-weight: 700; font-size: 14px; }
 .amaana-reminder-schedule dd { margin: 4px 0 0; font-size: 14px; }
 .amaana-reminder-schedule > p { font-size: 12px; margin: 20px 0; }
-.amaana-companion { color: #203b43; }
-.amaana-companion-dock { position: fixed; bottom: max(16px, env(safe-area-inset-bottom)); right: max(20px, env(safe-area-inset-right)); display: flex; gap: 8px; z-index: 1099; }
+.amaana-companion { color: #203b43; background: #f4efe3; border-bottom: 1px solid #d7cfbc; }
+/* Keep the launchers in flow: persistent overlays obscure reading and form controls. */
+.amaana-companion-dock { max-width: 1320px; margin-inline: auto; padding: 12px 32px; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px; }
 .amaana-companion-dock > button { display: flex; align-items: center; gap: 9px; min-height: 48px; padding: 12px 16px; border: 1px solid #476069; border-radius: 8px; background: #173e47; color: #fffaf0; box-shadow: 0 6px 22px #122e3926; font-size: 13px; font-weight: 650; }
 .amaana-companion-dock > button:hover, .amaana-companion-dock > button[aria-expanded="true"] { background: #285763; }
 .amaana-companion-panel { position: fixed; z-index: 1100; bottom: calc(max(16px, env(safe-area-inset-bottom)) + 60px); right: max(20px, env(safe-area-inset-right)); width: min(440px, calc(100vw - 32px)); max-height: calc(100dvh - 112px); overflow-y: auto; overscroll-behavior: contain; padding: 24px; border: 1px solid #d4c9b4; border-radius: 14px; background: #fffcf5; box-shadow: 0 18px 60px #102e3940; scrollbar-color: #75857d #f0eadf; scrollbar-width: thin; }
@@ -58,18 +59,17 @@
 .amaana-companion-error p { color: #853b26; }
 .amaana-reminders :focus-visible, .amaana-companion :focus-visible { outline: 3px solid #8f691e; outline-offset: 4px; }
 .amaana-reminders ::selection, .amaana-companion ::selection { background: #d9c18b; color: #173e47; }
-/* Reserve the dock's height so footer actions can scroll fully above it. */
-body { padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
 @media (max-width: 640px) {
   .amaana-reminder-inner { padding: 14px 18px; gap: 10px; flex-wrap: wrap; }
   .amaana-reminder-content { width: 100%; min-height: 74px; }
   .amaana-reminder-controls { width: 100%; justify-content: flex-end; }
-  .amaana-reminder-controls button { min-height: 36px; }
+  .amaana-reminder-controls button { min-height: 44px; }
   .amaana-reminder-schedule { padding: 8px 18px 24px; }
   .amaana-reminder-schedule dl { grid-template-columns: 1fr; }
-  .amaana-companion-dock { right: 12px; left: 12px; justify-content: center; }
+  .amaana-companion-dock { padding-inline: 12px; justify-content: center; }
   .amaana-companion-dock > button { padding: 11px 10px; gap: 6px; font-size: 12px; min-height: 46px; min-width: 0; }
   .amaana-companion-panel { right: 12px; width: calc(100% - 24px); padding: 22px; }
   .amaana-companion-head h2 { font-size: 26px; }
 }
 @media print { .amaana-companion, .amaana-reminders { display: none; } body { padding-bottom: 0; } }
+
