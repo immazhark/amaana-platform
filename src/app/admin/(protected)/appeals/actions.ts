@@ -3,6 +3,7 @@
 import { AppealCategory, AppealStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { getAppealConsentContentIssues, getFirstPublicationIssues, goalMatchesApprovedPublicTarget } from "@/lib/appeal-publication";
+import { getAppealUpdatePublicationIssues } from "@/lib/appeal-update-publication";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
@@ -44,16 +45,25 @@ export async function updateFeaturing(formData: FormData) {
 }
 
 export async function addAppealUpdate(formData: FormData) {
-  const user = await requirePermission("appeal.update"); const appealId = String(formData.get("id")); const title = String(formData.get("updateTitle") ?? "").trim(); const content = String(formData.get("updateContent") ?? "").trim(); const requestedPublic = formData.get("isPublic") === "on";
+  const user = await requirePermission("appeal.update"); const appealId = String(formData.get("id")); const title = String(formData.get("updateTitle") ?? "").trim(); const content = String(formData.get("updateContent") ?? "").trim(); const requestedPublic = formData.get("isPublic") === "on"; const privacyReviewed = formData.get("privacyReviewed") === "on";
   if (title.length < 5 || content.length < 20) throw new Error("Update title and content are required");
   const isPublic = requestedPublic && hasPermission(user, "appeal.approve");
+  const appeal = await prisma.appeal.findUniqueOrThrow({ where: { id: appealId }, select: { slug: true, status: true, assistanceRequest: { select: { id: true, verification: true } } } });
+  if (isPublic) {
+    const publicationIssues = getAppealUpdatePublicationIssues({ appealStatus: appeal.status, privacyReviewed, hasAssistanceRequest: Boolean(appeal.assistanceRequest), verification: appeal.assistanceRequest?.verification });
+    if (publicationIssues.length) throw new Error(`Appeal update cannot be published: ${publicationIssues.join(" ")}`);
+  }
   const update = await prisma.appealUpdate.create({ data: { appealId, authorId: user.id, title, content, isPublic, publishedAt: isPublic ? new Date() : null } });
-  await prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_added", entityType: "Appeal", entityId: appealId, metadata: { updateId: update.id, isPublic } } });
+  await prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_added", entityType: "Appeal", entityId: appealId, metadata: { updateId: update.id, isPublic, privacyReviewed: isPublic ? privacyReviewed : false } } });
   revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals");
+  if (isPublic) revalidatePath(`/appeals/${appeal.slug}`);
 }
 
 export async function publishAppealUpdate(formData: FormData) {
-  const user = await requirePermission("appeal.approve"); const appealId = String(formData.get("appealId")); const updateId = String(formData.get("updateId"));
-  await prisma.$transaction([prisma.appealUpdate.update({ where: { id: updateId, appealId }, data: { isPublic: true, publishedAt: new Date() } }), prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_published", entityType: "Appeal", entityId: appealId, metadata: { updateId } } })]);
-  revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals");
+  const user = await requirePermission("appeal.approve"); const appealId = String(formData.get("appealId")); const updateId = String(formData.get("updateId")); const privacyReviewed = formData.get("privacyReviewed") === "on";
+  const appeal = await prisma.appeal.findUniqueOrThrow({ where: { id: appealId }, select: { slug: true, status: true, assistanceRequest: { select: { id: true, verification: true } } } });
+  const publicationIssues = getAppealUpdatePublicationIssues({ appealStatus: appeal.status, privacyReviewed, hasAssistanceRequest: Boolean(appeal.assistanceRequest), verification: appeal.assistanceRequest?.verification });
+  if (publicationIssues.length) throw new Error(`Appeal update cannot be published: ${publicationIssues.join(" ")}`);
+  await prisma.$transaction([prisma.appealUpdate.update({ where: { id: updateId, appealId }, data: { isPublic: true, publishedAt: new Date() } }), prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_published", entityType: "Appeal", entityId: appealId, metadata: { updateId, privacyReviewed: true } } })]);
+  revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals"); revalidatePath(`/appeals/${appeal.slug}`);
 }
