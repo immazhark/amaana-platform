@@ -1,6 +1,7 @@
 import "./campaign.css";
 import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
 import { ProgrammeDetail } from "@/components/programme-detail";
+import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { programmeBySlug } from "@/lib/master-copy";
 import { canRenderPublicMedia, resolvePublicMediaUrl } from "@/lib/public-media";
 import type { Metadata } from "next";
@@ -48,7 +49,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function InitiativePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  if (['winter-drive-2025-26','winter-relief-2025-26'].includes(slug)) permanentRedirect('/our-work/winter-relief');
+  if (["winter-drive-2025-26", "winter-relief-2025-26"].includes(slug)) permanentRedirect("/our-work/winter-relief");
   if (programmeBySlug(slug)) return <ProgrammeDetail slug={slug} />;
   const initiative = await getInitiativePageData(slug);
   if (!initiative) notFound();
@@ -82,7 +83,9 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
               {gallery.length > 0 && <a className="v2-text-link" href="#campaign-gallery">View media and updates</a>}
             </div>
           </div>
-          {leadMedia && <div className="campaign-lead"><PublicMedia asset={leadMedia} priority /></div>}
+          <div className="campaign-lead">
+            {leadMedia ? <PublicMedia asset={leadMedia} priority /> : <WorkVisualPlaceholder label={initiative.title} className="campaign-lead-placeholder" />}
+          </div>
         </div>
       </section>
 
