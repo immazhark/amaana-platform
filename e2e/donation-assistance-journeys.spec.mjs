@@ -40,6 +40,7 @@ async function openDonationFixture(page, mode = 'success') {
 
   const response = await page.goto('/browser-acceptance/donation', { waitUntil: 'domcontentloaded' });
   expect(response?.ok()).toBeTruthy();
+  await expect(page.getByRole('heading', { name: 'Mocked donation journey' })).toBeVisible();
   const submit = page.getByRole('button', { name: 'Continue securely →' });
   await expect(submit).toBeEnabled();
   return submit;
