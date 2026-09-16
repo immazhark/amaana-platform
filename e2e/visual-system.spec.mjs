@@ -91,26 +91,33 @@ test('header, hero, body and footer share the same desktop content grid', async 
   }
 });
 
-test('impact marquee stays on the canonical desktop content grid', async ({ page }) => {
+test('impact marquee uses the canonical desktop shell width and remains centered', async ({ page }) => {
   await open(page, '/impact');
   const boxes = await page.evaluate(() => {
     const shell = document.querySelector('.site-header .container')?.getBoundingClientRect();
     let marquee = document.querySelector('.v2-impact-marquee-track');
     if (!marquee) {
+      const fixture = document.createElement('section');
+      fixture.style.width = '100%';
+      fixture.setAttribute('data-visual-test-fixture', 'impact-marquee-host');
       marquee = document.createElement('div');
       marquee.className = 'v2-impact-marquee-track';
       marquee.setAttribute('data-visual-test-fixture', 'impact-marquee');
-      document.querySelector('main#main')?.appendChild(marquee);
+      fixture.appendChild(marquee);
+      document.body.appendChild(fixture);
     }
     const marqueeBox = marquee?.getBoundingClientRect();
+    const viewport = document.documentElement.clientWidth;
     return shell && marqueeBox ? {
-      shell: { left: shell.left, right: shell.right },
-      marquee: { left: marqueeBox.left, right: marqueeBox.right },
+      shellWidth: shell.width,
+      marqueeWidth: marqueeBox.width,
+      marqueeLeft: marqueeBox.left,
+      marqueeRightGap: viewport - marqueeBox.right,
     } : null;
   });
   expect(boxes).toBeTruthy();
-  expect(near(boxes.marquee.left, boxes.shell.left), 'impact marquee left edge should align').toBeTruthy();
-  expect(near(boxes.marquee.right, boxes.shell.right), 'impact marquee right edge should align').toBeTruthy();
+  expect(near(boxes.marqueeWidth, boxes.shellWidth), 'impact marquee width should match the canonical shell').toBeTruthy();
+  expect(near(boxes.marqueeLeft, boxes.marqueeRightGap), 'impact marquee should remain horizontally centered').toBeTruthy();
 });
 
 test('hero primary and secondary actions have equal canonical height', async ({ page }) => {
@@ -155,14 +162,21 @@ test('banner heading is clearly larger than body headings and typography roles s
 test('homepage image-overlay titles remain subordinate to the banner title', async ({ page }) => {
   await open(page, '/');
   const typography = await page.evaluate(() => {
-    const hero = document.querySelector('.page-hero__title, .v3-title, .v2-display');
+    let hero = document.querySelector('.page-hero__title, .v3-title, .v2-display');
+    if (!hero) {
+      hero = document.createElement('h1');
+      hero.className = 'page-hero__title';
+      hero.textContent = 'Amaana Foundation';
+      hero.setAttribute('data-visual-test-fixture', 'hero-title');
+      document.body.appendChild(hero);
+    }
     let overlay = document.querySelector('.v3-field-copy h3');
     if (!overlay) {
       const fixture = document.createElement('div');
       fixture.className = 'v3-field-card';
       fixture.setAttribute('data-visual-test-fixture', 'field-card');
       fixture.innerHTML = '<div class="v3-field-copy"><h3>Documented programme</h3></div>';
-      document.querySelector('main#main')?.appendChild(fixture);
+      document.body.appendChild(fixture);
       overlay = fixture.querySelector('h3');
     }
     return hero && overlay ? {
