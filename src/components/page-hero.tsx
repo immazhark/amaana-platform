@@ -51,7 +51,6 @@ export function PageHero({
 
   return (
     <section className={classes} aria-labelledby={id}>
-      <div className="page-hero__atmosphere" aria-hidden="true" />
       <div className="page-hero__shell">
         <div className="page-hero__grid">
           <div className="page-hero__copy">
