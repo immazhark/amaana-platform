@@ -94,7 +94,7 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:3000/about > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:3000/request-assistance > /dev/null
 
-          ACCEPTANCE_STATUS=$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:3000/__acceptance/donation)
+          ACCEPTANCE_STATUS=$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:3000/browser-acceptance/donation)
           if [ "$ACCEPTANCE_STATUS" != "404" ]; then
             echo "Browser acceptance fixture must fail closed outside the isolated Playwright server; got HTTP ${ACCEPTANCE_STATUS}."
             exit 1
