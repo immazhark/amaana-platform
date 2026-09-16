@@ -14,6 +14,10 @@ async function expectLinks(navigation, visible, hidden) {
   for (const name of hidden) await expect(navigation.getByRole('link', { name })).toHaveCount(0);
 }
 
+function adminBrand(page) {
+  return page.locator('.admin-sidebar > a.brand');
+}
+
 test.describe('admin operational simulation without shared records', () => {
   test('admin sign-in surface preserves secure credential semantics', async ({ page }) => {
     const response = await page.goto('/admin/login', { waitUntil: 'domcontentloaded' });
@@ -31,7 +35,7 @@ test.describe('admin operational simulation without shared records', () => {
     await expectLinks(navigation,
       ['Assistance queue', 'Retention review'],
       ['Appeals', 'Media review', 'Donations']);
-    await expect(page.locator('a.brand')).toHaveAttribute('href', '/admin');
+    await expect(adminBrand(page)).toHaveAttribute('href', '/admin');
     await expect(page.getByText('Fail-closed landing:')).toBeVisible();
     await expect(page.locator('code')).toHaveText('/admin');
   });
@@ -41,7 +45,7 @@ test.describe('admin operational simulation without shared records', () => {
     await expectLinks(navigation,
       ['Appeals', 'Media review'],
       ['Assistance queue', 'Retention review', 'Donations']);
-    await expect(page.locator('a.brand')).toHaveAttribute('href', '/admin/appeals');
+    await expect(adminBrand(page)).toHaveAttribute('href', '/admin/appeals');
     await expect(page.locator('code')).toHaveText('/admin/appeals');
   });
 
@@ -50,14 +54,14 @@ test.describe('admin operational simulation without shared records', () => {
     await expectLinks(navigation,
       ['Donations'],
       ['Assistance queue', 'Appeals', 'Media review', 'Retention review']);
-    await expect(page.locator('a.brand')).toHaveAttribute('href', '/admin/donations');
+    await expect(adminBrand(page)).toHaveAttribute('href', '/admin/donations');
     await expect(page.locator('code')).toHaveText('/admin/donations');
   });
 
   test('unrecognized permissions fail closed to forbidden with no operational links', async ({ page }) => {
     const navigation = await openProfile(page, 'none');
     await expect(navigation.getByRole('link')).toHaveCount(0);
-    await expect(page.locator('a.brand')).toHaveAttribute('href', '/admin/forbidden');
+    await expect(adminBrand(page)).toHaveAttribute('href', '/admin/forbidden');
     await expect(page.locator('code')).toHaveText('/admin/forbidden');
   });
 
