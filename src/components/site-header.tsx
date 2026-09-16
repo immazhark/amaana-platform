@@ -88,7 +88,7 @@ export function SiteHeader() {
               return <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMenu} aria-current={active ? "page" : undefined}>{label}</Link>;
             })}
           </div>
-          <div className="mobile-menu-secondary" aria-label="More ways to connect">
+          <div className="mobile-menu-secondary">
             <Link href="/request-assistance" onClick={closeMenu}>Request assistance</Link>
             <Link href="/how-we-verify" onClick={closeMenu}>How we work</Link>
             <Link href="/transparency" onClick={closeMenu}>Transparency</Link>
