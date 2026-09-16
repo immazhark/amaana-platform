@@ -13,23 +13,24 @@
   overflow: hidden;
 }
 
-.v2-shell { width: min(calc(100% - 2rem), 78rem); margin-inline: auto; }
+.v2-shell { width: min(calc(100% - 2rem), 74rem); margin-inline: auto; }
 .v2-kicker,.v2-section-label { color: var(--v2-gold); font-size: .76rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
 .v2-hero-actions { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 2rem; }
 .v2-button { display: inline-flex; align-items: center; justify-content: center; min-height: 3.25rem; padding: .78rem 1.35rem; border: 1px solid var(--v2-gold); border-radius: 999px; background: var(--v2-gold); color: #122239; font-weight: 850; transition: transform .25s ease, box-shadow .25s ease, background .25s ease; }
 .v2-button:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgb(0 0 0 / 20%); background: #f0ca39; }
 .v2-button.ghost { background: transparent; color: #fffdf8; border-color: rgb(255 253 248 / 38%); }
 .v2-text-link { color: #b8890e; font-weight: 800; text-decoration-thickness: 1px; text-underline-offset: .2em; }
-.v2-section { padding-block: clamp(5rem, 10vw, 9rem); }
+.v2-section { padding-block: clamp(4.5rem, 8vw, 7.5rem); }
 .v2-section.paper { background: var(--v2-paper); }
 .v2-section.dark { background: #1d3150; color: #fffdf8; }
-.v2-section-head { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(18rem, .85fr); gap: clamp(2rem, 6vw, 6rem); align-items: end; margin-bottom: clamp(2.5rem, 6vw, 5rem); }
-.v2-section-title { margin: .7rem 0 0; max-width: 12ch; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.8rem, 6vw, 6rem); font-weight: 500; line-height: .95; letter-spacing: -.045em; }
+.v2-section-head { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(18rem, .85fr); gap: clamp(2rem, 6vw, 6rem); align-items: end; margin-bottom: clamp(2.5rem, 5vw, 4.5rem); }
+.v2-section-title { margin: .7rem 0 0; max-width: 12ch; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.4rem, 4.6vw, 4.5rem); font-weight: 500; line-height: .98; letter-spacing: -.04em; }
 .v2-section-intro { color: #5b6472; font-size: clamp(1rem, 1.6vw, 1.18rem); line-height: 1.75; }
 .dark .v2-section-intro { color: rgb(255 253 248 / 68%); }
 
 @media (max-width: 760px) {
   .v2-section-head { grid-template-columns: 1fr; }
+  .v2-section-title { font-size: clamp(2.2rem, 9vw, 3.4rem); }
 }
 
 @media (prefers-reduced-motion: reduce) {
