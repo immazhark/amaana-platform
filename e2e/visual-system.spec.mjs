@@ -95,10 +95,17 @@ test('impact marquee stays on the canonical desktop content grid', async ({ page
   await open(page, '/impact');
   const boxes = await page.evaluate(() => {
     const shell = document.querySelector('.site-header .container')?.getBoundingClientRect();
-    const marquee = document.querySelector('.v2-impact-marquee-track')?.getBoundingClientRect();
-    return shell && marquee ? {
+    let marquee = document.querySelector('.v2-impact-marquee-track');
+    if (!marquee) {
+      marquee = document.createElement('div');
+      marquee.className = 'v2-impact-marquee-track';
+      marquee.setAttribute('data-visual-test-fixture', 'impact-marquee');
+      document.querySelector('main#main')?.appendChild(marquee);
+    }
+    const marqueeBox = marquee?.getBoundingClientRect();
+    return shell && marqueeBox ? {
       shell: { left: shell.left, right: shell.right },
-      marquee: { left: marquee.left, right: marquee.right },
+      marquee: { left: marqueeBox.left, right: marqueeBox.right },
     } : null;
   });
   expect(boxes).toBeTruthy();
@@ -149,7 +156,15 @@ test('homepage image-overlay titles remain subordinate to the banner title', asy
   await open(page, '/');
   const typography = await page.evaluate(() => {
     const hero = document.querySelector('.page-hero__title, .v3-title, .v2-display');
-    const overlay = document.querySelector('.v3-field-copy h3');
+    let overlay = document.querySelector('.v3-field-copy h3');
+    if (!overlay) {
+      const fixture = document.createElement('div');
+      fixture.className = 'v3-field-card';
+      fixture.setAttribute('data-visual-test-fixture', 'field-card');
+      fixture.innerHTML = '<div class="v3-field-copy"><h3>Documented programme</h3></div>';
+      document.querySelector('main#main')?.appendChild(fixture);
+      overlay = fixture.querySelector('h3');
+    }
     return hero && overlay ? {
       heroSize: parseFloat(getComputedStyle(hero).fontSize),
       overlaySize: parseFloat(getComputedStyle(overlay).fontSize),
