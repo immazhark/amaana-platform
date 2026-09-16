@@ -94,9 +94,15 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:3000/about > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:3000/request-assistance > /dev/null
 
-          ACCEPTANCE_STATUS=$(curl --silent --output /dev/null --write-out '%{http_code}' http://127.0.0.1:3000/browser-acceptance/donation)
-          if [ "$ACCEPTANCE_STATUS" != "404" ]; then
-            echo "Browser acceptance fixture must fail closed outside the isolated Playwright server; got HTTP ${ACCEPTANCE_STATUS}."
+          # Next.js may stream a notFound() response with HTTP 200 after headers are committed.
+          # The security property we need is that normal runtime can never render fixture content.
+          ACCEPTANCE_STATUS=$(curl --silent --show-error --output /tmp/acceptance.html --write-out '%{http_code}' http://127.0.0.1:3000/browser-acceptance/donation)
+          if [ "$ACCEPTANCE_STATUS" -ge 500 ]; then
+            echo "Browser acceptance fixture returned an unexpected server error: HTTP ${ACCEPTANCE_STATUS}."
+            exit 1
+          fi
+          if grep -q 'Mocked donation journey' /tmp/acceptance.html; then
+            echo "Browser acceptance fixture content was exposed outside the isolated Playwright server."
             exit 1
           fi
 
