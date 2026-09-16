@@ -2,6 +2,39 @@ import { expect, test } from '@playwright/test';
 
 const routes = ['/about', '/governance', '/donate', '/request-assistance'];
 const widths = [1440, 720, 390];
+const publicSurfaceRoutes = [
+  '/',
+  '/about',
+  '/appeals',
+  '/compliance',
+  '/contact',
+  '/donate',
+  '/donation-policy',
+  '/faith-and-reflections',
+  '/get-involved',
+  '/get-involved/sponsor-education',
+  '/governance',
+  '/how-we-verify',
+  '/impact',
+  '/our-work',
+  '/our-work/dates-distribution',
+  '/our-work/eid-gift-kits',
+  '/our-work/hyderabad-flood-relief-2020',
+  '/our-work/medical-financial-assistance',
+  '/our-work/qurbani-meat-distribution',
+  '/our-work/taleem',
+  '/our-work/winter-relief',
+  '/partner',
+  '/privacy',
+  '/recognition',
+  '/refund-policy',
+  '/request-assistance',
+  '/request-assistance/received',
+  '/request-assistance/status',
+  '/stories',
+  '/terms',
+  '/transparency',
+];
 
 async function open(page, path, width = 1440) {
   await page.setViewportSize({ width, height: width <= 430 ? 844 : 1000 });
@@ -13,6 +46,29 @@ async function open(page, path, width = 1440) {
 
 function near(actual, expected, tolerance = 2) {
   return Math.abs(actual - expected) <= tolerance;
+}
+
+async function expectContained(page, route) {
+  const result = await page.evaluate(() => {
+    const viewport = document.documentElement.clientWidth;
+    const scrollWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
+    const offenders = [...document.querySelectorAll('header img, main img, main video, main iframe, footer img')]
+      .filter(element => {
+        const style = getComputedStyle(element);
+        if (style.display === 'none' || style.visibility === 'hidden' || element.closest('[aria-hidden="true"]')) return false;
+        const rect = element.getBoundingClientRect();
+        return rect.width > 0 && (rect.left < -1 || rect.right > viewport + 1);
+      })
+      .map(element => ({
+        tag: element.tagName,
+        src: element.getAttribute('src'),
+        left: element.getBoundingClientRect().left,
+        right: element.getBoundingClientRect().right,
+      }));
+    return { viewport, scrollWidth, offenders };
+  });
+  expect(result.scrollWidth, `${route} should not overflow horizontally`).toBeLessThanOrEqual(result.viewport + 1);
+  expect(result.offenders, `${route} has out-of-bounds media`).toEqual([]);
 }
 
 test('header, hero, body and footer share the same desktop content grid', async ({ page }) => {
@@ -100,21 +156,17 @@ for (const route of routes) {
   for (const width of widths) {
     test(`${route} contains media and content at ${width}px${width === 720 ? ' (200% desktop reflow equivalent)' : ''}`, async ({ page }) => {
       await open(page, route, width);
-      const result = await page.evaluate(() => {
-        const viewport = document.documentElement.clientWidth;
-        const scrollWidth = Math.max(document.documentElement.scrollWidth, document.body.scrollWidth);
-        const offenders = [...document.querySelectorAll('main img, main video, main iframe')]
-          .filter(element => {
-            const style = getComputedStyle(element);
-            if (style.display === 'none' || style.visibility === 'hidden') return false;
-            const rect = element.getBoundingClientRect();
-            return rect.width > 0 && (rect.left < -1 || rect.right > viewport + 1);
-          })
-          .map(element => ({ tag: element.tagName, src: element.getAttribute('src'), rect: element.getBoundingClientRect().toJSON() }));
-        return { viewport, scrollWidth, offenders };
-      });
-      expect(result.scrollWidth, `${route} should not overflow horizontally`).toBeLessThanOrEqual(result.viewport + 1);
-      expect(result.offenders, `${route} has out-of-bounds media`).toEqual([]);
+      await expectContained(page, route);
     });
   }
+}
+
+for (const width of [1440, 390]) {
+  test(`all concrete public routes stay horizontally contained at ${width}px`, async ({ page }) => {
+    test.setTimeout(120_000);
+    for (const route of publicSurfaceRoutes) {
+      await open(page, route, width);
+      await expectContained(page, route);
+    }
+  });
 }
