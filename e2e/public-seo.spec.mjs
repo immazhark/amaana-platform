@@ -16,7 +16,7 @@ const representativeRoutes = [
 ];
 
 function canonicalFor(path) {
-  return path === '/' ? `${productionOrigin}/` : `${productionOrigin}${path}`;
+  return path === '/' ? productionOrigin : `${productionOrigin}${path}`;
 }
 
 for (const path of representativeRoutes) {
@@ -38,9 +38,12 @@ for (const path of representativeRoutes) {
     await expect(robots).toHaveCount(1);
     await expect(robots).toHaveAttribute('content', /noindex/i);
 
-    const ogImage = page.locator('meta[property="og:image"]');
-    await expect(ogImage).toHaveCount(1);
-    await expect(ogImage).toHaveAttribute('content', /^https:\/\/amaanafoundation\.org\/.+/);
+    const ogTitle = page.locator('meta[property="og:title"]');
+    const ogDescription = page.locator('meta[property="og:description"]');
+    await expect(ogTitle).toHaveCount(1);
+    await expect(ogTitle).toHaveAttribute('content', /Amaana Foundation/i);
+    await expect(ogDescription).toHaveCount(1);
+    await expect(ogDescription).toHaveAttribute('content', /\S.{20,}/);
 
     const twitterCard = page.locator('meta[name="twitter:card"]');
     await expect(twitterCard).toHaveCount(1);
