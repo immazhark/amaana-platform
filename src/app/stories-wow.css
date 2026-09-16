@@ -11,6 +11,7 @@
 .v2-stories-feature-media:is(:hover,:focus-visible){transform:translateY(-.45rem);box-shadow:0 44px 100px rgb(47 76 122 / 22%)}
 .v2-stories-feature-placeholder{background:radial-gradient(circle at 72% 18%,rgb(224 179 24 / 20%),transparent 22%),linear-gradient(145deg,#2f4c7a,#1d3150 58%,#0f2036)}
 .v2-stories-feature-copy small,.v2-stories-card-copy>span,.v2-stories-card-copy small{color:var(--amaana-gold-deep)}
+.v2-stories-feature-copy h2{font-size:clamp(2.2rem,4.6vw,4.5rem)}
 .v2-stories-feature-copy p,.v2-stories-card-copy p,.v2-stories-single-note p{color:var(--amaana-ink-soft)}
 .v2-stories-archive{position:relative;background:radial-gradient(circle at 8% 18%,rgb(70 111 170 / 6%),transparent 22%),var(--amaana-paper)}
 .v2-stories-card{position:relative;border-color:var(--amaana-border-warm);background:linear-gradient(145deg,var(--amaana-paper),var(--amaana-cream) 140%);box-shadow:0 0 0 rgb(47 76 122 / 0)}
