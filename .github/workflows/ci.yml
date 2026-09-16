@@ -184,3 +184,38 @@ jobs:
           set -euo pipefail
           cd "$RUNNER_TEMP/amaana-browser-acceptance"
           npx playwright test --config=playwright.config.mjs
+
+  staging_acceptance:
+    name: staging-runtime-acceptance
+    if: github.event_name == 'push' && github.ref == 'refs/heads/phase-public-site-rebuild'
+    needs: verify
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      STAGING_BASE_URL: https://amaana-rebuild-preview-production.up.railway.app
+      EXPECTED_COMMIT_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Wait for Railway to serve the exact integration commit
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION_URL="${STAGING_BASE_URL}/api/health/version"
+          for attempt in {1..60}; do
+            BODY=$(curl --silent --show-error --max-time 10 "$VERSION_URL" || true)
+            if printf '%s' "$BODY" | grep -Fq "\"commitSha\":\"${EXPECTED_COMMIT_SHA}\""; then
+              echo "Railway is serving expected commit ${EXPECTED_COMMIT_SHA}."
+              exit 0
+            fi
+            echo "Waiting for Railway exact commit (${attempt}/60)..."
+            sleep 10
+          done
+          echo "Railway did not serve expected commit ${EXPECTED_COMMIT_SHA} within the acceptance window."
+          exit 1
+      - name: Run exact-candidate staging acceptance
+        run: node scripts/staging-launch-acceptance.mjs
