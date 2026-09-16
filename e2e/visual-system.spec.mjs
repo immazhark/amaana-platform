@@ -91,6 +91,21 @@ test('header, hero, body and footer share the same desktop content grid', async 
   }
 });
 
+test('impact marquee stays on the canonical desktop content grid', async ({ page }) => {
+  await open(page, '/impact');
+  const boxes = await page.evaluate(() => {
+    const shell = document.querySelector('.site-header .container')?.getBoundingClientRect();
+    const marquee = document.querySelector('.v2-impact-marquee-track')?.getBoundingClientRect();
+    return shell && marquee ? {
+      shell: { left: shell.left, right: shell.right },
+      marquee: { left: marquee.left, right: marquee.right },
+    } : null;
+  });
+  expect(boxes).toBeTruthy();
+  expect(near(boxes.marquee.left, boxes.shell.left), 'impact marquee left edge should align').toBeTruthy();
+  expect(near(boxes.marquee.right, boxes.shell.right), 'impact marquee right edge should align').toBeTruthy();
+});
+
 test('hero primary and secondary actions have equal canonical height', async ({ page }) => {
   await open(page, '/about');
   const actions = page.locator('.page-hero__actions .page-hero__button');
