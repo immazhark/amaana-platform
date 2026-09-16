@@ -97,14 +97,12 @@ test('impact marquee uses the canonical desktop shell width and remains centered
     const shell = document.querySelector('.site-header .container')?.getBoundingClientRect();
     let marquee = document.querySelector('.v2-impact-marquee-track');
     if (!marquee) {
-      const fixture = document.createElement('section');
-      fixture.style.width = '100%';
-      fixture.setAttribute('data-visual-test-fixture', 'impact-marquee-host');
-      marquee = document.createElement('div');
-      marquee.className = 'v2-impact-marquee-track';
-      marquee.setAttribute('data-visual-test-fixture', 'impact-marquee');
-      fixture.appendChild(marquee);
+      const fixture = document.createElement('div');
+      fixture.className = 'v2-home v2-impact-page';
+      fixture.setAttribute('data-visual-test-fixture', 'impact-page');
+      fixture.innerHTML = '<section class="v2-impact-marquee"><div class="v2-impact-marquee-track" data-visual-test-fixture="impact-marquee"></div></section>';
       document.body.appendChild(fixture);
+      marquee = fixture.querySelector('.v2-impact-marquee-track');
     }
     const marqueeBox = marquee?.getBoundingClientRect();
     const viewport = document.documentElement.clientWidth;
