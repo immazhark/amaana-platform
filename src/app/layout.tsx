@@ -17,6 +17,7 @@ import "./islamic-backdrops.css";
 import "./islamic-companion.css";
 import "./accessibility.css";
 import "./iteration-four.css";
+import "./page-hero.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { IslamicCompanion } from "@/components/islamic-companion";
