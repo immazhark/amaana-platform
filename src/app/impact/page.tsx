@@ -5,6 +5,7 @@ import { PublicMedia } from "@/components/public-media";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { programmeBySlug } from "@/lib/master-copy";
 import { getImpactPageData } from "@/lib/public-page-data";
+import "./impact-refinement.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -77,7 +78,7 @@ export default async function ImpactPage() {
         </div>
       </section>
 
-      {initiativesWithMedia.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p><h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2></div><p className="v2-section-intro">Only privacy-approved, public-safe material is shown. The people Amaana serves are never treated as proof objects.</p></div><div className="v2-impact-witness-grid">{initiativesWithMedia.slice(0, 4).map((item, index) => <Link href={`/our-work/${item.slug}`} className={`v2-impact-witness-item ${index === 0 ? "lead" : ""}`} key={item.id} aria-label={`Open ${item.title} initiative record`}><PublicMedia asset={item.mediaAssets[0]} /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Enter the field record →</span></div></Link>)}</div></div></section>}
+      {initiativesWithMedia.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p><h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2></div><p className="v2-section-intro">Only privacy-approved, public-safe material is shown. The people Amaana serves are never treated as proof objects.</p></div><div className="v2-impact-witness-grid">{initiativesWithMedia.slice(0, 4).map(item => <Link href={`/our-work/${item.slug}`} className="v2-impact-witness-item" key={item.id} aria-label={`Open ${item.title} initiative record`}><PublicMedia asset={item.mediaAssets[0]} /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Enter the field record →</span></div></Link>)}</div></div></section>}
 
       <section className="v2-section v2-impact-philosophy">
         <div className="v2-shell v2-impact-philosophy-grid">
