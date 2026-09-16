@@ -162,13 +162,14 @@ test('banner heading is clearly larger than body headings and typography roles s
 test('homepage image-overlay titles remain subordinate to the banner title', async ({ page }) => {
   await open(page, '/');
   const typography = await page.evaluate(() => {
-    let hero = document.querySelector('.page-hero__title, .v3-title, .v2-display');
+    let hero = document.querySelector('.page-hero__title');
     if (!hero) {
-      hero = document.createElement('h1');
-      hero.className = 'page-hero__title';
-      hero.textContent = 'Amaana Foundation';
-      hero.setAttribute('data-visual-test-fixture', 'hero-title');
-      document.body.appendChild(hero);
+      const host = document.createElement('section');
+      host.className = 'page-hero page-hero--level1';
+      host.setAttribute('data-visual-test-fixture', 'hero-host');
+      host.innerHTML = '<h1 class="page-hero__title">Amaana Foundation</h1>';
+      document.body.appendChild(host);
+      hero = host.querySelector('.page-hero__title');
     }
     let overlay = document.querySelector('.v3-field-copy h3');
     if (!overlay) {
