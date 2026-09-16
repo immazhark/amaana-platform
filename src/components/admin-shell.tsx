@@ -20,7 +20,7 @@ export function AdminShell({ children, userName, roleNames, permissions, logoutA
       <aside className="admin-sidebar">
         <Link className="brand" href={homePath}>
           <span className="brand-mark">A</span>
-          <span>Amaana Admin</span>
+          <span style={{ color: "#ffffff" }}>Amaana Admin</span>
         </Link>
         <nav aria-label="Admin navigation">
           {navigation.map(item => <Link href={item.path} key={item.path}>{item.label}</Link>)}
