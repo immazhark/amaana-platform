@@ -48,6 +48,10 @@ async function backgrounds(page) {
   });
 }
 
+function expectTopRight(position) {
+  expect(position).toMatch(/^100% (?:0|0%|0px)$/);
+}
+
 for (const width of widths) {
   test(`approved background system resolves correctly at ${width}px`, async ({ page }) => {
     await open(page, width);
@@ -69,9 +73,9 @@ for (const width of widths) {
     expect(styles.footerRepeat).toBe('no-repeat');
 
     if (mobile) {
-      expect(styles.heroPosition).toBe('100% 0%');
+      expectTopRight(styles.heroPosition);
       expect(styles.bodyPosition).toBe('50% 50%');
-      expect(styles.footerPosition).toBe('100% 0%');
+      expectTopRight(styles.footerPosition);
     } else {
       expect(styles.heroPosition).toBe('50% 50%');
       expect(styles.bodyPosition).toBe('50% 50%');
