@@ -1,0 +1,108 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-16",
+  "principle": "Green automation is necessary but not sufficient for production launch. External, human-review and cutover gates remain pending until evidence is recorded; main/DNS/payment actions require explicit authorization.",
+  "gates": [
+    {
+      "id": "integration-ci-browser",
+      "category": "technical",
+      "status": "VERIFIED",
+      "requiredFor": ["rehearsal", "production"],
+      "evidence": "GitHub CI #625 passed the complete workflow, including 74 Playwright browser acceptance checks, on integration SHA 6006b5eb917eded64598bf97e72983b9af67ce5c.",
+      "verifiedAt": "2026-09-16"
+    },
+    {
+      "id": "railway-preview-exact-sha",
+      "category": "technical",
+      "status": "VERIFIED",
+      "requiredFor": ["rehearsal", "production"],
+      "evidence": "Railway deployment 162f3690-936b-4fba-839e-c347bac927a9 is SUCCESS on integration SHA 6006b5eb917eded64598bf97e72983b9af67ce5c.",
+      "verifiedAt": "2026-09-16"
+    },
+    {
+      "id": "domestic-only-boundary",
+      "category": "compliance",
+      "status": "VERIFIED",
+      "requiredFor": ["rehearsal", "production"],
+      "evidence": "Public donation/appeal flows state India-only domestic contribution boundaries; Amaana is not represented as FCRA-registered.",
+      "verifiedAt": "2026-09-16"
+    },
+    {
+      "id": "public-media-human-review",
+      "category": "privacy",
+      "status": "PENDING",
+      "requiredFor": ["production"],
+      "evidence": "docs/public-media-review-register.json intentionally leaves legacy directly addressable media pending human privacy/consent/provenance review. npm run media:review-readiness is the fail-closed launch check."
+    },
+    {
+      "id": "public-media-upload-delivery",
+      "category": "infrastructure",
+      "status": "PENDING",
+      "requiredFor": ["production"],
+      "evidence": "Current Railway service variable names do not include the dedicated PUBLIC_MEDIA_* storage configuration required for admin public-media uploads/delivery. Bundled reviewed files are unaffected."
+    },
+    {
+      "id": "ca-12ab-status",
+      "category": "compliance",
+      "status": "PENDING",
+      "requiredFor": ["production"],
+      "evidence": "12A/12AB status still requires CA confirmation. The known 80G record is provisional Form 10AC dated 2026-01-26 for AY 2026-27 through 2028-29 and must not be presented as permanent approval."
+    },
+    {
+      "id": "razorpay-live-kyc-readiness",
+      "category": "payments",
+      "status": "PENDING",
+      "requiredFor": ["production"],
+      "evidence": "Razorpay integration exists, but live KYC/account readiness has not been independently certified in this implementation workflow."
+    },
+    {
+      "id": "controlled-live-donation-acceptance",
+      "category": "payments",
+      "status": "PENDING",
+      "requiredFor": ["production"],
+      "evidence": "Browser donation journeys are mocked and green. No real charge will be initiated without explicit authorization."
+    },
+    {
+      "id": "refund-receipt-operational-check",
+      "category": "payments",
+      "status": "PENDING",
+      "requiredFor": ["production"],
+      "evidence": "Refund, receipt/acknowledgement and reconciliation operations still require controlled operational verification."
+    },
+    {
+      "id": "database-backup-evidence",
+      "category": "recovery",
+      "status": "PENDING",
+      "requiredFor": ["rehearsal", "production"],
+      "evidence": "A recoverable Neon/PostgreSQL backup or snapshot must be confirmed immediately before rehearsal/cutover; no backup action is inferred from application CI."
+    },
+    {
+      "id": "rollback-rehearsal",
+      "category": "recovery",
+      "status": "PENDING",
+      "requiredFor": ["rehearsal", "production"],
+      "evidence": "Rollback procedure must be rehearsed against staging/preview and record the known-good SHA/deployment before production cutover."
+    },
+    {
+      "id": "production-dns-cutover-plan",
+      "category": "cutover",
+      "status": "PENDING",
+      "requiredFor": ["production"],
+      "evidence": "Cloudflare/DNS production cutover and rollback values must be recorded and explicitly approved before change."
+    },
+    {
+      "id": "production-indexing-decision",
+      "category": "cutover",
+      "status": "PENDING",
+      "requiredFor": ["production"],
+      "evidence": "Staging remains noindex. Production indexing must only be enabled as part of the approved cutover after final SEO/privacy review."
+    },
+    {
+      "id": "main-promotion-and-production-approval",
+      "category": "authorization",
+      "status": "PENDING",
+      "requiredFor": ["production"],
+      "evidence": "Merging to main and production cutover remain explicitly user-gated actions."
+    }
+  ]
+}
