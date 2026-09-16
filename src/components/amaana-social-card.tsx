@@ -52,7 +52,6 @@ export function AmaanaSocialCard() {
           flexDirection: "column",
           justifyContent: "space-between",
           width: "100%",
-          zIndex: 1,
         }}
       >
         <div style={{ display: "flex", flexDirection: "column" }}>
