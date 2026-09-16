@@ -8,7 +8,7 @@
       "category": "technical",
       "status": "VERIFIED",
       "requiredFor": ["rehearsal", "production"],
-      "evidence": "The integration workflow contains lint, typecheck, unit coverage, production build, bundle budgets, smoke checks and 74 Playwright browser acceptance checks. Baseline CI #625 passed on SHA 6006b5eb917eded64598bf97e72983b9af67ce5c; every later launch candidate must independently pass the same current workflow.",
+      "evidence": "The integration workflow contains lint, typecheck, unit coverage, production build, bundle budgets, smoke checks and 74 Playwright browser acceptance checks. CI #632 passed the complete verify job on integration SHA 63dcc3ae6384c7a388f6f0f241bf059ddf6cd6db; every later launch candidate must independently pass the same current workflow.",
       "verifiedAt": "2026-09-16"
     },
     {
@@ -16,7 +16,7 @@
       "category": "technical",
       "status": "VERIFIED",
       "requiredFor": ["rehearsal", "production"],
-      "evidence": "Railway preview deployment 162f3690-936b-4fba-839e-c347bac927a9 succeeded on baseline integration SHA 6006b5eb917eded64598bf97e72983b9af67ce5c. Each later launch candidate still requires an exact-SHA successful deployment before release approval.",
+      "evidence": "Railway preview deployment dae7e669-6640-4b8b-a8dc-c7ce4f48c741 succeeded on exact integration SHA 63dcc3ae6384c7a388f6f0f241bf059ddf6cd6db. Each later launch candidate still requires an exact-SHA successful deployment before release approval.",
       "verifiedAt": "2026-09-16"
     },
     {
@@ -30,9 +30,10 @@
     {
       "id": "staging-runtime-acceptance",
       "category": "technical",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "requiredFor": ["rehearsal", "production"],
-      "evidence": "Run STAGING_BASE_URL=https://<preview-host> npm run acceptance:staging against the exact candidate deployment and record the result. This must include live and readiness health and must not target the production Amaana domain."
+      "evidence": "CI #632 staging-runtime-acceptance verified that Railway was serving exact SHA 63dcc3ae6384c7a388f6f0f241bf059ddf6cd6db, then passed deployed version, live health, database/environment readiness, staging noindex, representative public routes, domestic-only appeals framing, and assistance privacy/header checks. Synthetic checkout fixture was not required; mocked browser CI remains the mandatory donation-journey gate.",
+      "verifiedAt": "2026-09-16"
     },
     {
       "id": "manual-rendered-accessibility-review",
@@ -60,7 +61,7 @@
       "category": "infrastructure",
       "status": "PENDING",
       "requiredFor": ["production"],
-      "evidence": "Current Railway service variable names do not include the dedicated PUBLIC_MEDIA_* storage configuration required for admin public-media uploads/delivery. Bundled reviewed files are unaffected."
+      "evidence": "Current Railway service variable names do not include the dedicated PUBLIC_MEDIA_S3_BUCKET and PUBLIC_MEDIA_BASE_URL configuration required for admin public-media uploads/delivery. src/lib/storage.ts intentionally requires a public bucket separate from the private assistance bucket. Bundled reviewed files are unaffected."
     },
     {
       "id": "ca-12ab-status",
