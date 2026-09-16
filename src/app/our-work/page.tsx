@@ -11,7 +11,7 @@ export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Our Work",
-  description: "Explore Amaana Foundation initiatives across food support, education, seasonal relief, emergency response, medical assistance and livelihoods.",
+  description: "Explore Amaana Foundation initiatives across medical and financial relief, emergency response, Ramadan and Eid, Taleem education support, and seasonal relief.",
   alternates: { canonical: "/our-work" },
   openGraph: { type: "website", url: "/our-work", title: "Our Work | Amaana Foundation", description: "Explore documented Amaana Foundation initiatives and the evidence, stories and approved media connected to them." },
 };
