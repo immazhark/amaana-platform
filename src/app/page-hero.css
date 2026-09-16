@@ -22,6 +22,7 @@
     linear-gradient(45deg, transparent 46%, rgb(224 179 24 / 12%) 48%, rgb(224 179 24 / 12%) 52%, transparent 54%),
     linear-gradient(-45deg, transparent 46%, rgb(255 255 255 / 7%) 48%, rgb(255 255 255 / 7%) 52%, transparent 54%);
   background-size: 84px 84px;
+  -webkit-mask-image: linear-gradient(90deg, #000 0%, rgb(0 0 0 / 34%) 52%, #000 100%);
   mask-image: linear-gradient(90deg, #000 0%, rgb(0 0 0 / 34%) 52%, #000 100%);
 }
 
@@ -73,6 +74,12 @@
   color: transparent;
   -webkit-text-fill-color: transparent;
   filter: drop-shadow(0 10px 26px rgb(6 23 43 / 18%));
+}
+
+.page-hero--long-title .page-hero__title {
+  max-width: 14ch;
+  font-size: clamp(2.85rem, 4.85vw, 4.85rem);
+  line-height: .98;
 }
 
 .page-hero__description {
@@ -128,6 +135,18 @@
 .page-hero__visual .v2-media-item { border: 0; border-radius: 0; background: transparent; }
 .page-hero__visual .v2-media-item figcaption { display: none; }
 
+.page-hero--home .page-hero__visual {
+  overflow: visible;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.page-hero--home .v3-hero-media {
+  height: 33rem;
+  min-height: 33rem;
+}
+
 .page-hero__visual-fallback {
   position: absolute;
   inset: 0;
@@ -151,11 +170,32 @@
 .page-hero__visual-fallback::after { width: 13rem; height: 13rem; right: 2rem; top: 2rem; border-color: rgb(224 179 24 / 28%); }
 .page-hero__visual-fallback span,
 .page-hero__visual-fallback strong,
-.page-hero__visual-fallback small { position: relative; z-index: 1; }
+.page-hero__visual-fallback small,
+.page-hero__visual-fallback b { position: relative; z-index: 1; }
 .page-hero__visual-fallback span { color: #f3c61c; font-size: .76rem; font-weight: 850; letter-spacing: .15em; text-transform: uppercase; }
 .page-hero__visual-fallback strong { max-width: 10ch; margin-top: .65rem; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.4rem, 4vw, 4.4rem); line-height: .95; }
 .page-hero__visual-fallback small { max-width: 24rem; margin-top: 1rem; color: rgb(255 255 255 / 70%); font-size: .92rem; line-height: 1.5; }
 .page-hero__visual-fallback i { position: absolute; left: clamp(2rem, 4vw, 3rem); bottom: 1.25rem; width: 6rem; height: 2px; background: #e0b318; }
+
+.page-hero__visual-fallback--stats { gap: .6rem; }
+.page-hero__visual-fallback--stats strong { max-width: 12ch; }
+.page-hero__stat-row {
+  position: relative;
+  z-index: 1;
+  display: grid;
+  gap: .3rem;
+  margin-top: .85rem;
+  padding-top: 1.15rem;
+  border-top: 1px solid rgb(255 255 255 / 18%);
+}
+.page-hero__stat-row b {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 500;
+  line-height: 1;
+}
+.page-hero__stat-row small { margin-top: 0; }
+.page-hero__visual-fallback--impact strong { max-width: 14ch; font-size: clamp(2rem, 3.6vw, 3.75rem); }
 
 /* Level 2: tighter editorial identity and a visibly different pattern scale. */
 .page-hero--level2 { background: linear-gradient(135deg, #153052 0%, #1e466f 64%, #315e88 100%); }
@@ -210,6 +250,7 @@
   .page-hero--information .page-hero__title,
   .page-hero--recognition .page-hero__title { max-width: 15ch; }
   .page-hero__visual { min-height: 26rem; }
+  .page-hero--home .v3-hero-media { height: 26rem; min-height: 26rem; }
 }
 
 @media (max-width: 600px) {
@@ -226,7 +267,8 @@
   .page-hero--trust .page-hero__title,
   .page-hero--action .page-hero__title,
   .page-hero--information .page-hero__title,
-  .page-hero--recognition .page-hero__title { max-width: none; font-size: clamp(2.55rem, 13vw, 4.25rem); line-height: .98; }
+  .page-hero--recognition .page-hero__title,
+  .page-hero--long-title .page-hero__title { max-width: none; font-size: clamp(2.55rem, 13vw, 4.25rem); line-height: .98; }
   .page-hero__description { margin-top: 1.35rem; font-size: 1rem; }
   .page-hero__actions { margin-top: 1.5rem; }
   .page-hero__button { width: 100%; }
@@ -236,6 +278,7 @@
   .page-hero--action .page-hero__visual,
   .page-hero--information .page-hero__visual,
   .page-hero--recognition .page-hero__visual { min-height: 20rem; border-radius: 1.25rem; }
+  .page-hero--home .v3-hero-media { height: 20rem; min-height: 20rem; border-radius: 1.25rem; }
 }
 
 @media (prefers-reduced-motion: reduce) {
