@@ -12,7 +12,7 @@ async function cssPayload(page, path) {
   const bodies = [];
   let bytes = 0;
   for (const href of hrefs) {
-    const stylesheet = await page.request.get(href);
+    const stylesheet = await page.context().request.get(href);
     expect(stylesheet.ok(), `Expected stylesheet ${href} to load`).toBeTruthy();
     const body = await stylesheet.text();
     bodies.push(body);
