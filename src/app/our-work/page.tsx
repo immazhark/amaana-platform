@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
 import { filterWork, type WorkSearch } from "@/lib/work-filters";
@@ -48,21 +49,24 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
 
   return (
     <div className="v2-home v2-work-index">
-      <section className="v2-hero v2-work-index-hero">
-        <div className="v2-shell v2-hero-inner">
-          <div>
-            <p className="v2-kicker">Our Work · Hyderabad</p>
-            <h1 className="v2-display">Different Needs. One Standard of Care.</h1>
+      <PageHero
+        variant="level1"
+        eyebrow="Our Work · Hyderabad"
+        title="Different Needs. One Standard of Care."
+        description={<p>Some needs return every year. Others arrive without warning. Explore Amaana’s medical and financial relief, emergency response, Ramadan and Eid initiatives, Taleem education support and seasonal relief.</p>}
+        actions={[
+          { label: "Explore the portfolio", href: "#work-results" },
+          { label: "See documented impact", href: "/impact", secondary: true },
+        ]}
+        visual={(
+          <div className="page-hero__visual-fallback page-hero__visual-fallback--stats">
+            <span>Documented public portfolio</span>
+            <strong>{initiativeCount} published programmes</strong>
+            <div className="page-hero__stat-row"><b>{causeCount}</b><small>canonical cause areas</small></div>
+            <i />
           </div>
-          <div>
-            <p className="v2-hero-copy">Some needs return every year. Others arrive without warning. Explore Amaana’s medical and financial relief, emergency response, Ramadan and Eid initiatives, Taleem education support and seasonal relief.</p>
-            <div className="v2-work-index-proof">
-              <div><span className="v2-proof-number">{initiativeCount}</span><span className="v2-proof-copy">published programmes and case records available to explore</span></div>
-              <div><span className="v2-proof-number">{causeCount}</span><span className="v2-proof-copy">canonical cause areas represented in the public library</span></div>
-            </div>
-          </div>
-        </div>
-      </section>
+        )}
+      />
 
       <section className="v2-section paper" id="work-results">
         <div className="v2-shell">
