@@ -38,7 +38,7 @@ async function openDonationFixture(page, mode = 'success') {
     `,
   }));
 
-  const response = await page.goto('/__acceptance/donation', { waitUntil: 'domcontentloaded' });
+  const response = await page.goto('/browser-acceptance/donation', { waitUntil: 'domcontentloaded' });
   expect(response?.ok()).toBeTruthy();
   const submit = page.getByRole('button', { name: 'Continue securely →' });
   await expect(submit).toBeEnabled();
@@ -214,7 +214,7 @@ test.describe('donation journey without real payment', () => {
     await fillDonationForm(page);
     await submit.click();
 
-    await expect(page.getByRole('alert')).toContainText('Mock payment verification is pending');
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('Mock payment verification is pending');
     await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
     await expect(page.getByLabel(/Donation amount/)).toBeDisabled();
     await expect(page.locator('input[name="domesticConfirmed"]')).toBeDisabled();
@@ -239,7 +239,7 @@ test.describe('private assistance journey', () => {
     await phone.fill('123');
     await page.getByRole('button', { name: 'Submit private request →' }).click();
 
-    await expect(page.getByRole('alert')).toContainText('Please check the highlighted information');
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('Please check the highlighted information');
     await expect(phone).toBeFocused();
     await expect(phone).toHaveAttribute('aria-invalid', 'true');
     await expect(page.getByText('Enter a valid phone number.')).toBeVisible();
