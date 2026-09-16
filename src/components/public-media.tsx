@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { canRenderPublicMedia, resolvePublicMediaUrl } from "@/lib/public-media";
 
 type PublicMediaAsset = {
@@ -14,28 +15,48 @@ type PublicMediaAsset = {
 type PublicMediaProps = {
   asset: PublicMediaAsset;
   priority?: boolean;
+  sizes?: string;
 };
 
-export function PublicMedia({ asset, priority = false }: PublicMediaProps) {
+const defaultResponsiveSizes = "(max-width: 700px) 100vw, (max-width: 1200px) 70vw, 900px";
+
+function canOptimizeLocally(url: string) {
+  return url.startsWith("/media/") || url.startsWith("/brand/");
+}
+
+export function PublicMedia({ asset, priority = false, sizes = defaultResponsiveSizes }: PublicMediaProps) {
   if (!canRenderPublicMedia(asset)) return null;
   const url = resolvePublicMediaUrl(asset);
   if (!url) return null;
 
   if (asset.kind === "IMAGE") {
+    const image = canOptimizeLocally(url) ? (
+      <Image
+        src={url}
+        alt={asset.altText ?? ""}
+        width={1600}
+        height={1200}
+        sizes={sizes}
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        decoding="async"
+      />
+    ) : (
+      <img
+        src={url}
+        alt={asset.altText ?? ""}
+        width={1600}
+        height={1200}
+        loading={priority ? "eager" : "lazy"}
+        fetchPriority={priority ? "high" : "auto"}
+        decoding="async"
+      />
+    );
+
     return (
       <figure className="v2-media-item">
-        {/* Approved assets may be served from multiple S3-compatible/CDN hosts. The public-safe renderer validates URLs before rendering. */}
-        {/* Width/height reserve the editorial 4:3 media slot before bytes arrive; CSS controls responsive sizing/cropping. */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={url}
-          alt={asset.altText ?? ""}
-          width={1600}
-          height={1200}
-          loading={priority ? "eager" : "lazy"}
-          fetchPriority={priority ? "high" : "auto"}
-          decoding="async"
-        />
+        {/* Local approved campaign media uses Next's responsive optimizer. External approved HTTPS media stays direct until hosts are explicitly allowlisted. */}
+        {image}
         {(asset.caption || asset.sourceYear) && (
           <figcaption>{asset.caption}{asset.caption && asset.sourceYear ? " · " : ""}{asset.sourceYear ?? ""}</figcaption>
         )}
