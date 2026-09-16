@@ -1,4 +1,12 @@
-const ADMIN_DESTINATIONS = [
+export const ADMIN_NAV_ITEMS = [
+  { permission: "assistance.view", path: "/admin", label: "Assistance queue" },
+  { permission: "appeal.view", path: "/admin/appeals", label: "Appeals" },
+  { permission: "content.view", path: "/admin/media", label: "Media review" },
+  { permission: "assistance.approve", path: "/admin/retention", label: "Retention review" },
+  { permission: "donation.view", path: "/admin/donations", label: "Donations" },
+] as const;
+
+const ADMIN_HOME_DESTINATIONS = [
   { permission: "assistance.view", path: "/admin" },
   { permission: "assistance.approve", path: "/admin/retention" },
   { permission: "appeal.view", path: "/admin/appeals" },
@@ -6,7 +14,12 @@ const ADMIN_DESTINATIONS = [
   { permission: "donation.view", path: "/admin/donations" },
 ] as const;
 
+export function adminNavigationForPermissions(permissions: Iterable<string>) {
+  const allowed = new Set(permissions);
+  return ADMIN_NAV_ITEMS.filter(item => allowed.has(item.permission));
+}
+
 export function adminHomePathForPermissions(permissions: Iterable<string>) {
   const allowed = new Set(permissions);
-  return ADMIN_DESTINATIONS.find(item => allowed.has(item.permission))?.path ?? "/admin/forbidden";
+  return ADMIN_HOME_DESTINATIONS.find(item => allowed.has(item.permission))?.path ?? "/admin/forbidden";
 }

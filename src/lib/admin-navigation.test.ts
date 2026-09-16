@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { adminHomePathForPermissions } from "./admin-navigation";
+import { adminHomePathForPermissions, adminNavigationForPermissions } from "./admin-navigation";
 
 describe("admin landing routing", () => {
   it("keeps assistance reviewers on the case queue", () => {
@@ -15,5 +15,36 @@ describe("admin landing routing", () => {
 
   it("fails closed when an account has no recognized admin permission", () => {
     expect(adminHomePathForPermissions([])).toBe("/admin/forbidden");
+  });
+});
+
+describe("admin navigation visibility", () => {
+  it("shows only destinations backed by explicit view/approval permissions", () => {
+    expect(adminNavigationForPermissions(["assistance.view", "assistance.update", "donation.view"]))
+      .toEqual([
+        { permission: "assistance.view", path: "/admin", label: "Assistance queue" },
+        { permission: "donation.view", path: "/admin/donations", label: "Donations" },
+      ]);
+  });
+
+  it("does not treat mutation-only permissions as permission to browse an area", () => {
+    expect(adminNavigationForPermissions(["assistance.update", "appeal.publish", "content.publish"]))
+      .toEqual([]);
+  });
+
+  it("keeps the canonical operations order for a full administrator", () => {
+    expect(adminNavigationForPermissions([
+      "donation.view",
+      "assistance.approve",
+      "content.view",
+      "appeal.view",
+      "assistance.view",
+    ]).map(item => item.label)).toEqual([
+      "Assistance queue",
+      "Appeals",
+      "Media review",
+      "Retention review",
+      "Donations",
+    ]);
   });
 });

@@ -83,6 +83,22 @@ jobs:
             fuser -k 3000/tcp 2>/dev/null || true
           }
 
+          assert_fixture_hidden() {
+            local path="$1"
+            local marker="$2"
+            local output="$3"
+            local status
+            status=$(curl --silent --show-error --output "$output" --write-out '%{http_code}' "http://127.0.0.1:3000${path}")
+            if [ "$status" -ge 500 ]; then
+              echo "Browser acceptance fixture ${path} returned an unexpected server error: HTTP ${status}."
+              exit 1
+            fi
+            if grep -q "$marker" "$output"; then
+              echo "Browser acceptance fixture content at ${path} was exposed outside the isolated Playwright server."
+              exit 1
+            fi
+          }
+
           npm run start > /tmp/amaana-next.log 2>&1 &
           SERVER_PID=$!
           trap cleanup_server EXIT
@@ -106,16 +122,9 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:3000/request-assistance > /dev/null
 
           # Next.js may stream a notFound() response with HTTP 200 after headers are committed.
-          # The security property we need is that normal runtime can never render fixture content.
-          ACCEPTANCE_STATUS=$(curl --silent --show-error --output /tmp/acceptance.html --write-out '%{http_code}' http://127.0.0.1:3000/browser-acceptance/donation)
-          if [ "$ACCEPTANCE_STATUS" -ge 500 ]; then
-            echo "Browser acceptance fixture returned an unexpected server error: HTTP ${ACCEPTANCE_STATUS}."
-            exit 1
-          fi
-          if grep -q 'Mocked donation journey' /tmp/acceptance.html; then
-            echo "Browser acceptance fixture content was exposed outside the isolated Playwright server."
-            exit 1
-          fi
+          # The security property is that normal runtime can never render synthetic fixture content.
+          assert_fixture_hidden "/browser-acceptance/donation" "Mocked donation journey" "/tmp/donation-acceptance.html"
+          assert_fixture_hidden "/browser-acceptance/admin?profile=full" "Synthetic operations console" "/tmp/admin-acceptance.html"
 
           curl --fail --silent --show-error -D /tmp/health.headers -o /dev/null http://127.0.0.1:3000/api/health/live
           tr -d '\r' < /tmp/health.headers > /tmp/health.normalized
