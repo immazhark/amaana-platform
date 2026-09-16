@@ -14,44 +14,7 @@
 }
 
 .v2-shell { width: min(calc(100% - 2rem), 78rem); margin-inline: auto; }
-
-.v2-hero {
-  min-height: min(88vh, 54rem);
-  display: grid;
-  align-items: end;
-  position: relative;
-  isolation: isolate;
-  background:
-    radial-gradient(circle at 78% 18%, rgb(224 179 24 / 22%), transparent 28%),
-    linear-gradient(145deg, #1d3150 0%, #2f4c7a 52%, #122239 100%);
-  color: #fffdf8;
-}
-
-.v2-hero::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  opacity: .18;
-  background-image:
-    radial-gradient(circle at 50% 100%, transparent 0 30px, rgb(255 255 255 / 12%) 31px 32px, transparent 33px),
-    linear-gradient(30deg, transparent 48%, rgb(224 179 24 / 16%) 49%, transparent 51%),
-    linear-gradient(150deg, transparent 48%, rgb(255 255 255 / 10%) 49%, transparent 51%);
-  background-size: 96px 96px, 72px 72px, 72px 72px;
-  mask-image: linear-gradient(to bottom, transparent, black 18%, black 82%, transparent);
-}
-
-.v2-hero-inner {
-  padding-block: clamp(7rem, 16vw, 11rem) clamp(3.5rem, 8vw, 6rem);
-  display: grid;
-  grid-template-columns: minmax(0, 1.2fr) minmax(18rem, .8fr);
-  gap: clamp(2rem, 6vw, 6rem);
-  align-items: end;
-}
-
 .v2-kicker,.v2-section-label { color: var(--v2-gold); font-size: .76rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
-.v2-display { margin: .8rem 0 0; max-width: 10ch; font-family: Georgia, "Times New Roman", serif; font-size: clamp(4rem, 10vw, 9rem); font-weight: 500; line-height: .88; letter-spacing: -.055em; }
-.v2-hero-copy { max-width: 44rem; color: rgb(255 253 248 / 76%); font-size: clamp(1.05rem, 2vw, 1.3rem); line-height: 1.7; }
 .v2-hero-actions { display: flex; flex-wrap: wrap; gap: .8rem; margin-top: 2rem; }
 .v2-button { display: inline-flex; align-items: center; justify-content: center; min-height: 3.25rem; padding: .78rem 1.35rem; border: 1px solid var(--v2-gold); border-radius: 999px; background: var(--v2-gold); color: #122239; font-weight: 850; transition: transform .25s ease, box-shadow .25s ease, background .25s ease; }
 .v2-button:hover { transform: translateY(-2px); box-shadow: 0 14px 34px rgb(0 0 0 / 20%); background: #f0ca39; }
@@ -66,8 +29,7 @@
 .dark .v2-section-intro { color: rgb(255 253 248 / 68%); }
 
 @media (max-width: 760px) {
-  .v2-hero-inner,.v2-section-head { grid-template-columns: 1fr; }
-  .v2-display { font-size: clamp(3.8rem, 18vw, 6.4rem); }
+  .v2-section-head { grid-template-columns: 1fr; }
 }
 
 @media (prefers-reduced-motion: reduce) {
