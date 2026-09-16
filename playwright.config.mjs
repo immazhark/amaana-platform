@@ -1,5 +1,7 @@
 import { defineConfig, devices } from '@playwright/test';
 
+const appWorkspace = process.env.AMAANA_APP_WORKSPACE ?? process.cwd();
+
 export default defineConfig({
   testDir: './e2e',
   timeout: 30_000,
@@ -19,6 +21,7 @@ export default defineConfig({
   },
   webServer: {
     command: 'npm run start',
+    cwd: appWorkspace,
     url: 'http://127.0.0.1:3000/api/health/live',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
