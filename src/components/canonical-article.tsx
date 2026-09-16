@@ -1,6 +1,59 @@
-import Link from 'next/link';
-import '@/app/canonical-content.css';
-export type ArticleBlock={title:string;paragraphs?:string[];items?:string[]};
-export function CanonicalArticle({title,intro,eyebrow,blocks,children}:{title:string;intro:string;eyebrow:string;blocks:ArticleBlock[];children?:React.ReactNode}){
- return <div className="v2-home canonical-article"><section className="v2-hero"><div className="v2-shell v2-hero-inner"><div><p className="v2-kicker">{eyebrow}</p><h1 className="v2-display">{title}</h1></div><div><p className="v2-hero-copy">{intro}</p><div className="v2-hero-actions"><Link className="v2-button" href="/our-work">Explore Our Work</Link><Link className="v2-text-link" href="/contact">Contact Amaana →</Link></div></div></div></section><section className="v2-section paper"><div className="v2-shell canonical-body">{blocks.map((b,i)=><section className="canonical-block" key={i}><h2>{b.title}</h2><div>{b.paragraphs?.map((p,j)=><p key={j}>{p}</p>)}{b.items&&<ul>{b.items.map((p,j)=><li key={j}>{p}</li>)}</ul>}</div></section>)}{children}</div></section></div>;
+import type { ReactNode } from "react";
+import { PageHero, type PageHeroVariant } from "@/components/page-hero";
+import "@/app/canonical-content.css";
+
+export type ArticleBlock = { title: string; paragraphs?: string[]; items?: string[] };
+
+type CanonicalArticleProps = {
+  title: string;
+  intro: string;
+  eyebrow: string;
+  blocks: ArticleBlock[];
+  children?: ReactNode;
+  heroVariant?: PageHeroVariant;
+  heroVisualTitle?: string;
+  heroVisualNote?: string;
+};
+
+export function CanonicalArticle({
+  title,
+  intro,
+  eyebrow,
+  blocks,
+  children,
+  heroVariant = "information",
+  heroVisualTitle,
+  heroVisualNote,
+}: CanonicalArticleProps) {
+  return (
+    <div className="v2-home canonical-article">
+      <PageHero
+        variant={heroVariant}
+        eyebrow={heroVariant === "trust" ? "Trust & Policies" : eyebrow}
+        title={title}
+        description={<p>{intro}</p>}
+        actions={[
+          { label: "Explore Our Work", href: "/our-work" },
+          { label: "Contact Amaana", href: "/contact", secondary: true },
+        ]}
+        visualKicker={heroVariant === "trust" ? eyebrow : "Amaana Foundation"}
+        visualTitle={heroVisualTitle ?? title}
+        visualNote={heroVisualNote ?? (heroVariant === "trust" ? "A public record of Amaana’s governance, accountability and responsible operating boundaries." : "Purpose, evidence and responsible service—presented with clarity.")}
+      />
+      <section className="v2-section paper">
+        <div className="v2-shell canonical-body">
+          {blocks.map((block, index) => (
+            <section className="canonical-block" key={index}>
+              <h2>{block.title}</h2>
+              <div>
+                {block.paragraphs?.map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{paragraph}</p>)}
+                {block.items && <ul>{block.items.map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}</ul>}
+              </div>
+            </section>
+          ))}
+          {children}
+        </div>
+      </section>
+    </div>
+  );
 }
