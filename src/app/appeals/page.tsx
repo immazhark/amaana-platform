@@ -24,8 +24,8 @@ export default async function AppealsPage() {
   return (
     <div className="v2-home v2-appeals-page">
       <PageHero
-        variant="action"
-        eyebrow="Verified Appeals · Hyderabad"
+        variant="level1"
+        eyebrow="Support a Need · Verified Appeals"
         title="Verified Needs. Clear Purpose. Responsible Support."
         description={<p>Amaana’s public appeals are created for specific needs that have been reviewed before fundraising. Each appeal explains what support is required, what donations will be used for, the campaign status, and—once completed—the documented outcome.</p>}
         actions={[
