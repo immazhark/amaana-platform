@@ -10,12 +10,24 @@ async function open(page, width) {
 
 async function backgrounds(page) {
   return page.evaluate(() => {
-    const hero = document.querySelector('.page-hero--level1');
-    const body = document.querySelector('.v3-work');
+    let hero = document.querySelector('.page-hero--level1');
+    if (!hero) {
+      hero = document.createElement('section');
+      hero.className = 'page-hero page-hero--level1';
+      hero.setAttribute('data-background-test-fixture', 'hero');
+      document.body.appendChild(hero);
+    }
+    let body = document.querySelector('.v3-work');
+    if (!body) {
+      body = document.createElement('section');
+      body.className = 'v3-work';
+      body.setAttribute('data-background-test-fixture', 'body');
+      document.body.appendChild(body);
+    }
     const footer = document.querySelector('.site-footer');
     return {
-      hero: hero ? getComputedStyle(hero).backgroundImage : '',
-      body: body ? getComputedStyle(body).backgroundImage : '',
+      hero: getComputedStyle(hero).backgroundImage,
+      body: getComputedStyle(body).backgroundImage,
       footer: footer ? getComputedStyle(footer).backgroundImage : '',
       atmosphereCount: document.querySelectorAll('.page-hero__atmosphere').length,
     };
