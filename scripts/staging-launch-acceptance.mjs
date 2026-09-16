@@ -57,6 +57,12 @@ expectHeader(health, "cache-control", /no-store/i, "health endpoint");
 expectHeader(health, "x-content-type-options", /^nosniff$/i, "health endpoint");
 expectHeader(health, "x-frame-options", /^DENY$/i, "health endpoint");
 
+const readiness = await get("/api/health/ready");
+const readinessPayload = await readiness.json();
+assert.equal(readinessPayload.status, "ready", "Readiness endpoint did not return status=ready");
+pass("database and production-environment readiness endpoint");
+expectHeader(readiness, "cache-control", /no-store/i, "readiness endpoint");
+
 const home = await getHtml("/");
 expectText(home.html, "Amaana Foundation", "homepage identity");
 assert.match(home.html, /name=["']robots["'][^>]*noindex|content=["'][^"']*noindex[^"']*["'][^>]*name=["']robots["']/i, "Staging homepage is not explicitly noindex");

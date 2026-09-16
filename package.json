@@ -18,6 +18,9 @@
     "acceptance:staging": "node scripts/staging-launch-acceptance.mjs",
     "media:review-register": "node scripts/check-public-media-review-register.mjs",
     "media:review-readiness": "node scripts/check-public-media-review-register.mjs --readiness",
+    "launch:status": "node scripts/check-launch-readiness.mjs",
+    "launch:rehearsal": "node scripts/check-launch-readiness.mjs --rehearsal",
+    "launch:production": "node scripts/check-launch-readiness.mjs --production",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
