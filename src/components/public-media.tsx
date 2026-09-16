@@ -42,6 +42,8 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
         decoding="async"
       />
     ) : (
+      // External approved assets may live on multiple S3-compatible/CDN hosts; keep this direct until hosts are explicitly allowlisted for Next's optimizer.
+      // eslint-disable-next-line @next/next/no-img-element
       <img
         src={url}
         alt={asset.altText ?? ""}
