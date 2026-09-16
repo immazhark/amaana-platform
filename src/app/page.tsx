@@ -40,7 +40,7 @@ export default async function HomePage() {
   const heroMedia = heroDrive?.mediaAssets[0];
 
   const heroVisual = heroDrive && heroMedia ? (
-    <div className="v3-hero-media" aria-label={heroDrive.title}>
+    <div className="v3-hero-media">
       <div className="v3-hero-photo"><PublicMedia asset={heroMedia} priority sizes="(max-width: 900px) calc(100vw - 2rem), 46vw" /></div>
       <div className="v3-hero-media-shade" aria-hidden="true" />
       <div className="v3-hero-media-caption"><span>{heroDrive.year}</span><strong>{heroDrive.title}</strong><Link href={`/our-work/${heroDrive.slug}`}>See the drive</Link></div>
