@@ -1,5 +1,6 @@
 import "./home-showcase.css";
 import "./campaign-home.css";
+import "./home-documentary.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AppealCard } from "@/components/appeal-card";
@@ -39,8 +40,8 @@ export default async function HomePage() {
   const heroMedia = heroDrive?.mediaAssets[0];
 
   const heroVisual = heroDrive && heroMedia ? (
-    <div className="v3-hero-media" aria-label={heroDrive.title}>
-      <div className="v3-hero-photo"><PublicMedia asset={heroMedia} priority /></div>
+    <div className="v3-hero-media">
+      <div className="v3-hero-photo"><PublicMedia asset={heroMedia} priority sizes="(max-width: 900px) calc(100vw - 2rem), 46vw" /></div>
       <div className="v3-hero-media-shade" aria-hidden="true" />
       <div className="v3-hero-media-caption"><span>{heroDrive.year}</span><strong>{heroDrive.title}</strong><Link href={`/our-work/${heroDrive.slug}`}>See the drive</Link></div>
     </div>
@@ -89,7 +90,7 @@ export default async function HomePage() {
           <div className="v3-field-grid">
             {fieldDrives.map((drive, index) => (
               <Link className={`v3-field-card ${index === 0 ? "v3-field-card-wide" : "v3-field-card-tall"}`} href={`/our-work/${drive.slug}`} key={drive.id}>
-                {drive.mediaAssets[0] ? <div className="v3-field-image"><PublicMedia asset={drive.mediaAssets[0]} /></div> : <div className="v3-field-image"><WorkVisualPlaceholder label={drive.title} /></div>}
+                {drive.mediaAssets[0] ? <div className="v3-field-image"><PublicMedia asset={drive.mediaAssets[0]} sizes={index === 0 ? "(max-width: 900px) calc(100vw - 2rem), 58vw" : "(max-width: 900px) calc(100vw - 2rem), 34vw"} /></div> : <div className="v3-field-image"><WorkVisualPlaceholder label={drive.title} /></div>}
                 <div className="v3-field-copy"><span>{drive.year}</span><h3>{drive.title}</h3><p>{drive.summary}</p></div>
               </Link>
             ))}

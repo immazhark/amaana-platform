@@ -26,6 +26,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Audit global CSS architecture
+        run: node scripts/audit-global-css.mjs
       - name: Decode and validate public campaign media
         run: |
           node --test scripts/test-public-media.mjs

@@ -2,6 +2,7 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 
 const representativeRoutes = [
+  { path: '/', family: 'Home' },
   { path: '/about', family: 'Level 1' },
   { path: '/get-involved/sponsor-education', family: 'Level 2' },
   { path: '/governance', family: 'Trust & Policies' },
