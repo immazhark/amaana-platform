@@ -1,5 +1,7 @@
 import { expect, test } from '@playwright/test';
 
+const widths = [320, 375, 390, 430, 768, 1024, 1280, 1440, 1920];
+
 async function open(page, width) {
   await page.setViewportSize({ width, height: width <= 430 ? 844 : 1000 });
   await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
@@ -25,29 +27,55 @@ async function backgrounds(page) {
       document.body.appendChild(body);
     }
     const footer = document.querySelector('.site-footer');
+    const heroStyle = getComputedStyle(hero);
+    const bodyStyle = getComputedStyle(body);
+    const footerStyle = footer ? getComputedStyle(footer) : null;
     return {
-      hero: getComputedStyle(hero).backgroundImage,
-      body: getComputedStyle(body).backgroundImage,
-      footer: footer ? getComputedStyle(footer).backgroundImage : '',
+      hero: heroStyle.backgroundImage,
+      body: bodyStyle.backgroundImage,
+      footer: footerStyle?.backgroundImage ?? '',
+      heroPosition: heroStyle.backgroundPosition,
+      bodyPosition: bodyStyle.backgroundPosition,
+      footerPosition: footerStyle?.backgroundPosition ?? '',
+      heroSize: heroStyle.backgroundSize,
+      bodySize: bodyStyle.backgroundSize,
+      footerSize: footerStyle?.backgroundSize ?? '',
+      heroRepeat: heroStyle.backgroundRepeat,
+      bodyRepeat: bodyStyle.backgroundRepeat,
+      footerRepeat: footerStyle?.backgroundRepeat ?? '',
       atmosphereCount: document.querySelectorAll('.page-hero__atmosphere').length,
     };
   });
 }
 
-test('desktop uses the approved Amaana background assets without the legacy hero layer', async ({ page }) => {
-  await open(page, 1440);
-  const styles = await backgrounds(page);
-  expect(styles.hero).toContain('/backgrounds/Amaana_Website_Header_Banner.svg');
-  expect(styles.body).toContain('/backgrounds/Amaana_Website_Body_Background.svg');
-  expect(styles.footer).toContain('/backgrounds/Amaana_Website_Footer_Background.svg');
-  expect(styles.hero).not.toContain('amaana-architectural-pattern');
-  expect(styles.atmosphereCount).toBe(0);
-});
+for (const width of widths) {
+  test(`approved background system resolves correctly at ${width}px`, async ({ page }) => {
+    await open(page, width);
+    const styles = await backgrounds(page);
+    const mobile = width <= 768;
+    const suffix = mobile ? '_Mobile.svg' : '.svg';
 
-test('mobile switches to the approved mobile background assets', async ({ page }) => {
-  await open(page, 390);
-  const styles = await backgrounds(page);
-  expect(styles.hero).toContain('/backgrounds/Amaana_Website_Header_Banner_Mobile.svg');
-  expect(styles.body).toContain('/backgrounds/Amaana_Website_Body_Background_Mobile.svg');
-  expect(styles.footer).toContain('/backgrounds/Amaana_Website_Footer_Background_Mobile.svg');
-});
+    expect(styles.hero).toContain(`/backgrounds/Amaana_Website_Header_Banner${suffix}`);
+    expect(styles.body).toContain(`/backgrounds/Amaana_Website_Body_Background${suffix}`);
+    expect(styles.footer).toContain(`/backgrounds/Amaana_Website_Footer_Background${suffix}`);
+    expect(styles.hero).not.toContain('amaana-architectural-pattern');
+    expect(styles.atmosphereCount).toBe(0);
+
+    expect(styles.heroSize).toBe('cover');
+    expect(styles.bodySize).toBe('cover');
+    expect(styles.footerSize).toBe('cover');
+    expect(styles.heroRepeat).toBe('no-repeat');
+    expect(styles.bodyRepeat).toBe('no-repeat');
+    expect(styles.footerRepeat).toBe('no-repeat');
+
+    if (mobile) {
+      expect(styles.heroPosition).toBe('100% 0%');
+      expect(styles.bodyPosition).toBe('50% 50%');
+      expect(styles.footerPosition).toBe('100% 0%');
+    } else {
+      expect(styles.heroPosition).toBe('50% 50%');
+      expect(styles.bodyPosition).toBe('50% 50%');
+      expect(styles.footerPosition).toBe('50% 50%');
+    }
+  });
+}
