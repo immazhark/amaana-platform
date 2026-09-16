@@ -45,7 +45,11 @@ test.describe('representative public accessibility', () => {
           id: violation.id,
           impact: violation.impact,
           help: violation.help,
-          nodes: violation.nodes.length,
+          nodes: violation.nodes.map(node => ({
+            target: node.target,
+            html: node.html,
+            failureSummary: node.failureSummary,
+          })),
         }));
 
       expect(blocking, `Blocking accessibility violations on ${route.path}`).toEqual([]);
@@ -74,12 +78,13 @@ test.describe('responsive containment', () => {
   }
 });
 
-test('desktop keyboard order starts with the skip link and home link', async ({ page }) => {
+test('desktop keyboard order starts with the skip link and primary home link', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openPublicPage(page, '/about');
 
   const skipLink = page.getByRole('link', { name: 'Skip to content' });
-  const homeLink = page.getByRole('link', { name: 'Amaana Foundation home' });
+  const primaryNav = page.getByRole('navigation', { name: 'Primary navigation' });
+  const homeLink = primaryNav.getByRole('link', { name: 'Amaana Foundation home' });
 
   await page.keyboard.press('Tab');
   await expect(skipLink).toBeFocused();
@@ -91,7 +96,8 @@ test('mobile navigation opens, moves focus inside, closes with Escape and restor
   await page.setViewportSize({ width: 390, height: 844 });
   await openPublicPage(page, '/about');
 
-  const toggle = page.getByRole('button', { name: 'Open navigation menu' });
+  const toggle = page.locator('button[aria-controls="mobile-navigation"]');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
   await toggle.focus();
   await page.keyboard.press('Enter');
 
@@ -102,8 +108,8 @@ test('mobile navigation opens, moves focus inside, closes with Escape and restor
 
   await page.keyboard.press('Escape');
   await expect(mobileNav).toBeHidden();
-  await expect(page.getByRole('button', { name: 'Open navigation menu' })).toBeFocused();
-  await expect(page.getByRole('button', { name: 'Open navigation menu' })).toHaveAttribute('aria-expanded', 'false');
+  await expect(toggle).toBeFocused();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 });
 
 test('reduced-motion preference disables reminder autoplay', async ({ page }) => {
