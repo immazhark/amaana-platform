@@ -10,7 +10,6 @@ import "./iteration-three.css";
 import "./brand-expression.css";
 import "./loading-experience.css";
 import "./world-class-polish.css";
-import "./home-media-polish.css";
 import "./experience-finish.css";
 import "./islamic-backdrops.css";
 import "./islamic-companion.css";
