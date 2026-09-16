@@ -145,6 +145,22 @@ test('banner heading is clearly larger than body headings and typography roles s
   expect(typography.actionFamily).toMatch(/Arial|Helvetica/i);
 });
 
+test('homepage image-overlay titles remain subordinate to the banner title', async ({ page }) => {
+  await open(page, '/');
+  const typography = await page.evaluate(() => {
+    const hero = document.querySelector('.page-hero__title, .v3-title, .v2-display');
+    const overlay = document.querySelector('.v3-field-copy h3');
+    return hero && overlay ? {
+      heroSize: parseFloat(getComputedStyle(hero).fontSize),
+      overlaySize: parseFloat(getComputedStyle(overlay).fontSize),
+      overlayFamily: getComputedStyle(overlay).fontFamily,
+    } : null;
+  });
+  expect(typography).toBeTruthy();
+  expect(typography.heroSize - typography.overlaySize).toBeGreaterThanOrEqual(12);
+  expect(typography.overlayFamily).toMatch(/Georgia|Times New Roman/i);
+});
+
 test('shared footer callout remains compact and does not compete with page hero', async ({ page }) => {
   await open(page, '/about');
   const metrics = await page.evaluate(() => {
