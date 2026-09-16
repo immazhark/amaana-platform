@@ -8,37 +8,35 @@ ChatGPT — continuing launch-hardening without parallel repository writers.
 
 ## Integration checkpoint
 - Integration branch: `phase-public-site-rebuild`
-- Verified integration head: `b1e1f733b8aa71da2fba29b77ca515bb3ddee63f`
-- PR #50 `Unify page hero hierarchy across public site` is merged.
-- Post-merge integration CI run `35042092753` passed the complete workflow.
-- Railway preview deployment `c8d951c6-8df2-41ba-b40e-a2c762b5e74a` is SUCCESS on exact integration SHA `b1e1f733b8aa71da2fba29b77ca515bb3ddee63f`.
-- No open PRs existed when this task branch was started.
+- Verified integration head: `edffc6a325d91a99b36f13405c30c17d458e8c0c`
+- PR #51 `Add browser E2E and accessibility acceptance` is merged.
+- Post-merge integration CI run `35043945986` / CI #601 passed the complete workflow, including Playwright + axe browser acceptance.
+- Railway preview deployment `e5003cef-1046-4921-a9aa-c2e55fd362c7` is SUCCESS on exact integration SHA `edffc6a325d91a99b36f13405c30c17d458e8c0c`.
 
 ## Current task branch
-- Branch: `test/browser-e2e-accessibility`
-- Base: `b1e1f733b8aa71da2fba29b77ca515bb3ddee63f`
-- Purpose: add durable browser-level responsive/accessibility coverage for representative public page families after the shared hierarchy/header work.
+- Branch: `perf/public-delivery-hardening`
+- Base: `edffc6a325d91a99b36f13405c30c17d458e8c0c`
+- Purpose: continue launch performance hardening by reducing unnecessary root-global CSS delivery, measuring route CSS payloads, and improving responsive image delivery without redesigning the approved visual system.
 
 ## Latest completed implementation
-PR #50 introduced the shared `PageHero` hierarchy across Level 1, Level 2, Trust & Policies, and purpose-led public pages while preserving approved media/fallback behavior. Superseded hero CSS was consolidated rather than weakening the existing bundle budget.
+PR #51 added durable browser-level responsive/accessibility acceptance using Playwright + axe without changing production runtime dependencies. The suite covers representative public page families, WCAG A/AA serious/critical axe checks, six viewport widths (1440, 1024, 768, 430, 390 and 360px), horizontal-overflow guards, desktop keyboard order, mobile navigation focus/Escape restoration, reduced motion and floating companion/Back-to-Top overlap.
 
-The final PR and post-merge CI both passed media/privacy validation, factual locks, Prisma validation, lint, typecheck, unit coverage, production build, unchanged JS/CSS bundle budgets, and server smoke checks. Railway preview is healthy on the merge SHA.
+The browser gate also drove real accessibility fixes before merge: shared PageHero ARIA misuse was removed, sponsorship small-text contrast was corrected, navigation semantics were tightened, and all 53 browser checks passed in the final PR run. Post-merge CI and Railway are healthy on the exact merge SHA.
 
 ## Current implementation scope
-1. Add browser E2E/accessibility acceptance using Playwright + axe without modifying production runtime dependencies.
-2. Cover representative public page families with automated accessibility checks.
-3. Add viewport acceptance at 1440, 1024, 768, 430, 390 and 360px with horizontal-overflow guards.
-4. Exercise keyboard focus/navigation and reduced-motion behavior.
-5. Keep rendered human visual review explicitly open; automation does not substitute for screenshot/pixel/assistive-technology acceptance.
+1. Measure and reduce root-global stylesheet delivery, starting with layers identified in `docs/POST_PR41_LAUNCH_AUDIT_2026-09-16.md`.
+2. Move route-specific visual CSS out of the root layout where safe, beginning with homepage-only media polish.
+3. Add a deterministic browser/build regression check for CSS delivered by representative routes so future iterations cannot silently re-globalize route-only styles.
+4. Tighten responsive `sizes` hints for high-traffic local media surfaces so Next.js selects more appropriate image widths.
+5. Preserve existing visual hierarchy, accessibility behavior, factual locks and current bundle ceilings; do not raise budgets to hide regressions.
 
 ## Remaining launch-hardening priorities
-1. Complete real rendered UX/UI acceptance at 1440, 1024, 768, 430, 390 and 360px, plus 200% zoom, keyboard-only, reduced motion, mobile navigation, Islamic companion and Back-to-Top overlap checks.
-2. Land and maintain durable browser E2E/accessibility coverage.
-3. Continue performance hardening, especially measured CSS consolidation and image/client-delivery optimization without redesigning the approved visual system.
-4. Complete donation journey and assistance journey E2E/operational acceptance.
-5. Complete editorial/CTA/terminology consistency and SEO/social/canonical/schema QA.
-6. Complete human public-media privacy/consent/provenance review and protected-storage audit.
-7. Complete admin operational simulation, external compliance/payment closures, launch rehearsal and production cutover.
+1. Complete real rendered UX/UI acceptance at 1440, 1024, 768, 430, 390 and 360px, plus 200% zoom and assistive-technology/manual visual review. Automated browser checks are now durable but do not replace human rendered acceptance.
+2. Continue performance hardening, especially measured CSS consolidation and image/client-delivery optimization without redesigning the approved visual system.
+3. Complete donation journey and assistance journey E2E/operational acceptance.
+4. Complete editorial/CTA/terminology consistency and SEO/social/canonical/schema QA.
+5. Complete human public-media privacy/consent/provenance review and protected-storage audit.
+6. Complete admin operational simulation, external compliance/payment closures, launch rehearsal and production cutover.
 
 ## Current acceptance constraints
 - Source/automation checks must not be described as pixel-level or assistive-technology browser verification.
