@@ -34,11 +34,11 @@ export function SiteFooter() {
             <p>
               A Hyderabad-based registered charitable trust supporting verified community needs through recurring initiatives, case-led assistance, education and relief.
             </p>
-            <div className="footer-socials" aria-label="Amaana Foundation social channels">
+            <nav className="footer-socials" aria-label="Amaana Foundation social channels">
               {socialLinks.map(([label, href]) => (
                 <a href={href} key={label} target="_blank" rel="noopener noreferrer" aria-label={`${label} — opens in a new tab`}>{label} ↗</a>
               ))}
-            </div>
+            </nav>
           </div>
 
           <div>
