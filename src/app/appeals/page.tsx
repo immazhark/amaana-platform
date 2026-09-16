@@ -25,13 +25,11 @@ export default async function AppealsPage() {
     <div className="v2-home v2-appeals-page">
       <PageHero
         variant="level1"
+        className="page-hero--long-title"
         eyebrow="Support a Need · Verified Appeals"
         title="Verified Needs. Clear Purpose. Responsible Support."
         description={<p>Amaana’s public appeals are created for specific needs that have been reviewed before fundraising. Each appeal explains what support is required, what donations will be used for, the campaign status, and—once completed—the documented outcome.</p>}
-        actions={[
-          { label: "See current appeals", href: "#current-appeals" },
-          { label: "How verification works", href: "/how-we-verify", secondary: true },
-        ]}
+        actions={[{ label: "See current appeals", href: "#current-appeals" }, { label: "How verification works", href: "/how-we-verify", secondary: true }]}
         visualKicker="Amanah in practice"
         visualTitle="Private Review → Public-Safe Appeal"
         visualNote="Need received · information reviewed · decision made · only approved context published."
