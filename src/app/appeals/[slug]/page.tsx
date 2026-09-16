@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
+import { PageHero } from "@/components/page-hero";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getAppealSearchPrivacy } from "@/lib/appeal-search-privacy";
 import { formatINR, isAppealOpenForDonations } from "@/lib/appeals";
@@ -14,39 +15,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const [appeal, confidentialityLevel] = await Promise.all([getAppealPageData(slug), getAppealSearchPrivacy(slug)]);
   if (!appeal) return { title: "Appeal not found" };
-
   const canonical = `/appeals/${appeal.slug}`;
   const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE";
   const metadataTitle = highlySensitive ? "Verified Support Appeal" : appeal.title;
-  const metadataDescription = highlySensitive
-    ? "A privacy-sensitive verified support appeal from Amaana Foundation. Public details are intentionally limited."
-    : appeal.summary;
-
-  return {
-    title: metadataTitle,
-    description: metadataDescription,
-    alternates: { canonical },
-    robots: highlySensitive ? { index: false, follow: true, nocache: true } : undefined,
-    openGraph: {
-      type: "article",
-      url: canonical,
-      title: metadataTitle,
-      description: metadataDescription,
-      publishedTime: appeal.publishedAt?.toISOString(),
-    },
-    twitter: {
-      card: "summary",
-      title: metadataTitle,
-      description: metadataDescription,
-    },
-  };
+  const metadataDescription = highlySensitive ? "A privacy-sensitive verified support appeal from Amaana Foundation. Public details are intentionally limited." : appeal.summary;
+  return { title: metadataTitle, description: metadataDescription, alternates: { canonical }, robots: highlySensitive ? { index: false, follow: true, nocache: true } : undefined, openGraph: { type: "article", url: canonical, title: metadataTitle, description: metadataDescription, publishedTime: appeal.publishedAt?.toISOString() }, twitter: { card: "summary", title: metadataTitle, description: metadataDescription } };
 }
 
 export default async function AppealDetailPage({ params }: Props) {
   const { slug } = await params;
   const appeal = await getAppealPageData(slug);
   if (!appeal) notFound();
-
   const raised = appeal.amountRaised.toNumber();
   const goal = appeal.goalAmount.toNumber();
   const progress = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
@@ -54,41 +33,21 @@ export default async function AppealDetailPage({ params }: Props) {
 
   return (
     <div className="v2-home v2-appeal-detail-page">
-      <BreadcrumbStructuredData items={[
-        { name: "Home", path: "/" },
-        { name: "Verified Appeals", path: "/appeals" },
-        { name: appeal.title, path: `/appeals/${appeal.slug}` },
-      ]} />
-      <section className="v2-appeal-detail-hero">
-        <div className="v2-shell v2-appeal-detail-hero-grid">
-          <div className="v2-appeal-detail-copy">
-            <Link className="v2-text-link" href="/appeals">← Back to current appeals</Link>
-            <div className="v2-appeal-detail-meta"><span>{appeal.category.replaceAll("_", " ")}</span><span>{appeal.beneficiaryLocation || "Location withheld"}</span><span>{isOpen ? "Open appeal" : "Appeal closed"}</span></div>
-            <h1>{appeal.title}</h1>
-            <p>{appeal.summary}</p>
-          </div>
-          <div className="v2-appeal-detail-visual"><WorkVisualPlaceholder label={appeal.title} /></div>
-        </div>
-      </section>
+      <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Verified Appeals", path: "/appeals" }, { name: appeal.title, path: `/appeals/${appeal.slug}` }]} />
+      <PageHero
+        variant="level2"
+        eyebrow={`${appeal.category.replaceAll("_", " ")} · ${appeal.beneficiaryLocation || "Location withheld"} · ${isOpen ? "Open appeal" : "Appeal closed"}`}
+        title={appeal.title}
+        description={<p>{appeal.summary}</p>}
+        actions={[{ label: "Back to current appeals", href: "/appeals", secondary: true }, ...(isOpen ? [{ label: "Support this appeal", href: `/donate/${appeal.slug}` } as const] : [])]}
+        visual={<WorkVisualPlaceholder label={appeal.title} />}
+      />
 
-      <section className="v2-appeal-funding-strip" aria-label="Appeal funding status">
-        <div className="v2-shell">
-          <aside className="v2-appeal-donation-panel" aria-describedby="appeal-payment-boundary">
-            <div><small>Appeal progress</small><strong>{formatINR(raised)}</strong><p>raised of {formatINR(goal)}</p></div>
-            <div className="v2-appeal-funding-progress"><div className="v2-appeal-progress" role="progressbar" aria-label={`${appeal.title} funding progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-valuetext={`${formatINR(raised)} raised of ${formatINR(goal)}; ${progress}% supported`}><span style={{ width: `${progress}%` }} /></div><div className="v2-appeal-progress-foot"><span>{progress}% supported</span><span>INR · India only</span></div></div>
-            <div>{isOpen ? <Link className="v2-button v2-appeal-donate-button" href={`/donate/${appeal.slug}`}>Support this appeal</Link> : <span className="v2-appeal-closed">This appeal is closed</span>}<p className="v2-appeal-secure-note" id="appeal-payment-boundary">Domestic INR donations are processed securely through Razorpay. Amaana does not accept foreign contributions.</p></div>
-          </aside>
-        </div>
-      </section>
+      <section className="v2-appeal-funding-strip" aria-label="Appeal funding status"><div className="v2-shell"><aside className="v2-appeal-donation-panel" aria-describedby="appeal-payment-boundary"><div><small>Appeal progress</small><strong>{formatINR(raised)}</strong><p>raised of {formatINR(goal)}</p></div><div className="v2-appeal-funding-progress"><div className="v2-appeal-progress" role="progressbar" aria-label={`${appeal.title} funding progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-valuetext={`${formatINR(raised)} raised of ${formatINR(goal)}; ${progress}% supported`}><span style={{ width: `${progress}%` }} /></div><div className="v2-appeal-progress-foot"><span>{progress}% supported</span><span>INR · India only</span></div></div><div>{isOpen ? <Link className="v2-button v2-appeal-donate-button" href={`/donate/${appeal.slug}`}>Support this appeal</Link> : <span className="v2-appeal-closed">This appeal is closed</span>}<p className="v2-appeal-secure-note" id="appeal-payment-boundary">Domestic INR donations are processed securely through Razorpay. Amaana does not accept foreign contributions.</p></div></aside></div></section>
 
       <section className="v2-appeal-context-strip" aria-label="How this appeal is handled"><div className="v2-shell"><div><span>01</span><strong>Reviewed need</strong><small>Information assessed before publication</small></div><div><span>02</span><strong>Public-safe story</strong><small>Private proofs remain private</small></div><div><span>03</span><strong>Tracked support</strong><small>Progress stays attached to this appeal</small></div><div><span>04</span><strong>Known updates</strong><small>Only confirmed outcomes are published</small></div></div></section>
 
-      <section className="v2-section paper">
-        <div className="v2-shell v2-appeal-story-grid">
-          <div><p className="v2-section-label">The need</p><h2>{appeal.beneficiaryDisplayName ?? "A verified request for support"}</h2></div>
-          <div className="v2-appeal-story-copy"><div className="v2-appeal-story">{appeal.story}</div><div className="v2-appeal-privacy-note"><span>Privacy boundary</span><p>Only information approved for public sharing appears here. Supporting documents used during review remain private.</p></div></div>
-        </div>
-      </section>
+      <section className="v2-section paper"><div className="v2-shell v2-appeal-story-grid"><div><p className="v2-section-label">The need</p><h2>{appeal.beneficiaryDisplayName ?? "A verified request for support"}</h2></div><div className="v2-appeal-story-copy"><div className="v2-appeal-story">{appeal.story}</div><div className="v2-appeal-privacy-note"><span>Privacy boundary</span><p>Only information approved for public sharing appears here. Supporting documents used during review remain private.</p></div></div></div></section>
 
       {appeal.updates.length > 0 && <section className="v2-section dark v2-appeal-updates"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Field updates</p><h2 className="v2-section-title">What is known, as it becomes known.</h2></div><p className="v2-section-intro">Updates record confirmed developments without filling gaps with assumptions.</p></div><div className="v2-appeal-update-line">{appeal.updates.map((update, index) => <article key={update.id}><span>{String(index + 1).padStart(2, "0")}</span><small>{update.publishedAt?.toLocaleDateString("en-IN", { dateStyle: "long" })}</small><h3>{update.title}</h3><p>{update.content}</p></article>)}</div></div></section>}
 
