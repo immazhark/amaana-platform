@@ -26,6 +26,9 @@
 .v2-section.dark { background: #1d3150; color: #fffdf8; }
 .v2-section-head { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(18rem, .85fr); gap: clamp(2rem, 6vw, 6rem); align-items: end; margin-bottom: clamp(2.5rem, 5vw, 4.5rem); }
 .v2-section-title { margin: .7rem 0 0; max-width: 12ch; font-family: Georgia, "Times New Roman", serif; font-size: clamp(2.4rem, 4.6vw, 4.5rem); font-weight: 500; line-height: .98; letter-spacing: -.04em; }
+.v2-section:not(.dark) .v2-section-title { width: fit-content; }
+.v2-section:not(.dark) .v2-section-title::after { width: 100%; min-width: 0; }
+.v2-section.dark .v2-section-title::after { display: none; }
 .v2-section-intro { color: #5b6472; font-size: clamp(1rem, 1.6vw, 1.18rem); line-height: 1.75; }
 .dark .v2-section-intro { color: rgb(255 253 248 / 68%); }
 
