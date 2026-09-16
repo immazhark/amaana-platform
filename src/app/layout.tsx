@@ -27,6 +27,7 @@ import { shouldAllowIndexing } from "@/lib/site-indexing";
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
 const allowIndexing = shouldAllowIndexing(appUrl, process.env.NEXT_PUBLIC_ALLOW_INDEXING);
 const organizationDescription = "Amaana Foundation is a Hyderabad-based registered charitable trust supporting verified community needs through relief, education, seasonal programmes and case-led assistance with dignity, transparency and accountability.";
+const socialAlt = "Amaana Foundation — Upholding Trust. Serving With Compassion, Dignity and Accountability.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
@@ -39,11 +40,13 @@ export const metadata: Metadata = {
     title: "Amaana Foundation",
     description: organizationDescription,
     url: "/",
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: socialAlt }],
   },
   twitter: {
     card: "summary_large_image",
     title: "Amaana Foundation",
     description: organizationDescription,
+    images: [{ url: "/twitter-image", alt: socialAlt }],
   },
   robots: allowIndexing
     ? { index: true, follow: true }
