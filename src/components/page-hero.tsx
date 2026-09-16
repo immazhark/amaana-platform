@@ -23,6 +23,17 @@ type PageHeroProps = {
   className?: string;
 };
 
+function HeroActionLink({ action }: { action: HeroAction }) {
+  const className = action.secondary ? "page-hero__button page-hero__button--secondary" : "page-hero__button";
+  const directAnchor = action.href.startsWith("#") || action.href.startsWith("mailto:") || action.href.startsWith("tel:") || /^https?:\/\//.test(action.href);
+
+  if (directAnchor) {
+    return <a className={className} href={action.href}>{action.label}</a>;
+  }
+
+  return <Link className={className} href={action.href}>{action.label}</Link>;
+}
+
 export function PageHero({
   variant,
   eyebrow,
@@ -49,15 +60,7 @@ export function PageHero({
             <div className="page-hero__description">{description}</div>
             {actions.length > 0 && (
               <div className="page-hero__actions">
-                {actions.map(action => (
-                  <Link
-                    className={action.secondary ? "page-hero__button page-hero__button--secondary" : "page-hero__button"}
-                    href={action.href}
-                    key={`${action.href}-${action.label}`}
-                  >
-                    {action.label}
-                  </Link>
-                ))}
+                {actions.map(action => <HeroActionLink action={action} key={`${action.href}-${action.label}`} />)}
               </div>
             )}
           </div>
