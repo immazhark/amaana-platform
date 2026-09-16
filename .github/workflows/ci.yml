@@ -72,9 +72,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          cleanup_server() {
+            if [ -n "${SERVER_PID:-}" ]; then
+              kill "$SERVER_PID" 2>/dev/null || true
+              wait "$SERVER_PID" 2>/dev/null || true
+            fi
+            # npm/Next may leave a child next-server alive after the wrapper exits.
+            # Port 3000 belongs only to this runner-owned smoke server at this point.
+            fuser -k 3000/tcp 2>/dev/null || true
+          }
+
           npm run start > /tmp/amaana-next.log 2>&1 &
           SERVER_PID=$!
-          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          trap cleanup_server EXIT
 
           READY=0
           for attempt in {1..30}; do
@@ -115,6 +126,15 @@ jobs:
           curl --fail --silent --show-error -D /tmp/assistance.headers -o /dev/null http://127.0.0.1:3000/request-assistance
           tr -d '\r' < /tmp/assistance.headers > /tmp/assistance.normalized
           grep -qi '^cache-control: .*no-store' /tmp/assistance.normalized
+
+          cleanup_server
+          trap - EXIT
+
+          # Fail here if the smoke server still owns the port; Playwright must start a fresh flagged server.
+          if fuser 3000/tcp >/dev/null 2>&1; then
+            echo "Smoke server still owns port 3000 after cleanup."
+            exit 1
+          fi
       - name: Build isolated browser acceptance fixture
         shell: bash
         env:
