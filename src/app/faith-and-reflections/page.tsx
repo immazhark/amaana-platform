@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { getFaithDiscoveryData } from "@/lib/public-discovery-data";
 
@@ -33,12 +34,20 @@ export default async function FaithAndReflectionsPage() {
 
   return (
     <div className="v2-home v2-faith-page">
-      <section className="v2-faith-hero">
-        <div className="v2-shell v2-faith-hero-grid">
-          <div className="v2-faith-hero-copy"><p className="v2-section-label">Faith & Reflections</p><h1>A place for the heart to return.</h1><p>A reviewed library of Islamic articles, reminders and videos centred on compassion, generosity, gratitude, service and the values that inspire Amaana&apos;s work.</p><div className="v2-hero-actions"><a className="v2-button" href="#library">Explore the library</a><Link className="v2-text-link" href="/our-work">See faith in action →</Link></div></div>
-          <div className="v2-faith-hero-symbol" aria-hidden="true"><span>Reflect</span><div></div><strong>أمانة</strong><span>Serve</span></div>
-        </div>
-      </section>
+      <PageHero
+        variant="level1"
+        eyebrow="Faith & Reflections"
+        title="A place for the heart to return."
+        description={<p>A reviewed library of Islamic articles, reminders and videos centred on compassion, generosity, gratitude, service and the values that inspire Amaana&apos;s work.</p>}
+        actions={[
+          { label: "Explore the library", href: "#library" },
+          { label: "See faith in action", href: "/our-work", secondary: true },
+        ]}
+        visual={lead?.mediaAssets[0] ? <PublicMedia asset={lead.mediaAssets[0]} priority /> : undefined}
+        visualKicker="Reflect · Serve"
+        visualTitle="أمانة"
+        visualNote="Reviewed religious content only. Sources, attribution and verification remain part of the public record."
+      />
 
       <section className="v2-faith-standard" aria-labelledby="faith-standard-title">
         <div className="v2-shell v2-faith-standard-grid"><div><p className="v2-section-label">Editorial trust</p><h2 id="faith-standard-title">Religious content should be handled with care.</h2></div><div><p>Qur&apos;an citations, translations, hadith references and religious claims stay out of the public library until their review state is verified.</p><p>Amaana shares beneficial material without presenting itself as a scholarly authority.</p></div></div>
