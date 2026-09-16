@@ -65,7 +65,7 @@ export function PageHero({
             )}
           </div>
 
-          <div className="page-hero__visual" aria-label={visual ? undefined : visualTitle ?? eyebrow}>
+          <div className="page-hero__visual">
             {visual ?? (
               <div className="page-hero__visual-fallback" aria-hidden="true">
                 <span>{visualKicker ?? eyebrow}</span>
