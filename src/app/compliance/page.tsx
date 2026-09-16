@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
   title: "Compliance and Registration",
@@ -20,7 +21,19 @@ export const metadata: Metadata = {
 
 export default function CompliancePage() {
   return <div className="v2-home v2-compliance-page">
-    <section className="v2-compliance-hero"><div className="v2-shell v2-compliance-hero-grid"><div><p className="v2-section-label">Current position · stated conservatively</p><h1>Clarity before<br />claims.</h1><p>This page explains Amaana Foundation&apos;s current donation and tax-approval position using only what is presently confirmed. Where professional confirmation is still pending, the site says so.</p><div className="v2-hero-actions"><a className="v2-button" href="#current-position">See current position</a><Link className="v2-text-link" href="/transparency">Transparency approach →</Link></div></div><div className="v2-compliance-seal"><span>Current public position</span><strong>Domestic<br />donations<br />only</strong><small>No FCRA registration</small></div></div></section>
+    <PageHero
+      variant="trust"
+      eyebrow="Trust & Policies"
+      title="Clarity before claims."
+      description={<p>This page explains Amaana Foundation&apos;s current donation and tax-approval position using only what is presently confirmed. Where professional confirmation is still pending, the site says so.</p>}
+      actions={[
+        { label: "See current position", href: "#current-position" },
+        { label: "Transparency approach", href: "/transparency", secondary: true },
+      ]}
+      visualKicker="Registration & Compliance"
+      visualTitle="Domestic donations only"
+      visualNote="No FCRA registration · provisional 80G approval · conservative public claims."
+    />
 
     <section className="v2-compliance-strip"><div className="v2-shell"><article><span>Domestic giving</span><strong>Accepted</strong><p>Through supported Indian payment methods.</p></article><article><span>Foreign contribution</span><strong>Not accepted</strong><p>Amaana Foundation is not presently FCRA-registered.</p></article><article><span>80G</span><strong>Provisional approval</strong><p>Form 10AC dated 26 January 2026.</p></article><article><span>Tax certificate</span><strong>Not enabled</strong><p>Normal donation acknowledgements only at present.</p></article></div></section>
 

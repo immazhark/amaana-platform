@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
   title: "Get Involved",
@@ -59,15 +60,19 @@ const waysToHelp = [
 export default function GetInvolvedPage() {
   return (
     <div className="v2-home">
-      <section className="v2-hero">
-        <div className="v2-shell v2-hero-inner">
-          <div><p className="v2-kicker">Get involved</p><h1 className="v2-display">Bring what you can.</h1></div>
-          <div>
-            <p className="v2-hero-copy">Supporting good work is not limited to making a payment. Education sponsorship, time, skills, responsible sharing and helping a genuine need reach the right place can all be part of the amanah.</p>
-            <div className="v2-hero-actions"><Link className="v2-button" href="/get-involved/sponsor-education">Sponsor education</Link><Link className="v2-button ghost" href="/contact">Connect with Amaana</Link></div>
-          </div>
-        </div>
-      </section>
+      <PageHero
+        variant="level1"
+        eyebrow="Get Involved · Amaana Foundation"
+        title="Bring what you can."
+        description={<p>Supporting good work is not limited to making a payment. Education sponsorship, time, skills, responsible sharing and helping a genuine need reach the right place can all be part of the amanah.</p>}
+        actions={[
+          { label: "Sponsor education", href: "/get-involved/sponsor-education" },
+          { label: "Connect with Amaana", href: "/contact", secondary: true },
+        ]}
+        visualKicker="Five ways to take part"
+        visualTitle="Time. Skills. Support. Care."
+        visualNote="Choose a path that is useful, responsible and realistic for the work that is happening now."
+      />
 
       <section className="v2-intent" aria-labelledby="ways-to-help-title">
         <div className="v2-shell">

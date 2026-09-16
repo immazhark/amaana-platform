@@ -1,27 +1,19 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AssistanceForm } from "@/components/assistance-form";
+import { PageHero } from "@/components/page-hero";
 
 export const metadata: Metadata = {
   title: "Request Assistance",
   description: "Submit a private assistance request to Amaana Foundation in Hyderabad for careful review, verification and follow-up.",
   alternates: { canonical: "/request-assistance" },
-  openGraph: {
-    type: "website",
-    url: "/request-assistance",
-    title: "Request Assistance | Amaana Foundation",
-    description: "Start a private assistance request with Amaana Foundation in Hyderabad. Requests begin with review, not public fundraising.",
-  },
-  twitter: {
-    card: "summary",
-    title: "Request Assistance | Amaana Foundation",
-    description: "A private first step for requesting assistance from Amaana Foundation.",
-  },
+  openGraph: { type: "website", url: "/request-assistance", title: "Request Assistance | Amaana Foundation", description: "Start a private assistance request with Amaana Foundation in Hyderabad. Requests begin with review, not public fundraising." },
+  twitter: { card: "summary", title: "Request Assistance | Amaana Foundation", description: "A private first step for requesting assistance from Amaana Foundation." },
 };
 
 export default function RequestAssistancePage() {
   return <div className="v2-home v2-assistance-page">
-    <section className="v2-assistance-hero"><div className="v2-shell v2-assistance-hero-grid"><div><p className="v2-section-label">A private first step</p><h1>Ask for Help Privately and With Dignity</h1><p>Seeking assistance can already be difficult. Amaana’s request process makes it possible for a person or family to explain a genuine need without being forced to share sensitive information publicly.</p><div className="v2-hero-actions"><a className="v2-button" href="#request-form">Begin your request</a><Link className="v2-text-link" href="/request-assistance/status">Track an existing request →</Link></div></div><div className="v2-assistance-promise"><span>What happens here</span><strong>Private request</strong><i>↓</i><strong>Human review</strong><i>↓</i><strong>Verification</strong><i>↓</i><strong>Responsible decision</strong><p>Submission does not guarantee assistance or publication.</p></div></div></section>
+    <PageHero variant="action" eyebrow="Request Assistance · Private First Step" title="Ask for Help Privately and With Dignity" description={<p>Seeking assistance can already be difficult. Amaana’s request process makes it possible for a person or family to explain a genuine need without being forced to share sensitive information publicly.</p>} actions={[{label:"Begin your request",href:"#request-form"},{label:"Track an existing request",href:"/request-assistance/status",secondary:true}]} visualKicker="What happens here" visualTitle="Private Request → Human Review" visualNote="Verification follows before a responsible decision. Submission does not guarantee assistance or publication." />
 
     <section className="v2-assistance-before"><div className="v2-shell"><p className="v2-section-label">Before you begin</p><div className="v2-assistance-before-grid"><h2>Share enough to help us understand. Keep sensitive material relevant.</h2><div><p>Describe the situation, the support needed and any useful context. Supporting documents can be added when they genuinely help verification.</p><p><strong>Your uploaded documents remain private.</strong> Public sharing, if ever considered later, is a separate reviewed decision.</p></div></div></div></section>
 

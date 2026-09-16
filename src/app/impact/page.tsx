@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { programmeBySlug } from "@/lib/master-copy";
@@ -35,17 +36,24 @@ export default async function ImpactPage() {
 
   return (
     <div className="v2-home v2-impact-page">
-      <section className="v2-impact-hero">
-        <div className="v2-shell v2-impact-hero-grid">
-          <div className="v2-impact-hero-copy">
-            <p className="v2-section-label">Impact · evidence · continuity</p>
-            <h1>Impact, Without Inflated Numbers</h1>
-            <p>Every number on an impact page should be able to answer a second question: what does it represent? Amaana therefore reports programme-level and case-level outcomes rather than collapsing unrelated activities into one marketing total.</p>
-            <div className="v2-hero-actions"><a className="v2-button" href="#evidence">Follow the evidence</a><Link className="v2-text-link" href="/transparency">How we report →</Link></div>
+      <PageHero
+        variant="level1"
+        eyebrow="Impact · Evidence · Continuity"
+        title="Impact, Without Inflated Numbers"
+        description={<p>Every number should answer a second question: what does it represent? Amaana reports programme-level and case-level outcomes rather than collapsing unrelated activities into one marketing total.</p>}
+        actions={[
+          { label: "Follow the evidence", href: "#evidence" },
+          { label: "How we report", href: "/transparency", secondary: true },
+        ]}
+        visual={(
+          <div className="page-hero__visual-fallback page-hero__visual-fallback--impact">
+            <span>Evidence chain</span>
+            <strong>Need → Trust → Action → Outcome</strong>
+            <small>Every published figure stays attached to the initiative, year and known result that gives it meaning.</small>
+            <i />
           </div>
-          <div className="v2-impact-hero-orbit" aria-hidden="true"><span>Need</span><span>Trust</span><strong>Amanah</strong><span>Action</span><span>Outcome</span></div>
-        </div>
-      </section>
+        )}
+      />
 
       <section className="v2-impact-marquee" aria-labelledby="impact-signals-title">
         <h2 id="impact-signals-title" className="sr-only">Published impact figures</h2>

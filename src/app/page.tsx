@@ -3,6 +3,7 @@ import "./campaign-home.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AppealCard } from "@/components/appeal-card";
+import { PageHero } from "@/components/page-hero";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getHomepagePublicContent } from "@/lib/public-content";
 import { eidGrowth, foundingStory, homepageImpact } from "@/content/amaana";
@@ -37,29 +38,32 @@ export default async function HomePage() {
   const heroDrive = fieldDrives.find(item => item.slug === "qurbani-meat-distribution-2026");
   const heroMedia = heroDrive?.mediaAssets[0];
 
+  const heroVisual = heroDrive && heroMedia ? (
+    <div className="v3-hero-media" aria-label={heroDrive.title}>
+      <div className="v3-hero-photo"><PublicMedia asset={heroMedia} priority /></div>
+      <div className="v3-hero-media-shade" aria-hidden="true" />
+      <div className="v3-hero-media-caption"><span>{heroDrive.year}</span><strong>{heroDrive.title}</strong><Link href={`/our-work/${heroDrive.slug}`}>See the drive</Link></div>
+    </div>
+  ) : undefined;
+
   return (
     <div className="v3-home">
-      <section className="v3-hero" aria-labelledby="amaana-home-title">
-        <div className="v3-shell v3-hero-grid">
-          <div className="v3-hero-copy">
-            <p className="v3-kicker">Amaana Foundation · Hyderabad</p>
-            <h1 className="v3-title" id="amaana-home-title">Trust, Turned Into Action.</h1>
-            <p className="v3-lead">
-              Amaana Foundation is a Hyderabad-based charitable trust helping families through verified medical and financial assistance, education support, Ramadan and Eid initiatives, seasonal relief and emergency response. We believe every contribution is an amaana—a trust to be handled with dignity, transparency and responsibility.
-            </p>
-            <div className="v3-actions">
-              <Link className="v3-btn" href="/our-work">Explore our work</Link>
-              <Link className="v3-btn secondary" href="/donate">Support a Verified Need</Link>
-            </div>
-          </div>
-
-          {heroDrive && heroMedia && <div className="v3-hero-media" aria-label={heroDrive.title}>
-            <div className="v3-hero-photo"><PublicMedia asset={heroMedia} priority /></div>
-            <div className="v3-hero-media-shade" aria-hidden="true" />
-            <div className="v3-hero-media-caption"><span>{heroDrive.year}</span><strong>{heroDrive.title}</strong><Link href={`/our-work/${heroDrive.slug}`}>See the drive</Link></div>
-          </div>}
-        </div>
-      </section>
+      <PageHero
+        variant="level1"
+        className="page-hero--home"
+        id="amaana-home-title"
+        eyebrow="Amaana Foundation · Hyderabad"
+        title="Trust, Turned Into Action."
+        description={<p>Amaana Foundation is a Hyderabad-based charitable trust helping families through verified medical and financial assistance, education support, Ramadan and Eid initiatives, seasonal relief and emergency response. We believe every contribution is an amaana—a trust to be handled with dignity, transparency and responsibility.</p>}
+        actions={[
+          { label: "Explore our work", href: "/our-work" },
+          { label: "Support a Verified Need", href: "/donate", secondary: true },
+        ]}
+        visual={heroVisual}
+        visualKicker="Amaana Foundation"
+        visualTitle="Documented work"
+        visualNote="Approved programme media appears here when available."
+      />
 
       <section className="v3-proof" aria-label="Selected documented impact">
         <div className="v3-shell v3-proof-grid">

@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getStoriesDiscoveryData } from "@/lib/public-discovery-data";
@@ -21,12 +22,20 @@ export default async function StoriesPage() {
 
   return (
     <div className="v2-home v2-stories-page">
-      <section className="v2-stories-hero">
-        <div className="v2-shell v2-stories-hero-grid">
-          <div className="v2-stories-hero-copy"><p className="v2-section-label">Stories of Amanah · field journal</p><h1>Where the work becomes a story.</h1><p>Completed assistance, field notes and campaign moments are published only when the record is ready to be shared with dignity. Known outcomes stay distinct from assumptions.</p><div className="v2-hero-actions"><a className="v2-button" href="#journal">Enter the journal</a><Link className="v2-text-link" href="/our-work">Explore the work →</Link></div></div>
-          <div className="v2-stories-hero-mark" aria-hidden="true"><span>Field</span><strong>01</strong><span>Journal</span></div>
-        </div>
-      </section>
+      <PageHero
+        variant="level1"
+        eyebrow="Stories of Amanah · Field Journal"
+        title="Where the work becomes a story."
+        description={<p>Completed assistance, field notes and campaign moments are published only when the record is ready to be shared with dignity. Known outcomes stay distinct from assumptions.</p>}
+        actions={[
+          { label: "Enter the journal", href: "#journal" },
+          { label: "Explore the work", href: "/our-work", secondary: true },
+        ]}
+        visual={leadStory?.mediaAssets[0] ? <PublicMedia asset={leadStory.mediaAssets[0]} priority /> : undefined}
+        visualKicker="Field journal"
+        visualTitle={leadStory?.title ?? "Stories of Amanah"}
+        visualNote="Privacy-reviewed public accounts from documented work."
+      />
 
       {leadStory && <section className="v2-stories-feature" id="journal" aria-labelledby="featured-story-title"><div className="v2-shell v2-stories-feature-grid"><Link className="v2-stories-feature-media" href={`/stories/${leadStory.slug}`} aria-label={`Read ${leadStory.title}`}>{leadStory.mediaAssets[0] ? <PublicMedia asset={leadStory.mediaAssets[0]} /> : <WorkVisualPlaceholder label={leadStory.title} />}</Link><div className="v2-stories-feature-copy"><p className="v2-section-label">Featured field note</p><small>{leadStory.initiative?.title ?? leadStory.cause?.title ?? "Story of Amanah"}</small><h2 id="featured-story-title">{leadStory.title}</h2><p>{leadStory.summary}</p><Link className="v2-text-link" href={`/stories/${leadStory.slug}`}>Read the documented account →</Link></div></div></section>}
 
