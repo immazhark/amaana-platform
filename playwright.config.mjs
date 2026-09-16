@@ -23,8 +23,12 @@ export default defineConfig({
     command: 'npm run start',
     cwd: appWorkspace,
     url: 'http://127.0.0.1:3000/api/health/live',
-    reuseExistingServer: true,
+    reuseExistingServer: !process.env.CI,
     timeout: 120_000,
+    env: {
+      ...process.env,
+      AMAANA_BROWSER_ACCEPTANCE: 'true',
+    },
   },
   projects: [
     {

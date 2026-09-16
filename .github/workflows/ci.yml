@@ -72,9 +72,20 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+
+          cleanup_server() {
+            if [ -n "${SERVER_PID:-}" ]; then
+              kill "$SERVER_PID" 2>/dev/null || true
+              wait "$SERVER_PID" 2>/dev/null || true
+            fi
+            # npm/Next may leave a child next-server alive after the wrapper exits.
+            # Port 3000 belongs only to this runner-owned smoke server at this point.
+            fuser -k 3000/tcp 2>/dev/null || true
+          }
+
           npm run start > /tmp/amaana-next.log 2>&1 &
           SERVER_PID=$!
-          trap 'kill "$SERVER_PID" 2>/dev/null || true' EXIT
+          trap cleanup_server EXIT
 
           READY=0
           for attempt in {1..30}; do
@@ -94,6 +105,18 @@ jobs:
           curl --fail --silent --show-error http://127.0.0.1:3000/about > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:3000/request-assistance > /dev/null
 
+          # Next.js may stream a notFound() response with HTTP 200 after headers are committed.
+          # The security property we need is that normal runtime can never render fixture content.
+          ACCEPTANCE_STATUS=$(curl --silent --show-error --output /tmp/acceptance.html --write-out '%{http_code}' http://127.0.0.1:3000/browser-acceptance/donation)
+          if [ "$ACCEPTANCE_STATUS" -ge 500 ]; then
+            echo "Browser acceptance fixture returned an unexpected server error: HTTP ${ACCEPTANCE_STATUS}."
+            exit 1
+          fi
+          if grep -q 'Mocked donation journey' /tmp/acceptance.html; then
+            echo "Browser acceptance fixture content was exposed outside the isolated Playwright server."
+            exit 1
+          fi
+
           curl --fail --silent --show-error -D /tmp/health.headers -o /dev/null http://127.0.0.1:3000/api/health/live
           tr -d '\r' < /tmp/health.headers > /tmp/health.normalized
           grep -qi '^cache-control: .*no-store' /tmp/health.normalized
@@ -103,6 +126,23 @@ jobs:
           curl --fail --silent --show-error -D /tmp/assistance.headers -o /dev/null http://127.0.0.1:3000/request-assistance
           tr -d '\r' < /tmp/assistance.headers > /tmp/assistance.normalized
           grep -qi '^cache-control: .*no-store' /tmp/assistance.normalized
+
+          cleanup_server
+          trap - EXIT
+
+          # Fail here if the smoke server still owns the port; Playwright must start a fresh flagged server.
+          if fuser 3000/tcp >/dev/null 2>&1; then
+            echo "Smoke server still owns port 3000 after cleanup."
+            exit 1
+          fi
+      - name: Build isolated browser acceptance fixture
+        shell: bash
+        env:
+          AMAANA_BROWSER_ACCEPTANCE: "true"
+        run: |
+          set -euo pipefail
+          rm -rf .next
+          npm run build
       - name: Prepare isolated browser acceptance workspace
         shell: bash
         run: |
@@ -121,7 +161,7 @@ jobs:
           set -euo pipefail
           cd "$RUNNER_TEMP/amaana-browser-acceptance"
           npx playwright install --with-deps chromium
-      - name: Run responsive and accessibility browser acceptance
+      - name: Run responsive, accessibility and journey browser acceptance
         shell: bash
         env:
           AMAANA_APP_WORKSPACE: ${{ github.workspace }}
