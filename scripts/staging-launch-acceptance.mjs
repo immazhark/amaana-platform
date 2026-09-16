@@ -5,6 +5,7 @@ if (!rawBaseUrl) {
   throw new Error("STAGING_BASE_URL is required, for example https://<staging-host>");
 }
 
+const expectedCommitSha = process.env.EXPECTED_COMMIT_SHA?.trim() || null;
 const baseUrl = new URL(rawBaseUrl);
 const productionHosts = new Set(["amaanafoundation.org", "www.amaanafoundation.org"]);
 if (productionHosts.has(baseUrl.hostname)) {
@@ -48,6 +49,17 @@ function expectHeader(response, name, pattern, context) {
 }
 
 console.log(`Running Amaana staging acceptance checks against ${baseUrl.origin}`);
+
+const version = await get("/api/health/version");
+const versionPayload = await version.json();
+assert.equal(versionPayload.status, "ok", "Version endpoint did not return status=ok");
+expectHeader(version, "cache-control", /no-store/i, "version endpoint");
+if (expectedCommitSha) {
+  assert.equal(versionPayload.commitSha, expectedCommitSha, `Staging is not serving expected commit ${expectedCommitSha}`);
+  pass(`exact candidate commit ${expectedCommitSha}`);
+} else {
+  pass("deployment version endpoint");
+}
 
 const health = await get("/api/health/live");
 const healthPayload = await health.json();
