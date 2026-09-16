@@ -32,6 +32,8 @@ jobs:
         run: |
           node --test scripts/test-public-media.mjs
           node scripts/check-public-media.mjs
+          node --test scripts/test-public-media-review-register.mjs
+          node scripts/check-public-media-review-register.mjs
       - name: Verify non-destructive campaign import
         run: node --test scripts/test-reviewed-campaigns.mjs scripts/test-reviewed-campaign-revisions.mjs scripts/test-reviewed-campaign-feature-normalization.mjs scripts/test-reviewed-campaign-video-normalization.mjs
       - name: Verify canonical factual locks

@@ -1,0 +1,123 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-16",
+  "purpose": "Coverage and launch-readiness register for files directly addressable under public/media. This register records review work still required; it does not treat existing publication, filenames, social-media use or automated checks as consent or human approval.",
+  "groups": [
+    {
+      "id": "completed-assistance",
+      "pattern": "^aid-",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": true,
+      "notes": "Completed assistance derivatives may contain beneficiaries, patients or family context. Redacted/blurred/cropped naming is only a processing hint and is not proof of consent or approval."
+    },
+    {
+      "id": "dates-distribution",
+      "pattern": "^dates-",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": false,
+      "notes": "Campaign media requires source, visible-person and website-channel review before launch certification."
+    },
+    {
+      "id": "eid-gift-kits",
+      "pattern": "^eid-kits-",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": false,
+      "notes": "Multi-year field media remains pending individual human privacy, consent and provenance review."
+    },
+    {
+      "id": "hyderabad-flood-relief",
+      "pattern": "^hyderabad-flood-",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": false,
+      "notes": "Historical relief media remains pending individual website-use review."
+    },
+    {
+      "id": "jewellery-release-outcome",
+      "pattern": "^jewellery-release-",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": true,
+      "notes": "Financial-assistance outcome media is treated as sensitive until a human reviewer records a decision."
+    },
+    {
+      "id": "qurbani-meat-distribution",
+      "pattern": "^(?:meat-|qurbani-meat-)",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": false,
+      "notes": "Campaign field and preparation media remains pending individual human review."
+    },
+    {
+      "id": "taleem",
+      "pattern": "^taleem-",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": true,
+      "notes": "Education media can involve minors and therefore remains sensitive until individual review is documented."
+    },
+    {
+      "id": "winter-relief",
+      "pattern": "^winter-",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": true,
+      "notes": "Winter relief media can include students or beneficiaries and remains pending individual review."
+    }
+  ],
+  "overrides": [
+    {
+      "path": "dates-2026-announcement.webp",
+      "provenance": "DOCUMENTED",
+      "provenanceReference": "docs/campaign-media-provenance.json",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "consent": "UNKNOWN"
+    },
+    {
+      "path": "dates-2026-results.webp",
+      "provenance": "DOCUMENTED",
+      "provenanceReference": "docs/campaign-media-provenance.json",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "consent": "UNKNOWN"
+    },
+    {
+      "path": "meat-2026-labels.webp",
+      "provenance": "DOCUMENTED",
+      "provenanceReference": "docs/campaign-media-provenance.json",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "consent": "UNKNOWN"
+    },
+    {
+      "path": "meat-2026-cartons.webp",
+      "provenance": "DOCUMENTED",
+      "provenanceReference": "docs/campaign-media-provenance.json",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "consent": "UNKNOWN"
+    },
+    {
+      "path": "dates-distribution-2026.webp",
+      "provenance": "DOCUMENTED",
+      "provenanceReference": "docs/campaign-media-provenance.json",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "consent": "UNKNOWN"
+    },
+    {
+      "path": "qurbani-meat-distribution-2026.webp",
+      "provenance": "DOCUMENTED",
+      "provenanceReference": "docs/campaign-media-provenance.json",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "consent": "UNKNOWN"
+    }
+  ]
+}

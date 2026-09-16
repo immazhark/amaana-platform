@@ -16,6 +16,8 @@
     "seed:public-content": "node prisma/seed-public-content.mjs",
     "seed:staging-acceptance": "node prisma/seed-staging-acceptance.mjs",
     "acceptance:staging": "node scripts/staging-launch-acceptance.mjs",
+    "media:review-register": "node scripts/check-public-media-review-register.mjs",
+    "media:review-readiness": "node scripts/check-public-media-review-register.mjs --readiness",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage"
   },
