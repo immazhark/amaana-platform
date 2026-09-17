@@ -1,5 +1,13 @@
 # Amaana Platform — Active Implementation State
 
+## 2026-09-17 master completion directive
+- Durable governing audit/completion brief: `docs/AMAANA_PLATFORM_AUDIT_COMPLETION_MASTER_PROMPT.md`.
+- Treat the platform as being in final refinement/completion, not a greenfield rebuild.
+- Execute the six audit/completion pillars sequentially: architecture/codebase; security/payments; performance; UX/accessibility; backend/data integrity; final feature/SRE delivery.
+- Preserve all existing factual locks, privacy/consent gates, domestic-only donation policy, approved visual direction, CI/bundle constraints, and production-cutover restrictions.
+- ChatGPT is the active implementation owner while Codex is unavailable.
+- The exact six approved background SVG replacements remain an isolated byte-safe asset-transfer task; do not regenerate/optimize/alter those locked files to work around connector transport limits.
+
 ## State
 **CHATGPT_ACTIVE**
 
