@@ -53,17 +53,40 @@ export async function addAppealUpdate(formData: FormData) {
     const publicationIssues = getAppealUpdatePublicationIssues({ appealStatus: appeal.status, privacyReviewed, hasAssistanceRequest: Boolean(appeal.assistanceRequest), verification: appeal.assistanceRequest?.verification });
     if (publicationIssues.length) throw new Error(`Appeal update cannot be published: ${publicationIssues.join(" ")}`);
   }
-  const update = await prisma.appealUpdate.create({ data: { appealId, authorId: user.id, title, content, isPublic, publishedAt: isPublic ? new Date() : null } });
-  await prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_added", entityType: "Appeal", entityId: appealId, metadata: { updateId: update.id, isPublic, privacyReviewed: isPublic ? privacyReviewed : false } } });
+  const updateId = crypto.randomUUID();
+  await prisma.$transaction([
+    prisma.appealUpdate.create({ data: { id: updateId, appealId, authorId: user.id, title, content, isPublic, publishedAt: isPublic ? new Date() : null } }),
+    prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_added", entityType: "Appeal", entityId: appealId, metadata: { updateId, isPublic, privacyReviewed: isPublic ? privacyReviewed : false } } }),
+  ]);
   revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals");
   if (isPublic) revalidatePath(`/appeals/${appeal.slug}`);
 }
 
 export async function publishAppealUpdate(formData: FormData) {
   const user = await requirePermission("appeal.approve"); const appealId = String(formData.get("appealId")); const updateId = String(formData.get("updateId")); const privacyReviewed = formData.get("privacyReviewed") === "on";
-  const appeal = await prisma.appeal.findUniqueOrThrow({ where: { id: appealId }, select: { slug: true, status: true, assistanceRequest: { select: { id: true, verification: true } } } });
+  const [appeal, update] = await Promise.all([
+    prisma.appeal.findUniqueOrThrow({ where: { id: appealId }, select: { slug: true, status: true, assistanceRequest: { select: { id: true, verification: true } } } }),
+    prisma.appealUpdate.findUniqueOrThrow({ where: { id: updateId }, select: { appealId: true, isPublic: true } }),
+  ]);
+  if (update.appealId !== appealId) throw new Error("Appeal update does not belong to this appeal");
+  if (update.isPublic) throw new Error("Appeal update is already public");
   const publicationIssues = getAppealUpdatePublicationIssues({ appealStatus: appeal.status, privacyReviewed, hasAssistanceRequest: Boolean(appeal.assistanceRequest), verification: appeal.assistanceRequest?.verification });
   if (publicationIssues.length) throw new Error(`Appeal update cannot be published: ${publicationIssues.join(" ")}`);
-  await prisma.$transaction([prisma.appealUpdate.update({ where: { id: updateId, appealId }, data: { isPublic: true, publishedAt: new Date() } }), prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_published", entityType: "Appeal", entityId: appealId, metadata: { updateId, privacyReviewed: true } } })]);
+  await prisma.$transaction([prisma.appealUpdate.update({ where: { id: updateId }, data: { isPublic: true, publishedAt: new Date() } }), prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_published", entityType: "Appeal", entityId: appealId, metadata: { updateId, privacyReviewed: true } } })]);
+  revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals"); revalidatePath(`/appeals/${appeal.slug}`);
+}
+
+export async function unpublishAppealUpdate(formData: FormData) {
+  const user = await requirePermission("appeal.approve"); const appealId = String(formData.get("appealId")); const updateId = String(formData.get("updateId"));
+  const [appeal, update] = await Promise.all([
+    prisma.appeal.findUniqueOrThrow({ where: { id: appealId }, select: { slug: true } }),
+    prisma.appealUpdate.findUniqueOrThrow({ where: { id: updateId }, select: { appealId: true, isPublic: true } }),
+  ]);
+  if (update.appealId !== appealId) throw new Error("Appeal update does not belong to this appeal");
+  if (!update.isPublic) throw new Error("Appeal update is already internal");
+  await prisma.$transaction([
+    prisma.appealUpdate.update({ where: { id: updateId }, data: { isPublic: false, publishedAt: null } }),
+    prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_unpublished", entityType: "Appeal", entityId: appealId, metadata: { updateId } } }),
+  ]);
   revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals"); revalidatePath(`/appeals/${appeal.slug}`);
 }
