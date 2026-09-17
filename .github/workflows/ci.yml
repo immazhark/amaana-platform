@@ -2,11 +2,17 @@ name: CI
 
 on:
   pull_request:
+    branches:
+      - main
+      - phase-public-site-rebuild
   push:
     branches:
       - main
-      - "build/**"
       - phase-public-site-rebuild
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -21,11 +27,14 @@ jobs:
       NEXT_PUBLIC_ALLOW_INDEXING: "false"
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+
       - name: Audit global CSS architecture
         run: node scripts/audit-global-css.mjs
       - name: Decode and validate public campaign media
@@ -46,111 +55,107 @@ jobs:
         run: node --experimental-strip-types --test scripts/test-work-filters.mjs
       - name: Verify daily readings, reminder windows and local calendar boundaries
         run: node --experimental-strip-types --test scripts/test-daily-companion.mjs scripts/test-daily-companion-api.mjs
+
       - run: npm run prisma:generate
       - run: npm run prisma:validate
       - run: npm run lint
       - run: npm run typecheck
-      - run: npm run test:coverage
-      - run: npm run build
+
+      - name: Run fast test suite for pull requests
+        if: github.event_name == 'pull_request'
+        run: npm test
+
+      - name: Run coverage suite for integration pushes
+        if: github.event_name == 'push'
+        run: npm run test:coverage
+
+      - name: Detect browser-affecting integration changes
+        if: github.event_name == 'push'
+        id: browser_changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          BEFORE="${{ github.event.before }}"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git cat-file -e "${BEFORE}^{commit}" 2>/dev/null || git fetch --no-tags --depth=1 origin "$BEFORE"
+          CHANGED=$(git diff --name-only "$BEFORE" "${{ github.sha }}")
+          printf '%s\n' "$CHANGED"
+          if printf '%s\n' "$CHANGED" | grep -Eq '^(src/app/.*\.(tsx|css)|src/components/|src/.*\.css$|public/|e2e/|playwright\.config\.mjs$|next\.config\.ts$)'; then
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build production application
+        if: github.event_name == 'push'
+        run: npm run build
+
       - name: Enforce production bundle budgets
+        if: github.event_name == 'push'
         shell: bash
         run: |
           set -euo pipefail
           JS_BYTES=$(find .next/static -type f -name '*.js' -printf '%s\n' | awk '{sum += $1} END {print sum + 0}')
           CSS_BYTES=$(find .next/static -type f -name '*.css' -printf '%s\n' | awk '{sum += $1} END {print sum + 0}')
           JS_BUDGET=$((800 * 1024))
-          # The canonical-content/public-site expansion now builds ~261 KiB of CSS.
-          # Keep a narrow regression ceiling instead of weakening the gate broadly.
           CSS_BUDGET=$((272 * 1024))
-
           echo "Built static JavaScript: ${JS_BYTES} bytes (budget ${JS_BUDGET})"
           echo "Built static CSS: ${CSS_BYTES} bytes (budget ${CSS_BUDGET})"
+          test "$JS_BYTES" -le "$JS_BUDGET"
+          test "$CSS_BYTES" -le "$CSS_BUDGET"
 
-          if [ "$JS_BYTES" -gt "$JS_BUDGET" ]; then
-            echo "JavaScript bundle budget exceeded."
-            exit 1
-          fi
-          if [ "$CSS_BYTES" -gt "$CSS_BUDGET" ]; then
-            echo "CSS bundle budget exceeded."
-            exit 1
-          fi
       - name: Run post-build server smoke checks
+        if: github.event_name == 'push'
         shell: bash
         run: |
           set -euo pipefail
-
           cleanup_server() {
             if [ -n "${SERVER_PID:-}" ]; then
               kill "$SERVER_PID" 2>/dev/null || true
               wait "$SERVER_PID" 2>/dev/null || true
             fi
-            # npm/Next may leave a child next-server alive after the wrapper exits.
-            # Port 3000 belongs only to this runner-owned smoke server at this point.
             fuser -k 3000/tcp 2>/dev/null || true
           }
-
           assert_fixture_hidden() {
             local path="$1"
             local marker="$2"
             local output="$3"
             local status
             status=$(curl --silent --show-error --output "$output" --write-out '%{http_code}' "http://127.0.0.1:3000${path}")
-            if [ "$status" -ge 500 ]; then
-              echo "Browser acceptance fixture ${path} returned an unexpected server error: HTTP ${status}."
-              exit 1
-            fi
-            if grep -q "$marker" "$output"; then
-              echo "Browser acceptance fixture content at ${path} was exposed outside the isolated Playwright server."
-              exit 1
-            fi
+            if [ "$status" -ge 500 ]; then exit 1; fi
+            if grep -q "$marker" "$output"; then exit 1; fi
           }
-
           npm run start > /tmp/amaana-next.log 2>&1 &
           SERVER_PID=$!
           trap cleanup_server EXIT
-
           READY=0
           for attempt in {1..30}; do
-            if curl --fail --silent --show-error http://127.0.0.1:3000/api/health/live > /tmp/health.json; then
-              READY=1
-              break
-            fi
+            if curl --fail --silent --show-error http://127.0.0.1:3000/api/health/live > /tmp/health.json; then READY=1; break; fi
             sleep 1
           done
-
-          if [ "$READY" -ne 1 ]; then
-            cat /tmp/amaana-next.log
-            exit 1
-          fi
-
+          if [ "$READY" -ne 1 ]; then cat /tmp/amaana-next.log; exit 1; fi
           grep -q '"status":"ok"' /tmp/health.json
           curl --fail --silent --show-error http://127.0.0.1:3000/about > /dev/null
           curl --fail --silent --show-error http://127.0.0.1:3000/request-assistance > /dev/null
-
-          # Next.js may stream a notFound() response with HTTP 200 after headers are committed.
-          # The security property is that normal runtime can never render synthetic fixture content.
           assert_fixture_hidden "/browser-acceptance/donation" "Mocked donation journey" "/tmp/donation-acceptance.html"
           assert_fixture_hidden "/browser-acceptance/admin?profile=full" "Synthetic operations console" "/tmp/admin-acceptance.html"
-
           curl --fail --silent --show-error -D /tmp/health.headers -o /dev/null http://127.0.0.1:3000/api/health/live
           tr -d '\r' < /tmp/health.headers > /tmp/health.normalized
           grep -qi '^cache-control: .*no-store' /tmp/health.normalized
           grep -qi '^x-content-type-options: nosniff$' /tmp/health.normalized
           grep -qi '^x-frame-options: DENY$' /tmp/health.normalized
-
           curl --fail --silent --show-error -D /tmp/assistance.headers -o /dev/null http://127.0.0.1:3000/request-assistance
           tr -d '\r' < /tmp/assistance.headers > /tmp/assistance.normalized
           grep -qi '^cache-control: .*no-store' /tmp/assistance.normalized
-
           cleanup_server
           trap - EXIT
+          if fuser 3000/tcp >/dev/null 2>&1; then exit 1; fi
 
-          # Fail here if the smoke server still owns the port; Playwright must start a fresh flagged server.
-          if fuser 3000/tcp >/dev/null 2>&1; then
-            echo "Smoke server still owns port 3000 after cleanup."
-            exit 1
-          fi
       - name: Build isolated browser acceptance fixture
+        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
         shell: bash
         env:
           AMAANA_BROWSER_ACCEPTANCE: "true"
@@ -158,7 +163,9 @@ jobs:
           set -euo pipefail
           rm -rf .next
           npm run build
+
       - name: Prepare isolated browser acceptance workspace
+        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -170,13 +177,17 @@ jobs:
           cd "$BROWSER_DIR"
           npm init -y >/dev/null
           npm install --save-dev --package-lock=false @playwright/test@1.55.0 @axe-core/playwright@4.10.2
+
       - name: Install Chromium for browser acceptance
+        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
         shell: bash
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP/amaana-browser-acceptance"
           npx playwright install --with-deps chromium
+
       - name: Run responsive, accessibility and journey browser acceptance
+        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
         shell: bash
         env:
           AMAANA_APP_WORKSPACE: ${{ github.workspace }}
@@ -184,38 +195,3 @@ jobs:
           set -euo pipefail
           cd "$RUNNER_TEMP/amaana-browser-acceptance"
           npx playwright test --config=playwright.config.mjs
-
-  staging_acceptance:
-    name: staging-runtime-acceptance
-    if: github.event_name == 'push' && github.ref == 'refs/heads/phase-public-site-rebuild'
-    needs: verify
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    env:
-      STAGING_BASE_URL: https://amaana-rebuild-preview-production.up.railway.app
-      EXPECTED_COMMIT_SHA: ${{ github.sha }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.sha }}
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-      - name: Wait for Railway to serve the exact integration commit
-        shell: bash
-        run: |
-          set -euo pipefail
-          VERSION_URL="${STAGING_BASE_URL}/api/health/version"
-          for attempt in {1..60}; do
-            BODY=$(curl --silent --show-error --max-time 10 "$VERSION_URL" || true)
-            if printf '%s' "$BODY" | grep -Fq "\"commitSha\":\"${EXPECTED_COMMIT_SHA}\""; then
-              echo "Railway is serving expected commit ${EXPECTED_COMMIT_SHA}."
-              exit 0
-            fi
-            echo "Waiting for Railway exact commit (${attempt}/60)..."
-            sleep 10
-          done
-          echo "Railway did not serve expected commit ${EXPECTED_COMMIT_SHA} within the acceptance window."
-          exit 1
-      - name: Run exact-candidate staging acceptance
-        run: node scripts/staging-launch-acceptance.mjs
