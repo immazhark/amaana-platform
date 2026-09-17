@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
+import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { createDonationReference, createReceiptToken, donationSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder } from "@/lib/razorpay";
@@ -7,13 +8,25 @@ import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
 import { validateProductionEnvironment } from "@/lib/env";
 
 const privateHeaders = { "Cache-Control": "no-store, private" };
+const MAX_PAYMENT_JSON_BYTES = 32 * 1024;
 
 export async function POST(request: Request) {
   try {
     validateProductionEnvironment();
     if (!isSameOrigin(request)) return NextResponse.json({ error: "Invalid request origin." }, { status: 403, headers: privateHeaders });
     if (!(await enforceDonationRateLimit(request))) return NextResponse.json({ error: "Too many checkout attempts. Please try again later." }, { status: 429, headers: { ...privateHeaders, "Retry-After": "3600" } });
-    const parsed = donationSchema.safeParse(await request.json());
+
+    let body: unknown;
+    try {
+      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES));
+    } catch (error) {
+      if (error instanceof RequestBodyTooLargeError) {
+        return NextResponse.json({ error: "Donation request payload is too large." }, { status: 413, headers: privateHeaders });
+      }
+      return NextResponse.json({ error: "Please check the donation information." }, { status: 400, headers: privateHeaders });
+    }
+
+    const parsed = donationSchema.safeParse(body);
     if (!parsed.success) return NextResponse.json({ error: "Please check the donation information." }, { status: 400, headers: privateHeaders });
     const appeal = await prisma.appeal.findFirst({
       where: { id: parsed.data.appealId, status: "PUBLISHED" },
