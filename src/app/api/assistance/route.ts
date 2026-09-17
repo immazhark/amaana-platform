@@ -2,8 +2,9 @@ import { AppealCategory, NotificationChannel } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { assistanceSchema, createReferenceNumber, createTrackingToken, hashTrackingToken } from "@/lib/assistance";
+import { RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { prisma } from "@/lib/prisma";
-import { deletePrivateDocumentObject, MAX_FILES, uploadPrivateDocument } from "@/lib/storage";
+import { deletePrivateDocumentObject, MAX_FILE_BYTES, MAX_FILES, uploadPrivateDocument } from "@/lib/storage";
 import { validateProductionEnvironment } from "@/lib/env";
 import { enforceAssistanceRateLimit, isSameOrigin } from "@/lib/request-security";
 
@@ -13,6 +14,8 @@ const privateHeaders = {
   "Referrer-Policy": "no-referrer",
   "X-Robots-Tag": "noindex, nofollow, noarchive",
 };
+const ASSISTANCE_MULTIPART_OVERHEAD_BYTES = 512 * 1024;
+const MAX_ASSISTANCE_MULTIPART_BYTES = MAX_FILES * MAX_FILE_BYTES + ASSISTANCE_MULTIPART_OVERHEAD_BYTES;
 
 export async function POST(request: Request) {
   try {
@@ -29,7 +32,25 @@ export async function POST(request: Request) {
       );
     }
 
-    const formData = await request.formData();
+    const contentType = request.headers.get("content-type") ?? "";
+    if (!contentType.toLowerCase().startsWith("multipart/form-data;")) {
+      return NextResponse.json({ error: "Invalid assistance submission format." }, { status: 400, headers: privateHeaders });
+    }
+
+    let formData: FormData;
+    try {
+      const bodyBytes = await readBodyBytesWithLimit(request, MAX_ASSISTANCE_MULTIPART_BYTES);
+      formData = await new Response(bodyBytes, { headers: { "Content-Type": contentType } }).formData();
+    } catch (error) {
+      if (error instanceof RequestBodyTooLargeError) {
+        return NextResponse.json(
+          { error: "The assistance submission is too large. Upload no more than five documents of up to 5 MB each." },
+          { status: 413, headers: privateHeaders },
+        );
+      }
+      return NextResponse.json({ error: "Invalid assistance submission format." }, { status: 400, headers: privateHeaders });
+    }
+
     const parsed = assistanceSchema.safeParse(Object.fromEntries(formData.entries()));
     if (!parsed.success) {
       return NextResponse.json(
