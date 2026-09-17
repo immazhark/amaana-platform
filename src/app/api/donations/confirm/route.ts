@@ -59,10 +59,22 @@ export async function POST(request: Request) {
       });
     }
 
+    // Another reconciliation path (most commonly a webhook) may have won the
+    // race while this browser confirmation was in flight. Always respond with
+    // the persisted donation state instead of assuming our guarded transition
+    // changed the row.
+    const currentDonation = await prisma.donation.findUnique({
+      where: { id: donation.id },
+      select: { status: true },
+    });
+    if (!currentDonation) {
+      throw new Error("Donation disappeared during payment confirmation");
+    }
+
     return NextResponse.json(
       {
         referenceNumber: donation.referenceNumber,
-        status: isCaptured ? "CAPTURED" : payment.status === "authorized" ? "AUTHORIZED" : donation.status,
+        status: currentDonation.status,
       },
       { headers: privateHeaders },
     );
