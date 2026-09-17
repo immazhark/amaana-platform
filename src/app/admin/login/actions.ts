@@ -41,9 +41,9 @@ export async function login(formData: FormData) {
     include: { credential: true },
   });
   const authenticated =
-    Boolean(user?.credential) &&
-    user?.status === "ACTIVE" &&
-    (await verifyPassword(password, user.credential!.passwordHash));
+    user?.credential && user.status === "ACTIVE"
+      ? await verifyPassword(password, user.credential.passwordHash)
+      : false;
 
   if (!user || !authenticated) {
     const recorded = await recordFailedLoginAttempt(subjectHash);
