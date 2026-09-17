@@ -25,6 +25,8 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
   const filters = filterWork(visibleCauses, search);
   const initiativeCount = visibleCauses.reduce((total, cause) => total + cause.initiatives.length, 0);
   const causeCount = visibleCauses.length;
+  const ramadanEidMedia = visibleCauses.find(cause => cause.slug === "ramadan-eid")?.initiatives.find(initiative => initiative.mediaAssets[0])?.mediaAssets[0];
+  const heroMedia = ramadanEidMedia ?? visibleCauses.flatMap(cause => cause.initiatives).find(initiative => initiative.mediaAssets[0])?.mediaAssets[0];
 
   return (
     <div className="v2-home v2-work-index">
@@ -35,7 +37,7 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
         title="Different Needs. One Standard of Care."
         description={<p>Some needs return every year. Others arrive without warning. Explore Amaana’s medical and financial relief, emergency response, Ramadan and Eid initiatives, Taleem education support and seasonal relief.</p>}
         actions={[{ label: "Explore the portfolio", href: "#work-results" }, { label: "See documented impact", href: "/impact", secondary: true }]}
-        visual={<div className="page-hero__visual-fallback page-hero__visual-fallback--stats"><span>Documented public portfolio</span><strong>{initiativeCount} published programmes</strong><div className="page-hero__stat-row"><b>{causeCount}</b><small>canonical cause areas</small></div><i /></div>}
+        visual={heroMedia ? <PublicMedia asset={heroMedia} priority sizes="(max-width: 900px) calc(100vw - 2rem), 42vw" /> : <div className="page-hero__visual-fallback page-hero__visual-fallback--stats"><span>Documented public portfolio</span><strong>{initiativeCount} published programmes</strong><div className="page-hero__stat-row"><b>{causeCount}</b><small>canonical cause areas</small></div><i /></div>}
       />
 
       <section className="v2-section paper" id="work-results"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Explore by need</p><h2 className="v2-section-title">A living portfolio of service.</h2></div><p className="v2-section-intro">The five umbrella programmes stay consistent across the site. Parent programmes appear once on the main index; use the year filter when you want to inspect a specific annual edition.</p></div>
