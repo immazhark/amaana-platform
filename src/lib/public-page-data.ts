@@ -191,6 +191,44 @@ export const getImpactPageData = cache(async () => {
 });
 
 /**
+ * Completed-case showcase for /appeals. Keep this intentionally narrow: only
+ * published initiatives under the canonical medical/financial relief cause and
+ * at most one approved public image per record are needed for the card strip.
+ */
+export const getCompletedAidShowcaseData = cache(async () => {
+  return prisma.initiative.findMany({
+    where: {
+      status: "PUBLISHED",
+      cause: { slug: "medical-financial-relief", status: "PUBLISHED" },
+    },
+    orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
+    select: {
+      slug: true,
+      mediaAssets: {
+        where: {
+          kind: "IMAGE",
+          isPublic: true,
+          privacyApprovedAt: { not: null },
+          publicUrl: { not: null },
+        },
+        orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
+        take: 1,
+        select: {
+          id: true,
+          kind: true,
+          title: true,
+          publicUrl: true,
+          externalUrl: true,
+          altText: true,
+          caption: true,
+          sourceYear: true,
+        },
+      },
+    },
+  });
+});
+
+/**
  * Appeals index projection. The card grid needs only public fundraising fields;
  * it should not serialize the private-facing story, internal notes or updates.
  */
