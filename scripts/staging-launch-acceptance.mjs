@@ -13,6 +13,8 @@ if (productionHosts.has(baseUrl.hostname)) {
 }
 
 const syntheticSlug = "staging-checkout-acceptance";
+const syntheticDonationReference = "AFD-STAGING-REFUNDED";
+const syntheticDonationToken = "staging-private-acknowledgement-token";
 let checks = 0;
 
 function pass(message) {
@@ -35,6 +37,19 @@ async function getHtml(path) {
   const contentType = response.headers.get("content-type") ?? "";
   assert.match(contentType, /text\/html/i, `${path} did not return HTML`);
   return { response, html: await response.text() };
+}
+
+async function postJson(path, body) {
+  return fetch(new URL(path, baseUrl), {
+    method: "POST",
+    redirect: "follow",
+    headers: {
+      "content-type": "application/json",
+      "origin": baseUrl.origin,
+      "user-agent": "Amaana-Staging-Acceptance/1.0",
+    },
+    body: JSON.stringify(body),
+  });
 }
 
 function expectText(html, text, context) {
@@ -102,6 +117,26 @@ if (appeals.html.includes("STAGING TEST")) {
   expectText(donation.html, "not an 80G tax-deduction certificate", "donation acknowledgement boundary");
 } else {
   console.log("• Synthetic checkout fixture is not seeded in this staging database; deployed checkout-specific checks are skipped. Mocked browser CI remains the mandatory donation-journey gate.");
+}
+
+const acknowledgement = await postJson("/api/donations/acknowledgement", {
+  reference: syntheticDonationReference,
+  token: syntheticDonationToken,
+});
+if (acknowledgement.status === 200) {
+  expectHeader(acknowledgement, "cache-control", /no-store/i, "private acknowledgement API");
+  const payload = await acknowledgement.json();
+  assert.equal(payload.found, true, "Synthetic acknowledgement did not return found=true");
+  assert.equal(payload.presentation?.tone, "refunded", "Synthetic acknowledgement is not in refunded presentation state");
+  assert.equal(payload.donation?.referenceNumber, syntheticDonationReference, "Synthetic acknowledgement reference mismatch");
+  assert.equal(payload.donation?.amount, 100, "Synthetic acknowledgement original amount mismatch");
+  assert.equal(payload.donation?.refundedAmount, 100, "Synthetic acknowledgement refunded amount mismatch");
+  assert.equal(payload.donation?.receiptNumber, `ACK-${syntheticDonationReference}`, "Synthetic acknowledgement receipt number mismatch");
+  pass("synthetic refunded donation acknowledgement state");
+} else if (acknowledgement.status === 404) {
+  console.log("• Synthetic refunded-donation fixture is not seeded yet; private refund/receipt runtime verification remains pending.");
+} else {
+  throw new Error(`Synthetic acknowledgement returned unexpected status ${acknowledgement.status}`);
 }
 
 const assistance = await getHtml("/request-assistance");
