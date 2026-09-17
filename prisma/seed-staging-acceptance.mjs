@@ -5,6 +5,8 @@ const prisma = new PrismaClient();
 const STAGING_SLUG = "staging-checkout-acceptance";
 const STAGING_REFERENCE = "AF-STAGING-ACCEPTANCE";
 const SYNTHETIC_TRACKING_TOKEN = "staging-acceptance-only";
+const SYNTHETIC_DONATION_REFERENCE = "AFD-STAGING-REFUNDED";
+const SYNTHETIC_DONATION_TOKEN = "staging-private-acknowledgement-token";
 
 async function main() {
   if (process.env.APP_ENVIRONMENT !== "staging") {
@@ -13,6 +15,8 @@ async function main() {
 
   const adminEmail = process.env.ADMIN_MAZHAR_EMAIL;
   if (!adminEmail) throw new Error("ADMIN_MAZHAR_EMAIL is required for staging acceptance seed ownership");
+  const donationPepper = process.env.DONATION_TOKEN_PEPPER;
+  if (!donationPepper) throw new Error("DONATION_TOKEN_PEPPER is required for the staging donation acknowledgement fixture");
 
   const owner = await prisma.user.findUnique({
     where: { email: adminEmail },
@@ -22,6 +26,9 @@ async function main() {
 
   const now = new Date();
   const trackingTokenHash = createHash("sha256").update(SYNTHETIC_TRACKING_TOKEN).digest("hex");
+  const receiptTokenHash = createHash("sha256")
+    .update(`${SYNTHETIC_DONATION_TOKEN}:${donationPepper}`)
+    .digest("hex");
 
   const request = await prisma.assistanceRequest.upsert({
     where: { referenceNumber: STAGING_REFERENCE },
@@ -113,6 +120,7 @@ async function main() {
       beneficiaryLocation: "Hyderabad, Telangana",
       coverImageUrl: null,
       goalAmount: "1000.00",
+      amountRaised: "0.00",
       isFeatured: false,
       publishedAt: now,
       closesAt: null,
@@ -144,7 +152,52 @@ async function main() {
     data: { status: "CONVERTED_TO_APPEAL", appealId: appeal.id },
   });
 
+  await prisma.donation.upsert({
+    where: { referenceNumber: SYNTHETIC_DONATION_REFERENCE },
+    update: {
+      appealId: appeal.id,
+      donorName: "Synthetic staging donor",
+      donorEmail: "staging-donor@example.invalid",
+      donorPhone: null,
+      isAnonymous: false,
+      domesticConfirmedAt: now,
+      amount: "100.00",
+      refundedAmount: "100.00",
+      currency: "INR",
+      status: "REFUNDED",
+      provider: "RAZORPAY",
+      providerOrderId: "order_staging_acceptance_refunded",
+      providerPaymentId: "pay_staging_acceptance_refunded",
+      receiptNumber: `ACK-${SYNTHETIC_DONATION_REFERENCE}`,
+      receiptTokenHash,
+      capturedAt: now,
+      failedAt: null,
+      refundedAt: now,
+    },
+    create: {
+      referenceNumber: SYNTHETIC_DONATION_REFERENCE,
+      appealId: appeal.id,
+      donorName: "Synthetic staging donor",
+      donorEmail: "staging-donor@example.invalid",
+      donorPhone: null,
+      isAnonymous: false,
+      domesticConfirmedAt: now,
+      amount: "100.00",
+      refundedAmount: "100.00",
+      currency: "INR",
+      status: "REFUNDED",
+      provider: "RAZORPAY",
+      providerOrderId: "order_staging_acceptance_refunded",
+      providerPaymentId: "pay_staging_acceptance_refunded",
+      receiptNumber: `ACK-${SYNTHETIC_DONATION_REFERENCE}`,
+      receiptTokenHash,
+      capturedAt: now,
+      refundedAt: now,
+    },
+  });
+
   console.log(`Staging acceptance workflow ready: ${request.referenceNumber} -> ${appeal.slug} (${appeal.status})`);
+  console.log(`Synthetic refunded donation ready: ${SYNTHETIC_DONATION_REFERENCE}`);
 }
 
 main()
