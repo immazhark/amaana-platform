@@ -149,8 +149,22 @@ export function validatePublicMediaFile(file: File) {
   if (file.size <= 0 || file.size > MAX_FILE_BYTES) throw new Error("Public media files must be between 1 byte and 5 MB");
 }
 
-function isManagedPublicMediaKey(objectKey: string) {
+export function isManagedPublicMediaKey(objectKey: string) {
   return /^\d{4}\/[0-9a-f-]{36}\.(?:pdf|jpg|png|webp)$/i.test(objectKey);
+}
+
+export async function getPublicMediaObject(objectKey: string) {
+  if (!isManagedPublicMediaKey(objectKey)) throw new Error("Invalid managed public media key");
+  const { bucket, client } = getPublicMediaStorage();
+  const object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: objectKey }));
+  if (!object.Body) throw new Error("Public media object has no body");
+  const bytes = await object.Body.transformToByteArray();
+  return {
+    bytes,
+    contentType: object.ContentType ?? "application/octet-stream",
+    etag: object.ETag ?? null,
+    lastModified: object.LastModified ?? null,
+  };
 }
 
 export async function deletePublicMediaObject(objectKey: string) {
