@@ -207,3 +207,12 @@ PR #22 and its Railway deployment are verified complete. No open PRs exist. Prio
 - Winter Drive: 234 Winter Kits / 234 beneficiaries; phase figures are subsets only.
 - Taleem Nazira + Hifdh: 25 students combined as of September 2026.
 - Canonical programme taxonomy contains exactly five umbrella categories.
+
+
+## 2026-09-17 — Explicit ChatGPT → Codex approved-artwork handoff
+
+**State:** CODEX_ACTIVE  
+**Base:** 2c01a02e0bcbb1ff92bb86ec9049aa0a4dda8c89  
+**Task branch:** fix/approved-background-artwork
+
+Verified current integration HEAD, no open PRs, CI run 35164492769 green, Railway e625eb4c-5b39-40b1-8360-3d12894f77c0 SUCCESS on exact base SHA. Read required continuity/source files and approved background lock/integration notes. All six ZIP assets independently match locked SHA-256 values and byte sizes. Preserve all newer implementation; prior local responsive work is obsolete and excluded. Next action is exact-byte atomic SVG replacement, CI/PR/staging acceptance, without production changes.
