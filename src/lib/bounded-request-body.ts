@@ -5,10 +5,14 @@ export class RequestBodyTooLargeError extends Error {
   }
 }
 
-export async function readTextBodyWithLimit(request: Request, maxBytes: number) {
+function validateMaxBytes(maxBytes: number) {
   if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0) {
     throw new RangeError("maxBytes must be a positive safe integer");
   }
+}
+
+export async function readBodyBytesWithLimit(request: Request, maxBytes: number) {
+  validateMaxBytes(maxBytes);
 
   const declaredLength = request.headers.get("content-length");
   if (declaredLength) {
@@ -18,7 +22,7 @@ export async function readTextBodyWithLimit(request: Request, maxBytes: number) 
     }
   }
 
-  if (!request.body) return "";
+  if (!request.body) return new Uint8Array();
 
   const reader = request.body.getReader();
   const chunks: Uint8Array[] = [];
@@ -48,5 +52,9 @@ export async function readTextBodyWithLimit(request: Request, maxBytes: number) 
     offset += chunk.byteLength;
   }
 
-  return new TextDecoder().decode(body);
+  return body;
+}
+
+export async function readTextBodyWithLimit(request: Request, maxBytes: number) {
+  return new TextDecoder().decode(await readBodyBytesWithLimit(request, maxBytes));
 }
