@@ -7,6 +7,32 @@ const mocks = vi.hoisted(() => ({
   createRazorpayOrder: vi.fn(),
 }));
 
+vi.mock("@/lib/appeals", () => ({
+  getRemainingAppealAmount: () => 0,
+  isAppealOpenForDonations: () => true,
+}));
+
+vi.mock("@/lib/bounded-request-body", () => {
+  class RequestBodyTooLargeError extends Error {}
+  return {
+    RequestBodyTooLargeError,
+    readTextBodyWithLimit: async (request: Request, maxBytes: number) => {
+      const declared = Number(request.headers.get("content-length"));
+      if (Number.isFinite(declared) && declared > maxBytes) throw new RequestBodyTooLargeError();
+      return request.text();
+    },
+  };
+});
+
+vi.mock("@/lib/donations", () => ({
+  createDonationReference: () => "AMN-123",
+  createReceiptToken: () => "receipt-token",
+  donationSchema: { safeParse: vi.fn() },
+  hashReceiptToken: () => "hashed-token",
+  isDonationAmountAllowedForRemaining: () => true,
+  MIN_DONATION_AMOUNT: 10,
+}));
+
 vi.mock("@/lib/request-security", () => ({
   isSameOrigin: () => true,
   enforceDonationRateLimit: mocks.enforceDonationRateLimit,
