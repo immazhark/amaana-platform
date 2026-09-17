@@ -8,6 +8,18 @@ const mocks = vi.hoisted(() => ({
   verifyCheckoutSignature: vi.fn(),
 }));
 
+vi.mock("@/lib/bounded-request-body", () => {
+  class RequestBodyTooLargeError extends Error {}
+  return {
+    RequestBodyTooLargeError,
+    readTextBodyWithLimit: async (request: Request, maxBytes: number) => {
+      const declared = Number(request.headers.get("content-length"));
+      if (Number.isFinite(declared) && declared > maxBytes) throw new RequestBodyTooLargeError();
+      return request.text();
+    },
+  };
+});
+
 vi.mock("@/lib/donations", () => ({
   hashReceiptToken: () => "hashed-receipt-token",
 }));
