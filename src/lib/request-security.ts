@@ -1,11 +1,9 @@
 import { createHash } from "node:crypto";
-import { Prisma } from "@prisma/client";
-import { prisma } from "./prisma";
+import { isPrismaSerializableConflict, withSerializableTransactionRetry } from "./prisma-transaction";
 
 type RateLimitPurpose = "donation" | "assistance";
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
-const SERIALIZABLE_RETRY_LIMIT = 3;
 
 export function isSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
@@ -39,37 +37,30 @@ export function getRateLimitClientHash(request: Request, purpose: RateLimitPurpo
   return createHash("sha256").update(`${purpose}:${address}:${pepper}`).digest("hex");
 }
 
-export function isRetryableRateLimitConflict(error: unknown) {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034";
-}
+export const isRetryableRateLimitConflict = isPrismaSerializableConflict;
 
 async function claimRateLimitSlot(clientHash: string, limit: number) {
-  for (let attempt = 0; attempt < SERIALIZABLE_RETRY_LIMIT; attempt += 1) {
-    try {
-      return await prisma.$transaction(
-        async tx => {
-          const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MS);
-          const attempts = await tx.donationAttempt.count({
-            where: {
-              clientHash,
-              createdAt: { gte: since },
-            },
-          });
-
-          if (attempts >= limit) return false;
-
-          await tx.donationAttempt.create({ data: { clientHash } });
-          return true;
+  try {
+    return await withSerializableTransactionRetry(async tx => {
+      const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MS);
+      const attempts = await tx.donationAttempt.count({
+        where: {
+          clientHash,
+          createdAt: { gte: since },
         },
-        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
-      );
-    } catch (error) {
-      if (!isRetryableRateLimitConflict(error)) throw error;
-      if (attempt === SERIALIZABLE_RETRY_LIMIT - 1) return false;
-    }
-  }
+      });
 
-  return false;
+      if (attempts >= limit) return false;
+
+      await tx.donationAttempt.create({ data: { clientHash } });
+      return true;
+    });
+  } catch (error) {
+    // High contention after all bounded retries is treated as a denied request,
+    // never as permission to bypass the abuse-control boundary.
+    if (isPrismaSerializableConflict(error)) return false;
+    throw error;
+  }
 }
 
 export async function enforceDonationRateLimit(request: Request) {
