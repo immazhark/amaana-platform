@@ -8,8 +8,9 @@ beforeEach(() => {
   process.env = {
     ...originalEnv,
     NODE_ENV: "test",
-    DONATION_TOKEN_PEPPER: "donation-secret",
-    ASSISTANCE_TOKEN_PEPPER: "assistance-secret",
+    DONATION_TOKEN_PEPPER: "test-donation-value",
+    ASSISTANCE_TOKEN_PEPPER: "test-assistance-value",
+    AUTH_RATE_LIMIT_PEPPER: "test-analytics-value",
   };
 });
 
@@ -31,30 +32,52 @@ function prismaError(code: string) {
 }
 
 describe("rate-limit client hashing", () => {
-  it("keeps donation and assistance identifiers cryptographically separated", () => {
+  it("keeps donation, assistance and analytics identifiers separated", () => {
     const request = requestFor("203.0.113.10");
-    expect(getRateLimitClientHash(request, "donation")).not.toBe(
+    const hashes = new Set([
+      getRateLimitClientHash(request, "donation"),
       getRateLimitClientHash(request, "assistance"),
-    );
+      getRateLimitClientHash(request, "analytics"),
+    ]);
+    expect(hashes.size).toBe(3);
   });
 
-  it("changes the assistance hash when only the assistance pepper rotates", () => {
+  it("changes only the assistance hash when its pepper rotates", () => {
     const request = requestFor("203.0.113.10");
-    const before = getRateLimitClientHash(request, "assistance");
+    const assistanceBefore = getRateLimitClientHash(request, "assistance");
+    const donationBefore = getRateLimitClientHash(request, "donation");
+    const analyticsBefore = getRateLimitClientHash(request, "analytics");
+
+    process.env.ASSISTANCE_TOKEN_PEPPER = "rotated-assistance-value";
+
+    expect(getRateLimitClientHash(request, "assistance")).not.toBe(assistanceBefore);
+    expect(getRateLimitClientHash(request, "donation")).toBe(donationBefore);
+    expect(getRateLimitClientHash(request, "analytics")).toBe(analyticsBefore);
+  });
+
+  it("changes only the analytics hash when its pepper rotates", () => {
+    const request = requestFor("203.0.113.10");
+    const analyticsBefore = getRateLimitClientHash(request, "analytics");
     const donationBefore = getRateLimitClientHash(request, "donation");
 
-    process.env.ASSISTANCE_TOKEN_PEPPER = "assistance-secret-rotated";
+    process.env.AUTH_RATE_LIMIT_PEPPER = "rotated-analytics-value";
 
-    expect(getRateLimitClientHash(request, "assistance")).not.toBe(before);
+    expect(getRateLimitClientHash(request, "analytics")).not.toBe(analyticsBefore);
     expect(getRateLimitClientHash(request, "donation")).toBe(donationBefore);
   });
 
-  it("fails closed in production when the workflow-specific pepper is missing", () => {
+  it("fails closed in production when a workflow pepper is missing", () => {
     process.env = { ...process.env, NODE_ENV: "production" };
     delete process.env.ASSISTANCE_TOKEN_PEPPER;
 
     expect(() => getRateLimitClientHash(requestFor("203.0.113.10"), "assistance")).toThrow(
       /ASSISTANCE_TOKEN_PEPPER/,
+    );
+
+    process.env.ASSISTANCE_TOKEN_PEPPER = "test-assistance-value";
+    delete process.env.AUTH_RATE_LIMIT_PEPPER;
+    expect(() => getRateLimitClientHash(requestFor("203.0.113.10"), "analytics")).toThrow(
+      /AUTH_RATE_LIMIT_PEPPER/,
     );
   });
 });
