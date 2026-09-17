@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { isPrismaSerializableConflict, withSerializableTransactionRetry } from "./prisma-transaction";
 
-type RateLimitPurpose = "donation" | "assistance";
+type RateLimitPurpose = "donation" | "assistance" | "analytics";
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 
@@ -16,7 +16,11 @@ export function isSameOrigin(request: Request) {
 }
 
 function getRateLimitPepper(purpose: RateLimitPurpose) {
-  const envName = purpose === "assistance" ? "ASSISTANCE_TOKEN_PEPPER" : "DONATION_TOKEN_PEPPER";
+  const envName = purpose === "assistance"
+    ? "ASSISTANCE_TOKEN_PEPPER"
+    : purpose === "analytics"
+      ? "AUTH_RATE_LIMIT_PEPPER"
+      : "DONATION_TOKEN_PEPPER";
   const pepper = process.env[envName];
   if (!pepper && process.env.NODE_ENV === "production") {
     throw new Error(`${envName} is not configured`);
@@ -26,9 +30,9 @@ function getRateLimitPepper(purpose: RateLimitPurpose) {
 
 /**
  * Creates a one-way client identifier for short-lived abuse counters without
- * storing the source IP address. Donation and assistance traffic deliberately
- * use separate secret peppers so hashes cannot be correlated across the two
- * sensitive workflows if one secret is ever rotated or exposed.
+ * storing the source IP address. Each public workflow includes a purpose prefix
+ * and an independently configurable secret so counters cannot be correlated
+ * across sensitive workflows if one secret is ever rotated or exposed.
  */
 export function getRateLimitClientHash(request: Request, purpose: RateLimitPurpose) {
   const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
@@ -75,4 +79,13 @@ export async function enforceDonationRateLimit(request: Request) {
  */
 export async function enforceAssistanceRateLimit(request: Request) {
   return claimRateLimitSlot(getRateLimitClientHash(request, "assistance"), 3);
+}
+
+/**
+ * Public page-view analytics are deliberately coarse and anonymous. The higher
+ * allowance avoids interfering with normal navigation while still bounding the
+ * database write rate from any one client. No source IP address is persisted.
+ */
+export async function enforceAnalyticsRateLimit(request: Request) {
+  return claimRateLimitSlot(getRateLimitClientHash(request, "analytics"), 300);
 }

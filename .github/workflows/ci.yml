@@ -83,7 +83,13 @@ jobs:
           git cat-file -e "${BEFORE}^{commit}" 2>/dev/null || git fetch --no-tags --depth=1 origin "$BEFORE"
           CHANGED=$(git diff --name-only "$BEFORE" "${{ github.sha }}")
           printf '%s\n' "$CHANGED"
-          if printf '%s\n' "$CHANGED" | grep -Eq '^(src/app/.*\.(tsx|css)|src/components/|src/.*\.css$|public/|e2e/|playwright\.config\.mjs$|next\.config\.ts$)'; then
+          # Protected admin list/editor TSX is not exercised by the isolated browser
+          # suite, which uses a synthetic operations console. Keep public pages,
+          # admin login, shared components/CSS, acceptance fixtures and config as
+          # browser-affecting while avoiding a second build + Chromium install for
+          # protected-admin-only rendering changes.
+          BROWSER_CHANGED=$(printf '%s\n' "$CHANGED" | grep -Ev '^src/app/admin/\(protected\)/.*\.tsx$' || true)
+          if printf '%s\n' "$BROWSER_CHANGED" | grep -Eq '^(src/app/.*\.(tsx|css)|src/components/|src/.*\.css$|public/|e2e/|playwright\.config\.mjs$|next\.config\.ts$)'; then
             echo "needed=true" >> "$GITHUB_OUTPUT"
           else
             echo "needed=false" >> "$GITHUB_OUTPUT"
