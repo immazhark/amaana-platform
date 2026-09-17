@@ -11,6 +11,7 @@ type CanonicalArticleProps = {
   blocks: ArticleBlock[];
   children?: ReactNode;
   heroVariant?: PageHeroVariant;
+  heroVisual?: ReactNode;
   heroVisualTitle?: string;
   heroVisualNote?: string;
 };
@@ -22,6 +23,7 @@ export function CanonicalArticle({
   blocks,
   children,
   heroVariant = "information",
+  heroVisual,
   heroVisualTitle,
   heroVisualNote,
 }: CanonicalArticleProps) {
@@ -36,6 +38,7 @@ export function CanonicalArticle({
           { label: "Explore Our Work", href: "/our-work" },
           { label: "Contact Amaana", href: "/contact", secondary: true },
         ]}
+        visual={heroVisual}
         visualKicker={heroVariant === "trust" ? eyebrow : "Amaana Foundation"}
         visualTitle={heroVisualTitle ?? title}
         visualNote={heroVisualNote ?? (heroVariant === "trust" ? "A public record of Amaana’s governance, accountability and responsible operating boundaries." : "Purpose, evidence and responsible service—presented with clarity.")}
