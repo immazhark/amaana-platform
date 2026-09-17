@@ -1,6 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { getDonationAcknowledgementPresentation, hashReceiptToken } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { isSameOrigin } from "@/lib/request-security";
@@ -11,6 +12,7 @@ const schema = z.object({
 });
 
 const privateHeaders = { "Cache-Control": "no-store, private" };
+const MAX_ACKNOWLEDGEMENT_JSON_BYTES = 8 * 1024;
 
 export async function POST(request: Request) {
   try {
@@ -18,7 +20,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ found: false }, { status: 403, headers: privateHeaders });
     }
 
-    const parsed = schema.safeParse(await request.json());
+    let body: unknown;
+    try {
+      body = JSON.parse(await readTextBodyWithLimit(request, MAX_ACKNOWLEDGEMENT_JSON_BYTES));
+    } catch (error) {
+      if (error instanceof RequestBodyTooLargeError) {
+        return NextResponse.json({ found: false }, { status: 413, headers: privateHeaders });
+      }
+      return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
+    }
+
+    const parsed = schema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
     }
