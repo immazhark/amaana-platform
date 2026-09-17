@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
+import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { hashReceiptToken } from "@/lib/donations";
 import { captureDonation } from "@/lib/payment-processing";
 import { prisma } from "@/lib/prisma";
@@ -8,6 +9,7 @@ import { isSameOrigin } from "@/lib/request-security";
 import { validateProductionEnvironment } from "@/lib/env";
 
 const privateHeaders = { "Cache-Control": "no-store, private" };
+const MAX_PAYMENT_JSON_BYTES = 32 * 1024;
 
 const schema = z.object({
   razorpay_order_id: z.string().min(1),
@@ -24,7 +26,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid request origin." }, { status: 403, headers: privateHeaders });
     }
 
-    const parsed = schema.safeParse(await request.json());
+    let body: unknown;
+    try {
+      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES));
+    } catch (error) {
+      if (error instanceof RequestBodyTooLargeError) {
+        return NextResponse.json({ error: "Payment confirmation payload is too large." }, { status: 413, headers: privateHeaders });
+      }
+      return NextResponse.json({ error: "Invalid payment confirmation." }, { status: 400, headers: privateHeaders });
+    }
+
+    const parsed = schema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: "Invalid payment confirmation." }, { status: 400, headers: privateHeaders });
     }
@@ -36,14 +48,20 @@ export async function POST(request: Request) {
 
     const donation = await prisma.donation.findUnique({
       where: { providerOrderId: input.razorpay_order_id },
-      select: { id: true, receiptTokenHash: true, referenceNumber: true, status: true },
+      select: { id: true, amount: true, receiptTokenHash: true, referenceNumber: true, status: true },
     });
     if (!donation || donation.receiptTokenHash !== hashReceiptToken(input.receiptToken)) {
       return NextResponse.json({ error: "Donation record not found." }, { status: 404, headers: privateHeaders });
     }
 
     const payment = await fetchRazorpayPayment(input.razorpay_payment_id);
-    if (payment.order_id !== input.razorpay_order_id || payment.currency !== "INR") {
+    const expectedAmountPaise = donation.amount.mul(100).toNumber();
+    if (
+      payment.order_id !== input.razorpay_order_id ||
+      payment.currency !== "INR" ||
+      !Number.isSafeInteger(expectedAmountPaise) ||
+      payment.amount !== expectedAmountPaise
+    ) {
       throw new Error("Payment verification mismatch");
     }
 
@@ -59,10 +77,22 @@ export async function POST(request: Request) {
       });
     }
 
+    // Another reconciliation path (most commonly a webhook) may have won the
+    // race while this browser confirmation was in flight. Always respond with
+    // the persisted donation state instead of assuming our guarded transition
+    // changed the row.
+    const currentDonation = await prisma.donation.findUnique({
+      where: { id: donation.id },
+      select: { status: true },
+    });
+    if (!currentDonation) {
+      throw new Error("Donation disappeared during payment confirmation");
+    }
+
     return NextResponse.json(
       {
         referenceNumber: donation.referenceNumber,
-        status: isCaptured ? "CAPTURED" : payment.status === "authorized" ? "AUTHORIZED" : donation.status,
+        status: currentDonation.status,
       },
       { headers: privateHeaders },
     );
