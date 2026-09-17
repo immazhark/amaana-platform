@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { retentionDeletionConfirmed } from "@/lib/retention-safety";
 import { deletePrivateDocumentObject } from "@/lib/storage";
 
 const allowedDecisions = new Set(["RETAIN", "PLACE_HOLD", "RELEASE_HOLD", "DELETE"]);
@@ -40,6 +41,9 @@ export async function reviewDocumentRetention(formData: FormData) {
   const documentId = String(formData.get("documentId") ?? "");
   const decision = String(formData.get("decision") ?? "");
   if (!allowedDecisions.has(decision)) throw new Error("Invalid retention decision");
+  if (!retentionDeletionConfirmed(decision, String(formData.get("deleteConfirmation") ?? ""))) {
+    throw new Error("Type DELETE to confirm permanent evidence deletion");
+  }
   const reason = requiredText(formData.get("reason"), "Retention reason", 2000);
   const reviewAfter = optionalReviewDate(formData.get("reviewAfter"));
 
