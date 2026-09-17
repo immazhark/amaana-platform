@@ -53,6 +53,16 @@ function confirmationRequest(headers?: HeadersInit) {
   });
 }
 
+function storedDonation() {
+  return {
+    id: "donation_123",
+    amount: { mul: () => ({ toNumber: () => 50000 }) },
+    receiptTokenHash: "hashed-receipt-token",
+    referenceNumber: "AMN-123",
+    status: "CREATED",
+  };
+}
+
 describe("donation confirmation persisted status", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -72,12 +82,7 @@ describe("donation confirmation persisted status", () => {
     "returns %s when another reconciliation path already persisted that state",
     async persistedStatus => {
       mocks.findUnique
-        .mockResolvedValueOnce({
-          id: "donation_123",
-          receiptTokenHash: "hashed-receipt-token",
-          referenceNumber: "AMN-123",
-          status: "CREATED",
-        })
+        .mockResolvedValueOnce(storedDonation())
         .mockResolvedValueOnce({ status: persistedStatus });
 
       const response = await POST(confirmationRequest());
@@ -98,5 +103,25 @@ describe("donation confirmation persisted status", () => {
     expect(body).toEqual({ error: "Payment confirmation payload is too large." });
     expect(mocks.verifyCheckoutSignature).not.toHaveBeenCalled();
     expect(mocks.fetchRazorpayPayment).not.toHaveBeenCalled();
+  });
+
+  it("does not authorize a provider payment whose amount differs from the stored donation", async () => {
+    mocks.findUnique.mockResolvedValueOnce(storedDonation());
+    mocks.fetchRazorpayPayment.mockResolvedValueOnce({
+      id: "pay_123",
+      order_id: "order_123",
+      amount: 49900,
+      currency: "INR",
+      status: "authorized",
+      captured: false,
+    });
+
+    const response = await POST(confirmationRequest());
+    const body = await response.json();
+
+    expect(response.status).toBe(500);
+    expect(body).toEqual({ error: "Payment is being verified. Please retain your payment confirmation." });
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
   });
 });
