@@ -207,3 +207,37 @@ PR #22 and its Railway deployment are verified complete. No open PRs exist. Prio
 - Winter Drive: 234 Winter Kits / 234 beneficiaries; phase figures are subsets only.
 - Taleem Nazira + Hifdh: 25 students combined as of September 2026.
 - Canonical programme taxonomy contains exactly five umbrella categories.
+
+---
+
+## 2026-09-17 — User-established audit & final-completion master directive
+
+**Outgoing:** Codex unavailable due usage limit  
+**Incoming:** ChatGPT  
+**State:** `CHATGPT_ACTIVE`  
+**Integration branch:** `phase-public-site-rebuild`  
+**Master directive:** `docs/AMAANA_PLATFORM_AUDIT_COMPLETION_MASTER_PROMPT.md`
+
+### Completed
+
+- User established a durable six-phase system-orchestrator brief for final platform completion: architecture/codebase audit, security/payment hardening, performance optimization, world-class UX/accessibility, backend/data-integrity excellence, and final feature/SRE delivery.
+- Saved the directive in-repo and linked it from `docs/AI_ACTIVE_WORK.md`.
+- Preserved existing canonical factual locks, privacy/consent gates, domestic-only donation policy, approved visual direction, CI/bundle constraints, and production-cutover restrictions as higher-order project safeguards.
+- Recorded current-tool interpretation: Canvas is deprecated; use repository-native edits/Work-compatible flows instead. Compliance/performance/accessibility goals require measured evidence rather than unsupported certification claims.
+
+### In progress
+
+- Continue platform audit/completion from the actual repository state without restarting the project.
+- Keep the exact approved six-background-SVG replacement isolated until a byte-safe transport path is available; never regenerate, optimize, minify, trace, or reinterpret the locked artwork.
+
+### Next exact action
+
+- Reconstruct the latest repository/CI/Railway state after these continuity commits.
+- Begin Phase 1 comprehensive codebase/architecture audit and produce a concrete gap analysis tied to existing implementation, tests, and launch-readiness evidence.
+- Implement safe findings incrementally through focused branches/commits while preserving the single-writer protocol.
+
+### Known risks / do-not-touch areas
+
+- No merge to `main`, production DNS/indexing change, live Razorpay activation, real financial transaction, destructive production data operation, or unsupported compliance claim without explicit authorization/evidence.
+- Do not introduce Redis/Kubernetes/Terraform or other infrastructure merely to satisfy a checklist; justify additions from measured need.
+- Do not claim WCAG AAA, PCI-DSS certification, sub-100ms performance, 95+ performance scores, or >90% coverage without evidence.
