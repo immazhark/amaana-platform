@@ -1,5 +1,6 @@
+import { Prisma } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { getRateLimitClientHash } from "./request-security";
+import { getRateLimitClientHash, isRetryableRateLimitConflict } from "./request-security";
 
 const originalEnv = { ...process.env };
 
@@ -19,6 +20,13 @@ afterEach(() => {
 function requestFor(address: string) {
   return new Request("https://amaanafoundation.org/", {
     headers: { "x-forwarded-for": `${address}, 10.0.0.1` },
+  });
+}
+
+function prismaError(code: string) {
+  return new Prisma.PrismaClientKnownRequestError("test error", {
+    code,
+    clientVersion: "test",
   });
 }
 
@@ -48,5 +56,16 @@ describe("rate-limit client hashing", () => {
     expect(() => getRateLimitClientHash(requestFor("203.0.113.10"), "assistance")).toThrow(
       /ASSISTANCE_TOKEN_PEPPER/,
     );
+  });
+});
+
+describe("rate-limit transaction retries", () => {
+  it("recognizes Prisma transaction write conflicts as retryable", () => {
+    expect(isRetryableRateLimitConflict(prismaError("P2034"))).toBe(true);
+  });
+
+  it("does not retry unrelated database errors", () => {
+    expect(isRetryableRateLimitConflict(prismaError("P2002"))).toBe(false);
+    expect(isRetryableRateLimitConflict(new Error("network failure"))).toBe(false);
   });
 });

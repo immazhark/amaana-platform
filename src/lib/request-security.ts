@@ -1,7 +1,11 @@
 import { createHash } from "node:crypto";
+import { Prisma } from "@prisma/client";
 import { prisma } from "./prisma";
 
 type RateLimitPurpose = "donation" | "assistance";
+
+const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
+const SERIALIZABLE_RETRY_LIMIT = 3;
 
 export function isSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
@@ -35,26 +39,49 @@ export function getRateLimitClientHash(request: Request, purpose: RateLimitPurpo
   return createHash("sha256").update(`${purpose}:${address}:${pepper}`).digest("hex");
 }
 
+export function isRetryableRateLimitConflict(error: unknown) {
+  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2034";
+}
+
+async function claimRateLimitSlot(clientHash: string, limit: number) {
+  for (let attempt = 0; attempt < SERIALIZABLE_RETRY_LIMIT; attempt += 1) {
+    try {
+      return await prisma.$transaction(
+        async tx => {
+          const since = new Date(Date.now() - RATE_LIMIT_WINDOW_MS);
+          const attempts = await tx.donationAttempt.count({
+            where: {
+              clientHash,
+              createdAt: { gte: since },
+            },
+          });
+
+          if (attempts >= limit) return false;
+
+          await tx.donationAttempt.create({ data: { clientHash } });
+          return true;
+        },
+        { isolationLevel: Prisma.TransactionIsolationLevel.Serializable },
+      );
+    } catch (error) {
+      if (!isRetryableRateLimitConflict(error)) throw error;
+      if (attempt === SERIALIZABLE_RETRY_LIMIT - 1) return false;
+    }
+  }
+
+  return false;
+}
+
 export async function enforceDonationRateLimit(request: Request) {
-  const clientHash = getRateLimitClientHash(request, "donation");
-  const since = new Date(Date.now() - 60 * 60 * 1000);
-  const attempts = await prisma.donationAttempt.count({ where: { clientHash, createdAt: { gte: since } } });
-  if (attempts >= 10) return false;
-  await prisma.donationAttempt.create({ data: { clientHash } });
-  return true;
+  return claimRateLimitSlot(getRateLimitClientHash(request, "donation"), 10);
 }
 
 /**
  * Assistance submissions can contain sensitive documents, so this endpoint is
  * intentionally stricter than donations. We reuse DonationAttempt as a generic
- * hashed request-attempt ledger for now while keeping purpose and secret-key
- * separation so the counters cannot be correlated across workflows.
+ * hashed request-attempt ledger while keeping purpose and secret-key separation
+ * so the counters cannot be correlated across workflows.
  */
 export async function enforceAssistanceRateLimit(request: Request) {
-  const clientHash = getRateLimitClientHash(request, "assistance");
-  const since = new Date(Date.now() - 60 * 60 * 1000);
-  const attempts = await prisma.donationAttempt.count({ where: { clientHash, createdAt: { gte: since } } });
-  if (attempts >= 3) return false;
-  await prisma.donationAttempt.create({ data: { clientHash } });
-  return true;
+  return claimRateLimitSlot(getRateLimitClientHash(request, "assistance"), 3);
 }
