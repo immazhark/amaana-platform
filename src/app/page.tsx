@@ -42,7 +42,7 @@ export default async function HomePage() {
     causes.map(cause => [
       cause.slug,
       cause.initiatives.find(initiative => initiative.mediaAssets[0])?.mediaAssets[0],
-    ]),
+    ] as const),
   );
 
   const heroVisual = heroDrive && heroMedia ? (
