@@ -1,6 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
+import { PublicMedia } from "@/components/public-media";
+import { getGetInvolvedHeroMedia } from "@/lib/get-involved-media";
+
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: "Get Involved",
@@ -57,7 +61,9 @@ const waysToHelp = [
   },
 ] as const;
 
-export default function GetInvolvedPage() {
+export default async function GetInvolvedPage() {
+  const heroMedia = await getGetInvolvedHeroMedia();
+
   return (
     <div className="v2-home">
       <PageHero
@@ -69,9 +75,10 @@ export default function GetInvolvedPage() {
           { label: "Sponsor education", href: "/get-involved/sponsor-education" },
           { label: "Connect with Amaana", href: "/contact", secondary: true },
         ]}
+        visual={heroMedia ? <PublicMedia asset={heroMedia} priority /> : undefined}
         visualKicker="Five ways to take part"
         visualTitle="Time. Skills. Support. Care."
-        visualNote="Choose a path that is useful, responsible and realistic for the work that is happening now."
+        visualNote="Documentary media from Amaana's published work. Choose a path that is useful, responsible and realistic for what is happening now."
       />
 
       <section className="v2-intent" aria-labelledby="ways-to-help-title">
