@@ -2,7 +2,9 @@ import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { captureDonation } from "@/lib/payment-processing";
 import { prisma } from "@/lib/prisma";
+import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { verifyWebhookSignature } from "@/lib/razorpay";
+import { calculateRefundAccounting } from "@/lib/refund-accounting";
 import { validateProductionEnvironment } from "@/lib/env";
 import { isPrismaUniqueConstraintError } from "@/lib/webhook-idempotency";
 
@@ -22,6 +24,14 @@ type RazorpayWebhook = {
     refund?: { entity: RazorpayEntity };
   };
 };
+
+function decimalRupeesToPaise(value: { mul: (amount: number) => { toNumber: () => number } }) {
+  const paise = value.mul(100).toNumber();
+  if (!Number.isSafeInteger(paise) || paise < 0) {
+    throw new Error("Stored financial amount cannot be represented safely in paise");
+  }
+  return paise;
+}
 
 export async function POST(request: Request) {
   const rawBody = await request.text();
@@ -94,16 +104,17 @@ export async function POST(request: Request) {
     } else if (
       payload.event === "refund.processed" &&
       refund?.payment_id &&
-      Number.isInteger(refund.amount) &&
+      Number.isSafeInteger(refund.amount) &&
       refund.amount > 0
     ) {
-      await prisma.$transaction(async tx => {
+      await withSerializableTransactionRetry(async tx => {
         const donation = await tx.donation.findUnique({
           where: { providerPaymentId: refund.payment_id },
           select: {
             id: true,
             appealId: true,
             amount: true,
+            refundedAmount: true,
           },
         });
 
@@ -118,27 +129,39 @@ export async function POST(request: Request) {
 
         if (!donation) return;
 
-        const refundAmount = refund.amount / 100;
-        const updated = await tx.donation.update({
-          where: { id: donation.id },
-          data: { refundedAmount: { increment: refundAmount } },
-          select: {
-            refundedAmount: true,
-            amount: true,
-          },
+        const appeal = await tx.appeal.findUnique({
+          where: { id: donation.appealId },
+          select: { amountRaised: true },
+        });
+        if (!appeal) {
+          throw new Error("Refund donation is missing its appeal");
+        }
+
+        const accounting = calculateRefundAccounting({
+          donationAmountPaise: decimalRupeesToPaise(donation.amount),
+          refundedAmountPaise: decimalRupeesToPaise(donation.refundedAmount),
+          appealRaisedPaise: decimalRupeesToPaise(appeal.amountRaised),
+          requestedRefundPaise: refund.amount,
         });
 
-        if (updated.refundedAmount.greaterThanOrEqualTo(updated.amount)) {
+        if (accounting.donationRefundPaise > 0) {
           await tx.donation.update({
             where: { id: donation.id },
-            data: { status: "REFUNDED", refundedAt: new Date() },
+            data: {
+              refundedAmount: { increment: accounting.donationRefundPaise / 100 },
+              ...(accounting.fullyRefunded
+                ? { status: "REFUNDED" as const, refundedAt: new Date() }
+                : {}),
+            },
           });
         }
 
-        await tx.appeal.update({
-          where: { id: donation.appealId },
-          data: { amountRaised: { decrement: refundAmount } },
-        });
+        if (accounting.appealRefundPaise > 0) {
+          await tx.appeal.update({
+            where: { id: donation.appealId },
+            data: { amountRaised: { decrement: accounting.appealRefundPaise / 100 } },
+          });
+        }
       });
     } else {
       await prisma.paymentEvent.create({
