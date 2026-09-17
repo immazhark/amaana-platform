@@ -40,10 +40,10 @@ vi.mock("@/lib/env", () => ({
 
 import { POST } from "./route";
 
-function confirmationRequest() {
+function confirmationRequest(headers?: HeadersInit) {
   return new Request("https://amaana.example/api/donations/confirm", {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", ...headers },
     body: JSON.stringify({
       razorpay_order_id: "order_123",
       razorpay_payment_id: "pay_123",
@@ -89,4 +89,14 @@ describe("donation confirmation persisted status", () => {
       expect(mocks.captureDonation).not.toHaveBeenCalled();
     },
   );
+
+  it("rejects an oversized confirmation payload before payment verification", async () => {
+    const response = await POST(confirmationRequest({ "Content-Length": String(32 * 1024 + 1) }));
+    const body = await response.json();
+
+    expect(response.status).toBe(413);
+    expect(body).toEqual({ error: "Payment confirmation payload is too large." });
+    expect(mocks.verifyCheckoutSignature).not.toHaveBeenCalled();
+    expect(mocks.fetchRazorpayPayment).not.toHaveBeenCalled();
+  });
 });
