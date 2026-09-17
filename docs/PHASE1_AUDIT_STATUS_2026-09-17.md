@@ -40,4 +40,4 @@ The six approved SVG background files are verified locally but contain large emb
 
 ## First Phase 1 implementation fix
 
-Commit `11acbaebdbcc17e330baa43c3adcf7d6b197fb01` hardens the Razorpay webhook path so failed/refund state mutations and provider-event claiming occur atomically. Concurrent duplicate deliveries now roll back the losing transaction, and duplicate unique-key conflicts are acknowledged only after re-reading the exact `providerEventId` row. The captured-payment path remains protected by the existing idempotent `captureDonation` state transition.
+The Razorpay webhook hardening on this branch makes failed/refund state mutation and provider-event claiming atomic. Concurrent duplicate deliveries now roll back the losing transaction, and duplicate unique-key conflicts are acknowledged only after re-reading the exact `providerEventId` row. The captured-payment path remains protected by the existing idempotent `captureDonation` state transition. Regression coverage verifies that only Prisma P2002 unique-constraint errors are classified as duplicate-delivery candidates.
