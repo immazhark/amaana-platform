@@ -11,6 +11,7 @@ describe("admin landing routing", () => {
     expect(adminHomePathForPermissions(["donation.view"])).toBe("/admin/donations");
     expect(adminHomePathForPermissions(["content.view"])).toBe("/admin/media");
     expect(adminHomePathForPermissions(["appeal.view"])).toBe("/admin/appeals");
+    expect(adminHomePathForPermissions(["rbac.manage"])).toBe("/admin/audit");
   });
 
   it("fails closed when an account has no recognized admin permission", () => {
@@ -32,6 +33,11 @@ describe("admin navigation visibility", () => {
       .toEqual([]);
   });
 
+  it("shows audit history only to the RBAC manager", () => {
+    expect(adminNavigationForPermissions(["rbac.manage"]))
+      .toEqual([{ permission: "rbac.manage", path: "/admin/audit", label: "Audit history" }]);
+  });
+
   it("keeps the canonical operations order for a full administrator", () => {
     expect(adminNavigationForPermissions([
       "donation.view",
@@ -39,12 +45,14 @@ describe("admin navigation visibility", () => {
       "content.view",
       "appeal.view",
       "assistance.view",
+      "rbac.manage",
     ]).map(item => item.label)).toEqual([
       "Assistance queue",
       "Appeals",
       "Media review",
       "Retention review",
       "Donations",
+      "Audit history",
     ]);
   });
 });
