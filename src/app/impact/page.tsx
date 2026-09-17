@@ -34,6 +34,7 @@ export default async function ImpactPage() {
   });
   const initiativesWithMetrics = initiatives.filter(item => item.primaryMetric && item.primaryMetricLabel);
   const initiativesWithMedia = initiatives.filter(item => item.mediaAssets.length > 0);
+  const heroMedia = initiativesWithMedia[0]?.mediaAssets[0] ?? null;
 
   return (
     <div className="v2-home v2-impact-page">
@@ -46,7 +47,7 @@ export default async function ImpactPage() {
           { label: "Follow the evidence", href: "#evidence" },
           { label: "How we report", href: "/transparency", secondary: true },
         ]}
-        visual={(
+        visual={heroMedia ? <PublicMedia asset={heroMedia} /> : (
           <div className="page-hero__visual-fallback page-hero__visual-fallback--impact">
             <span>Evidence chain</span>
             <strong>Need → Trust → Action → Outcome</strong>
