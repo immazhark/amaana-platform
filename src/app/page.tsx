@@ -38,6 +38,12 @@ export default async function HomePage() {
   const fieldDrives = featured.filter(item => ["qurbani-meat-distribution-2026", "dates-distribution-2026"].includes(item.slug));
   const heroDrive = fieldDrives.find(item => item.slug === "qurbani-meat-distribution-2026");
   const heroMedia = heroDrive?.mediaAssets[0];
+  const programmeMedia = new Map(
+    causes.map(cause => [
+      cause.slug,
+      cause.initiatives.find(initiative => initiative.mediaAssets[0])?.mediaAssets[0],
+    ]),
+  );
 
   const heroVisual = heroDrive && heroMedia ? (
     <div className="v3-hero-media">
@@ -109,17 +115,26 @@ export default async function HomePage() {
           </div>
 
           <div className="v3-work-list">
-            {programmeCategories.map((category, index) => (
-              <Link className="v3-work-row" href={programmeCategoryPath(category.slug)} key={category.slug}>
-                <div className="work-thumb"><WorkVisualPlaceholder label={category.title} /></div>
-                <small>{String(index + 1).padStart(2, '0')} · Our Work</small>
-                <h3>{category.title}</h3>
-                <div className="v3-work-metric">
-                  <span>{category.summary}</span>
-                </div>
-                <span className="v3-arrow" aria-hidden="true">↗</span>
-              </Link>
-            ))}
+            {programmeCategories.map((category, index) => {
+              const media = programmeMedia.get(category.slug);
+              return (
+                <Link className="v3-work-row" href={programmeCategoryPath(category.slug)} key={category.slug}>
+                  <div className="work-thumb">
+                    {media ? (
+                      <PublicMedia asset={media} sizes="(max-width: 600px) 5rem, (max-width: 900px) 5.5rem, 7rem" />
+                    ) : (
+                      <WorkVisualPlaceholder label={category.title} />
+                    )}
+                  </div>
+                  <small>{String(index + 1).padStart(2, '0')} · Our Work</small>
+                  <h3>{category.title}</h3>
+                  <div className="v3-work-metric">
+                    <span>{category.summary}</span>
+                  </div>
+                  <span className="v3-arrow" aria-hidden="true">↗</span>
+                </Link>
+              );
+            })}
           </div>
         </div>
       </section>
