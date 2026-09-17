@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
+import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { captureDonation } from "@/lib/payment-processing";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
@@ -7,6 +8,8 @@ import { verifyWebhookSignature } from "@/lib/razorpay";
 import { calculateRefundAccounting } from "@/lib/refund-accounting";
 import { validateProductionEnvironment } from "@/lib/env";
 import { isPrismaUniqueConstraintError } from "@/lib/webhook-idempotency";
+
+const MAX_RAZORPAY_WEBHOOK_BYTES = 256 * 1024;
 
 type RazorpayEntity = {
   id: string;
@@ -34,12 +37,12 @@ function decimalRupeesToPaise(value: { mul: (amount: number) => { toNumber: () =
 }
 
 export async function POST(request: Request) {
-  const rawBody = await request.text();
   const signature = request.headers.get("x-razorpay-signature") ?? "";
   let providerEventId: string | null = null;
 
   try {
     validateProductionEnvironment();
+    const rawBody = await readTextBodyWithLimit(request, MAX_RAZORPAY_WEBHOOK_BYTES);
 
     if (!verifyWebhookSignature(rawBody, signature)) {
       return new NextResponse("Invalid signature", { status: 401 });
@@ -175,6 +178,10 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) {
+      return new NextResponse("Webhook payload too large", { status: 413 });
+    }
+
     if (providerEventId && isPrismaUniqueConstraintError(error)) {
       const existing = await prisma.paymentEvent.findUnique({
         where: { providerEventId },
