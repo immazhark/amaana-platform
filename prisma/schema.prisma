@@ -392,6 +392,7 @@ model Appeal {
   @@index([category])
   @@index([causeId])
   @@index([initiativeId])
+  @@index([updatedAt])
 }
 
 model Donation {
@@ -422,6 +423,8 @@ model Donation {
   updatedAt           DateTime       @updatedAt
   @@index([appealId, status, createdAt])
   @@index([donorEmail, createdAt])
+  @@index([status, createdAt])
+  @@index([createdAt])
 }
 
 model PaymentEvent {
@@ -498,6 +501,7 @@ model AssistanceRequest {
   updatedAt         DateTime                 @updatedAt
   @@index([status, createdAt])
   @@index([phone])
+  @@index([createdAt])
 }
 
 model AssistanceVerification {
