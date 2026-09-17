@@ -13,6 +13,11 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+vi.mock("@/lib/public-media", () => ({
+  canRenderPublicMedia: (asset: { kind: string; publicUrl?: string | null; altText?: string | null }) =>
+    asset.kind !== "VIDEO" && Boolean(asset.publicUrl?.startsWith("https://") && (asset.kind !== "IMAGE" || asset.altText?.trim())),
+}));
+
 vi.mock("@/lib/storage", () => ({
   isManagedPublicMediaKey: (value: string) => /^\d{4}\/[0-9a-f-]{36}\.(?:pdf|jpg|png|webp)$/i.test(value),
   getPublicMediaObject: mocks.getPublicMediaObject,
