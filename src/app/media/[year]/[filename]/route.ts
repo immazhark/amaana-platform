@@ -55,7 +55,9 @@ export async function GET(
     if (object.etag) headers.set("ETag", object.etag);
     if (object.lastModified) headers.set("Last-Modified", object.lastModified.toUTCString());
 
-    return new Response(object.bytes, { status: 200, headers });
+    const body = new ArrayBuffer(object.bytes.byteLength);
+    new Uint8Array(body).set(object.bytes);
+    return new Response(body, { status: 200, headers });
   } catch (error) {
     if (error instanceof Error && (error.name === "NoSuchKey" || error.name === "NotFound")) return notFound();
     console.error("Unable to serve approved public media", error);
