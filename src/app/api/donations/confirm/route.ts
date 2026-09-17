@@ -48,14 +48,20 @@ export async function POST(request: Request) {
 
     const donation = await prisma.donation.findUnique({
       where: { providerOrderId: input.razorpay_order_id },
-      select: { id: true, receiptTokenHash: true, referenceNumber: true, status: true },
+      select: { id: true, amount: true, receiptTokenHash: true, referenceNumber: true, status: true },
     });
     if (!donation || donation.receiptTokenHash !== hashReceiptToken(input.receiptToken)) {
       return NextResponse.json({ error: "Donation record not found." }, { status: 404, headers: privateHeaders });
     }
 
     const payment = await fetchRazorpayPayment(input.razorpay_payment_id);
-    if (payment.order_id !== input.razorpay_order_id || payment.currency !== "INR") {
+    const expectedAmountPaise = donation.amount.mul(100).toNumber();
+    if (
+      payment.order_id !== input.razorpay_order_id ||
+      payment.currency !== "INR" ||
+      !Number.isSafeInteger(expectedAmountPaise) ||
+      payment.amount !== expectedAmountPaise
+    ) {
       throw new Error("Payment verification mismatch");
     }
 
