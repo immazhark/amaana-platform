@@ -1,10 +1,10 @@
 import { createHash } from "node:crypto";
-import { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { captureDonation } from "@/lib/payment-processing";
 import { prisma } from "@/lib/prisma";
 import { verifyWebhookSignature } from "@/lib/razorpay";
 import { validateProductionEnvironment } from "@/lib/env";
+import { isPrismaUniqueConstraintError } from "@/lib/webhook-idempotency";
 
 type RazorpayEntity = {
   id: string;
@@ -22,10 +22,6 @@ type RazorpayWebhook = {
     refund?: { entity: RazorpayEntity };
   };
 };
-
-function isUniqueConstraintError(error: unknown) {
-  return error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002";
-}
 
 export async function POST(request: Request) {
   const rawBody = await request.text();
@@ -56,10 +52,6 @@ export async function POST(request: Request) {
     const refund = payload.payload?.refund?.entity;
 
     if (payload.event === "payment.captured" && payment?.order_id && payment.currency === "INR") {
-      // captureDonation is independently idempotent: only CREATED/AUTHORIZED/FAILED
-      // donations can transition to CAPTURED and increment appeal totals. If two
-      // copies of the same webhook race, one capture becomes a no-op and the
-      // unique PaymentEvent row below resolves the duplicate delivery.
       const result = await captureDonation(payment.order_id, payment.id, payment.amount);
       await prisma.paymentEvent.create({
         data: {
@@ -70,9 +62,6 @@ export async function POST(request: Request) {
         },
       });
     } else if (payload.event === "payment.failed" && payment?.order_id) {
-      // Claim the provider event inside the same transaction as the state change.
-      // A concurrent duplicate cannot commit a second donation mutation because
-      // providerEventId is unique and the losing transaction rolls back entirely.
       await prisma.$transaction(async tx => {
         const donation = await tx.donation.findUnique({
           where: { providerOrderId: payment.order_id },
@@ -163,12 +152,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ received: true });
   } catch (error) {
-    // Razorpay retries webhooks and can deliver the same event concurrently.
-    // If another request committed this providerEventId first, treat the losing
-    // unique-key transaction as an acknowledged duplicate instead of returning
-    // 500 and causing needless retries. Re-read the row so unrelated P2002
-    // errors are never accidentally swallowed.
-    if (providerEventId && isUniqueConstraintError(error)) {
+    if (providerEventId && isPrismaUniqueConstraintError(error)) {
       const existing = await prisma.paymentEvent.findUnique({
         where: { providerEventId },
         select: { id: true },
