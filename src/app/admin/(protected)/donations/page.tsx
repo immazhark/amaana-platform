@@ -2,33 +2,42 @@ import Link from "next/link";
 import { DonationStatus } from "@prisma/client";
 import { requirePermission } from "@/lib/auth";
 import { formatINR } from "@/lib/appeals";
+import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { prisma } from "@/lib/prisma";
 
-type Props = { searchParams: Promise<{ status?: string }> };
+type Props = { searchParams: Promise<{ status?: string; page?: string }> };
 
 export default async function DonationsPage({ searchParams }: Props) {
   await requirePermission("donation.view");
-  const { status } = await searchParams;
+  const { status, page: pageParam } = await searchParams;
   const selected = Object.values(DonationStatus).includes(status as DonationStatus)
     ? status as DonationStatus
     : undefined;
+  const where = selected ? { status: selected } : undefined;
 
-  const [donations, reconciliation] = await Promise.all([
-    prisma.donation.findMany({
-      where: selected ? { status: selected } : undefined,
-      include: { appeal: { select: { title: true } } },
-      orderBy: { createdAt: "desc" },
-      take: 200,
-    }),
+  const [totalItems, reconciliation] = await Promise.all([
+    prisma.donation.count({ where }),
     prisma.donation.aggregate({
       where: { status: { in: ["CAPTURED", "REFUNDED"] } },
       _sum: { amount: true, refundedAmount: true },
     }),
   ]);
+  const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
+  const donations = await prisma.donation.findMany({
+    where,
+    include: { appeal: { select: { title: true } } },
+    orderBy: { createdAt: "desc" },
+    skip: pagination.skip,
+    take: pagination.pageSize,
+  });
 
   const grossCaptured = reconciliation._sum.amount?.toNumber() ?? 0;
   const refunded = reconciliation._sum.refundedAmount?.toNumber() ?? 0;
   const netRetained = Math.max(0, grossCaptured - refunded);
+  const pageHref = (targetPage: number) => ({
+    pathname: "/admin/donations",
+    query: { ...(selected ? { status: selected } : {}), page: targetPage },
+  });
 
   return <>
     <div className="admin-heading">
@@ -59,5 +68,10 @@ export default async function DonationsPage({ searchParams }: Props) {
       </table>
       {donations.length === 0 && <p className="empty-state">No donations match this view.</p>}
     </div>
+    <nav className="filter-row" aria-label="Donation pagination">
+      {pagination.hasPrevious && <Link href={pageHref(pagination.page - 1)}>Previous</Link>}
+      <span>Page {pagination.page} of {pagination.totalPages} · {pagination.totalItems} records</span>
+      {pagination.hasNext && <Link href={pageHref(pagination.page + 1)}>Next</Link>}
+    </nav>
   </>;
 }
