@@ -19,6 +19,11 @@ const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "6mb",
+    },
+  },
   async redirects() {
     return [
       { source: "/our-work/winter-drive-2025-26", destination: "/our-work/winter-relief", permanent: true },
