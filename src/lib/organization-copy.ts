@@ -25,7 +25,7 @@ export const governanceCopy={title:slice(p19,'## Page Title','## Intro'),intro:s
  {title:'Mohammed Mazhar Khan',paragraphs:['Founder & Managing Trustee','Leads Amaana’s overall direction, public accountability and primary operational/content approval.']},
  {title:'Mohammed Ather Khan',paragraphs:['Trustee & Treasurer','Supports governance, financial oversight and backup administrative responsibility.']},
  {title:'Syed Uqba Ali',paragraphs:['Trustee','Part of Amaana Foundation’s formal trustee structure.']},
- {title:'Registration & Compliance',paragraphs:['Registered charitable trust · 23 February 2024 · BK-4, CS No. 59/2024, Hyderabad, Telangana.','NGO DARPAN: TS/2024/0403215 · registered 21 May 2024.','Section 80G: provisional approval via Form 10AC dated 26 January 2026, covering AY 2026–27 through AY 2028–29.','Current 12A / 12AB status awaits confirmation from Amaana’s Chartered Accountant. Amaana Foundation is not FCRA-registered. Public fundraising remains domestic only.']}
+ {title:'Registration & Compliance',paragraphs:['Registered charitable trust · 23 February 2024 · BK-4, CS No. 59/2024, Hyderabad, Telangana.','NGO DARPAN: TS/2024/0403215 · registered 21 May 2024.','Section 80G: provisional approval via Form 10AC dated 26 January 2026, covering AY 2026–27 through AY 2028–29.','Section 12A / 12AB: provisional approval is in place. Amaana Foundation is not FCRA-registered. Public fundraising remains domestic only.']}
 ]};
 export function simplePage(number:number,copyMarker='## Copy'){
  const s=masterSection(number);return {title:slice(s,'## Page Title',s.includes('## Intro')?'## Intro':copyMarker),intro:slice(s,s.includes('## Intro')?'## Intro':copyMarker,'\n## ')};
