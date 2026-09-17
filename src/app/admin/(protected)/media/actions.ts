@@ -59,22 +59,33 @@ export async function createMediaAsset(formData: FormData) {
 
   const uploaded = file ? await uploadPublicMediaFile(file) : null;
 
-  let asset;
   try {
-    asset = await prisma.mediaAsset.create({
-      data: {
-        kind: inferredKind,
-        title: optionalText(formData.get("title"), 160),
-        publicUrl: manualUrl ?? uploaded?.publicUrl ?? null,
-        storageKey: uploaded?.objectKey ?? null,
-        altText,
-        caption: optionalText(formData.get("caption"), 1000),
-        sourcePath: optionalText(formData.get("sourcePath"), 500) ?? uploaded?.originalName ?? null,
-        sourceYear: Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null,
-        sortOrder: Number.isInteger(sortOrderRaw) ? sortOrderRaw : 0,
-        isPublic: false,
-        ...target,
-      },
+    await prisma.$transaction(async tx => {
+      const asset = await tx.mediaAsset.create({
+        data: {
+          kind: inferredKind,
+          title: optionalText(formData.get("title"), 160),
+          publicUrl: manualUrl ?? uploaded?.publicUrl ?? null,
+          storageKey: uploaded?.objectKey ?? null,
+          altText,
+          caption: optionalText(formData.get("caption"), 1000),
+          sourcePath: optionalText(formData.get("sourcePath"), 500) ?? uploaded?.originalName ?? null,
+          sourceYear: Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null,
+          sortOrder: Number.isInteger(sortOrderRaw) ? sortOrderRaw : 0,
+          isPublic: false,
+          ...target,
+        },
+      });
+
+      await tx.auditEvent.create({
+        data: {
+          actorId: user.id,
+          action: "media.created",
+          entityType: "MediaAsset",
+          entityId: asset.id,
+          metadata: { target, uploaded: Boolean(uploaded), hasPublicUrl: Boolean(asset.publicUrl) },
+        },
+      });
     });
   } catch (error) {
     if (uploaded?.objectKey) {
@@ -87,7 +98,6 @@ export async function createMediaAsset(formData: FormData) {
     throw error;
   }
 
-  await prisma.auditEvent.create({ data: { actorId: user.id, action: "media.created", entityType: "MediaAsset", entityId: asset.id, metadata: { target, uploaded: Boolean(uploaded), hasPublicUrl: Boolean(asset.publicUrl) } } });
   revalidatePath("/admin/media");
 }
 
@@ -149,6 +159,58 @@ export async function setMediaPublication(formData: FormData) {
       prisma.auditEvent.create({ data: { actorId: user.id, action: "media.unpublished", entityType: "MediaAsset", entityId: id } }),
     ]);
   }
+
+  revalidatePath("/admin/media");
+  revalidatePath("/");
+  revalidatePath("/our-work");
+  revalidatePath("/impact");
+  revalidatePath("/stories");
+  revalidatePath("/faith-and-reflections");
+}
+
+export async function deleteMediaAsset(formData: FormData) {
+  const user = await requirePermission("content.approve");
+  const id = String(formData.get("id") ?? "").trim();
+  const confirmation = String(formData.get("confirm") ?? "").trim();
+  if (!id) throw new Error("Media record is required");
+  if (confirmation !== "DELETE") throw new Error("Type DELETE to confirm permanent media deletion");
+
+  const asset = await prisma.mediaAsset.findUniqueOrThrow({
+    where: { id },
+    select: {
+      id: true,
+      isPublic: true,
+      storageKey: true,
+      publicUrl: true,
+      title: true,
+      sourcePath: true,
+    },
+  });
+
+  if (asset.isPublic) throw new Error("Unpublish this media before permanent deletion");
+
+  // Managed object deletion is intentionally first: DeleteObject is idempotent, so
+  // if the following database transaction fails the visible record remains and an
+  // approver can safely retry without leaving an unreachable storage object behind.
+  if (asset.storageKey) await deletePublicMediaObject(asset.storageKey);
+
+  await prisma.$transaction([
+    prisma.mediaAsset.delete({ where: { id } }),
+    prisma.auditEvent.create({
+      data: {
+        actorId: user.id,
+        action: "media.deleted",
+        entityType: "MediaAsset",
+        entityId: id,
+        metadata: {
+          storageManaged: Boolean(asset.storageKey),
+          hadPublicUrl: Boolean(asset.publicUrl),
+          title: asset.title,
+          sourcePath: asset.sourcePath,
+        },
+      },
+    }),
+  ]);
 
   revalidatePath("/admin/media");
   revalidatePath("/");
