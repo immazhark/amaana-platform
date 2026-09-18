@@ -2,6 +2,7 @@ import { NotificationChannel } from "@prisma/client";
 import { shouldMarkAppealFunded } from "@/lib/appeals";
 import { createReceiptNumber } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
+import { fetchRazorpayPayment } from "@/lib/razorpay";
 
 /**
  * Marks a verified Razorpay payment as captured exactly once.
@@ -89,4 +90,48 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
       providerPaymentId: current.providerPaymentId,
     };
   });
+}
+
+
+export async function ensureCapturedDonationForRefund(paymentId: string) {
+  const localPayment = await prisma.donation.findUnique({
+    where: { providerPaymentId: paymentId },
+    select: { id: true, status: true },
+  });
+
+  if (localPayment && ["CAPTURED", "REFUNDED"].includes(localPayment.status)) {
+    return { donationId: localPayment.id, matched: true, alreadyCaptured: true };
+  }
+
+  const providerPayment = await fetchRazorpayPayment(paymentId);
+  if (
+    providerPayment.id !== paymentId ||
+    providerPayment.currency !== "INR" ||
+    !providerPayment.order_id ||
+    !Number.isSafeInteger(providerPayment.amount)
+  ) {
+    throw new Error("Refund payment lookup returned an invalid payment");
+  }
+
+  const donationByOrder = await prisma.donation.findUnique({
+    where: { providerOrderId: providerPayment.order_id },
+    select: { id: true, amount: true },
+  });
+
+  if (!donationByOrder) {
+    return { donationId: null, matched: false, alreadyCaptured: false };
+  }
+
+  const expectedAmountPaise = donationByOrder.amount.mul(100).toNumber();
+  if (!Number.isSafeInteger(expectedAmountPaise) || expectedAmountPaise < 0 || providerPayment.amount !== expectedAmountPaise) {
+    throw new Error("Refund payment amount does not match the local donation order");
+  }
+
+  const result = await captureDonation(
+    providerPayment.order_id,
+    providerPayment.id,
+    providerPayment.amount,
+  );
+
+  return { donationId: result.donationId, matched: true, alreadyCaptured: false };
 }
