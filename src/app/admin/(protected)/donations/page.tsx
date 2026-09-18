@@ -15,11 +15,25 @@ export default async function DonationsPage({ searchParams }: Props) {
     : undefined;
   const where = selected ? { status: selected } : undefined;
 
-  const [totalItems, reconciliation] = await Promise.all([
+  const [totalItems, reconciliation, unmatchedCriticalEvents] = await Promise.all([
     prisma.donation.count({ where }),
     prisma.donation.aggregate({
       where: { status: { in: ["CAPTURED", "REFUNDED"] } },
       _sum: { amount: true, refundedAmount: true },
+    }),
+    prisma.paymentEvent.findMany({
+      where: {
+        donationId: null,
+        eventType: { in: ["payment.captured", "payment.failed", "refund.processed"] },
+      },
+      orderBy: { processedAt: "desc" },
+      take: 10,
+      select: {
+        id: true,
+        providerEventId: true,
+        eventType: true,
+        processedAt: true,
+      },
     }),
   ]);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
@@ -49,6 +63,23 @@ export default async function DonationsPage({ searchParams }: Props) {
         </p>
       </div>
     </div>
+    {unmatchedCriticalEvents.length > 0 && <section className="admin-card" style={{ marginBottom: "1.25rem" }}>
+      <div className="admin-heading">
+        <div>
+          <p className="eyebrow">Reconciliation attention</p>
+          <h2>Unmatched payment events</h2>
+          <p className="muted">Critical Razorpay events were received without a linked local donation. Review these before relying on payment totals.</p>
+        </div>
+        <span className="status-badge">{unmatchedCriticalEvents.length} shown</span>
+      </div>
+      <ol className="history">
+        {unmatchedCriticalEvents.map(event => <li key={event.id}>
+          <strong>{event.eventType}</strong>
+          <span>{event.processedAt.toLocaleString("en-IN")}</span>
+          <small>{event.providerEventId}</small>
+        </li>)}
+      </ol>
+    </section>}
     <div className="filter-row">
       <Link href="/admin/donations">All</Link>
       {Object.values(DonationStatus).map(item => <Link key={item} href={`/admin/donations?status=${item}`}>{item}</Link>)}
