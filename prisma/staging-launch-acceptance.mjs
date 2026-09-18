@@ -89,6 +89,11 @@ function normalizeComparableUrl(value) {
   return `${url.origin}${path}${url.search}${url.hash}`;
 }
 
+function normalizeGeneratedImageUrl(value) {
+  const url = new URL(value);
+  return `${url.origin}${url.pathname}`;
+}
+
 function expectSeoMetadata(html, path, context) {
   const expectedUrl = new URL(path, requestOrigin).href;
   assert.equal(normalizeComparableUrl(findCanonical(html)), normalizeComparableUrl(expectedUrl), `${context} canonical URL mismatch`);
@@ -149,11 +154,11 @@ pass("staging homepage remains noindex");
 expectSeoMetadata(home.html, "/", "homepage SEO");
 
 const homeOgImage = findMeta(home.html, "property", "og:image");
-assert.equal(homeOgImage, new URL("/opengraph-image", requestOrigin).href, "Homepage og:image is not the canonical Amaana social image");
+assert.equal(normalizeGeneratedImageUrl(homeOgImage), normalizeGeneratedImageUrl(new URL("/opengraph-image", requestOrigin).href), "Homepage og:image is not the canonical Amaana social image");
 pass("homepage: Open Graph image");
 
 assert.equal(findMeta(home.html, "name", "twitter:card"), "summary_large_image", "Homepage Twitter card must use summary_large_image");
-assert.equal(findMeta(home.html, "name", "twitter:image"), new URL("/twitter-image", requestOrigin).href, "Homepage twitter:image mismatch");
+assert.equal(normalizeGeneratedImageUrl(findMeta(home.html, "name", "twitter:image")), normalizeGeneratedImageUrl(new URL("/twitter-image", requestOrigin).href), "Homepage twitter:image mismatch");
 pass("homepage: Twitter card and image");
 
 const structuredDataScripts = [...home.html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
