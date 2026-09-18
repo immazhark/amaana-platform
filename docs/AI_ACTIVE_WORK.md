@@ -10,11 +10,10 @@
 - GitHub hosted Actions are temporarily unavailable because the personal-account monthly minutes were exhausted. Do not interpret zero-step runner failures as code failures.
 
 ## Current task branch
-- `work/launch-readiness-batch-2026-09-18`
-- Current quiet-batch head: resolve the branch head at validation time; this ledger deliberately avoids a self-staling hard-coded SHA.
-- Base: `4f7cbafb87e8c7d75fd7191d7bcc7a83c9320a3d`
-- Purpose: batch remaining autonomous launch hardening without opening PRs or triggering Railway for each small change.
-- Status: feature-frozen for consolidated validation. Do not add feature scope, open a PR, or trigger integration/Railway until the batch is reviewed as one candidate.
+- `work/backgrounds-razorpay-readiness-2026-09-18`
+- Base: family-review SHA `69b4e2fd5698b050ae8dcf7d712588a1d1167ca4`.
+- Purpose: finish the corrected approved background integration, reconcile Razorpay approval/readiness records, and preserve quiet-batch development while family review is ongoing.
+- Status: active quiet branch; do not deploy until the six corrected SVGs are landed byte-for-byte and validation is complete.
 
 ## Working protocol
 1. Keep `main` untouched.
@@ -103,13 +102,22 @@
 - Manual email recovery uses an atomic FAILED-only claim and cannot race an active worker into a duplicate send.
 - Notification worker tests cover atomic claim, stable provider idempotency, SENT transition, transient retry scheduling and concurrent claim loss.
 
+## Current background correction
+- Six corrected approved SVG source files were supplied on 18 September 2026.
+- `scripts/verify-approved-backgrounds.mjs` now locks their SHA-256 hashes and launch preflight fails closed if repo assets differ.
+- Repository replacement remains pending until the six corrected files are uploaded byte-for-byte to `public/backgrounds/`; do not regenerate, minify or text-reconstruct them.
+
+## Operational note
+- The preview service is healthy on the family-review SHA.
+- The latest notification-cron build attempt failed on the superseded pre-fix SHA because of the admin-login null-narrowing TypeScript error. The cron service is still configured correctly, but it must be rebuilt on the next controlled deployment after the corrected candidate is ready; do not deploy it separately now.
+
 ## Remaining genuine launch gates
 - `rollback-rehearsal` — real staging rollback to a previous known-good deployment and restoration still required.
 - `transactional-email-delivery` — controlled live production sender acceptance required.
 - `manual-rendered-accessibility-review` — final human rendered review required.
 - `final-editorial-seo-social-review` — final human copy/social preview review required.
 - `public-media-human-review` — individual media privacy/consent/provenance review required.
-- Razorpay live KYC/readiness and controlled real donation/refund/receipt operational checks.
+- Razorpay KYC/account activation is VERIFIED as of 18 September 2026. Remaining payment gates are Test-mode reconciliation, separate Live-mode key/webhook configuration at the controlled production checkpoint, controlled real donation acceptance, and refund/receipt operational verification.
 - explicit production indexing decision.
 - explicit `main` promotion/production approval.
 
