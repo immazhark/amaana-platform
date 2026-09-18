@@ -48,6 +48,15 @@
       "verifiedAt": "2026-09-18"
     },
     {
+      "id": "transactional-email-delivery",
+      "category": "operations",
+      "status": "PENDING",
+      "requiredFor": [
+        "production"
+      ],
+      "evidence": "Railway has an authenticated `amaana-notification-cron` service scheduled every five minutes and current staging runs return HTTP 200 with `{\\\"status\\\":\\\"disabled\\\"}` because staging email delivery is intentionally disabled. Production readiness requires EMAIL_DELIVERY_MODE=live in the approved production environment plus a controlled transactional-email acceptance proving queue creation, cron/job processing, provider acceptance, delivered/sent state and retry/idempotency behavior without sending beneficiary-sensitive content."
+    },
+    {
       "id": "manual-rendered-accessibility-review",
       "category": "experience",
       "status": "PENDING",
