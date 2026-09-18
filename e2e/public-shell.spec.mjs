@@ -58,6 +58,27 @@ test.describe('representative public accessibility', () => {
   }
 });
 
+
+test('unknown public routes return a branded, navigable and noindex 404', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const response = await page.goto('/definitely-not-an-amaana-route', { waitUntil: 'domcontentloaded' });
+
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole('heading', { name: "We Couldn't Find That Page" })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Return home' })).toHaveAttribute('href', '/');
+  await expect(page.getByRole('link', { name: /Explore our work/ })).toHaveAttribute('href', '/our-work');
+  await expect(page.getByRole('link', { name: /Current appeals/ })).toHaveAttribute('href', '/appeals');
+
+  const robots = page.locator('meta[name="robots"]');
+  await expect(robots).toHaveAttribute('content', /noindex/i);
+
+  const dimensions = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+  }));
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
+});
+
 test.describe('responsive containment', () => {
   for (const route of representativeRoutes) {
     for (const width of acceptanceWidths) {
