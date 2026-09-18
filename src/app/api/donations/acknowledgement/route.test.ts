@@ -54,6 +54,8 @@ describe("private donation acknowledgement request bounds", () => {
     expect(response.status).toBe(413);
     expect(body).toEqual({ found: false });
     expect(response.headers.get("cache-control")).toMatch(/no-store/i);
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex/i);
     expect(mocks.findUnique).not.toHaveBeenCalled();
   });
 });
