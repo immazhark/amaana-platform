@@ -21,7 +21,8 @@ Staging must remain disabled because synthetic acceptance data can contain test 
 - Resend receives a stable `Idempotency-Key` derived from the notification row id, preventing duplicate provider sends during retry within the provider idempotency window;
 - non-retryable provider/configuration failures are parked for manual attention;
 - Resend `409 concurrent_idempotent_requests` is retryable, while `409 invalid_idempotent_request` is treated as permanent because it indicates the same key was reused with a different payload;
-- approvers can review delivery state in `/admin/notifications`.
+- approvers can review delivery state in `/admin/notifications`;
+- primary/backup approvers with `notification.manage` can manually requeue a terminal FAILED email only after recording an operational reason; the same notification id and provider idempotency key are reused.
 
 ## Production activation prerequisites
 
@@ -72,7 +73,7 @@ Use `/admin/notifications` to inspect:
 - `FAILED`: retry scheduled or manual attention required;
 - `SENT`: successfully accepted by the provider.
 
-A `FAILED` row displaying **Manual attention required** will not retry automatically. Investigate the stored failure reason and provider configuration before creating or rescheduling another notification.
+A `FAILED` row displaying **Manual attention required** will not retry automatically. Investigate the stored failure reason and provider configuration first. An authorised operator may then use the audited **Requeue** action, which resets the same notification row to PENDING and preserves the same provider idempotency key. Do not create a duplicate notification merely to force another attempt.
 
 Never copy API keys, full email payloads, beneficiary documents, payment secrets or private tracking tokens into GitHub issues, readiness evidence or screenshots.
 
