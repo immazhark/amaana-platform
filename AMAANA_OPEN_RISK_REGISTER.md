@@ -17,10 +17,12 @@ Purpose: prevent unresolved quality, privacy, accessibility, performance or sour
 - Do not add final logo structured data or claim official master colours until this is closed.
 
 ### 2. Authentic media population
-**Status:** OPEN
+**Status:** OPEN / HUMAN REVIEW REQUIRED
 
-- Media architecture, privacy gate, admin review and separate public-media storage boundary are implemented.
-- Selected original Eid/Qurbani candidates still require target storage configuration, explicit public-use approval and actual publication.
+- Media architecture, privacy gate, admin review and separate public-media storage boundary are implemented for managed `MediaAsset` publication.
+- The repository also contains legacy/static campaign derivatives under `public/media`. Those files are directly addressable static assets and therefore do **not** inherit the managed `MediaAsset.isPublic` / `privacyApprovedAt` runtime gate or its unpublish/revocation behavior.
+- Every `public/media` path is covered by `docs/public-media-review-register.json`; the production preflight fails while assets remain pending, restricted or blocked. Filenames such as `-blurred` or `-redacted` are processing hints only and are not evidence of consent or privacy approval.
+- Before launch, human review must decide which static assets are approved for website publication, which should migrate into the managed public-media workflow, and which must be removed/restricted.
 - Documentary slots must never be filled with generated/stock beneficiary imagery merely to remove placeholders.
 
 ### 3. Source/archive completeness
@@ -31,9 +33,10 @@ Purpose: prevent unresolved quality, privacy, accessibility, performance or sour
 - `reviewed everything` remains prohibited until file-by-file inventory is real.
 
 ### 4. Payment workflow verification
-**Status:** OPEN / SOURCE-HARDENED
+**Status:** OPEN / PROVIDER APPROVED / SOURCE-HARDENED
 
-- Razorpay UX/security structure exists and checkout script is deferred.
+- Razorpay account activation/KYC and website verification were confirmed approved on 18 September 2026.
+- Razorpay UX/security structure exists and checkout script is deferred. Staging remains on Test-mode credentials until the controlled provider acceptance is complete.
 - Donation order/confirmation responses are explicitly `no-store, private`, including validation/authentication/failure responses.
 - Transactional donation checkout and private acknowledgement routes are explicitly excluded from indexing; token-bearing acknowledgement pages also apply a `no-referrer` policy so receipt tokens are not propagated through subsequent navigation.
 - Donation order creation, confirmation, capture reconciliation and acknowledgement use deliberately lean database projections rather than loading unrelated donor/payment fields.
