@@ -7,6 +7,12 @@ if (!rawBaseUrl) {
 
 const expectedCommitSha = process.env.EXPECTED_COMMIT_SHA?.trim() || null;
 const baseUrl = new URL(rawBaseUrl);
+const configuredRequestOrigin = process.env.STAGING_REQUEST_ORIGIN?.trim()
+  || process.env.NEXT_PUBLIC_APP_URL?.trim()
+  || null;
+const requestOrigin = configuredRequestOrigin
+  ? new URL(configuredRequestOrigin).origin
+  : baseUrl.origin;
 const productionHosts = new Set(["amaanafoundation.org", "www.amaanafoundation.org"]);
 if (productionHosts.has(baseUrl.hostname)) {
   throw new Error("Refusing to run staging acceptance checks against the production Amaana domain");
@@ -45,7 +51,7 @@ async function postJson(path, body) {
     redirect: "follow",
     headers: {
       "content-type": "application/json",
-      "origin": baseUrl.origin,
+      "origin": requestOrigin,
       "user-agent": "Amaana-Staging-Acceptance/1.0",
     },
     body: JSON.stringify(body),
@@ -64,6 +70,7 @@ function expectHeader(response, name, pattern, context) {
 }
 
 console.log(`Running Amaana staging acceptance checks against ${baseUrl.origin}`);
+console.log(`Using configured same-origin header ${requestOrigin} for CSRF-protected staging checks`);
 
 const version = await get("/api/health/version");
 const versionPayload = await version.json();
