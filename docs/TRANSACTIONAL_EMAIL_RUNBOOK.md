@@ -8,7 +8,7 @@ This runbook covers donor/assistance transactional email delivery only. It does 
 - Schedule: every 5 minutes
 - Worker endpoint: authenticated `POST /api/jobs/notifications`
 - Staging policy: `EMAIL_DELIVERY_MODE=disabled`
-- Expected staging cron response while disabled: HTTP 200 with `{"status":"disabled"}`
+- Expected staging cron response while disabled: HTTP 200 with `status:"disabled"` plus non-sensitive security-ledger cleanup counts.
 
 Staging must remain disabled because synthetic acceptance data can contain test addresses and must never generate external email.
 
@@ -20,6 +20,7 @@ Staging must remain disabled because synthetic acceptance data can contain test 
 - retry schedule after transient provider/network failure: 5m → 15m → 45m → 135m;
 - Resend receives a stable `Idempotency-Key` derived from the notification row id, preventing duplicate provider sends during retry within the provider idempotency window;
 - non-retryable provider/configuration failures are parked for manual attention;
+- Resend `409 concurrent_idempotent_requests` is retryable, while `409 invalid_idempotent_request` is treated as permanent because it indicates the same key was reused with a different payload;
 - approvers can review delivery state in `/admin/notifications`.
 
 ## Production activation prerequisites
