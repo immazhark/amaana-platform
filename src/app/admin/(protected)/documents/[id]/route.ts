@@ -20,7 +20,7 @@ export async function GET(_: Request, { params }: Props) {
   });
   if (!document) return new Response("Not found", { status: 404, headers: privateDocumentHeaders });
 
-  const signedUrl = await getPrivateDocumentUrl(document.objectKey);
+  const signedUrl = await getPrivateDocumentUrl(document.objectKey, document.assistanceRequestId);
   await prisma.auditEvent.create({
     data: {
       actorId: user.id,
