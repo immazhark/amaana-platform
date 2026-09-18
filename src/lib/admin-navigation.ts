@@ -4,6 +4,7 @@ export const ADMIN_NAV_ITEMS = [
   { permission: "content.view", path: "/admin/media", label: "Media review" },
   { permission: "assistance.approve", path: "/admin/retention", label: "Retention review" },
   { permission: "donation.view", path: "/admin/donations", label: "Donations" },
+  { permission: "notification.view", path: "/admin/notifications", label: "Notification delivery" },
   { permission: "rbac.manage", path: "/admin/audit", label: "Audit history" },
 ] as const;
 
@@ -13,6 +14,7 @@ const ADMIN_HOME_DESTINATIONS = [
   { permission: "appeal.view", path: "/admin/appeals" },
   { permission: "content.view", path: "/admin/media" },
   { permission: "donation.view", path: "/admin/donations" },
+  { permission: "notification.view", path: "/admin/notifications" },
   { permission: "rbac.manage", path: "/admin/audit" },
 ] as const;
 
