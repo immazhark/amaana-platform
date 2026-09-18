@@ -21,6 +21,11 @@ const steps = [
     args: ["--test", "scripts/test-public-editorial-consistency.mjs"],
   },
   {
+    label: "Public/private data boundary tests",
+    command: nodeCommand,
+    args: ["--test", "scripts/test-public-data-boundaries.mjs"],
+  },
+  {
     label: "Launch readiness policy invariants",
     command: nodeCommand,
     args: ["--test", "scripts/test-launch-readiness.mjs"],
