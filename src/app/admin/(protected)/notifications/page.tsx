@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { NotificationStatus } from "@prisma/client";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
-import { requirePermission } from "@/lib/auth";
+import { hasPermission, requirePermission } from "@/lib/auth";
+import { requeueFailedNotification } from "./actions";
 import { prisma } from "@/lib/prisma";
 
 type Props = { searchParams: Promise<{ status?: string; page?: string }> };
@@ -25,7 +26,8 @@ function deliveryScheduleLabel(status: NotificationStatus, scheduledFor: Date, s
 }
 
 export default async function NotificationOperationsPage({ searchParams }: Props) {
-  await requirePermission("notification.view");
+  const user = await requirePermission("notification.view");
+  const canManageNotifications = hasPermission(user, "notification.manage");
   const { status, page: pageParam } = await searchParams;
   const selected = Object.values(NotificationStatus).includes(status as NotificationStatus)
     ? status as NotificationStatus
@@ -125,7 +127,25 @@ export default async function NotificationOperationsPage({ searchParams }: Props
               <td>{related ? <Link href={related.href}>{related.label}</Link> : "—"}</td>
               <td>{notification.attempts}</td>
               <td>{deliveryScheduleLabel(notification.status, notification.scheduledFor, notification.sentAt)}</td>
-              <td><small>{notification.failureReason ?? "—"}</small></td>
+              <td>
+                <small>{notification.failureReason ?? "—"}</small>
+                {canManageNotifications && notification.status === NotificationStatus.FAILED && (
+                  <form action={requeueFailedNotification} className="admin-inline-form">
+                    <input type="hidden" name="id" value={notification.id} />
+                    <label>
+                      <span className="sr-only">Reason to requeue {notification.subject ?? notification.templateKey}</span>
+                      <input
+                        name="reason"
+                        minLength={10}
+                        maxLength={1000}
+                        required
+                        placeholder="Why is retry safe now?"
+                      />
+                    </label>
+                    <button type="submit">Requeue</button>
+                  </form>
+                )}
+              </td>
             </tr>;
           })}
         </tbody>
