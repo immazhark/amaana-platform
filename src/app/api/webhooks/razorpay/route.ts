@@ -5,7 +5,7 @@ import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-r
 import { captureDonation } from "@/lib/payment-processing";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
-import { verifyWebhookSignature } from "@/lib/razorpay";
+import { fetchRazorpayPayment, verifyWebhookSignature } from "@/lib/razorpay";
 import { calculateRefundAccounting } from "@/lib/refund-accounting";
 import { validateProductionEnvironment } from "@/lib/env";
 import { isPrismaUniqueConstraintError } from "@/lib/webhook-idempotency";
@@ -112,6 +112,40 @@ export async function POST(request: Request) {
       Number.isSafeInteger(refund.amount) &&
       refund.amount > 0
     ) {
+      const localPayment = await prisma.donation.findUnique({
+        where: { providerPaymentId: refund.payment_id },
+        select: { id: true, status: true },
+      });
+
+      if (!localPayment || !["CAPTURED", "REFUNDED"].includes(localPayment.status)) {
+        const providerPayment = await fetchRazorpayPayment(refund.payment_id);
+        if (
+          providerPayment.id !== refund.payment_id ||
+          providerPayment.currency !== "INR" ||
+          !providerPayment.order_id ||
+          !Number.isSafeInteger(providerPayment.amount)
+        ) {
+          throw new Error("Refund payment lookup returned an invalid payment");
+        }
+
+        const donationByOrder = await prisma.donation.findUnique({
+          where: { providerOrderId: providerPayment.order_id },
+          select: { id: true, amount: true },
+        });
+
+        if (donationByOrder) {
+          const expectedAmountPaise = decimalRupeesToPaise(donationByOrder.amount);
+          if (providerPayment.amount !== expectedAmountPaise) {
+            throw new Error("Refund payment amount does not match the local donation order");
+          }
+          await captureDonation(
+            providerPayment.order_id,
+            providerPayment.id,
+            providerPayment.amount,
+          );
+        }
+      }
+
       await withSerializableTransactionRetry(async tx => {
         const donation = await tx.donation.findUnique({
           where: { providerPaymentId: refund.payment_id },
