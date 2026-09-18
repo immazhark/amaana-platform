@@ -9,7 +9,7 @@ test('current launch register is structurally valid and remains intentionally bl
 
   assert.deepEqual(
     rehearsal.unresolved.map(gate => gate.id).sort(),
-    ['database-backup-evidence', 'rollback-rehearsal'],
+    ['rollback-rehearsal'],
   );
   assert.ok(production.unresolved.some(gate => gate.id === 'manual-rendered-accessibility-review'));
   assert.ok(production.unresolved.some(gate => gate.id === 'final-editorial-seo-social-review'));
