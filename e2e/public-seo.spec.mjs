@@ -76,3 +76,18 @@ test('default social share images are privacy-safe generated PNG assets', async 
     expect(bytes.byteLength, `${path} should contain a rendered social image`).toBeGreaterThan(5_000);
   }
 });
+
+
+test('admin sign-in remains explicitly private even when public SEO metadata exists', async ({ page }) => {
+  const response = await page.goto('/admin/login', { waitUntil: 'domcontentloaded' });
+  expect(response?.ok()).toBeTruthy();
+
+  const robots = page.locator('meta[name="robots"]');
+  await expect(robots).toHaveCount(1);
+  await expect(robots).toHaveAttribute('content', /noindex/i);
+  await expect(robots).toHaveAttribute('content', /nofollow/i);
+
+  const referrer = page.locator('meta[name="referrer"]');
+  await expect(referrer).toHaveCount(1);
+  await expect(referrer).toHaveAttribute('content', 'no-referrer');
+});
