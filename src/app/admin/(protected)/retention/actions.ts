@@ -102,6 +102,20 @@ export async function reviewDocumentRetention(formData: FormData) {
       throw new Error("Raw evidence can only be deleted after the assistance request is closed/rejected or its linked appeal is closed");
     }
 
+    await prisma.auditEvent.create({
+      data: {
+        actorId: user.id,
+        action: "assistance.document_deletion_started",
+        entityType: "AssistanceRequest",
+        entityId: document.assistanceRequestId,
+        metadata: {
+          documentId,
+          reason,
+          requestReference: document.assistanceRequest.referenceNumber,
+        },
+      },
+    });
+
     await deletePrivateDocumentObject(document.objectKey, document.assistanceRequestId);
     await prisma.$transaction([
       prisma.assistanceDocument.delete({ where: { id: documentId } }),
