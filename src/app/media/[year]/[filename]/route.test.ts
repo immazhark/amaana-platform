@@ -97,6 +97,22 @@ describe("approved public media delivery", () => {
     expect(mocks.getPublicMediaObject).toHaveBeenCalledWith(objectKey);
   });
 
+  it("fails closed when the stored object content type disagrees with its managed extension", async () => {
+    mocks.findFirst.mockResolvedValue(approvedAsset());
+    mocks.getPublicMediaObject.mockResolvedValue({
+      bytes: new Uint8Array([37, 80, 68, 70]),
+      contentType: "application/pdf",
+      etag: null,
+      lastModified: null,
+    });
+
+    const response = await GET(request(), context());
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("retry-after")).toBe("60");
+  });
+
   it("fails closed when the private bucket read is unavailable", async () => {
     mocks.findFirst.mockResolvedValue(approvedAsset());
     mocks.getPublicMediaObject.mockRejectedValue(new Error("storage unavailable"));
