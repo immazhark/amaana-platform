@@ -40,8 +40,8 @@ async function run() {
     throw new Error("Refusing public-media acceptance outside APP_ENVIRONMENT=staging");
   }
 
-  const stagingBaseUrl = new URL(required("STAGING_BASE_URL"));
   const publicMediaBaseUrl = new URL(required("PUBLIC_MEDIA_BASE_URL"));
+  const stagingBaseUrl = new URL(process.env.STAGING_BASE_URL?.trim() || publicMediaBaseUrl.origin);
   if (productionHosts.has(stagingBaseUrl.hostname) || productionHosts.has(publicMediaBaseUrl.hostname)) {
     throw new Error("Refusing public-media acceptance against the production Amaana domain");
   }
@@ -71,8 +71,9 @@ async function run() {
     credentials: { accessKeyId, secretAccessKey },
   });
 
-  const expectedCommitSha = process.env.EXPECTED_COMMIT_SHA?.trim();
-  if (expectedCommitSha) {
+  const expectedCommitSha = process.env.EXPECTED_COMMIT_SHA?.trim() || process.env.RAILWAY_GIT_COMMIT_SHA?.trim();
+  if (!expectedCommitSha) throw new Error("EXPECTED_COMMIT_SHA or RAILWAY_GIT_COMMIT_SHA is required");
+  {
     const versionResponse = await fetch(new URL("/api/health/version", stagingBaseUrl), {
       cache: "no-store",
       headers: { "user-agent": "Amaana-Public-Media-Acceptance/1.0" },
