@@ -79,6 +79,27 @@ test.describe('responsive containment', () => {
   }
 });
 
+test('skip link moves focus to the main content landmark', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openPublicPage(page, '/about');
+
+  const skipLink = page.getByRole('link', { name: 'Skip to content' });
+  const main = page.locator('main#main');
+  await page.keyboard.press('Tab');
+  await expect(skipLink).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(main).toBeFocused();
+});
+
+test('representative public pages expose one primary heading and an English document language', async ({ page }) => {
+  for (const route of representativeRoutes) {
+    await openPublicPage(page, route.path);
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(page.locator('main#main')).toHaveCount(1);
+    await expect(page.locator('h1')).toHaveCount(1);
+  }
+});
+
 test('desktop keyboard order starts with the skip link and primary home link', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openPublicPage(page, '/about');
