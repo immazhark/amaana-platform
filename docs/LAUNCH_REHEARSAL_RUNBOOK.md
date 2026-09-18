@@ -17,12 +17,24 @@ From the candidate checkout:
 
 ```bash
 npm ci
-npm run media:review-register
-npm run launch:status
-npm run launch:rehearsal
+npm run launch:preflight
 ```
 
-`launch:rehearsal` is expected to fail until backup evidence and the rollback rehearsal are genuinely completed. `media:review-readiness` is a separate production gate and must remain failing while human privacy/consent/provenance review is outstanding.
+The candidate preflight is the standard read-only repository gate. It runs canonical factual-lock tests, public editorial/compliance guards, public-media structural checks, review-register validation, launch-register validation, Prisma validation, lint, TypeScript, unit tests and a production build.
+
+For a rehearsal decision, run:
+
+```bash
+npm run launch:preflight:rehearsal
+```
+
+For the final production decision, run:
+
+```bash
+npm run launch:preflight:production
+```
+
+The rehearsal/production variants deliberately fail closed when unresolved readiness gates remain. They must never be made green by weakening a pending human, external, payment, privacy, rollback or authorization gate. `media:review-readiness` remains a separate production blocker while human privacy/consent/provenance review is outstanding.
 
 ## 3. Capture recovery evidence before rehearsal
 Do not treat application CI as a database backup.
