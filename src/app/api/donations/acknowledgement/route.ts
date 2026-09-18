@@ -11,7 +11,11 @@ const schema = z.object({
   token: z.string().min(20).max(300),
 });
 
-const privateHeaders = { "Cache-Control": "no-store, private" };
+const privateHeaders = {
+  "Cache-Control": "no-store, private",
+  "Referrer-Policy": "no-referrer",
+  "X-Robots-Tag": "noindex, nofollow, noarchive",
+};
 const MAX_ACKNOWLEDGEMENT_JSON_BYTES = 8 * 1024;
 
 export async function POST(request: Request) {
