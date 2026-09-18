@@ -44,8 +44,8 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "The deployed staging startup now creates the required RBAC owner before the synthetic acceptance fixtures. Railway logs on SHA 5c3762ca94b53cca1ad9d7a9fc9880deebff2b05 confirm the staging workflow and synthetic fully-refunded donation fixture are ready and the application reaches readiness. The repository staging-launch-acceptance script includes private refunded-acknowledgement assertions; controlled runtime execution remains part of release acceptance.",
-      "verifiedAt": "2026-09-17"
+      "evidence": "On 2026-09-18 exact integration SHA `1b0dc3b6769d088635fdcb00fd6d30df54256b67` passed a fail-closed one-shot Railway staging acceptance on deployment `701d682f-0d7b-4e46-ae7a-1b4c70938232`. The candidate was first served only on internal loopback port 18080; 32 checks passed before Railway's public port was opened, including exact-SHA verification, live/readiness health, noindex behavior, representative public routes, domestic-only donation boundaries, synthetic appeal privacy, Razorpay disclosure, refunded private acknowledgement state, private assistance response headers and consent messaging. The acceptance flag was then disabled and normal same-SHA deployment `2e6747d4-63a3-4cc7-aa2f-36d4ad103857` reached SUCCESS.",
+      "verifiedAt": "2026-09-18"
     },
     {
       "id": "manual-rendered-accessibility-review",
