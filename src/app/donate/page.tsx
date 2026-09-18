@@ -6,7 +6,7 @@ import { complianceCopy } from "@/lib/master-copy";
 const description = "Support a verified appeal or Amaana initiative through currently approved domestic donation options.";
 
 export const metadata: Metadata = {
-  title: "Support Amaana Foundation | Domestic Donations",
+  title: "Domestic Donations",
   description,
   alternates: { canonical: "/donate" },
   openGraph: {
