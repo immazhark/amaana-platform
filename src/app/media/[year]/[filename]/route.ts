@@ -45,11 +45,28 @@ export async function GET(
 
   try {
     const object = await getPublicMediaObject(objectKey);
+    const expectedContentType = contentTypeForKey(objectKey);
+    if (object.contentType.toLowerCase() !== expectedContentType) {
+      console.error("Approved public media content-type mismatch", {
+        objectKey,
+        expectedContentType,
+        storedContentType: object.contentType,
+      });
+      return new Response(null, {
+        status: 503,
+        headers: {
+          "Cache-Control": "no-store",
+          "Retry-After": "60",
+          "X-Robots-Tag": "noindex, nofollow, noarchive",
+        },
+      });
+    }
+
     const headers = new Headers({
       "Cache-Control": "public, max-age=60, s-maxage=300, must-revalidate",
       "Content-Disposition": "inline",
       "Content-Length": String(object.bytes.byteLength),
-      "Content-Type": contentTypeForKey(objectKey),
+      "Content-Type": expectedContentType,
       "X-Content-Type-Options": "nosniff",
     });
     if (object.etag) headers.set("ETag", object.etag);
