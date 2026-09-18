@@ -28,8 +28,9 @@ export function notificationRetryDelayMs(attemptNumber: number) {
   return RETRY_DELAYS_MS[Math.min(attemptNumber - 1, RETRY_DELAYS_MS.length - 1)];
 }
 
-export function isRetryableEmailProviderStatus(status: number) {
-  return status === 408 || status === 409 || status === 425 || status === 429 || status >= 500;
+export function isRetryableEmailProviderResponse(status: number, providerCode?: string | null) {
+  if (status === 409) return providerCode === "concurrent_idempotent_requests";
+  return status === 408 || status === 425 || status === 429 || status >= 500;
 }
 
 async function sendWithResend(
@@ -54,9 +55,21 @@ async function sendWithResend(
   });
 
   if (!response.ok) {
+    let providerCode: string | null = null;
+    try {
+      const payload = await response.json() as { name?: unknown; code?: unknown };
+      providerCode = typeof payload.name === "string"
+        ? payload.name
+        : typeof payload.code === "string"
+          ? payload.code
+          : null;
+    } catch {
+      // Status alone is enough to classify non-409 transient failures.
+    }
+
     throw new EmailProviderError(
-      `Email provider returned ${response.status}`,
-      isRetryableEmailProviderStatus(response.status),
+      `Email provider returned ${response.status}${providerCode ? ` (${providerCode})` : ""}`,
+      isRetryableEmailProviderResponse(response.status, providerCode),
     );
   }
 }
