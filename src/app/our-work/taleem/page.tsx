@@ -1,6 +1,6 @@
 import { ProgrammeDetail } from '@/components/programme-detail';
-import { programmeBySlug } from '@/lib/master-copy';
-export const dynamic = 'force-dynamic';
-export const metadata = { title: programmeBySlug('taleem')?.title, description: programmeBySlug('taleem')?.summary, alternates: { canonical: '/our-work/taleem' } };
-export default function Page(){return <ProgrammeDetail slug="taleem"/>;}
+import { programmePageMetadata } from '@/lib/programme-page-metadata';
 
+export const dynamic = 'force-dynamic';
+export const metadata = programmePageMetadata('taleem', '/our-work/taleem');
+export default function Page(){return <ProgrammeDetail slug="taleem"/>;}
