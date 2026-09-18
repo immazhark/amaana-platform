@@ -21,7 +21,6 @@ export async function requeueFailedNotification(formData: FormData) {
       channel: true,
       attempts: true,
       failureReason: true,
-      recipient: true,
       templateKey: true,
     },
   });
@@ -52,7 +51,6 @@ export async function requeueFailedNotification(formData: FormData) {
           reason: reason.slice(0, 1000),
           previousAttempts: current.attempts,
           previousFailureReason: current.failureReason,
-          recipient: current.recipient,
           templateKey: current.templateKey,
         },
       },
