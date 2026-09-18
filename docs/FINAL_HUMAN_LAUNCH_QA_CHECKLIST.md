@@ -81,7 +81,12 @@ With indexing still disabled:
 - [ ] staging `robots.txt` remains fail-closed;
 - [ ] staging sitemap remains empty while indexing is disabled.
 
-Immediately before an indexing decision, repeat canonical/robots/sitemap checks against the approved production hostname.
+Immediately before an indexing decision:
+- [ ] confirm the approved build is produced with `APP_ENVIRONMENT=production`;
+- [ ] confirm `NEXT_PUBLIC_ALLOW_INDEXING=true` is supplied to that production build;
+- [ ] confirm `NEXT_PUBLIC_APP_URL` is the official HTTPS Amaana hostname;
+- [ ] rebuild/redeploy rather than relying on a runtime-only flag change;
+- [ ] repeat canonical/robots/sitemap checks against the approved production hostname.
 
 ## 5. Public-media human review
 
