@@ -63,7 +63,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Automated coverage now includes axe WCAG A/AA checks across representative public/admin routes, six responsive widths, 200% reflow-equivalent containment, keyboard skip-link/focus order, mobile navigation focus restoration, reduced-motion behavior, one-H1/lang/landmark checks and fixed-control collision checks. Final human rendered review at representative desktop/tablet/mobile widths, 200% zoom, keyboard-only operation, reduced motion and key fixed-control states remains required; use `docs/FINAL_HUMAN_LAUNCH_QA_CHECKLIST.md`."
+      "evidence": "Automated coverage now includes axe WCAG A/AA checks on representative public routes, responsive containment at 1440/1024/768/430/390/360 widths, desktop keyboard order, functional skip-link focus transfer, mobile navigation focus restoration, reduced-motion behavior, one-H1/document-language checks, 200%-reflow-equivalent containment, and floating-control collision checks. Final human rendered review at representative desktop/tablet/mobile widths, actual browser 200% zoom, keyboard-only operation, reduced-motion presentation and visual/focus-quality judgement remains required."
     },
     {
       "id": "final-editorial-seo-social-review",
@@ -72,7 +72,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Automated release guards now cover canonical factual locks, stale/unsafe public compliance wording, exact medical/winter amounts, representative canonical/description/Open Graph/Twitter metadata, generated social images, structured data, fail-closed staging robots and empty sitemap behavior. `/donate` now has explicit canonical/Open Graph/Twitter metadata. Final human copy/CTA/terminology/social-preview review remains required before launch indexing is enabled; use `docs/FINAL_HUMAN_LAUNCH_QA_CHECKLIST.md`."
+      "evidence": "Automated launch coverage now includes canonical factual locks, a public editorial/compliance guard for stale amounts and provisional/FCRA boundaries, representative-page canonical/description/Open Graph/Twitter metadata checks, generated social-image checks, structured-data assertions, and fail-closed robots/sitemap behavior. The remaining gate is the final human editorial/social-preview judgement on the approved launch candidate plus the explicit production indexing decision."
     },
     {
       "id": "public-media-human-review",
@@ -128,7 +128,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Refund, acknowledgement and reconciliation paths now include bounded refund accounting, refund-driven FUNDED→PUBLISHED/CLOSED correction, out-of-order refund/capture reconciliation, privacy-minimized webhook evidence, unmatched critical-event admin visibility, private acknowledgement no-store/no-referrer/noindex headers and exactly-once queued donor refund notifications. Automated/synthetic coverage does not replace the final explicitly authorised controlled provider refund/receipt verification; use docs/PAYMENT_REFUND_OPERATIONS_RUNBOOK.md."
+      "evidence": "Refund, acknowledgement and reconciliation code paths have automated helper coverage, synthetic staging acknowledgement coverage, and route-level webhook tests for invalid signatures, duplicate-event idempotency, refund accounting, appeal-total reconciliation and donor notification. The final controlled operational verification against the approved Razorpay environment remains pending and will not be performed before live/test-provider readiness and explicit authorization."
     },
     {
       "id": "database-backup-evidence",
