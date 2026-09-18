@@ -444,6 +444,7 @@ model DonationAttempt {
   clientHash String
   createdAt  DateTime @default(now())
   @@index([clientHash, createdAt])
+  @@index([createdAt])
 }
 
 model DailyPageView {
@@ -461,6 +462,7 @@ model LoginAttempt {
   succeeded   Boolean  @default(false)
   createdAt   DateTime @default(now())
   @@index([subjectHash, createdAt])
+  @@index([createdAt])
 }
 
 model AppealUpdate {
