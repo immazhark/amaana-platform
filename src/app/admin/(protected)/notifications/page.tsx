@@ -11,6 +11,7 @@ const statusOrder = [
   NotificationStatus.PROCESSING,
   NotificationStatus.PENDING,
   NotificationStatus.SENT,
+  NotificationStatus.CANCELLED,
 ];
 
 function formatDateTime(value: Date | null) {
