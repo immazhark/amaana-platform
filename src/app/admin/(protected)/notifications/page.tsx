@@ -17,6 +17,12 @@ function formatDateTime(value: Date | null) {
   return value ? value.toLocaleString("en-IN") : "—";
 }
 
+function deliveryScheduleLabel(status: NotificationStatus, scheduledFor: Date, sentAt: Date | null) {
+  if (status === NotificationStatus.SENT) return formatDateTime(sentAt);
+  if (status === NotificationStatus.FAILED && scheduledFor.getUTCFullYear() >= 9999) return "Manual attention required";
+  return formatDateTime(scheduledFor);
+}
+
 export default async function NotificationOperationsPage({ searchParams }: Props) {
   await requirePermission("notification.view");
   const { status, page: pageParam } = await searchParams;
@@ -117,9 +123,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
               </td>
               <td>{related ? <Link href={related.href}>{related.label}</Link> : "—"}</td>
               <td>{notification.attempts}</td>
-              <td>{notification.status === NotificationStatus.SENT
-                ? formatDateTime(notification.sentAt)
-                : formatDateTime(notification.scheduledFor)}</td>
+              <td>{deliveryScheduleLabel(notification.status, notification.scheduledFor, notification.sentAt)}</td>
               <td><small>{notification.failureReason ?? "—"}</small></td>
             </tr>;
           })}
