@@ -124,12 +124,13 @@
     {
       "id": "database-backup-evidence",
       "category": "recovery",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "requiredFor": [
         "rehearsal",
         "production"
       ],
-      "evidence": "A recoverable Neon/PostgreSQL backup or snapshot must be confirmed immediately before rehearsal/cutover; no backup action is inferred from application CI."
+      "evidence": "On 2026-09-18 a manual Neon snapshot `amaana-pre-rehearsal-2026-09-18` (snapshot id `snap-blue-unit-b3rt8psa`) was created from the Amaana staging database branch before rollback rehearsal work. A restore drill was executed from that snapshot. After the restore, read-only comparison against the preserved original branch showed identical row counts, latest update timestamps, and content hashes for Appeal, Donation, AssistanceRequest, MediaAsset, User, and Prisma migration history. The snapshot is retained through 2026-10-18. No credentials or database URLs are recorded here.",
+      "verifiedAt": "2026-09-18"
     },
     {
       "id": "rollback-rehearsal",
