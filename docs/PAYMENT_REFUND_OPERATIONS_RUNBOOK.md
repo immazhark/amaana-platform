@@ -57,8 +57,10 @@ With explicit authorization only:
    - appeal `amountRaised` decreases by the retained refund effect and never below zero;
    - if a refund drops a FUNDED appeal below target before its deadline, the appeal returns to PUBLISHED;
    - if the same happens after the fundraising deadline, the appeal becomes CLOSED;
-   - duplicate refund delivery is a financial no-op after the provider event has already been recorded.
+   - duplicate refund delivery is a financial no-op after the provider event has already been recorded;
+   - exactly one `donation-refund-processed` notification is queued for a real refund adjustment.
 4. Verify the private acknowledgement reflects the refund state accurately.
+5. Verify the approved team donor recipient receives exactly one refund notification and that it contains only the donation reference, refund amount/state and settlement guidance.
 
 ## Out-of-order provider events
 
