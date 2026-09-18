@@ -2,6 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { isEmailDeliveryEnabled } from "@/lib/env";
 import { processPendingEmailNotifications } from "@/lib/notifications";
+import { pruneEphemeralSecurityLedgers } from "@/lib/security-ledger-retention";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -18,8 +19,11 @@ export async function POST(request: Request) {
   if (!isEmailDeliveryEnabled()) return NextResponse.json({ status: "disabled" }, { headers: { "Cache-Control": "no-store" } });
 
   try {
-    const result = await processPendingEmailNotifications();
-    return NextResponse.json({ status: "ok", ...result }, { headers: { "Cache-Control": "no-store" } });
+    const [result, retention] = await Promise.all([
+      processPendingEmailNotifications(),
+      pruneEphemeralSecurityLedgers(),
+    ]);
+    return NextResponse.json({ status: "ok", ...result, retention }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Notification delivery job failed", error);
     return NextResponse.json({ status: "failed" }, { status: 500, headers: { "Cache-Control": "no-store" } });
