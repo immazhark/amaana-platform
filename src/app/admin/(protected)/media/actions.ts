@@ -189,6 +189,23 @@ export async function deleteMediaAsset(formData: FormData) {
 
   if (asset.isPublic) throw new Error("Unpublish this media before permanent deletion");
 
+  // Record the destructive intent before storage deletion so a partial failure
+  // remains diagnosable even when the managed object is already gone.
+  await prisma.auditEvent.create({
+    data: {
+      actorId: user.id,
+      action: "media.deletion_started",
+      entityType: "MediaAsset",
+      entityId: id,
+      metadata: {
+        storageManaged: Boolean(asset.storageKey),
+        hadPublicUrl: Boolean(asset.publicUrl),
+        title: asset.title,
+        sourcePath: asset.sourcePath,
+      },
+    },
+  });
+
   // Managed object deletion is intentionally first: DeleteObject is idempotent, so
   // if the following database transaction fails the visible record remains and an
   // approver can safely retry without leaving an unreachable storage object behind.
