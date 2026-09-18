@@ -9,7 +9,11 @@ const representativeRoutes = [
   '/faith-and-reflections',
   '/about',
   '/appeals',
+  '/how-we-verify',
+  '/transparency',
   '/governance',
+  '/recognition',
+  '/partner',
   '/privacy',
   '/request-assistance',
   '/contact',
@@ -40,10 +44,13 @@ for (const path of representativeRoutes) {
 
     const ogTitle = page.locator('meta[property="og:title"]');
     const ogDescription = page.locator('meta[property="og:description"]');
+    const ogUrl = page.locator('meta[property="og:url"]');
     await expect(ogTitle).toHaveCount(1);
     await expect(ogTitle).toHaveAttribute('content', /Amaana Foundation/i);
     await expect(ogDescription).toHaveCount(1);
     await expect(ogDescription).toHaveAttribute('content', /\S.{20,}/);
+    await expect(ogUrl).toHaveCount(1);
+    await expect(ogUrl).toHaveAttribute('content', canonicalFor(path));
 
     const twitterCard = page.locator('meta[name="twitter:card"]');
     await expect(twitterCard).toHaveCount(1);
