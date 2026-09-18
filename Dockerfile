@@ -7,8 +7,10 @@ RUN npm ci
 FROM dependencies AS builder
 # Next.js resolves NEXT_PUBLIC_* values for prerendered/static metadata during `next build`.
 # Railway Docker builds require explicit ARG opt-in for build-time variables.
+ARG APP_ENVIRONMENT=staging
 ARG NEXT_PUBLIC_APP_URL=https://amaanafoundation.org
 ARG NEXT_PUBLIC_ALLOW_INDEXING=false
+ENV APP_ENVIRONMENT=$APP_ENVIRONMENT
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_ALLOW_INDEXING=$NEXT_PUBLIC_ALLOW_INDEXING
 COPY . .
