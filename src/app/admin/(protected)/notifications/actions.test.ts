@@ -4,7 +4,7 @@ import { NotificationStatus } from "@prisma/client";
 const mocks = vi.hoisted(() => ({
   requirePermission: vi.fn(),
   findUniqueOrThrow: vi.fn(),
-  updateNotification: vi.fn(),
+  updateNotificationMany: vi.fn(),
   createAudit: vi.fn(),
   transaction: vi.fn(),
   revalidatePath: vi.fn(),
@@ -16,9 +16,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     notification: {
       findUniqueOrThrow: mocks.findUniqueOrThrow,
-      update: mocks.updateNotification,
     },
-    auditEvent: { create: mocks.createAudit },
     $transaction: mocks.transaction,
   },
 }));
@@ -44,9 +42,12 @@ describe("manual notification recovery", () => {
       failureReason: "Email delivery is not configured",
       templateKey: "donation-acknowledgement",
     });
-    mocks.updateNotification.mockResolvedValue({ id: "notification_123" });
+    mocks.updateNotificationMany.mockResolvedValue({ count: 1 });
     mocks.createAudit.mockResolvedValue({ id: "audit_123" });
-    mocks.transaction.mockResolvedValue([]);
+    mocks.transaction.mockImplementation(async callback => callback({
+      notification: { updateMany: mocks.updateNotificationMany },
+      auditEvent: { create: mocks.createAudit },
+    }));
   });
 
   it("requires notification.manage permission", async () => {
@@ -73,11 +74,24 @@ describe("manual notification recovery", () => {
     expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
   });
 
+
+  it("fails closed when another worker changes the notification before the manual claim", async () => {
+    mocks.updateNotificationMany.mockResolvedValueOnce({ count: 0 });
+
+    await expect(requeueFailedNotification(form())).rejects.toThrow(/state changed/i);
+
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
   it("resets the failed notification for the existing idempotent worker and records audit context", async () => {
     await requeueFailedNotification(form());
 
-    expect(mocks.updateNotification).toHaveBeenCalledWith({
-      where: { id: "notification_123" },
+    expect(mocks.updateNotificationMany).toHaveBeenCalledWith({
+      where: {
+        id: "notification_123",
+        status: NotificationStatus.FAILED,
+      },
       data: {
         status: NotificationStatus.PENDING,
         attempts: 0,
