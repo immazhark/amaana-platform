@@ -76,7 +76,7 @@ function extensionForMimeType(mimeType: string) {
   throw new Error("Unsupported document type");
 }
 
-function isManagedPrivateDocumentKey(objectKey: string, requestId: string) {
+export function isManagedPrivateDocumentKey(objectKey: string, requestId: string) {
   const escapedRequestId = requestId.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
   return new RegExp(`^assistance/${escapedRequestId}/[0-9a-f-]{36}\\.(?:pdf|jpg|png|webp)$`, "i").test(objectKey);
 }
@@ -99,8 +99,8 @@ export async function deletePrivateDocumentObject(objectKey: string, requestId: 
   await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: objectKey }));
 }
 
-export async function getPrivateDocumentUrl(objectKey: string) {
-  if (!objectKey.startsWith("assistance/") || objectKey.includes("..")) throw new Error("Invalid private document key");
+export async function getPrivateDocumentUrl(objectKey: string, requestId: string) {
+  if (!isManagedPrivateDocumentKey(objectKey, requestId)) throw new Error("Invalid managed private document key");
   const { bucket, client } = getPrivateStorage();
   return getSignedUrl(client, new GetObjectCommand({ Bucket: bucket, Key: objectKey }), { expiresIn: 60 });
 }
