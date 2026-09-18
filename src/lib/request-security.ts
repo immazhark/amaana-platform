@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { isIP } from "node:net";
 import { isPrismaSerializableConflict, withSerializableTransactionRetry } from "./prisma-transaction";
 
 type RateLimitPurpose = "donation" | "assistance" | "analytics";
@@ -34,9 +35,40 @@ function getRateLimitPepper(purpose: RateLimitPurpose) {
  * and an independently configurable secret so counters cannot be correlated
  * across sensitive workflows if one secret is ever rotated or exposed.
  */
+export function getRateLimitClientAddress(request: Request) {
+  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const configuredHost = configuredUrl ? new URL(configuredUrl).host.toLowerCase() : null;
+  const requestHost = (
+    request.headers.get("x-forwarded-host")
+    ?? request.headers.get("host")
+    ?? new URL(request.url).host
+  ).toLowerCase();
+
+  const cloudflareAddress = request.headers.get("cf-connecting-ip")?.trim() ?? "";
+  const railwayAddress = request.headers.get("x-real-ip")?.trim() ?? "";
+  const forwardedChain = request.headers.get("x-forwarded-for")
+    ?.split(",")
+    .map(value => value.trim())
+    .filter(Boolean) ?? [];
+  const nearestForwardedAddress = forwardedChain.at(-1) ?? "";
+
+  const configuredIsRailwayHost = configuredHost?.endsWith(".up.railway.app") ?? false;
+  if (
+    configuredHost
+    && !configuredIsRailwayHost
+    && requestHost === configuredHost
+    && isIP(cloudflareAddress)
+  ) {
+    return cloudflareAddress;
+  }
+
+  if (isIP(railwayAddress)) return railwayAddress;
+  if (isIP(nearestForwardedAddress)) return nearestForwardedAddress;
+  return "unknown";
+}
+
 export function getRateLimitClientHash(request: Request, purpose: RateLimitPurpose) {
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim();
-  const address = forwarded ?? request.headers.get("x-real-ip") ?? "unknown";
+  const address = getRateLimitClientAddress(request);
   const pepper = getRateLimitPepper(purpose);
   return createHash("sha256").update(`${purpose}:${address}:${pepper}`).digest("hex");
 }
