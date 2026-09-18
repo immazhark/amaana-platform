@@ -6,8 +6,10 @@ test("editorial guard catches superseded factual values", () => {
   const findings = scanEditorialRisks("fixture.ts", `
     const oldBabyAmount = "₹107,200";
     const oldWinterTotal = "234+ beneficiaries in the winter drive";
+    const roundedAlizaAmount = "₹4.82L";
   `);
   assert.deepEqual(findings.map(item => item.id).sort(), [
+    "aliza-rounded-amount",
     "newborn-old-amount",
     "winter-superseded-plus-total",
   ]);
