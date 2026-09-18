@@ -14,6 +14,7 @@ test('current launch register is structurally valid and remains intentionally bl
   assert.ok(production.unresolved.some(gate => gate.id === 'manual-rendered-accessibility-review'));
   assert.ok(production.unresolved.some(gate => gate.id === 'final-editorial-seo-social-review'));
   assert.ok(production.unresolved.some(gate => gate.id === 'public-media-human-review'));
+  assert.ok(production.unresolved.some(gate => gate.id === 'transactional-email-delivery'));
   assert.ok(production.ready.some(gate => gate.id === 'public-media-upload-delivery'));
   assert.ok(production.unresolved.some(gate => gate.id === 'razorpay-live-kyc-readiness'));
   assert.ok(production.unresolved.some(gate => gate.id === 'main-promotion-and-production-approval'));
