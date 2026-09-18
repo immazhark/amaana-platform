@@ -96,6 +96,26 @@ describe("private document retention deletion", () => {
     }));
   });
 
+  it("blocks deletion while the request and linked appeal are still active", async () => {
+    mocks.findUniqueOrThrow.mockResolvedValue({
+      id: "doc_123",
+      assistanceRequestId: "request_123",
+      objectKey: "assistance/request_123/123e4567-e89b-12d3-a456-426614174000.pdf",
+      originalName: "evidence.pdf",
+      mimeType: "application/pdf",
+      sizeBytes: 1024,
+      assistanceRequest: {
+        referenceNumber: "AFR-123",
+        status: "UNDER_VERIFICATION",
+        appeal: { status: "PUBLISHED" },
+      },
+    });
+
+    await expect(reviewDocumentRetention(deletionForm())).rejects.toThrow(/only be deleted after/i);
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
   it("blocks deletion while an active hold exists", async () => {
     mocks.findFirstAudit.mockResolvedValue({ action: "assistance.document_legal_hold_placed" });
     await expect(reviewDocumentRetention(deletionForm())).rejects.toThrow(/Release the legal/);
