@@ -23,7 +23,11 @@
     "launch:rehearsal": "node scripts/check-launch-readiness.mjs --rehearsal",
     "launch:production": "node scripts/check-launch-readiness.mjs --production",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "editorial:check": "node scripts/check-public-editorial-consistency.mjs",
+    "launch:preflight": "node scripts/launch-preflight.mjs",
+    "launch:preflight:rehearsal": "node scripts/launch-preflight.mjs --rehearsal",
+    "launch:preflight:production": "node scripts/launch-preflight.mjs --production"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1128.0",
