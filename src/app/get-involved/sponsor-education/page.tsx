@@ -13,6 +13,7 @@ export const metadata: Metadata = {
   description: "Support Hifdh, Quran Nazira, school or college education through the Amaana Taleem Initiative.",
   alternates: { canonical: "/get-involved/sponsor-education" },
   openGraph: { type: "website", url: "/get-involved/sponsor-education", title: "Sponsor Education | Amaana Foundation", description: "Choose an education sponsorship path through the Amaana Taleem Initiative." },
+  twitter: { card: "summary", title: "Sponsor Education | Amaana Foundation", description: "Choose an education sponsorship path through the Amaana Taleem Initiative." },
 };
 
 const islamicPaths = [

@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   description: "Explore Amaana Foundation initiatives across medical and financial relief, emergency response, Ramadan and Eid, Taleem education support, and seasonal relief.",
   alternates: { canonical: "/our-work" },
   openGraph: { type: "website", url: "/our-work", title: "Our Work | Amaana Foundation", description: "Explore documented Amaana Foundation initiatives and the evidence, stories and approved media connected to them." },
+  twitter: { card: "summary", title: "Our Work | Amaana Foundation", description: "Explore documented Amaana Foundation initiatives and the evidence, stories and approved media connected to them." },
 };
 
 export default async function OurWorkPage({ searchParams }: { searchParams: Promise<WorkSearch> }) {

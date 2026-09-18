@@ -19,11 +19,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const legacyDestination = legacyProgrammeCategoryDestination(slug);
   const categorySlug = programmeCategoryFromRoute(slug);
   const category = programmeCategories.find(item => item.slug === categorySlug);
-  if (programmeAliases[slug]) return { title: 'Programme | Amaana Foundation' };
+  if (programmeAliases[slug]) return { title: 'Programme' };
   if (legacyDestination) { const canonicalCategory = programmeCategories.find(item => programmeCategoryPath(item.slug) === legacyDestination); return canonicalCategory ? { title: canonicalCategory.title, description: canonicalCategory.summary, alternates: { canonical: legacyDestination } } : { title: 'Amaana Programmes' }; }
   if (!category) return { title: 'Amaana Programmes' };
   const canonical = programmeCategoryPath(category.slug);
-  return { title: `${category.title} | Amaana Foundation Hyderabad`, description: category.summary, alternates: { canonical }, openGraph: { type: 'website', url: canonical, title: `${category.title} | Amaana Foundation Hyderabad`, description: category.summary }, twitter: { card: 'summary', title: `${category.title} | Amaana Foundation Hyderabad`, description: category.summary } };
+  return { title: category.title, description: category.summary, alternates: { canonical }, openGraph: { type: 'website', url: canonical, title: `${category.title} | Amaana Foundation`, description: category.summary }, twitter: { card: 'summary', title: `${category.title} | Amaana Foundation`, description: category.summary } };
 }
 
 export default async function Page({ params }: Props) {
