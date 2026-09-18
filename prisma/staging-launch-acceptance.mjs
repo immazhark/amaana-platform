@@ -70,14 +70,14 @@ function getAttribute(tag, name) {
 }
 
 function findMeta(html, key, value) {
-  for (const tag of html.match(/<meta\\b[^>]*>/gi) ?? []) {
+  for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
     if (getAttribute(tag, key) === value) return getAttribute(tag, "content");
   }
   return null;
 }
 
 function findCanonical(html) {
-  for (const tag of html.match(/<link\\b[^>]*>/gi) ?? []) {
+  for (const tag of html.match(/<link\b[^>]*>/gi) ?? []) {
     if (getAttribute(tag, "rel")?.toLowerCase() === "canonical") return getAttribute(tag, "href");
   }
   return null;
@@ -150,7 +150,7 @@ assert.equal(findMeta(home.html, "name", "twitter:card"), "summary_large_image",
 assert.equal(findMeta(home.html, "name", "twitter:image"), new URL("/twitter-image", requestOrigin).href, "Homepage twitter:image mismatch");
 pass("homepage: Twitter card and image");
 
-const structuredDataScripts = [...home.html.matchAll(/<script[^>]*type=["']application\\/ld\\+json["'][^>]*>([\\s\\S]*?)<\\/script>/gi)];
+const structuredDataScripts = [...home.html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
 assert.ok(structuredDataScripts.length > 0, "Homepage is missing JSON-LD structured data");
 const structuredData = structuredDataScripts.map(match => JSON.parse(match[1]));
 const serializedStructuredData = JSON.stringify(structuredData);
