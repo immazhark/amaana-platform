@@ -9,6 +9,8 @@ const representativeRoutes = [
   '/faith-and-reflections',
   '/about',
   '/appeals',
+  '/donate',
+  '/get-involved/sponsor-education',
   '/how-we-verify',
   '/transparency',
   '/governance',
@@ -52,9 +54,16 @@ for (const path of representativeRoutes) {
     await expect(ogUrl).toHaveCount(1);
     await expect(ogUrl).toHaveAttribute('content', canonicalFor(path));
 
+    const ogImage = page.locator('meta[property="og:image"]');
+    await expect(ogImage).toHaveCount(1);
+    await expect(ogImage).toHaveAttribute('content', /\/opengraph-image(?:\?|$)/);
+
     const twitterCard = page.locator('meta[name="twitter:card"]');
+    const twitterImage = page.locator('meta[name="twitter:image"]');
     await expect(twitterCard).toHaveCount(1);
     await expect(twitterCard).toHaveAttribute('content', /^summary(?:_large_image)?$/);
+    await expect(twitterImage).toHaveCount(1);
+    await expect(twitterImage).toHaveAttribute('content', /\/twitter-image(?:\?|$)/);
   });
 }
 
