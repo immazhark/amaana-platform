@@ -3,8 +3,9 @@
 import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { createSession, destroySession } from "@/lib/auth";
+import { createSession, destroySession, getCurrentUser } from "@/lib/auth";
 import { isLoginSubjectLocked, recordFailedLoginAttempt } from "@/lib/auth-rate-limit";
+import { getTrustedClientAddress } from "@/lib/client-address";
 import { verifyPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
 
@@ -26,10 +27,10 @@ export async function login(formData: FormData) {
   const email = String(formData.get("email") ?? "").trim().toLowerCase();
   const password = String(formData.get("password") ?? "");
   const headerStore = await headers();
-  const address =
-    headerStore.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-    headerStore.get("x-real-ip") ??
-    "unknown";
+  const address = getTrustedClientAddress(
+    headerStore,
+    process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org",
+  );
   const subjectHash = authenticationSubjectHash(email, address);
 
   if (await isLoginSubjectLocked(subjectHash)) {
@@ -64,6 +65,17 @@ export async function login(formData: FormData) {
 }
 
 export async function logout() {
+  const user = await getCurrentUser();
   await destroySession();
+  if (user) {
+    await prisma.auditEvent.create({
+      data: {
+        actorId: user.id,
+        action: "session.logout",
+        entityType: "User",
+        entityId: user.id,
+      },
+    });
+  }
   redirect("/admin/login");
 }
