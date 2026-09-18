@@ -8,6 +8,17 @@ export const metadata = {
   title: aboutCopy.title,
   description: aboutCopy.intro,
   alternates: { canonical: "/about" },
+  openGraph: {
+    type: "website",
+    url: "/about",
+    title: `${aboutCopy.title} | Amaana Foundation`,
+    description: aboutCopy.intro,
+  },
+  twitter: {
+    card: "summary",
+    title: `${aboutCopy.title} | Amaana Foundation`,
+    description: aboutCopy.intro,
+  },
 };
 
 export const dynamic = "force-dynamic";
