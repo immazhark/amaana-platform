@@ -9,9 +9,15 @@ const syntheticPng = Buffer.from(
   "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAusB9Y9ZQmcAAAAASUVORK5CYII=",
   "base64",
 );
+const syntheticPdf = Buffer.from(
+  "%PDF-1.4\n1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n2 0 obj\n<< /Type /Pages /Count 0 >>\nendobj\ntrailer\n<< /Root 1 0 R >>\n%%EOF\n",
+  "utf8",
+);
 
 let mediaAssetId = null;
 let objectKey = null;
+let documentAssetId = null;
+let documentObjectKey = null;
 let s3 = null;
 let bucket = null;
 
@@ -149,9 +155,88 @@ async function run() {
   assert.equal(revoked.status, 404, "Unpublished media remained publicly accessible");
   assert.match(revoked.headers.get("cache-control") ?? "", /no-store/i, "Revoked response must not be cached");
   pass("unpublishing immediately revokes origin access through /media");
+
+  documentObjectKey = `${now.getUTCFullYear()}/${randomUUID()}.pdf`;
+  const documentPublicUrl = `${publicMediaBaseUrl.toString().replace(/\/$/, "")}/${documentObjectKey}`;
+
+  await s3.send(new PutObjectCommand({
+    Bucket: bucket,
+    Key: documentObjectKey,
+    Body: syntheticPdf,
+    ContentType: "application/pdf",
+    CacheControl: "public, max-age=31536000, immutable",
+    Metadata: { originalName: "amaana-staging-public-media-acceptance.pdf", synthetic: "true" },
+  }));
+  pass("synthetic document uploaded to the dedicated private public-media bucket");
+
+  const documentAsset = await prisma.mediaAsset.create({
+    data: {
+      kind: "DOCUMENT",
+      title: "STAGING TEST — public document delivery acceptance",
+      publicUrl: documentPublicUrl,
+      storageKey: documentObjectKey,
+      caption: "Synthetic staging-only infrastructure acceptance document. Not beneficiary media.",
+      sourcePath: "synthetic://staging-public-media-acceptance.pdf",
+      sourceYear: now.getUTCFullYear(),
+      isPublic: false,
+      privacyApprovedAt: null,
+    },
+    select: { id: true },
+  });
+  documentAssetId = documentAsset.id;
+  pass("synthetic document MediaAsset created unpublished");
+
+  const unpublishedDocument = await requestMedia(documentPublicUrl, "document-unpublished");
+  assert.equal(unpublishedDocument.status, 404, "Unpublished document was publicly accessible");
+  assert.match(unpublishedDocument.headers.get("cache-control") ?? "", /no-store/i, "Unpublished document response must not be cached");
+  pass("unpublished document is inaccessible through /media");
+
+  await prisma.mediaAsset.update({
+    where: { id: documentAssetId },
+    data: { isPublic: true, privacyApprovedAt: new Date() },
+  });
+  pass("synthetic document publication gate enabled");
+
+  const publishedDocument = await requestMedia(documentPublicUrl, "document-published");
+  assert.equal(publishedDocument.status, 200, "Published synthetic document did not load through /media");
+  assert.match(publishedDocument.headers.get("content-type") ?? "", /^application\/pdf/i, "Published document content type is incorrect");
+  assert.match(publishedDocument.headers.get("x-content-type-options") ?? "", /^nosniff$/i, "Published document must send nosniff");
+  assert.match(publishedDocument.headers.get("content-disposition") ?? "", /^inline$/i, "Published document must use inline disposition");
+  const documentCacheControl = publishedDocument.headers.get("cache-control") ?? "";
+  assert.match(documentCacheControl, /max-age=60/i, "Published document browser cache must remain bounded");
+  assert.match(documentCacheControl, /s-maxage=300/i, "Published document shared cache must remain bounded");
+  assert.doesNotMatch(documentCacheControl, /immutable/i, "Published document proxy response must not be immutable");
+  const servedDocumentBytes = Buffer.from(await publishedDocument.arrayBuffer());
+  assert.deepEqual(servedDocumentBytes, syntheticPdf, "Published document proxy response bytes differ from the uploaded object");
+  pass("published document is served from private storage through the gated proxy");
+
+  await prisma.mediaAsset.update({
+    where: { id: documentAssetId },
+    data: { isPublic: false, privacyApprovedAt: null },
+  });
+  pass("synthetic document unpublished");
+
+  const revokedDocument = await requestMedia(documentPublicUrl, "document-revoked");
+  assert.equal(revokedDocument.status, 404, "Unpublished document remained publicly accessible");
+  assert.match(revokedDocument.headers.get("cache-control") ?? "", /no-store/i, "Revoked document response must not be cached");
+  pass("unpublishing document immediately revokes origin access through /media");
 }
 
 async function cleanup() {
+  if (documentAssetId) {
+    await prisma.mediaAsset.updateMany({
+      where: { id: documentAssetId },
+      data: { isPublic: false, privacyApprovedAt: null },
+    });
+    await prisma.mediaAsset.deleteMany({ where: { id: documentAssetId } });
+    pass("synthetic document MediaAsset removed");
+  }
+
+  if (s3 && bucket && documentObjectKey) {
+    await s3.send(new DeleteObjectCommand({ Bucket: bucket, Key: documentObjectKey }));
+    pass("synthetic document storage object removed");
+  }
+
   if (mediaAssetId) {
     await prisma.mediaAsset.updateMany({
       where: { id: mediaAssetId },
@@ -183,4 +268,4 @@ try {
 }
 
 if (failure) throw failure;
-console.log("\nAmaana public-media staging acceptance passed.");
+console.log("\nAmaana public-media staging acceptance passed for image and document delivery.");
