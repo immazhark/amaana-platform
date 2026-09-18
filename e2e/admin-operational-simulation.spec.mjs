@@ -27,6 +27,8 @@ test.describe('admin operational simulation without shared records', () => {
     await expect(page.getByLabel('Password')).toHaveAttribute('autocomplete', 'current-password');
     await expect(page.getByLabel('Email')).toHaveAttribute('required', '');
     await expect(page.getByLabel('Password')).toHaveAttribute('required', '');
+    await expect(page.getByLabel('Email')).toHaveAttribute('maxlength', '254');
+    await expect(page.getByLabel('Password')).toHaveAttribute('maxlength', '256');
     await expect(page.getByRole('button', { name: 'Sign in securely' })).toBeVisible();
   });
 
