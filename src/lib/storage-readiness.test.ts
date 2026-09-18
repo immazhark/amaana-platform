@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { getPublicMediaStorageReadiness, isManagedPrivateDocumentKey } from "./storage";
+import { getPublicMediaStorageReadiness, isManagedPrivateDocumentKey, PRIVATE_OBJECT_CACHE_CONTROL } from "./storage";
 
 const keys = [
   "S3_REGION",
@@ -86,5 +86,11 @@ describe("managed private document keys", () => {
     expect(isManagedPrivateDocumentKey("assistance/request-123/../secret.pdf", requestId)).toBe(false);
     expect(isManagedPrivateDocumentKey("assistance/request-123/not-a-uuid.pdf", requestId)).toBe(false);
     expect(isManagedPrivateDocumentKey("assistance/request-123/123e4567-e89b-12d3-a456-426614174000.exe", requestId)).toBe(false);
+  });
+});
+
+describe("storage cache boundary", () => {
+  it("keeps direct bucket objects private so publication caching stays under the gated proxy", () => {
+    expect(PRIVATE_OBJECT_CACHE_CONTROL).toBe("private, no-store, max-age=0");
   });
 });
