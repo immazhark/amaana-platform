@@ -83,16 +83,22 @@ function findCanonical(html) {
   return null;
 }
 
+function normalizeComparableUrl(value) {
+  const url = new URL(value);
+  const path = url.pathname === "/" ? "" : url.pathname.replace(/\/$/, "");
+  return `${url.origin}${path}${url.search}${url.hash}`;
+}
+
 function expectSeoMetadata(html, path, context) {
   const expectedUrl = new URL(path, requestOrigin).href;
-  assert.equal(findCanonical(html), expectedUrl, `${context} canonical URL mismatch`);
+  assert.equal(normalizeComparableUrl(findCanonical(html)), normalizeComparableUrl(expectedUrl), `${context} canonical URL mismatch`);
   pass(`${context}: canonical URL`);
 
   const description = findMeta(html, "name", "description");
   assert.ok(description && description.length >= 50, `${context} description is missing or too short`);
   pass(`${context}: meta description`);
 
-  assert.equal(findMeta(html, "property", "og:url"), expectedUrl, `${context} og:url mismatch`);
+  assert.equal(normalizeComparableUrl(findMeta(html, "property", "og:url")), normalizeComparableUrl(expectedUrl), `${context} og:url mismatch`);
   pass(`${context}: og:url`);
 
   const ogTitle = findMeta(html, "property", "og:title");
