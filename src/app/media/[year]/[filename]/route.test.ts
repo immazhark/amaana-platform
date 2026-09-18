@@ -97,6 +97,34 @@ describe("approved public media delivery", () => {
     expect(mocks.getPublicMediaObject).toHaveBeenCalledWith(objectKey);
   });
 
+  it("serves an approved managed PDF through the same gated proxy", async () => {
+    const pdfFilename = "123e4567-e89b-12d3-a456-426614174000.pdf";
+    const pdfKey = `${year}/${pdfFilename}`;
+    mocks.findFirst.mockResolvedValue({
+      kind: "DOCUMENT",
+      publicUrl: `https://amaanafoundation.org/media/${pdfKey}`,
+      externalUrl: null,
+      altText: null,
+    });
+    mocks.getPublicMediaObject.mockResolvedValue({
+      bytes: new Uint8Array([37, 80, 68, 70, 45]),
+      contentType: "application/pdf",
+      etag: null,
+      lastModified: null,
+    });
+
+    const response = await GET(
+      new Request(`https://amaanafoundation.org/media/${pdfKey}`),
+      context({ filename: pdfFilename }),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("content-type")).toBe("application/pdf");
+    expect(response.headers.get("content-disposition")).toBe("inline");
+    expect(response.headers.get("x-content-type-options")).toBe("nosniff");
+    expect(mocks.getPublicMediaObject).toHaveBeenCalledWith(pdfKey);
+  });
+
   it("fails closed when the stored object content type disagrees with its managed extension", async () => {
     mocks.findFirst.mockResolvedValue(approvedAsset());
     mocks.getPublicMediaObject.mockResolvedValue({
