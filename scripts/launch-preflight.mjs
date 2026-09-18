@@ -21,6 +21,11 @@ const steps = [
     args: ["--test", "scripts/test-public-editorial-consistency.mjs"],
   },
   {
+    label: "Launch readiness policy invariants",
+    command: nodeCommand,
+    args: ["--test", "scripts/test-launch-readiness.mjs"],
+  },
+  {
     label: "Public editorial consistency",
     command: nodeCommand,
     args: ["scripts/check-public-editorial-consistency.mjs"],
