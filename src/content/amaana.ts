@@ -63,7 +63,7 @@ export const initiatives: AmaanaInitiative[] = [
     title: "Medical & Financial Assistance",
     eyebrow: "Verified assistance",
     summary: "Case-led support for medical emergencies, livelihood needs and financial hardship after review of supporting information.",
-    metric: "₹4.82L",
+    metric: "₹482,700",
     metricLabel: "raised in one documented medical appeal",
     href: "/our-work#medical-financial-assistance",
   },
