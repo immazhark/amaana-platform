@@ -5,7 +5,7 @@ This runbook covers operational verification of Razorpay donation, acknowledgeme
 ## Current posture
 
 - Donation acceptance remains domestic India-only.
-- Live Razorpay activity remains blocked until KYC/account readiness is confirmed and explicit authorization is given.
+- Razorpay KYC/account activation was confirmed on 18 September 2026. Live Razorpay activity still remains blocked until Test-mode reconciliation is complete, separate Live-mode keys/webhook are configured at the controlled production checkpoint, and explicit authorization is given.
 - Staging/browser acceptance must remain synthetic and must not create a real charge.
 - Payment webhooks are signature-verified and idempotent by provider event id.
 - Stored webhook evidence is privacy-minimized to reconciliation fields only.
@@ -17,7 +17,7 @@ This runbook covers operational verification of Razorpay donation, acknowledgeme
 
 ## Before any live acceptance
 
-1. Confirm Razorpay live/KYC readiness.
+1. Confirm the recorded Razorpay approval remains active and that the controlled acceptance is using the intended Test or Live environment.
 2. Record the exact application candidate SHA.
 3. Confirm database backup/recovery evidence and rollback readiness.
 4. Confirm the intended appeal is explicitly approved for the controlled test.
@@ -113,7 +113,6 @@ The repository may record non-sensitive reference ids, candidate SHA, deployment
 
 The following remain PENDING until actually exercised with explicit authorization:
 
-- `razorpay-live-kyc-readiness`;
 - `controlled-live-donation-acceptance`;
 - `refund-receipt-operational-check`.
 
