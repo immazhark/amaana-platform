@@ -27,7 +27,8 @@
     "editorial:check": "node scripts/check-public-editorial-consistency.mjs",
     "launch:preflight": "node scripts/launch-preflight.mjs",
     "launch:preflight:rehearsal": "node scripts/launch-preflight.mjs --rehearsal",
-    "launch:preflight:production": "node scripts/launch-preflight.mjs --production"
+    "launch:preflight:production": "node scripts/launch-preflight.mjs --production",
+    "rehearsal:verify-target": "node scripts/verify-rollback-target.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1128.0",
