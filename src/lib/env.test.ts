@@ -38,6 +38,12 @@ describe("production environment safety", () => {
     expect(isEmailDeliveryEnabled()).toBe(true);
   });
 
+  it("keeps delivery disabled when the mode is omitted", () => {
+    delete process.env.EMAIL_DELIVERY_MODE;
+    expect(isEmailDeliveryEnabled()).toBe(false);
+  });
+
+
   it("accepts staging only with Razorpay test mode and disabled email delivery", () => {
     process.env.APP_ENVIRONMENT = "staging";
     process.env.EMAIL_DELIVERY_MODE = "disabled";
