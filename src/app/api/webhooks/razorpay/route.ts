@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
+import { appealStatusAfterRefund } from "@/lib/appeals";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { captureDonation } from "@/lib/payment-processing";
 import { prisma } from "@/lib/prisma";
@@ -134,7 +135,7 @@ export async function POST(request: Request) {
 
         const appeal = await tx.appeal.findUnique({
           where: { id: donation.appealId },
-          select: { amountRaised: true },
+          select: { status: true, amountRaised: true, goalAmount: true, closesAt: true },
         });
         if (!appeal) {
           throw new Error("Refund donation is missing its appeal");
@@ -160,9 +161,20 @@ export async function POST(request: Request) {
         }
 
         if (accounting.appealRefundPaise > 0) {
+          const nextAmountRaised = accounting.nextAppealRaisedPaise / 100;
+          const nextStatus = appealStatusAfterRefund(
+            appeal.status,
+            nextAmountRaised,
+            appeal.goalAmount,
+            appeal.closesAt,
+          );
+
           await tx.appeal.update({
             where: { id: donation.appealId },
-            data: { amountRaised: { decrement: accounting.appealRefundPaise / 100 } },
+            data: {
+              amountRaised: { decrement: accounting.appealRefundPaise / 100 },
+              ...(nextStatus !== appeal.status ? { status: nextStatus as "PUBLISHED" | "CLOSED" } : {}),
+            },
           });
         }
       });
