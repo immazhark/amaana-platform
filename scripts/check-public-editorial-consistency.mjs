@@ -29,6 +29,11 @@ const staleFacts = [
     pattern: /234\+[^\n]{0,80}(?:beneficiar|winter)/gi,
     message: "Use the canonical Winter Drive total: 234 Winter Kits to 234 beneficiaries.",
   },
+  {
+    id: "aliza-rounded-amount",
+    pattern: /₹\s*4\.82\s*L\b/gi,
+    message: "Use the exact documented Aliza medical-aid amount ₹482,700 on public surfaces.",
+  },
 ];
 
 const complianceRisks = [
