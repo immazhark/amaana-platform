@@ -41,12 +41,10 @@ export async function login(formData: FormData) {
     where: { email },
     include: { credential: true },
   });
-  const authenticated =
-    user?.credential && user.status === "ACTIVE"
-      ? await verifyPassword(password, user.credential.passwordHash)
-      : false;
+  const passwordMatches = await verifyPassword(password, user?.credential?.passwordHash ?? "");
+  const authenticated = Boolean(user && user.status === "ACTIVE" && passwordMatches);
 
-  if (!user || !authenticated) {
+  if (!authenticated) {
     const recorded = await recordFailedLoginAttempt(subjectHash);
     redirect(recorded ? "/admin/login?error=invalid" : "/admin/login?error=locked");
   }
