@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { isIP } from "node:net";
+import { getTrustedClientAddress } from "./client-address";
 import { isPrismaSerializableConflict, withSerializableTransactionRetry } from "./prisma-transaction";
 
 type RateLimitPurpose = "donation" | "assistance" | "analytics";
@@ -36,35 +36,7 @@ function getRateLimitPepper(purpose: RateLimitPurpose) {
  * across sensitive workflows if one secret is ever rotated or exposed.
  */
 export function getRateLimitClientAddress(request: Request) {
-  const configuredUrl = process.env.NEXT_PUBLIC_APP_URL;
-  const configuredHost = configuredUrl ? new URL(configuredUrl).host.toLowerCase() : null;
-  const requestHost = (
-    request.headers.get("x-forwarded-host")
-    ?? request.headers.get("host")
-    ?? new URL(request.url).host
-  ).toLowerCase();
-
-  const cloudflareAddress = request.headers.get("cf-connecting-ip")?.trim() ?? "";
-  const railwayAddress = request.headers.get("x-real-ip")?.trim() ?? "";
-  const forwardedChain = request.headers.get("x-forwarded-for")
-    ?.split(",")
-    .map(value => value.trim())
-    .filter(Boolean) ?? [];
-  const nearestForwardedAddress = forwardedChain.at(-1) ?? "";
-
-  const configuredIsRailwayHost = configuredHost?.endsWith(".up.railway.app") ?? false;
-  if (
-    configuredHost
-    && !configuredIsRailwayHost
-    && requestHost === configuredHost
-    && isIP(cloudflareAddress)
-  ) {
-    return cloudflareAddress;
-  }
-
-  if (isIP(railwayAddress)) return railwayAddress;
-  if (isIP(nearestForwardedAddress)) return nearestForwardedAddress;
-  return "unknown";
+  return getTrustedClientAddress(request.headers, request.url);
 }
 
 export function getRateLimitClientHash(request: Request, purpose: RateLimitPurpose) {
