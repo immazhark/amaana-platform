@@ -22,4 +22,4 @@ COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000 HOSTNAME=0.0.0.0
-CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && node prisma/import-reviewed-campaigns.mjs && if [ \"$APP_ENVIRONMENT\" = \"staging\" ]; then node prisma/seed.mjs && node prisma/seed-staging-acceptance.mjs; fi && if [ \"$APP_ENVIRONMENT\" = \"staging\" ] && [ \"$PUBLIC_MEDIA_ACCEPTANCE_ON_START\" = \"true\" ]; then npm run acceptance:public-media; fi && node server.js"]
+CMD ["sh", "-c", "./node_modules/.bin/prisma migrate deploy && node prisma/import-reviewed-campaigns.mjs && if [ \"$APP_ENVIRONMENT\" = \"staging\" ]; then node prisma/seed.mjs && node prisma/seed-staging-acceptance.mjs; fi && if [ \"$APP_ENVIRONMENT\" = \"staging\" ] && [ \"$PUBLIC_MEDIA_ACCEPTANCE_ON_START\" = \"true\" ]; then npm run acceptance:public-media; fi && if [ \"$APP_ENVIRONMENT\" = \"staging\" ] && [ \"$STAGING_ACCEPTANCE_ON_START\" = \"true\" ]; then node prisma/staging-start-with-acceptance.mjs; else node server.js; fi"]
