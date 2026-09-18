@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { getRateLimitClientHash, isRetryableRateLimitConflict } from "./request-security";
+import { getRateLimitClientAddress, getRateLimitClientHash, isRetryableRateLimitConflict } from "./request-security";
 
 const originalEnv = { ...process.env };
 
@@ -20,7 +20,11 @@ afterEach(() => {
 
 function requestFor(address: string) {
   return new Request("https://amaanafoundation.org/", {
-    headers: { "x-forwarded-for": `${address}, 10.0.0.1` },
+    headers: {
+      host: "amaanafoundation.org",
+      "x-real-ip": address,
+      "x-forwarded-for": `198.51.100.8, ${address}`,
+    },
   });
 }
 
@@ -30,6 +34,54 @@ function prismaError(code: string) {
     clientVersion: "test",
   });
 }
+
+describe("proxy-aware client address selection", () => {
+  it("uses Cloudflare's single-value visitor header on the configured custom domain", () => {
+    process.env.NEXT_PUBLIC_APP_URL = "https://amaanafoundation.org";
+    const request = new Request("https://amaanafoundation.org/", {
+      headers: {
+        host: "amaanafoundation.org",
+        "cf-connecting-ip": "203.0.113.10",
+        "x-real-ip": "198.51.100.20",
+        "x-forwarded-for": "192.0.2.9, 198.51.100.20",
+      },
+    });
+    expect(getRateLimitClientAddress(request)).toBe("203.0.113.10");
+  });
+
+  it("prefers Railway X-Real-IP for the direct staging host", () => {
+    process.env.NEXT_PUBLIC_APP_URL = "https://amaana-rebuild-preview-production.up.railway.app";
+    const request = new Request("https://amaana-rebuild-preview-production.up.railway.app/", {
+      headers: {
+        host: "amaana-rebuild-preview-production.up.railway.app",
+        "cf-connecting-ip": "203.0.113.99",
+        "x-real-ip": "198.51.100.20",
+        "x-forwarded-for": "192.0.2.9, 198.51.100.20",
+      },
+    });
+    expect(getRateLimitClientAddress(request)).toBe("198.51.100.20");
+  });
+
+  it("does not trust the first X-Forwarded-For hop when stronger proxy headers are absent", () => {
+    delete process.env.NEXT_PUBLIC_APP_URL;
+    const request = new Request("https://example.test/", {
+      headers: {
+        "x-forwarded-for": "203.0.113.250, 198.51.100.20",
+      },
+    });
+    expect(getRateLimitClientAddress(request)).toBe("198.51.100.20");
+  });
+
+  it("rejects malformed proxy-address headers", () => {
+    const request = new Request("https://example.test/", {
+      headers: {
+        "x-real-ip": "not-an-ip",
+        "x-forwarded-for": "also-not-an-ip",
+      },
+    });
+    expect(getRateLimitClientAddress(request)).toBe("unknown");
+  });
+});
 
 describe("rate-limit client hashing", () => {
   it("keeps donation, assistance and analytics identifiers separated", () => {
