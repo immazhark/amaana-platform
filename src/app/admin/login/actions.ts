@@ -48,9 +48,8 @@ export async function login(formData: FormData) {
     include: { credential: true },
   });
   const passwordMatches = await verifyPassword(password, user?.credential?.passwordHash ?? "");
-  const authenticated = Boolean(user && user.status === "ACTIVE" && passwordMatches);
 
-  if (!authenticated) {
+  if (!user || user.status !== "ACTIVE" || !passwordMatches) {
     const recorded = await recordFailedLoginAttempt(subjectHash);
     redirect(recorded ? "/admin/login?error=invalid" : "/admin/login?error=locked");
   }
