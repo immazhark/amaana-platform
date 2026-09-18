@@ -63,6 +63,45 @@ function expectText(html, text, context) {
   pass(`${context}: ${text}`);
 }
 
+
+function getAttribute(tag, name) {
+  const match = tag.match(new RegExp(`\\b${name}=["']([^"']*)["']`, "i"));
+  return match?.[1] ?? null;
+}
+
+function findMeta(html, key, value) {
+  for (const tag of html.match(/<meta\b[^>]*>/gi) ?? []) {
+    if (getAttribute(tag, key) === value) return getAttribute(tag, "content");
+  }
+  return null;
+}
+
+function findCanonical(html) {
+  for (const tag of html.match(/<link\b[^>]*>/gi) ?? []) {
+    if (getAttribute(tag, "rel")?.toLowerCase() === "canonical") return getAttribute(tag, "href");
+  }
+  return null;
+}
+
+function expectSeoMetadata(html, path, context) {
+  const expectedUrl = new URL(path, requestOrigin).href;
+  assert.equal(findCanonical(html), expectedUrl, `${context} canonical URL mismatch`);
+  pass(`${context}: canonical URL`);
+
+  const description = findMeta(html, "name", "description");
+  assert.ok(description && description.length >= 50, `${context} description is missing or too short`);
+  pass(`${context}: meta description`);
+
+  assert.equal(findMeta(html, "property", "og:url"), expectedUrl, `${context} og:url mismatch`);
+  pass(`${context}: og:url`);
+
+  const ogTitle = findMeta(html, "property", "og:title");
+  const ogDescription = findMeta(html, "property", "og:description");
+  assert.ok(ogTitle?.includes("Amaana Foundation"), `${context} Open Graph title is missing Amaana Foundation`);
+  assert.ok(ogDescription && ogDescription.length >= 40, `${context} Open Graph description is missing or too short`);
+  pass(`${context}: Open Graph title and description`);
+}
+
 function expectHeader(response, name, pattern, context) {
   const value = response.headers.get(name) ?? "";
   assert.match(value, pattern, `${context} header ${name} was ${JSON.stringify(value)}`);
@@ -101,10 +140,50 @@ const home = await getHtml("/");
 expectText(home.html, "Amaana Foundation", "homepage identity");
 assert.match(home.html, /name=["']robots["'][^>]*noindex|content=["'][^"']*noindex[^"']*["'][^>]*name=["']robots["']/i, "Staging homepage is not explicitly noindex");
 pass("staging homepage remains noindex");
+expectSeoMetadata(home.html, "/", "homepage SEO");
 
-for (const path of ["/about", "/our-work", "/privacy", "/transparency", "/donate"]) {
-  await getHtml(path);
+const homeOgImage = findMeta(home.html, "property", "og:image");
+assert.equal(homeOgImage, new URL("/opengraph-image", requestOrigin).href, "Homepage og:image is not the canonical Amaana social image");
+pass("homepage: Open Graph image");
+
+assert.equal(findMeta(home.html, "name", "twitter:card"), "summary_large_image", "Homepage Twitter card must use summary_large_image");
+assert.equal(findMeta(home.html, "name", "twitter:image"), new URL("/twitter-image", requestOrigin).href, "Homepage twitter:image mismatch");
+pass("homepage: Twitter card and image");
+
+const structuredDataScripts = [...home.html.matchAll(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi)];
+assert.ok(structuredDataScripts.length > 0, "Homepage is missing JSON-LD structured data");
+const structuredData = structuredDataScripts.map(match => JSON.parse(match[1]));
+const serializedStructuredData = JSON.stringify(structuredData);
+assert.match(serializedStructuredData, /"Organization"/, "Structured data is missing Organization");
+assert.match(serializedStructuredData, /"NGO"/, "Structured data is missing NGO");
+assert.match(serializedStructuredData, /"WebSite"/, "Structured data is missing WebSite");
+assert.ok(serializedStructuredData.includes(requestOrigin), "Structured data does not reference the configured staging origin");
+pass("homepage: Organization, NGO and WebSite structured data");
+
+for (const path of ["/about", "/our-work", "/appeals", "/privacy", "/transparency", "/donate"]) {
+  const page = await getHtml(path);
   pass(`public route ${path}`);
+  expectSeoMetadata(page.html, path, `${path} SEO`);
+}
+
+const robots = await get("/robots.txt");
+const robotsBody = await robots.text();
+assert.match(robotsBody, /User-agent:\s*\*/i, "robots.txt is missing wildcard user-agent");
+assert.match(robotsBody, /Disallow:\s*\//i, "Staging robots.txt does not block crawling");
+assert.doesNotMatch(robotsBody, /Sitemap:/i, "Staging robots.txt must not advertise a sitemap while indexing is disabled");
+pass("staging robots.txt remains fail-closed");
+
+const sitemap = await get("/sitemap.xml");
+const sitemapBody = await sitemap.text();
+assert.doesNotMatch(sitemapBody, /<url>/i, "Staging sitemap exposes public URLs while indexing is disabled");
+pass("staging sitemap remains empty while indexing is disabled");
+
+for (const imagePath of ["/opengraph-image", "/twitter-image"]) {
+  const image = await get(imagePath);
+  assert.match(image.headers.get("content-type") ?? "", /^image\//i, `${imagePath} did not return an image content type`);
+  const bytes = new Uint8Array(await image.arrayBuffer());
+  assert.ok(bytes.byteLength > 1000, `${imagePath} image payload is unexpectedly small`);
+  pass(`social image ${imagePath}`);
 }
 
 const appeals = await getHtml("/appeals");
