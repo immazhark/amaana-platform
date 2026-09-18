@@ -24,4 +24,6 @@ No application-data loss was detected. The restored database and the preserved o
 - row counts and latest update timestamps for Appeal, Donation, AssistanceRequest, MediaAsset, User, AuditEvent and Notification;
 - exact content digests for Appeal, Donation, AssistanceRequest, MediaAsset, User and `_prisma_migrations`.
 
-This is sufficient evidence that the snapshot was recoverable at the time of the rehearsal. The separate application deployment rollback gate remains open until Railway rollback/recovery is rehearsed and verified.
+Post-restore application startup was also revalidated by Railway deployment `bf4a93a3-7ec2-4b64-b3f2-83000a4e0ca8` on integration SHA `e643cda26d2bd447025a636400769cd47cd81e84`. Runtime logs confirmed the application reconnected to Neon, found all five migrations with none pending, rebuilt RBAC/staff fixtures, prepared the staging acceptance/refund fixtures and reached Next.js readiness.
+
+This is sufficient evidence that the snapshot was recoverable at the time of the rehearsal and that the application could restart cleanly against the recovered database. The separate application deployment rollback gate remains open until Railway rollback/recovery is rehearsed and verified.
