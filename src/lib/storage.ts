@@ -89,7 +89,14 @@ export async function uploadPrivateDocument(file: File, requestId: string) {
   const safeExtension = extensionForMimeType(file.type);
   const objectKey = `assistance/${requestId}/${randomUUID()}.${safeExtension}`;
   const { bucket, client } = getPrivateStorage();
-  await client.send(new PutObjectCommand({ Bucket: bucket, Key: objectKey, Body: bytes, ContentType: file.type, Metadata: { requestId } }));
+  await client.send(new PutObjectCommand({
+    Bucket: bucket,
+    Key: objectKey,
+    Body: bytes,
+    ContentType: file.type,
+    CacheControl: "private, no-store, max-age=0",
+    Metadata: { requestId },
+  }));
   return { objectKey, originalName: file.name.slice(0, 255), mimeType: file.type, sizeBytes: file.size };
 }
 
@@ -102,7 +109,11 @@ export async function deletePrivateDocumentObject(objectKey: string, requestId: 
 export async function getPrivateDocumentUrl(objectKey: string, requestId: string) {
   if (!isManagedPrivateDocumentKey(objectKey, requestId)) throw new Error("Invalid managed private document key");
   const { bucket, client } = getPrivateStorage();
-  return getSignedUrl(client, new GetObjectCommand({ Bucket: bucket, Key: objectKey }), { expiresIn: 60 });
+  return getSignedUrl(client, new GetObjectCommand({
+    Bucket: bucket,
+    Key: objectKey,
+    ResponseCacheControl: "private, no-store, max-age=0",
+  }), { expiresIn: 60 });
 }
 
 function normalizePublicBaseUrl() {
