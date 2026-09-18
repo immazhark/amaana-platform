@@ -31,6 +31,11 @@ for (const path of representativeRoutes) {
     expect(response?.ok(), `${path} should render successfully`).toBeTruthy();
 
     await expect(page).toHaveTitle(/Amaana Foundation/i);
+    const documentTitle = await page.title();
+    expect(
+      (documentTitle.match(/Amaana Foundation/gi) ?? []).length,
+      `${path} should not repeat the Amaana Foundation brand in the document title`,
+    ).toBeLessThanOrEqual(1);
 
     const description = page.locator('meta[name="description"]');
     await expect(description).toHaveCount(1);
