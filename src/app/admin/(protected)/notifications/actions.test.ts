@@ -42,7 +42,6 @@ describe("manual notification recovery", () => {
       channel: "EMAIL",
       attempts: 5,
       failureReason: "Email delivery is not configured",
-      recipient: "donor@example.test",
       templateKey: "donation-acknowledgement",
     });
     mocks.updateNotification.mockResolvedValue({ id: "notification_123" });
@@ -62,7 +61,6 @@ describe("manual notification recovery", () => {
       channel: "EMAIL",
       attempts: 1,
       failureReason: null,
-      recipient: "donor@example.test",
       templateKey: "donation-acknowledgement",
     });
 
@@ -97,7 +95,6 @@ describe("manual notification recovery", () => {
         metadata: expect.objectContaining({
           previousAttempts: 5,
           previousFailureReason: "Email delivery is not configured",
-          recipient: "donor@example.test",
           templateKey: "donation-acknowledgement",
         }),
       }),
