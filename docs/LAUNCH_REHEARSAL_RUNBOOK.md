@@ -28,6 +28,7 @@ npm run launch:rehearsal
 Do not treat application CI as a database backup.
 
 - Confirm a recoverable Neon/PostgreSQL snapshot or equivalent backup exists immediately before the rehearsal/cutover window.
+- For a non-disruptive Neon restore drill, call snapshot restore with `finalize: false`. Do **not** rely on the default for a newly created restore branch: the default finalizes immediately and can reassign computes / swap branch names. Verify the isolated restored branch first, then finalize only when an intentional branch replacement is required.
 - Record timestamp, environment, responsible operator, restore method and retention location in the operational change record; do not commit credentials or private database URLs to Git.
 - Confirm private assistance-document storage is backed up/retained according to policy and remains separate from public media.
 - If a migration is planned, verify it is backward/forward compatible with the rollback target. A destructive migration requires an explicitly tested restore path before cutover.
