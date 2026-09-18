@@ -94,8 +94,12 @@ describe("admin media deletion", () => {
     expect(mocks.deletePublicMediaObject).toHaveBeenCalledWith("2026/11111111-1111-4111-8111-111111111111.jpg");
     expect(mocks.deleteRecord).toHaveBeenCalledWith({ where: { id: "media_123" } });
     expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ action: "media.deletion_started", entityId: "media_123", actorId: "user_123" }),
+    }));
+    expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({ action: "media.deleted", entityId: "media_123", actorId: "user_123" }),
     }));
+    expect(mocks.createAudit.mock.invocationCallOrder[0]).toBeLessThan(mocks.deletePublicMediaObject.mock.invocationCallOrder[0]);
     expect(mocks.deletePublicMediaObject.mock.invocationCallOrder[0]).toBeLessThan(mocks.transaction.mock.invocationCallOrder[0]);
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/media");
   });
