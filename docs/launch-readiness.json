@@ -54,7 +54,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Railway has an authenticated `amaana-notification-cron` service scheduled every five minutes and current staging runs return HTTP 200 with `{\\\"status\\\":\\\"disabled\\\"}` because staging email delivery is intentionally disabled. Production readiness requires EMAIL_DELIVERY_MODE=live in the approved production environment plus a controlled transactional-email acceptance proving queue creation, cron/job processing, provider acceptance, delivered/sent state and retry/idempotency behavior without sending beneficiary-sensitive content."
+      "evidence": "Railway has an authenticated `amaana-notification-cron` service scheduled every five minutes and current staging runs return HTTP 200 with `{\\\"status\\\":\\\"disabled\\\"}` because staging email delivery is intentionally disabled. The application now includes atomic notification claiming, bounded retry/backoff, stale PROCESSING recovery, provider idempotency keys, precise Resend conflict classification, an admin operations view, and an audited `notification.manage` manual-requeue action for terminal FAILED email rows. Production readiness still requires EMAIL_DELIVERY_MODE=live in the approved production environment plus one controlled Amaana-owned recipient acceptance proving queue creation, cron/job processing, provider acceptance, exactly-once delivery and recovery behavior."
     },
     {
       "id": "manual-rendered-accessibility-review",
@@ -63,7 +63,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Automated responsive/axe checks are durable, but final human rendered review at representative desktop/tablet/mobile widths, 200% zoom, keyboard-only operation, reduced motion and key fixed-control states remains required."
+      "evidence": "Automated coverage now includes axe WCAG A/AA checks across representative public/admin routes, six responsive widths, 200% reflow-equivalent containment, keyboard skip-link/focus order, mobile navigation focus restoration, reduced-motion behavior, one-H1/lang/landmark checks and fixed-control collision checks. Final human rendered review at representative desktop/tablet/mobile widths, 200% zoom, keyboard-only operation, reduced motion and key fixed-control states remains required; use `docs/FINAL_HUMAN_LAUNCH_QA_CHECKLIST.md`."
     },
     {
       "id": "final-editorial-seo-social-review",
@@ -72,7 +72,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Final public copy/CTA/terminology/amount-format consistency plus production canonical, schema, robots/indexing and social-share preview review remains required before launch indexing is enabled."
+      "evidence": "Automated release guards now cover canonical factual locks, stale/unsafe public compliance wording, exact medical/winter amounts, representative canonical/description/Open Graph/Twitter metadata, generated social images, structured data, fail-closed staging robots and empty sitemap behavior. `/donate` now has explicit canonical/Open Graph/Twitter metadata. Final human copy/CTA/terminology/social-preview review remains required before launch indexing is enabled; use `docs/FINAL_HUMAN_LAUNCH_QA_CHECKLIST.md`."
     },
     {
       "id": "public-media-human-review",
