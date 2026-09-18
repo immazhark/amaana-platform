@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { getPublicMediaStorageReadiness } from "./storage";
+import { getPublicMediaStorageReadiness, isManagedPrivateDocumentKey } from "./storage";
 
 const keys = [
   "S3_REGION",
@@ -69,5 +69,22 @@ describe("getPublicMediaStorageReadiness", () => {
     expect(status.baseUrlConfigured).toBe(true);
     expect(status.baseUrlSecure).toBe(false);
     expect(status.deliveryReady).toBe(false);
+  });
+});
+
+
+describe("managed private document keys", () => {
+  it("accepts only keys bound to the owning assistance request", () => {
+    const requestId = "request-123";
+    const key = "assistance/request-123/123e4567-e89b-12d3-a456-426614174000.pdf";
+    expect(isManagedPrivateDocumentKey(key, requestId)).toBe(true);
+    expect(isManagedPrivateDocumentKey(key, "request-456")).toBe(false);
+  });
+
+  it("rejects traversal, unsupported extensions and malformed ids", () => {
+    const requestId = "request-123";
+    expect(isManagedPrivateDocumentKey("assistance/request-123/../secret.pdf", requestId)).toBe(false);
+    expect(isManagedPrivateDocumentKey("assistance/request-123/not-a-uuid.pdf", requestId)).toBe(false);
+    expect(isManagedPrivateDocumentKey("assistance/request-123/123e4567-e89b-12d3-a456-426614174000.exe", requestId)).toBe(false);
   });
 });
