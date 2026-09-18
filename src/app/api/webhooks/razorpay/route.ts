@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { appealStatusAfterRefund } from "@/lib/appeals";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { paymentEventAuditPayload } from "@/lib/payment-event-audit";
 import { captureDonation, ensureCapturedDonationForRefund } from "@/lib/payment-processing";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
@@ -64,6 +65,7 @@ export async function POST(request: Request) {
 
     const payment = payload.payload?.payment?.entity;
     const refund = payload.payload?.refund?.entity;
+    const auditPayload = paymentEventAuditPayload(payload);
 
     if (payload.event === "payment.captured" && payment?.order_id && payment.currency === "INR") {
       const result = await captureDonation(payment.order_id, payment.id, payment.amount);
@@ -72,7 +74,7 @@ export async function POST(request: Request) {
           providerEventId,
           eventType: payload.event,
           donationId: result.donationId,
-          payload: JSON.parse(rawBody),
+          payload: auditPayload,
         },
       });
     } else if (payload.event === "payment.failed" && payment?.order_id) {
@@ -87,7 +89,7 @@ export async function POST(request: Request) {
             providerEventId: providerEventId!,
             eventType: payload.event,
             donationId: donation?.id,
-            payload: JSON.parse(rawBody),
+            payload: auditPayload,
           },
         });
 
@@ -130,7 +132,7 @@ export async function POST(request: Request) {
             providerEventId: providerEventId!,
             eventType: payload.event,
             donationId: donation?.id,
-            payload: JSON.parse(rawBody),
+            payload: auditPayload,
           },
         });
 
@@ -186,7 +188,7 @@ export async function POST(request: Request) {
         data: {
           providerEventId,
           eventType: payload.event,
-          payload: JSON.parse(rawBody),
+          payload: auditPayload,
         },
       });
     }
