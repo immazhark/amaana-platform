@@ -69,10 +69,15 @@ Before any rollback action:
 Rehearsal sequence:
 1. Deploy/redeploy the candidate in staging and confirm `/api/health/live` and `/api/health/ready`.
 2. Run staging acceptance.
-3. Revert staging to the previous known-good deployment/SHA using the hosting platform's supported rollback/redeploy procedure.
-4. Re-check both health endpoints and representative public/private-boundary routes.
-5. Restore the candidate to staging and repeat the same checks.
-6. Record timestamps and deployment IDs outside Git if they include operationally sensitive context.
+3. Record the candidate SHA and verify it with:
+   ```bash
+   STAGING_BASE_URL="https://<staging-host>" EXPECTED_COMMIT_SHA="<candidate-sha>" npm run rehearsal:verify-target
+   ```
+4. Revert staging to the previous known-good deployment/SHA using the hosting platform's supported rollback/redeploy procedure.
+5. Verify the rollback target with the same command using the previous known-good SHA.
+6. Restore the candidate to staging.
+7. Run `rehearsal:verify-target` again with the candidate SHA, then repeat full staging acceptance.
+8. Record timestamps and deployment IDs outside Git if they include operationally sensitive context.
 
 Do not perform this sequence against production without explicit approval. When the rehearsal has actually succeeded, update `rollback-rehearsal` to `VERIFIED` with evidence.
 
