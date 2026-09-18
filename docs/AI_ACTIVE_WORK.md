@@ -3,58 +3,91 @@
 ## State
 **CHATGPT_ACTIVE**
 
-## Active implementation owner
-ChatGPT — executing Phase 1 audit and corrective implementation with a single repository writer.
-
 ## Integration branch
 - `phase-public-site-rebuild`
-- Verified integration SHA before current audit branch: `7e796ab48b8e08d7c6fbcba7d4ec91ae0c01dc46`
-- GitHub Actions CI run #698 passed on that exact SHA.
-- Railway deployment `95a41209-9bea-4e13-a981-f9902ff1b849` is SUCCESS on that exact SHA.
+- Current healthy integration SHA before this quiet batch: `4f7cbafb87e8c7d75fd7191d7bcc7a83c9320a3d`
+- Railway deployment `91a6a964-93f7-40df-a437-d43416e15ec5` is SUCCESS on that SHA.
+- GitHub hosted Actions are temporarily unavailable because the personal-account monthly minutes were exhausted. Do not interpret zero-step runner failures as code failures.
 
 ## Current task branch
-- `audit/phase1-codebase-gap-analysis`
-- Base: `7e796ab48b8e08d7c6fbcba7d4ec91ae0c01dc46`
-- Goal: complete evidence-based Phase 1 codebase/security/performance/data/UX audit and land focused verified fixes without production cutover.
+- `work/launch-readiness-batch-2026-09-18`
+- Base: `4f7cbafb87e8c7d75fd7191d7bcc7a83c9320a3d`
+- Purpose: batch remaining autonomous launch hardening without opening PRs or triggering Railway for each small change.
+- No PR should be opened and no integration merge/deploy should occur until this batch reaches one deliberate validation checkpoint.
 
-## Governing directive
-Read `docs/AMAANA_PLATFORM_AUDIT_COMPLETION_MASTER_PROMPT.md` and `docs/PHASE1_AUDIT_STATUS_2026-09-17.md` before changing implementation scope.
+## Working protocol
+1. Keep `main` untouched.
+2. Keep indexing disabled.
+3. Do not initiate real Razorpay payments/refunds.
+4. Do not publish real beneficiary/programme media without human privacy/consent/provenance review.
+5. Keep `STAGING_ACCEPTANCE_ON_START=false` and `PUBLIC_MEDIA_ACCEPTANCE_ON_START=false` except during an explicitly controlled same-SHA acceptance.
+6. Batch related changes on the quiet branch.
+7. At checkpoint: run one consolidated validation path, then one controlled integration merge/deploy.
 
-## State Log
+## Completed before this quiet batch
+- Secure gated private-bucket public-media proxy and real synthetic upload/publish/unpublish acceptance.
+- Database snapshot/restore recovery drill with matching content digests and clean post-restore application startup.
+- Fail-closed staging launch acceptance (32 checks) on exact candidate SHA before public-port activation.
+- SEO/social metadata hardening and Docker build-time NEXT_PUBLIC_* injection.
+- Bounded Prisma advisory-lock retry for transient P1002 migration contention.
+- Separate public-media storage from private assistance storage.
 
-| Component / Module | Status | Last Execution Summary | Next Required Action |
-| --- | --- | --- | --- |
-| Audit & Gap Analysis | In Progress | Green baseline verified; package scripts, CI, API surface, Prisma schema, payment routes, webhook flow, environment validation and headers inspected. | Complete auth, assistance, storage, notifications, query/index and public-route audit. |
-| Security & Payment Hardening | In Progress | Duplicate/concurrent Razorpay failed/refund webhook race fixed on current branch; regression guard tests added. | Run PR CI; continue refund bounds, webhook payload limits and rate-limit atomicity audit. |
-| Performance & Algorithms | Pending audit | Existing strict JS/CSS bundle budgets confirmed. | Inspect server queries, N+1 risks, client boundaries, assets and render churn. |
-| UX & Accessibility | In Progress | Existing responsive/accessibility/journey CI gate confirmed; manual rendered production review remains pending. | Continue page-family/manual QA and exact-background integration when byte-safe transfer is available. |
-| Backend & DB Integrity | In Progress | Prisma schema/indexes inspected at first pass. | Audit migrations, refund invariants, access patterns and recovery readiness. |
-| Remaining Feature Build | Pending audit | Public/admin route trees exist; no completeness assumption made. | Derive remaining modules from code and launch-readiness gates. |
+## Quiet-batch work completed/in progress
 
-## First Phase 1 implementation fix
-The Razorpay webhook previously checked `PaymentEvent` before mutating donation/refund state. Two concurrent copies of the same refund event could both pass that check before either unique event row existed. The current audit branch now claims failed/refund events inside the same database transaction as their side effects, so a losing duplicate transaction rolls back entirely. Duplicate P2002 conflicts are acknowledged only after re-reading the exact provider event row. The existing captured-payment transition remains independently idempotent.
+### Release / editorial quality
+- Unified read-only launch preflight commands:
+  - `npm run launch:preflight`
+  - `npm run launch:preflight:rehearsal`
+  - `npm run launch:preflight:production`
+- Public editorial/compliance guard with tests for:
+  - newborn amount ₹107,520;
+  - Winter 234 kits / 234 beneficiaries;
+  - Aliza amount ₹482,700;
+  - provisional 12A/12AB and 80G wording;
+  - domestic-only / non-FCRA boundary.
+- Exact Aliza public metric changed from rounded `₹4.82L` to `₹482,700`.
+- SEO browser coverage extended to donation/sponsorship routes and page-level social images.
+- Final human launch QA checklist added.
 
-## Current priority queue
-1. Payment/webhook correctness and idempotency.
-2. Atomic abuse/rate-limit enforcement.
-3. Refund accounting invariants.
-4. Authentication/session/RBAC audit.
-5. Assistance privacy/upload/storage audit.
-6. Database query/index and migration-safety audit.
-7. Public UX/accessibility/manual visual acceptance.
-8. Exact approved background artwork installation through byte-safe transport.
-9. Recovery/backup/rollback and production cutover evidence.
+### Accessibility
+- Skip-link target is programmatically focusable.
+- Browser acceptance verifies skip-link focus transfer, one H1, document language and main landmark.
+- Existing axe, responsive, reduced-motion, keyboard, mobile-focus and 200%-reflow-equivalent coverage retained.
 
-## Isolated blocker
-The six approved SVG background files are locally hash-verified but contain large embedded image payloads. The available GitHub text-content connector altered the first test transfer; that write was immediately rolled back. No altered artwork remains on integration. The background task is isolated and must not block the audit or other implementation work.
+### Security / privacy / operations
+- Private-document signed URL ownership binding and private-cache hardening.
+- Admin login timing/identity hardening and expired-session pruning.
+- Trusted proxy/client-address normalization for rate-limit identity.
+- Ephemeral login/donation security-ledger retention/pruning.
+- Transactional email worker idempotency/retry/stale-processing recovery plus operational runbook.
+- Notification operations page and audited manual requeue path using new `notification.manage` permission.
+- Destructive media/private-document deletion intent audit records.
+- Public-media route MIME mismatch fails closed; managed PDF delivery acceptance added.
+- Staging email delivery remains fail-closed/disabled.
 
-## Acceptance constraints
-- Do not initiate real donations or external financial transactions without explicit authorization.
-- Do not create real beneficiary requests/private evidence in browser fixtures or shared acceptance data.
-- Do not infer consent from prior publication, filenames, cropping/blurring or provenance records.
-- Do not mark external compliance/payment gates complete without evidence.
-- Do not merge to `main`, change production DNS, enable production indexing or perform production cutover without explicit user approval.
-- Do not raise bundle budgets to hide regressions.
+### Data / query integrity
+- Additive operational indexes for audit history, notification lists, security-ledger cleanup and media review ordering.
+- No destructive schema migration introduced.
 
-## Factual and release locks
-Read `docs/CURRENT_SOURCE_RECONCILIATION_2026-09-15.md` and `docs/canonical-factual-locks-2026-09-15.md` before content changes. Newborn medical aid = ₹107,520; Winter Drive = 234 kits / 234 beneficiaries; Taleem Nazira + Hifdh = 25 students combined as of September 2026; public taxonomy contains exactly five umbrella categories.
+## Remaining genuine launch gates
+- `rollback-rehearsal` — real staging rollback to a previous known-good deployment and restoration still required.
+- `transactional-email-delivery` — controlled live production sender acceptance required.
+- `manual-rendered-accessibility-review` — final human rendered review required.
+- `final-editorial-seo-social-review` — final human copy/social preview review required.
+- `public-media-human-review` — individual media privacy/consent/provenance review required.
+- Razorpay live KYC/readiness and controlled real donation/refund/receipt operational checks.
+- explicit production indexing decision.
+- explicit `main` promotion/production approval.
+
+## Recovery anchors
+- Database recovery snapshot evidence is recorded in `docs/DATABASE_RECOVERY_DRILL_2026-09-18.md`.
+- Preserved Neon branch: `pre-recovery-original-2026-09-18`.
+- Pinned rollback baseline branch: `rehearsal/rollback-baseline-2026-09-18` at healthy SHA `4f7cbafb87e8c7d75fd7191d7bcc7a83c9320a3d`.
+
+## Locked facts
+- Newborn medical aid: **₹107,520**.
+- Winter Drive 2025–26: **234 Winter Kits distributed to 234 beneficiaries**.
+- Aliza critical-care appeal: **₹482,700**.
+- Taleem Nazira + Hifdh: **25 students combined as of September 2026**.
+- Amaana is **not FCRA-registered**; fundraising remains domestic-only.
+- 12A/12AB and known 80G status are **provisional** and must be described that way.
