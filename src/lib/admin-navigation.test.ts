@@ -9,6 +9,7 @@ describe("admin landing routing", () => {
   it("routes specialized admins to the first area they are allowed to use", () => {
     expect(adminHomePathForPermissions(["assistance.approve"])).toBe("/admin/retention");
     expect(adminHomePathForPermissions(["donation.view"])).toBe("/admin/donations");
+    expect(adminHomePathForPermissions(["notification.view"])).toBe("/admin/notifications");
     expect(adminHomePathForPermissions(["content.view"])).toBe("/admin/media");
     expect(adminHomePathForPermissions(["appeal.view"])).toBe("/admin/appeals");
     expect(adminHomePathForPermissions(["rbac.manage"])).toBe("/admin/audit");
@@ -21,10 +22,11 @@ describe("admin landing routing", () => {
 
 describe("admin navigation visibility", () => {
   it("shows only destinations backed by explicit view/approval permissions", () => {
-    expect(adminNavigationForPermissions(["assistance.view", "assistance.update", "donation.view"]))
+    expect(adminNavigationForPermissions(["assistance.view", "assistance.update", "donation.view", "notification.view"]))
       .toEqual([
         { permission: "assistance.view", path: "/admin", label: "Assistance queue" },
         { permission: "donation.view", path: "/admin/donations", label: "Donations" },
+        { permission: "notification.view", path: "/admin/notifications", label: "Notification delivery" },
       ]);
   });
 
@@ -46,12 +48,14 @@ describe("admin navigation visibility", () => {
       "appeal.view",
       "assistance.view",
       "rbac.manage",
+      "notification.view",
     ]).map(item => item.label)).toEqual([
       "Assistance queue",
       "Appeals",
       "Media review",
       "Retention review",
       "Donations",
+      "Notification delivery",
       "Audit history",
     ]);
   });
