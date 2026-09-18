@@ -11,7 +11,7 @@
 
 ## Current task branch
 - `work/launch-readiness-batch-2026-09-18`
-- Current quiet-batch head: `8efb4c8d256921f8c4a4d8a37dda8393e29a188a`
+- Current quiet-batch head: resolve the branch head at validation time; this ledger deliberately avoids a self-staling hard-coded SHA.
 - Base: `4f7cbafb87e8c7d75fd7191d7bcc7a83c9320a3d`
 - Purpose: batch remaining autonomous launch hardening without opening PRs or triggering Railway for each small change.
 - Status: feature-frozen for consolidated validation. Do not add feature scope, open a PR, or trigger integration/Railway until the batch is reviewed as one candidate.
