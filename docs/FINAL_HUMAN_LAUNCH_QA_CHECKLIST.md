@@ -17,8 +17,11 @@ Record each review against one exact candidate SHA. If the candidate changes in 
 Review at minimum:
 
 - desktop 1440 × 900;
+- laptop/tablet landscape 1024 × 768;
 - tablet 768 × 1024;
+- mobile 430 × 932;
 - mobile 390 × 844;
+- narrow mobile 360 × 800;
 - browser zoom 200% on desktop;
 - keyboard-only navigation;
 - reduced-motion preference.
@@ -67,6 +70,17 @@ Only then may `manual-rendered-accessibility-review` be considered for VERIFIED 
 - [ ] CTA labels describe the actual destination/action and do not imply unavailable live services.
 - [ ] Completed appeals do not read as currently fundraising.
 - [ ] No placeholder, staging-test or internal workflow language appears on public pages.
+
+
+## 3A. CTA and journey review
+
+- [ ] Explore our work leads to the documented programme portfolio.
+- [ ] Support a Verified Need / Appeal leads to the current appeal surface.
+- [ ] Taleem sponsorship leads to the education sponsorship route.
+- [ ] Request assistance leads to the private assistance form.
+- [ ] Transparency / How we verify CTAs lead to the trust/process content promised by the label.
+- [ ] Contact / partnership CTAs lead to the correct communication route.
+- [ ] No CTA implies a currently available donation destination when none exists.
 
 ## 4. SEO and social-share review
 
@@ -150,6 +164,21 @@ Do not perform this section without explicit authorization.
 
 Only successful execution may resolve the `rollback-rehearsal` gate.
 
+
+## 8A. Admin rendered review
+
+Using authorised staging staff accounts:
+
+- [ ] case reviewer cannot access editorial or finance operations;
+- [ ] editorial reviewer cannot access beneficiary-case or finance operations;
+- [ ] finance reviewer remains isolated to donation reconciliation;
+- [ ] users with no applicable permission fail closed;
+- [ ] assistance verification, media review, retention review, notification operations and donation reconciliation remain usable at laptop width;
+- [ ] destructive actions clearly communicate permanence and required confirmation;
+- [ ] private document links never appear on public routes.
+
+Do not create or publish real beneficiary data for this review.
+
 ## 9. Final production authorization
 
 Before any launch action:
@@ -162,3 +191,14 @@ Before any launch action:
 - [ ] merge/promotion to `main` has explicit user authorization.
 
 A green checklist is evidence for a decision; it is not itself authorization to launch.
+
+
+## 10. Review outcome
+
+Record one of:
+
+- **PASS** — no launch-blocking issue;
+- **PASS WITH DEFERRED POLISH** — only items already classified in the post-core UI enhancement backlog;
+- **BLOCKED** — a correctness, privacy, accessibility, payment-integrity, factual or journey issue must be fixed before launch.
+
+For PASS/PASS WITH DEFERRED POLISH, record reviewer, date, exact candidate SHA and any deferred enhancement references in the operational launch record. Update only readiness gates directly supported by that evidence.
