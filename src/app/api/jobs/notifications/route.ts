@@ -16,13 +16,18 @@ function isAuthorized(request: Request) {
 
 export async function POST(request: Request) {
   if (!isAuthorized(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: { "Cache-Control": "no-store" } });
-  if (!isEmailDeliveryEnabled()) return NextResponse.json({ status: "disabled" }, { headers: { "Cache-Control": "no-store" } });
 
   try {
-    const [result, retention] = await Promise.all([
-      processPendingEmailNotifications(),
-      pruneEphemeralSecurityLedgers(),
-    ]);
+    const retention = await pruneEphemeralSecurityLedgers();
+
+    if (!isEmailDeliveryEnabled()) {
+      return NextResponse.json(
+        { status: "disabled", retention },
+        { headers: { "Cache-Control": "no-store" } },
+      );
+    }
+
+    const result = await processPendingEmailNotifications();
     return NextResponse.json({ status: "ok", ...result, retention }, { headers: { "Cache-Control": "no-store" } });
   } catch (error) {
     console.error("Notification delivery job failed", error);
