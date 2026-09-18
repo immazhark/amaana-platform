@@ -46,5 +46,16 @@ export function renderNotificationEmail(templateKey: string, payload: TemplatePa
     return { subject, text: `Assalamu alaikum,\n\nThank you for your donation. Reference: ${reference}. This is a normal donation acknowledgement and not an 80G tax certificate.\n\nJazakAllah khair,\nAmaana Foundation`, html: wrap(`<p>Thank you for supporting an Amaana Foundation appeal.</p><p><strong>Donation reference:</strong> ${safeReference}</p><p>This is a normal donation acknowledgement and is not an 80G tax certificate.</p>`) };
   }
 
+  if (templateKey === "donation-refund-processed") {
+    const refundAmount = value(payload, "refundAmount");
+    const refundState = value(payload, "refundState") || "refund";
+    const subject = configuredSubject || "Amaana Foundation donation refund processed";
+    return {
+      subject,
+      text: `Assalamu alaikum,\n\nA ${refundState} of ${refundAmount} has been processed for donation reference ${reference}. Please allow your bank/payment provider's normal settlement time for the credit to appear.\n\nJazakAllah khair,\nAmaana Foundation`,
+      html: wrap(`<p>A <strong>${escapeHtml(refundState)}</strong> of <strong>${escapeHtml(refundAmount)}</strong> has been processed for donation reference <strong>${safeReference}</strong>.</p><p>Please allow your bank or payment provider's normal settlement time for the credit to appear.</p>`),
+    };
+  }
+
   throw new Error(`Unsupported notification template: ${templateKey}`);
 }
