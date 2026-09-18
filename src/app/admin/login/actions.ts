@@ -4,6 +4,7 @@ import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createSession, destroySession, getCurrentUser } from "@/lib/auth";
+import { parseAdminLoginInput } from "@/lib/admin-login-input";
 import { isLoginSubjectLocked, recordFailedLoginAttempt } from "@/lib/auth-rate-limit";
 import { getTrustedClientAddress } from "@/lib/client-address";
 import { verifyPassword } from "@/lib/password";
@@ -24,17 +25,22 @@ function authenticationSubjectHash(email: string, address: string) {
 }
 
 export async function login(formData: FormData) {
-  const email = String(formData.get("email") ?? "").trim().toLowerCase();
-  const password = String(formData.get("password") ?? "");
+  const input = parseAdminLoginInput(formData.get("email"), formData.get("password"));
+  const { email, password } = input;
   const headerStore = await headers();
   const address = getTrustedClientAddress(
     headerStore,
     process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org",
   );
-  const subjectHash = authenticationSubjectHash(email, address);
+  const subjectHash = authenticationSubjectHash(input.rateLimitSubject, address);
 
   if (await isLoginSubjectLocked(subjectHash)) {
     redirect("/admin/login?error=locked");
+  }
+
+  if (!input.valid) {
+    const recorded = await recordFailedLoginAttempt(subjectHash);
+    redirect(recorded ? "/admin/login?error=invalid" : "/admin/login?error=locked");
   }
 
   const user = await prisma.user.findUnique({
