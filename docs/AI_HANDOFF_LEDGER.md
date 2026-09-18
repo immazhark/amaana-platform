@@ -241,3 +241,33 @@ PR #22 and its Railway deployment are verified complete. No open PRs exist. Prio
 - No merge to `main`, production DNS/indexing change, live Razorpay activation, real financial transaction, destructive production data operation, or unsupported compliance claim without explicit authorization/evidence.
 - Do not introduce Redis/Kubernetes/Terraform or other infrastructure merely to satisfy a checklist; justify additions from measured need.
 - Do not claim WCAG AAA, PCI-DSS certification, sub-100ms performance, 95+ performance scores, or >90% coverage without evidence.
+
+
+---
+
+## 2026-09-18 — Background correction and Razorpay approval reconciliation
+
+**Incoming:** ChatGPT  
+**State:** `CHATGPT_ACTIVE`  
+**Integration branch:** `phase-public-site-rebuild`  
+**Family-review SHA:** `69b4e2fd5698b050ae8dcf7d712588a1d1167ca4`  
+**Quiet task branch:** `work/backgrounds-razorpay-readiness-2026-09-18`
+
+### Completed
+- Recovered the exact unfinished approved-background replacement task.
+- Received six corrected SVG sources from the user and locked their SHA-256 hashes in `scripts/verify-approved-backgrounds.mjs`.
+- Added `npm run backgrounds:verify` and wired the hash check into launch preflight.
+- Confirmed the repo still contains the older substitute background bytes; exact replacement remains pending until the six supplied SVGs are uploaded byte-for-byte.
+- Confirmed Razorpay account/payment-gateway approval from the authenticated dashboard supplied by Amaana and marked the KYC/account-activation readiness gate VERIFIED.
+- Kept controlled live donation and refund/receipt operational acceptance as separate pending gates.
+- Confirmed the family-review Railway preview remains SUCCESS on the frozen SHA; no deployment was triggered.
+- Found the latest notification-cron build failure was on a superseded pre-fix SHA and came from the already-corrected admin-login TypeScript null-narrowing error. Rebuild is deferred to the next controlled candidate deployment.
+
+### Next exact action
+- Land the six corrected SVGs byte-for-byte in `public/backgrounds/` on the quiet branch.
+- Verify the locked hashes and responsive usage.
+- Run consolidated candidate validation.
+- Only then perform one controlled staging deployment so family review sees the corrected backgrounds.
+
+### Do not
+- Do not merge to `main`, enable indexing, initiate live Razorpay activity, publish unreviewed beneficiary media, or deploy the quiet branch before background verification is green.
