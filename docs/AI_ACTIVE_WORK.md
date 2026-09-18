@@ -11,9 +11,10 @@
 
 ## Current task branch
 - `work/launch-readiness-batch-2026-09-18`
+- Current quiet-batch head: `fd37b6cce7d932a614bc082ed9aacf1d11cda14c`
 - Base: `4f7cbafb87e8c7d75fd7191d7bcc7a83c9320a3d`
 - Purpose: batch remaining autonomous launch hardening without opening PRs or triggering Railway for each small change.
-- No PR should be opened and no integration merge/deploy should occur until this batch reaches one deliberate validation checkpoint.
+- Status: feature-frozen for source-level reconciliation; no PR should be opened and no integration merge/deploy should occur until one deliberate validation checkpoint is chosen.
 
 ## Working protocol
 1. Keep `main` untouched.
@@ -68,6 +69,33 @@
 ### Data / query integrity
 - Additive operational indexes for audit history, notification lists, security-ledger cleanup and media review ordering.
 - No destructive schema migration introduced.
+
+## Additional hardening completed in the quiet batch
+
+### Payment / refund correctness
+- Refund processing requires INR and bounded paise values.
+- Out-of-order refund webhooks reconcile payment → order and reuse the idempotent capture path before refund accounting.
+- Refunds can reopen a FUNDED appeal to PUBLISHED only while the fundraising window is still open; otherwise the under-target funded appeal becomes CLOSED.
+- Private donation acknowledgement responses are no-store, no-referrer and noindex.
+- Critical unmatched payment/refund events are surfaced in admin donation operations.
+- Stored webhook evidence is privacy-minimized.
+- Exactly one donor refund notification is queued transactionally for each effective unique refund event.
+- `docs/PAYMENT_REFUND_OPERATIONS_RUNBOOK.md` documents the controlled live acceptance.
+
+### Production indexing boundaries
+- Indexing now requires explicit opt-in, official HTTPS Amaana host and `APP_ENVIRONMENT=production`.
+- Docker builder defaults `APP_ENVIRONMENT=staging`, making preview builds fail closed.
+- `/donate` is a public SEO route while `/donate/<appeal>` remains private.
+- All admin surfaces have explicit noindex/nofollow/no-referrer metadata.
+
+### Rollback preparation
+- `npm run rehearsal:verify-target` validates exact deployed SHA, health/readiness, representative public routes and private no-cache/noindex boundaries.
+- Pinned previous-known-good branch remains `rehearsal/rollback-baseline-2026-09-18`.
+
+### Production RBAC correctness
+- New notification view/manage permissions are not seed-only.
+- Migration `20260918111500_notification_operations_rbac` idempotently creates/grants them to PRIMARY/BACKUP approvers in production.
+- Manual email recovery uses an atomic FAILED-only claim and cannot race an active worker into a duplicate send.
 
 ## Remaining genuine launch gates
 - `rollback-rehearsal` — real staging rollback to a previous known-good deployment and restoration still required.
