@@ -30,9 +30,12 @@ export async function requeueFailedNotification(formData: FormData) {
     throw new Error("Only failed notifications can be manually requeued");
   }
 
-  await prisma.$transaction([
-    prisma.notification.update({
-      where: { id },
+  await prisma.$transaction(async tx => {
+    const claimed = await tx.notification.updateMany({
+      where: {
+        id,
+        status: NotificationStatus.FAILED,
+      },
       data: {
         status: NotificationStatus.PENDING,
         attempts: 0,
@@ -40,8 +43,13 @@ export async function requeueFailedNotification(formData: FormData) {
         scheduledFor: new Date(),
         sentAt: null,
       },
-    }),
-    prisma.auditEvent.create({
+    });
+
+    if (claimed.count !== 1) {
+      throw new Error("Notification state changed before it could be requeued. Refresh and review the current delivery state.");
+    }
+
+    await tx.auditEvent.create({
       data: {
         actorId: user.id,
         action: "notification.manual_requeue",
@@ -54,8 +62,8 @@ export async function requeueFailedNotification(formData: FormData) {
           templateKey: current.templateKey,
         },
       },
-    }),
-  ]);
+    });
+  });
 
   revalidatePath("/admin/notifications");
 }
