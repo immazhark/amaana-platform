@@ -50,7 +50,7 @@ Never make the private assistance-document bucket public as a shortcut. Never pl
 - Public campaign media uses a different bucket and an HTTPS delivery origin. It may use the same provider account only when the bucket remains distinct from assistance storage.
 - Resend delivers queued email. Until the official domain is available, use Resend's test sender only with an approved test recipient; do not impersonate `amaanafoundation.org`.
 - Trigger `POST /api/jobs/notifications` with `Authorization: Bearer <CRON_SECRET>`. Do not put the secret in a URL.
-- Razorpay must remain in test mode until KYC, staging reconciliation and compliance review are complete.
+- Razorpay account activation/KYC is approved as of 18 September 2026. Staging must remain on Test-mode credentials. Live-mode credentials and the Live webhook are introduced only during the controlled production-acceptance checkpoint after staging reconciliation and final compliance review.
 
 Set provider spending alerts and hard limits where available. Upgrade Railway only immediately before the approved public launch.
 
