@@ -108,6 +108,7 @@ export async function POST(request: Request) {
     } else if (
       payload.event === "refund.processed" &&
       refund?.payment_id &&
+      refund.currency === "INR" &&
       Number.isSafeInteger(refund.amount) &&
       refund.amount > 0
     ) {
