@@ -124,6 +124,8 @@ export async function POST(request: Request) {
             appealId: true,
             amount: true,
             refundedAmount: true,
+            donorEmail: true,
+            referenceNumber: true,
           },
         });
 
@@ -179,6 +181,24 @@ export async function POST(request: Request) {
             data: {
               amountRaised: { decrement: accounting.appealRefundPaise / 100 },
               ...(nextStatus !== appeal.status ? { status: nextStatus as "PUBLISHED" | "CLOSED" } : {}),
+            },
+          });
+        }
+
+        if (accounting.donationRefundPaise > 0) {
+          const refundAmount = accounting.donationRefundPaise / 100;
+          await tx.notification.create({
+            data: {
+              channel: "EMAIL",
+              recipient: donation.donorEmail,
+              templateKey: "donation-refund-processed",
+              subject: "Amaana Foundation donation refund processed",
+              payload: {
+                referenceNumber: donation.referenceNumber,
+                refundAmount: `₹${refundAmount.toLocaleString("en-IN")}`,
+                refundState: accounting.fullyRefunded ? "full refund" : "partial refund",
+              },
+              donationId: donation.id,
             },
           });
         }
