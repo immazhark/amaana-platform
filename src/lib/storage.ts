@@ -6,6 +6,7 @@ const allowedTypes = new Set(["application/pdf", "image/jpeg", "image/png", "ima
 const publicMediaTypes = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
 export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 export const MAX_FILES = 5;
+export const PRIVATE_OBJECT_CACHE_CONTROL = "private, no-store, max-age=0";
 
 type StorageConfig = {
   bucket: string;
@@ -94,7 +95,7 @@ export async function uploadPrivateDocument(file: File, requestId: string) {
     Key: objectKey,
     Body: bytes,
     ContentType: file.type,
-    CacheControl: "private, no-store, max-age=0",
+    CacheControl: PRIVATE_OBJECT_CACHE_CONTROL,
     Metadata: { requestId },
   }));
   return { objectKey, originalName: file.name.slice(0, 255), mimeType: file.type, sizeBytes: file.size };
@@ -112,7 +113,7 @@ export async function getPrivateDocumentUrl(objectKey: string, requestId: string
   return getSignedUrl(client, new GetObjectCommand({
     Bucket: bucket,
     Key: objectKey,
-    ResponseCacheControl: "private, no-store, max-age=0",
+    ResponseCacheControl: PRIVATE_OBJECT_CACHE_CONTROL,
   }), { expiresIn: 60 });
 }
 
@@ -197,7 +198,7 @@ export async function uploadPublicMediaFile(file: File) {
     Key: objectKey,
     Body: bytes,
     ContentType: file.type,
-    CacheControl: "public, max-age=31536000, immutable",
+    CacheControl: PRIVATE_OBJECT_CACHE_CONTROL,
     Metadata: { originalName: file.name.slice(0, 255) },
   }));
 
