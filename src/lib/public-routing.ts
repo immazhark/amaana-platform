@@ -1,7 +1,7 @@
 export const PRIVATE_ROUTE_PREFIXES = [
   "/admin",
   "/api",
-  "/donate",
+  "/donate/",
   "/donations",
   "/request-assistance/status",
   "/request-assistance/received",
@@ -21,6 +21,7 @@ export const PUBLIC_STATIC_ROUTES = [
   { path: "/stories", changeFrequency: "weekly", priority: 0.85 },
   { path: "/faith-and-reflections", changeFrequency: "weekly", priority: 0.8 },
   { path: "/appeals", changeFrequency: "daily", priority: 0.95 },
+  { path: "/donate", changeFrequency: "weekly", priority: 0.85 },
   { path: "/about", changeFrequency: "monthly", priority: 0.8 },
   { path: "/get-involved", changeFrequency: "monthly", priority: 0.75 },
   { path: "/request-assistance", changeFrequency: "monthly", priority: 0.7 },
@@ -36,5 +37,9 @@ export const PUBLIC_STATIC_ROUTES = [
 ] as const;
 
 export function isPrivateRoute(path: string) {
-  return PRIVATE_ROUTE_PREFIXES.some(prefix => path === prefix || path.startsWith(`${prefix}/`));
+  return PRIVATE_ROUTE_PREFIXES.some(prefix =>
+    prefix.endsWith("/")
+      ? path.startsWith(prefix)
+      : path === prefix || path.startsWith(`${prefix}/`),
+  );
 }
