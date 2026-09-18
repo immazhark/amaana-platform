@@ -124,8 +124,9 @@ No beneficiary-sensitive production content should be used for the first accepta
 - [ ] refund flow is tested only within the approved controlled scope.
 - [ ] refunded amount and net retained totals reconcile.
 - [ ] no duplicate donation/payment event is created.
-- [ ] donor receives only the intended notification.
-- [ ] public appeal target/funded state updates correctly.
+- [ ] donor receives only the intended donation acknowledgement.
+- [ ] a controlled refund queues and delivers exactly one refund notification.
+- [ ] public appeal target/funded state updates correctly after capture and after refund.
 
 Do not perform this section without explicit authorization.
 
