@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
-  isRetryableEmailProviderStatus,
+  isRetryableEmailProviderResponse,
   notificationIdempotencyKey,
   notificationRetryDelayMs,
 } from "./notifications";
@@ -21,12 +21,16 @@ describe("notification delivery reliability", () => {
     expect(() => notificationRetryDelayMs(0)).toThrow("positive integer");
   });
 
-  it("retries only transient or concurrency/provider failures", () => {
-    for (const status of [408, 409, 425, 429, 500, 502, 503]) {
-      expect(isRetryableEmailProviderStatus(status), String(status)).toBe(true);
+  it("retries only transient provider failures and concurrent idempotency conflicts", () => {
+    for (const status of [408, 425, 429, 500, 502, 503]) {
+      expect(isRetryableEmailProviderResponse(status), String(status)).toBe(true);
     }
+    expect(isRetryableEmailProviderResponse(409, "concurrent_idempotent_requests")).toBe(true);
+    expect(isRetryableEmailProviderResponse(409, "invalid_idempotent_request")).toBe(false);
+    expect(isRetryableEmailProviderResponse(409)).toBe(false);
+
     for (const status of [400, 401, 403, 404, 422]) {
-      expect(isRetryableEmailProviderStatus(status), String(status)).toBe(false);
+      expect(isRetryableEmailProviderResponse(status), String(status)).toBe(false);
     }
   });
 });
