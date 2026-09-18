@@ -5,17 +5,60 @@ import { renderNotificationEmail } from "@/lib/notification-templates";
 const MAX_BATCH_SIZE = 20;
 const MAX_ATTEMPTS = 5;
 const PROCESSING_STALE_AFTER_MS = 15 * 60 * 1000;
+const RETRY_DELAYS_MS = [5, 15, 45, 135].map(minutes => minutes * 60 * 1000);
 
-async function sendWithResend(recipient: string, subject: string, text: string, html: string) {
+class EmailProviderError extends Error {
+  constructor(
+    message: string,
+    readonly retryable: boolean,
+  ) {
+    super(message);
+    this.name = "EmailProviderError";
+  }
+}
+
+export function notificationIdempotencyKey(notificationId: string) {
+  return `amaana-notification/${notificationId}`;
+}
+
+export function notificationRetryDelayMs(attemptNumber: number) {
+  if (!Number.isInteger(attemptNumber) || attemptNumber < 1) {
+    throw new Error("Notification attempt number must be a positive integer");
+  }
+  return RETRY_DELAYS_MS[Math.min(attemptNumber - 1, RETRY_DELAYS_MS.length - 1)];
+}
+
+export function isRetryableEmailProviderStatus(status: number) {
+  return status === 408 || status === 409 || status === 425 || status === 429 || status >= 500;
+}
+
+async function sendWithResend(
+  notificationId: string,
+  recipient: string,
+  subject: string,
+  text: string,
+  html: string,
+) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.EMAIL_FROM;
-  if (!apiKey || !from) throw new Error("Email delivery is not configured");
+  if (!apiKey || !from) throw new EmailProviderError("Email delivery is not configured", false);
+
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
-    headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+      "Idempotency-Key": notificationIdempotencyKey(notificationId),
+    },
     body: JSON.stringify({ from, to: [recipient], subject, text, html }),
   });
-  if (!response.ok) throw new Error(`Email provider returned ${response.status}`);
+
+  if (!response.ok) {
+    throw new EmailProviderError(
+      `Email provider returned ${response.status}`,
+      isRetryableEmailProviderStatus(response.status),
+    );
+  }
 }
 
 async function recoverStaleProcessingNotifications() {
@@ -66,13 +109,21 @@ export async function processPendingEmailNotifications() {
     });
     if (claimed.count !== 1) continue;
 
+    const attemptNumber = notification.attempts + 1;
+
     try {
       const rendered = renderNotificationEmail(
         notification.templateKey,
         notification.payload as Record<string, unknown>,
         notification.subject,
       );
-      await sendWithResend(notification.recipient, rendered.subject, rendered.text, rendered.html);
+      await sendWithResend(
+        notification.id,
+        notification.recipient,
+        rendered.subject,
+        rendered.text,
+        rendered.html,
+      );
       await prisma.notification.update({
         where: { id: notification.id },
         data: { status: NotificationStatus.SENT, sentAt: new Date(), failureReason: null },
@@ -80,12 +131,17 @@ export async function processPendingEmailNotifications() {
       sent += 1;
     } catch (error) {
       const failureReason = error instanceof Error ? error.message.slice(0, 500) : "Unknown delivery error";
+      const retryable = !(error instanceof EmailProviderError) || error.retryable;
+      const attemptsRemain = attemptNumber < MAX_ATTEMPTS;
+
       await prisma.notification.update({
         where: { id: notification.id },
         data: {
           status: NotificationStatus.FAILED,
           failureReason,
-          scheduledFor: new Date(Date.now() + 15 * 60 * 1000),
+          scheduledFor: retryable && attemptsRemain
+            ? new Date(Date.now() + notificationRetryDelayMs(attemptNumber))
+            : new Date("9999-12-31T23:59:59.999Z"),
         },
       });
       failed += 1;
