@@ -24,12 +24,13 @@ const permissions = [
   ["content.update", "Create and edit public-content media metadata"],
   ["content.approve", "Approve media for public rendering"],
   ["donation.view", "View donation and payment reconciliation records"],
+  ["notification.view", "View transactional email delivery status and failures"],
   ["rbac.manage", "Manage staff access and permissions"],
 ];
 
 const roles = {
   PRIMARY_APPROVER: permissions.map(([key]) => key),
-  BACKUP_APPROVER: ["assistance.view", "assistance.assign", "assistance.update", "assistance.approve", "appeal.create", "appeal.view", "appeal.update", "appeal.approve", "content.view", "content.update", "content.approve", "donation.view"],
+  BACKUP_APPROVER: ["assistance.view", "assistance.assign", "assistance.update", "assistance.approve", "appeal.create", "appeal.view", "appeal.update", "appeal.approve", "content.view", "content.update", "content.approve", "donation.view", "notification.view"],
   REVIEWER: ["assistance.view", "assistance.update", "appeal.view", "appeal.update", "content.view", "content.update"],
 };
 
