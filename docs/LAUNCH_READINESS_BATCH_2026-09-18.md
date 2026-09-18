@@ -15,6 +15,7 @@ This branch intentionally has no pull request and is not connected to Railway. I
   - `npm run launch:preflight:rehearsal`
   - `npm run launch:preflight:production`
 - Public editorial/compliance guard for canonical factual values and fail-closed regulatory wording.
+- Public/private data-boundary guard prevents storytelling/appeal surfaces from reading internal beneficiary, verification, token-hash or private-storage fields.
 - Exact Aliza medical-aid metric normalized to `₹482,700`.
 - Future CI wired to run the editorial guard.
 - Launch rehearsal runbook updated for the unified preflight.
@@ -22,6 +23,9 @@ This branch intentionally has no pull request and is not connected to Railway. I
 ### SEO and accessibility
 
 - Expanded browser SEO coverage for donation/education routes and page-level social images.
+- Donation document title de-duplicated against the root Amaana title template; browser acceptance now rejects repeated Amaana branding in titles.
+- Security-header browser acceptance covers CSP, HSTS, referrer policy, no-sniff, frame denial, permissions policy, COOP/CORP and no-store boundaries.
+- Branded 404 acceptance checks status, navigation, noindex and mobile containment.
 - Skip-link target made programmatically focusable.
 - Browser coverage for actual skip-link focus transfer, one H1, English document language and main landmark.
 
@@ -34,6 +38,7 @@ This branch intentionally has no pull request and is not connected to Railway. I
 - Stale PROCESSING recovery retained.
 - Production launch gate added for controlled transactional-email acceptance.
 - Transactional-email operations runbook added.
+- Notification worker tests now cover atomic claim, provider idempotency key, successful SENT transition, transient 429 rescheduling and concurrent-worker claim loss.
 - Railway notification cron remains intentionally email-disabled in staging.
 
 ### Admin operational visibility
@@ -55,7 +60,8 @@ This branch intentionally has no pull request and is not connected to Railway. I
   - nearest `X-Forwarded-For` hop only as fallback;
   - malformed values fail to `unknown`.
 - Public abuse controls and admin login throttling share the same resolver.
-- Admin login performs scrypt verification work even for unknown/malformed credentials to reduce account-enumeration timing differences.
+- Admin login performs scrypt verification work even for unknown/malformed stored credentials to reduce account-enumeration timing differences.
+- Admin login email/password inputs are server-bounded (254/256 chars) before user lookup or scrypt, while invalid attempts still participate in the rate-limit ledger.
 - Expired sessions are pruned when a new admin session is created.
 - Explicit admin logout is written to the audit trail.
 - Password verification tests expanded.
@@ -76,6 +82,7 @@ This branch intentionally has no pull request and is not connected to Railway. I
 - Managed-key traversal/wrong-owner/malformed-extension tests added.
 - Private evidence and public media deletion write a durable `deletion_started` audit event before irreversible object deletion.
 - Destructive ordering tests added.
+- Retention action coverage explicitly proves raw evidence cannot be deleted while the request/linked appeal is still active.
 
 ### Public media
 
@@ -111,6 +118,7 @@ No business rows are rewritten by these migrations.
 - Stored Razorpay webhook audit payloads are privacy-minimized to provider ids/order linkage/amount/currency/status instead of retaining the full provider payload.
 - Refund processing queues exactly one transactional refund notification inside the same unique-event transaction.
 - Payment/refund operations runbook added.
+- Razorpay webhook route-level tests cover invalid signatures, duplicate event idempotency, refund accounting, appeal-total reconciliation and donor notification.
 - Read-only rollback target verifier added for exact-SHA health/private-boundary checks.
 
 ### Production indexing and private-route boundaries
@@ -121,6 +129,11 @@ No business rows are rewritten by these migrations.
 - `/donate/<appeal>` checkout paths remain private/noindex.
 - A top-level admin layout explicitly keeps all admin surfaces noindex/nofollow/no-referrer.
 - Public-routing and browser SEO tests cover these boundaries.
+
+### Human review preparation
+
+- Structured manual launch-review checklist added for real 200% zoom, keyboard-only navigation, reduced motion, visual hierarchy, CTA destinations, social previews, factual/compliance reading and per-asset media consent/provenance review.
+- Readiness evidence now distinguishes automated proof from the remaining human/external judgement instead of overstating automation.
 
 ## Intentionally not changed
 
