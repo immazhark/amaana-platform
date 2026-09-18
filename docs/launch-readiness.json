@@ -48,6 +48,15 @@
       "verifiedAt": "2026-09-18"
     },
     {
+      "id": "approved-background-artwork",
+      "category": "experience",
+      "status": "PENDING",
+      "requiredFor": [
+        "production"
+      ],
+      "evidence": "Six corrected approved SVG source files were supplied on 2026-09-18 and their SHA-256 hashes are locked in scripts/verify-approved-backgrounds.mjs. The quiet work branch adds a fail-closed launch-preflight hash check. The repository still contains the older substitute SVG bytes until the six corrected files are uploaded byte-for-byte to public/backgrounds; this gate must remain pending until GitHub blob hashes match the locked source files and responsive rendered QA passes."
+    },
+    {
       "id": "transactional-email-delivery",
       "category": "operations",
       "status": "PENDING",
@@ -106,11 +115,12 @@
     {
       "id": "razorpay-live-kyc-readiness",
       "category": "payments",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "requiredFor": [
         "production"
       ],
-      "evidence": "Razorpay KYC/documentation has gone through multiple review rounds and requested documentation has been supplied. Final account/payment activation approval is still awaited from Razorpay."
+      "evidence": "Razorpay account/payment-gateway approval was confirmed on 2026-09-18 from the authenticated Razorpay dashboard supplied by Amaana. Website verification is complete. This closes the KYC/account-activation gate only; Test-mode reconciliation, Live-mode key/webhook configuration, controlled live donation acceptance and refund/receipt operational verification remain separate pending gates.",
+      "verifiedAt": "2026-09-18"
     },
     {
       "id": "controlled-live-donation-acceptance",
