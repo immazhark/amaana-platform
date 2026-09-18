@@ -11,10 +11,10 @@
 
 ## Current task branch
 - `work/launch-readiness-batch-2026-09-18`
-- Current quiet-batch head: `3a6ec1461883d5c72d48873fc76b3232ffebf879`
+- Current quiet-batch head: `8efb4c8d256921f8c4a4d8a37dda8393e29a188a`
 - Base: `4f7cbafb87e8c7d75fd7191d7bcc7a83c9320a3d`
 - Purpose: batch remaining autonomous launch hardening without opening PRs or triggering Railway for each small change.
-- Status: feature-frozen and source-level reconciliation complete; no PR should be opened and no integration merge/deploy should occur until one deliberate consolidated validation checkpoint is chosen.
+- Status: feature-frozen for consolidated validation. Do not add feature scope, open a PR, or trigger integration/Railway until the batch is reviewed as one candidate.
 
 ## Working protocol
 1. Keep `main` untouched.
@@ -48,16 +48,19 @@
   - domestic-only / non-FCRA boundary.
 - Exact Aliza public metric changed from rounded `₹4.82L` to `₹482,700`.
 - SEO browser coverage extended to donation/sponsorship routes and page-level social images.
-- Final human launch QA checklist added.
+- Document-title regression coverage prevents duplicate Amaana branding.
+- Public/private data-boundary guard prevents public publishing surfaces from reading internal beneficiary/verification/token/storage fields.
+- Final human launch QA checklist consolidated into one canonical document.
 
 ### Accessibility
 - Skip-link target is programmatically focusable.
 - Browser acceptance verifies skip-link focus transfer, one H1, document language and main landmark.
 - Existing axe, responsive, reduced-motion, keyboard, mobile-focus and 200%-reflow-equivalent coverage retained.
+- Branded 404 behavior is browser-tested for 404 status, navigation, noindex and mobile containment.
 
 ### Security / privacy / operations
 - Private-document signed URL ownership binding and private-cache hardening.
-- Admin login timing/identity hardening and expired-session pruning.
+- Admin login timing/identity hardening, bounded credential inputs, expired-session pruning and audited logout.
 - Trusted proxy/client-address normalization for rate-limit identity.
 - Ephemeral login/donation security-ledger retention/pruning.
 - Transactional email worker idempotency/retry/stale-processing recovery plus operational runbook.
@@ -65,6 +68,7 @@
 - Destructive media/private-document deletion intent audit records.
 - Public-media route MIME mismatch fails closed; managed PDF delivery acceptance added.
 - Staging email delivery remains fail-closed/disabled.
+- Browser security-header acceptance now covers CSP, HSTS, framing, referrer, permissions, COOP/CORP and no-store sensitive surfaces.
 
 ### Data / query integrity
 - Additive operational indexes for audit history, notification lists, security-ledger cleanup and media review ordering.
@@ -81,6 +85,7 @@
 - Stored webhook evidence is privacy-minimized.
 - Exactly one donor refund notification is queued transactionally for each effective unique refund event.
 - `docs/PAYMENT_REFUND_OPERATIONS_RUNBOOK.md` documents the controlled live acceptance.
+- Webhook route tests now cover invalid signatures, duplicate event idempotency and end-to-end refund reconciliation into donation/appeal/event/notification records.
 
 ### Production indexing boundaries
 - Indexing now requires explicit opt-in, official HTTPS Amaana host and `APP_ENVIRONMENT=production`.
@@ -96,6 +101,7 @@
 - New notification view/manage permissions are not seed-only.
 - Migration `20260918111500_notification_operations_rbac` idempotently creates/grants them to PRIMARY/BACKUP approvers in production.
 - Manual email recovery uses an atomic FAILED-only claim and cannot race an active worker into a duplicate send.
+- Notification worker tests cover atomic claim, stable provider idempotency, SENT transition, transient retry scheduling and concurrent claim loss.
 
 ## Remaining genuine launch gates
 - `rollback-rehearsal` — real staging rollback to a previous known-good deployment and restoration still required.
