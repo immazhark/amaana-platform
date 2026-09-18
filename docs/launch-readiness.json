@@ -128,7 +128,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Refund, receipt/acknowledgement and reconciliation code paths are covered by automated and synthetic checks, but the final controlled operational verification remains pending."
+      "evidence": "Refund, acknowledgement and reconciliation paths now include bounded refund accounting, refund-driven FUNDED→PUBLISHED/CLOSED correction, out-of-order refund/capture reconciliation, privacy-minimized webhook evidence, unmatched critical-event admin visibility, private acknowledgement no-store/no-referrer/noindex headers and exactly-once queued donor refund notifications. Automated/synthetic coverage does not replace the final explicitly authorised controlled provider refund/receipt verification; use docs/PAYMENT_REFUND_OPERATIONS_RUNBOOK.md."
     },
     {
       "id": "database-backup-evidence",
@@ -168,7 +168,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "The real domain is reachable directly, but indexing remains intentionally fail-closed. NEXT_PUBLIC_ALLOW_INDEXING is absent in Railway, robots disallows crawling, page metadata is noindex/nofollow and the sitemap is empty until an explicit launch indexing decision is approved."
+      "evidence": "The real domain is reachable directly, but indexing remains intentionally fail-closed. Indexing now requires the explicit flag, the official HTTPS Amaana host, and APP_ENVIRONMENT=production; the Docker build defaults APP_ENVIRONMENT to staging and receives the environment at build time. A future approved indexing decision therefore requires a deliberate production rebuild with APP_ENVIRONMENT=production and NEXT_PUBLIC_ALLOW_INDEXING=true, followed by robots/sitemap/canonical verification. Runtime-only flag changes cannot make a staging-built image indexable."
     },
     {
       "id": "main-promotion-and-production-approval",
