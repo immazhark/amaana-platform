@@ -6,7 +6,7 @@ export function isRazorpayKeyValidForEnvironment(environment: "production" | "st
 
 const productionSchema = z.object({
   APP_ENVIRONMENT: z.enum(["production", "staging"]).default("production"),
-  EMAIL_DELIVERY_MODE: z.enum(["live", "disabled"]).default("live"),
+  EMAIL_DELIVERY_MODE: z.enum(["live", "disabled"]).default("disabled"),
   DATABASE_URL: z.string().url(),
   NEXT_PUBLIC_APP_URL: z.string().url().refine(value => value.startsWith("https://"), "Production URL must use HTTPS"),
   EMAIL_FROM: z.string().min(3),
@@ -49,5 +49,5 @@ export function validateProductionEnvironment() {
 }
 
 export function isEmailDeliveryEnabled() {
-  return process.env.EMAIL_DELIVERY_MODE !== "disabled";
+  return process.env.EMAIL_DELIVERY_MODE === "live";
 }
