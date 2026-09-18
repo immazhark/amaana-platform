@@ -170,6 +170,7 @@ model AuditEvent {
   actor      User     @relation("AuditActor", fields: [actorId], references: [id])
   createdAt  DateTime @default(now())
   @@index([entityType, entityId, createdAt])
+  @@index([entityType, action, createdAt])
   @@index([actorId, createdAt])
   @@index([createdAt])
 }
@@ -355,6 +356,7 @@ model MediaAsset {
   @@index([initiativeId, isPublic, sortOrder])
   @@index([storyId, isPublic, sortOrder])
   @@index([faithContentId, isPublic, sortOrder])
+  @@index([isPublic, sourceYear, sortOrder, createdAt])
 }
 
 model Appeal {
