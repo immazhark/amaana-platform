@@ -34,7 +34,7 @@ test.describe('admin operational simulation without shared records', () => {
     const navigation = await openProfile(page, 'case');
     await expectLinks(navigation,
       ['Assistance queue', 'Retention review'],
-      ['Appeals', 'Media review', 'Donations']);
+      ['Appeals', 'Media review', 'Donations', 'Notification delivery']);
     await expect(adminBrand(page)).toHaveAttribute('href', '/admin');
     await expect(page.getByText('Fail-closed landing:')).toBeVisible();
     await expect(page.locator('code')).toHaveText('/admin');
@@ -44,7 +44,7 @@ test.describe('admin operational simulation without shared records', () => {
     const navigation = await openProfile(page, 'editorial');
     await expectLinks(navigation,
       ['Appeals', 'Media review'],
-      ['Assistance queue', 'Retention review', 'Donations']);
+      ['Assistance queue', 'Retention review', 'Donations', 'Notification delivery']);
     await expect(adminBrand(page)).toHaveAttribute('href', '/admin/appeals');
     await expect(page.locator('code')).toHaveText('/admin/appeals');
   });
@@ -53,7 +53,7 @@ test.describe('admin operational simulation without shared records', () => {
     const navigation = await openProfile(page, 'finance');
     await expectLinks(navigation,
       ['Donations'],
-      ['Assistance queue', 'Appeals', 'Media review', 'Retention review']);
+      ['Assistance queue', 'Appeals', 'Media review', 'Retention review', 'Notification delivery']);
     await expect(adminBrand(page)).toHaveAttribute('href', '/admin/donations');
     await expect(page.locator('code')).toHaveText('/admin/donations');
   });
@@ -73,6 +73,7 @@ test.describe('admin operational simulation without shared records', () => {
       'Media review',
       'Retention review',
       'Donations',
+      'Notification delivery',
     ]);
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
     expect(results.violations.filter(item => ['serious', 'critical'].includes(item.impact ?? ''))).toEqual([]);
