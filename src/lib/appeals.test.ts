@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getRemainingAppealAmount, isAppealOpenForDonations, shouldMarkAppealFunded } from "./appeals";
+import { appealStatusAfterRefund, getRemainingAppealAmount, isAppealOpenForDonations, shouldMarkAppealFunded } from "./appeals";
 
 const decimalLike = (value: number) => ({ toNumber: () => value });
 const now = new Date("2026-09-15T12:00:00.000Z");
@@ -87,5 +87,36 @@ describe("shouldMarkAppealFunded", () => {
 
   it("does not rewrite an already non-published state", () => {
     expect(shouldMarkAppealFunded("CLOSED", 80_000, 75_000)).toBe(false);
+  });
+});
+
+
+describe("appealStatusAfterRefund", () => {
+  it("reopens a funded appeal when a refund drops retained funds below target during an open fundraising window", () => {
+    expect(appealStatusAfterRefund(
+      "FUNDED",
+      70_000,
+      75_000,
+      "2026-09-20T12:00:00.000Z",
+      now,
+    )).toBe("PUBLISHED");
+  });
+
+  it("closes rather than reopens a funded appeal when its fundraising window has expired", () => {
+    expect(appealStatusAfterRefund(
+      "FUNDED",
+      70_000,
+      75_000,
+      "2026-09-14T12:00:00.000Z",
+      now,
+    )).toBe("CLOSED");
+  });
+
+  it("keeps a funded appeal funded when retained funds still meet the goal", () => {
+    expect(appealStatusAfterRefund("FUNDED", 75_000, 75_000, null, now)).toBe("FUNDED");
+  });
+
+  it.each(["PAUSED", "CLOSED", "REJECTED", "DRAFT", "PUBLISHED"])("never overrides manually controlled %s state", status => {
+    expect(appealStatusAfterRefund(status, 1, 75_000, null, now)).toBe(status);
   });
 });
