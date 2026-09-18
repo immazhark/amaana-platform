@@ -62,7 +62,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <Analytics />
         <SiteHeader />
         <IslamicCompanion />
-        <main id="main">{children}</main>
+        <main id="main" tabIndex={-1}>{children}</main>
         <BackToTop />
         <SiteFooter />
       </body>
