@@ -49,7 +49,7 @@ const complianceRisks = [
   },
   {
     id: "foreign-donation-acceptance",
-    pattern: /\b(?:accept|accepts|accepting)\s+(?:international|foreign|overseas)\s+(?:donations?|contributions?)\b/gi,
+    pattern: /\b(?:Amaana(?: Foundation)?|the Foundation|we)\s+(?:currently\s+)?(?:accept|accepts|are accepting)\s+(?:international|foreign|overseas)\s+(?:donations?|contributions?)\b/gi,
     message: "Public fundraising must remain domestic-only until FCRA status changes.",
   },
 ];
