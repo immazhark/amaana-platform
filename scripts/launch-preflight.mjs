@@ -31,6 +31,11 @@ const steps = [
     args: ["--test", "scripts/test-launch-readiness.mjs"],
   },
   {
+    label: "Approved background asset hashes",
+    command: nodeCommand,
+    args: ["scripts/verify-approved-backgrounds.mjs"],
+  },
+  {
     label: "Public editorial consistency",
     command: nodeCommand,
     args: ["scripts/check-public-editorial-consistency.mjs"],
