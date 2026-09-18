@@ -60,7 +60,7 @@ This branch intentionally has no pull request and is not connected to Railway. I
   - nearest `X-Forwarded-For` hop only as fallback;
   - malformed values fail to `unknown`.
 - Public abuse controls and admin login throttling share the same resolver.
-- Admin login performs scrypt verification work even for unknown/malformed stored credentials to reduce account-enumeration timing differences.
+- Valid-format unknown admin accounts still follow the dummy-scrypt verification path to reduce account-enumeration timing differences; structurally invalid/oversized credentials are rejected before expensive password work.
 - Admin login email/password inputs are server-bounded (254/256 chars) before user lookup or scrypt, while invalid attempts still participate in the rate-limit ledger.
 - Expired sessions are pruned when a new admin session is created.
 - Explicit admin logout is written to the audit trail.
