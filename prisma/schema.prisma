@@ -171,6 +171,7 @@ model AuditEvent {
   createdAt  DateTime @default(now())
   @@index([entityType, entityId, createdAt])
   @@index([actorId, createdAt])
+  @@index([createdAt])
 }
 
 model Role {
@@ -568,4 +569,5 @@ model Notification {
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
   @@index([status, scheduledFor])
+  @@index([status, createdAt])
 }
