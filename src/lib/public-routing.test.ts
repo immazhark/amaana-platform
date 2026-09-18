@@ -31,6 +31,12 @@ describe("public route publication policy", () => {
     expect(isPrivateRoute("/donations-info")).toBe(false);
   });
 
+  it("keeps the donate landing public while protecting appeal checkout subpaths", () => {
+    expect(isPrivateRoute("/donate")).toBe(false);
+    expect(isPrivateRoute("/donate/example-appeal")).toBe(true);
+    expect(PUBLIC_STATIC_ROUTES.some(route => route.path === "/donate")).toBe(true);
+  });
+
   it("does not allow duplicate publication rules", () => {
     const publicPaths = PUBLIC_STATIC_ROUTES.map(route => route.path);
     expect(new Set(publicPaths).size).toBe(publicPaths.length);
