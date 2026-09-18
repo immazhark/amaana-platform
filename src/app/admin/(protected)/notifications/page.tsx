@@ -77,7 +77,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
       <div>
         <p className="eyebrow">Operations</p>
         <h1>Notification delivery</h1>
-        <p className="lead">Read-only visibility into queued transactional emails, retry attempts and terminal delivery failures.</p>
+        <p className="lead">Operational visibility into queued transactional emails, retry attempts and terminal failures, with audited manual recovery for authorised approvers.</p>
       </div>
     </div>
 
