@@ -1,13 +1,16 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-17",
+  "updatedAt": "2026-09-18",
   "principle": "Green automation is necessary but not sufficient for production launch. External, human-review and cutover gates remain pending until evidence is recorded; main/indexing/payment activation actions remain explicitly controlled.",
   "gates": [
     {
       "id": "durable-ci-browser-gate-established",
       "category": "technical",
       "status": "VERIFIED",
-      "requiredFor": ["rehearsal", "production"],
+      "requiredFor": [
+        "rehearsal",
+        "production"
+      ],
       "evidence": "The integration workflow contains lint, typecheck, unit coverage, production build, bundle budgets, smoke checks and browser acceptance. CI #762 passed the full applicable integration verify job on SHA 5c3762ca94b53cca1ad9d7a9fc9880deebff2b05; every later launch candidate must independently pass the current workflow.",
       "verifiedAt": "2026-09-17"
     },
@@ -15,7 +18,10 @@
       "id": "railway-preview-deployment-baseline",
       "category": "technical",
       "status": "VERIFIED",
-      "requiredFor": ["rehearsal", "production"],
+      "requiredFor": [
+        "rehearsal",
+        "production"
+      ],
       "evidence": "Railway deployment a7b1b787-550e-40da-bad1-00c6f177c583 succeeded on exact integration SHA 5c3762ca94b53cca1ad9d7a9fc9880deebff2b05. Runtime logs showed migrations complete, RBAC/staff seed ready, staging acceptance workflow ready, synthetic refunded donation ready and Next.js ready.",
       "verifiedAt": "2026-09-17"
     },
@@ -23,7 +29,10 @@
       "id": "domestic-only-boundary",
       "category": "compliance",
       "status": "VERIFIED",
-      "requiredFor": ["rehearsal", "production"],
+      "requiredFor": [
+        "rehearsal",
+        "production"
+      ],
       "evidence": "Public donation/appeal flows state India-only domestic contribution boundaries; Amaana is not represented as FCRA-registered.",
       "verifiedAt": "2026-09-16"
     },
@@ -31,7 +40,10 @@
       "id": "staging-runtime-acceptance",
       "category": "technical",
       "status": "VERIFIED",
-      "requiredFor": ["rehearsal", "production"],
+      "requiredFor": [
+        "rehearsal",
+        "production"
+      ],
       "evidence": "The deployed staging startup now creates the required RBAC owner before the synthetic acceptance fixtures. Railway logs on SHA 5c3762ca94b53cca1ad9d7a9fc9880deebff2b05 confirm the staging workflow and synthetic fully-refunded donation fixture are ready and the application reaches readiness. The repository staging-launch-acceptance script includes private refunded-acknowledgement assertions; controlled runtime execution remains part of release acceptance.",
       "verifiedAt": "2026-09-17"
     },
@@ -39,35 +51,46 @@
       "id": "manual-rendered-accessibility-review",
       "category": "experience",
       "status": "PENDING",
-      "requiredFor": ["production"],
+      "requiredFor": [
+        "production"
+      ],
       "evidence": "Automated responsive/axe checks are durable, but final human rendered review at representative desktop/tablet/mobile widths, 200% zoom, keyboard-only operation, reduced motion and key fixed-control states remains required."
     },
     {
       "id": "final-editorial-seo-social-review",
       "category": "experience",
       "status": "PENDING",
-      "requiredFor": ["production"],
+      "requiredFor": [
+        "production"
+      ],
       "evidence": "Final public copy/CTA/terminology/amount-format consistency plus production canonical, schema, robots/indexing and social-share preview review remains required before launch indexing is enabled."
     },
     {
       "id": "public-media-human-review",
       "category": "privacy",
       "status": "PENDING",
-      "requiredFor": ["production"],
+      "requiredFor": [
+        "production"
+      ],
       "evidence": "docs/public-media-review-register.json intentionally leaves legacy directly addressable media pending human privacy/consent/provenance review. npm run media:review-readiness is the fail-closed launch check."
     },
     {
       "id": "public-media-upload-delivery",
       "category": "infrastructure",
-      "status": "PENDING",
-      "requiredFor": ["production"],
-      "evidence": "Current Railway service variable names do not include the dedicated PUBLIC_MEDIA_S3_BUCKET and PUBLIC_MEDIA_BASE_URL configuration required for admin public-media uploads/delivery. src/lib/storage.ts intentionally requires a public bucket separate from the private assistance bucket. Bundled reviewed files are unaffected."
+      "status": "VERIFIED",
+      "requiredFor": [
+        "production"
+      ],
+      "evidence": "A physically separate private Railway bucket `amaana-public-media` is configured through the PUBLIC_MEDIA_S3_* variables, with PUBLIC_MEDIA_BASE_URL routed through the gated staging `/media` proxy and Railway virtual-hosted S3 addressing. On exact integration SHA 29df6980e7a7300013d3c4c725a1442e9f3d0e45, GitHub CI #775 passed and Railway deployment 535e60a8-d236-4fea-a3a2-ec4a6ea2a3df completed a synthetic staging-only acceptance: upload to the dedicated private bucket, unpublished media inaccessible through `/media`, publication serving exact bytes through the proxy with bounded caching, unpublish revoking origin access, and cleanup removing both the synthetic MediaAsset and storage object. The private assistance bucket remained separate throughout.",
+      "verifiedAt": "2026-09-18"
     },
     {
       "id": "ca-12ab-status",
       "category": "compliance",
       "status": "VERIFIED",
-      "requiredFor": ["production"],
+      "requiredFor": [
+        "production"
+      ],
       "evidence": "Amaana Foundation has confirmed that provisional 12A / 12AB approval is in place. The public site must describe that approval as provisional. The known Section 80G approval is also provisional via Form 10AC dated 2026-01-26 for AY 2026-27 through 2028-29 and must not be presented as final or permanent.",
       "verifiedAt": "2026-09-17"
     },
@@ -75,42 +98,56 @@
       "id": "razorpay-live-kyc-readiness",
       "category": "payments",
       "status": "PENDING",
-      "requiredFor": ["production"],
+      "requiredFor": [
+        "production"
+      ],
       "evidence": "Razorpay KYC/documentation has gone through multiple review rounds and requested documentation has been supplied. Final account/payment activation approval is still awaited from Razorpay."
     },
     {
       "id": "controlled-live-donation-acceptance",
       "category": "payments",
       "status": "PENDING",
-      "requiredFor": ["production"],
+      "requiredFor": [
+        "production"
+      ],
       "evidence": "Browser donation journeys and synthetic staging acceptance are available. No real charge will be initiated without explicit authorization and Razorpay live activation."
     },
     {
       "id": "refund-receipt-operational-check",
       "category": "payments",
       "status": "PENDING",
-      "requiredFor": ["production"],
+      "requiredFor": [
+        "production"
+      ],
       "evidence": "Refund, receipt/acknowledgement and reconciliation code paths are covered by automated and synthetic checks, but the final controlled operational verification remains pending."
     },
     {
       "id": "database-backup-evidence",
       "category": "recovery",
       "status": "PENDING",
-      "requiredFor": ["rehearsal", "production"],
+      "requiredFor": [
+        "rehearsal",
+        "production"
+      ],
       "evidence": "A recoverable Neon/PostgreSQL backup or snapshot must be confirmed immediately before rehearsal/cutover; no backup action is inferred from application CI."
     },
     {
       "id": "rollback-rehearsal",
       "category": "recovery",
       "status": "PENDING",
-      "requiredFor": ["rehearsal", "production"],
+      "requiredFor": [
+        "rehearsal",
+        "production"
+      ],
       "evidence": "Rollback procedure must be rehearsed against staging/preview and record the known-good SHA/deployment before production cutover."
     },
     {
       "id": "production-dns-cutover-plan",
       "category": "cutover",
       "status": "VERIFIED",
-      "requiredFor": ["production"],
+      "requiredFor": [
+        "production"
+      ],
       "evidence": "Domain control and cutover were completed on 2026-09-17: amaanafoundation.org remains registered at Namecheap under the Foundation team's account access, authoritative DNS is in the team's Cloudflare account, the root hostname is verified against Railway, www permanently redirects to the root, HTTP redirects to HTTPS, Cloudflare SSL/TLS Full is active with Universal SSL, minimum TLS is 1.2 with TLS 1.3 enabled, and DNSSEC was re-established for the new Cloudflare zone.",
       "verifiedAt": "2026-09-17"
     },
@@ -118,14 +155,18 @@
       "id": "production-indexing-decision",
       "category": "cutover",
       "status": "PENDING",
-      "requiredFor": ["production"],
+      "requiredFor": [
+        "production"
+      ],
       "evidence": "The real domain is reachable directly, but indexing remains intentionally fail-closed. NEXT_PUBLIC_ALLOW_INDEXING is absent in Railway, robots disallows crawling, page metadata is noindex/nofollow and the sitemap is empty until an explicit launch indexing decision is approved."
     },
     {
       "id": "main-promotion-and-production-approval",
       "category": "authorization",
       "status": "PENDING",
-      "requiredFor": ["production"],
+      "requiredFor": [
+        "production"
+      ],
       "evidence": "Merging to main and formal production release approval remain explicitly user-gated actions."
     }
   ]
