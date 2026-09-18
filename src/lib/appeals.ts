@@ -55,3 +55,17 @@ export const formatINR = (amount: number) =>
     currency: "INR",
     maximumFractionDigits: 0,
   }).format(amount);
+
+
+export function appealStatusAfterRefund(
+  status: string,
+  nextAmountRaised: AmountLike,
+  goalAmount: AmountLike,
+  closesAt?: Date | string | null,
+  now: Date = new Date(),
+) {
+  if (status !== "FUNDED") return status;
+  if (amountToNumber(nextAmountRaised) >= amountToNumber(goalAmount)) return "FUNDED";
+  if (closesAt && new Date(closesAt).getTime() <= now.getTime()) return "CLOSED";
+  return "PUBLISHED";
+}
