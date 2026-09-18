@@ -39,11 +39,13 @@ This branch intentionally has no pull request and is not connected to Railway. I
 ### Admin operational visibility
 
 - New `notification.view` permission granted to primary and backup approvers, not reviewers.
-- New read-only `/admin/notifications` operations page.
+- New `notification.manage` permission enables audited manual recovery only for primary/backup approvers.
+- New `/admin/notifications` operations page.
 - Visibility for PENDING, PROCESSING, FAILED, SENT and CANCELLED states.
 - Attempts, next retry/sent time, failure reason and related assistance/donation record links.
 - Terminal failures explicitly show “Manual attention required”.
-- Unit/browser permission coverage updated.
+- Manual requeue is FAILED-only, requires an operational reason and uses an atomic status claim so it cannot race an active worker into a duplicate send.
+- Unit/browser permission and race coverage updated.
 
 ### Security and authentication
 
@@ -87,11 +89,38 @@ This branch intentionally has no pull request and is not connected to Railway. I
 Additive migration `20260918093000_operational_visibility_indexes` adds indexes matching actual operational queries:
 
 - `AuditEvent(createdAt)`
+- `AuditEvent(entityType, action, createdAt)`
 - `Notification(status, createdAt)`
 - `DonationAttempt(createdAt)`
 - `LoginAttempt(createdAt)`
+- `MediaAsset(isPublic, sourceYear, sortOrder, createdAt)`
 
-No business rows are rewritten by this migration.
+Production RBAC migration `20260918111500_notification_operations_rbac` idempotently creates `notification.view` and `notification.manage` and grants them only to PRIMARY/BACKUP approvers. Production launch therefore does not depend on running the staging seed.
+
+No business rows are rewritten by these migrations.
+
+### Payment/refund reconciliation
+
+- Private donation acknowledgement API now uses no-store, no-referrer and noindex headers.
+- Refund webhook processing requires INR and bounded integer paise values.
+- Funded appeals automatically return to PUBLISHED when a verified refund drops retained funds below target while the fundraising window remains open.
+- If the same refund happens after the fundraising deadline, the appeal becomes CLOSED instead of silently reopening.
+- Out-of-order `refund.processed` delivery resolves Razorpay payment → order and runs the existing idempotent capture path before refund accounting.
+- Unrelated provider payments remain unmatched rather than being force-linked.
+- Critical unmatched payment/refund events are surfaced in the admin donations screen for reconciliation.
+- Stored Razorpay webhook audit payloads are privacy-minimized to provider ids/order linkage/amount/currency/status instead of retaining the full provider payload.
+- Refund processing queues exactly one transactional refund notification inside the same unique-event transaction.
+- Payment/refund operations runbook added.
+- Read-only rollback target verifier added for exact-SHA health/private-boundary checks.
+
+### Production indexing and private-route boundaries
+
+- Indexing now requires all three conditions: explicit flag, official HTTPS Amaana host, and `APP_ENVIRONMENT=production`.
+- Docker build stage receives `APP_ENVIRONMENT`; its default is staging/fail-closed.
+- The public `/donate` landing page is indexable after approved production indexing.
+- `/donate/<appeal>` checkout paths remain private/noindex.
+- A top-level admin layout explicitly keeps all admin surfaces noindex/nofollow/no-referrer.
+- Public-routing and browser SEO tests cover these boundaries.
 
 ## Intentionally not changed
 
