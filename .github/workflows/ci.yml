@@ -55,6 +55,8 @@ jobs:
         run: |
           node --test scripts/test-public-editorial-consistency.mjs
           node scripts/check-public-editorial-consistency.mjs
+      - name: Guard public/private data boundaries
+        run: node --test scripts/test-public-data-boundaries.mjs
       - name: Verify archive filters
         run: node --experimental-strip-types --test scripts/test-work-filters.mjs
       - name: Verify daily readings, reminder windows and local calendar boundaries
