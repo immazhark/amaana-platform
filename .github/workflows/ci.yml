@@ -51,6 +51,10 @@ jobs:
         run: node --test scripts/test-reviewed-campaigns.mjs scripts/test-reviewed-campaign-revisions.mjs scripts/test-reviewed-campaign-feature-normalization.mjs scripts/test-reviewed-campaign-video-normalization.mjs
       - name: Verify canonical factual locks
         run: node --test scripts/test-canonical-factual-locks.mjs
+      - name: Guard public editorial and compliance copy
+        run: |
+          node --test scripts/test-public-editorial-consistency.mjs
+          node scripts/check-public-editorial-consistency.mjs
       - name: Verify archive filters
         run: node --experimental-strip-types --test scripts/test-work-filters.mjs
       - name: Verify daily readings, reminder windows and local calendar boundaries
