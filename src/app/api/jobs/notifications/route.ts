@@ -14,23 +14,44 @@ function isAuthorized(request: Request) {
   return timingSafeEqual(Buffer.from(secret), Buffer.from(supplied));
 }
 
+async function runRetentionMaintenance() {
+  try {
+    const result = await pruneEphemeralSecurityLedgers();
+    return { status: "ok" as const, ...result };
+  } catch (error) {
+    console.error("Security-ledger retention maintenance failed", error);
+    return { status: "failed" as const };
+  }
+}
+
 export async function POST(request: Request) {
-  if (!isAuthorized(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401, headers: { "Cache-Control": "no-store" } });
+  if (!isAuthorized(request)) {
+    return NextResponse.json(
+      { error: "Unauthorized" },
+      { status: 401, headers: { "Cache-Control": "no-store" } },
+    );
+  }
+
+  const retention = await runRetentionMaintenance();
+
+  if (!isEmailDeliveryEnabled()) {
+    return NextResponse.json(
+      { status: "disabled", retention },
+      { headers: { "Cache-Control": "no-store" } },
+    );
+  }
 
   try {
-    const retention = await pruneEphemeralSecurityLedgers();
-
-    if (!isEmailDeliveryEnabled()) {
-      return NextResponse.json(
-        { status: "disabled", retention },
-        { headers: { "Cache-Control": "no-store" } },
-      );
-    }
-
     const result = await processPendingEmailNotifications();
-    return NextResponse.json({ status: "ok", ...result, retention }, { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json(
+      { status: "ok", ...result, retention },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (error) {
     console.error("Notification delivery job failed", error);
-    return NextResponse.json({ status: "failed" }, { status: 500, headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json(
+      { status: "failed", retention },
+      { status: 500, headers: { "Cache-Control": "no-store" } },
+    );
   }
 }
