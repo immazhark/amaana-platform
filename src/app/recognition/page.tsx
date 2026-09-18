@@ -1,3 +1,11 @@
 import { CanonicalArticle } from '@/components/canonical-article';
-export const metadata={title:'AMP Recognition 2025 | Amaana Foundation',description:'Certificate of Excellence from the Association of Muslim Professionals at the 5th National Awards for Social Excellence 2025.'};
+
+const description = 'Certificate of Excellence from the Association of Muslim Professionals at the 5th National Awards for Social Excellence 2025.';
+export const metadata = {
+  title: 'AMP Recognition 2025',
+  description,
+  alternates: { canonical: '/recognition' },
+  openGraph: { type: 'website', url: '/recognition', title: 'AMP Recognition 2025 | Amaana Foundation', description },
+  twitter: { card: 'summary', title: 'AMP Recognition 2025 | Amaana Foundation', description },
+};
 export default function Page(){return <CanonicalArticle eyebrow="Awards & Recognition · 2025" heroVariant="recognition" heroVisualTitle="Certificate of Excellence" heroVisualNote="Best NGO Award of the Year (Telangana) · AMP 5th National Awards for Social Excellence 2025." title="Recognised for Service. Responsible for What Comes Next." intro="Amaana Foundation was recognised by the Association of Muslim Professionals at the 5th National Awards for Social Excellence 2025, receiving the Best NGO Award of the Year (Telangana)." blocks={[{title:'Certificate of Excellence',paragraphs:['The certificate acknowledges the Foundation’s contribution to society and nation building. The recognition is recorded here as awarded in 2025; it is not a claim of endorsement for every Amaana programme.']}]}><a className="v2-button" href="/documents/amp-certificate-excellence-2025.pdf" target="_blank" rel="noopener noreferrer">View the AMP Certificate (PDF)</a></CanonicalArticle>;}
