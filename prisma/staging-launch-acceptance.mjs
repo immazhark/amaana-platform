@@ -125,6 +125,10 @@ console.log(`Using configured same-origin header ${requestOrigin} for CSRF-prote
 const version = await get("/api/health/version");
 const versionPayload = await version.json();
 assert.equal(versionPayload.status, "ok", "Version endpoint did not return status=ok");
+assert.equal(versionPayload.environment, "staging", "Staging acceptance target must report APP_ENVIRONMENT=staging");
+pass("staging environment posture");
+assert.equal(versionPayload.paymentMode, "test", "Staging acceptance target must report Razorpay Test mode");
+pass("Razorpay Test payment posture");
 expectHeader(version, "cache-control", /no-store/i, "version endpoint");
 if (expectedCommitSha) {
   assert.equal(versionPayload.commitSha, expectedCommitSha, `Staging is not serving expected commit ${expectedCommitSha}`);
