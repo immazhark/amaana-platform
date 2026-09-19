@@ -46,6 +46,15 @@ export function renderNotificationEmail(templateKey: string, payload: TemplatePa
     return { subject, text: `Assalamu alaikum,\n\nThank you for your donation. Reference: ${reference}. This is a normal donation acknowledgement and not an 80G tax certificate.\n\nJazakAllah khair,\nAmaana Foundation`, html: wrap(`<p>Thank you for supporting an Amaana Foundation appeal.</p><p><strong>Donation reference:</strong> ${safeReference}</p><p>This is a normal donation acknowledgement and is not an 80G tax certificate.</p>`) };
   }
 
+  if (templateKey === "operational-email-acceptance") {
+    const subject = configuredSubject || "Amaana Foundation transactional email acceptance";
+    return {
+      subject,
+      text: "Assalamu alaikum,\n\nThis is Amaana Foundation's controlled transactional-email acceptance message. It contains no donor, beneficiary, payment or assistance-case data. If you received this message once, the production delivery path reached the authorised staff recipient successfully.\n\nJazakAllah khair,\nAmaana Foundation",
+      html: wrap("<p>This is Amaana Foundation's controlled transactional-email acceptance message.</p><p>It contains no donor, beneficiary, payment or assistance-case data.</p><p>If you received this message once, the production delivery path reached the authorised staff recipient successfully.</p>"),
+    };
+  }
+
   if (templateKey === "donation-refund-processed") {
     const refundAmount = value(payload, "refundAmount");
     const refundState = value(payload, "refundState") || "refund";
