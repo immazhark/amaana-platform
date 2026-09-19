@@ -560,6 +560,7 @@ model Notification {
   payload             Json
   scheduledFor        DateTime           @default(now())
   sentAt              DateTime?
+  providerMessageId   String?
   failureReason       String?
   attempts            Int                @default(0)
   userId              String?
