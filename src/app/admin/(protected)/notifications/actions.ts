@@ -5,6 +5,55 @@ import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
+export async function enqueueControlledEmailAcceptance() {
+  const user = await requirePermission("notification.manage");
+
+  const existing = await prisma.notification.findFirst({
+    where: {
+      userId: user.id,
+      channel: "EMAIL",
+      templateKey: "operational-email-acceptance",
+      status: { in: [NotificationStatus.PENDING, NotificationStatus.PROCESSING] },
+    },
+    select: { id: true, status: true },
+  });
+
+  if (existing) {
+    throw new Error("A controlled acceptance email is already queued or processing for this account.");
+  }
+
+  await prisma.$transaction(async tx => {
+    const notification = await tx.notification.create({
+      data: {
+        channel: "EMAIL",
+        recipient: user.email,
+        templateKey: "operational-email-acceptance",
+        subject: "Amaana Foundation transactional email acceptance",
+        payload: {
+          acceptanceType: "transactional-email",
+        },
+        userId: user.id,
+      },
+      select: { id: true },
+    });
+
+    await tx.auditEvent.create({
+      data: {
+        actorId: user.id,
+        action: "notification.acceptance_enqueued",
+        entityType: "Notification",
+        entityId: notification.id,
+        metadata: {
+          recipientScope: "current-authorised-staff-account",
+          templateKey: "operational-email-acceptance",
+        },
+      },
+    });
+  });
+
+  revalidatePath("/admin/notifications");
+}
+
 export async function requeueFailedNotification(formData: FormData) {
   const user = await requirePermission("notification.manage");
   const id = String(formData.get("id") ?? "").trim();
