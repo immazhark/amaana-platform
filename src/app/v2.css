@@ -40,3 +40,6 @@
 @media (prefers-reduced-motion: reduce) {
   .v2-button { transition: none; }
 }
+
+.v2-button--paper-secondary{background:transparent;color:#735408;border-color:#b8890e;box-shadow:inset 0 0 0 1px rgb(184 137 14/12%)}
+.v2-button--paper-secondary:hover{background:#fff7d7;color:#5d4306;border-color:#9c720d}
