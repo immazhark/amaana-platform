@@ -13,7 +13,7 @@
 - `work/backgrounds-razorpay-readiness-2026-09-18`
 - Base: family-review SHA `69b4e2fd5698b050ae8dcf7d712588a1d1167ca4`.
 - Purpose: finish the corrected approved background integration, reconcile Razorpay approval/readiness records, and preserve quiet-batch development while family review is ongoing.
-- Status: active quiet branch; do not deploy until the six corrected SVGs are landed byte-for-byte and validation is complete.
+- Status: active quiet branch; the six corrected SVGs are landed byte-for-byte. Do not deploy until the accumulated quiet batch receives consolidated validation and we deliberately choose the next staging checkpoint.
 
 ## Working protocol
 1. Keep `main` untouched.
@@ -103,13 +103,25 @@
 - Notification worker tests cover atomic claim, stable provider idempotency, SENT transition, transient retry scheduling and concurrent claim loss.
 
 ## Current background correction
-- Six corrected approved SVG source files were supplied on 18 September 2026.
-- `scripts/verify-approved-backgrounds.mjs` now locks their SHA-256 hashes and launch preflight fails closed if repo assets differ.
-- Repository replacement remains pending until the six corrected files are uploaded byte-for-byte to `public/backgrounds/`; do not regenerate, minify or text-reconstruct them.
+- Six corrected approved SVG source files were supplied and landed byte-for-byte in `public/backgrounds/`.
+- `scripts/verify-approved-backgrounds.mjs` locks their SHA-256 hashes and launch preflight fails closed if repo assets differ.
+- The family-review deployment still serves the previous backgrounds; responsive rendered QA remains pending until the next controlled staging deployment.
 
 ## Operational note
-- The preview service is healthy on the family-review SHA.
-- The latest notification-cron build attempt failed on the superseded pre-fix SHA because of the admin-login null-narrowing TypeScript error. The cron service is still configured correctly, but it must be rebuilt on the next controlled deployment after the corrected candidate is ready; do not deploy it separately now.
+- The preview service remains healthy on the family-review SHA.
+- The notification cron's historical failed build was caused by the superseded admin-login TypeScript error, not by the worker. The active cron deployment is healthy and was observed on 19 September 2026 firing every five minutes and receiving HTTP 200 with `status:"disabled"`, which is the intended staging posture.
+- No separate cron deployment is required merely to repair that historical failure.
+
+## Additional implementation completed on 19 September 2026
+
+- Donation checkout remount regression fixed with Next Script `onReady` plus an already-loaded `window.Razorpay` fallback; browser acceptance now reproduces unmount/remount behavior so the form cannot remain stuck on “Preparing secure checkout…” after revisiting the page.
+- Explicit `payment.failed` webhook state-guard tests added; failed payments cannot increase appeal accounting.
+- Transactional-email operations gained a controlled self-recipient acceptance action for authorised staff only, duplicate-active-acceptance protection, audit logging and Resend provider-message-id persistence/visibility.
+- Production environment contract now fails closed on staging/Live Razorpay mix-ups, wrong production canonical origin, shared assistance/public-media buckets, insecure public-media origin and launch-only acceptance flags.
+- Version health now exposes only non-secret deployment posture (`environment` and Razorpay `paymentMode`); staging/rollback acceptance requires `staging + test`.
+- Assistance browser acceptance now covers a synthetic private PDF in the multipart submission. Route tests lock private-document persistence and compensation cleanup when the later database write fails.
+- Additive migration `20260919142000_notification_provider_message_id` stores the external email provider message id for delivery reconciliation. It has not been applied to staging/production yet.
+- These new quiet-branch changes still require consolidated lint/typecheck/unit/build/browser validation before integration.
 
 ## Remaining genuine launch gates
 - `rollback-rehearsal` — real staging rollback to a previous known-good deployment and restoration still required.
@@ -117,7 +129,7 @@
 - `manual-rendered-accessibility-review` — final human rendered review required.
 - `final-editorial-seo-social-review` — final human copy/social preview review required.
 - `public-media-human-review` — individual media privacy/consent/provenance review required.
-- Razorpay KYC/account activation is VERIFIED as of 18 September 2026. Remaining payment gates are Test-mode reconciliation, separate Live-mode key/webhook configuration at the controlled production checkpoint, controlled real donation acceptance, and refund/receipt operational verification.
+- Razorpay account/KYC and website approval are VERIFIED. Provider-backed Test Mode capture, webhook delivery, acknowledgement/accounting and a full refund with `refund.processed` reconciliation are verified. Separate Live API credentials and a separate Live webhook now exist and remain outside staging. Remaining payment gates are provider-backed `payment.failed` evidence (or documented Test Checkout limitation), production-only Live credential installation, controlled real donation acceptance and production receipt/email/refund operations.
 - explicit production indexing decision.
 - explicit `main` promotion/production approval.
 
