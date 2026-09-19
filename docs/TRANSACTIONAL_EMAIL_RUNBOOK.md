@@ -19,6 +19,7 @@ Staging must remain disabled because synthetic acceptance data can contain test 
 - maximum automatic attempts: 5;
 - retry schedule after transient provider/network failure: 5m → 15m → 45m → 135m;
 - Resend receives a stable `Idempotency-Key` derived from the notification row id, preventing duplicate provider sends during retry within the provider idempotency window;
+- successful provider acceptance stores the returned Resend message id on the notification row for operational reconciliation without storing message bodies or secrets;
 - non-retryable provider/configuration failures are parked for manual attention;
 - Resend `409 concurrent_idempotent_requests` is retryable, while `409 invalid_idempotent_request` is treated as permanent because it indicates the same key was reused with a different payload;
 - approvers can review delivery state in `/admin/notifications`;
@@ -49,6 +50,7 @@ Do not enable live delivery until all of the following are true:
    - exactly one queue row transitions to `SENT`;
    - `attempts` reflects the actual send attempt count;
    - `sentAt` is populated;
+   - `providerMessageId` is populated when returned by Resend and matches the Admin operations row;
    - the recipient receives exactly one message;
    - the notification operations page reports the same state.
 7. Record non-sensitive evidence in the launch-readiness register.
