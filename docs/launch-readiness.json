@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-18",
+  "updatedAt": "2026-09-19",
   "principle": "Green automation is necessary but not sufficient for production launch. External, human-review and cutover gates remain pending until evidence is recorded; main/indexing/payment activation actions remain explicitly controlled.",
   "gates": [
     {
@@ -54,7 +54,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Six corrected approved SVG source files were supplied on 2026-09-18 and their SHA-256 hashes are locked in scripts/verify-approved-backgrounds.mjs. The quiet work branch adds a fail-closed launch-preflight hash check. The repository still contains the older substitute SVG bytes until the six corrected files are uploaded byte-for-byte to public/backgrounds; this gate must remain pending until GitHub blob hashes match the locked source files and responsive rendered QA passes."
+      "evidence": "All six corrected approved SVGs were uploaded byte-for-byte to public/backgrounds on 2026-09-19 in commit 6510cdfc7002f4d00e12628a1a55d2761cbe6fad. Git blob SHA-1 values and file sizes exactly match the prepared source package, which independently confirms the locked SHA-256 values in scripts/verify-approved-backgrounds.mjs, including the corrected mobile header and footer assets. CSS token integration already switches hero/body/footer to the mobile variants at max-width 768px with upper-right mobile header/footer positioning and centred body positioning. This gate remains PENDING only until the corrected assets are rendered in the controlled family-review deployment and responsive visual QA is completed."
     },
     {
       "id": "transactional-email-delivery",
