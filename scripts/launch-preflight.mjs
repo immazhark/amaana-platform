@@ -31,6 +31,12 @@ const steps = [
     args: ["--test", "scripts/test-launch-readiness.mjs"],
   },
   {
+    label: "Production environment contract tests",
+    command: nodeCommand,
+    args: ["--test", "scripts/test-production-environment.mjs"],
+  },
+
+  {
     label: "Approved background asset hashes",
     command: nodeCommand,
     args: ["scripts/verify-approved-backgrounds.mjs"],
