@@ -112,6 +112,7 @@ describe("notification worker flow", () => {
       data: {
         status: NotificationStatus.SENT,
         sentAt: expect.any(Date),
+        providerMessageId: "email_1",
         failureReason: null,
       },
     });
