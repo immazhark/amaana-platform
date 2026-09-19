@@ -2,7 +2,7 @@ import Link from "next/link";
 import { NotificationStatus } from "@prisma/client";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { hasPermission, requirePermission } from "@/lib/auth";
-import { requeueFailedNotification } from "./actions";
+import { enqueueControlledEmailAcceptance, requeueFailedNotification } from "./actions";
 import { prisma } from "@/lib/prisma";
 
 type Props = { searchParams: Promise<{ status?: string; page?: string }> };
@@ -80,6 +80,20 @@ export default async function NotificationOperationsPage({ searchParams }: Props
         <p className="lead">Operational visibility into queued transactional emails, retry attempts and terminal failures, with audited manual recovery for authorised approvers.</p>
       </div>
     </div>
+
+    {canManageNotifications && (
+      <section className="admin-card" aria-labelledby="email-acceptance-heading">
+        <h2 id="email-acceptance-heading">Controlled email acceptance</h2>
+        <p>
+          Queue one synthetic transactional email to your own authorised staff account.
+          This message contains no donor, beneficiary, payment or assistance-case data.
+          In staging, delivery remains disabled and the row stays queued until the approved production acceptance.
+        </p>
+        <form action={enqueueControlledEmailAcceptance}>
+          <button type="submit">Queue acceptance email to my staff account</button>
+        </form>
+      </section>
+    )}
 
     <div className="filter-row">
       <Link href="/admin/notifications">All</Link>
