@@ -48,7 +48,7 @@ export default function Page() {
     >
       <div className="v2-hero-actions">
         <Link className="v2-button" href="/appeals">Support a Verified Appeal</Link>
-        <Link className="v2-button ghost" href="/get-involved/sponsor-education">Explore Taleem Sponsorship</Link>
+        <Link className="v2-button v2-button--paper-secondary" href="/get-involved/sponsor-education">Explore Taleem Sponsorship</Link>
         <Link className="v2-text-link" href="/contact">Ask About Programme Giving →</Link>
       </div>
     </CanonicalArticle>
