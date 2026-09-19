@@ -9,6 +9,19 @@ describe("notification email templates", () => {
   });
 
 
+  it("renders the controlled operational acceptance without sensitive case data", () => {
+    const email = renderNotificationEmail("operational-email-acceptance", {
+      acceptanceType: "transactional-email",
+    });
+
+    expect(email.subject).toMatch(/transactional email acceptance/i);
+    expect(email.text).toContain("controlled transactional-email acceptance");
+    expect(email.text).toContain("no donor, beneficiary, payment or assistance-case data");
+    expect(email.html).not.toContain("reference");
+    expect(email.html).not.toContain("card");
+    expect(email.html).not.toContain("bank account");
+  });
+
   it("renders refund notifications with only the approved transaction summary", () => {
     const email = renderNotificationEmail("donation-refund-processed", {
       referenceNumber: "AFD-2026-12345678",
