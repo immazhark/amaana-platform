@@ -29,7 +29,8 @@
     "launch:preflight": "node scripts/launch-preflight.mjs",
     "launch:preflight:rehearsal": "node scripts/launch-preflight.mjs --rehearsal",
     "launch:preflight:production": "node scripts/launch-preflight.mjs --production",
-    "rehearsal:verify-target": "node scripts/verify-rollback-target.mjs"
+    "rehearsal:verify-target": "node scripts/verify-rollback-target.mjs",
+    "launch:env:production": "node scripts/check-production-environment.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1128.0",
