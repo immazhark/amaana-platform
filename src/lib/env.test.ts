@@ -5,7 +5,7 @@ const requiredProductionEnv = {
   APP_ENVIRONMENT: "production",
   EMAIL_DELIVERY_MODE: "live",
   DATABASE_URL: "https://example.com/database",
-  NEXT_PUBLIC_APP_URL: "https://example.com",
+  NEXT_PUBLIC_APP_URL: "https://amaanafoundation.org",
   EMAIL_FROM: "Amaana <noreply@example.com>",
   RESEND_API_KEY: "re_test_key",
   CRON_SECRET: "c".repeat(32),
@@ -14,6 +14,8 @@ const requiredProductionEnv = {
   S3_ENDPOINT: "https://s3.example.com",
   S3_ACCESS_KEY_ID: "access-key",
   S3_SECRET_ACCESS_KEY: "s".repeat(16),
+  PUBLIC_MEDIA_S3_BUCKET: "amaana-public-media",
+  PUBLIC_MEDIA_BASE_URL: "https://amaanafoundation.org/media",
   ASSISTANCE_TOKEN_PEPPER: "a".repeat(32),
   NEXT_PUBLIC_RAZORPAY_KEY_ID: "rzp_live_example",
   RAZORPAY_KEY_SECRET: "r".repeat(16),
@@ -36,6 +38,21 @@ describe("production environment safety", () => {
   it("accepts the default production deployment posture", () => {
     expect(() => validateProductionEnvironment()).not.toThrow();
     expect(isEmailDeliveryEnabled()).toBe(true);
+  });
+
+  it("rejects a production canonical URL that is not the official Amaana origin", () => {
+    process.env.NEXT_PUBLIC_APP_URL = "https://amaana-platform-production.up.railway.app";
+    expect(() => validateProductionEnvironment()).toThrow(/Production canonical origin/);
+  });
+
+  it("rejects public media stored in the private assistance bucket", () => {
+    process.env.PUBLIC_MEDIA_S3_BUCKET = process.env.S3_BUCKET;
+    expect(() => validateProductionEnvironment()).toThrow(/separate bucket/);
+  });
+
+  it("rejects a non-HTTPS public media origin", () => {
+    process.env.PUBLIC_MEDIA_BASE_URL = "http://media.example.com";
+    expect(() => validateProductionEnvironment()).toThrow(/Public media URL must use HTTPS/);
   });
 
   it("keeps delivery disabled when the mode is omitted", () => {
