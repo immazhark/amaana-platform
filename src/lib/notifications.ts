@@ -72,6 +72,13 @@ async function sendWithResend(
       isRetryableEmailProviderResponse(response.status, providerCode),
     );
   }
+
+  try {
+    const payload = await response.json() as { id?: unknown };
+    return typeof payload.id === "string" && payload.id.trim() ? payload.id.trim() : null;
+  } catch {
+    return null;
+  }
 }
 
 async function recoverStaleProcessingNotifications() {
@@ -130,7 +137,7 @@ export async function processPendingEmailNotifications() {
         notification.payload as Record<string, unknown>,
         notification.subject,
       );
-      await sendWithResend(
+      const providerMessageId = await sendWithResend(
         notification.id,
         notification.recipient,
         rendered.subject,
@@ -139,7 +146,12 @@ export async function processPendingEmailNotifications() {
       );
       await prisma.notification.update({
         where: { id: notification.id },
-        data: { status: NotificationStatus.SENT, sentAt: new Date(), failureReason: null },
+        data: {
+          status: NotificationStatus.SENT,
+          sentAt: new Date(),
+          providerMessageId,
+          failureReason: null,
+        },
       });
       sent += 1;
     } catch (error) {
