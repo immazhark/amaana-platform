@@ -264,6 +264,55 @@ test.describe('private assistance journey', () => {
     await expect(page.getByText('Enter a valid phone number.')).toHaveCount(0);
   });
 
+  test('supporting evidence stays in the private multipart submission without altering the public URL', async ({ page }) => {
+    let contentType = '';
+    let multipartBody = '';
+
+    await page.route('**/api/assistance', async route => {
+      contentType = route.request().headers()['content-type'] ?? '';
+      const body = route.request().postDataBuffer();
+      multipartBody = body ? body.toString('utf8') : '';
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({ referenceNumber: assistanceReference, trackingToken }),
+      });
+    });
+
+    await openAssistance(page);
+    await fillAssistanceForm(page);
+
+    const evidence = page.getByLabel(/Add private supporting files/);
+    await evidence.setInputFiles({
+      name: 'synthetic-supporting-evidence.pdf',
+      mimeType: 'application/pdf',
+      buffer: Buffer.from('%PDF-1.4 synthetic browser acceptance evidence only'),
+    });
+
+    const selected = await evidence.evaluate(input => Array.from(input.files ?? []).map(file => ({
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    })));
+    expect(selected).toEqual([expect.objectContaining({
+      name: 'synthetic-supporting-evidence.pdf',
+      type: 'application/pdf',
+    })]);
+
+    await page.getByRole('button', { name: 'Submit private request →' }).click();
+
+    expect(contentType).toMatch(/^multipart\/form-data;\s*boundary=/i);
+    expect(multipartBody).toContain('name="documents"');
+    expect(multipartBody).toContain('filename="synthetic-supporting-evidence.pdf"');
+    expect(multipartBody).toContain('Content-Type: application/pdf');
+    expect(multipartBody).toContain('synthetic browser acceptance evidence only');
+    expect(multipartBody).toContain('name="applicantName"');
+    expect(multipartBody).toContain('Acceptance Applicant');
+
+    await expect(page).toHaveURL(new RegExp(`/request-assistance/received#reference=${assistanceReference}&token=`));
+    expect(new URL(page.url()).search).toBe('');
+  });
+
   test('mocked submission redirects to fragment-only private tracking and resolves status safely', async ({ page }) => {
     let statusBody = null;
     await page.route('**/api/assistance', route => route.fulfill({
