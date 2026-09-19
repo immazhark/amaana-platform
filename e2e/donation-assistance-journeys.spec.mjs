@@ -130,6 +130,21 @@ test.describe('donation journey without real payment', () => {
     expect(orderCalls).toBe(0);
   });
 
+  test('Razorpay checkout becomes ready again after the donation form remounts', async ({ page }) => {
+    const submit = await openDonationFixture(page, 'dismiss');
+    await expect(page.getByText('Secure checkout is ready.')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Unmount donation form' }).click();
+    await expect(page.getByText('Donation form unmounted for remount acceptance.')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Remount donation form' }).click();
+    const remountedSubmit = page.getByRole('button', { name: 'Continue securely →' });
+    await expect(remountedSubmit).toBeEnabled();
+    await expect(page.getByText('Secure checkout is ready.')).toBeVisible();
+
+    expect(await submit.count()).toBe(0);
+  });
+
   test('dismissing mocked Razorpay returns the form to a safe ready state', async ({ page }) => {
     const order = { value: null };
     await mockDonationOrder(page, order);
