@@ -4,6 +4,8 @@ import { NotificationStatus } from "@prisma/client";
 const mocks = vi.hoisted(() => ({
   requirePermission: vi.fn(),
   findUniqueOrThrow: vi.fn(),
+  findFirstNotification: vi.fn(),
+  createNotification: vi.fn(),
   updateNotificationMany: vi.fn(),
   createAudit: vi.fn(),
   transaction: vi.fn(),
@@ -16,12 +18,13 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     notification: {
       findUniqueOrThrow: mocks.findUniqueOrThrow,
+      findFirst: mocks.findFirstNotification,
     },
     $transaction: mocks.transaction,
   },
 }));
 
-import { requeueFailedNotification } from "./actions";
+import { enqueueControlledEmailAcceptance, requeueFailedNotification } from "./actions";
 
 function form(reason = "Provider configuration was corrected and delivery may be retried.") {
   const data = new FormData();
@@ -33,7 +36,9 @@ function form(reason = "Provider configuration was corrected and delivery may be
 describe("manual notification recovery", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    mocks.requirePermission.mockResolvedValue({ id: "user_123" });
+    mocks.requirePermission.mockResolvedValue({ id: "user_123", email: "staff@example.test" });
+    mocks.findFirstNotification.mockResolvedValue(null);
+    mocks.createNotification.mockResolvedValue({ id: "notification_acceptance_1" });
     mocks.findUniqueOrThrow.mockResolvedValue({
       id: "notification_123",
       status: NotificationStatus.FAILED,
@@ -45,9 +50,61 @@ describe("manual notification recovery", () => {
     mocks.updateNotificationMany.mockResolvedValue({ count: 1 });
     mocks.createAudit.mockResolvedValue({ id: "audit_123" });
     mocks.transaction.mockImplementation(async callback => callback({
-      notification: { updateMany: mocks.updateNotificationMany },
+      notification: { updateMany: mocks.updateNotificationMany, create: mocks.createNotification },
       auditEvent: { create: mocks.createAudit },
     }));
+  });
+
+  it("queues controlled acceptance only to the current authorised staff email and audits it", async () => {
+    await enqueueControlledEmailAcceptance();
+
+    expect(mocks.requirePermission).toHaveBeenCalledWith("notification.manage");
+    expect(mocks.findFirstNotification).toHaveBeenCalledWith({
+      where: {
+        userId: "user_123",
+        channel: "EMAIL",
+        templateKey: "operational-email-acceptance",
+        status: { in: [NotificationStatus.PENDING, NotificationStatus.PROCESSING] },
+      },
+      select: { id: true, status: true },
+    });
+    expect(mocks.createNotification).toHaveBeenCalledWith({
+      data: {
+        channel: "EMAIL",
+        recipient: "staff@example.test",
+        templateKey: "operational-email-acceptance",
+        subject: "Amaana Foundation transactional email acceptance",
+        payload: { acceptanceType: "transactional-email" },
+        userId: "user_123",
+      },
+      select: { id: true },
+    });
+    expect(mocks.createAudit).toHaveBeenCalledWith({
+      data: {
+        actorId: "user_123",
+        action: "notification.acceptance_enqueued",
+        entityType: "Notification",
+        entityId: "notification_acceptance_1",
+        metadata: {
+          recipientScope: "current-authorised-staff-account",
+          templateKey: "operational-email-acceptance",
+        },
+      },
+    });
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/notifications");
+  });
+
+  it("refuses a duplicate controlled acceptance while one is queued or processing", async () => {
+    mocks.findFirstNotification.mockResolvedValueOnce({
+      id: "existing_acceptance",
+      status: NotificationStatus.PENDING,
+    });
+
+    await expect(enqueueControlledEmailAcceptance()).rejects.toThrow(/already queued or processing/i);
+
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.createNotification).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
   });
 
   it("requires notification.manage permission", async () => {
