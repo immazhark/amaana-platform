@@ -133,3 +133,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) { .v2-intent-card,.v2-field-story,.v2-button,.v2-text-link,.v2-work-card,.v2-intent-arrow { transition: none; } }
+
+/* UI/UX audit: balance five-card sets instead of orphaning item five. */
+@media(min-width:901px){.v2-intent-grid--five{grid-template-columns:repeat(6,minmax(0,1fr))}.v2-intent-grid--five>.v2-intent-card{grid-column:span 2}.v2-intent-grid--five>.v2-intent-card:nth-child(n+4){grid-column:span 3;border-top:1px solid rgb(15 27 43 / 12%)}}
+@media(min-width:621px) and (max-width:900px){.v2-intent-grid--five>.v2-intent-card:nth-child(5){grid-column:1/-1;border-top:1px solid rgb(15 27 43 / 12%)}}
