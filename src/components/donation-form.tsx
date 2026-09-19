@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { FormEvent, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
 
@@ -17,6 +17,12 @@ export function DonationForm({ appealId, appealTitle, maxAmount }: { appealId: s
   const [phase, setPhase] = useState<CheckoutPhase>("loading");
   const transactionMax = Math.min(maxAmount, 1_000_000);
   const transactionMin = transactionMax < 10 ? transactionMax : 10;
+
+  useEffect(() => {
+    if (window.Razorpay) {
+      setPhase(current => current === "reconciliation" ? current : "ready");
+    }
+  }, []);
 
   const busy = phase === "opening" || phase === "verifying";
   const lockedForReconciliation = phase === "reconciliation";
