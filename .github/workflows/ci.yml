@@ -46,6 +46,7 @@ jobs:
       - name: Validate launch readiness register
         run: |
           node --test scripts/test-launch-readiness.mjs
+          node --test scripts/test-production-environment.mjs
           node scripts/check-launch-readiness.mjs
       - name: Verify non-destructive campaign import
         run: node --test scripts/test-reviewed-campaigns.mjs scripts/test-reviewed-campaign-revisions.mjs scripts/test-reviewed-campaign-feature-normalization.mjs scripts/test-reviewed-campaign-video-normalization.mjs
