@@ -119,7 +119,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Razorpay account/payment-gateway approval was confirmed on 2026-09-18 from the authenticated Razorpay dashboard supplied by Amaana. Website verification is complete. This closes the KYC/account-activation gate only; Test-mode reconciliation, Live-mode key/webhook configuration, controlled live donation acceptance and refund/receipt operational verification remain separate pending gates.",
+      "evidence": "Razorpay account/payment-gateway approval and website verification were confirmed on 2026-09-18. On 2026-09-19 a separate Live API key was generated and securely saved by Amaana, and a separate Live webhook was created for `payment.captured`, `payment.failed`, and `refund.processed`. Test and Live credentials/secrets remain intentionally separate. The current family/staging service `amaana-rebuild-preview` continues to use Test credentials only.",
       "verifiedAt": "2026-09-18"
     },
     {
@@ -129,7 +129,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Browser donation journeys and synthetic staging acceptance are available. No real charge will be initiated without explicit authorization and Razorpay live activation."
+      "evidence": "Razorpay Live API credentials and a separate Live webhook now exist, but no real charge has been initiated. Railway already contains a distinct `amaana-platform` service sourced from `main`, which is the intended production target; the current official domain is still attached to the family/staging `amaana-rebuild-preview` service. Production acceptance therefore remains blocked until the approved release is promoted to `main`, production-only Live credentials/webhook secret are configured on `amaana-platform`, the official domain is deliberately moved to that service, and one explicitly approved low-value real donation is captured/reconciled. None of those cutover actions may occur without explicit user approval."
     },
     {
       "id": "refund-receipt-operational-check",
@@ -168,7 +168,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Domain control and cutover were completed on 2026-09-17: amaanafoundation.org remains registered at Namecheap under the Foundation team's account access, authoritative DNS is in the team's Cloudflare account, the root hostname is verified against Railway, www permanently redirects to the root, HTTP redirects to HTTPS, Cloudflare SSL/TLS Full is active with Universal SSL, minimum TLS is 1.2 with TLS 1.3 enabled, and DNSSEC was re-established for the new Cloudflare zone.",
+      "evidence": "Domain control, Cloudflare TLS and DNS ownership are verified. As of 2026-09-19 `amaanafoundation.org` is intentionally attached to the Railway family/staging service `amaana-rebuild-preview`, while a separate `amaana-platform` service sourced from `main` exists with only a Railway-generated domain. Final production cutover must deliberately move the official custom domain to `amaana-platform` only after the approved release and production-only variables are ready; staging must retain Test Razorpay credentials.",
       "verifiedAt": "2026-09-17"
     },
     {
