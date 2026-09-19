@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-16",
-  "purpose": "Coverage and launch-readiness register for files directly addressable under public/media. This register records review work still required; it does not treat existing publication, filenames, social-media use or automated checks as consent or human approval.",
+  "updatedAt": "2026-09-19",
+  "purpose": "Coverage and launch-readiness register for files directly addressable under public/media. This register records review work still required; it does not treat existing publication, filenames, social-media use, blur/redaction hints or automated checks as consent or human approval. Mixed field-media groups default to sensitive context; a human reviewer may explicitly set sensitiveContext=false only for an individual asset that contains no beneficiary/patient/minor/private-context material.",
   "groups": [
     {
       "id": "completed-assistance",
@@ -10,7 +10,8 @@
       "provenance": "PARTIAL",
       "consent": "UNKNOWN",
       "sensitiveContext": true,
-      "notes": "Completed assistance derivatives may contain beneficiaries, patients or family context. Redacted/blurred/cropped naming is only a processing hint and is not proof of consent or approval."
+      "notes": "Completed assistance derivatives may contain beneficiaries, patients or family context. Redacted/blurred/cropped naming is only a processing hint and is not proof of consent or approval.",
+      "reviewPriority": "CRITICAL"
     },
     {
       "id": "dates-distribution",
@@ -18,8 +19,9 @@
       "humanReview": "PENDING_HUMAN_REVIEW",
       "provenance": "PARTIAL",
       "consent": "UNKNOWN",
-      "sensitiveContext": false,
-      "notes": "Campaign media requires source, visible-person and website-channel review before launch certification."
+      "sensitiveContext": true,
+      "notes": "Campaign media requires source, visible-person and website-channel review before launch certification. This mixed field-media group defaults to sensitive context; an individual preparation/product-only asset may be explicitly overridden to sensitiveContext=false only after human inspection.",
+      "reviewPriority": "HIGH"
     },
     {
       "id": "eid-gift-kits",
@@ -27,8 +29,9 @@
       "humanReview": "PENDING_HUMAN_REVIEW",
       "provenance": "PARTIAL",
       "consent": "UNKNOWN",
-      "sensitiveContext": false,
-      "notes": "Multi-year field media remains pending individual human privacy, consent and provenance review."
+      "sensitiveContext": true,
+      "notes": "Multi-year field media remains pending individual human privacy, consent and provenance review. This mixed field-media group defaults to sensitive context; an individual preparation/product-only asset may be explicitly overridden to sensitiveContext=false only after human inspection.",
+      "reviewPriority": "HIGH"
     },
     {
       "id": "hyderabad-flood-relief",
@@ -36,8 +39,9 @@
       "humanReview": "PENDING_HUMAN_REVIEW",
       "provenance": "PARTIAL",
       "consent": "UNKNOWN",
-      "sensitiveContext": false,
-      "notes": "Historical relief media remains pending individual website-use review."
+      "sensitiveContext": true,
+      "notes": "Historical relief media remains pending individual website-use review. This mixed field-media group defaults to sensitive context; an individual preparation/product-only asset may be explicitly overridden to sensitiveContext=false only after human inspection.",
+      "reviewPriority": "HIGH"
     },
     {
       "id": "jewellery-release-outcome",
@@ -46,7 +50,8 @@
       "provenance": "PARTIAL",
       "consent": "UNKNOWN",
       "sensitiveContext": true,
-      "notes": "Financial-assistance outcome media is treated as sensitive until a human reviewer records a decision."
+      "notes": "Financial-assistance outcome media is treated as sensitive until a human reviewer records a decision.",
+      "reviewPriority": "CRITICAL"
     },
     {
       "id": "qurbani-meat-distribution",
@@ -54,8 +59,9 @@
       "humanReview": "PENDING_HUMAN_REVIEW",
       "provenance": "PARTIAL",
       "consent": "UNKNOWN",
-      "sensitiveContext": false,
-      "notes": "Campaign field and preparation media remains pending individual human review."
+      "sensitiveContext": true,
+      "notes": "Campaign field and preparation media remains pending individual human review. This mixed field-media group defaults to sensitive context; an individual preparation/product-only asset may be explicitly overridden to sensitiveContext=false only after human inspection.",
+      "reviewPriority": "HIGH"
     },
     {
       "id": "taleem",
@@ -64,7 +70,8 @@
       "provenance": "PARTIAL",
       "consent": "UNKNOWN",
       "sensitiveContext": true,
-      "notes": "Education media can involve minors and therefore remains sensitive until individual review is documented."
+      "notes": "Education media can involve minors and therefore remains sensitive until individual review is documented.",
+      "reviewPriority": "CRITICAL"
     },
     {
       "id": "winter-relief",
@@ -73,7 +80,8 @@
       "provenance": "PARTIAL",
       "consent": "UNKNOWN",
       "sensitiveContext": true,
-      "notes": "Winter relief media can include students or beneficiaries and remains pending individual review."
+      "notes": "Winter relief media can include students or beneficiaries and remains pending individual review.",
+      "reviewPriority": "CRITICAL"
     }
   ],
   "overrides": [
@@ -119,5 +127,17 @@
       "humanReview": "PENDING_HUMAN_REVIEW",
       "consent": "UNKNOWN"
     }
-  ]
+  ],
+  "inventorySummary": {
+    "totalAssets": 194,
+    "totalBytes": 25328742,
+    "duplicateBlobPairs": [
+      [
+        "eid-kits-2021-gallery-10.webp",
+        "eid-kits-2021-gallery-12.webp"
+      ]
+    ],
+    "generatedAt": "2026-09-19",
+    "note": "Counts are repository inventory metadata only, not human media approval."
+  }
 }
