@@ -55,6 +55,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
       failureReason: true,
       scheduledFor: true,
       sentAt: true,
+      providerMessageId: true,
       createdAt: true,
       assistanceRequestId: true,
       donationId: true,
@@ -114,6 +115,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
             <th>Related record</th>
             <th>Attempts</th>
             <th>Next / sent</th>
+            <th>Provider ID</th>
             <th>Failure</th>
           </tr>
         </thead>
@@ -141,6 +143,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
               <td>{related ? <Link href={related.href}>{related.label}</Link> : "—"}</td>
               <td>{notification.attempts}</td>
               <td>{deliveryScheduleLabel(notification.status, notification.scheduledFor, notification.sentAt)}</td>
+              <td><small>{notification.providerMessageId ?? "—"}</small></td>
               <td>
                 <small>{notification.failureReason ?? "—"}</small>
                 {canManageNotifications && notification.status === NotificationStatus.FAILED && (
