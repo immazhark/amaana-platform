@@ -69,6 +69,9 @@ export function validatePublicMediaReviewRegister(register, assetPaths) {
     assertState(override.humanReview, HUMAN_REVIEW_STATES, `Override ${override.path} humanReview`);
     assertState(override.provenance, PROVENANCE_STATES, `Override ${override.path} provenance`);
     assertState(override.consent, CONSENT_STATES, `Override ${override.path} consent`);
+    if (override.sensitiveContext !== undefined && typeof override.sensitiveContext !== 'boolean') {
+      throw new Error(`Override ${override.path} sensitiveContext must be boolean when provided.`);
+    }
     overrideByPath.set(override.path, override);
   }
 
@@ -83,7 +86,7 @@ export function validatePublicMediaReviewRegister(register, assetPaths) {
     const decision = {
       path: assetPath,
       groupId: group.id,
-      sensitiveContext: Boolean(group.sensitiveContext),
+      sensitiveContext: override?.sensitiveContext ?? Boolean(group.sensitiveContext),
       humanReview: override?.humanReview ?? group.humanReview,
       provenance: override?.provenance ?? group.provenance,
       consent: override?.consent ?? group.consent,
@@ -114,6 +117,7 @@ export function publicMediaReviewSummary(resolved) {
     blocked: count('BLOCKED'),
     documentedProvenance: resolved.filter(item => item.provenance === 'DOCUMENTED').length,
     unknownConsent: resolved.filter(item => item.consent === 'UNKNOWN').length,
+    sensitiveContext: resolved.filter(item => item.sensitiveContext).length,
   };
 }
 
@@ -132,7 +136,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const summary = publicMediaReviewSummary(resolved);
     console.log(`Public media review coverage: ${summary.total} assets represented exactly once.`);
     console.log(`Human review: ${summary.approved} approved, ${summary.restricted} restricted, ${summary.pending} pending, ${summary.blocked} blocked.`);
-    console.log(`Governance metadata: ${summary.documentedProvenance} with documented provenance; ${summary.unknownConsent} with consent still unknown.`);
+    console.log(`Governance metadata: ${summary.documentedProvenance} with documented provenance; ${summary.unknownConsent} with consent still unknown; ${summary.sensitiveContext} default to sensitive-context review.`);
     console.log('Automated register coverage is not human privacy/consent approval.');
     if (readiness && (summary.pending || summary.blocked || summary.restricted)) {
       throw new Error(`Launch media review is not complete: ${summary.pending} pending, ${summary.restricted} restricted, ${summary.blocked} blocked.`);
