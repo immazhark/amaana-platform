@@ -138,7 +138,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Refund, acknowledgement and reconciliation code paths have automated helper coverage, synthetic staging acknowledgement coverage, and route-level webhook tests for invalid signatures, duplicate-event idempotency, refund accounting, appeal-total reconciliation and donor notification. The final controlled operational verification against the approved Razorpay environment remains pending and will not be performed before live/test-provider readiness and explicit authorization."
+      "evidence": "On 2026-09-19, the approved Razorpay Test Mode account completed a real provider-backed staging capture against the dedicated staging acceptance appeal: Razorpay checkout returned success for INR 100, the signed `payment.captured` webhook reached `/api/webhooks/razorpay` with HTTP 200, the browser `/api/donations/confirm` call returned HTTP 200, Neon stored the donation as CAPTURED with a receipt number, the private acknowledgement route returned HTTP 200, appeal `amountRaised` reconciled exactly to the net captured donation total (INR 100), and a donation-acknowledgement notification was queued. Staging email delivery remains intentionally disabled, so the notification is PENDING. Refund, explicit failed-payment provider flow, duplicate-webhook replay evidence and live-mode operational verification remain pending."
     },
     {
       "id": "database-backup-evidence",
