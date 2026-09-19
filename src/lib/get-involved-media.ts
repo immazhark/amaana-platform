@@ -11,6 +11,30 @@ import { prisma } from "@/lib/prisma";
  */
 export const getGetInvolvedHeroMedia = cache(async () => {
   try {
+    const select = {
+      id: true,
+      kind: true,
+      title: true,
+      publicUrl: true,
+      externalUrl: true,
+      altText: true,
+      caption: true,
+      sourceYear: true,
+    } as const;
+
+    const participationMedia = await prisma.mediaAsset.findFirst({
+      where: {
+        kind: "IMAGE",
+        isPublic: true,
+        privacyApprovedAt: { not: null },
+        publicUrl: { not: null },
+        initiative: { slug: "taleem-initiative-2025", status: "PUBLISHED" },
+      },
+      orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
+      select,
+    });
+    if (participationMedia) return participationMedia;
+
     return await prisma.mediaAsset.findFirst({
       where: {
         kind: "IMAGE",
@@ -20,16 +44,7 @@ export const getGetInvolvedHeroMedia = cache(async () => {
         initiative: { status: "PUBLISHED" },
       },
       orderBy: [{ sourceYear: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }],
-      select: {
-        id: true,
-        kind: true,
-        title: true,
-        publicUrl: true,
-        externalUrl: true,
-        altText: true,
-        caption: true,
-        sourceYear: true,
-      },
+      select,
     });
   } catch {
     return null;
