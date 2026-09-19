@@ -11,7 +11,7 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "The integration workflow contains lint, typecheck, unit coverage, production build, bundle budgets, smoke checks and browser acceptance. CI #762 passed the full applicable integration verify job on SHA 5c3762ca94b53cca1ad9d7a9fc9880deebff2b05; every later launch candidate must independently pass the current workflow.",
+      "evidence": "The integration workflow contains lint, typecheck, unit coverage, production build, bundle budgets, smoke checks and browser acceptance. CI #762 passed the full applicable integration verify job on SHA 5c3762ca94b53cca1ad9d7a9fc9880deebff2b05. The current quiet branch additionally adds a browser regression for Razorpay checkout readiness after component remount. GitHub hosted-runner quota remains a separate operational constraint, so the new quiet-branch changes must receive a fresh green validation run before promotion.",
       "verifiedAt": "2026-09-17"
     },
     {
@@ -129,7 +129,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Razorpay Live API credentials and a separate Live webhook now exist, but no real charge has been initiated. Railway already contains a distinct `amaana-platform` service sourced from `main`, which is the intended production target; the current official domain is still attached to the family/staging `amaana-rebuild-preview` service. Production acceptance therefore remains blocked until the approved release is promoted to `main`, production-only Live credentials/webhook secret are configured on `amaana-platform`, the official domain is deliberately moved to that service, and one explicitly approved low-value real donation is captured/reconciled. None of those cutover actions may occur without explicit user approval."
+      "evidence": "Razorpay Live API credentials and a separate Live webhook exist and are stored outside Git/chat. The current family/staging service `amaana-rebuild-preview` still uses Test credentials and currently serves `amaanafoundation.org`; a distinct `amaana-platform` Railway service sourced from `main` is reserved as the production target. No real charge has been initiated. Production acceptance remains blocked until the approved release is promoted to `main`, production-only variables are configured on `amaana-platform`, the official domain is deliberately moved to that service, the Live webhook signature boundary is verified there, and one explicitly approved low-value real donation is captured/reconciled/refund-verified."
     },
     {
       "id": "refund-receipt-operational-check",
@@ -138,7 +138,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Provider-backed Razorpay Test Mode acceptance now includes successful capture and full refund. On 2026-09-19 the INR 110 test payment `pay_Tdo33NThi9m4rH` was refunded from the Razorpay Test Dashboard. Razorpay delivered `refund.processed` to `/api/webhooks/razorpay` with HTTP 200; Neon changed donation `AFD-2026-52467908` from CAPTURED to REFUNDED, set `refundedAmount` to INR 110 and `refundedAt`, and the staging acceptance appeal `amountRaised` reconciled from INR 310 back to INR 200. Successful capture/signature/browser confirmation/acknowledgement and refund accounting are therefore provider-verified in Test Mode. Explicit provider-backed `payment.failed` evidence, duplicate-webhook replay evidence, live-mode acceptance and production email delivery remain pending."
+      "evidence": "Provider-backed Razorpay Test Mode acceptance now includes successful captures, signed webhook delivery, browser confirmation, acknowledgement creation, exact appeal accounting and a full refund. On 2026-09-19 the INR 110 test payment `pay_Tdo33NThi9m4rH` was refunded from the Razorpay Test Dashboard; Razorpay delivered `refund.processed` to `/api/webhooks/razorpay` with HTTP 200, Neon changed donation `AFD-2026-52467908` from CAPTURED to REFUNDED, set `refundedAmount` to INR 110 and `refundedAt`, and the staging acceptance appeal reconciled from INR 310 back to INR 200. During repeated checkout testing, a real client-side regression was found where revisiting the donation page after Razorpay had already loaded could leave the button stuck on `Preparing secure checkout…` until a hard refresh. The quiet branch fixes this by using Next Script `onReady` plus an already-loaded `window.Razorpay` mount check, with a browser-acceptance remount regression added. Provider-backed `payment.failed` evidence remains pending because the current Razorpay Test Checkout did not expose the documented Success/Failure controls in the observed Netbanking/Wallet/UPI flows; the route-level failed-payment state guards now have explicit automated coverage. Live-mode acceptance and production email delivery remain pending."
     },
     {
       "id": "database-backup-evidence",
