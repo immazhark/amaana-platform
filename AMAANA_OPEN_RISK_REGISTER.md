@@ -33,7 +33,7 @@ Purpose: prevent unresolved quality, privacy, accessibility, performance or sour
 - `reviewed everything` remains prohibited until file-by-file inventory is real.
 
 ### 4. Payment workflow verification
-**Status:** OPEN / PROVIDER APPROVED / SOURCE-HARDENED
+**Status:** OPEN / PROVIDER TEST CAPTURE+REFUND VERIFIED / QUIET-BRANCH HARDENING UNVALIDATED
 
 - Razorpay account activation/KYC and website verification were confirmed approved on 18 September 2026.
 - Razorpay UX/security structure exists and checkout script is deferred. Staging remains on Test-mode credentials until the controlled provider acceptance is complete.
@@ -43,7 +43,10 @@ Purpose: prevent unresolved quality, privacy, accessibility, performance or sour
 - Global `/api/*` responses receive a `private, no-store` header fallback so a future endpoint does not become cacheable merely because its handler omitted a local header.
 - Razorpay-handler confirmation failures are caught inside the asynchronous payment callback so the UI cannot remain indefinitely stuck in `verifying` after a transport/JSON failure.
 - After Razorpay has returned a payment response, a failed Amaana confirmation moves the form into a locked reconciliation state rather than enabling another checkout attempt. Donors are instructed to retain the Razorpay confirmation and not to submit another payment or share OTPs, UPI PINs or card credentials.
-- Staging order creation, checkout, capture verification, acknowledgement, failure, reconciliation, refund and duplicate/idempotency paths still require E2E verification.
+- Provider-backed Test Mode order creation, checkout, capture verification, acknowledgement/accounting and a full refund with `refund.processed` reconciliation were verified on 19 September 2026.
+- A real client regression was found where revisiting checkout could remain stuck on “Preparing secure checkout…” until hard refresh. The quiet branch fixes this with `onReady` plus an existing-`window.Razorpay` fallback and a remount browser regression; consolidated validation and staging redeployment are still pending.
+- Provider-backed `payment.failed` remains unproven because the observed Razorpay Test Checkout did not expose a deterministic failure control; explicit route-level failure-state tests now protect application behavior.
+- Separate Live credentials and a Live webhook exist, but staging intentionally remains Test-only. Controlled real-payment acceptance remains a production gate.
 
 ### 5. Assistance workflow verification
 **Status:** OPEN / SOURCE-HARDENED
@@ -53,7 +56,8 @@ Purpose: prevent unresolved quality, privacy, accessibility, performance or sour
 - Field-level server validation reaches the matching form controls with visible messages plus `aria-invalid`/descriptions instead of collapsing into a generic banner.
 - After server-side field rejection, focus is moved to the first invalid control for keyboard/screen-reader recovery.
 - Successfully uploaded private documents are tracked and compensated with narrowly scoped deletion if a later upload, recipient lookup or request database write fails.
-- Full staging submission, file validation, cleanup failure-path verification, receipt, tracking, reviewer access and error/recovery journeys remain an E2E release gate.
+- Browser acceptance now includes synthetic supporting-file selection, multipart submission and private fragment-only receipt/tracking behavior. Route tests also lock private-document persistence and compensation cleanup after a simulated post-upload database failure.
+- Real staging storage cleanup failure-path verification, reviewer access, and final error/recovery journeys remain release gates.
 
 ### 6. Real performance certification
 **Status:** OPEN / AUTOMATED REGRESSION GATE ACTIVE
@@ -111,11 +115,12 @@ Still required:
 - Final rendered crawl, metadata/structured-data validation, Search Console submission and index monitoring remain open.
 
 ### 10. Compliance/legal confirmation
-**Status:** OPEN WHERE PROFESSIONAL CONFIRMATION IS REQUIRED
+**Status:** OPEN FOR ONGOING PROFESSIONAL COMPLIANCE / CURRENT REGISTRATION POSITION RECORDED
 
 - Current site correctly presents provisional 80G and domestic-only/no-FCRA boundaries.
-- 12AB/12A position and provisional-80G conversion/renewal requirements still need CA confirmation.
-- No functionality or copy may imply a final tax position before that confirmation.
+- Provisional 12A/12AB approval is confirmed and must continue to be described as provisional.
+- The known 80G approval is provisional via Form 10AC dated 26 January 2026 for AY 2026–27 through 2028–29; renewal/conversion and ongoing filing/compliance timelines remain matters for CA oversight.
+- No functionality or copy may imply permanent/final tax approval or FCRA registration.
 
 ## Active technical hardening risks
 
