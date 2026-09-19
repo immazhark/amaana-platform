@@ -6,8 +6,10 @@ const mocks = vi.hoisted(() => ({
   paymentEventFindUnique: vi.fn(),
   rootPaymentEventCreate: vi.fn(),
   transactionRetry: vi.fn(),
+  rootTransaction: vi.fn(),
   txDonationFindUnique: vi.fn(),
   txDonationUpdate: vi.fn(),
+  txDonationUpdateMany: vi.fn(),
   txAppealFindUnique: vi.fn(),
   txAppealUpdate: vi.fn(),
   txPaymentEventCreate: vi.fn(),
@@ -53,6 +55,7 @@ vi.mock("@/lib/webhook-idempotency", () => ({
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
+    $transaction: mocks.rootTransaction,
     paymentEvent: {
       findUnique: mocks.paymentEventFindUnique,
       create: mocks.rootPaymentEventCreate,
@@ -111,6 +114,7 @@ describe("Razorpay webhook route", () => {
       donation: {
         findUnique: mocks.txDonationFindUnique,
         update: mocks.txDonationUpdate,
+        updateMany: mocks.txDonationUpdateMany,
       },
       appeal: {
         findUnique: mocks.txAppealFindUnique,
@@ -124,6 +128,7 @@ describe("Razorpay webhook route", () => {
       },
     };
 
+    mocks.rootTransaction.mockImplementation(async callback => callback(tx));
     mocks.transactionRetry.mockImplementation(async callback => callback(tx));
     mocks.txDonationFindUnique.mockResolvedValue({
       id: "donation_1",
@@ -167,6 +172,80 @@ describe("Razorpay webhook route", () => {
     expect(body).toEqual({ received: true });
     expect(mocks.ensureCapturedDonationForRefund).not.toHaveBeenCalled();
     expect(mocks.transactionRetry).not.toHaveBeenCalled();
+  });
+
+  it("records payment.failed without changing appeal accounting", async () => {
+    mocks.txDonationFindUnique.mockResolvedValueOnce({ id: "donation_failed_1" });
+    mocks.txDonationUpdateMany.mockResolvedValueOnce({ count: 1 });
+
+    const response = await POST(webhookRequest({
+      event: "payment.failed",
+      payload: {
+        payment: {
+          entity: {
+            id: "pay_failed_001",
+            order_id: "order_failed_001",
+            amount: 2500,
+            currency: "INR",
+            status: "failed",
+          },
+        },
+      },
+    }, { "x-razorpay-event-id": "evt_failed_001" }));
+    const body = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(body).toEqual({ received: true });
+    expect(mocks.txPaymentEventCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        providerEventId: "evt_failed_001",
+        eventType: "payment.failed",
+        donationId: "donation_failed_1",
+      }),
+    });
+    expect(mocks.txDonationUpdateMany).toHaveBeenCalledWith({
+      where: {
+        id: "donation_failed_1",
+        status: { in: ["CREATED", "AUTHORIZED"] },
+      },
+      data: {
+        status: "FAILED",
+        failedAt: expect.any(Date),
+        providerPaymentId: "pay_failed_001",
+      },
+    });
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("records an unmatched payment.failed event without mutating a donation", async () => {
+    mocks.txDonationFindUnique.mockResolvedValueOnce(null);
+
+    const response = await POST(webhookRequest({
+      event: "payment.failed",
+      payload: {
+        payment: {
+          entity: {
+            id: "pay_failed_unknown",
+            order_id: "order_unknown",
+            amount: 2500,
+            currency: "INR",
+            status: "failed",
+          },
+        },
+      },
+    }, { "x-razorpay-event-id": "evt_failed_unknown" }));
+
+    expect(response.status).toBe(200);
+    expect(mocks.txPaymentEventCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        providerEventId: "evt_failed_unknown",
+        eventType: "payment.failed",
+        donationId: undefined,
+      }),
+    });
+    expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
   });
 
   it("reconciles an INR refund into donation, appeal, event and notification records", async () => {
