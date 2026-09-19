@@ -22,7 +22,8 @@ Staging must remain disabled because synthetic acceptance data can contain test 
 - non-retryable provider/configuration failures are parked for manual attention;
 - Resend `409 concurrent_idempotent_requests` is retryable, while `409 invalid_idempotent_request` is treated as permanent because it indicates the same key was reused with a different payload;
 - approvers can review delivery state in `/admin/notifications`;
-- primary/backup approvers with `notification.manage` can manually requeue a terminal FAILED email only after recording an operational reason; the same notification id and provider idempotency key are reused.
+- primary/backup approvers with `notification.manage` can manually requeue a terminal FAILED email only after recording an operational reason; the same notification id and provider idempotency key are reused;
+- authorised notification managers can queue one synthetic acceptance message to their own signed-in staff email account; arbitrary recipients are not accepted, and a second PENDING/PROCESSING acceptance row for the same staff account is refused.
 
 ## Production activation prerequisites
 
@@ -41,7 +42,7 @@ Do not enable live delivery until all of the following are true:
 1. Record the candidate SHA and current notification queue counts.
 2. Confirm the cron service is healthy before changing delivery mode.
 3. Set `EMAIL_DELIVERY_MODE=live` only in the approved production application environment.
-4. Create one controlled synthetic/operational notification addressed to the approved team recipient.
+4. Sign in with the approved staff account, open `/admin/notifications`, and use **Queue acceptance email to my staff account**. The server action targets only the current authorised user's account email, contains no donor/beneficiary/payment/case data, prevents a duplicate active acceptance row, and writes an audit event.
 5. Wait for the scheduled cron invocation.
 6. Verify:
    - job response is HTTP 200 with `status=ok`;
@@ -87,5 +88,7 @@ The `transactional-email-delivery` gate in `docs/launch-readiness.json` remains 
 - the queue reaches `SENT`;
 - the team receives exactly one email;
 - operational failure/retry visibility is usable.
+
+On 19 September 2026 the staging cron was observed firing on its five-minute schedule repeatedly and receiving HTTP 200 with `status:"disabled"`, confirming the authenticated scheduler/job path while external delivery remained intentionally off.
 
 A healthy disabled staging cron is infrastructure evidence, not production email-delivery evidence.
