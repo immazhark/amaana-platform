@@ -9,11 +9,11 @@ export const aboutCopy={title:slice(p14,'## Page Title','## Intro'),intro:slice(
  block(p14.slice(p14.indexOf('## What “Amaana” Means')),'Amaana Means Trust','**Copy:**','---'),
  {title:'Mission',paragraphs:[slice(p15,'## Mission','## Vision')]},
  {title:'Vision',paragraphs:[slice(p15,'## Vision','## Our Values')]},
- ...slice(p15,'## Our Values','---').split(/\n### /).filter(Boolean).map(s=>({title:cleanCopy(s.split('\n')[0]).replace(/^### /,''),paragraphs:paragraphs(s.split('\n').slice(1).join('\n'))})),
+ ...slice(p15,'## Our Values','---').split(/\n### /).filter(Boolean).map(s=>({title:cleanCopy(s.split('\n')[0]).replace(/^### /,''),paragraphs:paragraphs(s.split('\n').slice(1).join('\n')),presentation:'labelled' as const})),
  block(p16,'Support Based on Need, Not Labels','## Copy','---')
 ]};
 export const verificationCopy={title:slice(p17,'## Page Title','## Intro'),intro:slice(p17,'## Intro','## From Request'),blocks:[
- ...slice(p17,'## From Request to Relief','## Core Principle').split(/\n### /).filter(s=>s.trim()).map(s=>({title:cleanCopy(s.split('\n')[0]).replace(/^### /,''),paragraphs:paragraphs(s.split('\n').slice(1).join('\n'))})),
+ ...slice(p17,'## From Request to Relief','## Core Principle').split(/\n### /).filter(s=>s.trim()).map(s=>({title:cleanCopy(s.split('\n')[0]).replace(/^### /,''),paragraphs:paragraphs(s.split('\n').slice(1).join('\n')),presentation:'labelled' as const})),
  {title:'Public Evidence. Private Proofs.',paragraphs:[slice(p17,'### **Public Evidence. Private Proofs.**','**CTA:**')]}
 ]};
 export const transparencyCopy={title:slice(p18,'## Page Title','## Intro'),intro:slice(p18,'## Intro','## How Amaana'),blocks:[
