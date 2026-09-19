@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { PageHero, type PageHeroVariant } from "@/components/page-hero";
 import "@/app/canonical-content.css";
 
-export type ArticleBlock = { title: string; paragraphs?: string[]; items?: string[] };
+export type ArticleBlock = { title: string; paragraphs?: string[]; items?: string[]; presentation?: "default" | "labelled" };
 
 type CanonicalArticleProps = {
   title: string;
@@ -46,7 +46,7 @@ export function CanonicalArticle({
       <section className="v2-section paper">
         <div className="v2-shell canonical-body">
           {blocks.map((block, index) => (
-            <section className="canonical-block" key={index}>
+            <section className={`canonical-block${block.presentation === "labelled" ? " canonical-block--labelled" : ""}`} key={index}>
               <h2>{block.title}</h2>
               <div>
                 {block.paragraphs?.map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{paragraph}</p>)}
