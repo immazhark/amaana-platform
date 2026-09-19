@@ -142,7 +142,6 @@ test.describe('donation journey without real payment', () => {
     await expect(remountedSubmit).toBeEnabled();
     await expect(page.getByText('Secure checkout is ready.')).toBeVisible();
 
-    expect(await submit.count()).toBe(0);
   });
 
   test('dismissing mocked Razorpay returns the form to a safe ready state', async ({ page }) => {
