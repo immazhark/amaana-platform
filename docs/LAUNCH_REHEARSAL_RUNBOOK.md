@@ -73,6 +73,7 @@ Rehearsal sequence:
    ```bash
    STAGING_BASE_URL="https://<staging-host>" EXPECTED_COMMIT_SHA="<candidate-sha>" npm run rehearsal:verify-target
    ```
+   The verifier also requires the target to report `APP_ENVIRONMENT=staging` and Razorpay `paymentMode=test` through the non-secret version health response; a rollback that accidentally exposes Live payment posture fails.
 4. Revert staging to the previous known-good deployment/SHA using the hosting platform's supported rollback/redeploy procedure.
 5. Verify the rollback target with the same command using the previous known-good SHA.
 6. Restore the candidate to staging.
