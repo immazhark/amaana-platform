@@ -110,7 +110,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount }: { appealId: s
     <Script
       src="https://checkout.razorpay.com/v1/checkout.js"
       strategy="lazyOnload"
-      onLoad={() => setPhase(current => current === "reconciliation" ? current : "ready")}
+      onReady={() => setPhase(current => current === "reconciliation" ? current : "ready")}
       onError={() => {
         setPhase(current => current === "reconciliation" ? current : "loading");
         showError("Secure checkout could not load. Please refresh and try again.");
