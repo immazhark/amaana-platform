@@ -138,7 +138,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "On 2026-09-19, the approved Razorpay Test Mode account completed a real provider-backed staging capture against the dedicated staging acceptance appeal: Razorpay checkout returned success for INR 100, the signed `payment.captured` webhook reached `/api/webhooks/razorpay` with HTTP 200, the browser `/api/donations/confirm` call returned HTTP 200, Neon stored the donation as CAPTURED with a receipt number, the private acknowledgement route returned HTTP 200, appeal `amountRaised` reconciled exactly to the net captured donation total (INR 100), and a donation-acknowledgement notification was queued. Staging email delivery remains intentionally disabled, so the notification is PENDING. Refund, explicit failed-payment provider flow, duplicate-webhook replay evidence and live-mode operational verification remain pending."
+      "evidence": "Provider-backed Razorpay Test Mode acceptance now includes successful capture and full refund. On 2026-09-19 the INR 110 test payment `pay_Tdo33NThi9m4rH` was refunded from the Razorpay Test Dashboard. Razorpay delivered `refund.processed` to `/api/webhooks/razorpay` with HTTP 200; Neon changed donation `AFD-2026-52467908` from CAPTURED to REFUNDED, set `refundedAmount` to INR 110 and `refundedAt`, and the staging acceptance appeal `amountRaised` reconciled from INR 310 back to INR 200. Successful capture/signature/browser confirmation/acknowledgement and refund accounting are therefore provider-verified in Test Mode. Explicit provider-backed `payment.failed` evidence, duplicate-webhook replay evidence, live-mode acceptance and production email delivery remain pending."
     },
     {
       "id": "database-backup-evidence",
