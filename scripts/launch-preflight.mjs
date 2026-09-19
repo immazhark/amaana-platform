@@ -93,6 +93,11 @@ if (mode === "rehearsal") {
 if (mode === "production") {
   steps.push(
     {
+      label: "Production environment contract",
+      command: nodeCommand,
+      args: ["scripts/check-production-environment.mjs"],
+    },
+    {
       label: "Public media human-review readiness",
       command: nodeCommand,
       args: ["scripts/check-public-media-review-register.mjs", "--readiness"],
