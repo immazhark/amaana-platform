@@ -12,16 +12,26 @@
 
 ## Deployment order
 
-1. Configure and validate production secrets from `.env.example`.
-2. Back up the database.
-3. Run `npx prisma migrate deploy` as a one-off release task.
-4. Run `npm run seed:rbac` for the initial staff accounts and whenever new application permissions are introduced. Rotate initial passwords after first access.
-5. Deploy the application container. Its startup command applies pending Prisma migrations before serving traffic.
-6. Verify `/api/health/live` and `/api/health/ready`.
-7. Open Admin → Media review and verify the public-media preflight. Do not publish uploaded campaign media until all three readiness checks are green.
-8. Configure Razorpay webhook events: `payment.captured`, `payment.failed`, `refund.processed`.
-9. Complete a Razorpay test-mode donation, webhook, acknowledgement and refund exercise.
-10. Switch to live credentials only after reconciliation succeeds.
+1. Keep `amaana-rebuild-preview` as the staging/family-review service with Razorpay Test credentials only. Never place Live credentials on this service.
+2. Prepare the distinct `amaana-platform` Railway service as the production target after the approved release is promoted to `main`.
+3. Configure and validate production secrets from `.env.example`, including the separately generated Razorpay Live Key ID, Live Key Secret and Live webhook secret. Do not reuse Test secrets.
+4. Back up the database.
+5. Run `npx prisma migrate deploy` as a one-off release task.
+6. Run `npm run seed:rbac` for the initial staff accounts and whenever new application permissions are introduced. Rotate initial passwords after first access.
+7. Deploy the application container. Its startup command applies pending Prisma migrations before serving traffic.
+8. Verify `/api/health/live` and `/api/health/ready`.
+9. Open Admin → Media review and verify the public-media preflight. Do not publish uploaded campaign media until all readiness checks are green.
+10. Verify the production Razorpay webhook is configured for `payment.captured`, `payment.failed`, and `refund.processed`.
+11. Move `amaanafoundation.org` to the production service only after production variables, health checks, human launch gates and rollback readiness are complete.
+12. Perform one explicitly approved low-value real donation and reconcile capture, webhook, acknowledgement, settlement visibility and refund behavior before opening normal live donations.
+
+## Railway service and payment-environment separation
+
+- `amaana-rebuild-preview` is the current staging/family-review service. It is attached to the family review URL and currently also serves `amaanafoundation.org` while launch work is incomplete. It must remain on `rzp_test_...` credentials and the Test webhook secret.
+- `amaana-platform` is the separate Railway service sourced from `main` and is the intended production target. It must receive only production-approved variables and `rzp_live_...` credentials.
+- The Razorpay Live API key and a separate Live webhook were generated/configured on 19 September 2026. Their secret values must remain outside Git and chat.
+- A Live webhook pointed at `https://amaanafoundation.org/api/webhooks/razorpay` will not validate correctly while that hostname still routes to the staging service using the Test webhook secret. Therefore no real charge may be initiated before the deliberate domain cutover.
+- Moving the official domain, changing production variables, enabling indexing and initiating a real charge are separate controlled launch actions and require explicit approval.
 
 ## Public media deployment preflight
 
@@ -50,7 +60,7 @@ Never make the private assistance-document bucket public as a shortcut. Never pl
 - Public campaign media uses a different bucket and an HTTPS delivery origin. It may use the same provider account only when the bucket remains distinct from assistance storage.
 - Resend delivers queued email. Until the official domain is available, use Resend's test sender only with an approved test recipient; do not impersonate `amaanafoundation.org`.
 - Trigger `POST /api/jobs/notifications` with `Authorization: Bearer <CRON_SECRET>`. Do not put the secret in a URL.
-- Razorpay account activation/KYC is approved as of 18 September 2026. Staging must remain on Test-mode credentials. Live-mode credentials and the Live webhook are introduced only during the controlled production-acceptance checkpoint after staging reconciliation and final compliance review.
+- Razorpay account activation/KYC is approved. Test-mode capture and full-refund reconciliation were provider-verified on 19 September 2026. Separate Live credentials and a Live webhook now exist but are not installed on staging; they are reserved for the controlled production checkpoint.
 
 Set provider spending alerts and hard limits where available. Upgrade Railway only immediately before the approved public launch.
 
@@ -69,7 +79,7 @@ Set provider spending alerts and hard limits where available. Upgrade Railway on
 - Keep previous database backups before migrations and rehearse restoration.
 - Review failed webhook responses and queued notifications daily after launch.
 - Staff access changes must be made through RBAC and retained in the audit trail.
-- Do not enable 80G certificates until the CA confirms the required registration and compliance position.
+- Amaana's 80G and 12A/12AB approvals are provisional. Never describe them as final or permanent. Any donor tax-certificate issuance workflow must follow the CA-approved operational/compliance process.
 - If public-media credentials are compromised, rotate them without changing the private assistance bucket's public-access policy.
 
 ## Launch checklist
@@ -82,8 +92,12 @@ Set provider spending alerts and hard limits where available. Upgrade Railway on
 - [ ] Admin Media review preflight fully green and non-sensitive upload/publish/unpublish test completed
 - [ ] `npm run seed:rbac` rerun after the content/media permissions deployment
 - [ ] Admin accounts seeded; unique passwords delivered securely and rotated
-- [ ] Razorpay KYC/live activation complete; webhook secret configured
-- [ ] Domestic test payments, failures and refunds reconciled
+- [x] Razorpay account/KYC approval and website verification complete
+- [x] Razorpay Test webhook configured; provider-backed capture and full-refund reconciliation completed
+- [ ] Provider-backed `payment.failed` evidence completed or formally accepted as a documented Test Checkout limitation with automated route coverage
+- [x] Separate Razorpay Live API credentials and Live webhook created and stored securely
+- [ ] Live credentials installed only on the production `amaana-platform` service at the controlled cutover
+- [ ] Explicitly approved low-value live donation captured, reconciled and refund-verified
 - [ ] Notification worker configured and delivery tested
 - [ ] Railway, Neon, storage/CDN and Resend usage alerts/limits configured
 - [ ] Mobile, keyboard and screen-reader checks completed
