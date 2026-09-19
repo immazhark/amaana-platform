@@ -32,7 +32,12 @@ const version = await get("/api/health/version");
 assert.equal(version.status, 200, "version endpoint is not healthy");
 const versionBody = await version.json();
 assert.equal(versionBody.commitSha, expectedSha, "deployed commit SHA does not match expected rollback target");
+assert.equal(versionBody.environment, "staging", "rollback rehearsal target must report APP_ENVIRONMENT=staging");
+assert.equal(versionBody.paymentMode, "test", "rollback rehearsal target must report Razorpay Test mode");
+assert.match(version.headers.get("cache-control") ?? "", /no-store/i, "version endpoint must be no-store");
 pass(`exact deployed SHA ${expectedSha}`);
+pass("staging environment posture");
+pass("Razorpay Test payment posture");
 
 const live = await get("/api/health/live");
 assert.equal(live.status, 200, "liveness endpoint failed");
