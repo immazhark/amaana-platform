@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { complianceCopy } from "@/lib/master-copy";
+import styles from "./donate-audit.module.css";
 
 const description = "Support a verified appeal or Amaana initiative through currently approved domestic donation options.";
 
@@ -46,11 +47,11 @@ export default function Page() {
         },
       ]}
     >
-      <div className="v2-hero-actions">
-        <Link className="v2-button" href="/appeals">Support a Verified Appeal</Link>
-        <Link className="v2-button v2-button--paper-secondary" href="/get-involved/sponsor-education">Explore Taleem Sponsorship</Link>
-        <Link className="v2-text-link" href="/contact">Ask About Programme Giving →</Link>
+      <div className={styles.routes} aria-label="Donation routes">
+        <article className={styles.route}><span>Route 01</span><h3>Support a verified public appeal</h3><p>Choose a specific published need, review the context and remaining verified target, then continue to the secure domestic INR checkout.</p><Link className="v2-button" href="/appeals">See verified appeals</Link></article>
+        <article className={styles.route}><span>Route 02</span><h3>Support education or another approved programme</h3><p>Taleem sponsorship and programme giving begin with the currently available programme route or a conversation with Amaana about an approved destination.</p><Link className="v2-button v2-button--paper-secondary" href="/get-involved/sponsor-education">Explore Taleem sponsorship</Link><Link className="v2-text-link" href="/contact">Ask about programme giving →</Link></article>
       </div>
+      <p className={styles.note}>These are distinct giving routes: public appeals are specific verified needs; programme support is arranged only where Amaana confirms an available approved destination.</p>
     </CanonicalArticle>
   );
 }
