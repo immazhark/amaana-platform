@@ -132,7 +132,7 @@ export const getOurWorkIndexData = cache(async () => {
               publicUrl: { not: null },
             },
             orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
-            take: 1,
+            take: 3,
             select: {
               id: true,
               kind: true,
@@ -175,7 +175,7 @@ export const getImpactPageData = cache(async () => {
           publicUrl: { not: null },
         },
         orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
-        take: 1,
+        take: 3,
         select: {
           id: true,
           kind: true,
@@ -213,7 +213,7 @@ export const getCompletedAidShowcaseData = cache(async () => {
           publicUrl: { not: null },
         },
         orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
-        take: 1,
+        take: 3,
         select: {
           id: true,
           kind: true,
@@ -316,7 +316,7 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
           publicUrl: { not: null },
         },
         orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
-        take: 1,
+        take: 3,
         select: {
           id: true,
           kind: true,
