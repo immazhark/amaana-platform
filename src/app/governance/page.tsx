@@ -8,4 +8,4 @@ export const metadata = {
   openGraph: { type: 'website', url: '/governance', title: `${governanceCopy.title} | Amaana Foundation`, description: governanceCopy.intro },
   twitter: { card: 'summary', title: `${governanceCopy.title} | Amaana Foundation`, description: governanceCopy.intro },
 };
-export default function Page(){return <CanonicalArticle eyebrow="Governance" heroVariant="trust" heroVisualTitle="Governance" {...governanceCopy}></CanonicalArticle>;}
+export default function Page(){return <CanonicalArticle eyebrow="Governance" heroVariant="trust" heroVisualTitle="Governance" bodyClassName="canonical-body--governance" {...governanceCopy}></CanonicalArticle>;}
