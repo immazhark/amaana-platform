@@ -12,6 +12,7 @@ import { PublicMedia } from "@/components/public-media";
 import { getInitiativePageData } from "@/lib/public-page-data";
 import { distinctStoryParagraphs, publicRecordFallback } from "@/lib/public-copy";
 import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
+import { canExposePublicAppeal } from "@/lib/public-environment";
 
 export const dynamic = "force-dynamic";
 
@@ -38,12 +39,12 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
   const initiative = await getInitiativePageData(slug);
   if (!initiative) notFound();
 
-  const media = initiative.mediaAssets.filter(canRenderPublicMedia);
+  const media = initiative.mediaAssets.filter(canRenderPublicMedia).filter((asset,index,list)=>list.findIndex(other=>resolvePublicMediaUrl(other)===resolvePublicMediaUrl(asset))===index);
   const leadMedia = media.find(asset => asset.kind === "IMAGE");
   const gallery = media.filter(asset => asset.id !== leadMedia?.id);
   const period = formatYears(initiative.startYear, initiative.endYear, initiative.year);
   const paragraphs = initiative.story.split(/\n\s*\n/).filter(Boolean);
-  const activeAppeals = initiative.appeals.filter(appeal => appeal.status === "PUBLISHED");
+  const activeAppeals = initiative.appeals.filter(appeal => appeal.status === "PUBLISHED" && canExposePublicAppeal(appeal));
   const isTaleemInitiative = initiative.slug.startsWith("taleem-");
 
   return (
