@@ -1,0 +1,10 @@
+
+.intent :global(.v2-intent-card){transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease}
+.intent :global(.v2-intent-card:hover){transform:translateY(-3px);box-shadow:0 1rem 2.25rem rgb(18 34 57 / 7%);border-color:rgb(224 179 24 / 28%)}
+.journey{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr));gap:.75rem!important;border:0!important}
+.journey :global(.v2-journey-step){min-height:11rem;padding:1.15rem!important;border:1px solid rgb(18 34 57 / 12%)!important;border-radius:1rem;background:#fffdf8;box-shadow:0 .55rem 1.5rem rgb(18 34 57 / 4%)}
+.journey :global(.v2-journey-step b){color:#122239}
+.journey :global(.v2-journey-step span){color:#5b6472;line-height:1.55}
+@media(max-width:900px){.journey{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.journey{grid-template-columns:1fr}.journey :global(.v2-journey-step){min-height:auto}}
+@media(prefers-reduced-motion:reduce){.intent :global(.v2-intent-card){transition:none}.intent :global(.v2-intent-card:hover){transform:none}}
