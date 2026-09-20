@@ -43,7 +43,7 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
   const leadMedia = media.find(asset => asset.kind === "IMAGE");
   const gallery = media.filter(asset => asset.id !== leadMedia?.id);
   const period = formatYears(initiative.startYear, initiative.endYear, initiative.year);
-  const paragraphs = initiative.story.split(/\n\s*\n/).filter(Boolean);
+  const paragraphs = distinctStoryParagraphs(initiative.summary, initiative.story);
   const activeAppeals = initiative.appeals.filter(appeal => appeal.status === "PUBLISHED" && canExposePublicAppeal(appeal));
   const isTaleemInitiative = initiative.slug.startsWith("taleem-");
 
