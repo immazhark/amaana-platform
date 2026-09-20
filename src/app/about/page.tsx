@@ -33,6 +33,7 @@ export default async function AboutPage() {
       heroVisual={originMedia ? <PublicMedia asset={originMedia} priority /> : undefined}
       heroVisualTitle="Our Story"
       heroVisualNote="From community-led Ramadan support to a charitable trust serving verified needs with dignity and accountability."
+      bodyClassName="canonical-body--about"
       {...aboutCopy}
     >
       <section className="canonical-block">
