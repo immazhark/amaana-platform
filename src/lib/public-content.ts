@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { publicFaithWhere } from "@/lib/faith-publication";
-import { canExposePublicAppeal } from "@/lib/public-environment";
+import { canExposePublicAppeal, isSyntheticStagingAppeal } from "@/lib/public-environment";
 
 const publishedWhere = {
   status: "PUBLISHED" as const,
@@ -213,7 +213,7 @@ export async function getHomepagePublicContent() {
   ]);
 
   return {
-    appeals: appeals.filter(appeal => canExposePublicAppeal(appeal) && isAppealOpenForDonations(appeal)).slice(0, 3),
+    appeals: appeals.filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && isAppealOpenForDonations(appeal)).slice(0, 3),
     initiatives,
     featuredFaith,
     stories,
