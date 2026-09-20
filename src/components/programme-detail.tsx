@@ -35,7 +35,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const children=programmeChildren(slug);
  const childMediaRecords=await getProgrammeChildMedia(children.map(child=>child.slug));
  const childMedia=new Map(childMediaRecords.map(item=>[item.slug,item.mediaAssets[0]??null]));
- const media=record.mediaAssets.filter(canRenderPublicMedia);
+ const media=record.mediaAssets.filter(canRenderPublicMedia).filter((asset,index,list)=>list.findIndex(other=>resolvePublicMediaUrl(other)===resolvePublicMediaUrl(asset))===index);
  const lead=media.find(m=>m.kind==='IMAGE');
  const gallery=media.filter(m=>m.id!==lead?.id);
  const status=canonical?.programmeStatus??'RECURRING';
