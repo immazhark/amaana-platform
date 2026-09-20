@@ -7,7 +7,7 @@ import { getPublishedInitiativeBySlug } from '@/lib/public-content';
 import { getProgrammeChildMedia } from '@/lib/public-page-data';
 import { programmeBySlug, programmeChildren } from '@/lib/master-copy';
 import { PublicMedia } from '@/components/public-media';
-import { canRenderPublicMedia, resolvePublicMediaUrl } from '@/lib/public-media';
+import { canRenderPublicMedia, isDocumentaryPublicImage, resolvePublicMediaUrl } from '@/lib/public-media';
 import { distinctStoryParagraphs, publicRecordFallback } from '@/lib/public-copy';
 import { CampaignMediaGallery } from '@/components/campaign-media-gallery';
 import '@/app/our-work/[slug]/campaign.css';
@@ -34,10 +34,11 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const summary=canonical?.summary??record.summary;
  const children=programmeChildren(slug);
  const childMediaRecords=await getProgrammeChildMedia(children.map(child=>child.slug));
- const childMedia=new Map(childMediaRecords.map(item=>[item.slug,item.mediaAssets[0]??null]));
+ const childMedia=new Map(childMediaRecords.map(item=>[item.slug,item.mediaAssets.find(isDocumentaryPublicImage)??item.mediaAssets.find(canRenderPublicMedia)??null]));
  const media=record.mediaAssets.filter(canRenderPublicMedia).filter((asset,index,list)=>list.findIndex(other=>resolvePublicMediaUrl(other)===resolvePublicMediaUrl(asset))===index);
- const lead=media.find(m=>m.kind==='IMAGE');
- const gallery=media.filter(m=>m.id!==lead?.id);
+ const lead=media.find(isDocumentaryPublicImage)??media.find(m=>m.kind==='IMAGE');
+ const highlightMedia=slug==='eid-gift-kits-2026'?media.find(asset=>/beneficiar|impact graphic/i.test(`${asset.title??''} ${asset.caption??''}`)):undefined;
+ const gallery=media.filter(m=>m.id!==lead?.id&&m.id!==highlightMedia?.id);
  const status=canonical?.programmeStatus??'RECURRING';
  const primaryMetric=record.primaryMetric;
  const primaryMetricLabel=record.primaryMetricLabel;
@@ -74,6 +75,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
   {clinicalTerms.length>0&&<section className="campaign-clinical-note" aria-labelledby="clinical-terms-title"><div className="v2-shell"><div><span>Plain-language context</span><h2 id="clinical-terms-title">Clinical terms mentioned in this case</h2><p>These short explanations clarify abbreviations in the documented case record; they are not medical advice.</p></div><ul>{clinicalTerms.map(item=><li key={item.term}><strong>{item.term}</strong><span>{item.meaning}</span></li>)}</ul></div></section>}
   {facts&&facts.length>0&&<section className="v2-section paper"><div className="v2-shell"><h2>Programme details</h2><ol className="canonical-facts">{facts.map(f=><li key={f}>{f}</li>)}</ol></div></section>}
   {children.length>0&&<section className="v2-section paper" id="programme-pathways"><div className="v2-shell"><h2>{slug==='taleem'?'One Initiative. Different Pathways to Learning.':'View Year-by-Year Impact'}</h2><div className={pathwaysClass}>{children.map(child=>{const mediaAsset=childMedia.get(child.slug)??null;return <article key={child.slug}><div className="canonical-pathway-visual">{mediaAsset&&canRenderPublicMedia(mediaAsset)?<PublicMedia asset={mediaAsset}/>:<WorkVisualPlaceholder label={child.title}/>}</div><p className="v2-section-label">{'year' in child?child.year:child.programmeStatus==='EXPANDING'?'Developing pathway':'Continuing sponsorship'}</p><h3><Link href={`/our-work/${child.slug}`}>{child.title}</Link></h3><p>{child.summary}</p>{'primaryMetric' in child&&child.primaryMetric&&<div className="canonical-pathway-metric"><strong>{child.primaryMetric}</strong>{'primaryMetricLabel' in child&&child.primaryMetricLabel&&<span>{child.primaryMetricLabel}</span>}</div>}<Link className="v2-text-link" href={`/our-work/${child.slug}`}>Explore this {child.programmeStatus==='EXPANDING'?'pathway':'programme'} →</Link></article>})}</div></div></section>}
+  {highlightMedia&&<section className="campaign-data-visual"><div className="v2-shell"><div><span className="v2-section-label">Beneficiary breakdown</span><h2>Who the 2026 Eid Gift Kits reached</h2><p>{highlightMedia.caption}</p></div><PublicMedia asset={highlightMedia}/></div></section>}
   {media.length>0&&<section className="campaign-gallery" id="campaign-gallery"><div className="v2-shell"><div className="campaign-section-heading"><h2>Real Work. Shared Responsibly.</h2><p>Original photographs from this programme. Personal documents remain private.</p></div><CampaignMediaGallery items={(gallery.length?gallery:media).filter(asset=>asset.kind==='IMAGE').map(asset=>({id:asset.id,url:resolvePublicMediaUrl(asset)??"",alt:asset.altText,caption:asset.caption})).filter(item=>Boolean(item.url))}/><div className="campaign-gallery-grid">{(gallery.length?gallery:media).filter(asset=>asset.kind!=='IMAGE').map(asset=><PublicMedia asset={asset} key={asset.id}/>)}</div></div></section>}
   {(slug==='taleem'||slug.startsWith('taleem-'))&&<section className="v2-section"><div className="v2-shell"><h2>Knowledge should open doors — financial hardship should not close them.</h2><p>Identify a genuine educational barrier, verify the need, and respond responsibly.</p><Link className="v2-button" href="/get-involved/sponsor-education">Sponsor a Learner</Link></div></section>}
   <section className="campaign-next"><div className="v2-shell"><h2>Choose How You Want to Help</h2><div className="v2-hero-actions"><Link className="v2-button" href="/donate">Support Amaana</Link><Link className="v2-text-link" href="/our-work">Explore Our Work →</Link></div></div></section>
