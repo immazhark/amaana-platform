@@ -1,5 +1,5 @@
 .campaign-page { background: #fffdf8; color: #122239; }
-.campaign-breadcrumb { padding-block: 22px; font-size: .875rem; overflow-wrap: anywhere; }
+.campaign-breadcrumb { padding-block: 22px; font-size: .875rem; overflow-wrap: break-word; word-break: normal; }
 .campaign-breadcrumb a { text-underline-offset: .25em; }
 .campaign-hero { background: #1d3150; color: #fffdf8; padding-block: clamp(28px, 4vw, 60px); }
 .campaign-hero-grid { display: grid; grid-template-columns: 1fr 1.15fr; gap: clamp(24px, 4vw, 64px); align-items: center; }
@@ -21,12 +21,12 @@
 .campaign-gallery { padding-block: clamp(36px, 5vw, 72px); background: #faf6ec; }
 .campaign-section-heading { max-width: 70ch; margin-bottom: 32px; }
 .campaign-section-heading p { line-height: 1.7; }
-.campaign-gallery-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 32px; align-items: start; }
+.campaign-gallery-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; align-items: start; margin-top: 20px; }
 .campaign-image-link { color: inherit; text-decoration: none; min-width: 0; }
 .campaign-image-link .v2-media-item { margin: 0; }
 .campaign-image-link .v2-media-item img { display: block; width: 100%; height: auto; max-height: 620px; object-fit: contain; background: #fffdf8; }
 .campaign-gallery-grid .v2-media-item { margin: 0; min-width: 0; }
-.campaign-gallery-grid .v2-media-item video { display: block; width: 100%; max-height: 620px; aspect-ratio: 9 / 16; object-fit: contain; background: #122239; }
+.campaign-gallery-grid .v2-media-item video { display: block; width: 100%; max-height: 520px; aspect-ratio: 9 / 16; object-fit: contain; background: #122239; }
 .campaign-image-link figcaption { line-height: 1.6; font-size: .95rem; padding: 16px 0 8px; color: #122239; }
 .campaign-open { display: inline-block; color: #2f4c7a; text-decoration: underline; text-underline-offset: .25em; font-size: .875rem; }
 .campaign-image-link:hover .campaign-open { color: #122239; text-decoration-thickness: 2px; }
@@ -40,7 +40,7 @@
 .campaign-page [id] { scroll-margin-top: 100px; }
 @media (max-width: 760px) {
   .campaign-hero-grid, .campaign-story { grid-template-columns: 1fr; }
-  .campaign-gallery-grid { grid-template-columns: 1fr; gap: 30px; }
+  .campaign-gallery-grid { grid-template-columns: 1fr; gap: 20px; }
   .campaign-heading h1 { max-width: 18ch; }
   .campaign-lead .v2-media-item img { height: auto; max-height: 420px; }
   .campaign-story { gap: 22px; }
