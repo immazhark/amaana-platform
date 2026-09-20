@@ -10,3 +10,23 @@
 .canonical-block--labelled h2{overflow-wrap:normal;word-break:normal;hyphens:none;text-wrap:balance}
 .canonical-block--labelled h2::after{content:" —";color:#b8890e}
 .canonical-block--labelled>div{padding-top:.2rem}
+
+
+/* Consolidated Claude + Gemini audit: structured trust/content layouts without flattening page personality. */
+.canonical-body--governance{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem;padding-block:3rem}
+.canonical-body--governance .canonical-block{display:block;padding:1.5rem;border:1px solid rgb(18 34 57 / 10%);border-radius:1rem;background:#fffdf8;box-shadow:0 .75rem 2rem rgb(18 34 57 / 4%)}
+.canonical-body--governance .canonical-block h2{margin-top:0;font-size:clamp(1.35rem,2vw,1.75rem)}
+.canonical-body--governance .canonical-block p:first-child{font-weight:800;color:#2f4c7a}
+.canonical-body--governance .canonical-block:last-child{grid-column:1/-1;display:grid;grid-template-columns:minmax(12rem,.7fr) minmax(0,1.3fr);gap:2rem;background:#faf6ec}
+.canonical-body--comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;padding-block:3rem}
+.canonical-body--comparison .canonical-block{display:block;padding:1.75rem;border:1px solid rgb(18 34 57 / 10%);border-radius:1rem;background:#fffdf8}
+.canonical-body--comparison .canonical-block:nth-child(2){background:#f4f7fb}
+.canonical-body--comparison .canonical-block:last-child{grid-column:1/-1;background:#faf6ec}
+.canonical-block--card-list>div{min-width:0}
+.canonical-block--card-list ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;padding:0;list-style:none}
+.canonical-block--card-list li{padding:1rem 1.1rem;border:1px solid rgb(18 34 57 / 10%);border-radius:.85rem;background:#fffdf8}
+@media(max-width:800px){
+ .canonical-body--governance,.canonical-body--comparison{grid-template-columns:1fr}
+ .canonical-body--governance .canonical-block:last-child,.canonical-body--comparison .canonical-block:last-child{grid-column:auto;grid-template-columns:1fr}
+ .canonical-block--card-list ul{grid-template-columns:1fr}
+}
