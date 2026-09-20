@@ -71,3 +71,8 @@
   .v2-initiative-row .v2-initiative-proof { grid-column: 1 / -1; }
   .v2-initiative-row .v2-initiative-thumb { max-width: none; }
 }
+
+.v2-initiative-proof--currency{justify-self:end;width:max-content;max-width:100%;padding:.65rem .8rem;border:1px solid rgb(47 125 74 / 16%);border-radius:999px;background:#edf8f0;color:#225a36}
+.v2-initiative-proof--currency strong{color:#225a36;font-family:inherit;font-size:1rem!important;font-weight:850}
+.v2-initiative-proof--currency span{color:#3f6f50;font-size:.68rem;font-weight:750;letter-spacing:.04em;text-transform:uppercase}
+@media(max-width:900px){.v2-initiative-proof--currency{justify-self:start}}
