@@ -1,0 +1,8 @@
+
+.lifecycle{padding:.9rem 0;background:transparent}
+.lifecycleTrack{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.55rem;padding:.8rem 1rem;border:1px solid rgb(224 179 24 / 24%);border-radius:1rem;background:rgb(255 248 224 / 82%);color:#5b4a12}
+.lifecycleTrack span{font-size:.78rem;font-weight:800;letter-spacing:.02em}
+.lifecycleTrack b{color:#b8890e;font-weight:700}
+.appealItem{position:relative;min-width:0}
+.stagingBadge{position:absolute;z-index:2;top:.8rem;right:.8rem;padding:.32rem .58rem;border:1px solid rgb(108 63 168 / 24%);border-radius:999px;background:#f1e8ff;color:#5b2f91;font-size:.66rem;font-weight:850;letter-spacing:.08em;text-transform:uppercase;box-shadow:0 .25rem .8rem rgb(18 34 57 / 8%)}
+@media(max-width:620px){.lifecycleTrack{justify-content:flex-start}.lifecycleTrack b{display:none}.lifecycleTrack span{display:flex;align-items:center;gap:.45rem;width:100%}.lifecycleTrack span::before{content:"";width:.5rem;height:.5rem;border-radius:50%;background:#e0b318;flex:0 0 auto}}
