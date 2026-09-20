@@ -82,3 +82,11 @@
 .campaign-clinical-note li strong{color:#1d3150}
 .campaign-clinical-note li span{color:#5b6472;font-size:.75rem;line-height:1.35;text-transform:none;letter-spacing:normal}
 @media(max-width:700px){.campaign-history-note>.v2-shell,.campaign-clinical-note>.v2-shell{grid-template-columns:1fr}}
+
+.campaign-data-visual{padding-block:clamp(2.5rem,5vw,4rem);background:#fffdf8}
+.campaign-data-visual>.v2-shell{display:grid;grid-template-columns:minmax(0,.75fr) minmax(18rem,1.25fr);gap:clamp(1.5rem,5vw,4rem);align-items:center}
+.campaign-data-visual h2{margin:.35rem 0 .65rem;font-family:Georgia,"Times New Roman",serif;font-size:clamp(2rem,4vw,3.4rem);font-weight:500;line-height:1}
+.campaign-data-visual p{color:#5b6472;line-height:1.65}
+.campaign-data-visual .v2-media-item{margin:0;overflow:hidden;border:1px solid rgb(18 34 57 / 10%);border-radius:1rem;background:#f7f3eb}
+.campaign-data-visual .v2-media-item img{width:100%;height:auto;object-fit:contain}
+@media(max-width:760px){.campaign-data-visual>.v2-shell{grid-template-columns:1fr}}
