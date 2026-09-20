@@ -30,3 +30,23 @@
  .canonical-body--governance .canonical-block:last-child,.canonical-body--comparison .canonical-block:last-child{grid-column:auto;grid-template-columns:1fr}
  .canonical-block--card-list ul{grid-template-columns:1fr}
 }
+
+
+/* About: preserve editorial narrative, then give Mission/Vision equal visual weight. */
+.canonical-body--about{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1rem;padding-block:1rem}
+.canonical-body--about .canonical-block{grid-column:1/-1}
+.canonical-body--about .canonical-block:nth-child(1) p,.canonical-body--about .canonical-block:nth-child(2) p{max-width:62ch}
+.canonical-body--about .canonical-block:nth-child(3),.canonical-body--about .canonical-block:nth-child(4){grid-column:auto;margin:1rem 0;padding:1.5rem;border:1px solid rgb(18 34 57 / 10%);border-radius:1rem;background:#fffdf8}
+.canonical-body--about .canonical-block:nth-child(3) h2,.canonical-body--about .canonical-block:nth-child(4) h2{margin-top:0}
+
+/* Verification: a readable process timeline rather than run-on prose. */
+.canonical-body--timeline{counter-reset:amaana-step;position:relative}
+.canonical-body--timeline .canonical-block{counter-increment:amaana-step;position:relative;padding-left:4.5rem}
+.canonical-body--timeline .canonical-block::before{content:counter(amaana-step,decimal-leading-zero);position:absolute;left:0;top:3rem;width:2.75rem;height:2.75rem;display:grid;place-items:center;border:1px solid rgb(224 179 24 / 45%);border-radius:.8rem;background:#fff8df;color:#7b5c08;font-weight:850;font-variant-numeric:tabular-nums}
+.canonical-body--timeline .canonical-block::after{content:"";position:absolute;left:1.35rem;top:5.75rem;bottom:-.1rem;width:1px;background:rgb(18 34 57 / 12%)}
+.canonical-body--timeline .canonical-block:last-child::after{display:none}
+@media(max-width:700px){
+ .canonical-body--about{grid-template-columns:1fr}
+ .canonical-body--about .canonical-block:nth-child(3),.canonical-body--about .canonical-block:nth-child(4){grid-column:1}
+ .canonical-body--timeline .canonical-block{padding-left:3.75rem}
+}
