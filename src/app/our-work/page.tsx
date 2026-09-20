@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
+import { isDocumentaryPublicImage } from "@/lib/public-media";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
 import { filterWork, type WorkSearch } from "@/lib/work-filters";
 import "./work-filters.css";
