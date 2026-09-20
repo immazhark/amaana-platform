@@ -1,0 +1,11 @@
+
+.emptyState{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1rem;align-items:start;padding:clamp(1.5rem,4vw,2.5rem);border:1px solid rgb(70 111 170 / 16%);border-radius:1.4rem;background:linear-gradient(145deg,#fffdf8,#f4f7fb);box-shadow:0 1rem 3rem rgb(18 34 57 / 5%)}
+.emptyMark{width:3rem;height:3rem;display:grid;place-items:center;border-radius:.9rem;background:#122239;color:#f0d56b;font-weight:850}
+.emptyCopy{min-width:0}
+.emptyCopy h3{margin:.25rem 0 .5rem;font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.6rem,3vw,2.25rem);font-weight:500;color:#122239}
+.emptyCopy p{max-width:48rem;margin:0 0 1rem;color:#5b6472;line-height:1.65}
+.ethicList{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem!important}
+.ethicList article{padding:1.15rem;border:1px solid rgb(255 253 248 / 14%);border-radius:1rem;background:rgb(255 253 248 / 4%)}
+.ethicList article h3{margin:.35rem 0 .45rem}
+.ethicList article p{margin:0;color:rgb(255 253 248 / 70%);line-height:1.55}
+@media(max-width:760px){.emptyState{grid-template-columns:1fr}.ethicList{grid-template-columns:1fr!important}}
