@@ -16,5 +16,24 @@ export function distinctStoryParagraphs(summary: string, story: string) {
     .filter(paragraph => normalizePublicCopy(paragraph) !== normalizedSummary);
 }
 
-export const publicRecordFallback =
-  "This page preserves the documented public record for this initiative. Additional context is shown through published metrics, approved media and updates where those records are available.";
+export function buildPublicRecordFallback({
+  title,
+  status,
+  metric,
+  metricLabel,
+}: {
+  title: string;
+  status?: string | null;
+  metric?: string | null;
+  metricLabel?: string | null;
+}) {
+  const statusSentence = status
+    ? `This ${status.toLowerCase()} record remains part of Amaana's published programme history.`
+    : `This record remains part of Amaana's published programme history.`;
+  const metricSentence = metric
+    ? `The documented public outcome is ${metric}${metricLabel ? ` — ${metricLabel}` : ""}.`
+    : "";
+  return [statusSentence, metricSentence, `Approved evidence and programme details for ${title} are shown on this page where those records are available.`]
+    .filter(Boolean)
+    .join(" ");
+}
