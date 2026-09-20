@@ -5,7 +5,7 @@
 .v3-hero-photo{position:absolute;inset:0}
 .v3-hero-photo img{object-fit:cover;object-position:center;transform:scale(1.015);transition:transform 1.15s cubic-bezier(.2,.7,.2,1)}
 .v3-hero-media:hover .v3-hero-photo img{transform:scale(1.045)}
-.v3-hero-media-shade{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgb(4 12 23 / .04) 20%,rgb(4 12 23 / .18) 52%,rgb(4 12 23 / .88) 100%)}
+.v3-hero-media-shade{position:absolute;inset:0;z-index:1;background:linear-gradient(180deg,rgb(4 12 23 / .08) 16%,rgb(4 12 23 / .38) 55%,rgb(4 12 23 / .96) 100%)}
 .v3-hero-media:before{content:"";position:absolute;z-index:2;inset:1rem;border:1px solid rgb(255 255 255 / .15);border-radius:1.45rem 1.45rem 5.7rem 1.45rem;pointer-events:none}
 .v3-hero-media-caption{position:absolute;z-index:3;left:clamp(1.6rem,3.5vw,3rem);right:clamp(1.6rem,3.5vw,3rem);bottom:clamp(1.8rem,4vw,3rem);display:grid;gap:.65rem;max-width:30rem}
 .v3-hero-media-caption>span{color:#f1cf52;font-size:.72rem;font-weight:800;letter-spacing:.14em;text-transform:uppercase}
