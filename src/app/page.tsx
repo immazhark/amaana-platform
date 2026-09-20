@@ -12,6 +12,7 @@ import { getOurWorkIndexData } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
 import { programmeCategories } from '@/lib/master-copy';
 import { programmeCategoryPath } from '@/lib/programme-category-routing';
+import { isDocumentaryPublicImage } from '@/lib/public-media';
 
 export const dynamic = "force-dynamic";
 
@@ -41,7 +42,7 @@ export default async function HomePage() {
   const programmeMedia = new Map(
     causes.map(cause => [
       cause.slug,
-      cause.initiatives.find(initiative => initiative.mediaAssets[0])?.mediaAssets[0],
+      cause.initiatives.map(initiative => initiative.mediaAssets.find(isDocumentaryPublicImage) ?? initiative.mediaAssets[0]).find(Boolean),
     ] as const),
   );
 
