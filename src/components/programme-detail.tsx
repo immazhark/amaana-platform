@@ -7,6 +7,8 @@ import { getPublishedInitiativeBySlug } from '@/lib/public-content';
 import { programmeBySlug, programmeChildren } from '@/lib/master-copy';
 import { PublicMedia } from '@/components/public-media';
 import { canRenderPublicMedia, resolvePublicMediaUrl } from '@/lib/public-media';
+import { distinctStoryParagraphs, publicRecordFallback } from '@/lib/public-copy';
+import { CampaignMediaGallery } from '@/components/campaign-media-gallery';
 import '@/app/our-work/[slug]/campaign.css';
 import '@/app/canonical-content.css';
 
@@ -45,10 +47,10 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
     ]}
     visual={lead?<PublicMedia asset={lead} priority />:<WorkVisualPlaceholder label={title} className="campaign-lead-placeholder" />}
   />
-  <section className="campaign-story v2-shell" id="programme-story"><div><p className="v2-section-label">The work</p><h2>What happened</h2></div><div className="campaign-story-copy">{storyParagraphs.map((paragraph,index)=><p key={index}>{paragraph}</p>)}</div></section>
+  <section className="campaign-story v2-shell" id="programme-story"><div><p className="v2-section-label">The work</p><h2>What happened</h2></div><div className="campaign-story-copy">{storyParagraphs.length>0?storyParagraphs.map((paragraph,index)=><p key={index}>{paragraph}</p>):<p>{publicRecordFallback}</p>}</div></section>
   {facts&&facts.length>0&&<section className="v2-section paper"><div className="v2-shell"><h2>Programme details</h2><ol className="canonical-facts">{facts.map(f=><li key={f}>{f}</li>)}</ol></div></section>}
   {children.length>0&&<section className="v2-section paper" id="programme-pathways"><div className="v2-shell"><h2>{slug==='taleem'?'One Initiative. Different Pathways to Learning.':'View Year-by-Year Impact'}</h2><div className="canonical-pathways">{children.map(child=><article key={child.slug}><div className="canonical-pathway-visual"><WorkVisualPlaceholder label={child.title}/></div><p className="v2-section-label">{'year' in child?child.year:child.programmeStatus==='EXPANDING'?'Developing pathway':'Continuing sponsorship'}</p><h3><Link href={`/our-work/${child.slug}`}>{child.title}</Link></h3><p>{child.summary}</p><Link className="v2-text-link" href={`/our-work/${child.slug}`}>Explore this {child.programmeStatus==='EXPANDING'?'pathway':'programme'} →</Link></article>)}</div></div></section>}
-  {media.length>0&&<section className="campaign-gallery" id="campaign-gallery"><div className="v2-shell"><div className="campaign-section-heading"><h2>Real Work. Shared Responsibly.</h2><p>Original photographs from this programme. Personal documents remain private.</p></div><div className="campaign-gallery-grid">{(gallery.length?gallery:media).map(asset=><div key={asset.id}><PublicMedia asset={asset}/>{asset.kind==='IMAGE'&&<a href={resolvePublicMediaUrl(asset)??'#'} target="_blank" rel="noopener noreferrer">View full image</a>}</div>)}</div></div></section>}
+  {media.length>0&&<section className="campaign-gallery" id="campaign-gallery"><div className="v2-shell"><div className="campaign-section-heading"><h2>Real Work. Shared Responsibly.</h2><p>Original photographs from this programme. Personal documents remain private.</p></div><CampaignMediaGallery items={(gallery.length?gallery:media).filter(asset=>asset.kind==='IMAGE').map(asset=>({id:asset.id,url:resolvePublicMediaUrl(asset)??"",alt:asset.altText,caption:asset.caption})).filter(item=>Boolean(item.url))}/><div className="campaign-gallery-grid">{(gallery.length?gallery:media).filter(asset=>asset.kind!=='IMAGE').map(asset=><PublicMedia asset={asset} key={asset.id}/>)}</div></div></section>}
   {(slug==='taleem'||slug.startsWith('taleem-'))&&<section className="v2-section"><div className="v2-shell"><h2>Knowledge should open doors — financial hardship should not close them.</h2><p>Identify a genuine educational barrier, verify the need, and respond responsibly.</p><Link className="v2-button" href="/get-involved/sponsor-education">Sponsor a Learner</Link></div></section>}
   <section className="campaign-next"><div className="v2-shell"><h2>Choose How You Want to Help</h2><div className="v2-hero-actions"><Link className="v2-button" href="/donate">Support Amaana</Link><Link className="v2-text-link" href="/our-work">Explore Our Work →</Link></div></div></section>
  </div>;
