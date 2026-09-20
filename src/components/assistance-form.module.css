@@ -1,0 +1,15 @@
+
+.form :global(.field input:not([type=checkbox]):not([type=file])),
+.form :global(.field select),
+.form :global(.field textarea){width:100%;border:1px solid rgb(18 34 57 / 17%)!important;border-radius:.9rem!important;background:#fff!important;padding:.82rem .9rem!important;box-shadow:none!important;transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease}
+.form :global(.field textarea){min-height:10rem}
+.form :global(.field input:not([type=checkbox]):not([type=file]):focus),
+.form :global(.field select:focus),
+.form :global(.field textarea:focus){border-color:#e0b318!important;box-shadow:0 0 0 3px rgb(224 179 24 / 18%)!important;background:#fffdf8!important;outline:0}
+.form :global(.field input[aria-invalid=true]),
+.form :global(.field select[aria-invalid=true]),
+.form :global(.field textarea[aria-invalid=true]){border-color:#a72727!important}
+.form :global(.v2-form-choice){border-radius:1rem!important}
+.form :global(.v2-file-field){border-radius:1rem!important;overflow:hidden}
+.privacyNote{margin:-1rem 0 1.35rem;padding:.9rem 1rem;border-left:3px solid #466faa;border-radius:.35rem;background:#eef3fa;color:#4e5b69;font-size:.82rem;line-height:1.55}
+@media(prefers-reduced-motion:reduce){.form :global(.field input),.form :global(.field select),.form :global(.field textarea){transition:none}}
