@@ -1,5 +1,6 @@
 
 "use client";
+/* eslint-disable @next/next/no-img-element */
 
 import { useEffect, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
@@ -7,7 +8,7 @@ import styles from "./campaign-media-gallery.module.css";
 export type CampaignGalleryItem = {
   id: string;
   url: string;
-  alt: string;
+  alt: string | null;
   caption?: string | null;
 };
 
@@ -91,9 +92,9 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               type="button"
               className={styles.trigger}
               onClick={() => setActiveIndex(index)}
-              aria-label={`Open image ${index + 1} of ${items.length}: ${item.alt}`}
+              aria-label={`Open image ${index + 1} of ${items.length}: ${item.alt ?? "programme photograph"}`}
             >
-              <img src={item.url} alt={item.alt} loading="lazy" decoding="async" />
+              <img src={item.url} alt={item.alt ?? ""} loading="lazy" decoding="async" />
               <span className={styles.openLabel}>Enlarge</span>
             </button>
             {item.caption ? <figcaption>{item.caption}</figcaption> : null}
@@ -110,13 +111,13 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
             className={styles.dialog}
             role="dialog"
             aria-modal="true"
-            aria-label={`Image ${activeIndex! + 1} of ${items.length}: ${active.alt}`}
+            aria-label={`Image ${activeIndex! + 1} of ${items.length}: ${active.alt ?? "programme photograph"}`}
           >
             <div className={styles.dialogTop}>
               <span>{activeIndex! + 1} / {items.length}</span>
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
-            <img className={styles.fullImage} src={active.url} alt={active.alt} />
+            <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} />
             {active.caption ? <p className={styles.caption}>{active.caption}</p> : null}
             {items.length > 1 ? (
               <div className={styles.controls}>
