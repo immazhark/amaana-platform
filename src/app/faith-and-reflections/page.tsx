@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { getFaithDiscoveryData } from "@/lib/public-discovery-data";
+import styles from "./faith-audit.module.css";
 
 export const dynamic = "force-dynamic";
 
@@ -56,7 +57,7 @@ export default async function FaithAndReflectionsPage() {
       <section className="v2-section paper" id="library" aria-labelledby="faith-library-title">
         <div className="v2-shell">
           <div className="v2-section-head"><div><p className="v2-section-label">The library</p><h2 className="v2-section-title" id="faith-library-title">Read. Reflect. Watch.</h2></div><p className="v2-section-intro">{content.length > 0 ? `${content.length} verified item${content.length === 1 ? "" : "s"} are currently published.` : "No religious content is currently published. Drafts and unverified material remain private until review is complete."}</p></div>
-          <div className="v2-faith-format-grid"><article><span>01</span><strong>{articles.length}</strong><h3>Articles</h3><p>Long-form reflection with source and review context.</p></article><article><span>02</span><strong>{reminders.length}</strong><h3>Reminders</h3><p>Concise, purposeful reflection without engagement bait.</p></article><article><span>03</span><strong>{videos.length}</strong><h3>Videos</h3><p>Reviewed visual content with attribution and context.</p></article></div>
+          {content.length > 0 ? <div className="v2-faith-format-grid"><article><span>01</span><strong>{articles.length}</strong><h3>Articles</h3><p>Long-form reflection with source and review context.</p></article><article><span>02</span><strong>{reminders.length}</strong><h3>Reminders</h3><p>Concise, purposeful reflection without engagement bait.</p></article><article><span>03</span><strong>{videos.length}</strong><h3>Videos</h3><p>Reviewed visual content with attribution and context.</p></article></div> : <div className={styles.emptyState}><div className={styles.emptyIcon} aria-hidden="true">✦</div><span className={styles.emptyKicker}>Editorial library under curation</span><h3>Reviewed faith content will appear here when it is ready.</h3><p>Sources, translations, citations and scholarly attributions are checked before publication. Drafts remain private until that review is complete.</p><div className={styles.emptyActions}><Link className="v2-button" href="/our-work">See faith in action</Link><Link className="v2-text-link" href="/about">Why Amaana handles content carefully →</Link></div></div>}
         </div>
       </section>
 
