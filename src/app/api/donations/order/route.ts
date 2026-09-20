@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder } from "@/lib/razorpay";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
 import { validateProductionEnvironment } from "@/lib/env";
+import { canExposePublicAppeal } from "@/lib/public-environment";
 
 const privateHeaders = { "Cache-Control": "no-store, private" };
 const MAX_PAYMENT_JSON_BYTES = 32 * 1024;
@@ -32,6 +33,7 @@ export async function POST(request: Request) {
       where: { id: parsed.data.appealId, status: "PUBLISHED" },
       select: {
         id: true,
+        slug: true,
         title: true,
         status: true,
         goalAmount: true,
@@ -39,7 +41,7 @@ export async function POST(request: Request) {
         closesAt: true,
       },
     });
-    if (!appeal || !isAppealOpenForDonations(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+    if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
 
     const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
     if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) {
