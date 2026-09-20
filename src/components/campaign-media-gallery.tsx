@@ -2,7 +2,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
 
 export type CampaignGalleryItem = {
@@ -20,19 +20,19 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
 
   const active = activeIndex === null ? null : items[activeIndex];
 
-  function close() {
-    const previous = activeIndex;
+  const close = useCallback(() => {
+    const previousIndex = activeIndex;
     setActiveIndex(null);
-    if (previous !== null) requestAnimationFrame(() => triggerRefs.current[previous]?.focus());
-  }
+    if (previousIndex !== null) requestAnimationFrame(() => triggerRefs.current[previousIndex]?.focus());
+  }, [activeIndex]);
 
-  function previous() {
+  const previous = useCallback(() => {
     setActiveIndex(index => index === null ? 0 : (index - 1 + items.length) % items.length);
-  }
+  }, [items.length]);
 
-  function next() {
+  const next = useCallback(() => {
     setActiveIndex(index => index === null ? 0 : (index + 1) % items.length);
-  }
+  }, [items.length]);
 
   useEffect(() => {
     if (activeIndex === null) return;
@@ -78,7 +78,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [activeIndex, items.length]);
+  }, [activeIndex, close, next, previous]);
 
   if (!items.length) return null;
 
