@@ -90,8 +90,12 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
   return (
     <>
       <div className={styles.grid} aria-label="Programme photographs">
-        {items.map((item, index) => (
-          <figure className={styles.card} key={item.id}>
+        {items.map((item, index) => {
+          const descriptor = `${item.alt ?? ""} ${item.caption ?? ""}`;
+          const privacyProtected = /(privacy|blurred|identit(?:y|ies) protected)/i.test(descriptor);
+          const graphicAsset = /(graphic|announcement|campaign cover|results update|infographic|carousel)/i.test(descriptor);
+          return (
+          <figure className={`${styles.card} ${graphicAsset ? styles.graphicCard : ""}`} key={item.id}>
             <button
               ref={node => { triggerRefs.current[index] = node; }}
               type="button"
@@ -100,11 +104,13 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               aria-label={`Open image ${index + 1} of ${items.length}: ${item.alt ?? "programme photograph"}`}
             >
               {canOptimizeLocally(item.url) ? <Image src={item.url} alt={item.alt ?? ""} width={1600} height={1200} sizes="(max-width: 640px) 50vw, (max-width: 1100px) 33vw, 25vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={1600} height={1200} loading="lazy" decoding="async" />}
+              {privacyProtected ? <span className={styles.privacyLabel}>Privacy protected</span> : null}
               <span className={styles.openLabel}>Enlarge</span>
             </button>
             {item.caption ? <figcaption>{item.caption}</figcaption> : null}
           </figure>
-        ))}
+          );
+        })}
       </div>
 
       {active ? (
