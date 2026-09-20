@@ -2,6 +2,7 @@ import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
+import { canExposePublicAppeal } from "@/lib/public-environment";
 import {
   getPublishedFaithContentBySlug,
   getPublishedInitiativeBySlug,
@@ -53,7 +54,7 @@ export const getAppealPageData = cache(async (slug: string) => {
     },
   });
 
-  if (!appeal) return null;
+  if (!appeal || !canExposePublicAppeal(appeal)) return null;
   if (!canExposeAppealArchive({
     appealStatus: appeal.status,
     hasAssistanceRequest: Boolean(appeal.assistanceRequest),
@@ -271,7 +272,7 @@ export const getDonationPageData = cache(async (slug: string) => {
     },
   });
 
-  if (!appeal || !isAppealOpenForDonations(appeal)) return null;
+  if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return null;
   return appeal;
 });
 
@@ -291,6 +292,42 @@ export const getTransparencyPageData = cache(async () => {
       primaryMetric: true,
       primaryMetricLabel: true,
       cause: { select: { title: true } },
+    },
+  });
+});
+
+
+/**
+ * One reviewed image per child programme, fetched in a single query.
+ * Used by programme hubs so authentic media can replace generic placeholders
+ * without introducing N+1 reads or bypassing publication/privacy gates.
+ */
+export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
+  if (!slugs.length) return [];
+  return prisma.initiative.findMany({
+    where: { slug: { in: slugs }, status: "PUBLISHED" },
+    select: {
+      slug: true,
+      mediaAssets: {
+        where: {
+          kind: "IMAGE",
+          isPublic: true,
+          privacyApprovedAt: { not: null },
+          publicUrl: { not: null },
+        },
+        orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
+        take: 1,
+        select: {
+          id: true,
+          kind: true,
+          title: true,
+          publicUrl: true,
+          externalUrl: true,
+          altText: true,
+          caption: true,
+          sourceYear: true,
+        },
+      },
     },
   });
 });
