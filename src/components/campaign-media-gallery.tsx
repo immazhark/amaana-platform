@@ -2,6 +2,7 @@
 "use client";
 /* eslint-disable @next/next/no-img-element */
 
+import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
 
@@ -11,6 +12,10 @@ export type CampaignGalleryItem = {
   alt: string | null;
   caption?: string | null;
 };
+
+function canOptimizeLocally(url: string) {
+  return url.startsWith("/media/") || url.startsWith("/brand/");
+}
 
 export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }) {
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
@@ -94,7 +99,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               onClick={() => setActiveIndex(index)}
               aria-label={`Open image ${index + 1} of ${items.length}: ${item.alt ?? "programme photograph"}`}
             >
-              <img src={item.url} alt={item.alt ?? ""} loading="lazy" decoding="async" />
+              {canOptimizeLocally(item.url) ? <Image src={item.url} alt={item.alt ?? ""} width={1600} height={1200} sizes="(max-width: 640px) 50vw, (max-width: 1100px) 33vw, 25vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={1600} height={1200} loading="lazy" decoding="async" />}
               <span className={styles.openLabel}>Enlarge</span>
             </button>
             {item.caption ? <figcaption>{item.caption}</figcaption> : null}
@@ -117,7 +122,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               <span>{activeIndex! + 1} / {items.length}</span>
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
-            <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} />
+            {canOptimizeLocally(active.url) ? <Image className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={1600} height={1200} sizes="90vw" /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={1600} height={1200} />}
             {active.caption ? <p className={styles.caption}>{active.caption}</p> : null}
             {items.length > 1 ? (
               <div className={styles.controls}>
