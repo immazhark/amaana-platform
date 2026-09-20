@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { PageHero, type PageHeroVariant } from "@/components/page-hero";
 import "@/app/canonical-content.css";
 
-export type ArticleBlock = { title: string; paragraphs?: string[]; items?: string[]; presentation?: "default" | "labelled" };
+export type ArticleBlock = { title: string; paragraphs?: string[]; items?: string[]; presentation?: "default" | "labelled" | "card-list" };
 
 type CanonicalArticleProps = {
   title: string;
@@ -14,6 +14,7 @@ type CanonicalArticleProps = {
   heroVisual?: ReactNode;
   heroVisualTitle?: string;
   heroVisualNote?: string;
+  bodyClassName?: string;
 };
 
 export function CanonicalArticle({
@@ -26,6 +27,7 @@ export function CanonicalArticle({
   heroVisual,
   heroVisualTitle,
   heroVisualNote,
+  bodyClassName,
 }: CanonicalArticleProps) {
   return (
     <div className="v2-home canonical-article">
@@ -44,9 +46,9 @@ export function CanonicalArticle({
         visualNote={heroVisualNote ?? (heroVariant === "trust" ? "A public record of Amaana’s governance, accountability and responsible operating boundaries." : "Purpose, evidence and responsible service—presented with clarity.")}
       />
       <section className="v2-section paper">
-        <div className="v2-shell canonical-body">
+        <div className={`v2-shell canonical-body${bodyClassName ? ` ${bodyClassName}` : ""}`}>
           {blocks.map((block, index) => (
-            <section className={`canonical-block${block.presentation === "labelled" ? " canonical-block--labelled" : ""}`} key={index}>
+            <section className={`canonical-block${block.presentation === "labelled" ? " canonical-block--labelled" : ""}${block.presentation === "card-list" ? " canonical-block--card-list" : ""}`} key={index}>
               <h2>{block.title}</h2>
               <div>
                 {block.paragraphs?.map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{paragraph}</p>)}
