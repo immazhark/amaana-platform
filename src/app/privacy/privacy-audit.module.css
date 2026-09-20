@@ -1,0 +1,11 @@
+
+.matrix{padding:0 0 clamp(2.5rem,5vw,4rem);background:#fffdf8}
+.matrixGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.8rem}
+.matrixGrid article{padding:1.15rem;border:1px solid rgb(18 34 57 / 10%);border-radius:1rem;background:#fff}
+.matrixGrid article:nth-child(1){border-top:4px solid #466faa}
+.matrixGrid article:nth-child(2){border-top:4px solid #b8890e}
+.matrixGrid article:nth-child(3){border-top:4px solid #2f4c7a}
+.matrixGrid span{display:block;color:#697482;font-size:.68rem;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
+.matrixGrid h2{margin:.35rem 0 .5rem;font-size:1.15rem;line-height:1.25}
+.matrixGrid p{margin:0;color:#5b6472;font-size:.84rem;line-height:1.55}
+@media(max-width:760px){.matrixGrid{grid-template-columns:1fr}}
