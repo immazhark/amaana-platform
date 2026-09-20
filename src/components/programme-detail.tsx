@@ -29,7 +29,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const statusLabel=canonical?.causeSlug==='medical-financial-relief'?(slug==='jewellery-loan-intervention'?'Assistance completed':'Fundraising completed'):status==='EXPANDING'?'Developing pathway':status==='ONGOING'?'Ongoing sponsorship':status==='HISTORICAL'?'Historical response':status==='COMPLETED'?'Completed work':'Recurring programme';
  const parent=canonical?.parentSlug?programmeBySlug(canonical.parentSlug):undefined;
  const facts=canonical&&'facts' in canonical?canonical.facts:[];
- const storyParagraphs=story.split(/\n\s*\n/).filter(Boolean);
+ const storyParagraphs=distinctStoryParagraphs(summary,story);
  const breadcrumbItems=[
   {name:'Home',path:'/'},
   {name:'Our Work',path:'/our-work'},
