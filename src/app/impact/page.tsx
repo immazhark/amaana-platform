@@ -60,23 +60,17 @@ export default async function ImpactPage() {
         )}
       />
 
-      <section className="v2-impact-marquee" aria-labelledby="impact-signals-title">
-        <h2 id="impact-signals-title" className="sr-only">Published impact figures</h2>
-        {initiativesWithMetrics.length > 0 ? <div className="v2-impact-marquee-track">{initiativesWithMetrics.map((item, index) => <div className="v2-impact-marquee-item" key={item.id}><small>{String(index + 1).padStart(2, "0")} · {item.cause.title}</small><strong>{item.primaryMetric}</strong><span>{item.primaryMetricLabel}</span></div>)}</div> : <div className="v2-shell"><p>Impact figures appear only when their initiatives are published.</p></div>}
-      </section>
-
-      <section className="v2-section paper" id="evidence" aria-labelledby="evidence-title">
+      <section className="v2-section paper v2-impact-wall-section" id="evidence" aria-labelledby="impact-wall-title">
         <div className="v2-shell">
-          <div className="v2-section-head"><div><p className="v2-section-label">Evidence by initiative</p><h2 className="v2-section-title" id="evidence-title">Every number has a home.</h2></div><p className="v2-section-intro">Each underlying case or parent programme appears once. Annual editions remain available from their programme record instead of being repeated as separate impact entries.</p></div>
-          {initiatives.length > 0 ? <div className="v2-impact-ledger">{initiatives.map((item, index) => {
+          <div className="v2-section-head"><div><p className="v2-section-label">Wall of impact</p><h2 className="v2-section-title" id="impact-wall-title">Every tile carries a documented outcome.</h2></div><p className="v2-section-intro">Explore the result, then enter the initiative record for its story, evidence and context.</p></div>
+          {initiatives.length > 0 ? <div className="v2-impact-wall">{initiatives.map((item, index) => {
             const thumbnail = selectIdentityPublicImage(item.mediaAssets) ?? null;
-            return <Link href={`/our-work/${item.slug}`} className="v2-impact-ledger-row" key={item.id}>
-              <span className="v2-impact-ledger-index">{String(index + 1).padStart(2, "0")}</span>
-              <div className="v2-impact-ledger-thumb">{thumbnail ? <PublicMedia asset={thumbnail} /> : <WorkVisualPlaceholder label={item.title} />}</div>
-              <div><small>{item.cause.title}</small><h3>{item.title}</h3></div>
-              <p>{item.summary}</p>
-              <div className="v2-impact-ledger-metric">{item.primaryMetric ? <><strong>{item.primaryMetric}</strong><span>{item.primaryMetricLabel}</span></> : <><strong>View</strong><span>documented initiative</span></>}</div>
-              <span className="v2-impact-ledger-arrow" aria-hidden="true">↗</span>
+            return <Link href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id} aria-label={`Open ${item.title} initiative record`}>
+              {thumbnail ? <div className="v2-impact-tile-media" aria-hidden="true"><PublicMedia asset={thumbnail} /></div> : null}
+              <div className="v2-impact-tile-shade" aria-hidden="true" />
+              <span className="v2-impact-tile-index">{String(index + 1).padStart(2, "0")}</span>
+              <div className="v2-impact-tile-copy"><small>{item.cause.title}</small>{item.primaryMetric ? <strong>{item.primaryMetric}</strong> : null}<span>{item.primaryMetricLabel ?? item.title}</span><h3>{item.title}</h3></div>
+              <span className="v2-impact-tile-action" aria-hidden="true">Explore impact ↗</span>
             </Link>;
           })}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Evidence gate active</span><h3>No published initiative evidence yet.</h3><p>Nothing is invented to fill the space.</p></div>}
         </div>
