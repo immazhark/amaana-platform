@@ -27,8 +27,6 @@ export function distinctStoryParagraphs(summary: string, story: string) {
 }
 
 export function buildPublicRecordFallback(input: {
-  title: string;
-  status?: string | null;
   metric?: string | null;
   metricLabel?: string | null;
 }) {
