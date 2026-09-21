@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
 import { PageHero } from "@/components/page-hero";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
+import { MobileSupportBar } from "@/components/mobile-support-bar";
 import { getAppealSearchPrivacy } from "@/lib/appeal-search-privacy";
 import { formatINR, isAppealOpenForDonations } from "@/lib/appeals";
 import { getAppealPageData } from "@/lib/public-page-data";
@@ -54,6 +55,7 @@ export default async function AppealDetailPage({ params }: Props) {
       <section className="v2-section v2-appeal-giving-note"><div className="v2-shell v2-appeal-giving-note-grid"><div><p className="v2-section-label">Before you give</p><h2 className="v2-section-title">Support should begin with understanding.</h2></div><div><p>This page is designed to give enough context to make an informed decision without turning a person&apos;s hardship into a fundraising performance. If an appeal is open, support goes specifically to this published appeal through its donation journey.</p><div className="v2-hero-actions">{isOpen && <Link className="v2-button" href={`/donate/${appeal.slug}`}>Support this appeal</Link>}<Link className="v2-text-link" href="/how-we-verify">How Amaana reviews requests →</Link></div></div></div></section>
 
       <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Continue with context</p><h2>See the work around the appeal.</h2><p>Explore completed initiatives, documented outcomes and Amaana&apos;s public evidence approach before or after contributing.</p><div className="v2-hero-actions v2-hero-actions-centered"><Link className="v2-button" href="/our-work">Explore our work</Link><Link className="v2-text-link" href="/transparency">Transparency →</Link></div></div></section>
+      {isOpen ? <MobileSupportBar href={`/donate/${appeal.slug}`} label="Support this appeal" context={`${formatINR(Math.max(goal - raised, 0))} remaining verified need`} /> : null}
     </div>
   );
 }
