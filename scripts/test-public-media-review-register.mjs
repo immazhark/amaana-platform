@@ -17,13 +17,14 @@ test('every directly addressable public media file has exactly one conservative 
   assert.deepEqual(resolved.map(item => item.path).sort(), assetPaths);
 });
 
-test('legacy register does not infer human approval or consent from existing publication', async () => {
+test('reset register keeps every retained asset conservative until human review', async () => {
   const resolved = await loadAndValidatePublicMediaReviewRegister();
   const summary = publicMediaReviewSummary(resolved);
   assert.equal(summary.approved, 0);
   assert.equal(summary.pending, summary.total);
   assert.equal(summary.unknownConsent, summary.total);
-  assert.ok(summary.documentedProvenance > 0, 'known provenance records should remain distinguishable from privacy approval');
+  assert.equal(summary.restricted, 0);
+  assert.equal(summary.blocked, 0);
 });
 
 test('approval claims fail closed without reviewer, date, documented provenance and usable consent', () => {
