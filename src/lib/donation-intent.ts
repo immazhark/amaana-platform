@@ -1,3 +1,4 @@
+// Donor intent is distinct from the selected appeal designation and beneficiary eligibility review.
 export const DONATION_INTENTS = ["GENERAL", "SADAQAH", "ZAKAT"] as const;
 
 export type DonationIntentValue = typeof DONATION_INTENTS[number];
