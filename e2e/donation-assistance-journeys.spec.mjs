@@ -89,13 +89,23 @@ async function openAssistance(page) {
   await expect(page.getByRole('heading', { name: 'Tell us about the request.' })).toBeVisible();
 }
 
-async function fillAssistanceForm(page) {
+async function fillAssistanceForm(page, { stopAtEvidence = false } = {}) {
   await page.getByLabel('Applicant name').fill('Acceptance Applicant');
   await page.getByLabel('Phone number').fill('9000000000');
   await page.getByLabel(/Email/).fill('applicant@example.test');
   await page.getByLabel('City').fill('Hyderabad');
+  await page.getByRole('button', { name: 'Continue to need →' }).click();
+
   await page.getByLabel('Type of assistance').selectOption('MEDICAL');
   await page.getByLabel('Describe the need').fill('This is synthetic browser acceptance data used only to verify the private assistance workflow without creating a real beneficiary request.');
+  await page.getByRole('button', { name: 'Continue to evidence →' }).click();
+
+  if (stopAtEvidence) return;
+  await finishAssistanceConfirmation(page);
+}
+
+async function finishAssistanceConfirmation(page) {
+  await page.getByRole('button', { name: 'Continue to confirm →' }).click();
   await page.locator('input[name="consent"]').check();
 }
 
@@ -257,6 +267,22 @@ test.describe('donation journey without real payment', () => {
 });
 
 test.describe('private assistance journey', () => {
+  test('guided form blocks step progression until required contact fields are complete', async ({ page }) => {
+    await openAssistance(page);
+
+    await page.getByRole('button', { name: 'Continue to need →' }).click();
+    await expect(page.getByText('Step 1 of 4')).toBeVisible();
+    await expect(page.getByLabel('Applicant name')).toBeFocused();
+
+    await page.getByLabel('Applicant name').fill('Acceptance Applicant');
+    await page.getByLabel('Phone number').fill('9000000000');
+    await page.getByLabel('City').fill('Hyderabad');
+    await page.getByRole('button', { name: 'Continue to need →' }).click();
+
+    await expect(page.getByText('Step 2 of 4')).toBeVisible();
+    await expect(page.getByLabel('Type of assistance')).toBeVisible();
+  });
+
   test('server validation focuses the first rejected field and clears its inline error on edit', async ({ page }) => {
     await page.route('**/api/assistance', route => route.fulfill({
       status: 400,
@@ -299,7 +325,7 @@ test.describe('private assistance journey', () => {
     });
 
     await openAssistance(page);
-    await fillAssistanceForm(page);
+    await fillAssistanceForm(page, { stopAtEvidence: true });
 
     const evidence = page.getByLabel(/Add private supporting files/);
     await evidence.setInputFiles({
@@ -318,6 +344,7 @@ test.describe('private assistance journey', () => {
       type: 'application/pdf',
     })]);
 
+    await finishAssistanceConfirmation(page);
     await page.getByRole('button', { name: 'Submit private request →' }).click();
 
     expect(contentType).toMatch(/^multipart\/form-data;\s*boundary=/i);
