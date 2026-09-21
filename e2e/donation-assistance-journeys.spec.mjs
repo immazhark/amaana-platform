@@ -283,6 +283,31 @@ test.describe('private assistance journey', () => {
     await expect(page.getByLabel('Type of assistance')).toBeVisible();
   });
 
+  test('guided assistance progress controls expose step targets and announce the current step', async ({ page }) => {
+    await openAssistance(page);
+
+    const progress = page.getByRole('navigation', { name: 'Assistance request progress' });
+    const contactButton = progress.getByRole('button', { name: /01Contact/ });
+    const needButton = progress.getByRole('button', { name: /02Need/ });
+
+    await expect(contactButton).toHaveAttribute('aria-controls', 'assistance-step-1');
+    await expect(needButton).toHaveAttribute('aria-controls', 'assistance-step-2');
+    await expect(contactButton).toHaveAttribute('aria-current', 'step');
+
+    const status = progress.locator('[aria-live="polite"]');
+    await expect(status).toContainText('Step 1 of 4');
+
+    await page.getByLabel('Applicant name').fill('Acceptance Applicant');
+    await page.getByLabel('Phone number').fill('9000000000');
+    await page.getByLabel('City').fill('Hyderabad');
+    await page.getByRole('button', { name: 'Continue to need →' }).click();
+
+    await expect(status).toContainText('Step 2 of 4');
+    await expect(needButton).toHaveAttribute('aria-current', 'step');
+    await expect(page.locator('#assistance-step-2')).toBeVisible();
+    await expect(page.locator('#assistance-step-1')).toBeHidden();
+  });
+
   test('returning to an earlier step cannot bypass its validation when jumping forward again', async ({ page }) => {
     await openAssistance(page);
     await fillAssistanceForm(page);
