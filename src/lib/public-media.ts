@@ -1,11 +1,14 @@
-type PublicMediaCandidate = {
+export type PublicMediaCandidate = {
   kind: "IMAGE" | "VIDEO" | "DOCUMENT" | "EXTERNAL_VIDEO";
   publicUrl?: string | null;
   externalUrl?: string | null;
   altText?: string | null;
   title?: string | null;
   caption?: string | null;
+  sortOrder?: number | null;
 };
+
+export const IDENTITY_MEDIA_SORT_ORDER = -1000;
 
 function isSafePublicUrl(value: string | null | undefined) {
   if (!value) return false;
@@ -52,4 +55,16 @@ export function isDocumentaryPublicImage(asset: PublicMediaCandidate) {
   if (asset.kind !== "IMAGE" || !canRenderPublicMedia(asset)) return false;
   const descriptor = `${asset.title ?? ""} ${asset.caption ?? ""}`.toLowerCase();
   return !/(infographic|impact graphic|announcement|campaign cover|results update|thank-you|thank you|poster)/.test(descriptor);
+}
+
+export function isIdentityPublicImage(asset: PublicMediaCandidate) {
+  return asset.kind === "IMAGE"
+    && asset.sortOrder === IDENTITY_MEDIA_SORT_ORDER
+    && canRenderPublicMedia(asset);
+}
+
+export function selectIdentityPublicImage<T extends PublicMediaCandidate>(assets: readonly T[]) {
+  return assets.find(asset => isIdentityPublicImage(asset))
+    ?? assets.find(asset => isDocumentaryPublicImage(asset))
+    ?? assets.find(asset => asset.kind === "IMAGE" && canRenderPublicMedia(asset));
 }

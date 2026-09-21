@@ -5,7 +5,7 @@ import { revalidatePath } from "next/cache";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { mediaPublicationIssues, parseMediaPublicationReview } from "@/lib/media-governance";
 import { prisma } from "@/lib/prisma";
-import { canRenderPublicMedia } from "@/lib/public-media";
+import { IDENTITY_MEDIA_SORT_ORDER, canRenderPublicMedia } from "@/lib/public-media";
 import { deletePublicMediaObject, uploadPublicMediaFile, validatePublicMediaFile } from "@/lib/storage";
 
 type TargetFields = { causeId?: string; initiativeId?: string; storyId?: string; faithContentId?: string };
@@ -56,11 +56,22 @@ export async function createMediaAsset(formData: FormData) {
   if (inferredKind === "IMAGE" && !altText) throw new Error("Image alt text is required");
   const sourceYearRaw = Number(formData.get("sourceYear"));
   const sortOrderRaw = Number(formData.get("sortOrder"));
+  const identityImage = inferredKind === "IMAGE" && formData.get("identityImage") === "on";
+  const displayOrder = identityImage
+    ? IDENTITY_MEDIA_SORT_ORDER
+    : Number.isInteger(sortOrderRaw) && sortOrderRaw >= 0 ? sortOrderRaw : 0;
 
   const uploaded = file ? await uploadPublicMediaFile(file) : null;
 
   try {
     await prisma.$transaction(async tx => {
+      if (identityImage) {
+        await tx.mediaAsset.updateMany({
+          where: { kind: "IMAGE", sortOrder: IDENTITY_MEDIA_SORT_ORDER, ...target },
+          data: { sortOrder: 0 },
+        });
+      }
+
       const asset = await tx.mediaAsset.create({
         data: {
           kind: inferredKind,
@@ -71,7 +82,7 @@ export async function createMediaAsset(formData: FormData) {
           caption: optionalText(formData.get("caption"), 1000),
           sourcePath: optionalText(formData.get("sourcePath"), 500) ?? uploaded?.originalName ?? null,
           sourceYear: Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null,
-          sortOrder: Number.isInteger(sortOrderRaw) ? sortOrderRaw : 0,
+          sortOrder: displayOrder,
           isPublic: false,
           ...target,
         },
@@ -83,7 +94,7 @@ export async function createMediaAsset(formData: FormData) {
           action: "media.created",
           entityType: "MediaAsset",
           entityId: asset.id,
-          metadata: { target, uploaded: Boolean(uploaded), hasPublicUrl: Boolean(asset.publicUrl) },
+          metadata: { target, uploaded: Boolean(uploaded), hasPublicUrl: Boolean(asset.publicUrl), identityImage },
         },
       });
     });
@@ -112,16 +123,32 @@ export async function updateMediaAsset(formData: FormData) {
   if (asset.kind === "IMAGE" && !altText) throw new Error("Image alt text is required");
   const sourceYearRaw = Number(formData.get("sourceYear"));
   const sortOrderRaw = Number(formData.get("sortOrder"));
+  const identityImage = asset.kind === "IMAGE" && formData.get("identityImage") === "on";
+  const displayOrder = identityImage
+    ? IDENTITY_MEDIA_SORT_ORDER
+    : Number.isInteger(sortOrderRaw) && sortOrderRaw >= 0 ? sortOrderRaw : 0;
+  const target = {
+    causeId: asset.causeId ?? undefined,
+    initiativeId: asset.initiativeId ?? undefined,
+    storyId: asset.storyId ?? undefined,
+    faithContentId: asset.faithContentId ?? undefined,
+  };
 
-  await prisma.$transaction([
-    prisma.mediaAsset.update({ where: { id }, data: {
+  await prisma.$transaction(async tx => {
+    if (identityImage) {
+      await tx.mediaAsset.updateMany({
+        where: { id: { not: id }, kind: "IMAGE", sortOrder: IDENTITY_MEDIA_SORT_ORDER, ...target },
+        data: { sortOrder: 0 },
+      });
+    }
+    await tx.mediaAsset.update({ where: { id }, data: {
       title: optionalText(formData.get("title"), 160), publicUrl, altText,
       caption: optionalText(formData.get("caption"), 1000), sourcePath: optionalText(formData.get("sourcePath"), 500),
       sourceYear: Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null,
-      sortOrder: Number.isInteger(sortOrderRaw) ? sortOrderRaw : 0,
-    } }),
-    prisma.auditEvent.create({ data: { actorId: user.id, action: "media.metadata_updated", entityType: "MediaAsset", entityId: id, metadata: { wasPublic: asset.isPublic } } }),
-  ]);
+      sortOrder: displayOrder,
+    } });
+    await tx.auditEvent.create({ data: { actorId: user.id, action: "media.metadata_updated", entityType: "MediaAsset", entityId: id, metadata: { wasPublic: asset.isPublic, identityImage } } });
+  });
   revalidatePath("/admin/media");
 }
 
@@ -141,6 +168,9 @@ export async function setMediaPublication(formData: FormData) {
     const review = parseMediaPublicationReview(formData);
     const issues = mediaPublicationIssues(review);
     if (issues.length) throw new Error(issues.join(" "));
+    if (asset.kind === "IMAGE" && asset.sortOrder === IDENTITY_MEDIA_SORT_ORDER && !review.heroEligible) {
+      throw new Error("The designated identity image requires explicit Hero use approved confirmation before publication.");
+    }
 
     await prisma.$transaction([
       prisma.mediaAsset.update({ where: { id }, data: { isPublic: true, privacyApprovedAt: new Date() } }),

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canRenderPublicMedia, resolvePublicMediaUrl } from "./public-media";
+import { IDENTITY_MEDIA_SORT_ORDER, canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "./public-media";
 
 describe("public media safety", () => {
   it("accepts HTTPS and safe root-relative media URLs", () => {
@@ -27,5 +27,13 @@ describe("public media safety", () => {
   it("uses only the external URL for external video records", () => {
     expect(resolvePublicMediaUrl({ kind: "EXTERNAL_VIDEO", externalUrl: "https://www.youtube.com/watch?v=test", publicUrl: "/wrong" })).toBe("https://www.youtube.com/watch?v=test");
     expect(resolvePublicMediaUrl({ kind: "EXTERNAL_VIDEO", externalUrl: "http://example.org/video" })).toBeNull();
+  });
+
+  it("selects the explicit identity image before other documentary images", () => {
+    const gallery = [
+      { kind: "IMAGE" as const, publicUrl: "/media/gallery.webp", altText: "Gallery photograph", sortOrder: 0 },
+      { kind: "IMAGE" as const, publicUrl: "/media/hero.webp", altText: "Identity photograph", sortOrder: IDENTITY_MEDIA_SORT_ORDER },
+    ];
+    expect(selectIdentityPublicImage(gallery)?.publicUrl).toBe("/media/hero.webp");
   });
 });
