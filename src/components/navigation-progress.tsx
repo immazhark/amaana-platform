@@ -5,15 +5,16 @@ import { useEffect, useRef, useState } from "react";
 
 export function NavigationProgress() {
   const pathname = usePathname();
-  const [pending, setPending] = useState(false);
+  const [pendingFrom, setPendingFrom] = useState<string | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const visible = pendingFrom === pathname;
 
   useEffect(() => {
-    if (timer.current) {
-      clearTimeout(timer.current);
-      timer.current = null;
-    }
-  }, [pathname]);
+    if (!visible) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [visible]);
 
   useEffect(() => {
     const begin = (event: MouseEvent) => {
@@ -27,11 +28,15 @@ export function NavigationProgress() {
       if (next.origin !== current.origin || (next.pathname === current.pathname && next.search === current.search)) return;
 
       if (timer.current) clearTimeout(timer.current);
-      timer.current = setTimeout(() => setPending(true), 180);
+      const originPath = current.pathname;
+      timer.current = setTimeout(() => {
+        setPendingFrom(originPath);
+        timer.current = null;
+      }, 120);
     };
 
     const finishHistoryNavigation = () => {
-      setPending(false);
+      setPendingFrom(null);
       if (timer.current) {
         clearTimeout(timer.current);
         timer.current = null;
@@ -47,5 +52,13 @@ export function NavigationProgress() {
     };
   }, []);
 
-  return pending ? <div key={pathname} className="amaana-nav-progress" aria-hidden="true"><span /></div> : null;
+  return visible ? (
+    <div className="amaana-loading-overlay amaana-navigation-loading" role="status" aria-live="polite" aria-label="Loading page">
+      <div className="amaana-loading-indicator">
+        <img className="amaana-loading-logo" src="/brand/amaana-mark.svg" alt="" aria-hidden="true" />
+        <span className="amaana-loading-dots" aria-hidden="true"><i /><i /><i /></span>
+        <span className="sr-only">Loading page</span>
+      </div>
+    </div>
+  ) : null;
 }
