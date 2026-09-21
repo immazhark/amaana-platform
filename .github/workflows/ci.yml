@@ -184,6 +184,12 @@ jobs:
           trap - EXIT
           if fuser 3000/tcp >/dev/null 2>&1; then exit 1; fi
 
+      - name: Prepare browser acceptance database
+        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
+        run: |
+          npx prisma migrate deploy
+          npm run seed:public-content
+
       - name: Build isolated browser acceptance fixture
         if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
         shell: bash
