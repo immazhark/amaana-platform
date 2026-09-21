@@ -142,3 +142,45 @@ Family feedback is complete and the remediation stream is no longer held on a qu
 - Audit/trust-polish commit chain through `67e898ac20266a20ab2836f22dabd1e18d6a0ad0` deployed successfully.
 - Carousel E2E regression coverage exists in `e2e/carousel-acceptance.spec.mjs` for keyboard controls and mobile document containment.
 - Screenshot-level staging inspection is still a separate rendered QA gate; do not claim it solely from build success.
+
+
+## Continued implementation — 21 September 2026
+
+### Scroll-reduction completion
+- Programme evidence galleries: horizontal carousel + accessible lightbox.
+- Long parent-programme year/pathway histories: compact carousel when more than three records.
+- Home field-work showcase: horizontal carousel.
+- Home five-area programme discovery: horizontal carousel, replacing five stacked rows.
+- Impact witness photography: horizontal carousel.
+- Stories detail supporting photography: shared carousel/lightbox instead of tall bespoke grid.
+- Mobile Home proof metrics and Impact metrics: native horizontal snap strips to avoid four stacked metric blocks.
+- Full-width 3–5 slide Homepage banner is prepared and remains dormant until at least three curated featured identity images pass publication review. No autoplay.
+
+### Donation-flow enhancement
+- Donor intent is now a durable financial attribute: General Charity, Sadaqah or Zakat.
+- The selected appeal remains the designated destination regardless of donor intent.
+- Zakat is available only for appeals explicitly reviewed as Zakat-eligible, and eligibility is checked again by the server.
+- Intent propagates into Razorpay order notes, private transaction acknowledgement, acknowledgement email and admin reconciliation.
+- Existing donations safely default to General Charity.
+- No claim is made that choosing Zakat itself establishes beneficiary eligibility.
+
+### Request Assistance conversion
+- The former four-fieldset long form has been converted to true progressive disclosure.
+- Required fields are validated before the user can continue to the next step.
+- Private file selection survives step changes and is submitted only with the final secure multipart request.
+- Server validation returns the user to the correct step/control.
+- This directly reduces mobile scroll without weakening privacy or verification.
+
+### Validation
+- Donation-intent implementation + tests: Railway SUCCESS at `430329957477bf513b79577bbeae47f6602d3b3c`.
+- Story curated-media alignment: Railway SUCCESS at `cef325f99e55548596a4e452e549e0c4804b675d`.
+- Guided assistance flow: Railway SUCCESS at `22e252dedd7cc988c9da96f4e72384ef6ecf6e61`.
+- Latest mobile metric-strip deployment is still being validated at this checkpoint.
+- Browser/Playwright regression files are committed, but current hosted GitHub workflow reporting is absent; rendered execution remains an explicit validation gate.
+
+### Still intentionally deferred until curated photographs are supplied
+- Actual 3–5 Homepage banner slide population.
+- Exact crop/object-position tuning per image.
+- Per-photo overlay contrast measurements.
+- Final gallery ordering/captions after photo selection.
+- Human privacy/consent/provenance/hero-use approval for each public photograph.

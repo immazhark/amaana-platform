@@ -161,3 +161,47 @@
 - Taleem Nazira + Hifdh: **25 students combined as of September 2026**.
 - Amaana is **not FCRA-registered**; fundraising remains domestic-only.
 - 12A/12AB and known 80G status are **provisional** and must be described that way.
+
+
+## 21 September 2026 implementation checkpoint — carousels, donor intent and guided assistance
+
+### Scroll reduction and curated-media architecture
+- Shared manual/swipe/keyboard `ScrollCarousel` now powers programme galleries, long programme-year histories, Homepage field work/programme discovery, Impact witness media and supporting Story media.
+- The Homepage full-width curated banner is structurally complete and intentionally activates only once at least three approved featured identity images are available; it supports up to five curated slides and never autoplays.
+- Story metadata, Story heroes and Story discovery cards now use the explicit identity-image contract instead of first-file heuristics.
+- Mobile Home proof metrics and Impact metrics become horizontal snap strips instead of long stacked blocks.
+- Curated image insertion remains data/media work. Do not redesign these surfaces when the selected photographs arrive.
+
+### Donation intent
+- Added a donor `givingIntent` record with values `GENERAL`, `SADAQAH` and `ZAKAT`.
+- Donor giving intention remains separate from appeal designation and separate from the internal beneficiary Zakat-eligibility review.
+- Zakat is offered only when the appeal's private verification record is explicitly `ELIGIBLE`; the order API re-checks this server-side and rejects forged Zakat intent otherwise.
+- Giving intent is persisted on the Donation, included in Razorpay order notes, private acknowledgement, donor acknowledgement email payload and admin donation/reconciliation views.
+- Additive migration: `20260921103000_donation_giving_intent`.
+- The same additive enum/column/index were applied to the staging Neon branch before code rollout; existing records default to `GENERAL`.
+- The complete donation-intent stack built successfully on Railway at `430329957477bf513b79577bbeae47f6602d3b3c`.
+
+### Mobile appeal conversion
+- Open verified appeal pages now have a mobile-only persistent “Support this appeal” action.
+- It is deliberately absent on closed appeals and is not globally injected across Stories/programmes.
+- Safe-area spacing prevents the bar from obscuring content and shifts Back-to-top/Companion overlays upward on affected pages.
+- Isolated browser acceptance fixture and regression spec cover open/closed state, horizontal containment and floating-control overlap.
+
+### Request Assistance
+- The request form is now a genuine four-step guided flow: Contact → Need → Supporting Evidence → Confirm.
+- Current-step validation prevents invalid forward progression.
+- Input/file state is preserved between steps; the final request remains one secure multipart submission.
+- Server validation errors reopen the exact step containing the rejected field and focus that control.
+- Browser regression coverage follows the real progressive flow and preserves the private PDF upload test.
+- Production compile/TypeScript succeeded and Railway deployment `32b31a06-8577-49d6-b283-e9c3183940ca` reached SUCCESS.
+
+### Performance / regression guards
+- Dynamic Homepage data loading is narrowed to dedicated appeal + discovery projections instead of loading unused story/faith/archive data.
+- Public media retains intrinsic layout reservation.
+- Browser performance coverage records CLS for Home, About, Our Work, Donate and Request Assistance with a <= 0.10 launch budget.
+- Hosted GitHub browser workflow execution is not currently being reported for the newest test-only commits. Do not describe those Playwright specs as executed until a runner result is available.
+
+### Current validation note
+- Story curated-media deployment `cef325f99e55548596a4e452e549e0c4804b675d` reached SUCCESS before being superseded.
+- Guided Assistance deployment `22e252dedd7cc988c9da96f4e72384ef6ecf6e61` reached SUCCESS.
+- Latest mobile metric-strip head `71ea4b429e9cfaa6b1fcb3369b453d7cdb64cfef` is in Railway deployment validation at the time of this checkpoint.
