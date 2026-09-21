@@ -55,6 +55,17 @@
   --af-content-reading: 60ch;
   --af-content-editorial: 68ch;
 
+  /* Compatibility aliases while legacy layers are migrated */
+  --af-blue: var(--af-color-blue-600);
+  --af-blue-deep: var(--af-color-navy-800);
+  --af-ink: var(--af-color-navy-950);
+  --af-gold: var(--af-color-gold-500);
+  --af-gold-soft: var(--af-color-gold-soft);
+  --af-paper: var(--af-color-surface);
+  --af-cream: var(--af-color-canvas);
+  --af-border: var(--af-color-border);
+  --af-soft: var(--af-color-muted);
+
   /* Motion */
   --af-motion-fast: 160ms;
   --af-motion-medium: 250ms;

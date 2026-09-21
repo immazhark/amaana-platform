@@ -5,8 +5,11 @@
 @media (max-width: 420px) { .brand-official .brand-lockup { height: 3.45rem; } }
 
 :root {
-  --amaana-blue-bright:#4b78b7;--amaana-blue:#466faa;--amaana-blue-mid:#2f4c7a;--amaana-blue-deep:#1d3150;--amaana-ink:#122239;--amaana-gold-bright:#f0c928;--amaana-gold:#e0b318;--amaana-gold-deep:#b8890e;--amaana-cream:#faf6ec;--amaana-paper:#fffdf8;
-  --amaana-brand-gradient:linear-gradient(105deg,#4b78b7 0%,#466faa 27%,#e0b318 63%,#f0c928 82%,#b8890e 100%);--amaana-blue-gradient:linear-gradient(125deg,#122239 0%,#1d3150 38%,#466faa 100%);--amaana-gold-gradient:linear-gradient(110deg,#b8890e 0%,#e0b318 48%,#f0c928 100%);
+  --amaana-blue-bright:#4b78b7;
+  --amaana-gold-bright:#f0c928;
+  --amaana-brand-gradient:linear-gradient(105deg,var(--amaana-blue-bright) 0%,var(--amaana-blue) 27%,var(--amaana-gold) 63%,var(--amaana-gold-bright) 82%,var(--amaana-gold-deep) 100%);
+  --amaana-blue-gradient:linear-gradient(125deg,var(--amaana-blue-ink) 0%,var(--amaana-blue-deep) 38%,var(--amaana-blue) 100%);
+  --amaana-gold-gradient:linear-gradient(110deg,var(--amaana-gold-deep) 0%,var(--amaana-gold) 48%,var(--amaana-gold-bright) 100%);
 }
 .v2-home .v2-display{color:#fffdf8;background-image:linear-gradient(105deg,#fffdf8 2%,#fffdf8 28%,#f0d56b 55%,#e0b318 78%,#fff1ad 100%);background-size:180% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 18px 55px rgb(0 0 0/18%)}
 .v2-home .v2-section-title,.v2-home .v2-origin h2,.v2-home .v2-intent-heading h2,.v2-closing h2{color:var(--amaana-blue-deep)}

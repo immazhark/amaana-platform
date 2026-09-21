@@ -1,15 +1,5 @@
-/* Amaana Foundation — experience finish layer */
-:root{
-  --af-blue:#466faa;
-  --af-blue-deep:#1d3150;
-  --af-ink:#122239;
-  --af-gold:#e0b318;
-  --af-gold-soft:#f1cf52;
-  --af-paper:#fffdf8;
-  --af-cream:#faf6ec;
-  --af-border:#e6dcc3;
-  --af-soft:#5b6472;
-}
+/* Amaana Foundation — experience finish layer
+   Brand values are owned by tokens.css; this file owns finishing interactions only. */
 
 /* Global rhythm + optical alignment */
 main{overflow:clip}.container,.v3-shell{padding-inline:max(0px,env(safe-area-inset-left));padding-right:max(0px,env(safe-area-inset-right))}.v3-section-head>*{min-width:0}.v3-heading,.v3-title,.footer-lead h2{text-wrap:balance}.v3-lead,.v3-intro,.footer-intro p,.footer-note{text-wrap:pretty}.v3-section-head{align-items:start}.v3-section-head .v3-intro{padding-top:.45rem}.v3-label,.v3-kicker,.footer-kicker{line-height:1.35}.v3-btn,.button,.nav-donate{touch-action:manipulation}
@@ -42,7 +32,7 @@ main{overflow:clip}.container,.v3-shell{padding-inline:max(0px,env(safe-area-ins
 .v3-closing{position:relative;overflow:hidden}.v3-closing:before,.v3-closing:after{content:"";position:absolute;border-radius:50%;pointer-events:none}.v3-closing:before{width:28rem;aspect-ratio:1;left:-12rem;top:-10rem;border:1px solid rgb(255 255 255 / 8%);box-shadow:0 0 0 4rem rgb(255 255 255 / 2%)}.v3-closing:after{width:21rem;aspect-ratio:1;right:-8rem;bottom:-10rem;background:radial-gradient(circle,rgb(224 179 24 / 12%),transparent 65%)}.v3-closing .v3-shell{position:relative;z-index:1}
 
 /* Footer: official brand lockup and cleaner columns */
-.footer-brand-lockup{display:inline-flex;align-items:center;gap:.9rem;width:max-content;max-width:100%;color:#fffdf8}.footer-brand-mark{width:4.2rem;height:4.2rem;display:grid;place-items:center;border-radius:50%;background:rgb(255 253 248 / 94%);box-shadow:0 16px 40px rgb(0 0 0 / 18%)}.footer-brand-mark img{width:78%;height:auto;object-fit:contain}.footer-brand-copy{display:grid;gap:.18rem;line-height:1}.footer-brand-copy strong{font-size:1.1rem;letter-spacing:.16em;background:linear-gradient(105deg,#fffdf8 0%,#f1cf52 78%);-webkit-background-clip:text;background-clip:text;color:transparent}.footer-brand-copy small{font-size:.62rem;letter-spacing:.28em;color:rgb(255 253 248 / 62%)}.footer-intro>p{max-width:31rem}.footer-links{display:grid;gap:.2rem}.footer-links a{min-height:2.55rem;display:flex;align-items:center;width:max-content;max-width:100%}.footer-note{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(18rem,1.25fr);gap:1.5rem;align-items:start;padding-block:1.5rem 2rem}.footer-note span:last-child{text-align:right}.footer-note a{overflow-wrap:anywhere}
+.footer-brand-lockup{display:inline-flex;align-items:center;gap:.9rem;width:max-content;max-width:100%;color:#fffdf8}.footer-brand-mark{width:4.2rem;height:4.2rem;display:grid;place-items:center;border-radius:50%;background:rgb(255 253 248 / 94%);box-shadow:0 16px 40px rgb(0 0 0 / 18%)}.footer-brand-mark img{width:78%;height:auto;object-fit:contain}.footer-brand-copy{display:grid;gap:.18rem;line-height:1}.footer-brand-copy strong{font-size:1.1rem;letter-spacing:.16em;background:linear-gradient(105deg,#fffdf8 0%,#f1cf52 78%);-webkit-background-clip:text;background-clip:text;color:transparent}.footer-brand-copy small{font-size:.62rem;letter-spacing:.28em;color:rgb(255 253 248 / 62%)}.footer-intro>p{max-width:31rem}.footer-links{display:grid;gap:.2rem}.footer-links a{min-height:2.55rem;display:flex;align-items:center;width:max-content;max-width:100%}.footer-note{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(18rem,1.25fr);gap:1.5rem;align-items:start;padding-block:1.5rem 2rem}.footer-note span:last-child{text-align:right}.footer-note a{overflow-wrap:break-word}
 
 /* Better states and safer long content */
 :is(a,button,input,textarea,select){-webkit-tap-highlight-color:transparent}.v3-home a,.site-header a,.site-footer a{text-decoration-thickness:.08em}.v3-home img,.site-header img,.site-footer img{max-width:100%}.v3-home h1,.v3-home h2,.v3-home h3,.site-footer h2{overflow-wrap:normal;word-break:normal}.v3-home p,.site-footer p{orphans:2;widows:2}

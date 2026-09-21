@@ -13,7 +13,9 @@
   --amaana-paper: var(--af-color-surface);
   --amaana-sand: var(--af-color-surface-muted);
   --amaana-charcoal: #26303d;
+  --amaana-ink: var(--af-color-navy-950);
   --amaana-ink-soft: var(--af-color-muted);
+  --amaana-border: var(--af-color-border);
   --amaana-border-warm: var(--af-color-border);
 }
 .site-header {
