@@ -66,8 +66,9 @@ test('unknown public routes return a branded, navigable and noindex 404', async 
   expect(response?.status()).toBe(404);
   await expect(page.getByRole('heading', { name: "We Couldn't Find That Page" })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Return home' })).toHaveAttribute('href', '/');
-  await expect(page.getByRole('link', { name: /Explore our work/ })).toHaveAttribute('href', '/our-work');
-  await expect(page.getByRole('link', { name: /Current appeals/ })).toHaveAttribute('href', '/appeals');
+  const recoveryActions = page.locator('main#main');
+  await expect(recoveryActions.getByRole('link', { name: /Explore our work/ })).toHaveAttribute('href', '/our-work');
+  await expect(recoveryActions.getByRole('link', { name: /Current appeals/ })).toHaveAttribute('href', '/appeals');
 
   const robots = page.locator('meta[name="robots"]');
   await expect(robots).toHaveAttribute('content', /noindex/i);

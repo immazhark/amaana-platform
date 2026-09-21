@@ -20,7 +20,7 @@
 .progress>p strong{color:var(--v2-ink)}
 .progress ol{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.45rem;margin:0;padding:0;list-style:none}
 .progress button{width:100%;min-height:3rem;display:flex;align-items:center;gap:.45rem;padding:.55rem .65rem;border:1px solid rgb(18 34 57 / 10%);border-radius:.75rem;background:#fff;color:#65707c;font:inherit;font-size:.76rem;font-weight:750;text-align:left}
-.progress button span{color:#8f7450;font-size:.68rem}
+.progress button span{color:#6f5428;font-size:.68rem}
 .progress button[aria-current=step]{border-color:rgb(70 111 170 / 38%);background:#eef3fa;color:var(--v2-ink);box-shadow:0 0 0 2px rgb(70 111 170 / 8%)}
 .progress button:disabled{opacity:.48;cursor:not-allowed}
 .progress button:not(:disabled){cursor:pointer}
