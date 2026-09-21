@@ -1,5 +1,3 @@
-@import "./home-media-polish.css";
-
 /* Homepage-only documentary field media. Consolidated from former global polish layers. */
 .v3-field{position:relative;background:#fffdf8}
 .v3-field:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 14% 30%,rgb(70 111 170 / .08),transparent 24%),radial-gradient(circle at 84% 75%,rgb(224 179 24 / .09),transparent 22%);pointer-events:none}
