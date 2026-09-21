@@ -283,6 +283,21 @@ test.describe('private assistance journey', () => {
     await expect(page.getByLabel('Type of assistance')).toBeVisible();
   });
 
+  test('returning to an earlier step cannot bypass its validation when jumping forward again', async ({ page }) => {
+    await openAssistance(page);
+    await fillAssistanceForm(page);
+
+    await page.getByRole('button', { name: /01Contact/ }).click();
+    const city = page.getByLabel('City');
+    await city.fill('');
+
+    await page.getByRole('button', { name: /04Confirm/ }).click();
+
+    await expect(page.getByText('Step 1 of 4')).toBeVisible();
+    await expect(city).toBeFocused();
+    await expect(page.getByLabel('Type of assistance')).toBeHidden();
+  });
+
   test('server validation focuses the first rejected field and clears its inline error on edit', async ({ page }) => {
     await page.route('**/api/assistance', route => route.fulfill({
       status: 400,
