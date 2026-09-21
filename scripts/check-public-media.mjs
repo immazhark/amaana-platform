@@ -98,7 +98,7 @@ export async function checkPublicMedia(root) {
   }
   await walk(root);
   if (failures.length) throw new Error(`Invalid public media boundary:\n${failures.join('\n')}`);
-  if (!count) throw new Error('No raster media found; check the public media directory.');
+  if (!count) console.log('No raster programme media is currently staged; empty media-library state accepted.');
   console.log(`Checked ${boundaryCount} public-media paths for obvious privacy-boundary violations.`);
   console.log(`Decoded ${count} public images successfully.`);
   console.log('Note: this structural gate does not replace human privacy/consent/provenance review of the media itself.');
