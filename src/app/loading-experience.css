@@ -1,10 +1,10 @@
 .amaana-loading {
-  position: fixed;
-  inset: 0;
-  z-index: 9999;
+  position: relative;
+  z-index: 1;
   display: grid;
   place-items: center;
-  min-height: 100dvh;
+  width: 100%;
+  min-height: calc(100dvh - 5.2rem);
   padding: 2rem;
   background:
     radial-gradient(circle at 50% 42%, rgb(224 179 24 / 10%), transparent 22rem),
@@ -134,6 +134,10 @@
 @keyframes amaana-loader-shimmer {
   from { background-position: 0% 50%; }
   to { background-position: 100% 50%; }
+}
+
+@media (max-width: 760px) {
+  .amaana-loading { min-height: calc(100dvh - 4.6rem); }
 }
 
 @media (prefers-reduced-motion: reduce) {
