@@ -136,7 +136,7 @@ export default async function HomePage() {
             <p className="v3-intro">Some needs return every year. Others arrive without warning. Amaana’s work therefore combines recurring programmes with verified case-led assistance—from Eid Gift Kits and Qurbani distribution to Taleem, winter relief, emergency response and urgent medical or financial support.</p>
           </div>
 
-          <ScrollCarousel label="Amaana programme areas" mode="cards" className="v3-work-carousel">
+          <ScrollCarousel label="Amaana programme areas" mode="focus" className="v3-work-carousel" autoAdvanceMs={6500}>
             {programmeCategories.map((category, index) => {
               const media = programmeMedia.get(category.slug);
               return (
