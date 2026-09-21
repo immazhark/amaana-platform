@@ -64,6 +64,7 @@ export default async function HomePage() {
     <div className="v3-home">
       {bannerReady ? (
         <section className="v3-home-banner" aria-labelledby="amaana-home-title">
+          <h1 className="sr-only" id="amaana-home-title">Amaana Foundation — Trust, Turned Into Action.</h1>
           <ScrollCarousel label="Featured Amaana programmes" mode="hero" className="v3-home-banner-carousel">
             {heroSlides.map(({ drive, media }, index) => (
               <article className="v3-home-banner-slide" key={drive.id}>
@@ -71,8 +72,8 @@ export default async function HomePage() {
                 <div className="v3-home-banner-shade" aria-hidden="true" />
                 <div className="v3-shell v3-home-banner-content">
                   <p className="v3-home-banner-kicker">Amaana Foundation · {drive.causeTitle}</p>
-                  {index === 0 ? <h1 id="amaana-home-title">Trust, Turned Into Action.</h1> : <h2>{drive.title}</h2>}
-                  {index === 0 ? <h2>{drive.title}</h2> : null}
+                  <span className="v3-home-banner-brandline">Trust, Turned Into Action.</span>
+                  <h2>{drive.title}</h2>
                   <p>{drive.summary}</p>
                   {drive.primaryMetric ? <div className="v3-home-banner-metric"><strong>{drive.primaryMetric}</strong><span>{drive.primaryMetricLabel ?? "Documented impact"}</span></div> : null}
                   <div className="v3-home-banner-actions">
