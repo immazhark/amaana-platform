@@ -32,10 +32,11 @@ export function ScrollCarousel({
   autoAdvanceMs = 0,
 }: ScrollCarouselProps) {
   const slides = Children.toArray(children);
+  const slideCount = slideCount;
   const viewportRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<Array<HTMLDivElement | null>>([]);
   const frameRef = useRef<number | null>(null);
-  const [activeIndex, setActiveIndex] = useState(() => Math.min(Math.max(startAt, 0), Math.max(slides.length - 1, 0)));
+  const [activeIndex, setActiveIndex] = useState(() => Math.min(Math.max(startAt, 0), Math.max(slideCount - 1, 0)));
   const id = useId().replaceAll(":", "");
   const viewportId = `carousel-${id}`;
   const prefersReducedMotion = useRef(false);
@@ -51,7 +52,7 @@ export function ScrollCarousel({
 
   const updateActiveFromScroll = useCallback(() => {
     const viewport = viewportRef.current;
-    if (!viewport || slides.length < 2) return;
+    if (!viewport || slideCount < 2) return;
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
     frameRef.current = requestAnimationFrame(() => {
       let closestIndex = 0;
@@ -67,15 +68,15 @@ export function ScrollCarousel({
       });
       setActiveIndex(closestIndex);
     });
-  }, [mode, slides.length]);
+  }, [mode, slideCount]);
 
   useEffect(() => () => {
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
   }, []);
 
   const goTo = useCallback((index: number) => {
-    if (!slides.length) return;
-    const bounded = Math.min(Math.max(index, 0), slides.length - 1);
+    if (!slideCount) return;
+    const bounded = Math.min(Math.max(index, 0), slideCount - 1);
     const viewport = viewportRef.current;
     const slide = slideRefs.current[bounded];
     if (!viewport || !slide) return;
@@ -84,13 +85,13 @@ export function ScrollCarousel({
       behavior: prefersReducedMotion.current ? "auto" : "smooth",
     });
     setActiveIndex(bounded);
-  }, [mode, slides.length]);
+  }, [mode, slideCount]);
 
   useEffect(() => {
-    if (!autoAdvanceMs || slides.length < 2 || paused || prefersReducedMotion.current) return;
+    if (!autoAdvanceMs || slideCount < 2 || paused || prefersReducedMotion.current) return;
     const timer = window.setInterval(() => {
       setActiveIndex(current => {
-        const next = (current + 1) % slides.length;
+        const next = (current + 1) % slideCount;
         const viewport = viewportRef.current;
         const slide = slideRefs.current[next];
         if (viewport && slide) viewport.scrollTo({ left: mode === "focus" ? slide.offsetLeft - (viewport.clientWidth - slide.clientWidth) / 2 : slide.offsetLeft, behavior: "smooth" });
@@ -98,7 +99,7 @@ export function ScrollCarousel({
       });
     }, autoAdvanceMs);
     return () => window.clearInterval(timer);
-  }, [autoAdvanceMs, mode, paused, slides.length]);
+  }, [autoAdvanceMs, mode, paused, slideCount]);
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.currentTarget !== event.target) return;
@@ -113,11 +114,11 @@ export function ScrollCarousel({
       goTo(0);
     } else if (event.key === "End") {
       event.preventDefault();
-      goTo(slides.length - 1);
+      goTo(slideCount - 1);
     }
   };
 
-  if (!slides.length) return null;
+  if (!slideCount) return null;
 
   const rootClasses = [
     styles.root,
@@ -136,10 +137,10 @@ export function ScrollCarousel({
       onFocusCapture={() => autoAdvanceMs && setPaused(true)}
       onBlurCapture={() => autoAdvanceMs && setPaused(false)}
     >
-      {slides.length > 1 ? (
+      {slideCount > 1 ? (
         <div className={styles.toolbar}>
           <span className={styles.status} aria-live="polite" aria-atomic="true">
-            <span className={styles.srOnly}>Slide </span>{activeIndex + 1} / {slides.length}
+            <span className={styles.srOnly}>Slide </span>{activeIndex + 1} / {slideCount}
           </span>
           <div className={styles.controls}>
             {autoAdvanceMs ? <button type="button" aria-label={paused ? "Resume automatic slides" : "Pause automatic slides"} onClick={() => setPaused(value => !value)}><span aria-hidden="true">{paused ? "▶" : "Ⅱ"}</span></button> : null}
@@ -157,7 +158,7 @@ export function ScrollCarousel({
               aria-controls={viewportId}
               aria-label="Next slide"
               onClick={() => goTo(activeIndex + 1)}
-              disabled={activeIndex === slides.length - 1}
+              disabled={activeIndex === slideCount - 1}
             >
               <span aria-hidden="true">→</span>
             </button>
@@ -169,10 +170,10 @@ export function ScrollCarousel({
         ref={viewportRef}
         className={styles.viewport}
         id={viewportId}
-        tabIndex={slides.length > 1 ? 0 : -1}
+        tabIndex={slideCount > 1 ? 0 : -1}
         onScroll={updateActiveFromScroll}
         onKeyDown={onKeyDown}
-        aria-label={slides.length > 1 ? `${label}. Use left and right arrow keys to move between slides.` : label}
+        aria-label={slideCount > 1 ? `${label}. Use left and right arrow keys to move between slides.` : label}
       >
         <div className={styles.track}>
           {slides.map((slide, index) => (
@@ -183,7 +184,7 @@ export function ScrollCarousel({
               ref={node => { slideRefs.current[index] = node; }}
               role="group"
               aria-roledescription="slide"
-              aria-label={`${index + 1} of ${slides.length}`}
+              aria-label={`${index + 1} of ${slideCount}`}
               aria-current={mode === "focus" && index === activeIndex ? "true" : undefined}
               aria-hidden={mode === "hero" && index !== activeIndex ? true : undefined}
               inert={mode === "hero" && index !== activeIndex ? true : undefined}
