@@ -110,7 +110,7 @@ jobs:
           # browser-affecting while avoiding a second build + Chromium install for
           # protected-admin-only rendering changes.
           BROWSER_CHANGED=$(printf '%s\n' "$CHANGED" | grep -Ev '^src/app/admin/\(protected\)/.*\.tsx$' || true)
-          if printf '%s\n' "$BROWSER_CHANGED" | grep -Eq '^(src/app/.*\.(tsx|css)|src/components/|src/.*\.css$|public/|e2e/|playwright\.config\.mjs$|next\.config\.ts$|\.github/workflows/ci\.yml$)'; then
+          if printf '%s\n' "$BROWSER_CHANGED" | grep -Eq '^(src/app/.*\.(tsx|css)|src/components/|src/.*\.css$|public/|prisma/|Dockerfile$|e2e/|playwright\.config\.mjs$|next\.config\.ts$|\.github/workflows/ci\.yml$)'; then
             echo "needed=true" >> "$GITHUB_OUTPUT"
           else
             echo "needed=false" >> "$GITHUB_OUTPUT"
