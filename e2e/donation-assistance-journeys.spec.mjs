@@ -288,8 +288,8 @@ test.describe('private assistance journey', () => {
     await openAssistance(page);
 
     const progress = page.getByRole('navigation', { name: 'Assistance request progress' });
-    const contactButton = progress.getByRole('button', { name: /01Contact/ });
-    const needButton = progress.getByRole('button', { name: /02Need/ });
+    const contactButton = progress.getByRole('button', { name: /Contact/ });
+    const needButton = progress.getByRole('button', { name: /Need/ });
 
     await expect(contactButton).toHaveAttribute('aria-controls', 'assistance-step-1');
     await expect(needButton).toHaveAttribute('aria-controls', 'assistance-step-2');
@@ -313,11 +313,11 @@ test.describe('private assistance journey', () => {
     await openAssistance(page);
     await fillAssistanceForm(page);
 
-    await page.getByRole('button', { name: /01Contact/ }).click();
+    await page.getByRole('button', { name: /Contact/ }).click();
     const city = page.getByLabel('City');
     await city.fill('');
 
-    await page.getByRole('button', { name: /04Confirm/ }).click();
+    await page.getByRole('button', { name: /Confirm/ }).click();
 
     await expect(page.getByText('Step 1 of 4')).toBeVisible();
     await expect(city).toBeFocused();
@@ -336,8 +336,10 @@ test.describe('private assistance journey', () => {
     await openAssistance(page);
     await fillAssistanceForm(page);
 
+    await page.getByRole('button', { name: /Contact/ }).click();
     const phone = page.getByLabel('Phone number');
     await phone.fill('123');
+    await page.getByRole('button', { name: /Confirm/ }).click();
     await page.getByRole('button', { name: 'Submit private request →' }).click();
 
     await expect(page.locator('.form-error[role="alert"]')).toContainText('Please check the highlighted information');

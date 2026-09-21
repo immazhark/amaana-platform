@@ -71,7 +71,9 @@ test('unknown public routes return a branded, navigable and noindex 404', async 
   await expect(recoveryActions.getByRole('link', { name: /Current appeals/ })).toHaveAttribute('href', '/appeals');
 
   const robots = page.locator('meta[name="robots"]');
-  await expect(robots).toHaveAttribute('content', /noindex/i);
+  expect(await robots.count()).toBeGreaterThan(0);
+  const robotValues = await robots.evaluateAll(nodes => nodes.map(node => node.getAttribute('content') ?? ''));
+  expect(robotValues.every(value => /noindex/i.test(value))).toBe(true);
 
   const dimensions = await page.evaluate(() => ({
     clientWidth: document.documentElement.clientWidth,

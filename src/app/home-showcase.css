@@ -14,3 +14,6 @@
 .v3-work-row:hover{background:rgb(70 111 170 / 5%)}
 @media(max-width:900px){.v3-proof-grid{gap:.55rem}.v3-proof-item{border-right:1px solid rgb(18 34 57 / 8%)!important;border-bottom:1px solid rgb(18 34 57 / 8%)!important}}
 @media(max-width:600px){.v3-proof-item{padding:1.15rem}.v3-proof-item strong{font-size:clamp(1.85rem,9vw,2.7rem)}}
+
+/* Browser accessibility close-out: small gold labels on light paper use the canonical high-contrast ink. */
+.v3-trust-grid>div:last-child>.v3-label,.v3-appeals .v3-label{color:var(--af-color-gold-ink)}
