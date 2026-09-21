@@ -13,3 +13,9 @@
 :global(.v2-impact-witness-carousel){margin-top:.25rem}
 :global(.v2-impact-witness-carousel .v2-impact-witness-item){display:block!important;width:100%!important;height:21rem!important;min-height:21rem!important;grid-column:auto!important;margin-top:0!important}
 @media(max-width:700px){:global(.v2-impact-witness-carousel .v2-impact-witness-item){height:18rem!important;min-height:18rem!important}}
+
+@media(max-width:560px){
+  :global(.v2-impact-marquee-track){display:flex!important;grid-template-columns:none!important;gap:.65rem!important;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x mandatory;scrollbar-width:none;padding-inline:1rem!important}
+  :global(.v2-impact-marquee-track::-webkit-scrollbar){display:none}
+  :global(.v2-impact-marquee-item){flex:0 0 min(82vw,20rem)!important;width:auto!important;min-height:9rem!important;scroll-snap-align:start}
+}

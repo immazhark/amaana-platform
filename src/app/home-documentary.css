@@ -104,3 +104,11 @@
 .v3-work-card:hover .v3-work-card-body i,.v3-work-card:focus-visible .v3-work-card-body i{transform:translate(.18rem,-.18rem)}
 @media(max-width:700px){.v3-work-card{min-height:28rem}.v3-work-card-media{height:12rem}}
 @media(prefers-reduced-motion:reduce){.v3-work-card,.v3-work-card-media img,.v3-work-card-body i{transition:none}.v3-work-card:hover,.v3-work-card:focus-visible,.v3-work-card:hover .v3-work-card-media img,.v3-work-card:focus-visible .v3-work-card-media img,.v3-work-card:hover .v3-work-card-body i,.v3-work-card:focus-visible .v3-work-card-body i{transform:none}}
+
+/* Mobile metric strip: keep proof scannable without four stacked blocks. */
+@media(max-width:520px){
+  .v3-proof{overflow:hidden}
+  .v3-proof-grid{display:flex!important;gap:.65rem!important;overflow-x:auto;overscroll-behavior-inline:contain;scroll-snap-type:x mandatory;scrollbar-width:none;padding-block:.1rem .5rem}
+  .v3-proof-grid::-webkit-scrollbar{display:none}
+  .v3-proof-item{flex:0 0 min(82vw,20rem);min-height:8rem!important;scroll-snap-align:start;border:1px solid rgb(18 34 57 / 8%)!important;padding:1.2rem!important}
+}
