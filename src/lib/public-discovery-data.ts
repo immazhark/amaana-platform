@@ -10,6 +10,7 @@ const publicMediaSelect = {
   altText: true,
   caption: true,
   sourceYear: true,
+  sortOrder: true,
 } as const;
 
 export async function getStoriesDiscoveryData() {
