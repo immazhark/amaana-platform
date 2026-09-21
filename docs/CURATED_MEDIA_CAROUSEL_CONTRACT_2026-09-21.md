@@ -25,13 +25,14 @@ An identity image may not be published without explicit **Hero use approved** co
 
 ## 3. Surface mapping
 
-### Homepage full-width banner
-- Uses only identity images from featured published initiatives.
-- Activates only when at least **3** qualifying identity images are available.
-- Maximum visible banner set: **5** slides.
-- Below three images, keep the static PageHero fallback rather than showing an under-populated carousel.
-- Each slide uses the real programme title/summary/metric and links to that programme.
-- Manual controls, touch/swipe and keyboard only. **No autoplay.**
+### Homepage full-width flagship carousel
+- This is the permanent homepage masthead and must render as a full-bleed, cinematic editorial carousel rather than falling back to a static PageHero.
+- Slide 1 is always **The Story of Amaana**: a concise origin-to-present glimpse linking to `/about`. It must distinguish the grassroots Ramadan 2020 beginning from later formal organisation/registration.
+- Subsequent slides highlight major Amaana initiatives using their approved identity images, documented summary/metric and direct programme link.
+- Curated initiative photography progressively enriches the carousel; absence of enough reviewed photos must not remove the carousel or the Amaana-story slide.
+- Keep the visible set deliberately curated rather than exhaustive. The homepage should feel like a flagship editorial showcase, while `/our-work` remains the complete programme portfolio.
+- Controls must support touch/swipe, keyboard and explicit previous/next navigation. Motion must respect reduced-motion preferences.
+- Initiative slides may not use unreviewed/random legacy images. The Story of Amaana slide may use a designed Amaana visual treatment until a specifically approved story/heritage photograph is available.
 
 ### Homepage programme strip
 - Uses one identity image per programme area when available.
