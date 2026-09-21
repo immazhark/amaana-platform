@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useEffect } from "react";
 
 export default function Loading() {
@@ -13,7 +14,7 @@ export default function Loading() {
     <div className="amaana-loading-route-shell">
       <div className="amaana-loading-overlay" role="status" aria-live="polite" aria-label="Loading page">
         <div className="amaana-loading-indicator">
-          <img className="amaana-loading-logo" src="/brand/amaana-mark.svg" alt="" aria-hidden="true" />
+          <Image className="amaana-loading-logo" src="/brand/amaana-mark.svg" alt="" aria-hidden="true" width={96} height={96} priority />
           <span className="amaana-loading-dots" aria-hidden="true"><i /><i /><i /></span>
           <span className="sr-only">Loading page</span>
         </div>
