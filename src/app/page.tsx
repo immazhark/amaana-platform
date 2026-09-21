@@ -6,7 +6,7 @@ import Link from "next/link";
 import { AppealCard } from "@/components/appeal-card";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getHomepageAppeals } from "@/lib/public-content";
-import { eidGrowth, foundingStory, homepageImpact } from "@/content/amaana";
+import { eidGrowth, homepageImpact } from "@/content/amaana";
 import { getHomepageDiscoveryData } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
 import { ScrollCarousel } from "@/components/scroll-carousel";
@@ -184,18 +184,6 @@ export default async function HomePage() {
 
           <div className="v3-actions">
             <Link className="v3-btn" href="/our-work/eid-gift-kits">Explore the seven-year story</Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="v3-section v3-origin" aria-labelledby="origin-title">
-        <div className="v3-shell v3-origin-grid">
-          <div className="v3-origin-mark" aria-hidden="true">85</div>
-          <div className="v3-origin-copy">
-            <p className="v3-label">{foundingStory.eyebrow}</p>
-            <h2 id="origin-title">{foundingStory.headline}</h2>
-            <p>{foundingStory.body}</p>
-            <Link className="v3-btn" href="/about">Read Amaana&apos;s story</Link>
           </div>
         </div>
       </section>
