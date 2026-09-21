@@ -95,6 +95,74 @@ export const getHomepageHeroMedia = cache(async () => {
 });
 
 /**
+ * Lean discovery projection for the dynamic homepage.
+ *
+ * Home only needs featured/specified programme records and a few identity-image
+ * candidates per umbrella area. This avoids serializing the full annual archive
+ * on every homepage request.
+ */
+export const getHomepageDiscoveryData = cache(async () => {
+  const fieldSlugs = ["qurbani-meat-distribution-2026", "dates-distribution-2026"];
+
+  const [initiatives, causes] = await Promise.all([
+    prisma.initiative.findMany({
+      where: {
+        status: "PUBLISHED",
+        OR: [{ isFeatured: true }, { slug: { in: fieldSlugs } }],
+      },
+      orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
+      take: 7,
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        summary: true,
+        year: true,
+        endYear: true,
+        isFeatured: true,
+        primaryMetric: true,
+        primaryMetricLabel: true,
+        cause: { select: { title: true } },
+        mediaAssets: {
+          where: { kind: "IMAGE", isPublic: true, privacyApprovedAt: { not: null }, publicUrl: { not: null } },
+          orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
+          take: 3,
+          select: {
+            id: true, kind: true, title: true, publicUrl: true, externalUrl: true,
+            altText: true, caption: true, sourceYear: true, sortOrder: true,
+          },
+        },
+      },
+    }),
+    prisma.cause.findMany({
+      where: { status: "PUBLISHED" },
+      orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
+      select: {
+        slug: true,
+        initiatives: {
+          where: { status: "PUBLISHED" },
+          orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
+          take: 4,
+          select: {
+            mediaAssets: {
+              where: { kind: "IMAGE", isPublic: true, privacyApprovedAt: { not: null }, publicUrl: { not: null } },
+              orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
+              take: 3,
+              select: {
+                id: true, kind: true, title: true, publicUrl: true, externalUrl: true,
+                altText: true, caption: true, sourceYear: true, sortOrder: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+  ]);
+
+  return { initiatives, causes };
+});
+
+/**
  * Lean discovery projection for /our-work.
  *
  * The index only needs public cause copy, initiative summaries/metrics and one

@@ -7,6 +7,7 @@
 .v2-media-item,
 .v2-media-link {
   grid-column: span 6;
+  min-width: 0;
   margin: 0;
   overflow: hidden;
   border: 1px solid rgb(18 34 57 / 10%);
@@ -18,6 +19,7 @@
 .v2-media-item video {
   display: block;
   width: 100%;
+  height: auto;
   aspect-ratio: 4 / 3;
   object-fit: cover;
   background: #122239;

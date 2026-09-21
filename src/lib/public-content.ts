@@ -155,23 +155,31 @@ export async function getFeaturedFaithContent() {
  * this projection narrow lowers database work, serialization and server render
  * cost while preserving the publication/privacy gates used elsewhere.
  */
+export async function getHomepageAppeals() {
+  const appeals = await prisma.appeal.findMany({
+    where: { status: "PUBLISHED" },
+    orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
+    select: {
+      slug: true,
+      title: true,
+      summary: true,
+      category: true,
+      beneficiaryLocation: true,
+      status: true,
+      goalAmount: true,
+      amountRaised: true,
+      closesAt: true,
+    },
+  });
+
+  return appeals
+    .filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && isAppealOpenForDonations(appeal))
+    .slice(0, 3);
+}
+
 export async function getHomepagePublicContent() {
   const [appeals, initiatives, featuredFaith, stories] = await Promise.all([
-    prisma.appeal.findMany({
-      where: { status: "PUBLISHED" },
-      orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
-      select: {
-        slug: true,
-        title: true,
-        summary: true,
-        category: true,
-        beneficiaryLocation: true,
-        status: true,
-        goalAmount: true,
-        amountRaised: true,
-        closesAt: true,
-      },
-    }),
+    getHomepageAppeals(),
     prisma.initiative.findMany({
       where: publishedWhere,
       orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
@@ -213,7 +221,7 @@ export async function getHomepagePublicContent() {
   ]);
 
   return {
-    appeals: appeals.filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && isAppealOpenForDonations(appeal)).slice(0, 3),
+    appeals,
     initiatives,
     featuredFaith,
     stories,

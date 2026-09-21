@@ -6,9 +6,9 @@ import Link from "next/link";
 import { AppealCard } from "@/components/appeal-card";
 import { PageHero } from "@/components/page-hero";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
-import { getHomepagePublicContent } from "@/lib/public-content";
+import { getHomepageAppeals } from "@/lib/public-content";
 import { eidGrowth, foundingStory, homepageImpact } from "@/content/amaana";
-import { getOurWorkIndexData } from "@/lib/public-page-data";
+import { getHomepageDiscoveryData } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
 import { ScrollCarousel } from "@/components/scroll-carousel";
 import { programmeCategories } from '@/lib/master-copy';
@@ -35,8 +35,8 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [{ appeals }, causes] = await Promise.all([getHomepagePublicContent(), getOurWorkIndexData()]);
-  const featured = causes.flatMap(cause => cause.initiatives.map(item => ({ ...item, causeTitle: cause.title })));
+  const [appeals, discovery] = await Promise.all([getHomepageAppeals(), getHomepageDiscoveryData()]);
+  const featured = discovery.initiatives.map(item => ({ ...item, causeTitle: item.cause.title }));
   const fieldDrives = featured.filter(item => ["qurbani-meat-distribution-2026", "dates-distribution-2026"].includes(item.slug));
   const heroSlides = featured
     .filter(item => item.isFeatured)
@@ -44,7 +44,7 @@ export default async function HomePage() {
     .filter((item): item is typeof item & { media: NonNullable<typeof item.media> } => Boolean(item.media))
     .slice(0, 5);
   const programmeMedia = new Map(
-    causes.map(cause => [
+    discovery.causes.map(cause => [
       cause.slug,
       cause.initiatives.map(initiative => selectIdentityPublicImage(initiative.mediaAssets)).find(Boolean),
     ] as const),
