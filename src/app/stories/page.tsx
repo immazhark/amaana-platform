@@ -13,8 +13,8 @@ export const metadata: Metadata = {
   title: "Stories of Amanah",
   description: "Dignified, privacy-reviewed accounts of Amaana Foundation's completed assistance and community work.",
   alternates: { canonical: "/stories" },
-  openGraph: { type: "website", url: "/stories", title: "Stories of Amanah | Amaana Foundation", description: "Dignified, privacy-reviewed accounts from Amaana Foundation's community work and completed assistance." },
-  twitter: { card: "summary_large_image", title: "Stories of Amanah | Amaana Foundation", description: "Privacy-reviewed field accounts from Amaana Foundation's completed assistance and community work." },
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }], type: "website", url: "/stories", title: "Stories of Amanah | Amaana Foundation", description: "Dignified, privacy-reviewed accounts from Amaana Foundation's community work and completed assistance." },
+  twitter: { images: ["/twitter-image"], card: "summary_large_image", title: "Stories of Amanah | Amaana Foundation", description: "Privacy-reviewed field accounts from Amaana Foundation's completed assistance and community work." },
 };
 
 export default async function StoriesPage() {

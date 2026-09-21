@@ -5,7 +5,7 @@ export const metadata = {
   title: verificationCopy.title,
   description: verificationCopy.intro,
   alternates: { canonical: '/how-we-verify' },
-  openGraph: { type: 'website', url: '/how-we-verify', title: `${verificationCopy.title} | Amaana Foundation`, description: verificationCopy.intro },
-  twitter: { card: 'summary', title: `${verificationCopy.title} | Amaana Foundation`, description: verificationCopy.intro },
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }], type: 'website', url: '/how-we-verify', title: `${verificationCopy.title} | Amaana Foundation`, description: verificationCopy.intro },
+  twitter: { images: ["/twitter-image"], card: 'summary', title: `${verificationCopy.title} | Amaana Foundation`, description: verificationCopy.intro },
 };
 export default function Page(){return <CanonicalArticle eyebrow="How Amaana Works" heroVariant="information" heroVisualTitle="Verify Before We Mobilise" heroVisualNote="Need, evidence, privacy, review and known outcomes remain connected throughout the process." bodyClassName="canonical-body--timeline" {...verificationCopy}></CanonicalArticle>;}

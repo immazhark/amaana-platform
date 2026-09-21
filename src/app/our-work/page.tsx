@@ -15,8 +15,8 @@ export const metadata: Metadata = {
   title: "Our Work",
   description: "Explore Amaana Foundation initiatives across medical and financial relief, emergency response, Ramadan and Eid, Taleem education support, and seasonal relief.",
   alternates: { canonical: "/our-work" },
-  openGraph: { type: "website", url: "/our-work", title: "Our Work | Amaana Foundation", description: "Explore documented Amaana Foundation initiatives and the evidence, stories and approved media connected to them." },
-  twitter: { card: "summary", title: "Our Work | Amaana Foundation", description: "Explore documented Amaana Foundation initiatives and the evidence, stories and approved media connected to them." },
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }], type: "website", url: "/our-work", title: "Our Work | Amaana Foundation", description: "Explore documented Amaana Foundation initiatives and the evidence, stories and approved media connected to them." },
+  twitter: { images: ["/twitter-image"], card: "summary", title: "Our Work | Amaana Foundation", description: "Explore documented Amaana Foundation initiatives and the evidence, stories and approved media connected to them." },
 };
 
 export default async function OurWorkPage({ searchParams }: { searchParams: Promise<WorkSearch> }) {

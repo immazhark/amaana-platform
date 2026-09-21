@@ -16,8 +16,8 @@ export const metadata: Metadata = {
   title: "Verified Appeals",
   description: "Explore current reviewed support appeals from Amaana Foundation in Hyderabad, with public-safe context and clear donation boundaries.",
   alternates: { canonical: "/appeals" },
-  openGraph: { type: "website", url: "/appeals", title: "Verified Appeals | Amaana Foundation", description: "Explore current reviewed support appeals from Amaana Foundation in Hyderabad, with public-safe context and clear donation boundaries." },
-  twitter: { card: "summary", title: "Verified Appeals | Amaana Foundation", description: "Explore current reviewed support appeals from Amaana Foundation in Hyderabad." },
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }], type: "website", url: "/appeals", title: "Verified Appeals | Amaana Foundation", description: "Explore current reviewed support appeals from Amaana Foundation in Hyderabad, with public-safe context and clear donation boundaries." },
+  twitter: { images: ["/twitter-image"], card: "summary", title: "Verified Appeals | Amaana Foundation", description: "Explore current reviewed support appeals from Amaana Foundation in Hyderabad." },
 };
 
 export const dynamic = "force-dynamic";

@@ -15,13 +15,13 @@ export const metadata: Metadata = {
   title: "Our Impact",
   description: "Explore Amaana Foundation's documented initiative outcomes, stories and evidence.",
   alternates: { canonical: "/impact" },
-  openGraph: {
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }],
     type: "website",
     url: "/impact",
     title: "Our Impact | Amaana Foundation",
     description: "Explore Amaana Foundation's documented initiative outcomes, stories and evidence.",
   },
-  twitter: {
+  twitter: { images: ["/twitter-image"],
     card: "summary_large_image",
     title: "Our Impact | Amaana Foundation",
     description: "Documented outcomes, initiative-level evidence and privacy-safe field records from Amaana Foundation.",

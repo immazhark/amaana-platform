@@ -11,13 +11,13 @@ export const metadata: Metadata = {
   title: "Faith & Reflections",
   description: "Reviewed Islamic articles, reminders and videos that connect faith, compassion and service.",
   alternates: { canonical: "/faith-and-reflections" },
-  openGraph: {
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }],
     type: "website",
     url: "/faith-and-reflections",
     title: "Faith & Reflections | Amaana Foundation",
     description: "Reviewed Islamic articles, reminders and videos connecting faith, compassion and service.",
   },
-  twitter: {
+  twitter: { images: ["/twitter-image"],
     card: "summary_large_image",
     title: "Faith & Reflections | Amaana Foundation",
     description: "Reviewed Islamic reflections connecting compassion, generosity, service and Amaana's work.",

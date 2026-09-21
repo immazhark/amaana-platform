@@ -8,13 +8,13 @@ export const metadata = {
   title: aboutCopy.title,
   description: aboutCopy.intro,
   alternates: { canonical: "/about" },
-  openGraph: {
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }],
     type: "website",
     url: "/about",
     title: `${aboutCopy.title} | Amaana Foundation`,
     description: aboutCopy.intro,
   },
-  twitter: {
+  twitter: { images: ["/twitter-image"],
     card: "summary",
     title: `${aboutCopy.title} | Amaana Foundation`,
     description: aboutCopy.intro,
