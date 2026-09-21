@@ -4,6 +4,9 @@ import { expect, test } from '@playwright/test';
 const representativeRoutes = [
   { path: '/', family: 'Home' },
   { path: '/about', family: 'Level 1' },
+  { path: '/our-work', family: 'Programme discovery' },
+  { path: '/impact', family: 'Impact' },
+  { path: '/stories', family: 'Stories' },
   { path: '/get-involved/sponsor-education', family: 'Level 2' },
   { path: '/governance', family: 'Trust & Policies' },
   { path: '/donate', family: 'Purpose · action' },
