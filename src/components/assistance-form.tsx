@@ -44,6 +44,11 @@ export function AssistanceForm() {
     focusStep(target);
   }
 
+  function navigateToStep(target: AssistanceStep) {
+    if (target > step && !validateStep(step)) return;
+    goToStep(target);
+  }
+
   function validateStep(current: AssistanceStep) {
     const fieldset = formRef.current?.querySelector<HTMLElement>(`[data-assistance-step="${current}"]`);
     if (!fieldset) return false;
@@ -63,7 +68,30 @@ export function AssistanceForm() {
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = event.currentTarget;
-    setError(""); setFieldErrors({}); setSubmitting(true);
+    setError("");
+    setFieldErrors({});
+
+    const invalidControl = assistanceFieldOrder
+      .map(field => ({ field, control: form.elements.namedItem(field) }))
+      .find(({ control }) => control instanceof HTMLInputElement || control instanceof HTMLSelectElement || control instanceof HTMLTextAreaElement
+        ? !control.checkValidity()
+        : false);
+
+    if (invalidControl) {
+      const targetStep = fieldStep[invalidControl.field];
+      setStep(targetStep);
+      setMaxVisitedStep(current => Math.max(current, targetStep) as AssistanceStep);
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        const control = form.elements.namedItem(invalidControl.field);
+        if (control instanceof HTMLInputElement || control instanceof HTMLSelectElement || control instanceof HTMLTextAreaElement) {
+          control.reportValidity();
+          control.focus();
+        }
+      }));
+      return;
+    }
+
+    setSubmitting(true);
     try {
       const response = await fetch("/api/assistance", { method: "POST", body: new FormData(form) });
       const result = await response.json() as AssistanceResponse;
@@ -98,11 +126,11 @@ export function AssistanceForm() {
 
   const nameError = firstFieldError("applicantName"); const phoneError = firstFieldError("phone"); const emailError = firstFieldError("email"); const cityError = firstFieldError("city"); const categoryError = firstFieldError("category"); const descriptionError = firstFieldError("description"); const consentError = firstFieldError("consent");
 
-  return <form ref={formRef} className={`v2-premium-form v2-assistance-form ${styles.form}`} onSubmit={submit} encType="multipart/form-data" aria-busy={submitting} aria-labelledby="assistance-form-heading" aria-describedby="assistance-form-description">
+  return <form ref={formRef} className={`v2-premium-form v2-assistance-form ${styles.form}`} onSubmit={submit} encType="multipart/form-data" noValidate aria-busy={submitting} aria-labelledby="assistance-form-heading" aria-describedby="assistance-form-description">
     <div className="v2-form-heading"><span>Private submission</span><h2 id="assistance-form-heading">Tell us about the request.</h2><p id="assistance-form-description">Fields marked as required help the team identify and review the request. Optional information can be left out.</p></div>
     <nav className={styles.progress} aria-label="Assistance request progress">
       <p><strong>Step {step} of 4</strong><span>{stepLabels[step - 1]}</span></p>
-      <ol>{stepLabels.map((label, index) => { const itemStep = (index + 1) as AssistanceStep; return <li key={label}><button type="button" onClick={() => goToStep(itemStep)} disabled={itemStep > maxVisitedStep || submitting} aria-current={itemStep === step ? "step" : undefined}><span>{String(itemStep).padStart(2, "0")}</span>{label}</button></li>; })}</ol>
+      <ol>{stepLabels.map((label, index) => { const itemStep = (index + 1) as AssistanceStep; return <li key={label}><button type="button" onClick={() => navigateToStep(itemStep)} disabled={itemStep > maxVisitedStep || submitting} aria-current={itemStep === step ? "step" : undefined}><span>{String(itemStep).padStart(2, "0")}</span>{label}</button></li>; })}</ol>
     </nav>
     {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}</div>}
     <fieldset data-assistance-step="1" tabIndex={-1} hidden={step !== 1}><legend><span>01</span> Contact</legend><div className="form-grid">
