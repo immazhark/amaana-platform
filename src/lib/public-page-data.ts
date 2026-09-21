@@ -142,6 +142,7 @@ export const getOurWorkIndexData = cache(async () => {
               altText: true,
               caption: true,
               sourceYear: true,
+              sortOrder: true,
             },
           },
         },

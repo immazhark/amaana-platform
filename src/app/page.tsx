@@ -10,9 +10,10 @@ import { getHomepagePublicContent } from "@/lib/public-content";
 import { eidGrowth, foundingStory, homepageImpact } from "@/content/amaana";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
+import { ScrollCarousel } from "@/components/scroll-carousel";
 import { programmeCategories } from '@/lib/master-copy';
 import { programmeCategoryPath } from '@/lib/programme-category-routing';
-import { isDocumentaryPublicImage } from '@/lib/public-media';
+import { isDocumentaryPublicImage, selectIdentityPublicImage } from '@/lib/public-media';
 
 export const dynamic = "force-dynamic";
 
@@ -37,8 +38,11 @@ export default async function HomePage() {
   const [{ appeals }, causes] = await Promise.all([getHomepagePublicContent(), getOurWorkIndexData()]);
   const featured = causes.flatMap(cause => cause.initiatives.map(item => ({ ...item, causeTitle: cause.title })));
   const fieldDrives = featured.filter(item => ["qurbani-meat-distribution-2026", "dates-distribution-2026"].includes(item.slug));
-  const heroDrive = fieldDrives.find(item => item.slug === "qurbani-meat-distribution-2026");
-  const heroMedia = heroDrive?.mediaAssets[0];
+  const heroSlides = featured
+    .filter(item => item.isFeatured)
+    .map(drive => ({ drive, media: selectIdentityPublicImage(drive.mediaAssets) }))
+    .filter((item): item is typeof item & { media: NonNullable<typeof item.media> } => Boolean(item.media))
+    .slice(0, 5);
   const programmeMedia = new Map(
     causes.map(cause => [
       cause.slug,
@@ -46,12 +50,16 @@ export default async function HomePage() {
     ] as const),
   );
 
-  const heroVisual = heroDrive && heroMedia ? (
-    <div className="v3-hero-media">
-      <div className="v3-hero-photo"><PublicMedia asset={heroMedia} priority sizes="(max-width: 900px) calc(100vw - 2rem), 46vw" /></div>
-      <div className="v3-hero-media-shade" aria-hidden="true" />
-      <div className="v3-hero-media-caption"><span>{heroDrive.year}</span><strong>{heroDrive.title}</strong><Link href={`/our-work/${heroDrive.slug}`}>See the drive</Link></div>
-    </div>
+  const heroVisual = heroSlides.length ? (
+    <ScrollCarousel label="Featured Amaana programmes" mode="hero" className="v3-hero-carousel">
+      {heroSlides.map(({ drive, media }, index) => (
+        <div className="v3-hero-media" key={drive.id}>
+          <div className="v3-hero-photo"><PublicMedia asset={media} priority={index === 0} sizes="(max-width: 900px) calc(100vw - 2rem), 46vw" /></div>
+          <div className="v3-hero-media-shade" aria-hidden="true" />
+          <div className="v3-hero-media-caption"><span>{drive.year ?? drive.endYear ?? "Amaana programme"}</span><strong>{drive.title}</strong><Link href={`/our-work/${drive.slug}`}>See the programme</Link></div>
+        </div>
+      ))}
+    </ScrollCarousel>
   ) : undefined;
 
   return (
@@ -94,14 +102,17 @@ export default async function HomePage() {
             <p className="v3-intro">We would rather show programme-level evidence than publish one oversized number that cannot be responsibly audited. Our impact reporting focuses on documented annual reach, quantities distributed, verified cases completed and what donor support enabled.</p>
           </div>
 
-          <div className="v3-field-grid">
-            {fieldDrives.map((drive, index) => (
-              <Link className={`v3-field-card ${index === 0 ? "v3-field-card-wide" : "v3-field-card-tall"}`} href={`/our-work/${drive.slug}`} key={drive.id}>
-                {drive.mediaAssets[0] ? <div className="v3-field-image"><PublicMedia asset={drive.mediaAssets[0]} sizes={index === 0 ? "(max-width: 900px) calc(100vw - 2rem), 58vw" : "(max-width: 900px) calc(100vw - 2rem), 34vw"} /></div> : <div className="v3-field-image"><WorkVisualPlaceholder label={drive.title} /></div>}
-                <div className="v3-field-copy"><span>{drive.year}</span><h3>{drive.title}</h3><p>{drive.summary}</p></div>
-              </Link>
-            ))}
-          </div>
+          <ScrollCarousel label="Selected documented field work" mode="cards" className="v3-field-carousel">
+            {fieldDrives.map((drive, index) => {
+              const media = selectIdentityPublicImage(drive.mediaAssets);
+              return (
+                <Link className={`v3-field-card ${index === 0 ? "v3-field-card-wide" : "v3-field-card-tall"}`} href={`/our-work/${drive.slug}`} key={drive.id}>
+                  {media ? <div className="v3-field-image"><PublicMedia asset={media} sizes="(max-width: 900px) 86vw, 38vw" /></div> : <div className="v3-field-image"><WorkVisualPlaceholder label={drive.title} /></div>}
+                  <div className="v3-field-copy"><span>{drive.year}</span><h3>{drive.title}</h3><p>{drive.summary}</p></div>
+                </Link>
+              );
+            })}
+          </ScrollCarousel>
         </div>
       </section>
 

@@ -5,6 +5,7 @@
 import Image from "next/image";
 import { useCallback, useEffect, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
+import { ScrollCarousel } from "./scroll-carousel";
 
 export type CampaignGalleryItem = {
   id: string;
@@ -89,7 +90,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
 
   return (
     <>
-      <div className={styles.grid} aria-label="Programme photographs">
+      <ScrollCarousel label="Programme photographs" mode="gallery" className={styles.carousel}>
         {items.map((item, index) => {
           const descriptor = `${item.alt ?? ""} ${item.caption ?? ""}`;
           const privacyProtected = /(privacy|blurred|identit(?:y|ies) protected)/i.test(descriptor);
@@ -111,7 +112,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
           </figure>
           );
         })}
-      </div>
+      </ScrollCarousel>
 
       {active ? (
         <div className={styles.backdrop} onMouseDown={event => {
