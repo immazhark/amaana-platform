@@ -34,7 +34,6 @@ export default async function ImpactPage() {
     const canonical = programmeBySlug(item.slug);
     return Boolean(canonical) && !(canonical && "parentSlug" in canonical && canonical.parentSlug);
   });
-  const initiativesWithMetrics = initiatives.filter(item => item.primaryMetric && item.primaryMetricLabel);
   const initiativesWithMedia = initiatives.filter(item => item.mediaAssets.length > 0);
   const heroSource = initiativesWithMedia.find(item => selectIdentityPublicImage(item.mediaAssets)) ?? initiativesWithMedia[0];
   const heroMedia = heroSource ? selectIdentityPublicImage(heroSource.mediaAssets) ?? null : null;
