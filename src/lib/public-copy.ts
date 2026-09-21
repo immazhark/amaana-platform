@@ -26,15 +26,14 @@ export function distinctStoryParagraphs(summary: string, story: string) {
     .filter(paragraph => normalizePublicCopy(paragraph) !== normalizedSummary);
 }
 
-export function buildPublicRecordFallback({
-  metric,
-  metricLabel,
-}: {
+export function buildPublicRecordFallback(input: {
   title: string;
   status?: string | null;
   metric?: string | null;
   metricLabel?: string | null;
 }) {
+  const metric = input.metric;
+  const metricLabel = input.metricLabel;
   const metricSentence = metric
     ? `The documented outcome for this work is ${metric}${metricLabel ? ` ${metricLabel}` : ""}.`
     : "";
