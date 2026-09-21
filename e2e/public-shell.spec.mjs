@@ -192,3 +192,38 @@ test('mobile floating companion and Back to top controls do not overlap', async 
   await backToTop.click();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
 });
+
+
+test('client navigation uses a full-screen branded blocking overlay without collapsing the page shell', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPublicPage(page, '/');
+
+  await page.route('**/about?*', async route => {
+    await new Promise(resolve => setTimeout(resolve, 700));
+    await route.continue();
+  });
+
+  const before = await page.locator('main#main').boundingBox();
+  expect(before).not.toBeNull();
+
+  await page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'About' }).click({ noWaitAfter: true });
+
+  const overlay = page.locator('.amaana-navigation-loading');
+  await expect(overlay).toBeVisible();
+  await expect(overlay.locator('.amaana-loading-logo')).toBeVisible();
+  await expect(overlay.locator('.amaana-loading-dots i')).toHaveCount(3);
+
+  const geometry = await overlay.boundingBox();
+  expect(geometry).not.toBeNull();
+  expect(geometry.x).toBeLessThanOrEqual(1);
+  expect(geometry.width).toBeGreaterThanOrEqual(389);
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe('hidden');
+
+  const during = await page.locator('main#main').boundingBox();
+  expect(during).not.toBeNull();
+  expect(during.height).toBeGreaterThan(0);
+
+  await page.waitForURL('**/about');
+  await expect(overlay).toHaveCount(0);
+  expect(await page.evaluate(() => document.body.style.overflow)).not.toBe('hidden');
+});
