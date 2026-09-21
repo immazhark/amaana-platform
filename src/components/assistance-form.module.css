@@ -5,7 +5,7 @@
 .form :global(.field textarea){min-height:10rem}
 .form :global(.field input:not([type=checkbox]):not([type=file]):focus),
 .form :global(.field select:focus),
-.form :global(.field textarea:focus){border-color:#e0b318!important;box-shadow:0 0 0 3px rgb(224 179 24 / 18%)!important;background:#fffdf8!important;outline:0}
+.form :global(.field textarea:focus){border-color:var(--af-color-focus)!important;box-shadow:0 0 0 3px rgb(178 119 0 / 18%)!important;background:#fffdf8!important;outline:0}
 .form :global(.field input[aria-invalid=true]),
 .form :global(.field select[aria-invalid=true]),
 .form :global(.field textarea[aria-invalid=true]){border-color:#a72727!important}
