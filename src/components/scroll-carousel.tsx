@@ -191,7 +191,8 @@ export function ScrollCarousel({
               onClick={event => {
                 if (mode !== "focus" || index === activeIndex) return;
                 const target = event.target;
-                if (target instanceof Element && target.closest("a, button, input, select, textarea, [role=\"button\"]")) return;
+                if (target instanceof Element && target.closest("button, input, select, textarea, [role=\"button\"]")) return;
+                event.preventDefault();
                 goTo(index);
               }}
             >
