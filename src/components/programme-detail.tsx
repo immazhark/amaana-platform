@@ -51,7 +51,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const storyParagraphs=distinctStoryParagraphs("",story||summary);
  const clinicalTerms=clinicalTermsIn(`${summary} ${story}`);
  const historicalGrassroots=['hyderabad-flood-relief-2020','covid-essential-support-2020'].includes(slug);
- const fallbackStory=buildPublicRecordFallback({title,status:statusLabel,metric:primaryMetric,metricLabel:primaryMetricLabel});
+ const fallbackStory=buildPublicRecordFallback({metric:primaryMetric,metricLabel:primaryMetricLabel});
  const factsClass=slug==='hyderabad-flood-relief-2020'?'canonical-facts canonical-facts--timeline':'canonical-facts';
  const breadcrumbItems=[
   {name:'Home',path:'/'},
