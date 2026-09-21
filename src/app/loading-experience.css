@@ -22,3 +22,11 @@
 @keyframes amaana-loader-shimmer{from{background-position:0 50%}to{background-position:100% 50%}}
 @media(max-width:600px){.amaana-loading-inner{transform:scale(.92)}}
 @media(prefers-reduced-motion:reduce){.amaana-loading,.amaana-loading-inner,.amaana-loading-mark,.amaana-loading-orbit,.amaana-loading-wordmark strong,.amaana-loading-pulse i{animation:none}.amaana-loading-pulse i{opacity:.75}}
+
+
+/* Immediate navigation feedback is deliberately non-blocking.
+   It appears only after a short delay, so fast routes transition with no loader flash. */
+.amaana-nav-progress{position:fixed;z-index:10020;top:0;left:0;width:100%;height:3px;pointer-events:none;overflow:hidden;background:transparent}
+.amaana-nav-progress span{display:block;width:38%;height:100%;border-radius:0 999px 999px 0;background:linear-gradient(90deg,#466faa,#e0b318,#f0d56b);box-shadow:0 0 .8rem rgb(224 179 24 / 42%);animation:amaana-nav-progress 1.05s cubic-bezier(.4,0,.2,1) infinite}
+@keyframes amaana-nav-progress{0%{transform:translateX(-105%) scaleX(.65)}55%{transform:translateX(125%) scaleX(1)}100%{transform:translateX(285%) scaleX(.72)}}
+@media(prefers-reduced-motion:reduce){.amaana-nav-progress span{animation:none;width:72%}}
