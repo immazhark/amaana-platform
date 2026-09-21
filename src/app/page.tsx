@@ -149,28 +149,28 @@ export default async function HomePage() {
             <p className="v3-intro">Some needs return every year. Others arrive without warning. Amaana’s work therefore combines recurring programmes with verified case-led assistance—from Eid Gift Kits and Qurbani distribution to Taleem, winter relief, emergency response and urgent medical or financial support.</p>
           </div>
 
-          <div className="v3-work-list">
+          <ScrollCarousel label="Amaana programme areas" mode="cards" className="v3-work-carousel">
             {programmeCategories.map((category, index) => {
               const media = programmeMedia.get(category.slug);
               return (
-                <Link className="v3-work-row" href={programmeCategoryPath(category.slug)} key={category.slug}>
-                  <div className="work-thumb">
+                <Link className="v3-work-card" href={programmeCategoryPath(category.slug)} key={category.slug}>
+                  <div className="v3-work-card-media">
                     {media ? (
-                      <PublicMedia asset={media} sizes="(max-width: 600px) 5rem, (max-width: 900px) 5.5rem, 7rem" />
+                      <PublicMedia asset={media} sizes="(max-width: 700px) 86vw, 30rem" />
                     ) : (
                       <WorkVisualPlaceholder label={category.title} />
                     )}
                   </div>
-                  <small>{String(index + 1).padStart(2, '0')} · Our Work</small>
-                  <h3>{category.title}</h3>
-                  <div className="v3-work-metric">
-                    <span>{category.summary}</span>
+                  <div className="v3-work-card-body">
+                    <small>{String(index + 1).padStart(2, '0')} · Our Work</small>
+                    <h3>{category.title}</h3>
+                    <p>{category.summary}</p>
+                    <span>Explore programme <i aria-hidden="true">↗</i></span>
                   </div>
-                  <span className="v3-arrow" aria-hidden="true">↗</span>
                 </Link>
               );
             })}
-          </div>
+          </ScrollCarousel>
         </div>
       </section>
 
