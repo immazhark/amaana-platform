@@ -1,0 +1,43 @@
+/* Amaana Foundation canonical public-section surface system.
+   One approved body artwork, expressed through controlled light/alternate/dark gradients.
+   Route CSS owns layout; this layer owns public page atmosphere and transitions. */
+:root{
+  --af-surface-art:var(--amaana-bg-body);
+  --af-surface-light:linear-gradient(128deg,rgb(255 253 248 / 90%) 0%,rgb(250 246 236 / 82%) 48%,rgb(233 239 248 / 72%) 100%),var(--af-surface-art);
+  --af-surface-light-alt:linear-gradient(142deg,rgb(243 237 221 / 84%) 0%,rgb(255 253 248 / 91%) 52%,rgb(240 213 107 / 10%) 100%),var(--af-surface-art);
+  --af-surface-dark:linear-gradient(132deg,rgb(10 26 46 / 94%) 0%,rgb(29 49 80 / 92%) 52%,rgb(47 76 122 / 90%) 100%),var(--af-surface-art);
+  --af-surface-dark-alt:linear-gradient(148deg,rgb(18 34 57 / 95%) 0%,rgb(29 49 80 / 90%) 58%,rgb(117 86 7 / 24%) 140%),var(--af-surface-art);
+  --af-surface-position:center center;
+}
+main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
+:is(.v2-section.paper,.v3-section,.amaana-bg-body){
+  background-color:var(--af-color-canvas)!important;background-image:var(--af-surface-light)!important;
+  background-repeat:no-repeat!important;background-size:cover!important;background-position:var(--af-surface-position)!important;background-blend-mode:normal,luminosity
+}
+.v3-home>.v3-section:nth-of-type(even),.v2-home>.v2-section.paper:nth-of-type(even){background-image:var(--af-surface-light-alt)!important}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust){
+  color:#fffdf8;background-color:var(--af-color-navy-800)!important;background-image:var(--af-surface-dark)!important;
+  background-repeat:no-repeat!important;background-size:cover!important;background-position:var(--af-surface-position)!important;background-blend-mode:normal,soft-light
+}
+:is(.v2-impact-trust,.v3-closing){
+  background-color:var(--af-color-navy-950)!important;background-image:var(--af-surface-dark-alt)!important;
+  background-repeat:no-repeat!important;background-size:cover!important;background-position:var(--af-surface-position)!important;background-blend-mode:normal,soft-light
+}
+:is(.v2-impact-trust,.v2-impact-witness,.v2-impact-philosophy)::before,:is(.v2-impact-trust,.v2-impact-witness,.v2-impact-philosophy)::after{content:none!important}
+.v2-impact-philosophy{background-color:var(--af-color-canvas)!important;background-image:var(--af-surface-light-alt)!important;background-repeat:no-repeat!important;background-size:cover!important;background-position:var(--af-surface-position)!important}
+:is(.v2-section,.v3-section){position:relative}
+:is(.v2-section,.v3-section)+:is(.v2-section,.v3-section){border-top:1px solid rgb(117 86 7 / 8%)}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust)+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust){border-top-color:rgb(240 213 107 / 10%)}
+.page-hero--level1{background-image:var(--amaana-bg-hero)!important;background-blend-mode:normal}
+.site-footer{background-image:var(--amaana-bg-footer)!important}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(h1,h2,h3,h4,strong){color:inherit}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(.v2-section-intro,.v3-intro){color:rgb(255 253 248 / 72%)}
+@media(max-width:768px){
+  :root{--af-surface-position:center top}
+  :is(.v2-section.paper,.v3-section,.amaana-bg-body,.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust,.v2-impact-philosophy,.v3-closing){background-size:auto 100%!important}
+}
+@media(prefers-reduced-motion:no-preference){
+  :is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust){animation:af-surface-drift 24s ease-in-out infinite alternate}
+}
+@keyframes af-surface-drift{from{background-position:center center}to{background-position:52% 48%}}
+@media(prefers-reduced-motion:reduce){:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust){animation:none}}
