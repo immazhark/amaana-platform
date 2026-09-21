@@ -1,28 +1,44 @@
 # Amaana Platform — Active Implementation State
 
 ## State
-**CHATGPT_ACTIVE**
+**STAGING_PHASED_IMPLEMENTATION_ACTIVE**
 
 ## Integration branch
 - `phase-public-site-rebuild`
-- Current healthy integration SHA before this quiet batch: `4f7cbafb87e8c7d75fd7191d7bcc7a83c9320a3d`
-- Railway deployment `91a6a964-93f7-40df-a437-d43416e15ec5` is SUCCESS on that SHA.
-- GitHub hosted Actions are temporarily unavailable because the personal-account monthly minutes were exhausted. Do not interpret zero-step runner failures as code failures.
+- Family feedback/review is complete as of 21 September 2026.
+- Quiet-mode restrictions are lifted. Audited implementation may be pushed phase-by-phase to staging on this branch.
+- Current implementation head at this checkpoint: `4c56a0f6fa351ea9262aff945bd6043d6f56ea04`.
+- `main` remains untouched until explicit production-promotion approval.
 
-## Current task branch
-- `work/backgrounds-razorpay-readiness-2026-09-18`
-- Base: family-review SHA `69b4e2fd5698b050ae8dcf7d712588a1d1167ca4`.
-- Purpose: finish the corrected approved background integration, reconcile Razorpay approval/readiness records, and preserve quiet-batch development while family review is ongoing.
-- Status: active quiet branch; the six corrected SVGs are landed byte-for-byte. Do not deploy until the accumulated quiet batch receives consolidated validation and we deliberately choose the next staging checkpoint.
+## Current task stream
+- Continue the consolidated audit/enhancement roadmap on the integration branch.
+- Curated programme photography is intentionally deferred until the owner finishes selecting images drive-by-drive.
+- The media system must remain plug-and-play while that curation happens; do not request replacement media as a blocker for unrelated engineering work.
+- Priority UX direction: materially reduce vertical scrolling with deliberate banner, gallery and repeated-card carousels while keeping reading-heavy trust/policy/story content linear.
 
 ## Working protocol
-1. Keep `main` untouched.
-2. Keep indexing disabled.
-3. Do not initiate real Razorpay payments/refunds.
-4. Do not publish real beneficiary/programme media without human privacy/consent/provenance review.
-5. Keep `STAGING_ACCEPTANCE_ON_START=false` and `PUBLIC_MEDIA_ACCEPTANCE_ON_START=false` except during an explicitly controlled same-SHA acceptance.
-6. Batch related changes on the quiet branch.
-7. At checkpoint: run one consolidated validation path, then one controlled integration merge/deploy.
+1. Keep `main` untouched and indexing disabled.
+2. Push coherent, reviewable implementation slices to `phase-public-site-rebuild`; staging auto-deploys browser-affecting changes.
+3. Do not initiate real Razorpay payments/refunds or production cutover actions.
+4. Do not publish real beneficiary/programme media without the existing human privacy/consent/provenance gate.
+5. Do not reintroduce the deleted legacy programme-image pool or heuristic/random hero selection.
+6. Use one explicit curated identity/hero image per programme/drive and ordered supporting images.
+7. Prefer compact carousels only for media/repeated-card surfaces where they reduce scroll; do not hide long-form accountability or policy reading inside sliders.
+8. At each implementation checkpoint, validate build/type safety and retain browser/E2E regression coverage.
+
+## 21 September 2026 media + carousel baseline
+- All 191 legacy programme/drive/cause image files were removed from the current staging branch.
+- All 175 staging `MediaAsset` IMAGE records were removed. Three legacy MP4 records/files remain outside this image-reset scope and hosted video remains fail-closed publicly.
+- `prisma/integration-media.json` is empty so deleted images cannot silently re-seed.
+- Identity image contract is deterministic: `IDENTITY_MEDIA_SORT_ORDER = -1000`; assigning a new identity image demotes the prior identity image for the same target.
+- Identity publication requires explicit hero-use approval in addition to the normal privacy/provenance publication gate.
+- Shared manual/swipe/keyboard `ScrollCarousel` is implemented without autoplay or a heavy slider dependency.
+- Programme galleries use the carousel while retaining the accessible lightbox.
+- Long programme-year histories switch to compact carousel presentation when they exceed three entries.
+- Impact witness media uses a compact carousel.
+- Homepage programme discovery is a horizontal five-area strip.
+- A full-width homepage banner carousel is wired but activates only once at least three approved featured identity images exist; until then the existing static PageHero fallback remains.
+- Curated image insertion therefore requires data/media work, not another layout redesign. See `docs/CURATED_MEDIA_CAROUSEL_CONTRACT_2026-09-21.md`.
 
 ## Completed before this quiet batch
 - Secure gated private-bucket public-media proxy and real synthetic upload/publish/unpublish acceptance.

@@ -103,3 +103,42 @@ Family review remains isolated on `phase-public-site-rebuild` at `b4b0a1b022a4d0
 ### Family feedback
 
 Family navigation feedback is still being collected. When received, add it to this same remediation stream as real-user evidence rather than starting a separate redesign plan.
+
+
+## Staging implementation checkpoint — 21 September 2026
+
+Family feedback is complete and the remediation stream is no longer held on a quiet branch. Implementation is now landing phase-by-phase on `phase-public-site-rebuild`.
+
+### Completed from the previous “nice-to-have / later polish” list
+
+- **Home Our Work polish:** stronger thumbnail framing, restrained hover/focus media lift, improved section spacing and identity-image preference.
+- **Appeal card ring/elevation:** subtle baseline elevation plus restrained hover ring.
+- **Impact media density:** photographic witness wall converted to a compact carousel and identity-image selection standardized.
+- **About lower-page spacing:** recognition and public-record continuation receive distinct, scannable closing treatments.
+- **Governance density:** added an at-a-glance summary from existing public governance facts without adding new claims.
+- **Broader media architecture:** legacy image pool reset; explicit identity/hero selection replaces first/random-image heuristics.
+
+### New scroll-reduction implementation
+
+- Shared `ScrollCarousel` supports manual buttons, touch/swipe, ArrowLeft/ArrowRight/Home/End keyboard navigation, slide status and reduced-motion behavior.
+- No carousel auto-rotation is allowed.
+- Programme gallery is horizontal while preserving modal enlargement, Escape handling and focus return.
+- Parent programme histories with more than three child/year records are horizontal compact cards.
+- Homepage documented-field work and programme-area discovery are horizontal strips.
+- Impact witness photography is horizontal rather than a four-card vertical wall.
+- Full-width homepage banner carousel is prepared for 3–5 curated featured identity images and stays dormant below three images.
+
+### Media-dependent items intentionally deferred
+
+- Final image crop/object-position tuning for the full-width homepage banner.
+- Exact image-overlay contrast measurement against the curated photographs.
+- Final gallery pacing/order and per-image captions once curated sets are supplied.
+- Page-specific hero-image diversification that requires the new curated media.
+- Human privacy/consent/provenance approval remains mandatory for every real public asset.
+
+### Validation state
+
+- Main carousel implementation commit `1ce9160086bf4a26f820e32b28f944edc44df901` deployed successfully on Railway.
+- Audit/trust-polish commit chain through `67e898ac20266a20ab2836f22dabd1e18d6a0ad0` deployed successfully.
+- Carousel E2E regression coverage exists in `e2e/carousel-acceptance.spec.mjs` for keyboard controls and mobile document containment.
+- Screenshot-level staging inspection is still a separate rendered QA gate; do not claim it solely from build success.
