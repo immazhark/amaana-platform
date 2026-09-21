@@ -6,7 +6,7 @@ import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { ScrollCarousel } from "@/components/scroll-carousel";
 import { programmeBySlug } from "@/lib/master-copy";
 import { getImpactPageData } from "@/lib/public-page-data";
-import { isDocumentaryPublicImage, selectIdentityPublicImage } from "@/lib/public-media";
+import { selectIdentityPublicImage } from "@/lib/public-media";
 import "./impact-refinement.module.css";
 
 export const dynamic = "force-dynamic";
