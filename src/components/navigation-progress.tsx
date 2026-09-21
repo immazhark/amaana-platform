@@ -26,7 +26,7 @@ export function NavigationProgress() {
 
       const next = new URL(anchor.href, window.location.href);
       const current = new URL(window.location.href);
-      if (next.origin !== current.origin || (next.pathname === current.pathname && next.search === current.search)) return;
+      if (next.origin !== current.origin || next.pathname === current.pathname) return;
 
       setPendingFrom(current.pathname);
     };
