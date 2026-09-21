@@ -338,11 +338,20 @@ export const getDonationPageData = cache(async (slug: string) => {
       goalAmount: true,
       amountRaised: true,
       closesAt: true,
+      assistanceRequest: {
+        select: {
+          verification: { select: { zakatStatus: true } },
+        },
+      },
     },
   });
 
   if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return null;
-  return appeal;
+  const { assistanceRequest, ...publicAppeal } = appeal;
+  return {
+    ...publicAppeal,
+    zakatEligible: assistanceRequest?.verification?.zakatStatus === "ELIGIBLE",
+  };
 });
 
 /**

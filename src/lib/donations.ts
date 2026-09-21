@@ -1,5 +1,6 @@
 import { createHash, randomBytes, randomInt } from "node:crypto";
 import { z } from "zod";
+import { DONATION_INTENTS } from "@/lib/donation-intent";
 
 export const MIN_DONATION_AMOUNT = 10;
 export const MAX_DONATION_AMOUNT = 1_000_000;
@@ -10,6 +11,7 @@ export const donationSchema = z.object({
   donorEmail: z.string().trim().email().max(254),
   donorPhone: z.union([z.literal(""), z.string().trim().regex(/^\+?[0-9][0-9\s-]{7,16}$/)]).optional(),
   amount: z.coerce.number().int().min(1).max(MAX_DONATION_AMOUNT),
+  givingIntent: z.enum(DONATION_INTENTS),
   isAnonymous: z.boolean().optional().default(false),
   domesticConfirmed: z.literal(true),
 });

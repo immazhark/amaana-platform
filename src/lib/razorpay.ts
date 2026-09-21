@@ -15,8 +15,16 @@ async function requestRazorpay(path: string, init?: RequestInit) {
   return response.json();
 }
 
-export async function createRazorpayOrder(input: { amountPaise: number; receipt: string; appealId: string }) {
-  return requestRazorpay("/orders", { method: "POST", body: JSON.stringify({ amount: input.amountPaise, currency: "INR", receipt: input.receipt, notes: { appealId: input.appealId } }) }) as Promise<{ id: string; amount: number; currency: string; receipt: string; status: string }>;
+export async function createRazorpayOrder(input: { amountPaise: number; receipt: string; appealId: string; givingIntent: string }) {
+  return requestRazorpay("/orders", {
+    method: "POST",
+    body: JSON.stringify({
+      amount: input.amountPaise,
+      currency: "INR",
+      receipt: input.receipt,
+      notes: { appealId: input.appealId, givingIntent: input.givingIntent },
+    }),
+  }) as Promise<{ id: string; amount: number; currency: string; receipt: string; status: string }>;
 }
 
 export async function fetchRazorpayPayment(paymentId: string) {

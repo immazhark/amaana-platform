@@ -95,6 +95,12 @@ enum DonationStatus {
   REFUNDED
 }
 
+enum DonationIntent {
+  GENERAL
+  SADAQAH
+  ZAKAT
+}
+
 enum ContentStatus {
   DRAFT
   UNDER_REVIEW
@@ -406,6 +412,7 @@ model Donation {
   donorEmail          String
   donorPhone          String?
   isAnonymous         Boolean        @default(false)
+  givingIntent        DonationIntent @default(GENERAL)
   domesticConfirmedAt DateTime
   amount              Decimal        @db.Decimal(12, 2)
   refundedAmount      Decimal        @default(0) @db.Decimal(12, 2)
@@ -427,6 +434,7 @@ model Donation {
   @@index([appealId, status, createdAt])
   @@index([donorEmail, createdAt])
   @@index([status, createdAt])
+  @@index([givingIntent, createdAt])
   @@index([createdAt])
 }
 
