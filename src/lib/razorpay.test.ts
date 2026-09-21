@@ -45,12 +45,22 @@ describe("Razorpay signatures", () => {
       amountPaise: 50000,
       receipt: "AFD-1",
       appealId: "appeal_1",
+      givingIntent: "GENERAL",
     });
 
     expect(order.id).toBe("order_1");
     expect(fetchMock).toHaveBeenCalledWith(
       "https://api.razorpay.com/v1/orders",
-      expect.objectContaining({ method: "POST", cache: "no-store" }),
+      expect.objectContaining({
+        method: "POST",
+        cache: "no-store",
+        body: JSON.stringify({
+          amount: 50000,
+          currency: "INR",
+          receipt: "AFD-1",
+          notes: { appealId: "appeal_1", givingIntent: "GENERAL" },
+        }),
+      }),
     );
   });
 
@@ -90,6 +100,7 @@ describe("Razorpay signatures", () => {
         amountPaise: 50000,
         receipt: "AFD-FAIL",
         appealId: "appeal_1",
+        givingIntent: "GENERAL",
       }),
     ).rejects.toThrow("Razorpay request failed with status 504");
   });

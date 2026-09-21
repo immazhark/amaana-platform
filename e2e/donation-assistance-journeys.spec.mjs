@@ -159,7 +159,24 @@ test.describe('donation journey without real payment', () => {
       donorName: 'Acceptance Donor',
       donorEmail: 'acceptance@example.test',
       amount: '250',
+      givingIntent: 'GENERAL',
       domesticConfirmed: true,
+    }));
+  });
+
+  test('Zakat selection is sent as donor intent when the fixture marks the appeal eligible', async ({ page }) => {
+    const order = { value: null };
+    await mockDonationOrder(page, order);
+    const submit = await openDonationFixture(page, 'dismiss');
+    await fillDonationForm(page);
+
+    await page.getByLabel('Zakat').check();
+    await submit.click();
+
+    expect(order.value).toEqual(expect.objectContaining({
+      appealId: 'browser-acceptance-appeal',
+      givingIntent: 'ZAKAT',
+      amount: '250',
     }));
   });
 
@@ -190,6 +207,7 @@ test.describe('donation journey without real payment', () => {
           referenceNumber: donationReference,
           receiptNumber: 'RCP-ACCEPT-001',
           donorName: 'Acceptance Donor',
+          givingIntent: 'GENERAL',
           amount: 250,
           refundedAmount: 0,
           recordDate: '2026-09-16T00:00:00.000Z',
@@ -206,6 +224,7 @@ test.describe('donation journey without real payment', () => {
     await expect(page).toHaveURL(new RegExp(`/donations/${donationReference}/acknowledgement#token=`));
     await expect(page.getByRole('heading', { name: 'Donation verified.' })).toBeVisible();
     await expect(page.getByText('RCP-ACCEPT-001')).toBeVisible();
+    await expect(page.getByText('General Charity')).toBeVisible();
     expect(new URL(page.url()).search).toBe('');
     expect(order.value).not.toBeNull();
     expect(confirmation.value).toEqual(expect.objectContaining({

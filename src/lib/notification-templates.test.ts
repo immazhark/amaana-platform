@@ -3,9 +3,11 @@ import { renderNotificationEmail } from "./notification-templates";
 
 describe("notification email templates", () => {
   it("marks donation messages as normal acknowledgements", () => {
-    const email = renderNotificationEmail("donation-acknowledgement", { referenceNumber: "AMN-123" });
+    const email = renderNotificationEmail("donation-acknowledgement", { referenceNumber: "AMN-123", givingIntent: "ZAKAT" });
     expect(email.text).toContain("not an 80G tax certificate");
+    expect(email.text).toContain("Giving intention: Zakat");
     expect(email.html).toContain("AMN-123");
+    expect(email.html).toContain("Zakat");
   });
 
 
