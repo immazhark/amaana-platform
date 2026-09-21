@@ -112,3 +112,31 @@
   .v3-proof-grid::-webkit-scrollbar{display:none}
   .v3-proof-item{flex:0 0 min(82vw,20rem);min-height:8rem!important;scroll-snap-align:start;border:1px solid rgb(18 34 57 / 8%)!important;padding:1.2rem!important}
 }
+
+
+/* Flagship homepage masthead: always a full-bleed editorial carousel.
+   The first slide tells Amaana's origin story; reviewed initiative identity images
+   progressively enrich the remaining slides without collapsing the masthead. */
+.v3-home-banner{width:100%;overflow:hidden}
+.v3-home-banner-carousel{height:clamp(39rem,78vh,55rem);min-height:39rem}
+.v3-home-banner-slide--story{background:
+  radial-gradient(circle at 78% 22%,rgb(224 179 24 / 20%),transparent 18%),
+  radial-gradient(circle at 82% 28%,rgb(70 111 170 / 28%),transparent 30%),
+  linear-gradient(112deg,#081522 0%,#122b49 54%,#1d4a78 100%)}
+.v3-home-banner-story-art{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+.v3-home-banner-story-year{position:absolute;right:clamp(-1rem,2vw,3rem);bottom:-.14em;color:rgb(255 255 255 / 6%);font:500 clamp(13rem,31vw,31rem)/.72 var(--af-font-display);letter-spacing:-.08em}
+.v3-home-banner-story-mark{position:absolute;right:clamp(2rem,9vw,10rem);top:clamp(5rem,12vh,9rem);color:rgb(241 207 82 / 28%);font:500 clamp(3.5rem,8vw,8rem)/1 var(--af-font-display);text-shadow:0 1.2rem 4rem rgb(0 0 0 / 18%)}
+.v3-home-banner-slide--story .v3-home-banner-content{padding-right:min(40vw,31rem)}
+.v3-home-banner-slide--story .v3-home-banner-brandline{max-width:12ch}
+.v3-home-banner-slide--story .v3-home-banner-shade{background:linear-gradient(90deg,rgb(5 14 25 / 90%),rgb(8 23 40 / 62%) 55%,rgb(8 23 40 / 12%))}
+@media(max-width:900px){
+  .v3-home-banner-carousel{height:clamp(42rem,78vh,50rem)}
+  .v3-home-banner-slide--story .v3-home-banner-content{padding-right:clamp(1rem,12vw,6rem)}
+}
+@media(max-width:600px){
+  .v3-home-banner-carousel{height:44rem;min-height:44rem}
+  .v3-home-banner-story-year{right:-1rem;font-size:12rem}
+  .v3-home-banner-story-mark{right:1rem;top:5.5rem;font-size:3.8rem}
+  .v3-home-banner-slide--story .v3-home-banner-shade{background:linear-gradient(0deg,rgb(5 14 25 / 97%),rgb(8 23 40 / 70%) 64%,rgb(8 23 40 / 22%))}
+  .v3-home-banner-slide--story .v3-home-banner-content{padding-right:.25rem}
+}
