@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 export function NavigationProgress() {
   const pathname = usePathname();
   const [pendingFrom, setPendingFrom] = useState<string | null>(null);
-  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
   const visible = pendingFrom === pathname;
 
   useEffect(() => {
