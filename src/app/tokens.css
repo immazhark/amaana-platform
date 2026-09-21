@@ -1,0 +1,62 @@
+:root {
+  /* Brand colour roles */
+  --af-color-canvas: #faf6ec;
+  --af-color-surface: #fffdf8;
+  --af-color-surface-muted: #f3eddd;
+  --af-color-navy-950: #122239;
+  --af-color-navy-800: #1d3150;
+  --af-color-navy-700: #2f4c7a;
+  --af-color-blue-600: #466faa;
+  --af-color-blue-soft: #e9eff8;
+  --af-color-gold-500: #e0b318;
+  --af-color-gold-soft: #f0d56b;
+  --af-color-gold-ink: #755607;
+  --af-color-text: var(--af-color-navy-950);
+  --af-color-muted: #5b6472;
+  --af-color-border: #e6dcc3;
+  --af-color-success: #216e4a;
+  --af-color-warning: #7a4e00;
+  --af-color-error: #9b2c2c;
+  --af-color-focus: #b27700;
+
+  /* Spacing */
+  --af-space-1: .25rem;
+  --af-space-2: .5rem;
+  --af-space-3: .75rem;
+  --af-space-4: 1rem;
+  --af-space-5: 1.5rem;
+  --af-space-6: 2rem;
+  --af-space-7: 3rem;
+  --af-space-8: 4rem;
+  --af-space-section: clamp(4rem, 8vw, 7rem);
+
+  /* Shape */
+  --af-radius-sm: .55rem;
+  --af-radius-md: 1rem;
+  --af-radius-lg: 1.5rem;
+  --af-radius-xl: 2rem;
+  --af-radius-pill: 999px;
+
+  /* Elevation */
+  --af-shadow-card: 0 16px 48px rgb(18 34 57 / 8%);
+  --af-shadow-raised: 0 24px 58px rgb(4 21 40 / 18%);
+
+  /* Typography */
+  --af-font-body: Arial, Helvetica, sans-serif;
+  --af-font-display: Georgia, "Times New Roman", serif;
+  --af-text-xs: .76rem;
+  --af-text-sm: .9rem;
+  --af-text-body: 1rem;
+  --af-text-lead: clamp(1.05rem, 2vw, 1.3rem);
+  --af-text-display: clamp(2.55rem, 7vw, 5rem);
+
+  /* Content measure */
+  --af-content-wide: 74rem;
+  --af-content-reading: 60ch;
+  --af-content-editorial: 68ch;
+
+  /* Motion */
+  --af-motion-fast: 160ms;
+  --af-motion-medium: 250ms;
+  --af-ease-standard: cubic-bezier(.2, .8, .2, 1);
+}

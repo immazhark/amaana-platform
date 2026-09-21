@@ -1,22 +1,21 @@
 :root {
-  --amaana-blue: #466FAA;
-  --amaana-blue-mid: #2F4C7A;
-  --amaana-blue-deep: #1D3150;
-  --amaana-blue-ink: #122239;
-  --amaana-blue-soft: #E9EFF8;
-  --amaana-gold: #E0B318;
-  --amaana-gold-deep: #B8890E;
-  --amaana-gold-soft: #F4E9B5;
-  --amaana-cream: #FAF6EC;
-  --amaana-cream-muted: #F3EDDD;
-  --amaana-ivory: #FAF6EC;
-  --amaana-paper: #FFFDF8;
-  --amaana-sand: #F3EDDD;
-  --amaana-charcoal: #26303D;
-  --amaana-ink-soft: #5B6472;
-  --amaana-border-warm: #E6DCC3;
+  --amaana-blue: var(--af-color-blue-600);
+  --amaana-blue-mid: var(--af-color-navy-700);
+  --amaana-blue-deep: var(--af-color-navy-800);
+  --amaana-blue-ink: var(--af-color-navy-950);
+  --amaana-blue-soft: var(--af-color-blue-soft);
+  --amaana-gold: var(--af-color-gold-500);
+  --amaana-gold-deep: var(--af-color-gold-ink);
+  --amaana-gold-soft: var(--af-color-gold-soft);
+  --amaana-cream: var(--af-color-canvas);
+  --amaana-cream-muted: var(--af-color-surface-muted);
+  --amaana-ivory: var(--af-color-canvas);
+  --amaana-paper: var(--af-color-surface);
+  --amaana-sand: var(--af-color-surface-muted);
+  --amaana-charcoal: #26303d;
+  --amaana-ink-soft: var(--af-color-muted);
+  --amaana-border-warm: var(--af-color-border);
 }
-
 .site-header {
   border-bottom-color: rgb(70 111 170 / 16%);
   background: rgb(250 246 236 / 92%);
