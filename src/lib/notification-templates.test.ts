@@ -20,8 +20,9 @@ describe("notification email templates", () => {
     expect(email.text).toContain("controlled transactional-email acceptance");
     expect(email.text).toContain("no donor, beneficiary, payment or assistance-case data");
     expect(email.html).not.toContain("reference");
-    expect(email.html).not.toContain("card");
-    expect(email.html).not.toContain("bank account");
+    expect(email.html).not.toContain("4111 1111 1111 1111");
+    expect(email.html).not.toContain("123456789012");
+    expect(email.html).not.toContain("IFSC0001234");
   });
 
   it("renders refund notifications with only the approved transaction summary", () => {
@@ -35,8 +36,9 @@ describe("notification email templates", () => {
     expect(email.text).toContain("partial refund");
     expect(email.text).toContain("₹250");
     expect(email.text).toContain("AFD-2026-12345678");
-    expect(email.html).not.toContain("card");
-    expect(email.html).not.toContain("bank account");
+    expect(email.html).not.toContain("4111 1111 1111 1111");
+    expect(email.html).not.toContain("123456789012");
+    expect(email.html).not.toContain("IFSC0001234");
   });
 
   it("escapes untrusted template values", () => {

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { createDonationReference, createReceiptNumber, createReceiptToken, donationSchema, getDonationAcknowledgementPresentation, hashReceiptToken, isDonationAmountAllowedForRemaining } from "./donations";
 
-const valid = { appealId: "cmf1234567890123456789012", donorName: "Test Donor", donorEmail: "donor@example.com", donorPhone: "9876543210", amount: 500, domesticConfirmed: true };
+const valid = { appealId: "cmf1234567890123456789012", donorName: "Test Donor", donorEmail: "donor@example.com", donorPhone: "9876543210", amount: 500, givingIntent: "GENERAL", domesticConfirmed: true };
 describe("donation validation", () => {
   it("accepts a domestic INR donation", () => expect(donationSchema.safeParse(valid).success).toBe(true));
   it("requires domestic-source confirmation", () => expect(donationSchema.safeParse({ ...valid, domesticConfirmed: false }).success).toBe(false));
