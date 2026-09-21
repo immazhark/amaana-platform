@@ -9,3 +9,7 @@
 :global(.v2-impact-witness-item h3){text-shadow:0 2px 12px rgb(0 0 0 / 42%)}
 @media(max-width:980px){:global(.v2-impact-marquee-track){grid-template-columns:repeat(2,minmax(0,1fr))!important}}
 @media(max-width:560px){:global(.v2-impact-marquee-track){grid-template-columns:1fr!important}}
+
+:global(.v2-impact-witness-carousel){margin-top:.25rem}
+:global(.v2-impact-witness-carousel .v2-impact-witness-item){display:block!important;width:100%!important;height:21rem!important;min-height:21rem!important;grid-column:auto!important;margin-top:0!important}
+@media(max-width:700px){:global(.v2-impact-witness-carousel .v2-impact-witness-item){height:18rem!important;min-height:18rem!important}}

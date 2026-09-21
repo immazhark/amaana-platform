@@ -36,14 +36,14 @@ export default async function AboutPage() {
       bodyClassName="canonical-body--about"
       {...aboutCopy}
     >
-      <section className="canonical-block">
+      <section className="canonical-block canonical-block--about-recognition">
         <h2>Recognition from AMP</h2>
         <div>
           <p>Amaana Foundation received the Best NGO Award of the Year (Telangana) at AMP’s 5th National Awards for Social Excellence 2025.</p>
           <Link href="/recognition">View the Certificate of Excellence →</Link>
         </div>
       </section>
-      <section className="canonical-block">
+      <section className="canonical-block canonical-block--about-record">
         <h2>Continue the public record</h2>
         <div>
           <p>Learn who carries formal responsibility for Amaana, how verified needs are handled, and how public evidence is separated from private proof.</p>

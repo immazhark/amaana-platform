@@ -19,7 +19,7 @@
 .v3-field-copy h3{margin:0;max-width:12ch;font-family:Georgia,"Times New Roman",serif;font-size:clamp(2.1rem,3.7vw,3.8rem);font-weight:500;line-height:.98;letter-spacing:-.04em}
 .v3-field-card-tall .v3-field-copy h3{font-size:clamp(2rem,3vw,3.3rem)}
 .v3-field-copy p{display:none}
-.v3-field-card:focus-visible{outline:3px solid var(--af-gold);outline-offset:5px}
+.v3-field-card:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:5px}
 
 /* These sections can skip off-screen layout work until the visitor approaches them. */
 .v3-proof-item,.v3-work-row,.v3-year,.v3-origin-copy,.v3-trust-panel,.v3-empty{content-visibility:auto;contain-intrinsic-size:1px 300px}

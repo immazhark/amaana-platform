@@ -13,7 +13,7 @@ import { PublicMedia } from "@/components/public-media";
 import { ScrollCarousel } from "@/components/scroll-carousel";
 import { programmeCategories } from '@/lib/master-copy';
 import { programmeCategoryPath } from '@/lib/programme-category-routing';
-import { isDocumentaryPublicImage, selectIdentityPublicImage } from '@/lib/public-media';
+import { selectIdentityPublicImage } from '@/lib/public-media';
 
 export const dynamic = "force-dynamic";
 
@@ -46,7 +46,7 @@ export default async function HomePage() {
   const programmeMedia = new Map(
     causes.map(cause => [
       cause.slug,
-      cause.initiatives.map(initiative => initiative.mediaAssets.find(isDocumentaryPublicImage) ?? initiative.mediaAssets[0]).find(Boolean),
+      cause.initiatives.map(initiative => selectIdentityPublicImage(initiative.mediaAssets)).find(Boolean),
     ] as const),
   );
 

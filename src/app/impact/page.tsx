@@ -3,9 +3,10 @@ import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
+import { ScrollCarousel } from "@/components/scroll-carousel";
 import { programmeBySlug } from "@/lib/master-copy";
 import { getImpactPageData } from "@/lib/public-page-data";
-import { isDocumentaryPublicImage } from "@/lib/public-media";
+import { isDocumentaryPublicImage, selectIdentityPublicImage } from "@/lib/public-media";
 import "./impact-refinement.module.css";
 
 export const dynamic = "force-dynamic";
@@ -35,8 +36,8 @@ export default async function ImpactPage() {
   });
   const initiativesWithMetrics = initiatives.filter(item => item.primaryMetric && item.primaryMetricLabel);
   const initiativesWithMedia = initiatives.filter(item => item.mediaAssets.length > 0);
-  const heroSource = initiativesWithMedia.find(item => item.mediaAssets.some(isDocumentaryPublicImage)) ?? initiativesWithMedia[0];
-  const heroMedia = heroSource?.mediaAssets.find(isDocumentaryPublicImage) ?? heroSource?.mediaAssets[0] ?? null;
+  const heroSource = initiativesWithMedia.find(item => selectIdentityPublicImage(item.mediaAssets)) ?? initiativesWithMedia[0];
+  const heroMedia = heroSource ? selectIdentityPublicImage(heroSource.mediaAssets) ?? null : null;
 
   return (
     <div className="v2-home v2-impact-page">
@@ -68,7 +69,7 @@ export default async function ImpactPage() {
         <div className="v2-shell">
           <div className="v2-section-head"><div><p className="v2-section-label">Evidence by initiative</p><h2 className="v2-section-title" id="evidence-title">Every number has a home.</h2></div><p className="v2-section-intro">Each underlying case or parent programme appears once. Annual editions remain available from their programme record instead of being repeated as separate impact entries.</p></div>
           {initiatives.length > 0 ? <div className="v2-impact-ledger">{initiatives.map((item, index) => {
-            const thumbnail = item.mediaAssets.find(isDocumentaryPublicImage) ?? item.mediaAssets[0] ?? null;
+            const thumbnail = selectIdentityPublicImage(item.mediaAssets) ?? null;
             return <Link href={`/our-work/${item.slug}`} className="v2-impact-ledger-row" key={item.id}>
               <span className="v2-impact-ledger-index">{String(index + 1).padStart(2, "0")}</span>
               <div className="v2-impact-ledger-thumb">{thumbnail ? <PublicMedia asset={thumbnail} /> : <WorkVisualPlaceholder label={item.title} />}</div>
@@ -81,7 +82,7 @@ export default async function ImpactPage() {
         </div>
       </section>
 
-      {initiativesWithMedia.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p><h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2></div><p className="v2-section-intro">Only privacy-approved, public-safe material is shown. The people Amaana serves are never treated as proof objects.</p></div><div className="v2-impact-witness-grid">{initiativesWithMedia.slice(0, 4).map(item => <Link href={`/our-work/${item.slug}`} className="v2-impact-witness-item" key={item.id} aria-label={`Open ${item.title} initiative record`}><PublicMedia asset={item.mediaAssets.find(isDocumentaryPublicImage) ?? item.mediaAssets[0]} /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Enter the field record →</span></div></Link>)}</div></div></section>}
+      {initiativesWithMedia.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p><h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2></div><p className="v2-section-intro">Only privacy-approved, public-safe material is shown. The people Amaana serves are never treated as proof objects.</p></div><ScrollCarousel label="Documented impact photographs" mode="cards" className="v2-impact-witness-carousel">{initiativesWithMedia.slice(0, 6).map(item => { const media=selectIdentityPublicImage(item.mediaAssets); if(!media) return null; return <Link href={`/our-work/${item.slug}`} className="v2-impact-witness-item" key={item.id} aria-label={`Open ${item.title} initiative record`}><PublicMedia asset={media} /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Enter the field record →</span></div></Link>; })}</ScrollCarousel></div></section>}
 
       <section className="v2-section v2-impact-philosophy">
         <div className="v2-shell v2-impact-philosophy-grid">
