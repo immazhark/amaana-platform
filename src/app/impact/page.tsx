@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
-import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { ScrollCarousel } from "@/components/scroll-carousel";
 import { programmeBySlug } from "@/lib/master-copy";
 import { getImpactPageData } from "@/lib/public-page-data";
