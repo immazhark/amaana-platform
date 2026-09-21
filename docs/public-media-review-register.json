@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-19",
-  "purpose": "Coverage and launch-readiness register for files directly addressable under public/media. This register records review work still required; it does not treat existing publication, filenames, social-media use, blur/redaction hints or automated checks as consent or human approval. Mixed field-media groups default to sensitive context; a human reviewer may explicitly set sensitiveContext=false only for an individual asset that contains no beneficiary/patient/minor/private-context material.",
+  "updatedAt": "2026-09-21",
+  "purpose": "Coverage and launch-readiness register for public/media after the 21 September 2026 programme-image reset. Legacy programme images were removed so future media can be reintroduced only from the curated, initiative-by-initiative selection with an explicit hero/identity image and ordered supporting assets.",
   "groups": [
     {
       "id": "completed-assistance",
@@ -84,60 +84,12 @@
       "reviewPriority": "CRITICAL"
     }
   ],
-  "overrides": [
-    {
-      "path": "dates-2026-announcement.webp",
-      "provenance": "DOCUMENTED",
-      "provenanceReference": "docs/campaign-media-provenance.json",
-      "humanReview": "PENDING_HUMAN_REVIEW",
-      "consent": "UNKNOWN"
-    },
-    {
-      "path": "dates-2026-results.webp",
-      "provenance": "DOCUMENTED",
-      "provenanceReference": "docs/campaign-media-provenance.json",
-      "humanReview": "PENDING_HUMAN_REVIEW",
-      "consent": "UNKNOWN"
-    },
-    {
-      "path": "meat-2026-labels.webp",
-      "provenance": "DOCUMENTED",
-      "provenanceReference": "docs/campaign-media-provenance.json",
-      "humanReview": "PENDING_HUMAN_REVIEW",
-      "consent": "UNKNOWN"
-    },
-    {
-      "path": "meat-2026-cartons.webp",
-      "provenance": "DOCUMENTED",
-      "provenanceReference": "docs/campaign-media-provenance.json",
-      "humanReview": "PENDING_HUMAN_REVIEW",
-      "consent": "UNKNOWN"
-    },
-    {
-      "path": "dates-distribution-2026.webp",
-      "provenance": "DOCUMENTED",
-      "provenanceReference": "docs/campaign-media-provenance.json",
-      "humanReview": "PENDING_HUMAN_REVIEW",
-      "consent": "UNKNOWN"
-    },
-    {
-      "path": "qurbani-meat-distribution-2026.webp",
-      "provenance": "DOCUMENTED",
-      "provenanceReference": "docs/campaign-media-provenance.json",
-      "humanReview": "PENDING_HUMAN_REVIEW",
-      "consent": "UNKNOWN"
-    }
-  ],
+  "overrides": [],
   "inventorySummary": {
-    "totalAssets": 194,
-    "totalBytes": 25328742,
-    "duplicateBlobPairs": [
-      [
-        "eid-kits-2021-gallery-10.webp",
-        "eid-kits-2021-gallery-12.webp"
-      ]
-    ],
-    "generatedAt": "2026-09-19",
-    "note": "Counts are repository inventory metadata only, not human media approval."
+    "totalAssets": 3,
+    "totalImages": 0,
+    "retainedNonImageAssets": 3,
+    "generatedAt": "2026-09-21",
+    "note": "All legacy drive/cause/initiative image files were removed from staging. Three existing MP4 files remain outside this image-reset scope."
   }
 }
