@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-19",
+  "updatedAt": "2026-09-21",
   "principle": "Green automation is necessary but not sufficient for production launch. External, human-review and cutover gates remain pending until evidence is recorded; main/indexing/payment activation actions remain explicitly controlled.",
   "gates": [
     {
@@ -11,8 +11,8 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "The integration workflow contains lint, typecheck, unit coverage, production build, bundle budgets, smoke checks and browser acceptance. CI #762 passed the full applicable integration verify job on SHA 5c3762ca94b53cca1ad9d7a9fc9880deebff2b05. The current quiet branch additionally adds a browser regression for Razorpay checkout readiness after component remount. GitHub hosted-runner quota remains a separate operational constraint, so the new quiet-branch changes must receive a fresh green validation run before promotion.",
-      "verifiedAt": "2026-09-17"
+      "evidence": "GitHub Actions CI #868 (run 35601818450) passed the full integration verify job on exact release-candidate SHA f6d535dc45ed4987406648fa30b62e346379f64b on 2026-09-21. The run passed CSS architecture audit, public campaign media validation, launch-readiness validation, campaign import safety, canonical factual locks, editorial/compliance guards, public/private data-boundary checks, archive/calendar checks, Prisma generate/validate, ESLint, TypeScript, coverage, production build, JS/CSS budgets, server/security smoke checks, isolated browser fixture setup, Chromium installation, and the final responsive/accessibility/journey browser acceptance suite.",
+      "verifiedAt": "2026-09-21"
     },
     {
       "id": "railway-preview-deployment-baseline",
@@ -22,8 +22,8 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "Railway deployment a7b1b787-550e-40da-bad1-00c6f177c583 succeeded on exact integration SHA 5c3762ca94b53cca1ad9d7a9fc9880deebff2b05. Runtime logs showed migrations complete, RBAC/staff seed ready, staging acceptance workflow ready, synthetic refunded donation ready and Next.js ready.",
-      "verifiedAt": "2026-09-17"
+      "evidence": "Railway staging project amaana-platform-staging reports SUCCESS for the release-candidate deployment on exact SHA f6d535dc45ed4987406648fa30b62e346379f64b (commit `fix: stabilize loading layout and close accessibility gaps`). The hardened startup path retains Prisma migration retry, transient Neon P1001 handling, staging seed retry and idempotent whole-script retry protection.",
+      "verifiedAt": "2026-09-21"
     },
     {
       "id": "domestic-only-boundary",
