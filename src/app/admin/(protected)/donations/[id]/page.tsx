@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { requirePermission } from "@/lib/auth";
 import { formatINR } from "@/lib/appeals";
+import { donationIntentLabel } from "@/lib/donation-intent";
 import { prisma } from "@/lib/prisma";
 
 type Props = { params: Promise<{ id: string }> };
@@ -37,6 +38,7 @@ export default async function DonationDetailPage({ params }: Props) {
           <div><dt>Public anonymity</dt><dd>{donation.isAnonymous ? "Anonymous" : "Name may be shown"}</dd></div>
           <div><dt>Email</dt><dd>{donation.donorEmail}</dd></div>
           <div><dt>Phone</dt><dd>{donation.donorPhone ?? "Not supplied"}</dd></div>
+          <div><dt>Giving intention</dt><dd>{donationIntentLabel(donation.givingIntent)}</dd></div>
           <div><dt>Razorpay order</dt><dd>{donation.providerOrderId}</dd></div>
           <div><dt>Razorpay payment</dt><dd>{donation.providerPaymentId ?? "Pending"}</dd></div>
           <div><dt>Acknowledgement</dt><dd>{donation.receiptNumber ?? "Pending"}</dd></div>

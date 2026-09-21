@@ -3,6 +3,7 @@ import { DonationStatus } from "@prisma/client";
 import { requirePermission } from "@/lib/auth";
 import { formatINR } from "@/lib/appeals";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
+import { donationIntentLabel } from "@/lib/donation-intent";
 import { prisma } from "@/lib/prisma";
 
 type Props = { searchParams: Promise<{ status?: string; page?: string }> };
@@ -86,11 +87,12 @@ export default async function DonationsPage({ searchParams }: Props) {
     </div>
     <div className="admin-table-wrap">
       <table>
-        <thead><tr><th>Reference</th><th>Donor</th><th>Appeal</th><th>Amount</th><th>Refunded</th><th>Status</th><th>Date</th></tr></thead>
+        <thead><tr><th>Reference</th><th>Donor</th><th>Appeal</th><th>Intent</th><th>Amount</th><th>Refunded</th><th>Status</th><th>Date</th></tr></thead>
         <tbody>{donations.map(donation => <tr key={donation.id}>
           <td><Link href={`/admin/donations/${donation.id}`}><strong>{donation.referenceNumber}</strong></Link></td>
           <td>{donation.donorName}<br/><small>{donation.donorEmail}</small></td>
           <td>{donation.appeal.title}</td>
+          <td>{donationIntentLabel(donation.givingIntent)}</td>
           <td>{formatINR(donation.amount.toNumber())}</td>
           <td>{formatINR(donation.refundedAmount.toNumber())}</td>
           <td><span className="status-badge">{donation.status}</span></td>

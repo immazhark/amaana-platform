@@ -24,6 +24,7 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
         referenceNumber: true,
         appealId: true,
         donorEmail: true,
+        givingIntent: true,
         receiptTokenHash: true,
       },
     });
@@ -67,7 +68,7 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
           recipient: donation.donorEmail,
           templateKey: "donation-acknowledgement",
           subject: "Thank you for supporting an Amaana Foundation appeal",
-          payload: { referenceNumber: donation.referenceNumber },
+          payload: { referenceNumber: donation.referenceNumber, givingIntent: donation.givingIntent },
           donationId: donation.id,
         },
       });
