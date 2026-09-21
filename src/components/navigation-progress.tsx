@@ -28,20 +28,11 @@ export function NavigationProgress() {
       const current = new URL(window.location.href);
       if (next.origin !== current.origin || (next.pathname === current.pathname && next.search === current.search)) return;
 
-      if (timer.current) clearTimeout(timer.current);
-      const originPath = current.pathname;
-      timer.current = setTimeout(() => {
-        setPendingFrom(originPath);
-        timer.current = null;
-      }, 120);
+      setPendingFrom(current.pathname);
     };
 
     const finishHistoryNavigation = () => {
       setPendingFrom(null);
-      if (timer.current) {
-        clearTimeout(timer.current);
-        timer.current = null;
-      }
     };
 
     document.addEventListener("click", begin, true);
@@ -49,7 +40,6 @@ export function NavigationProgress() {
     return () => {
       document.removeEventListener("click", begin, true);
       window.removeEventListener("popstate", finishHistoryNavigation);
-      if (timer.current) clearTimeout(timer.current);
     };
   }, []);
 
