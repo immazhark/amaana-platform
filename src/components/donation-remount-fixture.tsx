@@ -21,6 +21,7 @@ export function DonationRemountFixture() {
           appealId="browser-acceptance-appeal"
           appealTitle="Browser Acceptance Appeal"
           maxAmount={5000}
+          zakatEligible
         />
       ) : (
         <p role="status">Donation form unmounted for remount acceptance.</p>

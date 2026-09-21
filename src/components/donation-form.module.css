@@ -19,3 +19,18 @@
 .hint{display:block;margin-top:.45rem;color:#5f6974;line-height:1.5}
 @media(max-width:620px){.checkoutControl{border-radius:.85rem}.amountControl{min-height:4.1rem}.choice label{padding:1rem}}
 @media(prefers-reduced-motion:reduce){.checkoutControl,.choice label{transition:none}}
+
+.intentGroup{display:grid;gap:.8rem;margin:0;padding:0;border:0}
+.intentGroup legend{padding:0;color:var(--v2-ink);font-size:.82rem;font-weight:850}
+.intentIntro{margin:0;color:#5f6974;font-size:.9rem;line-height:1.55}
+.intentGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem}
+.intentOption{display:flex;min-width:0;gap:.7rem;align-items:flex-start;padding:1rem;border:1px solid rgb(18 34 57 / 14%);border-radius:1rem;background:#fff;cursor:pointer;transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease}
+.intentOption:has(input:checked){border-color:rgb(70 111 170 / 48%);background:#eef3fa;box-shadow:0 0 0 2px rgb(70 111 170 / 10%)}
+.intentOption:focus-within{outline:3px solid var(--af-color-focus);outline-offset:2px}
+.intentOption input{flex:0 0 auto;width:1.1rem;height:1.1rem;margin-top:.18rem;accent-color:var(--v2-blue)}
+.intentOption span{display:grid;gap:.2rem;min-width:0}
+.intentOption strong{color:var(--v2-ink)}
+.intentOption small{color:#5f6974;line-height:1.4}
+.intentNote{display:block;color:#5f6974;line-height:1.5}
+@media(max-width:760px){.intentGrid{grid-template-columns:1fr}}
+@media(prefers-reduced-motion:reduce){.intentOption{transition:none}}

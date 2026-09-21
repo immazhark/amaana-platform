@@ -4,6 +4,7 @@ import Script from "next/script";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
+import { DONATION_INTENT_DESCRIPTIONS, DONATION_INTENT_LABELS, type DonationIntentValue } from "@/lib/donation-intent";
 import styles from "./donation-form.module.css";
 
 type RazorpayResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
@@ -11,7 +12,7 @@ type RazorpayOptions = { key: string; amount: number; currency: string; name: st
 type CheckoutPhase = "loading" | "ready" | "opening" | "verifying" | "reconciliation";
 declare global { interface Window { Razorpay: new (options: RazorpayOptions) => { open(): void } } }
 
-export function DonationForm({ appealId, appealTitle, maxAmount }: { appealId: string; appealTitle: string; maxAmount: number }) {
+export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible = false }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean }) {
   const router = useRouter();
   const errorRef = useRef<HTMLDivElement>(null);
   const [error, setError] = useState("");
@@ -68,6 +69,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount }: { appealId: s
           donorEmail: values.get("donorEmail"),
           donorPhone: values.get("donorPhone"),
           amount: values.get("amount"),
+          givingIntent: values.get("givingIntent"),
           isAnonymous: values.get("isAnonymous") === "on",
           domesticConfirmed: values.get("domesticConfirmed") === "on",
         }),
@@ -132,6 +134,19 @@ export function DonationForm({ appealId, appealTitle, maxAmount }: { appealId: s
         <div className={`field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorName">Full name</label><div className={styles.checkoutControl}><input id="donorName" name="donorName" autoComplete="name" minLength={2} required disabled={lockedForReconciliation}/></div></div>
         <div className={`field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorEmail">Email</label><div className={styles.checkoutControl}><input id="donorEmail" name="donorEmail" type="email" autoComplete="email" required disabled={lockedForReconciliation}/></div></div>
         <div className={`field full ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorPhone">Phone <span className="muted">optional</span></label><div className={styles.checkoutControl}><input id="donorPhone" name="donorPhone" type="tel" autoComplete="tel" disabled={lockedForReconciliation}/></div></div>
+        <fieldset className={`field full ${styles.intentGroup}`} disabled={lockedForReconciliation}>
+          <legend>Giving intention</legend>
+          <p className={styles.intentIntro}>Choose how you want this contribution recorded. The selected appeal remains the designated destination in every case.</p>
+          <div className={styles.intentGrid}>
+            {(["GENERAL", "SADAQAH", ...(zakatEligible ? ["ZAKAT"] : [])] as DonationIntentValue[]).map((intent, index) => (
+              <label className={styles.intentOption} key={intent}>
+                <input type="radio" name="givingIntent" value={intent} defaultChecked={index === 0} required />
+                <span><strong>{DONATION_INTENT_LABELS[intent]}</strong><small>{DONATION_INTENT_DESCRIPTIONS[intent]}</small></span>
+              </label>
+            ))}
+          </div>
+          <small className={styles.intentNote}>{zakatEligible ? "Amaana has explicitly reviewed this appeal as Zakat-eligible. Your selection records your giving intention; it does not alter the underlying verification record." : "Zakat is shown only on appeals that Amaana has explicitly reviewed as Zakat-eligible."}</small>
+        </fieldset>
         <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="isAnonymous" type="checkbox" disabled={lockedForReconciliation}/><span><strong>Keep my public identity private</strong><small>Do not show my name in any public donor listing.</small></span></label></div>
         <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="domesticConfirmed" type="checkbox" required disabled={lockedForReconciliation}/><span><strong>Domestic contribution confirmation</strong><small>I confirm this donation is from an Indian source using a domestic payment method.</small></span></label></div>
         <div className="field full v2-form-submit"><button className="v2-button" type="submit" disabled={busy || !scriptReady || lockedForReconciliation}>{phase === "opening" ? "Opening secure checkout…" : phase === "verifying" ? "Verifying donation…" : phase === "reconciliation" ? "Verification follow-up required" : scriptReady ? "Continue securely →" : "Preparing secure checkout…"}</button><small>{lockedForReconciliation ? "Do not submit another payment for this donation. Keep your Razorpay confirmation so the payment can be reconciled safely." : "Next: Razorpay secure checkout. Your Amaana acknowledgement follows successful payment verification and is not an 80G tax-deduction certificate."}</small></div>
