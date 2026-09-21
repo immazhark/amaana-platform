@@ -18,10 +18,7 @@
   background-position:center center;
 }
 
-.amaana-bg-body,
-.v3-work,
-.v3-origin,
-.paper{
+.amaana-bg-body{
   background-color:#fbf7ef!important;
   background-image:var(--amaana-bg-body)!important;
   background-repeat:no-repeat!important;
@@ -50,10 +47,7 @@
   }
 
   .amaana-bg-hero{background-position:top right}
-  .amaana-bg-body,
-  .v3-work,
-  .v3-origin,
-  .paper{background-position:center center!important}
+  .amaana-bg-body{background-position:center center!important}
   .amaana-bg-footer,
   .site-footer{background-position:top right}
 }
