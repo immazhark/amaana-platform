@@ -55,7 +55,7 @@ export default async function HomePage() {
     <div className="v3-home">
       <section className="v3-home-banner" aria-labelledby="amaana-home-title">
         <h1 className="sr-only" id="amaana-home-title">Amaana Foundation — Trust, Turned Into Action.</h1>
-        <ScrollCarousel label="Amaana Foundation story and featured work" mode="hero" className="v3-home-banner-carousel">
+        <ScrollCarousel label="Amaana Foundation story and featured work" mode="hero" className="v3-home-banner-carousel" autoAdvanceMs={7000}>
           <article className="v3-home-banner-slide v3-home-banner-slide--story">
             <div className="v3-home-banner-story-art" aria-hidden="true">
               <span className="v3-home-banner-story-year">2020</span>
@@ -92,15 +92,15 @@ export default async function HomePage() {
         </ScrollCarousel>
       </section>
 
-      <section className="v3-proof" aria-label="Selected documented impact">
-        <div className="v3-shell v3-proof-grid">
+      <section className="v3-proof" aria-labelledby="homepage-highlights-title">
+        <div className="v3-shell"><p className="v3-proof-label" id="homepage-highlights-title">Highlights</p><div className="v3-proof-grid">
           {homepageImpact.map(item => (
             <div className="v3-proof-item" key={item.label}>
               <strong>{item.value}</strong>
               <span>{item.label}</span>
             </div>
           ))}
-        </div>
+        </div></div>
       </section>
 
       <section className="v3-section v3-field" aria-labelledby="field-title">
