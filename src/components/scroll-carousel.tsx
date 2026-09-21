@@ -160,6 +160,8 @@ export function ScrollCarousel({
               role="group"
               aria-roledescription="slide"
               aria-label={`${index + 1} of ${slides.length}`}
+              aria-hidden={mode === "hero" && index !== activeIndex ? true : undefined}
+              inert={mode === "hero" && index !== activeIndex ? true : undefined}
             >
               {slide}
             </div>

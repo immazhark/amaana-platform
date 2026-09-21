@@ -50,36 +50,58 @@ export default async function HomePage() {
     ] as const),
   );
 
-  const heroVisual = heroSlides.length ? (
-    <ScrollCarousel label="Featured Amaana programmes" mode="hero" className="v3-hero-carousel">
-      {heroSlides.map(({ drive, media }, index) => (
-        <div className="v3-hero-media" key={drive.id}>
-          <div className="v3-hero-photo"><PublicMedia asset={media} priority={index === 0} sizes="(max-width: 900px) calc(100vw - 2rem), 46vw" /></div>
-          <div className="v3-hero-media-shade" aria-hidden="true" />
-          <div className="v3-hero-media-caption"><span>{drive.year ?? drive.endYear ?? "Amaana programme"}</span><strong>{drive.title}</strong><Link href={`/our-work/${drive.slug}`}>See the programme</Link></div>
-        </div>
-      ))}
-    </ScrollCarousel>
+  const bannerReady = heroSlides.length >= 3;
+  const fallbackHero = heroSlides[0] ?? null;
+  const fallbackHeroVisual = fallbackHero ? (
+    <div className="v3-hero-media">
+      <div className="v3-hero-photo"><PublicMedia asset={fallbackHero.media} priority sizes="(max-width: 900px) calc(100vw - 2rem), 46vw" /></div>
+      <div className="v3-hero-media-shade" aria-hidden="true" />
+      <div className="v3-hero-media-caption"><span>{fallbackHero.drive.year ?? fallbackHero.drive.endYear ?? "Amaana programme"}</span><strong>{fallbackHero.drive.title}</strong><Link href={`/our-work/${fallbackHero.drive.slug}`}>See the programme</Link></div>
+    </div>
   ) : undefined;
 
   return (
     <div className="v3-home">
-      <PageHero
-        variant="level1"
-        className="page-hero--home"
-        id="amaana-home-title"
-        eyebrow="Amaana Foundation · Hyderabad"
-        title="Trust, Turned Into Action."
-        description={<p>Amaana Foundation is a Hyderabad-based charitable trust helping families through verified medical and financial assistance, education support, Ramadan and Eid initiatives, seasonal relief and emergency response. We believe every contribution is an amaana—a trust to be handled with dignity, transparency and responsibility.</p>}
-        actions={[
-          { label: "Explore our work", href: "/our-work" },
-          { label: "Support a Verified Need", href: "/donate", secondary: true },
-        ]}
-        visual={heroVisual}
-        visualKicker="Amaana Foundation"
-        visualTitle="Documented work"
-        visualNote="Approved programme media appears here when available."
-      />
+      {bannerReady ? (
+        <section className="v3-home-banner" aria-labelledby="amaana-home-title">
+          <ScrollCarousel label="Featured Amaana programmes" mode="hero" className="v3-home-banner-carousel">
+            {heroSlides.map(({ drive, media }, index) => (
+              <article className="v3-home-banner-slide" key={drive.id}>
+                <div className="v3-home-banner-media"><PublicMedia asset={media} priority={index === 0} sizes="100vw" /></div>
+                <div className="v3-home-banner-shade" aria-hidden="true" />
+                <div className="v3-shell v3-home-banner-content">
+                  <p className="v3-home-banner-kicker">Amaana Foundation · {drive.causeTitle}</p>
+                  {index === 0 ? <h1 id="amaana-home-title">Trust, Turned Into Action.</h1> : <h2>{drive.title}</h2>}
+                  {index === 0 ? <h2>{drive.title}</h2> : null}
+                  <p>{drive.summary}</p>
+                  {drive.primaryMetric ? <div className="v3-home-banner-metric"><strong>{drive.primaryMetric}</strong><span>{drive.primaryMetricLabel ?? "Documented impact"}</span></div> : null}
+                  <div className="v3-home-banner-actions">
+                    <Link className="v3-btn" href={`/our-work/${drive.slug}`}>Explore this programme</Link>
+                    <Link className="v3-btn secondary" href="/donate">Support a Need</Link>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </ScrollCarousel>
+        </section>
+      ) : (
+        <PageHero
+          variant="level1"
+          className="page-hero--home"
+          id="amaana-home-title"
+          eyebrow="Amaana Foundation · Hyderabad"
+          title="Trust, Turned Into Action."
+          description={<p>Amaana Foundation is a Hyderabad-based charitable trust helping families through verified medical and financial assistance, education support, Ramadan and Eid initiatives, seasonal relief and emergency response. We believe every contribution is an amaana—a trust to be handled with dignity, transparency and responsibility.</p>}
+          actions={[
+            { label: "Explore our work", href: "/our-work" },
+            { label: "Support a Verified Need", href: "/donate", secondary: true },
+          ]}
+          visual={fallbackHeroVisual}
+          visualKicker="Amaana Foundation"
+          visualTitle="Documented work"
+          visualNote="Your curated identity photographs will populate the programme banner here."
+        />
+      )}
 
       <section className="v3-proof" aria-label="Selected documented impact">
         <div className="v3-shell v3-proof-grid">
