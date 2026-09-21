@@ -141,7 +141,7 @@ test.describe('donation journey without real payment', () => {
   });
 
   test('Razorpay checkout becomes ready again after the donation form remounts', async ({ page }) => {
-    const submit = await openDonationFixture(page, 'dismiss');
+    await openDonationFixture(page, 'dismiss');
     await expect(page.getByText('Secure checkout is ready.')).toBeVisible();
 
     await page.getByRole('button', { name: 'Unmount donation form' }).click();

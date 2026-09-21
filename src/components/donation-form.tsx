@@ -21,9 +21,12 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
   const transactionMin = transactionMax < 10 ? transactionMax : 10;
 
   useEffect(() => {
-    if (window.Razorpay) {
-      setPhase(current => current === "reconciliation" ? current : "ready");
-    }
+    const frame = window.requestAnimationFrame(() => {
+      if (window.Razorpay) {
+        setPhase(current => current === "reconciliation" ? current : "ready");
+      }
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const busy = phase === "opening" || phase === "verifying";
