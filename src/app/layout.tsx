@@ -23,6 +23,7 @@ import { IslamicCompanion } from "@/components/islamic-companion";
 import { Analytics } from "@/components/analytics";
 import { StructuredData } from "@/components/structured-data";
 import { BackToTop } from "@/components/back-to-top";
+import { NavigationProgress } from "@/components/navigation-progress";
 import { shouldAllowIndexing } from "@/lib/site-indexing";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
@@ -61,6 +62,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a className="v2-skip-link" href="#main">Skip to content</a>
         <StructuredData />
         <Analytics />
+        <NavigationProgress />
         <SiteHeader />
         <IslamicCompanion />
         <main id="main" tabIndex={-1}>{children}</main>
