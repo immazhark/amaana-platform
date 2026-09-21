@@ -12,7 +12,7 @@ import {
 } from "react";
 import styles from "./scroll-carousel.module.css";
 
-type CarouselMode = "hero" | "gallery" | "cards";
+type CarouselMode = "hero" | "gallery" | "cards" | "focus";
 
 type ScrollCarouselProps = {
   children: ReactNode;
@@ -58,7 +58,8 @@ export function ScrollCarousel({
       let closestDistance = Number.POSITIVE_INFINITY;
       slideRefs.current.forEach((slide, index) => {
         if (!slide) return;
-        const distance = Math.abs(slide.offsetLeft - viewport.scrollLeft);
+        const target = mode === "focus" ? slide.offsetLeft - (viewport.clientWidth - slide.clientWidth) / 2 : slide.offsetLeft;
+        const distance = Math.abs(target - viewport.scrollLeft);
         if (distance < closestDistance) {
           closestDistance = distance;
           closestIndex = index;
@@ -66,7 +67,7 @@ export function ScrollCarousel({
       });
       setActiveIndex(closestIndex);
     });
-  }, [slides.length]);
+  }, [mode, slides.length]);
 
   useEffect(() => () => {
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
@@ -79,11 +80,11 @@ export function ScrollCarousel({
     const slide = slideRefs.current[bounded];
     if (!viewport || !slide) return;
     viewport.scrollTo({
-      left: slide.offsetLeft,
+      left: mode === "focus" ? slide.offsetLeft - (viewport.clientWidth - slide.clientWidth) / 2 : slide.offsetLeft,
       behavior: prefersReducedMotion.current ? "auto" : "smooth",
     });
     setActiveIndex(bounded);
-  }, [slides.length]);
+  }, [mode, slides.length]);
 
   useEffect(() => {
     if (!autoAdvanceMs || slides.length < 2 || paused || prefersReducedMotion.current) return;
@@ -92,12 +93,12 @@ export function ScrollCarousel({
         const next = (current + 1) % slides.length;
         const viewport = viewportRef.current;
         const slide = slideRefs.current[next];
-        if (viewport && slide) viewport.scrollTo({ left: slide.offsetLeft, behavior: "smooth" });
+        if (viewport && slide) viewport.scrollTo({ left: mode === "focus" ? slide.offsetLeft - (viewport.clientWidth - slide.clientWidth) / 2 : slide.offsetLeft, behavior: "smooth" });
         return next;
       });
     }, autoAdvanceMs);
     return () => window.clearInterval(timer);
-  }, [autoAdvanceMs, paused, slides.length]);
+  }, [autoAdvanceMs, mode, paused, slides.length]);
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.currentTarget !== event.target) return;
@@ -176,7 +177,8 @@ export function ScrollCarousel({
         <div className={styles.track}>
           {slides.map((slide, index) => (
             <div
-              className={styles.slide}
+              className={`${styles.slide} ${mode === "focus" && index === activeIndex ? styles.activeSlide : ""}`}
+              data-active={index === activeIndex ? "true" : undefined}
               key={index}
               ref={node => { slideRefs.current[index] = node; }}
               role="group"
