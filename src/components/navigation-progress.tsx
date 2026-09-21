@@ -9,7 +9,6 @@ export function NavigationProgress() {
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
-    setPending(false);
     if (timer.current) {
       clearTimeout(timer.current);
       timer.current = null;
@@ -48,5 +47,5 @@ export function NavigationProgress() {
     };
   }, []);
 
-  return pending ? <div className="amaana-nav-progress" aria-hidden="true"><span /></div> : null;
+  return pending ? <div key={pathname} className="amaana-nav-progress" aria-hidden="true"><span /></div> : null;
 }
