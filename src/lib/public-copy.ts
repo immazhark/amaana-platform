@@ -38,10 +38,8 @@ export function buildPublicRecordFallback({
   metricLabel?: string | null;
 }) {
   const metricSentence = metric
-    ? `Through this work, Amaana's community came together to provide ${metric}${metricLabel ? ` ${metricLabel}` : ""}.`
+    ? `The documented outcome for this work is ${metric}${metricLabel ? ` ${metricLabel}` : ""}.`
     : "";
-  const statusSentence = status ? `This ${status.toLowerCase()} effort is part of Amaana's continuing record of service.` : "";
-  return [metricSentence, statusSentence, `This page shares what we can responsibly document about ${title} while protecting the dignity and privacy of the people involved.`]
-    .filter(Boolean)
-    .join(" ");
+  const privacySentence = `Only information suitable for public sharing is included here; personal documents and sensitive details remain private.`;
+  return [metricSentence, privacySentence].filter(Boolean).join(" ");
 }
