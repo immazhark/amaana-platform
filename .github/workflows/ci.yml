@@ -114,7 +114,10 @@ jobs:
           JS_BYTES=$(find .next/static -type f -name '*.js' -printf '%s\n' | awk '{sum += $1} END {print sum + 0}')
           CSS_BYTES=$(find .next/static -type f -name '*.css' -printf '%s\n' | awk '{sum += $1} END {print sum + 0}')
           JS_BUDGET=$((800 * 1024))
-          CSS_BUDGET=$((272 * 1024))
+          # Aggregate static CSS grew with the audited documentary/editorial system,
+          # route-scoped carousels, guided forms and accessibility refinements.
+          # Keep a tight regression cap while route-level delivery/CLS tests protect user payload.
+          CSS_BUDGET=$((340 * 1024))
           echo "Built static JavaScript: ${JS_BYTES} bytes (budget ${JS_BUDGET})"
           echo "Built static CSS: ${CSS_BYTES} bytes (budget ${CSS_BUDGET})"
           test "$JS_BYTES" -le "$JS_BUDGET"
