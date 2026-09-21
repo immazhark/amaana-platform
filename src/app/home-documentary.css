@@ -140,3 +140,26 @@
   .v3-home-banner-slide--story .v3-home-banner-shade{background:linear-gradient(0deg,rgb(5 14 25 / 97%),rgb(8 23 40 / 70%) 64%,rgb(8 23 40 / 22%))}
   .v3-home-banner-slide--story .v3-home-banner-content{padding-right:.25rem}
 }
+
+
+/* Flagship showcase correction: the navy canvas is full bleed, but each slide lives
+   inside the same editorial body width as the rest of Amaana. */
+.v3-home-banner{padding:clamp(1rem,2.2vw,2rem) 0;background:
+  radial-gradient(circle at 78% 18%,rgb(70 111 170 / 22%),transparent 27%),
+  linear-gradient(135deg,#071522,#102744 58%,#0b1b31)}
+.v3-home-banner-carousel{width:min(calc(100% - clamp(2rem,7vw,7rem)),88rem);height:clamp(34rem,68vh,46rem);min-height:34rem;margin-inline:auto;border:1px solid rgb(255 255 255 / 12%);border-radius:clamp(1.1rem,2vw,2rem);overflow:hidden;box-shadow:0 2rem 6rem rgb(0 0 0 / 24%)}
+.v3-home-banner-slide{border-radius:inherit}
+.v3-home-banner-content{width:100%;max-width:none;padding-inline:clamp(1.5rem,5vw,5rem);padding-right:min(46%,38rem)}
+.v3-home-banner-slide--story .v3-home-banner-content{padding-left:clamp(1.5rem,5vw,5rem);padding-right:min(44%,34rem)}
+.v3-home-banner-brandline{font-size:clamp(2.75rem,5.4vw,5.25rem)}
+.v3-home-banner-content h2{font-size:clamp(1.45rem,2.25vw,2.35rem)}
+.v3-proof-label{margin:0 0 .75rem;color:var(--af-color-gold-ink);font-size:.72rem;font-weight:850;letter-spacing:.14em;text-transform:uppercase}
+@media(max-width:900px){
+ .v3-home-banner-carousel{width:min(calc(100% - 2rem),88rem);height:clamp(36rem,70vh,44rem)}
+ .v3-home-banner-content,.v3-home-banner-slide--story .v3-home-banner-content{padding-inline:clamp(1.25rem,5vw,3rem);padding-right:clamp(1.25rem,18vw,8rem)}
+}
+@media(max-width:600px){
+ .v3-home-banner{padding:.65rem 0}
+ .v3-home-banner-carousel{width:calc(100% - 1rem);height:40rem;min-height:40rem;border-radius:1.15rem}
+ .v3-home-banner-content,.v3-home-banner-slide--story .v3-home-banner-content{padding:4rem 1.2rem 5.25rem}
+}
