@@ -109,6 +109,7 @@ async function finishAssistanceConfirmation(page) {
   await page.locator('input[name="consent"]').check();
 }
 
+// Release-candidate browser gate: keep this suite active whenever checkout or runtime hardening changes.
 test.describe('donation journey without real payment', () => {
   test('browser constraints require an allowed amount and domestic confirmation before checkout', async ({ page }) => {
     let orderCalls = 0;
