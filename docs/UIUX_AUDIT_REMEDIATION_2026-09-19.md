@@ -121,7 +121,7 @@ Family feedback is complete and the remediation stream is no longer held on a qu
 ### New scroll-reduction implementation
 
 - Shared `ScrollCarousel` supports manual buttons, touch/swipe, ArrowLeft/ArrowRight/Home/End keyboard navigation, slide status and reduced-motion behavior.
-- No carousel auto-rotation is allowed.
+- Ordinary galleries and long programme-history carousels remain manual. Later approved 21 September direction supersedes the earlier blanket rule: the flagship homepage hero and the center-focused Homepage “Documented work” carousel may auto-advance, with pause/resume controls, interaction pause and reduced-motion safeguards.
 - Programme gallery is horizontal while preserving modal enlargement, Escape handling and focus return.
 - Parent programme histories with more than three child/year records are horizontal compact cards.
 - Homepage documented-field work and programme-area discovery are horizontal strips.
