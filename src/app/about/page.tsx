@@ -44,9 +44,9 @@ export default async function AboutPage() {
         </div>
       </section>
       <section className="canonical-block canonical-block--about-record">
-        <h2>Continue the public record</h2>
+        <h2>Learn more about how Amaana works</h2>
         <div>
-          <p>Learn who carries formal responsibility for Amaana, how verified needs are handled, and how public evidence is separated from private proof.</p>
+          <p>Meet the people responsible for Amaana, understand how requests for support are reviewed, and see how we share useful updates while protecting private information.</p>
           <p><Link href="/governance">Governance & trustees →</Link></p>
           <p><Link href="/how-we-verify">How verification works →</Link></p>
           <p><Link href="/transparency">Transparency & reporting →</Link></p>
