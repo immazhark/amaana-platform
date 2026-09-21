@@ -1,9 +1,14 @@
-/* Navigation feedback follows latency; it never delays navigation. */
-.amaana-route-loading{position:fixed;z-index:10010;top:1rem;left:50%;display:grid;place-items:center;width:3rem;height:3rem;transform:translateX(-50%);pointer-events:none;border:1px solid rgb(224 179 24 / 34%);border-radius:999px;background:rgb(255 253 248 / 88%);box-shadow:0 10px 30px rgb(18 34 57 / 15%);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);animation:amaana-route-in .16s ease-out both}
-.amaana-route-loading__mark{display:grid;place-items:center;width:2rem;height:2rem;border:2px solid rgb(18 34 57 / 16%);border-top-color:#d7a90f;border-radius:999px;color:#17345a;font:900 .62rem/1 system-ui,sans-serif;letter-spacing:.06em;animation:amaana-route-spin .8s linear infinite}
-.amaana-nav-progress{position:fixed;z-index:10020;top:0;left:0;width:100%;height:3px;pointer-events:none;overflow:hidden;background:transparent}
-.amaana-nav-progress span{display:block;width:38%;height:100%;border-radius:0 999px 999px 0;background:linear-gradient(90deg,#466faa,#e0b318,#f0d56b);box-shadow:0 0 .8rem rgb(224 179 24 / 42%);animation:amaana-nav-progress 1.05s cubic-bezier(.4,0,.2,1) infinite}
-@keyframes amaana-route-in{from{opacity:0;transform:translate(-50%,-.3rem) scale(.94)}to{opacity:1;transform:translateX(-50%) scale(1)}}
-@keyframes amaana-route-spin{to{transform:rotate(360deg)}}
-@keyframes amaana-nav-progress{0%{transform:translateX(-105%) scaleX(.65)}55%{transform:translateX(125%) scaleX(1)}100%{transform:translateX(285%) scaleX(.72)}}
-@media(prefers-reduced-motion:reduce){.amaana-route-loading,.amaana-route-loading__mark,.amaana-nav-progress span{animation:none!important}}
+/* Branded navigation loading state.
+   The overlay blocks interaction without collapsing the route underneath it. */
+.amaana-loading-route-shell{min-height:100dvh}
+.amaana-loading-overlay{position:fixed;z-index:10050;inset:0;width:100vw;height:100dvh;display:grid;place-items:center;overflow:hidden;background:rgb(10 25 44 / 28%);-webkit-backdrop-filter:blur(2px);backdrop-filter:blur(2px);cursor:wait;overscroll-behavior:contain;touch-action:none;animation:amaana-overlay-in .16s ease-out both}
+.amaana-loading-indicator{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;min-width:8rem;min-height:8rem;padding:1.1rem 1.35rem;border:1px solid rgb(255 255 255 / 24%);border-radius:1.5rem;background:rgb(255 253 248 / 94%);box-shadow:0 1.5rem 4rem rgb(7 18 33 / 24%)}
+.amaana-loading-logo{display:block;width:clamp(4.5rem,11vw,6rem);height:clamp(4.5rem,11vw,6rem);object-fit:contain;transform-origin:center;animation:amaana-logo-breathe 1.35s cubic-bezier(.45,0,.55,1) infinite}
+.amaana-loading-dots{display:flex;align-items:center;justify-content:center;gap:.42rem;height:.65rem}
+.amaana-loading-dots i{display:block;width:.48rem;height:.48rem;border-radius:50%;background:var(--af-color-gold-ink,#b8890e);animation:amaana-dot-pulse 1.05s ease-in-out infinite}
+.amaana-loading-dots i:nth-child(2){animation-delay:.14s}.amaana-loading-dots i:nth-child(3){animation-delay:.28s}
+@keyframes amaana-overlay-in{from{opacity:0}to{opacity:1}}
+@keyframes amaana-logo-breathe{0%,100%{transform:scale(.88);opacity:.82}50%{transform:scale(1.06);opacity:1}}
+@keyframes amaana-dot-pulse{0%,60%,100%{transform:translateY(0) scale(.8);opacity:.38}30%{transform:translateY(-.22rem) scale(1);opacity:1}}
+@media(max-width:600px){.amaana-loading-indicator{min-width:7rem;min-height:7rem;padding:1rem;border-radius:1.25rem}.amaana-loading-logo{width:4.75rem;height:4.75rem}}
+@media(prefers-reduced-motion:reduce){.amaana-loading-overlay{animation:none}.amaana-loading-logo{animation:amaana-logo-fade 1.5s ease-in-out infinite}.amaana-loading-dots i{animation:none;opacity:.72}@keyframes amaana-logo-fade{0%,100%{opacity:.78}50%{opacity:1}}}
