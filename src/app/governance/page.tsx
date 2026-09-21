@@ -5,8 +5,8 @@ export const metadata = {
   title: governanceCopy.title,
   description: governanceCopy.intro,
   alternates: { canonical: '/governance' },
-  openGraph: { type: 'website', url: '/governance', title: `${governanceCopy.title} | Amaana Foundation`, description: governanceCopy.intro },
-  twitter: { card: 'summary', title: `${governanceCopy.title} | Amaana Foundation`, description: governanceCopy.intro },
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }], type: 'website', url: '/governance', title: `${governanceCopy.title} | Amaana Foundation`, description: governanceCopy.intro },
+  twitter: { images: ["/twitter-image"], card: 'summary', title: `${governanceCopy.title} | Amaana Foundation`, description: governanceCopy.intro },
 };
 export default function Page(){
   return <CanonicalArticle eyebrow="Governance" heroVariant="trust" heroVisualTitle="Governance" bodyClassName="canonical-body--governance" {...governanceCopy}>

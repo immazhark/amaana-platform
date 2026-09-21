@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   title: "Request Assistance",
   description: "Submit a private assistance request to Amaana Foundation in Hyderabad for careful review, verification and follow-up.",
   alternates: { canonical: "/request-assistance" },
-  openGraph: { type: "website", url: "/request-assistance", title: "Request Assistance | Amaana Foundation", description: "Start a private assistance request with Amaana Foundation in Hyderabad. Requests begin with review, not public fundraising." },
-  twitter: { card: "summary", title: "Request Assistance | Amaana Foundation", description: "A private first step for requesting assistance from Amaana Foundation." },
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }], type: "website", url: "/request-assistance", title: "Request Assistance | Amaana Foundation", description: "Start a private assistance request with Amaana Foundation in Hyderabad. Requests begin with review, not public fundraising." },
+  twitter: { images: ["/twitter-image"], card: "summary", title: "Request Assistance | Amaana Foundation", description: "A private first step for requesting assistance from Amaana Foundation." },
 };
 
 export default function RequestAssistancePage() {

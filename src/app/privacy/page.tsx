@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   title: "Privacy Notice",
   description: "How Amaana Foundation currently collects, uses and protects personal information.",
   alternates: { canonical: "/privacy" },
-  openGraph: { type: "website", url: "/privacy", title: "Privacy Notice | Amaana Foundation", description: "How Amaana Foundation currently handles personal information." },
-  twitter: { card: "summary", title: "Privacy Notice | Amaana Foundation", description: "How Amaana Foundation currently handles personal information." },
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }], type: "website", url: "/privacy", title: "Privacy Notice | Amaana Foundation", description: "How Amaana Foundation currently handles personal information." },
+  twitter: { images: ["/twitter-image"], card: "summary", title: "Privacy Notice | Amaana Foundation", description: "How Amaana Foundation currently handles personal information." },
 };
 const sections=[
 ["01","Information we collect",<>Depending on the interaction, Amaana may collect names, contact details, location, enquiries, donation references and assistance-request information. Assistance records may include medical, financial, education or other supporting documents relevant to verification. Staff accounts also contain identity, role and audit information.</>],

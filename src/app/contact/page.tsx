@@ -7,13 +7,13 @@ export const metadata: Metadata = {
   title: "Contact",
   description: "Contact Amaana Foundation in Hyderabad, Telangana for general enquiries, assistance, volunteering, collaborations or donation support.",
   alternates: { canonical: "/contact" },
-  openGraph: {
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }],
     type: "website",
     url: "/contact",
     title: "Contact Amaana Foundation",
     description: "Reach Amaana Foundation in Hyderabad for general enquiries, assistance, volunteering, collaborations or donation support.",
   },
-  twitter: {
+  twitter: { images: ["/twitter-image"],
     card: "summary",
     title: "Contact Amaana Foundation",
     description: "Choose the right contact path for Amaana Foundation in Hyderabad.",
