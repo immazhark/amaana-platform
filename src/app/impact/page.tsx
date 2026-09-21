@@ -42,8 +42,8 @@ export default async function ImpactPage() {
       <PageHero
         variant="level1"
         eyebrow="Impact · Evidence · Continuity"
-        title="Impact, Without Inflated Numbers"
-        description={<p>Every number should answer a second question: what does it represent? Amaana reports programme-level and case-level outcomes rather than collapsing unrelated activities into one marketing total.</p>}
+        title="Impact, initiative by initiative."
+        description={<p>See what each Amaana initiative achieved, with the year, programme and known outcome kept together so the numbers retain their meaning.</p>}
         actions={[
           { label: "Follow the evidence", href: "#evidence" },
           { label: "How we report", href: "/transparency", secondary: true },
@@ -60,7 +60,7 @@ export default async function ImpactPage() {
 
       <section className="v2-section paper v2-impact-wall-section" id="evidence" aria-labelledby="impact-wall-title">
         <div className="v2-shell">
-          <div className="v2-section-head"><div><p className="v2-section-label">Wall of impact</p><h2 className="v2-section-title" id="impact-wall-title">Every tile carries a documented outcome.</h2></div><p className="v2-section-intro">Explore an outcome, then open the initiative to understand the work behind it.</p></div>
+          <div className="v2-section-head"><div><p className="v2-section-label">Wall of impact</p><h2 className="v2-section-title" id="impact-wall-title">See what each initiative achieved.</h2></div><p className="v2-section-intro">Explore an outcome, then open the initiative to understand the work behind it.</p></div>
           {initiatives.length > 0 ? <div className="v2-impact-wall">{initiatives.map((item, index) => {
             const thumbnail = selectIdentityPublicImage(item.mediaAssets) ?? null;
             return <Link href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id} aria-label={`Open ${item.title}`}>
