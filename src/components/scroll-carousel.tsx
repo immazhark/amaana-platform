@@ -32,7 +32,7 @@ export function ScrollCarousel({
   autoAdvanceMs = 0,
 }: ScrollCarouselProps) {
   const slides = Children.toArray(children);
-  const slideCount = slides.length;
+  const slideCount = Children.count(children);
   const viewportRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<Array<HTMLDivElement | null>>([]);
   const frameRef = useRef<number | null>(null);
