@@ -107,10 +107,10 @@ export default async function HomePage() {
         <div className="v3-shell">
           <div className="v3-section-head">
             <div>
-              <p className="v3-label">Seen in the work</p>
-              <h2 className="v3-heading" id="field-title">Impact We Can Stand Behind</h2>
+              <p className="v3-label">From the field</p>
+              <h2 className="v3-heading" id="field-title">A closer look at the work</h2>
             </div>
-            <p className="v3-intro">We would rather show programme-level evidence than publish one oversized number that cannot be responsibly audited. Our impact reporting focuses on documented annual reach, quantities distributed, verified cases completed and what donor support enabled.</p>
+            <p className="v3-intro">Step inside selected Amaana initiatives through documented moments from the field, then open each programme to see its story and reported outcomes.</p>
           </div>
 
           <ScrollCarousel label="Selected documented field work" mode="cards" className="v3-field-carousel">
