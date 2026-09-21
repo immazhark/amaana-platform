@@ -188,6 +188,12 @@ export function ScrollCarousel({
               aria-current={mode === "focus" && index === activeIndex ? "true" : undefined}
               aria-hidden={mode === "hero" && index !== activeIndex ? true : undefined}
               inert={mode === "hero" && index !== activeIndex ? true : undefined}
+              onClick={event => {
+                if (mode !== "focus" || index === activeIndex) return;
+                const target = event.target;
+                if (target instanceof Element && target.closest("a, button, input, select, textarea, [role=\"button\"]")) return;
+                goTo(index);
+              }}
             >
               {slide}
             </div>
