@@ -25,11 +25,10 @@
 
 /* Center-focused editorial carousel for programme/content discovery.
    Adjacent cards remain visible as context while the active card owns the reading focus. */
-.focus .viewport{scroll-padding-inline:clamp(1rem,8vw,7rem)}
-.focus .track{align-items:center;padding-inline:max(1rem,calc((100vw - min(72vw,48rem))/2));padding-block:.8rem 1.25rem}
+.focus{container-type:inline-size}\n.focus .viewport{scroll-padding-inline:clamp(1rem,8vw,7rem)}\n.focus .track{align-items:center;padding-inline:max(1rem,calc((100cqw - min(72vw,48rem))/2));padding-block:.8rem 1.25rem}
 .focus .slide{width:min(72vw,48rem);scroll-snap-align:center;opacity:.64;transform:scale(.9);transform-origin:center;filter:saturate(.72);transition:transform .34s var(--af-ease-standard),opacity .28s ease,filter .28s ease}
 .focus .activeSlide{opacity:1;transform:scale(1);filter:none;z-index:2}
 .focus .activeSlide>*{box-shadow:0 1.25rem 3.25rem rgb(18 34 57 / 14%)}
-@media(max-width:900px){.focus .track{padding-inline:max(1rem,calc((100vw - min(80vw,38rem))/2))}.focus .slide{width:min(80vw,38rem);opacity:.72;transform:scale(.94)}}
+@media(max-width:900px){.focus .track{padding-inline:max(1rem,calc((100cqw - min(80vw,38rem))/2))}.focus .slide{width:min(80vw,38rem);opacity:.72;transform:scale(.94)}}
 @media(max-width:600px){.focus .track{padding-inline:7vw}.focus .slide{width:86vw;opacity:.78;transform:scale(.96)}}
 @media(prefers-reduced-motion:reduce){.focus .slide{transition:none;transform:none}.focus .activeSlide>*{box-shadow:none}}
