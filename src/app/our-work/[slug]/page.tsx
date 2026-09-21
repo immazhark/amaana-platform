@@ -44,7 +44,7 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
   const gallery = media.filter(asset => asset.id !== leadMedia?.id);
   const period = formatYears(initiative.startYear, initiative.endYear, initiative.year);
   const paragraphs = distinctStoryParagraphs("", initiative.story || initiative.summary);
-  const fallbackStory = buildPublicRecordFallback({ title: initiative.title, status: period, metric: initiative.primaryMetric, metricLabel: initiative.primaryMetricLabel });
+  const fallbackStory = buildPublicRecordFallback({ metric: initiative.primaryMetric, metricLabel: initiative.primaryMetricLabel });
   const activeAppeals = initiative.appeals.filter(appeal => appeal.status === "PUBLISHED" && canExposePublicAppeal(appeal));
   const isTaleemInitiative = initiative.slug.startsWith("taleem-");
 
