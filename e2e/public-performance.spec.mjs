@@ -33,7 +33,7 @@ test('homepage documentary CSS stays route-scoped', async ({ page }) => {
 });
 
 
-const clsRoutes = ['/', '/about', '/our-work', '/donate', '/request-assistance'];
+const clsRoutes = ['/', '/about', '/our-work', '/impact', '/stories', '/donate', '/request-assistance'];
 
 for (const path of clsRoutes) {
   test(`${path} keeps cumulative layout shift within the launch budget`, async ({ page }) => {
