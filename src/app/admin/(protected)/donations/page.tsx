@@ -1,20 +1,26 @@
 import Link from "next/link";
-import { DonationStatus } from "@prisma/client";
+import { DonationIntent, DonationStatus, Prisma } from "@prisma/client";
 import { requirePermission } from "@/lib/auth";
 import { formatINR } from "@/lib/appeals";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
 import { prisma } from "@/lib/prisma";
 
-type Props = { searchParams: Promise<{ status?: string; page?: string }> };
+type Props = { searchParams: Promise<{ status?: string; intent?: string; page?: string }> };
 
 export default async function DonationsPage({ searchParams }: Props) {
   await requirePermission("donation.view");
-  const { status, page: pageParam } = await searchParams;
+  const { status, intent, page: pageParam } = await searchParams;
   const selected = Object.values(DonationStatus).includes(status as DonationStatus)
     ? status as DonationStatus
     : undefined;
-  const where = selected ? { status: selected } : undefined;
+  const selectedIntent = Object.values(DonationIntent).includes(intent as DonationIntent)
+    ? intent as DonationIntent
+    : undefined;
+  const where: Prisma.DonationWhereInput = {
+    ...(selected ? { status: selected } : {}),
+    ...(selectedIntent ? { givingIntent: selectedIntent } : {}),
+  };
 
   const [totalItems, reconciliation, unmatchedCriticalEvents] = await Promise.all([
     prisma.donation.count({ where }),
@@ -51,7 +57,25 @@ export default async function DonationsPage({ searchParams }: Props) {
   const netRetained = Math.max(0, grossCaptured - refunded);
   const pageHref = (targetPage: number) => ({
     pathname: "/admin/donations",
-    query: { ...(selected ? { status: selected } : {}), page: targetPage },
+    query: {
+      ...(selected ? { status: selected } : {}),
+      ...(selectedIntent ? { intent: selectedIntent } : {}),
+      page: targetPage,
+    },
+  });
+  const statusHref = (nextStatus?: DonationStatus) => ({
+    pathname: "/admin/donations",
+    query: {
+      ...(nextStatus ? { status: nextStatus } : {}),
+      ...(selectedIntent ? { intent: selectedIntent } : {}),
+    },
+  });
+  const intentHref = (nextIntent?: DonationIntent) => ({
+    pathname: "/admin/donations",
+    query: {
+      ...(selected ? { status: selected } : {}),
+      ...(nextIntent ? { intent: nextIntent } : {}),
+    },
   });
 
   return <>
@@ -81,9 +105,15 @@ export default async function DonationsPage({ searchParams }: Props) {
         </li>)}
       </ol>
     </section>}
-    <div className="filter-row">
-      <Link href="/admin/donations">All</Link>
-      {Object.values(DonationStatus).map(item => <Link key={item} href={`/admin/donations?status=${item}`}>{item}</Link>)}
+    <div className="filter-row" aria-label="Donation status filter">
+      <strong>Status:</strong>
+      <Link href={statusHref()}>All</Link>
+      {Object.values(DonationStatus).map(item => <Link key={item} href={statusHref(item)}>{item}</Link>)}
+    </div>
+    <div className="filter-row" aria-label="Giving intention filter">
+      <strong>Giving intention:</strong>
+      <Link href={intentHref()}>All</Link>
+      {Object.values(DonationIntent).map(item => <Link key={item} href={intentHref(item)}>{donationIntentLabel(item)}</Link>)}
     </div>
     <div className="admin-table-wrap">
       <table>
