@@ -52,3 +52,12 @@
 .v3-field-carousel .v3-field-card{width:100%;height:100%}
 .v3-field-carousel .v3-field-card-wide,.v3-field-carousel .v3-field-card-tall{min-height:34rem}
 @media(max-width:700px){.v3-field-carousel .v3-field-card,.v3-field-carousel .v3-field-card-wide,.v3-field-carousel .v3-field-card-tall{min-height:27rem}}
+
+/* Audit close-out: stronger documentary thumbnails and more breathing room around Our Work. */
+.v3-work .v3-section-head{margin-bottom:clamp(3rem,6vw,5.25rem)}
+.v3-work-row .work-thumb{border:1px solid rgb(18 34 57 / 10%);background:var(--af-color-blue-soft);box-shadow:0 .5rem 1.5rem rgb(18 34 57 / 5%);transition:border-color var(--af-motion-medium) ease,box-shadow var(--af-motion-medium) ease,transform var(--af-motion-medium) var(--af-ease-standard)}
+.v3-work-row .work-thumb :is(figure,img,.work-visual-placeholder){width:100%;height:100%}
+.v3-work-row .work-thumb img{transform:scale(1.001);transition:transform .55s var(--af-ease-standard)}
+.v3-work-row:hover .work-thumb,.v3-work-row:focus-visible .work-thumb{border-color:rgb(70 111 170 / 34%);box-shadow:0 .85rem 2.2rem rgb(18 34 57 / 9%);transform:translateY(-2px)}
+.v3-work-row:hover .work-thumb img,.v3-work-row:focus-visible .work-thumb img{transform:scale(1.045)}
+@media(prefers-reduced-motion:reduce){.v3-work-row .work-thumb,.v3-work-row .work-thumb img{transition:none}.v3-work-row:hover .work-thumb,.v3-work-row:focus-visible .work-thumb,.v3-work-row:hover .work-thumb img,.v3-work-row:focus-visible .work-thumb img{transform:none}}
