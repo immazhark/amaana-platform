@@ -20,6 +20,7 @@ type ScrollCarouselProps = {
   mode?: CarouselMode;
   className?: string;
   startAt?: number;
+  autoAdvanceMs?: number;
 };
 
 export function ScrollCarousel({
@@ -28,6 +29,7 @@ export function ScrollCarousel({
   mode = "cards",
   className = "",
   startAt = 0,
+  autoAdvanceMs = 0,
 }: ScrollCarouselProps) {
   const slides = Children.toArray(children);
   const viewportRef = useRef<HTMLDivElement>(null);
@@ -37,6 +39,7 @@ export function ScrollCarousel({
   const id = useId().replaceAll(":", "");
   const viewportId = `carousel-${id}`;
   const prefersReducedMotion = useRef(false);
+  const [paused, setPaused] = useState(false);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -82,6 +85,20 @@ export function ScrollCarousel({
     setActiveIndex(bounded);
   }, [slides.length]);
 
+  useEffect(() => {
+    if (!autoAdvanceMs || slides.length < 2 || paused || prefersReducedMotion.current) return;
+    const timer = window.setInterval(() => {
+      setActiveIndex(current => {
+        const next = (current + 1) % slides.length;
+        const viewport = viewportRef.current;
+        const slide = slideRefs.current[next];
+        if (viewport && slide) viewport.scrollTo({ left: slide.offsetLeft, behavior: "smooth" });
+        return next;
+      });
+    }, autoAdvanceMs);
+    return () => window.clearInterval(timer);
+  }, [autoAdvanceMs, paused, slides.length]);
+
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.currentTarget !== event.target) return;
     if (event.key === "ArrowLeft") {
@@ -113,6 +130,10 @@ export function ScrollCarousel({
       aria-label={label}
       aria-roledescription="carousel"
       data-carousel-mode={mode}
+      onMouseEnter={() => autoAdvanceMs && setPaused(true)}
+      onMouseLeave={() => autoAdvanceMs && setPaused(false)}
+      onFocusCapture={() => autoAdvanceMs && setPaused(true)}
+      onBlurCapture={() => autoAdvanceMs && setPaused(false)}
     >
       {slides.length > 1 ? (
         <div className={styles.toolbar}>
@@ -120,6 +141,7 @@ export function ScrollCarousel({
             <span className={styles.srOnly}>Slide </span>{activeIndex + 1} / {slides.length}
           </span>
           <div className={styles.controls}>
+            {autoAdvanceMs ? <button type="button" aria-label={paused ? "Resume automatic slides" : "Pause automatic slides"} onClick={() => setPaused(value => !value)}><span aria-hidden="true">{paused ? "▶" : "Ⅱ"}</span></button> : null}
             <button
               type="button"
               aria-controls={viewportId}
