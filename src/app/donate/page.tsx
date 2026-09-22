@@ -2,6 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { complianceCopy } from "@/lib/master-copy";
+import { getAppealsIndexData } from "@/lib/public-page-data";
+import { isAppealOpenForDonations } from "@/lib/appeals";
+import { canExposeSyntheticStagingContent, isSyntheticStagingAppeal } from "@/lib/public-environment";
 import styles from "./donate-audit.module.css";
 
 const description = "Support a verified appeal or Amaana initiative through currently approved domestic donation options.";
@@ -25,15 +28,21 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Page() {
+export const dynamic = "force-dynamic";
+
+export default async function Page() {
+  const appealRecords = await getAppealsIndexData();
+  const isStaging = canExposeSyntheticStagingContent();
+  const openAppeals = appealRecords.filter(appeal => isAppealOpenForDonations(appeal) && (isStaging || !isSyntheticStagingAppeal(appeal)));
+  const hasOpenAppeals = openAppeals.length > 0;
   return (
     <CanonicalArticle
       eyebrow="Donate · Amaana Foundation"
       heroVariant="action"
       heroVisualTitle="Give With Purpose"
-      heroVisualNote="Choose a verified public appeal, explore Taleem sponsorship, or ask Amaana about a currently approved programme giving route."
+      heroVisualNote={hasOpenAppeals ? "Choose a verified public appeal, explore Taleem sponsorship, or ask Amaana about a currently approved programme giving route." : "There is no active public appeal right now. Explore Taleem sponsorship or ask Amaana about a currently approved programme giving route."}
       title="Give With Confidence. Give With Purpose."
-      intro="Every contribution is an amaana. Choose where your support should go: a specific verified appeal or a currently approved programme."
+      intro={hasOpenAppeals ? "Every contribution is an amaana. Choose where your support should go: a specific verified appeal or a currently approved programme." : "Every contribution is an amaana. No public appeal is accepting donations right now, so choose an approved programme route or speak with Amaana before contributing."}
       blocks={[
         {
           title: "Choose where your support should go.",
@@ -48,7 +57,7 @@ export default function Page() {
       ]}
     >
       <div className={styles.routes} aria-label="Donation routes">
-        <article className={styles.route}><span>Route 01</span><h3>Support a verified public appeal</h3><p>Choose a specific published need, review the context and remaining verified target, then continue to the secure domestic INR checkout.</p><Link className="v2-button" href="/appeals">See verified appeals</Link></article>
+        <article className={styles.route}><span>Route 01</span><h3>{hasOpenAppeals ? "Support a verified public appeal" : "Public appeals"}</h3><p>{hasOpenAppeals ? `There ${openAppeals.length === 1 ? "is" : "are"} currently ${openAppeals.length} reviewed public ${openAppeals.length === 1 ? "appeal" : "appeals"} accepting support. Review the context and remaining verified target before continuing to secure domestic INR checkout.` : "No public appeal is accepting donations right now. Completed cases remain visible for accountability, and new urgent appeals appear only after review."}</p><Link className="v2-button" href="/appeals">{hasOpenAppeals ? "See verified appeals" : "View appeals and completed cases"}</Link></article>
         <article className={styles.route}><span>Route 02</span><h3>Support education or another approved programme</h3><p>Taleem sponsorship and programme giving begin with the currently available programme route or a conversation with Amaana about an approved destination.</p><Link className="v2-button v2-button--paper-secondary" href="/get-involved/sponsor-education">Explore Taleem sponsorship</Link><Link className="v2-text-link" href="/contact">Ask about programme giving →</Link></article>
       </div>
       <p className={styles.note}>These are distinct giving routes: public appeals are specific verified needs; programme support is arranged only where Amaana confirms an available approved destination.</p>
