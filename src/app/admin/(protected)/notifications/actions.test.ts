@@ -9,11 +9,13 @@ const mocks = vi.hoisted(() => ({
   updateNotificationMany: vi.fn(),
   createAudit: vi.fn(),
   transaction: vi.fn(),
+  serializableTransaction: vi.fn(),
   revalidatePath: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.requirePermission }));
+vi.mock("@/lib/prisma-transaction", () => ({ withSerializableTransactionRetry: mocks.serializableTransaction }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     notification: {
@@ -49,6 +51,11 @@ describe("manual notification recovery", () => {
     });
     mocks.updateNotificationMany.mockResolvedValue({ count: 1 });
     mocks.createAudit.mockResolvedValue({ id: "audit_123" });
+    const tx = {
+      notification: { findFirst: mocks.findFirstNotification, updateMany: mocks.updateNotificationMany, create: mocks.createNotification },
+      auditEvent: { create: mocks.createAudit },
+    };
+    mocks.serializableTransaction.mockImplementation(async callback => callback(tx));
     mocks.transaction.mockImplementation(async callback => callback({
       notification: { findFirst: mocks.findFirstNotification, updateMany: mocks.updateNotificationMany, create: mocks.createNotification },
       auditEvent: { create: mocks.createAudit },
@@ -91,7 +98,7 @@ describe("manual notification recovery", () => {
         },
       },
     });
-    expect(mocks.transaction).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: "Serializable" });
+    expect(mocks.serializableTransaction).toHaveBeenCalledWith(expect.any(Function));
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/notifications");
   });
 
@@ -103,7 +110,7 @@ describe("manual notification recovery", () => {
 
     await expect(enqueueControlledEmailAcceptance()).rejects.toThrow(/already queued or processing/i);
 
-    expect(mocks.transaction).toHaveBeenCalled();
+    expect(mocks.serializableTransaction).toHaveBeenCalled();
     expect(mocks.createNotification).not.toHaveBeenCalled();
     expect(mocks.createAudit).not.toHaveBeenCalled();
   });
