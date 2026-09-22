@@ -2,6 +2,7 @@ import { NotificationChannel } from "@prisma/client";
 import { shouldMarkAppealFunded } from "@/lib/appeals";
 import { createReceiptNumber } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
+import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { fetchRazorpayPayment } from "@/lib/razorpay";
 
 /**
@@ -14,7 +15,7 @@ import { fetchRazorpayPayment } from "@/lib/razorpay";
  * never incremented again, which keeps appeal totals idempotent.
  */
 export async function captureDonation(providerOrderId: string, providerPaymentId: string, amountPaise: number) {
-  return prisma.$transaction(async tx => {
+  return withSerializableTransactionRetry(async tx => {
     const donation = await tx.donation.findUnique({
       where: { providerOrderId },
       select: {
