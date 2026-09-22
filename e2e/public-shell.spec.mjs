@@ -224,7 +224,8 @@ test('client navigation uses a full-screen branded blocking overlay without coll
   const before = await page.locator('main#main').boundingBox();
   expect(before).not.toBeNull();
 
-  await page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'About' }).click({ noWaitAfter: true });
+  await page.getByRole('button', { name: 'Open navigation menu' }).click();
+  await page.getByRole('navigation', { name: 'Mobile navigation' }).getByRole('link', { name: 'About' }).click({ noWaitAfter: true });
 
   const overlay = page.locator('.amaana-navigation-loading');
   await expect(overlay).toBeVisible();
