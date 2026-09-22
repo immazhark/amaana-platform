@@ -130,6 +130,15 @@ export async function updateMediaAsset(formData: FormData) {
   const displayOrder = identityImage
     ? IDENTITY_MEDIA_SORT_ORDER
     : Number.isInteger(sortOrderRaw) && sortOrderRaw >= 0 ? sortOrderRaw : 0;
+  const wasIdentityImage = asset.kind === "IMAGE" && asset.sortOrder === IDENTITY_MEDIA_SORT_ORDER;
+  const deliveryUrlChanged = publicUrl !== asset.publicUrl;
+  const identityStateChanged = identityImage !== wasIdentityImage;
+  if (asset.isPublic && deliveryUrlChanged) {
+    throw new Error("Unpublish this media before changing its delivery URL so privacy and provenance can be reviewed again.");
+  }
+  if (asset.isPublic && identityStateChanged) {
+    throw new Error("Unpublish this media before changing its identity-image role so hero eligibility can be reviewed again.");
+  }
   const target = {
     causeId: asset.causeId ?? undefined,
     initiativeId: asset.initiativeId ?? undefined,
