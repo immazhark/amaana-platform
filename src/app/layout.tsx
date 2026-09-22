@@ -10,12 +10,15 @@ import "./iteration-three.css";
 import "./brand-expression.css";
 import "./loading-experience.css";
 import "./world-class-polish.css";
-import "./experience-finish.css";
 import "./islamic-backdrops.css";
 import "./islamic-companion.css";
-import "./accessibility.css";
 import "./iteration-four.css";
 import "./page-hero.css";
+// Canonical visual-system reconciliation: route layers may define structure,
+// but the shared Amaana surface/action system must resolve after them.
+import "./experience-finish.css";
+// Accessibility remains the final authority for focus, motion and readability.
+import "./accessibility.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { IslamicCompanion } from "@/components/islamic-companion";
