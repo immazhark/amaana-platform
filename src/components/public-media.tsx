@@ -10,6 +10,8 @@ type PublicMediaAsset = {
   altText: string | null;
   caption: string | null;
   sourceYear: number | null;
+  width?: number | null;
+  height?: number | null;
 };
 
 type PublicMediaProps = {
@@ -30,12 +32,14 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
   if (!url) return null;
 
   if (asset.kind === "IMAGE") {
+    const width = asset.width && asset.width > 0 ? asset.width : 1600;
+    const height = asset.height && asset.height > 0 ? asset.height : 1200;
     const image = canOptimizeLocally(url) ? (
       <Image
         src={url}
         alt={asset.altText ?? ""}
-        width={1600}
-        height={1200}
+        width={width}
+        height={height}
         sizes={sizes}
         loading={priority ? "eager" : "lazy"}
         fetchPriority={priority ? "high" : "auto"}
@@ -47,8 +51,8 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
       <img
         src={url}
         alt={asset.altText ?? ""}
-        width={1600}
-        height={1200}
+        width={width}
+        height={height}
         loading={priority ? "eager" : "lazy"}
         fetchPriority={priority ? "high" : "auto"}
         decoding="async"
