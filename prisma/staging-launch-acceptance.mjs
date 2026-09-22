@@ -130,6 +130,7 @@ pass("staging environment posture");
 assert.equal(versionPayload.paymentMode, "test", "Staging acceptance target must report Razorpay Test mode");
 pass("Razorpay Test payment posture");
 expectHeader(version, "cache-control", /no-store/i, "version endpoint");
+expectHeader(version, "x-robots-tag", /noindex.*nofollow.*noarchive/i, "version endpoint");
 if (expectedCommitSha) {
   assert.equal(versionPayload.commitSha, expectedCommitSha, `Staging is not serving expected commit ${expectedCommitSha}`);
   pass(`exact candidate commit ${expectedCommitSha}`);
@@ -142,6 +143,7 @@ const healthPayload = await health.json();
 assert.equal(healthPayload.status, "ok", "Live health endpoint did not return status=ok");
 pass("live health endpoint");
 expectHeader(health, "cache-control", /no-store/i, "health endpoint");
+expectHeader(health, "x-robots-tag", /noindex.*nofollow.*noarchive/i, "health endpoint");
 expectHeader(health, "x-content-type-options", /^nosniff$/i, "health endpoint");
 expectHeader(health, "x-frame-options", /^DENY$/i, "health endpoint");
 
@@ -150,6 +152,7 @@ const readinessPayload = await readiness.json();
 assert.equal(readinessPayload.status, "ready", "Readiness endpoint did not return status=ready");
 pass("database and production-environment readiness endpoint");
 expectHeader(readiness, "cache-control", /no-store/i, "readiness endpoint");
+expectHeader(readiness, "x-robots-tag", /noindex.*nofollow.*noarchive/i, "readiness endpoint");
 
 const home = await getHtml("/");
 expectText(home.html, "Amaana Foundation", "homepage identity");
