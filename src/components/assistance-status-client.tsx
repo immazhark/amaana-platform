@@ -50,6 +50,12 @@ export function AssistanceStatusClient() {
       window.history.replaceState(null, "", `${window.location.pathname}${privateTrackingFragment(credentials)}`);
     }
 
+    // Fragments keep the token out of HTTP requests/referrers, but they can
+    // still remain in browser history or screenshots. Once credentials are
+    // captured in component state for this request, remove them from the
+    // address bar entirely.
+    window.history.replaceState(null, "", window.location.pathname);
+
     const controller = new AbortController();
     void fetch("/api/assistance/status", {
       method: "POST",
