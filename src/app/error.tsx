@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useEffect } from "react";
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {
-  useEffect(() => { console.error("Application route failed", error.digest ?? error.message); }, [error]);
+  useEffect(() => { console.error("Application route failed", { digest: error.digest ?? null }); }, [error.digest]);
 
   return (
     <section className="v2-error-page">
