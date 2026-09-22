@@ -123,7 +123,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
         const width = active.width && active.width > 0 ? active.width : 1600;
         const height = active.height && active.height > 0 ? active.height : 1200;
         return (
-        <div className={styles.backdrop} onMouseDown={event => {
+        <div className={styles.backdrop} role="presentation" onMouseDown={event => {
           if (event.currentTarget === event.target) close();
         }}>
           <div
@@ -132,6 +132,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
             role="dialog"
             aria-modal="true"
             aria-labelledby={dialogTitleId}
+            tabIndex={-1}
           >
             <div className={styles.dialogTop}>
               <span id={dialogTitleId}>Image {activeIndex! + 1} of {items.length}: {active.alt ?? "programme photograph"}</span>
