@@ -267,3 +267,44 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
     background-position:center top;
   }
 }
+
+
+/* Canonical action geometry and section transition polish. */
+:is(.button,.v2-button,.v3-btn,.af-btn){
+  min-height:2.875rem;
+  padding:.78rem 1.15rem;
+  border-radius:999px;
+  font-size:.92rem;
+  font-weight:800;
+  line-height:1.15;
+  letter-spacing:.01em;
+  text-decoration:none;
+}
+:is(.v2-text-link,.v3-text-link,.af-link-action){
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  min-height:2.75rem;
+  padding:.25rem 0;
+  font-weight:800;
+  text-underline-offset:.24em;
+}
+:is(.v2-actions,.v3-actions,.page-hero__actions){
+  display:flex;
+  flex-wrap:wrap;
+  gap:.75rem;
+  align-items:center;
+}
+:is(.v2-section,.v3-section)>:is(.v2-shell,.v3-shell){
+  position:relative;
+  z-index:1;
+}
+@media(max-width:600px){
+  :is(.v2-actions,.v3-actions,.page-hero__actions) :is(.button,.v2-button,.v3-btn,.af-btn){
+    width:100%;
+    justify-content:center;
+  }
+  :is(.v2-actions,.v3-actions,.page-hero__actions) :is(.v2-text-link,.v3-text-link,.af-link-action){
+    width:auto;
+  }
+}
