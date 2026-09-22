@@ -14,7 +14,7 @@ declare global { interface Window { Razorpay: new (options: RazorpayOptions) => 
 
 export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible = false }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean }) {
   const router = useRouter();
-  const errorRef = useRef<HTMLDivElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);\n  const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState("");
   const [phase, setPhase] = useState<CheckoutPhase>("loading");
   const transactionMax = Math.min(maxAmount, 1_000_000);
@@ -128,14 +128,14 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         showError("Secure checkout could not load. Please refresh and try again.");
       }}
     />
-    <form className="v2-premium-form v2-donation-form" onSubmit={submit} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
+    <form ref={formRef} className="v2-premium-form v2-donation-form" onSubmit={submit} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
       <div className="v2-form-heading"><span>Secure contribution</span><h2 id="donation-form-heading">Choose how you would like to support.</h2><p id="donation-form-description">Only the information needed to process and acknowledge your contribution is requested.</p></div>
       <p id="donation-checkout-status" className={styles.status} role="status" aria-live="polite">{statusText}</p>
       {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}</div>}
       <div className="form-grid">
-        <div className={`field full v2-amount-field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="amount">Donation amount <span>INR</span></label><div className={`${styles.checkoutControl} ${styles.amountControl}`}><b aria-hidden="true">₹</b><input id="amount" name="amount" type="number" min={transactionMin} max={transactionMax} step="1" inputMode="numeric" placeholder="Enter amount" required disabled={lockedForReconciliation}/></div><small className={styles.hint}>{transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small></div>
-        <div className={`field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorName">Full name</label><div className={styles.checkoutControl}><input id="donorName" name="donorName" autoComplete="name" minLength={2} required disabled={lockedForReconciliation}/></div></div>
-        <div className={`field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorEmail">Email</label><div className={styles.checkoutControl}><input id="donorEmail" name="donorEmail" type="email" autoComplete="email" required disabled={lockedForReconciliation}/></div></div>
+        <div className={`field full v2-amount-field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="amount">Donation amount <span>INR</span></label><div className={`${styles.checkoutControl} ${styles.amountControl}`}><b aria-hidden="true">₹</b><input id="amount" name="amount" type="number" min={transactionMin} max={transactionMax} step="1" inputMode="numeric" placeholder="Enter amount" required disabled={lockedForReconciliation} aria-describedby="amount-hint donation-checkout-status"/></div><small id="amount-hint" className={styles.hint}>{transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small></div>
+        <div className={`field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorName">Full name</label><div className={styles.checkoutControl}><input id="donorName" name="donorName" autoComplete="name" minLength={2} required disabled={lockedForReconciliation} aria-describedby="donation-checkout-status"/></div></div>
+        <div className={`field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorEmail">Email</label><div className={styles.checkoutControl}><input id="donorEmail" name="donorEmail" type="email" autoComplete="email" required disabled={lockedForReconciliation} aria-describedby="donation-checkout-status"/></div></div>
         <div className={`field full ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorPhone">Phone <span className="muted">optional</span></label><div className={styles.checkoutControl}><input id="donorPhone" name="donorPhone" type="tel" autoComplete="tel" disabled={lockedForReconciliation}/></div></div>
         <fieldset className={`field full ${styles.intentGroup}`} disabled={lockedForReconciliation}>
           <legend>Giving intention</legend>
