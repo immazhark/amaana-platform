@@ -1,8 +1,8 @@
 @import "./home-media-polish.css";
 
 /* Homepage-only documentary field media. Consolidated from former global polish layers. */
-.v3-field{position:relative;background:#fffdf8}
-.v3-field:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 14% 30%,rgb(70 111 170 / .08),transparent 24%),radial-gradient(circle at 84% 75%,rgb(224 179 24 / .09),transparent 22%);pointer-events:none}
+.v3-field{position:relative;background-color:var(--af-color-canvas);background-image:var(--af-surface-light);background-repeat:no-repeat;background-size:cover;background-position:var(--af-surface-position)}
+.v3-field:before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgb(255 253 248 / .08),rgb(255 253 248 / .28));pointer-events:none}
 .v3-field .v3-shell{position:relative}
 .v3-field-grid{display:grid;grid-template-columns:minmax(0,1.22fr) minmax(19rem,.78fr);gap:clamp(1rem,2.5vw,1.7rem);align-items:stretch}
 .v3-field-card{position:relative;display:grid;overflow:hidden;border-radius:1.5rem;background:#122239;color:#fffdf8;min-height:35rem;box-shadow:0 28px 70px rgb(18 34 57 / .13);isolation:isolate;outline:1px solid rgb(18 34 57 / 6%);transition:transform .38s cubic-bezier(.2,.7,.2,1),box-shadow .38s ease}
