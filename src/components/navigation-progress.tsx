@@ -26,7 +26,12 @@ export function NavigationProgress() {
 
       const next = new URL(anchor.href, window.location.href);
       const current = new URL(window.location.href);
-      if (next.origin !== current.origin || next.pathname === current.pathname) return;\n\n      // On compact layouts the desktop navigation is intentionally hidden. Ignore\n      // synthetic clicks against non-rendered anchors; real user navigation comes\n      // through the visible mobile menu and should still trigger the overlay.\n      if (anchor.getClientRects().length === 0) return;
+      if (next.origin !== current.origin || next.pathname === current.pathname) return;
+
+      // On compact layouts the desktop navigation is intentionally hidden. Ignore
+      // synthetic clicks against non-rendered anchors; real user navigation comes
+      // through the visible mobile menu and should still trigger the overlay.
+      if (anchor.getClientRects().length === 0) return;
 
       setPendingFrom(current.pathname);
     };
