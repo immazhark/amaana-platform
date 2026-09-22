@@ -40,7 +40,10 @@ export async function transitionAppeal(formData: FormData) {
 
 export async function updateFeaturing(formData: FormData) {
   const user = await requirePermission("appeal.approve"); const id = String(formData.get("id")); const isFeatured = formData.get("isFeatured") === "on"; const featuredOrderValue = Number(formData.get("featuredOrder"));
-  await prisma.$transaction([prisma.appeal.update({ where: { id }, data: { isFeatured, featuredOrder: isFeatured && Number.isInteger(featuredOrderValue) ? featuredOrderValue : null } }), prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.featuring_updated", entityType: "Appeal", entityId: id, metadata: { isFeatured } } })]);
+  const appeal = await prisma.appeal.findUniqueOrThrow({ where: { id }, select: { status: true } });
+  if (isFeatured && appeal.status !== "PUBLISHED") throw new Error("Only an actively published appeal can be featured");
+  if (isFeatured && (!Number.isInteger(featuredOrderValue) || featuredOrderValue < 1)) throw new Error("Featured display order must be a positive whole number");
+  await prisma.$transaction([prisma.appeal.update({ where: { id }, data: { isFeatured, featuredOrder: isFeatured ? featuredOrderValue : null } }), prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.featuring_updated", entityType: "Appeal", entityId: id, metadata: { isFeatured, featuredOrder: isFeatured ? featuredOrderValue : null } } })]);
   revalidatePath(`/admin/appeals/${id}`); revalidatePath("/appeals"); revalidatePath("/");
 }
 
