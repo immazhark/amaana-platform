@@ -70,6 +70,19 @@ export function ScrollCarousel({
     });
   }, [mode, slideCount]);
 
+  useEffect(() => {
+    if (mode !== "focus") return;
+    const viewport = viewportRef.current;
+    const slide = slideRefs.current[activeIndex];
+    if (!viewport || !slide) return;
+    const center = () => viewport.scrollTo({ left: slide.offsetLeft - (viewport.clientWidth - slide.clientWidth) / 2, behavior: "auto" });
+    const frame = requestAnimationFrame(center);
+    const observer = new ResizeObserver(center);
+    observer.observe(viewport);
+    observer.observe(slide);
+    return () => { cancelAnimationFrame(frame); observer.disconnect(); };
+  }, [activeIndex, mode]);
+
   useEffect(() => () => {
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
   }, []);
