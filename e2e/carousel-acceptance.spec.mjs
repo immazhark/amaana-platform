@@ -102,3 +102,23 @@ test('homepage focus carousel remains centered and contained on mobile', async (
   }));
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
 });
+
+
+test('auto-advancing carousel stays paused while focus moves between internal controls', async ({ page }) => {
+  await open(page, '/impact', 1440);
+
+  const carousel = page.locator('[data-carousel-auto-advance]').first();
+  await expect(carousel).toBeVisible();
+  const status = carousel.locator('[aria-live="polite"]');
+  const initial = (await status.textContent())?.trim();
+
+  const next = carousel.getByRole('button', { name: 'Next slide' });
+  await next.focus();
+  await page.waitForTimeout(5_500);
+  expect((await status.textContent())?.trim()).toBe(initial);
+
+  const previous = carousel.getByRole('button', { name: 'Previous slide' });
+  await previous.focus();
+  await page.waitForTimeout(1_000);
+  expect((await status.textContent())?.trim()).toBe(initial);
+});
