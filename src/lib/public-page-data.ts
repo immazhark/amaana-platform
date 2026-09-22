@@ -88,6 +88,8 @@ export const getHomepageHeroMedia = cache(async () => {
       altText: true,
       caption: true,
       sourceYear: true,
+      width: true,
+      height: true,
       initiative: { select: { slug: true, title: true } },
       story: { select: { slug: true, title: true } },
     },
