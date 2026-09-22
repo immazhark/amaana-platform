@@ -78,6 +78,7 @@ export async function POST(request: Request) {
     }
 
     const referenceNumber = createDonationReference(); const receiptToken = createReceiptToken(); const amountPaise = parsed.data.amount * 100;
+    if (!Number.isSafeInteger(amountPaise) || amountPaise <= 0) throw new Error("Donation amount cannot be represented safely in paise");
     const order = await createRazorpayOrder({ amountPaise, receipt: referenceNumber, appealId: appeal.id, givingIntent: parsed.data.givingIntent });
     if (order.amount !== amountPaise || order.currency !== "INR") throw new Error("Unexpected order response");
     const donation = await prisma.donation.create({
