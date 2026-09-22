@@ -25,6 +25,10 @@ export function SiteHeader() {
   const toggleRef = useRef<HTMLButtonElement>(null);
   const mobileNavRef = useRef<HTMLElement>(null);
   const closeMenu = () => setOpenForPath(null);
+  const closeMenuAndRestoreFocus = () => {
+    setOpenForPath(null);
+    requestAnimationFrame(() => toggleRef.current?.focus());
+  };
 
   useEffect(() => {
     if (!open) return;
@@ -80,6 +84,7 @@ export function SiteHeader() {
         </div>
       </nav>
 
+      {open ? <button type="button" className="mobile-menu-backdrop" aria-label="Close navigation menu" onClick={closeMenuAndRestoreFocus} /> : null}
       <nav ref={mobileNavRef} id="mobile-navigation" className={`mobile-menu${open ? " open" : ""}`} aria-label="Mobile navigation" hidden={!open}>
         <div className="container mobile-menu-inner">
           <div className="mobile-menu-primary">
