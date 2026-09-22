@@ -506,3 +506,8 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 .site-footer .footer-lead{padding-block:clamp(2rem,4vw,3.25rem)!important;margin-bottom:0!important}
 .site-footer .footer-lead h2{font-size:clamp(2rem,3.4vw,3.35rem)!important;margin:.55rem 0 1rem!important}
 @media(max-width:600px){.site-footer .footer-lead{padding-block:2.25rem!important}.site-footer .footer-lead h2{font-size:clamp(2rem,8.5vw,2.8rem)!important}}
+
+/* Accessibility audit: readable ink on light compliance/legal surfaces. */
+.v2-compliance-guardrail-grid article>span{color:var(--af-color-gold-ink)!important;font-weight:800}
+.v2-compliance-guardrail-grid article>p{color:var(--af-color-navy-800)!important}
+.v2-compliance-page :is(.v2-section.paper,.v2-compliance-guardrails) :is(.v2-section-intro,p){color:var(--af-color-navy-800)}
