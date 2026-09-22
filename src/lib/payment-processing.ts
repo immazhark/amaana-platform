@@ -29,7 +29,16 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
         receiptTokenHash: true,
       },
     });
-    if (!donation || donation.currency !== "INR" || donation.amount.mul(100).toNumber() !== amountPaise) {
+    const expectedAmountPaise = donation ? donation.amount.mul(100).toNumber() : null;
+    if (
+      !donation ||
+      donation.currency !== "INR" ||
+      !Number.isSafeInteger(expectedAmountPaise) ||
+      expectedAmountPaise <= 0 ||
+      !Number.isSafeInteger(amountPaise) ||
+      amountPaise <= 0 ||
+      expectedAmountPaise !== amountPaise
+    ) {
       throw new Error("Payment does not match donation order");
     }
 
