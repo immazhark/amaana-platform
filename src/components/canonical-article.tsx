@@ -16,6 +16,7 @@ type CanonicalArticleProps = {
   heroVisualNote?: string;
   bodyClassName?: string;
   heroActions?: { label: string; href: string; secondary?: boolean }[];
+  bodyId?: string;
 };
 
 export function CanonicalArticle({
@@ -30,6 +31,7 @@ export function CanonicalArticle({
   heroVisualNote,
   bodyClassName,
   heroActions,
+  bodyId,
 }: CanonicalArticleProps) {
   return (
     <div className="v2-home canonical-article">
@@ -47,7 +49,7 @@ export function CanonicalArticle({
         visualTitle={heroVisualTitle ?? title}
         visualNote={heroVisualNote ?? (heroVariant === "trust" ? "A public record of Amaana’s governance, accountability and responsible operating boundaries." : "Purpose, evidence and responsible service—presented with clarity.")}
       />
-      <section className="v2-section paper">
+      <section className="v2-section paper" id={bodyId}>
         <div className={`v2-shell canonical-body${bodyClassName ? ` ${bodyClassName}` : ""}`}>
           {blocks.map((block, index) => (
             <section className={`canonical-block${block.presentation === "labelled" ? " canonical-block--labelled" : ""}${block.presentation === "card-list" ? " canonical-block--card-list" : ""}`} key={index}>
