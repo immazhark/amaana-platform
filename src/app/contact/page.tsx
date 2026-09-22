@@ -55,7 +55,7 @@ export default function ContactPage() {
       <section className="v2-section paper">
         <div className="v2-shell">
           <div className="v2-section-head"><div><p className="v2-section-label">Choose your path</p><h2 className="v2-section-title">Reach the right part of the team.</h2></div><p className="v2-section-intro">Keeping enquiries separated helps Amaana respond responsibly while protecting private beneficiary information.</p></div>
-          <div className={`v2-intent-grid v2-intent-grid--five ${styles.grid}`}>{contactPaths.map(path => <Link className="v2-intent-card" href={path.href} key={path.marker} aria-label={`${path.title}: ${path.action}`}><span className="v2-intent-marker" aria-hidden="true">{path.marker}</span><div><h3>{path.title}</h3><p>{path.copy}</p><span className="v2-text-link">{path.action} →</span></div><span className="v2-intent-arrow" aria-hidden="true">↗</span></Link>)}</div>
+          <div className={`v2-intent-grid v2-intent-grid--five ${styles.grid}`}>{contactPaths.map(path => <Link className="v2-intent-card" data-contact-kind={path.marker} href={path.href} key={path.marker} aria-label={`${path.title}: ${path.action}`}><span className="v2-intent-marker" aria-hidden="true">{path.marker}</span><div><h3>{path.title}</h3><p>{path.copy}</p><span className="v2-text-link">{path.action} →</span></div><span className="v2-intent-arrow" aria-hidden="true">↗</span></Link>)}</div>
         </div>
       </section>
 
