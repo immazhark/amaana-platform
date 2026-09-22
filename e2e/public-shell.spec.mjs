@@ -179,6 +179,20 @@ test('mobile navigation opens, moves focus inside, closes with Escape and restor
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 });
 
+test('mobile navigation backdrop dismisses the menu without entering keyboard order', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPublicPage(page, '/about');
+
+  const toggle = page.locator('button[aria-controls="mobile-navigation"]');
+  await toggle.click();
+  const backdrop = page.locator('.mobile-menu-backdrop');
+  await expect(backdrop).toBeVisible();
+  await expect(backdrop).toHaveAttribute('tabindex', '-1');
+  await backdrop.click({ position: { x: 10, y: 100 } });
+  await expect(page.getByRole('navigation', { name: 'Mobile navigation' })).toBeHidden();
+  await expect(toggle).toBeFocused();
+});
+
 test('reduced-motion preference disables reminder autoplay', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await openPublicPage(page, '/donate');
