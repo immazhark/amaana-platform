@@ -54,6 +54,10 @@ export function DonationAcknowledgementClient({ reference }: { reference: string
       );
     }
 
+    // The fragment prevents the token from reaching HTTP infrastructure, but
+    // the browser no longer needs to display or retain it after capture.
+    window.history.replaceState(null, "", window.location.pathname);
+
     const controller = new AbortController();
     void fetch("/api/donations/acknowledgement", {
       method: "POST",
