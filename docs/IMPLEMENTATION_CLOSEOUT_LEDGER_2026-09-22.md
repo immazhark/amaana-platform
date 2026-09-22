@@ -3,6 +3,49 @@
 Updated: 2026-09-22
 Branch: `phase-public-site-rebuild`
 
+## Consolidated source coverage
+
+This close-out explicitly includes every previously supplied review source: latest Claude, earlier page-by-page Claude/UI audit, Gemini, DeepSeek, Qwen, Mistral AI, KIMI, SEOptimer, Family Feedback #1, Family Feedback #2, UX Designer Feedback #1, Product Owner Feedback #1 and #2, plus subsequent Product Owner observations and approved enhancements.
+
+No accepted item from those sources is dropped merely because it is not repeated in the current chat. Duplicate findings are consolidated into one implementation item; conflicting suggestions follow the already-recorded project decisions and factual/privacy/compliance constraints.
+
+### Accepted audit/remediation themes tracked through completion
+- simpler first-visit comprehension and shorter, more visual homepage;
+- flagship Amaana/story + major-work carousel and compact programme navigation;
+- approved real media first, contextual fallback second;
+- gallery/lightbox/load-more treatment where long galleries create scroll fatigue;
+- evidence-led trust rather than repetitive trust claims;
+- stronger contextual CTA/action hierarchy without artificial urgency;
+- one coherent design system and removal of competing legacy CSS;
+- editorial body treatment without turning every paragraph into a card;
+- typography, wrapping, currency and metric integrity;
+- checkout and assistance form field/focus/error/accessibility quality;
+- assistance upload-limit architecture verification;
+- staging synthetic-content isolation;
+- measured CLS/performance/bundle remediation;
+- deliberate mobile, keyboard, reduced-motion and accessibility acceptance;
+- privacy-first Stories and curated Faith states without fabricated content;
+- governance, transparency, recognition and compliance presentation improvements while preserving verified wording;
+- appeal lifecycle/status presentation and approved thumbnails/fallbacks;
+- SEO/social/schema audit of existing implementation rather than duplicate rebuild;
+- responsive media/aspect-ratio contract verification;
+- social/WhatsApp sharing where appropriate;
+- automated acknowledgements/receipt operational readiness where already within the release scope;
+- final cross-browser, staging and release-candidate QA.
+
+### Explicitly rejected/protected suggestions
+- no pre-launch indexing;
+- no fake scarcity or manufactured urgency;
+- no unsupported cost-per-student, donor, impact or tax claims;
+- no claim of government approval or final/permanent 80G;
+- no privacy-compromising beneficiary media;
+- no Railway-to-Vercel migration without evidence;
+- no blind security/payment rewrites where existing implementation is correct;
+- no live payment/cutover/main merge without explicit approval.
+
+### Enhancement backlog boundary
+Approved enhancements already designated for this release are implemented in this close-out. Larger product features requiring separate religious/payment/product validation — including Scheduled Giving/AutoPay, Zakat calculator, Hijri scheduling and other Phase-2 platform concepts — remain preserved in the enhancement backlog and are not silently discarded.
+
 ## Working rule
 
 This ledger is the implementation source of truth for the current close-out. Work proceeds without waiting for repeated continuation prompts. Items are only marked complete after code, automated checks, and where applicable rendered/browser acceptance. Production cutover, indexing, live payments, unreviewed beneficiary media, and main-branch promotion remain protected human-approval gates.
