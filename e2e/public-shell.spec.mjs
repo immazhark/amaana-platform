@@ -124,6 +124,21 @@ test.describe('responsive containment', () => {
   }
 });
 
+test.describe('200 percent zoom reflow', () => {
+  for (const path of ['/', '/donate', '/request-assistance', '/our-work/eid-gift-kits']) {
+    test(`${path} remains horizontally contained at 200 percent zoom equivalent`, async ({ page }) => {
+      // WCAG reflow at 200% on a 1280 CSS-pixel viewport is equivalent to a 640 CSS-pixel layout viewport.
+      await page.setViewportSize({ width: 640, height: 900 });
+      await openPublicPage(page, path);
+      const dimensions = await page.evaluate(() => ({
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+      }));
+      expect(dimensions.scrollWidth, `${path} overflowed at 200% zoom equivalent`).toBeLessThanOrEqual(dimensions.clientWidth + 1);
+    });
+  }
+});
+
 test('skip link moves focus to the main content landmark', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await openPublicPage(page, '/about');
