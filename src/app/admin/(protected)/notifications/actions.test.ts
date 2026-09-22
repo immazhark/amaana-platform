@@ -132,6 +132,12 @@ describe("manual notification recovery", () => {
   });
 
 
+  it("rejects an oversized operational reason before reading or mutating notification state", async () => {
+    await expect(requeueFailedNotification(form("x".repeat(1001)))).rejects.toThrow(/too long/i);
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
   it("fails closed when another worker changes the notification before the manual claim", async () => {
     mocks.updateNotificationMany.mockResolvedValueOnce({ count: 0 });
 
