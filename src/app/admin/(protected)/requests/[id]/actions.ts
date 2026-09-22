@@ -250,6 +250,7 @@ export async function convertToAppeal(formData: FormData) {
 
   const request = await prisma.assistanceRequest.findUniqueOrThrow({ where: { id }, include: { verification: true } });
   if (request.status !== AssistanceStatus.APPROVED || request.appealId) throw new Error("Only approved, unconverted requests can become appeals");
+  if (!request.verification?.completedAt || !request.verification.reviewedById) throw new Error("Verification must be completed by an authorised reviewer before appeal conversion");
   const verificationIssues = getPublicAppealVerificationIssues(request.verification);
   if (verificationIssues.length) throw new Error(`Public appeal verification is incomplete: ${verificationIssues.join(" ")}`);
   const goalAmount = request.verification!.approvedPublicTarget!.toNumber();
