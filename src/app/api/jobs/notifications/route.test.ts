@@ -54,6 +54,14 @@ describe("notification maintenance job", () => {
     expect(mocks.processPendingEmailNotifications).not.toHaveBeenCalled();
   });
 
+  it("keeps unauthorized job responses private and non-indexable", async () => {
+    const response = await POST(request("x".repeat(32)));
+
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex.*nofollow.*noarchive/i);
+  });
+
   it("runs retention maintenance while email delivery is disabled", async () => {
     mocks.isEmailDeliveryEnabled.mockReturnValue(false);
     const response = await POST(request());
