@@ -8,7 +8,11 @@ import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
 import { validateProductionEnvironment } from "@/lib/env";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 
-const privateHeaders = { "Cache-Control": "no-store, private" };
+const privateHeaders = {
+  "Cache-Control": "no-store, private",
+  "Referrer-Policy": "no-referrer",
+  "X-Robots-Tag": "noindex, nofollow, noarchive",
+};
 const MAX_PAYMENT_JSON_BYTES = 32 * 1024;
 
 export async function POST(request: Request) {
