@@ -215,32 +215,6 @@
   color: rgb(255 255 255 / 62%);
 }
 
-.v2-home {
-  --v2-ivory: var(--amaana-cream);
-  --v2-ink: var(--amaana-blue-ink);
-  --v2-ink-soft: var(--amaana-ink-soft);
-  --v2-gold: var(--amaana-gold);
-  --v2-gold-deep: var(--amaana-gold-deep);
-  --v2-gold-soft: var(--amaana-gold-soft);
-  --v2-blue-mid: var(--amaana-blue-mid);
-  --v2-sand: var(--amaana-cream-muted);
-  --v2-paper: var(--amaana-paper);
-  --v2-border-warm: var(--amaana-border-warm);
-}
-
-.v2-hero {
-  background:
-    radial-gradient(circle at 82% 14%, rgb(224 179 24 / 20%), transparent 28%),
-    radial-gradient(circle at 16% 72%, rgb(70 111 170 / 22%), transparent 34%),
-    linear-gradient(145deg, #101F35 0%, #1D3150 45%, #2F4C7A 100%);
-}
-
-.v2-work-card:nth-child(1) {
-  background:
-    radial-gradient(circle at 78% 10%, rgb(224 179 24 / 12%), transparent 30%),
-    linear-gradient(145deg, #122239, #2F4C7A);
-}
-
 @media (max-width: 960px) {
   .footer-lead,
   .footer-grid-v2 {
