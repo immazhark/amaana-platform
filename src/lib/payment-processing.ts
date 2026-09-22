@@ -33,6 +33,7 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
     if (
       !donation ||
       donation.currency !== "INR" ||
+      expectedAmountPaise === null ||
       !Number.isSafeInteger(expectedAmountPaise) ||
       expectedAmountPaise <= 0 ||
       !Number.isSafeInteger(amountPaise) ||
