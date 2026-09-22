@@ -36,3 +36,5 @@ html {
 .v2-policy-page .v2-section-label{color:#5f4b31!important}
 .v2-policy-page [aria-hidden="true"]:is(span){color:var(--af-color-gold-ink)}
 .v2-contact-safety-copy p{color:var(--af-color-navy-800)!important}
+
+.v2-policy-page aside>p{color:#5f4b31!important}
