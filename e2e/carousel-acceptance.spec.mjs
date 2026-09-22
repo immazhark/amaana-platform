@@ -56,7 +56,7 @@ test('programme carousel scrolls internally without creating mobile page overflo
 });
 
 
-test('homepage documented work uses a centered rotating focus carousel', async ({ page }) => {
+test('homepage documented work uses a centered user-controlled focus carousel', async ({ page }) => {
   await open(page, '/', 1440);
 
   const carousel = page.getByRole('region', { name: 'Amaana programme areas' });
@@ -82,7 +82,7 @@ test('homepage documented work uses a centered rotating focus carousel', async (
   await expect(second).toHaveAttribute('aria-current', 'true');
   await expect(page).toHaveURL(/\/$/);
 
-  await expect(carousel.getByRole('button', { name: 'Pause automatic slides' })).toBeVisible();
+  await expect(carousel.getByRole('button', { name: 'Pause automatic slides' })).toHaveCount(0);
 });
 
 test('homepage focus carousel remains centered and contained on mobile', async ({ page }) => {
