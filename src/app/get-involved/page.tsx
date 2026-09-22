@@ -12,13 +12,15 @@ export const metadata: Metadata = {
   description: "Ways to support, follow and participate in Amaana Foundation’s work in Hyderabad, including education sponsorship through the Amaana Taleem Initiative.",
   alternates: { canonical: "/get-involved" },
   openGraph: {
+    images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }],
     type: "website",
     url: "/get-involved",
     title: "Get Involved | Amaana Foundation",
     description: "Support Amaana through education sponsorship, verified appeals, volunteering, responsible sharing and assistance referrals.",
   },
   twitter: {
-    card: "summary",
+    images: ["/twitter-image"],
+    card: "summary_large_image",
     title: "Get Involved | Amaana Foundation",
     description: "Practical ways to support and participate in Amaana Foundation's work.",
   },
