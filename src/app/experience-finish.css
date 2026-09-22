@@ -518,3 +518,9 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 .site-footer .footer-lead{padding-block:1.75rem!important}
 .site-footer .footer-lead h2{font-size:clamp(1.9rem,3vw,3rem)!important;line-height:1.02!important;margin:.45rem 0 .8rem!important}
 @media(max-width:600px){.site-footer .footer-lead{padding-block:1.75rem!important}.site-footer .footer-lead h2{font-size:clamp(1.9rem,8vw,2.55rem)!important}}
+
+/* Keep the global invitation concise so route content remains primary. */
+.site-footer .footer-lead{padding-block:1.25rem!important}
+.site-footer .footer-lead h2{max-width:18ch!important;font-size:clamp(1.8rem,2.7vw,2.75rem)!important;line-height:1.04!important;margin:.35rem 0 .65rem!important}
+.site-footer .footer-lead p{margin-block:.45rem!important;line-height:1.5!important}
+@media(max-width:600px){.site-footer .footer-lead{padding-block:1.4rem!important}.site-footer .footer-lead h2{font-size:clamp(1.8rem,7.5vw,2.4rem)!important}}
