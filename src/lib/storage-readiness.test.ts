@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { getPublicMediaStorageReadiness, isManagedPrivateDocumentKey, PRIVATE_OBJECT_CACHE_CONTROL } from "./storage";
+import { getPublicMediaStorageReadiness, isManagedPrivateDocumentKey, PRIVATE_OBJECT_CACHE_CONTROL, readImageDimensions } from "./storage";
 
 const keys = [
   "S3_REGION",
@@ -92,5 +92,42 @@ describe("managed private document keys", () => {
 describe("storage cache boundary", () => {
   it("keeps direct bucket objects private so publication caching stays under the gated proxy", () => {
     expect(PRIVATE_OBJECT_CACHE_CONTROL).toBe("private, no-store, max-age=0");
+  });
+});
+
+
+describe("readImageDimensions", () => {
+  it("reads PNG IHDR dimensions", () => {
+    const bytes = Buffer.alloc(24);
+    Buffer.from([0x89,0x50,0x4e,0x47,0x0d,0x0a,0x1a,0x0a]).copy(bytes);
+    bytes.writeUInt32BE(1080, 16);
+    bytes.writeUInt32BE(1350, 20);
+    expect(readImageDimensions(bytes, "image/png")).toEqual({ width: 1080, height: 1350 });
+  });
+
+  it("reads WebP VP8X dimensions", () => {
+    const bytes = Buffer.alloc(30);
+    bytes.write("RIFF", 0, "ascii");
+    bytes.write("WEBP", 8, "ascii");
+    bytes.write("VP8X", 12, "ascii");
+    bytes.writeUIntLE(1079, 24, 3);
+    bytes.writeUIntLE(1349, 27, 3);
+    expect(readImageDimensions(bytes, "image/webp")).toEqual({ width: 1080, height: 1350 });
+  });
+
+  it("reads JPEG SOF dimensions without decoding image pixels", () => {
+    const bytes = Buffer.from([
+      0xff,0xd8,
+      0xff,0xe0,0x00,0x04,0x00,0x00,
+      0xff,0xc0,0x00,0x0b,0x08,0x05,0x46,0x04,0x38,0x03,0x01,0x11,0x00,
+      0xff,0xd9,
+    ]);
+    expect(readImageDimensions(bytes, "image/jpeg")).toEqual({ width: 1080, height: 1350 });
+  });
+
+  it("fails closed for truncated, malformed or non-image input", () => {
+    expect(readImageDimensions(Buffer.from([0x89,0x50]), "image/png")).toBeNull();
+    expect(readImageDimensions(Buffer.from([0xff,0xd8,0xff,0xc0,0x00,0x02]), "image/jpeg")).toBeNull();
+    expect(readImageDimensions(Buffer.from("%PDF-1.7"), "application/pdf")).toBeNull();
   });
 });
