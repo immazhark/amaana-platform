@@ -21,7 +21,7 @@ vi.mock("@/lib/media-governance", () => ({
   mediaPublicationIssues: () => [],
   parseMediaPublicationReview: () => ({}),
 }));
-vi.mock("@/lib/public-media", () => ({ canRenderPublicMedia: () => true }));
+vi.mock("@/lib/public-media", () => ({ canRenderPublicMedia: () => true, IDENTITY_MEDIA_SORT_ORDER: -1000 }));
 vi.mock("@/lib/storage", () => ({
   deletePublicMediaObject: mocks.deletePublicMediaObject,
   uploadPublicMediaFile: vi.fn(),
