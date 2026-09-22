@@ -308,3 +308,75 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
     width:auto;
   }
 }
+
+
+/* Shared chrome reconciliation: header and footer should frame every route identically. */
+.site-header{
+  border-bottom:1px solid rgb(117 86 7 / 12%);
+  box-shadow:0 8px 28px rgb(18 34 57 / 5%);
+}
+.site-header .nav{
+  min-height:4.75rem;
+  gap:clamp(1rem,2vw,2rem);
+}
+.site-header .brand-official{flex:0 0 auto}
+.site-header .brand-lockup{
+  width:clamp(4.25rem,6vw,5.25rem);
+  height:auto;
+}
+.site-header .nav-links{gap:clamp(.7rem,1.4vw,1.25rem)}
+.site-header .nav-link{
+  position:relative;
+  padding:.65rem .15rem;
+  font-size:.9rem;
+  font-weight:750;
+  line-height:1.2;
+}
+.site-header .nav-link::after{
+  content:"";
+  position:absolute;
+  right:.15rem;
+  bottom:.28rem;
+  left:.15rem;
+  height:2px;
+  border-radius:999px;
+  background:var(--af-color-gold-500);
+  opacity:0;
+  transform:scaleX(.45);
+  transition:opacity .18s ease,transform .18s ease;
+}
+.site-header .nav-link:is(:hover,:focus-visible,.active)::after{opacity:1;transform:scaleX(1)}
+.site-footer{border-top:1px solid rgb(240 213 107 / 16%)}
+.site-footer .footer-lead{
+  max-width:58rem;
+  padding-block:clamp(3.5rem,7vw,6.5rem);
+}
+.site-footer .footer-lead h2{
+  max-width:15ch;
+  margin:.7rem 0 1.5rem;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(2.3rem,4.4vw,4.25rem);
+  font-weight:500;
+  line-height:1;
+  letter-spacing:-.04em;
+  text-wrap:balance;
+}
+.site-footer .footer-grid-v2{
+  gap:clamp(2rem,4vw,4rem);
+  padding-block:clamp(2.5rem,5vw,4.5rem);
+  border-top:1px solid rgb(240 213 107 / 14%);
+}
+.site-footer .footer-links{gap:.68rem}
+.site-footer .footer-note{
+  gap:1rem 2rem;
+  padding-block:1.5rem 2rem;
+  border-top:1px solid rgb(240 213 107 / 12%);
+}
+@media(max-width:900px){
+  .site-header .nav{min-height:4.25rem}
+  .site-header .brand-lockup{width:4.25rem}
+}
+@media(max-width:600px){
+  .site-footer .footer-lead{padding-block:3.5rem}
+  .site-footer .footer-lead h2{font-size:clamp(2.2rem,10vw,3.2rem)}
+}
