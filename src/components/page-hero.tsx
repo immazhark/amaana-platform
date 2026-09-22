@@ -50,7 +50,7 @@ export function PageHero({
   const classes = ["page-hero", `page-hero--${variant}`, className].filter(Boolean).join(" ");
 
   return (
-    <section className={classes} aria-labelledby={id}>
+    <section className={classes} aria-labelledby={id || undefined}>
       <div className="page-hero__shell">
         <div className="page-hero__grid">
           <div className="page-hero__copy">
