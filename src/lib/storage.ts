@@ -239,58 +239,6 @@ export async function deletePublicMediaObject(objectKey: string) {
   await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: objectKey }));
 }
 
-export type ImageDimensions = { width: number; height: number };
-
-export function readImageDimensions(bytes: Buffer, mimeType: string): ImageDimensions | null {
-  if (mimeType === "image/png" && bytes.length >= 24 && hasValidSignature(bytes, mimeType)) {
-    const width = bytes.readUInt32BE(16);
-    const height = bytes.readUInt32BE(20);
-    return width > 0 && height > 0 ? { width, height } : null;
-  }
-
-  if (mimeType === "image/jpeg" && bytes.length >= 4 && hasValidSignature(bytes, mimeType)) {
-    let offset = 2;
-    while (offset + 9 < bytes.length) {
-      if (bytes[offset] !== 0xff) { offset += 1; continue; }
-      const marker = bytes[offset + 1];
-      if (marker === 0xd8 || marker === 0xd9 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) { offset += 2; continue; }
-      if (offset + 4 > bytes.length) break;
-      const segmentLength = bytes.readUInt16BE(offset + 2);
-      if (segmentLength < 2 || offset + 2 + segmentLength > bytes.length) break;
-      if ((marker >= 0xc0 && marker <= 0xc3) || (marker >= 0xc5 && marker <= 0xc7) || (marker >= 0xc9 && marker <= 0xcb) || (marker >= 0xcd && marker <= 0xcf)) {
-        if (segmentLength < 7) return null;
-        const height = bytes.readUInt16BE(offset + 5);
-        const width = bytes.readUInt16BE(offset + 7);
-        return width > 0 && height > 0 ? { width, height } : null;
-      }
-      offset += 2 + segmentLength;
-    }
-    return null;
-  }
-
-  if (mimeType === "image/webp" && bytes.length >= 30 && hasValidSignature(bytes, mimeType)) {
-    const chunk = bytes.subarray(12, 16).toString("ascii");
-    if (chunk === "VP8X") {
-      const width = 1 + bytes.readUIntLE(24, 3);
-      const height = 1 + bytes.readUIntLE(27, 3);
-      return { width, height };
-    }
-    if (chunk === "VP8 " && bytes.length >= 30 && bytes[23] === 0x9d && bytes[24] === 0x01 && bytes[25] === 0x2a) {
-      const width = bytes.readUInt16LE(26) & 0x3fff;
-      const height = bytes.readUInt16LE(28) & 0x3fff;
-      return width > 0 && height > 0 ? { width, height } : null;
-    }
-    if (chunk === "VP8L" && bytes.length >= 25 && bytes[20] === 0x2f) {
-      const bits = bytes.readUInt32LE(21);
-      const width = (bits & 0x3fff) + 1;
-      const height = ((bits >> 14) & 0x3fff) + 1;
-      return { width, height };
-    }
-  }
-
-  return null;
-}
-
 export async function uploadPublicMediaFile(file: File) {
   validatePublicMediaFile(file);
   const bytes = Buffer.from(await file.arrayBuffer());
