@@ -4,6 +4,8 @@ const mocks = vi.hoisted(() => ({
   requirePermission: vi.fn(),
   findUniqueOrThrow: vi.fn(),
   deleteRecord: vi.fn(),
+  updateRecord: vi.fn(),
+  updateMany: vi.fn(),
   createAudit: vi.fn(),
   transaction: vi.fn(),
   deletePublicMediaObject: vi.fn(),
@@ -31,14 +33,15 @@ vi.mock("@/lib/prisma", () => ({
       findUniqueOrThrow: mocks.findUniqueOrThrow,
       delete: mocks.deleteRecord,
       create: vi.fn(),
-      update: vi.fn(),
+      update: mocks.updateRecord,
+      updateMany: mocks.updateMany,
     },
     auditEvent: { create: mocks.createAudit },
     $transaction: mocks.transaction,
   },
 }));
 
-import { deleteMediaAsset } from "./actions";
+import { deleteMediaAsset, updateMediaAsset } from "./actions";
 
 function deletionForm(confirm = "DELETE") {
   const formData = new FormData();
@@ -46,6 +49,45 @@ function deletionForm(confirm = "DELETE") {
   formData.set("confirm", confirm);
   return formData;
 }
+
+function updateForm(overrides: Record<string, string> = {}) {
+  const formData = new FormData();
+  formData.set("id", "media_123");
+  formData.set("publicUrl", "https://cdn.example/original.jpg");
+  formData.set("altText", "Documentary photograph");
+  formData.set("sortOrder", "0");
+  for (const [key, value] of Object.entries(overrides)) formData.set(key, value);
+  return formData;
+}
+
+describe("published media editing", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "user_123" });
+  });
+
+  it("requires unpublishing before changing a published delivery URL", async () => {
+    mocks.findUniqueOrThrow.mockResolvedValue({
+      id: "media_123", kind: "IMAGE", isPublic: true,
+      publicUrl: "https://cdn.example/original.jpg", storageKey: null,
+      sortOrder: 0, causeId: "cause_1", initiativeId: null, storyId: null, faithContentId: null,
+    });
+
+    await expect(updateMediaAsset(updateForm({ publicUrl: "https://cdn.example/replacement.jpg" }))).rejects.toThrow(/unpublish.*delivery URL/i);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("requires unpublishing before promoting published media to identity use", async () => {
+    mocks.findUniqueOrThrow.mockResolvedValue({
+      id: "media_123", kind: "IMAGE", isPublic: true,
+      publicUrl: "https://cdn.example/original.jpg", storageKey: null,
+      sortOrder: 0, causeId: "cause_1", initiativeId: null, storyId: null, faithContentId: null,
+    });
+
+    await expect(updateMediaAsset(updateForm({ identityImage: "on" }))).rejects.toThrow(/unpublish.*identity-image/i);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+});
 
 describe("admin media deletion", () => {
   beforeEach(() => {
