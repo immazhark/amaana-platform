@@ -57,9 +57,17 @@ export async function POST(request: Request) {
 
     const alreadyProcessed = await prisma.paymentEvent.findUnique({
       where: { providerEventId },
-      select: { id: true },
+      select: { id: true, eventType: true },
     });
     if (alreadyProcessed) {
+      if (alreadyProcessed.eventType !== payload.event) {
+        console.error("Razorpay webhook event id collision", {
+          providerEventId,
+          storedEventType: alreadyProcessed.eventType,
+          receivedEventType: payload.event,
+        });
+        return new NextResponse("Webhook event id conflict", { status: 409 });
+      }
       return NextResponse.json({ received: true });
     }
 
@@ -82,9 +90,9 @@ export async function POST(request: Request) {
         if (!isPrismaUniqueConstraintError(eventError)) throw eventError;
         const existing = await prisma.paymentEvent.findUnique({
           where: { providerEventId },
-          select: { id: true },
+          select: { id: true, eventType: true },
         });
-        if (!existing) throw eventError;
+        if (!existing || existing.eventType !== payload.event) throw eventError;
       }
     } else if (
       payload.event === "payment.failed" &&
@@ -241,9 +249,9 @@ export async function POST(request: Request) {
     if (providerEventId && isPrismaUniqueConstraintError(error)) {
       const existing = await prisma.paymentEvent.findUnique({
         where: { providerEventId },
-        select: { id: true },
+        select: { id: true, eventType: true },
       });
-      if (existing) {
+      if (existing && existing.eventType === payload.event) {
         return NextResponse.json({ received: true });
       }
     }
