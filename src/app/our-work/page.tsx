@@ -40,7 +40,7 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
         title="Different Needs. One Standard of Care."
         description={<p>Some needs return every year. Others arrive without warning. Explore Amaana’s medical and financial relief, emergency response, Ramadan and Eid initiatives, Taleem education support and seasonal relief.</p>}
         actions={[{ label: "Explore the portfolio", href: "#work-results" }, { label: "See documented impact", href: "/impact", secondary: true }]}
-        visual={heroMedia ? <PublicMedia asset={heroMedia} priority sizes="(max-width: 900px) calc(100vw - 2rem), 42vw" /> : <div className="page-hero__visual-fallback page-hero__visual-fallback--stats"><span>Documented public portfolio</span><strong>{initiativeCount} published programmes</strong><div className="page-hero__stat-row"><b>{causeCount}</b><small>canonical cause areas</small></div><i /></div>}
+        visual={heroMedia ? <PublicMedia asset={heroMedia} priority sizes="(max-width: 900px) calc(100vw - 2rem), 42vw" /> : <div className="page-hero__visual-fallback page-hero__visual-fallback--stats"><span>Documented public portfolio</span><strong>{initiativeCount} published programmes</strong><div className="page-hero__stat-row"><b>{causeCount}</b><small>areas of service</small></div><i /></div>}
       />
 
       <section className="v2-section paper" id="work-results"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Explore by need</p><h2 className="v2-section-title">A living portfolio of service.</h2></div><p className="v2-section-intro">Start with a programme area, then use the year filter to explore a specific annual edition.</p></div>
