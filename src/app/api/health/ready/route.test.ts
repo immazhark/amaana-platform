@@ -24,6 +24,7 @@ describe("readiness health", () => {
     const response = await GET();
     expect(response.status).toBe(200);
     expect(response.headers.get("cache-control")).toMatch(/no-store/i);
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex.*nofollow.*noarchive/i);
     await expect(response.json()).resolves.toEqual({ status: "ready" });
   });
 
