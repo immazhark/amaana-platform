@@ -4,11 +4,12 @@ import { NotificationStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
 export async function enqueueControlledEmailAcceptance() {
   const user = await requirePermission("notification.manage");
 
-  await prisma.$transaction(async tx => {
+  await withSerializableTransactionRetry(async tx => {
     const existing = await tx.notification.findFirst({
       where: {
         userId: user.id,
@@ -46,7 +47,7 @@ export async function enqueueControlledEmailAcceptance() {
         },
       },
     });
-  }, { isolationLevel: "Serializable" });
+  });
 
   revalidatePath("/admin/notifications");
 }
