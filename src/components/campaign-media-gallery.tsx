@@ -24,6 +24,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const dialogTitleId = useRef(`gallery-dialog-${crypto.randomUUID()}`);
   const triggerRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const active = activeIndex === null ? null : items[activeIndex];
@@ -130,10 +131,10 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
             className={styles.dialog}
             role="dialog"
             aria-modal="true"
-            aria-label={`Image ${activeIndex! + 1} of ${items.length}: ${active.alt ?? "programme photograph"}`}
+            aria-labelledby={dialogTitleId.current}
           >
             <div className={styles.dialogTop}>
-              <span>{activeIndex! + 1} / {items.length}</span>
+              <span id={dialogTitleId.current}>Image {activeIndex! + 1} of {items.length}: {active.alt ?? "programme photograph"}</span>
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
             {canOptimizeLocally(active.url) ? <Image className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}
