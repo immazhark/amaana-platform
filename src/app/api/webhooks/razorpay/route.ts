@@ -69,14 +69,23 @@ export async function POST(request: Request) {
 
     if (payload.event === "payment.captured" && payment?.order_id && payment.currency === "INR") {
       const result = await captureDonation(payment.order_id, payment.id, payment.amount);
-      await prisma.paymentEvent.create({
-        data: {
-          providerEventId,
-          eventType: payload.event,
-          donationId: result.donationId,
-          payload: auditPayload,
-        },
-      });
+      try {
+        await prisma.paymentEvent.create({
+          data: {
+            providerEventId,
+            eventType: payload.event,
+            donationId: result.donationId,
+            payload: auditPayload,
+          },
+        });
+      } catch (eventError) {
+        if (!isPrismaUniqueConstraintError(eventError)) throw eventError;
+        const existing = await prisma.paymentEvent.findUnique({
+          where: { providerEventId },
+          select: { id: true },
+        });
+        if (!existing) throw eventError;
+      }
     } else if (payload.event === "payment.failed" && payment?.order_id && payment.currency === "INR") {
       await withSerializableTransactionRetry(async tx => {
         const donation = await tx.donation.findUnique({
