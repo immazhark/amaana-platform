@@ -40,11 +40,11 @@ export function ScrollCarousel({
   const id = useId().replaceAll(":", "");
   const viewportId = `carousel-${id}`;
   const prefersReducedMotion = useRef(false);
-  const [paused, setPaused] = useState(false);
+  const [paused, setPaused] = useState(false);\n  const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => { prefersReducedMotion.current = media.matches; };
+    const sync = () => {\n      prefersReducedMotion.current = media.matches;\n      setReducedMotion(media.matches);\n    };
     sync();
     media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
@@ -101,7 +101,7 @@ export function ScrollCarousel({
   }, [mode, slideCount]);
 
   useEffect(() => {
-    if (!autoAdvanceMs || slideCount < 2 || paused || prefersReducedMotion.current) return;
+    if (!autoAdvanceMs || slideCount < 2 || paused || reducedMotion) return;
     const timer = window.setInterval(() => {
       setActiveIndex(current => {
         const next = (current + 1) % slideCount;
@@ -112,7 +112,7 @@ export function ScrollCarousel({
       });
     }, autoAdvanceMs);
     return () => window.clearInterval(timer);
-  }, [autoAdvanceMs, mode, paused, slideCount]);
+  }, [autoAdvanceMs, mode, paused, reducedMotion, slideCount]);
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.currentTarget !== event.target) return;
@@ -156,7 +156,7 @@ export function ScrollCarousel({
             <span className={styles.srOnly}>Slide </span>{activeIndex + 1} / {slideCount}
           </span>
           <div className={styles.controls}>
-            {autoAdvanceMs ? <button type="button" aria-label={paused ? "Resume automatic slides" : "Pause automatic slides"} onClick={() => setPaused(value => !value)}><span aria-hidden="true">{paused ? "▶" : "Ⅱ"}</span></button> : null}
+            {autoAdvanceMs && !reducedMotion ? <button type="button" aria-label={paused ? "Resume automatic slides" : "Pause automatic slides"} onClick={() => setPaused(value => !value)}><span aria-hidden="true">{paused ? "▶" : "Ⅱ"}</span></button> : null}
             <button
               type="button"
               aria-controls={viewportId}
