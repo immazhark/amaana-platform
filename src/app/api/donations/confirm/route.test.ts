@@ -107,6 +107,19 @@ describe("donation confirmation persisted status", () => {
     },
   );
 
+  it("keeps payment confirmation responses private and non-indexable", async () => {
+    mocks.findUnique
+      .mockResolvedValueOnce(storedDonation())
+      .mockResolvedValueOnce({ status: "AUTHORIZED" });
+
+    const response = await POST(confirmationRequest());
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex.*nofollow.*noarchive/i);
+  });
+
   it("rejects an oversized confirmation payload before payment verification", async () => {
     const response = await POST(confirmationRequest({ "Content-Length": String(32 * 1024 + 1) }));
     const body = await response.json();
