@@ -512,3 +512,62 @@ test('legacy query-based assistance tracking is scrubbed from history-visible lo
   expect(page.url()).not.toContain(reference);
   expect(page.url()).not.toContain(token);
 });
+
+
+test('private donation acknowledgement token is removed from the visible URL after capture', async ({ page }) => {
+  const reference = 'AFD-2026-PRIVATE';
+  const token = 'private-donation-token-1234567890';
+  let postedBody = null;
+
+  await page.route('**/api/donations/acknowledgement', async route => {
+    postedBody = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        found: true,
+        presentation: {
+          tone: 'captured',
+          heading: 'Donation received',
+          summary: 'Your donation has been recorded.',
+          statusLabel: 'Captured',
+        },
+        donation: {
+          referenceNumber: reference,
+          receiptNumber: 'AFR-2026-PRIVATE',
+          donorName: 'Private Donor',
+          givingIntent: 'GENERAL',
+          amount: 500,
+          refundedAmount: 0,
+          recordDate: '2026-09-22T10:00:00.000Z',
+          providerPaymentId: 'pay_private',
+          appeal: { title: 'Verified need', slug: 'verified-need' },
+        },
+      }),
+    });
+  });
+
+  await page.goto(`/donations/${reference}/acknowledgement#token=${token}`);
+  await expect(page.getByRole('heading', { name: 'Donation received' })).toBeVisible();
+
+  expect(postedBody).toEqual({ reference, token });
+  expect(page.url()).toBe(`http://127.0.0.1:3000/donations/${reference}/acknowledgement`);
+  expect(page.url()).not.toContain(token);
+});
+
+test('legacy query donation acknowledgement token is scrubbed from the visible URL', async ({ page }) => {
+  const reference = 'AFD-2026-LEGACY';
+  const token = 'legacy-donation-token-1234567890';
+
+  await page.route('**/api/donations/acknowledgement', route => route.fulfill({
+    status: 404,
+    contentType: 'application/json',
+    body: JSON.stringify({ found: false }),
+  }));
+
+  await page.goto(`/donations/${reference}/acknowledgement?token=${token}`);
+  await expect(page.getByRole('heading', { name: 'Private acknowledgement unavailable.' })).toBeVisible();
+
+  expect(page.url()).toBe(`http://127.0.0.1:3000/donations/${reference}/acknowledgement`);
+  expect(page.url()).not.toContain(token);
+});
