@@ -297,7 +297,7 @@ export async function uploadPublicMediaFile(file: File) {
   if (!hasValidSignature(bytes, file.type)) throw new Error("The uploaded media does not match its declared file type");
 
   const dimensions = file.type.startsWith("image/") ? readImageDimensions(bytes, file.type) : null;
-  const dimensions = file.type.startsWith("image/") ? readImageDimensions(bytes, file.type) : null;\n  const safeExtension = extensionForMimeType(file.type);
+  const safeExtension = extensionForMimeType(file.type);
   const objectKey = `${new Date().getUTCFullYear()}/${randomUUID()}.${safeExtension}`;
   const { bucket, client } = getPublicMediaStorage();
   await client.send(new PutObjectCommand({
