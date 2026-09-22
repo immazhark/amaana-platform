@@ -141,7 +141,7 @@ export async function uploadPrivateDocument(file: File, requestId: string) {
   if (file.size > MAX_FILE_BYTES) throw new Error("Each document must be 5 MB or smaller");
   const bytes = Buffer.from(await file.arrayBuffer());
   if (!hasValidSignature(bytes, file.type)) throw new Error("The uploaded document does not match its declared file type");
-  const dimensions = file.type.startsWith("image/") ? readImageDimensions(bytes, file.type) : null;\n  const safeExtension = extensionForMimeType(file.type);
+  const safeExtension = extensionForMimeType(file.type);
   const objectKey = `assistance/${requestId}/${randomUUID()}.${safeExtension}`;
   const { bucket, client } = getPrivateStorage();
   await client.send(new PutObjectCommand({
@@ -297,7 +297,7 @@ export async function uploadPublicMediaFile(file: File) {
   if (!hasValidSignature(bytes, file.type)) throw new Error("The uploaded media does not match its declared file type");
 
   const dimensions = file.type.startsWith("image/") ? readImageDimensions(bytes, file.type) : null;
-  const safeExtension = extensionForMimeType(file.type);
+  const dimensions = file.type.startsWith("image/") ? readImageDimensions(bytes, file.type) : null;\n  const safeExtension = extensionForMimeType(file.type);
   const objectKey = `${new Date().getUTCFullYear()}/${randomUUID()}.${safeExtension}`;
   const { bucket, client } = getPublicMediaStorage();
   await client.send(new PutObjectCommand({
