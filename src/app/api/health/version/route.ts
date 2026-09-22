@@ -16,6 +16,6 @@ export function GET() {
       environment: process.env.APP_ENVIRONMENT ?? null,
       paymentMode: razorpayMode(),
     },
-    { headers: { "Cache-Control": "no-store" } },
+    { headers: { "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow, noarchive" } },
   );
 }
