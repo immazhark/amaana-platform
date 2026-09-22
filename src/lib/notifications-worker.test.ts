@@ -83,7 +83,7 @@ describe("notification worker flow", () => {
 
     expect(result).toEqual({ selected: 1, sent: 1, failed: 0 });
 
-    expect(mocks.updateMany).toHaveBeenNthCalledWith(2, {
+    expect(mocks.updateMany).toHaveBeenNthCalledWith(3, {
       where: {
         id: "notification_1",
         status: { in: [NotificationStatus.PENDING, NotificationStatus.FAILED] },
@@ -142,8 +142,30 @@ describe("notification worker flow", () => {
     expect(failureUpdate.data.scheduledFor.getTime()).toBeGreaterThanOrEqual(before + 5 * 60 * 1000);
   });
 
+  it("marks an exhausted stale processing attempt for manual review", async () => {
+    mocks.findMany.mockResolvedValue([]);
+
+    const result = await processPendingEmailNotifications();
+
+    expect(result).toEqual({ selected: 0, sent: 0, failed: 0 });
+    expect(mocks.updateMany).toHaveBeenNthCalledWith(2, {
+      where: {
+        channel: "EMAIL",
+        status: NotificationStatus.PROCESSING,
+        updatedAt: { lt: expect.any(Date) },
+        attempts: { gte: 5 },
+      },
+      data: {
+        status: NotificationStatus.FAILED,
+        failureReason: expect.stringMatching(/manual review/i),
+        scheduledFor: new Date("9999-12-31T23:59:59.999Z"),
+      },
+    });
+  });
+
   it("skips delivery when another worker wins the atomic claim", async () => {
     mocks.updateMany
+      .mockResolvedValueOnce({ count: 0 })
       .mockResolvedValueOnce({ count: 0 })
       .mockResolvedValueOnce({ count: 0 });
     const fetchMock = vi.fn();
