@@ -4,7 +4,7 @@ import { PageHero } from "@/components/page-hero";
 import { ProgrammeDetail } from "@/components/programme-detail";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { programmeBySlug } from "@/lib/master-copy";
-import { canRenderPublicMedia, resolvePublicMediaUrl } from "@/lib/public-media";
+import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
@@ -28,8 +28,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const initiative = await getInitiativePageData(slug);
   if (!initiative) return { title: "Initiative not found" };
   const canonical = `/our-work/${initiative.slug}`;
-  const leadImage = initiative.mediaAssets.find(asset => asset.kind === "IMAGE" && asset.publicUrl)?.publicUrl ?? undefined;
-  return { title: initiative.title, description: initiative.summary, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: initiative.title, description: initiative.summary, images: leadImage ? [{ url: leadImage, alt: initiative.mediaAssets.find(asset => asset.publicUrl === leadImage)?.altText ?? initiative.title }] : undefined }, twitter: { card: leadImage ? "summary_large_image" : "summary", title: initiative.title, description: initiative.summary, images: leadImage ? [leadImage] : undefined } };
+  const identity = selectIdentityPublicImage(initiative.mediaAssets);
+  const leadImage = identity ? resolvePublicMediaUrl(identity) ?? undefined : undefined;
+  return { title: initiative.title, description: initiative.summary, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: initiative.title, description: initiative.summary, images: leadImage ? [{ url: leadImage, alt: identity?.altText ?? initiative.title }] : undefined }, twitter: { card: leadImage ? "summary_large_image" : "summary", title: initiative.title, description: initiative.summary, images: leadImage ? [leadImage] : undefined } };
 }
 
 export default async function InitiativePage({ params }: { params: Promise<{ slug: string }> }) {
