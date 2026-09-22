@@ -121,6 +121,7 @@ export async function updateMediaAsset(formData: FormData) {
   if (asset.isPublic && !hasPermission(user, "content.approve")) throw new Error("Published media requires approval permission to edit");
 
   const publicUrl = safePublicUrl(formData.get("publicUrl"));
+  if (!publicUrl && !asset.storageKey) throw new Error("Media must retain an approved public URL");
   const altText = optionalText(formData.get("altText"), 300);
   if (asset.kind === "IMAGE" && !altText) throw new Error("Image alt text is required");
   const sourceYearRaw = Number(formData.get("sourceYear"));
