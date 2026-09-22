@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   title: "Donation Policy",
   description: "How domestic donations are accepted, designated, recorded and acknowledged by Amaana Foundation.",
   alternates: { canonical: "/donation-policy" },
-  openGraph: { type: "website", url: "/donation-policy", title: "Donation Policy | Amaana Foundation", description: "How Amaana accepts and records domestic donations." },
-  twitter: { card: "summary", title: "Donation Policy | Amaana Foundation", description: "How Amaana accepts and records domestic donations." },
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }],  type: "website", url: "/donation-policy", title: "Donation Policy | Amaana Foundation", description: "How Amaana accepts and records domestic donations." },
+  twitter: { images: ["/twitter-image"],  card: "summary_large_image", title: "Donation Policy | Amaana Foundation", description: "How Amaana accepts and records domestic donations." },
 };
 const sections=[
 ["01","Domestic contributions only",<>The checkout requires confirmation that funds are being contributed from an Indian source through a domestic payment method. <strong>Foreign contributions are not invited or accepted because Amaana Foundation is not FCRA-registered.</strong></>],
