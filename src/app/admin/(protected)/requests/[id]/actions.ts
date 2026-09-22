@@ -257,6 +257,12 @@ export async function convertToAppeal(formData: FormData) {
   const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)}-${Date.now().toString(36)}`;
 
   await prisma.$transaction(async tx => {
+    const claimed = await tx.assistanceRequest.updateMany({
+      where: { id, status: AssistanceStatus.APPROVED, appealId: null },
+      data: { status: AssistanceStatus.CONVERTED_TO_APPEAL },
+    });
+    if (claimed.count !== 1) throw new Error("This request was changed or converted by another admin. Refresh before trying again.");
+
     const appeal = await tx.appeal.create({
       data: {
         slug,
@@ -271,7 +277,6 @@ export async function convertToAppeal(formData: FormData) {
         assistanceRequest: { connect: { id } },
       },
     });
-    await tx.assistanceRequest.update({ where: { id }, data: { status: AssistanceStatus.CONVERTED_TO_APPEAL } });
     await tx.auditEvent.create({
       data: {
         actorId: user.id,
