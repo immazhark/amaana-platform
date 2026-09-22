@@ -38,14 +38,18 @@ async function currentLegalHold(documentId: string) {
 
 export async function reviewDocumentRetention(formData: FormData) {
   const user = await requirePermission("assistance.approve");
-  const documentId = String(formData.get("documentId") ?? "");
+  const documentId = String(formData.get("documentId") ?? "").trim();
   const decision = String(formData.get("decision") ?? "");
+  if (!documentId) throw new Error("Document is required");
   if (!allowedDecisions.has(decision)) throw new Error("Invalid retention decision");
   if (!retentionDeletionConfirmed(decision, String(formData.get("deleteConfirmation") ?? ""))) {
     throw new Error("Type DELETE to confirm permanent evidence deletion");
   }
   const reason = requiredText(formData.get("reason"), "Retention reason", 2000);
   const reviewAfter = optionalReviewDate(formData.get("reviewAfter"));
+  if (["RETAIN", "PLACE_HOLD"].includes(decision) && reviewAfter && new Date(reviewAfter).getTime() <= Date.now()) {
+    throw new Error("Next retention review must be scheduled for a future date");
+  }
 
   const document = await prisma.assistanceDocument.findUniqueOrThrow({
     where: { id: documentId },
