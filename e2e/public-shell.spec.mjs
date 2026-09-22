@@ -275,3 +275,41 @@ test('client navigation uses a full-screen branded blocking overlay without coll
   await expect(overlay).toHaveCount(0);
   expect(await page.evaluate(() => document.body.style.overflow)).not.toBe('hidden');
 });
+
+
+test('mobile navigation traps keyboard focus while open and does not expose the page behind it', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPublicPage(page, '/about');
+
+  const toggle = page.locator('button[aria-controls="mobile-navigation"]');
+  await toggle.click();
+  const mobileNav = page.getByRole('navigation', { name: 'Mobile navigation' });
+  await expect(mobileNav).toBeVisible();
+
+  const focusables = await mobileNav.locator('a[href], button:not([disabled])').count();
+  expect(focusables).toBeGreaterThan(1);
+
+  for (let index = 0; index < focusables + 2; index += 1) {
+    await page.keyboard.press('Tab');
+    const insideMenu = await page.evaluate(() => {
+      const nav = document.querySelector('#mobile-navigation');
+      const toggleButton = document.querySelector('button[aria-controls="mobile-navigation"]');
+      return Boolean(nav?.contains(document.activeElement) || toggleButton === document.activeElement);
+    });
+    expect(insideMenu, 'Keyboard focus escaped the open mobile navigation').toBe(true);
+  }
+
+  await page.keyboard.press('Escape');
+  await expect(mobileNav).toBeHidden();
+  await expect(toggle).toBeFocused();
+});
+
+test('reduced motion disables smooth document scrolling and keeps navigation usable', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await openPublicPage(page, '/about');
+
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe('auto');
+  await page.getByRole('link', { name: 'Skip to content' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('main#main')).toBeFocused();
+});
