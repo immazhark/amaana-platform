@@ -349,18 +349,20 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 .site-footer{border-top:1px solid rgb(240 213 107 / 16%)}
 .site-footer .footer-lead{
   max-width:58rem;
-  padding-block:clamp(3.5rem,7vw,6.5rem);
+  margin-bottom:0;
+  padding-block:1.25rem;
 }
 .site-footer .footer-lead h2{
-  max-width:15ch;
-  margin:.7rem 0 1.5rem;
+  max-width:18ch;
+  margin:.35rem 0 .65rem;
   font-family:Georgia,"Times New Roman",serif;
-  font-size:clamp(2.3rem,4.4vw,4.25rem);
+  font-size:clamp(1.8rem,2.7vw,2.75rem);
   font-weight:500;
-  line-height:1;
+  line-height:1.04;
   letter-spacing:-.04em;
   text-wrap:balance;
 }
+.site-footer .footer-lead p{margin-block:.45rem;line-height:1.5}
 .site-footer .footer-grid-v2{
   gap:clamp(2rem,4vw,4rem);
   padding-block:clamp(2.5rem,5vw,4.5rem);
@@ -377,8 +379,8 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
   .site-header .brand-lockup{width:4.25rem}
 }
 @media(max-width:600px){
-  .site-footer .footer-lead{padding-block:3.5rem}
-  .site-footer .footer-lead h2{font-size:clamp(2.2rem,10vw,3.2rem)}
+  .site-footer .footer-lead{padding-block:1.4rem}
+  .site-footer .footer-lead h2{font-size:clamp(1.8rem,7.5vw,2.4rem)}
 }
 
 
@@ -503,9 +505,6 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 /* Browser acceptance corrections: canonical body art, hero controls and compact footer. */
 :is(.v2-section.paper,.v3-section,.amaana-bg-body,.v2-closing,.v3-closing,.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-history-note,.campaign-clinical-note,.campaign-data-visual,.campaign-gallery,.campaign-next){background-size:cover!important}
 .page-hero__button{min-height:3.1875rem!important;padding-block:.82rem!important}
-.site-footer .footer-lead{padding-block:clamp(2rem,4vw,3.25rem)!important;margin-bottom:0!important}
-.site-footer .footer-lead h2{font-size:clamp(2rem,3.4vw,3.35rem)!important;margin:.55rem 0 1rem!important}
-@media(max-width:600px){.site-footer .footer-lead{padding-block:2.25rem!important}.site-footer .footer-lead h2{font-size:clamp(2rem,8.5vw,2.8rem)!important}}
 
 /* Accessibility audit: readable ink on light compliance/legal surfaces. */
 .v2-compliance-guardrail-grid article>span{color:var(--af-color-gold-ink)!important;font-weight:800}
@@ -513,14 +512,5 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 .v2-compliance-page :is(.v2-section.paper,.v2-compliance-guardrails) :is(.v2-section-intro,p){color:var(--af-color-navy-800)}
 
 
-/* Acceptance consolidation: homepage body surface and compact shared footer. */
+/* Acceptance consolidation: homepage body surface. */
 .v3-work{background-size:cover!important;background-position:var(--af-surface-position)!important;background-repeat:no-repeat!important}
-.site-footer .footer-lead{padding-block:1.75rem!important}
-.site-footer .footer-lead h2{font-size:clamp(1.9rem,3vw,3rem)!important;line-height:1.02!important;margin:.45rem 0 .8rem!important}
-@media(max-width:600px){.site-footer .footer-lead{padding-block:1.75rem!important}.site-footer .footer-lead h2{font-size:clamp(1.9rem,8vw,2.55rem)!important}}
-
-/* Keep the global invitation concise so route content remains primary. */
-.site-footer .footer-lead{padding-block:1.25rem!important}
-.site-footer .footer-lead h2{max-width:18ch!important;font-size:clamp(1.8rem,2.7vw,2.75rem)!important;line-height:1.04!important;margin:.35rem 0 .65rem!important}
-.site-footer .footer-lead p{margin-block:.45rem!important;line-height:1.5!important}
-@media(max-width:600px){.site-footer .footer-lead{padding-block:1.4rem!important}.site-footer .footer-lead h2{font-size:clamp(1.8rem,7.5vw,2.4rem)!important}}
