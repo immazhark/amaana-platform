@@ -118,4 +118,4 @@ test('critical public routes do not load Razorpay before a donation journey need
     );
     expect(razorpayResources, `${path} eagerly loaded payment-provider resources`).toEqual([]);
   }
-}
+});
