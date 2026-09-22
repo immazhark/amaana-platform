@@ -40,11 +40,15 @@ export function ScrollCarousel({
   const id = useId().replaceAll(":", "");
   const viewportId = `carousel-${id}`;
   const prefersReducedMotion = useRef(false);
-  const [paused, setPaused] = useState(false);\n  const [reducedMotion, setReducedMotion] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const sync = () => {\n      prefersReducedMotion.current = media.matches;\n      setReducedMotion(media.matches);\n    };
+    const sync = () => {
+      prefersReducedMotion.current = media.matches;
+      setReducedMotion(media.matches);
+    };
     sync();
     media.addEventListener("change", sync);
     return () => media.removeEventListener("change", sync);
