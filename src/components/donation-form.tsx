@@ -17,6 +17,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
   const errorRef = useRef<HTMLDivElement>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState("");
+  const [remainingHint, setRemainingHint] = useState<number | null>(null);
   const [phase, setPhase] = useState<CheckoutPhase>("loading");
   const transactionMax = Math.min(maxAmount, 1_000_000);
   const transactionMin = transactionMax < 10 ? transactionMax : 10;
@@ -51,6 +52,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setRemainingHint(null);
     if (lockedForReconciliation) {
       showError("Please do not submit another payment while this donation is being reconciled.");
       return;
@@ -79,7 +81,10 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         }),
       });
       const order = await orderResponse.json();
-      if (!orderResponse.ok) throw new Error(order.error ?? "Could not start checkout");
+      if (!orderResponse.ok) {
+        if (typeof order.remainingAmount === "number") setRemainingHint(order.remainingAmount);
+        throw new Error(order.error ?? "Could not start checkout");
+      }
 
       const checkout = new window.Razorpay({
         key: order.keyId,
@@ -132,7 +137,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
     <form ref={formRef} className="v2-premium-form v2-donation-form" onSubmit={submit} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
       <div className="v2-form-heading"><span>Secure contribution</span><h2 id="donation-form-heading">Choose how you would like to support.</h2><p id="donation-form-description">Only the information needed to process and acknowledge your contribution is requested.</p></div>
       <p id="donation-checkout-status" className={styles.status} role="status" aria-live="polite">{statusText}</p>
-      {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}</div>}
+      {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{remainingHint !== null ? <p><button type="button" className="v2-text-link" onClick={() => { const input = formRef.current?.elements.namedItem("amount"); if (input instanceof HTMLInputElement) { input.value = String(remainingHint); input.focus(); } }}>Use the current remaining amount: ₹{remainingHint.toLocaleString("en-IN")}</button></p> : null}</div>}
       <div className="form-grid">
         <div className={`field full v2-amount-field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="amount">Donation amount <span>INR</span></label><div className={`${styles.checkoutControl} ${styles.amountControl}`}><b aria-hidden="true">₹</b><input id="amount" name="amount" type="number" min={transactionMin} max={transactionMax} step="1" inputMode="numeric" placeholder="Enter amount" required disabled={lockedForReconciliation} aria-describedby="amount-hint donation-checkout-status"/></div><small id="amount-hint" className={styles.hint}>{transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small></div>
         <div className={`field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorName">Full name</label><div className={styles.checkoutControl}><input id="donorName" name="donorName" autoComplete="name" minLength={2} required disabled={lockedForReconciliation} aria-describedby="donation-checkout-status"/></div></div>
