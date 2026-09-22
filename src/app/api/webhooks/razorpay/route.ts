@@ -86,7 +86,13 @@ export async function POST(request: Request) {
         });
         if (!existing) throw eventError;
       }
-    } else if (payload.event === "payment.failed" && payment?.order_id && payment.currency === "INR") {
+    } else if (
+      payload.event === "payment.failed" &&
+      payment?.order_id &&
+      payment.currency === "INR" &&
+      Number.isSafeInteger(payment.amount) &&
+      payment.amount > 0
+    ) {
       await withSerializableTransactionRetry(async tx => {
         const donation = await tx.donation.findUnique({
           where: { providerOrderId: payment.order_id },
