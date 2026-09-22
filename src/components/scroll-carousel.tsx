@@ -152,7 +152,11 @@ export function ScrollCarousel({
       onMouseEnter={() => autoAdvanceMs && setPaused(true)}
       onMouseLeave={() => autoAdvanceMs && setPaused(false)}
       onFocusCapture={() => autoAdvanceMs && setPaused(true)}
-      onBlurCapture={event => {\n        if (!autoAdvanceMs) return;\n        const nextFocus = event.relatedTarget;\n        if (!(nextFocus instanceof Node) || !event.currentTarget.contains(nextFocus)) setPaused(false);\n      }}
+      onBlurCapture={event => {
+        if (!autoAdvanceMs) return;
+        const nextFocus = event.relatedTarget;
+        if (!(nextFocus instanceof Node) || !event.currentTarget.contains(nextFocus)) setPaused(false);
+      }}
     >
       {slideCount > 1 ? (
         <div className={styles.toolbar}>
