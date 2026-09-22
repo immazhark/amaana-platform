@@ -28,6 +28,12 @@ export function AppealShare({ title, summary, path }: AppealShareProps) {
     }
   }
 
+  function shareOnWhatsApp() {
+    const message = [title, summary, canonicalUrl].filter(Boolean).join("\n\n");
+    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
+    setStatus("WhatsApp share opened in a new tab.");
+  }
+
   async function copy() {
     try {
       await navigator.clipboard.writeText(canonicalUrl);
@@ -45,6 +51,7 @@ export function AppealShare({ title, summary, path }: AppealShareProps) {
       </div>
       <div className="v2-appeal-share-actions">
         <button type="button" className="v2-text-link" onClick={share}>Share appeal ↗</button>
+        <button type="button" className="v2-text-link" onClick={shareOnWhatsApp}>WhatsApp ↗</button>
         <button type="button" className="v2-text-link" onClick={copy}>Copy link</button>
       </div>
       <p className="v2-appeal-share-status" role="status" aria-live="polite">{status}</p>
