@@ -9,7 +9,7 @@ export const metadata = {
   twitter: { images: ["/twitter-image"], card: 'summary', title: `${governanceCopy.title} | Amaana Foundation`, description: governanceCopy.intro },
 };
 export default function Page(){
-  return <CanonicalArticle eyebrow="Governance" heroVariant="trust" heroVisualTitle="Governance" bodyClassName="canonical-body--governance" {...governanceCopy}>
+  return <CanonicalArticle eyebrow="Governance" heroVariant="trust" heroVisualTitle="Governance" bodyClassName="canonical-body--governance" heroActions={[{ label: "Meet the trustees", href: "#governance-record" }, { label: "Compliance position", href: "/compliance", secondary: true }]} {...governanceCopy}>
     <section className="governance-summary" aria-label="Governance at a glance">
       <div><span>Formal responsibility</span><strong>3 trustees</strong><small>Named in Amaana’s public governance record.</small></div>
       <div><span>Trust registration</span><strong>23 Feb 2024</strong><small>Hyderabad, Telangana.</small></div>
