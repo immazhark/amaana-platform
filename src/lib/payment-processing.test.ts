@@ -26,11 +26,68 @@ vi.mock("@/lib/prisma-transaction", () => ({
   withSerializableTransactionRetry: mocks.transaction,
 }));
 
-import { ensureCapturedDonationForRefund } from "./payment-processing";
+import { captureDonation, ensureCapturedDonationForRefund } from "./payment-processing";
 
 const decimal = (value: number) => ({
   mul: (factor: number) => ({ toNumber: () => value * factor }),
   toNumber: () => value,
+});
+
+describe("captureDonation", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.transaction.mockImplementation(async callback => callback({
+      donation: {
+        findUnique: mocks.txDonationFindUnique,
+        updateMany: mocks.txDonationUpdateMany,
+      },
+      appeal: {
+        update: mocks.txAppealUpdate,
+        updateMany: mocks.txAppealUpdateMany,
+      },
+      notification: {
+        create: mocks.txNotificationCreate,
+      },
+    }));
+  });
+
+  it("fails closed before mutation when a captured amount is not a safe positive integer", async () => {
+    mocks.txDonationFindUnique.mockResolvedValue({
+      id: "donation_unsafe",
+      currency: "INR",
+      amount: decimal(500),
+      referenceNumber: "AFD-2026-UNSAFE",
+      appealId: "appeal_1",
+      donorEmail: "donor@example.test",
+      givingIntent: "GENERAL",
+      receiptTokenHash: "hash",
+    });
+
+    await expect(captureDonation("order_unsafe", "pay_unsafe", Number.MAX_SAFE_INTEGER + 1))
+      .rejects.toThrow("Payment does not match donation order");
+
+    expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when the stored rupee amount cannot be represented safely in paise", async () => {
+    mocks.txDonationFindUnique.mockResolvedValue({
+      id: "donation_unsafe",
+      currency: "INR",
+      amount: decimal(Number.MAX_SAFE_INTEGER),
+      referenceNumber: "AFD-2026-UNSAFE",
+      appealId: "appeal_1",
+      donorEmail: "donor@example.test",
+      givingIntent: "GENERAL",
+      receiptTokenHash: "hash",
+    });
+
+    await expect(captureDonation("order_unsafe", "pay_unsafe", 50_000))
+      .rejects.toThrow("Payment does not match donation order");
+
+    expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
+  });
 });
 
 describe("ensureCapturedDonationForRefund", () => {
