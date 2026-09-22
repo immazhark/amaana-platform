@@ -499,3 +499,10 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 .v2-assistance-after-flow strong{display:block;color:var(--af-color-navy-800);line-height:1.25}
 @media(max-width:900px){.v2-assistance-after-flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){.v2-assistance-after-flow{grid-template-columns:1fr}.v2-assistance-form-layout>aside{padding:1rem}}
+
+/* Browser acceptance corrections: canonical body art, hero controls and compact footer. */
+:is(.v2-section.paper,.v3-section,.amaana-bg-body,.v2-closing,.v3-closing,.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-history-note,.campaign-clinical-note,.campaign-data-visual,.campaign-gallery,.campaign-next){background-size:cover!important}
+.page-hero__button{min-height:3.1875rem!important;padding-block:.82rem!important}
+.site-footer .footer-lead{padding-block:clamp(2rem,4vw,3.25rem)!important;margin-bottom:0!important}
+.site-footer .footer-lead h2{font-size:clamp(2rem,3.4vw,3.35rem)!important;margin:.55rem 0 1rem!important}
+@media(max-width:600px){.site-footer .footer-lead{padding-block:2.25rem!important}.site-footer .footer-lead h2{font-size:clamp(2rem,8.5vw,2.8rem)!important}}
