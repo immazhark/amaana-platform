@@ -132,8 +132,15 @@ export async function saveVerification(formData: FormData) {
 
   const completedAt = markComplete ? (request.verification?.completedAt ?? new Date()) : null;
   const reviewedById = markComplete ? user.id : null;
-  await prisma.$transaction([
-    prisma.assistanceVerification.upsert({
+  await prisma.$transaction(async tx => {
+    const stillEditable = await tx.assistanceRequest.findFirst({
+      where: { id, appealId: null, status: { not: AssistanceStatus.CONVERTED_TO_APPEAL } },
+      select: { id: true },
+    });
+    if (!stillEditable) {
+      throw new Error("Verification was locked because this request was converted while you were reviewing it. Refresh before saving.");
+    }
+    await tx.assistanceVerification.upsert({
       where: { assistanceRequestId: id },
       create: {
         assistanceRequestId: id,
@@ -176,8 +183,8 @@ export async function saveVerification(formData: FormData) {
         completedAt,
         reviewedById,
       },
-    }),
-    prisma.auditEvent.create({
+    });
+    await tx.auditEvent.create({
       data: {
         actorId: user.id,
         action: markComplete ? "assistance.verification_completed" : "assistance.verification_saved",
@@ -185,8 +192,8 @@ export async function saveVerification(formData: FormData) {
         entityId: id,
         metadata: { decision, completed: markComplete, confidentialityLevel, zakatStatus },
       },
-    }),
-  ]);
+    });
+  });
   revalidatePath(`/admin/requests/${id}`);
   revalidatePath("/admin");
 }
