@@ -11,4 +11,4 @@
 @keyframes amaana-logo-breathe{0%,100%{transform:scale(.88);opacity:.82}50%{transform:scale(1.06);opacity:1}}
 @keyframes amaana-dot-pulse{0%,60%,100%{transform:translateY(0) scale(.8);opacity:.38}30%{transform:translateY(-.22rem) scale(1);opacity:1}}
 @media(max-width:600px){.amaana-loading-indicator{min-width:7rem;min-height:7rem;padding:1rem;border-radius:1.25rem}.amaana-loading-logo{width:4.75rem;height:4.75rem}}
-@media(prefers-reduced-motion:reduce){.amaana-loading-overlay{animation:none}.amaana-loading-logo{animation:amaana-logo-fade 1.5s ease-in-out infinite}.amaana-loading-dots i{animation:none;opacity:.72}@keyframes amaana-logo-fade{0%,100%{opacity:.78}50%{opacity:1}}}
+@media(prefers-reduced-motion:reduce){.amaana-loading-overlay,.amaana-loading-logo,.amaana-loading-dots i{animation:none}.amaana-loading-logo{transform:none;opacity:1}.amaana-loading-dots i{transform:none;opacity:.72}}
