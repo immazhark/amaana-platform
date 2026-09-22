@@ -45,6 +45,7 @@ for (const path of ["/api/health/live", "/api/health/ready", "/api/health/versio
     const response = await request.get(path);
     expect([200, 503]).toContain(response.status());
     expect(response.headers()["cache-control"] ?? "").toMatch(/no-store/i);
+    expect(response.headers()["x-robots-tag"] ?? "").toMatch(/noindex.*nofollow.*noarchive/i);
   });
 }
 
