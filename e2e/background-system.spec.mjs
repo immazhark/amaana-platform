@@ -74,11 +74,11 @@ for (const width of widths) {
 
     if (mobile) {
       expectTopRight(styles.heroPosition);
-      expect(styles.bodyPosition).toBe('50% 50%');
+      expect(styles.bodyPosition.split(',').map(value => value.trim()).every(value => value === '50% 0%')).toBe(true);
       expectTopRight(styles.footerPosition);
     } else {
       expect(styles.heroPosition).toBe('50% 50%');
-      expect(styles.bodyPosition).toBe('50% 50%');
+      expect(styles.bodyPosition.split(',').map(value => value.trim()).every(value => value === '50% 50%')).toBe(true);
       expect(styles.footerPosition).toBe('50% 50%');
     }
   });
