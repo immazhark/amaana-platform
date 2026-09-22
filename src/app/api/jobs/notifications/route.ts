@@ -7,6 +7,12 @@ import { pruneEphemeralSecurityLedgers } from "@/lib/security-ledger-retention";
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
+const privateHeaders = {
+  "Cache-Control": "no-store, private",
+  "Referrer-Policy": "no-referrer",
+  "X-Robots-Tag": "noindex, nofollow, noarchive",
+};
+
 function isAuthorized(request: Request) {
   const secret = process.env.CRON_SECRET;
   const supplied = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") || "";
@@ -28,7 +34,7 @@ export async function POST(request: Request) {
   if (!isAuthorized(request)) {
     return NextResponse.json(
       { error: "Unauthorized" },
-      { status: 401, headers: { "Cache-Control": "no-store" } },
+      { status: 401, headers: privateHeaders },
     );
   }
 
@@ -37,7 +43,7 @@ export async function POST(request: Request) {
   if (!isEmailDeliveryEnabled()) {
     return NextResponse.json(
       { status: "disabled", retention },
-      { headers: { "Cache-Control": "no-store" } },
+      { headers: privateHeaders },
     );
   }
 
@@ -51,7 +57,7 @@ export async function POST(request: Request) {
     console.error("Notification delivery job failed", error);
     return NextResponse.json(
       { status: "failed", retention },
-      { status: 500, headers: { "Cache-Control": "no-store" } },
+      { status: 500, headers: privateHeaders },
     );
   }
 }
