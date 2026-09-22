@@ -8,30 +8,27 @@ import { prisma } from "@/lib/prisma";
 export async function enqueueControlledEmailAcceptance() {
   const user = await requirePermission("notification.manage");
 
-  const existing = await prisma.notification.findFirst({
-    where: {
-      userId: user.id,
-      channel: "EMAIL",
-      templateKey: "operational-email-acceptance",
-      status: { in: [NotificationStatus.PENDING, NotificationStatus.PROCESSING] },
-    },
-    select: { id: true, status: true },
-  });
-
-  if (existing) {
-    throw new Error("A controlled acceptance email is already queued or processing for this account.");
-  }
-
   await prisma.$transaction(async tx => {
+    const existing = await tx.notification.findFirst({
+      where: {
+        userId: user.id,
+        channel: "EMAIL",
+        templateKey: "operational-email-acceptance",
+        status: { in: [NotificationStatus.PENDING, NotificationStatus.PROCESSING] },
+      },
+      select: { id: true, status: true },
+    });
+    if (existing) {
+      throw new Error("A controlled acceptance email is already queued or processing for this account.");
+    }
+
     const notification = await tx.notification.create({
       data: {
         channel: "EMAIL",
         recipient: user.email,
         templateKey: "operational-email-acceptance",
         subject: "Amaana Foundation transactional email acceptance",
-        payload: {
-          acceptanceType: "transactional-email",
-        },
+        payload: { acceptanceType: "transactional-email" },
         userId: user.id,
       },
       select: { id: true },
@@ -49,7 +46,7 @@ export async function enqueueControlledEmailAcceptance() {
         },
       },
     });
-  });
+  }, { isolationLevel: "Serializable" });
 
   revalidatePath("/admin/notifications");
 }
