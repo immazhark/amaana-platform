@@ -72,3 +72,48 @@ for (const path of clsRoutes) {
     expect(metrics.cls, `${path} exceeded the CLS launch budget`).toBeLessThanOrEqual(0.1);
   });
 }
+
+
+const criticalPublicRoutes = ['/', '/about', '/our-work', '/appeals', '/donate', '/request-assistance'];
+
+for (const path of criticalPublicRoutes) {
+  test(`${path} avoids failed first-party resources and duplicate stylesheet delivery`, async ({ page }) => {
+    const failed = [];
+    page.on('requestfailed', request => {
+      const url = new URL(request.url());
+      if (url.origin === 'http://127.0.0.1:3000') {
+        failed.push({ url: url.pathname, failure: request.failure()?.errorText ?? 'unknown' });
+      }
+    });
+
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+    const response = await page.goto(path, { waitUntil: 'load' });
+    expect(response?.ok(), `Expected ${path} to render successfully`).toBeTruthy();
+    await page.waitForTimeout(250);
+
+    const resources = await page.evaluate(() => performance.getEntriesByType('resource').map(entry => entry.name));
+    const localResources = resources
+      .map(value => new URL(value, location.href))
+      .filter(url => url.origin === location.origin)
+      .map(url => url.pathname);
+    const stylesheets = localResources.filter(value => value.endsWith('.css'));
+
+    expect(failed, `${path} had failed first-party requests`).toEqual([]);
+    expect(new Set(stylesheets).size, `${path} loaded duplicate first-party stylesheets`).toBe(stylesheets.length);
+  });
+}
+
+test('critical public routes do not load Razorpay before a donation journey needs checkout', async ({ page }) => {
+  for (const path of ['/', '/about', '/our-work', '/appeals', '/request-assistance']) {
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+    const response = await page.goto(path, { waitUntil: 'load' });
+    expect(response?.ok(), `Expected ${path} to render successfully`).toBeTruthy();
+
+    const razorpayResources = await page.evaluate(() =>
+      performance.getEntriesByType('resource')
+        .map(entry => entry.name)
+        .filter(name => /razorpay/i.test(name)),
+    );
+    expect(razorpayResources, `${path} eagerly loaded payment-provider resources`).toEqual([]);
+  }
+}
