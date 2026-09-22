@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   title: "Terms of Use",
   description: "Terms governing use of the Amaana Foundation platform and assistance-request process.",
   alternates: { canonical: "/terms" },
-  openGraph: { type: "website", url: "/terms", title: "Terms of Use | Amaana Foundation", description: "Terms for Amaana's public platform and assistance-request process." },
-  twitter: { card: "summary", title: "Terms of Use | Amaana Foundation", description: "Terms for Amaana's public platform and assistance-request process." },
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }],  type: "website", url: "/terms", title: "Terms of Use | Amaana Foundation", description: "Terms for Amaana's public platform and assistance-request process." },
+  twitter: { images: ["/twitter-image"],  card: "summary_large_image", title: "Terms of Use | Amaana Foundation", description: "Terms for Amaana's public platform and assistance-request process." },
 };
 const sections=[
 ["01","Platform purpose",<>The platform provides information about Amaana Foundation, receives private assistance requests and enables domestic donations through supported giving routes.</>],
