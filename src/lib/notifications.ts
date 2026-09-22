@@ -96,6 +96,20 @@ async function recoverStaleProcessingNotifications() {
       scheduledFor: new Date(),
     },
   });
+
+  await prisma.notification.updateMany({
+    where: {
+      channel: "EMAIL",
+      status: NotificationStatus.PROCESSING,
+      updatedAt: { lt: staleBefore },
+      attempts: { gte: MAX_ATTEMPTS },
+    },
+    data: {
+      status: NotificationStatus.FAILED,
+      failureReason: "Recovered after an interrupted final notification delivery attempt; manual review is required.",
+      scheduledFor: new Date("9999-12-31T23:59:59.999Z"),
+    },
+  });
 }
 
 export async function processPendingEmailNotifications() {
