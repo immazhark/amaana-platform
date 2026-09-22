@@ -12,6 +12,8 @@ export type CampaignGalleryItem = {
   url: string;
   alt: string | null;
   caption?: string | null;
+  width?: number | null;
+  height?: number | null;
 };
 
 function canOptimizeLocally(url: string) {
@@ -95,6 +97,8 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
           const descriptor = `${item.alt ?? ""} ${item.caption ?? ""}`;
           const privacyProtected = /(privacy|blurred|identit(?:y|ies) protected)/i.test(descriptor);
           const graphicAsset = /(graphic|announcement|campaign cover|results update|infographic|carousel)/i.test(descriptor);
+          const width = item.width && item.width > 0 ? item.width : 1600;
+          const height = item.height && item.height > 0 ? item.height : 1200;
           return (
           <figure className={`${styles.card} ${graphicAsset ? styles.graphicCard : ""}`} key={item.id}>
             <button
@@ -104,7 +108,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               onClick={() => setActiveIndex(index)}
               aria-label={`Open image ${index + 1} of ${items.length}: ${item.alt ?? "programme photograph"}`}
             >
-              {canOptimizeLocally(item.url) ? <Image src={item.url} alt={item.alt ?? ""} width={1600} height={1200} sizes="(max-width: 640px) 50vw, (max-width: 1100px) 33vw, 25vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={1600} height={1200} loading="lazy" decoding="async" />}
+              {canOptimizeLocally(item.url) ? <Image src={item.url} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 640px) 50vw, (max-width: 1100px) 33vw, 25vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
               {privacyProtected ? <span className={styles.privacyLabel}>Privacy protected</span> : null}
               <span className={styles.openLabel}>Enlarge</span>
             </button>
@@ -114,7 +118,10 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
         })}
       </ScrollCarousel>
 
-      {active ? (
+      {active ? (() => {
+        const width = active.width && active.width > 0 ? active.width : 1600;
+        const height = active.height && active.height > 0 ? active.height : 1200;
+        return (
         <div className={styles.backdrop} onMouseDown={event => {
           if (event.currentTarget === event.target) close();
         }}>
@@ -129,7 +136,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               <span>{activeIndex! + 1} / {items.length}</span>
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
-            {canOptimizeLocally(active.url) ? <Image className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={1600} height={1200} sizes="90vw" /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={1600} height={1200} />}
+            {canOptimizeLocally(active.url) ? <Image className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}
             {active.caption ? <p className={styles.caption}>{active.caption}</p> : null}
             {items.length > 1 ? (
               <div className={styles.controls}>
@@ -139,7 +146,8 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
             ) : null}
           </div>
         </div>
-      ) : null}
+        );
+      })() : null}
     </>
   );
 }
