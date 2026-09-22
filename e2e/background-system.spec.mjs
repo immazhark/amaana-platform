@@ -66,10 +66,10 @@ for (const width of widths) {
     expect(styles.atmosphereCount).toBe(0);
 
     expect(styles.heroSize).toBe('cover');
-    expect(styles.bodySize).toBe('cover');
+    expect(styles.bodySize.split(',').map(value => value.trim()).every(value => value === 'cover')).toBe(true);
     expect(styles.footerSize).toBe('cover');
     expect(styles.heroRepeat).toBe('no-repeat');
-    expect(styles.bodyRepeat).toBe('no-repeat');
+    expect(styles.bodyRepeat.split(',').map(value => value.trim()).every(value => value === 'no-repeat')).toBe(true);
     expect(styles.footerRepeat).toBe('no-repeat');
 
     if (mobile) {
