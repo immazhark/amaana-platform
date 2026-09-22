@@ -61,6 +61,7 @@ export async function requeueFailedNotification(formData: FormData) {
 
   if (!id) throw new Error("Notification is required");
   if (reason.length < 10) throw new Error("Provide a short operational reason before requeueing");
+  if (reason.length > 1000) throw new Error("Operational reason is too long");
 
   const current = await prisma.notification.findUniqueOrThrow({
     where: { id },
