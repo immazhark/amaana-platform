@@ -207,11 +207,23 @@ export async function updateRequest(formData: FormData) {
   if (status === AssistanceStatus.APPROVED && previous.status !== status && !canApproveAssistanceRequest(previous.verification)) throw new Error("Complete verification with an approved decision before marking this request approved");
   if (status === AssistanceStatus.REJECTED && previous.status !== status && (!previous.verification?.completedAt || previous.verification.decision !== AssistanceVerificationDecision.DECLINED)) throw new Error("Complete verification with a declined decision before marking this request rejected");
 
-  await prisma.$transaction([
-    prisma.assistanceRequest.update({ where: { id }, data: { status, internalNotes: internalNotes || null } }),
-    prisma.auditEvent.create({ data: { actorId: user.id, action: "assistance.updated", entityType: "AssistanceRequest", entityId: id, metadata: { previousStatus: previous.status, status } } }),
-    ...(previous.status !== status && previous.email ? [prisma.notification.create({ data: { channel: NotificationChannel.EMAIL, recipient: previous.email, templateKey: "assistance-status-updated", subject: "Your Amaana request status was updated", payload: { referenceNumber: previous.referenceNumber, status }, assistanceRequestId: id } })] : []),
-  ]);
+  await prisma.$transaction(async tx => {
+    const updated = await tx.assistanceRequest.updateMany({
+      where: {
+        id,
+        status: previous.status,
+        ...(previous.appealId ? { appealId: previous.appealId } : { appealId: null }),
+      },
+      data: { status, internalNotes: internalNotes || null },
+    });
+    if (updated.count !== 1) {
+      throw new Error("This request changed while you were reviewing it. Refresh before saving.");
+    }
+    await tx.auditEvent.create({ data: { actorId: user.id, action: "assistance.updated", entityType: "AssistanceRequest", entityId: id, metadata: { previousStatus: previous.status, status } } });
+    if (previous.status !== status && previous.email) {
+      await tx.notification.create({ data: { channel: NotificationChannel.EMAIL, recipient: previous.email, templateKey: "assistance-status-updated", subject: "Your Amaana request status was updated", payload: { referenceNumber: previous.referenceNumber, status }, assistanceRequestId: id } });
+    }
+  });
   revalidatePath(`/admin/requests/${id}`);
   revalidatePath("/admin");
 }
