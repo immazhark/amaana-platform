@@ -91,12 +91,13 @@ for (const path of criticalPublicRoutes) {
     expect(response?.ok(), `Expected ${path} to render successfully`).toBeTruthy();
     await page.waitForTimeout(250);
 
-    const localResources = await page.evaluate(() =>
-      performance.getEntriesByType('resource')
-        .map(entry => new URL(entry.name, location.href))
-        .filter(url => url.origin === location.origin)
-        .map(url => url.pathname),
-    );
+    const localResources = await page.evaluate(() => {
+      const currentOrigin = window.location.origin;
+      return performance.getEntriesByType('resource')
+        .map(entry => new URL(entry.name, window.location.href))
+        .filter(url => url.origin === currentOrigin)
+        .map(url => url.pathname);
+    });
     const stylesheets = localResources.filter(value => value.endsWith('.css'));
 
     expect(failed, `${path} had failed first-party requests`).toEqual([]);
