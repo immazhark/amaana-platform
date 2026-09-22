@@ -241,86 +241,9 @@
     linear-gradient(145deg, #122239, #2F4C7A);
 }
 
-.v2-contact-social-section {
-  padding: clamp(3.5rem, 6vw, 5.5rem) 0;
-  background: linear-gradient(135deg, #e9eff8, #faf6ec 65%);
-}
-
-.v2-contact-social-grid {
-  display: grid;
-  grid-template-columns: minmax(0, .85fr) minmax(0, 1.15fr);
-  gap: clamp(2.5rem, 8vw, 8rem);
-  align-items: start;
-}
-
-.v2-contact-social-grid h2 {
-  max-width: 12ch;
-  margin: .7rem 0 1.25rem;
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(2.35rem, 4vw, 4.25rem);
-  font-weight: 400;
-  line-height: .98;
-  letter-spacing: -.04em;
-}
-
-.v2-contact-social-grid > div:first-child > p:last-child {
-  max-width: 38rem;
-  color: var(--amaana-ink-soft);
-  line-height: 1.75;
-}
-
-.v2-contact-social-links {
-  border-top: 1px solid rgb(38 48 61 / 16%);
-}
-
-.v2-contact-social-links a {
-  display: grid;
-  grid-template-columns: 7rem 1fr auto;
-  gap: 1.25rem;
-  align-items: center;
-  min-height: 6.8rem;
-  padding: 1.25rem 0;
-  border-bottom: 1px solid rgb(38 48 61 / 16%);
-  color: var(--amaana-blue-mid);
-  transition: padding .22s ease, color .22s ease;
-}
-
-.v2-contact-social-links a:hover {
-  padding-left: .6rem;
-  color: var(--amaana-blue);
-}
-
-.v2-contact-social-links span {
-  color: var(--amaana-gold-deep);
-  font-size: .7rem;
-  font-weight: 850;
-  letter-spacing: .12em;
-  text-transform: uppercase;
-}
-
-.v2-contact-social-links strong {
-  font-family: Georgia, "Times New Roman", serif;
-  font-size: clamp(1.4rem, 2.7vw, 2.4rem);
-  font-weight: 400;
-}
-
-.v2-contact-social-links i {
-  color: var(--amaana-gold);
-  font-style: normal;
-  font-size: 1.3rem;
-}
-
-.v2-closing {
-  background:
-    radial-gradient(circle at 20% 15%, rgb(70 111 170 / 10%), transparent 28%),
-    radial-gradient(circle at 82% 78%, rgb(224 179 24 / 12%), transparent 24%),
-    linear-gradient(145deg, #F3EDDD, #FAF6EC 58%, #FFFDF8);
-}
-
 @media (max-width: 960px) {
   .footer-lead,
-  .footer-grid-v2,
-  .v2-contact-social-grid {
+  .footer-grid-v2 {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
@@ -329,9 +252,6 @@
   }
 }
 
-@media (max-width: 720px) {
-  .v2-contact-social-grid { grid-template-columns: 1fr; }
-}
 
 @media (max-width: 640px) {
   .footer-lead,
@@ -352,8 +272,7 @@
   .v2-work-card,
   .nav-links .nav-link::after,
   .footer-lead-actions a,
-  .footer-socials a,
-  .v2-contact-social-links a {
+  .footer-socials a {
     transition: none !important;
     transform: none !important;
   }
