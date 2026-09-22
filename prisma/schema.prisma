@@ -345,6 +345,8 @@ model MediaAsset {
   caption           String?
   sourcePath        String?
   sourceYear        Int?
+  width             Int?
+  height            Int?
   sortOrder         Int              @default(0)
   isPublic          Boolean          @default(false)
   privacyApprovedAt DateTime?
