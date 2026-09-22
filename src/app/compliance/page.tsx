@@ -7,14 +7,14 @@ export const metadata: Metadata = {
   title: "Compliance and Registration",
   description: "Current domestic-donation, FCRA, provisional 12A and provisional 80G disclosures for Amaana Foundation, stated conservatively from confirmed records.",
   alternates: { canonical: "/compliance" },
-  openGraph: {
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }], 
     type: "website",
     url: "/compliance",
     title: "Compliance and Registration | Amaana Foundation",
     description: "Current domestic-donation, FCRA, provisional 12A and provisional 80G disclosures for Amaana Foundation.",
   },
-  twitter: {
-    card: "summary",
+  twitter: { images: ["/twitter-image"], 
+    card: "summary_large_image",
     title: "Compliance and Registration | Amaana Foundation",
     description: "Amaana Foundation's current public compliance position and donation boundaries.",
   },
