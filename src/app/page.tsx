@@ -103,30 +103,6 @@ export default async function HomePage() {
         </div></div>
       </section>
 
-      <section className="v3-section v3-field" aria-labelledby="field-title">
-        <div className="v3-shell">
-          <div className="v3-section-head">
-            <div>
-              <p className="v3-label">From the field</p>
-              <h2 className="v3-heading" id="field-title">A closer look at the work</h2>
-            </div>
-            <p className="v3-intro">Step inside selected Amaana initiatives through documented moments from the field, then open each programme to see its story and reported outcomes.</p>
-          </div>
-
-          <ScrollCarousel label="Selected documented field work" mode="cards" className="v3-field-carousel">
-            {fieldDrives.map((drive, index) => {
-              const media = selectIdentityPublicImage(drive.mediaAssets);
-              return (
-                <Link className={`v3-field-card ${index === 0 ? "v3-field-card-wide" : "v3-field-card-tall"}`} href={`/our-work/${drive.slug}`} key={drive.id}>
-                  {media ? <div className="v3-field-image"><PublicMedia asset={media} sizes="(max-width: 900px) 86vw, 38vw" /></div> : <div className="v3-field-image"><WorkVisualPlaceholder label={drive.title} /></div>}
-                  <div className="v3-field-copy"><span>{drive.year}</span><h3>{drive.title}</h3><p>{drive.summary}</p></div>
-                </Link>
-              );
-            })}
-          </ScrollCarousel>
-        </div>
-      </section>
-
       <section className="v3-section v3-work" aria-labelledby="featured-work-title">
         <div className="v3-shell">
           <div className="v3-section-head">
@@ -185,6 +161,30 @@ export default async function HomePage() {
           <div className="v3-actions">
             <Link className="v3-btn" href="/our-work/eid-gift-kits">Explore the seven-year story</Link>
           </div>
+        </div>
+      </section>
+
+      <section className="v3-section v3-field" aria-labelledby="field-title">
+        <div className="v3-shell">
+          <div className="v3-section-head">
+            <div>
+              <p className="v3-label">From the field</p>
+              <h2 className="v3-heading" id="field-title">A closer look at the work</h2>
+            </div>
+            <p className="v3-intro">Two documented field moments offer a closer view after the programme overview. Open either initiative for its fuller record and reported outcomes.</p>
+          </div>
+
+          <ScrollCarousel label="Selected documented field work" mode="cards" className="v3-field-carousel">
+            {fieldDrives.map((drive, index) => {
+              const media = selectIdentityPublicImage(drive.mediaAssets);
+              return (
+                <Link className={`v3-field-card ${index === 0 ? "v3-field-card-wide" : "v3-field-card-tall"}`} href={`/our-work/${drive.slug}`} key={drive.id}>
+                  {media ? <div className="v3-field-image"><PublicMedia asset={media} sizes="(max-width: 900px) 86vw, 38vw" /></div> : <div className="v3-field-image"><WorkVisualPlaceholder label={drive.title} /></div>}
+                  <div className="v3-field-copy"><span>{drive.year}</span><h3>{drive.title}</h3><p>{drive.summary}</p></div>
+                </Link>
+              );
+            })}
+          </ScrollCarousel>
         </div>
       </section>
 
