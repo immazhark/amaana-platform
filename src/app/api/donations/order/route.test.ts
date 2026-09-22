@@ -103,6 +103,23 @@ describe("donation order request bounds", () => {
     mocks.enforceDonationRateLimit.mockResolvedValue(true);
   });
 
+  it("keeps checkout order responses private even when validation fails", async () => {
+    mocks.safeParse.mockReturnValue({ success: false, error: {} });
+
+    const response = await POST(new Request("https://amaana.example/api/donations/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    }));
+
+    expect(response.status).toBe(400);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex.*nofollow.*noarchive/i);
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.createRazorpayOrder).not.toHaveBeenCalled();
+  });
+
   it("rejects an oversized payload before appeal or Razorpay work", async () => {
     const request = new Request("https://amaana.example/api/donations/order", {
       method: "POST",
