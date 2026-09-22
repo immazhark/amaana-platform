@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { validateProductionEnvironment } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
 
-const headers = { "Cache-Control": "no-store" };
+const headers = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow, noarchive" };
 const READINESS_TIMEOUT_MS = 2_500;
 
 async function databaseReady() {
