@@ -20,8 +20,10 @@ vi.mock("@/lib/prisma", () => ({
     donation: {
       findUnique: mocks.rootFindUnique,
     },
-    $transaction: mocks.transaction,
   },
+}));
+vi.mock("@/lib/prisma-transaction", () => ({
+  withSerializableTransactionRetry: mocks.transaction,
 }));
 
 import { ensureCapturedDonationForRefund } from "./payment-processing";
