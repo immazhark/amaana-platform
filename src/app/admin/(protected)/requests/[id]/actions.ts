@@ -26,6 +26,7 @@ import {
 } from "@/lib/assistance";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
 const statuses = new Set(Object.values(AssistanceStatus));
 const verificationDecisions = new Set<string>(ASSISTANCE_VERIFICATION_DECISIONS);
@@ -132,7 +133,7 @@ export async function saveVerification(formData: FormData) {
 
   const completedAt = markComplete ? (request.verification?.completedAt ?? new Date()) : null;
   const reviewedById = markComplete ? user.id : null;
-  await prisma.$transaction(async tx => {
+  await withSerializableTransactionRetry(async tx => {
     const stillEditable = await tx.assistanceRequest.findFirst({
       where: { id, appealId: null, status: { not: AssistanceStatus.CONVERTED_TO_APPEAL } },
       select: { id: true },
@@ -214,7 +215,32 @@ export async function updateRequest(formData: FormData) {
   if (status === AssistanceStatus.APPROVED && previous.status !== status && !canApproveAssistanceRequest(previous.verification)) throw new Error("Complete verification with an approved decision before marking this request approved");
   if (status === AssistanceStatus.REJECTED && previous.status !== status && (!previous.verification?.completedAt || previous.verification.decision !== AssistanceVerificationDecision.DECLINED)) throw new Error("Complete verification with a declined decision before marking this request rejected");
 
-  await prisma.$transaction(async tx => {
+  await withSerializableTransactionRetry(async tx => {
+    const current = await tx.assistanceRequest.findUniqueOrThrow({
+      where: { id },
+      select: {
+        status: true,
+        appealId: true,
+        verification: { select: { decision: true, completedAt: true } },
+      },
+    });
+    if (
+      current.status !== previous.status ||
+      current.appealId !== previous.appealId
+    ) {
+      throw new Error("This request changed while you were reviewing it. Refresh before saving.");
+    }
+    if (status === AssistanceStatus.APPROVED && previous.status !== status && !canApproveAssistanceRequest(current.verification)) {
+      throw new Error("Verification changed while you were reviewing it. Refresh and confirm the approved verification before saving.");
+    }
+    if (
+      status === AssistanceStatus.REJECTED &&
+      previous.status !== status &&
+      (!current.verification?.completedAt || current.verification.decision !== AssistanceVerificationDecision.DECLINED)
+    ) {
+      throw new Error("Verification changed while you were reviewing it. Refresh and confirm the declined verification before saving.");
+    }
+
     const updated = await tx.assistanceRequest.updateMany({
       where: {
         id,
@@ -267,15 +293,15 @@ export async function convertToAppeal(formData: FormData) {
   const publicStory = String(formData.get("publicStory") ?? "").trim();
   if (title.length < 8 || publicSummary.length < 20 || publicStory.length < 40) throw new Error("A public title, privacy-safe summary and privacy-safe story are required");
 
-  const request = await prisma.assistanceRequest.findUniqueOrThrow({ where: { id }, include: { verification: true } });
-  if (request.status !== AssistanceStatus.APPROVED || request.appealId) throw new Error("Only approved, unconverted requests can become appeals");
-  if (!request.verification?.completedAt || !request.verification.reviewedById) throw new Error("Verification must be completed by an authorised reviewer before appeal conversion");
-  const verificationIssues = getPublicAppealVerificationIssues(request.verification);
-  if (verificationIssues.length) throw new Error(`Public appeal verification is incomplete: ${verificationIssues.join(" ")}`);
-  const goalAmount = request.verification!.approvedPublicTarget!.toNumber();
-  const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)}-${Date.now().toString(36)}`;
+  await withSerializableTransactionRetry(async tx => {
+    const request = await tx.assistanceRequest.findUniqueOrThrow({ where: { id }, include: { verification: true } });
+    if (request.status !== AssistanceStatus.APPROVED || request.appealId) throw new Error("Only approved, unconverted requests can become appeals");
+    if (!request.verification?.completedAt || !request.verification.reviewedById) throw new Error("Verification must be completed by an authorised reviewer before appeal conversion");
+    const verificationIssues = getPublicAppealVerificationIssues(request.verification);
+    if (verificationIssues.length) throw new Error(`Public appeal verification is incomplete: ${verificationIssues.join(" ")}`);
+    const goalAmount = request.verification.approvedPublicTarget!.toNumber();
+    const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)}-${Date.now().toString(36)}`;
 
-  await prisma.$transaction(async tx => {
     const claimed = await tx.assistanceRequest.updateMany({
       where: { id, status: AssistanceStatus.APPROVED, appealId: null },
       data: { status: AssistanceStatus.CONVERTED_TO_APPEAL },
@@ -302,7 +328,7 @@ export async function convertToAppeal(formData: FormData) {
         action: "appeal.created_from_assistance",
         entityType: "Appeal",
         entityId: appeal.id,
-        metadata: { assistanceRequestId: id, verificationId: request.verification!.id, approvedPublicTarget: goalAmount },
+        metadata: { assistanceRequestId: id, verificationId: request.verification.id, approvedPublicTarget: goalAmount },
       },
     });
     if (request.email) {
