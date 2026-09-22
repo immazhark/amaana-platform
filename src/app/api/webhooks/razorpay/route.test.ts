@@ -163,7 +163,7 @@ describe("Razorpay webhook route", () => {
   });
 
   it("acknowledges a duplicate provider event without replaying refund accounting", async () => {
-    mocks.paymentEventFindUnique.mockResolvedValue({ id: "existing_event" });
+    mocks.paymentEventFindUnique.mockResolvedValue({ id: "existing_event", eventType: "refund.processed" });
 
     const response = await POST(webhookRequest(refundPayload()));
     const body = await response.json();
@@ -172,6 +172,21 @@ describe("Razorpay webhook route", () => {
     expect(body).toEqual({ received: true });
     expect(mocks.ensureCapturedDonationForRefund).not.toHaveBeenCalled();
     expect(mocks.transactionRetry).not.toHaveBeenCalled();
+  });
+
+  it("rejects reuse of a provider event id for a different event type", async () => {
+    mocks.paymentEventFindUnique.mockResolvedValue({
+      id: "existing_event",
+      eventType: "payment.failed",
+    });
+
+    const response = await POST(webhookRequest(refundPayload()));
+
+    expect(response.status).toBe(409);
+    expect(await response.text()).toBe("Webhook event id conflict");
+    expect(mocks.ensureCapturedDonationForRefund).not.toHaveBeenCalled();
+    expect(mocks.transactionRetry).not.toHaveBeenCalled();
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
   });
 
   it("records payment.failed without changing appeal accounting", async () => {
