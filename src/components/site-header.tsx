@@ -84,7 +84,7 @@ export function SiteHeader() {
         </div>
       </nav>
 
-      {open ? <button type="button" className="mobile-menu-backdrop" aria-label="Close navigation menu" onClick={closeMenuAndRestoreFocus} /> : null}
+      {open ? <button type="button" className="mobile-menu-backdrop" tabIndex={-1} aria-label="Close navigation menu" onClick={closeMenuAndRestoreFocus} /> : null}
       <nav ref={mobileNavRef} id="mobile-navigation" className={`mobile-menu${open ? " open" : ""}`} aria-label="Mobile navigation" hidden={!open}>
         <div className="container mobile-menu-inner">
           <div className="mobile-menu-primary">
