@@ -422,3 +422,39 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
   :is(.v2-closing,.v3-closing){padding-block:4rem}
   :is(.v2-closing,.v3-closing) h2{font-size:clamp(2.2rem,9.5vw,3.35rem)}
 }
+
+
+/* Special-route sections keep their purpose while inheriting the shared Amaana surface rhythm. */
+:is(.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-history-note,.campaign-clinical-note,.campaign-data-visual,.campaign-gallery,.campaign-next){
+  position:relative;
+  background-color:var(--af-color-canvas);
+  background-image:var(--af-surface-light);
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-position:var(--af-surface-position);
+}
+:is(.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-history-note,.campaign-clinical-note,.campaign-data-visual,.campaign-gallery,.campaign-next){
+  border-top:1px solid rgb(117 86 7 / 8%);
+}
+:is(.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-data-visual,.campaign-gallery,.campaign-next){
+  padding-block:var(--af-section-space);
+}
+:is(.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-data-visual,.campaign-gallery,.campaign-next)>:is(.v2-shell,[class*="v2-shell"]){
+  width:min(calc(100% - (var(--af-public-gutter) * 2)),var(--af-public-shell));
+  margin-inline:auto;
+}
+.campaign-next{
+  text-align:center;
+  background-image:var(--af-surface-light-alt);
+}
+.campaign-next h2{
+  max-width:15ch;
+  margin:0 auto 1.5rem;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(2.3rem,4.5vw,4rem);
+  font-weight:500;
+  line-height:1;
+  letter-spacing:-.04em;
+  text-wrap:balance;
+}
+.campaign-next .v2-hero-actions{justify-content:center}
