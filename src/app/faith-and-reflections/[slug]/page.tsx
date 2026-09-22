@@ -5,6 +5,7 @@ import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
 import { getFaithPageData } from "@/lib/public-page-data";
+import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
 
 type Props = { params: Promise<{ slug: string }> };
 export const dynamic = "force-dynamic";
@@ -14,8 +15,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const item = await getFaithPageData(slug);
   if (!item) return { title: "Reflection not found" };
   const canonical = `/faith-and-reflections/${item.slug}`;
-  const leadImage = item.mediaAssets.find(asset => asset.kind === "IMAGE" && asset.publicUrl)?.publicUrl ?? undefined;
-  const leadAlt = leadImage ? item.mediaAssets.find(asset => asset.publicUrl === leadImage)?.altText ?? item.title : undefined;
+  const identity = selectIdentityPublicImage(item.mediaAssets);
+  const leadImage = identity ? resolvePublicMediaUrl(identity) ?? undefined : undefined;
+  const leadAlt = identity?.altText ?? item.title;
   return { title: item.title, description: item.excerpt, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: item.title, description: item.excerpt, publishedTime: item.publishedAt?.toISOString(), images: leadImage ? [{ url: leadImage, alt: leadAlt }] : undefined }, twitter: { card: leadImage ? "summary_large_image" : "summary", title: item.title, description: item.excerpt, images: leadImage ? [leadImage] : undefined } };
 }
 
@@ -25,7 +27,8 @@ export default async function FaithDetailPage({ params }: Props) {
   if (!item) notFound();
   const publishedDate = item.publishedAt ? new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(item.publishedAt) : null;
   const topics = item.topics.map(link => link.topic.name);
-  const leadMedia = item.mediaAssets.find(asset => asset.kind === "IMAGE") ?? null;
+  const publicMedia = item.mediaAssets.filter(canRenderPublicMedia);
+  const leadMedia = selectIdentityPublicImage(publicMedia);
 
   return <div className="v2-home v2-faith-detail-page">
     <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Faith & Reflections", path: "/faith-and-reflections" }, { name: item.title, path: `/faith-and-reflections/${item.slug}` }]} />
@@ -33,7 +36,7 @@ export default async function FaithDetailPage({ params }: Props) {
 
     <section className="v2-section paper"><div className="v2-shell v2-faith-detail-body-grid"><aside><p className="v2-section-label">Review context</p>{item.sourceCitation ? <div className="v2-faith-detail-source"><span>Source citation</span><p>{item.sourceCitation}</p></div> : <p className="v2-faith-detail-muted">No separate source citation is displayed for this item.</p>}{item.verifiedAt && <p className="v2-faith-detail-muted">Religious review verified {new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(item.verifiedAt)}.</p>}</aside><article><p className="v2-section-label">Reflection</p>{item.body ? <div className="v2-faith-detail-body">{item.body}</div> : <p className="v2-faith-detail-body">{item.excerpt}</p>}</article></div></section>
 
-    {item.mediaAssets.length > 0 && <section className="v2-section dark"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Reviewed media</p><h2 className="v2-section-title">Visual context, separately approved.</h2></div><p className="v2-section-intro">Media appears here only when its own public-use and privacy checks are satisfied.</p></div><div className="v2-media-grid">{item.mediaAssets.map(asset => <PublicMedia asset={asset} key={asset.id} />)}</div></div></section>}
+    {publicMedia.length > 0 && <section className="v2-section dark"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Reviewed media</p><h2 className="v2-section-title">Visual context, separately approved.</h2></div><p className="v2-section-intro">Media appears here only when its own public-use and privacy checks are satisfied.</p></div><div className="v2-media-grid">{publicMedia.map(asset => <PublicMedia asset={asset} key={asset.id} />)}</div></div></section>}
 
     <section className="v2-faith-detail-standard"><div className="v2-shell"><div><span>Religious review</span><strong>Verified before publication</strong></div><div><span>Source discipline</span><strong>Stored citations shown when available</strong></div><div><span>Authority boundary</span><strong>Amaana is not presented as a scholarly authority</strong></div></div></section>
 
