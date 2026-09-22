@@ -78,10 +78,10 @@ export async function POST(request: Request) {
         },
       });
     } else if (payload.event === "payment.failed" && payment?.order_id && payment.currency === "INR") {
-      await prisma.$transaction(async tx => {
+      await withSerializableTransactionRetry(async tx => {
         const donation = await tx.donation.findUnique({
           where: { providerOrderId: payment.order_id },
-          select: { id: true },
+          select: { id: true, amount: true },
         });
 
         await tx.paymentEvent.create({
@@ -94,6 +94,10 @@ export async function POST(request: Request) {
         });
 
         if (donation) {
+          const expectedAmountPaise = decimalRupeesToPaise(donation.amount);
+          if (payment.amount !== expectedAmountPaise) {
+            throw new Error("Failed payment amount does not match the local donation order");
+          }
           await tx.donation.updateMany({
             where: {
               id: donation.id,
