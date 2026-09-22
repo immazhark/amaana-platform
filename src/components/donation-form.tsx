@@ -14,7 +14,8 @@ declare global { interface Window { Razorpay: new (options: RazorpayOptions) => 
 
 export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible = false }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean }) {
   const router = useRouter();
-  const errorRef = useRef<HTMLDivElement>(null);\n  const formRef = useRef<HTMLFormElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+  const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState("");
   const [phase, setPhase] = useState<CheckoutPhase>("loading");
   const transactionMax = Math.min(maxAmount, 1_000_000);
