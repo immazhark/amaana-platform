@@ -107,7 +107,7 @@ export default async function HomePage() {
         <div className="v3-shell">
           <div className="v3-section-head">
             <div>
-              <p className="v3-label">Documented work</p>
+              <p className="v3-label">How Amaana serves</p>
               <h2 className="v3-heading" id="featured-work-title">Different Needs. One Standard of Care.</h2>
             </div>
             <p className="v3-intro">Some needs return every year. Others arrive without warning. Amaana’s work therefore combines recurring programmes with verified case-led assistance—from Eid Gift Kits and Qurbani distribution to Taleem, winter relief, emergency response and urgent medical or financial support.</p>
@@ -171,10 +171,10 @@ export default async function HomePage() {
               <p className="v3-label">From the field</p>
               <h2 className="v3-heading" id="field-title">A closer look at the work</h2>
             </div>
-            <p className="v3-intro">Two documented field moments offer a closer view after the programme overview. Open either initiative for its fuller record and reported outcomes.</p>
+            <p className="v3-intro">Two field moments bring the programme overview closer to the people and places behind it. Open either initiative for its fuller record and reported outcomes.</p>
           </div>
 
-          <ScrollCarousel label="Selected documented field work" mode="cards" className="v3-field-carousel">
+          <ScrollCarousel label="Selected field work" mode="cards" className="v3-field-carousel">
             {fieldDrives.map((drive, index) => {
               const media = selectIdentityPublicImage(drive.mediaAssets);
               return (
