@@ -1,5 +1,11 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { getPublicMediaStorageReadiness, isManagedPrivateDocumentKey, PRIVATE_OBJECT_CACHE_CONTROL, PUBLIC_MEDIA_CACHE_CONTROL, readImageDimensions } from "./storage";
+import {
+  getPublicMediaStorageReadiness,
+  isManagedPrivateDocumentKey,
+  PRIVATE_OBJECT_CACHE_CONTROL,
+  PUBLIC_MEDIA_CACHE_CONTROL,
+  readImageDimensions,
+} from "./storage";
 
 const keys = [
   "S3_REGION",
