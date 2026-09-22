@@ -39,6 +39,25 @@ for (const path of ["/request-assistance", "/admin/login", "/api/health/live"]) 
   });
 }
 
+
+for (const path of ["/api/health/live", "/api/health/ready", "/api/health/version"]) {
+  test(`operational health endpoint ${path} is never cached`, async ({ request }) => {
+    const response = await request.get(path);
+    expect([200, 503]).toContain(response.status());
+    expect(response.headers()["cache-control"] ?? "").toMatch(/no-store/i);
+  });
+}
+
+test("readiness and liveness expose only bounded operational state", async ({ request }) => {
+  const live = await request.get("/api/health/live");
+  expect(await live.json()).toEqual({ status: "ok" });
+
+  const ready = await request.get("/api/health/ready");
+  const readyBody = await ready.json();
+  expect(["ready", "not_ready"]).toContain(readyBody.status);
+  expect(Object.keys(readyBody)).toEqual(["status"]);
+});
+
 test("framework identity header is disabled", async ({ request }) => {
   const response = await request.get("/");
   expect(response.headers()["x-powered-by"]).toBeUndefined();
