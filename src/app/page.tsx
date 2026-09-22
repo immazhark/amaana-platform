@@ -36,6 +36,7 @@ export default async function HomePage() {
   const [appeals, discovery] = await Promise.all([getHomepageAppeals(), getHomepageDiscoveryData()]);
   const featured = discovery.initiatives.map(item => ({ ...item, causeTitle: item.cause.title }));
   const fieldDrives = featured.filter(item => ["qurbani-meat-distribution-2026", "dates-distribution-2026"].includes(item.slug));
+  const hasOpenAppeals = appeals.length > 0;
   const heroSlides = featured
     .filter(item => item.isFeatured)
     .map(drive => ({ drive, media: selectIdentityPublicImage(drive.mediaAssets) }))
@@ -83,7 +84,7 @@ export default async function HomePage() {
                 {drive.primaryMetric ? <div className="v3-home-banner-metric"><strong>{drive.primaryMetric}</strong><span>{drive.primaryMetricLabel ?? "Documented impact"}</span></div> : null}
                 <div className="v3-home-banner-actions">
                   <Link className="v3-btn" href={`/our-work/${drive.slug}`}>Explore this initiative</Link>
-                  <Link className="v3-btn secondary" href="/donate">Support a Need</Link>
+                  <Link className="v3-btn secondary" href={hasOpenAppeals ? "/appeals" : "/get-involved"}>{hasOpenAppeals ? "Support a verified need" : "Ways to support"}</Link>
                 </div>
               </div>
             </article>
