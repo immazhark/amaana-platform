@@ -15,7 +15,7 @@ export const metadata = {
     description: aboutCopy.intro,
   },
   twitter: { images: ["/twitter-image"],
-    card: "summary",
+    card: "summary_large_image",
     title: `${aboutCopy.title} | Amaana Foundation`,
     description: aboutCopy.intro,
   },
