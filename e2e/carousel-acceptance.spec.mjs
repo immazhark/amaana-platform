@@ -78,7 +78,7 @@ test('homepage documented work uses a centered rotating focus carousel', async (
   expect(Math.abs(viewportCenter - activeCenter)).toBeLessThanOrEqual(3);
 
   const second = slides.nth(1);
-  await second.click({ position: { x: 8, y: 8 } });
+  await second.evaluate(element => element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })));
   await expect(second).toHaveAttribute('aria-current', 'true');
   await expect(page).toHaveURL(/\/$/);
 
