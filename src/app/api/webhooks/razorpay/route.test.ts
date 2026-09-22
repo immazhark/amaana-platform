@@ -241,6 +241,37 @@ describe("Razorpay webhook route", () => {
     expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["zero", 0],
+    ["negative", -1],
+    ["fractional", 2500.5],
+    ["unsafe", Number.MAX_SAFE_INTEGER + 1],
+  ])("does not mutate a donation for an unsafe %s payment.failed amount", async (_label, amount) => {
+    const response = await POST(webhookRequest({
+      event: "payment.failed",
+      payload: {
+        payment: {
+          entity: {
+            id: "pay_failed_unsafe",
+            order_id: "order_failed_unsafe",
+            amount,
+            currency: "INR",
+            status: "failed",
+          },
+        },
+      },
+    }, { "x-razorpay-event-id": `evt_failed_unsafe_${String(amount).replace(/[^0-9]/g, "_")}` }));
+
+    expect(response.status).toBe(200);
+    expect(mocks.txDonationFindUnique).not.toHaveBeenCalled();
+    expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.rootPaymentEventCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        eventType: "payment.failed",
+      }),
+    });
+  });
+
   it("does not mutate a donation for a non-INR payment.failed event", async () => {
     const response = await POST(webhookRequest({
       event: "payment.failed",
