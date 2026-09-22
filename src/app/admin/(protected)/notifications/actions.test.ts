@@ -50,7 +50,7 @@ describe("manual notification recovery", () => {
     mocks.updateNotificationMany.mockResolvedValue({ count: 1 });
     mocks.createAudit.mockResolvedValue({ id: "audit_123" });
     mocks.transaction.mockImplementation(async callback => callback({
-      notification: { updateMany: mocks.updateNotificationMany, create: mocks.createNotification },
+      notification: { findFirst: mocks.findFirstNotification, updateMany: mocks.updateNotificationMany, create: mocks.createNotification },
       auditEvent: { create: mocks.createAudit },
     }));
   });
@@ -91,6 +91,7 @@ describe("manual notification recovery", () => {
         },
       },
     });
+    expect(mocks.transaction).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: "Serializable" });
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/notifications");
   });
 
@@ -102,7 +103,7 @@ describe("manual notification recovery", () => {
 
     await expect(enqueueControlledEmailAcceptance()).rejects.toThrow(/already queued or processing/i);
 
-    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.transaction).toHaveBeenCalled();
     expect(mocks.createNotification).not.toHaveBeenCalled();
     expect(mocks.createAudit).not.toHaveBeenCalled();
   });
