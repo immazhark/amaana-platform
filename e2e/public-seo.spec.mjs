@@ -66,7 +66,7 @@ for (const path of representativeRoutes) {
     const twitterCard = page.locator('meta[name="twitter:card"]');
     const twitterImage = page.locator('meta[name="twitter:image"]');
     await expect(twitterCard).toHaveCount(1);
-    await expect(twitterCard).toHaveAttribute('content', /^summary(?:_large_image)?$/);
+    await expect(twitterCard).toHaveAttribute('content', 'summary_large_image');
     await expect(twitterImage).toHaveCount(1);
     await expect(twitterImage).toHaveAttribute('content', /\/twitter-image(?:\?|$)/);
   });
