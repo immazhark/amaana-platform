@@ -82,6 +82,8 @@ export async function createMediaAsset(formData: FormData) {
           caption: optionalText(formData.get("caption"), 1000),
           sourcePath: optionalText(formData.get("sourcePath"), 500) ?? uploaded?.originalName ?? null,
           sourceYear: Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null,
+          width: uploaded?.width ?? null,
+          height: uploaded?.height ?? null,
           sortOrder: displayOrder,
           isPublic: false,
           ...target,
