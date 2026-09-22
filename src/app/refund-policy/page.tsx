@@ -7,8 +7,8 @@ export const metadata: Metadata = {
   title: "Refund Policy",
   description: "How to report an erroneous, duplicate or unauthorised donation to Amaana Foundation.",
   alternates: { canonical: "/refund-policy" },
-  openGraph: { type: "website", url: "/refund-policy", title: "Refund Policy | Amaana Foundation", description: "How Amaana reviews donation payment and refund requests." },
-  twitter: { card: "summary", title: "Refund Policy | Amaana Foundation", description: "How Amaana reviews donation payment and refund requests." },
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }],  type: "website", url: "/refund-policy", title: "Refund Policy | Amaana Foundation", description: "How Amaana reviews donation payment and refund requests." },
+  twitter: { images: ["/twitter-image"],  card: "summary_large_image", title: "Refund Policy | Amaana Foundation", description: "How Amaana reviews donation payment and refund requests." },
 };
 const sections=[
 ["01","Requesting review",<>If you believe a donation was duplicated, entered incorrectly or processed without authorisation, contact <a href="mailto:amaanafoundation24@gmail.com">amaanafoundation24@gmail.com</a> promptly with the Amaana donation reference, payment reference if available, date, amount and a short description of the issue.</>],
