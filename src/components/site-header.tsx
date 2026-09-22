@@ -76,7 +76,7 @@ export function SiteHeader() {
             const active = isActivePath(pathname, href);
             return <Link className={active ? "nav-link active" : "nav-link"} href={href} key={href} aria-current={active ? "page" : undefined}>{label}</Link>;
           })}
-          <Link className="button nav-donate" href="/appeals">Support a need</Link>
+          <Link className="button nav-donate" href="/appeals" aria-current={isActivePath(pathname, "/appeals") ? "page" : undefined}>Support a need</Link>
         </div>
       </nav>
 
@@ -95,7 +95,7 @@ export function SiteHeader() {
             <Link href="/governance" onClick={closeMenu}>Governance</Link>
             <Link href="/contact" onClick={closeMenu}>Contact</Link>
           </div>
-          <Link className="button" href="/appeals" onClick={closeMenu}>Support a verified need</Link>
+          <Link className="button" href="/appeals" onClick={closeMenu} aria-current={isActivePath(pathname, "/appeals") ? "page" : undefined}>Support a verified need</Link>
         </div>
       </nav>
     </header>
