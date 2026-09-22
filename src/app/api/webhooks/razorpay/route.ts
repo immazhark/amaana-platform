@@ -77,7 +77,7 @@ export async function POST(request: Request) {
           payload: auditPayload,
         },
       });
-    } else if (payload.event === "payment.failed" && payment?.order_id) {
+    } else if (payload.event === "payment.failed" && payment?.order_id && payment.currency === "INR") {
       await prisma.$transaction(async tx => {
         const donation = await tx.donation.findUnique({
           where: { providerOrderId: payment.order_id },
