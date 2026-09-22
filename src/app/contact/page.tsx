@@ -23,6 +23,7 @@ export const metadata: Metadata = {
 const contactPaths = [
   { marker: "01", title: "General enquiries", copy: "Questions about Amaana, its work, collaborations or other general matters can be sent to the foundation team.", action: "Email Amaana", href: "mailto:amaanafoundation24@gmail.com" },
   { marker: "02", title: "Call Amaana", copy: "For a direct public contact route, call Amaana Foundation on its official phone number.", action: "+91-9908002694", href: "tel:+919908002694" },
+  { marker: "02A", title: "WhatsApp Amaana", copy: "Prefer messaging? Start a WhatsApp conversation with Amaana Foundation on the same official public number.", action: "Open WhatsApp", href: "https://wa.me/919908002694" },
   { marker: "03", title: "Request assistance", copy: "If you or someone you know needs support, use the dedicated private intake route so the request reaches the right review process.", action: "Request assistance", href: "/request-assistance" },
   { marker: "04", title: "Volunteer or collaborate", copy: "If you want to contribute time, skills, resources or explore a genuine collaboration, start with our Get Involved journey.", action: "Get involved", href: "/get-involved" },
   { marker: "05", title: "Donation support", copy: "For a payment or donation query, contact the team with your Amaana reference or Razorpay payment ID only. Never share PINs, OTPs or card credentials.", action: "Email donation support", href: "mailto:amaanafoundation24@gmail.com?subject=Donation%20support" },
