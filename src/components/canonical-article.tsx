@@ -15,6 +15,7 @@ type CanonicalArticleProps = {
   heroVisualTitle?: string;
   heroVisualNote?: string;
   bodyClassName?: string;
+  heroActions?: { label: string; href: string; secondary?: boolean }[];
 };
 
 export function CanonicalArticle({
@@ -28,6 +29,7 @@ export function CanonicalArticle({
   heroVisualTitle,
   heroVisualNote,
   bodyClassName,
+  heroActions,
 }: CanonicalArticleProps) {
   return (
     <div className="v2-home canonical-article">
@@ -36,7 +38,7 @@ export function CanonicalArticle({
         eyebrow={heroVariant === "trust" ? "Trust & Policies" : eyebrow}
         title={title}
         description={<p>{intro}</p>}
-        actions={[
+        actions={heroActions ?? [
           { label: "Explore Our Work", href: "/our-work" },
           { label: "Contact Amaana", href: "/contact", secondary: true },
         ]}
