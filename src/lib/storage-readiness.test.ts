@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { getPublicMediaStorageReadiness, isManagedPrivateDocumentKey, PRIVATE_OBJECT_CACHE_CONTROL, readImageDimensions } from "./storage";
+import { getPublicMediaStorageReadiness, isManagedPrivateDocumentKey, PRIVATE_OBJECT_CACHE_CONTROL, PUBLIC_MEDIA_CACHE_CONTROL, readImageDimensions } from "./storage";
 
 const keys = [
   "S3_REGION",
@@ -90,8 +90,9 @@ describe("managed private document keys", () => {
 });
 
 describe("storage cache boundary", () => {
-  it("keeps direct bucket objects private so publication caching stays under the gated proxy", () => {
+  it("keeps private evidence non-cacheable while immutable public media is cacheable", () => {
     expect(PRIVATE_OBJECT_CACHE_CONTROL).toBe("private, no-store, max-age=0");
+    expect(PUBLIC_MEDIA_CACHE_CONTROL).toBe("public, max-age=31536000, immutable");
   });
 });
 
