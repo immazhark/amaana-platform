@@ -142,10 +142,10 @@ export default async function HomePage() {
         <div className="v3-shell">
           <div className="v3-section-head">
             <div>
-              <p className="v3-label">Seven years of Eid Gift Kits</p>
-              <h2 className="v3-heading" id="eid-growth-title">From 85 families in 2020 to 710 in 2026.</h2>
+              <p className="v3-label">Seven documented distributions</p>
+              <h2 className="v3-heading" id="eid-growth-title">85 families became 710 — one year at a time.</h2>
             </div>
-            <p className="v3-intro">A Ramadan effort that began around one family table became a recurring community tradition. The growth below follows the documented year-by-year record.</p>
+            <p className="v3-intro">The year-by-year record shows the scale of the Eid Gift Kits programme more clearly than another retelling of its origin: steady continuity, documented across seven Ramadan distributions.</p>
           </div>
 
           <div className="v3-timeline" aria-label="Eid Gift Kits growth from 2020 to 2026">
@@ -204,7 +204,7 @@ export default async function HomePage() {
             <p className="v3-label">Take the next step</p>
             <div className="v3-quick-links">
               <Link href="/our-work"><span>Explore our work</span><span aria-hidden="true">↗</span></Link>
-              <Link href="/appeals"><span>Support a verified need</span><span aria-hidden="true">↗</span></Link>
+              <Link href={hasOpenAppeals ? "/appeals" : "/get-involved"}><span>{hasOpenAppeals ? "Support a verified need" : "Ways to support Amaana"}</span><span aria-hidden="true">↗</span></Link>
               <Link href="/request-assistance"><span>Request assistance privately</span><span aria-hidden="true">↗</span></Link>
               <Link href="/get-involved"><span>Volunteer time or skills</span><span aria-hidden="true">↗</span></Link>
               <Link href="/contact"><span>Contact Amaana</span><span aria-hidden="true">↗</span></Link>
