@@ -8,6 +8,7 @@ import { programmeCategories, programmes } from '@/lib/master-copy';
 import { legacyProgrammeCategoryDestination, programmeCategoryFromRoute, programmeCategoryPath } from '@/lib/programme-category-routing';
 import { getOurWorkIndexData } from '@/lib/public-page-data';
 import { PublicMedia } from '@/components/public-media';
+import { selectIdentityPublicImage } from '@/lib/public-media';
 import '@/app/canonical-content.css';
 
 const programmeAliases: Record<string, string> = { qurbani: 'qurbani-meat-distribution', taleem: 'taleem', 'eid-gift-kits': 'eid-gift-kits', 'dates-distribution': 'dates-distribution' };
@@ -38,7 +39,7 @@ export default async function Page({ params }: Props) {
   const causes = await getOurWorkIndexData();
   const records = causes.flatMap(cause => cause.initiatives);
   const items = programmes.filter(item => item.causeSlug === category.slug && !('parentSlug' in item));
-  const leadPhoto = items.map(item => records.find(record => record.slug === item.slug)?.mediaAssets[0]).find(Boolean);
+  const leadPhoto = items.map(item => { const record = records.find(candidate => candidate.slug === item.slug); return record ? selectIdentityPublicImage(record.mediaAssets) : null; }).find(Boolean) ?? null;
 
   return <div className="v2-home">
     <BreadcrumbStructuredData items={[{ name: 'Home', path: '/' }, { name: 'Our Work', path: '/our-work' }, { name: category.title, path: canonical }]} />
