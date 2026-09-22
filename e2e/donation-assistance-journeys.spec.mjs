@@ -232,8 +232,8 @@ test.describe('donation journey without real payment', () => {
     await fillDonationForm(page);
     await submit.click();
 
-    await expect(page).toHaveURL(new RegExp(`/donations/${donationReference}/acknowledgement#token=`));
     await expect(page.getByRole('heading', { name: 'Donation verified.' })).toBeVisible();
+    await expect(page).toHaveURL(`/donations/${donationReference}/acknowledgement`);
     await expect(page.getByText('RCP-ACCEPT-001')).toBeVisible();
     await expect(page.getByText('General Charity')).toBeVisible();
     expect(new URL(page.url()).search).toBe('');
@@ -438,7 +438,7 @@ test.describe('private assistance journey', () => {
     expect(statusBody).toEqual({ reference: assistanceReference, token: trackingToken });
   });
 
-  test('legacy tracking query credentials are scrubbed into the URL fragment', async ({ page }) => {
+  test('legacy tracking query credentials are scrubbed from the visible URL', async ({ page }) => {
     await mockAnalytics(page);
     await page.route('**/api/assistance/status', route => route.fulfill({
       status: 200,
@@ -456,8 +456,8 @@ test.describe('private assistance journey', () => {
 
     const url = new URL(page.url());
     expect(url.search).toBe('');
-    expect(url.hash).toContain(`reference=${assistanceReference}`);
-    expect(url.hash).toContain('token=');
+    expect(url.hash).toBe('');
+    expect(url.pathname).toBe('/request-assistance/status');
   });
 });
 
