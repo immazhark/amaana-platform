@@ -175,7 +175,7 @@ describe("Razorpay webhook route", () => {
   });
 
   it("records payment.failed without changing appeal accounting", async () => {
-    mocks.txDonationFindUnique.mockResolvedValueOnce({ id: "donation_failed_1" });
+    mocks.txDonationFindUnique.mockResolvedValueOnce({ id: "donation_failed_1", amount: decimal(25) });
     mocks.txDonationUpdateMany.mockResolvedValueOnce({ count: 1 });
 
     const response = await POST(webhookRequest({
@@ -216,6 +216,29 @@ describe("Razorpay webhook route", () => {
     });
     expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
     expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects a failed-payment event whose amount does not match the local order", async () => {
+    mocks.txDonationFindUnique.mockResolvedValueOnce({ id: "donation_failed_1", amount: decimal(50) });
+
+    const response = await POST(webhookRequest({
+      event: "payment.failed",
+      payload: {
+        payment: {
+          entity: {
+            id: "pay_failed_wrong_amount",
+            order_id: "order_failed_001",
+            amount: 2500,
+            currency: "INR",
+            status: "failed",
+          },
+        },
+      },
+    }, { "x-razorpay-event-id": "evt_failed_wrong_amount" }));
+
+    expect(response.status).toBe(500);
+    expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
   });
 
   it("does not mutate a donation for a non-INR payment.failed event", async () => {
