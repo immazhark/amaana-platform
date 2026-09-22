@@ -14,7 +14,7 @@ export const metadata: Metadata = {
     description: "Reach Amaana Foundation in Hyderabad for general enquiries, assistance, volunteering, collaborations or donation support.",
   },
   twitter: { images: ["/twitter-image"],
-    card: "summary",
+    card: "summary_large_image",
     title: "Contact Amaana Foundation",
     description: "Choose the right contact path for Amaana Foundation in Hyderabad.",
   },
