@@ -71,7 +71,7 @@ export default async function GetInvolvedPage() {
         variant="level1"
         eyebrow="Get Involved · Amaana Foundation"
         title="Bring what you can."
-        description={<p>Supporting good work is not limited to making a payment. Education sponsorship, time, skills, responsible sharing and helping a genuine need reach the right place can all be part of the amanah.</p>}
+        description={<p>There is more than one way to stand with the work. Sponsor education, offer useful skills, share responsibly or help a genuine need reach Amaana.</p>}
         actions={[
           { label: "Sponsor education", href: "/get-involved/sponsor-education" },
           { label: "Connect with Amaana", href: "/contact", secondary: true },
@@ -79,7 +79,7 @@ export default async function GetInvolvedPage() {
         visual={heroMedia ? <PublicMedia asset={heroMedia} priority /> : undefined}
         visualKicker="Five ways to take part"
         visualTitle="Time. Skills. Support. Care."
-        visualNote="Documentary media from Amaana's published work. Choose a path that is useful, responsible and realistic for what is happening now."
+        visualNote="Choose a path that matches what you can offer and what the work needs now."
       />
 
       <section className="v2-intent" aria-labelledby="ways-to-help-title">
