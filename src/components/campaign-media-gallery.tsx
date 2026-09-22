@@ -3,7 +3,7 @@
 /* eslint-disable @next/next/no-img-element */
 
 import Image from "next/image";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
 import { ScrollCarousel } from "./scroll-carousel";
 
@@ -24,7 +24,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
   const [activeIndex, setActiveIndex] = useState<number | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
-  const dialogTitleId = useRef(`gallery-dialog-${crypto.randomUUID()}`);
+  const dialogTitleId = `gallery-dialog-${useId().replaceAll(":", "")}`;
   const triggerRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const active = activeIndex === null ? null : items[activeIndex];
@@ -131,10 +131,10 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
             className={styles.dialog}
             role="dialog"
             aria-modal="true"
-            aria-labelledby={dialogTitleId.current}
+            aria-labelledby={dialogTitleId}
           >
             <div className={styles.dialogTop}>
-              <span id={dialogTitleId.current}>Image {activeIndex! + 1} of {items.length}: {active.alt ?? "programme photograph"}</span>
+              <span id={dialogTitleId}>Image {activeIndex! + 1} of {items.length}: {active.alt ?? "programme photograph"}</span>
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
             {canOptimizeLocally(active.url) ? <Image className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}
