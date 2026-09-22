@@ -511,3 +511,10 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 .v2-compliance-guardrail-grid article>span{color:var(--af-color-gold-ink)!important;font-weight:800}
 .v2-compliance-guardrail-grid article>p{color:var(--af-color-navy-800)!important}
 .v2-compliance-page :is(.v2-section.paper,.v2-compliance-guardrails) :is(.v2-section-intro,p){color:var(--af-color-navy-800)}
+
+
+/* Acceptance consolidation: homepage body surface and compact shared footer. */
+.v3-work{background-size:cover!important;background-position:var(--af-surface-position)!important;background-repeat:no-repeat!important}
+.site-footer .footer-lead{padding-block:1.75rem!important}
+.site-footer .footer-lead h2{font-size:clamp(1.9rem,3vw,3rem)!important;line-height:1.02!important;margin:.45rem 0 .8rem!important}
+@media(max-width:600px){.site-footer .footer-lead{padding-block:1.75rem!important}.site-footer .footer-lead h2{font-size:clamp(1.9rem,8vw,2.55rem)!important}}
