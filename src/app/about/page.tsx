@@ -34,6 +34,7 @@ export default async function AboutPage() {
       heroVisualTitle="Our Story"
       heroVisualNote="From community-led Ramadan support to a charitable trust serving verified needs with dignity and accountability."
       bodyClassName="canonical-body--about"
+      bodyId="about-story"
       heroActions={[{ label: "Our journey & values", href: "#about-story" }, { label: "Explore our work", href: "/our-work", secondary: true }]}
       {...aboutCopy}
     >
