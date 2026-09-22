@@ -460,3 +460,55 @@ test.describe('private assistance journey', () => {
     expect(url.hash).toContain('token=');
   });
 });
+
+
+test('private assistance tracking credentials are removed from the visible URL before status display', async ({ page }) => {
+  const reference = 'AFR-PRIVATE-001';
+  const token = 'private-tracking-token-1234567890';
+  let postedBody = null;
+
+  await page.route('**/api/assistance/status', async route => {
+    postedBody = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        found: true,
+        status: 'UNDER_VERIFICATION',
+        createdAt: '2026-09-20T10:00:00.000Z',
+        updatedAt: '2026-09-22T10:00:00.000Z',
+      }),
+    });
+  });
+
+  await page.goto(`/request-assistance/status#reference=${reference}&token=${token}`);
+  await expect(page.getByRole('heading', { name: 'Under verification' })).toBeVisible();
+
+  expect(postedBody).toEqual({ reference, token });
+  expect(page.url()).toBe('http://127.0.0.1:3000/request-assistance/status');
+  expect(page.url()).not.toContain(reference);
+  expect(page.url()).not.toContain(token);
+});
+
+test('legacy query-based assistance tracking is scrubbed from history-visible location', async ({ page }) => {
+  const reference = 'AFR-LEGACY-001';
+  const token = 'legacy-private-token-1234567890';
+
+  await page.route('**/api/assistance/status', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      found: true,
+      status: 'SUBMITTED',
+      createdAt: '2026-09-20T10:00:00.000Z',
+      updatedAt: '2026-09-20T10:00:00.000Z',
+    }),
+  }));
+
+  await page.goto(`/request-assistance/status?reference=${reference}&token=${token}`);
+  await expect(page.getByRole('heading', { name: 'Submitted' })).toBeVisible();
+
+  expect(page.url()).toBe('http://127.0.0.1:3000/request-assistance/status');
+  expect(page.url()).not.toContain(reference);
+  expect(page.url()).not.toContain(token);
+});
