@@ -73,7 +73,8 @@ export function SiteHeader() {
   }, [open]);
 
   return (
-    <header className="site-header">
+    <>
+      <header className="site-header">
       <nav className="container nav" aria-label="Primary navigation">
         <Link className="brand brand-official" href="/" aria-label="Amaana Foundation home" onClick={closeMenu}>
           <Image className="brand-lockup" src="/brand/amaana-mark.svg" width={108} height={108} alt="Amaana Foundation — Upholding Trust" priority />
@@ -92,7 +93,6 @@ export function SiteHeader() {
         </div>
       </nav>
 
-      {open ? <button type="button" className="mobile-menu-backdrop" tabIndex={-1} aria-label="Close navigation menu" onClick={closeMenuAndRestoreFocus} /> : null}
       <nav ref={mobileNavRef} id="mobile-navigation" className={`mobile-menu${open ? " open" : ""}`} aria-label="Mobile navigation" hidden={!open}>
         <div className="container mobile-menu-inner">
           <div className="mobile-menu-primary">
@@ -110,6 +110,8 @@ export function SiteHeader() {
           <Link className="button" href="/appeals" onClick={closeMenu} aria-current={isActivePath(pathname, "/appeals") ? "page" : undefined}>Support a verified need</Link>
         </div>
       </nav>
-    </header>
+      </header>
+      {open ? <button type="button" className="mobile-menu-backdrop" tabIndex={-1} aria-label="Close navigation menu" onClick={closeMenuAndRestoreFocus} /> : null}
+    </>
   );
 }
