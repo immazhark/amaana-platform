@@ -23,7 +23,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
   const requests = await prisma.assistanceRequest.findMany({
     where,
     include: { assignedTo: true, _count: { select: { documents: true } } },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
     take: pagination.pageSize,
   });
