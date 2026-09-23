@@ -118,6 +118,11 @@ export async function createMediaAsset(formData: FormData) {
 export async function updateMediaAsset(formData: FormData) {
   const user = await requirePermission("content.update");
   const id = String(formData.get("id") ?? "");
+  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "");
+  const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
+  if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) {
+    throw new Error("Media edit version is missing or invalid. Refresh before editing.");
+  }
   const asset = await prisma.mediaAsset.findUniqueOrThrow({ where: { id } });
   if (asset.isPublic && !hasPermission(user, "content.approve")) throw new Error("Published media requires approval permission to edit");
 
@@ -160,19 +165,30 @@ export async function updateMediaAsset(formData: FormData) {
     faithContentId: asset.faithContentId ?? undefined,
   };
 
-  await prisma.$transaction(async tx => {
+  await withSerializableTransactionRetry(async tx => {
+    const freshAsset = await tx.mediaAsset.findUniqueOrThrow({
+      where: { id },
+      select: { isPublic: true, updatedAt: true },
+    });
+    if (freshAsset.isPublic !== asset.isPublic || freshAsset.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
+      throw new Error("This media changed while you were reviewing it. Refresh before editing metadata.");
+    }
     if (identityImage) {
       await tx.mediaAsset.updateMany({
         where: { id: { not: id }, kind: "IMAGE", sortOrder: IDENTITY_MEDIA_SORT_ORDER, ...target },
         data: { sortOrder: 0 },
       });
     }
-    await tx.mediaAsset.update({ where: { id }, data: {
-      title, publicUrl, altText,
-      caption, sourcePath,
-      sourceYear,
-      sortOrder: displayOrder,
-    } });
+    const claimed = await tx.mediaAsset.updateMany({
+      where: { id, isPublic: asset.isPublic, updatedAt: expectedUpdatedAt },
+      data: {
+        title, publicUrl, altText,
+        caption, sourcePath,
+        sourceYear,
+        sortOrder: displayOrder,
+      },
+    });
+    if (claimed.count !== 1) throw new Error("This media changed while you were reviewing it. Refresh before editing metadata.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "media.metadata_updated", entityType: "MediaAsset", entityId: id, metadata: { wasPublic: asset.isPublic, identityImage } } });
   });
   revalidatePath("/admin/media");
