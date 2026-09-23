@@ -31,8 +31,8 @@ export function parsePrivateTrackingFragment(hash: string): PrivateTrackingCrede
 /**
  * New tracking links keep credentials in the fragment so browsers do not send
  * them to the server, proxy or referrer. Query parsing exists only to preserve
- * already-issued preview links; callers should immediately replace a legacy
- * query URL with the fragment form after reading it in the browser.
+ * already-issued preview links. Consumers must capture credentials into
+ * stable client state and scrub both query and fragment data immediately.
  */
 export function parsePrivateTrackingLocation(search: string, hash: string): PrivateTrackingCredentials | null {
   return parsePrivateTrackingFragment(hash)
