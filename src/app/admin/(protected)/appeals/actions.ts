@@ -6,6 +6,7 @@ import { getAppealConsentContentIssues, getFirstPublicationIssues, goalMatchesAp
 import { getAppealUpdatePublicationIssues } from "@/lib/appeal-update-publication";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
 const transitions: Record<AppealStatus, AppealStatus[]> = {
   DRAFT: ["UNDER_REVIEW"], UNDER_REVIEW: ["DRAFT", "PUBLISHED", "REJECTED"], PUBLISHED: ["PAUSED", "FUNDED", "CLOSED"], PAUSED: ["PUBLISHED", "CLOSED"], FUNDED: ["CLOSED"], CLOSED: [], REJECTED: ["DRAFT"],
@@ -34,7 +35,19 @@ export async function transitionAppeal(formData: FormData) {
   if (approvalTransition && !hasPermission(user, "appeal.approve")) throw new Error("Approval permission is required");
   const publicationIssues = getFirstPublicationIssues({ fromStatus: current.status, toStatus: next, goalAmount: current.goalAmount, verification: current.assistanceRequest?.verification, beneficiaryDisplayName: current.beneficiaryDisplayName, coverImageUrl: current.coverImageUrl });
   if (publicationIssues.length) throw new Error(`Appeal cannot be published: ${publicationIssues.join(" ")}`);
-  await prisma.$transaction([prisma.appeal.update({ where: { id }, data: { status: next, reviewedById: approvalTransition ? user.id : current.reviewedById, publishedAt: next === "PUBLISHED" && !current.publishedAt ? new Date() : current.publishedAt } }), prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.status_changed", entityType: "Appeal", entityId: id, metadata: { from: current.status, to: next } } })]);
+  await withSerializableTransactionRetry(async tx => {
+    const fresh = await tx.appeal.findUniqueOrThrow({ where: { id }, include: { assistanceRequest: { include: { verification: true } } } });
+    if (fresh.status !== current.status) throw new Error("This appeal changed while you were reviewing it. Refresh before changing status.");
+    if (!transitions[fresh.status].includes(next)) throw new Error("Invalid appeal status transition");
+    const freshPublicationIssues = getFirstPublicationIssues({ fromStatus: fresh.status, toStatus: next, goalAmount: fresh.goalAmount, verification: fresh.assistanceRequest?.verification, beneficiaryDisplayName: fresh.beneficiaryDisplayName, coverImageUrl: fresh.coverImageUrl });
+    if (freshPublicationIssues.length) throw new Error(`Appeal cannot be published: ${freshPublicationIssues.join(" ")}`);
+    const updated = await tx.appeal.updateMany({
+      where: { id, status: current.status },
+      data: { status: next, reviewedById: approvalTransition ? user.id : fresh.reviewedById, publishedAt: next === "PUBLISHED" && !fresh.publishedAt ? new Date() : fresh.publishedAt },
+    });
+    if (updated.count !== 1) throw new Error("This appeal changed while you were reviewing it. Refresh before changing status.");
+    await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.status_changed", entityType: "Appeal", entityId: id, metadata: { from: fresh.status, to: next } } });
+  });
   revalidatePath(`/admin/appeals/${id}`); revalidatePath("/admin/appeals"); revalidatePath("/appeals"); revalidatePath("/");
 }
 
@@ -43,7 +56,12 @@ export async function updateFeaturing(formData: FormData) {
   const appeal = await prisma.appeal.findUniqueOrThrow({ where: { id }, select: { status: true } });
   if (isFeatured && appeal.status !== "PUBLISHED") throw new Error("Only an actively published appeal can be featured");
   if (isFeatured && (!Number.isInteger(featuredOrderValue) || featuredOrderValue < 1)) throw new Error("Featured display order must be a positive whole number");
-  await prisma.$transaction([prisma.appeal.update({ where: { id }, data: { isFeatured, featuredOrder: isFeatured ? featuredOrderValue : null } }), prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.featuring_updated", entityType: "Appeal", entityId: id, metadata: { isFeatured, featuredOrder: isFeatured ? featuredOrderValue : null } } })]);
+  await withSerializableTransactionRetry(async tx => {
+    const fresh = await tx.appeal.findUniqueOrThrow({ where: { id }, select: { status: true, isFeatured: true, featuredOrder: true } });
+    if (isFeatured && fresh.status !== "PUBLISHED") throw new Error("This appeal is no longer actively published. Refresh before featuring it.");
+    await tx.appeal.update({ where: { id }, data: { isFeatured, featuredOrder: isFeatured ? featuredOrderValue : null } });
+    await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.featuring_updated", entityType: "Appeal", entityId: id, metadata: { previousIsFeatured: fresh.isFeatured, previousFeaturedOrder: fresh.featuredOrder, isFeatured, featuredOrder: isFeatured ? featuredOrderValue : null } } });
+  });
   revalidatePath(`/admin/appeals/${id}`); revalidatePath("/appeals"); revalidatePath("/");
 }
 
