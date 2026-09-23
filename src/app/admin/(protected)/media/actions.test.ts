@@ -3,6 +3,8 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   requirePermission: vi.fn(),
   findUniqueOrThrow: vi.fn(),
+  findMany: vi.fn(),
+  createRecord: vi.fn(),
   deleteRecord: vi.fn(),
   updateRecord: vi.fn(),
   updateMany: vi.fn(),
@@ -34,7 +36,7 @@ vi.mock("@/lib/prisma", () => ({
     mediaAsset: {
       findUniqueOrThrow: mocks.findUniqueOrThrow,
       delete: mocks.deleteRecord,
-      create: vi.fn(),
+      create: mocks.createRecord,
       update: mocks.updateRecord,
       updateMany: mocks.updateMany,
     },
@@ -43,7 +45,7 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-import { deleteMediaAsset, setMediaPublication, updateMediaAsset } from "./actions";
+import { createMediaAsset, deleteMediaAsset, setMediaPublication, updateMediaAsset } from "./actions";
 
 function deletionForm(confirm = "DELETE") {
   const formData = new FormData();
@@ -62,6 +64,54 @@ function updateForm(overrides: Record<string, string> = {}) {
   for (const [key, value] of Object.entries(overrides)) formData.set(key, value);
   return formData;
 }
+
+describe("identity media creation concurrency", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "user_123" });
+    mocks.findMany.mockResolvedValue([]);
+    mocks.updateMany.mockResolvedValue({ count: 0 });
+    mocks.createRecord.mockResolvedValue({ id: "media_new", publicUrl: "https://cdn.example/identity.jpg" });
+    mocks.createAudit.mockResolvedValue({ id: "audit_123" });
+    mocks.serializableTransaction.mockImplementation(async callback => callback({
+      mediaAsset: {
+        findMany: mocks.findMany,
+        updateMany: mocks.updateMany,
+        create: mocks.createRecord,
+      },
+      auditEvent: { create: mocks.createAudit },
+    }));
+  });
+
+  it("serializes identity creation around the target identity predicate", async () => {
+    const form = new FormData();
+    form.set("target", "cause:cause_1");
+    form.set("publicUrl", "https://cdn.example/identity.jpg");
+    form.set("kind", "IMAGE");
+    form.set("altText", "Amaana programme identity photograph");
+    form.set("identityImage", "on");
+
+    await createMediaAsset(form);
+
+    expect(mocks.serializableTransaction).toHaveBeenCalledTimes(1);
+    expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        kind: "IMAGE",
+        sortOrder: -1000,
+        causeId: "cause_1",
+      }),
+      select: { id: true },
+    }));
+    expect(mocks.findMany.mock.invocationCallOrder[0]).toBeLessThan(mocks.updateMany.mock.invocationCallOrder[0]);
+    expect(mocks.updateMany.mock.invocationCallOrder[0]).toBeLessThan(mocks.createRecord.mock.invocationCallOrder[0]);
+    expect(mocks.createRecord).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ sortOrder: -1000, isPublic: false, causeId: "cause_1" }),
+    }));
+    expect(mocks.createAudit).toHaveBeenCalledWith({
+      data: expect.objectContaining({ action: "media.created", entityId: "media_new" }),
+    });
+  });
+});
 
 describe("published media editing", () => {
   beforeEach(() => {
