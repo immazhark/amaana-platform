@@ -9,6 +9,27 @@ import {
   getPublishedStoryBySlug,
 } from "@/lib/public-content";
 
+export const PUBLIC_APPROVED_IMAGE_WHERE = {
+  kind: "IMAGE" as const,
+  isPublic: true,
+  privacyApprovedAt: { not: null },
+  publicUrl: { not: null },
+};
+
+export const PUBLIC_IMAGE_SELECT = {
+  id: true,
+  kind: true,
+  title: true,
+  publicUrl: true,
+  externalUrl: true,
+  altText: true,
+  caption: true,
+  sourceYear: true,
+  width: true,
+  height: true,
+  sortOrder: true,
+} as const;
+
 /**
  * React request memoization for dynamic routes whose metadata and page body
  * need the same public record. This keeps metadata generation from causing a
@@ -126,13 +147,10 @@ export const getHomepageDiscoveryData = cache(async () => {
         primaryMetricLabel: true,
         cause: { select: { title: true } },
         mediaAssets: {
-          where: { kind: "IMAGE", isPublic: true, privacyApprovedAt: { not: null }, publicUrl: { not: null } },
+          where: PUBLIC_APPROVED_IMAGE_WHERE,
           orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
           take: 3,
-          select: {
-            id: true, kind: true, title: true, publicUrl: true, externalUrl: true,
-            altText: true, caption: true, sourceYear: true, width: true, height: true, sortOrder: true,
-          },
+          select: PUBLIC_IMAGE_SELECT,
         },
       },
     }),
@@ -147,13 +165,10 @@ export const getHomepageDiscoveryData = cache(async () => {
           take: 4,
           select: {
             mediaAssets: {
-              where: { kind: "IMAGE", isPublic: true, privacyApprovedAt: { not: null }, publicUrl: { not: null } },
+              where: PUBLIC_APPROVED_IMAGE_WHERE,
               orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
               take: 3,
-              select: {
-                id: true, kind: true, title: true, publicUrl: true, externalUrl: true,
-                altText: true, caption: true, sourceYear: true, width: true, height: true, sortOrder: true,
-              },
+              select: PUBLIC_IMAGE_SELECT,
             },
           },
         },
@@ -195,27 +210,10 @@ export const getOurWorkIndexData = cache(async () => {
           primaryMetric: true,
           primaryMetricLabel: true,
           mediaAssets: {
-            where: {
-              kind: "IMAGE",
-              isPublic: true,
-              privacyApprovedAt: { not: null },
-              publicUrl: { not: null },
-            },
+            where: PUBLIC_APPROVED_IMAGE_WHERE,
             orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
             take: 3,
-            select: {
-              id: true,
-              kind: true,
-              title: true,
-              publicUrl: true,
-              externalUrl: true,
-              altText: true,
-              caption: true,
-              sourceYear: true,
-              width: true,
-              height: true,
-              sortOrder: true,
-            },
+            select: PUBLIC_IMAGE_SELECT,
           },
         },
       },
@@ -241,26 +239,10 @@ export const getImpactPageData = cache(async () => {
       primaryMetricLabel: true,
       cause: { select: { title: true } },
       mediaAssets: {
-        where: {
-          kind: "IMAGE",
-          isPublic: true,
-          privacyApprovedAt: { not: null },
-          publicUrl: { not: null },
-        },
+        where: PUBLIC_APPROVED_IMAGE_WHERE,
         orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
         take: 3,
-        select: {
-          id: true,
-          kind: true,
-          title: true,
-          publicUrl: true,
-          externalUrl: true,
-          altText: true,
-          caption: true,
-          sourceYear: true,
-          width: true,
-          height: true,
-        },
+        select: PUBLIC_IMAGE_SELECT,
       },
     },
   });
@@ -281,26 +263,10 @@ export const getCompletedAidShowcaseData = cache(async () => {
     select: {
       slug: true,
       mediaAssets: {
-        where: {
-          kind: "IMAGE",
-          isPublic: true,
-          privacyApprovedAt: { not: null },
-          publicUrl: { not: null },
-        },
+        where: PUBLIC_APPROVED_IMAGE_WHERE,
         orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
         take: 3,
-        select: {
-          id: true,
-          kind: true,
-          title: true,
-          publicUrl: true,
-          externalUrl: true,
-          altText: true,
-          caption: true,
-          sourceYear: true,
-          width: true,
-          height: true,
-        },
+        select: PUBLIC_IMAGE_SELECT,
       },
     },
   });
@@ -395,26 +361,10 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
     select: {
       slug: true,
       mediaAssets: {
-        where: {
-          kind: "IMAGE",
-          isPublic: true,
-          privacyApprovedAt: { not: null },
-          publicUrl: { not: null },
-        },
+        where: PUBLIC_APPROVED_IMAGE_WHERE,
         orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
         take: 3,
-        select: {
-          id: true,
-          kind: true,
-          title: true,
-          publicUrl: true,
-          externalUrl: true,
-          altText: true,
-          caption: true,
-          sourceYear: true,
-          width: true,
-          height: true,
-        },
+        select: PUBLIC_IMAGE_SELECT,
       },
     },
   });

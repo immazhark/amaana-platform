@@ -6,7 +6,11 @@ import { hasPermission, requirePermission } from "@/lib/auth";
 import { mediaPublicationIssues, parseMediaPublicationReview } from "@/lib/media-governance";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
-import { IDENTITY_MEDIA_SORT_ORDER, canRenderPublicMedia } from "@/lib/public-media";
+import {
+  IDENTITY_MEDIA_SORT_ORDER,
+  canRenderPublicMedia,
+  normalizeSafePublicMediaUrl,
+} from "@/lib/public-media";
 import { deletePublicMediaObject, uploadPublicMediaFile, validatePublicMediaFile } from "@/lib/storage";
 
 type TargetFields = { causeId?: string; initiativeId?: string; storyId?: string; faithContentId?: string };
@@ -24,14 +28,9 @@ function targetFields(value: string): TargetFields {
 function safePublicUrl(value: FormDataEntryValue | null) {
   const raw = String(value ?? "").trim();
   if (!raw) return null;
-  if (raw.startsWith("/") && !raw.startsWith("//")) return raw;
-  try {
-    const url = new URL(raw);
-    if (url.protocol !== "https:") throw new Error();
-    return url.toString();
-  } catch {
-    throw new Error("Public media URL must use HTTPS or a root-relative path");
-  }
+  const normalized = normalizeSafePublicMediaUrl(raw);
+  if (!normalized) throw new Error("Public media URL must use HTTPS or a safe root-relative path");
+  return normalized;
 }
 
 function optionalText(value: FormDataEntryValue | null, max: number) {

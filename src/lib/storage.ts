@@ -6,6 +6,7 @@ const allowedTypes = new Set(["application/pdf", "image/jpeg", "image/png", "ima
 const publicMediaTypes = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
 export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 export const MAX_FILES = 5;
+export const MAX_PUBLIC_IMAGE_PIXELS = 40_000_000;
 export const PRIVATE_OBJECT_CACHE_CONTROL = "private, no-store, max-age=0";
 export const PUBLIC_MEDIA_CACHE_CONTROL = "public, max-age=31536000, immutable";
 
@@ -71,6 +72,22 @@ function hasValidSignature(bytes: Buffer, mimeType: string) {
 }
 
 export type ImageDimensions = { width: number; height: number };
+
+export function validatePublicImageDimensions(dimensions: ImageDimensions | null) {
+  if (!dimensions ||
+      !Number.isInteger(dimensions.width) ||
+      !Number.isInteger(dimensions.height) ||
+      dimensions.width <= 0 ||
+      dimensions.height <= 0) {
+    throw new Error("Public image dimensions could not be verified");
+  }
+
+  if (dimensions.width > MAX_PUBLIC_IMAGE_PIXELS / dimensions.height) {
+    throw new Error(`Public image exceeds the ${MAX_PUBLIC_IMAGE_PIXELS.toLocaleString("en-IN")} pixel safety limit`);
+  }
+
+  return dimensions;
+}
 
 export function readImageDimensions(bytes: Buffer, mimeType: string): ImageDimensions | null {
   if (mimeType === "image/png") {
@@ -245,7 +262,9 @@ export async function uploadPublicMediaFile(file: File) {
   const bytes = Buffer.from(await file.arrayBuffer());
   if (!hasValidSignature(bytes, file.type)) throw new Error("The uploaded media does not match its declared file type");
 
-  const dimensions = file.type.startsWith("image/") ? readImageDimensions(bytes, file.type) : null;
+  const dimensions = file.type.startsWith("image/")
+    ? validatePublicImageDimensions(readImageDimensions(bytes, file.type))
+    : null;
   const safeExtension = extensionForMimeType(file.type);
   const objectKey = `${new Date().getUTCFullYear()}/${randomUUID()}.${safeExtension}`;
   const { bucket, client } = getPublicMediaStorage();

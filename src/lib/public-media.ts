@@ -10,24 +10,32 @@ export type PublicMediaCandidate = {
 
 export const IDENTITY_MEDIA_SORT_ORDER = -1000;
 
-function isSafePublicUrl(value: string | null | undefined) {
-  if (!value) return false;
-  if (value.startsWith("/")) return !value.startsWith("//");
+const PUBLIC_MEDIA_RELATIVE_ORIGIN = "https://amaana.invalid";
+
+export function normalizeSafePublicMediaUrl(value: string | null | undefined) {
+  const raw = value?.trim();
+  if (!raw || /[\\\u0000-\u001F\u007F\s]/.test(raw)) return null;
 
   try {
-    const url = new URL(value);
-    return url.protocol === "https:";
+    if (raw.startsWith("/")) {
+      if (raw.startsWith("//")) return null;
+      const url = new URL(raw, PUBLIC_MEDIA_RELATIVE_ORIGIN);
+      if (url.origin !== PUBLIC_MEDIA_RELATIVE_ORIGIN) return null;
+      return `${url.pathname}${url.search}${url.hash}`;
+    }
+
+    const url = new URL(raw);
+    if (url.protocol !== "https:" || url.username || url.password) return null;
+    return url.toString();
   } catch {
-    return false;
+    return null;
   }
 }
 
 export function resolvePublicMediaUrl(asset: PublicMediaCandidate) {
-  if (asset.kind === "EXTERNAL_VIDEO") {
-    return isSafePublicUrl(asset.externalUrl) ? asset.externalUrl! : null;
-  }
-
-  return isSafePublicUrl(asset.publicUrl) ? asset.publicUrl! : null;
+  return normalizeSafePublicMediaUrl(
+    asset.kind === "EXTERNAL_VIDEO" ? asset.externalUrl : asset.publicUrl,
+  );
 }
 
 export function canRenderPublicMedia(asset: PublicMediaCandidate) {
