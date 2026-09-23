@@ -189,6 +189,7 @@ describe("private document retention deletion", () => {
         originalName: "evidence.pdf",
         mimeType: "application/pdf",
         sizeBytes: 1024,
+        updatedAt: new Date("2026-09-23T00:00:00.000Z"),
         assistanceRequest: { referenceNumber: "AFR-123", status: "CLOSED", appeal: null },
       })
       .mockResolvedValueOnce({
