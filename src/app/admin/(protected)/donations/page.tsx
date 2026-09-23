@@ -33,7 +33,7 @@ export default async function DonationsPage({ searchParams }: Props) {
         donationId: null,
         eventType: { in: ["payment.captured", "payment.failed", "refund.processed"] },
       },
-      orderBy: { processedAt: "desc" },
+      orderBy: [{ processedAt: "desc" }, { id: "desc" }],
       take: 10,
       select: {
         id: true,
@@ -47,7 +47,7 @@ export default async function DonationsPage({ searchParams }: Props) {
   const donations = await prisma.donation.findMany({
     where,
     include: { appeal: { select: { title: true } } },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
     take: pagination.pageSize,
   });
