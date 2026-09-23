@@ -1,3 +1,5 @@
+import Link from "next/link";
+import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { getPublicMediaStorageReadiness } from "@/lib/storage";
@@ -16,20 +18,42 @@ type ReviewMetadata = {
   reviewNotes?: string | null;
 };
 
-export default async function AdminMediaPage() {
+type Props = { searchParams: Promise<{ visibility?: string; page?: string }> };
+
+export default async function AdminMediaPage({ searchParams }: Props) {
   const user = await requirePermission("content.view");
   const canEdit = hasPermission(user, "content.update");
   const canApprove = hasPermission(user, "content.approve");
   const storage = getPublicMediaStorageReadiness();
-
-  const [assets, causes, initiatives, stories, faith, reviewEvents] = await Promise.all([
-    prisma.mediaAsset.findMany({ include: { cause: true, initiative: true, story: true, faithContent: true }, orderBy: [{ isPublic: "asc" }, { sourceYear: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }, { id: "desc" }] }),
+  const { visibility, page: pageParam } = await searchParams;
+  const selectedVisibility = visibility === "public" || visibility === "review" ? visibility : undefined;
+  const where = selectedVisibility ? { isPublic: selectedVisibility === "public" } : undefined;
+  const [totalItems, visibilityGroups, causes, initiatives, stories, faith] = await Promise.all([
+    prisma.mediaAsset.count({ where }),
+    prisma.mediaAsset.groupBy({ by: ["isPublic"], _count: { _all: true } }),
     prisma.cause.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
     prisma.initiative.findMany({ orderBy: [{ startYear: "desc" }, { title: "asc" }], select: { id: true, title: true } }),
     prisma.story.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
     prisma.faithContent.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
-    prisma.auditEvent.findMany({ where: { entityType: "MediaAsset", action: "media.privacy_reviewed" }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], select: { entityId: true, metadata: true, createdAt: true, actor: { select: { name: true } } } }),
   ]);
+  const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
+  const assets = await prisma.mediaAsset.findMany({
+    where,
+    include: { cause: true, initiative: true, story: true, faithContent: true },
+    orderBy: [{ isPublic: "asc" }, { sourceYear: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }, { id: "desc" }],
+    skip: pagination.skip,
+    take: pagination.pageSize,
+  });
+  const reviewEvents = assets.length === 0 ? [] : await prisma.auditEvent.findMany({
+    where: { entityType: "MediaAsset", entityId: { in: assets.map(asset => asset.id) }, action: "media.privacy_reviewed" },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    select: { entityId: true, metadata: true, createdAt: true, actor: { select: { name: true } } },
+  });
+  const visibilityCounts = new Map(visibilityGroups.map(item => [item.isPublic, item._count._all]));
+  const pageHref = (targetPage: number) => ({
+    pathname: "/admin/media",
+    query: { ...(selectedVisibility ? { visibility: selectedVisibility } : {}), page: targetPage },
+  });
 
   const latestReview = new Map<string, { metadata: ReviewMetadata; createdAt: Date; reviewer: string }>();
   for (const event of reviewEvents) {
@@ -74,7 +98,13 @@ export default async function AdminMediaPage() {
     </section>}
 
     <section className="admin-card">
-      <div className="admin-heading"><div><p className="eyebrow">Publication gate</p><h2>Media library</h2></div><span className="status-badge">{assets.length} records</span></div>
+      <div className="admin-heading"><div><p className="eyebrow">Publication gate</p><h2>Media library</h2></div><span className="status-badge">{pagination.totalItems} records</span></div>
+      <div className="filter-row" aria-label="Media publication filter">
+        <strong>Visibility:</strong>
+        <Link href="/admin/media" aria-current={!selectedVisibility ? "page" : undefined}>All</Link>
+        <Link href="/admin/media?visibility=review" aria-current={selectedVisibility === "review" ? "page" : undefined}>Private review ({visibilityCounts.get(false) ?? 0})</Link>
+        <Link href="/admin/media?visibility=public" aria-current={selectedVisibility === "public" ? "page" : undefined}>Public ({visibilityCounts.get(true) ?? 0})</Link>
+      </div>
       <p className="muted">Public evidence is different from private proof. Website publication now requires GREEN classification, confirmed provenance, an approved website channel, and consent that matches the people and context shown.</p>
       {assets.length === 0 ? <p className="empty-state">No media records yet.</p> : <div className="admin-media-list">{assets.map(asset => {
         const review = latestReview.get(asset.id);
@@ -99,6 +129,11 @@ export default async function AdminMediaPage() {
           {canApprove && !asset.isPublic && <form action={deleteMediaAsset} className="form-grid admin-media-publish"><input type="hidden" name="id" value={asset.id}/><div className="field full"><label>Permanent deletion confirmation</label><input name="confirm" required pattern="DELETE" placeholder="Type DELETE"/><small>Deletes the unpublished record and its Amaana-managed storage object. External source URLs are not modified.</small></div><div className="field full"><button className="text-button" type="submit">Delete unpublished media permanently</button></div></form>}
         </article>;
       })}</div>}
+      <nav className="filter-row" aria-label="Media pagination">
+        {pagination.hasPrevious && <Link href={pageHref(pagination.page - 1)}>Previous</Link>}
+        <span>Page {pagination.page} of {pagination.totalPages} · {pagination.totalItems} records</span>
+        {pagination.hasNext && <Link href={pageHref(pagination.page + 1)}>Next</Link>}
+      </nav>
     </section>
   </>;
 }
