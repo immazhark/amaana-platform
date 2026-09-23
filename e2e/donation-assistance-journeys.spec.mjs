@@ -488,6 +488,9 @@ test('private assistance tracking credentials are removed from the visible URL b
   expect(page.url()).toBe('http://127.0.0.1:3000/request-assistance/status');
   expect(page.url()).not.toContain(reference);
   expect(page.url()).not.toContain(token);
+  await expect(page.getByText(reference)).toBeVisible();
+  await page.getByRole('link', { name: 'Understand the review process →' }).focus();
+  await expect(page.getByText(reference)).toBeVisible();
 });
 
 test('legacy query-based assistance tracking is scrubbed from history-visible location', async ({ page }) => {
@@ -553,6 +556,9 @@ test('private donation acknowledgement token is removed from the visible URL aft
   expect(postedBody).toEqual({ reference, token });
   expect(page.url()).toBe(`http://127.0.0.1:3000/donations/${reference}/acknowledgement`);
   expect(page.url()).not.toContain(token);
+  await expect(page.getByText(reference)).toBeVisible();
+  await page.getByRole('link', { name: /Return to this appeal/ }).focus();
+  await expect(page.getByText(reference)).toBeVisible();
 });
 
 test('legacy query donation acknowledgement token is scrubbed from the visible URL', async ({ page }) => {
