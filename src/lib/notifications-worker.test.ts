@@ -166,9 +166,11 @@ describe("notification worker flow", () => {
         failureReason: null,
       },
     });
-    expect(mocks.updateMany.mock.calls).not.toContainEqual([
-      expect.objectContaining({ data: expect.objectContaining({ status: NotificationStatus.FAILED }) }),
-    ]);
+    const postClaimWrites = mocks.updateMany.mock.calls.slice(3);
+    expect(postClaimWrites).toHaveLength(1);
+    expect(postClaimWrites[0]?.[0]).toEqual(expect.objectContaining({
+      data: expect.objectContaining({ status: NotificationStatus.SENT }),
+    }));
     expect(mocks.update).not.toHaveBeenCalled();
   });
 
