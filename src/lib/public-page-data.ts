@@ -56,6 +56,7 @@ export const getAppealPageData = cache(async (slug: string) => {
       amountRaised: true,
       closesAt: true,
       publishedAt: true,
+      coverImageUrl: true,
       assistanceRequest: {
         select: {
           id: true,
@@ -367,5 +368,24 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
         select: PUBLIC_IMAGE_SELECT,
       },
     },
+  });
+});
+
+
+/**
+ * Approved cover media for a public appeal.
+ *
+ * The appeal editor already requires cover images to match a reviewed Media
+ * library record. Public rendering repeats the same fail-closed publication
+ * boundary so an old or subsequently revoked URL cannot leak into the hero.
+ */
+export const getAppealCoverMedia = cache(async (coverImageUrl: string | null | undefined) => {
+  if (!coverImageUrl) return null;
+  return prisma.mediaAsset.findFirst({
+    where: {
+      ...PUBLIC_APPROVED_IMAGE_WHERE,
+      publicUrl: coverImageUrl,
+    },
+    select: PUBLIC_IMAGE_SELECT,
   });
 });

@@ -4,11 +4,13 @@ import { notFound } from "next/navigation";
 import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
 import { PageHero } from "@/components/page-hero";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
+import { PublicMedia } from "@/components/public-media";
 import { MobileSupportBar } from "@/components/mobile-support-bar";
 import { AppealShare } from "@/components/appeal-share";
 import { getAppealSearchPrivacy } from "@/lib/appeal-search-privacy";
+import { normalizeSafePublicMediaUrl } from "@/lib/public-media";
 import { formatINR, isAppealOpenForDonations } from "@/lib/appeals";
-import { getAppealPageData } from "@/lib/public-page-data";
+import { getAppealCoverMedia, getAppealPageData } from "@/lib/public-page-data";
 
 type Props = { params: Promise<{ slug: string }> };
 export const dynamic = "force-dynamic";
@@ -28,6 +30,8 @@ export default async function AppealDetailPage({ params }: Props) {
   const { slug } = await params;
   const appeal = await getAppealPageData(slug);
   if (!appeal) notFound();
+  const coverUrl = normalizeSafePublicMediaUrl(appeal.coverImageUrl);
+  const coverMedia = await getAppealCoverMedia(coverUrl);
   const raised = appeal.amountRaised.toNumber();
   const goal = appeal.goalAmount.toNumber();
   const progress = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
@@ -42,7 +46,7 @@ export default async function AppealDetailPage({ params }: Props) {
         title={appeal.title}
         description={<p>{appeal.summary}</p>}
         actions={[{ label: "Back to current appeals", href: "/appeals", secondary: true }, ...(isOpen ? [{ label: "Support this appeal", href: `/donate/${appeal.slug}` } as const] : [])]}
-        visual={<WorkVisualPlaceholder label={appeal.title} />}
+        visual={coverMedia ? <PublicMedia asset={coverMedia} priority /> : <WorkVisualPlaceholder label={appeal.title} />}
       />
 
       <section className="v2-appeal-funding-strip" aria-label="Appeal funding status"><div className="v2-shell"><aside className="v2-appeal-donation-panel" aria-describedby="appeal-payment-boundary"><div><small>Appeal progress</small><strong>{formatINR(raised)}</strong><p>raised of {formatINR(goal)}</p></div><div className="v2-appeal-funding-progress"><div className="v2-appeal-progress" role="progressbar" aria-label={`${appeal.title} funding progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-valuetext={`${formatINR(raised)} raised of ${formatINR(goal)}; ${progress}% supported`}><span style={{ width: `${progress}%` }} /></div><div className="v2-appeal-progress-foot"><span>{progress}% supported</span><span>INR · India only</span></div></div><div>{isOpen ? <Link className="v2-button v2-appeal-donate-button" href={`/donate/${appeal.slug}`}>Support this appeal</Link> : <span className="v2-appeal-closed">This appeal is closed</span>}<p className="v2-appeal-secure-note" id="appeal-payment-boundary">Domestic INR donations are processed securely through Razorpay. Amaana does not accept foreign contributions.</p></div></aside><AppealShare title={appeal.title} summary={appeal.summary} path={`/appeals/${appeal.slug}`} /></div></section>
