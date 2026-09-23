@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { mediaPublicationIssues, parseMediaPublicationReview } from "@/lib/media-governance";
 import { prisma } from "@/lib/prisma";
+import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { IDENTITY_MEDIA_SORT_ORDER, canRenderPublicMedia } from "@/lib/public-media";
 import { deletePublicMediaObject, uploadPublicMediaFile, validatePublicMediaFile } from "@/lib/storage";
 
@@ -184,17 +185,31 @@ export async function setMediaPublication(formData: FormData) {
       throw new Error("The designated identity image requires explicit Hero use approved confirmation before publication.");
     }
 
-    await prisma.$transaction([
-      prisma.mediaAsset.update({ where: { id }, data: { isPublic: true, privacyApprovedAt: new Date() } }),
-      prisma.auditEvent.create({ data: {
+    await withSerializableTransactionRetry(async tx => {
+      const freshAsset = await tx.mediaAsset.findUniqueOrThrow({ where: { id } });
+      if (freshAsset.isPublic) throw new Error("This media is already published. Refresh before changing publication state.");
+      if (!canRenderPublicMedia(freshAsset)) {
+        throw new Error(freshAsset.kind === "VIDEO"
+          ? "Hosted video publication is disabled until synchronized caption tracks are supported and verified."
+          : "Media changed while you were reviewing it and no longer satisfies public rendering requirements.");
+      }
+      if (freshAsset.kind === "IMAGE" && freshAsset.sortOrder === IDENTITY_MEDIA_SORT_ORDER && !review.heroEligible) {
+        throw new Error("The designated identity image requires explicit Hero use approved confirmation before publication.");
+      }
+      const claimed = await tx.mediaAsset.updateMany({
+        where: { id, isPublic: false, updatedAt: freshAsset.updatedAt },
+        data: { isPublic: true, privacyApprovedAt: new Date() },
+      });
+      if (claimed.count !== 1) throw new Error("This media changed while you were reviewing it. Refresh before publishing.");
+      await tx.auditEvent.create({ data: {
         actorId: user.id,
         action: "media.privacy_reviewed",
         entityType: "MediaAsset",
         entityId: id,
         metadata: review,
-      } }),
-      prisma.auditEvent.create({ data: { actorId: user.id, action: "media.published", entityType: "MediaAsset", entityId: id, metadata: { privacyGate: "passed" } } }),
-    ]);
+      } });
+      await tx.auditEvent.create({ data: { actorId: user.id, action: "media.published", entityType: "MediaAsset", entityId: id, metadata: { privacyGate: "passed" } } });
+    });
   } else {
     await prisma.$transaction([
       prisma.mediaAsset.update({ where: { id }, data: { isPublic: false, privacyApprovedAt: null } }),
