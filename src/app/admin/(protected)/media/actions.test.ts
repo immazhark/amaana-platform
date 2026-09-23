@@ -79,6 +79,18 @@ describe("published media editing", () => {
     expect(mocks.transaction).not.toHaveBeenCalled();
   });
 
+  it("requires unpublishing before changing published privacy or provenance metadata", async () => {
+    mocks.findUniqueOrThrow.mockResolvedValue({
+      id: "media_123", kind: "IMAGE", isPublic: true,
+      title: null, altText: "Documentary photograph", caption: null, sourcePath: null, sourceYear: null,
+      publicUrl: "https://cdn.example/original.jpg", storageKey: null,
+      sortOrder: 0, causeId: "cause_1", initiativeId: null, storyId: null, faithContentId: null,
+    });
+
+    await expect(updateMediaAsset(updateForm({ caption: "A newly identifying public caption" }))).rejects.toThrow(/unpublish.*metadata/i);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
   it("requires unpublishing before promoting published media to identity use", async () => {
     mocks.findUniqueOrThrow.mockResolvedValue({
       id: "media_123", kind: "IMAGE", isPublic: true,
