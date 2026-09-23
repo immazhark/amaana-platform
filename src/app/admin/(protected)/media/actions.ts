@@ -105,7 +105,7 @@ export async function createMediaAsset(formData: FormData) {
       try {
         await deletePublicMediaObject(uploaded.objectKey);
       } catch (cleanupError) {
-        console.error("Public media record creation failed and uploaded-object cleanup also failed", cleanupError);
+        console.error("Public media record creation failed and uploaded-object cleanup also failed");
       }
     }
     throw error;
@@ -230,6 +230,20 @@ export async function deleteMediaAsset(formData: FormData) {
   });
 
   if (asset.isPublic) throw new Error("Unpublish this media before permanent deletion");
+
+  // Re-read the destructive invariants immediately before touching storage.
+  // An earlier admin view must never authorize deletion after another operator
+  // republishes or replaces the managed object.
+  const deletionSnapshot = await prisma.mediaAsset.findUniqueOrThrow({
+    where: { id },
+    select: { isPublic: true, storageKey: true, publicUrl: true },
+  });
+  if (deletionSnapshot.isPublic) {
+    throw new Error("This media was published while you were reviewing it. Refresh before deleting.");
+  }
+  if (deletionSnapshot.storageKey !== asset.storageKey || deletionSnapshot.publicUrl !== asset.publicUrl) {
+    throw new Error("This media changed while you were reviewing it. Refresh before deleting.");
+  }
 
   // Record the destructive intent before storage deletion so a partial failure
   // remains diagnosable even when the managed object is already gone.
