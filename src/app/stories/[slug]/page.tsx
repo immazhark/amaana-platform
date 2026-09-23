@@ -6,6 +6,7 @@ import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
 import { ScrollCarousel } from "@/components/scroll-carousel";
+import { PublicContentStructuredData } from "@/components/public-content-structured-data";
 import { getStoryPageData } from "@/lib/public-page-data";
 import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
 
@@ -37,6 +38,16 @@ export default async function StoryPage({ params }: Props) {
 
   return (
     <div className="v2-home v2-story-detail-page">
+      <PublicContentStructuredData
+        type="Article"
+        title={story.title}
+        description={story.summary}
+        path={`/stories/${story.slug}`}
+        publishedAt={story.publishedAt}
+        modifiedAt={story.updatedAt}
+        imageUrl={leadMedia ? resolvePublicMediaUrl(leadMedia) : null}
+        section="Stories of Amanah"
+      />
       <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Stories", path: "/stories" }, { name: story.title, path: `/stories/${story.slug}` }]} />
       <PageHero
         variant="level2"

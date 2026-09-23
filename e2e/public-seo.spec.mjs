@@ -96,3 +96,21 @@ test('admin sign-in remains explicitly private even when public SEO metadata exi
   await expect(referrer).toHaveCount(1);
   await expect(referrer).toHaveAttribute('content', 'no-referrer');
 });
+
+
+test('published programme detail exposes canonical WebPage structured data linked to Amaana', async ({ page }) => {
+  const response = await page.goto('/our-work/eid-gift-kits', { waitUntil: 'domcontentloaded' });
+  expect(response?.ok()).toBeTruthy();
+
+  const schema = page.locator('script[data-public-content-schema="WebPage"]');
+  await expect(schema).toHaveCount(1);
+
+  const data = JSON.parse(await schema.textContent());
+  expect(data['@context']).toBe('https://schema.org');
+  expect(data['@type']).toBe('WebPage');
+  expect(data.url).toBe('https://amaanafoundation.org/our-work/eid-gift-kits');
+  expect(data.publisher).toEqual({ '@id': 'https://amaanafoundation.org/#organization' });
+  expect(data.isPartOf).toEqual({ '@id': 'https://amaanafoundation.org/#website' });
+  expect(data.name).toMatch(/Eid Gift Kits/i);
+  expect(data.description).toMatch(/\S.{20,}/);
+});

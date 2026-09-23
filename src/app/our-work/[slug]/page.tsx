@@ -12,6 +12,7 @@ import { PublicMedia } from "@/components/public-media";
 import { getInitiativePageData } from "@/lib/public-page-data";
 import { buildPublicRecordFallback, distinctStoryParagraphs, heroTeaser } from "@/lib/public-copy";
 import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
+import { PublicContentStructuredData } from "@/components/public-content-structured-data";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 
 export const dynamic = "force-dynamic";
@@ -51,6 +52,16 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
 
   return (
     <div className="v2-home campaign-page">
+      <PublicContentStructuredData
+        type="WebPage"
+        title={initiative.title}
+        description={initiative.summary}
+        path={`/our-work/${initiative.slug}`}
+        publishedAt={initiative.publishedAt}
+        modifiedAt={initiative.updatedAt}
+        imageUrl={leadMedia ? resolvePublicMediaUrl(leadMedia) : null}
+        section={initiative.cause.title}
+      />
       <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Our Work", path: "/our-work" }, { name: initiative.title, path: `/our-work/${initiative.slug}` }]} />
       <div className="v2-shell campaign-breadcrumb"><nav aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true"> / </span><Link href="/our-work">Our work</Link><span aria-hidden="true"> / </span><span>{initiative.title}</span></nav></div>
       <PageHero variant="level2" eyebrow={`${initiative.cause.title} · ${period}`} title={initiative.title} description={<p>{heroTeaser(initiative.summary)}</p>} actions={[{label:"Read about the drive",href:"#campaign-story"},...(gallery.length>0?[{label:"View media and updates",href:"#campaign-gallery",secondary:true} as const]:[])]} visual={leadMedia ? <PublicMedia asset={leadMedia} priority /> : <WorkVisualPlaceholder label={initiative.title} className="campaign-lead-placeholder" />} />

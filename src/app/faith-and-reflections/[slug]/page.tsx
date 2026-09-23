@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
+import { PublicContentStructuredData } from "@/components/public-content-structured-data";
 import { getFaithPageData } from "@/lib/public-page-data";
 import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
 
@@ -31,6 +32,17 @@ export default async function FaithDetailPage({ params }: Props) {
   const leadMedia = selectIdentityPublicImage(publicMedia);
 
   return <div className="v2-home v2-faith-detail-page">
+    <PublicContentStructuredData
+      type="Article"
+      title={item.title}
+      description={item.excerpt}
+      path={`/faith-and-reflections/${item.slug}`}
+      publishedAt={item.publishedAt}
+      modifiedAt={item.updatedAt}
+      imageUrl={leadMedia ? resolvePublicMediaUrl(leadMedia) : null}
+      section="Faith & Reflections"
+      keywords={topics}
+    />
     <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Faith & Reflections", path: "/faith-and-reflections" }, { name: item.title, path: `/faith-and-reflections/${item.slug}` }]} />
     <PageHero variant="level2" eyebrow={`${item.type.toLowerCase()}${publishedDate ? ` · ${publishedDate}` : ""}`} title={item.title} description={<><p>{item.excerpt}</p>{topics.length > 0 && <div className="v2-faith-detail-topics">{topics.map(topic => <span key={topic}>{topic}</span>)}</div>}</>} actions={[{label:"Back to Faith & Reflections",href:"/faith-and-reflections",secondary:true}]} visual={leadMedia ? <PublicMedia asset={leadMedia} priority /> : undefined} visualKicker="Editorial trust" visualTitle="Reviewed Before Publication" visualNote="Amaana shares reviewed beneficial material without presenting itself as a scholarly authority." />
 
