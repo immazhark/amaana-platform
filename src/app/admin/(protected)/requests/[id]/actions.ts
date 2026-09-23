@@ -288,6 +288,9 @@ export async function assignRequest(formData: FormData) {
   const user = await requirePermission("assistance.assign");
   const id = String(formData.get("id"));
   const assignedToId = String(formData.get("assignedToId") || "");
+  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "");
+  const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
+  if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Assignment version is missing or invalid. Refresh before assigning.");
   await withSerializableTransactionRetry(async tx => {
     if (assignedToId) {
       const eligibleAssignee = await tx.user.findFirst({
@@ -303,12 +306,16 @@ export async function assignRequest(formData: FormData) {
 
     const request = await tx.assistanceRequest.findUniqueOrThrow({
       where: { id },
-      select: { assignedToId: true },
+      select: { assignedToId: true, updatedAt: true },
     });
-    await tx.assistanceRequest.update({
-      where: { id },
+    if (request.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
+      throw new Error("This request changed while you were reviewing it. Refresh before assigning.");
+    }
+    const claimed = await tx.assistanceRequest.updateMany({
+      where: { id, updatedAt: expectedUpdatedAt },
       data: { assignedToId: assignedToId || null },
     });
+    if (claimed.count !== 1) throw new Error("This request changed while you were reviewing it. Refresh before assigning.");
     await tx.auditEvent.create({
       data: {
         actorId: user.id,
@@ -327,6 +334,12 @@ export async function convertToAppeal(formData: FormData) {
   const user = await requirePermission("appeal.create");
   if (!hasPermission(user, "assistance.view") || !hasPermission(user, "assistance.update")) redirect("/admin/forbidden");
   const id = String(formData.get("id"));
+  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "");
+  const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
+  if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Conversion version is missing or invalid. Refresh before creating the appeal.");
+  const expectedVerificationUpdatedAtRaw = String(formData.get("expectedVerificationUpdatedAt") ?? "");
+  const expectedVerificationUpdatedAt = new Date(expectedVerificationUpdatedAtRaw);
+  if (!expectedVerificationUpdatedAtRaw || Number.isNaN(expectedVerificationUpdatedAt.getTime())) throw new Error("Verification version is missing or invalid. Refresh before creating the appeal.");
   const title = String(formData.get("title") ?? "").trim();
   const publicSummary = String(formData.get("publicSummary") ?? "").trim();
   const publicStory = String(formData.get("publicStory") ?? "").trim();
@@ -335,14 +348,16 @@ export async function convertToAppeal(formData: FormData) {
   await withSerializableTransactionRetry(async tx => {
     const request = await tx.assistanceRequest.findUniqueOrThrow({ where: { id }, include: { verification: true } });
     if (request.status !== AssistanceStatus.APPROVED || request.appealId) throw new Error("Only approved, unconverted requests can become appeals");
+    if (request.updatedAt.getTime() !== expectedUpdatedAt.getTime()) throw new Error("This request changed while you were reviewing it. Refresh before creating the appeal.");
     if (!request.verification?.completedAt || !request.verification.reviewedById) throw new Error("Verification must be completed by an authorised reviewer before appeal conversion");
+    if (request.verification.updatedAt.getTime() !== expectedVerificationUpdatedAt.getTime()) throw new Error("Verification changed while you were reviewing it. Refresh before creating the appeal.");
     const verificationIssues = getPublicAppealVerificationIssues(request.verification);
     if (verificationIssues.length) throw new Error(`Public appeal verification is incomplete: ${verificationIssues.join(" ")}`);
     const goalAmount = request.verification.approvedPublicTarget!.toNumber();
     const slug = `${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60)}-${Date.now().toString(36)}`;
 
     const claimed = await tx.assistanceRequest.updateMany({
-      where: { id, status: AssistanceStatus.APPROVED, appealId: null },
+      where: { id, status: AssistanceStatus.APPROVED, appealId: null, updatedAt: expectedUpdatedAt },
       data: { status: AssistanceStatus.CONVERTED_TO_APPEAL },
     });
     if (claimed.count !== 1) throw new Error("This request was changed or converted by another admin. Refresh before trying again.");
