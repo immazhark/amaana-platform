@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { adminHomePathForPermissions, adminNavigationForPermissions } from "@/lib/admin-navigation";
+import { AdminNavigation } from "@/components/admin-navigation";
 
 type Props = {
   children: React.ReactNode;
@@ -22,9 +23,7 @@ export function AdminShell({ children, userName, roleNames, permissions, logoutA
           <span className="brand-mark">A</span>
           <span style={{ color: "#ffffff" }}>Amaana Admin</span>
         </Link>
-        <nav aria-label="Admin navigation">
-          {navigation.map(item => <Link href={item.path} key={item.path}>{item.label}</Link>)}
-        </nav>
+        <AdminNavigation items={navigation} />
         <div className="admin-user">
           <span>{userName}</span>
           <small>{roleNames.join(", ")}</small>
