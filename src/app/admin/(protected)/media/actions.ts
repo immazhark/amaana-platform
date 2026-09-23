@@ -65,8 +65,15 @@ export async function createMediaAsset(formData: FormData) {
   const uploaded = file ? await uploadPublicMediaFile(file) : null;
 
   try {
-    await prisma.$transaction(async tx => {
+    await withSerializableTransactionRetry(async tx => {
       if (identityImage) {
+        // Predicate-read the current identity set before demotion. Under
+        // PostgreSQL SERIALIZABLE this makes concurrent identity creations for
+        // the same target conflict/retry instead of allowing two winners.
+        await tx.mediaAsset.findMany({
+          where: { kind: "IMAGE", sortOrder: IDENTITY_MEDIA_SORT_ORDER, ...target },
+          select: { id: true },
+        });
         await tx.mediaAsset.updateMany({
           where: { kind: "IMAGE", sortOrder: IDENTITY_MEDIA_SORT_ORDER, ...target },
           data: { sortOrder: 0 },
