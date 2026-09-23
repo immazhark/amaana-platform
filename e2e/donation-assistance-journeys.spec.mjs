@@ -191,6 +191,73 @@ test.describe('donation journey without real payment', () => {
     }));
   });
 
+  for (const failure of [
+    { name: 'rate limiting', status: 429, message: 'Please wait before starting another donation.' },
+    { name: 'server failure', status: 500, message: 'Could not start checkout safely.' },
+  ]) {
+    test(`order API ${failure.name} restores an editable form without opening Razorpay`, async ({ page }) => {
+      let checkoutOpens = 0;
+      await page.addInitScript(() => {
+        window.__AMAANA_ACCEPTANCE_RAZORPAY_MODE = 'count-only';
+        window.__AMAANA_ACCEPTANCE_CHECKOUT_OPENS = 0;
+      });
+      await page.route('**/api/donations/order', route => route.fulfill({
+        status: failure.status,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: failure.message }),
+      }));
+      await openDonationFixture(page, 'count-only');
+      await page.evaluate(() => {
+        const Original = window.Razorpay;
+        window.Razorpay = class extends Original {
+          open() {
+            window.__AMAANA_ACCEPTANCE_CHECKOUT_OPENS += 1;
+            super.open();
+          }
+        };
+      });
+
+      const submit = page.getByRole('button', { name: 'Continue securely →' });
+      await fillDonationForm(page);
+      await submit.click();
+
+      await expect(page.locator('.form-error[role="alert"]')).toContainText(failure.message);
+      await expect(page.locator('.form-error[role="alert"]')).toBeFocused();
+      await expect(submit).toBeEnabled();
+      await expect(page.getByLabel(/Donation amount/)).toBeEnabled();
+      await expect(page.getByLabel('Full name')).toBeEnabled();
+      await expect(page.getByLabel('Email')).toBeEnabled();
+      checkoutOpens = await page.evaluate(() => window.__AMAANA_ACCEPTANCE_CHECKOUT_OPENS);
+      expect(checkoutOpens).toBe(0);
+    });
+  }
+
+  test('controls remain locked while the order request is unresolved', async ({ page }) => {
+    let releaseOrder;
+    await page.route('**/api/donations/order', async route => {
+      await new Promise(resolve => { releaseOrder = resolve; });
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify(orderPayload()),
+      });
+    });
+
+    const submit = await openDonationFixture(page, 'dismiss');
+    await fillDonationForm(page);
+    await submit.click();
+
+    await expect(page.getByRole('button', { name: 'Opening secure checkout…' })).toBeDisabled();
+    await expect(page.getByLabel(/Donation amount/)).toBeDisabled();
+    await expect(page.getByLabel('Full name')).toBeDisabled();
+    await expect(page.getByLabel('Email')).toBeDisabled();
+    await expect(page.getByLabel(/Phone/)).toBeDisabled();
+    await expect(page.locator('input[name="domesticConfirmed"]')).toBeDisabled();
+
+    releaseOrder();
+    await expect(page.getByRole('button', { name: 'Continue securely →' })).toBeEnabled();
+  });
+
   test('mocked successful verification reaches a private acknowledgement without external payment', async ({ page }) => {
     const order = { value: null };
     const confirmation = { value: null };
