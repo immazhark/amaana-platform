@@ -97,10 +97,11 @@ export default async function NotificationOperationsPage({ searchParams }: Props
       </section>
     )}
 
-    <div className="filter-row">
-      <Link href="/admin/notifications">All</Link>
+    <div className="filter-row" aria-label="Notification status filter">
+      <strong>Status:</strong>
+      <Link href="/admin/notifications" aria-current={!selected ? "page" : undefined}>All</Link>
       {statusOrder.map(item => (
-        <Link key={item} href={"/admin/notifications?status=" + item}>
+        <Link key={item} href={"/admin/notifications?status=" + item} aria-current={selected === item ? "page" : undefined}>
           {item} ({counts.get(item) ?? 0})
         </Link>
       ))}
