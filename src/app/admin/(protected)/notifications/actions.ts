@@ -54,9 +54,12 @@ export async function enqueueControlledEmailAcceptance() {
 export async function requeueFailedNotification(formData: FormData) {
   const user = await requirePermission("notification.manage");
   const id = String(formData.get("id") ?? "").trim();
+  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "").trim();
+  const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
   const reason = String(formData.get("reason") ?? "").trim();
 
   if (!id) throw new Error("Notification is required");
+  if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Notification version is missing or invalid. Refresh before requeueing");
   if (reason.length < 10) throw new Error("Provide a short operational reason before requeueing");
   if (reason.length > 1000) throw new Error("Operational reason is too long");
 
@@ -70,9 +73,13 @@ export async function requeueFailedNotification(formData: FormData) {
         attempts: true,
         failureReason: true,
         templateKey: true,
+        updatedAt: true,
       },
     });
 
+    if (current.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
+      throw new Error("Notification state changed while you were reviewing it. Refresh and review the current delivery state.");
+    }
     if (current.channel !== "EMAIL") throw new Error("Only email notifications can be manually requeued here");
     if (current.status !== NotificationStatus.FAILED) {
       throw new Error("Only failed notifications can be manually requeued");
@@ -82,6 +89,7 @@ export async function requeueFailedNotification(formData: FormData) {
       where: {
         id,
         status: NotificationStatus.FAILED,
+        updatedAt: expectedUpdatedAt,
       },
       data: {
         status: NotificationStatus.PENDING,
