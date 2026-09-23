@@ -90,5 +90,5 @@ export async function POST(request: Request) {
       select: { id: true, donorName: true, donorEmail: true, donorPhone: true },
     });
     return NextResponse.json({ donationId: donation.id, orderId: order.id, amount: amountPaise, currency: "INR", keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, appealTitle: appeal.title, donor: { name: donation.donorName, email: donation.donorEmail, contact: donation.donorPhone }, receiptToken }, { status: 201, headers: privateHeaders });
-  } catch (error) { console.error("Donation order creation failed", error); return NextResponse.json({ error: "We could not start the secure payment. Please try again." }, { status: 500, headers: privateHeaders }); }
+  } catch { console.error("Donation order creation failed"); return NextResponse.json({ error: "We could not start the secure payment. Please try again." }, { status: 500, headers: privateHeaders }); }
 }
