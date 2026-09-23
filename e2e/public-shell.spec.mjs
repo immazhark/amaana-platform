@@ -217,6 +217,23 @@ test('navigation marks current primary, support and secondary routes consistentl
   await expect(mobileNav.getByRole('link', { name: 'Governance' })).not.toHaveAttribute('aria-current', 'page');
 });
 
+test('impact and transparency expose the same explicit public/private evidence boundary', async ({ page }) => {
+  for (const path of ['/impact', '/transparency']) {
+    await openPublicPage(page, path);
+
+    const boundary = page.locator('[data-trust-evidence-boundary]');
+    await expect(boundary).toHaveCount(1);
+    await expect(boundary.getByRole('heading', { level: 3 })).toHaveCount(3);
+
+    const text = await boundary.innerText();
+    expect(text).toContain('Public record');
+    expect(text).toContain('Private verification');
+    expect(text).toContain('Publication gate');
+    expect(text).toMatch(/identity documents/i);
+    expect(text).toMatch(/privacy-review requirements/i);
+  }
+});
+
 test('canonical continuation routes expose unique internal destinations on partner and recognition pages', async ({ page }) => {
   const expected = {
     '/partner': ['/how-we-verify', '/transparency', '/get-involved'],

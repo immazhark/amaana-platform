@@ -1,0 +1,105 @@
+.section {
+  display: grid;
+  gap: clamp(1.5rem, 4vw, 3rem);
+  margin-block: clamp(1rem, 3vw, 2.25rem);
+  padding: clamp(1.35rem, 3vw, 2rem);
+  border: 1px solid rgb(18 34 57 / 10%);
+  border-radius: var(--af-card-radius, 1.25rem);
+  background: linear-gradient(145deg, rgb(255 253 248 / 94%), rgb(244 247 251 / 88%));
+  box-shadow: var(--af-card-shadow, 0 16px 42px rgb(18 34 57 / 7%));
+}
+
+.heading {
+  display: grid;
+  gap: .8rem;
+  max-width: 58rem;
+}
+
+.heading :global(.v2-section-label) {
+  margin: 0;
+}
+
+.heading h2 {
+  max-width: 18ch;
+  margin: 0;
+  color: var(--af-color-navy-950);
+  font-family: var(--af-font-display);
+  font-size: clamp(2rem, 4vw, 3.4rem);
+  font-weight: 500;
+  line-height: 1.02;
+  letter-spacing: -.04em;
+  text-wrap: balance;
+}
+
+.heading > p:last-child {
+  max-width: 66ch;
+  margin: 0;
+  color: var(--af-color-muted);
+  line-height: 1.75;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: .85rem;
+}
+
+.card {
+  min-width: 0;
+  padding: 1.2rem;
+  border: 1px solid rgb(18 34 57 / 10%);
+  border-radius: 1rem;
+  background: rgb(255 253 248 / 86%);
+}
+
+.card small {
+  display: block;
+  margin-bottom: .65rem;
+  color: var(--af-color-gold-ink);
+  font-size: .7rem;
+  font-weight: 850;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
+
+.card h3 {
+  margin: 0 0 .7rem;
+  color: var(--af-color-navy-800);
+  font-family: var(--af-font-display);
+  font-size: clamp(1.25rem, 2vw, 1.6rem);
+  font-weight: 500;
+  line-height: 1.15;
+}
+
+.card p {
+  margin: 0;
+  color: var(--af-color-muted);
+  line-height: 1.65;
+}
+
+.index {
+  display: inline-grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  margin-bottom: 1rem;
+  border: 1px solid rgb(224 179 24 / 35%);
+  border-radius: .7rem;
+  background: rgb(255 248 223 / 72%);
+  color: var(--af-color-gold-ink);
+  font-size: .72rem;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 820px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .section {
+    padding: 1rem;
+  }
+}

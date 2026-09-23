@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { ScrollCarousel } from "@/components/scroll-carousel";
+import { TrustEvidenceBoundary } from "@/components/trust-evidence-boundary";
 import { programmeBySlug } from "@/lib/master-copy";
 import { getImpactPageData } from "@/lib/public-page-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
@@ -60,6 +61,7 @@ export default async function ImpactPage() {
 
       <section className="v2-section paper v2-impact-wall-section" id="evidence" aria-labelledby="impact-wall-title">
         <div className="v2-shell">
+          <TrustEvidenceBoundary context="impact" />
           <div className="v2-section-head"><div><p className="v2-section-label">Wall of impact</p><h2 className="v2-section-title" id="impact-wall-title">See what each initiative achieved.</h2></div><p className="v2-section-intro">Explore an outcome, then open the initiative to understand the work behind it.</p></div>
           {initiatives.length > 0 ? <div className="v2-impact-wall">{initiatives.map((item, index) => {
             const thumbnail = selectIdentityPublicImage(item.mediaAssets) ?? null;

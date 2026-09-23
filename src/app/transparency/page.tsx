@@ -1,4 +1,5 @@
 import { CanonicalArticle } from '@/components/canonical-article';
+import { TrustEvidenceBoundary } from '@/components/trust-evidence-boundary';
 import { transparencyCopy } from '@/lib/organization-copy';
 
 export const metadata = {
@@ -12,4 +13,4 @@ export default function Page(){return <CanonicalArticle eyebrow="Transparency" h
     { label: "How verification works", href: "/how-we-verify", description: "Follow the review process behind verified assistance and public appeals." },
     { label: "Governance", href: "/governance", description: "See the trustees and formal responsibility behind Amaana Foundation." },
     { label: "Compliance position", href: "/compliance", description: "Review current domestic-donation, FCRA and provisional tax-registration boundaries." },
-  ]} {...transparencyCopy}></CanonicalArticle>;}
+  ]} {...transparencyCopy}><TrustEvidenceBoundary context="transparency" /></CanonicalArticle>;}
