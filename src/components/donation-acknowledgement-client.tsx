@@ -1,13 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore } from "react";
+import { useEffect, useState } from "react";
 import { PrintButton } from "@/components/print-button";
 import { donationIntentLabel } from "@/lib/donation-intent";
-import {
-  parsePrivateDonationAcknowledgementLocation,
-  privateDonationAcknowledgementFragment,
-} from "@/lib/private-donation-ack";
+import { parsePrivateDonationAcknowledgementLocation } from "@/lib/private-donation-ack";
 
 type AcknowledgementRecord = {
   found: true;
@@ -31,32 +28,22 @@ type AcknowledgementRecord = {
 };
 
 type AcknowledgementResponse = AcknowledgementRecord | { found: false };
-
-const subscribeLocation = () => () => undefined;
-const serverLocation = () => "__server__";
-const browserLocation = () => `${window.location.search}\n${window.location.hash}`;
 const formatINR = (amount: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 
 export function DonationAcknowledgementClient({ reference }: { reference: string }) {
-  const locationSnapshot = useSyncExternalStore(subscribeLocation, browserLocation, serverLocation);
-  const hydrated = locationSnapshot !== "__server__";
-  const [search = "", hash = ""] = hydrated ? locationSnapshot.split("\n", 2) : ["", ""];
-  const token = hydrated ? parsePrivateDonationAcknowledgementLocation(search, hash) : null;
+  const [token, setToken] = useState<string | null | undefined>(undefined);
   const [record, setRecord] = useState<AcknowledgementRecord | null | undefined>(undefined);
 
   useEffect(() => {
-    if (!token) return;
-    if (search) {
-      window.history.replaceState(
-        null,
-        "",
-        `${window.location.pathname}${privateDonationAcknowledgementFragment(token)}`,
-      );
+    const captured = parsePrivateDonationAcknowledgementLocation(window.location.search, window.location.hash);
+    setToken(captured);
+    if (window.location.search || window.location.hash) {
+      window.history.replaceState(null, "", window.location.pathname);
     }
+  }, []);
 
-    // The fragment prevents the token from reaching HTTP infrastructure, but
-    // the browser no longer needs to display or retain it after capture.
-    window.history.replaceState(null, "", window.location.pathname);
+  useEffect(() => {
+    if (!token) return;
 
     const controller = new AbortController();
     void fetch("/api/donations/acknowledgement", {
@@ -73,9 +60,9 @@ export function DonationAcknowledgementClient({ reference }: { reference: string
       });
 
     return () => controller.abort();
-  }, [reference, search, token]);
+  }, [reference, token]);
 
-  const loading = !hydrated || (Boolean(token) && record === undefined);
+  const loading = token === undefined || (Boolean(token) && record === undefined);
 
   if (loading) {
     return <div className="v2-home v2-state-page"><section className="v2-state-hero"><div className="v2-shell"><p className="v2-section-label">Donation acknowledgement</p><h1>Opening your private transaction record…</h1><p>Confirming the private acknowledgement details in this browser.</p></div></section></div>;
