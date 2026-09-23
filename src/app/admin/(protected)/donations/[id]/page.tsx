@@ -13,7 +13,7 @@ export default async function DonationDetailPage({ params }: Props) {
   const { id } = await params;
   const donation = await prisma.donation.findUnique({
     where: { id },
-    include: { appeal: true, events: { orderBy: { processedAt: "desc" } } },
+    include: { appeal: true, events: { orderBy: [{ processedAt: "desc" }, { id: "desc" }] } },
   });
   if (!donation) notFound();
 
