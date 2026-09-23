@@ -194,11 +194,15 @@ describe("manual notification recovery", () => {
         entityId: "notification_123",
         metadata: expect.objectContaining({
           previousAttempts: 5,
-          previousFailureReason: "Email delivery is not configured",
+          hadPreviousFailure: true,
           templateKey: "donation-acknowledgement",
         }),
       }),
     });
+    const recoveryAudit = mocks.createAudit.mock.calls.find(
+      ([arg]) => arg?.data?.action === "notification.manual_requeue",
+    )?.[0];
+    expect(recoveryAudit?.data?.metadata).not.toHaveProperty("previousFailureReason");
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/notifications");
   });
 });
