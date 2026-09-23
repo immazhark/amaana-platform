@@ -218,3 +218,7 @@
 ## Codex phase A — 2026-09-23
 
 Ownership CODEX_ACTIVE. Branch fix/refund-entity-idempotency. Recovery PR #102 merged at 30f157521776a1fadf70d326d1cff44d88e69e1f after PR CI passed. Implement additive refund identity ledger with legacy backfill, atomic accounting and real PostgreSQL concurrency tests. Integration build/deploy certification pending. No production actions.
+
+## Codex phases B/C — 2026-09-23
+
+Ownership CODEX_ACTIVE. Branch fix/private-credential-recovery from 700bd0c202d99b46b1aaaac8e85e5180e4760c25. PR #103 passed route tests, isolated PostgreSQL concurrency/rollback/out-of-order and migration fixtures before merge. Fix stable captured private credentials and extend donor failure/recovery acceptance. Baseline 30f1575 passed 73 staging checks after initial readiness 503 recovered; do not classify transient readiness as permanent health. Newest integration CI/deploy still pending.
