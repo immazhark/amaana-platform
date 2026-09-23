@@ -94,6 +94,11 @@ describe("private document retention deletion", () => {
         entityId: "request_123",
       }),
     }));
+    const deletionAudit = mocks.createAudit.mock.calls.find(
+      ([arg]) => arg?.data?.action === "assistance.document_deleted",
+    )?.[0];
+    expect(deletionAudit?.data?.metadata).not.toHaveProperty("originalName");
+    expect(deletionAudit?.data?.metadata).not.toHaveProperty("objectKey");
   });
 
   it("revalidates a newly placed hold immediately before storage deletion", async () => {
