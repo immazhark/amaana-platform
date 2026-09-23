@@ -57,7 +57,6 @@ export async function reviewDocumentRetention(formData: FormData) {
       id: true,
       assistanceRequestId: true,
       objectKey: true,
-      originalName: true,
       mimeType: true,
       sizeBytes: true,
       assistanceRequest: {
@@ -159,7 +158,6 @@ export async function reviewDocumentRetention(formData: FormData) {
         entityId: document.assistanceRequestId,
         metadata: {
           documentId,
-          originalName: document.originalName,
           mimeType: document.mimeType,
           sizeBytes: document.sizeBytes,
           reason,
