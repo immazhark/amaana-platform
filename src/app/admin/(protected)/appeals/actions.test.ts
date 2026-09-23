@@ -52,7 +52,7 @@ describe("appeal concurrent mutation guards", () => {
     mocks.hasPermission.mockReturnValue(true);
     mocks.auditCreate.mockResolvedValue({ id: "audit" });
     mocks.updateManyAppeal.mockResolvedValue({ count: 1 });
-    (globalThis as typeof globalThis & { __appealTx: unknown }).__appealTx = { appeal: { findUniqueOrThrow: mocks.appealFind, update: mocks.updateAppeal, updateMany: mocks.updateManyAppeal }, auditEvent: { create: mocks.auditCreate } };
+    (globalThis as typeof globalThis & { __appealTx: unknown }).__appealTx = { appeal: { findUniqueOrThrow: mocks.appealFind, update: mocks.updateAppeal, updateMany: mocks.updateManyAppeal }, appealUpdate: { findUniqueOrThrow: mocks.updateFind, create: mocks.updateCreate, update: mocks.updateUpdate, updateMany: mocks.updateManyUpdate }, auditEvent: { create: mocks.auditCreate } };
   });
 
   it("rejects a status transition when the appeal changed after review", async () => {
@@ -84,7 +84,7 @@ describe("appeal update publication recovery", () => {
     mocks.transaction.mockResolvedValue([]);
     mocks.updateManyUpdate.mockResolvedValue({ count: 1 });
     mocks.hasPermission.mockReturnValue(true);
-    (globalThis as typeof globalThis & { __appealTx: unknown }).__appealTx = { appeal: { findUniqueOrThrow: mocks.appealFind, update: mocks.updateAppeal, updateMany: mocks.updateManyAppeal }, auditEvent: { create: mocks.auditCreate } };
+    (globalThis as typeof globalThis & { __appealTx: unknown }).__appealTx = { appeal: { findUniqueOrThrow: mocks.appealFind, update: mocks.updateAppeal, updateMany: mocks.updateManyAppeal }, appealUpdate: { findUniqueOrThrow: mocks.updateFind, create: mocks.updateCreate, update: mocks.updateUpdate, updateMany: mocks.updateManyUpdate }, auditEvent: { create: mocks.auditCreate } };
   });
 
   it("rechecks public-update eligibility at creation inside the serialized boundary", async () => {
@@ -148,7 +148,7 @@ describe("appeal update publication recovery", () => {
 
     expect(mocks.updateManyUpdate).toHaveBeenCalledWith({ where: { id: "update-1", appealId: "appeal-1", isPublic: true }, data: { isPublic: false, publishedAt: null } });
     expect(mocks.auditCreate).toHaveBeenCalledWith({ data: expect.objectContaining({ action: "appeal.update_unpublished", entityId: "appeal-1" }) });
-    expect(mocks.transaction).toHaveBeenCalledTimes(1);
+    expect(mocks.updateManyUpdate).toHaveBeenCalledTimes(1);
   });
 
   it("rejects repeat unpublication of an internal update", async () => {
