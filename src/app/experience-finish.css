@@ -8,7 +8,7 @@ main{overflow:clip}.container,.v3-shell{padding-inline:max(0px,env(safe-area-ins
 .site-header .nav{gap:1rem}.brand-official{min-width:4.25rem;min-height:4.25rem}.brand-lockup{display:block;max-width:4rem;height:auto}.nav-link{min-height:2.75rem;display:inline-flex;align-items:center}.nav-donate{min-height:3.25rem;padding-inline:1.2rem}.menu-toggle{min-width:2.85rem;min-height:2.85rem;place-items:center}.menu-toggle span{line-height:1;font-size:1.35rem}.mobile-menu-inner{padding-block:1.4rem 1.75rem}.mobile-menu-primary{display:grid}.mobile-menu-primary a{padding-block:.8rem;border-bottom:1px solid rgb(18 34 57 / 8%)}.mobile-menu-secondary{padding-top:1rem}.mobile-menu-secondary a{min-height:2.75rem;display:inline-flex;align-items:center}
 
 /* Switch the complete navigation together before labels crowd tablet widths. */
-@media(max-width:1020px){.site-header .nav-links{display:none}.site-header .menu-toggle{display:grid}.site-header .mobile-menu.open{display:block;max-height:calc(100dvh - 5.2rem);overflow-y:auto;overscroll-behavior:contain}}
+@media(max-width:1020px){.site-header .nav-links{display:none}.site-header .menu-toggle{display:grid}.site-header .mobile-menu.open{display:block;max-height:calc(100vh - 7.2rem);max-height:calc(100dvh - 7.2rem);overflow-y:auto;overscroll-behavior:contain}}
 
 /* Proof strip: clearer baseline and stronger grouping */
 .v3-proof-grid{align-items:stretch}.v3-proof-item{display:flex;min-height:9rem;flex-direction:column;justify-content:center}.v3-proof-item strong{font-variant-numeric:tabular-nums}.v3-proof-item span{max-width:17rem}
