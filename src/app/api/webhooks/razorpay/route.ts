@@ -298,7 +298,7 @@ export async function POST(request: Request) {
       }
     }
 
-    console.error("Razorpay webhook failed", error);
+    console.error("Razorpay webhook failed", { eventType: receivedEventType ?? "unknown", hasProviderEventId: Boolean(providerEventId) });
     return new NextResponse("Webhook processing failed", { status: 500 });
   }
 }
