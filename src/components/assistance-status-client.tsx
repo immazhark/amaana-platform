@@ -1,8 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState, useSyncExternalStore } from "react";
-import { parsePrivateTrackingLocation, privateTrackingFragment } from "@/lib/private-tracking";
+import { useEffect, useState } from "react";
+import { parsePrivateTrackingLocation, type PrivateTrackingCredentials } from "@/lib/private-tracking";
 
 type TrackingRecord = {
   found: true;
@@ -12,10 +12,6 @@ type TrackingRecord = {
 };
 
 type TrackingResponse = TrackingRecord | { found: false };
-
-const subscribeLocation = () => () => undefined;
-const serverLocation = () => "__server__";
-const browserLocation = () => `${window.location.search}\n${window.location.hash}`;
 
 const statusLabels: Record<string, string> = {
   SUBMITTED: "Submitted",
@@ -38,23 +34,19 @@ const statusCopy: Record<string, string> = {
 };
 
 export function AssistanceStatusClient() {
-  const locationSnapshot = useSyncExternalStore(subscribeLocation, browserLocation, serverLocation);
-  const hydrated = locationSnapshot !== "__server__";
-  const [search = "", hash = ""] = hydrated ? locationSnapshot.split("\n", 2) : ["", ""];
-  const credentials = hydrated ? parsePrivateTrackingLocation(search, hash) : null;
+  const [credentials, setCredentials] = useState<PrivateTrackingCredentials | null | undefined>(undefined);
   const [record, setRecord] = useState<TrackingRecord | null | undefined>(undefined);
 
   useEffect(() => {
-    if (!credentials) return;
-    if (search) {
-      window.history.replaceState(null, "", `${window.location.pathname}${privateTrackingFragment(credentials)}`);
+    const captured = parsePrivateTrackingLocation(window.location.search, window.location.hash);
+    setCredentials(captured);
+    if (window.location.search || window.location.hash) {
+      window.history.replaceState(null, "", window.location.pathname);
     }
+  }, []);
 
-    // Fragments keep the token out of HTTP requests/referrers, but they can
-    // still remain in browser history or screenshots. Once credentials are
-    // captured in component state for this request, remove them from the
-    // address bar entirely.
-    window.history.replaceState(null, "", window.location.pathname);
+  useEffect(() => {
+    if (!credentials) return;
 
     const controller = new AbortController();
     void fetch("/api/assistance/status", {
@@ -71,9 +63,9 @@ export function AssistanceStatusClient() {
       });
 
     return () => controller.abort();
-  }, [credentials, search]);
+  }, [credentials]);
 
-  const loading = !hydrated || (Boolean(credentials) && record === undefined);
+  const loading = credentials === undefined || (Boolean(credentials) && record === undefined);
   const title = loading
     ? "Checking your private request…"
     : record
