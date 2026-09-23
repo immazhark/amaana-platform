@@ -120,15 +120,57 @@ describe("admin media deletion", () => {
     expect(mocks.transaction).not.toHaveBeenCalled();
   });
 
+  it("blocks deletion if another admin republishes the media before storage mutation", async () => {
+    mocks.findUniqueOrThrow
+      .mockResolvedValueOnce({
+        id: "media_123", isPublic: false,
+        storageKey: "2026/11111111-1111-4111-8111-111111111111.jpg",
+        publicUrl: "https://cdn.example/media.jpg", title: "Unpublished", sourcePath: "IMG.jpg",
+      })
+      .mockResolvedValueOnce({
+        isPublic: true,
+        storageKey: "2026/11111111-1111-4111-8111-111111111111.jpg",
+        publicUrl: "https://cdn.example/media.jpg",
+      });
+
+    await expect(deleteMediaAsset(deletionForm())).rejects.toThrow(/published while you were reviewing/i);
+    expect(mocks.deletePublicMediaObject).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+  });
+
+  it("blocks deletion if the managed object changes before storage mutation", async () => {
+    mocks.findUniqueOrThrow
+      .mockResolvedValueOnce({
+        id: "media_123", isPublic: false,
+        storageKey: "2026/old.jpg", publicUrl: "https://cdn.example/old.jpg",
+        title: "Unpublished", sourcePath: "IMG.jpg",
+      })
+      .mockResolvedValueOnce({
+        isPublic: false,
+        storageKey: "2026/replacement.jpg",
+        publicUrl: "https://cdn.example/replacement.jpg",
+      });
+
+    await expect(deleteMediaAsset(deletionForm())).rejects.toThrow(/changed while you were reviewing/i);
+    expect(mocks.deletePublicMediaObject).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+  });
+
   it("deletes managed storage before atomically removing an unpublished record and recording the audit", async () => {
-    mocks.findUniqueOrThrow.mockResolvedValue({
-      id: "media_123",
-      isPublic: false,
-      storageKey: "2026/11111111-1111-4111-8111-111111111111.jpg",
-      publicUrl: "https://cdn.example/media.jpg",
-      title: "Unpublished",
-      sourcePath: "IMG.jpg",
-    });
+    mocks.findUniqueOrThrow
+      .mockResolvedValueOnce({
+        id: "media_123",
+        isPublic: false,
+        storageKey: "2026/11111111-1111-4111-8111-111111111111.jpg",
+        publicUrl: "https://cdn.example/media.jpg",
+        title: "Unpublished",
+        sourcePath: "IMG.jpg",
+      })
+      .mockResolvedValueOnce({
+        isPublic: false,
+        storageKey: "2026/11111111-1111-4111-8111-111111111111.jpg",
+        publicUrl: "https://cdn.example/media.jpg",
+      });
 
     await deleteMediaAsset(deletionForm());
 
