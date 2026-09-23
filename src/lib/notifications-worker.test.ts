@@ -156,7 +156,19 @@ describe("notification worker flow", () => {
 
     const result = await processPendingEmailNotifications();
     expect(result).toEqual({ selected: 1, sent: 0, failed: 0 });
-    expect(mocks.updateMany).toHaveBeenCalledTimes(5);
+    expect(mocks.updateMany).toHaveBeenCalledTimes(4);
+    expect(mocks.updateMany).toHaveBeenLastCalledWith({
+      where: { id: "notification_1", status: NotificationStatus.PROCESSING, attempts: 1 },
+      data: {
+        status: NotificationStatus.SENT,
+        sentAt: expect.any(Date),
+        providerMessageId: "email_1",
+        failureReason: null,
+      },
+    });
+    expect(mocks.updateMany.mock.calls).not.toContainEqual([
+      expect.objectContaining({ data: expect.objectContaining({ status: NotificationStatus.FAILED }) }),
+    ]);
     expect(mocks.update).not.toHaveBeenCalled();
   });
 
