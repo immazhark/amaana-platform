@@ -66,6 +66,7 @@ export async function reviewDocumentRetention(formData: FormData) {
       objectKey: true,
       mimeType: true,
       sizeBytes: true,
+      updatedAt: true,
       assistanceRequest: {
         select: {
           referenceNumber: true,
@@ -127,6 +128,7 @@ export async function reviewDocumentRetention(formData: FormData) {
       select: {
         assistanceRequestId: true,
         objectKey: true,
+        updatedAt: true,
         assistanceRequest: {
           select: {
             status: true,
@@ -136,7 +138,8 @@ export async function reviewDocumentRetention(formData: FormData) {
       },
     });
     if (deletionSnapshot.assistanceRequestId !== document.assistanceRequestId ||
-        deletionSnapshot.objectKey !== document.objectKey) {
+        deletionSnapshot.objectKey !== document.objectKey ||
+        deletionSnapshot.updatedAt.getTime() !== document.updatedAt.getTime()) {
       throw new Error("This evidence record changed while you were reviewing it. Refresh before deleting.");
     }
     if (await currentLegalHold(documentId)) {
@@ -146,6 +149,14 @@ export async function reviewDocumentRetention(formData: FormData) {
     const stillClosedLinkedAppeal = deletionSnapshot.assistanceRequest.appeal?.status === "CLOSED";
     if (!stillTerminal && !stillClosedLinkedAppeal) {
       throw new Error("The request or linked appeal changed while you were reviewing it. Refresh before deleting.");
+    }
+
+    const claimed = await prisma.assistanceDocument.updateMany({
+      where: { id: documentId, objectKey: document.objectKey, updatedAt: deletionSnapshot.updatedAt },
+      data: { updatedAt: new Date() },
+    });
+    if (claimed.count !== 1) {
+      throw new Error("This evidence record changed while you were reviewing it. Refresh before deleting.");
     }
 
     await prisma.auditEvent.create({
