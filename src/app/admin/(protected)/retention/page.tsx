@@ -1,15 +1,35 @@
 import Link from "next/link";
+import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { reviewDocumentRetention } from "./actions";
 
 type EventMetadata = { documentId?: string; decision?: string; reason?: string; reviewAfter?: string | null };
 
-export default async function RetentionReviewPage() {
-  await requirePermission("assistance.approve");
+type Props = { searchParams: Promise<{ state?: string; page?: string }> };
 
-  const [documents, events] = await Promise.all([
-    prisma.assistanceDocument.findMany({
+export default async function RetentionReviewPage({ searchParams }: Props) {
+  await requirePermission("assistance.approve");
+  const { state, page: pageParam } = await searchParams;
+  const selectedState = state === "active" || state === "eligible" ? state : undefined;
+  const terminalWhere = {
+    OR: [
+      { assistanceRequest: { status: { in: ["CLOSED", "REJECTED"] as const } } },
+      { assistanceRequest: { appeal: { status: "CLOSED" as const } } },
+    ],
+  };
+  const where = selectedState === "eligible"
+    ? terminalWhere
+    : selectedState === "active"
+      ? { NOT: terminalWhere }
+      : undefined;
+  const [totalItems, totalDocuments, eligibleDocuments] = await Promise.all([
+    prisma.assistanceDocument.count({ where }),
+    prisma.assistanceDocument.count(),
+    prisma.assistanceDocument.count({ where: terminalWhere }),
+  ]);
+  const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
+  const documents = await prisma.assistanceDocument.findMany({
       include: {
         assistanceRequest: {
           select: {
@@ -23,10 +43,13 @@ export default async function RetentionReviewPage() {
         },
       },
       orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-    }),
-    prisma.auditEvent.findMany({
+      skip: pagination.skip,
+      take: pagination.pageSize,
+    });
+  const events = documents.length === 0 ? [] : await prisma.auditEvent.findMany({
       where: {
         entityType: "AssistanceRequest",
+        entityId: { in: [...new Set(documents.map(document => document.assistanceRequestId))] },
         action: { in: [
           "assistance.document_retention_reviewed",
           "assistance.document_legal_hold_placed",
@@ -36,8 +59,13 @@ export default async function RetentionReviewPage() {
       },
       include: { actor: { select: { name: true } } },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    }),
-  ]);
+    });
+
+  const activeDocuments = Math.max(0, totalDocuments - eligibleDocuments);
+  const pageHref = (targetPage: number) => ({
+    pathname: "/admin/retention",
+    query: { ...(selectedState ? { state: selectedState } : {}), page: targetPage },
+  });
 
   const documentEvents = new Map<string, typeof events>();
   for (const event of events) {
@@ -49,7 +77,7 @@ export default async function RetentionReviewPage() {
   }
 
   return <>
-    <div className="admin-heading"><div><p className="eyebrow">Data minimisation</p><h1>Retention review</h1><p className="lead">Review private beneficiary evidence after its operational purpose changes. No fixed deletion period is applied until Amaana&apos;s CA/legal/safeguarding retention schedules are confirmed.</p></div><span className="status-badge">{documents.length} private files</span></div>
+    <div className="admin-heading"><div><p className="eyebrow">Data minimisation</p><h1>Retention review</h1><p className="lead">Review private beneficiary evidence after its operational purpose changes. No fixed deletion period is applied until Amaana&apos;s CA/legal/safeguarding retention schedules are confirmed.</p></div><span className="status-badge">{totalDocuments} private files</span></div>
 
     <section className="admin-card" style={{ marginBottom: "2rem" }}>
       <h2>Retention rules applied here</h2>
@@ -61,7 +89,13 @@ export default async function RetentionReviewPage() {
     </section>
 
     <section className="admin-card">
-      <div className="admin-heading"><div><p className="eyebrow">Private evidence</p><h2>Assistance documents</h2></div></div>
+      <div className="admin-heading"><div><p className="eyebrow">Private evidence</p><h2>Assistance documents</h2></div><span className="status-badge">{pagination.totalItems} in view</span></div>
+      <div className="filter-row" aria-label="Retention eligibility filter">
+        <strong>Workflow state:</strong>
+        <Link href="/admin/retention" aria-current={!selectedState ? "page" : undefined}>All ({totalDocuments})</Link>
+        <Link href="/admin/retention?state=eligible" aria-current={selectedState === "eligible" ? "page" : undefined}>Review eligible ({eligibleDocuments})</Link>
+        <Link href="/admin/retention?state=active" aria-current={selectedState === "active" ? "page" : undefined}>Active case ({activeDocuments})</Link>
+      </div>
       {documents.length === 0 ? <p className="empty-state">No private assistance documents are currently stored.</p> : <div className="admin-media-list">{documents.map(document => {
         const history = documentEvents.get(document.id) ?? [];
         const latestHoldEvent = history.find(event => ["assistance.document_legal_hold_placed", "assistance.document_legal_hold_released"].includes(event.action));
@@ -93,6 +127,11 @@ export default async function RetentionReviewPage() {
           </form>
         </article>;
       })}</div>}
+      <nav className="filter-row" aria-label="Retention pagination">
+        {pagination.hasPrevious && <Link href={pageHref(pagination.page - 1)}>Previous</Link>}
+        <span>Page {pagination.page} of {pagination.totalPages} · {pagination.totalItems} records</span>
+        {pagination.hasNext && <Link href={pageHref(pagination.page + 1)}>Next</Link>}
+      </nav>
     </section>
   </>;
 }
