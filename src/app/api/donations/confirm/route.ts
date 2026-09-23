@@ -101,7 +101,7 @@ export async function POST(request: Request) {
       { headers: privateHeaders },
     );
   } catch (error) {
-    console.error("Donation confirmation failed", error);
+    console.error("Donation confirmation failed");
     return NextResponse.json(
       { error: "Payment is being verified. Please retain your payment confirmation." },
       { status: 500, headers: privateHeaders },
