@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   updateFind: vi.fn(),
   updateCreate: vi.fn(),
   updateUpdate: vi.fn(),
+  updateManyUpdate: vi.fn(),
   auditCreate: vi.fn(),
   transaction: vi.fn(),
   updateAppeal: vi.fn(),
@@ -20,7 +21,7 @@ vi.mock("@/lib/auth", () => ({
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     appeal: { findUniqueOrThrow: mocks.appealFind, update: mocks.updateAppeal, updateMany: mocks.updateManyAppeal },
-    appealUpdate: { findUniqueOrThrow: mocks.updateFind, create: mocks.updateCreate, update: mocks.updateUpdate },
+    appealUpdate: { findUniqueOrThrow: mocks.updateFind, create: mocks.updateCreate, update: mocks.updateUpdate, updateMany: mocks.updateManyUpdate },
     auditEvent: { create: mocks.auditCreate },
     $transaction: mocks.transaction,
   },
@@ -81,8 +82,30 @@ describe("appeal update publication recovery", () => {
     mocks.requirePermission.mockResolvedValue({ id: "approver" });
     mocks.appealFind.mockResolvedValue({ slug: "appeal-slug", status: "PUBLISHED", assistanceRequest: null });
     mocks.transaction.mockResolvedValue([]);
+    mocks.updateManyUpdate.mockResolvedValue({ count: 1 });
     mocks.hasPermission.mockReturnValue(true);
     (globalThis as typeof globalThis & { __appealTx: unknown }).__appealTx = { appeal: { findUniqueOrThrow: mocks.appealFind, update: mocks.updateAppeal, updateMany: mocks.updateManyAppeal }, auditEvent: { create: mocks.auditCreate } };
+  });
+
+  it("rechecks appeal publication eligibility inside the serialized publish boundary", async () => {
+    mocks.appealFind
+      .mockResolvedValueOnce({ slug: "appeal-slug", status: "PUBLISHED", assistanceRequest: null })
+      .mockResolvedValueOnce({ status: "PAUSED", assistanceRequest: null });
+    mocks.updateFind
+      .mockResolvedValueOnce({ appealId: "appeal-1", isPublic: false })
+      .mockResolvedValueOnce({ appealId: "appeal-1", isPublic: false });
+
+    await expect(publishAppealUpdate(form({ appealId: "appeal-1", updateId: "update-1", privacyReviewed: "on" }))).rejects.toThrow(/cannot be published/i);
+    expect(mocks.updateManyUpdate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
+  it("fails closed when an update publication claim loses a race", async () => {
+    mocks.updateFind.mockResolvedValue({ appealId: "appeal-1", isPublic: false });
+    mocks.updateManyUpdate.mockResolvedValue({ count: 0 });
+
+    await expect(publishAppealUpdate(form({ appealId: "appeal-1", updateId: "update-1", privacyReviewed: "on" }))).rejects.toThrow(/changed while you were reviewing/i);
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
 
   it("rejects repeat publication instead of resetting the publication timestamp", async () => {
@@ -106,7 +129,7 @@ describe("appeal update publication recovery", () => {
 
     await unpublishAppealUpdate(form({ appealId: "appeal-1", updateId: "update-1" }));
 
-    expect(mocks.updateUpdate).toHaveBeenCalledWith({ where: { id: "update-1" }, data: { isPublic: false, publishedAt: null } });
+    expect(mocks.updateManyUpdate).toHaveBeenCalledWith({ where: { id: "update-1", appealId: "appeal-1", isPublic: true }, data: { isPublic: false, publishedAt: null } });
     expect(mocks.auditCreate).toHaveBeenCalledWith({ data: expect.objectContaining({ action: "appeal.update_unpublished", entityId: "appeal-1" }) });
     expect(mocks.transaction).toHaveBeenCalledTimes(1);
   });
