@@ -128,6 +128,38 @@ describe("media publication concurrency", () => {
     expect(mocks.createAudit).not.toHaveBeenCalled();
   });
 
+  it("atomically unpublishes and audits a currently public asset", async () => {
+    const updatedAt = new Date("2026-09-23T00:00:00.000Z");
+    mocks.findUniqueOrThrow
+      .mockResolvedValueOnce({ id: "media_123", kind: "IMAGE", isPublic: true, publicUrl: "https://cdn.example/media.jpg", altText: "Documentary image", sortOrder: 0 })
+      .mockResolvedValueOnce({ isPublic: true, updatedAt });
+    const formData = new FormData();
+    formData.set("id", "media_123");
+    formData.set("publish", "false");
+
+    await setMediaPublication(formData);
+
+    expect(mocks.updateMany).toHaveBeenCalledWith({
+      where: { id: "media_123", isPublic: true, updatedAt },
+      data: { isPublic: false, privacyApprovedAt: null },
+    });
+    expect(mocks.createAudit).toHaveBeenCalledWith({ data: expect.objectContaining({ action: "media.unpublished", entityId: "media_123" }) });
+  });
+
+  it("does not duplicate an unpublication audit when another admin wins the race", async () => {
+    const updatedAt = new Date("2026-09-23T00:00:00.000Z");
+    mocks.findUniqueOrThrow
+      .mockResolvedValueOnce({ id: "media_123", kind: "IMAGE", isPublic: true, publicUrl: "https://cdn.example/media.jpg", altText: "Documentary image", sortOrder: 0 })
+      .mockResolvedValueOnce({ isPublic: true, updatedAt });
+    mocks.updateMany.mockResolvedValueOnce({ count: 0 });
+    const formData = new FormData();
+    formData.set("id", "media_123");
+    formData.set("publish", "false");
+
+    await expect(setMediaPublication(formData)).rejects.toThrow(/changed while you were reviewing/i);
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+  });
+
   it("fails closed when the reviewed media changes before the publication claim", async () => {
     const updatedAt = new Date("2026-09-23T00:00:00.000Z");
     mocks.findUniqueOrThrow
