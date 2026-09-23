@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { publicFaithWhere } from "@/lib/faith-publication";
 import { prisma } from "@/lib/prisma";
 import { PUBLIC_STATIC_ROUTES } from "@/lib/public-routing";
 import { shouldAllowIndexing } from "@/lib/site-indexing";
@@ -43,7 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       select: { slug: true, updatedAt: true },
     }),
     prisma.faithContent.findMany({
-      where: { status: "PUBLISHED", religiousReviewStatus: "VERIFIED" },
+      where: publicFaithWhere,
       select: { slug: true, updatedAt: true },
     }),
   ]);
