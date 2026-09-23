@@ -217,6 +217,31 @@ test('navigation marks current primary, support and secondary routes consistentl
   await expect(mobileNav.getByRole('link', { name: 'Governance' })).not.toHaveAttribute('aria-current', 'page');
 });
 
+test('canonical continuation routes expose unique internal destinations on partner and recognition pages', async ({ page }) => {
+  const expected = {
+    '/partner': ['/how-we-verify', '/transparency', '/get-involved'],
+    '/recognition': ['/governance', '/transparency', '/our-work'],
+  };
+
+  for (const [path, destinations] of Object.entries(expected)) {
+    await openPublicPage(page, path);
+
+    const continuation = page.getByRole('navigation', { name: 'Continue exploring Amaana' });
+    await expect(continuation).toBeVisible();
+
+    const hrefs = await continuation.locator('a').evaluateAll(links =>
+      links.map(link => link.getAttribute('href')).filter(Boolean),
+    );
+
+    expect(hrefs, `${path} should expose the expected continuation routes`).toEqual(destinations);
+    expect(new Set(hrefs).size, `${path} continuation routes must be unique`).toBe(hrefs.length);
+    expect(
+      hrefs.every(href => href.startsWith('/') && !href.startsWith('//') && !/\s/.test(href)),
+      `${path} continuation routes must remain safe internal paths`,
+    ).toBe(true);
+  }
+});
+
 test('mobile navigation backdrop dismisses the menu without entering keyboard order', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openPublicPage(page, '/about');

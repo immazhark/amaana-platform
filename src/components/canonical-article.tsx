@@ -31,8 +31,42 @@ type CanonicalArticleProps = {
   pathways?: ArticlePathway[];
 };
 
-function hasMeaningfulBlockContent(block: ArticleBlock) {
-  return Boolean(block.paragraphs?.some(paragraph => paragraph.trim()) || block.items?.some(item => item.trim()));
+function normalizedNonEmpty(values?: string[]) {
+  return values?.map(value => value.trim()).filter((value): value is string => value.length > 0);
+}
+
+function normalizeBlocks(blocks: ArticleBlock[]) {
+  return blocks
+    .map(block => ({
+      ...block,
+      title: block.title.trim(),
+      paragraphs: normalizedNonEmpty(block.paragraphs),
+      items: normalizedNonEmpty(block.items),
+    }))
+    .filter(block => block.title.length > 0 && Boolean(block.paragraphs?.length || block.items?.length));
+}
+
+function isSafeInternalPathwayHref(href: string) {
+  return href.startsWith("/") && !href.startsWith("//") && !/\s/.test(href);
+}
+
+function normalizePathways(pathways?: ArticlePathway[]) {
+  if (!pathways?.length) return [];
+
+  const seen = new Set<string>();
+  return pathways
+    .map(pathway => ({
+      label: pathway.label.trim(),
+      href: pathway.href.trim(),
+      description: pathway.description.trim(),
+    }))
+    .filter(pathway => {
+      if (!pathway.label || !pathway.description || !isSafeInternalPathwayHref(pathway.href) || seen.has(pathway.href)) {
+        return false;
+      }
+      seen.add(pathway.href);
+      return true;
+    });
 }
 
 export function CanonicalArticle({
@@ -50,8 +84,8 @@ export function CanonicalArticle({
   bodyId,
   pathways,
 }: CanonicalArticleProps) {
-  const visibleBlocks = blocks.filter(block => block.title.trim() && hasMeaningfulBlockContent(block));
-  const visiblePathways = pathways?.filter(pathway => pathway.label.trim() && pathway.href.trim() && pathway.description.trim()) ?? [];
+  const visibleBlocks = normalizeBlocks(blocks);
+  const visiblePathways = normalizePathways(pathways);
 
   return (
     <div className="v2-home canonical-article">
@@ -81,8 +115,8 @@ export function CanonicalArticle({
             >
               <h2>{block.title}</h2>
               <div>
-                {block.paragraphs?.filter(Boolean).map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{paragraph}</p>)}
-                {block.items && <ul>{block.items.filter(Boolean).map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}</ul>}
+                {block.paragraphs?.map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{paragraph}</p>)}
+                {block.items?.length ? <ul>{block.items.map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}</ul> : null}
               </div>
             </section>
           ))}
