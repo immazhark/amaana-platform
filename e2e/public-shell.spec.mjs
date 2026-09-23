@@ -80,6 +80,14 @@ test.describe('representative public accessibility', () => {
 });
 
 
+test('Stories journal CTA resolves to a real in-page target', async ({ page }) => {
+  await openPublicPage(page, '/stories');
+
+  const journalLink = page.getByRole('link', { name: 'Enter the journal' });
+  await expect(journalLink).toHaveAttribute('href', '#journal');
+  await expect(page.locator('#journal')).toHaveCount(1);
+});
+
 test('unknown public routes return a branded, navigable and noindex 404', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const response = await page.goto('/definitely-not-an-amaana-route', { waitUntil: 'domcontentloaded' });
