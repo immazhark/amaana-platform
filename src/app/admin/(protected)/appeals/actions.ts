@@ -46,6 +46,9 @@ export async function updateAppeal(formData: FormData) {
 
 export async function transitionAppeal(formData: FormData) {
   const user = await requirePermission("appeal.update"); const id = String(formData.get("id")); const next = String(formData.get("status")) as AppealStatus;
+  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "").trim();
+  const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
+  if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Appeal workflow version is missing or invalid. Refresh before changing status.");
   const current = await prisma.appeal.findUniqueOrThrow({ where: { id }, include: { assistanceRequest: { include: { verification: true } } } });
   if (!transitions[current.status].includes(next)) throw new Error("Invalid appeal status transition");
   const approvalTransition = ["PUBLISHED", "PAUSED", "FUNDED", "CLOSED", "REJECTED"].includes(next);
@@ -54,12 +57,12 @@ export async function transitionAppeal(formData: FormData) {
   if (publicationIssues.length) throw new Error(`Appeal cannot be published: ${publicationIssues.join(" ")}`);
   await withSerializableTransactionRetry(async tx => {
     const fresh = await tx.appeal.findUniqueOrThrow({ where: { id }, include: { assistanceRequest: { include: { verification: true } } } });
-    if (fresh.status !== current.status) throw new Error("This appeal changed while you were reviewing it. Refresh before changing status.");
+    if (fresh.status !== current.status || fresh.updatedAt.getTime() !== expectedUpdatedAt.getTime()) throw new Error("This appeal changed while you were reviewing it. Refresh before changing status.");
     if (!transitions[fresh.status].includes(next)) throw new Error("Invalid appeal status transition");
     const freshPublicationIssues = getFirstPublicationIssues({ fromStatus: fresh.status, toStatus: next, goalAmount: fresh.goalAmount, verification: fresh.assistanceRequest?.verification, beneficiaryDisplayName: fresh.beneficiaryDisplayName, coverImageUrl: fresh.coverImageUrl });
     if (freshPublicationIssues.length) throw new Error(`Appeal cannot be published: ${freshPublicationIssues.join(" ")}`);
     const updated = await tx.appeal.updateMany({
-      where: { id, status: current.status },
+      where: { id, status: current.status, updatedAt: expectedUpdatedAt },
       data: { status: next, reviewedById: approvalTransition ? user.id : fresh.reviewedById, publishedAt: next === "PUBLISHED" && !fresh.publishedAt ? new Date() : fresh.publishedAt },
     });
     if (updated.count !== 1) throw new Error("This appeal changed while you were reviewing it. Refresh before changing status.");
@@ -70,13 +73,18 @@ export async function transitionAppeal(formData: FormData) {
 
 export async function updateFeaturing(formData: FormData) {
   const user = await requirePermission("appeal.approve"); const id = String(formData.get("id")); const isFeatured = formData.get("isFeatured") === "on"; const featuredOrderValue = Number(formData.get("featuredOrder"));
+  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "").trim();
+  const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
+  if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Appeal featuring version is missing or invalid. Refresh before saving.");
   const appeal = await prisma.appeal.findUniqueOrThrow({ where: { id }, select: { status: true } });
   if (isFeatured && appeal.status !== "PUBLISHED") throw new Error("Only an actively published appeal can be featured");
   if (isFeatured && (!Number.isInteger(featuredOrderValue) || featuredOrderValue < 1)) throw new Error("Featured display order must be a positive whole number");
   await withSerializableTransactionRetry(async tx => {
-    const fresh = await tx.appeal.findUniqueOrThrow({ where: { id }, select: { status: true, isFeatured: true, featuredOrder: true } });
+    const fresh = await tx.appeal.findUniqueOrThrow({ where: { id }, select: { status: true, isFeatured: true, featuredOrder: true, updatedAt: true } });
+    if (fresh.updatedAt.getTime() !== expectedUpdatedAt.getTime()) throw new Error("This appeal changed while you were reviewing it. Refresh before saving featuring.");
     if (isFeatured && fresh.status !== "PUBLISHED") throw new Error("This appeal is no longer actively published. Refresh before featuring it.");
-    await tx.appeal.update({ where: { id }, data: { isFeatured, featuredOrder: isFeatured ? featuredOrderValue : null } });
+    const claimed = await tx.appeal.updateMany({ where: { id, updatedAt: expectedUpdatedAt }, data: { isFeatured, featuredOrder: isFeatured ? featuredOrderValue : null } });
+    if (claimed.count !== 1) throw new Error("This appeal changed while you were reviewing it. Refresh before saving featuring.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.featuring_updated", entityType: "Appeal", entityId: id, metadata: { previousIsFeatured: fresh.isFeatured, previousFeaturedOrder: fresh.featuredOrder, isFeatured, featuredOrder: isFeatured ? featuredOrderValue : null } } });
   });
   revalidatePath(`/admin/appeals/${id}`); revalidatePath("/appeals"); revalidatePath("/");
