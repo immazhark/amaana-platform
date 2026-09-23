@@ -37,7 +37,7 @@ vi.mock("@/lib/appeal-update-publication", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import { addAppealUpdate, publishAppealUpdate, transitionAppeal, unpublishAppealUpdate, updateFeaturing } from "./actions";
+import { addAppealUpdate, publishAppealUpdate, transitionAppeal, unpublishAppealUpdate, updateAppeal, updateFeaturing } from "./actions";
 
 function form(values: Record<string, string>) {
   const data = new FormData();
@@ -53,6 +53,27 @@ describe("appeal concurrent mutation guards", () => {
     mocks.auditCreate.mockResolvedValue({ id: "audit" });
     mocks.updateManyAppeal.mockResolvedValue({ count: 1 });
     (globalThis as typeof globalThis & { __appealTx: unknown }).__appealTx = { appeal: { findUniqueOrThrow: mocks.appealFind, update: mocks.updateAppeal, updateMany: mocks.updateManyAppeal }, appealUpdate: { findUniqueOrThrow: mocks.updateFind, create: mocks.updateCreate, update: mocks.updateUpdate, updateMany: mocks.updateManyUpdate }, auditEvent: { create: mocks.auditCreate } };
+  });
+
+  it("rejects a stale same-status content edit using the rendered appeal version", async () => {
+    const renderedAt = new Date("2026-09-23T04:00:00.000Z");
+    const newerAt = new Date("2026-09-23T04:01:00.000Z");
+    mocks.appealFind
+      .mockResolvedValueOnce({ status: "DRAFT", updatedAt: newerAt, assistanceRequest: null })
+      .mockResolvedValueOnce({ status: "DRAFT", updatedAt: newerAt, assistanceRequest: null });
+
+    await expect(updateAppeal(form({
+      id: "appeal-1",
+      expectedUpdatedAt: renderedAt.toISOString(),
+      title: "Verified medical support",
+      slug: "verified-medical-support",
+      summary: "A sufficiently detailed verified appeal summary.",
+      story: "A sufficiently detailed verified public appeal story for review.",
+      goalAmount: "1000",
+      category: "MEDICAL",
+    }))).rejects.toThrow(/changed while you were reviewing/i);
+    expect(mocks.updateManyAppeal).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
 
   it("rejects a status transition when the appeal changed after review", async () => {
