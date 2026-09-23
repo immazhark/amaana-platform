@@ -145,8 +145,7 @@ export async function POST(request: Request) {
       cleanupResults.forEach((result, index) => {
         if (result.status === "rejected") {
           console.error("Assistance private-document cleanup failed", {
-            objectKey: documents[index]?.objectKey,
-            error: result.reason,
+            documentIndex: index,
           });
         }
       });
