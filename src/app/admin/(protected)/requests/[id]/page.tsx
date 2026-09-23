@@ -79,6 +79,8 @@ export default async function RequestDetailPage({ params }: Props) {
           <p className="muted">Record verification, funding checks, disclosure permissions and Zakat review here. This information is internal and is not copied automatically into public appeal text.</p>
           <form action={saveVerification} className="field">
             <input type="hidden" name="id" value={id}/>
+            <input type="hidden" name="expectedRequestUpdatedAt" value={request.updatedAt.toISOString()}/>
+            <input type="hidden" name="expectedVerificationUpdatedAt" value={verification?.updatedAt.toISOString() ?? ""}/>
 
             <label htmlFor="confidentialityLevel">Confidentiality level</label>
             <select id="confidentialityLevel" name="confidentialityLevel" defaultValue={verification?.confidentialityLevel ?? "CONFIDENTIAL"} disabled={verificationLocked}>
@@ -163,6 +165,7 @@ export default async function RequestDetailPage({ params }: Props) {
           <h2>Review</h2>
           <form action={updateRequest} className="field">
             <input type="hidden" name="id" value={id}/>
+            <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
             <label htmlFor="status">Status</label>
             <select id="status" name="status" defaultValue={request.status} disabled={converted}>{visibleStatuses.map(status => <option key={status} value={status}>{status.replaceAll("_", " ")}</option>)}</select>
             {converted && <input type="hidden" name="status" value="CONVERTED_TO_APPEAL"/>}
