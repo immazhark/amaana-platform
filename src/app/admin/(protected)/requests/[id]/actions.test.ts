@@ -124,7 +124,7 @@ describe("assistance admin concurrency guards", () => {
     mocks.requestFind.mockResolvedValue({
       id: "request-1",
       appealId: null,
-      status: AssistanceStatus.UNDER_REVIEW,
+      status: AssistanceStatus.UNDER_VERIFICATION,
       verification: { completedAt: null },
     });
     mocks.requestFindFirst.mockResolvedValue({
