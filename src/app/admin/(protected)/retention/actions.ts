@@ -32,7 +32,7 @@ async function latestLegalHoldEvent(documentId: string, db: Pick<typeof prisma, 
       metadata: { path: ["documentId"], equals: documentId },
     },
     orderBy: { createdAt: "desc" },
-    select: { action: true },
+    select: { action: true, createdAt: true },
   });
 }
 
