@@ -37,7 +37,7 @@ vi.mock("@/lib/appeal-update-publication", () => ({
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
-import { publishAppealUpdate, transitionAppeal, unpublishAppealUpdate, updateFeaturing } from "./actions";
+import { addAppealUpdate, publishAppealUpdate, transitionAppeal, unpublishAppealUpdate, updateFeaturing } from "./actions";
 
 function form(values: Record<string, string>) {
   const data = new FormData();
@@ -85,6 +85,23 @@ describe("appeal update publication recovery", () => {
     mocks.updateManyUpdate.mockResolvedValue({ count: 1 });
     mocks.hasPermission.mockReturnValue(true);
     (globalThis as typeof globalThis & { __appealTx: unknown }).__appealTx = { appeal: { findUniqueOrThrow: mocks.appealFind, update: mocks.updateAppeal, updateMany: mocks.updateManyAppeal }, auditEvent: { create: mocks.auditCreate } };
+  });
+
+  it("rechecks public-update eligibility at creation inside the serialized boundary", async () => {
+    mocks.hasPermission.mockReturnValue(true);
+    mocks.appealFind
+      .mockResolvedValueOnce({ slug: "appeal-slug", status: "PUBLISHED", assistanceRequest: null })
+      .mockResolvedValueOnce({ status: "PAUSED", assistanceRequest: null });
+
+    await expect(addAppealUpdate(form({
+      id: "appeal-1",
+      updateTitle: "A verified update",
+      updateContent: "This is a sufficiently detailed privacy-safe campaign update.",
+      isPublic: "on",
+      privacyReviewed: "on",
+    }))).rejects.toThrow(/cannot be published/i);
+    expect(mocks.updateCreate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
 
   it("rechecks appeal publication eligibility inside the serialized publish boundary", async () => {
