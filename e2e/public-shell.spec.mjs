@@ -226,9 +226,9 @@ test('impact and transparency expose the same explicit public/private evidence b
     await expect(boundary.getByRole('heading', { level: 3 })).toHaveCount(3);
 
     const text = await boundary.innerText();
-    expect(text).toContain('Public record');
-    expect(text).toContain('Private verification');
-    expect(text).toContain('Publication gate');
+    expect(text).toMatch(/public record/i);
+    expect(text).toMatch(/private verification/i);
+    expect(text).toMatch(/publication gate/i);
     expect(text).toMatch(/identity documents/i);
     expect(text).toMatch(/privacy-review requirements/i);
   }
