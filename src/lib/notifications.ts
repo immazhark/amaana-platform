@@ -168,7 +168,11 @@ export async function processPendingEmailNotifications() {
         },
       });
       if (completed.count !== 1) {
-        throw new Error("Notification delivery state changed after provider acceptance");
+        // The provider already accepted this idempotent delivery, but another
+        // worker/admin changed the local row before our completion claim.
+        // Never reinterpret that concurrency outcome as a provider failure or
+        // overwrite the newer state with FAILED.
+        continue;
       }
       sent += 1;
     } catch (error) {
