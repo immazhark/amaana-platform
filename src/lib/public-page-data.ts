@@ -1,4 +1,5 @@
 import { cache } from "react";
+import { getAppealCoverMediaIssues } from "@/lib/appeal-cover-media";
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
@@ -381,11 +382,43 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
  */
 export const getAppealCoverMedia = cache(async (coverImageUrl: string | null | undefined) => {
   if (!coverImageUrl) return null;
-  return prisma.mediaAsset.findFirst({
+
+  const media = await prisma.mediaAsset.findFirst({
     where: {
       ...PUBLIC_APPROVED_IMAGE_WHERE,
       publicUrl: coverImageUrl,
     },
-    select: PUBLIC_IMAGE_SELECT,
+    select: {
+      ...PUBLIC_IMAGE_SELECT,
+      isPublic: true,
+      privacyApprovedAt: true,
+    },
   });
+  if (!media) return null;
+
+  const review = await prisma.auditEvent.findFirst({
+    where: {
+      entityType: "MediaAsset",
+      entityId: media.id,
+      action: "media.privacy_reviewed",
+    },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    select: { metadata: true },
+  });
+
+  if (getAppealCoverMediaIssues(media, review?.metadata).length > 0) return null;
+
+  return {
+    id: media.id,
+    kind: media.kind,
+    title: media.title,
+    publicUrl: media.publicUrl,
+    externalUrl: media.externalUrl,
+    altText: media.altText,
+    caption: media.caption,
+    sourceYear: media.sourceYear,
+    width: media.width,
+    height: media.height,
+    sortOrder: media.sortOrder,
+  };
 });
