@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { BreadcrumbStructuredData } from '@/components/breadcrumb-structured-data';
+import { PublicContentStructuredData } from '@/components/public-content-structured-data';
 import { PageHero } from '@/components/page-hero';
 import { WorkVisualPlaceholder } from '@/components/work-visual-placeholder';
 import { getPublishedInitiativeBySlug } from '@/lib/public-content';
@@ -60,6 +61,16 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
   {name:title,path:`/our-work/${slug}`},
  ];
  return <div className="v2-home campaign-page canonical-programme">
+  <PublicContentStructuredData
+   type="WebPage"
+   title={title}
+   description={summary}
+   path={`/our-work/${slug}`}
+   publishedAt={record.publishedAt}
+   modifiedAt={record.updatedAt}
+   imageUrl={lead?resolvePublicMediaUrl(lead):null}
+   section={record.cause.title}
+  />
   <BreadcrumbStructuredData items={breadcrumbItems}/>
   <div className="v2-shell campaign-breadcrumb"><nav aria-label="Breadcrumb"><Link href="/our-work">Our Work</Link> / {parent?<><Link href={`/our-work/${parent.slug}`}>{parent.title}</Link> / </>:null}<span>{title}</span></nav></div>
   <PageHero
