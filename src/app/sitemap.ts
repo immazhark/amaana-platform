@@ -1,6 +1,8 @@
 import type { MetadataRoute } from "next";
+import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
 import { publicFaithWhere } from "@/lib/faith-publication";
 import { prisma } from "@/lib/prisma";
+import { canExposePublicAppeal } from "@/lib/public-environment";
 import { PUBLIC_STATIC_ROUTES } from "@/lib/public-routing";
 import { shouldAllowIndexing } from "@/lib/site-indexing";
 import { canListAppealInSitemap } from "@/lib/sitemap-privacy";
@@ -24,10 +26,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       where: { status: { in: ["PUBLISHED", "FUNDED", "CLOSED"] } },
       select: {
         slug: true,
+        title: true,
+        status: true,
         updatedAt: true,
         assistanceRequest: {
           select: {
-            verification: { select: { confidentialityLevel: true } },
+            verification: {
+              select: {
+                confidentialityLevel: true,
+                archiveConsent: true,
+              },
+            },
           },
         },
       },
@@ -56,7 +65,13 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
 
   const searchableAppeals = appeals.filter(item =>
-    canListAppealInSitemap(item.assistanceRequest?.verification?.confidentialityLevel),
+    canExposePublicAppeal(item)
+    && canExposeAppealArchive({
+      appealStatus: item.status,
+      hasAssistanceRequest: Boolean(item.assistanceRequest),
+      archiveConsent: item.assistanceRequest?.verification?.archiveConsent,
+    })
+    && canListAppealInSitemap(item.assistanceRequest?.verification?.confidentialityLevel),
   );
 
   return [
