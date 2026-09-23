@@ -25,7 +25,12 @@ export default async function AuditHistoryPage({ searchParams }: Props) {
   };
   const [totalItems, facets] = await Promise.all([
     prisma.auditEvent.count({ where }),
-    prisma.auditEvent.groupBy({ by: ["entityType"], _count: { _all: true }, orderBy: { entityType: "asc" } }),
+    prisma.auditEvent.groupBy({
+      by: ["entityType"],
+      where: action ? { action } : undefined,
+      _count: { _all: true },
+      orderBy: { entityType: "asc" },
+    }),
   ]);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const events = await prisma.auditEvent.findMany({
