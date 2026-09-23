@@ -23,7 +23,18 @@ export function distinctStoryParagraphs(summary: string, story: string) {
     .split(/\n\s*\n/)
     .map(paragraph => paragraph.trim())
     .filter(Boolean)
-    .filter(paragraph => normalizePublicCopy(paragraph) !== normalizedSummary);
+    .filter(paragraph => {
+      const normalizedParagraph = normalizePublicCopy(paragraph);
+      if (!normalizedSummary || !normalizedParagraph) return true;
+      if (normalizedParagraph === normalizedSummary) return false;
+      const shorter = Math.min(normalizedParagraph.length, normalizedSummary.length);
+      const longer = Math.max(normalizedParagraph.length, normalizedSummary.length);
+      const substantiallySameLength = shorter / longer >= 0.82;
+      return !(substantiallySameLength && (
+        normalizedParagraph.includes(normalizedSummary) ||
+        normalizedSummary.includes(normalizedParagraph)
+      ));
+    });
 }
 
 export function buildPublicRecordFallback({

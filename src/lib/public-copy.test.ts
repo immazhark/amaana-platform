@@ -17,6 +17,20 @@ describe("distinctStoryParagraphs", () => {
     )).toHaveLength(2);
   });
 
+  it("removes near-verbatim body copy that only expands the hero summary slightly", () => {
+    expect(distinctStoryParagraphs(
+      "Amaana supported families through a documented Eid distribution.",
+      "Amaana supported families through a documented Eid distribution across Hyderabad."
+    )).toEqual([]);
+  });
+
+  it("keeps materially expanded body copy even when it shares the same opening", () => {
+    expect(distinctStoryParagraphs(
+      "Amaana supported families through a documented Eid distribution.",
+      "Amaana supported families through a documented Eid distribution. Volunteers verified lists, prepared kits and coordinated delivery across several neighbourhoods before Eid."
+    )).toHaveLength(1);
+  });
+
   it("normalizes punctuation and whitespace before comparison", () => {
     expect(distinctStoryParagraphs(
       "A documented outcome — shared responsibly.",

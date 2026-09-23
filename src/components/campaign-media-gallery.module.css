@@ -1,4 +1,4 @@
-.carousel{margin-top:.25rem}
+.grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.9rem;margin-top:.25rem}
 .card{height:100%;margin:0;overflow:hidden;border:1px solid rgb(18 34 57 / 12%);border-radius:1rem;background:#fffdf8;box-shadow:0 .5rem 1.5rem rgb(18 34 57 / 5%)}
 .trigger{position:relative;display:block;width:100%;padding:0;border:0;background:#eef1f4;cursor:zoom-in}
 .trigger img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover;transition:transform .25s ease}
@@ -19,3 +19,6 @@
 .privacyLabel{position:absolute;left:.65rem;top:.65rem;padding:.3rem .55rem;border:1px solid rgb(255 255 255 / 18%);border-radius:999px;background:rgb(15 33 55 / 82%);color:#fff;font-size:.64rem;font-weight:850;letter-spacing:.06em;text-transform:uppercase;backdrop-filter:blur(8px)}
 .graphicCard .trigger{background:#f5f0e6}
 .graphicCard .trigger img{object-fit:contain!important;padding:.35rem}
+
+@media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:560px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem}.card figcaption{padding:.55rem .6rem .7rem;font-size:.75rem}.openLabel{right:.45rem;bottom:.45rem}}

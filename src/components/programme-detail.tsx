@@ -49,7 +49,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const statusLabel=canonical?.causeSlug==='medical-financial-relief'?(slug==='jewellery-loan-intervention'?'Assistance completed':'Fundraising completed'):status==='EXPANDING'?'Developing pathway':status==='ONGOING'?'Ongoing sponsorship':status==='HISTORICAL'?'Historical response':status==='COMPLETED'?'Completed work':'Recurring programme';
  const parent=canonical?.parentSlug?programmeBySlug(canonical.parentSlug):undefined;
  const facts=canonical&&'facts' in canonical?canonical.facts:[];
- const storyParagraphs=distinctStoryParagraphs("",story||summary);
+ const storyParagraphs=distinctStoryParagraphs(summary,story||summary);
  const clinicalTerms=clinicalTermsIn(`${summary} ${story}`);
  const historicalGrassroots=['hyderabad-flood-relief-2020','covid-essential-support-2020'].includes(slug);
  const fallbackStory=buildPublicRecordFallback({metric:primaryMetric,metricLabel:primaryMetricLabel});
@@ -85,7 +85,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
     visual={lead?<PublicMedia asset={lead} priority />:<WorkVisualPlaceholder label={title} className="campaign-lead-placeholder" />}
   />
   {(primaryMetric||primaryMetricLabel)&&<section className="campaign-impact-strip" aria-label="Programme impact summary"><div className="v2-shell"><div><span>Documented impact</span><strong>{primaryMetric??"Published record"}</strong><p>{primaryMetricLabel??statusLabel}</p></div><div><span>Status</span><strong>{statusLabel}</strong></div></div></section>}
-  <section className="campaign-story v2-shell" id="programme-story"><div><p className="v2-section-label">The work</p><h2>What happened</h2></div><div className="campaign-story-copy">{storyParagraphs.length>0?storyParagraphs.map((paragraph,index)=><p key={index}>{paragraph}</p>):<p>{fallbackStory}</p>}</div></section>
+  <section className="campaign-story v2-shell" id="programme-story"><div><p className="v2-section-label">The work</p><h2>How the programme took shape</h2></div><div className="campaign-story-copy">{storyParagraphs.length>0?storyParagraphs.map((paragraph,index)=><p key={index}>{paragraph}</p>):<p>{fallbackStory}</p>}</div></section>
   {historicalGrassroots&&<section className="campaign-history-note"><div className="v2-shell"><span>Historical grassroots record</span><p>This work predates Amaana Foundation&apos;s later formal registration and is presented as part of the community effort that preceded the registered trust.</p></div></section>}
   {clinicalTerms.length>0&&<section className="campaign-clinical-note" aria-labelledby="clinical-terms-title"><div className="v2-shell"><div><span>Plain-language context</span><h2 id="clinical-terms-title">Clinical terms mentioned in this case</h2><p>These short explanations clarify abbreviations in the documented case record; they are not medical advice.</p></div><ul>{clinicalTerms.map(item=><li key={item.term}><strong>{item.term}</strong><span>{item.meaning}</span></li>)}</ul></div></section>}
   {facts&&facts.length>0&&<section className="v2-section paper"><div className="v2-shell"><h2>Programme details</h2><ol className={factsClass}>{facts.map(f=><li key={f}>{f}</li>)}</ol></div></section>}
