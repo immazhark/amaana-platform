@@ -22,7 +22,7 @@ export default async function RetentionReviewPage() {
           },
         },
       },
-      orderBy: { createdAt: "asc" },
+      orderBy: [{ createdAt: "asc" }, { id: "asc" }],
     }),
     prisma.auditEvent.findMany({
       where: {
@@ -35,7 +35,7 @@ export default async function RetentionReviewPage() {
         ] },
       },
       include: { actor: { select: { name: true } } },
-      orderBy: { createdAt: "desc" },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     }),
   ]);
 
