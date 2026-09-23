@@ -23,12 +23,12 @@ export default async function AdminMediaPage() {
   const storage = getPublicMediaStorageReadiness();
 
   const [assets, causes, initiatives, stories, faith, reviewEvents] = await Promise.all([
-    prisma.mediaAsset.findMany({ include: { cause: true, initiative: true, story: true, faithContent: true }, orderBy: [{ isPublic: "asc" }, { sourceYear: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }] }),
+    prisma.mediaAsset.findMany({ include: { cause: true, initiative: true, story: true, faithContent: true }, orderBy: [{ isPublic: "asc" }, { sourceYear: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }, { id: "desc" }] }),
     prisma.cause.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
     prisma.initiative.findMany({ orderBy: [{ startYear: "desc" }, { title: "asc" }], select: { id: true, title: true } }),
     prisma.story.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
     prisma.faithContent.findMany({ orderBy: { title: "asc" }, select: { id: true, title: true } }),
-    prisma.auditEvent.findMany({ where: { entityType: "MediaAsset", action: "media.privacy_reviewed" }, orderBy: { createdAt: "desc" }, select: { entityId: true, metadata: true, createdAt: true, actor: { select: { name: true } } } }),
+    prisma.auditEvent.findMany({ where: { entityType: "MediaAsset", action: "media.privacy_reviewed" }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], select: { entityId: true, metadata: true, createdAt: true, actor: { select: { name: true } } } }),
   ]);
 
   const latestReview = new Map<string, { metadata: ReviewMetadata; createdAt: Date; reviewer: string }>();
