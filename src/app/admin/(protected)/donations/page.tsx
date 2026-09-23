@@ -48,8 +48,16 @@ export default async function DonationsPage({ searchParams }: Props) {
         processedAt: true,
       },
     }),
-    prisma.donation.groupBy({ by: ["status"], _count: { _all: true } }),
-    prisma.donation.groupBy({ by: ["givingIntent"], _count: { _all: true } }),
+    prisma.donation.groupBy({
+      by: ["status"],
+      where: selectedIntent ? { givingIntent: selectedIntent } : undefined,
+      _count: { _all: true },
+    }),
+    prisma.donation.groupBy({
+      by: ["givingIntent"],
+      where: selected ? { status: selected } : undefined,
+      _count: { _all: true },
+    }),
   ]);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const donations = await prisma.donation.findMany({
