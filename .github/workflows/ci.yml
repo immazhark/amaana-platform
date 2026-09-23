@@ -82,6 +82,14 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
 
+      - name: Verify refund ledger against isolated PostgreSQL
+        env:
+          AMAANA_DATABASE_TESTS: "true"
+        run: |
+          npx prisma migrate deploy
+          node scripts/test-refund-ledger-migration.mjs
+          npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts
+
       - name: Run fast test suite for pull requests
         if: github.event_name == 'pull_request'
         run: npm test
@@ -231,3 +239,4 @@ jobs:
           set -euo pipefail
           cd "$RUNNER_TEMP/amaana-browser-acceptance"
           npx playwright test --config=playwright.config.mjs
+
