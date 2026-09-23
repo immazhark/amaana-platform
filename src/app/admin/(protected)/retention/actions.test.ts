@@ -96,6 +96,38 @@ describe("private document retention deletion", () => {
     }));
   });
 
+  it("revalidates a newly placed hold immediately before storage deletion", async () => {
+    mocks.findFirstAudit
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ action: "assistance.document_legal_hold_placed" });
+
+    await expect(reviewDocumentRetention(deletionForm())).rejects.toThrow(/placed under hold while you were reviewing/i);
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+  });
+
+  it("revalidates terminal workflow state immediately before storage deletion", async () => {
+    mocks.findUniqueOrThrow
+      .mockResolvedValueOnce({
+        id: "doc_123",
+        assistanceRequestId: "request_123",
+        objectKey: "assistance/request_123/123e4567-e89b-12d3-a456-426614174000.pdf",
+        originalName: "evidence.pdf",
+        mimeType: "application/pdf",
+        sizeBytes: 1024,
+        assistanceRequest: { referenceNumber: "AFR-123", status: "CLOSED", appeal: null },
+      })
+      .mockResolvedValueOnce({
+        assistanceRequestId: "request_123",
+        objectKey: "assistance/request_123/123e4567-e89b-12d3-a456-426614174000.pdf",
+        assistanceRequest: { status: "UNDER_VERIFICATION", appeal: { status: "PUBLISHED" } },
+      });
+
+    await expect(reviewDocumentRetention(deletionForm())).rejects.toThrow(/changed while you were reviewing/i);
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+  });
+
   it("blocks deletion while the request and linked appeal are still active", async () => {
     mocks.findUniqueOrThrow.mockResolvedValue({
       id: "doc_123",
