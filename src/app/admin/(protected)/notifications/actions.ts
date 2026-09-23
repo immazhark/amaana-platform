@@ -3,7 +3,6 @@
 import { NotificationStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
 export async function enqueueControlledEmailAcceptance() {
@@ -106,7 +105,7 @@ export async function requeueFailedNotification(formData: FormData) {
         metadata: {
           reason: reason.slice(0, 1000),
           previousAttempts: current.attempts,
-          previousFailureReason: current.failureReason,
+          hadPreviousFailure: Boolean(current.failureReason),
           templateKey: current.templateKey,
         },
       },
