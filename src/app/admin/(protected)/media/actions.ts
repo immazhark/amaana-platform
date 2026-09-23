@@ -302,8 +302,6 @@ export async function deleteMediaAsset(formData: FormData) {
         metadata: {
           storageManaged: Boolean(asset.storageKey),
           hadPublicUrl: Boolean(asset.publicUrl),
-          title: asset.title,
-          sourcePath: asset.sourcePath,
         },
       },
     }),
