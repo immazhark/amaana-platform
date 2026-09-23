@@ -52,7 +52,7 @@ describe("manual notification recovery", () => {
     mocks.updateNotificationMany.mockResolvedValue({ count: 1 });
     mocks.createAudit.mockResolvedValue({ id: "audit_123" });
     const tx = {
-      notification: { findFirst: mocks.findFirstNotification, updateMany: mocks.updateNotificationMany, create: mocks.createNotification },
+      notification: { findFirst: mocks.findFirstNotification, findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateNotificationMany, create: mocks.createNotification },
       auditEvent: { create: mocks.createAudit },
     };
     mocks.serializableTransaction.mockImplementation(async callback => callback(tx));
@@ -131,7 +131,7 @@ describe("manual notification recovery", () => {
     });
 
     await expect(requeueFailedNotification(form())).rejects.toThrow(/Only failed notifications/);
-    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
   });
 
   it("requires a meaningful operator reason", async () => {
@@ -143,7 +143,22 @@ describe("manual notification recovery", () => {
   it("rejects an oversized operational reason before reading or mutating notification state", async () => {
     await expect(requeueFailedNotification(form("x".repeat(1001)))).rejects.toThrow(/too long/i);
     expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
-    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+  });
+
+  it("rechecks FAILED state inside the serialized recovery boundary", async () => {
+    mocks.findUniqueOrThrow.mockResolvedValueOnce({
+      id: "notification_123",
+      status: NotificationStatus.PROCESSING,
+      channel: "EMAIL",
+      attempts: 5,
+      failureReason: null,
+      templateKey: "donation-acknowledgement",
+    });
+
+    await expect(requeueFailedNotification(form())).rejects.toThrow(/Only failed notifications/);
+    expect(mocks.updateNotificationMany).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
   });
 
   it("fails closed when another worker changes the notification before the manual claim", async () => {
