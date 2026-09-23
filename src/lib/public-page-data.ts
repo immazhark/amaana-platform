@@ -360,7 +360,7 @@ export const getTransparencyPageData = cache(async () => {
 export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
   if (!slugs.length) return [];
   return prisma.initiative.findMany({
-    where: { slug: { in: slugs }, status: "PUBLISHED" },
+    where: { slug: { in: slugs }, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     select: {
       slug: true,
       mediaAssets: {
