@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   createAudit: vi.fn(),
   deleteDocumentRecord: vi.fn(),
   transaction: vi.fn(),
+  serializableTransaction: vi.fn(),
   deletePrivateDocumentObject: vi.fn(),
   revalidatePath: vi.fn(),
 }));
@@ -14,6 +15,9 @@ const mocks = vi.hoisted(() => ({
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.requirePermission }));
 vi.mock("@/lib/storage", () => ({ deletePrivateDocumentObject: mocks.deletePrivateDocumentObject }));
+vi.mock("@/lib/prisma-transaction", () => ({
+  withSerializableTransactionRetry: mocks.serializableTransaction,
+}));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     assistanceDocument: {
@@ -61,6 +65,55 @@ describe("private document retention deletion", () => {
     mocks.deletePrivateDocumentObject.mockResolvedValue(undefined);
     mocks.deleteDocumentRecord.mockResolvedValue({ id: "doc_123" });
     mocks.transaction.mockResolvedValue([]);
+    mocks.serializableTransaction.mockImplementation(async callback => callback({
+      assistanceDocument: { findUniqueOrThrow: mocks.findUniqueOrThrow },
+      auditEvent: { findFirst: mocks.findFirstAudit, create: mocks.createAudit },
+    }));
+  });
+
+  it("rejects a stale hold decision without writing contradictory audit history", async () => {
+    const form = new FormData();
+    form.set("documentId", "doc_123");
+    form.set("decision", "PLACE_HOLD");
+    form.set("reason", "Safeguarding review is active.");
+    form.set("expectedHoldAction", "");
+    form.set("expectedHoldCreatedAt", "");
+
+    mocks.findFirstAudit
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        action: "assistance.document_legal_hold_placed",
+        createdAt: new Date("2026-09-23T04:00:00.000Z"),
+      });
+
+    await expect(reviewDocumentRetention(form)).rejects.toThrow(/hold state changed while you were reviewing/i);
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+  });
+
+  it("records a hold only when the reviewed hold version is still current", async () => {
+    const createdAt = new Date("2026-09-23T04:00:00.000Z");
+    const form = new FormData();
+    form.set("documentId", "doc_123");
+    form.set("decision", "RELEASE_HOLD");
+    form.set("reason", "Safeguarding review is complete.");
+    form.set("expectedHoldAction", "assistance.document_legal_hold_placed");
+    form.set("expectedHoldCreatedAt", createdAt.toISOString());
+
+    mocks.findFirstAudit.mockResolvedValue({
+      action: "assistance.document_legal_hold_placed",
+      createdAt,
+    });
+
+    await reviewDocumentRetention(form);
+
+    expect(mocks.serializableTransaction).toHaveBeenCalledTimes(1);
+    expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        action: "assistance.document_legal_hold_released",
+        entityId: "request_123",
+        metadata: expect.objectContaining({ documentId: "doc_123" }),
+      }),
+    }));
   });
 
   it("requires exact destructive confirmation before loading the document", async () => {
