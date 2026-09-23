@@ -36,6 +36,9 @@ const decimal = (value: number) => ({
 describe("captureDonation", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.rootFindUnique.mockReset();
+    mocks.fetchRazorpayPayment.mockReset();
+    mocks.txDonationFindUnique.mockReset();
     mocks.transaction.mockImplementation(async callback => callback({
       donation: {
         findUnique: mocks.txDonationFindUnique,
@@ -261,9 +264,7 @@ describe("ensureCapturedDonationForRefund", () => {
     ["failed", false],
     ["created", false],
   ])("does not reconstruct local capture from provider status %s", async (status, captured) => {
-    mocks.rootFindUnique
-      .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ id: "donation_1", amount: decimal(500) });
+    mocks.rootFindUnique.mockResolvedValueOnce(null);
     mocks.fetchRazorpayPayment.mockResolvedValue({
       id: "pay_1",
       order_id: "order_1",
