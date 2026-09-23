@@ -10,8 +10,8 @@ const transitions: Record<string, string[]> = { DRAFT: ["UNDER_REVIEW"], UNDER_R
 export default async function AppealEditorPage({ params }: Props) {
   const user = await requirePermission("appeal.view"); const { id } = await params;
   const [appeal, history] = await Promise.all([
-    prisma.appeal.findUnique({ where: { id }, include: { updates: { include: { author: true }, orderBy: { createdAt: "desc" } }, assistanceRequest: { include: { verification: true } } } }),
-    prisma.auditEvent.findMany({ where: { entityType: "Appeal", entityId: id }, include: { actor: true }, orderBy: { createdAt: "desc" } }),
+    prisma.appeal.findUnique({ where: { id }, include: { updates: { include: { author: true }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }, assistanceRequest: { include: { verification: true } } } }),
+    prisma.auditEvent.findMany({ where: { entityType: "Appeal", entityId: id }, include: { actor: true }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
   ]);
   if (!appeal) notFound();
   const editable = ["DRAFT", "UNDER_REVIEW", "REJECTED"].includes(appeal.status) && hasPermission(user, "appeal.update");
