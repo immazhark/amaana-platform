@@ -4,6 +4,12 @@ import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { enqueueControlledEmailAcceptance, requeueFailedNotification } from "./actions";
 import { prisma } from "@/lib/prisma";
+import {
+  NOTIFICATION_OVERDUE_MS,
+  NOTIFICATION_STALE_PROCESSING_MS,
+  TERMINAL_NOTIFICATION_SCHEDULE,
+  notificationOperationalState,
+} from "@/lib/operational-signals";
 
 type Props = { searchParams: Promise<{ status?: string; page?: string }> };
 
@@ -33,14 +39,43 @@ export default async function NotificationOperationsPage({ searchParams }: Props
     ? status as NotificationStatus
     : undefined;
   const where = selected ? { status: selected } : undefined;
+  const now = new Date();
+  const staleProcessingBefore = new Date(now.getTime() - NOTIFICATION_STALE_PROCESSING_MS);
+  const overdueBefore = new Date(now.getTime() - NOTIFICATION_OVERDUE_MS);
 
-  const [totalItems, grouped] = await Promise.all([
+  const [totalItems, grouped, staleProcessing, overdueDue, terminalFailures] = await Promise.all([
     prisma.notification.count({ where }),
     prisma.notification.groupBy({
       by: ["status"],
       _count: { _all: true },
     }),
+    prisma.notification.count({
+      where: {
+        channel: "EMAIL",
+        status: NotificationStatus.PROCESSING,
+        updatedAt: { lt: staleProcessingBefore },
+      },
+    }),
+    prisma.notification.count({
+      where: {
+        channel: "EMAIL",
+        status: { in: [NotificationStatus.PENDING, NotificationStatus.FAILED] },
+        attempts: { lt: 5 },
+        scheduledFor: { lt: overdueBefore },
+      },
+    }),
+    prisma.notification.count({
+      where: {
+        channel: "EMAIL",
+        status: NotificationStatus.FAILED,
+        OR: [
+          { attempts: { gte: 5 } },
+          { scheduledFor: { gte: TERMINAL_NOTIFICATION_SCHEDULE } },
+        ],
+      },
+    }),
   ]);
+  const operational = notificationOperationalState({ staleProcessing, overdueDue, terminalFailures });
 
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const notifications = await prisma.notification.findMany({
@@ -82,6 +117,24 @@ export default async function NotificationOperationsPage({ searchParams }: Props
         <p className="lead">Operational visibility into queued transactional emails, retry attempts and terminal failures, with audited manual recovery for authorised approvers.</p>
       </div>
     </div>
+
+    <section className="admin-card" aria-labelledby="notification-health-heading">
+      <div className="admin-heading">
+        <div>
+          <p className="eyebrow">Delivery health</p>
+          <h2 id="notification-health-heading">Operational signals</h2>
+          <p className="muted">
+            Queue degradation is tracked separately from infrastructure readiness so a healthy server cannot hide stuck or terminal email delivery.
+          </p>
+        </div>
+        <span className="status-badge">{operational.status === "healthy" ? "HEALTHY" : `${operational.attention} NEED ATTENTION`}</span>
+      </div>
+      <div className="card-grid">
+        <article className="card"><strong>{operational.staleProcessing}</strong><p>Processing longer than 15 minutes</p></article>
+        <article className="card"><strong>{operational.overdueDue}</strong><p>Due email jobs overdue by 15+ minutes</p></article>
+        <article className="card"><strong>{operational.terminalFailures}</strong><p>Terminal failures requiring manual review</p></article>
+      </div>
+    </section>
 
     {canManageNotifications && (
       <section className="admin-card" aria-labelledby="email-acceptance-heading">

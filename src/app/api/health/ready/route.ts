@@ -22,9 +22,17 @@ async function databaseReady() {
 export async function GET() {
   try {
     validateProductionEnvironment();
-    await databaseReady();
-    return NextResponse.json({ status: "ready" }, { headers });
   } catch {
+    console.error("Readiness check failed", { component: "environment" });
     return NextResponse.json({ status: "not_ready" }, { status: 503, headers });
   }
+
+  try {
+    await databaseReady();
+  } catch {
+    console.error("Readiness check failed", { component: "database" });
+    return NextResponse.json({ status: "not_ready" }, { status: 503, headers });
+  }
+
+  return NextResponse.json({ status: "ready" }, { headers });
 }

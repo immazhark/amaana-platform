@@ -5,6 +5,7 @@ import { formatINR } from "@/lib/appeals";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
 import { prisma } from "@/lib/prisma";
+import { donationOperationalState } from "@/lib/operational-signals";
 
 type Props = { searchParams: Promise<{ status?: string; intent?: string; page?: string }> };
 
@@ -22,7 +23,7 @@ export default async function DonationsPage({ searchParams }: Props) {
     ...(selectedIntent ? { givingIntent: selectedIntent } : {}),
   };
 
-  const [totalItems, reconciliation, unmatchedCriticalEventCount, unmatchedCriticalEvents, statusGroups, intentGroups] = await Promise.all([
+  const [totalItems, reconciliation, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, statusGroups, intentGroups] = await Promise.all([
     prisma.donation.count({ where }),
     prisma.donation.aggregate({
       where: { status: { in: ["CAPTURED", "REFUNDED"] } },
@@ -46,6 +47,18 @@ export default async function DonationsPage({ searchParams }: Props) {
         providerEventId: true,
         eventType: true,
         processedAt: true,
+      },
+    }),
+    prisma.donation.count({
+      where: {
+        status: { in: [DonationStatus.CAPTURED, DonationStatus.REFUNDED] },
+        receiptNumber: null,
+      },
+    }),
+    prisma.donation.count({
+      where: {
+        status: DonationStatus.REFUNDED,
+        refundedAt: null,
       },
     }),
     prisma.donation.groupBy({
@@ -73,6 +86,11 @@ export default async function DonationsPage({ searchParams }: Props) {
   const grossCaptured = reconciliation._sum.amount?.toNumber() ?? 0;
   const refunded = reconciliation._sum.refundedAmount?.toNumber() ?? 0;
   const netRetained = Math.max(0, grossCaptured - refunded);
+  const operational = donationOperationalState({
+    unmatchedCriticalEvents: unmatchedCriticalEventCount,
+    missingAcknowledgements,
+    refundedWithoutCompletionTime,
+  });
   const pageHref = (targetPage: number) => ({
     pathname: "/admin/donations",
     query: {
@@ -106,6 +124,21 @@ export default async function DonationsPage({ searchParams }: Props) {
         </p>
       </div>
     </div>
+    <section className="admin-card" aria-labelledby="donation-health-heading" style={{ marginBottom: "1.25rem" }}>
+      <div className="admin-heading">
+        <div>
+          <p className="eyebrow">Payment health</p>
+          <h2 id="donation-health-heading">Operational signals</h2>
+          <p className="muted">These counters flag reconciliation and acknowledgement invariants that need review even when payment infrastructure itself is reachable.</p>
+        </div>
+        <span className="status-badge">{operational.status === "healthy" ? "HEALTHY" : `${operational.attention} NEED ATTENTION`}</span>
+      </div>
+      <div className="card-grid">
+        <article className="card"><strong>{operational.unmatchedCriticalEvents}</strong><p>Unmatched critical payment events</p></article>
+        <article className="card"><strong>{operational.missingAcknowledgements}</strong><p>Captured/refunded donations without acknowledgement numbers</p></article>
+        <article className="card"><strong>{operational.refundedWithoutCompletionTime}</strong><p>Refunded donations missing completion time</p></article>
+      </div>
+    </section>
     {unmatchedCriticalEvents.length > 0 && <section className="admin-card" style={{ marginBottom: "1.25rem" }}>
       <div className="admin-heading">
         <div>
