@@ -89,10 +89,15 @@ export async function addAppealUpdate(formData: FormData) {
     if (publicationIssues.length) throw new Error(`Appeal update cannot be published: ${publicationIssues.join(" ")}`);
   }
   const updateId = crypto.randomUUID();
-  await prisma.$transaction([
-    prisma.appealUpdate.create({ data: { id: updateId, appealId, authorId: user.id, title, content, isPublic, publishedAt: isPublic ? new Date() : null } }),
-    prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_added", entityType: "Appeal", entityId: appealId, metadata: { updateId, isPublic, privacyReviewed: isPublic ? privacyReviewed : false } } }),
-  ]);
+  await withSerializableTransactionRetry(async tx => {
+    const freshAppeal = await tx.appeal.findUniqueOrThrow({ where: { id: appealId }, select: { status: true, assistanceRequest: { select: { id: true, verification: true } } } });
+    if (isPublic) {
+      const freshIssues = getAppealUpdatePublicationIssues({ appealStatus: freshAppeal.status, privacyReviewed, hasAssistanceRequest: Boolean(freshAppeal.assistanceRequest), verification: freshAppeal.assistanceRequest?.verification });
+      if (freshIssues.length) throw new Error(`Appeal update cannot be published: ${freshIssues.join(" ")}`);
+    }
+    await tx.appealUpdate.create({ data: { id: updateId, appealId, authorId: user.id, title, content, isPublic, publishedAt: isPublic ? new Date() : null } });
+    await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_added", entityType: "Appeal", entityId: appealId, metadata: { updateId, isPublic, privacyReviewed: isPublic ? privacyReviewed : false } } });
+  });
   revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals");
   if (isPublic) revalidatePath(`/appeals/${appeal.slug}`);
 }
