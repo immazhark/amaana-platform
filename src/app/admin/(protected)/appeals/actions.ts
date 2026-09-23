@@ -14,6 +14,9 @@ const transitions: Record<AppealStatus, AppealStatus[]> = {
 
 export async function updateAppeal(formData: FormData) {
   const user = await requirePermission("appeal.update"); const id = String(formData.get("id"));
+  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "").trim();
+  const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
+  if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Appeal edit version is missing or invalid. Refresh before editing.");
   const title = String(formData.get("title") ?? "").trim(); const slug = String(formData.get("slug") ?? "").trim().toLowerCase(); const summary = String(formData.get("summary") ?? "").trim(); const story = String(formData.get("story") ?? "").trim(); const goalAmount = Number(formData.get("goalAmount"));
   const category = String(formData.get("category")); const coverImageValue = String(formData.get("coverImageUrl") || "").trim(); const beneficiaryDisplayName = String(formData.get("beneficiaryDisplayName") || "").trim();
   if (title.length < 8 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || summary.length < 20 || story.length < 40 || !Number.isFinite(goalAmount) || goalAmount <= 0 || !Object.values(AppealCategory).includes(category as AppealCategory)) throw new Error("Complete all required appeal fields");
@@ -25,14 +28,14 @@ export async function updateAppeal(formData: FormData) {
   if (contentIssues.length) throw new Error(contentIssues.join(" "));
   await withSerializableTransactionRetry(async tx => {
     const fresh = await tx.appeal.findUniqueOrThrow({ where: { id }, include: { assistanceRequest: { include: { verification: true } } } });
-    if (fresh.status !== current.status || !["DRAFT", "UNDER_REVIEW", "REJECTED"].includes(fresh.status)) {
+    if (fresh.status !== current.status || fresh.updatedAt.getTime() !== expectedUpdatedAt.getTime() || !["DRAFT", "UNDER_REVIEW", "REJECTED"].includes(fresh.status)) {
       throw new Error("This appeal changed while you were reviewing it. Refresh before editing content.");
     }
     if (fresh.assistanceRequest && !goalMatchesApprovedPublicTarget(goalAmount, fresh.assistanceRequest.verification)) throw new Error("Appeal goal must match the approved public fundraising target");
     const freshContentIssues = getAppealConsentContentIssues({ verification: fresh.assistanceRequest?.verification, beneficiaryDisplayName, coverImageUrl: coverImageValue });
     if (freshContentIssues.length) throw new Error(freshContentIssues.join(" "));
     const updated = await tx.appeal.updateMany({
-      where: { id, status: current.status },
+      where: { id, status: current.status, updatedAt: expectedUpdatedAt },
       data: { title, slug, summary, story, goalAmount, category: category as AppealCategory, beneficiaryDisplayName: beneficiaryDisplayName || null, beneficiaryLocation: String(formData.get("beneficiaryLocation") || "").trim() || null, coverImageUrl: coverImageValue || null },
     });
     if (updated.count !== 1) throw new Error("This appeal changed while you were reviewing it. Refresh before editing content.");
