@@ -10,7 +10,7 @@ import { isAppealOpenForDonations } from "@/lib/appeals";
 import { getAppealsIndexData, getCompletedAidShowcaseData } from "@/lib/public-page-data";
 import styles from "./appeals-audit.module.css";
 import { canExposeSyntheticStagingContent, isSyntheticStagingAppeal } from "@/lib/public-environment";
-import { isDocumentaryPublicImage } from "@/lib/public-media";
+import { isDocumentaryPublicImage, selectIdentityPublicImage } from "@/lib/public-media";
 
 export const metadata: Metadata = {
   title: "Verified Appeals",
@@ -29,7 +29,7 @@ export default async function AppealsPage() {
   ]);
   const isStaging = canExposeSyntheticStagingContent();
   const appeals = appealRecords.filter(appeal => isAppealOpenForDonations(appeal) && (isStaging || !isSyntheticStagingAppeal(appeal)));
-  const completedAidMedia = new Map(completedAid.map(item => [item.slug, item.mediaAssets.find(isDocumentaryPublicImage) ?? item.mediaAssets[0] ?? null]));
+  const completedAidMedia = new Map(completedAid.map(item => [item.slug, item.mediaAssets.find(isDocumentaryPublicImage) ?? selectIdentityPublicImage(item.mediaAssets) ?? null]));
 
   return (
     <div className="v2-home v2-appeals-page">
