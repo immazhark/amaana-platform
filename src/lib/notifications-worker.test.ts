@@ -142,6 +142,25 @@ describe("notification worker flow", () => {
     expect(failureUpdate.data.scheduledFor.getTime()).toBeGreaterThanOrEqual(before + 5 * 60 * 1000);
   });
 
+  it("does not persist unexpected internal error details in notification state", async () => {
+    mocks.renderNotificationEmail.mockImplementationOnce(() => {
+      throw new Error("template failed for donor@example.test with private payload");
+    });
+
+    const result = await processPendingEmailNotifications();
+
+    expect(result).toEqual({ selected: 1, sent: 0, failed: 1 });
+    expect(mocks.updateMany).toHaveBeenNthCalledWith(4, {
+      where: { id: "notification_1", status: NotificationStatus.PROCESSING, attempts: 1 },
+      data: {
+        status: NotificationStatus.FAILED,
+        failureReason: "Unexpected notification delivery failure",
+        scheduledFor: expect.any(Date),
+      },
+    });
+    expect(JSON.stringify(mocks.updateMany.mock.calls)).not.toContain("donor@example.test with private payload");
+  });
+
   it("does not overwrite a newer worker state after provider acceptance", async () => {
     mocks.updateMany
       .mockResolvedValueOnce({ count: 0 })
