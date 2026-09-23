@@ -176,7 +176,9 @@ export async function processPendingEmailNotifications() {
       }
       sent += 1;
     } catch (error) {
-      const failureReason = error instanceof Error ? error.message.slice(0, 500) : "Unknown delivery error";
+      const failureReason = error instanceof EmailProviderError
+        ? error.message.slice(0, 500)
+        : "Unexpected notification delivery failure";
       const retryable = !(error instanceof EmailProviderError) || error.retryable;
       const attemptsRemain = attemptNumber < MAX_ATTEMPTS;
 
