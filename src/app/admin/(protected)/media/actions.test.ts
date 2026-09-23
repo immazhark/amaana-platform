@@ -253,6 +253,7 @@ describe("admin media deletion", () => {
     mocks.requirePermission.mockResolvedValue({ id: "user_123" });
     mocks.deletePublicMediaObject.mockResolvedValue(undefined);
     mocks.deleteRecord.mockResolvedValue({ id: "media_123" });
+    mocks.updateMany.mockResolvedValue({ count: 1 });
     mocks.createAudit.mockResolvedValue({ id: "audit_123" });
     mocks.transaction.mockResolvedValue([]);
   });
@@ -283,12 +284,13 @@ describe("admin media deletion", () => {
       .mockResolvedValueOnce({
         id: "media_123", isPublic: false,
         storageKey: "2026/11111111-1111-4111-8111-111111111111.jpg",
-        publicUrl: "https://cdn.example/media.jpg", title: "Unpublished", sourcePath: "IMG.jpg",
+        publicUrl: "https://cdn.example/media.jpg", title: "Unpublished", sourcePath: "IMG.jpg", updatedAt: new Date("2026-09-23T00:00:00.000Z"),
       })
       .mockResolvedValueOnce({
         isPublic: true,
         storageKey: "2026/11111111-1111-4111-8111-111111111111.jpg",
         publicUrl: "https://cdn.example/media.jpg",
+        updatedAt: new Date("2026-09-23T00:00:00.000Z"),
       });
 
     await expect(deleteMediaAsset(deletionForm())).rejects.toThrow(/published while you were reviewing/i);
@@ -301,12 +303,13 @@ describe("admin media deletion", () => {
       .mockResolvedValueOnce({
         id: "media_123", isPublic: false,
         storageKey: "2026/old.jpg", publicUrl: "https://cdn.example/old.jpg",
-        title: "Unpublished", sourcePath: "IMG.jpg",
+        title: "Unpublished", sourcePath: "IMG.jpg", updatedAt: new Date("2026-09-23T00:00:00.000Z"),
       })
       .mockResolvedValueOnce({
         isPublic: false,
         storageKey: "2026/replacement.jpg",
         publicUrl: "https://cdn.example/replacement.jpg",
+        updatedAt: new Date("2026-09-23T00:01:00.000Z"),
       });
 
     await expect(deleteMediaAsset(deletionForm())).rejects.toThrow(/changed while you were reviewing/i);
@@ -328,11 +331,16 @@ describe("admin media deletion", () => {
         isPublic: false,
         storageKey: "2026/11111111-1111-4111-8111-111111111111.jpg",
         publicUrl: "https://cdn.example/media.jpg",
+        updatedAt: new Date("2026-09-23T00:00:00.000Z"),
       });
 
     await deleteMediaAsset(deletionForm());
 
     expect(mocks.requirePermission).toHaveBeenCalledWith("content.approve");
+    expect(mocks.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ id: "media_123", isPublic: false }),
+      data: expect.objectContaining({ updatedAt: expect.any(Date) }),
+    }));
     expect(mocks.deletePublicMediaObject).toHaveBeenCalledWith("2026/11111111-1111-4111-8111-111111111111.jpg");
     expect(mocks.deleteRecord).toHaveBeenCalledWith({ where: { id: "media_123" } });
     expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({
