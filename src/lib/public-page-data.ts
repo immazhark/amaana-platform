@@ -133,6 +133,7 @@ export const getHomepageDiscoveryData = cache(async () => {
     prisma.initiative.findMany({
       where: {
         status: "PUBLISHED",
+        cause: { status: "PUBLISHED" },
         OR: [{ isFeatured: true }, { slug: { in: fieldSlugs } }],
       },
       orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
