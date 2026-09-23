@@ -14,7 +14,25 @@ import { fetchRazorpayPayment } from "@/lib/razorpay";
  * payment for the same order, currency and amount. CAPTURED/REFUNDED records are
  * never incremented again, which keeps appeal totals idempotent.
  */
+function assertCapturedPaymentIdentity(
+  status: string,
+  persistedPaymentId: string | null,
+  incomingPaymentId: string,
+) {
+  if (["CAPTURED", "REFUNDED"].includes(status) && persistedPaymentId !== incomingPaymentId) {
+    throw new Error("Donation order is already bound to a different captured payment");
+  }
+}
+
+function providerPaymentIsCaptured(payment: { status?: string; captured?: boolean }) {
+  return payment.captured === true || ["captured", "refunded"].includes(payment.status ?? "");
+}
+
 export async function captureDonation(providerOrderId: string, providerPaymentId: string, amountPaise: number) {
+  if (!providerOrderId.trim() || !providerPaymentId.trim()) {
+    throw new Error("Provider order and payment identities are required");
+  }
+
   return withSerializableTransactionRetry(async tx => {
     const donation = await tx.donation.findUnique({
       where: { providerOrderId },
@@ -27,6 +45,8 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
         donorEmail: true,
         givingIntent: true,
         receiptTokenHash: true,
+        status: true,
+        providerPaymentId: true,
       },
     });
     const expectedAmountPaise = donation ? donation.amount.mul(100).toNumber() : null;
@@ -42,6 +62,8 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
     ) {
       throw new Error("Payment does not match donation order");
     }
+
+    assertCapturedPaymentIdentity(donation.status, donation.providerPaymentId, providerPaymentId);
 
     const changed = await tx.donation.updateMany({
       where: { id: donation.id, status: { in: ["CREATED", "AUTHORIZED", "FAILED"] } },
@@ -93,6 +115,7 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
         });
 
     if (!current) throw new Error("Donation disappeared during payment reconciliation");
+    assertCapturedPaymentIdentity(current.status, current.providerPaymentId, providerPaymentId);
 
     return {
       donationId: donation.id,
@@ -120,7 +143,9 @@ export async function ensureCapturedDonationForRefund(paymentId: string) {
     providerPayment.id !== paymentId ||
     providerPayment.currency !== "INR" ||
     !providerPayment.order_id ||
-    !Number.isSafeInteger(providerPayment.amount)
+    !Number.isSafeInteger(providerPayment.amount) ||
+    providerPayment.amount <= 0 ||
+    !providerPaymentIsCaptured(providerPayment)
   ) {
     throw new Error("Refund payment lookup returned an invalid payment");
   }
