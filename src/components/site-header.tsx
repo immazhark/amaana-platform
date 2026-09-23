@@ -14,6 +14,14 @@ const primaryLinks = [
   ["Get Involved", "/get-involved"],
 ] as const;
 
+const secondaryLinks = [
+  ["Request assistance", "/request-assistance"],
+  ["How we work", "/how-we-verify"],
+  ["Transparency", "/transparency"],
+  ["Governance", "/governance"],
+  ["Contact", "/contact"],
+] as const;
+
 function isActivePath(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
@@ -94,11 +102,10 @@ export function SiteHeader() {
             })}
           </div>
           <div className="mobile-menu-secondary">
-            <Link href="/request-assistance" onClick={closeMenu}>Request assistance</Link>
-            <Link href="/how-we-verify" onClick={closeMenu}>How we work</Link>
-            <Link href="/transparency" onClick={closeMenu}>Transparency</Link>
-            <Link href="/governance" onClick={closeMenu}>Governance</Link>
-            <Link href="/contact" onClick={closeMenu}>Contact</Link>
+            {secondaryLinks.map(([label, href]) => {
+              const active = isActivePath(pathname, href);
+              return <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMenu} aria-current={active ? "page" : undefined}>{label}</Link>;
+            })}
           </div>
           <Link className="button" href="/appeals" onClick={closeMenu} aria-current={isActivePath(pathname, "/appeals") ? "page" : undefined}>Support a verified need</Link>
         </div>

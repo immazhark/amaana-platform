@@ -194,6 +194,29 @@ test('mobile navigation opens, moves focus inside, closes with Escape and restor
   await expect(toggle).toHaveAttribute('aria-expanded', 'false');
 });
 
+test('navigation marks current primary, support and secondary routes consistently', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openPublicPage(page, '/our-work/eid-gift-kits');
+
+  const primaryNav = page.getByRole('navigation', { name: 'Primary navigation' });
+  await expect(primaryNav.getByRole('link', { name: 'Our Work' })).toHaveAttribute('aria-current', 'page');
+  await expect(primaryNav.getByRole('link', { name: 'Impact' })).not.toHaveAttribute('aria-current', 'page');
+
+  await openPublicPage(page, '/appeals');
+  await expect(primaryNav.getByRole('link', { name: 'Support a need' })).toHaveAttribute('aria-current', 'page');
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPublicPage(page, '/transparency');
+  const toggle = page.locator('button[aria-controls="mobile-navigation"]');
+  await toggle.click();
+
+  const mobileNav = page.getByRole('navigation', { name: 'Mobile navigation' });
+  const transparency = mobileNav.getByRole('link', { name: 'Transparency' });
+  await expect(transparency).toHaveAttribute('aria-current', 'page');
+  await expect(transparency).toHaveClass(/active/);
+  await expect(mobileNav.getByRole('link', { name: 'Governance' })).not.toHaveAttribute('aria-current', 'page');
+});
+
 test('mobile navigation backdrop dismisses the menu without entering keyboard order', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openPublicPage(page, '/about');

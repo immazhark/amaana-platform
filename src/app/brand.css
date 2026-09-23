@@ -103,6 +103,17 @@
 
 .mobile-menu-secondary a { color: var(--amaana-ink-soft); }
 
+.mobile-menu-inner a.active:not(.button) {
+  box-shadow: inset 3px 0 0 var(--amaana-gold);
+  padding-left: .75rem;
+}
+
+.nav-donate[aria-current="page"],
+.mobile-menu-inner .button[aria-current="page"] {
+  outline: 2px solid var(--amaana-gold);
+  outline-offset: 2px;
+}
+
 .site-footer {
   background:
     radial-gradient(circle at 10% 20%, rgb(70 111 170 / 18%), transparent 28%),
