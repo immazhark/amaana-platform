@@ -33,7 +33,7 @@ vi.mock("@/lib/appeal-publication", () => ({
 }));
 vi.mock("@/lib/prisma-transaction", () => ({ withSerializableTransactionRetry: (callback: (tx: unknown) => unknown) => callback((globalThis as typeof globalThis & { __appealTx: unknown }).__appealTx) }));
 vi.mock("@/lib/appeal-update-publication", () => ({
-  getAppealUpdatePublicationIssues: () => [],
+  getAppealUpdatePublicationIssues: ({ appealStatus }: { appealStatus: string }) => appealStatus === "PUBLISHED" ? [] : ["Appeal must be actively published."],
 }));
 vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
 
