@@ -112,7 +112,7 @@ export async function createMediaAsset(formData: FormData) {
     if (uploaded?.objectKey) {
       try {
         await deletePublicMediaObject(uploaded.objectKey);
-      } catch (cleanupError) {
+      } catch {
         console.error("Public media record creation failed and uploaded-object cleanup also failed");
       }
     }
