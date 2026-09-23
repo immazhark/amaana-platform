@@ -224,10 +224,16 @@ export async function setMediaPublication(formData: FormData) {
       await tx.auditEvent.create({ data: { actorId: user.id, action: "media.published", entityType: "MediaAsset", entityId: id, metadata: { privacyGate: "passed" } } });
     });
   } else {
-    await prisma.$transaction([
-      prisma.mediaAsset.update({ where: { id }, data: { isPublic: false, privacyApprovedAt: null } }),
-      prisma.auditEvent.create({ data: { actorId: user.id, action: "media.unpublished", entityType: "MediaAsset", entityId: id } }),
-    ]);
+    await withSerializableTransactionRetry(async tx => {
+      const freshAsset = await tx.mediaAsset.findUniqueOrThrow({ where: { id }, select: { isPublic: true, updatedAt: true } });
+      if (!freshAsset.isPublic) throw new Error("This media is already unpublished. Refresh before changing publication state.");
+      const claimed = await tx.mediaAsset.updateMany({
+        where: { id, isPublic: true, updatedAt: freshAsset.updatedAt },
+        data: { isPublic: false, privacyApprovedAt: null },
+      });
+      if (claimed.count !== 1) throw new Error("This media changed while you were reviewing it. Refresh before unpublishing.");
+      await tx.auditEvent.create({ data: { actorId: user.id, action: "media.unpublished", entityType: "MediaAsset", entityId: id } });
+    });
   }
 
   revalidatePath("/admin/media");
