@@ -144,14 +144,14 @@ export async function updateMediaAsset(formData: FormData) {
     caption !== asset.caption ||
     sourcePath !== asset.sourcePath ||
     sourceYear !== asset.sourceYear;
-  if (asset.isPublic && privacyMetadataChanged) {
-    throw new Error("Unpublish this media before changing public-facing or provenance metadata so privacy can be reviewed again.");
-  }
   if (asset.isPublic && deliveryUrlChanged) {
     throw new Error("Unpublish this media before changing its delivery URL so privacy and provenance can be reviewed again.");
   }
   if (asset.isPublic && identityStateChanged) {
     throw new Error("Unpublish this media before changing its identity-image role so hero eligibility can be reviewed again.");
+  }
+  if (asset.isPublic && privacyMetadataChanged) {
+    throw new Error("Unpublish this media before changing public-facing or provenance metadata so privacy can be reviewed again.");
   }
   const target = {
     causeId: asset.causeId ?? undefined,
