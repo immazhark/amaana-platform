@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { parsePrivateTrackingLocation, type PrivateTrackingCredentials } from "@/lib/private-tracking";
 
 type TrackingRecord = {
@@ -34,13 +34,12 @@ const statusCopy: Record<string, string> = {
 };
 
 export function AssistanceStatusClient() {
-  const credentialsRef = useRef<PrivateTrackingCredentials | null | undefined>(undefined);
+  const [credentials] = useState<PrivateTrackingCredentials | null | undefined>(() =>
+    typeof window === "undefined"
+      ? undefined
+      : parsePrivateTrackingLocation(window.location.search, window.location.hash),
+  );
   const [record, setRecord] = useState<TrackingRecord | null | undefined>(undefined);
-
-  if (credentialsRef.current === undefined && typeof window !== "undefined") {
-    credentialsRef.current = parsePrivateTrackingLocation(window.location.search, window.location.hash);
-  }
-  const credentials = credentialsRef.current;
 
   useEffect(() => {
     if (window.location.search || window.location.hash) {
