@@ -23,7 +23,21 @@ export async function updateAppeal(formData: FormData) {
   if (current.assistanceRequest && !goalMatchesApprovedPublicTarget(goalAmount, current.assistanceRequest.verification)) throw new Error("Appeal goal must match the approved public fundraising target");
   const contentIssues = getAppealConsentContentIssues({ verification: current.assistanceRequest?.verification, beneficiaryDisplayName, coverImageUrl: coverImageValue });
   if (contentIssues.length) throw new Error(contentIssues.join(" "));
-  await prisma.$transaction([prisma.appeal.update({ where: { id }, data: { title, slug, summary, story, goalAmount, category: category as AppealCategory, beneficiaryDisplayName: beneficiaryDisplayName || null, beneficiaryLocation: String(formData.get("beneficiaryLocation") || "").trim() || null, coverImageUrl: coverImageValue || null } }), prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.content_updated", entityType: "Appeal", entityId: id } })]);
+  await withSerializableTransactionRetry(async tx => {
+    const fresh = await tx.appeal.findUniqueOrThrow({ where: { id }, include: { assistanceRequest: { include: { verification: true } } } });
+    if (fresh.status !== current.status || !["DRAFT", "UNDER_REVIEW", "REJECTED"].includes(fresh.status)) {
+      throw new Error("This appeal changed while you were reviewing it. Refresh before editing content.");
+    }
+    if (fresh.assistanceRequest && !goalMatchesApprovedPublicTarget(goalAmount, fresh.assistanceRequest.verification)) throw new Error("Appeal goal must match the approved public fundraising target");
+    const freshContentIssues = getAppealConsentContentIssues({ verification: fresh.assistanceRequest?.verification, beneficiaryDisplayName, coverImageUrl: coverImageValue });
+    if (freshContentIssues.length) throw new Error(freshContentIssues.join(" "));
+    const updated = await tx.appeal.updateMany({
+      where: { id, status: current.status },
+      data: { title, slug, summary, story, goalAmount, category: category as AppealCategory, beneficiaryDisplayName: beneficiaryDisplayName || null, beneficiaryLocation: String(formData.get("beneficiaryLocation") || "").trim() || null, coverImageUrl: coverImageValue || null },
+    });
+    if (updated.count !== 1) throw new Error("This appeal changed while you were reviewing it. Refresh before editing content.");
+    await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.content_updated", entityType: "Appeal", entityId: id } });
+  });
   revalidatePath(`/admin/appeals/${id}`);
 }
 
@@ -93,7 +107,17 @@ export async function publishAppealUpdate(formData: FormData) {
   if (update.isPublic) throw new Error("Appeal update is already public");
   const publicationIssues = getAppealUpdatePublicationIssues({ appealStatus: appeal.status, privacyReviewed, hasAssistanceRequest: Boolean(appeal.assistanceRequest), verification: appeal.assistanceRequest?.verification });
   if (publicationIssues.length) throw new Error(`Appeal update cannot be published: ${publicationIssues.join(" ")}`);
-  await prisma.$transaction([prisma.appealUpdate.update({ where: { id: updateId }, data: { isPublic: true, publishedAt: new Date() } }), prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_published", entityType: "Appeal", entityId: appealId, metadata: { updateId, privacyReviewed: true } } })]);
+  await withSerializableTransactionRetry(async tx => {
+    const freshAppeal = await tx.appeal.findUniqueOrThrow({ where: { id: appealId }, select: { status: true, assistanceRequest: { select: { id: true, verification: true } } } });
+    const freshUpdate = await tx.appealUpdate.findUniqueOrThrow({ where: { id: updateId }, select: { appealId: true, isPublic: true } });
+    if (freshUpdate.appealId !== appealId) throw new Error("Appeal update does not belong to this appeal");
+    if (freshUpdate.isPublic) throw new Error("Appeal update is already public");
+    const freshIssues = getAppealUpdatePublicationIssues({ appealStatus: freshAppeal.status, privacyReviewed, hasAssistanceRequest: Boolean(freshAppeal.assistanceRequest), verification: freshAppeal.assistanceRequest?.verification });
+    if (freshIssues.length) throw new Error(`Appeal update cannot be published: ${freshIssues.join(" ")}`);
+    const claimed = await tx.appealUpdate.updateMany({ where: { id: updateId, appealId, isPublic: false }, data: { isPublic: true, publishedAt: new Date() } });
+    if (claimed.count !== 1) throw new Error("Appeal update changed while you were reviewing it. Refresh before publishing.");
+    await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_published", entityType: "Appeal", entityId: appealId, metadata: { updateId, privacyReviewed: true } } });
+  });
   revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals"); revalidatePath(`/appeals/${appeal.slug}`);
 }
 
@@ -105,9 +129,10 @@ export async function unpublishAppealUpdate(formData: FormData) {
   ]);
   if (update.appealId !== appealId) throw new Error("Appeal update does not belong to this appeal");
   if (!update.isPublic) throw new Error("Appeal update is already internal");
-  await prisma.$transaction([
-    prisma.appealUpdate.update({ where: { id: updateId }, data: { isPublic: false, publishedAt: null } }),
-    prisma.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_unpublished", entityType: "Appeal", entityId: appealId, metadata: { updateId } } }),
-  ]);
+  await withSerializableTransactionRetry(async tx => {
+    const claimed = await tx.appealUpdate.updateMany({ where: { id: updateId, appealId, isPublic: true }, data: { isPublic: false, publishedAt: null } });
+    if (claimed.count !== 1) throw new Error("Appeal update changed while you were reviewing it. Refresh before unpublishing.");
+    await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_unpublished", entityType: "Appeal", entityId: appealId, metadata: { updateId } } });
+  });
   revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals"); revalidatePath(`/appeals/${appeal.slug}`);
 }
