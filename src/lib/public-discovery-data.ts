@@ -1,6 +1,8 @@
 import { publicFaithWhere } from "@/lib/faith-publication";
 import { prisma } from "@/lib/prisma";
 
+const DISCOVERY_MEDIA_CANDIDATE_LIMIT = 3;
+
 const publicMediaSelect = {
   id: true,
   kind: true,
@@ -28,7 +30,7 @@ export async function getStoriesDiscoveryData() {
       mediaAssets: {
         where: { isPublic: true, privacyApprovedAt: { not: null } },
         orderBy: { sortOrder: "asc" },
-        take: 1,
+        take: DISCOVERY_MEDIA_CANDIDATE_LIMIT,
         select: publicMediaSelect,
       },
     },
@@ -55,7 +57,7 @@ export async function getFaithDiscoveryData() {
       mediaAssets: {
         where: { isPublic: true, privacyApprovedAt: { not: null } },
         orderBy: { sortOrder: "asc" },
-        take: 1,
+        take: DISCOVERY_MEDIA_CANDIDATE_LIMIT,
         select: publicMediaSelect,
       },
     },

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { getFaithDiscoveryData } from "@/lib/public-discovery-data";
+import { selectIdentityPublicImage } from "@/lib/public-media";
 import styles from "./faith-audit.module.css";
 
 export const dynamic = "force-dynamic";
@@ -31,6 +32,7 @@ export default async function FaithAndReflectionsPage() {
   const reminders = content.filter(item => item.type === "REMINDER");
   const videos = content.filter(item => item.type === "VIDEO");
   const lead = content[0];
+  const leadMedia = lead ? selectIdentityPublicImage(lead.mediaAssets) : null;
   const rest = content.slice(1);
 
   return (
@@ -44,7 +46,7 @@ export default async function FaithAndReflectionsPage() {
           { label: "Explore the library", href: "#library" },
           { label: "See faith in action", href: "/our-work", secondary: true },
         ]}
-        visual={lead?.mediaAssets[0] ? <PublicMedia asset={lead.mediaAssets[0]} priority /> : undefined}
+        visual={leadMedia ? <PublicMedia asset={leadMedia} priority /> : undefined}
         visualKicker="Reflect · Serve"
         visualTitle="أمانة"
         visualNote="Reviewed religious content only. Sources, attribution and verification remain part of the public record."
@@ -61,7 +63,7 @@ export default async function FaithAndReflectionsPage() {
         </div>
       </section>
 
-      {lead && <section className="v2-section dark v2-faith-feature" aria-labelledby="featured-reflection-title"><div className="v2-shell v2-faith-feature-grid"><div className="v2-faith-feature-copy"><p className="v2-section-label">Featured reflection</p><small>{lead.type.toLowerCase()}</small><h2 id="featured-reflection-title">{lead.title}</h2><p>{lead.excerpt}</p>{lead.sourceCitation && <div className="v2-faith-source"><span>Reviewed source</span><p>{lead.sourceCitation}</p></div>}<Link className="v2-button ghost" href={`/faith-and-reflections/${lead.slug}`}>Read the reviewed reflection</Link></div><div className="v2-faith-feature-media">{lead.mediaAssets[0] ? <PublicMedia asset={lead.mediaAssets[0]} /> : <div className="v2-faith-feature-placeholder"><span>Reviewed content</span><strong>{lead.title}</strong><small>Visual media appears only when separately approved for public use.</small></div>}</div></div></section>}
+      {lead && <section className="v2-section dark v2-faith-feature" aria-labelledby="featured-reflection-title"><div className="v2-shell v2-faith-feature-grid"><div className="v2-faith-feature-copy"><p className="v2-section-label">Featured reflection</p><small>{lead.type.toLowerCase()}</small><h2 id="featured-reflection-title">{lead.title}</h2><p>{lead.excerpt}</p>{lead.sourceCitation && <div className="v2-faith-source"><span>Reviewed source</span><p>{lead.sourceCitation}</p></div>}<Link className="v2-button ghost" href={`/faith-and-reflections/${lead.slug}`}>Read the reviewed reflection</Link></div><div className="v2-faith-feature-media">{leadMedia ? <PublicMedia asset={leadMedia} /> : <div className="v2-faith-feature-placeholder"><span>Reviewed content</span><strong>{lead.title}</strong><small>Visual media appears only when separately approved for public use.</small></div>}</div></div></section>}
 
       {rest.length > 0 && <section className="v2-section v2-faith-archive" aria-labelledby="published-reflections-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Published reflections</p><h2 className="v2-section-title" id="published-reflections-title">Verified before it reaches you.</h2></div><p className="v2-section-intro">Every public item has both publication approval and verified religious review.</p></div><div className="v2-faith-library-grid">{rest.map((item,index)=><Link className={`v2-faith-library-item ${index===0?"wide":""}`} href={`/faith-and-reflections/${item.slug}`} key={item.id} aria-label={`Open ${item.title}`}><span>{String(index+2).padStart(2,"0")}</span><small>{item.type.toLowerCase()}</small><h3>{item.title}</h3><p>{item.excerpt}</p>{item.sourceCitation && <div><b>Source</b><p>{item.sourceCitation}</p></div>}<strong className="v2-faith-library-action">Open reflection ↗</strong></Link>)}</div></div></section>}
 
