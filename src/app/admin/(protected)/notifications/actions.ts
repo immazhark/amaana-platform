@@ -61,24 +61,24 @@ export async function requeueFailedNotification(formData: FormData) {
   if (reason.length < 10) throw new Error("Provide a short operational reason before requeueing");
   if (reason.length > 1000) throw new Error("Operational reason is too long");
 
-  const current = await prisma.notification.findUniqueOrThrow({
-    where: { id },
-    select: {
-      id: true,
-      status: true,
-      channel: true,
-      attempts: true,
-      failureReason: true,
-      templateKey: true,
-    },
-  });
+  await withSerializableTransactionRetry(async tx => {
+    const current = await tx.notification.findUniqueOrThrow({
+      where: { id },
+      select: {
+        id: true,
+        status: true,
+        channel: true,
+        attempts: true,
+        failureReason: true,
+        templateKey: true,
+      },
+    });
 
-  if (current.channel !== "EMAIL") throw new Error("Only email notifications can be manually requeued here");
-  if (current.status !== NotificationStatus.FAILED) {
-    throw new Error("Only failed notifications can be manually requeued");
-  }
+    if (current.channel !== "EMAIL") throw new Error("Only email notifications can be manually requeued here");
+    if (current.status !== NotificationStatus.FAILED) {
+      throw new Error("Only failed notifications can be manually requeued");
+    }
 
-  await prisma.$transaction(async tx => {
     const claimed = await tx.notification.updateMany({
       where: {
         id,
