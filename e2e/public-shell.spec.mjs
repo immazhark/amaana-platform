@@ -203,7 +203,28 @@ test('mobile navigation backdrop dismisses the menu without entering keyboard or
   const backdrop = page.locator('.mobile-menu-backdrop');
   await expect(backdrop).toBeVisible();
   await expect(backdrop).toHaveAttribute('tabindex', '-1');
-  await backdrop.click({ position: { x: 10, y: 100 } });
+
+  const clickPoint = await page.evaluate(() => {
+    const backdropElement = document.querySelector('.mobile-menu-backdrop');
+    const menuElement = document.querySelector('#mobile-navigation');
+    if (!(backdropElement instanceof HTMLElement) || !(menuElement instanceof HTMLElement)) return null;
+
+    const backdropRect = backdropElement.getBoundingClientRect();
+    const menuRect = menuElement.getBoundingClientRect();
+    const x = Math.max(backdropRect.left + 8, Math.min(backdropRect.right - 8, backdropRect.left + backdropRect.width / 2));
+    const availableBelow = backdropRect.bottom - Math.max(backdropRect.top, menuRect.bottom);
+    const availableAbove = Math.min(backdropRect.bottom, menuRect.top) - backdropRect.top;
+    const y = availableBelow >= 16
+      ? Math.max(backdropRect.top + 8, menuRect.bottom + Math.min(24, availableBelow / 2))
+      : availableAbove >= 16
+        ? Math.min(backdropRect.bottom - 8, menuRect.top - Math.min(24, availableAbove / 2))
+        : null;
+
+    return y === null ? null : { x, y };
+  });
+
+  expect(clickPoint, 'Open mobile navigation must leave a pointer-accessible backdrop region').not.toBeNull();
+  await page.mouse.click(clickPoint.x, clickPoint.y);
   await expect(page.getByRole('navigation', { name: 'Mobile navigation' })).toBeHidden();
   await expect(toggle).toBeFocused();
 });
