@@ -155,6 +155,7 @@ export default async function RequestDetailPage({ params }: Props) {
           <h2>Assignment</h2>
           <form action={assignRequest} className="field">
             <input type="hidden" name="id" value={id}/>
+            <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
             <label htmlFor="assignedToId">Assigned staff member</label>
             <select id="assignedToId" name="assignedToId" defaultValue={request.assignedToId ?? ""}><option value="">Unassigned</option>{staff.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}</select>
             <button className="button secondary" disabled={!hasPermission(user, "assistance.assign")}>Save assignment</button>
@@ -182,6 +183,8 @@ export default async function RequestDetailPage({ params }: Props) {
           <dl className="details"><div><dt>Approved target</dt><dd>₹{verification.approvedPublicTarget!.toNumber().toLocaleString("en-IN")}</dd></div></dl>
           <form action={convertToAppeal} className="field">
             <input type="hidden" name="id" value={id}/>
+            <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
+            <input type="hidden" name="expectedVerificationUpdatedAt" value={verification.updatedAt.toISOString()}/>
             <label htmlFor="title">Public title</label>
             <input id="title" name="title" minLength={8} required/>
             <label htmlFor="publicSummary">Public summary</label>
