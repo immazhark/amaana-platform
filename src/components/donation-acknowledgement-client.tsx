@@ -31,24 +31,27 @@ type AcknowledgementResponse = AcknowledgementRecord | { found: false };
 const formatINR = (amount: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 
 export function DonationAcknowledgementClient({ reference }: { reference: string }) {
-  const [token] = useState<string | null | undefined>(() =>
-    typeof window === "undefined"
-      ? undefined
-      : parsePrivateDonationAcknowledgementLocation(window.location.search, window.location.hash),
-  );
+  const [token, setToken] = useState<string | null | undefined>(undefined);
   const [record, setRecord] = useState<AcknowledgementRecord | null | undefined>(undefined);
 
   useEffect(() => {
+    const resolvedToken = parsePrivateDonationAcknowledgementLocation(window.location.search, window.location.hash);
     if (window.location.search || window.location.hash) {
       window.history.replaceState(null, "", window.location.pathname);
     }
-    if (!token) return;
 
+    setToken(resolvedToken);
+    if (!resolvedToken) {
+      setRecord(null);
+      return;
+    }
+
+    setRecord(undefined);
     const controller = new AbortController();
     void fetch("/api/donations/acknowledgement", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reference, token }),
+      body: JSON.stringify({ reference, token: resolvedToken }),
       cache: "no-store",
       signal: controller.signal,
     })
@@ -59,7 +62,7 @@ export function DonationAcknowledgementClient({ reference }: { reference: string
       });
 
     return () => controller.abort();
-  }, [reference, token]);
+  }, [reference]);
 
   const loading = token === undefined || (Boolean(token) && record === undefined);
 

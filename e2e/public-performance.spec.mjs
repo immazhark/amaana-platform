@@ -81,8 +81,21 @@ for (const path of criticalPublicRoutes) {
     const failed = [];
     page.on('requestfailed', request => {
       const url = new URL(request.url());
-      if (url.origin === 'http://127.0.0.1:3000') {
-        failed.push({ url: url.pathname, failure: request.failure()?.errorText ?? 'unknown' });
+      if (url.origin !== 'http://127.0.0.1:3000') return;
+
+      const failure = request.failure()?.errorText ?? 'unknown';
+      const headers = request.headers();
+      const isCancelledNextPrefetch = failure === 'net::ERR_ABORTED'
+        && request.resourceType() === 'fetch'
+        && (
+          headers['next-router-prefetch'] === '1'
+          || headers.rsc === '1'
+          || headers.purpose === 'prefetch'
+          || headers['sec-purpose'] === 'prefetch'
+        );
+
+      if (!isCancelledNextPrefetch) {
+        failed.push({ url: url.pathname, failure, resourceType: request.resourceType() });
       }
     });
 
