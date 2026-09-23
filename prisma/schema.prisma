@@ -430,6 +430,7 @@ model Donation {
   refundedAt          DateTime?
   appeal              Appeal         @relation(fields: [appealId], references: [id])
   events              PaymentEvent[]
+  refunds             RefundLedger[]
   notifications       Notification[]
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
@@ -438,6 +439,18 @@ model Donation {
   @@index([status, createdAt])
   @@index([givingIntent, createdAt])
   @@index([createdAt])
+}
+
+// Durable provider-object identity; never prune with notification/security logs.
+model RefundLedger {
+  providerRefundId  String   @id
+  providerPaymentId String
+  donationId        String
+  amount            Decimal  @db.Decimal(12, 2)
+  currency          String
+  donation          Donation @relation(fields: [donationId], references: [id], onDelete: Restrict)
+  processedAt       DateTime @default(now())
+  @@index([donationId, processedAt])
 }
 
 model PaymentEvent {
@@ -586,3 +599,4 @@ model Notification {
   @@index([status, scheduledFor])
   @@index([status, createdAt])
 }
+

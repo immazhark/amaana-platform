@@ -15,6 +15,8 @@ const mocks = vi.hoisted(() => ({
   txAppealUpdate: vi.fn(),
   txPaymentEventCreate: vi.fn(),
   txNotificationCreate: vi.fn(),
+  txRefundCreateMany: vi.fn(),
+  txRefundFindUnique: vi.fn(),
 }));
 
 vi.mock("@/lib/bounded-request-body", () => {
@@ -128,6 +130,10 @@ describe("Razorpay webhook route", () => {
       notification: {
         create: mocks.txNotificationCreate,
       },
+      refundLedger: {
+        createMany: mocks.txRefundCreateMany,
+        findUnique: mocks.txRefundFindUnique,
+      },
     };
 
     mocks.rootTransaction.mockImplementation(async callback => callback(tx));
@@ -150,6 +156,14 @@ describe("Razorpay webhook route", () => {
     mocks.txDonationUpdate.mockResolvedValue({ id: "donation_1" });
     mocks.txAppealUpdate.mockResolvedValue({ id: "appeal_1" });
     mocks.txNotificationCreate.mockResolvedValue({ id: "notification_1" });
+    mocks.txRefundCreateMany.mockResolvedValue({ count: 1 });
+    mocks.txRefundFindUnique.mockResolvedValue({
+      providerRefundId: "rfnd_001",
+      providerPaymentId: "pay_001",
+      donationId: "donation_1",
+      amount: decimal(25),
+      currency: "INR",
+    });
   });
 
   it("rejects an invalid signature before any event lookup or accounting", async () => {
@@ -371,6 +385,41 @@ describe("Razorpay webhook route", () => {
     });
     expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
     expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+  });
+
+  it("records a new event for an existing refund without repeating accounting or notification", async () => {
+    mocks.txRefundCreateMany.mockResolvedValue({ count: 0 });
+    const response = await POST(webhookRequest(refundPayload(), { "x-razorpay-event-id": "evt_different" }));
+    expect(response.status).toBe(200);
+    expect(mocks.txPaymentEventCreate).toHaveBeenCalledOnce();
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects conflicting details for an existing refund identity", async () => {
+    mocks.txRefundCreateMany.mockResolvedValue({ count: 0 });
+    const response = await POST(webhookRequest(refundPayload(3000)));
+    expect(response.status).toBe(500);
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+  });
+
+  it.each(["", "invalid", null])("rejects a missing or malformed refund id %s", async id => {
+    const payload = refundPayload();
+    const response = await POST(webhookRequest({
+      ...payload,
+      payload: { refund: { entity: { ...payload.payload.refund.entity, id } } },
+    }));
+    expect(response.status).toBe(400);
+    expect(mocks.transactionRetry).not.toHaveBeenCalled();
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
+  });
+
+  it("does not acknowledge an unmatched refund as accounted", async () => {
+    mocks.txDonationFindUnique.mockResolvedValueOnce(null);
+    const response = await POST(webhookRequest(refundPayload()));
+    expect(response.status).toBe(500);
+    expect(mocks.txRefundCreateMany).not.toHaveBeenCalled();
   });
 
   it("reconciles an INR refund into donation, appeal, event and notification records", async () => {

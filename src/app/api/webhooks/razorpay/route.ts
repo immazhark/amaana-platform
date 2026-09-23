@@ -77,6 +77,16 @@ export async function POST(request: Request) {
     const refund = payload.payload?.refund?.entity;
     const auditPayload = paymentEventAuditPayload(payload);
 
+    // A financial refund must have a stable provider identity. Never acknowledge
+    // malformed refunds as processed, since doing so would hide reconciliation.
+    if (payload.event === "refund.processed" && (
+      !refund || typeof refund.id !== "string" || !/^rfnd_[A-Za-z0-9]+$/.test(refund.id) ||
+      typeof refund.payment_id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(refund.payment_id) ||
+      refund.currency !== "INR" || !Number.isSafeInteger(refund.amount) || refund.amount <= 0
+    )) {
+      return new NextResponse("Invalid refund entity", { status: 400 });
+    }
+
     if (payload.event === "payment.captured" && payment?.order_id && payment.currency === "INR") {
       const result = await captureDonation(payment.order_id, payment.id, payment.amount);
       try {
@@ -167,7 +177,34 @@ export async function POST(request: Request) {
           },
         });
 
-        if (!donation) return;
+        if (!donation) throw new Error("Refund donation is not available for reconciliation");
+
+        // The entity claim and ALL financial effects share the transaction.
+        // skipDuplicates avoids swallowing a different uniqueness failure.
+        // Serializable conflicts retry the complete operation using fresh state.
+        const claim = await tx.refundLedger.createMany({
+          data: {
+            providerRefundId: refund.id,
+            providerPaymentId: refund.payment_id!,
+            donationId: donation.id,
+            amount: refund.amount / 100,
+            currency: refund.currency!,
+          },
+          skipDuplicates: true,
+        });
+        if (claim.count === 0) {
+          const existingRefund = await tx.refundLedger.findUnique({
+            where: { providerRefundId: refund.id },
+          });
+          if (!existingRefund ||
+            existingRefund.donationId !== donation.id ||
+            existingRefund.providerPaymentId !== refund.payment_id ||
+            existingRefund.currency !== refund.currency ||
+            decimalRupeesToPaise(existingRefund.amount) !== refund.amount) {
+            throw new Error("Refund entity identity conflict");
+          }
+          return;
+        }
 
         const appeal = await tx.appeal.findUnique({
           where: { id: donation.appealId },
