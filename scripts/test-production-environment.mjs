@@ -8,6 +8,8 @@ function validEnv() {
     EMAIL_DELIVERY_MODE: "live",
     DATABASE_URL: "postgresql://user:password@db.example.com:5432/amaana?sslmode=require",
     NEXT_PUBLIC_APP_URL: "https://amaanafoundation.org",
+    PRODUCTION_INDEXING_DECISION: "keep_disabled",
+    NEXT_PUBLIC_ALLOW_INDEXING: "false",
     EMAIL_FROM: "Amaana Foundation <notifications@amaanafoundation.org>",
     RESEND_API_KEY: "re_production_key",
     CRON_SECRET: "c".repeat(32),
@@ -46,6 +48,51 @@ test("rejects staging payment/email posture and non-official origin", () => {
   assert.match(problems, /EMAIL_DELIVERY_MODE/);
   assert.match(problems, /official/);
   assert.match(problems, /Live key/);
+});
+
+test("requires an explicit production indexing decision and matching public flag", () => {
+  const missing = validEnv();
+  delete missing.PRODUCTION_INDEXING_DECISION;
+  assert.match(validateProductionEnvironmentContract(missing).join("\n"), /PRODUCTION_INDEXING_DECISION is required/);
+
+  const enableMismatch = validEnv();
+  enableMismatch.PRODUCTION_INDEXING_DECISION = "enable";
+  enableMismatch.NEXT_PUBLIC_ALLOW_INDEXING = "false";
+  assert.match(validateProductionEnvironmentContract(enableMismatch).join("\n"), /NEXT_PUBLIC_ALLOW_INDEXING must be true/);
+
+  const disabledMismatch = validEnv();
+  disabledMismatch.PRODUCTION_INDEXING_DECISION = "keep_disabled";
+  disabledMismatch.NEXT_PUBLIC_ALLOW_INDEXING = "true";
+  assert.match(validateProductionEnvironmentContract(disabledMismatch).join("\n"), /must not be true/);
+
+  const enabled = validEnv();
+  enabled.PRODUCTION_INDEXING_DECISION = "enable";
+  enabled.NEXT_PUBLIC_ALLOW_INDEXING = "true";
+  assert.deepEqual(validateProductionEnvironmentContract(enabled), []);
+});
+
+test("rejects public media delivery outside the official Amaana media boundary", () => {
+  const wrongHost = validEnv();
+  wrongHost.PUBLIC_MEDIA_BASE_URL = "https://cdn.example.com/media";
+  assert.match(validateProductionEnvironmentContract(wrongHost).join("\n"), /official .*\/media/i);
+
+  const wrongPath = validEnv();
+  wrongPath.PUBLIC_MEDIA_BASE_URL = "https://amaanafoundation.org/uploads";
+  assert.match(validateProductionEnvironmentContract(wrongPath).join("\n"), /official .*\/media/i);
+
+  const withQuery = validEnv();
+  withQuery.PUBLIC_MEDIA_BASE_URL = "https://amaanafoundation.org/media?source=preview";
+  assert.match(validateProductionEnvironmentContract(withQuery).join("\n"), /without query or fragment/i);
+});
+
+test("rejects insecure or malformed private storage endpoints", () => {
+  const insecure = validEnv();
+  insecure.S3_ENDPOINT = "http://s3.example.com";
+  assert.match(validateProductionEnvironmentContract(insecure).join("\n"), /S3_ENDPOINT must use HTTPS/);
+
+  const malformed = validEnv();
+  malformed.S3_ENDPOINT = "not-a-url";
+  assert.match(validateProductionEnvironmentContract(malformed).join("\n"), /S3_ENDPOINT must be a valid URL/);
 });
 
 test("rejects shared public/private storage and launch-only acceptance flags", () => {

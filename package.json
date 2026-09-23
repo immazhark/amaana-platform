@@ -30,7 +30,9 @@
     "launch:preflight:rehearsal": "node scripts/launch-preflight.mjs --rehearsal",
     "launch:preflight:production": "node scripts/launch-preflight.mjs --production",
     "rehearsal:verify-target": "node scripts/verify-rollback-target.mjs",
-    "launch:env:production": "node scripts/check-production-environment.mjs"
+    "launch:env:production": "node scripts/check-production-environment.mjs",
+    "launch:env:production:indexing-enabled": "PRODUCTION_INDEXING_DECISION=enable NEXT_PUBLIC_ALLOW_INDEXING=true node scripts/check-production-environment.mjs",
+    "launch:env:production:indexing-disabled": "PRODUCTION_INDEXING_DECISION=keep_disabled NEXT_PUBLIC_ALLOW_INDEXING=false node scripts/check-production-environment.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1128.0",

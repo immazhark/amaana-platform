@@ -82,6 +82,23 @@ Rehearsal sequence:
 
 Do not perform this sequence against production without explicit approval. When the rehearsal has actually succeeded, update `rollback-rehearsal` to `VERIFIED` with evidence.
 
+## 6. Production environment handoff contract
+
+Before any production deployment, set an explicit indexing decision rather than inheriting an ambient flag:
+
+- `PRODUCTION_INDEXING_DECISION=keep_disabled` with `NEXT_PUBLIC_ALLOW_INDEXING=false` keeps the launch non-indexable.
+- `PRODUCTION_INDEXING_DECISION=enable` with `NEXT_PUBLIC_ALLOW_INDEXING=true` is only valid after the separate human indexing gate is approved.
+
+Then run:
+
+```bash
+npm run launch:env:production
+```
+
+The contract also requires the official `https://amaanafoundation.org` application origin, Live Razorpay posture, production email delivery, separate private/public storage buckets, an HTTPS private-storage endpoint, and `PUBLIC_MEDIA_BASE_URL=https://amaanafoundation.org/media`. It prints variable names and validation failures only; it must never print secret values.
+
+The convenience scripts `launch:env:production:indexing-enabled` and `launch:env:production:indexing-disabled` set only the indexing decision variables. All other production values must still come from the approved production environment.
+
 ## 6. Production-only blockers
 `npm run launch:production` must remain red until all production gates have evidence, including:
 

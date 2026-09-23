@@ -67,7 +67,16 @@ export function validateProductionEnvironmentContract(env) {
 
   const privateBucket = requireValue(env, "S3_BUCKET", problems);
   requireValue(env, "S3_REGION", problems);
-  requireValue(env, "S3_ENDPOINT", problems);
+  const s3Endpoint = requireValue(env, "S3_ENDPOINT", problems);
+  if (s3Endpoint) {
+    try {
+      if (new URL(s3Endpoint).protocol !== "https:") {
+        problems.push("S3_ENDPOINT must use HTTPS in production.");
+      }
+    } catch {
+      problems.push("S3_ENDPOINT must be a valid URL.");
+    }
+  }
 
   const publicBucket = requireValue(env, "PUBLIC_MEDIA_S3_BUCKET", problems);
   const publicBaseUrl = requireValue(env, "PUBLIC_MEDIA_BASE_URL", problems);
@@ -76,12 +85,24 @@ export function validateProductionEnvironmentContract(env) {
   }
   if (publicBaseUrl) {
     try {
-      if (new URL(publicBaseUrl).protocol !== "https:") {
-        problems.push("PUBLIC_MEDIA_BASE_URL must use HTTPS.");
+      const url = new URL(publicBaseUrl);
+      const normalizedPath = url.pathname.replace(/\/+$/, "") || "/";
+      if (url.origin !== "https://amaanafoundation.org" || normalizedPath !== "/media" || url.search || url.hash) {
+        problems.push("PUBLIC_MEDIA_BASE_URL must use the official https://amaanafoundation.org/media path without query or fragment.");
       }
     } catch {
       problems.push("PUBLIC_MEDIA_BASE_URL must be a valid URL.");
     }
+  }
+
+  const indexingDecision = requireValue(env, "PRODUCTION_INDEXING_DECISION", problems);
+  const indexingFlag = String(env.NEXT_PUBLIC_ALLOW_INDEXING ?? "").toLowerCase();
+  if (indexingDecision && !["enable", "keep_disabled"].includes(indexingDecision)) {
+    problems.push("PRODUCTION_INDEXING_DECISION must be enable or keep_disabled.");
+  } else if (indexingDecision === "enable" && indexingFlag !== "true") {
+    problems.push("NEXT_PUBLIC_ALLOW_INDEXING must be true when PRODUCTION_INDEXING_DECISION=enable.");
+  } else if (indexingDecision === "keep_disabled" && indexingFlag === "true") {
+    problems.push("NEXT_PUBLIC_ALLOW_INDEXING must not be true when PRODUCTION_INDEXING_DECISION=keep_disabled.");
   }
 
   for (const [name, minLength] of Object.entries(REQUIRED_SECRET_LENGTHS)) {
