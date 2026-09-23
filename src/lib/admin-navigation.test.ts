@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { adminHomePathForPermissions, adminNavigationForPermissions } from "./admin-navigation";
+import { adminHomePathForPermissions, adminNavigationForPermissions, isAdminNavigationActive } from "./admin-navigation";
 
 describe("admin landing routing", () => {
   it("keeps assistance reviewers on the case queue", () => {
@@ -58,5 +58,26 @@ describe("admin navigation visibility", () => {
       "Notification delivery",
       "Audit history",
     ]);
+  });
+});
+
+
+describe("admin active navigation semantics", () => {
+  it("maps assistance request details back to the assistance queue", () => {
+    expect(isAdminNavigationActive("/admin", "/admin")).toBe(true);
+    expect(isAdminNavigationActive("/admin/requests/req_123", "/admin")).toBe(true);
+    expect(isAdminNavigationActive("/admin/requests/req_123/evidence", "/admin")).toBe(true);
+  });
+
+  it("keeps non-assistance admin areas from activating the assistance queue", () => {
+    expect(isAdminNavigationActive("/admin/appeals", "/admin")).toBe(false);
+    expect(isAdminNavigationActive("/admin/retention", "/admin")).toBe(false);
+    expect(isAdminNavigationActive("/admin/donations", "/admin")).toBe(false);
+  });
+
+  it("activates exact and nested destinations without prefix collisions", () => {
+    expect(isAdminNavigationActive("/admin/donations", "/admin/donations")).toBe(true);
+    expect(isAdminNavigationActive("/admin/donations/don_123", "/admin/donations")).toBe(true);
+    expect(isAdminNavigationActive("/admin/donations-archive", "/admin/donations")).toBe(false);
   });
 });
