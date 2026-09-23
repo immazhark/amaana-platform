@@ -41,6 +41,7 @@ function decimalRupeesToPaise(value: { mul: (amount: number) => { toNumber: () =
 export async function POST(request: Request) {
   const signature = request.headers.get("x-razorpay-signature") ?? "";
   let providerEventId: string | null = null;
+  let receivedEventType: string | null = null;
 
   try {
     validateProductionEnvironment();
@@ -51,6 +52,7 @@ export async function POST(request: Request) {
     }
 
     const payload = JSON.parse(rawBody) as RazorpayWebhook;
+    receivedEventType = payload.event;
     providerEventId =
       request.headers.get("x-razorpay-event-id") ??
       createHash("sha256").update(rawBody).digest("hex");
@@ -251,8 +253,11 @@ export async function POST(request: Request) {
         where: { providerEventId },
         select: { id: true, eventType: true },
       });
-      if (existing && existing.eventType === payload.event) {
+      if (existing && existing.eventType === receivedEventType) {
         return NextResponse.json({ received: true });
+      }
+      if (existing) {
+        return new NextResponse("Webhook event id conflict", { status: 409 });
       }
     }
 
@@ -260,3 +265,4 @@ export async function POST(request: Request) {
     return new NextResponse("Webhook processing failed", { status: 500 });
   }
 }
+

@@ -271,3 +271,7 @@ PR #22 and its Railway deployment are verified complete. No open PRs exist. Prio
 
 ### Do not
 - Do not merge to `main`, enable indexing, initiate live Razorpay activity, publish unreviewed beneficiary media, or deploy the quiet branch before background verification is green.
+
+## 2026-09-23 — Codex CI recovery
+
+Explicit user takeover; verified integration e76744a28e3da94ce239e45af96f01510fc5524e, no open integration PRs. CI 35772257463 and Railway b85e2a7a-c63f-4ae6-a404-489e3148bf9e fail the same pre-existing TS2304 at webhook route line 254. Captured verified event type outside try scope for race recovery; conflicting races now return 409 and unrelated uniqueness failures remain errors. Local targeted webhook suite: 15 tests pass. Full remote checks pending; no production changes. Next: refund-entity ledger and transaction/concurrency tests.

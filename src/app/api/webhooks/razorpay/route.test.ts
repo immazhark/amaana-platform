@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
   ensureCapturedDonationForRefund: vi.fn(),
   paymentEventFindUnique: vi.fn(),
   rootPaymentEventCreate: vi.fn(),
+  uniqueConstraintError: vi.fn(),
   transactionRetry: vi.fn(),
   rootTransaction: vi.fn(),
   txDonationFindUnique: vi.fn(),
@@ -50,7 +51,7 @@ vi.mock("@/lib/env", () => ({
 }));
 
 vi.mock("@/lib/webhook-idempotency", () => ({
-  isPrismaUniqueConstraintError: () => false,
+  isPrismaUniqueConstraintError: mocks.uniqueConstraintError,
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -102,6 +103,7 @@ function refundPayload(amount = 2500) {
 describe("Razorpay webhook route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.uniqueConstraintError.mockReturnValue(false);
     mocks.verifyWebhookSignature.mockReturnValue(true);
     mocks.paymentEventFindUnique.mockResolvedValue(null);
     mocks.ensureCapturedDonationForRefund.mockResolvedValue({
@@ -187,6 +189,33 @@ describe("Razorpay webhook route", () => {
     expect(mocks.ensureCapturedDonationForRefund).not.toHaveBeenCalled();
     expect(mocks.transactionRetry).not.toHaveBeenCalled();
     expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["refund.processed", 200],
+    ["payment.failed", 409],
+  ])("handles a concurrent event insert with stored type %s", async (eventType, status) => {
+    mocks.paymentEventFindUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({ id: "racing_event", eventType });
+    mocks.uniqueConstraintError.mockReturnValue(true);
+    mocks.transactionRetry.mockRejectedValueOnce({ code: "P2002" });
+
+    const response = await POST(webhookRequest(refundPayload()));
+
+    expect(response.status).toBe(status);
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("does not acknowledge an unrelated unique constraint failure", async () => {
+    mocks.uniqueConstraintError.mockReturnValue(true);
+    mocks.transactionRetry.mockRejectedValueOnce({ code: "P2002" });
+
+    const response = await POST(webhookRequest(refundPayload()));
+
+    expect(response.status).toBe(500);
   });
 
   it("records payment.failed without changing appeal accounting", async () => {
@@ -389,3 +418,4 @@ describe("Razorpay webhook route", () => {
     });
   });
 });
+
