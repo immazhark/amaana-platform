@@ -23,8 +23,8 @@ function optionalReviewDate(value: FormDataEntryValue | null) {
   return date.toISOString();
 }
 
-async function currentLegalHold(documentId: string) {
-  const event = await prisma.auditEvent.findFirst({
+async function currentLegalHold(documentId: string, db: Pick<typeof prisma, "auditEvent"> = prisma) {
+  const event = await db.auditEvent.findFirst({
     where: {
       entityType: "AssistanceRequest",
       action: { in: ["assistance.document_legal_hold_placed", "assistance.document_legal_hold_released"] },
@@ -106,6 +106,35 @@ export async function reviewDocumentRetention(formData: FormData) {
       throw new Error("Raw evidence can only be deleted after the assistance request is closed/rejected or its linked appeal is closed");
     }
 
+    // Revalidate the destructive preconditions immediately before touching
+    // storage. The initial read is only for the operator preview; it must not
+    // authorize a later deletion after another admin changes the request/hold.
+    const deletionSnapshot = await prisma.assistanceDocument.findUniqueOrThrow({
+      where: { id: documentId },
+      select: {
+        assistanceRequestId: true,
+        objectKey: true,
+        assistanceRequest: {
+          select: {
+            status: true,
+            appeal: { select: { status: true } },
+          },
+        },
+      },
+    });
+    if (deletionSnapshot.assistanceRequestId !== document.assistanceRequestId ||
+        deletionSnapshot.objectKey !== document.objectKey) {
+      throw new Error("This evidence record changed while you were reviewing it. Refresh before deleting.");
+    }
+    if (await currentLegalHold(documentId)) {
+      throw new Error("This document was placed under hold while you were reviewing it. Refresh before deleting.");
+    }
+    const stillTerminal = ["CLOSED", "REJECTED"].includes(deletionSnapshot.assistanceRequest.status);
+    const stillClosedLinkedAppeal = deletionSnapshot.assistanceRequest.appeal?.status === "CLOSED";
+    if (!stillTerminal && !stillClosedLinkedAppeal) {
+      throw new Error("The request or linked appeal changed while you were reviewing it. Refresh before deleting.");
+    }
+
     await prisma.auditEvent.create({
       data: {
         actorId: user.id,
@@ -122,7 +151,7 @@ export async function reviewDocumentRetention(formData: FormData) {
 
     await deletePrivateDocumentObject(document.objectKey, document.assistanceRequestId);
     await prisma.$transaction([
-      prisma.assistanceDocument.delete({ where: { id: documentId } }),
+      prisma.assistanceDocument.delete({ where: { id: documentId, objectKey: document.objectKey } }),
       prisma.auditEvent.create({ data: {
         actorId: user.id,
         action: "assistance.document_deleted",
