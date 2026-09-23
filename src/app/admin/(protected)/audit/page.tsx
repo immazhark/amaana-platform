@@ -31,7 +31,7 @@ export default async function AuditHistoryPage({ searchParams }: Props) {
   const events = await prisma.auditEvent.findMany({
     where,
     include: { actor: { select: { name: true, email: true } } },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
     take: pagination.pageSize,
   });
