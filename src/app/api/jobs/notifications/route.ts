@@ -24,7 +24,7 @@ async function runRetentionMaintenance() {
   try {
     const result = await pruneEphemeralSecurityLedgers();
     return { status: "ok" as const, ...result };
-  } catch (error) {
+  } catch {
     console.error("Security-ledger retention maintenance failed");
     return { status: "failed" as const };
   }
@@ -53,7 +53,7 @@ export async function POST(request: Request) {
       { status: "ok", ...result, retention },
       { headers: privateHeaders },
     );
-  } catch (error) {
+  } catch {
     console.error("Notification delivery job failed");
     return NextResponse.json(
       { status: "failed", retention },
