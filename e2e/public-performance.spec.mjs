@@ -159,6 +159,29 @@ test('Islamic companion detail panel remains interaction-gated and functional', 
   await expect(panel).toBeVisible();
   await expect(panel.getByRole('heading', { name: 'Today’s ayah & hadith' })).toBeVisible();
 
+  const geometry = await page.evaluate(() => {
+    const header = document.querySelector('.site-header');
+    const panelElement = document.querySelector('#amaana-reading-panel');
+    const closeButton = panelElement?.querySelector('button[aria-label="Close companion"]');
+    if (!(header instanceof HTMLElement) || !(panelElement instanceof HTMLElement) || !(closeButton instanceof HTMLElement)) return null;
+
+    const headerRect = header.getBoundingClientRect();
+    const panelRect = panelElement.getBoundingClientRect();
+    const closeRect = closeButton.getBoundingClientRect();
+    const closeX = closeRect.left + closeRect.width / 2;
+    const closeY = closeRect.top + closeRect.height / 2;
+    return {
+      headerBottom: headerRect.bottom,
+      panelTop: panelRect.top,
+      closeButtonIsTopmost: document.elementFromPoint(closeX, closeY) === closeButton
+        || closeButton.contains(document.elementFromPoint(closeX, closeY)),
+    };
+  });
+
+  expect(geometry, 'Companion panel geometry should be measurable').not.toBeNull();
+  expect(geometry.panelTop, 'Companion panel must clear the sticky header').toBeGreaterThanOrEqual(geometry.headerBottom);
+  expect(geometry.closeButtonIsTopmost, 'Companion close control must remain pointer-accessible').toBe(true);
+
   await panel.getByRole('button', { name: 'Close companion' }).click();
   await expect(page.locator('.amaana-companion-panel')).toHaveCount(0);
   await expect(readingsButton).toBeFocused();

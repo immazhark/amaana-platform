@@ -5,9 +5,12 @@ const root = process.cwd();
 const layoutPath = path.join(root, 'src/app/layout.tsx');
 const homePath = path.join(root, 'src/app/page.tsx');
 const homeDocumentaryPath = path.join(root, 'src/app/home-documentary.css');
+const brandExpressionPath = path.join(root, 'src/app/brand-expression.css');
+const retiredIterationThreePath = path.join(root, 'src/app/iteration-three.css');
 const layout = await readFile(layoutPath, 'utf8');
 const home = await readFile(homePath, 'utf8');
 const homeDocumentary = await readFile(homeDocumentaryPath, 'utf8');
+const brandExpression = await readFile(brandExpressionPath, 'utf8');
 
 const cssImports = [...layout.matchAll(/import\s+["']\.\/([^"']+\.css)["'];/g)].map(match => match[1]);
 const uniqueImports = new Set(cssImports);
@@ -17,9 +20,10 @@ if (cssImports.length !== uniqueImports.size) {
   failures.push('Root layout contains duplicate CSS imports.');
 }
 
-// The verified pre-hardening root had 19 stylesheet layers. Two homepage/brand layers are now scoped or consolidated.
-if (cssImports.length > 17) {
-  failures.push(`Root layout imports ${cssImports.length} CSS files; expected no more than 17.`);
+// The verified pre-hardening root had 19 stylesheet layers. Homepage-only layers,
+ // brand-lockup.css and the adjacent iteration-three.css layer are now scoped or consolidated.
+if (cssImports.length > 16) {
+  failures.push(`Root layout imports ${cssImports.length} CSS files; expected no more than 16.`);
 }
 
 for (const routeOnly of ['home-documentary.css', 'home-media-polish.css']) {
@@ -30,6 +34,23 @@ for (const routeOnly of ['home-documentary.css', 'home-media-polish.css']) {
 
 if (cssImports.includes('brand-lockup.css')) {
   failures.push('brand-lockup.css was consolidated into brand-expression.css and must not return as a root layer.');
+}
+
+if (cssImports.includes('iteration-three.css')) {
+  failures.push('iteration-three.css was consolidated into brand-expression.css and must not return as a root layer.');
+}
+
+for (const requiredRule of ['.v2-kicker,.v2-section-label', '.v2-closing', '.brand-official']) {
+  if (!brandExpression.includes(requiredRule)) {
+    failures.push(`brand-expression.css is missing consolidated rule ${requiredRule}.`);
+  }
+}
+
+try {
+  await stat(retiredIterationThreePath);
+  failures.push('Retired src/app/iteration-three.css still exists; consolidated legacy layers must not remain as dead files.');
+} catch (error) {
+  if (!error || typeof error !== 'object' || !('code' in error) || error.code !== 'ENOENT') throw error;
 }
 
 if (!home.match(/import\s+["']\.\/home-documentary\.css["'];/)) {

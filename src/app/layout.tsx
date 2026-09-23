@@ -6,7 +6,8 @@ import "./media.css";
 import "./appeal-card.css";
 import "./error-experience.css";
 import "./refinement.css";
-import "./iteration-three.css";
+// Brand expression also carries the former adjacent iteration-three rules so the
+// verified cascade stays intact without an extra global stylesheet layer.
 import "./brand-expression.css";
 import "./loading-experience.css";
 import "./world-class-polish.css";
