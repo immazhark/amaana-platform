@@ -134,6 +134,19 @@ export async function updateMediaAsset(formData: FormData) {
   const wasIdentityImage = asset.kind === "IMAGE" && asset.sortOrder === IDENTITY_MEDIA_SORT_ORDER;
   const deliveryUrlChanged = publicUrl !== asset.publicUrl;
   const identityStateChanged = identityImage !== wasIdentityImage;
+  const title = optionalText(formData.get("title"), 160);
+  const caption = optionalText(formData.get("caption"), 1000);
+  const sourcePath = optionalText(formData.get("sourcePath"), 500);
+  const sourceYear = Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null;
+  const privacyMetadataChanged =
+    title !== asset.title ||
+    altText !== asset.altText ||
+    caption !== asset.caption ||
+    sourcePath !== asset.sourcePath ||
+    sourceYear !== asset.sourceYear;
+  if (asset.isPublic && privacyMetadataChanged) {
+    throw new Error("Unpublish this media before changing public-facing or provenance metadata so privacy can be reviewed again.");
+  }
   if (asset.isPublic && deliveryUrlChanged) {
     throw new Error("Unpublish this media before changing its delivery URL so privacy and provenance can be reviewed again.");
   }
@@ -155,9 +168,9 @@ export async function updateMediaAsset(formData: FormData) {
       });
     }
     await tx.mediaAsset.update({ where: { id }, data: {
-      title: optionalText(formData.get("title"), 160), publicUrl, altText,
-      caption: optionalText(formData.get("caption"), 1000), sourcePath: optionalText(formData.get("sourcePath"), 500),
-      sourceYear: Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null,
+      title, publicUrl, altText,
+      caption, sourcePath,
+      sourceYear,
       sortOrder: displayOrder,
     } });
     await tx.auditEvent.create({ data: { actorId: user.id, action: "media.metadata_updated", entityType: "MediaAsset", entityId: id, metadata: { wasPublic: asset.isPublic, identityImage } } });
