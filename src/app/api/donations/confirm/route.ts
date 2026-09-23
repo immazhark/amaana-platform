@@ -100,7 +100,7 @@ export async function POST(request: Request) {
       },
       { headers: privateHeaders },
     );
-  } catch (error) {
+  } catch {
     console.error("Donation confirmation failed");
     return NextResponse.json(
       { error: "Payment is being verified. Please retain your payment confirmation." },
