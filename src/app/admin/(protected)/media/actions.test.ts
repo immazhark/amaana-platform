@@ -237,6 +237,12 @@ describe("admin media deletion", () => {
     expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({ action: "media.deleted", entityId: "media_123", actorId: "user_123" }),
     }));
+    for (const [arg] of mocks.createAudit.mock.calls) {
+      if (arg?.data?.action === "media.deletion_started" || arg?.data?.action === "media.deleted") {
+        expect(arg.data.metadata).not.toHaveProperty("title");
+        expect(arg.data.metadata).not.toHaveProperty("sourcePath");
+      }
+    }
     expect(mocks.createAudit.mock.invocationCallOrder[0]).toBeLessThan(mocks.deletePublicMediaObject.mock.invocationCallOrder[0]);
     expect(mocks.deletePublicMediaObject.mock.invocationCallOrder[0]).toBeLessThan(mocks.transaction.mock.invocationCallOrder[0]);
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/media");
