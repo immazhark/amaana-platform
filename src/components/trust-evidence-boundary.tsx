@@ -1,5 +1,3 @@
-import styles from "./trust-evidence-boundary.module.css";
-
 type TrustEvidenceBoundaryProps = {
   context: "impact" | "transparency";
 };
@@ -40,17 +38,18 @@ export function TrustEvidenceBoundary({ context }: TrustEvidenceBoundaryProps) {
   const headingId = `trust-evidence-${context}`;
 
   return (
-    <section className={styles.section} aria-labelledby={headingId} data-trust-evidence-boundary={context}>
-      <div className={styles.heading}>
-        <p className="v2-section-label">{copy.eyebrow}</p>
-        <h2 id={headingId}>{copy.title}</h2>
-        <p>{copy.intro}</p>
+    <section aria-labelledby={headingId} data-trust-evidence-boundary={context}>
+      <div className="v2-section-head">
+        <div>
+          <p className="v2-section-label">{copy.eyebrow}</p>
+          <h2 className="v2-section-title" id={headingId}>{copy.title}</h2>
+        </div>
+        <p className="v2-section-intro">{copy.intro}</p>
       </div>
-      <div className={styles.grid}>
-        {EVIDENCE_ITEMS.map((item, index) => (
-          <article className={styles.card} key={item.label}>
-            <span className={styles.index}>{String(index + 1).padStart(2, "0")}</span>
-            <small>{item.label}</small>
+      <div className="grid stats">
+        {EVIDENCE_ITEMS.map(item => (
+          <article className="card" key={item.label}>
+            <span className="eyebrow">{item.label}</span>
             <h3>{item.title}</h3>
             <p>{item.description}</p>
           </article>
