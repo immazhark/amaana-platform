@@ -107,13 +107,13 @@ export default async function DonationsPage({ searchParams }: Props) {
     </section>}
     <div className="filter-row" aria-label="Donation status filter">
       <strong>Status:</strong>
-      <Link href={statusHref()}>All</Link>
-      {Object.values(DonationStatus).map(item => <Link key={item} href={statusHref(item)}>{item}</Link>)}
+      <Link href={statusHref()} aria-current={!selected ? "page" : undefined}>All</Link>
+      {Object.values(DonationStatus).map(item => <Link key={item} href={statusHref(item)} aria-current={selected === item ? "page" : undefined}>{item}</Link>)}
     </div>
     <div className="filter-row" aria-label="Giving intention filter">
       <strong>Giving intention:</strong>
-      <Link href={intentHref()}>All</Link>
-      {Object.values(DonationIntent).map(item => <Link key={item} href={intentHref(item)}>{donationIntentLabel(item)}</Link>)}
+      <Link href={intentHref()} aria-current={!selectedIntent ? "page" : undefined}>All</Link>
+      {Object.values(DonationIntent).map(item => <Link key={item} href={intentHref(item)} aria-current={selectedIntent === item ? "page" : undefined}>{donationIntentLabel(item)}</Link>)}
     </div>
     <div className="admin-table-wrap">
       <table>
