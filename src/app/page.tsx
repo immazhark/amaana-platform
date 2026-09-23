@@ -73,9 +73,9 @@ export default async function HomePage() {
               </div>
             </div>
           </article>
-          {heroSlides.map(({ drive, media }, index) => (
+          {heroSlides.map(({ drive, media }) => (
             <article className="v3-home-banner-slide" key={drive.id}>
-              <div className="v3-home-banner-media"><PublicMedia asset={media} priority={index === 0} sizes="100vw" /></div>
+              <div className="v3-home-banner-media"><PublicMedia asset={media} sizes="100vw" /></div>
               <div className="v3-home-banner-shade" aria-hidden="true" />
               <div className="v3-shell v3-home-banner-content">
                 <p className="v3-home-banner-kicker">Amaana Foundation · {drive.causeTitle}</p>

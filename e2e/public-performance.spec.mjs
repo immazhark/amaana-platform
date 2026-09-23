@@ -132,3 +132,34 @@ test('critical public routes do not load Razorpay before a donation journey need
     expect(razorpayResources, `${path} eagerly loaded payment-provider resources`).toEqual([]);
   }
 });
+
+
+test('homepage does not high-priority fetch inactive carousel photography', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  const response = await page.goto('/', { waitUntil: 'load' });
+  expect(response?.ok(), 'Expected homepage to render successfully').toBeTruthy();
+
+  const inactivePriorityImages = page.locator('.v3-home-banner-slide[aria-hidden="true"] img[fetchpriority="high"]');
+  await expect(inactivePriorityImages).toHaveCount(0);
+});
+
+test('Islamic companion detail panel remains interaction-gated and functional', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  const response = await page.goto('/about', { waitUntil: 'load' });
+  expect(response?.ok(), 'Expected About page to render successfully').toBeTruthy();
+
+  await expect(page.locator('.amaana-companion-panel')).toHaveCount(0);
+
+  const readingsButton = page.getByRole('button', { name: 'Ayah & Hadith' });
+  await readingsButton.click();
+
+  const panel = page.locator('#amaana-reading-panel');
+  await expect(panel).toBeVisible();
+  await expect(panel.getByRole('heading', { name: 'Today’s ayah & hadith' })).toBeVisible();
+
+  await panel.getByRole('button', { name: 'Close companion' }).click();
+  await expect(page.locator('.amaana-companion-panel')).toHaveCount(0);
+  await expect(readingsButton).toBeFocused();
+});
