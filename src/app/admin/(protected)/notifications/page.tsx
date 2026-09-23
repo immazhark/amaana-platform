@@ -63,7 +63,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
       assistanceRequest: { select: { referenceNumber: true } },
       donation: { select: { referenceNumber: true } },
     },
-    orderBy: [{ status: "asc" }, { createdAt: "desc" }],
+    orderBy: [{ status: "asc" }, { createdAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
     take: pagination.pageSize,
   });
