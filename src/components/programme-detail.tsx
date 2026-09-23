@@ -49,7 +49,9 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const pathwaysClass=slug==='eid-gift-kits'?'canonical-pathways canonical-pathways--timeline':slug==='dates-distribution'?'canonical-pathways canonical-pathways--growth':slug==='qurbani-meat-distribution'?'canonical-pathways canonical-pathways--comparison':'canonical-pathways';
  const usePathwayCarousel=publishedChildren.length>3;
  const statusLabel=canonical?.causeSlug==='medical-financial-relief'?(slug==='jewellery-loan-intervention'?'Assistance completed':'Fundraising completed'):status==='EXPANDING'?'Developing pathway':status==='ONGOING'?'Ongoing sponsorship':status==='HISTORICAL'?'Historical response':status==='COMPLETED'?'Completed work':'Recurring programme';
- const parent=canonical?.parentSlug?programmeBySlug(canonical.parentSlug):undefined;
+ const parentCandidate=canonical?.parentSlug?programmeBySlug(canonical.parentSlug):undefined;
+ const parentRecord=parentCandidate?await getPublishedInitiativeBySlug(parentCandidate.slug):null;
+ const parent=parentRecord?parentCandidate:undefined;
  const facts=canonical&&'facts' in canonical?canonical.facts:[];
  const storyParagraphs=distinctStoryParagraphs(summary,story||summary);
  const clinicalTerms=clinicalTermsIn(`${summary} ${story}`);
