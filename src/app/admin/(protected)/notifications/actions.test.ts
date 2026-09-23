@@ -28,9 +28,12 @@ vi.mock("@/lib/prisma", () => ({
 
 import { enqueueControlledEmailAcceptance, requeueFailedNotification } from "./actions";
 
+const renderedAt = new Date("2026-09-23T04:00:00.000Z");
+
 function form(reason = "Provider configuration was corrected and delivery may be retried.") {
   const data = new FormData();
   data.set("id", "notification_123");
+  data.set("expectedUpdatedAt", renderedAt.toISOString());
   data.set("reason", reason);
   return data;
 }
@@ -48,6 +51,7 @@ describe("manual notification recovery", () => {
       attempts: 5,
       failureReason: "Email delivery is not configured",
       templateKey: "donation-acknowledgement",
+      updatedAt: renderedAt,
     });
     mocks.updateNotificationMany.mockResolvedValue({ count: 1 });
     mocks.createAudit.mockResolvedValue({ id: "audit_123" });
@@ -128,6 +132,7 @@ describe("manual notification recovery", () => {
       attempts: 1,
       failureReason: null,
       templateKey: "donation-acknowledgement",
+      updatedAt: renderedAt,
     });
 
     await expect(requeueFailedNotification(form())).rejects.toThrow(/Only failed notifications/);
@@ -154,9 +159,26 @@ describe("manual notification recovery", () => {
       attempts: 5,
       failureReason: null,
       templateKey: "donation-acknowledgement",
+      updatedAt: renderedAt,
     });
 
     await expect(requeueFailedNotification(form())).rejects.toThrow(/Only failed notifications/);
+    expect(mocks.updateNotificationMany).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+  });
+
+  it("rejects a stale failed-notification screen before attempting recovery", async () => {
+    mocks.findUniqueOrThrow.mockResolvedValueOnce({
+      id: "notification_123",
+      status: NotificationStatus.FAILED,
+      channel: "EMAIL",
+      attempts: 5,
+      failureReason: "Email delivery is not configured",
+      templateKey: "donation-acknowledgement",
+      updatedAt: new Date("2026-09-23T04:01:00.000Z"),
+    });
+
+    await expect(requeueFailedNotification(form())).rejects.toThrow(/state changed while you were reviewing/i);
     expect(mocks.updateNotificationMany).not.toHaveBeenCalled();
     expect(mocks.createAudit).not.toHaveBeenCalled();
   });
@@ -177,6 +199,7 @@ describe("manual notification recovery", () => {
       where: {
         id: "notification_123",
         status: NotificationStatus.FAILED,
+        updatedAt: renderedAt,
       },
       data: {
         status: NotificationStatus.PENDING,
