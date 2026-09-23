@@ -40,7 +40,7 @@ export async function getPublishedInitiatives() {
 
 export async function getPublishedInitiativeBySlug(slug: string) {
   return prisma.initiative.findFirst({
-    where: { slug, status: "PUBLISHED" },
+    where: { slug, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     include: {
       cause: true,
       mediaAssets: {

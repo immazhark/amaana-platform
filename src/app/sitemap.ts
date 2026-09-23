@@ -44,6 +44,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     prisma.initiative.findMany({
       where: {
         status: "PUBLISHED",
+        cause: { status: "PUBLISHED" },
         slug: { notIn: redirectedLegacyInitiativeSlugs },
       },
       select: { slug: true, updatedAt: true },
