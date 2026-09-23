@@ -5,6 +5,7 @@ import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { retentionDeletionConfirmed } from "@/lib/retention-safety";
 import { deletePrivateDocumentObject } from "@/lib/storage";
+import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
 const allowedDecisions = new Set(["RETAIN", "PLACE_HOLD", "RELEASE_HOLD", "DELETE"]);
 
@@ -23,8 +24,8 @@ function optionalReviewDate(value: FormDataEntryValue | null) {
   return date.toISOString();
 }
 
-async function currentLegalHold(documentId: string, db: Pick<typeof prisma, "auditEvent"> = prisma) {
-  const event = await db.auditEvent.findFirst({
+async function latestLegalHoldEvent(documentId: string, db: Pick<typeof prisma, "auditEvent"> = prisma) {
+  return db.auditEvent.findFirst({
     where: {
       entityType: "AssistanceRequest",
       action: { in: ["assistance.document_legal_hold_placed", "assistance.document_legal_hold_released"] },
@@ -33,6 +34,10 @@ async function currentLegalHold(documentId: string, db: Pick<typeof prisma, "aud
     orderBy: { createdAt: "desc" },
     select: { action: true },
   });
+}
+
+async function currentLegalHold(documentId: string, db: Pick<typeof prisma, "auditEvent"> = prisma) {
+  const event = await latestLegalHoldEvent(documentId, db);
   return event?.action === "assistance.document_legal_hold_placed";
 }
 
@@ -47,6 +52,8 @@ export async function reviewDocumentRetention(formData: FormData) {
   }
   const reason = requiredText(formData.get("reason"), "Retention reason", 2000);
   const reviewAfter = optionalReviewDate(formData.get("reviewAfter"));
+  const expectedHoldAction = String(formData.get("expectedHoldAction") ?? "");
+  const expectedHoldCreatedAt = String(formData.get("expectedHoldCreatedAt") ?? "");
   if (["RETAIN", "PLACE_HOLD"].includes(decision) && reviewAfter && new Date(reviewAfter).getTime() <= Date.now()) {
     throw new Error("Next retention review must be scheduled for a future date");
   }
@@ -71,32 +78,39 @@ export async function reviewDocumentRetention(formData: FormData) {
 
   const held = await currentLegalHold(documentId);
 
-  if (decision === "PLACE_HOLD") {
-    if (held) throw new Error("This document is already under legal/audit/safeguarding hold");
-    await prisma.auditEvent.create({ data: {
-      actorId: user.id,
-      action: "assistance.document_legal_hold_placed",
-      entityType: "AssistanceRequest",
-      entityId: document.assistanceRequestId,
-      metadata: { documentId, reason, reviewAfter },
-    } });
-  } else if (decision === "RELEASE_HOLD") {
-    if (!held) throw new Error("This document is not currently under hold");
-    await prisma.auditEvent.create({ data: {
-      actorId: user.id,
-      action: "assistance.document_legal_hold_released",
-      entityType: "AssistanceRequest",
-      entityId: document.assistanceRequestId,
-      metadata: { documentId, reason, reviewAfter },
-    } });
-  } else if (decision === "RETAIN") {
-    await prisma.auditEvent.create({ data: {
-      actorId: user.id,
-      action: "assistance.document_retention_reviewed",
-      entityType: "AssistanceRequest",
-      entityId: document.assistanceRequestId,
-      metadata: { documentId, decision: "RETAIN", reason, reviewAfter },
-    } });
+  if (decision === "PLACE_HOLD" || decision === "RELEASE_HOLD" || decision === "RETAIN") {
+    await withSerializableTransactionRetry(async tx => {
+      const freshDocument = await tx.assistanceDocument.findUniqueOrThrow({
+        where: { id: documentId },
+        select: { assistanceRequestId: true, objectKey: true },
+      });
+      if (freshDocument.assistanceRequestId !== document.assistanceRequestId || freshDocument.objectKey !== document.objectKey) {
+        throw new Error("This evidence record changed while you were reviewing it. Refresh before recording retention.");
+      }
+      const latestHold = await latestLegalHoldEvent(documentId, tx);
+      const latestAction = latestHold?.action ?? "";
+      const latestCreatedAt = latestHold?.createdAt?.toISOString?.() ?? "";
+      if (latestAction !== expectedHoldAction || latestCreatedAt !== expectedHoldCreatedAt) {
+        throw new Error("The hold state changed while you were reviewing it. Refresh before recording retention.");
+      }
+      const currentlyHeld = latestAction === "assistance.document_legal_hold_placed";
+      if (decision === "PLACE_HOLD" && currentlyHeld) throw new Error("This document is already under legal/audit/safeguarding hold");
+      if (decision === "RELEASE_HOLD" && !currentlyHeld) throw new Error("This document is not currently under hold");
+      const action = decision === "PLACE_HOLD"
+        ? "assistance.document_legal_hold_placed"
+        : decision === "RELEASE_HOLD"
+          ? "assistance.document_legal_hold_released"
+          : "assistance.document_retention_reviewed";
+      await tx.auditEvent.create({ data: {
+        actorId: user.id,
+        action,
+        entityType: "AssistanceRequest",
+        entityId: document.assistanceRequestId,
+        metadata: decision === "RETAIN"
+          ? { documentId, decision: "RETAIN", reason, reviewAfter }
+          : { documentId, reason, reviewAfter },
+      } });
+    });
   } else {
     if (held) throw new Error("Release the legal/audit/safeguarding hold before deletion");
     const terminalRequest = ["CLOSED", "REJECTED"].includes(document.assistanceRequest.status);
