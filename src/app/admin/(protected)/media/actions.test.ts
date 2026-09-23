@@ -326,6 +326,7 @@ describe("admin media deletion", () => {
         publicUrl: "https://cdn.example/media.jpg",
         title: "Unpublished",
         sourcePath: "IMG.jpg",
+        updatedAt: new Date("2026-09-23T00:00:00.000Z"),
       })
       .mockResolvedValueOnce({
         isPublic: false,
