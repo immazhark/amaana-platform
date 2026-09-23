@@ -27,3 +27,9 @@ export function adminHomePathForPermissions(permissions: Iterable<string>) {
   const allowed = new Set(permissions);
   return ADMIN_HOME_DESTINATIONS.find(item => allowed.has(item.permission))?.path ?? "/admin/forbidden";
 }
+
+
+export function isAdminNavigationActive(pathname: string, path: string) {
+  if (path === "/admin") return pathname === "/admin" || pathname.startsWith("/admin/requests/");
+  return pathname === path || pathname.startsWith(`${path}/`);
+}
