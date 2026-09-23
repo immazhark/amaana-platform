@@ -57,6 +57,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
       sentAt: true,
       providerMessageId: true,
       createdAt: true,
+      updatedAt: true,
       assistanceRequestId: true,
       donationId: true,
       assistanceRequest: { select: { referenceNumber: true } },
@@ -149,6 +150,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
                 {canManageNotifications && notification.status === NotificationStatus.FAILED && (
                   <form action={requeueFailedNotification} className="admin-inline-form">
                     <input type="hidden" name="id" value={notification.id} />
+                    <input type="hidden" name="expectedUpdatedAt" value={notification.updatedAt.toISOString()} />
                     <label>
                       <span className="sr-only">Reason to requeue {notification.subject ?? notification.templateKey}</span>
                       <input
