@@ -107,8 +107,8 @@ describe("notification worker flow", () => {
       }),
     );
 
-    expect(mocks.update).toHaveBeenCalledWith({
-      where: { id: "notification_1" },
+    expect(mocks.updateMany).toHaveBeenNthCalledWith(4, {
+      where: { id: "notification_1", status: NotificationStatus.PROCESSING, attempts: 1 },
       data: {
         status: NotificationStatus.SENT,
         sentAt: expect.any(Date),
@@ -129,8 +129,8 @@ describe("notification worker flow", () => {
     const result = await processPendingEmailNotifications();
 
     expect(result).toEqual({ selected: 1, sent: 0, failed: 1 });
-    expect(mocks.update).toHaveBeenCalledWith({
-      where: { id: "notification_1" },
+    expect(mocks.updateMany).toHaveBeenNthCalledWith(4, {
+      where: { id: "notification_1", status: NotificationStatus.PROCESSING, attempts: 1 },
       data: {
         status: NotificationStatus.FAILED,
         failureReason: expect.stringMatching(/429/),
@@ -138,8 +138,24 @@ describe("notification worker flow", () => {
       },
     });
 
-    const failureUpdate = mocks.update.mock.calls.at(-1)?.[0];
+    const failureUpdate = mocks.updateMany.mock.calls.at(-1)?.[0];
     expect(failureUpdate.data.scheduledFor.getTime()).toBeGreaterThanOrEqual(before + 5 * 60 * 1000);
+  });
+
+  it("does not overwrite a newer worker state after provider acceptance", async () => {
+    mocks.updateMany
+      .mockResolvedValueOnce({ count: 0 })
+      .mockResolvedValueOnce({ count: 0 })
+      .mockResolvedValueOnce({ count: 1 })
+      .mockResolvedValueOnce({ count: 0 });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => ({ id: "email_1" }),
+    }));
+
+    await expect(processPendingEmailNotifications()).rejects.toThrow(/state changed after provider acceptance/i);
+    expect(mocks.update).not.toHaveBeenCalled();
   });
 
   it("marks an exhausted stale processing attempt for manual review", async () => {
