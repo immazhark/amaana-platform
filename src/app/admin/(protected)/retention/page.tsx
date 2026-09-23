@@ -83,6 +83,8 @@ export default async function RetentionReviewPage() {
 
           <form action={reviewDocumentRetention} className="form-grid admin-media-edit">
             <input type="hidden" name="documentId" value={document.id}/>
+            <input type="hidden" name="expectedHoldAction" value={latestHoldEvent?.action ?? ""}/>
+            <input type="hidden" name="expectedHoldCreatedAt" value={latestHoldEvent?.createdAt.toISOString() ?? ""}/>
             <div className="field"><label>Decision</label><select name="decision" required defaultValue="RETAIN"><option value="RETAIN">Retain and review later</option>{held ? <option value="RELEASE_HOLD">Release legal/audit/safeguarding hold</option> : <option value="PLACE_HOLD">Place legal/audit/safeguarding hold</option>}<option value="DELETE">Permanently delete raw evidence</option></select></div>
             <div className="field"><label>Review again after <span className="muted">optional</span></label><input type="date" name="reviewAfter"/></div>
             <div className="field full"><label>Permanent deletion confirmation <span className="muted">only when deleting</span></label><input name="deleteConfirmation" autoComplete="off" placeholder="Type DELETE to confirm permanent deletion"/><small>For RETAIN or hold decisions, leave this blank. Permanent deletion fails closed unless the exact word DELETE is entered.</small></div>
