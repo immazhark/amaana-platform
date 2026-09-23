@@ -570,6 +570,7 @@ model AssistanceDocument {
   sizeBytes           Int
   assistanceRequest   AssistanceRequest @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
   createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
   @@index([assistanceRequestId])
 }
 
