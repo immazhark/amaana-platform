@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   findFirstAudit: vi.fn(),
   createAudit: vi.fn(),
   deleteDocumentRecord: vi.fn(),
+  updateManyDocument: vi.fn(),
   transaction: vi.fn(),
   serializableTransaction: vi.fn(),
   deletePrivateDocumentObject: vi.fn(),
@@ -23,6 +24,7 @@ vi.mock("@/lib/prisma", () => ({
     assistanceDocument: {
       findUniqueOrThrow: mocks.findUniqueOrThrow,
       delete: mocks.deleteDocumentRecord,
+      updateMany: mocks.updateManyDocument,
     },
     auditEvent: {
       findFirst: mocks.findFirstAudit,
@@ -48,6 +50,7 @@ describe("private document retention deletion", () => {
     vi.clearAllMocks();
     mocks.requirePermission.mockResolvedValue({ id: "user_123" });
     mocks.findFirstAudit.mockResolvedValue(null);
+    mocks.updateManyDocument.mockResolvedValue({ count: 1 });
     mocks.findUniqueOrThrow.mockResolvedValue({
       id: "doc_123",
       assistanceRequestId: "request_123",
@@ -55,6 +58,7 @@ describe("private document retention deletion", () => {
       originalName: "evidence.pdf",
       mimeType: "application/pdf",
       sizeBytes: 1024,
+      updatedAt: new Date("2026-09-23T00:00:00.000Z"),
       assistanceRequest: {
         referenceNumber: "AFR-123",
         status: "CLOSED",
@@ -126,6 +130,10 @@ describe("private document retention deletion", () => {
     await reviewDocumentRetention(deletionForm());
 
     expect(mocks.requirePermission).toHaveBeenCalledWith("assistance.approve");
+    expect(mocks.updateManyDocument).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ id: "doc_123", objectKey: expect.any(String), updatedAt: expect.any(Date) }),
+      data: expect.objectContaining({ updatedAt: expect.any(Date) }),
+    }));
     expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
         action: "assistance.document_deletion_started",
@@ -186,6 +194,7 @@ describe("private document retention deletion", () => {
       .mockResolvedValueOnce({
         assistanceRequestId: "request_123",
         objectKey: "assistance/request_123/123e4567-e89b-12d3-a456-426614174000.pdf",
+        updatedAt: new Date("2026-09-23T00:00:00.000Z"),
         assistanceRequest: { status: "UNDER_VERIFICATION", appeal: { status: "PUBLISHED" } },
       });
 
@@ -202,6 +211,7 @@ describe("private document retention deletion", () => {
       originalName: "evidence.pdf",
       mimeType: "application/pdf",
       sizeBytes: 1024,
+      updatedAt: new Date("2026-09-23T00:00:00.000Z"),
       assistanceRequest: {
         referenceNumber: "AFR-123",
         status: "UNDER_VERIFICATION",
