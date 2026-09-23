@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     const result = await processPendingEmailNotifications();
     return NextResponse.json(
       { status: "ok", ...result, retention },
-      { headers: { "Cache-Control": "no-store" } },
+      { headers: privateHeaders },
     );
   } catch (error) {
     console.error("Notification delivery job failed", error);
