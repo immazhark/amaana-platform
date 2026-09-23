@@ -13,6 +13,7 @@ import { getInitiativePageData } from "@/lib/public-page-data";
 import { buildPublicRecordFallback, distinctStoryParagraphs, heroTeaser } from "@/lib/public-copy";
 import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
 import { PublicContentStructuredData } from "@/components/public-content-structured-data";
+import { isAppealOpenForDonations } from "@/lib/appeals";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 
 export const dynamic = "force-dynamic";
@@ -47,7 +48,7 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
   const period = formatYears(initiative.startYear, initiative.endYear, initiative.year);
   const paragraphs = distinctStoryParagraphs(initiative.summary, initiative.story || initiative.summary);
   const fallbackStory = buildPublicRecordFallback({ metric: initiative.primaryMetric, metricLabel: initiative.primaryMetricLabel });
-  const activeAppeals = initiative.appeals.filter(appeal => appeal.status === "PUBLISHED" && canExposePublicAppeal(appeal));
+  const activeAppeals = initiative.appeals.filter(appeal => canExposePublicAppeal(appeal) && isAppealOpenForDonations(appeal));
   const isTaleemInitiative = initiative.slug.startsWith("taleem-");
 
   return (
