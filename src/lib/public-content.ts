@@ -68,7 +68,7 @@ export async function getPublishedStories() {
     where: { status: "PUBLISHED", privacyApprovedAt: { not: null } },
     include: {
       cause: true,
-      initiative: true,
+      initiative: { include: { cause: true } },
       mediaAssets: {
         where: { isPublic: true, privacyApprovedAt: { not: null } },
         orderBy: { sortOrder: "asc" },
@@ -87,7 +87,7 @@ export async function getPublishedStoryBySlug(slug: string) {
     },
     include: {
       cause: true,
-      initiative: true,
+      initiative: { include: { cause: true } },
       mediaAssets: {
         where: { isPublic: true, privacyApprovedAt: { not: null } },
         orderBy: { sortOrder: "asc" },
@@ -102,7 +102,7 @@ export async function getPublishedFaithContent() {
     include: {
       topics: { include: { topic: true } },
       cause: true,
-      initiative: true,
+      initiative: { include: { cause: true } },
       mediaAssets: {
         where: { isPublic: true, privacyApprovedAt: { not: null } },
         orderBy: { sortOrder: "asc" },
@@ -121,7 +121,7 @@ export async function getPublishedFaithContentBySlug(slug: string) {
     include: {
       topics: { include: { topic: true } },
       cause: true,
-      initiative: true,
+      initiative: { include: { cause: true } },
       mediaAssets: {
         where: { isPublic: true, privacyApprovedAt: { not: null } },
         orderBy: { sortOrder: "asc" },

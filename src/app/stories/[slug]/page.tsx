@@ -34,7 +34,7 @@ export default async function StoryPage({ params }: Props) {
   const remainingMedia = publicMedia.filter(asset => asset.id !== leadMedia?.id);
   const remainingImages = remainingMedia.filter(asset => asset.kind === "IMAGE");
   const remainingOtherMedia = remainingMedia.filter(asset => asset.kind !== "IMAGE");
-  const relatedInitiative = story.initiative?.status === "PUBLISHED" ? story.initiative : null;
+  const relatedInitiative = story.initiative?.status === "PUBLISHED" && story.initiative.cause.status === "PUBLISHED" ? story.initiative : null;
   const relatedCause = story.cause?.status === "PUBLISHED" ? story.cause : null;
   const context = relatedInitiative?.title ?? relatedCause?.title ?? "Amaana field journal";
 

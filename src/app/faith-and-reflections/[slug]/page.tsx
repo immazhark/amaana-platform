@@ -31,7 +31,7 @@ export default async function FaithDetailPage({ params }: Props) {
   const publicMedia = item.mediaAssets.filter(canRenderPublicMedia);
   const leadMedia = selectIdentityPublicImage(publicMedia);
   const remainingMedia = publicMedia.filter(asset => asset.id !== leadMedia?.id);
-  const relatedInitiative = item.initiative?.status === "PUBLISHED" ? item.initiative : null;
+  const relatedInitiative = item.initiative?.status === "PUBLISHED" && item.initiative.cause.status === "PUBLISHED" ? item.initiative : null;
 
   return <div className="v2-home v2-faith-detail-page">
     <PublicContentStructuredData

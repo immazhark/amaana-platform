@@ -26,7 +26,7 @@ export async function getStoriesDiscoveryData() {
       summary: true,
       publishedAt: true,
       cause: { select: { title: true, status: true } },
-      initiative: { select: { title: true, status: true } },
+      initiative: { select: { title: true, status: true, cause: { select: { status: true } } } },
       mediaAssets: {
         where: { isPublic: true, privacyApprovedAt: { not: null } },
         orderBy: { sortOrder: "asc" },
