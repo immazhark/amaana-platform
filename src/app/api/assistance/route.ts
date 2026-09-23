@@ -152,7 +152,7 @@ export async function POST(request: Request) {
       throw submissionError;
     }
   } catch (error) {
-    console.error("Assistance submission failed", error);
+    console.error("Assistance submission failed");
     return NextResponse.json(
       { error: "We could not securely submit your request. Please try again later." },
       { status: 500, headers: privateHeaders },
