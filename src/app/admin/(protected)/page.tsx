@@ -1,19 +1,20 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import { AssistanceStatus } from "@prisma/client";
 import { adminHomePathForPermissions } from "@/lib/admin-navigation";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { hasPermission, permissionKeys, requireAuthenticatedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 
 type Props = { searchParams: Promise<{ status?: string; page?: string }> };
-const allowed = ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION", "APPROVED", "REJECTED", "CONVERTED_TO_APPEAL", "CLOSED"];
+const allowed = Object.values(AssistanceStatus);
 
 export default async function AdminQueuePage({ searchParams }: Props) {
   const user = await requireAuthenticatedUser();
   if (!hasPermission(user, "assistance.view")) redirect(adminHomePathForPermissions(permissionKeys(user)));
   const { status, page: pageParam } = await searchParams;
-  const selected = allowed.includes(status ?? "") ? status : undefined;
-  const where = selected ? { status: selected as never } : undefined;
+  const selected = allowed.includes(status as AssistanceStatus) ? status as AssistanceStatus : undefined;
+  const where = selected ? { status: selected } : undefined;
   const totalItems = await prisma.assistanceRequest.count({ where });
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const requests = await prisma.assistanceRequest.findMany({
