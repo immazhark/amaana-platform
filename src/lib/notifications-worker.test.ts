@@ -154,7 +154,9 @@ describe("notification worker flow", () => {
       json: async () => ({ id: "email_1" }),
     }));
 
-    await expect(processPendingEmailNotifications()).rejects.toThrow(/state changed after provider acceptance/i);
+    const result = await processPendingEmailNotifications();
+    expect(result).toEqual({ selected: 1, sent: 0, failed: 0 });
+    expect(mocks.updateMany).toHaveBeenCalledTimes(5);
     expect(mocks.update).not.toHaveBeenCalled();
   });
 
