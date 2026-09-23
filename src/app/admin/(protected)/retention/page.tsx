@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { AssistanceStatus, AppealStatus, Prisma } from "@prisma/client";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -12,13 +13,13 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
   await requirePermission("assistance.approve");
   const { state, page: pageParam } = await searchParams;
   const selectedState = state === "active" || state === "eligible" ? state : undefined;
-  const terminalWhere = {
+  const terminalWhere: Prisma.AssistanceDocumentWhereInput = {
     OR: [
-      { assistanceRequest: { status: { in: ["CLOSED", "REJECTED"] as const } } },
-      { assistanceRequest: { appeal: { status: "CLOSED" as const } } },
+      { assistanceRequest: { status: { in: [AssistanceStatus.CLOSED, AssistanceStatus.REJECTED] } } },
+      { assistanceRequest: { appeal: { status: AppealStatus.CLOSED } } },
     ],
   };
-  const where = selectedState === "eligible"
+  const where: Prisma.AssistanceDocumentWhereInput | undefined = selectedState === "eligible"
     ? terminalWhere
     : selectedState === "active"
       ? { NOT: terminalWhere }
