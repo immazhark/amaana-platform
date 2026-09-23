@@ -21,4 +21,3 @@
 .graphicCard .trigger img{object-fit:contain!important;padding:.35rem}
 
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:560px){.grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:.55rem}.card figcaption{padding:.55rem .6rem .7rem;font-size:.75rem}.openLabel{right:.45rem;bottom:.45rem}}
