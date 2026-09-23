@@ -265,21 +265,37 @@ export async function assignRequest(formData: FormData) {
   const user = await requirePermission("assistance.assign");
   const id = String(formData.get("id"));
   const assignedToId = String(formData.get("assignedToId") || "");
-  if (assignedToId) {
-    const eligibleAssignee = await prisma.user.findFirst({
-      where: {
-        id: assignedToId,
-        status: "ACTIVE",
-        roles: { some: { role: { permissions: { some: { permission: { key: "assistance.view" } } } } } },
-      },
-      select: { id: true },
+  await withSerializableTransactionRetry(async tx => {
+    if (assignedToId) {
+      const eligibleAssignee = await tx.user.findFirst({
+        where: {
+          id: assignedToId,
+          status: "ACTIVE",
+          roles: { some: { role: { permissions: { some: { permission: { key: "assistance.view" } } } } } },
+        },
+        select: { id: true },
+      });
+      if (!eligibleAssignee) throw new Error("The selected staff member cannot access assistance requests");
+    }
+
+    const request = await tx.assistanceRequest.findUniqueOrThrow({
+      where: { id },
+      select: { assignedToId: true },
     });
-    if (!eligibleAssignee) throw new Error("The selected staff member cannot access assistance requests");
-  }
-  await prisma.$transaction([
-    prisma.assistanceRequest.update({ where: { id }, data: { assignedToId: assignedToId || null } }),
-    prisma.auditEvent.create({ data: { actorId: user.id, action: "assistance.assigned", entityType: "AssistanceRequest", entityId: id, metadata: { assignedToId: assignedToId || null } } }),
-  ]);
+    await tx.assistanceRequest.update({
+      where: { id },
+      data: { assignedToId: assignedToId || null },
+    });
+    await tx.auditEvent.create({
+      data: {
+        actorId: user.id,
+        action: "assistance.assigned",
+        entityType: "AssistanceRequest",
+        entityId: id,
+        metadata: { previousAssignedToId: request.assignedToId, assignedToId: assignedToId || null },
+      },
+    });
+  });
   revalidatePath(`/admin/requests/${id}`);
   revalidatePath("/admin");
 }
