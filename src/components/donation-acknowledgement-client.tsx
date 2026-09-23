@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { PrintButton } from "@/components/print-button";
 import { donationIntentLabel } from "@/lib/donation-intent";
 import { parsePrivateDonationAcknowledgementLocation } from "@/lib/private-donation-ack";
@@ -31,18 +31,18 @@ type AcknowledgementResponse = AcknowledgementRecord | { found: false };
 const formatINR = (amount: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 
 export function DonationAcknowledgementClient({ reference }: { reference: string }) {
-  const [token, setToken] = useState<string | null | undefined>(undefined);
+  const tokenRef = useRef<string | null | undefined>(undefined);
   const [record, setRecord] = useState<AcknowledgementRecord | null | undefined>(undefined);
 
+  if (tokenRef.current === undefined && typeof window !== "undefined") {
+    tokenRef.current = parsePrivateDonationAcknowledgementLocation(window.location.search, window.location.hash);
+  }
+  const token = tokenRef.current;
+
   useEffect(() => {
-    const captured = parsePrivateDonationAcknowledgementLocation(window.location.search, window.location.hash);
-    setToken(captured);
     if (window.location.search || window.location.hash) {
       window.history.replaceState(null, "", window.location.pathname);
     }
-  }, []);
-
-  useEffect(() => {
     if (!token) return;
 
     const controller = new AbortController();
