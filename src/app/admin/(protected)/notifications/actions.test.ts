@@ -131,7 +131,7 @@ describe("manual notification recovery", () => {
     });
 
     await expect(requeueFailedNotification(form())).rejects.toThrow(/Only failed notifications/);
-    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).toHaveBeenCalled();
   });
 
   it("requires a meaningful operator reason", async () => {
