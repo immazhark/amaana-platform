@@ -247,6 +247,8 @@ test('mobile navigation backdrop dismisses the menu without entering keyboard or
   });
 
   expect(clickPoint, 'Open mobile navigation must leave a pointer-accessible backdrop region').not.toBeNull();
+  const topmostClass = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.className ?? '', clickPoint);
+  expect(String(topmostClass), 'The exposed dismiss region must belong to the mobile navigation backdrop').toContain('mobile-menu-backdrop');
   await page.mouse.click(clickPoint.x, clickPoint.y);
   await expect(page.getByRole('navigation', { name: 'Mobile navigation' })).toBeHidden();
   await expect(toggle).toBeFocused();
