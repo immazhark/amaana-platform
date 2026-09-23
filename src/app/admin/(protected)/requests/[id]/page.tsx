@@ -31,7 +31,7 @@ export default async function RequestDetailPage({ params }: Props) {
       where: { status: "ACTIVE", roles: { some: { role: { permissions: { some: { permission: { key: "assistance.view" } } } } } } },
       orderBy: { name: "asc" },
     }),
-    prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, include: { actor: true }, orderBy: { createdAt: "desc" } }),
+    prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, include: { actor: true }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
   ]);
   if (!request) notFound();
 
