@@ -22,11 +22,17 @@ export default async function DonationsPage({ searchParams }: Props) {
     ...(selectedIntent ? { givingIntent: selectedIntent } : {}),
   };
 
-  const [totalItems, reconciliation, unmatchedCriticalEvents] = await Promise.all([
+  const [totalItems, reconciliation, unmatchedCriticalEventCount, unmatchedCriticalEvents, statusGroups, intentGroups] = await Promise.all([
     prisma.donation.count({ where }),
     prisma.donation.aggregate({
       where: { status: { in: ["CAPTURED", "REFUNDED"] } },
       _sum: { amount: true, refundedAmount: true },
+    }),
+    prisma.paymentEvent.count({
+      where: {
+        donationId: null,
+        eventType: { in: ["payment.captured", "payment.failed", "refund.processed"] },
+      },
     }),
     prisma.paymentEvent.findMany({
       where: {
@@ -42,6 +48,8 @@ export default async function DonationsPage({ searchParams }: Props) {
         processedAt: true,
       },
     }),
+    prisma.donation.groupBy({ by: ["status"], _count: { _all: true } }),
+    prisma.donation.groupBy({ by: ["givingIntent"], _count: { _all: true } }),
   ]);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const donations = await prisma.donation.findMany({
@@ -52,6 +60,8 @@ export default async function DonationsPage({ searchParams }: Props) {
     take: pagination.pageSize,
   });
 
+  const statusCounts = new Map(statusGroups.map(item => [item.status, item._count._all]));
+  const intentCounts = new Map(intentGroups.map(item => [item.givingIntent, item._count._all]));
   const grossCaptured = reconciliation._sum.amount?.toNumber() ?? 0;
   const refunded = reconciliation._sum.refundedAmount?.toNumber() ?? 0;
   const netRetained = Math.max(0, grossCaptured - refunded);
@@ -93,9 +103,9 @@ export default async function DonationsPage({ searchParams }: Props) {
         <div>
           <p className="eyebrow">Reconciliation attention</p>
           <h2>Unmatched payment events</h2>
-          <p className="muted">Critical Razorpay events were received without a linked local donation. Review these before relying on payment totals.</p>
+          <p className="muted">Critical Razorpay events were received without a linked local donation. Review these before relying on payment totals. The newest 10 are shown below.</p>
         </div>
-        <span className="status-badge">{unmatchedCriticalEvents.length} shown</span>
+        <span className="status-badge">{unmatchedCriticalEventCount} unresolved</span>
       </div>
       <ol className="history">
         {unmatchedCriticalEvents.map(event => <li key={event.id}>
@@ -108,12 +118,12 @@ export default async function DonationsPage({ searchParams }: Props) {
     <div className="filter-row" aria-label="Donation status filter">
       <strong>Status:</strong>
       <Link href={statusHref()} aria-current={!selected ? "page" : undefined}>All</Link>
-      {Object.values(DonationStatus).map(item => <Link key={item} href={statusHref(item)} aria-current={selected === item ? "page" : undefined}>{item}</Link>)}
+      {Object.values(DonationStatus).map(item => <Link key={item} href={statusHref(item)} aria-current={selected === item ? "page" : undefined}>{item} ({statusCounts.get(item) ?? 0})</Link>)}
     </div>
     <div className="filter-row" aria-label="Giving intention filter">
       <strong>Giving intention:</strong>
       <Link href={intentHref()} aria-current={!selectedIntent ? "page" : undefined}>All</Link>
-      {Object.values(DonationIntent).map(item => <Link key={item} href={intentHref(item)} aria-current={selectedIntent === item ? "page" : undefined}>{donationIntentLabel(item)}</Link>)}
+      {Object.values(DonationIntent).map(item => <Link key={item} href={intentHref(item)} aria-current={selectedIntent === item ? "page" : undefined}>{donationIntentLabel(item)} ({intentCounts.get(item) ?? 0})</Link>)}
     </div>
     <div className="admin-table-wrap">
       <table>
