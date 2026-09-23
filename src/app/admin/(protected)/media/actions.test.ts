@@ -58,6 +58,7 @@ function updateForm(overrides: Record<string, string> = {}) {
   formData.set("publicUrl", "https://cdn.example/original.jpg");
   formData.set("altText", "Documentary photograph");
   formData.set("sortOrder", "0");
+  formData.set("expectedUpdatedAt", "2026-09-23T00:00:00.000Z");
   for (const [key, value] of Object.entries(overrides)) formData.set(key, value);
   return formData;
 }
@@ -66,6 +67,27 @@ describe("published media editing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requirePermission.mockResolvedValue({ id: "user_123" });
+  });
+
+  it("rejects a stale same-state metadata edit before demoting another identity asset", async () => {
+    const renderedAt = new Date("2026-09-23T00:00:00.000Z");
+    const newerAt = new Date("2026-09-23T00:01:00.000Z");
+    mocks.findUniqueOrThrow.mockResolvedValue({
+      id: "media_123", kind: "IMAGE", isPublic: false,
+      title: null, altText: "Documentary photograph", caption: null, sourcePath: null, sourceYear: null,
+      publicUrl: "https://cdn.example/original.jpg", storageKey: null,
+      sortOrder: 0, causeId: "cause_1", initiativeId: null, storyId: null, faithContentId: null,
+      updatedAt: newerAt,
+    });
+    mocks.serializableTransaction.mockImplementation(async callback => callback({
+      mediaAsset: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateMany },
+      auditEvent: { create: mocks.createAudit },
+    }));
+
+    await expect(updateMediaAsset(updateForm({ identityImage: "on", expectedUpdatedAt: renderedAt.toISOString() })))
+      .rejects.toThrow(/changed while you were reviewing/i);
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
   });
 
   it("requires unpublishing before changing a published delivery URL", async () => {
