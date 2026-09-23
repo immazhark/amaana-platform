@@ -29,7 +29,7 @@ export function distinctStoryParagraphs(summary: string, story: string) {
       if (normalizedParagraph === normalizedSummary) return false;
       const shorter = Math.min(normalizedParagraph.length, normalizedSummary.length);
       const longer = Math.max(normalizedParagraph.length, normalizedSummary.length);
-      const substantiallySameLength = shorter / longer >= 0.82;
+      const substantiallySameLength = shorter / longer >= 0.75;
       return !(substantiallySameLength && (
         normalizedParagraph.includes(normalizedSummary) ||
         normalizedSummary.includes(normalizedParagraph)
