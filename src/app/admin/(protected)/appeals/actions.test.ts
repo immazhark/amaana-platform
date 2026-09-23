@@ -78,10 +78,23 @@ describe("appeal concurrent mutation guards", () => {
 
   it("rejects a status transition when the appeal changed after review", async () => {
     mocks.appealFind
-      .mockResolvedValueOnce({ status: "UNDER_REVIEW", goalAmount: 1000, reviewedById: null, publishedAt: null, beneficiaryDisplayName: null, coverImageUrl: null, assistanceRequest: null })
-      .mockResolvedValueOnce({ status: "DRAFT", goalAmount: 1000, reviewedById: null, publishedAt: null, beneficiaryDisplayName: null, coverImageUrl: null, assistanceRequest: null });
+      .mockResolvedValueOnce({ status: "UNDER_REVIEW", updatedAt: new Date("2026-09-23T04:00:00.000Z"), goalAmount: 1000, reviewedById: null, publishedAt: null, beneficiaryDisplayName: null, coverImageUrl: null, assistanceRequest: null })
+      .mockResolvedValueOnce({ status: "DRAFT", updatedAt: new Date("2026-09-23T04:01:00.000Z"), goalAmount: 1000, reviewedById: null, publishedAt: null, beneficiaryDisplayName: null, coverImageUrl: null, assistanceRequest: null });
 
-    await expect(transitionAppeal(form({ id: "appeal-1", status: "PUBLISHED" }))).rejects.toThrow(/changed while you were reviewing/i);
+    await expect(transitionAppeal(form({ id: "appeal-1", status: "PUBLISHED", expectedUpdatedAt: "2026-09-23T04:00:00.000Z" }))).rejects.toThrow(/changed while you were reviewing/i);
+    expect(mocks.updateManyAppeal).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects same-status workflow transition when the rendered appeal version is stale", async () => {
+    const renderedAt = new Date("2026-09-23T04:00:00.000Z");
+    const newerAt = new Date("2026-09-23T04:01:00.000Z");
+    mocks.appealFind
+      .mockResolvedValueOnce({ status: "UNDER_REVIEW", updatedAt: newerAt, goalAmount: 1000, reviewedById: null, publishedAt: null, beneficiaryDisplayName: null, coverImageUrl: null, assistanceRequest: null })
+      .mockResolvedValueOnce({ status: "UNDER_REVIEW", updatedAt: newerAt, goalAmount: 1000, reviewedById: null, publishedAt: null, beneficiaryDisplayName: null, coverImageUrl: null, assistanceRequest: null });
+
+    await expect(transitionAppeal(form({ id: "appeal-1", status: "PUBLISHED", expectedUpdatedAt: renderedAt.toISOString() })))
+      .rejects.toThrow(/changed while you were reviewing/i);
     expect(mocks.updateManyAppeal).not.toHaveBeenCalled();
     expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
@@ -89,9 +102,9 @@ describe("appeal concurrent mutation guards", () => {
   it("rechecks publication state before featuring", async () => {
     mocks.appealFind
       .mockResolvedValueOnce({ status: "PUBLISHED" })
-      .mockResolvedValueOnce({ status: "PAUSED", isFeatured: false, featuredOrder: null });
+      .mockResolvedValueOnce({ status: "PAUSED", isFeatured: false, featuredOrder: null, updatedAt: new Date("2026-09-23T04:00:00.000Z") });
 
-    await expect(updateFeaturing(form({ id: "appeal-1", isFeatured: "on", featuredOrder: "1" }))).rejects.toThrow(/no longer actively published/i);
+    await expect(updateFeaturing(form({ id: "appeal-1", isFeatured: "on", featuredOrder: "1", expectedUpdatedAt: "2026-09-23T04:00:00.000Z" }))).rejects.toThrow(/no longer actively published/i);
     expect(mocks.updateAppeal).not.toHaveBeenCalled();
     expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
