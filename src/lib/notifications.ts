@@ -158,8 +158,8 @@ export async function processPendingEmailNotifications() {
         rendered.text,
         rendered.html,
       );
-      await prisma.notification.update({
-        where: { id: notification.id },
+      const completed = await prisma.notification.updateMany({
+        where: { id: notification.id, status: NotificationStatus.PROCESSING, attempts: attemptNumber },
         data: {
           status: NotificationStatus.SENT,
           sentAt: new Date(),
@@ -167,14 +167,17 @@ export async function processPendingEmailNotifications() {
           failureReason: null,
         },
       });
+      if (completed.count !== 1) {
+        throw new Error("Notification delivery state changed after provider acceptance");
+      }
       sent += 1;
     } catch (error) {
       const failureReason = error instanceof Error ? error.message.slice(0, 500) : "Unknown delivery error";
       const retryable = !(error instanceof EmailProviderError) || error.retryable;
       const attemptsRemain = attemptNumber < MAX_ATTEMPTS;
 
-      await prisma.notification.update({
-        where: { id: notification.id },
+      const failedClaim = await prisma.notification.updateMany({
+        where: { id: notification.id, status: NotificationStatus.PROCESSING, attempts: attemptNumber },
         data: {
           status: NotificationStatus.FAILED,
           failureReason,
@@ -183,7 +186,7 @@ export async function processPendingEmailNotifications() {
             : new Date("9999-12-31T23:59:59.999Z"),
         },
       });
-      failed += 1;
+      if (failedClaim.count === 1) failed += 1;
     }
   }
 
