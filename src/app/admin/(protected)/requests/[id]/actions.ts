@@ -73,6 +73,12 @@ function getGeneralVerificationIssues(input: {
 export async function saveVerification(formData: FormData) {
   const user = await requirePermission("assistance.update");
   const id = String(formData.get("id") ?? "");
+  const expectedRequestUpdatedAtRaw = String(formData.get("expectedRequestUpdatedAt") ?? "");
+  const expectedRequestUpdatedAt = new Date(expectedRequestUpdatedAtRaw);
+  if (!expectedRequestUpdatedAtRaw || Number.isNaN(expectedRequestUpdatedAt.getTime())) throw new Error("Request edit version is missing or invalid. Refresh before saving verification.");
+  const expectedVerificationUpdatedAtRaw = String(formData.get("expectedVerificationUpdatedAt") ?? "");
+  const expectedVerificationUpdatedAt = expectedVerificationUpdatedAtRaw ? new Date(expectedVerificationUpdatedAtRaw) : null;
+  if (expectedVerificationUpdatedAtRaw && Number.isNaN(expectedVerificationUpdatedAt!.getTime())) throw new Error("Verification edit version is invalid. Refresh before saving.");
   const request = await prisma.assistanceRequest.findUniqueOrThrow({
     where: { id },
     select: { id: true, appealId: true, status: true, verification: true },
@@ -136,10 +142,21 @@ export async function saveVerification(formData: FormData) {
   await withSerializableTransactionRetry(async tx => {
     const stillEditable = await tx.assistanceRequest.findFirst({
       where: { id, appealId: null, status: { not: AssistanceStatus.CONVERTED_TO_APPEAL } },
-      select: { id: true },
+      select: { id: true, updatedAt: true, verification: { select: { updatedAt: true } } },
     });
     if (!stillEditable) {
       throw new Error("Verification was locked because this request was converted while you were reviewing it. Refresh before saving.");
+    }
+    if (stillEditable.updatedAt.getTime() !== expectedRequestUpdatedAt.getTime()) {
+      throw new Error("This request changed while you were reviewing it. Refresh before saving verification.");
+    }
+    const currentVerificationUpdatedAt = stillEditable.verification?.updatedAt ?? null;
+    if (
+      (currentVerificationUpdatedAt === null) !== (expectedVerificationUpdatedAt === null) ||
+      (currentVerificationUpdatedAt && expectedVerificationUpdatedAt &&
+        currentVerificationUpdatedAt.getTime() !== expectedVerificationUpdatedAt.getTime())
+    ) {
+      throw new Error("Verification changed while you were reviewing it. Refresh before saving.");
     }
     await tx.assistanceVerification.upsert({
       where: { assistanceRequestId: id },
@@ -202,13 +219,16 @@ export async function saveVerification(formData: FormData) {
 export async function updateRequest(formData: FormData) {
   const user = await requirePermission("assistance.update");
   const id = String(formData.get("id"));
+  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "");
+  const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
+  if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Request edit version is missing or invalid. Refresh before saving.");
   const status = String(formData.get("status")) as AssistanceStatus;
   const internalNotes = String(formData.get("internalNotes") ?? "").trim();
   if (!statuses.has(status)) throw new Error("Invalid status");
   if (internalNotes.length > ASSISTANCE_INTERNAL_NOTES_MAX_LENGTH) throw new Error("Internal notes are too long");
   const previous = await prisma.assistanceRequest.findUniqueOrThrow({
     where: { id },
-    select: { id: true, status: true, appealId: true, email: true, referenceNumber: true, verification: { select: { decision: true, completedAt: true } } },
+    select: { id: true, status: true, appealId: true, email: true, referenceNumber: true, updatedAt: true, verification: { select: { decision: true, completedAt: true } } },
   });
   if (!isManualAssistanceStatusAllowed(previous.status, status, Boolean(previous.appealId))) throw new Error("This status can only be changed by the linked appeal workflow");
   if ((status === AssistanceStatus.APPROVED || status === AssistanceStatus.REJECTED) && previous.status !== status && !hasPermission(user, "assistance.approve")) throw new Error("Approval permission is required");
@@ -221,12 +241,14 @@ export async function updateRequest(formData: FormData) {
       select: {
         status: true,
         appealId: true,
+        updatedAt: true,
         verification: { select: { decision: true, completedAt: true } },
       },
     });
     if (
       current.status !== previous.status ||
-      current.appealId !== previous.appealId
+      current.appealId !== previous.appealId ||
+      current.updatedAt.getTime() !== expectedUpdatedAt.getTime()
     ) {
       throw new Error("This request changed while you were reviewing it. Refresh before saving.");
     }
@@ -246,6 +268,7 @@ export async function updateRequest(formData: FormData) {
         id,
         status: previous.status,
         ...(previous.appealId ? { appealId: previous.appealId } : { appealId: null }),
+        updatedAt: expectedUpdatedAt,
       },
       data: { status, internalNotes: internalNotes || null },
     });
