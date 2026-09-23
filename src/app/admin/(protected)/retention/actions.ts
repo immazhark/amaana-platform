@@ -143,7 +143,6 @@ export async function reviewDocumentRetention(formData: FormData) {
         metadata: {
           documentId,
           reason,
-          requestReference: document.assistanceRequest.referenceNumber,
         },
       },
     });
@@ -158,10 +157,7 @@ export async function reviewDocumentRetention(formData: FormData) {
         entityId: document.assistanceRequestId,
         metadata: {
           documentId,
-          mimeType: document.mimeType,
-          sizeBytes: document.sizeBytes,
           reason,
-          requestReference: document.assistanceRequest.referenceNumber,
         },
       } }),
     ]);
