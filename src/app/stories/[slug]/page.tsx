@@ -34,7 +34,9 @@ export default async function StoryPage({ params }: Props) {
   const remainingMedia = publicMedia.filter(asset => asset.id !== leadMedia?.id);
   const remainingImages = remainingMedia.filter(asset => asset.kind === "IMAGE");
   const remainingOtherMedia = remainingMedia.filter(asset => asset.kind !== "IMAGE");
-  const context = story.initiative?.title ?? story.cause?.title ?? "Amaana field journal";
+  const relatedInitiative = story.initiative?.status === "PUBLISHED" ? story.initiative : null;
+  const relatedCause = story.cause?.status === "PUBLISHED" ? story.cause : null;
+  const context = relatedInitiative?.title ?? relatedCause?.title ?? "Amaana field journal";
 
   return (
     <div className="v2-home v2-story-detail-page">
@@ -67,7 +69,7 @@ export default async function StoryPage({ params }: Props) {
 
       <section className="v2-story-detail-ethic"><div className="v2-shell v2-story-detail-ethic-grid"><div><p className="v2-section-label">Editorial boundary</p><h2>Evidence without exposure.</h2></div><p>Stories can explain the work without turning vulnerability into spectacle. Private documents stay private, identity details are minimized, and public media is optional rather than assumed.</p></div></section>
 
-      <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Continue the journey</p><h2>One account belongs to a wider body of work.</h2><div className="v2-hero-actions" style={{ justifyContent: "center" }}>{story.initiative && <Link className="v2-button" href={`/our-work/${story.initiative.slug}`}>View this initiative</Link>}<Link className="v2-text-link" href="/stories">Return to the field journal →</Link></div></div></section>
+      <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Continue the journey</p><h2>One account belongs to a wider body of work.</h2><div className="v2-hero-actions" style={{ justifyContent: "center" }}>{relatedInitiative && <Link className="v2-button" href={`/our-work/${relatedInitiative.slug}`}>View this initiative</Link>}<Link className="v2-text-link" href="/stories">Return to the field journal →</Link></div></div></section>
     </div>
   );
 }
