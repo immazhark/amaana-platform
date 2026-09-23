@@ -31,40 +31,44 @@ type AcknowledgementResponse = AcknowledgementRecord | { found: false };
 const formatINR = (amount: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 
 export function DonationAcknowledgementClient({ reference }: { reference: string }) {
-  const [token, setToken] = useState<string | null | undefined>(undefined);
   const [record, setRecord] = useState<AcknowledgementRecord | null | undefined>(undefined);
 
   useEffect(() => {
-    const resolvedToken = parsePrivateDonationAcknowledgementLocation(window.location.search, window.location.hash);
-    if (window.location.search || window.location.hash) {
-      window.history.replaceState(null, "", window.location.pathname);
-    }
+    let controller: AbortController | undefined;
+    const frame = window.requestAnimationFrame(() => {
+      setRecord(undefined);
+      const resolvedToken = parsePrivateDonationAcknowledgementLocation(window.location.search, window.location.hash);
+      if (window.location.search || window.location.hash) {
+        window.history.replaceState(null, "", window.location.pathname);
+      }
 
-    setToken(resolvedToken);
-    if (!resolvedToken) {
-      setRecord(null);
-      return;
-    }
+      if (!resolvedToken) {
+        setRecord(null);
+        return;
+      }
 
-    setRecord(undefined);
-    const controller = new AbortController();
-    void fetch("/api/donations/acknowledgement", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ reference, token: resolvedToken }),
-      cache: "no-store",
-      signal: controller.signal,
-    })
-      .then(async response => response.ok ? await response.json() as AcknowledgementResponse : { found: false } as AcknowledgementResponse)
-      .then(result => setRecord(result.found ? result : null))
-      .catch(error => {
-        if (!(error instanceof DOMException && error.name === "AbortError")) setRecord(null);
-      });
+      controller = new AbortController();
+      void fetch("/api/donations/acknowledgement", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reference, token: resolvedToken }),
+        cache: "no-store",
+        signal: controller.signal,
+      })
+        .then(async response => response.ok ? await response.json() as AcknowledgementResponse : { found: false } as AcknowledgementResponse)
+        .then(result => setRecord(result.found ? result : null))
+        .catch(error => {
+          if (!(error instanceof DOMException && error.name === "AbortError")) setRecord(null);
+        });
+    });
 
-    return () => controller.abort();
+    return () => {
+      window.cancelAnimationFrame(frame);
+      controller?.abort();
+    };
   }, [reference]);
 
-  const loading = token === undefined || (Boolean(token) && record === undefined);
+  const loading = record === undefined;
 
   if (loading) {
     return <div className="v2-home v2-state-page"><section className="v2-state-hero"><div className="v2-shell"><p className="v2-section-label">Donation acknowledgement</p><h1>Opening your private transaction record…</h1><p>Confirming the private acknowledgement details in this browser.</p></div></section></div>;
