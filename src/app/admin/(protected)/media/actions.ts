@@ -281,6 +281,7 @@ export async function deleteMediaAsset(formData: FormData) {
       isPublic: true,
       storageKey: true,
       publicUrl: true,
+      updatedAt: true,
     },
   });
 
@@ -291,12 +292,25 @@ export async function deleteMediaAsset(formData: FormData) {
   // republishes or replaces the managed object.
   const deletionSnapshot = await prisma.mediaAsset.findUniqueOrThrow({
     where: { id },
-    select: { isPublic: true, storageKey: true, publicUrl: true },
+    select: { isPublic: true, storageKey: true, publicUrl: true, updatedAt: true },
   });
   if (deletionSnapshot.isPublic) {
     throw new Error("This media was published while you were reviewing it. Refresh before deleting.");
   }
-  if (deletionSnapshot.storageKey !== asset.storageKey || deletionSnapshot.publicUrl !== asset.publicUrl) {
+  if (deletionSnapshot.storageKey !== asset.storageKey ||
+      deletionSnapshot.publicUrl !== asset.publicUrl ||
+      deletionSnapshot.updatedAt.getTime() !== asset.updatedAt.getTime()) {
+    throw new Error("This media changed while you were reviewing it. Refresh before deleting.");
+  }
+
+  // Atomically claim the still-unpublished, exact reviewed version before any
+  // external storage mutation. The updatedAt bump makes stale publication or
+  // metadata actions fail their own optimistic-concurrency claims.
+  const claimed = await prisma.mediaAsset.updateMany({
+    where: { id, isPublic: false, updatedAt: deletionSnapshot.updatedAt },
+    data: { updatedAt: new Date() },
+  });
+  if (claimed.count !== 1) {
     throw new Error("This media changed while you were reviewing it. Refresh before deleting.");
   }
 
