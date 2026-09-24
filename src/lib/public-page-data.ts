@@ -263,7 +263,7 @@ export const getOurWorkIndexData = cache(async () => {
  */
 export const getImpactPageData = cache(async () => {
   return prisma.initiative.findMany({
-    where: { status: "PUBLISHED" },
+    where: { status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
     select: {
       id: true,
@@ -369,7 +369,7 @@ export const getDonationPageData = cache(async (slug: string) => {
  */
 export const getTransparencyPageData = cache(async () => {
   return prisma.initiative.findMany({
-    where: { status: "PUBLISHED" },
+    where: { status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
     select: {
       id: true,
