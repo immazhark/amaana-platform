@@ -19,7 +19,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const identity = selectIdentityPublicImage(item.mediaAssets);
   const leadImage = identity ? resolvePublicMediaUrl(identity) ?? undefined : undefined;
   const leadAlt = identity?.altText ?? item.title;
-  return { title: item.title, description: item.excerpt, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: item.title, description: item.excerpt, publishedTime: item.publishedAt?.toISOString(), images: leadImage ? [{ url: leadImage, alt: leadAlt }] : undefined }, twitter: { card: leadImage ? "summary_large_image" : "summary", title: item.title, description: item.excerpt, images: leadImage ? [leadImage] : undefined } };
+  return { title: item.title, description: item.excerpt, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: `${item.title} | Amaana Foundation`, description: item.excerpt, publishedTime: item.publishedAt?.toISOString(), images: leadImage ? [{ url: leadImage, alt: leadAlt }] : undefined }, twitter: { card: leadImage ? "summary_large_image" : "summary", title: `${item.title} | Amaana Foundation`, description: item.excerpt, images: leadImage ? [leadImage] : undefined } };
 }
 
 export default async function FaithDetailPage({ params }: Props) {

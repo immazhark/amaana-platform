@@ -23,7 +23,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE";
   const metadataTitle = highlySensitive ? "Verified Support Appeal" : appeal.title;
   const metadataDescription = highlySensitive ? "A privacy-sensitive verified support appeal from Amaana Foundation. Public details are intentionally limited." : appeal.summary;
-  return { title: metadataTitle, description: metadataDescription, alternates: { canonical }, robots: highlySensitive ? { index: false, follow: true, nocache: true } : undefined, openGraph: { type: "article", url: canonical, title: metadataTitle, description: metadataDescription, publishedTime: appeal.publishedAt?.toISOString() }, twitter: { card: "summary", title: metadataTitle, description: metadataDescription } };
+  return { title: metadataTitle, description: metadataDescription, alternates: { canonical }, robots: highlySensitive ? { index: false, follow: true, nocache: true } : undefined, openGraph: { type: "article", url: canonical, title: `${metadataTitle} | Amaana Foundation`, description: metadataDescription, publishedTime: appeal.publishedAt?.toISOString() }, twitter: { card: "summary", title: `${metadataTitle} | Amaana Foundation`, description: metadataDescription } };
 }
 
 export default async function AppealDetailPage({ params }: Props) {
