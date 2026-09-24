@@ -130,33 +130,44 @@ export const getHomepageHeroMedia = cache(async () => {
 export const getHomepageDiscoveryData = cache(async () => {
   const fieldSlugs = ["qurbani-meat-distribution-2026", "dates-distribution-2026"];
 
-  const [initiatives, causes, publishedProgrammeRecords] = await Promise.all([
+  const homepageInitiativeSelect = {
+    id: true,
+    slug: true,
+    title: true,
+    summary: true,
+    year: true,
+    endYear: true,
+    isFeatured: true,
+    primaryMetric: true,
+    primaryMetricLabel: true,
+    cause: { select: { title: true } },
+    mediaAssets: {
+      where: PUBLIC_APPROVED_IMAGE_WHERE,
+      orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
+      take: 3,
+      select: PUBLIC_IMAGE_SELECT,
+    },
+  } as const;
+
+  const [featuredInitiatives, fieldInitiatives, causes, publishedProgrammeRecords] = await Promise.all([
     prisma.initiative.findMany({
       where: {
         status: "PUBLISHED",
         cause: { status: "PUBLISHED" },
-        OR: [{ isFeatured: true }, { slug: { in: fieldSlugs } }],
-      },
-      orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
-      take: 7,
-      select: {
-        id: true,
-        slug: true,
-        title: true,
-        summary: true,
-        year: true,
-        endYear: true,
         isFeatured: true,
-        primaryMetric: true,
-        primaryMetricLabel: true,
-        cause: { select: { title: true } },
-        mediaAssets: {
-          where: PUBLIC_APPROVED_IMAGE_WHERE,
-          orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
-          take: 3,
-          select: PUBLIC_IMAGE_SELECT,
-        },
       },
+      orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
+      take: 5,
+      select: homepageInitiativeSelect,
+    }),
+    prisma.initiative.findMany({
+      where: {
+        status: "PUBLISHED",
+        cause: { status: "PUBLISHED" },
+        slug: { in: fieldSlugs },
+      },
+      orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
+      select: homepageInitiativeSelect,
     }),
     prisma.cause.findMany({
       where: { status: "PUBLISHED" },
@@ -187,8 +198,12 @@ export const getHomepageDiscoveryData = cache(async () => {
     }),
   ]);
 
+  const initiativesBySlug = new Map(
+    [...featuredInitiatives, ...fieldInitiatives].map(record => [record.slug, record] as const),
+  );
+
   return {
-    initiatives,
+    initiatives: Array.from(initiativesBySlug.values()),
     causes,
     publishedProgrammeSlugs: publishedProgrammeRecords.map(record => record.slug),
   };
