@@ -5,6 +5,9 @@ import test from 'node:test';
 const locks = JSON.parse(
   await readFile(new URL('../prisma/canonical-factual-locks.json', import.meta.url), 'utf8'),
 );
+const masterProgrammes = JSON.parse(
+  await readFile(new URL('../prisma/master-programmes.json', import.meta.url), 'utf8'),
+);
 const migrationSource = await readFile(
   new URL('../prisma/apply-master-content.mjs', import.meta.url),
   'utf8',
@@ -25,6 +28,17 @@ test('newborn medical-aid factual lock uses the confirmed amount', () => {
   assert.ok(newborn);
   assert.equal(newborn.primaryMetric, '₹107,520');
   assert.deepEqual(newborn.textReplacements, [{ from: '₹107,200', to: '₹107,520' }]);
+});
+
+test('master programme source cannot reintroduce the superseded newborn amount', () => {
+  const newborn = masterProgrammes.initiatives.find(
+    (item) => item.slug === 'emergency-neonatal-medical-aid',
+  );
+  assert.ok(newborn);
+  assert.equal(newborn.primaryMetric, '₹107,520');
+  assert.match(newborn.summary, /₹107,520/);
+  assert.match(newborn.story, /₹107,520/);
+  assert.doesNotMatch(JSON.stringify(newborn), /₹107,200/);
 });
 
 test('Winter factual lock uses one overall 234-to-234 metric and keeps phase figures subordinate', () => {
