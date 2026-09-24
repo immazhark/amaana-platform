@@ -1,10 +1,14 @@
 import type { Metadata } from "next";
 import { programmeBySlug } from "@/lib/master-copy";
+import { getPublishedInitiativeBySlug } from "@/lib/public-content";
 
-export function programmePageMetadata(slug: string, canonical: string): Metadata {
+export async function programmePageMetadata(slug: string, canonical: string): Promise<Metadata> {
+  const record = await getPublishedInitiativeBySlug(slug);
+  if (!record) return { title: "Programme not found" };
+
   const programme = programmeBySlug(slug);
-  const title = programme?.title ?? "Amaana Programme";
-  const description = programme?.summary ?? "Explore documented Amaana Foundation community work in Hyderabad.";
+  const title = programme?.title ?? record.title;
+  const description = programme?.summary ?? record.summary;
 
   return {
     title,
