@@ -15,6 +15,7 @@ export const PUBLIC_APPROVED_IMAGE_WHERE = {
   isPublic: true,
   privacyApprovedAt: { not: null },
   publicUrl: { not: null },
+  altText: { not: "" },
 };
 
 export const PUBLIC_IMAGE_SELECT = {
