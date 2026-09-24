@@ -144,7 +144,7 @@ test('legacy Our Work aliases resolve to their canonical public destinations', a
   for (const [legacy, canonical] of cases) {
     const response = await page.goto(legacy, { waitUntil: 'domcontentloaded' });
     expect(response?.ok(), `${legacy} should resolve successfully`).toBeTruthy();
-    await expect(page).toHaveURL(canonicalFor(canonical));
+    expect(new URL(page.url()).pathname).toBe(canonical);
 
     const canonicalLink = page.locator('link[rel="canonical"]');
     await expect(canonicalLink).toHaveCount(1);
