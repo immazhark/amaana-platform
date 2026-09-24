@@ -30,6 +30,12 @@ const publicSeedSource = await readFile(
 
 const bySlug = new Map(locks.initiatives.map((item) => [item.slug, item]));
 
+test('runtime and migration master programme sources stay structurally identical', () => {
+  assert.equal(runtimeMasterCopy.version, masterProgrammes.version);
+  assert.deepEqual(runtimeMasterCopy.categories, masterProgrammes.categories);
+  assert.deepEqual(runtimeMasterCopy.initiatives, masterProgrammes.initiatives);
+});
+
 test('newborn medical-aid factual lock uses the confirmed amount', () => {
   const newborn = bySlug.get('emergency-neonatal-medical-aid');
   assert.ok(newborn);
