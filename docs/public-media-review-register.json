@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-21",
+  "updatedAt": "2026-09-24",
   "purpose": "Coverage and launch-readiness register for public/media after the 21 September 2026 programme-image reset. Legacy programme images were removed so future media can be reintroduced only from the curated, initiative-by-initiative selection with an explicit hero/identity image and ordered supporting assets.",
   "groups": [
     {
@@ -86,10 +86,10 @@
   ],
   "overrides": [],
   "inventorySummary": {
-    "totalAssets": 3,
+    "totalAssets": 0,
     "totalImages": 0,
-    "retainedNonImageAssets": 3,
-    "generatedAt": "2026-09-21",
-    "note": "All legacy drive/cause/initiative image files were removed from staging. Three existing MP4 files remain outside this image-reset scope."
+    "retainedNonImageAssets": 0,
+    "generatedAt": "2026-09-24",
+    "note": "All legacy drive/cause/initiative media files have now been removed from public/media. New programme media must enter through the curated review/publish workflow rather than direct static-file retention."
   }
 }
