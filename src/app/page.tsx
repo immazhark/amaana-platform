@@ -36,6 +36,9 @@ export default async function HomePage() {
   const [appeals, discovery] = await Promise.all([getHomepageAppeals(), getHomepageDiscoveryData()]);
   const featured = discovery.initiatives.map(item => ({ ...item, causeTitle: item.cause.title }));
   const fieldDrives = featured.filter(item => ["qurbani-meat-distribution-2026", "dates-distribution-2026"].includes(item.slug));
+  const fieldSectionIntro = fieldDrives.length > 1
+    ? "Two field moments bring the programme overview closer to the people and places behind it. Open either initiative for its fuller record and reported outcomes."
+    : "This field moment brings the programme overview closer to the people and places behind it. Open the initiative for its fuller record and reported outcomes.";
   const hasOpenAppeals = appeals.length > 0;
   const heroSlides = featured
     .filter(item => item.isFeatured)
@@ -181,29 +184,31 @@ export default async function HomePage() {
         </div>
       </section>
 
-      <section className="v3-section v3-field" aria-labelledby="field-title">
-        <div className="v3-shell">
-          <div className="v3-section-head">
-            <div>
-              <p className="v3-label">From the field</p>
-              <h2 className="v3-heading" id="field-title">A closer look at the work</h2>
+      {fieldDrives.length > 0 && (
+        <section className="v3-section v3-field" aria-labelledby="field-title">
+          <div className="v3-shell">
+            <div className="v3-section-head">
+              <div>
+                <p className="v3-label">From the field</p>
+                <h2 className="v3-heading" id="field-title">A closer look at the work</h2>
+              </div>
+              <p className="v3-intro">{fieldSectionIntro}</p>
             </div>
-            <p className="v3-intro">Two field moments bring the programme overview closer to the people and places behind it. Open either initiative for its fuller record and reported outcomes.</p>
-          </div>
 
-          <ScrollCarousel label="Selected field work" mode="cards" className="v3-field-carousel">
-            {fieldDrives.map((drive, index) => {
-              const media = selectIdentityPublicImage(drive.mediaAssets);
-              return (
-                <Link className={`v3-field-card ${index === 0 ? "v3-field-card-wide" : "v3-field-card-tall"}`} href={`/our-work/${drive.slug}`} key={drive.id}>
-                  {media ? <div className="v3-field-image"><PublicMedia asset={media} sizes="(max-width: 900px) 86vw, 38vw" /></div> : <div className="v3-field-image"><WorkVisualPlaceholder label={drive.title} /></div>}
-                  <div className="v3-field-copy"><span>{drive.year}</span><h3>{drive.title}</h3><p>{drive.summary}</p></div>
-                </Link>
-              );
-            })}
-          </ScrollCarousel>
-        </div>
-      </section>
+            <ScrollCarousel label="Selected field work" mode="cards" className="v3-field-carousel">
+              {fieldDrives.map((drive, index) => {
+                const media = selectIdentityPublicImage(drive.mediaAssets);
+                return (
+                  <Link className={`v3-field-card ${index === 0 ? "v3-field-card-wide" : "v3-field-card-tall"}`} href={`/our-work/${drive.slug}`} key={drive.id}>
+                    {media ? <div className="v3-field-image"><PublicMedia asset={media} sizes="(max-width: 900px) 86vw, 38vw" /></div> : <div className="v3-field-image"><WorkVisualPlaceholder label={drive.title} /></div>}
+                    <div className="v3-field-copy"><span>{drive.year}</span><h3>{drive.title}</h3><p>{drive.summary}</p></div>
+                  </Link>
+                );
+              })}
+            </ScrollCarousel>
+          </div>
+        </section>
+      )}
 
       <section className="v3-section v3-trust" aria-labelledby="trust-title">
         <div className="v3-shell v3-trust-grid">
