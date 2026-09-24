@@ -3,13 +3,13 @@ import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-dat
 import { PageHero } from "@/components/page-hero";
 import { ProgrammeDetail } from "@/components/programme-detail";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
-import { programmeBySlug, programmeCategories } from "@/lib/master-copy";
+import { programmeBySlug, programmeCategories, programmes } from "@/lib/master-copy";
 import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { PublicMedia } from "@/components/public-media";
-import { getInitiativePageData } from "@/lib/public-page-data";
+import { getInitiativePageData, getOurWorkIndexData } from "@/lib/public-page-data";
 import { buildPublicRecordFallback, distinctStoryParagraphs, heroTeaser } from "@/lib/public-copy";
 import { programmeCategoryPath } from "@/lib/programme-category-routing";
 import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
@@ -28,6 +28,14 @@ const LEGACY_CATEGORY_REDIRECTS: Record<string, string> = {
   "medical-financial-assistance": "medical-financial-relief",
 };
 
+function hasPublishedTopLevelProgramme(categorySlug: string, publishedSlugs: Set<string>) {
+  return programmes.some(
+    item => item.causeSlug === categorySlug
+      && !("parentSlug" in item)
+      && publishedSlugs.has(item.slug),
+  );
+}
+
 function formatYears(startYear: number | null, endYear: number | null, year: number | null) {
   if (year) return String(year);
   if (startYear && endYear) return startYear === endYear ? String(startYear) : `${startYear}–${endYear}`;
@@ -41,6 +49,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (categoryRedirectTarget) {
     const category = programmeCategories.find(item => item.slug === categoryRedirectTarget);
     if (!category) return { title: "Initiative not found" };
+    const causes = await getOurWorkIndexData();
+    const publishedSlugs = new Set(causes.flatMap(cause => cause.initiatives.map(item => item.slug)));
+    if (!hasPublishedTopLevelProgramme(category.slug, publishedSlugs)) {
+      return { title: "Initiative not found" };
+    }
     const canonical = programmeCategoryPath(category.slug);
     return {
       title: category.title,
@@ -75,6 +88,9 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
   if (categoryRedirectTarget) {
     const category = programmeCategories.find(item => item.slug === categoryRedirectTarget);
     if (!category) notFound();
+    const causes = await getOurWorkIndexData();
+    const publishedSlugs = new Set(causes.flatMap(cause => cause.initiatives.map(item => item.slug)));
+    if (!hasPublishedTopLevelProgramme(category.slug, publishedSlugs)) notFound();
     permanentRedirect(programmeCategoryPath(category.slug));
   }
 
