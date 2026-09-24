@@ -11,6 +11,7 @@ describe("public page media projection contract", () => {
       isPublic: true,
       privacyApprovedAt: { not: null },
       publicUrl: { not: null },
+      altText: { not: "" },
     });
     expect(PUBLIC_IMAGE_SELECT.sortOrder).toBe(true);
     expect(PUBLIC_IMAGE_SELECT.altText).toBe(true);
