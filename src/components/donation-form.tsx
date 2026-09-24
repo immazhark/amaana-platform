@@ -31,6 +31,12 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
     return () => window.cancelAnimationFrame(frame);
   }, []);
 
+  useEffect(() => {
+    if (!error) return;
+    const frame = window.requestAnimationFrame(() => errorRef.current?.focus());
+    return () => window.cancelAnimationFrame(frame);
+  }, [error]);
+
   const busy = phase === "opening" || phase === "verifying";
   const submissionLocked = busy || phase === "reconciliation";
   const lockedForReconciliation = phase === "reconciliation";
@@ -47,7 +53,6 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
 
   function showError(message: string) {
     setError(message);
-    requestAnimationFrame(() => errorRef.current?.focus());
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
