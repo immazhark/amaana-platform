@@ -13,12 +13,26 @@ const securityHeaders = [
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
 ];
 
+const noStoreHeaders = [{ key: "Cache-Control", value: "private, no-store, max-age=0" }];
+
 const nextConfig: NextConfig = {
   output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "6mb",
+    },
+  },
   async headers() {
-    return [{ source: "/(.*)", headers: securityHeaders }, { source: "/admin/:path*", headers: [{ key: "Cache-Control", value: "private, no-store, max-age=0" }] }, { source: "/donations/:path*", headers: [{ key: "Cache-Control", value: "private, no-store, max-age=0" }] }, { source: "/request-assistance/:path*", headers: [{ key: "Cache-Control", value: "private, no-store, max-age=0" }] }];
+    return [
+      { source: "/(.*)", headers: securityHeaders },
+      { source: "/api/:path*", headers: noStoreHeaders },
+      { source: "/admin/:path*", headers: noStoreHeaders },
+      { source: "/donate/:path*", headers: noStoreHeaders },
+      { source: "/donations/:path*", headers: noStoreHeaders },
+      { source: "/request-assistance/:path*", headers: noStoreHeaders },
+    ];
   },
 };
 

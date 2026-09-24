@@ -1,0 +1,53 @@
+:root{
+  --amaana-bg-hero:url("/backgrounds/Amaana_Website_Header_Banner.svg");
+  --amaana-bg-body:url("/backgrounds/Amaana_Website_Body_Background.svg");
+  --amaana-bg-footer:url("/backgrounds/Amaana_Website_Footer_Background.svg");
+}
+
+.amaana-bg-hero,
+.amaana-bg-body,
+.amaana-bg-footer{
+  position:relative;
+  background-repeat:no-repeat;
+  background-size:cover;
+}
+
+.amaana-bg-hero{
+  background-color:#fbf7ef;
+  background-image:var(--amaana-bg-hero);
+  background-position:center center;
+}
+
+.amaana-bg-body{
+  background-color:#fbf7ef!important;
+  background-image:var(--amaana-bg-body)!important;
+  background-repeat:no-repeat!important;
+  background-size:cover!important;
+  background-position:center center!important;
+}
+
+.amaana-bg-footer,
+.site-footer{
+  background-color:#0f3a63;
+  background-image:var(--amaana-bg-footer);
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-position:center center;
+}
+
+.site-footer:before{content:none}
+.amaana-section-shell{position:relative;isolation:isolate}
+.amaana-section-content{position:relative;z-index:1}
+
+@media(max-width:768px){
+  :root{
+    --amaana-bg-hero:url("/backgrounds/Amaana_Website_Header_Banner_Mobile.svg");
+    --amaana-bg-body:url("/backgrounds/Amaana_Website_Body_Background_Mobile.svg");
+    --amaana-bg-footer:url("/backgrounds/Amaana_Website_Footer_Background_Mobile.svg");
+  }
+
+  .amaana-bg-hero{background-position:top right}
+  .amaana-bg-body{background-position:center center!important}
+  .amaana-bg-footer,
+  .site-footer{background-position:top right}
+}

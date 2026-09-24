@@ -1,0 +1,31 @@
+
+.form :global(.field input:not([type=checkbox]):not([type=file])),
+.form :global(.field select),
+.form :global(.field textarea){width:100%;border:1px solid rgb(18 34 57 / 17%)!important;border-radius:.9rem!important;background:#fff!important;padding:.82rem .9rem!important;box-shadow:none!important;transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease}
+.form :global(.field textarea){min-height:10rem}
+.form :global(.field input:not([type=checkbox]):not([type=file]):focus),
+.form :global(.field select:focus),
+.form :global(.field textarea:focus){border-color:var(--af-color-focus)!important;box-shadow:0 0 0 3px rgb(178 119 0 / 18%)!important;background:#fffdf8!important;outline:0}
+.form :global(.field input[aria-invalid=true]),
+.form :global(.field select[aria-invalid=true]),
+.form :global(.field textarea[aria-invalid=true]){border-color:#a72727!important}
+.form :global(.v2-form-choice){border-radius:1rem!important}
+.form :global(.v2-file-field){border-radius:1rem!important;overflow:hidden}
+.privacyNote{margin:-1rem 0 1.35rem;padding:.9rem 1rem;border-left:3px solid #466faa;border-radius:.35rem;background:#eef3fa;color:#4e5b69;font-size:.82rem;line-height:1.55}
+@media(prefers-reduced-motion:reduce){.form :global(.field input),.form :global(.field select),.form :global(.field textarea){transition:none}}
+
+.form fieldset[hidden]{display:none!important}
+.progress{display:grid;gap:.85rem;margin:0 0 1.5rem;padding:1rem;border:1px solid rgb(18 34 57 / 10%);border-radius:1rem;background:#faf6ec}
+.progress>p{display:flex;align-items:baseline;justify-content:space-between;gap:1rem;margin:0;color:#5f6974;font-size:.78rem}
+.progress>p strong{color:var(--v2-ink)}
+.progress ol{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:.45rem;margin:0;padding:0;list-style:none}
+.progress button{width:100%;min-height:3rem;display:flex;align-items:center;gap:.45rem;padding:.55rem .65rem;border:1px solid rgb(18 34 57 / 10%);border-radius:.75rem;background:#fff;color:#65707c;font:inherit;font-size:.76rem;font-weight:750;text-align:left}
+.progress button span{color:#6f5428;font-size:.68rem}
+.progress button[aria-current=step]{border-color:rgb(70 111 170 / 38%);background:#eef3fa;color:var(--v2-ink);box-shadow:0 0 0 2px rgb(70 111 170 / 8%)}
+.progress button:disabled{opacity:.48;cursor:not-allowed}
+.progress button:not(:disabled){cursor:pointer}
+.progress button:focus-visible,.backButton:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:2px}
+.stepActions{display:flex;justify-content:space-between;gap:.75rem;align-items:center;margin-top:1.35rem;padding-top:1rem;border-top:1px solid rgb(18 34 57 / 8%)}
+.stepActions .v2-button{margin-left:auto}
+.backButton{min-height:2.8rem;padding:.65rem .2rem;border:0;background:transparent;color:var(--v2-blue);font:inherit;font-weight:800;cursor:pointer}
+@media(max-width:620px){.progress ol{grid-template-columns:repeat(2,minmax(0,1fr))}.stepActions{align-items:stretch;flex-direction:column-reverse}.stepActions .v2-button,.backButton{width:100%;margin:0}}

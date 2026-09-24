@@ -1,0 +1,13 @@
+
+.proof{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(16rem,.75fr);gap:1rem;margin-top:1.5rem;padding:1rem;border:1px solid rgb(18 34 57 / 10%);border-radius:1.25rem;background:#f7f3eb}
+.preview{min-height:28rem;overflow:hidden;border:1px solid rgb(18 34 57 / 10%);border-radius:.9rem;background:#fff}
+.preview iframe{display:block;width:100%;height:32rem;border:0}
+.meta{display:grid;align-content:start;gap:.75rem;padding:1rem}
+.meta>span{color:#8a6a0a;font-size:.7rem;font-weight:850;letter-spacing:.1em;text-transform:uppercase}
+.meta dl{margin:0;display:grid;gap:.75rem}
+.meta dl div{padding-top:.75rem;border-top:1px solid rgb(18 34 57 / 10%)}
+.meta dt{color:#596573;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
+.meta dd{margin:.2rem 0 0;color:#122239;font-weight:750;line-height:1.45}
+.note{color:#5b6472;font-size:.8rem;line-height:1.55}
+@media(max-width:800px){.proof{grid-template-columns:1fr}.preview{min-height:0}.preview iframe{height:24rem}}
+@media(max-width:560px){.preview iframe{display:none}.preview{padding:1rem}.preview::after{content:"Certificate preview is available from the PDF link below.";display:block;color:#5b6472;line-height:1.5}}

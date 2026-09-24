@@ -1,8 +1,17 @@
-import Link from "next/link";
-import { hasPermission, requirePermission } from "@/lib/auth";
+import { AdminShell } from "@/components/admin-shell";
+import { permissionKeys, requireAuthenticatedUser } from "@/lib/auth";
 import { logout } from "../login/actions";
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
-  const user = await requirePermission("assistance.view");
-  return <div className="admin-shell"><aside className="admin-sidebar"><Link className="brand" href="/admin"><span className="brand-mark">A</span><span>Amaana Admin</span></Link><nav aria-label="Admin navigation"><Link href="/admin">Assistance queue</Link>{hasPermission(user, "appeal.view") && <Link href="/admin/appeals">Appeals</Link>}{hasPermission(user, "donation.view") && <Link href="/admin/donations">Donations</Link>}</nav><div className="admin-user"><span>{user.name}</span><small>{user.roles.map(item => item.role.name.replaceAll("_", " ")).join(", ")}</small><form action={logout}><button className="text-button" type="submit">Sign out</button></form></div></aside><div className="admin-content">{children}</div></div>;
+  const user = await requireAuthenticatedUser();
+  return (
+    <AdminShell
+      userName={user.name}
+      roleNames={user.roles.map(item => item.role.name.replaceAll("_", " "))}
+      permissions={permissionKeys(user)}
+      logoutAction={logout}
+    >
+      {children}
+    </AdminShell>
+  );
 }

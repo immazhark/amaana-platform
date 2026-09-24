@@ -1,0 +1,16 @@
+import { CanonicalArticle } from '@/components/canonical-article';
+import styles from './recognition-audit.module.css';
+
+const description = 'Certificate of Excellence from the Association of Muslim Professionals at the 5th National Awards for Social Excellence 2025.';
+export const metadata = {
+  title: 'AMP Recognition 2025',
+  description,
+  alternates: { canonical: '/recognition' },
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }], type: 'website', url: '/recognition', title: 'AMP Recognition 2025 | Amaana Foundation', description },
+  twitter: { images: ["/twitter-image"], card: 'summary_large_image', title: 'AMP Recognition 2025 | Amaana Foundation', description },
+};
+export default function Page(){return <CanonicalArticle eyebrow="Awards & Recognition · 2025" heroVariant="recognition" heroVisualTitle="Certificate of Excellence" heroVisualNote="Best NGO Award of the Year (Telangana) · AMP 5th National Awards for Social Excellence 2025." title="Recognised for Service. Responsible for What Comes Next." heroActions={[{ label: "View the recognition", href: "#recognition-record" }, { label: "Explore our work", href: "/our-work", secondary: true }]} pathways={[
+  { label: "Governance", href: "/governance", description: "See the trustees and formal responsibility behind Amaana Foundation." },
+  { label: "Transparency", href: "/transparency", description: "Understand how Amaana presents evidence, outcomes and privacy boundaries." },
+  { label: "Explore our work", href: "/our-work", description: "Review the programmes, initiatives and case-led assistance behind the public record." },
+]} intro="Amaana Foundation was recognised by the Association of Muslim Professionals at the 5th National Awards for Social Excellence 2025, receiving the Best NGO Award of the Year (Telangana)." blocks={[{title:'What this recognition records',paragraphs:['The certificate acknowledges Amaana Foundation’s contribution to society and nation building at AMP’s 2025 awards. It records a specific recognition received in 2025; it does not imply endorsement of every Amaana programme or future activity.']}]}><section className={styles.proof} id="recognition-record" aria-labelledby="recognition-proof-title"><div className={styles.preview}><iframe loading="lazy" title="AMP Certificate of Excellence 2025 preview" src="/documents/amp-certificate-excellence-2025.pdf#view=FitH" /></div><div className={styles.meta}><span>Recognition record</span><h2 id="recognition-proof-title">Certificate of Excellence</h2><dl><div><dt>Issuer</dt><dd>Association of Muslim Professionals (AMP)</dd></div><div><dt>Year</dt><dd>2025</dd></div><div><dt>Recognition</dt><dd>Best NGO Award of the Year (Telangana)</dd></div><div><dt>Event</dt><dd>5th National Awards for Social Excellence 2025</dd></div></dl><p className={styles.note}>This records the recognition Amaana received; it is not presented as an endorsement of every programme or future activity.</p><a className="v2-button" href="/documents/amp-certificate-excellence-2025.pdf" target="_blank" rel="noopener noreferrer">Open the AMP Certificate (PDF)</a></div></section></CanonicalArticle>;}

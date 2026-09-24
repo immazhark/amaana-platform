@@ -2,8 +2,17 @@ name: CI
 
 on:
   pull_request:
+    branches:
+      - main
+      - phase-public-site-rebuild
   push:
-    branches: [main, "build/**"]
+    branches:
+      - main
+      - phase-public-site-rebuild
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 permissions:
   contents: read
@@ -11,20 +20,250 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: amaana
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d amaana"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/amaana?schema=public
       NEXT_PUBLIC_APP_URL: https://amaanafoundation.org
+      NEXT_PUBLIC_ALLOW_INDEXING: "false"
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+
+      - name: Audit global CSS architecture
+        run: node scripts/audit-global-css.mjs
+      - name: Decode and validate public campaign media
+        run: |
+          node --test scripts/test-public-media.mjs
+          node scripts/check-public-media.mjs
+          node --test scripts/test-public-media-review-register.mjs
+          node scripts/check-public-media-review-register.mjs
+      - name: Validate launch readiness register
+        run: |
+          node --test scripts/test-launch-readiness.mjs
+          node --test scripts/test-production-environment.mjs
+          node scripts/check-launch-readiness.mjs
+      - name: Verify non-destructive campaign import
+        run: node --test scripts/test-reviewed-campaigns.mjs scripts/test-reviewed-campaign-revisions.mjs scripts/test-reviewed-campaign-feature-normalization.mjs scripts/test-reviewed-campaign-video-normalization.mjs
+      - name: Verify canonical factual locks
+        run: node --test scripts/test-canonical-factual-locks.mjs
+      - name: Guard public editorial and compliance copy
+        run: |
+          node --test scripts/test-public-editorial-consistency.mjs
+          node scripts/check-public-editorial-consistency.mjs
+      - name: Guard public/private data boundaries
+        run: node --test scripts/test-public-data-boundaries.mjs
+      - name: Verify archive filters
+        run: node --experimental-strip-types --test scripts/test-work-filters.mjs
+      - name: Verify daily readings, reminder windows and local calendar boundaries
+        run: node --experimental-strip-types --test scripts/test-daily-companion.mjs scripts/test-daily-companion-api.mjs
+
       - run: npm run prisma:generate
       - run: npm run prisma:validate
       - run: npm run lint
       - run: npm run typecheck
-      - run: npm run test:coverage
-      - run: npm run build
+
+      - name: Verify refund ledger against isolated PostgreSQL
+        env:
+          AMAANA_DATABASE_TESTS: "true"
+        run: |
+          npx prisma migrate deploy
+          node scripts/test-refund-ledger-migration.mjs
+          npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts
+
+      - name: Run fast test suite for pull requests
+        if: github.event_name == 'pull_request'
+        run: npm test
+
+      - name: Run coverage suite for integration pushes
+        if: github.event_name == 'push'
+        run: npm run test:coverage
+
+      - name: Detect browser-affecting integration changes
+        if: github.event_name == 'push'
+        id: browser_changes
+        shell: bash
+        run: |
+          set -euo pipefail
+          BEFORE="${{ github.event.before }}"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git cat-file -e "${BEFORE}^{commit}" 2>/dev/null || git fetch --no-tags --depth=1 origin "$BEFORE"
+          CHANGED=$(git diff --name-only "$BEFORE" "${{ github.sha }}")
+          printf '%s\n' "$CHANGED"
+          # Protected admin list/editor TSX is not exercised by the isolated browser
+          # suite, which uses a synthetic operations console. Keep public pages,
+          # admin login, shared components/CSS, acceptance fixtures and config as
+          # browser-affecting while avoiding a second build + Chromium install for
+          # protected-admin-only rendering changes.
+          BROWSER_CHANGED=$(printf '%s\n' "$CHANGED" | grep -Ev '^src/app/admin/\(protected\)/.*\.tsx$' || true)
+          if printf '%s\n' "$BROWSER_CHANGED" | grep -Eq '^(src/app/.*\.(tsx|css)|src/components/|src/.*\.css$|public/|prisma/|Dockerfile$|e2e/|playwright\.config\.mjs$|next\.config\.ts$|\.github/workflows/ci\.yml$)'; then
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "needed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build production application
+        if: github.event_name == 'push'
+        run: npm run build
+
+      - name: Enforce production bundle budgets
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          JS_BYTES=$(find .next/static -type f -name '*.js' -printf '%s\n' | awk '{sum += $1} END {print sum + 0}')
+          CSS_BYTES=$(find .next/static -type f -name '*.css' -printf '%s\n' | awk '{sum += $1} END {print sum + 0}')
+          JS_BUDGET=$((800 * 1024))
+          # Aggregate static CSS grew with the audited documentary/editorial system,
+          # route-scoped carousels, guided forms and accessibility refinements.
+          # Keep a tight regression cap while route-level delivery/CLS tests protect user payload.
+          CSS_BUDGET=$((340 * 1024))
+          echo "Built static JavaScript: ${JS_BYTES} bytes (budget ${JS_BUDGET})"
+          echo "Built static CSS: ${CSS_BYTES} bytes (budget ${CSS_BUDGET})"
+          test "$JS_BYTES" -le "$JS_BUDGET"
+          test "$CSS_BYTES" -le "$CSS_BUDGET"
+
+      - name: Run post-build server smoke checks
+        if: github.event_name == 'push'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cleanup_server() {
+            if [ -n "${SERVER_PID:-}" ]; then
+              kill "$SERVER_PID" 2>/dev/null || true
+              wait "$SERVER_PID" 2>/dev/null || true
+            fi
+            fuser -k 3000/tcp 2>/dev/null || true
+          }
+          assert_fixture_hidden() {
+            local path="$1"
+            local marker="$2"
+            local output="$3"
+            local status
+            status=$(curl --silent --show-error --output "$output" --write-out '%{http_code}' "http://127.0.0.1:3000${path}")
+            if [ "$status" -ge 500 ]; then exit 1; fi
+            if grep -q "$marker" "$output"; then exit 1; fi
+          }
+          npm run start > /tmp/amaana-next.log 2>&1 &
+          SERVER_PID=$!
+          trap cleanup_server EXIT
+          READY=0
+          for attempt in {1..30}; do
+            if curl --fail --silent --show-error http://127.0.0.1:3000/api/health/live > /tmp/health.json; then READY=1; break; fi
+            sleep 1
+          done
+          if [ "$READY" -ne 1 ]; then cat /tmp/amaana-next.log; exit 1; fi
+          grep -q '"status":"ok"' /tmp/health.json
+          curl --fail --silent --show-error http://127.0.0.1:3000/about > /dev/null
+          curl --fail --silent --show-error http://127.0.0.1:3000/request-assistance > /dev/null
+          assert_fixture_hidden "/browser-acceptance/donation" "Mocked donation journey" "/tmp/donation-acceptance.html"
+          assert_fixture_hidden "/browser-acceptance/admin?profile=full" "Synthetic operations console" "/tmp/admin-acceptance.html"
+          curl --fail --silent --show-error -D /tmp/health.headers -o /dev/null http://127.0.0.1:3000/api/health/live
+          tr -d '\r' < /tmp/health.headers > /tmp/health.normalized
+          grep -qi '^cache-control: .*no-store' /tmp/health.normalized
+          grep -qi '^x-content-type-options: nosniff$' /tmp/health.normalized
+          grep -qi '^x-frame-options: DENY$' /tmp/health.normalized
+          curl --fail --silent --show-error -D /tmp/assistance.headers -o /dev/null http://127.0.0.1:3000/request-assistance
+          tr -d '\r' < /tmp/assistance.headers > /tmp/assistance.normalized
+          grep -qi '^cache-control: .*no-store' /tmp/assistance.normalized
+          cleanup_server
+          trap - EXIT
+          if fuser 3000/tcp >/dev/null 2>&1; then exit 1; fi
+
+      - name: Prepare browser acceptance database
+        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
+        run: |
+          npx prisma migrate deploy
+          npm run seed:public-content
+
+      - name: Build isolated browser acceptance fixture
+        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
+        shell: bash
+        env:
+          AMAANA_BROWSER_ACCEPTANCE: "true"
+        run: |
+          set -euo pipefail
+          rm -rf .next
+          npm run build
+
+      - name: Prepare isolated browser acceptance workspace
+        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          BROWSER_DIR="$RUNNER_TEMP/amaana-browser-acceptance"
+          rm -rf "$BROWSER_DIR"
+          mkdir -p "$BROWSER_DIR"
+          cp -R e2e "$BROWSER_DIR/e2e"
+          cp playwright.config.mjs "$BROWSER_DIR/playwright.config.mjs"
+          cd "$BROWSER_DIR"
+          npm init -y >/dev/null
+          npm install --save-dev --package-lock=false @playwright/test@1.55.0 @axe-core/playwright@4.10.2
+
+      - name: Install Chromium for browser acceptance
+        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/amaana-browser-acceptance"
+          npx playwright install --with-deps chromium
+
+      - name: Run responsive, accessibility and journey browser acceptance
+        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
+        shell: bash
+        env:
+          AMAANA_APP_WORKSPACE: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/amaana-browser-acceptance"
+          npx playwright test --config=playwright.config.mjs
+
+
+  production-promotion-readiness:
+    name: Production promotion readiness
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate launch-readiness register structure
+        run: node scripts/check-launch-readiness.mjs
+
+      - name: Keep draft promotion advisory and fail closed when ready
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event.pull_request.draft }}" = "true" ]; then
+            echo "Draft production-promotion PR: readiness remains advisory."
+            echo "Marking this PR Ready for Review will require every production gate to be VERIFIED or NOT_APPLICABLE."
+            node scripts/check-launch-readiness.mjs --production || true
+            exit 0
+          fi
+
+          echo "Production-promotion PR is Ready for Review; enforcing fail-closed production readiness."
+          node scripts/check-launch-readiness.mjs --production
+

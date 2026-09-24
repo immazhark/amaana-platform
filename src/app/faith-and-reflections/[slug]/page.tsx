@@ -1,0 +1,61 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { PageHero } from "@/components/page-hero";
+import { PublicMedia } from "@/components/public-media";
+import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
+import { PublicContentStructuredData } from "@/components/public-content-structured-data";
+import { getFaithPageData } from "@/lib/public-page-data";
+import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
+import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
+import { canonicalOurWorkDestination } from "@/lib/our-work-routing";
+
+type Props = { params: Promise<{ slug: string }> };
+export const dynamic = "force-dynamic";
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { slug } = await params;
+  const item = await getFaithPageData(slug);
+  if (!item) return { title: "Reflection not found" };
+  const canonical = `/faith-and-reflections/${item.slug}`;
+  const identity = selectIdentityPublicImage(item.mediaAssets);
+  const leadImage = identity ? resolvePublicMediaUrl(identity) ?? undefined : undefined;
+  const leadAlt = identity?.altText ?? item.title;
+  return { title: item.title, description: item.excerpt, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: `${item.title} | Amaana Foundation`, description: item.excerpt, publishedTime: item.publishedAt?.toISOString(), images: openGraphShareImages(leadImage, leadAlt) }, twitter: { card: "summary_large_image", title: `${item.title} | Amaana Foundation`, description: item.excerpt, images: twitterShareImages(leadImage) } };
+}
+
+export default async function FaithDetailPage({ params }: Props) {
+  const { slug } = await params;
+  const item = await getFaithPageData(slug);
+  if (!item) notFound();
+  const publishedDate = item.publishedAt ? new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(item.publishedAt) : null;
+  const topics = item.topics.map(link => link.topic.name);
+  const publicMedia = item.mediaAssets.filter(canRenderPublicMedia);
+  const leadMedia = selectIdentityPublicImage(publicMedia);
+  const remainingMedia = publicMedia.filter(asset => asset.id !== leadMedia?.id);
+  const relatedInitiative = item.initiative?.status === "PUBLISHED" && item.initiative.cause.status === "PUBLISHED" ? item.initiative : null;
+
+  return <div className="v2-home v2-faith-detail-page">
+    <PublicContentStructuredData
+      type="Article"
+      title={item.title}
+      description={item.excerpt}
+      path={`/faith-and-reflections/${item.slug}`}
+      publishedAt={item.publishedAt}
+      modifiedAt={item.updatedAt}
+      imageUrl={leadMedia ? resolvePublicMediaUrl(leadMedia) : null}
+      section="Faith & Reflections"
+      keywords={topics}
+    />
+    <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Faith & Reflections", path: "/faith-and-reflections" }, { name: item.title, path: `/faith-and-reflections/${item.slug}` }]} />
+    <PageHero variant="level2" eyebrow={`${item.type.toLowerCase()}${publishedDate ? ` · ${publishedDate}` : ""}`} title={item.title} description={<><p>{item.excerpt}</p>{topics.length > 0 && <div className="v2-faith-detail-topics">{topics.map(topic => <span key={topic}>{topic}</span>)}</div>}</>} actions={[{label:"Back to Faith & Reflections",href:"/faith-and-reflections",secondary:true}]} visual={leadMedia ? <PublicMedia asset={leadMedia} priority /> : undefined} visualKicker="Editorial trust" visualTitle="Reviewed Before Publication" visualNote="Amaana shares reviewed beneficial material without presenting itself as a scholarly authority." />
+
+    <section className="v2-section paper"><div className="v2-shell v2-faith-detail-body-grid"><aside><p className="v2-section-label">Review context</p>{item.sourceCitation ? <div className="v2-faith-detail-source"><span>Source citation</span><p>{item.sourceCitation}</p></div> : <p className="v2-faith-detail-muted">No separate source citation is displayed for this item.</p>}{item.verifiedAt && <p className="v2-faith-detail-muted">Religious review verified {new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(item.verifiedAt)}.</p>}</aside><article><p className="v2-section-label">Reflection</p>{item.body ? <div className="v2-faith-detail-body">{item.body}</div> : <p className="v2-faith-detail-body">{item.excerpt}</p>}</article></div></section>
+
+    {remainingMedia.length > 0 && <section className="v2-section dark"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Reviewed media</p><h2 className="v2-section-title">Visual context, separately approved.</h2></div><p className="v2-section-intro">Media appears here only when its own public-use and privacy checks are satisfied.</p></div><div className="v2-media-grid">{remainingMedia.map(asset => <PublicMedia asset={asset} key={asset.id} />)}</div></div></section>}
+
+    <section className="v2-faith-detail-standard"><div className="v2-shell"><div><span>Religious review</span><strong>Verified before publication</strong></div><div><span>Source discipline</span><strong>Stored citations shown when available</strong></div><div><span>Authority boundary</span><strong>Amaana is not presented as a scholarly authority</strong></div></div></section>
+
+    <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Reflection into service</p><h2>Carry the value into action.</h2><p>Return to the reviewed library or see the real initiatives where Amaana&apos;s values are put into practice.</p><div className="v2-hero-actions" style={{ justifyContent: "center" }}><Link className="v2-button" href="/faith-and-reflections">Back to the library</Link>{relatedInitiative ? <Link className="v2-text-link" href={canonicalOurWorkDestination(relatedInitiative.slug)}>Related initiative →</Link> : <Link className="v2-text-link" href="/our-work">Explore our work →</Link>}</div></div></section>
+  </div>;
+}

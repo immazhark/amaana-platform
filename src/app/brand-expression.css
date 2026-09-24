@@ -1,0 +1,24 @@
+/* Consolidated former iteration-three layer. This block intentionally remains
+   before the brand-expression rules below to preserve the verified cascade. */
+.brand-official{min-width:12rem;gap:.7rem}.brand-official .brand-mark{display:block;width:3.25rem;height:3.25rem;border-radius:0;background:transparent;object-fit:contain}.brand-copy{display:grid;line-height:1}.brand-copy .brand-name{color:var(--amaana-blue);font-size:1rem;font-weight:900;letter-spacing:.18em}.brand-foundation{margin-top:.18rem;color:var(--amaana-gold-deep);font-size:.68rem;font-weight:900;letter-spacing:.24em}.brand-copy .brand-location{margin-top:.36rem;color:#5b6472;font-size:.56rem;font-weight:750;letter-spacing:.08em;text-transform:uppercase}
+.v2-kicker,.v2-section-label{display:inline-flex;align-items:center;gap:.7rem;margin-bottom:1.2rem}.v2-kicker::before,.v2-section-label::before{content:"";width:2.5rem;height:1px;background:currentColor}.v2-section-title{margin:0;font-family:Georgia,"Times New Roman",serif;font-weight:500;letter-spacing:-.045em}
+
+.v2-closing{padding-block:clamp(4.5rem,8vw,6.5rem);text-align:center;background:linear-gradient(145deg,#f3eddd,#faf6ec)}.v2-closing h2{margin:0 auto;max-width:13ch;font-family:Georgia,"Times New Roman",serif;font-size:clamp(2.6rem,4.8vw,4.7rem);font-weight:500;line-height:.98;letter-spacing:-.045em}.v2-closing p{max-width:40rem;margin:1.35rem auto 0;color:#5b6472}
+
+@media(max-width:820px){.brand-copy .brand-location{display:none}}
+@media(max-width:680px){.v2-section{padding-block:4.5rem}}
+@media(max-width:520px){.brand-official .brand-mark{width:2.75rem;height:2.75rem}.brand-official{min-width:0}.brand-copy .brand-name{font-size:.9rem}}
+
+/* Official lockup geometry. Kept immediately before the expression rules to preserve the former cascade. */
+.brand-official { min-width: 7.25rem; align-self: stretch; display: flex; align-items: center; }
+.brand-official .brand-lockup { display: block; width: auto; height: 4.35rem; object-fit: contain; }
+@media (max-width: 760px) { .brand-official .brand-lockup { height: 3.85rem; } }
+@media (max-width: 420px) { .brand-official .brand-lockup { height: 3.45rem; } }
+
+:root {
+  --amaana-blue-bright:#4b78b7;
+  --amaana-gold-bright:#f0c928;
+  --amaana-brand-gradient:linear-gradient(105deg,var(--amaana-blue-bright) 0%,var(--amaana-blue) 27%,var(--amaana-gold) 63%,var(--amaana-gold-bright) 82%,var(--amaana-gold-deep) 100%);
+  --amaana-blue-gradient:linear-gradient(125deg,var(--amaana-blue-ink) 0%,var(--amaana-blue-deep) 38%,var(--amaana-blue) 100%);
+  --amaana-gold-gradient:linear-gradient(110deg,var(--amaana-gold-deep) 0%,var(--amaana-gold) 48%,var(--amaana-gold-bright) 100%);
+}

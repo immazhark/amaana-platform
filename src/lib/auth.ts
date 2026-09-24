@@ -9,8 +9,12 @@ const tokenHash = (token: string) => createHash("sha256").update(token).digest("
 
 export async function createSession(userId: string) {
   const token = randomBytes(32).toString("base64url");
-  const expiresAt = new Date(Date.now() + SESSION_DAYS * 86400000);
-  await prisma.session.create({ data: { userId, tokenHash: tokenHash(token), expiresAt } });
+  const now = new Date();
+  const expiresAt = new Date(now.getTime() + SESSION_DAYS * 86400000);
+  await prisma.$transaction([
+    prisma.session.deleteMany({ where: { expiresAt: { lte: now } } }),
+    prisma.session.create({ data: { userId, tokenHash: tokenHash(token), expiresAt } }),
+  ]);
   (await cookies()).set(COOKIE_NAME, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict", path: "/", expires: expiresAt });
 }
 
@@ -26,9 +30,14 @@ export async function getCurrentUser() {
   return prisma.user.findFirst({ where: { status: "ACTIVE", sessions: { some: { tokenHash: tokenHash(token), expiresAt: { gt: new Date() } } } }, include: { roles: { include: { role: { include: { permissions: { include: { permission: true } } } } } } } });
 }
 
-export async function requirePermission(permission: string) {
+export async function requireAuthenticatedUser() {
   const user = await getCurrentUser();
   if (!user) redirect("/admin/login");
+  return user;
+}
+
+export async function requirePermission(permission: string) {
+  const user = await requireAuthenticatedUser();
   const allowed = user.roles.some(userRole => userRole.role.permissions.some(item => item.permission.key === permission));
   if (!allowed) redirect("/admin/forbidden");
   return user;
@@ -36,4 +45,8 @@ export async function requirePermission(permission: string) {
 
 export function hasPermission(user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>, permission: string) {
   return user.roles.some(userRole => userRole.role.permissions.some(item => item.permission.key === permission));
+}
+
+export function permissionKeys(user: NonNullable<Awaited<ReturnType<typeof getCurrentUser>>>) {
+  return user.roles.flatMap(userRole => userRole.role.permissions.map(item => item.permission.key));
 }

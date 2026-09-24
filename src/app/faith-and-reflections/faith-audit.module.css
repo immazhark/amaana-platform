@@ -1,0 +1,7 @@
+
+.emptyState{margin-top:1.5rem;padding:clamp(2rem,5vw,3.5rem);border:1px solid rgb(224 179 24 / 28%);border-radius:1.5rem;background:linear-gradient(145deg,rgb(255 253 248 / 94%),rgb(250 246 236 / 82%));box-shadow:0 1rem 3rem rgb(18 34 57 / 6%);text-align:center}
+.emptyIcon{width:3.5rem;height:3.5rem;display:grid;place-items:center;margin:0 auto 1rem;border-radius:1rem;background:rgb(224 179 24 / 12%);color:#8a6800;font-weight:850}
+.emptyKicker{display:inline-block;margin-bottom:.55rem;color:#8a6800;font-size:.7rem;font-weight:850;letter-spacing:.12em;text-transform:uppercase}
+.emptyState h3{margin:.2rem 0 .65rem;font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.7rem,3vw,2.5rem);font-weight:500;color:var(--v2-ink)}
+.emptyState p{max-width:42rem;margin:0 auto;color:#5f6974;line-height:1.7}
+.emptyActions{display:flex;justify-content:center;gap:1rem;flex-wrap:wrap;margin-top:1.35rem}

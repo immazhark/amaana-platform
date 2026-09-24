@@ -1,0 +1,492 @@
+{
+  "version": "master-2026-09-15-v1",
+  "categories": [
+    {
+      "slug": "medical-financial-relief",
+      "title": "Medical & Financial Relief",
+      "displayOrder": 0,
+      "summary": "Verified help when an illness, debt or sudden financial crisis becomes too heavy for a family to carry alone.",
+      "description": "When a medical emergency or sudden financial hardship pushes a family beyond what it can manage alone, Amaana Foundation steps in with carefully verified, case-specific support. Depending on the need, assistance may help with urgent treatment costs, debt relief, livelihood recovery, or other essential financial burdens. Whether support is raised publicly or arranged privately, our focus remains the same: respond with dignity, use funds responsibly, and provide clear accountability for how assistance reaches the intended family."
+    },
+    {
+      "slug": "emergency-humanitarian-relief",
+      "title": "Emergency & Humanitarian Relief",
+      "displayOrder": 1,
+      "summary": "From floods to community-wide emergencies, we respond with practical support, trusted local coordination and clear accountability.",
+      "description": "From floods to community-wide emergencies, we respond with practical support, trusted local coordination and clear accountability."
+    },
+    {
+      "slug": "ramadan-eid",
+      "title": "Ramadan & Eid Initiatives",
+      "displayOrder": 2,
+      "summary": "Recurring programmes that turn the spirit of Ramadan, Eid and Qurbani into thoughtful support for families facing financial hardship.",
+      "description": "Recurring programmes that turn the spirit of Ramadan, Eid and Qurbani into thoughtful support for families facing financial hardship."
+    },
+    {
+      "slug": "amaana-taleem",
+      "title": "Amaana Taleem Initiative",
+      "displayOrder": 3,
+      "summary": "Helping learners continue with dignity through educational essentials, Qur'anic learning and verified sponsorship pathways.",
+      "description": "Amaana Taleem Initiative brings together practical educational assistance and faith-based learning sponsorship for children and young people whose families may struggle to meet the cost of learning. The initiative began with identifiable, verifiable needs — including stationery kits for 50 orphan children in Borabanda, Hyderabad, in 2025 — and now also facilitates continuing sponsorship for Qur'an Nazira and Hifdh day scholars. As of September 2026, 25 students across Nazira and Hifdh were being sponsored through Amaana by multiple donors. As the initiative develops, Amaana also aims to extend verified support to school and college students whose education may otherwise be disrupted by financial hardship."
+    },
+    {
+      "slug": "seasonal-relief",
+      "title": "Seasonal Relief & Essentials",
+      "displayOrder": 4,
+      "summary": "Timely, practical support for seasonal needs that can place additional pressure on already vulnerable households.",
+      "description": "Amaana Foundation's Seasonal Relief & Essentials programme responds to predictable hardships that become more severe at particular times of the year. The focus is simple: identify a genuine seasonal need, reach people who are least equipped to absorb the added burden, and provide useful essentials at the time they are most needed. Winter support currently forms the programme's documented starting point, with future seasonal responses able to sit within the same framework as needs are verified."
+    }
+  ],
+  "initiatives": [
+    {
+      "slug": "auto-rickshaw-livelihood-support",
+      "title": "A Livelihood on Wheels",
+      "summary": "Sometimes the most meaningful assistance is not temporary relief, but the means to move forward independently. Through the collective support of our donors, ₹95,000 was raised to help provide an auto-rickshaw and essential start-up support—creating an opportunity for sustained income, greater stability, and a more dignified path forward.",
+      "story": "Sometimes the most meaningful assistance is not temporary relief, but the means to move forward independently. Through the collective support of our donors, ₹95,000 was raised to help provide an auto-rickshaw and essential start-up support—creating an opportunity for sustained income, greater stability, and a more dignified path forward.",
+      "causeSlug": "medical-financial-relief",
+      "primaryMetric": "₹95,000",
+      "primaryMetricLabel": "raised toward this case",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "emergency-neonatal-medical-aid",
+      "title": "Together for a Newborn’s Recovery",
+      "summary": "In the first days of life, one family found itself facing an unexpected medical emergency. Their eight-day-old baby boy required hospital care and C-PAP respiratory support while mounting treatment costs placed the family under severe financial strain. Amaana Foundation mobilized a medical-aid appeal, and donors responded with compassion and urgency, helping raise ₹107,520 to support the family’s medical expenses. The child later improved and was discharged from hospital—a completed appeal made possible by timely community support.",
+      "story": "In the first days of life, one family found itself facing an unexpected medical emergency. Their eight-day-old baby boy required hospital care and C-PAP respiratory support while mounting treatment costs placed the family under severe financial strain. Amaana Foundation mobilized a medical-aid appeal, and donors responded with compassion and urgency, helping raise ₹107,520 to support the family’s medical expenses. The child later improved and was discharged from hospital—a completed appeal made possible by timely community support.",
+      "causeSlug": "medical-financial-relief",
+      "primaryMetric": "₹107,520",
+      "primaryMetricLabel": "raised toward this case",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "oral-cancer-surgery-support",
+      "title": "Standing With Him Through Cancer Surgery",
+      "summary": "Facing stage 3 oral cancer, a patient in Hyderabad required urgent surgery at Mythri Hospital in May 2025. Amaana Foundation mobilized community support for the medical need, and donors came together to contribute ₹319,000 toward his surgery. The appeal reflects what timely collective giving can achieve when a family is confronted with a serious medical crisis.",
+      "story": "Facing stage 3 oral cancer, a patient in Hyderabad required urgent surgery at Mythri Hospital in May 2025. Amaana Foundation mobilized community support for the medical need, and donors came together to contribute ₹319,000 toward his surgery. The appeal reflects what timely collective giving can achieve when a family is confronted with a serious medical crisis.",
+      "causeSlug": "medical-financial-relief",
+      "primaryMetric": "₹319,000",
+      "primaryMetricLabel": "raised toward this case",
+      "programmeStatus": "COMPLETED",
+      "year": 2025
+    },
+    {
+      "slug": "aliza-critical-care-support",
+      "title": "Standing With Aliza Through Critical Care",
+      "summary": "Baby Aliza Fatima Quadri developed severe pneumonia that progressed to Acute Respiratory Distress Syndrome (ARDS) with refractory hypoxemia, leaving her in need of advanced respiratory and intensive care. After High Frequency Oscillatory Ventilation (HFOV) was unable to stabilise her condition, she required veno-venous ECMO support, mechanical ventilation, IV antibiotics, and continued treatment in the Pediatric Intensive Care Unit at KIMS Hospitals. Amaana Foundation mobilized an urgent medical-aid appeal and, through the generosity of donors, raised ₹482,700 toward her treatment. The Foundation team personally delivered the support to her family, who confirmed receipt and expressed their gratitude to everyone who stood with them during this critical period. At the time of the appeal update, Aliza remained under intensive treatment, so the fundraising appeal was completed while her medical recovery was still ongoing.",
+      "story": "Baby Aliza Fatima Quadri developed severe pneumonia that progressed to Acute Respiratory Distress Syndrome (ARDS) with refractory hypoxemia, leaving her in need of advanced respiratory and intensive care. After High Frequency Oscillatory Ventilation (HFOV) was unable to stabilise her condition, she required veno-venous ECMO support, mechanical ventilation, IV antibiotics, and continued treatment in the Pediatric Intensive Care Unit at KIMS Hospitals. Amaana Foundation mobilized an urgent medical-aid appeal and, through the generosity of donors, raised ₹482,700 toward her treatment. The Foundation team personally delivered the support to her family, who confirmed receipt and expressed their gratitude to everyone who stood with them during this critical period. At the time of the appeal update, Aliza remained under intensive treatment, so the fundraising appeal was completed while her medical recovery was still ongoing.",
+      "causeSlug": "medical-financial-relief",
+      "primaryMetric": "₹482,700",
+      "primaryMetricLabel": "raised toward this case",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "severe-burn-treatment-support",
+      "title": "Supporting a Mother Through Severe Burn Treatment",
+      "summary": "After suffering 45% severe burn injuries, a single mother of two required continued medical treatment at a time when her family had already exhausted much of its financial capacity. Around ₹4.2 lakh had already been spent on her care before the family approached Amaana Foundation for support. After reviewing the documents and verifying the case, Amaana mobilized a medical-aid appeal and raised ₹72,000. The amount was handed directly to the patient’s daughter to support the ongoing treatment need.",
+      "story": "After suffering 45% severe burn injuries, a single mother of two required continued medical treatment at a time when her family had already exhausted much of its financial capacity. Around ₹4.2 lakh had already been spent on her care before the family approached Amaana Foundation for support. After reviewing the documents and verifying the case, Amaana mobilized a medical-aid appeal and raised ₹72,000. The amount was handed directly to the patient’s daughter to support the ongoing treatment need.",
+      "causeSlug": "medical-financial-relief",
+      "primaryMetric": "₹72,000",
+      "primaryMetricLabel": "raised toward this case",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "jewellery-loan-intervention",
+      "title": "Restoring Financial Breathing Room for an Auto Driver’s Family",
+      "summary": "An auto-rickshaw driver and father of two, was supporting his family on a modest and uncertain household income while living in rented accommodation. One son relied on irregular daily-wage work with no permanent employment, while his younger son had ongoing medical needs. Medical and household pressures had forced the family to pledge jewellery and take on debt, with interest continuing to increase the burden. After reviewing the loan paperwork and verifying the situation, Amaana Foundation chose to resolve the case privately rather than launch a public appeal. ₹138,300 was pooled by Amaana team members and friends, the outstanding loan was cleared, and the family’s pledged jewellery was released and returned.",
+      "story": "An auto-rickshaw driver and father of two, was supporting his family on a modest and uncertain household income while living in rented accommodation. One son relied on irregular daily-wage work with no permanent employment, while his younger son had ongoing medical needs. Medical and household pressures had forced the family to pledge jewellery and take on debt, with interest continuing to increase the burden. After reviewing the loan paperwork and verifying the situation, Amaana Foundation chose to resolve the case privately rather than launch a public appeal. ₹138,300 was pooled by Amaana team members and friends, the outstanding loan was cleared, and the family’s pledged jewellery was released and returned.",
+      "causeSlug": "medical-financial-relief",
+      "primaryMetric": "₹138,300",
+      "primaryMetricLabel": "privately pooled · debt cleared",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "hyderabad-flood-relief-2020",
+      "title": "When Hyderabad Flooded, Our Community Responded",
+      "summary": "In October–November 2020, during Amaana’s early grassroots phase and before the Foundation was formally registered, the team responded to families affected by the Hyderabad floods through a three-phase relief effort. Support included ration and expanded relief kits, direct assistance to affected households, and coordinated help through trusted local organisations. Across the first two phases, 82 ration kits were distributed in Baba Nagar and Balapur and a further 60 expanded relief kits were provided for assessed flood-affected families, with Safa Baitul Maal supporting on-ground assessment and beneficiary coordination. A third phase included a designated ₹50,000 donor transfer for further relief support.",
+      "story": "In October–November 2020, during Amaana’s early grassroots phase and before the Foundation was formally registered, the team responded to families affected by the Hyderabad floods through a three-phase relief effort. Support included ration and expanded relief kits, direct assistance to affected households, and coordinated help through trusted local organisations. Across the first two phases, 82 ration kits were distributed in Baba Nagar and Balapur and a further 60 expanded relief kits were provided for assessed flood-affected families, with Safa Baitul Maal supporting on-ground assessment and beneficiary coordination. A third phase included a designated ₹50,000 donor transfer for further relief support.",
+      "causeSlug": "emergency-humanitarian-relief",
+      "primaryMetric": "3 phases",
+      "primaryMetricLabel": "October–November 2020",
+      "year": 2020,
+      "programmeStatus": "HISTORICAL",
+      "facts": [
+        "Phase 1: approximately ₹125,000 raised; 82 ration kits worth approximately ₹60,000 distributed in Baba Nagar and Balapur.",
+        "Phase 1 also supported affected households directly and through HHF, Sakina Foundation, Deccanistan and Jamaat-e-Islami Hind.",
+        "Phase 2: 60 expanded relief kits worth over ₹100,000 handed to Safa Baitul Maal for assessed families.",
+        "Phase 3: a designated ₹50,000 donor contribution transferred to Safa Baitul Maal.",
+        "These activities were carried out by the founding team before formal registration. No exact unique-beneficiary total is available."
+      ]
+    },
+    {
+      "slug": "covid-essential-support-2020",
+      "title": "Responding to Families During the COVID-19 Crisis",
+      "summary": "During the COVID-19 crisis in 2020, the family-led effort that would later become Amaana Foundation responded to households facing sudden income loss, food insecurity and severe uncertainty. Alongside the first Eid Gift Kits initiative, the founding team provided ration and essential-support assistance to families in need through its local community network.",
+      "story": "During the COVID-19 crisis in 2020, the family-led effort that would later become Amaana Foundation responded to households facing sudden income loss, food insecurity and severe uncertainty. Alongside the first Eid Gift Kits initiative, the founding team provided ration and essential-support assistance to families in need through its local community network.\n\nThese early distributions took place before Amaana had formal organizational systems and standardized annual reporting. The work forms an important part of Amaana's grassroots history, but complete beneficiary and financial totals are not available today. Rather than reconstruct figures that cannot be verified, Amaana records the initiative honestly as part of its early emergency response.",
+      "causeSlug": "emergency-humanitarian-relief",
+      "primaryMetric": null,
+      "primaryMetricLabel": null,
+      "year": 2020,
+      "programmeStatus": "HISTORICAL"
+    },
+    {
+      "slug": "dates-distribution",
+      "title": "Sharing the Blessing of Iftar",
+      "summary": "Dates are a simple but meaningful part of Ramadan and the breaking of the fast. Through Amaana Foundation’s Dates Distribution initiative, this small act of giving has been carried forward year after year as part of our seasonal community support. Across the four documented years from 2023 to 2026, 420 kg of dates were distributed, with the programme growing from 78 kg in 2023 to 162 kg in 2026.",
+      "story": "Dates are a simple but meaningful part of Ramadan and the breaking of the fast. Through Amaana Foundation’s Dates Distribution initiative, this small act of giving has been carried forward year after year as part of our seasonal community support. Across the four documented years from 2023 to 2026, 420 kg of dates were distributed, with the programme growing from 78 kg in 2023 to 162 kg in 2026.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "420 kg",
+      "primaryMetricLabel": "dates distributed · 2023–2026",
+      "startYear": 2023,
+      "endYear": 2026,
+      "programmeStatus": "RECURRING"
+    },
+    {
+      "slug": "dates-distribution-2023",
+      "title": "2023 — The First Documented Dates Distribution",
+      "summary": "In 2023, Amaana Foundation distributed 78 kg of dates as part of its Ramadan seasonal outreach. This is the earliest year for which a confirmed Dates Distribution quantity is currently available in the Foundation’s records, forming the starting point of the documented four-year initiative.",
+      "story": "In 2023, Amaana Foundation distributed 78 kg of dates as part of its Ramadan seasonal outreach. This is the earliest year for which a confirmed Dates Distribution quantity is currently available in the Foundation’s records, forming the starting point of the documented four-year initiative.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "78 kg",
+      "primaryMetricLabel": "dates distributed in 2023",
+      "year": 2023,
+      "parentSlug": "dates-distribution",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "dates-distribution-2024",
+      "title": "2024 — Growing the Distribution",
+      "summary": "The Dates Distribution initiative continued in 2024 with 90 kg of dates distributed during the Ramadan season. The increase from the previous year reflected the continuation and gradual growth of a simple, recurring form of community support.",
+      "story": "The Dates Distribution initiative continued in 2024 with 90 kg of dates distributed during the Ramadan season. The increase from the previous year reflected the continuation and gradual growth of a simple, recurring form of community support.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "90 kg",
+      "primaryMetricLabel": "dates distributed in 2024",
+      "year": 2024,
+      "parentSlug": "dates-distribution",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "dates-distribution-2025",
+      "title": "2025 — Continuing the Ramadan Tradition",
+      "summary": "In 2025, Amaana Foundation again distributed 90 kg of dates, maintaining the initiative as part of its recurring Ramadan outreach. The year represents continuity: sustaining a dependable seasonal programme alongside Amaana’s other Ramadan and community-support efforts.",
+      "story": "In 2025, Amaana Foundation again distributed 90 kg of dates, maintaining the initiative as part of its recurring Ramadan outreach. The year represents continuity: sustaining a dependable seasonal programme alongside Amaana’s other Ramadan and community-support efforts.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "90 kg",
+      "primaryMetricLabel": "dates distributed in 2025",
+      "year": 2025,
+      "parentSlug": "dates-distribution",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "dates-distribution-2026",
+      "title": "2026 — Our Largest Documented Dates Distribution Yet",
+      "summary": "The initiative expanded significantly in 2026, with 162 kg of dates distributed — the highest documented annual quantity between 2023 and 2026. This brought Amaana Foundation’s four-year documented Dates Distribution total to 420 kg.",
+      "story": "The initiative expanded significantly in 2026, with 162 kg of dates distributed — the highest documented annual quantity between 2023 and 2026. This brought Amaana Foundation’s four-year documented Dates Distribution total to 420 kg.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "162 kg",
+      "primaryMetricLabel": "dates distributed in 2026",
+      "year": 2026,
+      "parentSlug": "dates-distribution",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "qurbani-meat-distribution",
+      "title": "Qurbani Meat Distribution",
+      "summary": "Amaana Foundation’s Qurbani Meat Distribution initiative connects the spirit of sacrifice with practical community care by helping fresh meat reach families and individuals who may otherwise have limited access to it. Across the documented 2025 and 2026 drives, 43 sacrificial animals contributed to distributions that reached 500+ families, with beneficiaries selected from vulnerable and lower-income households.",
+      "story": "Amaana Foundation’s Qurbani Meat Distribution initiative connects the spirit of sacrifice with practical community care by helping fresh meat reach families and individuals who may otherwise have limited access to it. Across the documented 2025 and 2026 drives, 43 sacrificial animals contributed to distributions that reached 500+ families, with beneficiaries selected from vulnerable and lower-income households.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "500+",
+      "primaryMetricLabel": "family distributions · 2025–2026",
+      "startYear": 2025,
+      "endYear": 2026,
+      "programmeStatus": "RECURRING"
+    },
+    {
+      "slug": "qurbani-meat-distribution-2025",
+      "title": "2025 — Qurbani Meat Distribution",
+      "summary": "In 2025, Amaana Foundation carried out a Qurbani Meat Distribution drive using 15 sacrificial animals. Meat was distributed to 150+ families, with beneficiaries identified before distribution so that the support could be directed toward households facing genuine need. The drive was made possible through donor participation and community support.",
+      "story": "In 2025, Amaana Foundation carried out a Qurbani Meat Distribution drive using 15 sacrificial animals. Meat was distributed to 150+ families, with beneficiaries identified before distribution so that the support could be directed toward households facing genuine need. The drive was made possible through donor participation and community support.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "150+",
+      "primaryMetricLabel": "families reached in 2025",
+      "year": 2025,
+      "parentSlug": "qurbani-meat-distribution",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "qurbani-meat-distribution-2026",
+      "title": "2026 — Qurbani Meat Distribution",
+      "summary": "Amaana Foundation expanded its Qurbani Meat Distribution in 2026 with 28 sheep. Approximately 380 kg was handled overall, with unusable portions removed during preparation before the meat was packed into 350 clean boxes of roughly 1 kg each. The distribution reached 350+ families, including daily-wage earners, labourers, residents of lower-income settlements, widows, orphans, madrasa and Hifdh students, house helps, and other households facing financial hardship.",
+      "story": "Amaana Foundation expanded its Qurbani Meat Distribution in 2026 with 28 sheep. Approximately 380 kg was handled overall, with unusable portions removed during preparation before the meat was packed into 350 clean boxes of roughly 1 kg each. The distribution reached 350+ families, including daily-wage earners, labourers, residents of lower-income settlements, widows, orphans, madrasa and Hifdh students, house helps, and other households facing financial hardship.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "350+",
+      "primaryMetricLabel": "families reached in 2026",
+      "year": 2026,
+      "parentSlug": "qurbani-meat-distribution",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "eid-gift-kits",
+      "title": "Eid Gift Kits — Celebrating Eid With Dignity",
+      "summary": "Amaana Foundation’s Eid Gift Kits initiative is its longest-running annual programme, beginning in Ramadan 2020 as a family-led response during the COVID period in Hyderabad. Each year, carefully assembled household packages are provided to financially vulnerable families so they can prepare for Eid with greater dignity and ease. The contents and cost of each kit are adjusted to market conditions and household needs. From 85 families in 2020 to 710 families in 2026, the initiative has recorded 2,830 family distributions across seven annual drives.",
+      "story": "Amaana Foundation’s Eid Gift Kits initiative is its longest-running annual programme, beginning in Ramadan 2020 as a family-led response during the COVID period in Hyderabad. Each year, carefully assembled household packages are provided to financially vulnerable families so they can prepare for Eid with greater dignity and ease. The contents and cost of each kit are adjusted to market conditions and household needs. From 85 families in 2020 to 710 families in 2026, the initiative has recorded 2,830 family distributions across seven annual drives.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "2,830",
+      "primaryMetricLabel": "family distributions · seven annual drives",
+      "startYear": 2020,
+      "endYear": 2026,
+      "programmeStatus": "RECURRING"
+    },
+    {
+      "slug": "eid-gift-kits-2020",
+      "title": "2020 — Where the Eid Gift Kits Journey Began",
+      "summary": "In Ramadan 2020, during the uncertainty of the COVID period, the family-led effort that would later become Amaana Foundation began its Eid support programme by preparing and distributing gift kits to 85 families in Hyderabad. Each kit was valued at approximately ₹797 and contained practical household and festive essentials intended to help families prepare for Eid with dignity. This first drive became the foundation for what would grow into Amaana’s flagship annual initiative.",
+      "story": "In Ramadan 2020, during the uncertainty of the COVID period, the family-led effort that would later become Amaana Foundation began its Eid support programme by preparing and distributing gift kits to 85 families in Hyderabad. Each kit was valued at approximately ₹797 and contained practical household and festive essentials intended to help families prepare for Eid with dignity. This first drive became the foundation for what would grow into Amaana’s flagship annual initiative.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "85",
+      "primaryMetricLabel": "families reached in 2020",
+      "year": 2020,
+      "parentSlug": "eid-gift-kits",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "eid-gift-kits-2021",
+      "title": "2021 — Growing Beyond the First Year",
+      "summary": "The Eid Gift Kits initiative continued in 2021 and more than doubled its first-year reach. 171 families received Eid support, with each kit valued at approximately ₹1,327. The growth reflected increasing community participation and strengthened the team’s commitment to making the programme an annual effort rather than a one-time response.",
+      "story": "The Eid Gift Kits initiative continued in 2021 and more than doubled its first-year reach. 171 families received Eid support, with each kit valued at approximately ₹1,327. The growth reflected increasing community participation and strengthened the team’s commitment to making the programme an annual effort rather than a one-time response.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "171",
+      "primaryMetricLabel": "families reached in 2021",
+      "year": 2021,
+      "parentSlug": "eid-gift-kits",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "eid-gift-kits-2022",
+      "title": "2022 — Expanding Reach and Responding to Individual Needs",
+      "summary": "In 2022, the programme expanded significantly to support 339 families, with the standard kit valued at approximately ₹1,430. Records from the year also note 12 customised kits, reflecting an effort to respond to particular household needs rather than treating every family identically. The drive marked another major step in the programme’s scale and organisation.",
+      "story": "In 2022, the programme expanded significantly to support 339 families, with the standard kit valued at approximately ₹1,430. Records from the year also note 12 customised kits, reflecting an effort to respond to particular household needs rather than treating every family identically. The drive marked another major step in the programme’s scale and organisation.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "339",
+      "primaryMetricLabel": "families reached in 2022",
+      "year": 2022,
+      "parentSlug": "eid-gift-kits",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "eid-gift-kits-2023",
+      "title": "2023 — More Than 400 Families Supported",
+      "summary": "Amaana’s Eid Gift Kits drive reached 408 families in 2023. The actual kit cost was recorded at approximately ₹1,519, while the programme worked with a rounded/discounted figure of about ₹1,500 per kit. By this stage, the initiative had grown from a small family-led effort into a recurring community programme supporting hundreds of households each Ramadan.",
+      "story": "Amaana’s Eid Gift Kits drive reached 408 families in 2023. The actual kit cost was recorded at approximately ₹1,519, while the programme worked with a rounded/discounted figure of about ₹1,500 per kit. By this stage, the initiative had grown from a small family-led effort into a recurring community programme supporting hundreds of households each Ramadan.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "408",
+      "primaryMetricLabel": "families reached in 2023",
+      "year": 2023,
+      "parentSlug": "eid-gift-kits",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "eid-gift-kits-2024",
+      "title": "2024 — Sustaining a Growing Annual Commitment",
+      "summary": "In 2024, Amaana Foundation provided Eid Gift Kits to 467 families, with each kit valued at approximately ₹1,500. The drive continued the initiative’s steady year-on-year growth while preserving its original purpose: helping financially vulnerable households prepare for Eid with useful, dignified support.",
+      "story": "In 2024, Amaana Foundation provided Eid Gift Kits to 467 families, with each kit valued at approximately ₹1,500. The drive continued the initiative’s steady year-on-year growth while preserving its original purpose: helping financially vulnerable households prepare for Eid with useful, dignified support.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "467",
+      "primaryMetricLabel": "families reached in 2024",
+      "year": 2024,
+      "parentSlug": "eid-gift-kits",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "eid-gift-kits-2025",
+      "title": "2025 — Reaching 650 Families",
+      "summary": "The 2025 Eid Gift Kits drive marked another major expansion, reaching 650 families. Each kit was valued at approximately ₹1,709, with the programme continuing to combine staple and festive household essentials for Eid. Separate records also show that approximately ₹15,000 in packaging and transport costs was covered outside the main donations, helping preserve donor contributions for the intended kit distribution.",
+      "story": "The 2025 Eid Gift Kits drive marked another major expansion, reaching 650 families. Each kit was valued at approximately ₹1,709, with the programme continuing to combine staple and festive household essentials for Eid. Separate records also show that approximately ₹15,000 in packaging and transport costs was covered outside the main donations, helping preserve donor contributions for the intended kit distribution.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "650",
+      "primaryMetricLabel": "families reached in 2025",
+      "year": 2025,
+      "parentSlug": "eid-gift-kits",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "eid-gift-kits-2026",
+      "title": "2026 — The Largest Eid Gift Kits Drive Yet",
+      "summary": "In 2026, Amaana Foundation’s Eid Gift Kits initiative reached its largest documented scale to date, supporting 710 families. Each kit was valued at approximately ₹1,783 and was designed to help households prepare for Eid with a meaningful combination of staple and festive essentials. The year reflected the programme’s growth from 85 families in 2020 to 710 families in 2026, while retaining the same principle at its core: support should preserve dignity and respond to genuine household need.",
+      "story": "In 2026, Amaana Foundation’s Eid Gift Kits initiative reached its largest documented scale to date, supporting 710 families. Each kit was valued at approximately ₹1,783 and was designed to help households prepare for Eid with a meaningful combination of staple and festive essentials. The year reflected the programme’s growth from 85 families in 2020 to 710 families in 2026, while retaining the same principle at its core: support should preserve dignity and respond to genuine household need.",
+      "causeSlug": "ramadan-eid",
+      "primaryMetric": "710",
+      "primaryMetricLabel": "families reached in 2026",
+      "year": 2026,
+      "parentSlug": "eid-gift-kits",
+      "programmeStatus": "COMPLETED"
+    },
+    {
+      "slug": "taleem",
+      "title": "Amaana Taleem Initiative — Education Support With Purpose and Accountability",
+      "summary": "Amaana Taleem Initiative brings together practical educational assistance and faith-based learning sponsorship for children and young people whose families may struggle to meet the cost of learning. The initiative began with identifiable, verifiable needs — including stationery kits for 50 orphan children in Borabanda, Hyderabad, in 2025 — and now also facilitates continuing sponsorship for Qur'an Nazira and Hifdh day scholars. As of September 2026, 25 students across Nazira and Hifdh were being sponsored through Amaana by multiple donors. As the initiative develops, Amaana also aims to extend verified support to school and college students whose education may otherwise be disrupted by financial hardship.",
+      "story": "Amaana Taleem Initiative brings together practical educational assistance and faith-based learning sponsorship for children and young people whose families may struggle to meet the cost of learning. The initiative began with identifiable, verifiable needs — including stationery kits for 50 orphan children in Borabanda, Hyderabad, in 2025 — and now also facilitates continuing sponsorship for Qur'an Nazira and Hifdh day scholars. As of September 2026, 25 students across Nazira and Hifdh were being sponsored through Amaana by multiple donors. As the initiative develops, Amaana also aims to extend verified support to school and college students whose education may otherwise be disrupted by financial hardship.",
+      "causeSlug": "amaana-taleem",
+      "primaryMetric": "25",
+      "primaryMetricLabel": "Nazira / Hifdh students combined · September 2026",
+      "programmeStatus": "RECURRING"
+    },
+    {
+      "slug": "taleem-initiative-2025",
+      "title": "Stationery Kits for Orphan Students",
+      "summary": "In 2025, Amaana Taleem Initiative provided stationery kits to 50 orphan children through the Al Khair community/masjid network in Borabanda, Hyderabad. The distribution focused on a simple but important educational need: ensuring children had essential learning materials available for their studies. The support was practical, identifiable and directly delivered to the intended students.",
+      "story": "In 2025, Amaana Taleem Initiative provided stationery kits to 50 orphan children through the Al Khair community/masjid network in Borabanda, Hyderabad. The distribution focused on a simple but important educational need: ensuring children had essential learning materials available for their studies. The support was practical, identifiable and directly delivered to the intended students.",
+      "causeSlug": "amaana-taleem",
+      "primaryMetric": "50",
+      "primaryMetricLabel": "orphan children · Borabanda, Hyderabad",
+      "parentSlug": "taleem",
+      "programmeStatus": "COMPLETED",
+      "year": 2025
+    },
+    {
+      "slug": "taleem-hifdh-sponsorship",
+      "title": "Sponsor a Hifdh Student",
+      "summary": "Through Amaana Taleem Initiative, donors can support day scholars engaged in Hifdh — the memorisation of the Qur'an — at Al Madarsatul Islamia Lithafizil Quranil Kareem. The sponsorship pathway is intended to help students continue their Qur'anic education while easing part of the financial pressure on families that may otherwise struggle to sustain it. As of September 2026, 25 students across Amaana's Qur'an Nazira and Hifdh sponsorships were being supported by multiple donors.",
+      "story": "Through Amaana Taleem Initiative, donors can support day scholars engaged in Hifdh — the memorisation of the Qur'an — at Al Madarsatul Islamia Lithafizil Quranil Kareem. The sponsorship pathway is intended to help students continue their Qur'anic education while easing part of the financial pressure on families that may otherwise struggle to sustain it. As of September 2026, 25 students across Amaana's Qur'an Nazira and Hifdh sponsorships were being supported by multiple donors.",
+      "causeSlug": "amaana-taleem",
+      "primaryMetric": null,
+      "primaryMetricLabel": null,
+      "parentSlug": "taleem",
+      "programmeStatus": "ONGOING"
+    },
+    {
+      "slug": "taleem-nazira-sponsorship",
+      "title": "Sponsor Qur’an Nazira Education",
+      "summary": "Amaana Taleem Initiative facilitates sponsorship for students learning Qur'an Nazira — the guided reading of the Qur'an with regular instruction and practice — at Al Madarsatul Islamia Lithafizil Quranil Kareem. Donor support helps students continue their Qur'anic learning where household finances may otherwise make regular education difficult. As of September 2026, 25 students across Amaana's Nazira and Hifdh sponsorships were being supported through multiple donors.",
+      "story": "Amaana Taleem Initiative facilitates sponsorship for students learning Qur'an Nazira — the guided reading of the Qur'an with regular instruction and practice — at Al Madarsatul Islamia Lithafizil Quranil Kareem. Donor support helps students continue their Qur'anic learning where household finances may otherwise make regular education difficult. As of September 2026, 25 students across Amaana's Nazira and Hifdh sponsorships were being supported through multiple donors.",
+      "causeSlug": "amaana-taleem",
+      "primaryMetric": null,
+      "primaryMetricLabel": null,
+      "parentSlug": "taleem",
+      "programmeStatus": "ONGOING"
+    },
+    {
+      "slug": "taleem-school-college-sponsorship",
+      "title": "Sponsor a Student’s School or College Education",
+      "summary": "Amaana Taleem Initiative is designed to extend educational assistance to verified students from financially vulnerable households whose schooling or college education may be at risk because of fees or other essential academic costs. Support under this pathway will be matched to a clearly identified educational need, with verification and responsible follow-through before assistance is provided.",
+      "story": "Amaana Taleem Initiative is designed to extend educational assistance to verified students from financially vulnerable households whose schooling or college education may be at risk because of fees or other essential academic costs. Support under this pathway will be matched to a clearly identified educational need, with verification and responsible follow-through before assistance is provided.",
+      "causeSlug": "amaana-taleem",
+      "primaryMetric": null,
+      "primaryMetricLabel": null,
+      "parentSlug": "taleem",
+      "programmeStatus": "EXPANDING"
+    },
+    {
+      "slug": "winter-relief",
+      "title": "Winter Drive 2025–26 — Warmth for Children and Vulnerable Families",
+      "summary": "During the 2025–26 winter season, Amaana Foundation distributed 234 Winter Kits to 234 beneficiaries through a multi-phase Winter Drive. The support included sweaters, blankets and beanie caps for madrasa students, orphan children, widows, daily-wage labourers, domestic workers and other people facing seasonal hardship.",
+      "story": "During the 2025–26 winter season, Amaana Foundation distributed 234 Winter Kits to 234 beneficiaries through a multi-phase Winter Drive. The support included sweaters, blankets and beanie caps for madrasa students, orphan children, widows, daily-wage labourers, domestic workers and other people facing seasonal hardship.\n\nIn Phase 1, support was distributed at Al Madarsatul Islamia LiTahfizil Quranil Kareem, FeelKhana, Mallepally, reaching 96 madrasa students, including boys and girls from approximately ages 2 to 18 and underprivileged orphan children. In Phase 2, Amaana worked in collaboration with Al Khair Society at Al Khair Masjid, Hyderabad, where 101 Winter Kits were distributed. These phase figures are supporting sub-measures within the overall drive and must not be added to the overall total of 234 Winter Kits distributed to 234 beneficiaries.",
+      "causeSlug": "seasonal-relief",
+      "primaryMetric": "234 Winter Kits",
+      "primaryMetricLabel": "distributed to 234 beneficiaries",
+      "startYear": 2025,
+      "endYear": 2026,
+      "programmeStatus": "COMPLETED",
+      "facts": [
+        "Overall: 234 Winter Kits distributed to 234 beneficiaries.",
+        "Phase 1: 96 madrasa students.",
+        "Phase 2: 101 Winter Kits.",
+        "Phase figures are supporting sub-measures within the overall drive and must not be added to 234."
+      ],
+      "dataCaveat": null
+    }
+  ],
+  "pages": {
+    "13": {
+      "name": "Homepage",
+      "source": "## Hero — Recommended Primary Copy\n\n**Eyebrow:**  \n**AMAANA FOUNDATION · HYDERABAD**\n\n**Headline:**  \n# **Trust, Turned Into Action.**\n\n**Supporting Copy:**  \nAmaana Foundation is a Hyderabad-based charitable trust helping families through verified medical and financial assistance, education support, Ramadan and Eid initiatives, seasonal relief and emergency response. We believe every contribution is an *amaana*—a trust to be handled with dignity, transparency and responsibility.\n\n**Primary CTA:** **See Our Work**  \n**Secondary CTA:** **Support a Verified Need**  \n**Tertiary CTA:** **Request Assistance**\n\n### Alternate Faith-Led Hero\n**Headline:**  \n**An Amaana to Serve. A Responsibility to Deliver.**\n\n**Supporting Copy:**  \nWhat began as a family-led Ramadan effort in 2020 has grown into a registered charitable foundation built around a simple principle: identify genuine need, respond with compassion, and remain accountable for what has been entrusted to us.\n\n**CTAs:** **Explore Our Impact** · **Support Amaana**\n\n### Homepage Hero Strategy Note\nLead with the meaning of *Amaana*—trust—rather than a generic charity slogan. The visitor should understand within seconds **who Amaana is, where it works, what it does and why it can be trusted**.\n\n---\n\n## Homepage — Trust Introduction\n\n**Heading:**  \n## **Compassion With Accountability**\n\n**Copy:**  \nGood intentions matter. So does what happens next. Amaana Foundation works close to the communities it serves, reviews needs before mobilising support, protects sensitive beneficiary information, and reports documented outcomes wherever records permit. Our responsibility is not only to collect support, but to ensure that it is directed toward the purpose for which it was entrusted.\n\n**CTA:** **How Amaana Works**\n\n---\n\n## Homepage — Our Work Intro\n\n**Eyebrow:** **OUR WORK**\n\n**Heading:**  \n## **Different Needs. One Standard of Care.**\n\n**Copy:**  \nSome needs return every year. Others arrive without warning. Amaana's work therefore combines recurring programmes with verified case-led assistance—from Eid Gift Kits and Qurbani distribution to Taleem, winter relief, emergency response and urgent medical or financial support.\n\n**CTA:** **Explore All Initiatives**\n\n---\n\n## Homepage — Impact Intro\n\n**Heading:**  \n## **Impact We Can Stand Behind**\n\n**Copy:**  \nWe would rather show programme-level evidence than publish one oversized number that cannot be responsibly audited. Our impact reporting focuses on documented annual reach, quantities distributed, verified cases completed and what donor support enabled.\n\n### Recommended Homepage Impact Highlights\n- **7 consecutive years** — Eid Gift Kits, 2020–2026\n- **2,830 family distributions** — across seven documented Eid Gift Kit drives\n- **710 families** — reached through Eid Gift Kits in 2026\n- **500+ family distributions** — across documented Qurbani drives in 2025 and 2026\n- **420 kg of dates** — distributed across documented 2023–2026 Ramadan drives\n- **50 orphan children** — provided stationery kits through Taleem in 2025\n- **25 Qur'an Nazira / Hifdh students** — under continuing sponsorship as documented in September 2026\n\n**Implementation Note:** Do not turn the above into a combined “total beneficiaries” figure.\n\n**CTA:** **Explore Our Impact**\n\n---\n\n## Homepage — Verification Strip\n\n**Heading:**  \n### **Verified Privately. Reported Responsibly.**\n\n**Microcopy:**  \nRequests are reviewed before assistance is approved. Sensitive documents remain private. Public updates focus on the verified need, support delivered and documented outcome.\n\n**CTA:** **See How We Verify**\n\n---\n\n## Homepage — Get Involved\n\n**Heading:**  \n## **Choose How You Want to Help**\n\n**Donate:**  \nSupport a current verified appeal or one of Amaana's recurring initiatives.\n\nCTA: **Support Amaana**\n\n**Volunteer:**  \nContribute your time, skills or professional expertise to work that needs reliable hands.\n\nCTA: **Volunteer With Us**\n\n**Partner:**  \nWork with Amaana on distributions, education, relief, verification or institutional collaboration.\n\nCTA: **Partner With Amaana**\n\n**Request Assistance:**  \nIf you or a family you know is facing a genuine medical, financial, educational or emergency need, submit a request privately.\n\nCTA: **Request Assistance**\n\n---"
+    },
+    "14": {
+      "name": "About Amaana",
+      "source": "## Page Title\n# **A Trust That Began With a Simple Decision to Help**\n\n## Intro\nAmaana Foundation is a Hyderabad-based registered charitable trust rooted in the Islamic principle of *amanah*—trust. We exist to turn compassion into practical, verified assistance while treating both donor contributions and beneficiary dignity as responsibilities entrusted to us.\n\n---\n\n## Our Story\n\n**Heading:**  \n## **From a Ramadan Effort to a Continuing Responsibility**\n\n**Copy:**  \nAmaana's story began in Ramadan 2020, during the uncertainty of the COVID-19 crisis. Families around us were facing lost income, rising household pressure and the prospect of Eid without the essentials many of us take for granted. What began as a family-led effort, supported by relatives and friends, helped **85 families** through the first Eid Gift Kits drive.\n\nWe could have treated that first effort as a one-time response. Instead, we returned the following year—and the year after that. The Eid programme grew from **85 families in 2020 to 710 families in 2026**, while other needs became visible through the same community networks: flood-affected households, patients facing urgent treatment costs, children needing educational support, families struggling through winter, households unable to afford Qurbani meat, and individuals needing a path back to financial stability.\n\nAs the responsibility grew, so did the need for structure. In **2023**, the family decided to formalise the work so that donations, records, governance and future programmes could be handled more consistently. Amaana Foundation was subsequently registered as a charitable trust in Hyderabad on **23 February 2024**, followed by NGO DARPAN registration in May 2024.\n\nToday, Amaana combines the closeness of a community-rooted organisation with a growing commitment to stronger systems, transparent reporting and responsible digital infrastructure. The scale has changed. The principle has not: **what is entrusted to us must be handled with care.**\n\n**CTA:** **See Our Journey** · **Explore Our Work**\n\n---\n\n## What “Amaana” Means\n\n**Heading:**  \n## **Amaana Means Trust**\n\n**Copy:**  \nOur name is more than an identity. It is a standard we try to work by. A donation is an *amaana*. A family's private documents are an *amaana*. A volunteer's time is an *amaana*. The story we tell about someone in hardship is also an *amaana*.\n\nFor us, trust means using support for its stated purpose, verifying responsibly, communicating honestly, protecting what should remain private and acknowledging clearly when a fact or figure cannot be verified.\n\n---"
+    },
+    "15": {
+      "name": "Mission, Vision & Values",
+      "source": "## Mission\n**To identify genuine need, verify it responsibly, mobilise support with integrity, deliver assistance with dignity, and account for the outcome.**\n\n## Vision\n**A community in which charitable support is trusted, dignified and capable of creating both immediate relief and meaningful opportunity.**\n\n## Our Values\n\n### **Amanah — Trust**\nWe treat donations, information and responsibilities as things entrusted to our care—not simply resources to be used.\n\n### **Dignity**\nA person should not have to surrender privacy or self-respect in order to receive help.\n\n### **Verification**\nCompassion begins the conversation; responsible review determines how we respond.\n\n### **Transparency**\nWhere records permit, we report what was raised, what was delivered and what the support enabled.\n\n### **Local Accountability**\nWe stay close to the communities, referrals and partners through which needs reach us.\n\n### **Continuity**\nWe aim to build dependable programmes and improve them year after year rather than appearing only when a campaign is visible online.\n\n### **Compassion With Structure**\nEmpathy should move us to act. Good systems help make that action responsible, fair and sustainable.\n\n---"
+    },
+    "16": {
+      "name": "Who We Serve",
+      "source": "## Heading\n# **Support Based on Need, Not Labels**\n\n## Copy\nAmaana's programmes serve different people at different moments of hardship. Depending on the initiative, documented support has reached widows and women-led households, children and students, orphaned children, daily-wage earners, labourers, drivers, low-income households, people facing urgent medical needs, families affected by emergencies, and individuals seeking a sustainable way to regain financial stability.\n\nNeed is assessed in context. We avoid reducing people to a category, and we do not promise assistance solely because someone fits a particular label.\n\n---"
+    },
+    "17": {
+      "name": "How Amaana Works / How We Verify",
+      "source": "## Page Title\n# **Verify Privately. Respond Responsibly. Report Clearly.**\n\n## Intro\nA genuine request for help often comes with deeply personal information. Amaana's process is designed to understand the need without turning private hardship into public spectacle.\n\n## From Request to Relief\n\n### **1. A Request or Referral Reaches Us**\nRequests may come directly from a family, through trusted community contacts, masjid/community networks, social media or Amaana's assistance channel.\n\n### **2. We Understand the Need**\nThe team reviews the urgency, circumstances, nature of assistance required and whether Amaana is reasonably positioned to help.\n\n### **3. We Verify Privately**\nRelevant supporting documents or corroboration may be requested. Medical records, identity documents, bank information and sensitive family details are handled as verification material—not public content.\n\n### **4. We Decide the Appropriate Response**\nDepending on the case, assistance may come through available funds, a dedicated public appeal, an in-kind programme, direct procurement or referral to another suitable organisation.\n\n### **5. We Mobilise Support When Needed**\nIf a public appeal is necessary, we communicate enough information to explain the verified need while avoiding unnecessary exposure of the person or family involved.\n\n### **6. Assistance Is Delivered**\nSupport may take the form of medical assistance, financial relief, food or seasonal essentials, education support, livelihood assets or other case-specific help.\n\n### **7. We Close the Loop**\nWhere appropriate and documented, donors receive completion updates, distribution figures, photographs, financial summaries or confirmation of the outcome.\n\n## Core Principle\n### **Public Evidence. Private Proofs.**\nWe should be able to demonstrate that assistance happened and that entrusted support was used for its stated purpose without publishing documents that could compromise a beneficiary's dignity, safety or privacy.\n\n**CTA:** **Request Assistance** · **Explore Completed Appeals**\n\n---"
+    },
+    "18": {
+      "name": "Transparency & Accountability",
+      "source": "## Page Title\n# **Trust Is Built in the Details**\n\n## Intro\nTransparency is not the publication of every private document. It is the discipline of being precise about what is known, what was collected, what was delivered, what remains unverified and what should remain confidential.\n\n## How Amaana Builds Accountability\n- Maintain programme and campaign records wherever available.\n- Report documented quantities, beneficiary counts and campaign outcomes without inflating them.\n- Preserve annual cost information for recurring initiatives such as Eid Gift Kits.\n- Provide completion updates for case-led medical, financial and livelihood appeals where an outcome is documented.\n- Separate operational expenses from programme donations where records make that distinction available.\n- Preserve photographs and distribution evidence where publication is appropriate.\n- Maintain registration and compliance information in a dedicated public area.\n- Use role-based administration for the digital platform rather than relying on one shared credential.\n\n## What We Intentionally Keep Private\n- Aadhaar and other identity documents\n- Medical reports, prescriptions and private clinical records\n- Bank account details and sensitive transaction proofs\n- Private verification conversations\n- Unnecessary family details\n- Children's identifying information unless publication is appropriate and approved\n\n## Reporting Philosophy\n**We prefer a smaller number we can explain over a larger number we cannot responsibly defend.**\n\nAmaana therefore reports impact by programme and year rather than combining all activity into a single lifetime beneficiary total that could double-count the same household across different initiatives.\n\n**CTAs:** **View Our Impact** · **See Registration & Compliance**\n\n---"
+    },
+    "19": {
+      "name": "Governance, Registration & Compliance",
+      "source": "## Page Title\n# **Built to Carry Trust Responsibly**\n\n## Intro\nAmaana grew from a family-led initiative into a registered charitable trust because continuity requires more than goodwill. Formal governance, documentation and compliance help protect the people we serve, the people who support us and the work itself.\n\n## Governance\n\n### **Mohammed Mazhar Khan**\n**Founder & Managing Trustee**  \nLeads Amaana's overall direction, public accountability and primary operational/content approval.\n\n### **Mohammed Ather Khan**\n**Trustee & Treasurer**  \nSupports governance, financial oversight and backup administrative responsibility.\n\n### **Syed Uqba Ali**\n**Trustee**  \nPart of Amaana Foundation's formal trustee structure.\n\n**Implementation Note:** Website/digital administrators and formal trustees are not automatically the same thing. Do not assign public governance titles to digital administrators unless Amaana separately approves those titles.\n\n## Registration & Current Compliance Position\n\n**Legal Entity:** Registered charitable trust  \n**Trust Registration:** 23 February 2024 — BK-4, CS No. 59/2024, Hyderabad, Telangana  \n**NGO DARPAN:** TS/2024/0403215 — registered 21 May 2024  \n**PAN:** Held in the name of Amaana Foundation; full number should not be displayed publicly by default  \n**Section 80G:** **Provisional approval** via Form 10AC dated 26 January 2026, covering AY 2026–27 through AY 2028–29  \n**12A / 12AB:** Current/final status must be confirmed with Amaana's Chartered Accountant before any website claim states that it is finalized  \n**FCRA:** Amaana Foundation is **not FCRA-registered**  \n**Donation Geography:** Public fundraising should remain **domestic only** unless the legal position changes\n\n## Tax Wording\nAmaana's current Section 80G position is provisional. The website must not describe the approval as permanent or final. Any statement about donor tax deduction should remain subject to the applicable approval, receipt requirements, donor eligibility and Indian tax law.\n\n**CTA:** **View Compliance Information** · **Contact Us for Due Diligence**\n\n---"
+    },
+    "20": {
+      "name": "Impact Page",
+      "source": "## Page Title\n# **Impact, Without Inflated Numbers**\n\n## Intro\nEvery number on an impact page should be able to answer a second question: **what does it represent?** Amaana therefore reports programme-level and case-level outcomes rather than collapsing unrelated activities into one marketing total.\n\n## Recommended Impact Narrative\nFrom **85 Eid Gift Kit families in 2020 to 710 in 2026**, Amaana's longest-running programme shows what consistent community support can build over time. Around that recurring core, other programmes have developed as verified needs emerged: Qurbani meat distribution, Ramadan dates, Taleem, winter essentials, disaster response and case-led medical, financial and livelihood assistance.\n\nThe purpose of this page is not simply to display numbers. It is to connect each figure to a documented action—a kit prepared, a family reached, a treatment need supported, a debt cleared, a student equipped or a relief response completed.\n\n## Recommended Impact Modules\nUse separate modules rather than one cumulative total:\n- **Eid Gift Kits:** year-by-year 2020–2026\n- **Qurbani:** 2025 and 2026 separately, plus 500+ family distributions across the two documented drives\n- **Dates:** year-by-year kilograms, 420 kg across 2023–2026\n- **Taleem:** 50 stationery-kit recipients in 2025; 25 Nazira/Hifdh students documented under sponsorship as of September 2026\n- **Winter:** show approved drive figures and phase measures separately\n- **Emergency Relief:** show Hyderabad Flood Relief phases; COVID support without invented totals\n- **Case-Led Assistance:** show each completed verified case individually with amount and documented outcome\n\n**CTA:** **Explore the Work Behind the Numbers**\n\n---"
+    },
+    "21": {
+      "name": "Appeals",
+      "source": "## Appeals Landing Page\n\n**Page Title:**  \n# **Verified Needs. Clear Purpose. Responsible Support.**\n\n**Intro:**  \nAmaana's public appeals are created for specific needs that have been reviewed before fundraising. Each appeal should clearly explain what support is required, what donations will be used for, the campaign status, and—once completed—the documented outcome.\n\n### Active Appeal Card Requirements\nEach card should show, where applicable:\n- concise need/title\n- verified-use summary\n- target amount\n- amount raised / progress\n- campaign status\n- Zakat eligibility only when explicitly confirmed\n- meaningful CTA\n\n**Recommended CTA:** **Support This Verified Need**\n\n### Completed Appeals Intro\n**Heading:** **See What Support Made Possible**\n\n**Copy:**  \nCompleted appeals should not disappear when fundraising closes. Keeping the verified need, amount raised and documented outcome visible helps donors see how community support translated into action.\n\n**CTA:** **View Completed Appeals**\n\n### No Active Appeals — Critical Empty State\n**Heading:** **No Public Appeal Is Open Right Now**\n\n**Copy:**  \nThat does not mean the work has stopped. You can explore completed cases, support one of Amaana's recurring initiatives, or contribute to an available general-purpose fund if it is currently enabled. New urgent appeals will appear here after verification.\n\n**CTAs:** **Explore Our Work** · **See Completed Appeals**\n\n**Codex Note:** Never leave the Donate journey at a dead end merely because no emergency appeal is active.\n\n---"
+    },
+    "22": {
+      "name": "Donate / Support Amaana",
+      "source": "## Page Title\n# **Give With Confidence. Give With Purpose.**\n\n## Intro\nEvery contribution is an *amaana*. Before a donor gives, the website should make the purpose clear—whether the contribution supports a specific verified appeal, a recurring initiative or another currently approved fund.\n\n## Recommended Donation Journey Copy\n**Choose where your support should go.**  \nSupport an active verified need, contribute to an ongoing programme such as Taleem or seasonal relief, or choose another donation option that Amaana has currently enabled.\n\n### Trust Microcopy\n**Your support should never disappear into a vague promise.** Where a donation is tied to a specific appeal or initiative, Amaana aims to report the documented outcome and campaign status.\n\n### Domestic Donation Notice\n**Domestic donations only.** Amaana Foundation is not currently FCRA-registered and does not solicit or accept foreign contributions through its public donation flow.\n\n### 80G Notice\nAmaana Foundation currently holds **provisional approval under Section 80G** via Form 10AC dated 26 January 2026 for AY 2026–27 through AY 2028–29. Tax treatment depends on applicable law, donor eligibility and valid receipt/compliance requirements. Do not describe the approval as permanent or final.\n\n### Payment-Gateway Implementation Note\nOnly present Razorpay/online payment as live when Amaana's applicable KYC, account and website requirements are fully operational. If online payment is unavailable, the page should clearly show the currently approved domestic donation method rather than a broken or inactive flow.\n\n### Recommended CTAs\n- **Support a Verified Appeal**\n- **Support an Amaana Initiative**\n- **See Where Support Goes**\n\n---"
+    },
+    "23": {
+      "name": "Faith & Giving",
+      "source": "## Page Title\n# **Giving as Trust, Worship and Responsibility**\n\n## Intro\nAmaana's work is inspired by Islamic teachings on charity, compassion, justice and responsibility. Faith should deepen the way we serve—not replace verification, accountability or respect for the person receiving support.\n\n## Qur'anic Reflection\n**Heading:** **Generosity That Multiplies Good**\n\n**Copy:**  \nThe Qur'an describes sincere spending in the way of Allah through the image of a grain that grows into many ears, each carrying further grain (**Qur'an 2:261**). The lesson is not only about multiplication of reward; it reminds us that a sincere act of giving can continue producing benefit beyond the moment it is made.\n\n## Hadith Reflection\n**Heading:** **Charity Does Not Diminish Wealth**\n\n**Copy:**  \nThe Prophet ﷺ taught that charity does not decrease wealth (**Sahih Muslim 2588**). For donors, this is an invitation to generosity with trust in Allah; for Amaana, it is also a reminder that donated wealth carries responsibility and must be handled with integrity.\n\n## Service Reflection\n**Heading:** **Helping One Another**\n\n**Copy:**  \nProphetic teaching also connects Allah's help with a believer's willingness to help another person in need (**Sahih Muslim 2699**). Amaana seeks to translate that ethic into practical service—verify the hardship, protect dignity, and respond where we can.\n\n### Religious Copy Implementation Note\nWhen displaying translated Qur'an or Hadith wording verbatim, use a recognized translation/source and keep the reference visible. The summaries above are intentionally paraphrased for website use.\n\n---"
+    },
+    "24": {
+      "name": "Zakat & Sadaqah",
+      "source": "## Heading\n# **Give With Intention—and With Clarity**\n\n## Intro\nZakat and Sadaqah are not interchangeable donation labels. Amaana should communicate clearly how a contribution will be used so donors can give according to their intention and religious understanding.\n\n## Zakat Copy\n**Heading:** **Zakat**\n\n**Copy:**  \nNot every Amaana appeal or programme should automatically be described as Zakat-eligible. Where Amaana has confirmed that a specific need is suitable for Zakat and the donation can be handled accordingly, the website should mark that opportunity clearly. If an appeal is not marked as Zakat-eligible, donors should not assume that it is.\n\n**CTA:** **View Zakat-Eligible Needs**\n\n### Zakat Governance Note\nBefore Codex enables Zakat badges, filters or a dedicated Zakat fund, Amaana should confirm its internal eligibility review, accounting/segregation process and current religious guidance. Do not label all programmes as Zakat-eligible by default.\n\n## Sadaqah Copy\n**Heading:** **Sadaqah**\n\n**Copy:**  \nVoluntary charity can support a wide range of beneficial work. Where Sadaqah is accepted, donors can choose from Amaana's currently enabled initiatives or verified appeals according to the purpose shown on the donation page.\n\n**CTA:** **Support Through Sadaqah**\n\n---"
+    },
+    "25": {
+      "name": "Request Assistance",
+      "source": "## Page Title\n# **Ask for Help Privately and With Dignity**\n\n## Intro\nSeeking assistance can already be difficult. Amaana's request process should make it possible for a person or family to explain a genuine need without being forced to share sensitive information publicly.\n\n## Types of Requests We May Review\nDepending on current capacity and programme scope, requests may include:\n- urgent medical assistance\n- severe financial hardship\n- education-related needs\n- livelihood-related assistance\n- emergency or disaster-related needs\n- other essential family support that fits Amaana's charitable scope\n\n## What Happens After You Submit\n**1. We review the request.**  \nSubmitting a form does not automatically guarantee assistance.\n\n**2. We may contact you privately.**  \nAdditional details or supporting documents may be required to understand and verify the need.\n\n**3. The team assesses what response is appropriate.**  \nThis may include direct assistance, a public appeal, an in-kind response, a programme referral or, where Amaana cannot help, no further action.\n\n**4. We protect sensitive material.**  \nDocuments supplied for verification are not intended for public display.\n\n## Form Privacy Microcopy\n**Please upload only documents relevant to the request. Do not post medical reports, identity numbers or bank details in any public comment or social-media message.**\n\n## Submission Confirmation\n**Heading:** **Your Request Has Been Received**\n\n**Copy:**  \nThank you for sharing the details with us. The Amaana team will review the request according to current capacity and verification requirements. Submission does not guarantee approval, and we may contact you if additional information is required.\n\n---"
+    },
+    "26": {
+      "name": "Volunteer With Amaana",
+      "source": "## Page Title\n# **Give More Than Money—Give Time, Skill and Reliability**\n\n## Copy\nNot every contribution comes through a donation. Amaana's work also depends on people who are willing to show up carefully and consistently—whether that means helping prepare kits, supporting distributions, organizing records, documenting impact responsibly, contributing professional expertise or strengthening the systems behind the work.\n\n## Ways to Contribute\n- packing and distribution support\n- programme logistics\n- documentation and record organization\n- responsible photography/media support where approved\n- design, technology and digital support\n- educational support and mentoring where a programme requires it\n- professional expertise in areas such as healthcare, finance, legal/compliance or operations\n\n## Volunteer Standard\n**Reliability matters more than visibility.** Volunteers are expected to protect beneficiary dignity, respect internal verification material and follow Amaana's process rather than using service activities for personal exposure.\n\n**CTA:** **Register Your Interest**\n\n---"
+    },
+    "27": {
+      "name": "Partner With Amaana",
+      "source": "## Page Title\n# **Better Local Impact Is Often Built Together**\n\n## Copy\nSome needs are best addressed through credible collaboration. Amaana has worked with community organisations and local networks where their on-ground knowledge, beneficiary assessment or distribution capacity strengthened the response.\n\nWe welcome conversations with institutions, schools and colleges, masajid and madrasas, healthcare professionals, community organisations, responsible businesses and other partners who share a commitment to transparent and dignified service.\n\n## Partnership Areas\n- emergency and disaster response\n- education and Taleem support\n- seasonal distributions\n- medical and referral support\n- verified beneficiary identification\n- logistics and procurement\n- institutional or CSR-supported initiatives, subject to applicable compliance\n- professional and technical capacity building\n\n**CTA:** **Start a Partnership Conversation**\n\n### Partnership Standard\nPartnership copy should never imply endorsement by an organisation merely because it participated in one distribution. Name collaborators only where Amaana has a documented basis to do so.\n\n---"
+    },
+    "28": {
+      "name": "Stories & Impact Stories",
+      "source": "## Page Title\n# **The Work Behind the Numbers**\n\n## Intro\nAn impact statistic tells us the scale. A story explains what changed. Amaana's stories should focus on the purpose of the intervention, the support delivered and the documented outcome—without turning someone's illness, poverty or private circumstances into content.\n\n## Editorial Standard\n- centre dignity, not helplessness\n- explain the intervention clearly\n- use names only where publication is appropriate\n- avoid graphic medical or hardship imagery\n- never imply a medical recovery that has not been documented\n- show what support enabled\n- close completed appeals with outcomes whenever possible\n\n**CTA:** **Read Impact Stories**\n\n---"
+    },
+    "29": {
+      "name": "Media Gallery",
+      "source": "## Page Title\n# **Real Work. Real Moments. Shared Responsibly.**\n\n## Copy\nAmaana's media archive documents preparation, distribution and community action across its programmes. Wherever appropriate, the website should use authentic Amaana photographs and video rather than generic stock or AI-generated beneficiary imagery.\n\nImages should inform and document—not embarrass, expose or sensationalise the people receiving support.\n\n## Suggested Gallery Filters\n- Eid Gift Kits\n- Qurbani\n- Taleem\n- Winter Drive\n- Dates Distribution\n- Emergency Relief\n- Medical & Financial Assistance — only where publication is appropriate\n\n---"
+    },
+    "30": {
+      "name": "Social & Community Updates",
+      "source": "## Heading\n# **Stay Close to the Work**\n\n## Copy\nMany Amaana campaigns begin as urgent community updates and end with donor thank-you messages, completion reports and photographs of the work carried out. Follow Amaana's official channels for new appeals, drive launches, progress updates and documented outcomes.\n\n**Instagram:** @amaanafoundation  \n**Facebook:** amaanafoundation24  \n**YouTube:** amaanafoundation\n\n**CTA:** **Follow Amaana**\n\n---"
+    },
+    "31": {
+      "name": "Contact",
+      "source": "## Page Title\n# **Start a Conversation With Amaana**\n\n## Intro\nWhether you want to support an initiative, discuss a partnership, volunteer, verify organizational information or ask about assistance, use Amaana's official channels so the request reaches the right people.\n\n**Website:** amaanafoundation.org  \n**Email:** amaanafoundation24@gmail.com  \n**Phone / WhatsApp:** +91-9908002694  \n**Instagram / YouTube:** amaanafoundation  \n**Facebook:** amaanafoundation24\n\n### Contact Route Labels\n- **Donation & Appeal Enquiries**\n- **Request Assistance**\n- **Partnerships & Institutional Enquiries**\n- **Volunteer Enquiries**\n- **Registration / Due-Diligence Enquiries**\n- **Media & General Contact**\n\n---"
+    },
+    "32": {
+      "name": "Footer Copy",
+      "source": "## Recommended Footer Brand Line\n**Amaana Foundation — Upholding Trust. Serving With Compassion, Dignity and Accountability.**\n\n## Short Footer About\nA Hyderabad-based registered charitable trust supporting verified community needs through recurring initiatives, case-led assistance, education and relief.\n\n## Footer Compliance Microcopy\n**Domestic donations only. Amaana Foundation is not FCRA-registered. Section 80G approval is provisional and subject to applicable compliance and tax rules.**\n\n## Footer Links\nAbout · Our Work · Impact · Appeals · Donate · Taleem · How We Verify · Transparency · Governance & Compliance · Request Assistance · Volunteer · Partner · Contact · Privacy · Terms\n\n---"
+    },
+    "33": {
+      "name": "Critical UX Microcopy",
+      "source": "## Donation Success\n**Thank You for Entrusting This Support to Amaana**  \nYour contribution has been recorded. Please retain your payment confirmation and receipt where applicable. We will share programme or appeal updates through the relevant Amaana channels as the work progresses.\n\n## Donation Failure\n**Your Payment Was Not Completed**  \nNo successful contribution has been recorded through this attempt. Please try again or use another currently approved donation method. If your account was debited but the website shows a failure, contact Amaana with the payment reference so it can be checked.\n\n## Appeal Fully Funded\n**Alhamdulillah, This Appeal Has Reached Its Required Support**  \nThank you to everyone who contributed and shared the need. The appeal is now closed to further designated donations while the team completes delivery and documentation of the outcome.\n\n## Appeal Completed\n**Appeal Completed**  \nThe required support has been delivered or disbursed according to the documented case outcome. See the completion update for details that can be shared publicly.\n\n## Assistance Form Upload Notice\n**Your documents are for verification—not for public display.** Upload only what is relevant to the request.\n\n## Newsletter / Updates Consent\n**Receive meaningful updates, not noise.** Get new appeals, programme launches and completed-impact updates from Amaana.\n\n## 404 Page\n**We Couldn't Find That Page**  \nThe page may have moved as Amaana's website has grown. You can return to Our Work, view active appeals or contact us if you were looking for a specific initiative.\n\n**CTAs:** **Go to Home** · **Explore Our Work**\n\n---"
+    },
+    "34": {
+      "name": "Frequently Asked Questions",
+      "source": "## How does Amaana decide whom to help?\nRequests are reviewed based on the nature and urgency of the need, available verification, Amaana's charitable scope and current capacity. Submission or referral does not automatically guarantee assistance.\n\n## Does Amaana verify medical and financial appeals?\nAmaana requests relevant supporting information or corroboration before approving case-led assistance or public fundraising. Sensitive documents are kept private rather than displayed publicly.\n\n## Why doesn't Amaana publish every proof document?\nTransparency and privacy are not opposites. Amaana publishes enough information to explain the verified need and documented outcome while keeping identity documents, private medical records, bank details and sensitive family information confidential.\n\n## Can I donate from outside India?\nAmaana Foundation is not currently FCRA-registered. Its public donation flow is therefore restricted to domestic contributions unless the legal position changes.\n\n## Does Amaana have 80G approval?\nAmaana currently holds **provisional approval under Section 80G** via Form 10AC dated 26 January 2026, covering AY 2026–27 through AY 2028–29. The website should not describe this as permanent or final approval.\n\n## Are all Amaana causes Zakat-eligible?\nNo. A cause should be presented as Zakat-eligible only when Amaana has specifically confirmed that status and can handle the contribution accordingly. If an appeal is not marked as Zakat-eligible, donors should not assume that it is.\n\n## Can I request help for someone else?\nYes, referrals may be submitted, but Amaana may need to contact the affected person/family or obtain relevant information before making a decision.\n\n## Can I volunteer?\nYes. Volunteer opportunities depend on current programmes and needs. Amaana values reliable support in logistics, documentation, education, media, technology and professional areas.\n\n## Can an institution partner with Amaana?\nYes. Amaana is open to responsible collaborations that fit its charitable scope, compliance requirements and dignity standards.\n\n## Why doesn't Amaana publish one total number of all people helped?\nThe same household may receive legitimate support through different programmes or in different years. Adding every programme count together could therefore double-count people. Amaana prefers programme-level reporting that can be explained and verified.\n\n---"
+    },
+    "35": {
+      "name": "SEO / Page Metadata Copy for Codex",
+      "source": "Use these as starting points; Codex may adjust lengths for technical limits without changing factual meaning.\n\n## Home\n**Title:** Amaana Foundation | Trust, Turned Into Action  \n**Description:** Hyderabad-based charitable trust supporting verified medical, financial, education, Ramadan, Eid, seasonal and emergency needs with dignity and transparency.\n\n## About\n**Title:** About Amaana Foundation | Our Story, Mission & Values  \n**Description:** Learn how a family-led Ramadan effort in 2020 grew into Amaana Foundation, a registered Hyderabad charitable trust built around trust, dignity and accountability.\n\n## Our Work\n**Title:** Our Work | Amaana Foundation Initiatives & Relief  \n**Description:** Explore Amaana Foundation's medical and financial relief, emergency response, Ramadan and Eid initiatives, Taleem education support and seasonal relief.\n\n## Impact\n**Title:** Impact | Amaana Foundation  \n**Description:** Explore documented programme-level impact, annual distributions and completed verified assistance without inflated or double-counted totals.\n\n## Taleem\n**Title:** Amaana Taleem Initiative | Education & Qur'an Learning Support  \n**Description:** Support learning through stationery kits, Hifdh and Qur'an Nazira sponsorship, and verified school or college education assistance.\n\n## Appeals\n**Title:** Verified Appeals | Amaana Foundation  \n**Description:** View current and completed verified medical, financial and community-support appeals from Amaana Foundation.\n\n## Donate\n**Title:** Support Amaana Foundation | Domestic Donations  \n**Description:** Support a verified appeal or Amaana initiative through currently approved domestic donation options.\n\n## Transparency\n**Title:** Transparency & Verification | Amaana Foundation  \n**Description:** See how Amaana verifies needs, protects beneficiary privacy, documents impact and handles entrusted support responsibly.\n\n## Request Assistance\n**Title:** Request Assistance | Amaana Foundation  \n**Description:** Privately submit a medical, financial, educational or emergency assistance request for review by Amaana Foundation.\n\n---"
+    }
+  }
+}

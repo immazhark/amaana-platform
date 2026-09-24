@@ -1,4 +1,15 @@
-import type { Metadata } from "next";
-import { ContentPage } from "@/components/content-page";
-export const metadata: Metadata = { title: "How We Verify", description: "Understand Amaana Foundation’s assistance review and appeal-verification process." };
-export default function VerificationPage() { return <ContentPage eyebrow="Responsible giving" title="How we verify requests" intro="Verification is designed to reduce risk, protect donor trust and treat applicants with dignity."><h2>1. Initial request</h2><p>We collect the applicant’s contact details, a clear description of the need and consent to conduct verification.</p><h2>2. Supporting information</h2><p>Relevant documents may be requested depending on the case. These documents are kept private and are accessible only to authorized reviewers.</p><h2>3. Personal review</h2><p>The team checks the supplied information, follows up with the applicant and may seek independent confirmation where appropriate.</p><h2>4. Decision</h2><p>A request may be approved, declined, closed or returned for more information. Approval for assistance does not automatically mean public publication.</p><h2>5. Publication approval</h2><p>A public appeal uses only approved information. Sensitive documents are not displayed, and a designated approver must authorize publication.</p><p className="policy-note">Verification reduces risk but cannot eliminate every possibility of error, changed circumstances or misrepresentation.</p></ContentPage>; }
+import { CanonicalArticle } from '@/components/canonical-article';
+import { verificationCopy } from '@/lib/organization-copy';
+
+export const metadata = {
+  title: verificationCopy.title,
+  description: verificationCopy.intro,
+  alternates: { canonical: '/how-we-verify' },
+  openGraph: { images: [{ url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" }], type: 'website', url: '/how-we-verify', title: `${verificationCopy.title} | Amaana Foundation`, description: verificationCopy.intro },
+  twitter: { images: ["/twitter-image"], card: 'summary_large_image', title: `${verificationCopy.title} | Amaana Foundation`, description: verificationCopy.intro },
+};
+export default function Page(){return <CanonicalArticle eyebrow="How Amaana Works" heroVariant="information" heroVisualTitle="Verify Before We Mobilise" heroVisualNote="Need, evidence, privacy, review and known outcomes remain connected throughout the process." bodyClassName="canonical-body--timeline" bodyId="verification-process" heroActions={[{ label: "Follow the review process", href: "#verification-process" }, { label: "Request assistance", href: "/request-assistance", secondary: true }]} pathways={[
+    { label: "Transparency & reporting", href: "/transparency", description: "See how public evidence and private beneficiary information are deliberately separated." },
+    { label: "Governance", href: "/governance", description: "Understand who carries formal responsibility for Amaana’s work." },
+    { label: "Request assistance", href: "/request-assistance", description: "Use the private intake route when a person or family needs support." },
+  ]} {...verificationCopy}></CanonicalArticle>;}

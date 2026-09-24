@@ -1,0 +1,646 @@
+import { expect, test } from '@playwright/test';
+
+const receiptToken = 'receipt-token-browser-acceptance-abcdefghijklmnopqrstuvwxyz';
+const trackingToken = 'tracking-token-browser-acceptance-abcdefghijklmnopqrstuvwxyz';
+const donationReference = 'DON-ACCEPT-001';
+const assistanceReference = 'AST-ACCEPT-001';
+
+async function mockAnalytics(page) {
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+}
+
+async function openDonationFixture(page, mode = 'success') {
+  await mockAnalytics(page);
+  await page.addInitScript(selectedMode => {
+    window.__AMAANA_ACCEPTANCE_RAZORPAY_MODE = selectedMode;
+  }, mode);
+  await page.route('https://checkout.razorpay.com/v1/checkout.js', route => route.fulfill({
+    status: 200,
+    contentType: 'application/javascript',
+    body: `
+      window.Razorpay = class {
+        constructor(options) { this.options = options; }
+        open() {
+          const mode = window.__AMAANA_ACCEPTANCE_RAZORPAY_MODE || 'success';
+          if (mode === 'dismiss') {
+            queueMicrotask(() => this.options.modal.ondismiss());
+            return;
+          }
+          queueMicrotask(() => {
+            void this.options.handler({
+              razorpay_order_id: 'order_acceptance_001',
+              razorpay_payment_id: 'pay_acceptance_001',
+              razorpay_signature: 'signature_acceptance_001'
+            });
+          });
+        }
+      };
+    `,
+  }));
+
+  const response = await page.goto('/browser-acceptance/donation', { waitUntil: 'domcontentloaded' });
+  expect(response?.ok()).toBeTruthy();
+  await expect(page.getByRole('heading', { name: 'Mocked donation journey' })).toBeVisible();
+  const submit = page.getByRole('button', { name: 'Continue securely →' });
+  await expect(submit).toBeEnabled();
+  return submit;
+}
+
+async function fillDonationForm(page, amount = '250') {
+  await page.getByLabel(/Donation amount/).fill(amount);
+  await page.getByLabel('Full name').fill('Acceptance Donor');
+  await page.getByLabel('Email').fill('acceptance@example.test');
+  await page.getByLabel(/Phone/).fill('9876543210');
+  await page.locator('input[name="domesticConfirmed"]').check();
+}
+
+function orderPayload() {
+  return {
+    donationId: 'donation-acceptance-001',
+    orderId: 'order_acceptance_001',
+    amount: 25000,
+    currency: 'INR',
+    keyId: 'rzp_test_browser_acceptance',
+    appealTitle: 'Browser Acceptance Appeal',
+    donor: {
+      name: 'Acceptance Donor',
+      email: 'acceptance@example.test',
+      contact: '9876543210',
+    },
+    receiptToken,
+  };
+}
+
+async function mockDonationOrder(page, capture) {
+  await page.route('**/api/donations/order', async route => {
+    capture.value = route.request().postDataJSON();
+    await route.fulfill({
+      status: 201,
+      contentType: 'application/json',
+      body: JSON.stringify(orderPayload()),
+    });
+  });
+}
+
+async function openAssistance(page) {
+  await mockAnalytics(page);
+  const response = await page.goto('/request-assistance', { waitUntil: 'domcontentloaded' });
+  expect(response?.ok()).toBeTruthy();
+  await expect(page.getByRole('heading', { name: 'Tell us about the request.' })).toBeVisible();
+}
+
+async function fillAssistanceForm(page, { stopAtEvidence = false } = {}) {
+  await page.getByLabel('Applicant name').fill('Acceptance Applicant');
+  await page.getByLabel('Phone number').fill('9000000000');
+  await page.getByLabel(/Email/).fill('applicant@example.test');
+  await page.getByLabel('City').fill('Hyderabad');
+  await page.getByRole('button', { name: 'Continue to need →' }).click();
+
+  await page.getByLabel('Type of assistance').selectOption('MEDICAL');
+  await page.getByLabel('Describe the need').fill('This is synthetic browser acceptance data used only to verify the private assistance workflow without creating a real beneficiary request.');
+  await page.getByRole('button', { name: 'Continue to evidence →' }).click();
+
+  if (stopAtEvidence) return;
+  await finishAssistanceConfirmation(page);
+}
+
+async function finishAssistanceConfirmation(page) {
+  await page.getByRole('button', { name: 'Continue to confirm →' }).click();
+  await page.locator('input[name="consent"]').check();
+}
+
+// Release-candidate browser gate: keep this suite active whenever checkout or runtime hardening changes.
+test.describe('donation journey without real payment', () => {
+  test('browser constraints require an allowed amount and domestic confirmation before checkout', async ({ page }) => {
+    let orderCalls = 0;
+    await page.route('**/api/donations/order', route => {
+      orderCalls += 1;
+      return route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Should not be called' }) });
+    });
+    await openDonationFixture(page, 'dismiss');
+
+    const amount = page.getByLabel(/Donation amount/);
+    const domestic = page.locator('input[name="domesticConfirmed"]');
+    const form = page.locator('form.v2-donation-form');
+
+    await amount.fill('5001');
+    await page.getByLabel('Full name').fill('Acceptance Donor');
+    await page.getByLabel('Email').fill('acceptance@example.test');
+
+    expect(await amount.evaluate(input => ({ valid: input.validity.valid, rangeOverflow: input.validity.rangeOverflow }))).toEqual({
+      valid: false,
+      rangeOverflow: true,
+    });
+
+    await amount.fill('250');
+    expect(await domestic.evaluate(input => input.validity.valueMissing)).toBe(true);
+    expect(await form.evaluate(node => node.checkValidity())).toBe(false);
+
+    await domestic.check();
+    expect(await form.evaluate(node => node.checkValidity())).toBe(true);
+    expect(orderCalls).toBe(0);
+  });
+
+  test('Razorpay checkout becomes ready again after the donation form remounts', async ({ page }) => {
+    await openDonationFixture(page, 'dismiss');
+    await expect(page.getByText('Secure checkout is ready.')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Unmount donation form' }).click();
+    await expect(page.getByText('Donation form unmounted for remount acceptance.')).toBeVisible();
+
+    await page.getByRole('button', { name: 'Remount donation form' }).click();
+    const remountedSubmit = page.getByRole('button', { name: 'Continue securely →' });
+    await expect(remountedSubmit).toBeEnabled();
+    await expect(page.getByText('Secure checkout is ready.')).toBeVisible();
+
+  });
+
+  test('dismissing mocked Razorpay returns the form to a safe ready state', async ({ page }) => {
+    const order = { value: null };
+    await mockDonationOrder(page, order);
+    const submit = await openDonationFixture(page, 'dismiss');
+    await fillDonationForm(page);
+
+    await submit.click();
+    await expect(submit).toHaveText('Continue securely →');
+    await expect(submit).toBeEnabled();
+    await expect(page.getByLabel(/Donation amount/)).toBeEnabled();
+    expect(order.value).toEqual(expect.objectContaining({
+      appealId: 'browser-acceptance-appeal',
+      donorName: 'Acceptance Donor',
+      donorEmail: 'acceptance@example.test',
+      amount: '250',
+      givingIntent: 'GENERAL',
+      domesticConfirmed: true,
+    }));
+  });
+
+  test('Zakat selection is sent as donor intent when the fixture marks the appeal eligible', async ({ page }) => {
+    const order = { value: null };
+    await mockDonationOrder(page, order);
+    const submit = await openDonationFixture(page, 'dismiss');
+    await fillDonationForm(page);
+
+    await page.getByLabel('Zakat').check();
+    await submit.click();
+
+    expect(order.value).toEqual(expect.objectContaining({
+      appealId: 'browser-acceptance-appeal',
+      givingIntent: 'ZAKAT',
+      amount: '250',
+    }));
+  });
+
+  for (const failure of [
+    { name: 'rate limiting', status: 429, message: 'Please wait before starting another donation.' },
+    { name: 'server failure', status: 500, message: 'Could not start checkout safely.' },
+  ]) {
+    test(`order API ${failure.name} restores an editable form without opening Razorpay`, async ({ page }) => {
+      let checkoutOpens = 0;
+      await page.addInitScript(() => {
+        window.__AMAANA_ACCEPTANCE_RAZORPAY_MODE = 'count-only';
+        window.__AMAANA_ACCEPTANCE_CHECKOUT_OPENS = 0;
+      });
+      await page.route('**/api/donations/order', route => route.fulfill({
+        status: failure.status,
+        contentType: 'application/json',
+        body: JSON.stringify({ error: failure.message }),
+      }));
+      await openDonationFixture(page, 'count-only');
+      await page.evaluate(() => {
+        const Original = window.Razorpay;
+        window.Razorpay = class extends Original {
+          open() {
+            window.__AMAANA_ACCEPTANCE_CHECKOUT_OPENS += 1;
+            super.open();
+          }
+        };
+      });
+
+      const submit = page.getByRole('button', { name: 'Continue securely →' });
+      await fillDonationForm(page);
+      await submit.click();
+
+      await expect(page.locator('.form-error[role="alert"]')).toContainText(failure.message);
+      await expect(page.locator('.form-error[role="alert"]')).toBeFocused();
+      await expect(submit).toBeEnabled();
+      await expect(page.getByLabel(/Donation amount/)).toBeEnabled();
+      await expect(page.getByLabel('Full name')).toBeEnabled();
+      await expect(page.getByLabel('Email')).toBeEnabled();
+      checkoutOpens = await page.evaluate(() => window.__AMAANA_ACCEPTANCE_CHECKOUT_OPENS);
+      expect(checkoutOpens).toBe(0);
+    });
+  }
+
+  test('controls remain locked while the order request is unresolved', async ({ page }) => {
+    let releaseOrder;
+    await page.route('**/api/donations/order', async route => {
+      await new Promise(resolve => { releaseOrder = resolve; });
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify(orderPayload()),
+      });
+    });
+
+    const submit = await openDonationFixture(page, 'dismiss');
+    await fillDonationForm(page);
+    await submit.click();
+
+    await expect(page.getByRole('button', { name: 'Opening secure checkout…' })).toBeDisabled();
+    await expect(page.getByLabel(/Donation amount/)).toBeDisabled();
+    await expect(page.getByLabel('Full name')).toBeDisabled();
+    await expect(page.getByLabel('Email')).toBeDisabled();
+    await expect(page.getByLabel(/Phone/)).toBeDisabled();
+    await expect(page.locator('input[name="domesticConfirmed"]')).toBeDisabled();
+
+    releaseOrder();
+    await expect(page.getByRole('button', { name: 'Continue securely →' })).toBeEnabled();
+  });
+
+  test('mocked successful verification reaches a private acknowledgement without external payment', async ({ page }) => {
+    const order = { value: null };
+    const confirmation = { value: null };
+    await mockDonationOrder(page, order);
+    await page.route('**/api/donations/confirm', async route => {
+      confirmation.value = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ referenceNumber: donationReference }),
+      });
+    });
+    await page.route('**/api/donations/acknowledgement', route => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        found: true,
+        presentation: {
+          tone: 'captured',
+          heading: 'Donation verified.',
+          summary: 'Browser acceptance mock completed without contacting a payment provider.',
+          statusLabel: 'Captured',
+        },
+        donation: {
+          referenceNumber: donationReference,
+          receiptNumber: 'RCP-ACCEPT-001',
+          donorName: 'Acceptance Donor',
+          givingIntent: 'GENERAL',
+          amount: 250,
+          refundedAmount: 0,
+          recordDate: '2026-09-16T00:00:00.000Z',
+          providerPaymentId: 'pay_acceptance_001',
+          appeal: { title: 'Browser Acceptance Appeal', slug: 'browser-acceptance-appeal' },
+        },
+      }),
+    }));
+
+    const submit = await openDonationFixture(page, 'success');
+    await fillDonationForm(page);
+    await submit.click();
+
+    await expect(page.getByRole('heading', { name: 'Donation verified.' })).toBeVisible();
+    await expect(page).toHaveURL(`/donations/${donationReference}/acknowledgement`);
+    await expect(page.getByText('RCP-ACCEPT-001')).toBeVisible();
+    await expect(page.getByText('General Charity')).toBeVisible();
+    expect(new URL(page.url()).search).toBe('');
+    expect(order.value).not.toBeNull();
+    expect(confirmation.value).toEqual(expect.objectContaining({
+      razorpay_order_id: 'order_acceptance_001',
+      razorpay_payment_id: 'pay_acceptance_001',
+      razorpay_signature: 'signature_acceptance_001',
+      receiptToken,
+    }));
+  });
+
+  test('mocked verification failure locks the form against duplicate payment attempts', async ({ page }) => {
+    const order = { value: null };
+    await mockDonationOrder(page, order);
+    await page.route('**/api/donations/confirm', route => route.fulfill({
+      status: 503,
+      contentType: 'application/json',
+      body: JSON.stringify({ error: 'Mock payment verification is pending. Keep your payment confirmation.' }),
+    }));
+
+    const submit = await openDonationFixture(page, 'success');
+    await fillDonationForm(page);
+    await submit.click();
+
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('Mock payment verification is pending');
+    await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+    await expect(page.getByLabel(/Donation amount/)).toBeDisabled();
+    await expect(page.locator('input[name="domesticConfirmed"]')).toBeDisabled();
+    await expect(page.getByText(/do not submit another payment/i).first()).toBeVisible();
+  });
+});
+
+test.describe('private assistance journey', () => {
+  test('guided form blocks step progression until required contact fields are complete', async ({ page }) => {
+    await openAssistance(page);
+
+    await page.getByRole('button', { name: 'Continue to need →' }).click();
+    await expect(page.getByText('Step 1 of 4')).toBeVisible();
+    await expect(page.getByLabel('Applicant name')).toBeFocused();
+
+    await page.getByLabel('Applicant name').fill('Acceptance Applicant');
+    await page.getByLabel('Phone number').fill('9000000000');
+    await page.getByLabel('City').fill('Hyderabad');
+    await page.getByRole('button', { name: 'Continue to need →' }).click();
+
+    await expect(page.getByText('Step 2 of 4')).toBeVisible();
+    await expect(page.getByLabel('Type of assistance')).toBeVisible();
+  });
+
+  test('guided assistance progress controls expose step targets and announce the current step', async ({ page }) => {
+    await openAssistance(page);
+
+    const progress = page.getByRole('navigation', { name: 'Assistance request progress' });
+    const contactButton = progress.getByRole('button', { name: /Contact/ });
+    const needButton = progress.getByRole('button', { name: /Need/ });
+
+    await expect(contactButton).toHaveAttribute('aria-controls', 'assistance-step-1');
+    await expect(needButton).toHaveAttribute('aria-controls', 'assistance-step-2');
+    await expect(contactButton).toHaveAttribute('aria-current', 'step');
+
+    const status = progress.locator('[aria-live="polite"]');
+    await expect(status).toContainText('Step 1 of 4');
+
+    await page.getByLabel('Applicant name').fill('Acceptance Applicant');
+    await page.getByLabel('Phone number').fill('9000000000');
+    await page.getByLabel('City').fill('Hyderabad');
+    await page.getByRole('button', { name: 'Continue to need →' }).click();
+
+    await expect(status).toContainText('Step 2 of 4');
+    await expect(needButton).toHaveAttribute('aria-current', 'step');
+    await expect(page.locator('#assistance-step-2')).toBeVisible();
+    await expect(page.locator('#assistance-step-1')).toBeHidden();
+  });
+
+  test('returning to an earlier step cannot bypass its validation when jumping forward again', async ({ page }) => {
+    await openAssistance(page);
+    await fillAssistanceForm(page);
+
+    await page.getByRole('button', { name: /Contact/ }).click();
+    const city = page.getByLabel('City');
+    await city.fill('');
+
+    await page.getByRole('button', { name: /Confirm/ }).click();
+
+    await expect(page.getByText('Step 1 of 4')).toBeVisible();
+    await expect(city).toBeFocused();
+    await expect(page.getByLabel('Type of assistance')).toBeHidden();
+  });
+
+  test('server validation focuses the first rejected field and clears its inline error on edit', async ({ page }) => {
+    await page.route('**/api/assistance', route => route.fulfill({
+      status: 400,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        error: 'Please check the highlighted information and try again.',
+        fields: { phone: ['Enter a valid phone number.'] },
+      }),
+    }));
+    await openAssistance(page);
+    await fillAssistanceForm(page);
+
+    await page.getByRole('button', { name: /Contact/ }).click();
+    const phone = page.getByLabel('Phone number');
+    await phone.fill('123');
+    await page.getByRole('button', { name: /Confirm/ }).click();
+    await page.getByRole('button', { name: 'Submit private request →' }).click();
+
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('Please check the highlighted information');
+    await expect(phone).toBeFocused();
+    await expect(phone).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByText('Enter a valid phone number.')).toBeVisible();
+
+    await phone.fill('9000000000');
+    await expect(phone).not.toHaveAttribute('aria-invalid', 'true');
+    await expect(page.getByText('Enter a valid phone number.')).toHaveCount(0);
+  });
+
+  test('supporting evidence stays in the private multipart submission without altering the public URL', async ({ page }) => {
+    let contentType = '';
+    let multipartBody = '';
+
+    await page.route('**/api/assistance', async route => {
+      contentType = route.request().headers()['content-type'] ?? '';
+      const body = route.request().postDataBuffer();
+      multipartBody = body ? body.toString('utf8') : '';
+      await route.fulfill({
+        status: 201,
+        contentType: 'application/json',
+        body: JSON.stringify({ referenceNumber: assistanceReference, trackingToken }),
+      });
+    });
+
+    await openAssistance(page);
+    await fillAssistanceForm(page, { stopAtEvidence: true });
+
+    const evidence = page.getByLabel(/Add private supporting files/);
+    await evidence.setInputFiles({
+      name: 'synthetic-supporting-evidence.pdf',
+      mimeType: 'application/pdf',
+      buffer: Buffer.from('%PDF-1.4 synthetic browser acceptance evidence only'),
+    });
+
+    const selected = await evidence.evaluate(input => Array.from(input.files ?? []).map(file => ({
+      name: file.name,
+      type: file.type,
+      size: file.size,
+    })));
+    expect(selected).toEqual([expect.objectContaining({
+      name: 'synthetic-supporting-evidence.pdf',
+      type: 'application/pdf',
+    })]);
+
+    await finishAssistanceConfirmation(page);
+    await page.getByRole('button', { name: 'Submit private request →' }).click();
+
+    expect(contentType).toMatch(/^multipart\/form-data;\s*boundary=/i);
+    expect(multipartBody).toContain('name="documents"');
+    expect(multipartBody).toContain('filename="synthetic-supporting-evidence.pdf"');
+    expect(multipartBody).toContain('Content-Type: application/pdf');
+    expect(multipartBody).toContain('synthetic browser acceptance evidence only');
+    expect(multipartBody).toContain('name="applicantName"');
+    expect(multipartBody).toContain('Acceptance Applicant');
+
+    await expect(page).toHaveURL(new RegExp(`/request-assistance/received#reference=${assistanceReference}&token=`));
+    expect(new URL(page.url()).search).toBe('');
+  });
+
+  test('mocked submission redirects to fragment-only private tracking and resolves status safely', async ({ page }) => {
+    let statusBody = null;
+    await page.route('**/api/assistance', route => route.fulfill({
+      status: 201,
+      contentType: 'application/json',
+      body: JSON.stringify({ referenceNumber: assistanceReference, trackingToken }),
+    }));
+    await page.route('**/api/assistance/status', async route => {
+      statusBody = route.request().postDataJSON();
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          found: true,
+          status: 'UNDER_VERIFICATION',
+          createdAt: '2026-09-16T00:00:00.000Z',
+          updatedAt: '2026-09-16T01:00:00.000Z',
+        }),
+      });
+    });
+
+    await openAssistance(page);
+    await fillAssistanceForm(page);
+    await page.getByRole('button', { name: 'Submit private request →' }).click();
+
+    await expect(page).toHaveURL(new RegExp(`/request-assistance/received#reference=${assistanceReference}&token=`));
+    await expect(page.getByText(assistanceReference)).toBeVisible();
+    expect(new URL(page.url()).search).toBe('');
+
+    await page.getByRole('link', { name: 'Track this request' }).click();
+    await expect(page.getByRole('heading', { name: 'Under verification' })).toBeVisible();
+    await expect(page.getByText(assistanceReference)).toBeVisible();
+    expect(new URL(page.url()).search).toBe('');
+    expect(statusBody).toEqual({ reference: assistanceReference, token: trackingToken });
+  });
+
+  test('legacy tracking query credentials are scrubbed from the visible URL', async ({ page }) => {
+    await mockAnalytics(page);
+    await page.route('**/api/assistance/status', route => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        found: true,
+        status: 'SUBMITTED',
+        createdAt: '2026-09-16T00:00:00.000Z',
+        updatedAt: '2026-09-16T00:00:00.000Z',
+      }),
+    }));
+
+    await page.goto(`/request-assistance/status?reference=${assistanceReference}&token=${trackingToken}`, { waitUntil: 'domcontentloaded' });
+    await expect(page.getByRole('heading', { name: 'Submitted' })).toBeVisible();
+
+    const url = new URL(page.url());
+    expect(url.search).toBe('');
+    expect(url.hash).toBe('');
+    expect(url.pathname).toBe('/request-assistance/status');
+  });
+});
+
+
+test('private assistance tracking credentials are removed from the visible URL before status display', async ({ page }) => {
+  const reference = 'AFR-PRIVATE-001';
+  const token = 'private-tracking-token-1234567890';
+  let postedBody = null;
+
+  await page.route('**/api/assistance/status', async route => {
+    postedBody = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        found: true,
+        status: 'UNDER_VERIFICATION',
+        createdAt: '2026-09-20T10:00:00.000Z',
+        updatedAt: '2026-09-22T10:00:00.000Z',
+      }),
+    });
+  });
+
+  await page.goto(`/request-assistance/status#reference=${reference}&token=${token}`);
+  await expect(page.getByRole('heading', { name: 'Under verification' })).toBeVisible();
+
+  expect(postedBody).toEqual({ reference, token });
+  expect(page.url()).toBe('http://127.0.0.1:3000/request-assistance/status');
+  expect(page.url()).not.toContain(reference);
+  expect(page.url()).not.toContain(token);
+  await expect(page.getByText(reference)).toBeVisible();
+  await page.getByRole('link', { name: 'Understand the review process →' }).focus();
+  await expect(page.getByText(reference)).toBeVisible();
+});
+
+test('legacy query-based assistance tracking is scrubbed from history-visible location', async ({ page }) => {
+  const reference = 'AFR-LEGACY-001';
+  const token = 'legacy-private-token-1234567890';
+
+  await page.route('**/api/assistance/status', route => route.fulfill({
+    status: 200,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      found: true,
+      status: 'SUBMITTED',
+      createdAt: '2026-09-20T10:00:00.000Z',
+      updatedAt: '2026-09-20T10:00:00.000Z',
+    }),
+  }));
+
+  await page.goto(`/request-assistance/status?reference=${reference}&token=${token}`);
+  await expect(page.getByRole('heading', { name: 'Submitted' })).toBeVisible();
+
+  expect(page.url()).toBe('http://127.0.0.1:3000/request-assistance/status');
+  expect(page.url()).not.toContain(reference);
+  expect(page.url()).not.toContain(token);
+});
+
+
+test('private donation acknowledgement token is removed from the visible URL after capture', async ({ page }) => {
+  const reference = 'AFD-2026-PRIVATE';
+  const token = 'private-donation-token-1234567890';
+  let postedBody = null;
+
+  await page.route('**/api/donations/acknowledgement', async route => {
+    postedBody = route.request().postDataJSON();
+    await route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        found: true,
+        presentation: {
+          tone: 'captured',
+          heading: 'Donation received',
+          summary: 'Your donation has been recorded.',
+          statusLabel: 'Captured',
+        },
+        donation: {
+          referenceNumber: reference,
+          receiptNumber: 'AFR-2026-PRIVATE',
+          donorName: 'Private Donor',
+          givingIntent: 'GENERAL',
+          amount: 500,
+          refundedAmount: 0,
+          recordDate: '2026-09-22T10:00:00.000Z',
+          providerPaymentId: 'pay_private',
+          appeal: { title: 'Verified need', slug: 'verified-need' },
+        },
+      }),
+    });
+  });
+
+  await page.goto(`/donations/${reference}/acknowledgement#token=${token}`);
+  await expect(page.getByRole('heading', { name: 'Donation received' })).toBeVisible();
+
+  expect(postedBody).toEqual({ reference, token });
+  expect(page.url()).toBe(`http://127.0.0.1:3000/donations/${reference}/acknowledgement`);
+  expect(page.url()).not.toContain(token);
+  await expect(page.getByText(reference)).toBeVisible();
+  await page.getByRole('link', { name: /Return to this appeal/ }).focus();
+  await expect(page.getByText(reference)).toBeVisible();
+});
+
+test('legacy query donation acknowledgement token is scrubbed from the visible URL', async ({ page }) => {
+  const reference = 'AFD-2026-LEGACY';
+  const token = 'legacy-donation-token-1234567890';
+
+  await page.route('**/api/donations/acknowledgement', route => route.fulfill({
+    status: 404,
+    contentType: 'application/json',
+    body: JSON.stringify({ found: false }),
+  }));
+
+  await page.goto(`/donations/${reference}/acknowledgement?token=${token}`);
+  await expect(page.getByRole('heading', { name: 'Private acknowledgement unavailable.' })).toBeVisible();
+
+  expect(page.url()).toBe(`http://127.0.0.1:3000/donations/${reference}/acknowledgement`);
+  expect(page.url()).not.toContain(token);
+});

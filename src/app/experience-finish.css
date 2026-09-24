@@ -1,0 +1,516 @@
+/* Amaana Foundation — experience finish layer
+   Brand values are owned by tokens.css; this file owns finishing interactions only. */
+
+/* Global rhythm + optical alignment */
+main{overflow:clip}.container,.v3-shell{padding-inline:max(0px,env(safe-area-inset-left));padding-right:max(0px,env(safe-area-inset-right))}.v3-section-head>*{min-width:0}.v3-heading,.footer-lead h2{text-wrap:balance}.v3-intro,.footer-intro p,.footer-note{text-wrap:pretty}.v3-section-head{align-items:start}.v3-section-head .v3-intro{padding-top:.45rem}.v3-label,.v3-kicker,.footer-kicker{line-height:1.35}.v3-btn,.button,.nav-donate{touch-action:manipulation}
+
+/* Header: cleaner hierarchy, larger hit area, no visual jitter */
+.site-header .nav{gap:1rem}.brand-official{min-width:4.25rem;min-height:4.25rem}.brand-lockup{display:block;max-width:4rem;height:auto}.nav-link{min-height:2.75rem;display:inline-flex;align-items:center}.nav-donate{min-height:3.25rem;padding-inline:1.2rem}.menu-toggle{min-width:2.85rem;min-height:2.85rem;place-items:center}.menu-toggle span{line-height:1;font-size:1.35rem}.mobile-menu-inner{padding-block:1.4rem 1.75rem}.mobile-menu-primary{display:grid}.mobile-menu-primary a{padding-block:.8rem;border-bottom:1px solid rgb(18 34 57 / 8%)}.mobile-menu-secondary{padding-top:1rem}.mobile-menu-secondary a{min-height:2.75rem;display:inline-flex;align-items:center}
+
+/* Switch the complete navigation together before labels crowd tablet widths. */
+@media(max-width:1020px){.site-header .nav-links{display:none}.site-header .menu-toggle{display:grid}.site-header .mobile-menu.open{display:block;max-height:calc(100vh - 7.2rem);max-height:calc(100dvh - 7.2rem);overflow-y:auto;overscroll-behavior:contain}}
+
+/* Proof strip: clearer baseline and stronger grouping */
+.v3-proof-grid{align-items:stretch}.v3-proof-item{display:flex;min-height:9rem;flex-direction:column;justify-content:center}.v3-proof-item strong{font-variant-numeric:tabular-nums}.v3-proof-item span{max-width:17rem}
+
+/* Eid timeline: legible on wide and narrow screens */
+.v3-timeline{gap:clamp(.65rem,2vw,1.5rem)}.v3-year{min-width:0}.v3-year span{font-variant-numeric:tabular-nums}.v3-year small{line-height:1.35}.v3-eid .v3-actions{margin-top:clamp(2.5rem,5vw,4.5rem)}
+
+/* Appeal/empty state */
+.v3-empty{box-shadow:0 20px 55px rgb(18 34 57 / 7%)}.v3-empty h3{text-wrap:balance}.v3-empty .v3-actions{justify-content:flex-end}.v2-appeal-card{border-radius:1.25rem;overflow:hidden}.v2-appeal-card-link{min-height:3.5rem}
+
+/* Closing section */
+.v3-closing{position:relative;overflow:hidden}.v3-closing:before,.v3-closing:after{content:"";position:absolute;border-radius:50%;pointer-events:none}.v3-closing:before{width:28rem;aspect-ratio:1;left:-12rem;top:-10rem;border:1px solid rgb(255 255 255 / 8%);box-shadow:0 0 0 4rem rgb(255 255 255 / 2%)}.v3-closing:after{width:21rem;aspect-ratio:1;right:-8rem;bottom:-10rem;background:radial-gradient(circle,rgb(224 179 24 / 12%),transparent 65%)}.v3-closing .v3-shell{position:relative;z-index:1}
+
+/* Footer: official brand lockup and cleaner columns */
+.footer-brand-lockup{display:inline-flex;align-items:center;gap:.9rem;width:max-content;max-width:100%;color:#fffdf8}.footer-brand-mark{width:4.2rem;height:4.2rem;display:grid;place-items:center;border-radius:50%;background:rgb(255 253 248 / 94%);box-shadow:0 16px 40px rgb(0 0 0 / 18%)}.footer-brand-mark img{width:78%;height:auto;object-fit:contain}.footer-brand-copy{display:grid;gap:.18rem;line-height:1}.footer-brand-copy strong{font-size:1.1rem;letter-spacing:.16em;background:linear-gradient(105deg,#fffdf8 0%,#f1cf52 78%);-webkit-background-clip:text;background-clip:text;color:transparent}.footer-brand-copy small{font-size:.62rem;letter-spacing:.28em;color:rgb(255 253 248 / 62%)}.footer-intro>p{max-width:31rem}.footer-links{display:grid;gap:.2rem}.footer-links a{min-height:2.55rem;display:flex;align-items:center;width:max-content;max-width:100%}.footer-note{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(18rem,1.25fr);gap:1.5rem;align-items:start;padding-block:1.5rem 2rem}.footer-note span:last-child{text-align:right}.footer-note a{overflow-wrap:break-word}
+
+/* Better states and safer long content */
+:is(a,button,input,textarea,select){-webkit-tap-highlight-color:transparent}.v3-home a,.site-header a,.site-footer a{text-decoration-thickness:.08em}.v3-home img,.site-header img,.site-footer img{max-width:100%}.v3-home h1,.v3-home h2,.v3-home h3,.site-footer h2{overflow-wrap:normal;word-break:normal}.v3-home p,.site-footer p{orphans:2;widows:2}
+
+@media (hover:hover){.footer-brand-lockup:hover .footer-brand-mark{transform:translateY(-2px);box-shadow:0 22px 46px rgb(0 0 0 / 24%)}.footer-brand-mark{transition:transform .25s ease,box-shadow .25s ease}}
+
+@media(max-width:1020px){.nav-links{gap:.5rem}.nav-link{font-size:.84rem}.v3-work-row{grid-template-columns:6rem minmax(0,1fr) minmax(10rem,.4fr) 1.5rem}.footer-note{grid-template-columns:1fr 1fr}.footer-note span:last-child{grid-column:1/-1;text-align:left;max-width:48rem}}
+
+@media(max-width:900px){.v3-section-head{gap:1.25rem}.v3-section-head .v3-intro{max-width:42rem;padding-top:0}.v3-hero-media-caption{padding-right:1rem}.v3-work-row{grid-template-columns:5.2rem minmax(0,1fr) 1.5rem}.v3-timeline{grid-template-columns:repeat(4,minmax(0,1fr));gap:2.25rem 1rem}.v3-year{padding-right:.25rem}.footer-grid-v2{grid-template-columns:1fr 1fr}.footer-intro{grid-column:1/-1;max-width:42rem}}
+
+@media(max-width:760px){.brand-official{min-width:3.7rem;min-height:3.7rem}.brand-lockup{max-width:3.55rem}.mobile-menu-primary a{font-size:clamp(1.35rem,6vw,2rem)}.v3-section{padding-block:clamp(4rem,12vw,6rem)}.v3-hero-grid{padding-top:4.75rem}.v3-proof-item{min-height:8rem}.v3-work-row{padding-block:1.55rem}.v3-timeline{grid-template-columns:repeat(2,minmax(0,1fr));gap:2rem 1rem}.footer-grid-v2{grid-template-columns:1fr;gap:2rem}.footer-intro{grid-column:auto}.footer-note{grid-template-columns:1fr;gap:.7rem}.footer-note span:last-child{grid-column:auto}.footer-brand-mark{width:3.8rem;height:3.8rem}}
+
+@media(max-width:520px){.v3-shell{width:min(calc(100% - 1.25rem),74rem)}.v3-title{font-size:clamp(3.6rem,18vw,5.4rem);line-height:.87}.v3-lead{font-size:1rem;line-height:1.65}.v3-hero-media{min-height:27rem;border-radius:1.1rem 1.1rem 3.2rem 1.1rem}.v3-hero-media-caption{left:1.2rem;right:1.2rem;bottom:1.35rem}.v3-hero-media-caption>strong{font-size:2.1rem}.v3-proof-grid{grid-template-columns:1fr}.v3-proof-item{border-right:0;border-bottom:1px solid var(--af-border)!important;padding:1.25rem .15rem}.v3-proof-item:last-child{border-bottom:0!important}.v3-work-row{grid-template-columns:1fr auto}.v3-work-row small{grid-column:1/-1}.v3-work-row h3{font-size:2.05rem}.v3-timeline{gap:1.5rem .7rem}.v3-trust-panel{border-radius:1rem}.v3-empty{border-radius:1rem}.footer-lead h2{font-size:clamp(2rem,9vw,3rem)}.footer-brand-copy strong{font-size:1rem}}
+
+@media(prefers-reduced-motion:reduce){.v3-work-row:before,.v3-arrow,.v3-quick-links a span:last-child,.footer-brand-mark{transition:none!important}.v3-work-row:hover .v3-arrow,.v3-work-row:focus-visible .v3-arrow,.v3-quick-links a:hover span:last-child,.v3-quick-links a:focus-visible span:last-child,.footer-brand-lockup:hover .footer-brand-mark{transform:none!important}}
+
+
+
+/* Consolidated canonical section surfaces */
+/* Amaana Foundation canonical public-section surface system.
+   One approved body artwork, expressed through controlled light/alternate/dark gradients.
+   Route CSS owns layout; this layer owns public page atmosphere and transitions. */
+:root{
+  --af-surface-art:var(--amaana-bg-body);
+  --af-surface-light:linear-gradient(128deg,rgb(255 253 248 / 90%) 0%,rgb(250 246 236 / 82%) 48%,rgb(233 239 248 / 72%) 100%),var(--af-surface-art);
+  --af-surface-light-alt:linear-gradient(142deg,rgb(243 237 221 / 84%) 0%,rgb(255 253 248 / 91%) 52%,rgb(240 213 107 / 10%) 100%),var(--af-surface-art);
+  --af-surface-dark:linear-gradient(132deg,rgb(10 26 46 / 94%) 0%,rgb(29 49 80 / 92%) 52%,rgb(47 76 122 / 90%) 100%),var(--af-surface-art);
+  --af-surface-dark-alt:linear-gradient(148deg,rgb(18 34 57 / 95%) 0%,rgb(29 49 80 / 90%) 58%,rgb(117 86 7 / 24%) 140%),var(--af-surface-art);
+  --af-surface-position:center center;
+}
+main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
+:is(.v2-section.paper,.v3-section,.amaana-bg-body){
+  background-color:var(--af-color-canvas)!important;background-image:var(--af-surface-light)!important;
+  background-repeat:no-repeat!important;background-size:cover!important;background-position:var(--af-surface-position)!important;background-blend-mode:normal,luminosity
+}
+.v3-home>.v3-section:nth-of-type(even),.v2-home>.v2-section.paper:nth-of-type(even){background-image:var(--af-surface-light-alt)!important}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust){
+  color:#fffdf8;background-color:var(--af-color-navy-800)!important;background-image:var(--af-surface-dark)!important;
+  background-repeat:no-repeat!important;background-size:cover!important;background-position:var(--af-surface-position)!important;background-blend-mode:normal,soft-light
+}
+:is(.v2-impact-trust,.v3-closing){
+  background-color:var(--af-color-navy-950)!important;background-image:var(--af-surface-dark-alt)!important;
+  background-repeat:no-repeat!important;background-size:cover!important;background-position:var(--af-surface-position)!important;background-blend-mode:normal,soft-light
+}
+:is(.v2-impact-trust,.v2-impact-witness,.v2-impact-philosophy)::before,:is(.v2-impact-trust,.v2-impact-witness,.v2-impact-philosophy)::after{content:none!important}
+.v2-impact-philosophy{background-color:var(--af-color-canvas)!important;background-image:var(--af-surface-light-alt)!important;background-repeat:no-repeat!important;background-size:cover!important;background-position:var(--af-surface-position)!important}
+:is(.v2-section,.v3-section){position:relative}
+:is(.v2-section,.v3-section)+:is(.v2-section,.v3-section){border-top:1px solid rgb(117 86 7 / 8%)}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust)+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust){border-top-color:rgb(240 213 107 / 10%)}
+.page-hero--level1{background-image:var(--amaana-bg-hero)!important;background-blend-mode:normal}
+.site-footer{background-image:var(--amaana-bg-footer)!important}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(h1,h2,h3,h4,strong){color:inherit}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(.v2-section-intro,.v3-intro){color:rgb(255 253 248 / 72%)}
+@media(max-width:768px){
+  :root{--af-surface-position:center top}
+  :is(.v2-section.paper,.v3-section,.amaana-bg-body,.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust,.v2-impact-philosophy,.v3-closing){background-size:auto 100%!important}
+}
+@media(prefers-reduced-motion:no-preference){
+  :is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust){animation:af-surface-drift 24s ease-in-out infinite alternate}
+}
+@keyframes af-surface-drift{from{background-position:center center}to{background-position:52% 48%}}
+@media(prefers-reduced-motion:reduce){:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust){animation:none}}
+
+
+/* Consolidated canonical action hierarchy */
+/* Canonical Amaana action hierarchy.
+   Primary = gold filled, Secondary = outlined, Link = text action.
+   Context may invert ink/border for dark surfaces, but geometry and hierarchy stay identical. */
+:root{
+  --af-action-height:3.25rem;
+  --af-action-pad-x:1.35rem;
+  --af-action-primary-bg:var(--af-color-gold-500);
+  --af-action-primary-hover:#f0ca39;
+  --af-action-primary-ink:var(--af-color-navy-950);
+  --af-action-secondary-border:rgb(18 34 57 / 28%);
+  --af-action-secondary-ink:var(--af-color-navy-950);
+  --af-action-link:var(--af-color-gold-ink);
+}
+:is(.button,.v2-button,.v3-btn,.af-btn){
+  display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+  min-height:var(--af-action-height);height:auto;padding:.72rem var(--af-action-pad-x);
+  border:1px solid var(--af-action-primary-bg);border-radius:var(--af-radius-pill);
+  background:var(--af-action-primary-bg);color:var(--af-action-primary-ink);
+  font:800 .94rem/1.2 var(--af-font-body);text-align:center;text-decoration:none;
+  white-space:normal;cursor:pointer;
+  box-shadow:0 8px 22px rgb(117 86 7 / 12%);
+  transition:transform var(--af-motion-medium) var(--af-ease-standard),box-shadow var(--af-motion-medium) ease,background var(--af-motion-medium) ease,border-color var(--af-motion-medium) ease,color var(--af-motion-medium) ease
+}
+:is(.button,.v2-button,.v3-btn,.af-btn):is(:hover,:focus-visible){
+  background:var(--af-action-primary-hover);border-color:var(--af-action-primary-hover);color:var(--af-action-primary-ink);
+  transform:translateY(-2px);box-shadow:0 14px 30px rgb(117 86 7 / 18%)
+}
+:is(.button.secondary,.v2-button.secondary,.v2-button.ghost,.v2-button--paper-secondary,.v3-btn.secondary,.v3-btn.ghost,.af-btn--secondary){
+  background:transparent;color:var(--af-action-secondary-ink);border-color:var(--af-action-secondary-border);box-shadow:none
+}
+:is(.button.secondary,.v2-button.secondary,.v2-button.ghost,.v2-button--paper-secondary,.v3-btn.secondary,.v3-btn.ghost,.af-btn--secondary):is(:hover,:focus-visible){
+  background:rgb(18 34 57 / 6%);color:var(--af-color-navy-950);border-color:rgb(18 34 57 / 48%);box-shadow:none
+}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(.button.secondary,.v2-button.secondary,.v2-button.ghost,.v3-btn.secondary,.v3-btn.ghost,.af-btn--secondary){
+  color:#fffdf8;border-color:rgb(255 253 248 / 42%);background:transparent
+}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(.button.secondary,.v2-button.secondary,.v2-button.ghost,.v3-btn.secondary,.v3-btn.ghost,.af-btn--secondary):is(:hover,:focus-visible){
+  color:#fffdf8;border-color:rgb(240 213 107 / 62%);background:rgb(255 253 248 / 8%)
+}
+:is(.v2-text-link,.v3-text-link,.af-link-action){
+  display:inline-flex;align-items:center;gap:.35rem;min-height:2.75rem;padding:.15rem 0;
+  border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--af-action-link);
+  font:800 .94rem/1.3 var(--af-font-body);text-decoration:none;cursor:pointer;
+  transition:color var(--af-motion-fast) ease,transform var(--af-motion-fast) ease
+}
+:is(.v2-text-link,.v3-text-link,.af-link-action):is(:hover,:focus-visible){color:var(--af-color-navy-800);transform:translateX(.16rem)}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(.v2-text-link,.v3-text-link,.af-link-action){color:var(--af-color-gold-soft)}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(.v2-text-link,.v3-text-link,.af-link-action):is(:hover,:focus-visible){color:#fffdf8}
+.site-header :is(.button,.nav-donate){min-height:3rem;padding:.68rem 1.2rem}
+:is(.v2-hero-actions,.v3-actions,.actions){display:flex;flex-wrap:wrap;align-items:center;gap:.75rem}
+@media(max-width:560px){:is(.v2-hero-actions,.v3-actions,.actions) :is(.button,.v2-button,.v3-btn,.af-btn){width:100%}}
+@media(prefers-reduced-motion:reduce){:is(.button,.v2-button,.v3-btn,.af-btn,.v2-text-link,.v3-text-link,.af-link-action){transition:none!important;transform:none!important}}
+
+
+
+/* Canonical cross-route visual reconciliation.
+   Route styles may own composition; these rules keep geometry, rhythm and surfaces recognizably Amaana. */
+:root{
+  --af-public-shell:74rem;
+  --af-public-gutter:clamp(.75rem,2.2vw,1rem);
+  --af-section-space:clamp(4.5rem,8vw,7.5rem);
+  --af-card-radius:1.25rem;
+  --af-card-border:rgb(117 86 7 / 16%);
+  --af-card-shadow:0 16px 42px rgb(18 34 57 / 7%);
+}
+:is(.v2-shell,.v3-shell,.page-hero__shell,.site-header .container,.site-footer>.container){
+  width:min(calc(100% - (var(--af-public-gutter) * 2)),var(--af-public-shell));
+  margin-inline:auto;
+}
+:is(.v2-section,.v3-section){padding-block:var(--af-section-space)}
+:is(.v2-section-head,.v3-section-head){
+  display:grid;
+  grid-template-columns:minmax(0,1.15fr) minmax(18rem,.85fr);
+  gap:clamp(2rem,6vw,6rem);
+  align-items:end;
+  margin-bottom:clamp(2.5rem,5vw,4.5rem);
+}
+:is(.v2-section-title,.v3-heading){
+  max-width:12ch;
+  margin:.7rem 0 0;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(2.4rem,4.6vw,4.5rem);
+  font-weight:500;
+  line-height:.98;
+  letter-spacing:-.04em;
+  text-wrap:balance;
+}
+:is(.v2-section-intro,.v3-intro){
+  max-width:42rem;
+  font-size:clamp(1rem,1.6vw,1.18rem);
+  line-height:1.75;
+}
+:is(.v2-section-label,.v2-kicker,.v3-label,.v3-kicker,.page-hero__eyebrow){
+  font-size:.76rem;
+  font-weight:800;
+  line-height:1.35;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+:is(.v2-documentary-card,.v2-stories-card,.v2-appeal-card,.canonical-pathways article,.v3-empty){
+  border-radius:var(--af-card-radius);
+  border-color:var(--af-card-border);
+  box-shadow:var(--af-card-shadow);
+}
+.page-hero--level1{
+  background-color:var(--af-color-canvas)!important;
+  background-image:var(--amaana-bg-hero)!important;
+  background-repeat:no-repeat!important;
+  background-size:cover!important;
+  background-position:center center!important;
+}
+.site-footer{
+  background-color:var(--af-color-navy-800)!important;
+  background-image:var(--amaana-bg-footer)!important;
+  background-repeat:no-repeat!important;
+  background-size:cover!important;
+  background-position:center center!important;
+}
+@media(max-width:900px){
+  :is(.v2-section-head,.v3-section-head){grid-template-columns:1fr;gap:1.25rem;align-items:start}
+  :is(.v2-section-title,.v3-heading){max-width:15ch}
+}
+@media(max-width:768px){
+  :root{--af-public-gutter:.625rem;--af-section-space:clamp(4rem,12vw,6rem)}
+  .page-hero--level1{background-image:var(--amaana-bg-hero)!important;background-position:top right!important}
+  .site-footer{background-image:var(--amaana-bg-footer)!important;background-position:top right!important}
+}
+@media(max-width:600px){
+  :is(.v2-section-title,.v3-heading){font-size:clamp(2.2rem,9vw,3.4rem)}
+}
+
+
+/* Canonical media + card language.
+   Individual routes may vary composition, never the underlying visual vocabulary. */
+:root{
+  --af-media-radius:1.15rem;
+  --af-media-border:rgb(117 86 7 / 16%);
+  --af-media-shadow:0 18px 46px rgb(18 34 57 / 9%);
+  --af-card-pad:clamp(1.15rem,2vw,1.6rem);
+}
+:is(.v2-media-item,.v2-documentary-card,.v2-stories-card-media,.canonical-pathway-visual,.work-thumb,.v2-impact-ledger-thumb){
+  border-radius:var(--af-media-radius);
+}
+:is(.v2-documentary-card,.v2-stories-card,.v2-appeal-card,.canonical-pathways article){
+  overflow:hidden;
+  border:1px solid var(--af-card-border);
+  background:rgb(255 253 248 / 88%);
+  box-shadow:var(--af-card-shadow);
+}
+:is(.v2-documentary-card,.v2-stories-card,.v2-appeal-card,.canonical-pathways article) :is(img,video){
+  display:block;
+  width:100%;
+  object-fit:cover;
+}
+:is(.v2-section,.v3-section)+:is(.v2-section,.v3-section){
+  border-top:1px solid rgb(117 86 7 / 8%);
+}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust)+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust){
+  border-top-color:rgb(240 213 107 / 10%);
+}
+/* Level-2 and trust heroes share one dark editorial family; level-1 remains the approved light artwork. */
+:is(.page-hero--level2,.page-hero--trust,.page-hero--action,.page-hero--information,.page-hero--recognition){
+  background-color:var(--af-color-navy-800);
+  background-image:var(--af-surface-dark);
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-position:center center;
+}
+:is(.page-hero--level2,.page-hero--trust,.page-hero--action,.page-hero--information,.page-hero--recognition) .page-hero__visual{
+  border-radius:var(--af-media-radius);
+  box-shadow:var(--af-media-shadow);
+}
+@media(max-width:768px){
+  :is(.page-hero--level2,.page-hero--trust,.page-hero--action,.page-hero--information,.page-hero--recognition){
+    background-size:auto 100%;
+    background-position:center top;
+  }
+}
+
+
+/* Canonical action geometry and section transition polish. */
+:is(.button,.v2-button,.v3-btn,.af-btn){
+  min-height:2.875rem;
+  padding:.78rem 1.15rem;
+  border-radius:999px;
+  font-size:.92rem;
+  font-weight:800;
+  line-height:1.15;
+  letter-spacing:.01em;
+  text-decoration:none;
+}
+:is(.v2-text-link,.v3-text-link,.af-link-action){
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  min-height:2.75rem;
+  padding:.25rem 0;
+  font-weight:800;
+  text-underline-offset:.24em;
+}
+:is(.v2-actions,.v3-actions,.page-hero__actions){
+  display:flex;
+  flex-wrap:wrap;
+  gap:.75rem;
+  align-items:center;
+}
+:is(.v2-section,.v3-section)>:is(.v2-shell,.v3-shell){
+  position:relative;
+  z-index:1;
+}
+@media(max-width:600px){
+  :is(.v2-actions,.v3-actions,.page-hero__actions) :is(.button,.v2-button,.v3-btn,.af-btn){
+    width:100%;
+    justify-content:center;
+  }
+  :is(.v2-actions,.v3-actions,.page-hero__actions) :is(.v2-text-link,.v3-text-link,.af-link-action){
+    width:auto;
+  }
+}
+
+
+/* Shared chrome reconciliation: header and footer should frame every route identically. */
+.site-header{
+  border-bottom:1px solid rgb(117 86 7 / 12%);
+  box-shadow:0 8px 28px rgb(18 34 57 / 5%);
+}
+.site-header .nav{
+  min-height:4.75rem;
+  gap:clamp(1rem,2vw,2rem);
+}
+.site-header .brand-official{flex:0 0 auto}
+.site-header .brand-lockup{
+  width:clamp(4.25rem,6vw,5.25rem);
+  height:auto;
+}
+.site-header .nav-links{gap:clamp(.7rem,1.4vw,1.25rem)}
+.site-header .nav-link{
+  position:relative;
+  padding:.65rem .15rem;
+  font-size:.9rem;
+  font-weight:750;
+  line-height:1.2;
+}
+.site-header .nav-link::after{
+  content:"";
+  position:absolute;
+  right:.15rem;
+  bottom:.28rem;
+  left:.15rem;
+  height:2px;
+  border-radius:999px;
+  background:var(--af-color-gold-500);
+  opacity:0;
+  transform:scaleX(.45);
+  transition:opacity .18s ease,transform .18s ease;
+}
+.site-header .nav-link:is(:hover,:focus-visible,.active)::after{opacity:1;transform:scaleX(1)}
+.site-footer{border-top:1px solid rgb(240 213 107 / 16%)}
+.site-footer .footer-lead{
+  max-width:58rem;
+  margin-bottom:0;
+  padding-block:1.25rem;
+}
+.site-footer .footer-lead h2{
+  max-width:18ch;
+  margin:.35rem 0 .65rem;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(1.8rem,2.7vw,2.75rem);
+  font-weight:500;
+  line-height:1.04;
+  letter-spacing:-.04em;
+  text-wrap:balance;
+}
+.site-footer .footer-lead p{margin-block:.45rem;line-height:1.5}
+.site-footer .footer-grid-v2{
+  gap:clamp(2rem,4vw,4rem);
+  padding-block:clamp(2.5rem,5vw,4.5rem);
+  border-top:1px solid rgb(240 213 107 / 14%);
+}
+.site-footer .footer-links{gap:.68rem}
+.site-footer .footer-note{
+  gap:1rem 2rem;
+  padding-block:1.5rem 2rem;
+  border-top:1px solid rgb(240 213 107 / 12%);
+}
+@media(max-width:900px){
+  .site-header .nav{min-height:4.25rem}
+  .site-header .brand-lockup{width:4.25rem}
+}
+@media(max-width:600px){
+  .site-footer .footer-lead{padding-block:1.4rem}
+  .site-footer .footer-lead h2{font-size:clamp(1.8rem,7.5vw,2.4rem)}
+}
+
+
+/* Canonical closing/pre-footer family: one recognisable end-of-page rhythm across discovery routes. */
+:is(.v2-closing,.v3-closing){
+  position:relative;
+  overflow:hidden;
+  padding-block:clamp(4.5rem,8vw,7rem);
+  text-align:center;
+  background-color:var(--af-color-canvas);
+  background-image:var(--af-surface-light-alt);
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-position:var(--af-surface-position);
+  border-top:1px solid rgb(117 86 7 / 10%);
+}
+:is(.v2-closing,.v3-closing) :is(.v2-shell,.v3-shell){
+  width:min(calc(100% - (var(--af-public-gutter) * 2)),56rem);
+  margin-inline:auto;
+}
+:is(.v2-closing,.v3-closing) h2{
+  max-width:15ch;
+  margin:.7rem auto 1.25rem;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(2.4rem,4.7vw,4.4rem);
+  font-weight:500;
+  line-height:.98;
+  letter-spacing:-.04em;
+  text-wrap:balance;
+}
+:is(.v2-closing,.v3-closing)>* p:not(.v2-section-label):not(.v3-section-label){
+  max-width:42rem;
+  margin-inline:auto;
+  line-height:1.75;
+}
+:is(.v2-closing,.v3-closing) :is(.v2-hero-actions,.v3-actions){
+  justify-content:center;
+  margin-top:1.6rem;
+}
+@media(max-width:600px){
+  :is(.v2-closing,.v3-closing){padding-block:4rem}
+  :is(.v2-closing,.v3-closing) h2{font-size:clamp(2.2rem,9.5vw,3.35rem)}
+}
+
+
+/* Special-route sections keep their purpose while inheriting the shared Amaana surface rhythm. */
+:is(.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-history-note,.campaign-clinical-note,.campaign-data-visual,.campaign-gallery,.campaign-next){
+  position:relative;
+  background-color:var(--af-color-canvas);
+  background-image:var(--af-surface-light);
+  background-repeat:no-repeat;
+  background-size:cover;
+  background-position:var(--af-surface-position);
+}
+:is(.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-history-note,.campaign-clinical-note,.campaign-data-visual,.campaign-gallery,.campaign-next){
+  border-top:1px solid rgb(117 86 7 / 8%);
+}
+:is(.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-data-visual,.campaign-gallery,.campaign-next){
+  padding-block:var(--af-section-space);
+}
+:is(.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-data-visual,.campaign-gallery,.campaign-next)>:is(.v2-shell,[class*="v2-shell"]){
+  width:min(calc(100% - (var(--af-public-gutter) * 2)),var(--af-public-shell));
+  margin-inline:auto;
+}
+.campaign-next{
+  text-align:center;
+  background-image:var(--af-surface-light-alt);
+}
+.campaign-next h2{
+  max-width:15ch;
+  margin:0 auto 1.5rem;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(2.3rem,4.5vw,4rem);
+  font-weight:500;
+  line-height:1;
+  letter-spacing:-.04em;
+  text-wrap:balance;
+}
+.campaign-next .v2-hero-actions{justify-content:center}
+
+
+/* Assistance flow: align process geometry with the same card vocabulary used elsewhere. */
+.v2-assistance-before-grid,.v2-assistance-form-layout{gap:clamp(1.5rem,4vw,4rem)}
+.v2-assistance-form-layout>aside{
+  border:1px solid var(--af-card-border);
+  border-radius:var(--af-card-radius);
+  padding:var(--af-card-pad);
+  background:rgb(255 253 248 / 78%);
+  box-shadow:var(--af-card-shadow);
+}
+.v2-assistance-form-layout>aside ol{display:grid;gap:.75rem;margin:1.25rem 0 0;padding:0;list-style:none}
+.v2-assistance-form-layout>aside li{
+  display:grid;
+  grid-template-columns:2.25rem minmax(0,1fr);
+  gap:.8rem;
+  align-items:start;
+  padding:.85rem 0;
+  border-top:1px solid rgb(117 86 7 / 10%);
+}
+.v2-assistance-form-layout>aside li>span{font-weight:850;color:var(--af-color-gold-ink)}
+.v2-assistance-form-layout>aside li p{margin:0;line-height:1.55}
+.v2-assistance-form-layout>aside li strong{display:block;margin-bottom:.15rem;color:var(--af-color-navy-800)}
+.v2-assistance-after-flow{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:.8rem;
+  margin-top:clamp(1.5rem,3vw,2.5rem);
+}
+.v2-assistance-after-flow>div{
+  min-width:0;
+  padding:1.15rem;
+  border:1px solid var(--af-card-border);
+  border-radius:var(--af-card-radius);
+  background:rgb(255 253 248 / 78%);
+  box-shadow:0 10px 28px rgb(18 34 57 / 5%);
+}
+.v2-assistance-after-flow span{display:block;margin-bottom:.7rem;color:var(--af-color-gold-ink);font-size:.75rem;font-weight:850;letter-spacing:.12em}
+.v2-assistance-after-flow strong{display:block;color:var(--af-color-navy-800);line-height:1.25}
+@media(max-width:900px){.v2-assistance-after-flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.v2-assistance-after-flow{grid-template-columns:1fr}.v2-assistance-form-layout>aside{padding:1rem}}
+
+/* Browser acceptance corrections: canonical body art, hero controls and compact footer. */
+:is(.v2-section.paper,.v3-section,.amaana-bg-body,.v2-closing,.v3-closing,.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-history-note,.campaign-clinical-note,.campaign-data-visual,.campaign-gallery,.campaign-next){background-size:cover!important}
+.page-hero__button{min-height:3.1875rem!important;padding-block:.82rem!important}
+
+/* Accessibility audit: readable ink on light compliance/legal surfaces. */
+.v2-compliance-guardrail-grid article>span{color:var(--af-color-gold-ink)!important;font-weight:800}
+.v2-compliance-guardrail-grid article>p{color:var(--af-color-navy-800)!important}
+.v2-compliance-page :is(.v2-section.paper,.v2-compliance-guardrails) :is(.v2-section-intro,p){color:var(--af-color-navy-800)}
+
+
+/* Acceptance consolidation: homepage body surface. */
+.v3-work{background-size:cover!important;background-position:var(--af-surface-position)!important;background-repeat:no-repeat!important}

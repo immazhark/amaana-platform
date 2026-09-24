@@ -1,0 +1,7 @@
+
+.grid :global(.v2-intent-card){transition:transform .2s ease,border-color .2s ease,box-shadow .2s ease}
+.grid :global(.v2-intent-card:hover){transform:translateY(-3px);border-color:rgb(224 179 24 / 28%);box-shadow:0 1rem 2rem rgb(18 34 57 / 7%)}
+.grid :global(.v2-intent-card[data-contact-kind="03"]){border-color:rgb(70 111 170 / 32%);background:linear-gradient(145deg,#fffdf8,#f1f5fb)}
+.grid :global(.v2-intent-card[data-contact-kind="03"] .v2-intent-marker){color:#2f4c7a}
+.privacy{padding:clamp(1.5rem,4vw,2.5rem);border:1px solid rgb(18 34 57 / 12%);border-left:4px solid #e0b318;border-radius:1rem;background:#fffdf8}
+@media(prefers-reduced-motion:reduce){.grid :global(.v2-intent-card){transition:none}.grid :global(.v2-intent-card:hover){transform:none}}
