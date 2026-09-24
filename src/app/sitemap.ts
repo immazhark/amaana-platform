@@ -7,15 +7,10 @@ import { PUBLIC_STATIC_ROUTES } from "@/lib/public-routing";
 import { publishedProgrammeCategoryPaths } from "@/lib/sitemap-programme-categories";
 import { shouldAllowIndexing } from "@/lib/site-indexing";
 import { canListAppealInSitemap } from "@/lib/sitemap-privacy";
+import { isLegacyOurWorkSlug } from "@/lib/our-work-routing";
 
 const configuredBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
 const base = configuredBase.replace(/\/$/, "");
-
-const redirectedLegacyInitiativeSlugs = [
-  "medical-financial-assistance",
-  "winter-drive-2025-26",
-  "winter-relief-2025-26",
-];
 
 export const revalidate = 3600;
 
@@ -46,7 +41,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       where: {
         status: "PUBLISHED",
         cause: { status: "PUBLISHED" },
-        slug: { notIn: redirectedLegacyInitiativeSlugs },
       },
       select: { slug: true, updatedAt: true },
     }),
@@ -60,7 +54,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     }),
   ]);
 
-  const publishedInitiativeSlugs = new Set(initiatives.map(item => item.slug));
+  const canonicalInitiatives = initiatives.filter(item => !isLegacyOurWorkSlug(item.slug));
+  const publishedInitiativeSlugs = new Set(canonicalInitiatives.map(item => item.slug));
   const availableProgrammeCategoryPaths = publishedProgrammeCategoryPaths(publishedInitiativeSlugs);
 
   const staticPages: MetadataRoute.Sitemap = PUBLIC_STATIC_ROUTES
@@ -83,7 +78,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   return [
     ...staticPages,
-    ...initiatives.map(item => ({ url: `${base}/our-work/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.8 })),
+    ...canonicalInitiatives.map(item => ({ url: `${base}/our-work/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.8 })),
     ...stories.map(item => ({ url: `${base}/stories/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.75 })),
     ...faithContent.map(item => ({ url: `${base}/faith-and-reflections/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.7 })),
     ...searchableAppeals.map(item => ({ url: `${base}/appeals/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "weekly" as const, priority: 0.85 })),

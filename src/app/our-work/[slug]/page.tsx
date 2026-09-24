@@ -17,17 +17,9 @@ import { PublicContentStructuredData } from "@/components/public-content-structu
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
 import { canExposePublicAppeal } from "@/lib/public-environment";
+import { legacyOurWorkRoute } from "@/lib/our-work-routing";
 
 export const dynamic = "force-dynamic";
-
-const LEGACY_INITIATIVE_REDIRECTS: Record<string, string> = {
-  "winter-drive-2025-26": "winter-relief",
-  "winter-relief-2025-26": "winter-relief",
-};
-
-const LEGACY_CATEGORY_REDIRECTS: Record<string, string> = {
-  "medical-financial-assistance": "medical-financial-relief",
-};
 
 function hasPublishedTopLevelProgramme(categorySlug: string, publishedSlugs: Set<string>) {
   return programmes.some(
@@ -46,9 +38,9 @@ function formatYears(startYear: number | null, endYear: number | null, year: num
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const categoryRedirectTarget = LEGACY_CATEGORY_REDIRECTS[slug];
-  if (categoryRedirectTarget) {
-    const category = programmeCategories.find(item => item.slug === categoryRedirectTarget);
+  const legacyRoute = legacyOurWorkRoute(slug);
+  if (legacyRoute?.kind === "category") {
+    const category = programmeCategories.find(item => item.slug === legacyRoute.categorySlug);
     if (!category) return { title: "Initiative not found" };
     const causes = await getOurWorkIndexData();
     const publishedSlugs = new Set(causes.flatMap(cause => cause.initiatives.map(item => item.slug)));
@@ -76,10 +68,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     };
   }
 
-  const redirectTarget = LEGACY_INITIATIVE_REDIRECTS[slug];
-  const initiative = await getInitiativePageData(redirectTarget ?? slug);
+  const targetSlug = legacyRoute?.kind === "initiative" ? legacyRoute.targetSlug : slug;
+  const initiative = await getInitiativePageData(targetSlug);
   if (!initiative) return { title: "Initiative not found" };
-  const canonical = `/our-work/${initiative.slug}`;
+  const canonical = legacyRoute?.kind === "initiative"
+    ? legacyRoute.destination
+    : `/our-work/${initiative.slug}`;
   const identity = selectIdentityPublicImage(initiative.mediaAssets);
   const leadImage = identity ? resolvePublicMediaUrl(identity) ?? undefined : undefined;
   return { title: initiative.title, description: initiative.summary, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: `${initiative.title} | Amaana Foundation`, description: initiative.summary, images: openGraphShareImages(leadImage, identity?.altText ?? initiative.title) }, twitter: { card: "summary_large_image", title: `${initiative.title} | Amaana Foundation`, description: initiative.summary, images: twitterShareImages(leadImage) } };
@@ -87,9 +81,9 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function InitiativePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const categoryRedirectTarget = LEGACY_CATEGORY_REDIRECTS[slug];
-  if (categoryRedirectTarget) {
-    const category = programmeCategories.find(item => item.slug === categoryRedirectTarget);
+  const legacyRoute = legacyOurWorkRoute(slug);
+  if (legacyRoute?.kind === "category") {
+    const category = programmeCategories.find(item => item.slug === legacyRoute.categorySlug);
     if (!category) notFound();
     const causes = await getOurWorkIndexData();
     const publishedSlugs = new Set(causes.flatMap(cause => cause.initiatives.map(item => item.slug)));
@@ -97,11 +91,10 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
     permanentRedirect(programmeCategoryPath(category.slug));
   }
 
-  const redirectTarget = LEGACY_INITIATIVE_REDIRECTS[slug];
-  if (redirectTarget) {
-    const initiative = await getInitiativePageData(redirectTarget);
+  if (legacyRoute?.kind === "initiative") {
+    const initiative = await getInitiativePageData(legacyRoute.targetSlug);
     if (!initiative) notFound();
-    permanentRedirect(`/our-work/${initiative.slug}`);
+    permanentRedirect(legacyRoute.destination);
   }
   if (programmeBySlug(slug)) return <ProgrammeDetail slug={slug} />;
   const initiative = await getInitiativePageData(slug);
