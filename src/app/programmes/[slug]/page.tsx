@@ -6,14 +6,13 @@ import { PublicContentStructuredData } from '@/components/public-content-structu
 import { PageHero } from '@/components/page-hero';
 import { WorkVisualPlaceholder } from '@/components/work-visual-placeholder';
 import { programmeCategories, programmes } from '@/lib/master-copy';
-import { legacyProgrammeCategoryDestination, programmeCategoryFromRoute, programmeCategoryPath } from '@/lib/programme-category-routing';
-import { getInitiativePageData, getOurWorkIndexData } from '@/lib/public-page-data';
+import { legacyProgrammeRoute, programmeCategoryFromRoute, programmeCategoryPath } from '@/lib/programme-category-routing';
+import { getOurWorkIndexData } from '@/lib/public-page-data';
 import { PublicMedia } from '@/components/public-media';
 import { resolvePublicMediaUrl, selectIdentityPublicImage } from '@/lib/public-media';
 import { openGraphShareImages, twitterShareImages } from '@/lib/social-share-media';
 import '@/app/canonical-content.css';
 
-const programmeAliases: Record<string, string> = { qurbani: 'qurbani-meat-distribution', taleem: 'taleem', 'eid-gift-kits': 'eid-gift-kits', 'dates-distribution': 'dates-distribution' };
 export const dynamic = 'force-dynamic';
 type Props = { params: Promise<{ slug: string }> };
 
@@ -27,46 +26,44 @@ function hasPublishedTopLevelProgramme(categorySlug: string, publishedSlugs: Set
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const legacyDestination = legacyProgrammeCategoryDestination(slug);
-  const categorySlug = programmeCategoryFromRoute(slug);
-  const category = programmeCategories.find(item => item.slug === categorySlug);
-  const aliasTarget = programmeAliases[slug];
-  if (aliasTarget) {
-    const initiative = await getInitiativePageData(aliasTarget);
-    if (!initiative) return { title: 'Programme not found' };
-    const canonical = `/our-work/${initiative.slug}`;
+  const legacyRoute = legacyProgrammeRoute(slug);
+  if (legacyRoute?.kind === 'initiative') {
+    const programme = programmes.find(item => item.slug === legacyRoute.targetSlug);
+    if (!programme) {
+      return {
+        title: 'Programme not found',
+        alternates: { canonical: legacyRoute.destination },
+      };
+    }
     return {
-      title: initiative.title,
-      description: initiative.summary,
-      alternates: { canonical },
+      title: programme.title,
+      description: programme.summary,
+      alternates: { canonical: legacyRoute.destination },
       openGraph: {
         type: 'article',
-        url: canonical,
-        title: `${initiative.title} | Amaana Foundation`,
-        description: initiative.summary,
+        url: legacyRoute.destination,
+        title: `${programme.title} | Amaana Foundation`,
+        description: programme.summary,
         images: openGraphShareImages(),
       },
       twitter: {
         card: 'summary_large_image',
-        title: `${initiative.title} | Amaana Foundation`,
-        description: initiative.summary,
+        title: `${programme.title} | Amaana Foundation`,
+        description: programme.summary,
         images: twitterShareImages(),
       },
     };
   }
-  if (legacyDestination) {
-    const canonicalCategory = programmeCategories.find(item => programmeCategoryPath(item.slug) === legacyDestination);
+  if (legacyRoute?.kind === 'category') {
+    const canonicalCategory = programmeCategories.find(item => programmeCategoryPath(item.slug) === legacyRoute.destination);
     if (!canonicalCategory) return { title: 'Programme not found' };
-    const causes = await getOurWorkIndexData();
-    const publishedSlugs = new Set(causes.flatMap(cause => cause.initiatives.map(item => item.slug)));
-    if (!hasPublishedTopLevelProgramme(canonicalCategory.slug, publishedSlugs)) return { title: 'Programme not found' };
     return {
       title: canonicalCategory.title,
       description: canonicalCategory.summary,
-      alternates: { canonical: legacyDestination },
+      alternates: { canonical: legacyRoute.destination },
       openGraph: {
         type: 'website',
-        url: legacyDestination,
+        url: legacyRoute.destination,
         title: `${canonicalCategory.title} | Amaana Foundation`,
         description: canonicalCategory.summary,
         images: openGraphShareImages(),
@@ -79,6 +76,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   }
+
+  const categorySlug = programmeCategoryFromRoute(slug);
+  const category = programmeCategories.find(item => item.slug === categorySlug);
   if (!category) return { title: 'Programme not found' };
   const causes = await getOurWorkIndexData();
   const publishedSlugs = new Set(causes.flatMap(cause => cause.initiatives.map(item => item.slug)));
@@ -89,19 +89,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params }: Props) {
   const { slug } = await params;
-  const aliasTarget = programmeAliases[slug];
-  if (aliasTarget) {
-    const initiative = await getInitiativePageData(aliasTarget);
-    if (!initiative) notFound();
-    permanentRedirect(`/our-work/${initiative.slug}`);
-  }
-  const legacyDestination = legacyProgrammeCategoryDestination(slug);
+  const legacyRoute = legacyProgrammeRoute(slug);
+  if (legacyRoute) permanentRedirect(legacyRoute.destination);
+
   const categorySlug = programmeCategoryFromRoute(slug);
-  const directCategory = programmeCategories.find(item => item.slug === categorySlug);
-  const legacyCategory = legacyDestination
-    ? programmeCategories.find(item => programmeCategoryPath(item.slug) === legacyDestination)
-    : undefined;
-  const category = directCategory ?? legacyCategory;
+  const category = programmeCategories.find(item => item.slug === categorySlug);
   if (!category) notFound();
 
   const causes = await getOurWorkIndexData();
@@ -113,7 +105,6 @@ export default async function Page({ params }: Props) {
       && recordBySlug.has(item.slug),
   );
   if (items.length === 0) notFound();
-  if (legacyDestination) permanentRedirect(legacyDestination);
 
   const canonical = programmeCategoryPath(category.slug);
   const leadPhoto = items.map(item => { const record = recordBySlug.get(item.slug); return record ? selectIdentityPublicImage(record.mediaAssets) : null; }).find(Boolean) ?? null;

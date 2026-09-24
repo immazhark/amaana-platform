@@ -14,6 +14,10 @@ This file records intentional permanent redirects for legacy or superseded publi
 | `/our-work/medical-aid-ailing-mother` | `/our-work/severe-burn-treatment-support` | Consolidate the reviewed ₹72,000 burn-treatment archive under the canonical case record. |
 | `/our-work/medical-aid-aliza-ards-2026` | `/our-work/aliza-critical-care-support` | Consolidate the reviewed Aliza ARDS archive under the canonical critical-care case. |
 | `/our-work/medical-financial-assistance` | `/programmes/medical-financial-relief` | Replace the superseded umbrella route with the canonical programme-category landing page. |
+| `/programmes/qurbani` | `/our-work/qurbani-meat-distribution` | Preserve the historic convenience programme route while consolidating discovery on the canonical Qurbani programme URL. |
+| `/programmes/taleem` | `/our-work/taleem` | Preserve the historic convenience programme route while consolidating discovery on the canonical Taleem programme URL. |
+| `/programmes/eid-gift-kits` | `/our-work/eid-gift-kits` | Preserve the historic convenience route while keeping the stable Our Work programme URL canonical. |
+| `/programmes/dates-distribution` | `/our-work/dates-distribution` | Preserve the historic convenience route while keeping the stable Our Work programme URL canonical. |
 | `/programmes/emergency-humanitarian-relief` | `/programmes/emergency-relief` | Keep the public category URL concise and aligned with the SEO master while the internal category slug remains `emergency-humanitarian-relief`. |
 | `/programmes/seasonal-essentials` | `/programmes/seasonal-relief` | Align the category landing URL with the SEO master and remove a second indexable route for the same content. |
 

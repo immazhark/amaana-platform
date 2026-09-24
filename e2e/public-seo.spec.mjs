@@ -153,3 +153,26 @@ test('legacy Our Work aliases issue deterministic canonical redirects', async ({
     expect(new URL(location, productionOrigin).pathname).toBe(canonical);
   }
 });
+
+test('legacy Programme aliases issue deterministic canonical redirects', async ({ request }) => {
+  const cases = [
+    ['/programmes/emergency-humanitarian-relief', '/programmes/emergency-relief'],
+    ['/programmes/seasonal-essentials', '/programmes/seasonal-relief'],
+    ['/programmes/qurbani', '/our-work/qurbani-meat-distribution'],
+    ['/programmes/taleem', '/our-work/taleem'],
+    ['/programmes/eid-gift-kits', '/our-work/eid-gift-kits'],
+    ['/programmes/dates-distribution', '/our-work/dates-distribution'],
+  ];
+
+  for (const [legacy, canonical] of cases) {
+    const redirect = await request.get(legacy, { maxRedirects: 0 });
+    expect(
+      [307, 308],
+      `${legacy} should issue a permanent-compatible redirect response`,
+    ).toContain(redirect.status());
+
+    const location = redirect.headers().location;
+    expect(location, `${legacy} should provide a redirect Location header`).toBeTruthy();
+    expect(new URL(location, productionOrigin).pathname).toBe(canonical);
+  }
+});
