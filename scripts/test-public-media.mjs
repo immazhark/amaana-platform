@@ -4,7 +4,7 @@ import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { createRequire } from 'node:module';
-import { validateImage, validatePublicMediaBoundaryPath } from './check-public-media.mjs';
+import { checkPublicMedia, validateImage, validatePublicMediaBoundaryPath } from './check-public-media.mjs';
 
 const require = createRequire(import.meta.url);
 const sharp = createRequire(require.resolve('next/package.json'))('sharp');
@@ -59,4 +59,10 @@ test('public media boundary allows reviewed derivative naming and ordinary field
   assert.doesNotThrow(() => validatePublicMediaBoundaryPath('qurbani/2026/raw-meat-preparation.jpg'));
   assert.doesNotThrow(() => validatePublicMediaBoundaryPath('eid/2026/event-cover.jpg'));
   assert.doesNotThrow(() => validatePublicMediaBoundaryPath('dates/2026/preparation.mp4'));
+});
+
+
+test('missing public media directory is accepted as an empty library', async () => {
+  const root = path.join(tmpdir(), `amaana-media-missing-${Date.now()}-${Math.random().toString(16).slice(2)}`);
+  await assert.doesNotReject(checkPublicMedia(root));
 });
