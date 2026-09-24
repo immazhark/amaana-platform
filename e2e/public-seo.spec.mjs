@@ -114,3 +114,40 @@ test('published programme detail exposes canonical WebPage structured data linke
   expect(data.name).toMatch(/Eid Gift Kits/i);
   expect(data.description).toMatch(/\S.{20,}/);
 });
+
+
+test('published programme category exposes canonical WebPage structured data', async ({ page }) => {
+  const response = await page.goto('/programmes/ramadan-eid', { waitUntil: 'domcontentloaded' });
+  expect(response?.ok()).toBeTruthy();
+
+  const schema = page.locator('script[data-public-content-schema="WebPage"]');
+  await expect(schema).toHaveCount(1);
+
+  const data = JSON.parse(await schema.textContent());
+  expect(data['@context']).toBe('https://schema.org');
+  expect(data['@type']).toBe('WebPage');
+  expect(data.url).toBe('https://amaanafoundation.org/programmes/ramadan-eid');
+  expect(data.publisher).toEqual({ '@id': 'https://amaanafoundation.org/#organization' });
+  expect(data.isPartOf).toEqual({ '@id': 'https://amaanafoundation.org/#website' });
+  expect(data.name).toMatch(/Ramadan & Eid/i);
+  expect(data.description).toMatch(/\S.{20,}/);
+});
+
+test('legacy Our Work aliases resolve to their canonical public destinations', async ({ page }) => {
+  const cases = [
+    ['/our-work/medical-financial-assistance', '/programmes/medical-financial-relief'],
+    ['/our-work/winter-drive-2025-26', '/our-work/winter-relief'],
+    ['/our-work/meat-distribution-2026', '/our-work/qurbani-meat-distribution-2026'],
+    ['/our-work/medical-aid-eight-day-old-baby', '/our-work/emergency-neonatal-medical-aid'],
+  ];
+
+  for (const [legacy, canonical] of cases) {
+    const response = await page.goto(legacy, { waitUntil: 'domcontentloaded' });
+    expect(response?.ok(), `${legacy} should resolve successfully`).toBeTruthy();
+    await expect(page).toHaveURL(canonicalFor(canonical));
+
+    const canonicalLink = page.locator('link[rel="canonical"]');
+    await expect(canonicalLink).toHaveCount(1);
+    await expect(canonicalLink).toHaveAttribute('href', canonicalFor(canonical));
+  }
+});

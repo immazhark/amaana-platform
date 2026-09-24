@@ -8,6 +8,7 @@ import { PublicContentStructuredData } from "@/components/public-content-structu
 import { getFaithPageData } from "@/lib/public-page-data";
 import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
 import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
+import { canonicalOurWorkDestination } from "@/lib/our-work-routing";
 
 type Props = { params: Promise<{ slug: string }> };
 export const dynamic = "force-dynamic";
@@ -55,6 +56,6 @@ export default async function FaithDetailPage({ params }: Props) {
 
     <section className="v2-faith-detail-standard"><div className="v2-shell"><div><span>Religious review</span><strong>Verified before publication</strong></div><div><span>Source discipline</span><strong>Stored citations shown when available</strong></div><div><span>Authority boundary</span><strong>Amaana is not presented as a scholarly authority</strong></div></div></section>
 
-    <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Reflection into service</p><h2>Carry the value into action.</h2><p>Return to the reviewed library or see the real initiatives where Amaana&apos;s values are put into practice.</p><div className="v2-hero-actions" style={{ justifyContent: "center" }}><Link className="v2-button" href="/faith-and-reflections">Back to the library</Link>{relatedInitiative ? <Link className="v2-text-link" href={`/our-work/${relatedInitiative.slug}`}>Related initiative →</Link> : <Link className="v2-text-link" href="/our-work">Explore our work →</Link>}</div></div></section>
+    <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Reflection into service</p><h2>Carry the value into action.</h2><p>Return to the reviewed library or see the real initiatives where Amaana&apos;s values are put into practice.</p><div className="v2-hero-actions" style={{ justifyContent: "center" }}><Link className="v2-button" href="/faith-and-reflections">Back to the library</Link>{relatedInitiative ? <Link className="v2-text-link" href={canonicalOurWorkDestination(relatedInitiative.slug)}>Related initiative →</Link> : <Link className="v2-text-link" href="/our-work">Explore our work →</Link>}</div></div></section>
   </div>;
 }

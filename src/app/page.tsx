@@ -13,6 +13,7 @@ import { programmeCategories, programmes } from '@/lib/master-copy';
 import { programmeCategoryPath } from '@/lib/programme-category-routing';
 import { selectIdentityPublicImage } from '@/lib/public-media';
 import { openGraphShareImages, twitterShareImages } from '@/lib/social-share-media';
+import { canonicalOurWorkDestination, isLegacyOurWorkSlug } from '@/lib/our-work-routing';
 
 export const dynamic = "force-dynamic";
 
@@ -37,7 +38,9 @@ export const metadata: Metadata = {
 
 export default async function HomePage() {
   const [appeals, discovery] = await Promise.all([getHomepageAppeals(), getHomepageDiscoveryData()]);
-  const featured = discovery.initiatives.map(item => ({ ...item, causeTitle: item.cause.title }));
+  const featured = discovery.initiatives
+    .filter(item => !isLegacyOurWorkSlug(item.slug))
+    .map(item => ({ ...item, causeTitle: item.cause.title }));
   const fieldDrives = featured.filter(item => ["qurbani-meat-distribution-2026", "dates-distribution-2026"].includes(item.slug));
   const fieldSectionIntro = fieldDrives.length > 1
     ? "Two field moments bring the programme overview closer to the people and places behind it. Open either initiative for its fuller record and reported outcomes."
@@ -104,7 +107,7 @@ export default async function HomePage() {
                 <p>{drive.summary}</p>
                 {drive.primaryMetric ? <div className="v3-home-banner-metric"><strong>{drive.primaryMetric}</strong><span>{drive.primaryMetricLabel ?? "Documented impact"}</span></div> : null}
                 <div className="v3-home-banner-actions">
-                  <Link className="v3-btn" href={`/our-work/${drive.slug}`}>Explore this initiative</Link>
+                  <Link className="v3-btn" href={canonicalOurWorkDestination(drive.slug)}>Explore this initiative</Link>
                   <Link className="v3-btn secondary" href={hasOpenAppeals ? "/appeals" : "/get-involved"}>{hasOpenAppeals ? "Support a verified need" : "Ways to support"}</Link>
                 </div>
               </div>
@@ -204,7 +207,7 @@ export default async function HomePage() {
               {fieldDrives.map((drive, index) => {
                 const media = selectIdentityPublicImage(drive.mediaAssets);
                 return (
-                  <Link className={`v3-field-card ${index === 0 ? "v3-field-card-wide" : "v3-field-card-tall"}`} href={`/our-work/${drive.slug}`} key={drive.id}>
+                  <Link className={`v3-field-card ${index === 0 ? "v3-field-card-wide" : "v3-field-card-tall"}`} href={canonicalOurWorkDestination(drive.slug)} key={drive.id}>
                     {media ? <div className="v3-field-image"><PublicMedia asset={media} sizes="(max-width: 900px) 86vw, 38vw" /></div> : <div className="v3-field-image"><WorkVisualPlaceholder label={drive.title} /></div>}
                     <div className="v3-field-copy"><span>{drive.year}</span><h3>{drive.title}</h3><p>{drive.summary}</p></div>
                   </Link>

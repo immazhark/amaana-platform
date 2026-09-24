@@ -2,13 +2,14 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { BreadcrumbStructuredData } from '@/components/breadcrumb-structured-data';
+import { PublicContentStructuredData } from '@/components/public-content-structured-data';
 import { PageHero } from '@/components/page-hero';
 import { WorkVisualPlaceholder } from '@/components/work-visual-placeholder';
 import { programmeCategories, programmes } from '@/lib/master-copy';
 import { legacyProgrammeCategoryDestination, programmeCategoryFromRoute, programmeCategoryPath } from '@/lib/programme-category-routing';
 import { getInitiativePageData, getOurWorkIndexData } from '@/lib/public-page-data';
 import { PublicMedia } from '@/components/public-media';
-import { selectIdentityPublicImage } from '@/lib/public-media';
+import { resolvePublicMediaUrl, selectIdentityPublicImage } from '@/lib/public-media';
 import { openGraphShareImages, twitterShareImages } from '@/lib/social-share-media';
 import '@/app/canonical-content.css';
 
@@ -118,6 +119,14 @@ export default async function Page({ params }: Props) {
   const leadPhoto = items.map(item => { const record = recordBySlug.get(item.slug); return record ? selectIdentityPublicImage(record.mediaAssets) : null; }).find(Boolean) ?? null;
 
   return <div className="v2-home">
+    <PublicContentStructuredData
+      type="WebPage"
+      title={category.title}
+      description={category.summary}
+      path={canonical}
+      imageUrl={leadPhoto ? resolvePublicMediaUrl(leadPhoto) : null}
+      section="Our Work"
+    />
     <BreadcrumbStructuredData items={[{ name: 'Home', path: '/' }, { name: 'Our Work', path: '/our-work' }, { name: category.title, path: canonical }]} />
     <div className="v2-shell campaign-breadcrumb"><nav aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true"> / </span><Link href="/our-work">Our Work</Link><span aria-hidden="true"> / </span><span>{category.title}</span></nav></div>
     <PageHero variant="level2" eyebrow="Our Work · Programme Category" title={category.title} description={<p>{category.description}</p>} actions={[{label:'Explore programmes',href:'#programme-list'},{label:'Back to Our Work',href:'/our-work',secondary:true}]} visual={leadPhoto ? <PublicMedia asset={leadPhoto} priority /> : <WorkVisualPlaceholder label={category.title} />} />
