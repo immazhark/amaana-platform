@@ -177,7 +177,10 @@ export const getHomepageDiscoveryData = cache(async () => {
       select: {
         slug: true,
         initiatives: {
-          where: { status: "PUBLISHED" },
+          where: {
+            status: "PUBLISHED",
+            mediaAssets: { some: PUBLIC_APPROVED_IMAGE_WHERE },
+          },
           orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
           take: 4,
           select: {
