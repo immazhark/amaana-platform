@@ -9,7 +9,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { PublicMedia } from "@/components/public-media";
-import { getInitiativePageData, getOurWorkIndexData } from "@/lib/public-page-data";
+import { getInitiativePageData } from "@/lib/public-page-data";
 import { buildPublicRecordFallback, distinctStoryParagraphs, heroTeaser } from "@/lib/public-copy";
 import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
 import { PublicContentStructuredData } from "@/components/public-content-structured-data";
