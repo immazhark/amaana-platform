@@ -15,6 +15,7 @@ import { programmeCategoryPath } from "@/lib/programme-category-routing";
 import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
 import { PublicContentStructuredData } from "@/components/public-content-structured-data";
 import { isAppealOpenForDonations } from "@/lib/appeals";
+import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 
 export const dynamic = "force-dynamic";
@@ -64,11 +65,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
         url: canonical,
         title: `${category.title} | Amaana Foundation`,
         description: category.summary,
+        images: openGraphShareImages(),
       },
       twitter: {
-        card: "summary",
+        card: "summary_large_image",
         title: `${category.title} | Amaana Foundation`,
         description: category.summary,
+        images: twitterShareImages(),
       },
     };
   }
@@ -79,7 +82,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const canonical = `/our-work/${initiative.slug}`;
   const identity = selectIdentityPublicImage(initiative.mediaAssets);
   const leadImage = identity ? resolvePublicMediaUrl(identity) ?? undefined : undefined;
-  return { title: initiative.title, description: initiative.summary, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: `${initiative.title} | Amaana Foundation`, description: initiative.summary, images: leadImage ? [{ url: leadImage, alt: identity?.altText ?? initiative.title }] : undefined }, twitter: { card: leadImage ? "summary_large_image" : "summary", title: `${initiative.title} | Amaana Foundation`, description: initiative.summary, images: leadImage ? [leadImage] : undefined } };
+  return { title: initiative.title, description: initiative.summary, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: `${initiative.title} | Amaana Foundation`, description: initiative.summary, images: openGraphShareImages(leadImage, identity?.altText ?? initiative.title) }, twitter: { card: "summary_large_image", title: `${initiative.title} | Amaana Foundation`, description: initiative.summary, images: twitterShareImages(leadImage) } };
 }
 
 export default async function InitiativePage({ params }: { params: Promise<{ slug: string }> }) {

@@ -9,6 +9,7 @@ import { legacyProgrammeCategoryDestination, programmeCategoryFromRoute, program
 import { getInitiativePageData, getOurWorkIndexData } from '@/lib/public-page-data';
 import { PublicMedia } from '@/components/public-media';
 import { selectIdentityPublicImage } from '@/lib/public-media';
+import { openGraphShareImages, twitterShareImages } from '@/lib/social-share-media';
 import '@/app/canonical-content.css';
 
 const programmeAliases: Record<string, string> = { qurbani: 'qurbani-meat-distribution', taleem: 'taleem', 'eid-gift-kits': 'eid-gift-kits', 'dates-distribution': 'dates-distribution' };
@@ -42,11 +43,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         url: canonical,
         title: `${initiative.title} | Amaana Foundation`,
         description: initiative.summary,
+        images: openGraphShareImages(),
       },
       twitter: {
-        card: 'summary',
+        card: 'summary_large_image',
         title: `${initiative.title} | Amaana Foundation`,
         description: initiative.summary,
+        images: twitterShareImages(),
       },
     };
   }
@@ -65,11 +68,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         url: legacyDestination,
         title: `${canonicalCategory.title} | Amaana Foundation`,
         description: canonicalCategory.summary,
+        images: openGraphShareImages(),
       },
       twitter: {
-        card: 'summary',
+        card: 'summary_large_image',
         title: `${canonicalCategory.title} | Amaana Foundation`,
         description: canonicalCategory.summary,
+        images: twitterShareImages(),
       },
     };
   }
@@ -78,7 +83,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const publishedSlugs = new Set(causes.flatMap(cause => cause.initiatives.map(item => item.slug)));
   if (!hasPublishedTopLevelProgramme(category.slug, publishedSlugs)) return { title: 'Programme not found' };
   const canonical = programmeCategoryPath(category.slug);
-  return { title: category.title, description: category.summary, alternates: { canonical }, openGraph: { type: 'website', url: canonical, title: `${category.title} | Amaana Foundation`, description: category.summary }, twitter: { card: 'summary', title: `${category.title} | Amaana Foundation`, description: category.summary } };
+  return { title: category.title, description: category.summary, alternates: { canonical }, openGraph: { type: 'website', url: canonical, title: `${category.title} | Amaana Foundation`, description: category.summary, images: openGraphShareImages() }, twitter: { card: 'summary_large_image', title: `${category.title} | Amaana Foundation`, description: category.summary, images: twitterShareImages() } };
 }
 
 export default async function Page({ params }: Props) {

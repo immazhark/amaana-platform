@@ -41,6 +41,11 @@ describe("programmePageMetadata", () => {
     expect(metadata.openGraph?.url).toBe(canonical);
     expect(metadata.openGraph?.title).toContain("Amaana Foundation");
     expect(metadata.twitter?.title).toContain("Amaana Foundation");
+    expect(metadata.openGraph?.images).toEqual([
+      { url: "/opengraph-image", width: 1200, height: 630, alt: "Amaana Foundation" },
+    ]);
+    expect(metadata.twitter?.card).toBe("summary_large_image");
+    expect(metadata.twitter?.images).toEqual(["/twitter-image"]);
   });
 
   it("does not emit canonical metadata for an unpublished programme", async () => {

@@ -9,6 +9,7 @@ import { ScrollCarousel } from "@/components/scroll-carousel";
 import { PublicContentStructuredData } from "@/components/public-content-structured-data";
 import { getStoryPageData } from "@/lib/public-page-data";
 import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
+import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
 
 type Props = { params: Promise<{ slug: string }> };
 export const dynamic = "force-dynamic";
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const identity = selectIdentityPublicImage(story.mediaAssets);
   const leadImage = identity ? resolvePublicMediaUrl(identity) ?? undefined : undefined;
   const leadAlt = identity?.altText ?? story.title;
-  return { title: story.title, description: story.summary, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: `${story.title} | Amaana Foundation`, description: story.summary, publishedTime: story.publishedAt?.toISOString(), images: leadImage ? [{ url: leadImage, alt: leadAlt }] : undefined }, twitter: { card: leadImage ? "summary_large_image" : "summary", title: `${story.title} | Amaana Foundation`, description: story.summary, images: leadImage ? [leadImage] : undefined } };
+  return { title: story.title, description: story.summary, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: `${story.title} | Amaana Foundation`, description: story.summary, publishedTime: story.publishedAt?.toISOString(), images: openGraphShareImages(leadImage, leadAlt) }, twitter: { card: "summary_large_image", title: `${story.title} | Amaana Foundation`, description: story.summary, images: twitterShareImages(leadImage) } };
 }
 
 export default async function StoryPage({ params }: Props) {

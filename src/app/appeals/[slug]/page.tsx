@@ -9,6 +9,7 @@ import { MobileSupportBar } from "@/components/mobile-support-bar";
 import { AppealShare } from "@/components/appeal-share";
 import { getAppealSearchPrivacy } from "@/lib/appeal-search-privacy";
 import { normalizeSafePublicMediaUrl } from "@/lib/public-media";
+import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
 import { formatINR, isAppealOpenForDonations } from "@/lib/appeals";
 import { getAppealCoverMedia, getAppealPageData } from "@/lib/public-page-data";
 
@@ -23,7 +24,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE";
   const metadataTitle = highlySensitive ? "Verified Support Appeal" : appeal.title;
   const metadataDescription = highlySensitive ? "A privacy-sensitive verified support appeal from Amaana Foundation. Public details are intentionally limited." : appeal.summary;
-  return { title: metadataTitle, description: metadataDescription, alternates: { canonical }, robots: highlySensitive ? { index: false, follow: true, nocache: true } : undefined, openGraph: { type: "article", url: canonical, title: `${metadataTitle} | Amaana Foundation`, description: metadataDescription, publishedTime: appeal.publishedAt?.toISOString() }, twitter: { card: "summary", title: `${metadataTitle} | Amaana Foundation`, description: metadataDescription } };
+  return { title: metadataTitle, description: metadataDescription, alternates: { canonical }, robots: highlySensitive ? { index: false, follow: true, nocache: true } : undefined, openGraph: { type: "article", url: canonical, title: `${metadataTitle} | Amaana Foundation`, description: metadataDescription, publishedTime: appeal.publishedAt?.toISOString(), images: openGraphShareImages() }, twitter: { card: "summary_large_image", title: `${metadataTitle} | Amaana Foundation`, description: metadataDescription, images: twitterShareImages() } };
 }
 
 export default async function AppealDetailPage({ params }: Props) {

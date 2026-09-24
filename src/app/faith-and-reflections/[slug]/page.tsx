@@ -7,6 +7,7 @@ import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-dat
 import { PublicContentStructuredData } from "@/components/public-content-structured-data";
 import { getFaithPageData } from "@/lib/public-page-data";
 import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
+import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
 
 type Props = { params: Promise<{ slug: string }> };
 export const dynamic = "force-dynamic";
@@ -19,7 +20,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const identity = selectIdentityPublicImage(item.mediaAssets);
   const leadImage = identity ? resolvePublicMediaUrl(identity) ?? undefined : undefined;
   const leadAlt = identity?.altText ?? item.title;
-  return { title: item.title, description: item.excerpt, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: `${item.title} | Amaana Foundation`, description: item.excerpt, publishedTime: item.publishedAt?.toISOString(), images: leadImage ? [{ url: leadImage, alt: leadAlt }] : undefined }, twitter: { card: leadImage ? "summary_large_image" : "summary", title: `${item.title} | Amaana Foundation`, description: item.excerpt, images: leadImage ? [leadImage] : undefined } };
+  return { title: item.title, description: item.excerpt, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: `${item.title} | Amaana Foundation`, description: item.excerpt, publishedTime: item.publishedAt?.toISOString(), images: openGraphShareImages(leadImage, leadAlt) }, twitter: { card: "summary_large_image", title: `${item.title} | Amaana Foundation`, description: item.excerpt, images: twitterShareImages(leadImage) } };
 }
 
 export default async function FaithDetailPage({ params }: Props) {
