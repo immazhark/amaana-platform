@@ -20,6 +20,10 @@ const convenienceContentSource = await readFile(
   new URL('../src/content/amaana.ts', import.meta.url),
   'utf8',
 );
+const publicSeedSource = await readFile(
+  new URL('../prisma/seed-public-content.mjs', import.meta.url),
+  'utf8',
+);
 
 const bySlug = new Map(locks.initiatives.map((item) => [item.slug, item]));
 
@@ -88,4 +92,26 @@ test('runtime programme copy applies the same factual-lock source before renderi
 test('convenience Winter content does not reintroduce the superseded 234+ wording', () => {
   assert.match(convenienceContentSource, /distributed 234 Winter Kits to 234 beneficiaries/);
   assert.doesNotMatch(convenienceContentSource, /234\+.*campaign-reported beneficiaries/);
+});
+
+test('public-content seed uses canonical programme taxonomy and Winter facts', () => {
+  assert.match(publicSeedSource, /slug: "medical-financial-relief"/);
+  assert.match(publicSeedSource, /slug: "emergency-humanitarian-relief"/);
+  assert.match(publicSeedSource, /slug: "ramadan-eid"/);
+  assert.match(publicSeedSource, /slug: "amaana-taleem"/);
+  assert.match(publicSeedSource, /slug: "seasonal-relief"/);
+
+  assert.doesNotMatch(publicSeedSource, /slug: "seasonal-food-support"/);
+  assert.doesNotMatch(publicSeedSource, /slug: "education"/);
+  assert.doesNotMatch(publicSeedSource, /slug: "emergency-relief"/);
+
+  assert.match(publicSeedSource, /slug: "winter-relief"[\s\S]*?primaryMetric: "234 Winter Kits"[\s\S]*?primaryMetricLabel: "distributed to 234 beneficiaries"[\s\S]*?causeSlug: "seasonal-relief"/);
+  assert.doesNotMatch(publicSeedSource, /primaryMetric: "234\+"/);
+  assert.doesNotMatch(publicSeedSource, /campaign-reported beneficiaries/);
+
+  assert.match(publicSeedSource, /slug: "eid-gift-kits"[\s\S]*?causeSlug: "ramadan-eid"/);
+  assert.match(publicSeedSource, /slug: "qurbani-meat-distribution"[\s\S]*?causeSlug: "ramadan-eid"/);
+  assert.match(publicSeedSource, /slug: "dates-distribution"[\s\S]*?causeSlug: "ramadan-eid"/);
+  assert.match(publicSeedSource, /slug: "taleem"[\s\S]*?causeSlug: "amaana-taleem"/);
+  assert.match(publicSeedSource, /slug: "hyderabad-flood-relief-2020"[\s\S]*?causeSlug: "emergency-humanitarian-relief"/);
 });

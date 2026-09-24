@@ -4,31 +4,38 @@ const prisma = new PrismaClient();
 
 const causes = [
   {
-    slug: "seasonal-food-support",
-    title: "Seasonal & Food Support",
-    summary: "Seasonal giving and food support shaped around Ramadan, Eid and community need.",
-    description: "Amaana's documented seasonal work includes Eid Gift Kits, Qurbani meat distribution, dates distribution and winter relief.",
-    displayOrder: 1,
-  },
-  {
-    slug: "education",
-    title: "Education",
-    summary: "Practical learning support for children through documented education initiatives.",
-    description: "Amaana's Taleem work includes stationery and learning essentials distributed through verified community activities.",
-    displayOrder: 2,
-  },
-  {
     slug: "medical-financial-relief",
     title: "Medical & Financial Relief",
     summary: "Verified help when an illness, debt or sudden financial crisis becomes too heavy for a family to carry alone.",
     description: "When a medical emergency or sudden financial hardship pushes a family beyond what it can manage alone, Amaana Foundation steps in with carefully verified, case-specific support.",
+    displayOrder: 0,
+  },
+  {
+    slug: "emergency-humanitarian-relief",
+    title: "Emergency & Humanitarian Relief",
+    summary: "From floods to community-wide emergencies, we respond with practical support, trusted local coordination and clear accountability.",
+    description: "From floods to community-wide emergencies, we respond with practical support, trusted local coordination and clear accountability.",
+    displayOrder: 1,
+  },
+  {
+    slug: "ramadan-eid",
+    title: "Ramadan & Eid Initiatives",
+    summary: "Recurring programmes that turn the spirit of Ramadan, Eid and Qurbani into thoughtful support for families facing financial hardship.",
+    description: "Recurring programmes that turn the spirit of Ramadan, Eid and Qurbani into thoughtful support for families facing financial hardship.",
+    displayOrder: 2,
+  },
+  {
+    slug: "amaana-taleem",
+    title: "Amaana Taleem Initiative",
+    summary: "Helping learners continue with dignity through educational essentials, Qur'anic learning and verified sponsorship pathways.",
+    description: "Amaana Taleem Initiative brings together practical educational assistance and faith-based learning sponsorship for children and young people whose families may struggle to meet the cost of learning.",
     displayOrder: 3,
   },
   {
-    slug: "emergency-relief",
-    title: "Emergency Relief",
-    summary: "Community response during urgent local hardship and emergency situations.",
-    description: "Amaana's early grassroots work includes relief activity during the Hyderabad floods of 2020.",
+    slug: "seasonal-relief",
+    title: "Seasonal Relief & Essentials",
+    summary: "Timely, practical support for seasonal needs that can place additional pressure on already vulnerable households.",
+    description: "Amaana Foundation's Seasonal Relief & Essentials programme responds to predictable hardships that become more severe at particular times of the year.",
     displayOrder: 4,
   },
 ];
@@ -67,7 +74,7 @@ const initiatives = [
     },
     isFeatured: true,
     displayOrder: 1,
-    causeSlug: "seasonal-food-support",
+    causeSlug: "ramadan-eid",
   },
   {
     slug: "eid-gift-kits-2020",
@@ -78,7 +85,7 @@ const initiatives = [
     primaryMetric: "85",
     primaryMetricLabel: "families reached in 2020",
     displayOrder: 11,
-    causeSlug: "seasonal-food-support",
+    causeSlug: "ramadan-eid",
   },
   {
     slug: "eid-gift-kits-2021",
@@ -89,7 +96,7 @@ const initiatives = [
     primaryMetric: "171",
     primaryMetricLabel: "families reached in 2021",
     displayOrder: 12,
-    causeSlug: "seasonal-food-support",
+    causeSlug: "ramadan-eid",
   },
   {
     slug: "eid-gift-kits-2022",
@@ -100,7 +107,7 @@ const initiatives = [
     primaryMetric: "339",
     primaryMetricLabel: "families reached in 2022",
     displayOrder: 13,
-    causeSlug: "seasonal-food-support",
+    causeSlug: "ramadan-eid",
   },
   {
     slug: "eid-gift-kits-2023",
@@ -111,7 +118,7 @@ const initiatives = [
     primaryMetric: "408",
     primaryMetricLabel: "families reached in 2023",
     displayOrder: 14,
-    causeSlug: "seasonal-food-support",
+    causeSlug: "ramadan-eid",
   },
   {
     slug: "eid-gift-kits-2024",
@@ -122,7 +129,7 @@ const initiatives = [
     primaryMetric: "467",
     primaryMetricLabel: "families reached in 2024",
     displayOrder: 15,
-    causeSlug: "seasonal-food-support",
+    causeSlug: "ramadan-eid",
   },
   {
     slug: "eid-gift-kits-2025",
@@ -133,7 +140,7 @@ const initiatives = [
     primaryMetric: "650",
     primaryMetricLabel: "families reached in 2025",
     displayOrder: 16,
-    causeSlug: "seasonal-food-support",
+    causeSlug: "ramadan-eid",
   },
   {
     slug: "eid-gift-kits-2026",
@@ -144,7 +151,7 @@ const initiatives = [
     primaryMetric: "710",
     primaryMetricLabel: "families reached in 2026",
     displayOrder: 17,
-    causeSlug: "seasonal-food-support",
+    causeSlug: "ramadan-eid",
   },
   {
     slug: "qurbani-meat-distribution",
@@ -157,7 +164,7 @@ const initiatives = [
     primaryMetricLabel: "families reached in 2026",
     isFeatured: true,
     displayOrder: 2,
-    causeSlug: "seasonal-food-support",
+    causeSlug: "ramadan-eid",
   },
   {
     slug: "taleem",
@@ -167,19 +174,19 @@ const initiatives = [
     primaryMetric: "50",
     primaryMetricLabel: "children in a documented Taleem activity",
     displayOrder: 3,
-    causeSlug: "education",
+    causeSlug: "amaana-taleem",
   },
   {
     slug: "winter-relief",
-    title: "Winter Drive",
-    summary: "Warm clothing, blankets and winter kits delivered through multi-phase community distribution.",
-    story: "A seasonal relief initiative delivered in documented phases through community institutions and local distribution.",
+    title: "Winter Drive 2025–26 — Warmth for Children and Vulnerable Families",
+    summary: "During the 2025–26 winter season, Amaana Foundation distributed 234 Winter Kits to 234 beneficiaries through a multi-phase Winter Drive. The support included sweaters, blankets and beanie caps for madrasa students, orphan children, widows, daily-wage labourers, domestic workers and other people facing seasonal hardship.",
+    story: "During the 2025–26 winter season, Amaana Foundation distributed 234 Winter Kits to 234 beneficiaries through a multi-phase Winter Drive. The support included sweaters, blankets and beanie caps for madrasa students, orphan children, widows, daily-wage labourers, domestic workers and other people facing seasonal hardship.\n\nIn Phase 1, support was distributed at Al Madarsatul Islamia LiTahfizil Quranil Kareem, FeelKhana, Mallepally, reaching 96 madrasa students, including boys and girls from approximately ages 2 to 18 and underprivileged orphan children. In Phase 2, Amaana worked in collaboration with Al Khair Society at Al Khair Masjid, Hyderabad, where 101 Winter Kits were distributed. These phase figures are supporting sub-measures within the overall drive and must not be added to the overall total of 234 Winter Kits distributed to 234 beneficiaries.",
     startYear: 2025,
     endYear: 2026,
-    primaryMetric: "234+",
-    primaryMetricLabel: "campaign-reported beneficiaries",
+    primaryMetric: "234 Winter Kits",
+    primaryMetricLabel: "distributed to 234 beneficiaries",
     displayOrder: 4,
-    causeSlug: "seasonal-food-support",
+    causeSlug: "seasonal-relief",
   },
   {
     slug: "dates-distribution",
@@ -189,7 +196,7 @@ const initiatives = [
     primaryMetric: "162 kg",
     primaryMetricLabel: "dates distributed",
     displayOrder: 5,
-    causeSlug: "seasonal-food-support",
+    causeSlug: "ramadan-eid",
   },
   {
     slug: "auto-rickshaw-livelihood-support",
@@ -210,7 +217,7 @@ const initiatives = [
     primaryMetric: "2020",
     primaryMetricLabel: "early community relief",
     displayOrder: 7,
-    causeSlug: "emergency-relief",
+    causeSlug: "emergency-humanitarian-relief",
   },
 ];
 
