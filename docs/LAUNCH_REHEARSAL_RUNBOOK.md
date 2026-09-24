@@ -167,7 +167,7 @@ Railway's official deployment-action documentation states that **Rollback** rest
 5. Choose **Rollback** and confirm.
 6. Do not start any second deployment while rollback is BUILDING/DEPLOYING.
 7. Wait for Railway terminal status and strict `/api/health/ready` success.
-8. Verify the running version identifies the previous known-good SHA `dde1cb607010eabd0216e06aeb4b32f9312f728c` only if that version endpoint/evidence actually reports it; otherwise verify using Railway deployment metadata and do not infer a version.
+8. Verify the running version identifies the previous known-good SHA `dde1cb607010eabd1c84dacc5c513737fd0378f7` only if that version endpoint/evidence actually reports it; otherwise verify using Railway deployment metadata and do not infer a version.
 9. Re-run the staging health/Test-payment/noindex checks required by this runbook.
 10. Restore forward to deployment `d0e7608a-df34-425b-9d30-79d1434b1064` using the same supported Railway historical deployment action, then wait for terminal health before any other deployment action.
 11. Re-run staging acceptance after restore-forward.
