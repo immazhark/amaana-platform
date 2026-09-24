@@ -7,7 +7,8 @@
 - `phase-public-site-rebuild`
 - Family feedback/review is complete as of 21 September 2026.
 - Quiet-mode restrictions are lifted. Audited implementation may be pushed phase-by-phase to staging on this branch.
-- Current implementation head at this checkpoint: `4c56a0f6fa351ea9262aff945bd6043d6f56ea04`.
+- Current certified application candidate: `bce6b1d85bedc9da6e0fb38484e867db71cb4182`.
+- Evidence-only follow-up commit: `10249ab61d15976ce939a067c6d181c11ee8b25b` refreshes the launch-readiness register and does not change application runtime behavior.
 - `main` remains untouched until explicit production-promotion approval.
 
 ## Current task stream
@@ -218,3 +219,55 @@
 ## Codex phase A — 2026-09-23
 
 Ownership CODEX_ACTIVE. Branch fix/refund-entity-idempotency. Recovery PR #102 merged at 30f157521776a1fadf70d326d1cff44d88e69e1f after PR CI passed. Implement additive refund identity ledger with legacy backfill, atomic accounting and real PostgreSQL concurrency tests. Integration build/deploy certification pending. No production actions.
+
+## 24 September 2026 — final launch/cutover certification checkpoint
+
+### Certified application candidate
+- Application SHA: `bce6b1d85bedc9da6e0fb38484e867db71cb4182`.
+- GitHub Actions run `36012879631`: **SUCCESS** on the exact candidate.
+- The run passed the full integration gate, including lint, TypeScript, isolated PostgreSQL refund-ledger verification, coverage, production build, bundle budgets, post-build smoke checks, isolated browser fixture/workspace, Chromium installation, and responsive/accessibility/journey Playwright acceptance.
+- Railway staging deployment `d0e7608a-df34-425b-9d30-79d1434b1064`: **SUCCESS** on the same exact application SHA.
+- Railway's strict `/api/health/ready` check passed only after the database became reachable; the system correctly remained fail-closed during the prolonged Neon P1001/P1002 incident.
+- Real startup recovery evidence from that deployment:
+  - reviewed-campaign import recovered after transient database failures;
+  - RBAC seed recovered after a transient database failure;
+  - staging-acceptance seed recovered after transient database failures;
+  - Next.js reached Ready;
+  - Railway promoted the candidate only after DB-backed readiness returned healthy.
+
+### Canonical routing/discovery closure
+- Legacy `/our-work/*` aliases are centralized and deterministic.
+- Legacy `/programmes/*` compatibility routes are also deterministic and no longer depend on database availability before redirecting.
+- The static shadow route `/our-work/medical-financial-assistance` now redirects deterministically to the canonical medical/financial programme category.
+- Sitemap/public discovery excludes legacy aliases and preserves published/canonical routes.
+- Programme-category JSON-LD and canonical metadata are covered by regression tests.
+- Homepage/Story/Faith related work links use canonical destination helpers.
+
+### Launch-readiness register
+- Rehearsal: **5/6** required gates resolved.
+- Production: **9/19** required gates resolved.
+- The only unresolved rehearsal gate is `rollback-rehearsal`.
+- Rollback rehearsal remains pending because the connected Railway action surface exposes redeploy-latest but not deployment of an arbitrary historical deployment/snapshot. Do not fake this gate through Git rewrites.
+- Current candidate and previous known-good deployment identities are recorded in `docs/launch-readiness.json`.
+
+### Remaining production gates
+The following remain intentionally PENDING until actual evidence exists:
+- approved background artwork human rendered QA;
+- transactional live email delivery acceptance;
+- final human rendered accessibility review;
+- final editorial/SEO/social-preview review;
+- public-media privacy/consent/provenance review;
+- controlled Live donation acceptance;
+- refund/receipt operational production acceptance;
+- real staging rollback rehearsal;
+- explicit production indexing decision;
+- explicit `main` promotion and production authorization.
+
+### Protected actions
+- Do not merge/promote to `main` without explicit user approval.
+- Do not enable production indexing without the explicit production indexing decision.
+- Do not install/use Live Razorpay credentials on staging.
+- Do not initiate a real donation/refund merely to make a readiness gate green.
+- Do not mark human privacy/accessibility/editorial gates VERIFIED from automated evidence alone.
+- Impact-page visual redesign remains deferred until the owner supplies the separate redesign prompt.
+
