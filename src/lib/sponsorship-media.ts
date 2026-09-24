@@ -22,6 +22,7 @@ export const getSponsorEducationHeroMedia = cache(async () => {
         isPublic: true,
         privacyApprovedAt: { not: null },
         publicUrl: { not: null },
+        altText: { not: "" },
         initiative: {
           slug: "taleem",
           status: "PUBLISHED",

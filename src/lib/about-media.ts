@@ -20,6 +20,7 @@ export const getAboutOriginMedia = cache(async () => {
         isPublic: true,
         privacyApprovedAt: { not: null },
         publicUrl: { not: null },
+        altText: { not: "" },
         initiative: {
           slug: "eid-gift-kits-2020",
           status: "PUBLISHED",
