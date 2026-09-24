@@ -1,3 +1,10 @@
+const DESIGNATED_PREVIEW_SERVICE_ID = "fcb9d167-eba1-40c8-a4e6-ac35af470989";
+
+export function isReviewedCampaignImportTarget(env = process.env) {
+  return env.APP_ENVIRONMENT === "staging"
+    && env.RAILWAY_SERVICE_ID === DESIGNATED_PREVIEW_SERVICE_ID;
+}
+
 const CANONICAL_CAUSE_SLUGS = new Set([
   "medical-financial-relief",
   "emergency-humanitarian-relief",

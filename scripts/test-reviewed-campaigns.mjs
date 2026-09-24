@@ -1,7 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
-import { importReviewedCampaigns } from "../prisma/reviewed-campaign-import.mjs";
+import { importReviewedCampaigns, isReviewedCampaignImportTarget } from "../prisma/reviewed-campaign-import.mjs";
 
 const campaigns = JSON.parse(await readFile(new URL("../prisma/campaigns-2026.json", import.meta.url), "utf8"));
 const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
@@ -51,6 +51,24 @@ function database({
     causeLookups,
   };
 }
+
+test("reviewed campaign bootstrap targets only the designated staging preview service", () => {
+  const serviceId = "fcb9d167-eba1-40c8-a4e6-ac35af470989";
+  assert.equal(isReviewedCampaignImportTarget({
+    APP_ENVIRONMENT: "staging",
+    RAILWAY_SERVICE_ID: serviceId,
+    RAILWAY_PUBLIC_DOMAIN: "amaanafoundation.org",
+  }), true);
+  assert.equal(isReviewedCampaignImportTarget({
+    APP_ENVIRONMENT: "production",
+    RAILWAY_SERVICE_ID: serviceId,
+  }), false);
+  assert.equal(isReviewedCampaignImportTarget({
+    APP_ENVIRONMENT: "staging",
+    RAILWAY_SERVICE_ID: "another-service",
+    RAILWAY_PUBLIC_DOMAIN: "amaana-rebuild-preview-production.up.railway.app",
+  }), false);
+});
 
 test("reviewed campaign sources use only explicit canonical causes", () => {
   for (const campaign of [...campaigns, ...historical]) {
