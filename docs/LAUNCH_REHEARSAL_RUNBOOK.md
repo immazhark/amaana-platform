@@ -11,6 +11,7 @@ A green build is not a launch decision. `docs/launch-readiness.json` is the evid
 3. Confirm the pull-request CI and the push-triggered post-merge CI both succeeded on the expected code line.
 4. Confirm Railway reports `SUCCESS` for the same exact SHA.
 5. Keep the previous known-good Railway deployment/SHA recorded for rollback.
+6. Enforce one Railway deployment workflow at a time for the staging service. If an automatic branch-triggered deployment is already BUILDING/DEPLOYING, do not start a manual redeploy of the same SHA. Parallel startup paths can contend on Prisma's migration advisory lock and surface transient P1002 failures even when the application is otherwise healthy.
 
 ## 2. Run repository readiness checks
 From the candidate checkout:
@@ -67,14 +68,14 @@ Before any rollback action:
 - confirm health endpoint and critical routes used to judge recovery.
 
 Rehearsal sequence:
-1. Deploy/redeploy the candidate in staging and confirm `/api/health/live` and `/api/health/ready`.
+1. Deploy/redeploy the candidate in staging and confirm `/api/health/live` and `/api/health/ready`. Before triggering anything manually, confirm there is no existing BUILDING/DEPLOYING workflow for the same staging service; use the already-running workflow rather than creating a duplicate.
 2. Run staging acceptance.
 3. Record the candidate SHA and verify it with:
    ```bash
    STAGING_BASE_URL="https://<staging-host>" EXPECTED_COMMIT_SHA="<candidate-sha>" npm run rehearsal:verify-target
    ```
    The verifier also requires the target to report `APP_ENVIRONMENT=staging` and Razorpay `paymentMode=test` through the non-secret version health response; a rollback that accidentally exposes Live payment posture fails.
-4. Revert staging to the previous known-good deployment/SHA using the hosting platform's supported rollback/redeploy procedure.
+4. Revert staging to the previous known-good deployment/SHA using the hosting platform's supported rollback/redeploy procedure. Trigger exactly one rollback deployment and wait for its terminal status before any restore-forward action.
 5. Verify the rollback target with the same command using the previous known-good SHA.
 6. Restore the candidate to staging.
 7. Run `rehearsal:verify-target` again with the candidate SHA, then repeat full staging acceptance.
