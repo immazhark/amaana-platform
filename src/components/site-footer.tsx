@@ -58,7 +58,7 @@ export function SiteFooter() {
               <Link href="/appeals">Current Appeals</Link>
               <Link href="/get-involved">Get Involved</Link>
               <Link href="/donate">Donate</Link>
-              <Link href="/our-work/taleem">Sponsor Education</Link>
+              <Link href="/get-involved/sponsor-education">Sponsor Education</Link>
               <Link href="/partner">Partner With Amaana</Link>
               <Link href="/request-assistance">Request Assistance</Link>
               <Link href="/how-we-verify">How Amaana Works</Link>
