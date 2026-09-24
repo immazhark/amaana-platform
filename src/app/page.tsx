@@ -43,6 +43,7 @@ export default async function HomePage() {
     .filter((item): item is typeof item & { media: NonNullable<typeof item.media> } => Boolean(item.media))
     .slice(0, 5);
   const publicProgrammeSlugs = new Set(discovery.publishedProgrammeSlugs);
+  const eidProgrammePublished = publicProgrammeSlugs.has("eid-gift-kits");
   const visibleProgrammeCategories = programmeCategories.filter(category => {
     const destination = programmeCategoryPath(category.slug);
     if (destination.startsWith("/our-work/")) {
@@ -173,7 +174,9 @@ export default async function HomePage() {
           </div>
 
           <div className="v3-actions">
-            <Link className="v3-btn" href="/our-work/eid-gift-kits">Explore the seven-year story</Link>
+            <Link className="v3-btn" href={eidProgrammePublished ? "/our-work/eid-gift-kits" : "/our-work"}>
+              {eidProgrammePublished ? "Explore the seven-year story" : "Explore published programmes"}
+            </Link>
           </div>
         </div>
       </section>
