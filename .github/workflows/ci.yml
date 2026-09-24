@@ -240,3 +240,30 @@ jobs:
           cd "$RUNNER_TEMP/amaana-browser-acceptance"
           npx playwright test --config=playwright.config.mjs
 
+
+  production-promotion-readiness:
+    name: Production promotion readiness
+    if: github.event_name == 'pull_request' && github.base_ref == 'main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Validate launch-readiness register structure
+        run: node scripts/check-launch-readiness.mjs
+
+      - name: Keep draft promotion advisory and fail closed when ready
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [ "${{ github.event.pull_request.draft }}" = "true" ]; then
+            echo "Draft production-promotion PR: readiness remains advisory."
+            echo "Marking this PR Ready for Review will require every production gate to be VERIFIED or NOT_APPLICABLE."
+            node scripts/check-launch-readiness.mjs --production || true
+            exit 0
+          fi
+
+          echo "Production-promotion PR is Ready for Review; enforcing fail-closed production readiness."
+          node scripts/check-launch-readiness.mjs --production
+
