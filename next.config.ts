@@ -24,12 +24,6 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "6mb",
     },
   },
-  async redirects() {
-    return [
-      { source: "/programmes/emergency-humanitarian-relief", destination: "/programmes/emergency-relief", permanent: true },
-      { source: "/programmes/seasonal-essentials", destination: "/programmes/seasonal-relief", permanent: true },
-    ];
-  },
   async headers() {
     return [
       { source: "/(.*)", headers: securityHeaders },
