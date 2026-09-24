@@ -90,7 +90,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "docs/public-media-review-register.json intentionally leaves legacy directly addressable media pending human privacy/consent/provenance review. npm run media:review-readiness is the fail-closed launch check."
+      "evidence": "On 2026-09-24 the final three orphaned legacy MP4 files were removed from `public/media`; the directly addressable repository programme-media inventory is now zero. `prisma/integration-media.json` is empty, canonical programme data does not reference those removed files, and both public-media structural validators now explicitly support a missing/empty `public/media` root with regression tests. Exact-head CI confirms the media-validation step passes in this empty state. This materially reduces launch privacy exposure, but the gate remains PENDING because any curated MediaAsset/public-bucket media that is selected for the actual launch still requires human privacy/consent/provenance and hero-use review before publication. An empty repository directory is not blanket approval for future media."
     },
     {
       "id": "public-media-upload-delivery",
