@@ -37,12 +37,12 @@ export async function generateMetadata(): Promise<Metadata> {
     openGraph: {
       type: "website",
       url: canonical,
-      title: category.title,
+      title: `${category.title} | Amaana Foundation`,
       description: category.summary,
     },
     twitter: {
       card: "summary",
-      title: category.title,
+      title: `${category.title} | Amaana Foundation`,
       description: category.summary,
     },
   };
