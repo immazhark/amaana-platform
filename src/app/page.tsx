@@ -9,7 +9,7 @@ import { eidGrowth, homepageImpact } from "@/content/amaana";
 import { getHomepageDiscoveryData } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
 import { ScrollCarousel } from "@/components/scroll-carousel";
-import { programmeCategories } from '@/lib/master-copy';
+import { programmeCategories, programmes } from '@/lib/master-copy';
 import { programmeCategoryPath } from '@/lib/programme-category-routing';
 import { selectIdentityPublicImage } from '@/lib/public-media';
 
@@ -42,6 +42,20 @@ export default async function HomePage() {
     .map(drive => ({ drive, media: selectIdentityPublicImage(drive.mediaAssets) }))
     .filter((item): item is typeof item & { media: NonNullable<typeof item.media> } => Boolean(item.media))
     .slice(0, 5);
+  const publicProgrammeSlugs = new Set(discovery.publishedProgrammeSlugs);
+  const visibleProgrammeCategories = programmeCategories.filter(category => {
+    const destination = programmeCategoryPath(category.slug);
+    if (destination.startsWith("/our-work/")) {
+      const destinationSlug = destination.slice("/our-work/".length);
+      return Boolean(destinationSlug) && publicProgrammeSlugs.has(destinationSlug);
+    }
+
+    return programmes.some(programme =>
+      programme.causeSlug === category.slug
+      && !("parentSlug" in programme)
+      && publicProgrammeSlugs.has(programme.slug),
+    );
+  });
   const programmeMedia = new Map(
     discovery.causes.map(cause => [
       cause.slug,
@@ -114,7 +128,7 @@ export default async function HomePage() {
           </div>
 
           <ScrollCarousel label="Amaana programme areas" mode="focus" className="v3-work-carousel">
-            {programmeCategories.map((category, index) => {
+            {visibleProgrammeCategories.map((category, index) => {
               const media = programmeMedia.get(category.slug);
               return (
                 <Link className="v3-work-card" href={programmeCategoryPath(category.slug)} key={category.slug}>

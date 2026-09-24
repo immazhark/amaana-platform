@@ -130,7 +130,7 @@ export const getHomepageHeroMedia = cache(async () => {
 export const getHomepageDiscoveryData = cache(async () => {
   const fieldSlugs = ["qurbani-meat-distribution-2026", "dates-distribution-2026"];
 
-  const [initiatives, causes] = await Promise.all([
+  const [initiatives, causes, publishedProgrammeRecords] = await Promise.all([
     prisma.initiative.findMany({
       where: {
         status: "PUBLISHED",
@@ -178,9 +178,20 @@ export const getHomepageDiscoveryData = cache(async () => {
         },
       },
     }),
+    prisma.initiative.findMany({
+      where: {
+        status: "PUBLISHED",
+        cause: { status: "PUBLISHED" },
+      },
+      select: { slug: true },
+    }),
   ]);
 
-  return { initiatives, causes };
+  return {
+    initiatives,
+    causes,
+    publishedProgrammeSlugs: publishedProgrammeRecords.map(record => record.slug),
+  };
 });
 
 /**
