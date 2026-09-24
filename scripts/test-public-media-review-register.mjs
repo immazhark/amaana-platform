@@ -61,3 +61,23 @@ test('review register rejects sensitive-detail fields even when coverage is othe
   };
   assert.throws(() => validatePublicMediaReviewRegister(unsafe, ['sample.webp']), /forbidden sensitive-detail field beneficiaryName/);
 });
+
+
+test('missing public-media root is a valid empty inventory', async () => {
+  const files = await listPublicMediaFiles('public/media-directory-that-does-not-exist');
+  assert.deepEqual(files, []);
+});
+
+test('empty inventory remains structurally valid and has no pending asset decisions', () => {
+  const resolved = validatePublicMediaReviewRegister(register, []);
+  assert.deepEqual(publicMediaReviewSummary(resolved), {
+    total: 0,
+    approved: 0,
+    restricted: 0,
+    pending: 0,
+    blocked: 0,
+    documentedProvenance: 0,
+    unknownConsent: 0,
+    sensitiveContext: 0,
+  });
+});

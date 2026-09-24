@@ -33,7 +33,15 @@ function scanForbiddenKeys(value, location = 'register') {
 export async function listPublicMediaFiles(root) {
   const files = [];
   async function walk(directory) {
-    for (const entry of await readdir(directory, { withFileTypes: true })) {
+    let entries;
+    try {
+      entries = await readdir(directory, { withFileTypes: true });
+    } catch (error) {
+      if (error?.code === 'ENOENT' && directory === root) return;
+      throw error;
+    }
+
+    for (const entry of entries) {
       const absolute = path.join(directory, entry.name);
       if (entry.isDirectory()) await walk(absolute);
       else if (entry.isFile()) files.push(path.relative(root, absolute).split(path.sep).join('/'));
