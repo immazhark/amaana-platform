@@ -27,6 +27,10 @@ const publicSeedSource = await readFile(
   new URL('../prisma/seed-public-content.mjs', import.meta.url),
   'utf8',
 );
+const masterCompilerSource = await readFile(
+  new URL('./compile-master-copy.mjs', import.meta.url),
+  'utf8',
+);
 
 const bySlug = new Map(locks.initiatives.map((item) => [item.slug, item]));
 
@@ -34,6 +38,14 @@ test('runtime and migration master programme sources stay structurally identical
   assert.equal(runtimeMasterCopy.version, masterProgrammes.version);
   assert.deepEqual(runtimeMasterCopy.categories, masterProgrammes.categories);
   assert.deepEqual(runtimeMasterCopy.initiatives, masterProgrammes.initiatives);
+});
+
+test('master compiler reapplies canonical factual locks before writing generated sources', () => {
+  assert.match(masterCompilerSource, /canonical-factual-locks\.json/);
+  assert.match(masterCompilerSource, /applyCanonicalFactualLocks\(items,factualLocks\)/);
+  assert.match(masterCompilerSource, /const amounts=\['₹95,000','₹107,520'/);
+  assert.doesNotMatch(masterCompilerSource, /const amounts=[^\n]*₹107,200/);
+  assert.doesNotMatch(masterCompilerSource, /winterItem\.primaryMetric='96 students'/);
 });
 
 test('newborn medical-aid factual lock uses the confirmed amount', () => {

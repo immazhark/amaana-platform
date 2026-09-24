@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 const root=path.resolve(import.meta.dirname,'..');
 const source=fs.readFileSync(path.join(root,'docs/Amaana_Foundation_Master_Website_Copy.md'),'utf8').replace(/\r/g,'');
+const factualLocks=JSON.parse(fs.readFileSync(path.join(root,'prisma/canonical-factual-locks.json'),'utf8'));
 const clean=s=>s.replace(/\*\*/g,'').replace(/(?<!\w)\*(?!\s)/g,'').replace(/\*(?!\w)/g,'').trim();
 function between(s,a,b){const i=s.indexOf(a);if(i<0)throw Error('Missing source marker '+a);const rest=s.slice(i+a.length);const end=b?rest.indexOf(b):-1;return end<0?rest:rest.slice(0,end);}
 function section(a,b){return between(source,'\n'+a,b?'\n'+b:undefined);}
@@ -14,7 +15,7 @@ const categories=[
 const items=[];
 function add(slug,title,summary,cause,metric=null,label=null,extra={}){items.push({slug,title,summary:summary.split('\n\n')[0],story:summary,causeSlug:categories[cause].slug,primaryMetric:metric,primaryMetricLabel:label,...extra});}
 const medicalSlugs=['auto-rickshaw-livelihood-support','emergency-neonatal-medical-aid','oral-cancer-surgery-support','aliza-critical-care-support','severe-burn-treatment-support','jewellery-loan-intervention'];
-const amounts=['₹95,000','₹107,200','₹319,000','₹482,700','₹72,000','₹138,300'];
+const amounts=['₹95,000','₹107,520','₹319,000','₹482,700','₹72,000','₹138,300'];
 for(let n=1;n<=6;n++){const s=section(`## ${n}. `,n===6?'# Emergency':`## ${n+1}. `);let copy=primary(s);if(n===6){copy=copy.replace(/Mohammed Hussain/g,'an auto-rickshaw driver').replace(/His youngest son has thalassemia[^.]*\./g,'His family also faced ongoing medical needs.');copy=copy.replace(/thalassemia/gi,'ongoing medical needs');}add(medicalSlugs[n-1],field(s,'### Recommended Website Heading'),copy,0,amounts[n-1],n===6?'privately pooled · debt cleared':'raised toward this case',{programmeStatus:'COMPLETED',...(n===3?{year:2025}:{})});}
 const flood=section('## 7. Hyderabad','## COVID');
 add('hyderabad-flood-relief-2020',field(flood,'### Recommended Website Heading'),primary(flood),1,'3 phases','October–November 2020',{year:2020,programmeStatus:'HISTORICAL',facts:['Phase 1: approximately ₹125,000 raised; 82 ration kits worth approximately ₹60,000 distributed in Baba Nagar and Balapur.','Phase 1 also supported affected households directly and through HHF, Sakina Foundation, Deccanistan and Jamaat-e-Islami Hind.','Phase 2: 60 expanded relief kits worth over ₹100,000 handed to Safa Baitul Maal for assessed families.','Phase 3: a designated ₹50,000 donor contribution transferred to Safa Baitul Maal.','These activities were carried out by the founding team before formal registration. No exact unique-beneficiary total is available.']});
@@ -38,11 +39,31 @@ categories[1].description=categories[1].summary;categories[2].description=catego
 const pages={};for(let n=13;n<=35;n++){const marker=new RegExp(`^# ${n}\\. .+$`,'m').exec(source);if(!marker)continue;const s=source.slice(marker.index+marker[0].length).split(new RegExp(`\\n# ${n+1}\\. `))[0];pages[n]={name:marker[0].replace(/^# \d+\. /,''),source:s.trim()};}
 const debt=items.find(i=>i.slug==='jewellery-loan-intervention');
 debt.story=debt.story.replace('an auto-rickshaw driver, an auto-rickshaw driver and father of two','An auto-rickshaw driver and father of two').replace('required ongoing treatment for ongoing medical needs','had ongoing medical needs');debt.summary=debt.story;
-const winterItem=items.find(i=>i.slug==='winter-relief');
-winterItem.story=winterItem.story.replace('A donor acknowledgement for the overall winter effort recorded 234 people reached.','The phase records use different measures and are reported separately.');winterItem.primaryMetric='96 students';winterItem.primaryMetricLabel='Phase 1 · 101 Winter Kits in Phase 2';winterItem.facts=['Phase 1: 96 madrasa students.','Phase 2: 101 Winter Kits.','These are separate phase measures, not one combined beneficiary total.'];winterItem.dataCaveat='Broader 234 figure has unresolved people/kit terminology; not approved as a definitive public metric.';
 for(const i of items.filter(i=>i.parentSlug==='eid-gift-kits')){const counts=[85,171,339,408,467,650,710];i.primaryMetric=String(counts[i.year-2020]);i.primaryMetricLabel='families reached in '+i.year;}
 for(const i of items.filter(i=>i.parentSlug==='dates-distribution')){i.primaryMetric=String({2023:78,2024:90,2025:90,2026:162}[i.year])+' kg';i.primaryMetricLabel='dates distributed in '+i.year;}
 for(const i of items.filter(i=>i.parentSlug==='qurbani-meat-distribution')){i.primaryMetric=i.year===2025?'150+':'350+';i.primaryMetricLabel='families reached in '+i.year;}
+function replaceLockedText(value,replacements=[]){
+ if(!value)return value;
+ return replacements.reduce((current,replacement)=>current.replaceAll(replacement.from,replacement.to),value);
+}
+function applyCanonicalFactualLocks(records,locks){
+ const lockBySlug=new Map();
+ for(const lock of locks.initiatives){
+  lockBySlug.set(lock.slug,lock);
+  for(const legacySlug of lock.legacySlugs||[])lockBySlug.set(legacySlug,lock);
+ }
+ for(const record of records){
+  const lock=lockBySlug.get(record.slug);
+  if(!lock)continue;
+  if(Object.prototype.hasOwnProperty.call(lock,'primaryMetric'))record.primaryMetric=lock.primaryMetric;
+  if(Object.prototype.hasOwnProperty.call(lock,'primaryMetricLabel'))record.primaryMetricLabel=lock.primaryMetricLabel;
+  record.summary=lock.summary??replaceLockedText(record.summary,lock.textReplacements);
+  record.story=lock.story??replaceLockedText(record.story,lock.textReplacements);
+  if(Object.prototype.hasOwnProperty.call(lock,'facts'))record.facts=lock.facts;
+  if(Object.prototype.hasOwnProperty.call(lock,'dataCaveat'))record.dataCaveat=lock.dataCaveat;
+ }
+}
+applyCanonicalFactualLocks(items,factualLocks);
 const output={version:'master-2026-09-15-v1',categories,initiatives:items,pages};
 for(const dir of ['src/content','prisma'])fs.mkdirSync(path.join(root,dir),{recursive:true});
 fs.writeFileSync(path.join(root,'src/content/master-copy.json'),JSON.stringify(output,null,2)+'\n');
