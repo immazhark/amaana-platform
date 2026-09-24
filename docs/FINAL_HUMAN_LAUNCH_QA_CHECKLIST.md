@@ -179,6 +179,22 @@ Using authorised staging staff accounts:
 
 Do not create or publish real beneficiary data for this review.
 
+
+## 8B. GitHub main-branch protection
+
+Before PR #104 or any later production-promotion PR leaves Draft:
+
+- [ ] `main` reports protected/ruleset-enforced in GitHub;
+- [ ] pull-request based changes are required for normal promotion;
+- [ ] normal CI is required before merge;
+- [ ] `Production promotion readiness` is required before merge;
+- [ ] required checks apply to the latest PR head SHA;
+- [ ] force-push and branch-deletion bypasses are not enabled for ordinary promotion;
+- [ ] administrator/bypass behavior is reviewed so launch controls cannot be casually skipped;
+- [ ] re-read GitHub branch/ruleset metadata after saving and record the effective rule.
+
+Do not mark `main-branch-protection` VERIFIED merely because a rule was created. Verify that GitHub is actually enforcing the intended rule on `main`.
+
 ## 9. Final production authorization
 
 Before any launch action:
