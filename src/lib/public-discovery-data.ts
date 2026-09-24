@@ -28,7 +28,12 @@ export async function getStoriesDiscoveryData() {
       cause: { select: { title: true, status: true } },
       initiative: { select: { title: true, status: true, cause: { select: { status: true } } } },
       mediaAssets: {
-        where: { isPublic: true, privacyApprovedAt: { not: null } },
+        where: {
+          kind: "IMAGE",
+          isPublic: true,
+          privacyApprovedAt: { not: null },
+          publicUrl: { not: null },
+        },
         orderBy: { sortOrder: "asc" },
         take: DISCOVERY_MEDIA_CANDIDATE_LIMIT,
         select: publicMediaSelect,
@@ -55,7 +60,12 @@ export async function getFaithDiscoveryData() {
         },
       },
       mediaAssets: {
-        where: { isPublic: true, privacyApprovedAt: { not: null } },
+        where: {
+          kind: "IMAGE",
+          isPublic: true,
+          privacyApprovedAt: { not: null },
+          publicUrl: { not: null },
+        },
         orderBy: { sortOrder: "asc" },
         take: DISCOVERY_MEDIA_CANDIDATE_LIMIT,
         select: publicMediaSelect,
