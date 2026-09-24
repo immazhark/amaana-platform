@@ -137,7 +137,7 @@ test('legacy Our Work aliases resolve to their canonical public destinations', a
   const cases = [
     ['/our-work/medical-financial-assistance', '/programmes/medical-financial-relief'],
     ['/our-work/winter-drive-2025-26', '/our-work/winter-relief'],
-    ['/our-work/meat-distribution-2026', '/our-work/qurbani-meat-distribution-2026'],
+    ['/our-work/meat-distribution-2026', '/our-work/qurbani-meat-distribution'],
     ['/our-work/medical-aid-eight-day-old-baby', '/our-work/emergency-neonatal-medical-aid'],
   ];
 

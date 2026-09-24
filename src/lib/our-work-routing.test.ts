@@ -10,8 +10,8 @@ const expectedRedirects = {
   "medical-financial-assistance": "/programmes/medical-financial-relief",
   "winter-drive-2025-26": "/our-work/winter-relief",
   "winter-relief-2025-26": "/our-work/winter-relief",
-  "meat-distribution-2025": "/our-work/qurbani-meat-distribution-2025",
-  "meat-distribution-2026": "/our-work/qurbani-meat-distribution-2026",
+  "meat-distribution-2025": "/our-work/qurbani-meat-distribution",
+  "meat-distribution-2026": "/our-work/qurbani-meat-distribution",
   "financial-aid-auto-rickshaw-2025": "/our-work/auto-rickshaw-livelihood-support",
   "medical-aid-eight-day-old-baby": "/our-work/emergency-neonatal-medical-aid",
   "medical-aid-stage-three-cancer-2025": "/our-work/oral-cancer-surgery-support",
@@ -32,8 +32,8 @@ describe("Our Work canonical routing", () => {
 
   it("keeps canonical slugs on the canonical Our Work route", () => {
     expect(canonicalOurWorkDestination("winter-relief")).toBe("/our-work/winter-relief");
-    expect(canonicalOurWorkDestination("qurbani-meat-distribution-2026"))
-      .toBe("/our-work/qurbani-meat-distribution-2026");
+    expect(canonicalOurWorkDestination("qurbani-meat-distribution"))
+      .toBe("/our-work/qurbani-meat-distribution");
     expect(canonicalOurWorkDestination("emergency-neonatal-medical-aid"))
       .toBe("/our-work/emergency-neonatal-medical-aid");
     expect(isLegacyOurWorkSlug("winter-relief")).toBe(false);

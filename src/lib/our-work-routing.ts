@@ -30,13 +30,13 @@ export const LEGACY_OUR_WORK_ROUTES: Readonly<Record<string, LegacyOurWorkRoute>
   },
   "meat-distribution-2025": {
     kind: "initiative",
-    targetSlug: "qurbani-meat-distribution-2025",
-    destination: "/our-work/qurbani-meat-distribution-2025",
+    targetSlug: "qurbani-meat-distribution",
+    destination: "/our-work/qurbani-meat-distribution",
   },
   "meat-distribution-2026": {
     kind: "initiative",
-    targetSlug: "qurbani-meat-distribution-2026",
-    destination: "/our-work/qurbani-meat-distribution-2026",
+    targetSlug: "qurbani-meat-distribution",
+    destination: "/our-work/qurbani-meat-distribution",
   },
   "financial-aid-auto-rickshaw-2025": {
     kind: "initiative",
