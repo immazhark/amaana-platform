@@ -6,7 +6,7 @@ import { PageHero } from '@/components/page-hero';
 import { WorkVisualPlaceholder } from '@/components/work-visual-placeholder';
 import { programmeCategories, programmes } from '@/lib/master-copy';
 import { legacyProgrammeCategoryDestination, programmeCategoryFromRoute, programmeCategoryPath } from '@/lib/programme-category-routing';
-import { getOurWorkIndexData } from '@/lib/public-page-data';
+import { getInitiativePageData, getOurWorkIndexData } from '@/lib/public-page-data';
 import { PublicMedia } from '@/components/public-media';
 import { selectIdentityPublicImage } from '@/lib/public-media';
 import '@/app/canonical-content.css';
@@ -20,7 +20,28 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const legacyDestination = legacyProgrammeCategoryDestination(slug);
   const categorySlug = programmeCategoryFromRoute(slug);
   const category = programmeCategories.find(item => item.slug === categorySlug);
-  if (programmeAliases[slug]) return { title: 'Programme' };
+  const aliasTarget = programmeAliases[slug];
+  if (aliasTarget) {
+    const initiative = await getInitiativePageData(aliasTarget);
+    if (!initiative) return { title: 'Programme not found' };
+    const canonical = `/our-work/${initiative.slug}`;
+    return {
+      title: initiative.title,
+      description: initiative.summary,
+      alternates: { canonical },
+      openGraph: {
+        type: 'article',
+        url: canonical,
+        title: `${initiative.title} | Amaana Foundation`,
+        description: initiative.summary,
+      },
+      twitter: {
+        card: 'summary',
+        title: `${initiative.title} | Amaana Foundation`,
+        description: initiative.summary,
+      },
+    };
+  }
   if (legacyDestination) { const canonicalCategory = programmeCategories.find(item => programmeCategoryPath(item.slug) === legacyDestination); return canonicalCategory ? { title: canonicalCategory.title, description: canonicalCategory.summary, alternates: { canonical: legacyDestination } } : { title: 'Amaana Programmes' }; }
   if (!category) return { title: 'Amaana Programmes' };
   const canonical = programmeCategoryPath(category.slug);
@@ -29,7 +50,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function Page({ params }: Props) {
   const { slug } = await params;
-  if (programmeAliases[slug]) permanentRedirect(`/our-work/${programmeAliases[slug]}`);
+  const aliasTarget = programmeAliases[slug];
+  if (aliasTarget) {
+    const initiative = await getInitiativePageData(aliasTarget);
+    if (!initiative) notFound();
+    permanentRedirect(`/our-work/${initiative.slug}`);
+  }
   const legacyDestination = legacyProgrammeCategoryDestination(slug);
   if (legacyDestination) permanentRedirect(legacyDestination);
   const categorySlug = programmeCategoryFromRoute(slug);
