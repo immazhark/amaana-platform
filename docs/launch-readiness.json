@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-21",
+  "updatedAt": "2026-09-24",
   "principle": "Green automation is necessary but not sufficient for production launch. External, human-review and cutover gates remain pending until evidence is recorded; main/indexing/payment activation actions remain explicitly controlled.",
   "gates": [
     {
@@ -11,8 +11,8 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "GitHub Actions CI #868 (run 35601818450) passed the full integration verify job on exact release-candidate SHA f6d535dc45ed4987406648fa30b62e346379f64b on 2026-09-21. The run passed CSS architecture audit, public campaign media validation, launch-readiness validation, campaign import safety, canonical factual locks, editorial/compliance guards, public/private data-boundary checks, archive/calendar checks, Prisma generate/validate, ESLint, TypeScript, coverage, production build, JS/CSS budgets, server/security smoke checks, isolated browser fixture setup, Chromium installation, and the final responsive/accessibility/journey browser acceptance suite.",
-      "verifiedAt": "2026-09-21"
+      "evidence": "GitHub Actions run 36012879631 completed SUCCESS on exact integration SHA bce6b1d85bedc9da6e0fb38484e867db71cb4182 on 2026-09-24. The run passed the full integration verify job, including CSS architecture, public campaign media validation, launch-readiness validation, campaign import safety, canonical factual locks, editorial/compliance guards, public/private data-boundary checks, archive/calendar checks, Prisma generate/validate, ESLint, TypeScript, PostgreSQL refund-ledger verification, coverage, production build, JS/CSS bundle budgets, post-build server smoke checks, isolated browser fixture/workspace preparation, Chromium installation, and the final responsive/accessibility/journey browser acceptance suite.",
+      "verifiedAt": "2026-09-24"
     },
     {
       "id": "railway-preview-deployment-baseline",
@@ -22,8 +22,8 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "Railway staging project amaana-platform-staging reports SUCCESS for the release-candidate deployment on exact SHA f6d535dc45ed4987406648fa30b62e346379f64b (commit `fix: stabilize loading layout and close accessibility gaps`). The hardened startup path retains Prisma migration retry, transient Neon P1001 handling, staging seed retry and idempotent whole-script retry protection.",
-      "verifiedAt": "2026-09-21"
+      "evidence": "Railway staging project amaana-platform-staging reports SUCCESS for deployment d0e7608a-df34-425b-9d30-79d1434b1064 on exact integration SHA bce6b1d85bedc9da6e0fb38484e867db71cb4182 (`fix: harden shadowed medical relief redirect`) on 2026-09-24. The strict `/api/health/ready` healthcheck eventually passed after a prolonged real Neon outage. During startup, Prisma migration, reviewed-campaign import, RBAC seed and staging-acceptance seed all exercised bounded transient-database retry paths; reviewed-campaign import recovered on attempt 3, RBAC seed on attempt 2, staging acceptance on attempt 4, Next.js reached Ready, and Railway promoted the exact candidate only after DB-backed readiness became healthy. Earlier exact-SHA deployment failures during the same outage remain valid fail-closed evidence rather than application-success claims.",
+      "verifiedAt": "2026-09-24"
     },
     {
       "id": "domestic-only-boundary",
@@ -159,7 +159,7 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "Rollback procedure must be rehearsed against staging/preview and record the known-good SHA/deployment before production cutover."
+      "evidence": "Rollback rehearsal remains intentionally PENDING. The current certified staging candidate is SHA bce6b1d85bedc9da6e0fb38484e867db71cb4182 on Railway deployment d0e7608a-df34-425b-9d30-79d1434b1064. The previous known-good application SHA before this candidate was dde1cb607010eabd1c84dacc5c513737fd0378f7 on deployment a2e7b849-9276-438c-969e-0cc6d5ce3aef. A valid rehearsal must redeploy that specific historical target, verify health/version/staging/Test-payment posture, and then restore the candidate. The currently connected Railway action surface exposes redeploy-latest but not redeploy/rollback of an arbitrary historical deployment, so this gate must not be marked VERIFIED through source-control rewrites or simulated evidence."
     },
     {
       "id": "production-dns-cutover-plan",
