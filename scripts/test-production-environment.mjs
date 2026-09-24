@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { validateProductionEnvironmentContract } from "./check-production-environment.mjs";
 
 function validEnv() {
@@ -113,4 +114,34 @@ test("never needs secret values to describe a failure", () => {
   const problems = validateProductionEnvironmentContract(env);
   assert.ok(problems.some(problem => problem.includes("RAZORPAY_KEY_SECRET")));
   assert.ok(problems.every(problem => !problem.includes("short")));
+});
+
+
+test(".env.example documents all explicit production posture controls", async () => {
+  const example = await readFile(".env.example", "utf8");
+
+  for (const name of [
+    "APP_ENVIRONMENT",
+    "EMAIL_DELIVERY_MODE",
+    "NEXT_PUBLIC_APP_URL",
+    "PRODUCTION_INDEXING_DECISION",
+    "NEXT_PUBLIC_ALLOW_INDEXING",
+    "STAGING_ACCEPTANCE_ON_START",
+    "PUBLIC_MEDIA_ACCEPTANCE_ON_START",
+    "AMAANA_BROWSER_ACCEPTANCE",
+    "PUBLIC_MEDIA_S3_BUCKET",
+    "PUBLIC_MEDIA_BASE_URL",
+    "NEXT_PUBLIC_RAZORPAY_KEY_ID",
+    "RAZORPAY_KEY_SECRET",
+    "RAZORPAY_WEBHOOK_SECRET",
+  ]) {
+    assert.match(example, new RegExp(`^${name}=`, "m"), `.env.example must document ${name}`);
+  }
+
+  assert.match(example, /^APP_ENVIRONMENT="staging"$/m);
+  assert.match(example, /^PRODUCTION_INDEXING_DECISION="keep_disabled"$/m);
+  assert.match(example, /^NEXT_PUBLIC_ALLOW_INDEXING="false"$/m);
+  assert.match(example, /^STAGING_ACCEPTANCE_ON_START="false"$/m);
+  assert.match(example, /^PUBLIC_MEDIA_ACCEPTANCE_ON_START="false"$/m);
+  assert.match(example, /^AMAANA_BROWSER_ACCEPTANCE="false"$/m);
 });
