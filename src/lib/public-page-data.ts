@@ -97,7 +97,7 @@ export const getHomepageHeroMedia = cache(async () => {
       privacyApprovedAt: { not: null },
       publicUrl: { not: null },
       OR: [
-        { initiative: { status: "PUBLISHED" } },
+        { initiative: { status: "PUBLISHED", cause: { status: "PUBLISHED" } } },
         { story: { status: "PUBLISHED", privacyApprovedAt: { not: null } } },
       ],
     },
