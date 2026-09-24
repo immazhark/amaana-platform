@@ -26,7 +26,7 @@ export async function getPublishedCauses() {
 
 export async function getPublishedInitiatives() {
   return prisma.initiative.findMany({
-    where: publishedWhere,
+    where: { status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     include: {
       cause: true,
       mediaAssets: {
@@ -181,7 +181,7 @@ export async function getHomepagePublicContent() {
   const [appeals, initiatives, featuredFaith, stories] = await Promise.all([
     getHomepageAppeals(),
     prisma.initiative.findMany({
-      where: publishedWhere,
+      where: { status: "PUBLISHED", cause: { status: "PUBLISHED" } },
       orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
       take: 7,
       select: {
