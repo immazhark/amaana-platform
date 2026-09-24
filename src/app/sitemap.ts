@@ -62,7 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const publishedInitiativeSlugs = new Set(initiatives.map(item => item.slug));
-  const publishedProgrammeCategoryPaths = new Set(
+  const publishedProgrammeCategoryPaths = new Set<string>(
     programmeCategories
       .filter(category =>
         programmes.some(programme =>
