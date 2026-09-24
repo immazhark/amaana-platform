@@ -8,6 +8,9 @@ const locks = JSON.parse(
 const masterProgrammes = JSON.parse(
   await readFile(new URL('../prisma/master-programmes.json', import.meta.url), 'utf8'),
 );
+const runtimeMasterCopy = JSON.parse(
+  await readFile(new URL('../src/content/master-copy.json', import.meta.url), 'utf8'),
+);
 const migrationSource = await readFile(
   new URL('../prisma/apply-master-content.mjs', import.meta.url),
   'utf8',
@@ -45,6 +48,17 @@ test('master programme source cannot reintroduce the superseded newborn amount',
   assert.doesNotMatch(JSON.stringify(newborn), /₹107,200/);
 });
 
+test('runtime master copy matches the canonical newborn amount at source', () => {
+  const newborn = runtimeMasterCopy.initiatives.find(
+    (item) => item.slug === 'emergency-neonatal-medical-aid',
+  );
+  assert.ok(newborn);
+  assert.equal(newborn.primaryMetric, '₹107,520');
+  assert.match(newborn.summary, /₹107,520/);
+  assert.match(newborn.story, /₹107,520/);
+  assert.doesNotMatch(JSON.stringify(newborn), /₹107,200/);
+});
+
 test('Winter factual lock uses one overall 234-to-234 metric and keeps phase figures subordinate', () => {
   const winter = bySlug.get('winter-relief');
   assert.ok(winter);
@@ -73,6 +87,22 @@ test('master Winter source matches the canonical 234-to-234 record', () => {
   ]);
   assert.equal(winter.dataCaveat, null);
   assert.notEqual(winter.primaryMetric, '96 students');
+});
+
+test('runtime master copy matches the canonical Winter record at source', () => {
+  const winter = runtimeMasterCopy.initiatives.find((item) => item.slug === 'winter-relief');
+  assert.ok(winter);
+  assert.equal(winter.primaryMetric, '234 Winter Kits');
+  assert.equal(winter.primaryMetricLabel, 'distributed to 234 beneficiaries');
+  assert.match(winter.summary, /234 Winter Kits to 234 beneficiaries/);
+  assert.match(winter.story, /must not be added to the overall total of 234/);
+  assert.deepEqual(winter.facts, [
+    'Overall: 234 Winter Kits distributed to 234 beneficiaries.',
+    'Phase 1: 96 madrasa students.',
+    'Phase 2: 101 Winter Kits.',
+    'Phase figures are supporting sub-measures within the overall drive and must not be added to 234.',
+  ]);
+  assert.equal(winter.dataCaveat, null);
 });
 
 test('canonical migration reapplies factual locks even when master content is already seeded', () => {
