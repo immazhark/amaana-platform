@@ -18,6 +18,11 @@ import { canExposePublicAppeal } from "@/lib/public-environment";
 
 export const dynamic = "force-dynamic";
 
+const LEGACY_INITIATIVE_REDIRECTS: Record<string, string> = {
+  "winter-drive-2025-26": "winter-relief",
+  "winter-relief-2025-26": "winter-relief",
+};
+
 function formatYears(startYear: number | null, endYear: number | null, year: number | null) {
   if (year) return String(year);
   if (startYear && endYear) return startYear === endYear ? String(startYear) : `${startYear}–${endYear}`;
@@ -27,7 +32,8 @@ function formatYears(startYear: number | null, endYear: number | null, year: num
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
-  const initiative = await getInitiativePageData(slug);
+  const redirectTarget = LEGACY_INITIATIVE_REDIRECTS[slug];
+  const initiative = await getInitiativePageData(redirectTarget ?? slug);
   if (!initiative) return { title: "Initiative not found" };
   const canonical = `/our-work/${initiative.slug}`;
   const identity = selectIdentityPublicImage(initiative.mediaAssets);
@@ -37,7 +43,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function InitiativePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  if (["winter-drive-2025-26", "winter-relief-2025-26"].includes(slug)) permanentRedirect("/our-work/winter-relief");
+  const redirectTarget = LEGACY_INITIATIVE_REDIRECTS[slug];
+  if (redirectTarget) {
+    const initiative = await getInitiativePageData(redirectTarget);
+    if (!initiative) notFound();
+    permanentRedirect(`/our-work/${initiative.slug}`);
+  }
   if (programmeBySlug(slug)) return <ProgrammeDetail slug={slug} />;
   const initiative = await getInitiativePageData(slug);
   if (!initiative) notFound();
