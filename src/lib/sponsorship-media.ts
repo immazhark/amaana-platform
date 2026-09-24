@@ -25,6 +25,7 @@ export const getSponsorEducationHeroMedia = cache(async () => {
         initiative: {
           slug: "taleem",
           status: "PUBLISHED",
+          cause: { status: "PUBLISHED" },
         },
       },
       orderBy: [{ sourceYear: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }],

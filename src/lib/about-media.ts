@@ -23,6 +23,7 @@ export const getAboutOriginMedia = cache(async () => {
         initiative: {
           slug: "eid-gift-kits-2020",
           status: "PUBLISHED",
+          cause: { status: "PUBLISHED" },
         },
       },
       orderBy: [{ sortOrder: "asc" }, { createdAt: "asc" }],
