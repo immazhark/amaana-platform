@@ -4,8 +4,7 @@ import { publicFaithWhere } from "@/lib/faith-publication";
 import { prisma } from "@/lib/prisma";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 import { PUBLIC_STATIC_ROUTES } from "@/lib/public-routing";
-import { programmeCategories, programmes } from "@/lib/master-copy";
-import { programmeCategoryPath } from "@/lib/programme-category-routing";
+import { publishedProgrammeCategoryPaths } from "@/lib/sitemap-programme-categories";
 import { shouldAllowIndexing } from "@/lib/site-indexing";
 import { canListAppealInSitemap } from "@/lib/sitemap-privacy";
 
@@ -62,21 +61,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
 
   const publishedInitiativeSlugs = new Set(initiatives.map(item => item.slug));
-  const publishedProgrammeCategoryPaths = new Set<string>(
-    programmeCategories
-      .filter(category =>
-        programmes.some(programme =>
-          programme.causeSlug === category.slug
-          && !("parentSlug" in programme)
-          && publishedInitiativeSlugs.has(programme.slug),
-        ),
-      )
-      .map(category => programmeCategoryPath(category.slug))
-      .filter(path => path.startsWith("/programmes/")),
-  );
+  const availableProgrammeCategoryPaths = publishedProgrammeCategoryPaths(publishedInitiativeSlugs);
 
   const staticPages: MetadataRoute.Sitemap = PUBLIC_STATIC_ROUTES
-    .filter(route => !route.path.startsWith("/programmes/") || publishedProgrammeCategoryPaths.has(route.path))
+    .filter(route => !route.path.startsWith("/programmes/") || availableProgrammeCategoryPaths.has(route.path))
     .map(route => ({
       url: `${base}${route.path}`,
       changeFrequency: route.changeFrequency,
