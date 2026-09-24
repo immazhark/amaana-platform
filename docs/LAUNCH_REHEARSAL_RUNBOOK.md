@@ -140,3 +140,43 @@ Rollback order:
 
 ## 9. Evidence hygiene
 Never commit passwords, API keys, full database URLs, private beneficiary documents, medical records, identity documents, banking details, consent documents or other restricted evidence into readiness files. The repository records status and non-sensitive evidence references; secret/private proof remains in the appropriate protected operational system.
+
+## Exact Railway rollback rehearsal target — 24 September 2026
+
+Railway's deployment records currently expose both required staging artifacts:
+
+- **Rollback target (previous known-good):**
+  - deployment: `a2e7b849-9276-438c-969e-0cc6d5ce3aef`
+  - application SHA: `dde1cb607010eabd1c84dacc5c513737fd0378f7`
+  - status in history: `REMOVED`
+  - `canRollback=true`
+  - `canRedeploy=true`
+- **Restore-forward target (certified candidate):**
+  - deployment: `d0e7608a-df34-425b-9d30-79d1434b1064`
+  - application SHA: `bce6b1d85bedc9da6e0fb38484e867db71cb4182`
+  - status: `SUCCESS`
+  - `canRollback=true`
+  - `canRedeploy=true`
+
+Railway's official deployment-action documentation states that **Rollback** restores the selected previous deployment's image and custom variables and does not rebuild it. The dashboard path is:
+
+1. Open the `amaana-rebuild-preview` service.
+2. Open **Deployments**.
+3. Locate deployment `a2e7b849-9276-438c-969e-0cc6d5ce3aef`.
+4. Open the deployment's **...** menu.
+5. Choose **Rollback** and confirm.
+6. Do not start any second deployment while rollback is BUILDING/DEPLOYING.
+7. Wait for Railway terminal status and strict `/api/health/ready` success.
+8. Verify the running version identifies the previous known-good SHA `dde1cb607010eabd0216e06aeb4b32f9312f728c` only if that version endpoint/evidence actually reports it; otherwise verify using Railway deployment metadata and do not infer a version.
+9. Re-run the staging health/Test-payment/noindex checks required by this runbook.
+10. Restore forward to deployment `d0e7608a-df34-425b-9d30-79d1434b1064` using the same supported Railway historical deployment action, then wait for terminal health before any other deployment action.
+11. Re-run staging acceptance after restore-forward.
+
+**Important correction:** the canonical previous known-good application SHA associated with deployment `a2e7b849-9276-438c-969e-0cc6d5ce3aef` is `dde1cb607010eabd1c84dacc5c513737fd0378f7`. Do not use the similarly-prefixed older historical SHA `ce2d995...`.
+
+Railway's public API documents the equivalent historical operation as:
+
+`deploymentRollback(id: "a2e7b849-9276-438c-969e-0cc6d5ce3aef")`
+
+The currently connected Railway action surface does not expose that mutation directly, so the rehearsal must be executed from Railway's dashboard or another explicitly authorized client that supports the documented rollback mutation. Do not emulate rollback by rewriting Git history or temporarily repointing the service branch.
+
