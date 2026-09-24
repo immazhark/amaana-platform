@@ -87,7 +87,7 @@ In Railway:
 
 1. Open `amaana-rebuild-preview`.
 2. Open **Deployments**.
-3. Locate deployment `a2e7b849-9276-4382-969e-0cc6d5ce3aef`.
+3. Locate deployment `a2e7b849-9276-438c-969e-0cc6d5ce3aef`.
 
 **Important:** if Railway does not show that exact ID, stop and do not substitute a deployment by visual similarity. The canonical ID is `a2e7b849-9276-438c-969e-0cc6d5ce3aef`.
 
