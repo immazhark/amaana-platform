@@ -133,7 +133,7 @@ test('published programme category exposes canonical WebPage structured data', a
   expect(data.description).toMatch(/\S.{20,}/);
 });
 
-test('legacy Our Work aliases resolve to their canonical public destinations', async ({ page }) => {
+test('legacy Our Work aliases resolve to their canonical public destinations', async ({ page, request }) => {
   const cases = [
     ['/our-work/medical-financial-assistance', '/programmes/medical-financial-relief'],
     ['/our-work/winter-drive-2025-26', '/our-work/winter-relief'],
@@ -142,9 +142,18 @@ test('legacy Our Work aliases resolve to their canonical public destinations', a
   ];
 
   for (const [legacy, canonical] of cases) {
-    const response = await page.goto(legacy, { waitUntil: 'domcontentloaded' });
-    expect(response?.ok(), `${legacy} should resolve successfully`).toBeTruthy();
-    expect(new URL(page.url()).pathname).toBe(canonical);
+    const redirect = await request.get(legacy, { maxRedirects: 0 });
+    expect(
+      [307, 308],
+      `${legacy} should issue a permanent-compatible redirect response`,
+    ).toContain(redirect.status());
+
+    const location = redirect.headers().location;
+    expect(location, `${legacy} should provide a redirect Location header`).toBeTruthy();
+    expect(new URL(location, productionOrigin).pathname).toBe(canonical);
+
+    const response = await page.goto(canonical, { waitUntil: 'domcontentloaded' });
+    expect(response?.ok(), `${canonical} should render successfully`).toBeTruthy();
 
     const canonicalLink = page.locator('link[rel="canonical"]');
     await expect(canonicalLink).toHaveCount(1);
