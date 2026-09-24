@@ -11,7 +11,7 @@ const representativeRoutes = [
   { path: '/our-work/taleem', family: 'Taleem' },
   { path: '/our-work/dates-distribution', family: 'Dates Distribution' },
   { path: '/our-work/hyderabad-flood-relief-2020', family: 'Flood Relief' },
-  { path: '/our-work/medical-financial-assistance', family: 'Medical & Financial Assistance' },
+  { path: '/programmes/medical-financial-relief', family: 'Medical & Financial Relief' },
   { path: '/impact', family: 'Impact' },
   { path: '/stories', family: 'Stories' },
   { path: '/appeals', family: 'Appeals' },

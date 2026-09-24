@@ -20,7 +20,7 @@ const publicSurfaceRoutes = [
   '/our-work/dates-distribution',
   '/our-work/eid-gift-kits',
   '/our-work/hyderabad-flood-relief-2020',
-  '/our-work/medical-financial-assistance',
+  '/programmes/medical-financial-relief',
   '/our-work/qurbani-meat-distribution',
   '/our-work/taleem',
   '/our-work/winter-relief',
