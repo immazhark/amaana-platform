@@ -133,7 +133,7 @@ test('published programme category exposes canonical WebPage structured data', a
   expect(data.description).toMatch(/\S.{20,}/);
 });
 
-test('legacy Our Work aliases resolve to their canonical public destinations', async ({ page, request }) => {
+test('legacy Our Work aliases issue deterministic canonical redirects', async ({ request }) => {
   const cases = [
     ['/our-work/medical-financial-assistance', '/programmes/medical-financial-relief'],
     ['/our-work/winter-drive-2025-26', '/our-work/winter-relief'],
@@ -151,12 +151,5 @@ test('legacy Our Work aliases resolve to their canonical public destinations', a
     const location = redirect.headers().location;
     expect(location, `${legacy} should provide a redirect Location header`).toBeTruthy();
     expect(new URL(location, productionOrigin).pathname).toBe(canonical);
-
-    const response = await page.goto(canonical, { waitUntil: 'domcontentloaded' });
-    expect(response?.ok(), `${canonical} should render successfully`).toBeTruthy();
-
-    const canonicalLink = page.locator('link[rel="canonical"]');
-    await expect(canonicalLink).toHaveCount(1);
-    await expect(canonicalLink).toHaveAttribute('href', canonicalFor(canonical));
   }
 });

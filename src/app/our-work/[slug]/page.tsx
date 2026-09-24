@@ -3,7 +3,7 @@ import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-dat
 import { PageHero } from "@/components/page-hero";
 import { ProgrammeDetail } from "@/components/programme-detail";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
-import { programmeBySlug, programmeCategories, programmes } from "@/lib/master-copy";
+import { programmeBySlug, programmeCategories } from "@/lib/master-copy";
 import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -11,7 +11,6 @@ import { notFound, permanentRedirect } from "next/navigation";
 import { PublicMedia } from "@/components/public-media";
 import { getInitiativePageData, getOurWorkIndexData } from "@/lib/public-page-data";
 import { buildPublicRecordFallback, distinctStoryParagraphs, heroTeaser } from "@/lib/public-copy";
-import { programmeCategoryPath } from "@/lib/programme-category-routing";
 import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
 import { PublicContentStructuredData } from "@/components/public-content-structured-data";
 import { isAppealOpenForDonations } from "@/lib/appeals";
@@ -20,14 +19,6 @@ import { canExposePublicAppeal } from "@/lib/public-environment";
 import { legacyOurWorkRoute } from "@/lib/our-work-routing";
 
 export const dynamic = "force-dynamic";
-
-function hasPublishedTopLevelProgramme(categorySlug: string, publishedSlugs: Set<string>) {
-  return programmes.some(
-    item => item.causeSlug === categorySlug
-      && !("parentSlug" in item)
-      && publishedSlugs.has(item.slug),
-  );
-}
 
 function formatYears(startYear: number | null, endYear: number | null, year: number | null) {
   if (year) return String(year);
@@ -42,12 +33,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   if (legacyRoute?.kind === "category") {
     const category = programmeCategories.find(item => item.slug === legacyRoute.categorySlug);
     if (!category) return { title: "Initiative not found" };
-    const causes = await getOurWorkIndexData();
-    const publishedSlugs = new Set(causes.flatMap(cause => cause.initiatives.map(item => item.slug)));
-    if (!hasPublishedTopLevelProgramme(category.slug, publishedSlugs)) {
-      return { title: "Initiative not found" };
-    }
-    const canonical = programmeCategoryPath(category.slug);
+    const canonical = legacyRoute.destination;
     return {
       title: category.title,
       description: category.summary,
@@ -68,12 +54,38 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     };
   }
 
-  const targetSlug = legacyRoute?.kind === "initiative" ? legacyRoute.targetSlug : slug;
-  const initiative = await getInitiativePageData(targetSlug);
+  if (legacyRoute?.kind === "initiative") {
+    const programme = programmeBySlug(legacyRoute.targetSlug);
+    if (!programme) {
+      return {
+        title: "Initiative not found",
+        alternates: { canonical: legacyRoute.destination },
+      };
+    }
+    const canonical = legacyRoute.destination;
+    return {
+      title: programme.title,
+      description: programme.summary,
+      alternates: { canonical },
+      openGraph: {
+        type: "article",
+        url: canonical,
+        title: `${programme.title} | Amaana Foundation`,
+        description: programme.summary,
+        images: openGraphShareImages(),
+      },
+      twitter: {
+        card: "summary_large_image",
+        title: `${programme.title} | Amaana Foundation`,
+        description: programme.summary,
+        images: twitterShareImages(),
+      },
+    };
+  }
+
+  const initiative = await getInitiativePageData(slug);
   if (!initiative) return { title: "Initiative not found" };
-  const canonical = legacyRoute?.kind === "initiative"
-    ? legacyRoute.destination
-    : `/our-work/${initiative.slug}`;
+  const canonical = `/our-work/${initiative.slug}`;
   const identity = selectIdentityPublicImage(initiative.mediaAssets);
   const leadImage = identity ? resolvePublicMediaUrl(identity) ?? undefined : undefined;
   return { title: initiative.title, description: initiative.summary, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: `${initiative.title} | Amaana Foundation`, description: initiative.summary, images: openGraphShareImages(leadImage, identity?.altText ?? initiative.title) }, twitter: { card: "summary_large_image", title: `${initiative.title} | Amaana Foundation`, description: initiative.summary, images: twitterShareImages(leadImage) } };
@@ -82,18 +94,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function InitiativePage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const legacyRoute = legacyOurWorkRoute(slug);
-  if (legacyRoute?.kind === "category") {
-    const category = programmeCategories.find(item => item.slug === legacyRoute.categorySlug);
-    if (!category) notFound();
-    const causes = await getOurWorkIndexData();
-    const publishedSlugs = new Set(causes.flatMap(cause => cause.initiatives.map(item => item.slug)));
-    if (!hasPublishedTopLevelProgramme(category.slug, publishedSlugs)) notFound();
-    permanentRedirect(programmeCategoryPath(category.slug));
-  }
-
-  if (legacyRoute?.kind === "initiative") {
-    const initiative = await getInitiativePageData(legacyRoute.targetSlug);
-    if (!initiative) notFound();
+  if (legacyRoute) {
     permanentRedirect(legacyRoute.destination);
   }
   if (programmeBySlug(slug)) return <ProgrammeDetail slug={slug} />;

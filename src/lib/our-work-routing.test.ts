@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { programmeBySlug, programmeCategories } from "./master-copy";
 import {
   LEGACY_OUR_WORK_ROUTES,
   canonicalOurWorkDestination,
@@ -27,6 +28,23 @@ describe("Our Work canonical routing", () => {
       expect(isLegacyOurWorkSlug(slug)).toBe(true);
       expect(legacyOurWorkRoute(slug)?.destination).toBe(destination);
       expect(canonicalOurWorkDestination(slug)).toBe(destination);
+    }
+  });
+
+  it("keeps every legacy destination backed by canonical master content", () => {
+    for (const [legacySlug, route] of Object.entries(LEGACY_OUR_WORK_ROUTES)) {
+      if (route.kind === "initiative") {
+        expect(
+          programmeBySlug(route.targetSlug),
+          `${legacySlug} must target a canonical master programme`,
+        ).toBeDefined();
+        continue;
+      }
+
+      expect(
+        programmeCategories.some(category => category.slug === route.categorySlug),
+        `${legacySlug} must target a canonical master category`,
+      ).toBe(true);
     }
   });
 
