@@ -5,6 +5,7 @@ import { importReviewedCampaigns, isReviewedCampaignImportTarget } from "../pris
 
 const campaigns = JSON.parse(await readFile(new URL("../prisma/campaigns-2026.json", import.meta.url), "utf8"));
 const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+const dockerfile = await readFile(new URL("../Dockerfile", import.meta.url), "utf8");
 const CANONICAL_CAUSE_SLUGS = new Set([
   "medical-financial-relief",
   "emergency-humanitarian-relief",
@@ -51,6 +52,17 @@ function database({
     causeLookups,
   };
 }
+
+test("reviewed campaign bootstrap uses the bounded transient database retry wrapper", () => {
+  assert.match(
+    dockerfile,
+    /node prisma\/migrate-deploy-with-retry\.mjs && node prisma\/run-db-script-with-retry\.mjs prisma\/import-reviewed-campaigns\.mjs &&/,
+  );
+  assert.doesNotMatch(
+    dockerfile,
+    /node prisma\/migrate-deploy-with-retry\.mjs && node prisma\/import-reviewed-campaigns\.mjs &&/,
+  );
+});
 
 test("reviewed campaign bootstrap targets only the designated staging preview service", () => {
   const serviceId = "fcb9d167-eba1-40c8-a4e6-ac35af470989";
