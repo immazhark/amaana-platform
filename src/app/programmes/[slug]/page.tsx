@@ -15,6 +15,14 @@ const programmeAliases: Record<string, string> = { qurbani: 'qurbani-meat-distri
 export const dynamic = 'force-dynamic';
 type Props = { params: Promise<{ slug: string }> };
 
+function hasPublishedTopLevelProgramme(categorySlug: string, publishedSlugs: Set<string>) {
+  return programmes.some(
+    item => item.causeSlug === categorySlug
+      && !('parentSlug' in item)
+      && publishedSlugs.has(item.slug),
+  );
+}
+
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
   const legacyDestination = legacyProgrammeCategoryDestination(slug);
@@ -42,8 +50,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       },
     };
   }
-  if (legacyDestination) { const canonicalCategory = programmeCategories.find(item => programmeCategoryPath(item.slug) === legacyDestination); return canonicalCategory ? { title: canonicalCategory.title, description: canonicalCategory.summary, alternates: { canonical: legacyDestination } } : { title: 'Amaana Programmes' }; }
-  if (!category) return { title: 'Amaana Programmes' };
+  if (legacyDestination) {
+    const canonicalCategory = programmeCategories.find(item => programmeCategoryPath(item.slug) === legacyDestination);
+    if (!canonicalCategory) return { title: 'Programme not found' };
+    const causes = await getOurWorkIndexData();
+    const publishedSlugs = new Set(causes.flatMap(cause => cause.initiatives.map(item => item.slug)));
+    if (!hasPublishedTopLevelProgramme(canonicalCategory.slug, publishedSlugs)) return { title: 'Programme not found' };
+    return {
+      title: canonicalCategory.title,
+      description: canonicalCategory.summary,
+      alternates: { canonical: legacyDestination },
+    };
+  }
+  if (!category) return { title: 'Programme not found' };
+  const causes = await getOurWorkIndexData();
+  const publishedSlugs = new Set(causes.flatMap(cause => cause.initiatives.map(item => item.slug)));
+  if (!hasPublishedTopLevelProgramme(category.slug, publishedSlugs)) return { title: 'Programme not found' };
   const canonical = programmeCategoryPath(category.slug);
   return { title: category.title, description: category.summary, alternates: { canonical }, openGraph: { type: 'website', url: canonical, title: `${category.title} | Amaana Foundation`, description: category.summary }, twitter: { card: 'summary', title: `${category.title} | Amaana Foundation`, description: category.summary } };
 }
@@ -57,11 +79,14 @@ export default async function Page({ params }: Props) {
     permanentRedirect(`/our-work/${initiative.slug}`);
   }
   const legacyDestination = legacyProgrammeCategoryDestination(slug);
-  if (legacyDestination) permanentRedirect(legacyDestination);
   const categorySlug = programmeCategoryFromRoute(slug);
-  const category = programmeCategories.find(item => item.slug === categorySlug);
+  const directCategory = programmeCategories.find(item => item.slug === categorySlug);
+  const legacyCategory = legacyDestination
+    ? programmeCategories.find(item => programmeCategoryPath(item.slug) === legacyDestination)
+    : undefined;
+  const category = directCategory ?? legacyCategory;
   if (!category) notFound();
-  const canonical = programmeCategoryPath(category.slug);
+
   const causes = await getOurWorkIndexData();
   const records = causes.flatMap(cause => cause.initiatives);
   const recordBySlug = new Map(records.map(record => [record.slug, record]));
@@ -70,6 +95,10 @@ export default async function Page({ params }: Props) {
       && !('parentSlug' in item)
       && recordBySlug.has(item.slug),
   );
+  if (items.length === 0) notFound();
+  if (legacyDestination) permanentRedirect(legacyDestination);
+
+  const canonical = programmeCategoryPath(category.slug);
   const leadPhoto = items.map(item => { const record = recordBySlug.get(item.slug); return record ? selectIdentityPublicImage(record.mediaAssets) : null; }).find(Boolean) ?? null;
 
   return <div className="v2-home">
