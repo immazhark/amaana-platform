@@ -156,6 +156,7 @@ export const getHomepageDiscoveryData = cache(async () => {
         status: "PUBLISHED",
         cause: { status: "PUBLISHED" },
         isFeatured: true,
+        mediaAssets: { some: PUBLIC_APPROVED_IMAGE_WHERE },
       },
       orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
       take: 5,
