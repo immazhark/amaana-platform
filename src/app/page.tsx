@@ -121,40 +121,42 @@ export default async function HomePage() {
         </div></div>
       </section>
 
-      <section className="v3-section v3-work" aria-labelledby="featured-work-title">
-        <div className="v3-shell">
-          <div className="v3-section-head">
-            <div>
-              <p className="v3-label">How Amaana serves</p>
-              <h2 className="v3-heading" id="featured-work-title">Different Needs. One Standard of Care.</h2>
+      {visibleProgrammeCategories.length > 0 && (
+        <section className="v3-section v3-work" aria-labelledby="featured-work-title">
+          <div className="v3-shell">
+            <div className="v3-section-head">
+              <div>
+                <p className="v3-label">How Amaana serves</p>
+                <h2 className="v3-heading" id="featured-work-title">Different Needs. One Standard of Care.</h2>
+              </div>
+              <p className="v3-intro">Some needs return every year. Others arrive without warning. Amaana’s work therefore combines recurring programmes with verified case-led assistance—from Eid Gift Kits and Qurbani distribution to Taleem, winter relief, emergency response and urgent medical or financial support.</p>
             </div>
-            <p className="v3-intro">Some needs return every year. Others arrive without warning. Amaana’s work therefore combines recurring programmes with verified case-led assistance—from Eid Gift Kits and Qurbani distribution to Taleem, winter relief, emergency response and urgent medical or financial support.</p>
-          </div>
 
-          <ScrollCarousel label="Amaana programme areas" mode="focus" className="v3-work-carousel">
-            {visibleProgrammeCategories.map((category, index) => {
-              const media = programmeMedia.get(category.slug);
-              return (
-                <Link className="v3-work-card" href={programmeCategoryPath(category.slug)} key={category.slug}>
-                  <div className="v3-work-card-media">
-                    {media ? (
-                      <PublicMedia asset={media} sizes="(max-width: 700px) 86vw, 30rem" />
-                    ) : (
-                      <WorkVisualPlaceholder label={category.title} />
-                    )}
-                  </div>
-                  <div className="v3-work-card-body">
-                    <small>{String(index + 1).padStart(2, '0')} · Our Work</small>
-                    <h3>{category.title}</h3>
-                    <p>{category.summary}</p>
-                    <span>Explore programme <i aria-hidden="true">↗</i></span>
-                  </div>
-                </Link>
-              );
-            })}
-          </ScrollCarousel>
-        </div>
-      </section>
+            <ScrollCarousel label="Amaana programme areas" mode="focus" className="v3-work-carousel">
+              {visibleProgrammeCategories.map((category, index) => {
+                const media = programmeMedia.get(category.slug);
+                return (
+                  <Link className="v3-work-card" href={programmeCategoryPath(category.slug)} key={category.slug}>
+                    <div className="v3-work-card-media">
+                      {media ? (
+                        <PublicMedia asset={media} sizes="(max-width: 700px) 86vw, 30rem" />
+                      ) : (
+                        <WorkVisualPlaceholder label={category.title} />
+                      )}
+                    </div>
+                    <div className="v3-work-card-body">
+                      <small>{String(index + 1).padStart(2, '0')} · Our Work</small>
+                      <h3>{category.title}</h3>
+                      <p>{category.summary}</p>
+                      <span>Explore programme <i aria-hidden="true">↗</i></span>
+                    </div>
+                  </Link>
+                );
+              })}
+            </ScrollCarousel>
+          </div>
+        </section>
+      )}
 
       <section className="v3-section v3-eid" aria-labelledby="eid-growth-title">
         <div className="v3-shell">
