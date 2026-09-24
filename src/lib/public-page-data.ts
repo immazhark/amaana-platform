@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { cache } from "react";
 import { getAppealCoverMediaIssues } from "@/lib/appeal-cover-media";
 import { prisma } from "@/lib/prisma";
@@ -147,7 +148,7 @@ export const getHomepageDiscoveryData = cache(async () => {
       take: 3,
       select: PUBLIC_IMAGE_SELECT,
     },
-  } as const;
+  } satisfies Prisma.InitiativeSelect;
 
   const [featuredInitiatives, fieldInitiatives, causes, publishedProgrammeRecords] = await Promise.all([
     prisma.initiative.findMany({
