@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { programmeBySlug } from "@/lib/master-copy";
 
-const getPublishedInitiativeBySlug = vi.fn();
+const { getPublishedInitiativeBySlug } = vi.hoisted(() => ({
+  getPublishedInitiativeBySlug: vi.fn(),
+}));
 
 vi.mock("@/lib/public-content", () => ({
   getPublishedInitiativeBySlug,
@@ -20,6 +22,7 @@ const canonicalProgrammes = [
 
 describe("programmePageMetadata", () => {
   beforeEach(() => {
+    getPublishedInitiativeBySlug.mockReset();
     getPublishedInitiativeBySlug.mockImplementation(async (slug: string) => {
       const programme = programmeBySlug(slug);
       if (!programme) return null;
