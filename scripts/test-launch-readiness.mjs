@@ -20,6 +20,7 @@ test('current launch register is structurally valid and remains intentionally bl
   assert.ok(production.unresolved.some(gate => gate.id === 'controlled-live-donation-acceptance'));
   assert.ok(production.unresolved.some(gate => gate.id === 'refund-receipt-operational-check'));
   assert.ok(production.unresolved.some(gate => gate.id === 'production-indexing-decision'));
+  assert.ok(production.unresolved.some(gate => gate.id === 'main-branch-protection'));
   assert.ok(production.unresolved.some(gate => gate.id === 'main-promotion-and-production-approval'));
 });
 

@@ -181,6 +181,15 @@
       "evidence": "The real domain is reachable directly, but indexing remains intentionally fail-closed. Indexing now requires the explicit flag, the official HTTPS Amaana host, and APP_ENVIRONMENT=production; the Docker build defaults APP_ENVIRONMENT to staging and receives the environment at build time. A future approved indexing decision therefore requires a deliberate production rebuild with APP_ENVIRONMENT=production and NEXT_PUBLIC_ALLOW_INDEXING=true, followed by robots/sitemap/canonical verification. Runtime-only flag changes cannot make a staging-built image indexable."
     },
     {
+      "id": "main-branch-protection",
+      "category": "authorization",
+      "status": "PENDING",
+      "requiredFor": [
+        "production"
+      ],
+      "evidence": "GitHub branch metadata was rechecked on 2026-09-24. The `main` branch currently reports `protected=false`, required status-check enforcement `off`, no required check contexts, and the repository ruleset collection is empty. The connected GitHub installation can read this state but does not expose administration writes for branch protection/rulesets. Before production promotion, `main` must be protected through GitHub repository settings so direct/bypass merges cannot skip the CI and `Production promotion readiness` checks. This gate must remain PENDING until the protection/ruleset is enabled and then re-read from GitHub as active."
+    },
+    {
       "id": "main-promotion-and-production-approval",
       "category": "authorization",
       "status": "PENDING",

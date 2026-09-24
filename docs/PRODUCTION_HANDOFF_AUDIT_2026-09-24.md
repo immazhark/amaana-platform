@@ -189,3 +189,27 @@ This operational evidence should inform the production service configuration rat
 This does not reflect an application-code failure. The certified application candidate is green. The remaining production work consists of explicit configuration, human/external acceptance gates, rollback rehearsal, indexing decision and owner authorization.
 
 No production configuration was changed as part of this audit.
+
+## 10. GitHub `main` branch protection gap
+
+A live repository metadata check on 24 September 2026 found:
+
+- `main.protected = false`
+- required status-check enforcement: `off`
+- required status-check contexts: none
+- repository rulesets: none
+
+This means CI and the dedicated `Production promotion readiness` job are currently visible safeguards but are not yet enforced by GitHub as an unskippable merge policy.
+
+Before production promotion, enable branch protection or a repository ruleset for `main` that, at minimum:
+
+- prevents accidental direct pushes/merges that bypass the pull-request path;
+- requires the normal CI verification check;
+- requires the `Production promotion readiness` check;
+- does not permit the production PR to merge while those required checks are failing;
+- preserves an explicit owner-controlled merge decision rather than enabling auto-merge.
+
+After configuration, re-read `main` branch/ruleset metadata and record evidence before marking the `main-branch-protection` launch gate VERIFIED.
+
+The connected GitHub installation does not expose administration writes for branch protection/rulesets, so this setting must be applied in GitHub repository settings by an authorized repository administrator.
+
