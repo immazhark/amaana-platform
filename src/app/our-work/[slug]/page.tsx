@@ -62,12 +62,12 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       openGraph: {
         type: "website",
         url: canonical,
-        title: category.title,
+        title: `${category.title} | Amaana Foundation`,
         description: category.summary,
       },
       twitter: {
         card: "summary",
-        title: category.title,
+        title: `${category.title} | Amaana Foundation`,
         description: category.summary,
       },
     };
@@ -79,7 +79,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const canonical = `/our-work/${initiative.slug}`;
   const identity = selectIdentityPublicImage(initiative.mediaAssets);
   const leadImage = identity ? resolvePublicMediaUrl(identity) ?? undefined : undefined;
-  return { title: initiative.title, description: initiative.summary, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: initiative.title, description: initiative.summary, images: leadImage ? [{ url: leadImage, alt: identity?.altText ?? initiative.title }] : undefined }, twitter: { card: leadImage ? "summary_large_image" : "summary", title: initiative.title, description: initiative.summary, images: leadImage ? [leadImage] : undefined } };
+  return { title: initiative.title, description: initiative.summary, alternates: { canonical }, openGraph: { type: "article", url: canonical, title: `${initiative.title} | Amaana Foundation`, description: initiative.summary, images: leadImage ? [{ url: leadImage, alt: identity?.altText ?? initiative.title }] : undefined }, twitter: { card: leadImage ? "summary_large_image" : "summary", title: `${initiative.title} | Amaana Foundation`, description: initiative.summary, images: leadImage ? [leadImage] : undefined } };
 }
 
 export default async function InitiativePage({ params }: { params: Promise<{ slug: string }> }) {
