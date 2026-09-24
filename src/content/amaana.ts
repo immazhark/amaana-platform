@@ -59,13 +59,13 @@ export const initiatives: AmaanaInitiative[] = [
     href: "/our-work#dates-distribution",
   },
   {
-    slug: "medical-financial-assistance",
-    title: "Medical & Financial Assistance",
+    slug: "medical-financial-relief",
+    title: "Medical & Financial Relief",
     eyebrow: "Verified assistance",
-    summary: "Case-led support for medical emergencies, livelihood needs and financial hardship after review of supporting information.",
+    summary: "Verified help for medical emergencies, livelihood needs and financial hardship after review of supporting information.",
     metric: "₹482,700",
     metricLabel: "raised in one documented medical appeal",
-    href: "/our-work#medical-financial-assistance",
+    href: "/programmes/medical-financial-relief",
   },
   {
     slug: "hyderabad-flood-relief-2020",

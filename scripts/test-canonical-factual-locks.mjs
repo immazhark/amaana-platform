@@ -94,6 +94,13 @@ test('convenience Winter content does not reintroduce the superseded 234+ wordin
   assert.doesNotMatch(convenienceContentSource, /234\+.*campaign-reported beneficiaries/);
 });
 
+test('convenience initiative copy uses the canonical medical-relief destination', () => {
+  assert.match(convenienceContentSource, /slug: "medical-financial-relief"/);
+  assert.match(convenienceContentSource, /title: "Medical & Financial Relief"/);
+  assert.match(convenienceContentSource, /href: "\/programmes\/medical-financial-relief"/);
+  assert.doesNotMatch(convenienceContentSource, /medical-financial-assistance/);
+});
+
 test('public-content seed uses canonical programme taxonomy and Winter facts', () => {
   assert.match(publicSeedSource, /slug: "medical-financial-relief"/);
   assert.match(publicSeedSource, /slug: "emergency-humanitarian-relief"/);
