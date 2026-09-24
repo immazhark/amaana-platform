@@ -8,6 +8,7 @@
     "primaryMetric": "162 kg",
     "primaryMetricLabel": "dates procured and distributed · campaign-reported",
     "displayOrder": 0,
+    "cause": { "slug": "ramadan-eid" },
     "media": [
       { "id": "19xGmJ26fbwo1wZ2ABhZR88KmOT6i41r-", "url": "/media/dates-distribution-2026.webp", "alt": "Individual packages labelled Dates Distribution Drive 2026", "caption": "Prepared for the Ramadan drive: individually labelled dates packages." },
       { "id": "15ZnZc61IDGr6fqSOzzBQCmDgfCvSPUSY", "url": "/media/dates-2026-results.webp", "alt": "Amaana's thank-you update reports 162 kg of premium dates procured and distributed", "caption": "Campaign results update: Amaana thanks donors and reports 162 kg procured and distributed." },
@@ -23,6 +24,7 @@
     "primaryMetric": null,
     "primaryMetricLabel": null,
     "displayOrder": 0,
+    "cause": { "slug": "ramadan-eid" },
     "media": [
       { "id": "1KwWNywqnoILWc1Oo1HKQKxgZ6gWN_Lly", "url": "/media/qurbani-meat-distribution-2026.webp", "alt": "Labelled containers from Amaana's Meat Distribution Drive 2026", "caption": "Campaign-labelled containers brought together for the 2026 drive." },
       { "id": "18RXikdPjwE34vGDiyJltcPWqSLsII1lM", "url": "/media/meat-2026-labels.webp", "alt": "Close-up of a Meat Distribution Drive 2026 label on a container", "caption": "Each pack carries the campaign name and year." },

@@ -4,53 +4,88 @@ import { readFile } from "node:fs/promises";
 import { importReviewedCampaigns } from "../prisma/reviewed-campaign-import.mjs";
 
 const campaigns = JSON.parse(await readFile(new URL("../prisma/campaigns-2026.json", import.meta.url), "utf8"));
-function database({ cause = "PUBLISHED", existing = [] } = {}) {
+const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+const CANONICAL_CAUSE_SLUGS = new Set([
+  "medical-financial-relief",
+  "emergency-humanitarian-relief",
+  "ramadan-eid",
+  "amaana-taleem",
+  "seasonal-relief",
+]);
+
+function database({
+  causeStatus = "PUBLISHED",
+  causeStatuses = {},
+  existing = [],
+} = {}) {
   const records = new Map(existing.map(slug => [slug, { id: slug, status: "ARCHIVED" }]));
   const writes = [];
   const causeLookups = [];
-  const causeCreates = [];
   const tx = {
     $executeRaw: async () => 1,
     cause: {
       findUnique: async ({ where }) => {
         causeLookups.push(where.slug);
-        return cause ? { id: "ramadan-eid-cause", status: cause, slug: where.slug } : null;
+        const status = Object.prototype.hasOwnProperty.call(causeStatuses, where.slug)
+          ? causeStatuses[where.slug]
+          : causeStatus;
+        return status ? { id: `cause:${where.slug}`, status, slug: where.slug } : null;
       },
-      create: async ({ data }) => {
-        causeCreates.push(data);
-        return { id: "ramadan-eid-cause", ...data };
+      create: async () => {
+        throw new Error("Reviewed campaign import must not create Causes");
       },
     },
     initiative: {
       findUnique: async ({ where }) => records.get(where.slug) ?? null,
-      create: async ({ data }) => { writes.push(data); records.set(data.slug, { id: data.slug, ...data }); },
+      create: async ({ data }) => {
+        writes.push(data);
+        records.set(data.slug, { id: data.slug, ...data });
+      },
     },
   };
+
   return {
     prisma: { $transaction: async callback => callback(tx) },
     records,
     writes,
     causeLookups,
-    causeCreates,
   };
 }
-test("creates both editions with reviewed media associated to their initiative", async () => {
-  const db = database();
-  assert.equal(await importReviewedCampaigns(db.prisma, campaigns), 2);
-  assert.ok(db.causeLookups.includes("ramadan-eid"));
-  for (const row of db.writes) {
-    assert.equal(row.year, 2026);
-    assert.equal(row.causeId, "ramadan-eid-cause");
-    assert.equal(row.mediaAssets.create.length, 3);
-    assert.ok(row.mediaAssets.create.every(asset => asset.isPublic && asset.privacyApprovedAt && asset.altText && asset.publicUrl.startsWith("/media/")));
+
+test("reviewed campaign sources use only explicit canonical causes", () => {
+  for (const campaign of [...campaigns, ...historical]) {
+    assert.ok(campaign.cause?.slug, `${campaign.slug} is missing an explicit cause`);
+    assert.ok(
+      CANONICAL_CAUSE_SLUGS.has(campaign.cause.slug),
+      `${campaign.slug} uses noncanonical cause ${campaign.cause.slug}`,
+    );
   }
 });
+
+test("creates both 2026 editions under canonical Ramadan/Eid", async () => {
+  const db = database();
+  assert.equal(await importReviewedCampaigns(db.prisma, campaigns), 2);
+  assert.deepEqual(db.causeLookups, ["ramadan-eid"]);
+  for (const row of db.writes) {
+    assert.equal(row.year, 2026);
+    assert.equal(row.causeId, "cause:ramadan-eid");
+    assert.equal(row.mediaAssets.create.length, 3);
+    assert.ok(row.mediaAssets.create.every(
+      asset => asset.isPublic
+        && asset.privacyApprovedAt
+        && asset.altText
+        && asset.publicUrl.startsWith("/media/"),
+    ));
+  }
+});
+
 test("repeated startup does not overwrite editorial records or duplicate media", async () => {
   const db = database();
   await importReviewedCampaigns(db.prisma, campaigns);
   assert.equal(await importReviewedCampaigns(db.prisma, campaigns), 0);
   assert.equal(db.writes.length, 2);
 });
+
 test("an existing archived record remains archived and untouched", async () => {
   const slug = campaigns[0].slug;
   const db = database({ existing: [slug] });
@@ -58,74 +93,109 @@ test("an existing archived record remains archived and untouched", async () => {
   assert.equal(db.records.get(slug).status, "ARCHIVED");
   assert.equal(db.writes.length, 1);
 });
-test("missing canonical Ramadan/Eid cause is created without depending on a destructive seed", async () => {
-  const db = database({ cause: false });
-  assert.equal(await importReviewedCampaigns(db.prisma, campaigns), 2);
-  assert.equal(db.causeCreates.length, 1);
-  assert.equal(db.causeCreates[0].slug, "ramadan-eid");
-  assert.equal(db.causeCreates[0].title, "Ramadan & Eid Initiatives");
-  assert.equal(db.causeCreates[0].status, "PUBLISHED");
-  assert.ok(db.writes.every(row => row.causeId === "ramadan-eid-cause"));
-});
-test("an unpublished cause is not silently republished", async () => {
-  const db = database({ cause: "ARCHIVED" });
+
+test("a missing canonical cause fails closed instead of creating alternate taxonomy", async () => {
+  const db = database({ causeStatuses: { "ramadan-eid": null } });
   assert.equal(await importReviewedCampaigns(db.prisma, campaigns), 0);
   assert.equal(db.writes.length, 0);
 });
+
+test("an unpublished canonical cause is not silently republished", async () => {
+  const db = database({ causeStatuses: { "ramadan-eid": "ARCHIVED" } });
+  assert.equal(await importReviewedCampaigns(db.prisma, campaigns), 0);
+  assert.equal(db.writes.length, 0);
+});
+
+test("one unpublished cause does not block campaigns in another canonical cause", async () => {
+  const aid = historical.find(campaign => campaign.slug === "medical-aid-eight-day-old-baby");
+  const db = database({ causeStatuses: { "ramadan-eid": "ARCHIVED" } });
+  assert.equal(await importReviewedCampaigns(db.prisma, [campaigns[0], aid]), 1);
+  assert.equal(db.writes.length, 1);
+  assert.equal(db.writes[0].slug, aid.slug);
+  assert.equal(db.writes[0].causeId, "cause:medical-financial-relief");
+});
+
+test("noncanonical cause input is rejected before it can publish taxonomy", async () => {
+  const db = database();
+  const invalid = {
+    ...campaigns[0],
+    cause: { slug: "seasonal-food-support" },
+  };
+  await assert.rejects(
+    importReviewedCampaigns(db.prisma, [invalid]),
+    /uses noncanonical cause seasonal-food-support/,
+  );
+  assert.equal(db.writes.length, 0);
+});
+
 test("campaign media identifiers and URLs are unique within this import", () => {
   const media = campaigns.flatMap(campaign => campaign.media);
   assert.equal(new Set(media.map(asset => asset.id)).size, media.length);
   assert.equal(new Set(media.map(asset => asset.url)).size, media.length);
 });
-test("historical education edition uses its own cause and media year", async () => {
-  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+
+test("historical education edition uses canonical Taleem cause and media year", async () => {
   const db = database();
   await importReviewedCampaigns(db.prisma, historical);
-  assert.equal(db.writes[0].year, 2025);
-  assert.ok(db.writes[0].mediaAssets.create.every(asset => asset.sourceYear === 2025));
-  assert.equal(db.writes[0].cause, undefined);
+  const taleem = db.writes.find(row => row.slug === "taleem-initiative-2025");
+  assert.equal(taleem.year, 2025);
+  assert.equal(taleem.causeId, "cause:amaana-taleem");
+  assert.ok(taleem.mediaAssets.create.every(asset => asset.sourceYear === 2025));
+  assert.equal(taleem.cause, undefined);
 });
-test("multi-year archive edition uses its starting year for media provenance", async () => {
-  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+
+test("multi-year Winter archive uses canonical Seasonal Relief and starting-year provenance", async () => {
   const winter = historical.filter(campaign => campaign.slug === "winter-drive-2025-26");
   const db = database();
   await importReviewedCampaigns(db.prisma, winter);
   assert.equal(db.writes[0].startYear, 2025);
   assert.equal(db.writes[0].endYear, 2026);
+  assert.equal(db.writes[0].causeId, "cause:seasonal-relief");
   assert.ok(db.writes[0].mediaAssets.create.every(asset => asset.sourceYear === 2025));
   assert.equal(db.writes[0].mediaAssets.create.length, 4);
-  assert.ok(db.writes[0].mediaAssets.create.slice(0, 2).every(asset => asset.sourcePath.startsWith("user-upload:winter-2025-26/")));
+  assert.ok(db.writes[0].mediaAssets.create.slice(0, 2).every(
+    asset => asset.sourcePath.startsWith("user-upload:winter-2025-26/"),
+  ));
 });
-test("historical dates editions preserve reported weights and video media kinds", async () => {
-  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+
+test("historical dates editions preserve reported weights and canonical Ramadan/Eid", async () => {
   const dates = historical.filter(campaign => campaign.slug.startsWith("dates-distribution-"));
   const db = database();
   assert.equal(await importReviewedCampaigns(db.prisma, dates), 3);
   assert.deepEqual(db.writes.map(row => row.year), [2025, 2024, 2023]);
   assert.deepEqual(db.writes.map(row => row.primaryMetric), ["90 kg", "90 kg", "78 kg"]);
+  assert.ok(db.writes.every(row => row.causeId === "cause:ramadan-eid"));
   assert.equal(db.writes.find(row => row.year === 2024).mediaAssets.create.at(-1).kind, "VIDEO");
   assert.equal(db.writes.find(row => row.year === 2023).mediaAssets.create.at(-1).kind, "VIDEO");
 });
-test("meat distribution editions preserve reported family reach and local media", async () => {
-  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+
+test("meat distribution editions preserve reported family reach and canonical Ramadan/Eid", async () => {
   const meat = historical.filter(campaign => campaign.slug.startsWith("meat-distribution-"));
   const db = database();
   assert.equal(await importReviewedCampaigns(db.prisma, meat), 2);
   assert.deepEqual(db.writes.map(row => row.primaryMetric), ["350 families", "150 families"]);
-  assert.ok(db.writes.flatMap(row => row.mediaAssets.create).every(asset => asset.sourcePath.startsWith("user-upload:meat-")));
+  assert.ok(db.writes.every(row => row.causeId === "cause:ramadan-eid"));
+  assert.ok(db.writes.flatMap(row => row.mediaAssets.create).every(
+    asset => asset.sourcePath.startsWith("user-upload:meat-"),
+  ));
 });
-test("completed aid appeals preserve exact reported amounts and a dedicated cause", async () => {
-  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
-  const aid = historical.filter(campaign => campaign.cause?.slug === "medical-financial-aid");
+
+test("completed aid appeals preserve exact amounts under canonical Medical & Financial Relief", async () => {
+  const aid = historical.filter(campaign => campaign.cause?.slug === "medical-financial-relief");
   const db = database();
   assert.equal(await importReviewedCampaigns(db.prisma, aid), 5);
-  assert.deepEqual(db.writes.map(row => row.primaryMetric), ["₹95,000", "₹1,07,520", "₹3,19,000", "₹72,000", "₹4,82,700"]);
-  assert.ok(db.writes.every(row => row.causeId === "ramadan-eid-cause"));
-  assert.ok(db.writes.flatMap(row => row.mediaAssets.create).every(asset => asset.sourcePath.startsWith("user-upload:")));
+  assert.deepEqual(
+    db.writes.map(row => row.primaryMetric),
+    ["₹95,000", "₹1,07,520", "₹3,19,000", "₹72,000", "₹4,82,700"],
+  );
+  assert.ok(db.writes.every(row => row.causeId === "cause:medical-financial-relief"));
+  assert.ok(db.writes.flatMap(row => row.mediaAssets.create).every(
+    asset => asset.sourcePath.startsWith("user-upload:"),
+  ));
 });
-test("completed aid archive excludes live payment cards and marks privacy derivatives", async () => {
-  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
-  const aid = historical.filter(campaign => campaign.cause?.slug === "medical-financial-aid");
+
+test("completed aid archive excludes live payment cards and marks privacy derivatives", () => {
+  const aid = historical.filter(campaign => campaign.cause?.slug === "medical-financial-relief");
   const sources = aid.flatMap(campaign => campaign.media.map(asset => asset.source));
   assert.ok(!sources.some(source => source.includes("3 (2).png")));
   assert.ok(sources.some(source => source.includes("payment-details-omitted")));
@@ -133,26 +203,30 @@ test("completed aid archive excludes live payment cards and marks privacy deriva
   assert.ok(sources.some(source => source.includes("contact-details-redacted")));
 });
 
-test("Eid Gift Kits archive preserves all seven annual editions and reviewed local media", async () => {
-  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+test("Eid Gift Kits archive preserves all seven editions under canonical Ramadan/Eid", async () => {
   const eid = historical.filter(campaign => campaign.slug.startsWith("eid-gift-kits-"));
   const db = database();
   assert.equal(await importReviewedCampaigns(db.prisma, eid), 7);
   assert.deepEqual(db.writes.map(row => row.year), [2020, 2021, 2022, 2023, 2024, 2025, 2026]);
-  assert.deepEqual(db.writes.map(row => row.primaryMetric ?? null), ["85 families", "171 kits", "339 kits", "408 kits", "467 kits", "650 kits", "710 families"]);
-  assert.ok(db.writes.every(row => row.causeId === "ramadan-eid-cause"));
-  assert.ok(db.writes.flatMap(row => row.mediaAssets.create).every(asset => asset.sourcePath.startsWith("user-upload:eid-kits-")));
+  assert.deepEqual(
+    db.writes.map(row => row.primaryMetric ?? null),
+    ["85 families", "171 kits", "339 kits", "408 kits", "467 kits", "650 kits", "710 families"],
+  );
+  assert.ok(db.writes.every(row => row.causeId === "cause:ramadan-eid"));
+  assert.ok(db.writes.flatMap(row => row.mediaAssets.create).every(
+    asset => asset.sourcePath.startsWith("user-upload:eid-kits-"),
+  ));
   assert.deepEqual(db.writes.map(row => row.mediaAssets.create.length), [16, 17, 24, 19, 8, 8, 13]);
   assert.equal(db.writes.flatMap(row => row.mediaAssets.create).length, 105);
 });
 
-test("Eid Gift Kits archive uses canonical totals and labels every published metric as campaign-reported", async () => {
-  const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
+test("Eid Gift Kits archive uses canonical totals and campaign-reported labels", () => {
   const eid = historical.filter(campaign => campaign.slug.startsWith("eid-gift-kits-"));
   assert.equal(eid.find(campaign => campaign.year === 2023).primaryMetric, "408 kits");
-  assert.ok(eid.filter(campaign => campaign.primaryMetric).every(campaign => campaign.primaryMetricLabel.includes("campaign-reported")));
+  assert.ok(eid.filter(campaign => campaign.primaryMetric).every(
+    campaign => campaign.primaryMetricLabel.includes("campaign-reported"),
+  ));
   const media = eid.flatMap(campaign => campaign.media);
   assert.equal(new Set(media.map(asset => asset.id)).size, media.length);
   assert.equal(new Set(media.map(asset => asset.url)).size, media.length);
 });
-

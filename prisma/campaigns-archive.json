@@ -8,12 +8,7 @@
     "primaryMetric": "50 children",
     "primaryMetricLabel": "supported · campaign-reported",
     "displayOrder": 2,
-    "cause": {
-      "slug": "education-support",
-      "title": "Education Support",
-      "summary": "Educational support for students through Amaana's Taleem Initiative.",
-      "description": "Explore the Taleem educational-kit drive and its original campaign updates."
-    },
+    "cause": { "slug": "amaana-taleem" },
     "media": [
       {
         "id": "1bi1n3KNP475Y1kh0jyV5lU8t6jgYIiZr",
@@ -46,6 +41,7 @@
     "primaryMetric": "234 kits",
     "primaryMetricLabel": "distributed · campaign-reported",
     "displayOrder": 1,
+    "cause": { "slug": "seasonal-relief" },
     "media": [
       {
         "id": "local-winter-preparation-1",
@@ -84,6 +80,7 @@
     "primaryMetric": "90 kg",
     "primaryMetricLabel": "dates distributed · campaign-reported",
     "displayOrder": 3,
+    "cause": { "slug": "ramadan-eid" },
     "media": [
       {
         "id": "local-dates-2025-1",
@@ -124,6 +121,7 @@
     "primaryMetric": "90 kg",
     "primaryMetricLabel": "dates distributed · campaign-reported",
     "displayOrder": 4,
+    "cause": { "slug": "ramadan-eid" },
     "media": [
       {
         "id": "local-dates-2024-poster",
@@ -151,6 +149,7 @@
     "primaryMetric": "78 kg",
     "primaryMetricLabel": "dates distributed · campaign-reported",
     "displayOrder": 5,
+    "cause": { "slug": "ramadan-eid" },
     "media": [
       {
         "id": "local-dates-2023-photo",
@@ -178,6 +177,7 @@
     "primaryMetric": "350 families",
     "primaryMetricLabel": "supported · campaign-reported",
     "displayOrder": 6,
+    "cause": { "slug": "ramadan-eid" },
     "media": [
       {
         "id": "local-meat-2026-1",
@@ -239,6 +239,7 @@
     "primaryMetric": "150 families",
     "primaryMetricLabel": "supported · campaign-reported",
     "displayOrder": 7,
+    "cause": { "slug": "ramadan-eid" },
     "media": [
       {
         "id": "local-meat-2025-1",
@@ -300,12 +301,7 @@
     "primaryMetric": "₹95,000",
     "primaryMetricLabel": "raised · campaign-reported",
     "displayOrder": 8,
-    "cause": {
-      "slug": "medical-financial-aid",
-      "title": "Medical & Financial Aid",
-      "summary": "Completed medical and livelihood-support appeals documented through privacy-reviewed campaign evidence.",
-      "description": "Explore completed aid appeals, campaign-reported amounts and privacy-protected handover records. Historical donation details are omitted."
-    },
+    "cause": { "slug": "medical-financial-relief" },
     "media": [
       {
         "id": "local-aid-auto-rickshaw",
@@ -339,12 +335,7 @@
     "primaryMetric": "₹1,07,520",
     "primaryMetricLabel": "raised and handed over · campaign-reported",
     "displayOrder": 9,
-    "cause": {
-      "slug": "medical-financial-aid",
-      "title": "Medical & Financial Aid",
-      "summary": "Completed medical and livelihood-support appeals documented through privacy-reviewed campaign evidence.",
-      "description": "Explore completed aid appeals, campaign-reported amounts and privacy-protected handover records. Historical donation details are omitted."
-    },
+    "cause": { "slug": "medical-financial-relief" },
     "media": [
       {
         "id": "local-aid-baby-appeal",
@@ -378,12 +369,7 @@
     "primaryMetric": "₹3,19,000",
     "primaryMetricLabel": "raised and handed over · campaign-reported",
     "displayOrder": 10,
-    "cause": {
-      "slug": "medical-financial-aid",
-      "title": "Medical & Financial Aid",
-      "summary": "Completed medical and livelihood-support appeals documented through privacy-reviewed campaign evidence.",
-      "description": "Explore completed aid appeals, campaign-reported amounts and privacy-protected handover records. Historical donation details are omitted."
-    },
+    "cause": { "slug": "medical-financial-relief" },
     "media": [
       {
         "id": "local-aid-cancer-appeal",
@@ -424,12 +410,7 @@
     "primaryMetric": "₹72,000",
     "primaryMetricLabel": "raised and handed over · campaign-reported",
     "displayOrder": 11,
-    "cause": {
-      "slug": "medical-financial-aid",
-      "title": "Medical & Financial Aid",
-      "summary": "Completed medical and livelihood-support appeals documented through privacy-reviewed campaign evidence.",
-      "description": "Explore completed aid appeals, campaign-reported amounts and privacy-protected handover records. Historical donation details are omitted."
-    },
+    "cause": { "slug": "medical-financial-relief" },
     "media": [
       {
         "id": "local-aid-mother-appeal",
@@ -463,12 +444,7 @@
     "primaryMetric": "₹4,82,700",
     "primaryMetricLabel": "raised and handed over · campaign-reported",
     "displayOrder": 12,
-    "cause": {
-      "slug": "medical-financial-aid",
-      "title": "Medical & Financial Aid",
-      "summary": "Completed medical and livelihood-support appeals documented through privacy-reviewed campaign evidence.",
-      "description": "Explore completed aid appeals, campaign-reported amounts and privacy-protected handover records. Historical donation details are omitted."
-    },
+    "cause": { "slug": "medical-financial-relief" },
     "media": [
       {
         "id": "local-aid-aliza-update",
@@ -502,12 +478,7 @@
     "primaryMetric": "85 families",
     "primaryMetricLabel": "supported · campaign-reported",
     "displayOrder": 20,
-    "cause": {
-      "slug": "eid-gift-kits",
-      "title": "Eid Gift Kits",
-      "summary": "Festive food kits prepared for families around Eid.",
-      "description": "Explore Amaana's annual Eid Gift Kits editions, their reported reach and original preparation photographs."
-    },
+    "cause": { "slug": "ramadan-eid" },
     "media": [
       {
         "id": "local-eid-kits-2020-gallery-01",
@@ -632,12 +603,7 @@
     "primaryMetric": "171 kits",
     "primaryMetricLabel": "prepared · campaign-reported",
     "displayOrder": 19,
-    "cause": {
-      "slug": "eid-gift-kits",
-      "title": "Eid Gift Kits",
-      "summary": "Festive food kits prepared for families around Eid.",
-      "description": "Explore Amaana's annual Eid Gift Kits editions, their reported reach and original preparation photographs."
-    },
+    "cause": { "slug": "ramadan-eid" },
     "media": [
       {
         "id": "local-eid-kits-2021-gallery-01",
@@ -769,12 +735,7 @@
     "primaryMetric": "339 kits",
     "primaryMetricLabel": "prepared · campaign-reported",
     "displayOrder": 18,
-    "cause": {
-      "slug": "eid-gift-kits",
-      "title": "Eid Gift Kits",
-      "summary": "Festive food kits prepared for families around Eid.",
-      "description": "Explore Amaana's annual Eid Gift Kits editions, their reported reach and original preparation photographs."
-    },
+    "cause": { "slug": "ramadan-eid" },
     "media": [
       {
         "id": "local-eid-kits-2022-gallery-01",
@@ -953,12 +914,7 @@
     "story": "Amaana's 2023 Eid Gift Kits edition brought together rice, flour, cooking oil, spices, dry fruits, milk and other festive essentials. A representative basket records the contents, while the wider photograph shows the prepared kits arranged in rows.\n\nEach completed bag carried Amaana's campaign label and an Eid greeting. Some kits also included an envelope for meat and curd expenses.\n\nAmaana's verified campaign history records 408 kits for this edition. The page does not estimate any additional reach from the number of visible bags.",
     "year": 2023,
     "displayOrder": 17,
-    "cause": {
-      "slug": "eid-gift-kits",
-      "title": "Eid Gift Kits",
-      "summary": "Festive food kits prepared for families around Eid.",
-      "description": "Explore Amaana's annual Eid Gift Kits editions, their reported reach and original preparation photographs."
-    },
+    "cause": { "slug": "ramadan-eid" },
     "media": [
       {
         "id": "local-eid-kits-2023-gallery-01",
@@ -1106,12 +1062,7 @@
     "primaryMetric": "467 kits",
     "primaryMetricLabel": "prepared · campaign-reported",
     "displayOrder": 16,
-    "cause": {
-      "slug": "eid-gift-kits",
-      "title": "Eid Gift Kits",
-      "summary": "Festive food kits prepared for families around Eid.",
-      "description": "Explore Amaana's annual Eid Gift Kits editions, their reported reach and original preparation photographs."
-    },
+    "cause": { "slug": "ramadan-eid" },
     "media": [
       {
         "id": "local-eid-kits-2024-gallery-01",
@@ -1180,12 +1131,7 @@
     "primaryMetric": "650 kits",
     "primaryMetricLabel": "prepared · campaign-reported",
     "displayOrder": 15,
-    "cause": {
-      "slug": "eid-gift-kits",
-      "title": "Eid Gift Kits",
-      "summary": "Festive food kits prepared for families around Eid.",
-      "description": "Explore Amaana's annual Eid Gift Kits editions, their reported reach and original preparation photographs."
-    },
+    "cause": { "slug": "ramadan-eid" },
     "media": [
       {
         "id": "local-eid-kits-2025-gallery-01",
@@ -1254,12 +1200,7 @@
     "primaryMetric": "710 families",
     "primaryMetricLabel": "supported · campaign-reported",
     "displayOrder": 14,
-    "cause": {
-      "slug": "eid-gift-kits",
-      "title": "Eid Gift Kits",
-      "summary": "Festive food kits prepared for families around Eid.",
-      "description": "Explore Amaana's annual Eid Gift Kits editions, their reported reach and original preparation photographs."
-    },
+    "cause": { "slug": "ramadan-eid" },
     "media": [
       {
         "id": "local-eid-kits-2026-gallery-01",
