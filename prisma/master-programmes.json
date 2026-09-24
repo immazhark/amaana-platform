@@ -378,20 +378,21 @@
     {
       "slug": "winter-relief",
       "title": "Winter Drive 2025–26 — Warmth for Children and Vulnerable Families",
-      "summary": "During the 2025–26 winter season, Amaana Foundation carried out a multi-phase Winter Drive to provide practical cold-weather essentials to children and families facing winter without adequate protection. The support included sweaters, blankets and beanie caps and reached madrasa students, orphan children, widows, daily-wage labourers, domestic workers and other people in need.",
-      "story": "During the 2025–26 winter season, Amaana Foundation carried out a multi-phase Winter Drive to provide practical cold-weather essentials to children and families facing winter without adequate protection. The support included sweaters, blankets and beanie caps and reached madrasa students, orphan children, widows, daily-wage labourers, domestic workers and other people in need.\n\nIn Phase 1, support was distributed at Al Madarsatul Islamia LiTahfizil Quranil Kareem, FeelKhana, Mallepally, reaching 96 madrasa students, including boys and girls from approximately ages 2 to 18 and underprivileged orphan children. In Phase 2, Amaana worked in collaboration with Al Khair Society at Al Khair Masjid, Hyderabad, where 101 Winter Kits were distributed. The phase records use different measures and are reported separately.",
+      "summary": "During the 2025–26 winter season, Amaana Foundation distributed 234 Winter Kits to 234 beneficiaries through a multi-phase Winter Drive. The support included sweaters, blankets and beanie caps for madrasa students, orphan children, widows, daily-wage labourers, domestic workers and other people facing seasonal hardship.",
+      "story": "During the 2025–26 winter season, Amaana Foundation distributed 234 Winter Kits to 234 beneficiaries through a multi-phase Winter Drive. The support included sweaters, blankets and beanie caps for madrasa students, orphan children, widows, daily-wage labourers, domestic workers and other people facing seasonal hardship.\n\nIn Phase 1, support was distributed at Al Madarsatul Islamia LiTahfizil Quranil Kareem, FeelKhana, Mallepally, reaching 96 madrasa students, including boys and girls from approximately ages 2 to 18 and underprivileged orphan children. In Phase 2, Amaana worked in collaboration with Al Khair Society at Al Khair Masjid, Hyderabad, where 101 Winter Kits were distributed. These phase figures are supporting sub-measures within the overall drive and must not be added to the overall total of 234 Winter Kits distributed to 234 beneficiaries.",
       "causeSlug": "seasonal-relief",
-      "primaryMetric": "96 students",
-      "primaryMetricLabel": "Phase 1 · 101 Winter Kits in Phase 2",
+      "primaryMetric": "234 Winter Kits",
+      "primaryMetricLabel": "distributed to 234 beneficiaries",
       "startYear": 2025,
       "endYear": 2026,
       "programmeStatus": "COMPLETED",
       "facts": [
+        "Overall: 234 Winter Kits distributed to 234 beneficiaries.",
         "Phase 1: 96 madrasa students.",
         "Phase 2: 101 Winter Kits.",
-        "These are separate phase measures, not one combined beneficiary total."
+        "Phase figures are supporting sub-measures within the overall drive and must not be added to 234."
       ],
-      "dataCaveat": "Broader 234 figure has unresolved people/kit terminology; not approved as a definitive public metric."
+      "dataCaveat": null
     }
   ]
 }

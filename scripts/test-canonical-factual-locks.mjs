@@ -54,6 +54,23 @@ test('Winter factual lock uses one overall 234-to-234 metric and keeps phase fig
   assert.deepEqual(winter.legacySlugs, ['winter-drive-2025-26', 'winter-relief-2025-26']);
 });
 
+test('master Winter source matches the canonical 234-to-234 record', () => {
+  const winter = masterProgrammes.initiatives.find((item) => item.slug === 'winter-relief');
+  assert.ok(winter);
+  assert.equal(winter.primaryMetric, '234 Winter Kits');
+  assert.equal(winter.primaryMetricLabel, 'distributed to 234 beneficiaries');
+  assert.match(winter.summary, /234 Winter Kits to 234 beneficiaries/);
+  assert.match(winter.story, /must not be added to the overall total of 234/);
+  assert.deepEqual(winter.facts, [
+    'Overall: 234 Winter Kits distributed to 234 beneficiaries.',
+    'Phase 1: 96 madrasa students.',
+    'Phase 2: 101 Winter Kits.',
+    'Phase figures are supporting sub-measures within the overall drive and must not be added to 234.',
+  ]);
+  assert.equal(winter.dataCaveat, null);
+  assert.notEqual(winter.primaryMetric, '96 students');
+});
+
 test('canonical migration reapplies factual locks even when master content is already seeded', () => {
   assert.match(
     migrationSource,
