@@ -12,6 +12,7 @@ import { ScrollCarousel } from "@/components/scroll-carousel";
 import { programmeCategories, programmes } from '@/lib/master-copy';
 import { programmeCategoryPath } from '@/lib/programme-category-routing';
 import { selectIdentityPublicImage } from '@/lib/public-media';
+import { openGraphShareImages, twitterShareImages } from '@/lib/social-share-media';
 
 export const dynamic = "force-dynamic";
 
@@ -24,11 +25,13 @@ export const metadata: Metadata = {
     url: "/",
     title: "Amaana Foundation | Verified Relief, Education & Community Support in Hyderabad",
     description: "A Hyderabad-based registered charitable trust supporting verified community needs through relief, education, seasonal programmes and case-led assistance.",
+    images: openGraphShareImages(),
   },
   twitter: {
     card: "summary_large_image",
     title: "Amaana Foundation | Verified Relief, Education & Community Support in Hyderabad",
     description: "A Hyderabad-based registered charitable trust supporting verified community needs through relief, education, seasonal programmes and case-led assistance.",
+    images: twitterShareImages(),
   },
 };
 
