@@ -60,6 +60,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: canonicalCategory.title,
       description: canonicalCategory.summary,
       alternates: { canonical: legacyDestination },
+      openGraph: {
+        type: 'website',
+        url: legacyDestination,
+        title: `${canonicalCategory.title} | Amaana Foundation`,
+        description: canonicalCategory.summary,
+      },
+      twitter: {
+        card: 'summary',
+        title: `${canonicalCategory.title} | Amaana Foundation`,
+        description: canonicalCategory.summary,
+      },
     };
   }
   if (!category) return { title: 'Programme not found' };
