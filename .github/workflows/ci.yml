@@ -65,7 +65,9 @@ jobs:
       - name: Verify non-destructive campaign import
         run: node --test scripts/test-reviewed-campaigns.mjs scripts/test-reviewed-campaign-revisions.mjs scripts/test-reviewed-campaign-feature-normalization.mjs scripts/test-reviewed-campaign-video-normalization.mjs
       - name: Verify canonical factual locks
-        run: node --test scripts/test-canonical-factual-locks.mjs
+        run: |
+          npm run master:check
+          node --test scripts/test-canonical-factual-locks.mjs
       - name: Guard public editorial and compliance copy
         run: |
           node --test scripts/test-public-editorial-consistency.mjs

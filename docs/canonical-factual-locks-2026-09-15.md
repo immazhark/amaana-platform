@@ -14,6 +14,19 @@ Supporting phase figures:
 
 The phase figures are sub-measures inside the overall drive and must **not** be added to the overall 234 total.
 
+## Compliance status — confirmed 17 September 2026
+
+The earlier master-copy wording that treated 12A / 12AB as awaiting Chartered Accountant confirmation is superseded by Amaana's later confirmation recorded in the launch-readiness register.
+
+Canonical public position:
+
+- **Section 12A / 12AB:** provisional approval is in place; do not describe it as final or permanent.
+- **Section 80G:** provisional approval via Form 10AC dated 26 January 2026, covering AY 2026–27 through AY 2028–29; do not describe it as final or permanent.
+- **FCRA:** Amaana Foundation is not FCRA-registered.
+- **Donation geography:** public fundraising remains domestic-only unless the legal position changes.
+
+This compliance correction is a public-copy lock. Older source text requiring fresh CA confirmation must not overwrite the later confirmed provisional status.
+
 ## Emergency neonatal medical-aid case
 
 Canonical amount raised:

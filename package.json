@@ -26,6 +26,8 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "editorial:check": "node scripts/check-public-editorial-consistency.mjs",
+    "master:check": "node scripts/compile-master-copy.mjs --check",
+    "master:sync": "node scripts/compile-master-copy.mjs",
     "launch:preflight": "node scripts/launch-preflight.mjs",
     "launch:preflight:rehearsal": "node scripts/launch-preflight.mjs --rehearsal",
     "launch:preflight:production": "node scripts/launch-preflight.mjs --production",

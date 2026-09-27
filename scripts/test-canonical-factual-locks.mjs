@@ -31,6 +31,10 @@ const masterCompilerSource = await readFile(
   new URL('./compile-master-copy.mjs', import.meta.url),
   'utf8',
 );
+const organizationCopySource = await readFile(
+  new URL('../src/lib/organization-copy.ts', import.meta.url),
+  'utf8',
+);
 
 const bySlug = new Map(locks.initiatives.map((item) => [item.slug, item]));
 
@@ -40,12 +44,21 @@ test('runtime and migration master programme sources stay structurally identical
   assert.deepEqual(runtimeMasterCopy.initiatives, masterProgrammes.initiatives);
 });
 
-test('master compiler reapplies canonical factual locks before writing generated sources', () => {
+test('master compiler uses tracked structured source and reapplies canonical factual locks reproducibly', () => {
+  assert.match(masterCompilerSource, /src\/content\/master-copy\.json/);
   assert.match(masterCompilerSource, /canonical-factual-locks\.json/);
-  assert.match(masterCompilerSource, /applyCanonicalFactualLocks\(items,factualLocks\)/);
-  assert.match(masterCompilerSource, /const amounts=\['₹95,000','₹107,520'/);
-  assert.doesNotMatch(masterCompilerSource, /const amounts=[^\n]*₹107,200/);
-  assert.doesNotMatch(masterCompilerSource, /winterItem\.primaryMetric='96 students'/);
+  assert.match(masterCompilerSource, /applyCanonicalFactualLocks\(items, factualLocks\)/);
+  assert.match(masterCompilerSource, /prisma\/master-programmes\.json/);
+  assert.match(masterCompilerSource, /process\.argv\.includes\("--check"\)/);
+  assert.doesNotMatch(masterCompilerSource, /Amaana_Foundation_Master_Website_Copy\.md/);
+});
+
+test('governance master source reflects the confirmed provisional 12A/12AB position', () => {
+  const governanceSource = runtimeMasterCopy.pages?.["19"]?.source;
+  assert.ok(governanceSource);
+  assert.match(governanceSource, /12A \/ 12AB:[\s\S]{0,120}Provisional approval is in place/i);
+  assert.doesNotMatch(governanceSource, /12A \/ 12AB:[\s\S]{0,180}must be confirmed/i);
+  assert.match(organizationCopySource, /Section 12A \/ 12AB: provisional approval is in place/i);
 });
 
 test('newborn medical-aid factual lock uses the confirmed amount', () => {
