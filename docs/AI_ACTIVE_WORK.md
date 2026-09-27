@@ -1,7 +1,7 @@
 # Amaana Platform — Active Implementation State
 
 ## State
-**STAGING_PHASED_IMPLEMENTATION_ACTIVE**
+**CODEX_ACTIVE**
 
 ## Integration branch
 - `phase-public-site-rebuild`
@@ -280,3 +280,7 @@ The following remain intentionally PENDING until actual evidence exists:
 - Do not mark human privacy/accessibility/editorial gates VERIFIED from automated evidence alone.
 - Impact-page visual redesign remains deferred until the owner supplies the separate redesign prompt.
 
+
+## 28 September 2026 — approved background integration
+
+User explicitly requested integration of all six revision-4 SVGs after design review. Codex owns this scoped implementation on `feat/approved-svg-backgrounds`, based on verified integration HEAD `6bb0666c45aa274e5e44a0a7d0339198802164e5`. Only open PR is draft production promotion #104; do not merge it. Replace approved assets byte-for-byte, refresh hash lock, adapt responsive placement and verify readability without changing content or footer height. Baseline push CI 36341349733 fails browser acceptance (classification in progress); PR checks pass. Production remains protected.
