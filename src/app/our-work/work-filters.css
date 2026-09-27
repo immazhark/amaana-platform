@@ -21,10 +21,6 @@
 
 .v2-cause-stack { display: grid; gap: clamp(4rem,8vw,7rem); }
 .v2-cause-section { min-width: 0; }
-.v2-cause-heading { display: grid; grid-template-columns: 3.2rem minmax(13rem,.8fr) minmax(0,1.2fr); gap: clamp(1rem,3vw,2.5rem); align-items: start; margin: 0 -.9rem 1.75rem; padding: clamp(1.25rem,2.5vw,1.8rem) .9rem; border-radius: 1rem; background: linear-gradient(105deg,rgb(70 111 170 / 7%),rgb(224 179 24 / 7%) 58%,transparent); }
-.v2-cause-number { color: #b8890e; font: 700 .85rem/1.4 system-ui,sans-serif; letter-spacing: .12em; }
-.v2-cause-heading h2 { margin: 0; font-family: Georgia,"Times New Roman",serif; font-size: clamp(2rem,4vw,3.5rem); line-height: 1.02; letter-spacing: -.035em; text-wrap: balance; }
-.v2-cause-heading > p { margin: 0; color: #5b6472; line-height: 1.75; max-width: 48rem; }
 
 .v2-initiative-list { display: grid; border-top: 1px solid #d9d2c2; }
 .v2-initiative-row { display: grid; grid-template-columns: 2.4rem minmax(0,1fr) minmax(10rem,13rem) 1.3rem; gap: clamp(.9rem,2vw,1.5rem); align-items: start; padding: clamp(1.35rem,2.7vw,2rem) 0; border-bottom: 1px solid #d9d2c2; color: inherit; text-decoration: none; }
@@ -42,9 +38,7 @@
 .v2-initiative-arrow { justify-self: end; color: #b8890e; font-weight: 800; line-height: 1; }
 
 @media (max-width: 900px) {
-  .v2-cause-heading { grid-template-columns: 2.6rem minmax(0,1fr); }
-  .v2-cause-heading > p { grid-column: 2; }
-  .v2-initiative-row,
+      .v2-initiative-row,
   .v2-initiative-row.has-media { grid-template-columns: 2.4rem minmax(0,1fr) 1.3rem; }
   .v2-initiative-row .v2-initiative-thumb,
   .v2-initiative-row .v2-initiative-copy,
@@ -60,9 +54,7 @@
   .work-filters button { width: 100%; }
   .work-filters a { min-height: auto; padding-block: .25rem; }
   .v2-work-index-proof { grid-template-columns: 1fr; }
-  .v2-cause-heading { grid-template-columns: 1fr; gap: .65rem; margin-inline: -.4rem; padding-inline: .75rem; }
-  .v2-cause-heading > p { grid-column: 1; }
-  .v2-initiative-row,
+      .v2-initiative-row,
   .v2-initiative-row.has-media { grid-template-columns: minmax(0,1fr) 1.3rem; gap: .8rem 1rem; }
   .v2-initiative-index { grid-column: 1; grid-row: 1; }
   .v2-initiative-row .v2-initiative-arrow { grid-column: 2; grid-row: 1; }
@@ -78,46 +70,28 @@
 @media(max-width:900px){.v2-initiative-proof--currency{justify-self:start}}
 
 
-/* Scalable programme directory: keep the default portfolio compact as yearly records grow. */
-.v2-cause-accordion{gap:.9rem}
-.v2-cause-disclosure{scroll-margin-top:7rem;overflow:clip;border:1px solid rgb(18 34 57 / 11%);border-radius:1.25rem;background:rgb(255 253 248 / 84%);box-shadow:0 .7rem 2.2rem rgb(18 34 57 / 4%)}
+
+/* Programme disclosure keeps the growing archive scan-friendly without changing routes. */
+.v2-cause-accordion{gap:.8rem}
+.v2-cause-disclosure{overflow:clip;border:1px solid rgb(18 34 57 / 11%);border-radius:1rem;background:rgb(255 253 248 / 88%)}
 .v2-cause-summary{list-style:none;cursor:pointer}
 .v2-cause-summary::-webkit-details-marker{display:none}
-.v2-cause-summary-heading{display:grid;grid-template-columns:2.4rem minmax(0,1fr) auto 2.5rem;gap:1rem;align-items:center;margin:0;padding:1.15rem 1.25rem;color:var(--v2-ink)}
-.v2-cause-summary-copy{display:grid;gap:.22rem;min-width:0}
-.v2-cause-summary-title{font-family:Georgia,"Times New Roman",serif;font-size:clamp(1.65rem,3vw,2.6rem);font-weight:500;line-height:1.02;letter-spacing:-.035em;text-wrap:balance}
-.v2-cause-summary-count{justify-self:end;padding:.48rem .7rem;border:1px solid rgb(18 34 57 / 10%);border-radius:999px;background:#fff;color:#5f6974;font-size:.75rem;font-weight:800;white-space:nowrap}
-.v2-cause-summary-toggle{display:grid;width:2.25rem;height:2.25rem;place-items:center;justify-self:end;border:1px solid rgb(18 34 57 / 14%);border-radius:50%;background:#fff;color:#1d3150;font-size:1.25rem;font-weight:500;line-height:1;transition:transform .2s ease,background .2s ease}
-.v2-cause-summary:hover{background:linear-gradient(90deg,rgb(70 111 170 / 5%),rgb(224 179 24 / 5%))}
+.v2-cause-summary-heading{display:grid;grid-template-columns:2.2rem minmax(0,1fr) auto 2.2rem;gap:.85rem;align-items:center;margin:0;padding:1rem;color:var(--v2-ink)}
+.v2-cause-summary-copy{display:grid;gap:.15rem;min-width:0}
+.v2-cause-summary-title{font:500 clamp(1.5rem,3vw,2.3rem)/1.05 Georgia,"Times New Roman",serif;letter-spacing:-.03em;text-wrap:balance}
+.v2-cause-summary-count{color:#677180;font-size:.75rem;font-weight:800;white-space:nowrap}
+.v2-cause-summary-toggle{display:grid;width:2rem;height:2rem;place-items:center;border:1px solid rgb(18 34 57 / 14%);border-radius:50%;background:#fff;font-size:1.2rem}
 .v2-cause-summary:focus-visible{outline:3px solid var(--v2-gold);outline-offset:3px}
-.v2-cause-disclosure[open] .v2-cause-summary{border-bottom:1px solid rgb(18 34 57 / 10%);background:linear-gradient(100deg,rgb(70 111 170 / 6%),rgb(224 179 24 / 6%) 64%,transparent)}
-.v2-cause-disclosure[open] .v2-cause-summary-toggle{transform:rotate(45deg);background:#fffaf0}
-.v2-cause-panel{padding:0 1.25rem 1.35rem}
-.v2-cause-description{max-width:56rem;margin:0;padding:1rem 0 1.2rem;color:#5b6472;line-height:1.7}
-.v2-cause-disclosure .v2-initiative-list{border-top:1px solid #d9d2c2}
-.v2-cause-disclosure .v2-taleem-highlights{margin-bottom:.2rem}
-
-@media(max-width:700px){
-  .v2-cause-accordion{gap:.7rem}
-  .v2-cause-disclosure{border-radius:1rem}
-  .v2-cause-summary-heading{grid-template-columns:2rem minmax(0,1fr) 2.25rem;gap:.7rem;padding:.95rem .9rem}
-  .v2-cause-summary-heading .v2-cause-number{grid-column:1;grid-row:1/3}
-  .v2-cause-summary-copy{grid-column:2;grid-row:1}
-  .v2-cause-summary-count{grid-column:2;grid-row:2;justify-self:start;padding:.36rem .55rem;font-size:.7rem}
-  .v2-cause-summary-toggle{grid-column:3;grid-row:1/3;width:2rem;height:2rem}
-  .v2-cause-summary-title{font-size:clamp(1.35rem,6vw,1.75rem)}
-  .v2-cause-panel{padding:0 .9rem 1rem}
-  .v2-cause-description{padding:.85rem 0 1rem;font-size:.92rem;line-height:1.6}
-  .v2-cause-disclosure .v2-initiative-row.has-media{grid-template-columns:5rem minmax(0,1fr) 1rem!important;gap:.8rem!important;align-items:start!important;padding:1rem 0!important}
-  .v2-cause-disclosure .v2-initiative-row.has-media .v2-initiative-index{display:none!important}
-  .v2-cause-disclosure .v2-initiative-row.has-media .v2-initiative-thumb{grid-column:1!important;grid-row:1/3!important;width:5rem!important;max-width:5rem!important;height:auto!important;aspect-ratio:4/3!important;border-radius:.7rem}
-  .v2-cause-disclosure .v2-initiative-row.has-media .v2-initiative-copy{grid-column:2!important;grid-row:1!important}
-  .v2-cause-disclosure .v2-initiative-row.has-media .v2-initiative-copy h3{font-size:1.25rem;line-height:1.08}
-  .v2-cause-disclosure .v2-initiative-row.has-media .v2-initiative-copy p{display:-webkit-box;margin-top:.45rem;overflow:hidden;-webkit-box-orient:vertical;-webkit-line-clamp:2;font-size:.86rem;line-height:1.5}
-  .v2-cause-disclosure .v2-initiative-row.has-media .v2-initiative-proof{grid-column:2!important;grid-row:2!important;justify-self:start}
-  .v2-cause-disclosure .v2-initiative-row.has-media .v2-initiative-arrow{display:block!important;grid-column:3!important;grid-row:1/3!important;align-self:center}
+.v2-cause-disclosure[open] .v2-cause-summary{border-bottom:1px solid rgb(18 34 57 / 10%);background:rgb(70 111 170 / 5%)}
+.v2-cause-disclosure[open] .v2-cause-summary-toggle{transform:rotate(45deg)}
+.v2-cause-panel{padding:0 1rem 1rem}
+.v2-cause-description{max-width:56rem;margin:0;padding:.9rem 0 1rem;color:#5b6472;line-height:1.65}
+@media(max-width:600px){
+.v2-cause-summary-heading{grid-template-columns:1.8rem minmax(0,1fr) 2rem;gap:.65rem;padding:.85rem}
+.v2-cause-summary-heading .v2-cause-number{grid-row:1/3}
+.v2-cause-summary-count{grid-column:2;grid-row:2;justify-self:start}
+.v2-cause-summary-toggle{grid-column:3;grid-row:1/3}
+.v2-cause-summary-title{font-size:1.4rem}
+.v2-cause-panel{padding-inline:.85rem}
 }
-
-@media(prefers-reduced-motion:reduce){
-  .v2-cause-summary-toggle{transition:none}
-}
+@media(prefers-reduced-motion:reduce){.v2-cause-summary-toggle{transition:none}}
