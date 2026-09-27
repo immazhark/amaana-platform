@@ -194,3 +194,63 @@ After GitHub protection is verified and the Railway rehearsal succeeds:
 10. perform controlled Live payment/refund acceptance only within the explicitly approved scope.
 
 A green CI state does not replace these operator gates.
+
+---
+
+## D. Verify the Resend production sending domain
+
+A production sending-domain resource now exists in Resend:
+
+- domain: `amaanafoundation.org`
+- provider status: `not_started`
+- sending: enabled
+- receiving: disabled
+- open tracking: disabled
+- click tracking: disabled
+- production email delivery remains disabled in Railway
+- no transactional email has been sent
+
+Add the following DNS records in the authoritative DNS provider for `amaanafoundation.org`.
+
+### DKIM
+
+TXT record:
+
+- name: `resend._domainkey`
+- value: `p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUxz7mTdpmCy0t5/jxTdA4b9VhZLj3bjDAM6+btZdiPFlLljdeX7g5EsXKJ5YsgtFWW9DutfaUcvrO/7L7+Exi6GNeYzxNohTdvnIG/+TEV/Hou/Oneo5Pj8Qr7YKvh/7wC7svPPIJJfqleoogwHdb5mFaFNDPdqY9ZLOaVHj22QIDAQAB`
+- TTL: Auto/default
+
+### SPF / Return-Path
+
+MX record:
+
+- name: `send`
+- target: `feedback-smtp.us-east-1.amazonses.com`
+- priority: `10`
+- TTL: Auto/default
+
+TXT record:
+
+- name: `send`
+- value: `v=spf1 include:amazonses.com ~all`
+- TTL: Auto/default
+
+CNAME record:
+
+- name: `rsend`
+- target: `send.forge.rmta.net`
+- TTL: Auto/default
+
+### After DNS is saved
+
+1. Do not enable live application email yet.
+2. Return to the Resend domain and start/recheck provider verification.
+3. Confirm all required DKIM/SPF records report verified.
+4. Only then prepare a production sending API key outside Git/chat.
+5. Configure the approved `EMAIL_FROM` identity on `amaanafoundation.org`.
+6. Keep `EMAIL_DELIVERY_MODE=disabled` until the controlled acceptance step is explicitly authorized.
+7. During acceptance, send exactly one synthetic/non-beneficiary test email to an approved staff recipient.
+8. Verify provider receipt, queue `SENT` state, stored provider message ID and no duplicate delivery.
+9. Re-check retry/idempotency before resolving `transactional-email-delivery`.
+
+Do not use donor, beneficiary, medical, payment or case data for the first production email acceptance.

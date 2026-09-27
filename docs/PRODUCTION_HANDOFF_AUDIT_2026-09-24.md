@@ -187,7 +187,24 @@ The certified staging candidate demonstrated the intended fail-closed behavior u
 
 This operational evidence should inform the production service configuration rather than be bypassed by weakening readiness.
 
-## 9. Current production-handoff decision
+## 9. Transactional email provider state — 27 September 2026
+
+Resend was audited directly:
+
+- existing API keys: one key named `amaana-platform-staging`;
+- configured sending domains before this block: none;
+- historical transactional emails: none;
+- new sending-domain resource created for `amaanafoundation.org`;
+- sending enabled;
+- receiving disabled;
+- open/click tracking disabled;
+- provider verification status: `not_started`;
+- no production email sent;
+- no production API key created.
+
+The required DKIM/SPF records are now captured in `docs/OPERATOR_PRELAUNCH_ACTIONS_2026-09-24.md`. Production email delivery remains fail-closed until DNS verification, an approved production sender/API key and a controlled exactly-once staff acceptance are completed.
+
+## 10. Current production-handoff decision
 
 **NOT READY FOR PRODUCTION CUTOVER YET.**
 
@@ -195,7 +212,7 @@ This does not reflect an application-code failure. The certified application can
 
 On 27 September 2026, only fail-closed/non-secret production preparation was changed: hardened Railway health/restart/watch settings and safe environment posture defaults. No production deployment, secret replacement, custom-domain move, Live Razorpay activation, live email activation or indexing decision occurred.
 
-## 10. GitHub `main` branch protection gap
+## 11. GitHub `main` branch protection gap
 
 A live repository metadata check on 24 September 2026 found:
 
