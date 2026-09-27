@@ -72,7 +72,7 @@ test("requires an explicit production indexing decision and matching public flag
   const disabledMismatch = validEnv();
   disabledMismatch.PRODUCTION_INDEXING_DECISION = "keep_disabled";
   disabledMismatch.NEXT_PUBLIC_ALLOW_INDEXING = "true";
-  assert.match(validateProductionEnvironmentContract(disabledMismatch).join("\n"), /must not be true/);
+  assert.match(validateProductionEnvironmentContract(disabledMismatch).join("\n"), /must be false/);
 
   const enabled = validEnv();
   enabled.PRODUCTION_INDEXING_DECISION = "enable";
