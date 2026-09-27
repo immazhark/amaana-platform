@@ -514,3 +514,8 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 
 /* Acceptance consolidation: homepage body surface. */
 .v3-work{background-size:cover!important;background-position:var(--af-surface-position)!important;background-repeat:no-repeat!important}
+
+/* Approved mobile art keeps its blue/emblem composition; copy needs an opaque reading surface. */
+@media(max-width:768px){
+  .page-hero--level1 .page-hero__copy{background:#eee5d2;border:1px solid rgb(117 86 7 / 12%);border-radius:1rem;padding:1.25rem;box-shadow:0 .5rem 2rem rgb(18 34 57 / 8%)}
+}
