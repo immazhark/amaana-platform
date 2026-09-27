@@ -78,7 +78,19 @@ export default async function HomePage() {
   return (
     <div className="v3-home">
       <section className="v3-home-banner" aria-labelledby="amaana-home-title">
-        <h1 className="sr-only" id="amaana-home-title">Amaana Foundation — Trust, Turned Into Action.</h1>
+        <h1
+          id="amaana-home-title"
+          style={{
+            position: "absolute",
+            inlineSize: 1,
+            blockSize: 1,
+            overflow: "hidden",
+            clipPath: "inset(50%)",
+            whiteSpace: "nowrap",
+          }}
+        >
+          Amaana Foundation — Trust, Turned Into Action.
+        </h1>
         <ScrollCarousel label="Amaana Foundation story and featured work" mode="hero" className="v3-home-banner-carousel" autoAdvanceMs={7000}>
           <article className="v3-home-banner-slide v3-home-banner-slide--story">
             <div className="v3-home-banner-story-art" aria-hidden="true">
