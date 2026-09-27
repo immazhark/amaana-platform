@@ -341,44 +341,23 @@ test('reduced-motion preference disables reminder autoplay', async ({ page }) =>
   await expect(autoplay).toHaveText('Motion off');
 });
 
-test('mobile companion launchers stay in flow and Back to top remains independently usable', async ({ page }) => {
+test('mobile floating companion and Back to top controls do not overlap', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await openPublicPage(page, '/about');
 
-  const geometry = await page.evaluate(() => {
-    const companion = document.querySelector('.amaana-companion');
-    const dock = document.querySelector('.amaana-companion-dock');
-    const main = document.querySelector('main#main');
-    if (!(companion instanceof HTMLElement) || !(dock instanceof HTMLElement) || !(main instanceof HTMLElement)) return null;
-
-    const companionBox = companion.getBoundingClientRect();
-    const dockBox = dock.getBoundingClientRect();
-    const mainBox = main.getBoundingClientRect();
-
-    return {
-      companionPosition: getComputedStyle(companion).position,
-      dockPosition: getComputedStyle(dock).position,
-      companionBottom: companionBox.bottom,
-      dockBottom: dockBox.bottom,
-      mainTop: mainBox.top,
-    };
-  });
-
-  expect(geometry).not.toBeNull();
-  expect(geometry.companionPosition).toBe('static');
-  expect(geometry.dockPosition).toBe('static');
-  expect(geometry.companionBottom).toBeLessThanOrEqual(geometry.mainTop + 1);
-  expect(geometry.dockBottom).toBeLessThanOrEqual(geometry.mainTop + 1);
-
   await page.evaluate(() => window.scrollTo(0, Math.max(1000, document.body.scrollHeight)));
 
   const backToTop = page.getByRole('button', { name: 'Back to top' });
+  const companion = page.locator('.amaana-companion-dock');
   await expect(backToTop).toBeVisible();
+  await expect(companion).toBeVisible();
 
   const backBox = await backToTop.boundingBox();
+  const companionBox = await companion.boundingBox();
   expect(backBox).not.toBeNull();
-  expect(backBox.y + backBox.height).toBeLessThanOrEqual(844);
+  expect(companionBox).not.toBeNull();
+  expect(rectanglesOverlap(backBox, companionBox), 'Floating controls overlap at 390px').toBe(false);
 
   await backToTop.click();
   await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
