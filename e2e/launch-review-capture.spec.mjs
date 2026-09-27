@@ -68,4 +68,49 @@ test.describe('launch review screenshot capture', () => {
       });
     }
   }
+
+  test('mobile bottom-right companion viewport capture', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.route('**/api/analytics/page-view', request =>
+      request.fulfill({ status: 204, body: '' }),
+    );
+
+    const response = await page.goto('/about', { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBeTruthy();
+    const companion = page.locator('.amaana-companion');
+    await expect(companion).toBeVisible();
+
+    await page.screenshot({
+      path: path.join(outputDir, 'companion-bottom-right--mobile-viewport.jpg'),
+      type: 'jpeg',
+      quality: 90,
+      fullPage: false,
+      animations: 'disabled',
+      caret: 'hide',
+    });
+  });
+
+  test('mobile support bar and companion collision viewport capture', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.route('**/api/analytics/page-view', request =>
+      request.fulfill({ status: 204, body: '' }),
+    );
+
+    const response = await page.goto('/browser-acceptance/mobile-support?state=open', { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBeTruthy();
+    await expect(page.getByRole('complementary', { name: 'Quick support action' })).toBeVisible();
+    await expect(page.locator('.amaana-companion')).toBeVisible();
+
+    await page.screenshot({
+      path: path.join(outputDir, 'companion-with-support-bar--mobile-viewport.jpg'),
+      type: 'jpeg',
+      quality: 90,
+      fullPage: false,
+      animations: 'disabled',
+      caret: 'hide',
+    });
+  });
+
 });
