@@ -115,6 +115,29 @@ test('Stories journal CTA resolves to a real in-page target', async ({ page }) =
   await expect(page.locator('#journal')).toHaveCount(1);
 });
 
+
+test('Our Work keeps the growing portfolio collapsed by programme until a visitor chooses a category', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPublicPage(page, '/our-work');
+
+  const groups = page.locator('details[data-work-category]');
+  expect(await groups.count()).toBeGreaterThan(1);
+  await expect(page.locator('details[data-work-category][open]')).toHaveCount(0);
+
+  const first = groups.first();
+  const firstSummary = first.locator('summary');
+  await expect(firstSummary).toBeVisible();
+  await firstSummary.click();
+  await expect(first).toHaveAttribute('open', '');
+  await expect(first.locator('a[href^="/our-work/"]').first()).toBeVisible();
+
+  await openPublicPage(page, '/our-work?programme=ramadan-eid');
+  const filteredGroups = page.locator('details[data-work-category]');
+  await expect(filteredGroups).toHaveCount(1);
+  await expect(filteredGroups.first()).toHaveAttribute('open', '');
+  await expect(filteredGroups.first().locator('summary')).toContainText(/Ramadan|Eid/i);
+});
+
 test('unknown public routes return a branded, navigable and noindex 404', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   const response = await page.goto('/definitely-not-an-amaana-route', { waitUntil: 'domcontentloaded' });
