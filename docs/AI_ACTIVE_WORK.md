@@ -7,12 +7,12 @@
 - `phase-public-site-rebuild`
 - Family feedback/review is complete as of 21 September 2026.
 - Quiet-mode restrictions are lifted. Audited implementation may be pushed phase-by-phase to staging on this branch.
-- Current exact integration HEAD: `60462d9cf0f790321b21dab531a443d11911dc21`; push CI `36027994092` and PR CI `36027999164` are SUCCESS.
-- Current successful Railway staging deployment: `368067ae-5bf4-4d00-90d9-43cc090eebc2` from source SHA `e1efc19f75482f2eae5f988b2a469dc2848640d5` (`privacy: remove orphaned public legacy videos`).
-- The later empty-public-media test/tooling commits through exact HEAD were skipped by Railway because they did not require another application deployment; exact-head CI is the authoritative repository gate.
+- Current exact integration HEAD: `cdfc8ad2cefb61c992537a3d4cae48e58cfe6aab`; push CI `36330311977` and PR CI `36330314494` are SUCCESS. Exact-head Chromium acceptance: 352 passed in 5.2 minutes.
+- Current successful Railway staging deployment: `a7625ecc-5d8b-41d7-a8ac-7cb341e71bfc` from source SHA `b5d5373402e275e3993448914cff75e1bbb23bcb` (`fix: make master copy source reproducible`). Startup encountered one transient Neon P1001, recovered through the existing retry path, and Railway `/api/health/ready` succeeded before deployment reached SUCCESS. The later `cdfc8ad2...` assertion-only commit was correctly SKIPPED by Railway.
+- Exact-head repository state is certified by GitHub CI; Railway deploys only application-affecting changes and correctly skips test/documentation-only follow-ups.
 - Prior runtime baseline `bce6b1d85bedc9da6e0fb38484e867db71cb4182` / deployment `d0e7608a-df34-425b-9d30-79d1434b1064` remains historical evidence, but that deployment is now `REMOVED` and is not the currently served staging deployment.
 - Reserved production service `amaana-platform` now has non-secret hardened deployment parity: `/api/health/ready`, 300-second timeout, restart retry limit 3 and staging-aligned application watch patterns. No deployment was triggered.
-- Safe production defaults were staged with deploys skipped: `APP_ENVIRONMENT=production`, `EMAIL_DELIVERY_MODE=disabled`, `NEXT_PUBLIC_ALLOW_INDEXING=false`, and all acceptance/browser flags false. Indexing decision, production public-media bucket/base URL, Live payments and live email remain deliberately unresolved.
+- Safe production defaults were staged with deploys skipped: `APP_ENVIRONMENT=production`, `EMAIL_DELIVERY_MODE=disabled`, `NEXT_PUBLIC_ALLOW_INDEXING=false`, and all acceptance/browser flags false. Indexing decision, production public-media bucket, Live payments and live email remain deliberately unresolved.
 - Resend production sending-domain resource for `amaanafoundation.org` was created on 27 September 2026 with sending enabled, receiving disabled and tracking disabled. Provider verification has been triggered and remains `pending`; DKIM, SPF MX, SPF TXT and the `rsend` CNAME now all report `pending`, with none yet verified. No transactional email was sent and no new API key was created.
 - Live Neon media audit on 27 September 2026: 3 MediaAsset rows total, all unpublished/unapproved initiative-linked legacy VIDEO metadata matching the three removed static MP4s; zero public assets, zero privacy approvals, zero public-without-approval, zero orphaned assets and zero identity assets. No destructive DB cleanup was performed.
 - Reserved production service now also has `PUBLIC_MEDIA_BASE_URL=https://amaanafoundation.org/media` configured with deploys skipped. `PUBLIC_MEDIA_S3_BUCKET` and `PRODUCTION_INDEXING_DECISION` remain deliberately unset.
@@ -36,7 +36,7 @@
 
 ## 21 September 2026 media + carousel baseline
 - All 191 legacy programme/drive/cause image files were removed from the current staging branch.
-- All 175 staging `MediaAsset` IMAGE records were removed. Three legacy MP4 records/files remain outside this image-reset scope and hosted video remains fail-closed publicly.
+- All 175 staging `MediaAsset` IMAGE records were removed. The three legacy static MP4 files were subsequently removed from `public/media`; three matching DB VIDEO metadata rows remain private/unapproved and hosted video remains fail-closed publicly.
 - `prisma/integration-media.json` is empty so deleted images cannot silently re-seed.
 - Identity image contract is deterministic: `IDENTITY_MEDIA_SORT_ORDER = -1000`; assigning a new identity image demotes the prior identity image for the same target.
 - Identity publication requires explicit hero-use approval in addition to the normal privacy/provenance publication gate.
@@ -70,8 +70,10 @@
   - provisional 12A/12AB and 80G wording;
   - domestic-only / non-FCRA boundary.
 - Exact Aliza public metric changed from rounded `₹4.82L` to `₹482,700`.
-- SEO browser coverage extended to donation/sponsorship routes and page-level social images.
+- SEO browser coverage now covers all 26 declared static public routes, all four programme-category schemas, generated social images and canonical redirects; exact-head Chromium acceptance completed 352/352.
 - Document-title regression coverage prevents duplicate Amaana branding.
+- Master-copy generation is now reproducible from tracked `src/content/master-copy.json`; `npm run master:check` is enforced in CI and the confirmed provisional 12A/12AB status is locked against stale source text.
+- Privacy, Terms and Refund Policy still explicitly disclose outstanding professional legal/accounting wording review; this remains part of the human `final-editorial-seo-social-review` gate and is not auto-closed by green automation.
 - Public/private data-boundary guard prevents public publishing surfaces from reading internal beneficiary/verification/token/storage fields.
 - Final human launch QA checklist consolidated into one canonical document.
 
