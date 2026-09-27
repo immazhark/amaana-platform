@@ -3,12 +3,12 @@ import { readFile } from "node:fs/promises";
 import path from "node:path";
 
 const expected = new Map([
-  ["Amaana_Website_Body_Background.svg", "7230fcfd9714410e2c5617a070c6e4859484d73ec3bd8bce9c2a08c9770ef123"],
-  ["Amaana_Website_Body_Background_Mobile.svg", "753ca2cab543b09680696129884b90486805483572e38b21823705f69a323f86"],
-  ["Amaana_Website_Footer_Background.svg", "81713776bbdc977cbee7988a803e474d0bff8e7aa7f2bf2b429e05d4e91e326c"],
-  ["Amaana_Website_Footer_Background_Mobile.svg", "84f288e265b0816962ae34ba162df433d3c41848fcb9eaa803f3fd8b6b10ccf7"],
-  ["Amaana_Website_Header_Banner.svg", "5ec47ba00b3bf01c5ca4688ba1d728be0000ad97473bfbaa880c5b2fdc1e911f"],
-  ["Amaana_Website_Header_Banner_Mobile.svg", "a7da5601196c24786cf9247899e29699f91ca4ad736bc7e0551b6083f54bf15f"],
+  ["Amaana_Website_Body_Background.svg", "cc3772feaf6935a9df65244dbb1da8842a9eb64f95e5b2cd2df7d47c7a82722d"],
+  ["Amaana_Website_Body_Background_Mobile.svg", "3e742c3b1070e251eb86c1dfe52611490f72c595108d9f696a7b6ec9a36ab8c5"],
+  ["Amaana_Website_Footer_Background.svg", "93d6f8bf1d6e4dad77718b9b35e1f9b1c9ba74d648f3a62f88a62c4635baad0e"],
+  ["Amaana_Website_Footer_Background_Mobile.svg", "cfd3a290c70afcb68f67954f946890d19e6bd5163c2da1b6869f966da40c275e"],
+  ["Amaana_Website_Header_Banner.svg", "5bc2669c19271b7497844ac083559916b57ad3a6af097223c4864631ea28f75b"],
+  ["Amaana_Website_Header_Banner_Mobile.svg", "5d9c865facaa9657427e23d3b0decceab653936ac546c1d5739a5b86543ac89f"],
 ]);
 
 const root = path.resolve("public/backgrounds");

@@ -61,6 +61,7 @@ for (const width of widths) {
 
     expect(styles.hero).toContain(`/backgrounds/Amaana_Website_Header_Banner${suffix}`);
     expect(styles.body).toContain(`/backgrounds/Amaana_Website_Body_Background${suffix}`);
+    expect(styles.body).not.toContain('gradient(');
     expect(styles.footer).toContain(`/backgrounds/Amaana_Website_Footer_Background${suffix}`);
     expect(styles.hero).not.toContain('amaana-architectural-pattern');
     expect(styles.atmosphereCount).toBe(0);
