@@ -1,7 +1,7 @@
 :root{
-  --amaana-bg-hero:url("/backgrounds/Amaana_Website_Header_Banner.svg");
-  --amaana-bg-body:url("/backgrounds/Amaana_Website_Body_Background.svg");
-  --amaana-bg-footer:url("/backgrounds/Amaana_Website_Footer_Background.svg");
+  --amaana-bg-hero:url("/backgrounds/Amaana_Website_Header_Banner.svg?v=20260928-r4");
+  --amaana-bg-body:url("/backgrounds/Amaana_Website_Body_Background.svg?v=20260928-r4");
+  --amaana-bg-footer:url("/backgrounds/Amaana_Website_Footer_Background.svg?v=20260928-r4");
 }
 
 .amaana-bg-hero,
@@ -41,9 +41,9 @@
 
 @media(max-width:768px){
   :root{
-    --amaana-bg-hero:url("/backgrounds/Amaana_Website_Header_Banner_Mobile.svg");
-    --amaana-bg-body:url("/backgrounds/Amaana_Website_Body_Background_Mobile.svg");
-    --amaana-bg-footer:url("/backgrounds/Amaana_Website_Footer_Background_Mobile.svg");
+    --amaana-bg-hero:url("/backgrounds/Amaana_Website_Header_Banner_Mobile.svg?v=20260928-r4");
+    --amaana-bg-body:url("/backgrounds/Amaana_Website_Body_Background_Mobile.svg?v=20260928-r4");
+    --amaana-bg-footer:url("/backgrounds/Amaana_Website_Footer_Background_Mobile.svg?v=20260928-r4");
   }
 
   .amaana-bg-hero{background-position:top right}
