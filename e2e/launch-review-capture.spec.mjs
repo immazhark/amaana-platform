@@ -50,6 +50,13 @@ test.describe('launch review screenshot capture', () => {
           window.scrollTo(0, 0);
         });
 
+        // Full-page screenshots do not naturally enter every off-screen element's
+        // viewport. Force review-mode painting so content-visibility:auto remains
+        // a runtime optimization without producing false blank panels in artifacts.
+        await page.addStyleTag({
+          content: '* { content-visibility: visible !important; }',
+        });
+
         await page.screenshot({
           path: path.join(outputDir, `${route.slug}--${viewport.name}.jpg`),
           type: 'jpeg',
