@@ -346,6 +346,28 @@ test('mobile floating companion and Back to top controls do not overlap', async 
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await openPublicPage(page, '/about');
 
+  const fixedGeometry = await page.evaluate(() => {
+    const companion = document.querySelector('.amaana-companion');
+    if (!(companion instanceof HTMLElement)) return null;
+
+    const box = companion.getBoundingClientRect();
+    const viewportWidth = document.documentElement.clientWidth;
+    const viewportHeight = window.innerHeight;
+
+    return {
+      position: getComputedStyle(companion).position,
+      rightGap: viewportWidth - box.right,
+      bottomGap: viewportHeight - box.bottom,
+    };
+  });
+
+  expect(fixedGeometry).not.toBeNull();
+  expect(fixedGeometry.position).toBe('fixed');
+  expect(fixedGeometry.rightGap).toBeGreaterThanOrEqual(0);
+  expect(fixedGeometry.rightGap).toBeLessThanOrEqual(24);
+  expect(fixedGeometry.bottomGap).toBeGreaterThanOrEqual(0);
+  expect(fixedGeometry.bottomGap).toBeLessThanOrEqual(24);
+
   await page.evaluate(() => window.scrollTo(0, Math.max(1000, document.body.scrollHeight)));
 
   const backToTop = page.getByRole('button', { name: 'Back to top' });
