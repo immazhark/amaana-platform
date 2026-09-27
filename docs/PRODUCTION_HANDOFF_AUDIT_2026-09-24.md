@@ -1,9 +1,10 @@
 # Amaana Platform — Production Handoff Configuration Audit
 
-Date: 24 September 2026  
+Original audit: 24 September 2026  
+Live re-verification/update: 27 September 2026  
 Integration branch: `phase-public-site-rebuild`  
-Certified application candidate: `bce6b1d85bedc9da6e0fb38484e867db71cb4182`  
-Current documentation head at audit start: `7eabaf67b7300edd3c83ad5726eb285b95f977b7`
+Exact green integration HEAD before this update: `e6bf44c5a7caf6009972a6d477125c1c2076bb34`  
+Current successful staging deployment: `368067ae-5bf4-4d00-90d9-43cc090eebc2` from source SHA `e1efc19f75482f2eae5f988b2a469dc2848640d5`
 
 This is a read-only production-handoff audit. It does **not** authorize a merge to `main`, production DNS changes, Live Razorpay activity, indexing enablement, transactional email activation, or mutation of production secrets.
 
@@ -23,30 +24,31 @@ Railway service:
 
 This service is therefore a reserved production target, not the currently certified release candidate.
 
-## 2. Current production-service configuration gap
+## 2. Production-service configuration parity — hardened 27 September 2026
 
-The reserved `amaana-platform` service still reflects the older Railway configuration:
+The reserved `amaana-platform` service has now been aligned with the non-secret hardened deployment controls used by staging:
 
 - builder: RAILPACK
 - source: `main`
-- one replica in `asia-southeast1-eqsg3a`
-- no explicit `/api/health/ready` healthcheck shown in current service config
-- no explicit 300-second healthcheck timeout shown
-- no explicit restart-policy retry count shown
-- no application watch-pattern list matching the hardened preview service
+- one replica remains in `asia-southeast1-eqsg3a` (region intentionally unchanged)
+- healthcheck: `/api/health/ready`
+- healthcheck timeout: 300 seconds
+- restart retry limit: 3
+- application watch patterns:
+  - `src/**`
+  - `public/**`
+  - `prisma/**`
+  - `package.json`
+  - `package-lock.json`
+  - `next.config.ts`
+  - `tsconfig.json`
+  - `postcss.config.mjs`
+  - `Dockerfile`
 - no custom production domain attached yet
 
-By comparison, the certified `amaana-rebuild-preview` service currently has:
+The Railway configuration mutation was made with no production deployment. Live deployment history remained unchanged: the latest production-service deployment is still `4ae17816-5942-43fc-b24f-1e8ef1dd4f16` on old `main` SHA `1a69dd179181390a488623accf1314a1ff09e319`.
 
-- `/api/health/ready` healthcheck
-- 300-second healthcheck timeout
-- restart retry limit of 3
-- explicit application watch patterns
-- the integration branch source
-- the current public custom domain
-- the hardened startup path exercised during the 24 September Neon outage
-
-The production target must be brought into configuration parity deliberately before cutover. Do not assume branch promotion alone will inherit preview-service settings.
+This closes the non-secret service-configuration parity gap without authorizing a production candidate deployment or changing DNS, region, credentials, indexing, email delivery, or payment posture.
 
 ## 3. Production environment contract — variable-name audit
 
@@ -75,23 +77,26 @@ The reserved production service already defines the following required variable 
 
 Values are intentionally not recorded here.
 
-### Required production controls currently absent by variable name
+### Production controls after 27 September fail-closed defaults
 
-At audit time, the reserved production service does **not** define:
+The reserved production service now defines these safe non-secret posture variables, with deployment explicitly skipped:
 
-- `APP_ENVIRONMENT`
-- `EMAIL_DELIVERY_MODE`
-- `PRODUCTION_INDEXING_DECISION`
-- `NEXT_PUBLIC_ALLOW_INDEXING`
-- `PUBLIC_MEDIA_BASE_URL`
-- `PUBLIC_MEDIA_S3_ACCESS_KEY_ID`
-- `PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY`
-- `PUBLIC_MEDIA_S3_BUCKET`
-- `PUBLIC_MEDIA_S3_ENDPOINT`
-- `PUBLIC_MEDIA_S3_REGION`
-- `PUBLIC_MEDIA_S3_FORCE_PATH_STYLE`
+- `APP_ENVIRONMENT=production`
+- `EMAIL_DELIVERY_MODE=disabled`
+- `NEXT_PUBLIC_ALLOW_INDEXING=false`
+- `STAGING_ACCEPTANCE_ON_START=false`
+- `PUBLIC_MEDIA_ACCEPTANCE_ON_START=false`
+- `AMAANA_BROWSER_ACCEPTANCE=false`
 
-These are configuration blockers for the repository production-environment contract. They must not be filled by copying staging values blindly.
+The remaining production contract decisions/resources still absent by variable name are:
+
+- `PRODUCTION_INDEXING_DECISION` — intentionally unset until the explicit owner indexing decision;
+- `PUBLIC_MEDIA_S3_BUCKET` — requires the approved production public-media bucket;
+- `PUBLIC_MEDIA_BASE_URL` — production contract requires `https://amaanafoundation.org/media`.
+
+The public-media runtime intentionally permits `PUBLIC_MEDIA_S3_REGION`, `PUBLIC_MEDIA_S3_ENDPOINT`, `PUBLIC_MEDIA_S3_ACCESS_KEY_ID`, `PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY`, and `PUBLIC_MEDIA_S3_FORCE_PATH_STYLE` to fall back to the private S3 provider/account settings while still requiring a physically/logically separate public-media bucket. Therefore those override variable names are **optional**, not unconditional blockers. When public-media access-key overrides are used, the production validator now requires the access-key ID and secret to be supplied together; optional endpoint overrides must use HTTPS.
+
+Final production acceptance still requires the actual redacted values to pass `scripts/check-production-environment.mjs`; variable-name presence alone is not evidence that Live Razorpay, Resend, database, storage, or sender identity values are correct.
 
 ## 4. Values that require deliberate production verification
 
@@ -156,10 +161,10 @@ Before deploying the first production candidate to `amaana-platform`:
 
 - [ ] source branch remains `main`
 - [ ] approved candidate has been explicitly promoted to `main`
-- [ ] `/api/health/ready` configured as Railway healthcheck
-- [ ] healthcheck timeout set to 300 seconds
-- [ ] restart behavior matches the hardened staging policy
-- [ ] application watch patterns are reviewed for production
+- [x] `/api/health/ready` configured as Railway healthcheck
+- [x] healthcheck timeout set to 300 seconds
+- [x] restart behavior matches the hardened staging policy
+- [x] application watch patterns aligned with the hardened staging service
 - [ ] required production variables exist
 - [ ] production environment contract passes without printing secrets
 - [ ] assistance and public-media buckets are separate
@@ -188,7 +193,7 @@ This operational evidence should inform the production service configuration rat
 
 This does not reflect an application-code failure. The certified application candidate is green. The remaining production work consists of explicit configuration, human/external acceptance gates, rollback rehearsal, indexing decision and owner authorization.
 
-No production configuration was changed as part of this audit.
+On 27 September 2026, only fail-closed/non-secret production preparation was changed: hardened Railway health/restart/watch settings and safe environment posture defaults. No production deployment, secret replacement, custom-domain move, Live Razorpay activation, live email activation or indexing decision occurred.
 
 ## 10. GitHub `main` branch protection gap
 

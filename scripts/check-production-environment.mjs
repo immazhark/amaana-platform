@@ -23,6 +23,34 @@ function requireValue(env, name, problems) {
   return value;
 }
 
+function validateHttpsEndpoint(env, name, problems, { required = false } = {}) {
+  const value = required ? requireValue(env, name, problems) : nonEmpty(env, name);
+  if (!value) return null;
+
+  try {
+    if (new URL(value).protocol !== "https:") {
+      problems.push(`${name} must use HTTPS in production.`);
+    }
+  } catch {
+    problems.push(`${name} must be a valid URL.`);
+  }
+
+  return value;
+}
+
+function validateBooleanString(env, name, problems, { required = false } = {}) {
+  const value = required ? requireValue(env, name, problems) : nonEmpty(env, name);
+  if (!value) return null;
+
+  const normalized = value.toLowerCase();
+  if (!["true", "false"].includes(normalized)) {
+    problems.push(`${name} must be true or false.`);
+    return null;
+  }
+
+  return normalized;
+}
+
 export function validateProductionEnvironmentContract(env) {
   const problems = [];
 
@@ -67,19 +95,19 @@ export function validateProductionEnvironmentContract(env) {
 
   const privateBucket = requireValue(env, "S3_BUCKET", problems);
   requireValue(env, "S3_REGION", problems);
-  const s3Endpoint = requireValue(env, "S3_ENDPOINT", problems);
-  if (s3Endpoint) {
-    try {
-      if (new URL(s3Endpoint).protocol !== "https:") {
-        problems.push("S3_ENDPOINT must use HTTPS in production.");
-      }
-    } catch {
-      problems.push("S3_ENDPOINT must be a valid URL.");
-    }
-  }
+  validateHttpsEndpoint(env, "S3_ENDPOINT", problems, { required: true });
+  validateBooleanString(env, "S3_FORCE_PATH_STYLE", problems);
 
   const publicBucket = requireValue(env, "PUBLIC_MEDIA_S3_BUCKET", problems);
   const publicBaseUrl = requireValue(env, "PUBLIC_MEDIA_BASE_URL", problems);
+  validateHttpsEndpoint(env, "PUBLIC_MEDIA_S3_ENDPOINT", problems);
+  validateBooleanString(env, "PUBLIC_MEDIA_S3_FORCE_PATH_STYLE", problems);
+
+  const publicAccessKey = nonEmpty(env, "PUBLIC_MEDIA_S3_ACCESS_KEY_ID");
+  const publicSecretKey = nonEmpty(env, "PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY");
+  if (Boolean(publicAccessKey) !== Boolean(publicSecretKey)) {
+    problems.push("PUBLIC_MEDIA_S3_ACCESS_KEY_ID and PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY must be configured together when overriding public-media credentials.");
+  }
   if (privateBucket && publicBucket && privateBucket === publicBucket) {
     problems.push("PUBLIC_MEDIA_S3_BUCKET must differ from the private assistance S3_BUCKET.");
   }
@@ -96,13 +124,13 @@ export function validateProductionEnvironmentContract(env) {
   }
 
   const indexingDecision = requireValue(env, "PRODUCTION_INDEXING_DECISION", problems);
-  const indexingFlag = String(env.NEXT_PUBLIC_ALLOW_INDEXING ?? "").toLowerCase();
+  const indexingFlag = validateBooleanString(env, "NEXT_PUBLIC_ALLOW_INDEXING", problems, { required: true });
   if (indexingDecision && !["enable", "keep_disabled"].includes(indexingDecision)) {
     problems.push("PRODUCTION_INDEXING_DECISION must be enable or keep_disabled.");
   } else if (indexingDecision === "enable" && indexingFlag !== "true") {
     problems.push("NEXT_PUBLIC_ALLOW_INDEXING must be true when PRODUCTION_INDEXING_DECISION=enable.");
-  } else if (indexingDecision === "keep_disabled" && indexingFlag === "true") {
-    problems.push("NEXT_PUBLIC_ALLOW_INDEXING must not be true when PRODUCTION_INDEXING_DECISION=keep_disabled.");
+  } else if (indexingDecision === "keep_disabled" && indexingFlag !== "false") {
+    problems.push("NEXT_PUBLIC_ALLOW_INDEXING must be false when PRODUCTION_INDEXING_DECISION=keep_disabled.");
   }
 
   for (const [name, minLength] of Object.entries(REQUIRED_SECRET_LENGTHS)) {

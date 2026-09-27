@@ -56,6 +56,14 @@ test("requires an explicit production indexing decision and matching public flag
   delete missing.PRODUCTION_INDEXING_DECISION;
   assert.match(validateProductionEnvironmentContract(missing).join("\n"), /PRODUCTION_INDEXING_DECISION is required/);
 
+  const missingFlag = validEnv();
+  delete missingFlag.NEXT_PUBLIC_ALLOW_INDEXING;
+  assert.match(validateProductionEnvironmentContract(missingFlag).join("\n"), /NEXT_PUBLIC_ALLOW_INDEXING is required/);
+
+  const malformedFlag = validEnv();
+  malformedFlag.NEXT_PUBLIC_ALLOW_INDEXING = "yes";
+  assert.match(validateProductionEnvironmentContract(malformedFlag).join("\n"), /NEXT_PUBLIC_ALLOW_INDEXING must be true or false/);
+
   const enableMismatch = validEnv();
   enableMismatch.PRODUCTION_INDEXING_DECISION = "enable";
   enableMismatch.NEXT_PUBLIC_ALLOW_INDEXING = "false";
@@ -94,6 +102,41 @@ test("rejects insecure or malformed private storage endpoints", () => {
   const malformed = validEnv();
   malformed.S3_ENDPOINT = "not-a-url";
   assert.match(validateProductionEnvironmentContract(malformed).join("\n"), /S3_ENDPOINT must be a valid URL/);
+
+  const malformedBoolean = validEnv();
+  malformedBoolean.S3_FORCE_PATH_STYLE = "sometimes";
+  assert.match(validateProductionEnvironmentContract(malformedBoolean).join("\n"), /S3_FORCE_PATH_STYLE must be true or false/);
+});
+
+test("validates optional public-media storage overrides without requiring them", () => {
+  const fallback = validEnv();
+  assert.deepEqual(validateProductionEnvironmentContract(fallback), []);
+
+  const partialCredentials = validEnv();
+  partialCredentials.PUBLIC_MEDIA_S3_ACCESS_KEY_ID = "public-access";
+  assert.match(
+    validateProductionEnvironmentContract(partialCredentials).join("\n"),
+    /PUBLIC_MEDIA_S3_ACCESS_KEY_ID and PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY must be configured together/,
+  );
+
+  const insecureEndpoint = validEnv();
+  insecureEndpoint.PUBLIC_MEDIA_S3_ENDPOINT = "http://public-s3.example.com";
+  assert.match(validateProductionEnvironmentContract(insecureEndpoint).join("\n"), /PUBLIC_MEDIA_S3_ENDPOINT must use HTTPS/);
+
+  const malformedEndpoint = validEnv();
+  malformedEndpoint.PUBLIC_MEDIA_S3_ENDPOINT = "not-a-url";
+  assert.match(validateProductionEnvironmentContract(malformedEndpoint).join("\n"), /PUBLIC_MEDIA_S3_ENDPOINT must be a valid URL/);
+
+  const malformedPathStyle = validEnv();
+  malformedPathStyle.PUBLIC_MEDIA_S3_FORCE_PATH_STYLE = "1";
+  assert.match(validateProductionEnvironmentContract(malformedPathStyle).join("\n"), /PUBLIC_MEDIA_S3_FORCE_PATH_STYLE must be true or false/);
+
+  const explicitOverrides = validEnv();
+  explicitOverrides.PUBLIC_MEDIA_S3_ACCESS_KEY_ID = "public-access";
+  explicitOverrides.PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY = "public-secret";
+  explicitOverrides.PUBLIC_MEDIA_S3_ENDPOINT = "https://public-s3.example.com";
+  explicitOverrides.PUBLIC_MEDIA_S3_FORCE_PATH_STYLE = "true";
+  assert.deepEqual(validateProductionEnvironmentContract(explicitOverrides), []);
 });
 
 test("rejects shared public/private storage and launch-only acceptance flags", () => {

@@ -11,6 +11,8 @@
 - Current successful Railway staging deployment: `368067ae-5bf4-4d00-90d9-43cc090eebc2` from source SHA `e1efc19f75482f2eae5f988b2a469dc2848640d5` (`privacy: remove orphaned public legacy videos`).
 - The later empty-public-media test/tooling commits through exact HEAD were skipped by Railway because they did not require another application deployment; exact-head CI is the authoritative repository gate.
 - Prior runtime baseline `bce6b1d85bedc9da6e0fb38484e867db71cb4182` / deployment `d0e7608a-df34-425b-9d30-79d1434b1064` remains historical evidence, but that deployment is now `REMOVED` and is not the currently served staging deployment.
+- Reserved production service `amaana-platform` now has non-secret hardened deployment parity: `/api/health/ready`, 300-second timeout, restart retry limit 3 and staging-aligned application watch patterns. No deployment was triggered.
+- Safe production defaults were staged with deploys skipped: `APP_ENVIRONMENT=production`, `EMAIL_DELIVERY_MODE=disabled`, `NEXT_PUBLIC_ALLOW_INDEXING=false`, and all acceptance/browser flags false. Indexing decision, production public-media bucket/base URL, Live payments and live email remain deliberately unresolved.
 - `main` remains untouched until explicit production-promotion approval.
 
 ## Current task stream
