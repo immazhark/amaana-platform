@@ -38,18 +38,24 @@ test('closed appeal fixture has no persistent support action', async ({ page }) 
   await expect(page.getByRole('complementary', { name: 'Quick support action' })).toHaveCount(0);
 });
 
-test('mobile support action and back-to-top control do not overlap after scrolling', async ({ page }) => {
+test('mobile support action, companion dock and back-to-top control remain collision-free', async ({ page }) => {
   await openFixture(page);
   await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
 
   const support = page.getByRole('complementary', { name: 'Quick support action' });
+  const companion = page.locator('.amaana-companion-dock');
   const backToTop = page.getByRole('button', { name: 'Back to top' });
   await expect(support).toBeVisible();
+  await expect(companion).toBeVisible();
   await expect(backToTop).toBeVisible();
 
   const supportBox = await support.boundingBox();
+  const companionBox = await companion.boundingBox();
   const backBox = await backToTop.boundingBox();
   expect(supportBox).not.toBeNull();
+  expect(companionBox).not.toBeNull();
   expect(backBox).not.toBeNull();
+  expect(overlaps(supportBox, companionBox), 'Support action overlaps bottom-right companion dock').toBe(false);
   expect(overlaps(supportBox, backBox), 'Support action overlaps Back to top').toBe(false);
+  expect(overlaps(companionBox, backBox), 'Bottom-right companion dock overlaps Back to top').toBe(false);
 });

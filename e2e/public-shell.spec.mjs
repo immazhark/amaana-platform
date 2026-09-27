@@ -348,9 +348,11 @@ test('mobile floating companion and Back to top controls do not overlap', async 
 
   const fixedGeometry = await page.evaluate(() => {
     const companion = document.querySelector('.amaana-companion');
-    if (!(companion instanceof HTMLElement)) return null;
+    const dock = document.querySelector('.amaana-companion-dock');
+    if (!(companion instanceof HTMLElement) || !(dock instanceof HTMLElement)) return null;
 
     const box = companion.getBoundingClientRect();
+    const dockBox = dock.getBoundingClientRect();
     const viewportWidth = document.documentElement.clientWidth;
     const viewportHeight = window.innerHeight;
 
@@ -358,6 +360,9 @@ test('mobile floating companion and Back to top controls do not overlap', async 
       position: getComputedStyle(companion).position,
       rightGap: viewportWidth - box.right,
       bottomGap: viewportHeight - box.bottom,
+      dockWidth: dockBox.width,
+      dockHeight: dockBox.height,
+      dockDirection: getComputedStyle(dock).flexDirection,
     };
   });
 
@@ -367,6 +372,9 @@ test('mobile floating companion and Back to top controls do not overlap', async 
   expect(fixedGeometry.rightGap).toBeLessThanOrEqual(24);
   expect(fixedGeometry.bottomGap).toBeGreaterThanOrEqual(0);
   expect(fixedGeometry.bottomGap).toBeLessThanOrEqual(24);
+  expect(fixedGeometry.dockDirection).toBe('column');
+  expect(fixedGeometry.dockWidth).toBeLessThanOrEqual(150);
+  expect(fixedGeometry.dockHeight).toBeLessThanOrEqual(100);
 
   await page.evaluate(() => window.scrollTo(0, Math.max(1000, document.body.scrollHeight)));
 
