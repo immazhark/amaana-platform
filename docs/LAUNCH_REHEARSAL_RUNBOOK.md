@@ -141,42 +141,50 @@ Rollback order:
 ## 9. Evidence hygiene
 Never commit passwords, API keys, full database URLs, private beneficiary documents, medical records, identity documents, banking details, consent documents or other restricted evidence into readiness files. The repository records status and non-sensitive evidence references; secret/private proof remains in the appropriate protected operational system.
 
-## Exact Railway rollback rehearsal target — 24 September 2026
+## Railway rollback rehearsal target viability — reverified 27 September 2026
 
-Railway's deployment records currently expose both required staging artifacts:
+The originally pinned rollback pair from 24 September is no longer safe to execute as written.
 
-- **Rollback target (previous known-good):**
+Live Railway history now reports:
+
+- **Previously pinned rollback target**
   - deployment: `a2e7b849-9276-438c-969e-0cc6d5ce3aef`
   - application SHA: `dde1cb607010eabd1c84dacc5c513737fd0378f7`
-  - status in history: `REMOVED`
-  - `canRollback=true`
+  - status: `REMOVED`
+  - `canRollback=false`
   - `canRedeploy=true`
-- **Restore-forward target (certified candidate):**
+- **Previously pinned restore-forward target**
   - deployment: `d0e7608a-df34-425b-9d30-79d1434b1064`
   - application SHA: `bce6b1d85bedc9da6e0fb38484e867db71cb4182`
+  - status: `REMOVED`
+  - `canRollback=false`
+  - `canRedeploy=true`
+- **Current successful staging deployment**
+  - deployment: `368067ae-5bf4-4d00-90d9-43cc090eebc2`
+  - source SHA: `e1efc19f75482f2eae5f988b2a469dc2848640d5`
+  - commit: `privacy: remove orphaned public legacy videos`
   - status: `SUCCESS`
   - `canRollback=true`
   - `canRedeploy=true`
 
-Railway's official deployment-action documentation states that **Rollback** restores the selected previous deployment's image and custom variables and does not rebuild it. The dashboard path is:
+The exact integration branch HEAD remains `60462d9cf0f790321b21dab531a443d11911dc21`; its push and PR CI runs are green. Railway skipped the later empty-media validation/tooling commits because they did not require another application deployment, so the currently served staging deployment remains `368067ae-5bf4-4d00-90d9-43cc090eebc2`.
 
-1. Open the `amaana-rebuild-preview` service.
-2. Open **Deployments**.
-3. Locate deployment `a2e7b849-9276-438c-969e-0cc6d5ce3aef`.
-4. Open the deployment's **...** menu.
-5. Choose **Rollback** and confirm.
-6. Do not start any second deployment while rollback is BUILDING/DEPLOYING.
-7. Wait for Railway terminal status and strict `/api/health/ready` success.
-8. Verify the running version identifies the previous known-good SHA `dde1cb607010eabd1c84dacc5c513737fd0378f7` only if that version endpoint/evidence actually reports it; otherwise verify using Railway deployment metadata and do not infer a version.
-9. Re-run the staging health/Test-payment/noindex checks required by this runbook.
-10. Restore forward to deployment `d0e7608a-df34-425b-9d30-79d1434b1064` using the same supported Railway historical deployment action, then wait for terminal health before any other deployment action.
-11. Re-run staging acceptance after restore-forward.
+Railway's official documentation states that rollback to an arbitrary previous deployment is available only while the stored deployment image remains inside the plan's retention window. When an image is no longer rollback-eligible, Railway exposes **Redeploy** instead, which rebuilds the selected historical source/configuration and is not equivalent evidence for the no-rebuild rollback gate.
 
-**Important correction:** the canonical previous known-good application SHA associated with deployment `a2e7b849-9276-438c-969e-0cc6d5ce3aef` is `dde1cb607010eabd1c84dacc5c513737fd0378f7`. Do not use the similarly-prefixed older historical SHA `ce2d995...`.
+### Required preflight immediately before the rehearsal
 
-Railway's public API documents the equivalent historical operation as:
+1. Open the `amaana-rebuild-preview` service and the **Deployments** tab.
+2. Confirm there is no BUILDING/DEPLOYING workflow already in progress.
+3. Confirm the exact historical deployment that will serve as the previous known-good baseline currently exposes **Rollback** in Railway's dashboard.
+4. Confirm the current candidate deployment that will be restored after the rollback is still present and identifiable by exact deployment ID and SHA.
+5. If either required historical image no longer exposes **Rollback**, do **not** substitute a visually similar row and do **not** mark the gate verified.
+6. Establish a fresh rollback-eligible rehearsal pair through Railway's supported dashboard workflow while keeping the Git branch unchanged, staging on Razorpay Test mode, and indexing disabled.
+7. Record the fresh deployment IDs and exact SHAs before performing the rollback.
+8. Execute exactly one real Railway **Rollback** to the fresh previous-known-good target.
+9. Verify the rollback-generated deployment, strict health/readiness, Test-payment posture, noindex posture, representative public routes and private boundaries.
+10. Restore forward to the fresh current candidate using Railway's supported historical deployment action, then repeat the same verification and staging acceptance.
+11. Only after both directions are proven may `rollback-rehearsal` move from PENDING to VERIFIED.
 
-`deploymentRollback(id: "a2e7b849-9276-438c-969e-0cc6d5ce3aef")`
+Do not use Git history manipulation, branch repointing, or a normal latest-source redeploy as a substitute for Railway's actual historical rollback feature.
 
-The currently connected Railway action surface does not expose that mutation directly, so the rehearsal must be executed from Railway's dashboard or another explicitly authorized client that supports the documented rollback mutation. Do not emulate rollback by rewriting Git history or temporarily repointing the service branch.
-
+The currently connected Railway action surface still does not expose the arbitrary historical rollback mutation, so the operator must perform the dashboard rollback/restore actions manually and provide the resulting deployment evidence for verification.

@@ -7,8 +7,10 @@
 - `phase-public-site-rebuild`
 - Family feedback/review is complete as of 21 September 2026.
 - Quiet-mode restrictions are lifted. Audited implementation may be pushed phase-by-phase to staging on this branch.
-- Current certified application candidate: `bce6b1d85bedc9da6e0fb38484e867db71cb4182`.
-- Evidence-only follow-up commit: `10249ab61d15976ce939a067c6d181c11ee8b25b` refreshes the launch-readiness register and does not change application runtime behavior.
+- Current exact integration HEAD: `60462d9cf0f790321b21dab531a443d11911dc21`; push CI `36027994092` and PR CI `36027999164` are SUCCESS.
+- Current successful Railway staging deployment: `368067ae-5bf4-4d00-90d9-43cc090eebc2` from source SHA `e1efc19f75482f2eae5f988b2a469dc2848640d5` (`privacy: remove orphaned public legacy videos`).
+- The later empty-public-media test/tooling commits through exact HEAD were skipped by Railway because they did not require another application deployment; exact-head CI is the authoritative repository gate.
+- Prior runtime baseline `bce6b1d85bedc9da6e0fb38484e867db71cb4182` / deployment `d0e7608a-df34-425b-9d30-79d1434b1064` remains historical evidence, but that deployment is now `REMOVED` and is not the currently served staging deployment.
 - `main` remains untouched until explicit production-promotion approval.
 
 ## Current task stream

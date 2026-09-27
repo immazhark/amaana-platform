@@ -55,21 +55,33 @@ Do not mark PR #104 Ready for Review yet merely because protection was enabled. 
 - service: `amaana-rebuild-preview`
 - environment id: `38aede68-35aa-42de-adbc-49802e6d44e4`
 
-### Fixed rollback target
+### Live target state reverified 27 September 2026
 
-- deployment: `a2e7b849-9276-438c-969e-0cc6d5ce3aef`
-- application SHA: `dde1cb607010eabd1c84dacc5c513737fd0378f7`
-- Railway history status at last verification: `REMOVED`
+The previously pinned pair has aged out of rollback eligibility and must not be used as if it were still valid:
+
+- `a2e7b849-9276-438c-969e-0cc6d5ce3aef` / `dde1cb607010eabd1c84dacc5c513737fd0378f7`
+  - status: `REMOVED`
+  - `canRollback=false`
+  - `canRedeploy=true`
+- `d0e7608a-df34-425b-9d30-79d1434b1064` / `bce6b1d85bedc9da6e0fb38484e867db71cb4182`
+  - status: `REMOVED`
+  - `canRollback=false`
+  - `canRedeploy=true`
+
+Current successful staging deployment:
+
+- deployment: `368067ae-5bf4-4d00-90d9-43cc090eebc2`
+- source SHA: `e1efc19f75482f2eae5f988b2a469dc2848640d5`
+- commit: `privacy: remove orphaned public legacy videos`
+- status: `SUCCESS`
 - `canRollback=true`
 - `canRedeploy=true`
 
-### Fixed restore-forward target
+Current exact integration HEAD:
 
-- deployment: `d0e7608a-df34-425b-9d30-79d1434b1064`
-- application SHA: `bce6b1d85bedc9da6e0fb38484e867db71cb4182`
-- Railway status at last verification: `SUCCESS`
-- `canRollback=true`
-- `canRedeploy=true`
+- `60462d9cf0f790321b21dab531a443d11911dc21`
+- push CI `36027994092`: SUCCESS
+- PR CI `36027999164`: SUCCESS
 
 ### Pre-action rules
 
@@ -80,39 +92,45 @@ Do not mark PR #104 Ready for Review yet merely because protection was enabled. 
 5. Keep staging on Razorpay Test posture.
 6. Keep indexing disabled.
 7. Do not perform any real payment.
+8. Treat Railway's currently visible **Rollback** action as the authority for historical-image eligibility; stale documentation is not sufficient.
 
-### Rollback action
+### Fresh-pair preparation
 
-In Railway:
+Because the original historical images are no longer rollback-eligible, establish a fresh rehearsal pair in Railway before the actual rollback:
 
-1. Open `amaana-rebuild-preview`.
-2. Open **Deployments**.
-3. Locate deployment `a2e7b849-9276-438c-969e-0cc6d5ce3aef`.
+1. In **Deployments**, select a known-good historical deployment whose exact SHA is already accepted for staging.
+2. If Railway exposes only **Redeploy** for that old artifact, using **Redeploy** may be used only to create a fresh known-good baseline image; it does not by itself satisfy the rollback gate.
+3. Wait for that fresh baseline deployment to reach terminal SUCCESS and verify its exact SHA, `/api/health/live`, `/api/health/ready`, staging posture, Razorpay Test mode and noindex.
+4. Restore the current staging candidate through Railway's supported historical deployment action so that the fresh baseline becomes a recent previous deployment inside the rollback-retention window.
+5. Verify the restored candidate by exact deployment metadata and the same health/posture checks.
+6. Record both fresh deployment IDs and SHAs before continuing.
 
-**Important:** if Railway does not show that exact ID, stop and do not substitute a deployment by visual similarity. The canonical ID is `a2e7b849-9276-438c-969e-0cc6d5ce3aef`.
+### Real rollback action
 
-4. Open the **...** menu.
-5. Choose **Rollback**.
-6. Confirm once.
-7. Wait for the rollback deployment to reach a terminal state.
-8. Do not begin restore-forward while rollback is still BUILDING/DEPLOYING.
+Only after the fresh pair is established:
+
+1. Open the fresh previous-known-good deployment's **...** menu.
+2. Confirm **Rollback** is visibly available.
+3. Choose **Rollback** exactly once.
+4. Wait for the rollback-generated deployment to reach a terminal state.
+5. Do not begin restore-forward while rollback is BUILDING/DEPLOYING.
 
 ### Rollback verification
 
 After rollback is terminal:
 
-- verify Railway deployment metadata corresponds to SHA `dde1cb607010eabd1c84dacc5c513737fd0378f7`;
+- verify Railway deployment metadata maps to the recorded previous-known-good SHA;
 - verify `/api/health/live`;
 - verify `/api/health/ready`;
 - verify staging environment posture;
 - verify Razorpay payment mode remains Test;
 - verify indexing/noindex remains fail-closed;
 - verify representative public routes and private-boundary routes;
-- run the repository target verifier where available:
+- run the repository target verifier with the exact recorded rollback SHA:
 
 ```bash
 STAGING_BASE_URL="https://<staging-host>" \
-EXPECTED_COMMIT_SHA="dde1cb607010eabd1c84dacc5c513737fd0378f7" \
+EXPECTED_COMMIT_SHA="<fresh-rollback-sha>" \
 npm run rehearsal:verify-target
 ```
 
@@ -122,10 +140,10 @@ Do not infer success if the version endpoint cannot prove the target. Use Railwa
 
 Only after rollback verification succeeds:
 
-1. Use Railway's supported historical deployment action on candidate deployment `d0e7608a-df34-425b-9d30-79d1434b1064`.
+1. Use Railway's supported historical deployment action on the recorded fresh candidate deployment.
 2. Confirm once.
 3. Wait for terminal status.
-4. Verify the candidate SHA `bce6b1d85bedc9da6e0fb38484e867db71cb4182`.
+4. Verify the exact recorded candidate SHA.
 5. Repeat live/readiness health.
 6. Repeat Test-payment/noindex posture verification.
 7. Re-run staging acceptance.
@@ -134,7 +152,7 @@ Repository verifier:
 
 ```bash
 STAGING_BASE_URL="https://<staging-host>" \
-EXPECTED_COMMIT_SHA="bce6b1d85bedc9da6e0fb38484e867db71cb4182" \
+EXPECTED_COMMIT_SHA="<fresh-candidate-sha>" \
 npm run rehearsal:verify-target
 ```
 
@@ -142,6 +160,8 @@ npm run rehearsal:verify-target
 
 Record:
 
+- fresh previous-known-good deployment ID and SHA;
+- fresh candidate deployment ID and SHA;
 - rollback action timestamp;
 - rollback-generated deployment ID;
 - target SHA evidence;
