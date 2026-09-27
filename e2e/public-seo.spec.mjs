@@ -1,31 +1,40 @@
 import { expect, test } from '@playwright/test';
 
 const productionOrigin = 'https://amaanafoundation.org';
-const representativeRoutes = [
+const publicStaticRoutes = [
   '/',
   '/our-work',
+  '/recognition',
+  '/partner',
+  '/get-involved/sponsor-education',
+  '/programmes/medical-financial-relief',
+  '/programmes/emergency-relief',
+  '/programmes/ramadan-eid',
+  '/programmes/seasonal-relief',
   '/impact',
   '/stories',
   '/faith-and-reflections',
-  '/about',
   '/appeals',
   '/donate',
-  '/get-involved/sponsor-education',
+  '/about',
+  '/get-involved',
+  '/request-assistance',
   '/how-we-verify',
   '/transparency',
   '/governance',
-  '/recognition',
-  '/partner',
-  '/privacy',
-  '/request-assistance',
+  '/compliance',
   '/contact',
+  '/privacy',
+  '/terms',
+  '/donation-policy',
+  '/refund-policy',
 ];
 
 function canonicalFor(path) {
   return path === '/' ? productionOrigin : `${productionOrigin}${path}`;
 }
 
-for (const path of representativeRoutes) {
+for (const path of publicStaticRoutes) {
   test(`SEO metadata is complete for ${path}`, async ({ page }) => {
     const response = await page.goto(path, { waitUntil: 'domcontentloaded' });
     expect(response?.ok(), `${path} should render successfully`).toBeTruthy();
@@ -116,22 +125,31 @@ test('published programme detail exposes canonical WebPage structured data linke
 });
 
 
-test('published programme category exposes canonical WebPage structured data', async ({ page }) => {
-  const response = await page.goto('/programmes/ramadan-eid', { waitUntil: 'domcontentloaded' });
-  expect(response?.ok()).toBeTruthy();
+const programmeCategorySchemaCases = [
+  ['/programmes/medical-financial-relief', /Medical & Financial Relief/i],
+  ['/programmes/emergency-relief', /Emergency Relief/i],
+  ['/programmes/ramadan-eid', /Ramadan & Eid/i],
+  ['/programmes/seasonal-relief', /Seasonal Relief/i],
+];
 
-  const schema = page.locator('script[data-public-content-schema="WebPage"]');
-  await expect(schema).toHaveCount(1);
+for (const [path, expectedName] of programmeCategorySchemaCases) {
+  test(`published programme category exposes canonical WebPage structured data for ${path}`, async ({ page }) => {
+    const response = await page.goto(path, { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBeTruthy();
 
-  const data = JSON.parse(await schema.textContent());
-  expect(data['@context']).toBe('https://schema.org');
-  expect(data['@type']).toBe('WebPage');
-  expect(data.url).toBe('https://amaanafoundation.org/programmes/ramadan-eid');
-  expect(data.publisher).toEqual({ '@id': 'https://amaanafoundation.org/#organization' });
-  expect(data.isPartOf).toEqual({ '@id': 'https://amaanafoundation.org/#website' });
-  expect(data.name).toMatch(/Ramadan & Eid/i);
-  expect(data.description).toMatch(/\S.{20,}/);
-});
+    const schema = page.locator('script[data-public-content-schema="WebPage"]');
+    await expect(schema).toHaveCount(1);
+
+    const data = JSON.parse(await schema.textContent());
+    expect(data['@context']).toBe('https://schema.org');
+    expect(data['@type']).toBe('WebPage');
+    expect(data.url).toBe(`https://amaanafoundation.org${path}`);
+    expect(data.publisher).toEqual({ '@id': 'https://amaanafoundation.org/#organization' });
+    expect(data.isPartOf).toEqual({ '@id': 'https://amaanafoundation.org/#website' });
+    expect(data.name).toMatch(expectedName);
+    expect(data.description).toMatch(/\S.{20,}/);
+  });
+}
 
 test('legacy Our Work aliases issue deterministic canonical redirects', async ({ request }) => {
   const cases = [
