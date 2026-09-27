@@ -127,7 +127,7 @@ test('published programme detail exposes canonical WebPage structured data linke
 
 const programmeCategorySchemaCases = [
   ['/programmes/medical-financial-relief', /Medical & Financial Relief/i],
-  ['/programmes/emergency-relief', /Emergency Relief/i],
+  ['/programmes/emergency-relief', /Emergency & Humanitarian Relief/i],
   ['/programmes/ramadan-eid', /Ramadan & Eid/i],
   ['/programmes/seasonal-relief', /Seasonal Relief/i],
 ];
