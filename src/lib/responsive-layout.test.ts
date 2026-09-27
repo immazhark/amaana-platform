@@ -3,14 +3,24 @@ import { describe, expect, it } from "vitest";
 
 const companion = readFileSync("src/app/islamic-companion.css", "utf8");
 const finish = readFileSync("src/app/experience-finish.css", "utf8");
+const iterationFour = readFileSync("src/app/iteration-four.css", "utf8");
 
 describe("shared responsive layout regressions", () => {
-  it("keeps persistent companion launchers in flow instead of over page content", () => {
-    const rules = [...companion.matchAll(/\.amaana-companion-dock\s*\{([^}]+)\}/g)];
-    expect(rules.length).toBeGreaterThan(0);
-    for (const rule of rules) expect(rule[1]).not.toMatch(/position:\s*(fixed|absolute|sticky)/);
-    expect(rules[0][1]).toMatch(/flex-wrap:\s*wrap/);
-    expect(companion).not.toMatch(/body\s*\{\s*padding-bottom:\s*calc\(80px/);
+  it("locks companion launchers to a compact bottom-right floating dock", () => {
+    const companionRule = companion.match(/\.amaana-companion\s*\{([^}]+)\}/);
+    const dockRules = [...companion.matchAll(/\.amaana-companion-dock\s*\{([^}]+)\}/g)];
+
+    expect(companionRule).not.toBeNull();
+    expect(companionRule![1]).toMatch(/position:\s*fixed/);
+    expect(companionRule![1]).toMatch(/right:\s*max\(/);
+    expect(companionRule![1]).toMatch(/bottom:\s*max\(/);
+
+    expect(dockRules.length).toBeGreaterThan(0);
+    expect(dockRules[0][1]).toMatch(/flex-wrap:\s*nowrap/);
+    expect(companion).toMatch(/@media\s*\(max-width:\s*640px\)[\s\S]*\.amaana-companion-dock\s*\{[^}]*flex-direction:\s*column/);
+    expect(companion).toMatch(/\.amaana-companion-dock\s*>\s*button\s*\{[^}]*max-width:\s*9rem/);
+    expect(companion).not.toMatch(/Keep the launchers in flow/i);
+    expect(iterationFour).not.toMatch(/\.amaana-companion\s*\{[^}]*position:\s*fixed/);
   });
 
   it("does not override the desktop menu visibility in the finish layer", () => {
