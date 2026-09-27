@@ -5,9 +5,8 @@
 .action:hover{background:var(--af-color-gold-soft)}
 .action:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
 :global(body):has(.root) :global(main){padding-bottom:calc(4.8rem + env(safe-area-inset-bottom))}
-:global(body):has(.root) :global(.amaana-companion){bottom:calc(4.8rem + max(8px,env(safe-area-inset-bottom)))!important}
-:global(body):has(.root) :global(.amaana-companion-panel){bottom:calc(4.8rem + max(16px,env(safe-area-inset-bottom)) + 60px)!important;max-height:calc(100dvh - 4.8rem - 112px)!important}
-:global(body):has(.root) :global(.amaana-back-to-top){bottom:calc(4.8rem + 8rem + env(safe-area-inset-bottom))!important}
+:global(body):has(.root) :global(.amaana-companion-panel){bottom:calc(4.8rem + max(16px,env(safe-area-inset-bottom)))!important;max-height:calc(100dvh - 4.8rem - 48px)!important}
+:global(body):has(.root) :global(.amaana-back-to-top){bottom:calc(4.8rem + max(12px,env(safe-area-inset-bottom)))!important}
 @media(min-width:761px){.root{display:none}}
 @media(max-width:390px){.inner{grid-template-columns:1fr}.context{display:none}.action{width:100%}}
 @media print{.root{display:none!important}}
