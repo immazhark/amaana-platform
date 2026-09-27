@@ -91,8 +91,9 @@ The reserved production service now defines these safe non-secret posture variab
 The remaining production contract decisions/resources still absent by variable name are:
 
 - `PRODUCTION_INDEXING_DECISION` — intentionally unset until the explicit owner indexing decision;
-- `PUBLIC_MEDIA_S3_BUCKET` — requires the approved production public-media bucket;
-- `PUBLIC_MEDIA_BASE_URL` — production contract requires `https://amaanafoundation.org/media`.
+- `PUBLIC_MEDIA_S3_BUCKET` — requires the approved production public-media bucket.
+
+`PUBLIC_MEDIA_BASE_URL=https://amaanafoundation.org/media` is now configured on the reserved production service with deployment explicitly skipped. No production deployment or domain cutover occurred.
 
 The public-media runtime intentionally permits `PUBLIC_MEDIA_S3_REGION`, `PUBLIC_MEDIA_S3_ENDPOINT`, `PUBLIC_MEDIA_S3_ACCESS_KEY_ID`, `PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY`, and `PUBLIC_MEDIA_S3_FORCE_PATH_STYLE` to fall back to the private S3 provider/account settings while still requiring a physically/logically separate public-media bucket. Therefore those override variable names are **optional**, not unconditional blockers. When public-media access-key overrides are used, the production validator now requires the access-key ID and secret to be supplied together; optional endpoint overrides must use HTTPS.
 
