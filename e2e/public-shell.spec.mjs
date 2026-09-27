@@ -80,6 +80,33 @@ test.describe('representative public accessibility', () => {
 });
 
 
+test('homepage semantic title stays screen-reader-only without creating visible hero text', async ({ page }) => {
+  await openPublicPage(page, '/');
+
+  const title = page.locator('#amaana-home-title');
+  await expect(title).toHaveCount(1);
+
+  const presentation = await title.evaluate(element => {
+    const style = getComputedStyle(element);
+    const box = element.getBoundingClientRect();
+    return {
+      position: style.position,
+      width: box.width,
+      height: box.height,
+      overflow: style.overflow,
+      clipPath: style.clipPath,
+      whiteSpace: style.whiteSpace,
+    };
+  });
+
+  expect(presentation.position).toBe('absolute');
+  expect(presentation.width).toBeLessThanOrEqual(1);
+  expect(presentation.height).toBeLessThanOrEqual(1);
+  expect(presentation.overflow).toBe('hidden');
+  expect(presentation.clipPath).toBe('inset(50%)');
+  expect(presentation.whiteSpace).toBe('nowrap');
+});
+
 test('Stories journal CTA resolves to a real in-page target', async ({ page }) => {
   await openPublicPage(page, '/stories');
 
