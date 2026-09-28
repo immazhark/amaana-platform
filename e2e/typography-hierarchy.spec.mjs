@@ -194,3 +194,22 @@ test('institutional routes keep evidence metadata subordinate and focus visible'
     }
   }
 });
+
+
+test('transactional form emphasis stays readable without typographic shouting', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  for (const route of ['/donate', '/request-assistance']) {
+    const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+    expect(response?.ok(), `${route} should render`).toBeTruthy();
+    const weights = await page.locator('.v2-premium-form .field label, [class*="checkoutLabel"], [class*="intentGroup"] legend, [class*="progress"] button').evaluateAll(nodes => nodes.map(node => Number.parseInt(getComputedStyle(node).fontWeight, 10)));
+    for (const weight of weights) expect(weight, `${route} form emphasis`).toBeLessThanOrEqual(700);
+  }
+});
+
+test('private state pages keep status metadata subordinate', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.goto('/request-assistance/status', { waitUntil: 'domcontentloaded' });
+  const weights = await page.locator('.v2-reference-block span, .v2-state-steps > span').evaluateAll(nodes => nodes.map(node => Number.parseInt(getComputedStyle(node).fontWeight, 10)));
+  for (const weight of weights) expect(weight).toBeLessThanOrEqual(700);
+});
