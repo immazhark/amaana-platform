@@ -100,6 +100,7 @@ export function IslamicCompanion() {
     }] : [];
     return [...reminder, ...liveItems.map(item => ({ id: item.id, kind: "live" as const, live: item }))];
   }, [activeReminder, liveItems]);
+  const safeRailIndex = railItems.length ? railIndex % railItems.length : 0;
   const activeRailItem = railItems.length ? railItems[safeRailIndex] : null;
 
   useEffect(() => {
@@ -110,7 +111,6 @@ export function IslamicCompanion() {
     return () => window.clearInterval(timer);
   }, [focused, hovered, panel, paused, reducedMotion, railItems.length, showSchedule]);
 
-  const safeRailIndex = railItems.length ? railIndex % railItems.length : 0;
   const closePanel = useCallback(() => {
     setPanel(null);
     requestAnimationFrame(() => companionButton.current?.focus({ preventScroll: true }));
