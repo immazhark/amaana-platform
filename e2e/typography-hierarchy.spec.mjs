@@ -4,7 +4,7 @@ const cases = [
   { route: '/stories', selector: '.v2-stories-feature-copy h2', fixture: '<div class="v2-stories-feature-copy"><h2>Featured field note</h2></div>' },
   { route: '/faith-and-reflections', selector: '.v2-faith-standard h2', fixture: '<section class="v2-faith-standard"><h2>Editorial trust</h2></section>' },
   { route: '/faith-and-reflections', selector: '.v2-faith-feature-copy h2', fixture: '<div class="v2-faith-feature-copy"><h2>Featured reflection</h2></div>' },
-  { route: '/our-work', selector: '.v2-cause-heading h2', fixture: '<div class="v2-cause-heading"><div><h2>Medical & Financial Relief</h2></div></div>' },
+  { route: '/our-work', selector: '.v2-cause-summary-title', fixture: '<details class="v2-cause-disclosure"><summary class="v2-cause-summary"><h2 class="v2-cause-summary-heading"><span class="v2-cause-summary-copy"><span class="v2-cause-summary-title">Medical & Financial Relief</span></span></h2></summary></details>' },
 ];
 
 for (const width of [1440, 390]) {
