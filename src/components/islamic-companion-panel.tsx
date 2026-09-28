@@ -46,6 +46,7 @@ type IslamicCompanionPanelProps = {
   date: string;
   now: Date | null;
   onClose: () => void;
+  onPanelChange: (panel: CompanionPanelKind) => void;
   onMoonChange: (value: MoonState) => void;
 };
 
@@ -79,6 +80,7 @@ export function IslamicCompanionPanel({
   date,
   now,
   onClose,
+  onPanelChange,
   onMoonChange,
 }: IslamicCompanionPanelProps) {
   const [data, setData] = useState<PrayerData | null>(null);
@@ -161,19 +163,23 @@ export function IslamicCompanionPanel({
   return (
     <div
       className="amaana-companion-panel"
-      id={panel === "readings" ? "amaana-reading-panel" : "amaana-prayer-panel"}
+      id="amaana-companion-panel"
       ref={panelRef}
       tabIndex={-1}
       role="region"
       aria-labelledby="companion-panel-title"
     >
       <header className="amaana-companion-head">
-        <h2 id="companion-panel-title">{panel === "readings" ? "Today’s ayah & hadith" : "Salah & Hijri date"}</h2>
+        <div><span className="amaana-companion-kicker">AMAANA COMPANION</span><h2 id="companion-panel-title">{panel === "readings" ? "Today’s reflection" : "Prayer & Hijri"}</h2></div>
         <button type="button" onClick={onClose} aria-label="Close companion"><CloseIcon /></button>
       </header>
+      <div className="amaana-companion-tabs" role="tablist" aria-label="Companion sections">
+        <button type="button" role="tab" aria-selected={panel === "readings"} aria-controls="companion-readings" onClick={() => onPanelChange("readings")}>Ayah & Hadith</button>
+        <button type="button" role="tab" aria-selected={panel === "prayers"} aria-controls="companion-prayers" onClick={() => onPanelChange("prayers")}>Salah & Hijri</button>
+      </div>
 
       {panel === "readings" ? (
-        <>
+        <div id="companion-readings" role="tabpanel" className="amaana-companion-view">
           <p className="amaana-companion-note">{date || "Today"} · Changes at midnight in Hyderabad</p>
           {reading ? (
             <>
@@ -199,9 +205,9 @@ export function IslamicCompanionPanel({
               </details>
             </>
           ) : <p>Preparing today’s reading…</p>}
-        </>
+        </div>
       ) : (
-        <>
+        <div id="companion-prayers" role="tabpanel" className="amaana-companion-view">
           <p className="amaana-companion-location">Hyderabad, India <span>IST · UTC+05:30</span></p>
           <div className="amaana-hijri">
             <h3>Hijri date</h3>
@@ -245,7 +251,7 @@ export function IslamicCompanionPanel({
               </details>
             </>
           )}
-        </>
+        </div>
       )}
     </div>
   );
