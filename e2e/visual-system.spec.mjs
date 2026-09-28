@@ -165,6 +165,18 @@ test('homepage omits superseded field and closing sections', async ({ page }) =>
   await expect(page.getByText('Upholding Trust. Serving With Compassion, Dignity and Accountability.', { exact: true })).toHaveCount(0);
 });
 
+test('homepage hero stays wide and compact on desktop', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await open(page, '/');
+  const hero = page.locator('[aria-label="Amaana Foundation story and featured work"]');
+  await expect(hero).toBeVisible();
+  const box = await hero.boundingBox();
+  expect(box).toBeTruthy();
+  expect(box.width / box.height).toBeGreaterThan(2.4);
+  expect(box.height).toBeLessThanOrEqual(500);
+  await expect(hero.getByText('The Story of Amaana · Hyderabad', { exact: true })).toBeVisible();
+});
+
 test('homepage programme carousel stays centered and wraps in both directions', async ({ page }) => {
   await open(page, '/');
   const carousel = page.locator('[aria-label="Amaana programme areas"]');
