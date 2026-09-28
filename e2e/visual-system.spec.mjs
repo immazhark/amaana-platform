@@ -301,18 +301,28 @@ test('shared footer callout remains compact and does not compete with page hero'
   expect(metrics.footerSize).toBeLessThan(metrics.heroSize);
 });
 
-test('mobile shared footer stays compact without shrinking navigation tap targets', async ({ page }) => {
+test('mobile shared footer compacts navigation without shrinking tap targets', async ({ page }) => {
   await open(page, '/about', 390);
   const metrics = await page.locator('.site-footer').evaluate(footer => {
     const links = Array.from(footer.querySelectorAll('.footer-links a'));
+    const groups = Array.from(footer.querySelectorAll('.footer-grid-v2 > div:not(.footer-intro)'));
+    const groupRects = groups.map(group => group.getBoundingClientRect());
+    const policyLinks = Array.from(groups.at(-1)?.querySelectorAll('.footer-links a') ?? []);
+    const policyColumns = new Set(policyLinks.map(link => Math.round(link.getBoundingClientRect().left / 8) * 8));
     return {
-      footerHeight: footer.getBoundingClientRect().height,
       minLinkHeight: Math.min(...links.map(link => link.getBoundingClientRect().height)),
       linkCount: links.length,
+      groupCount: groups.length,
+      navFootprint: Math.max(...groupRects.map(rect => rect.bottom)) - Math.min(...groupRects.map(rect => rect.top)),
+      firstRowDelta: Math.abs(groupRects[0].top - groupRects[1].top),
+      policyColumnCount: policyColumns.size,
     };
   });
   expect(metrics.linkCount).toBeGreaterThan(0);
-  expect(metrics.footerHeight).toBeLessThanOrEqual(1500);
+  expect(metrics.groupCount).toBe(3);
+  expect(metrics.navFootprint).toBeLessThanOrEqual(760);
+  expect(metrics.firstRowDelta).toBeLessThanOrEqual(2);
+  expect(metrics.policyColumnCount).toBeGreaterThanOrEqual(2);
   expect(metrics.minLinkHeight).toBeGreaterThanOrEqual(44);
 });
 
