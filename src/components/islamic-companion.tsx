@@ -48,12 +48,10 @@ export function IslamicCompanion() {
   const [panel, setPanel] = useState<CompanionPanelKind | null>(null);
   const [now, setNow] = useState<Date | null>(null);
   const [confirmedMoon, setConfirmedMoon] = useState<MoonState | null>(null);
-  const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
   const [reminderIndex] = useState(0);
-  const [showSchedule, setShowSchedule] = useState(false);
   const [liveItems, setLiveItems] = useState<LiveRailItem[]>([]);
   const [railIndex, setRailIndex] = useState(0);
   const companionButton = useRef<HTMLButtonElement>(null);
@@ -98,18 +96,19 @@ export function IslamicCompanion() {
     const reminder = activeReminder ? [{
       id: `reminder-${activeReminder.id}`, kind: "reminder" as const, reminder: activeReminder,
     }] : [];
-    return [...reminder, ...liveItems.map(item => ({ id: item.id, kind: "live" as const, live: item }))];
+    const currentAppeal = liveItems.find(item => item.kind === "appeal");
+    return [...reminder, ...(currentAppeal ? [{ id: currentAppeal.id, kind: "live" as const, live: currentAppeal }] : [])];
   }, [activeReminder, liveItems]);
   const safeRailIndex = railItems.length ? railIndex % railItems.length : 0;
   const activeRailItem = railItems.length ? railItems[safeRailIndex] : null;
 
   useEffect(() => {
-    if (paused || reducedMotion || hovered || focused || showSchedule || panel || railItems.length < 2) return;
+    if (reducedMotion || hovered || focused || panel || railItems.length < 2) return;
     const timer = window.setInterval(() => {
       if (!document.hidden) setRailIndex(index => index + 1);
     }, 12_000);
     return () => window.clearInterval(timer);
-  }, [focused, hovered, panel, paused, reducedMotion, railItems.length, showSchedule]);
+  }, [focused, hovered, panel, reducedMotion, railItems.length]);
 
   const closePanel = useCallback(() => {
     setPanel(null);
@@ -134,7 +133,7 @@ export function IslamicCompanion() {
         }}
       >
         <div className="amaana-reminder-inner">
-          <div className="amaana-live-badge" aria-hidden="true"><span />AMAANA LIVE</div>
+          <div className={`amaana-live-badge${activeRailItem?.kind === "live" ? " is-live" : " is-reminder"}`} aria-hidden="true"><span />{activeRailItem?.kind === "live" ? "AMAANA LIVE" : "TODAY’S REMINDER"}</div>
           <div className="amaana-reminder-stage" aria-live="polite" aria-atomic="true">
             {activeRailItem?.kind === "live" ? (
               <div className="amaana-reminder-content amaana-reminder-content--live" key={activeRailItem.id}>
@@ -152,28 +151,7 @@ export function IslamicCompanion() {
               </div>
             )}
           </div>
-          <div className="amaana-reminder-controls" aria-label="Amaana Live controls">
-            <button type="button" onClick={() => setRailIndex(index => (index - 1 + Math.max(railItems.length, 1)) % Math.max(railItems.length, 1))} aria-label="Previous update">‹</button>
-            <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused} disabled={reducedMotion} aria-label={paused ? "Play updates" : "Pause updates"}>{reducedMotion ? "•" : paused ? "▶" : "Ⅱ"}</button>
-            <button type="button" onClick={() => setRailIndex(index => (index + 1) % Math.max(railItems.length, 1))} aria-label="Next update">›</button>
-            <button className="amaana-schedule-trigger" type="button" onClick={() => setShowSchedule(value => !value)} aria-expanded={showSchedule} aria-controls="companion-schedule">Schedule</button>
-          </div>
         </div>
-
-        {showSchedule && (
-          <div className="amaana-reminder-schedule" id="companion-schedule">
-            <h2>Reminders for your week</h2>
-            <dl>
-              <div><dt>Monday & Thursday</dt><dd>Voluntary fasting, when permissible · before 18:00</dd></div>
-              <div><dt>Friday</dt><dd>Al-Kahf and durood</dd></div>
-              <div><dt>Every night · 20:00–04:00</dt><dd>Al-Baqarah 2:285–286 and Al-Mulk</dd></div>
-              <div><dt>Morning · 04:00–10:00 / Evening · 16:00–20:00</dt><dd>Adhkar and Sayyid al-Istighfar</dd></div>
-              <div><dt>Throughout the day</dt><dd>Istighfar, tasbih, takbeer, tahleel and tahmeed</dd></div>
-            </dl>
-            <p>All windows use Hyderabad time (IST). These are on-site reading prompts, not prayer rulings or device notifications.</p>
-            <button type="button" onClick={() => { setShowSchedule(false); companionButton.current?.focus(); }}>Close schedule</button>
-          </div>
-        )}
       </section>
 
       <aside className="amaana-companion" aria-label="Amaana daily companions">
