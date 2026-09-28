@@ -89,7 +89,9 @@ export function IslamicCompanionPanel({
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
-  const panelRef = useRef<HTMLDivElement>(null);\n  const readingsTabRef = useRef<HTMLButtonElement>(null);\n  const prayersTabRef = useRef<HTMLButtonElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const readingsTabRef = useRef<HTMLButtonElement>(null);
+  const prayersTabRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     panelRef.current?.focus({ preventScroll: true });
