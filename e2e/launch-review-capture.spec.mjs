@@ -43,6 +43,10 @@ const viewports = [
 ];
 
 const outputDir = path.resolve(process.cwd(), 'launch-review');
+const runFullReview = process.env.AMAANA_FULL_VISUAL_REVIEW === 'true';
+const reviewViewports = runFullReview
+  ? viewports
+  : viewports.filter(viewport => viewport.name === 'mobile' || viewport.name === 'desktop');
 
 test.beforeAll(async () => {
   await fs.mkdir(outputDir, { recursive: true });
@@ -50,7 +54,7 @@ test.beforeAll(async () => {
 
 test.describe('launch review screenshot capture', () => {
   for (const route of reviewRoutes) {
-    for (const viewport of viewports) {
+    for (const viewport of reviewViewports) {
       test(`${route.slug} ${viewport.name} launch review capture`, async ({ page }) => {
         test.setTimeout(60_000);
 
