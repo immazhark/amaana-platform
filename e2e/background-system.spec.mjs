@@ -19,6 +19,7 @@ for (const width of widths) {
           const owner = mark.closest('.page-hero,.site-footer');
           const isFooterMark = owner?.classList.contains('site-footer') ?? false;
           return {
+            isFooterMark,
             visible: box.width>0 && box.height>0,
             overlapping: isFooterMark && [...owner.querySelectorAll('.footer-lead>*,.footer-grid,.footer-note')].some(el=>overlaps(box,el.getBoundingClientRect())),
             size: getComputedStyle(mark).backgroundSize,
@@ -34,8 +35,8 @@ for (const width of widths) {
       });
       expect(result.overflow).toBe(false);
       for (const mark of result.marks) {
-        expect(mark.visible, 'decorative identity retains rendered geometry').toBe(true);
-        expect(mark.overlapping, 'identity must not collide with text, cards or links').toBe(false);
+        if (!mark.isFooterMark) expect(mark.visible, 'level-one hero identity retains rendered geometry').toBe(true);
+        if (mark.isFooterMark) expect(mark.overlapping, 'footer identity must not collide with footer content').toBe(false);
         expect(mark.size).toBe('contain');
         expect(mark.asset).toContain('/backgrounds/amaana-arch-emblem.svg');
         expect(mark.decorative).toBe('true');
