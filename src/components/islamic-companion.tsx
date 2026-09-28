@@ -1,6 +1,7 @@
 "use client";
 
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { hyderabadClock, remindersFor } from "@/lib/daily-companion";
 import type { CompanionPanelKind } from "@/components/islamic-companion-panel";
 
@@ -15,6 +16,16 @@ type Moon = {
 type MoonState = {
   date: string;
   moon: Moon | null;
+};
+
+type LiveRailItem = {
+  id: string;
+  kind: "appeal" | "initiative";
+  eyebrow: string;
+  title: string;
+  subtitle: string;
+  href: string;
+  cta: string;
 };
 
 const IslamicCompanionPanel = lazy(() =>
@@ -43,6 +54,8 @@ export function IslamicCompanion() {
   const [focused, setFocused] = useState(false);
   const [reminderIndex, setReminderIndex] = useState(0);
   const [showSchedule, setShowSchedule] = useState(false);
+  const [liveItems, setLiveItems] = useState<LiveRailItem[]>([]);
+  const [railIndex, setRailIndex] = useState(0);
   const readingsButton = useRef<HTMLButtonElement>(null);
   const prayersButton = useRef<HTMLButtonElement>(null);
 
@@ -67,18 +80,41 @@ export function IslamicCompanion() {
     };
   }, []);
 
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch("/api/public/live-rail", { cache: "no-store", signal: controller.signal })
+      .then(response => response.ok ? response.json() : { items: [] })
+      .then((payload: { items?: LiveRailItem[] }) => {
+        if (!controller.signal.aborted && Array.isArray(payload.items)) setLiveItems(payload.items);
+      })
+      .catch(() => undefined);
+    return () => controller.abort();
+  }, []);
+
   const date = now ? hyderabadClock(now).date : "";
   const currentMoon = confirmedMoon?.date === date ? confirmedMoon.moon : null;
   const reminders = now ? remindersFor(now, currentMoon) : [];
   const activeReminder = reminders.length ? reminders[reminderIndex % reminders.length] : null;
+  const railItems = useMemo(() => {
+    const reminder = activeReminder ? [{
+      id: `reminder-${activeReminder.id}`, kind: "reminder" as const, reminder: activeReminder,
+    }] : [];
+    return [...reminder, ...liveItems.map(item => ({ id: item.id, kind: "live" as const, live: item }))];
+  }, [activeReminder, liveItems]);
+  const activeRailItem = railItems.length ? railItems[railIndex % railItems.length] : null;
 
   useEffect(() => {
-    if (paused || reducedMotion || hovered || focused || showSchedule || panel || reminders.length < 2) return;
+    if (paused || reducedMotion || hovered || focused || showSchedule || panel || railItems.length < 2) return;
     const timer = window.setInterval(() => {
-      if (!document.hidden) setReminderIndex(index => index + 1);
-    }, 14_000);
+      if (!document.hidden) setRailIndex(index => index + 1);
+    }, 12_000);
     return () => window.clearInterval(timer);
-  }, [focused, hovered, panel, paused, reducedMotion, reminders.length, showSchedule]);
+  }, [focused, hovered, panel, paused, reducedMotion, railItems.length, showSchedule]);
+
+  useEffect(() => {
+    if (railIndex < railItems.length) return;
+    setRailIndex(0);
+  }, [railIndex, railItems.length]);
 
   const closePanel = useCallback(() => {
     setPanel(current => {
@@ -105,22 +141,29 @@ export function IslamicCompanion() {
         }}
       >
         <div className="amaana-reminder-inner">
-          <div className="amaana-reminder-content" aria-live="off">
-            <strong>{activeReminder?.title ?? "A moment for remembrance"}</strong>
-            <p>{activeReminder?.text ?? "Daily readings and gentle reminders, on Hyderabad time."}</p>
-            {activeReminder && (
-              <div className="amaana-reminder-links">
-                <a href={activeReminder.source} target="_blank" rel="noopener noreferrer">{activeReminder.reference}</a>
-                {activeReminder.readUrl && <a href={activeReminder.readUrl} target="_blank" rel="noopener noreferrer">Read the surah</a>}
+          <div className="amaana-live-badge" aria-hidden="true"><span />AMAANA LIVE</div>
+          <div className="amaana-reminder-stage" aria-live="polite" aria-atomic="true">
+            {activeRailItem?.kind === "live" ? (
+              <div className="amaana-reminder-content amaana-reminder-content--live" key={activeRailItem.id}>
+                <span className="amaana-reminder-eyebrow">{activeRailItem.live.eyebrow}</span>
+                <strong>{activeRailItem.live.title}</strong>
+                <p>{activeRailItem.live.subtitle}</p>
+                <Link className="amaana-live-cta" href={activeRailItem.live.href}>{activeRailItem.live.cta}<span aria-hidden="true"> →</span></Link>
+              </div>
+            ) : (
+              <div className="amaana-reminder-content" key={activeRailItem?.id ?? "fallback"}>
+                <span className="amaana-reminder-eyebrow">Today’s reminder</span>
+                <strong>{activeReminder?.title ?? "A moment for remembrance"}</strong>
+                <p>{activeReminder?.text ?? "Daily readings and gentle reminders, on Hyderabad time."}</p>
+                {activeReminder && <a className="amaana-reminder-source" href={activeReminder.source} target="_blank" rel="noopener noreferrer">{activeReminder.reference}</a>}
               </div>
             )}
           </div>
-          <div className="amaana-reminder-controls">
-            <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={!paused} disabled={reducedMotion}>
-              {reducedMotion ? "Motion off" : paused ? "Auto-play" : "Pause"}
-            </button>
-            <button type="button" onClick={() => { setPaused(true); setReminderIndex(index => index + 1); }} aria-label="Next reminder">Next</button>
-            <button type="button" onClick={() => setShowSchedule(value => !value)} aria-expanded={showSchedule} aria-controls="companion-schedule">Schedule</button>
+          <div className="amaana-reminder-controls" aria-label="Amaana Live controls">
+            <button type="button" onClick={() => setRailIndex(index => (index - 1 + Math.max(railItems.length, 1)) % Math.max(railItems.length, 1))} aria-label="Previous update">‹</button>
+            <button type="button" onClick={() => setPaused(value => !value)} aria-pressed={paused} disabled={reducedMotion} aria-label={paused ? "Play updates" : "Pause updates"}>{reducedMotion ? "•" : paused ? "▶" : "Ⅱ"}</button>
+            <button type="button" onClick={() => setRailIndex(index => (index + 1) % Math.max(railItems.length, 1))} aria-label="Next update">›</button>
+            <button className="amaana-schedule-trigger" type="button" onClick={() => setShowSchedule(value => !value)} aria-expanded={showSchedule} aria-controls="companion-schedule">Schedule</button>
           </div>
         </div>
 
