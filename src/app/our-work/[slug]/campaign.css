@@ -102,3 +102,20 @@
 .campaign-pathway-carousel .canonical-pathway-visual img{object-fit:cover}
 .campaign-pathway-carousel .campaign-pathway-card>p:not(.v2-section-label){display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 .campaign-pathway-carousel .v2-text-link{margin-top:auto;padding-top:.8rem}
+
+
+/* L2 audit reconciliation: detail pages use restrained metadata, readable narrative rhythm and one interaction language. */
+.campaign-breadcrumb nav,.campaign-history-note span,.campaign-clinical-note span:first-child,.canonical-facts--timeline li::before{font-weight:700}
+.campaign-breadcrumb a{text-decoration:underline;text-decoration-thickness:.075em;text-underline-offset:.2em;text-decoration-color:rgb(47 76 122 / 28%)}
+.campaign-breadcrumb a:is(:hover,:focus-visible){text-decoration-color:currentColor}
+.campaign-story-copy{max-width:64ch}
+.campaign-story-copy p{line-height:1.72}
+.campaign-pathway-carousel .campaign-pathway-card,.canonical-pathways--timeline article,.canonical-pathways--growth article,.canonical-pathways--comparison article{
+  box-shadow:none
+}
+.campaign-pathway-carousel .campaign-pathway-card:focus-within,.canonical-pathways article:focus-within{
+  border-color:rgb(70 111 170 / 34%)
+}
+.campaign-pathway-carousel a:focus-visible,.canonical-pathways a:focus-visible,.campaign-breadcrumb a:focus-visible{
+  outline:3px solid var(--af-color-focus);outline-offset:3px
+}
