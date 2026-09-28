@@ -345,3 +345,10 @@
   .v3-trust-panel{padding:1.35rem}
   .v3-quick-links a{min-height:3.25rem;align-items:center}
 }
+
+
+/* L1 audit reconciliation: homepage microcopy and interactions follow the public system. */
+.v3-proof-label,.v3-label,.v3-home-banner-kicker,.v3-work-card-body small{font-weight:700}
+.v3-work-card,.v3-quick-links a,.v3-btn{transition-duration:var(--af-motion-medium)}
+.v3-quick-links a:focus-visible,.v3-work-card:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:4px}
+.v3-trust-panel{border:1px solid rgb(18 34 57 / 10%);box-shadow:0 .75rem 2rem rgb(18 34 57 / 7%)}
