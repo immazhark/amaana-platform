@@ -42,3 +42,19 @@
 }
 
 @media (prefers-reduced-motion: reduce) { .taleem-sponsor * { scroll-behavior: auto; } }
+
+
+/* Bring the Taleem route into the shared compact L1 rhythm. */
+.taleem-hero{padding-block:clamp(3.75rem,7vw,6rem)}
+.taleem-hero h1{font-size:clamp(3.2rem,6.5vw,6rem)}
+.taleem-programme,.taleem-process{padding-block:clamp(3.75rem,6vw,5.75rem)}
+.taleem-section-head{margin-bottom:clamp(2rem,4vw,3.25rem)}
+.taleem-section-head h2,.taleem-school h2,.taleem-closing h2{font-size:clamp(2.45rem,4.6vw,4.5rem)}
+.taleem-path{padding:clamp(1.5rem,3.5vw,2.75rem)}
+.taleem-path h3{margin-top:1.5rem}
+.taleem-path a{text-decoration:none;border-bottom:1px solid currentColor}
+.taleem-school{padding-block:clamp(3.75rem,6.5vw,6rem)}
+.taleem-process li{padding-top:1.5rem}
+.taleem-process h3{margin-top:1.25rem}
+.taleem-closing{padding-block:clamp(3.75rem,6vw,5.75rem)}
+@media(max-width:760px){.taleem-hero{padding-block:3.5rem}.taleem-hero h1{font-size:clamp(3.25rem,16vw,5.4rem)}}
