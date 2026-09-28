@@ -299,3 +299,49 @@
   .v3-home-banner-brandline,.v3-home-banner-slide--story .v3-home-banner-brandline{font-size:clamp(2rem,2.7vw,2.7rem)}
   .v3-home-banner-content>p:not(.v3-home-banner-kicker){-webkit-line-clamp:1}
 }
+
+
+/* 2026-09-28 homepage editorial hierarchy pass.
+   Preserve the locked cinematic masthead; reduce competing visual weight below it. */
+.v3-home .v3-section{padding-block:clamp(3.5rem,5.8vw,5.5rem)}
+.v3-home .v3-section-head{margin-bottom:clamp(2rem,3.8vw,3.25rem)}
+.v3-home .v3-heading{font-size:clamp(2.25rem,4vw,3.9rem);line-height:1}
+.v3-home .v3-intro{max-width:39rem;line-height:1.68}
+.v3-proof{padding-block:.45rem!important}
+.v3-proof-label{margin:0;padding:.85rem 0 .15rem;color:var(--af-color-gold-ink);font-size:.7rem;font-weight:850;letter-spacing:.15em;text-transform:uppercase}
+.v3-proof-item{min-height:6.7rem!important;padding:1rem clamp(.9rem,2vw,1.55rem)!important;justify-content:center}
+.v3-proof-item strong{font-size:clamp(1.9rem,3.2vw,3.2rem)!important}
+.v3-proof-item span{min-height:0!important;margin-top:.4rem;font-size:.82rem}
+.v3-work .v3-section-head{margin-bottom:clamp(2rem,4vw,3.4rem)}
+.v3-work-carousel .toolbar{margin-bottom:.45rem}
+.v3-work-carousel .track{padding-block:.45rem 1rem}
+.v3-work-carousel .slide{width:min(66vw,42rem)}
+.v3-work-carousel .activeSlide>*{box-shadow:0 1rem 2.7rem rgb(18 34 57 / 11%)}
+.v3-work-card{border-radius:1.1rem}
+.v3-eid:before{opacity:.72}
+.v3-eid .v3-section-head{margin-bottom:2.25rem}
+.v3-timeline{padding-top:2.45rem}
+.v3-year span{font-size:clamp(1.75rem,3vw,3.15rem)}
+.v3-eid .v3-actions{margin-top:2.25rem}
+.v3-trust-grid{grid-template-columns:minmax(0,1.08fr) minmax(17rem,.72fr);gap:clamp(2rem,5vw,5rem);align-items:center}
+.v3-trust-panel{padding:clamp(1.7rem,3vw,2.7rem);border-radius:1.15rem;box-shadow:0 18px 48px rgb(18 34 57 / 11%)}
+.v3-trust-panel h2{font-size:clamp(2.15rem,3.5vw,3.35rem)}
+.v3-trust-panel p{line-height:1.62}
+.v3-quick-links a{padding:1rem 0}
+.v3-appeals .v3-section-head{margin-bottom:2rem}
+.v3-empty{padding:clamp(1.5rem,3vw,2.4rem);box-shadow:0 12px 34px rgb(18 34 57 / 6%)}
+.v3-empty h3{font-size:clamp(1.65rem,2.6vw,2.45rem)}
+@media(max-width:900px){
+  .v3-work-carousel .slide{width:min(78vw,37rem)}
+  .v3-trust-grid{grid-template-columns:1fr;align-items:start}
+}
+@media(max-width:600px){
+  .v3-home .v3-section{padding-block:3.5rem}
+  .v3-home .v3-section-head{margin-bottom:1.8rem}
+  .v3-proof-label{padding-left:.2rem}
+  .v3-proof-item{flex-basis:min(72vw,17rem)!important;min-height:6.2rem!important}
+  .v3-work-carousel .slide{width:84vw}
+  .v3-timeline{gap:1.25rem .65rem}
+  .v3-trust-panel{padding:1.35rem}
+  .v3-quick-links a{min-height:3.25rem;align-items:center}
+}
