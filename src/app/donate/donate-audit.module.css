@@ -16,3 +16,9 @@
 .route p{line-height:1.55}
 .note{margin-top:.75rem}
 @media(max-width:700px){.route{min-height:0}}
+
+
+/* Transaction audit: route choice remains clear without oversized card emphasis. */
+.route{border-radius:.75rem;box-shadow:none}
+.route span{font-weight:700}
+.route:focus-within{border-color:rgb(70 111 170 / 36%)}
