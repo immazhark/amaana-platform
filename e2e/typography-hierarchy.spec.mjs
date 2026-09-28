@@ -137,3 +137,19 @@ test('Our Work disclosure exposes a visible keyboard focus indicator', async ({ 
   expect(focus.style).not.toBe('none');
   expect(focus.offset).toBeGreaterThanOrEqual(2);
 });
+
+
+test('remaining L1 metadata and action text stay within canonical emphasis', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  const checks = [
+    ['/', '.v3-proof-label, .v3-label, .v3-work-card-body small'],
+    ['/get-involved', '.v2-intent-marker, .v2-intent-arrow'],
+    ['/appeals', '.v2-appeals-trustline .v2-shell, .v2-appeal-card-head, .v2-appeal-card-link'],
+  ];
+  for (const [route, selector] of checks) {
+    await page.goto(route, { waitUntil: 'domcontentloaded' });
+    const weights = await page.locator(selector).evaluateAll(nodes => nodes.map(node => Number.parseInt(getComputedStyle(node).fontWeight, 10)));
+    for (const weight of weights) expect(weight, `${route} metadata/action weight`).toBeLessThanOrEqual(700);
+  }
+});
