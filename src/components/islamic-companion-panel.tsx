@@ -89,7 +89,7 @@ export function IslamicCompanionPanel({
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
-  const panelRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);\n  const readingsTabRef = useRef<HTMLButtonElement>(null);\n  const prayersTabRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     panelRef.current?.focus({ preventScroll: true });
@@ -98,7 +98,7 @@ export function IslamicCompanionPanel({
     };
     document.addEventListener("keydown", onKeyDown);
     return () => document.removeEventListener("keydown", onKeyDown);
-  }, [onClose, panel]);
+  }, [onClose]);
 
   useEffect(() => {
     if (panel !== "prayers" || !date) return;
@@ -179,7 +179,7 @@ export function IslamicCompanionPanel({
       </div>
 
       {panel === "readings" ? (
-        <div id="companion-readings" role="tabpanel" className="amaana-companion-view">
+        <div id="companion-readings" role="tabpanel" aria-labelledby="companion-tab-readings" className="amaana-companion-view">
           <p className="amaana-companion-note">{date || "Today"} · Changes at midnight in Hyderabad</p>
           {reading ? (
             <>
@@ -207,7 +207,7 @@ export function IslamicCompanionPanel({
           ) : <p>Preparing today’s reading…</p>}
         </div>
       ) : (
-        <div id="companion-prayers" role="tabpanel" className="amaana-companion-view">
+        <div id="companion-prayers" role="tabpanel" aria-labelledby="companion-tab-prayers" className="amaana-companion-view">
           <p className="amaana-companion-location">Hyderabad, India <span>IST · UTC+05:30</span></p>
           <div className="amaana-hijri">
             <h3>Hijri date</h3>
