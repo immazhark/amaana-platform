@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-27",
+  "updatedAt": "2026-09-28",
   "principle": "Green automation is necessary but not sufficient for production launch. External, human-review and cutover gates remain pending until evidence is recorded; main/indexing/payment activation actions remain explicitly controlled.",
   "gates": [
     {
@@ -50,11 +50,12 @@
     {
       "id": "approved-background-artwork",
       "category": "experience",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "requiredFor": [
         "production"
       ],
-      "evidence": "All six corrected approved SVGs were uploaded byte-for-byte to public/backgrounds on 2026-09-19 in commit 6510cdfc7002f4d00e12628a1a55d2761cbe6fad. Git blob SHA-1 values and file sizes exactly match the prepared source package, which independently confirms the locked SHA-256 values in scripts/verify-approved-backgrounds.mjs, including the corrected mobile header and footer assets. CSS token integration already switches hero/body/footer to the mobile variants at max-width 768px with upper-right mobile header/footer positioning and centred body positioning. This gate remains PENDING only until the corrected assets are rendered in the controlled family-review deployment and responsive visual QA is completed."
+      "evidence": "Approved Amaana background artwork is integrated across desktop and mobile surfaces. Family review was completed before the final QA cycle. Exact-head CI run `36453509694` on integration HEAD `47f56cae8d150e6683a486c81566d85731ba361d` completed SUCCESS with 528 Chromium acceptance tests, including responsive containment and branded-background coverage. Exact-head launch-review screenshot artifact `10984158299` (SHA-256 `719856a5dd7f800a2cdc5a59be8f675d9eef9846325d4cbaad8e1e724493a57d`) was visually reviewed across representative desktop/mobile homepage, L1, initiative, transactional and trust/policy surfaces; no remaining artwork positioning, blending or contrast defect requiring application-code change was identified.",
+      "verifiedAt": "2026-09-28"
     },
     {
       "id": "transactional-email-delivery",
