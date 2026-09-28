@@ -671,3 +671,17 @@ body{font-weight:var(--af-weight-body)}
   .v2-story-source-note span,.v2-story-detail-rule span,.v2-story-detail-context>span,
   .governance-summary span,.canonical-pathway span
 ){font-weight:var(--af-weight-label)}
+
+
+/* L2 editorial detail reconciliation: Story/Faith metadata must remain subordinate to prose. */
+:is(
+ .v2-story-detail-rule span,.v2-story-source-note span,
+ .v2-faith-detail-source span,.v2-faith-detail-standard span,
+ .v2-faith-detail-topics span
+){font-weight:700}
+.v2-story-detail-prose,.v2-faith-detail-body{max-width:64ch}
+.v2-story-detail-prose>p,.v2-faith-detail-body{line-height:1.72}
+.v2-story-detail-page a:not(.v2-button):focus-visible,
+.v2-faith-detail-page a:not(.v2-button):focus-visible{
+ outline:3px solid var(--af-color-focus);outline-offset:3px
+}
