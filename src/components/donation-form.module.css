@@ -34,3 +34,11 @@
 .intentNote{display:block;color:#5f6974;line-height:1.5}
 @media(max-width:760px){.intentGrid{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.intentOption{transition:none}}
+
+
+/* Transaction audit: field labels, amount and choices use the canonical emphasis scale. */
+.checkoutLabel,.intentGroup legend{font-weight:700}
+.amountControl b{font-weight:700}
+.amountControl input{font-weight:700!important}
+.checkoutControl,.choice label,.intentOption{border-radius:.75rem;transition-duration:var(--af-motion-medium)}
+.status,.hint,.intentIntro,.intentNote,.choice small,.intentOption small{line-height:1.55}
