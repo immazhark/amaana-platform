@@ -10,7 +10,7 @@
   --amaana-emblem-space:calc(var(--amaana-emblem-width) + 2rem);
   --af-surface-size:240px auto,104px 104px;
   --af-surface-repeat:no-repeat,repeat;
-  --af-surface-position:right 2rem center,0 0;
+  --af-surface-position:right clamp(.75rem,2vw,2rem) center,0 0;
 }
 .amaana-bg-hero,.amaana-bg-body,.amaana-bg-footer,.site-footer{position:relative}
 .amaana-bg-hero{background-color:#eee5d2;background-image:var(--amaana-bg-hero);background-size:104px 104px,100% 100%;background-repeat:repeat,no-repeat}
@@ -20,11 +20,14 @@
 .amaana-section-shell{position:relative;isolation:isolate}
 .amaana-section-content{position:relative;z-index:1}
 .amaana-backdrop-emblem{
-  position:absolute;top:3rem;right:max(1rem,calc((100% - 74rem)/2));
+  position:absolute;top:clamp(1.5rem,5vw,3rem);right:clamp(.75rem,2vw,2rem);z-index:0;
   width:var(--amaana-emblem-width);aspect-ratio:276/500;
   background:url("/backgrounds/amaana-arch-emblem.svg?v=20260928-r5") top center/contain no-repeat;
-  pointer-events:none;
+  pointer-events:none;user-select:none;
 }
+.amaana-bg-hero>:not(.amaana-backdrop-emblem),.amaana-bg-body>:not(.amaana-backdrop-emblem),.amaana-bg-footer>:not(.amaana-backdrop-emblem),.site-footer>.container{position:relative;z-index:1}
+.amaana-bg-hero,.amaana-bg-body,.amaana-bg-footer,.site-footer{overflow:hidden}
+
 @media(max-width:900px){
   :root{--amaana-emblem-width:6rem}
   .amaana-backdrop-emblem{top:1rem;right:1.25rem}
