@@ -29,3 +29,16 @@
 .stepActions .v2-button{margin-left:auto}
 .backButton{min-height:2.8rem;padding:.65rem .2rem;border:0;background:transparent;color:var(--v2-blue);font:inherit;font-weight:800;cursor:pointer}
 @media(max-width:620px){.progress ol{grid-template-columns:repeat(2,minmax(0,1fr))}.stepActions{align-items:stretch;flex-direction:column-reverse}.stepActions .v2-button,.backButton{width:100%;margin:0}}
+
+
+/* Compact, touch-safe progress navigation for a private multi-step request. */
+.progress{gap:.7rem;margin-bottom:1.25rem;padding:.85rem;border-radius:.85rem}
+.progress ol{gap:.35rem}
+.progress button{min-height:44px;padding:.5rem .6rem;border-radius:.65rem}
+.stepActions{margin-top:1.1rem;padding-top:.9rem}
+.backButton{min-height:44px}
+@media(max-width:620px){
+  .progress{padding:.7rem}
+  .progress>p{align-items:flex-start;flex-direction:column;gap:.2rem}
+  .progress button{min-height:44px}
+}
