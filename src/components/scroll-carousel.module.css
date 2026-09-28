@@ -44,18 +44,23 @@
 }
 
 
-/* 2026-09-29 owner monitor QA: focus mode becomes balanced discovery on wide screens. */
+/* 2026-09-29 owner monitor QA: balanced wide discovery without breaking centered focus semantics. */
 @media(min-width:1200px){
-  .focus .viewport{scroll-padding-inline:0}
-  .focus .track{width:100%;min-width:100%;padding:.8rem 0 1.25rem;gap:1rem}
-  .focus .slide{
-    width:calc((100% - 2rem)/3);
-    flex:0 0 calc((100% - 2rem)/3);
-    opacity:1;
-    transform:none;
-    filter:none;
-    scroll-snap-align:start
+  .focus .viewport{scroll-padding-inline:calc((100cqw - min(30cqw,26rem))/2)}
+  .focus .track{
+    width:max-content;
+    min-width:100%;
+    padding:.8rem calc((100cqw - min(30cqw,26rem))/2) 1.25rem;
+    gap:1rem
   }
-  .focus .activeSlide{transform:translateY(-.25rem)}
+  .focus .slide{
+    width:min(30cqw,26rem);
+    flex:0 0 min(30cqw,26rem);
+    opacity:.82;
+    transform:scale(.97);
+    filter:saturate(.9);
+    scroll-snap-align:center
+  }
+  .focus .activeSlide{opacity:1;transform:translateY(-.25rem) scale(1);filter:none}
   .focus .activeSlide>*{box-shadow:0 1rem 2.5rem rgb(18 34 57 / 10%)}
 }
