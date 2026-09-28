@@ -165,6 +165,22 @@ test('homepage omits superseded field and closing sections', async ({ page }) =>
   await expect(page.getByText('Upholding Trust. Serving With Compassion, Dignity and Accountability.', { exact: true })).toHaveCount(0);
 });
 
+test('Amaana decorative emblems stay at the viewport edge without affecting content geometry', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await open(page, '/our-work');
+  const emblem = page.locator('.amaana-backdrop-emblem').first();
+  await expect(emblem).toBeVisible();
+  const geometry = await emblem.evaluate(node => {
+    const rect = node.getBoundingClientRect();
+    const parent = node.parentElement?.getBoundingClientRect();
+    const content = node.parentElement?.querySelector('.container, .page-hero__shell, .v2-shell, .v3-shell')?.getBoundingClientRect();
+    return { rightGap: window.innerWidth - rect.right, position: getComputedStyle(node).position, parentWidth: parent?.width ?? 0, contentWidth: content?.width ?? 0 };
+  });
+  expect(geometry.position).toBe('absolute');
+  expect(geometry.rightGap).toBeLessThanOrEqual(32);
+  expect(geometry.parentWidth).toBeGreaterThan(geometry.contentWidth);
+});
+
 test('homepage hero stays wide and compact on desktop', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await open(page, '/');
