@@ -44,39 +44,33 @@ export function SiteFooter() {
           </div>
 
           <FooterNavGroup label="Explore">
-            <div className="footer-links">
-              <Link href="/our-work">Our Work</Link>
-              <Link href="/impact">Impact</Link>
-              <Link href="/stories">Stories of Amanah</Link>
-              <Link href="/faith-and-reflections">Faith & Reflections</Link>
-              <Link href="/about">Our Story</Link>
-            </div>
+            <Link href="/our-work">Our Work</Link>
+            <Link href="/impact">Impact</Link>
+            <Link href="/stories">Stories of Amanah</Link>
+            <Link href="/faith-and-reflections">Faith & Reflections</Link>
+            <Link href="/about">Our Story</Link>
           </FooterNavGroup>
 
           <FooterNavGroup label="Take part">
-            <div className="footer-links">
-              <Link href="/appeals">Current Appeals</Link>
-              <Link href="/get-involved">Get Involved</Link>
-              <Link href="/donate">Donate</Link>
-              <Link href="/get-involved/sponsor-education">Sponsor Education</Link>
-              <Link href="/partner">Partner With Amaana</Link>
-              <Link href="/request-assistance">Request Assistance</Link>
-              <Link href="/how-we-verify">How Amaana Works</Link>
-              <Link href="/contact">Contact</Link>
-            </div>
+            <Link href="/appeals">Current Appeals</Link>
+            <Link href="/get-involved">Get Involved</Link>
+            <Link href="/donate">Donate</Link>
+            <Link href="/get-involved/sponsor-education">Sponsor Education</Link>
+            <Link href="/partner">Partner With Amaana</Link>
+            <Link href="/request-assistance">Request Assistance</Link>
+            <Link href="/how-we-verify">How Amaana Works</Link>
+            <Link href="/contact">Contact</Link>
           </FooterNavGroup>
 
           <FooterNavGroup label="Trust & policies">
-            <div className="footer-links">
-              <Link href="/transparency">Transparency</Link>
-              <Link href="/governance">Governance</Link>
-              <Link href="/recognition">Awards & Recognition</Link>
-              <Link href="/compliance">Registration & Compliance</Link>
-              <Link href="/donation-policy">Donation Policy</Link>
-              <Link href="/refund-policy">Refund Policy</Link>
-              <Link href="/privacy">Privacy</Link>
-              <Link href="/terms">Terms</Link>
-            </div>
+            <Link href="/transparency">Transparency</Link>
+            <Link href="/governance">Governance</Link>
+            <Link href="/recognition">Awards & Recognition</Link>
+            <Link href="/compliance">Registration & Compliance</Link>
+            <Link href="/donation-policy">Donation Policy</Link>
+            <Link href="/refund-policy">Refund Policy</Link>
+            <Link href="/privacy">Privacy</Link>
+            <Link href="/terms">Terms</Link>
           </FooterNavGroup>
         </div>
 

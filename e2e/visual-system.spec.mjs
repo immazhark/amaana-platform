@@ -122,7 +122,7 @@ test('page hero variants stay visually differentiated inside one canonical syste
   const samples = [
     ['/about', '.page-hero--level1'],
     ['/request-assistance', '.page-hero--action'],
-    ['/privacy', '.page-hero--information'],
+    ['/contact', '.page-hero--information'],
   ];
   const backgrounds = [];
   for (const [path, selector] of samples) {
