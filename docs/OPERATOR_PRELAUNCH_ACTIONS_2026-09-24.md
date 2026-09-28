@@ -55,33 +55,36 @@ Do not mark PR #104 Ready for Review yet merely because protection was enabled. 
 - service: `amaana-rebuild-preview`
 - environment id: `38aede68-35aa-42de-adbc-49802e6d44e4`
 
-### Live target state reverified 27 September 2026
+### Live target state reverified 28 September 2026
 
-The previously pinned pair has aged out of rollback eligibility and must not be used as if it were still valid:
+Current served staging application candidate:
 
-- `a2e7b849-9276-438c-969e-0cc6d5ce3aef` / `dde1cb607010eabd1c84dacc5c513737fd0378f7`
-  - status: `REMOVED`
-  - `canRollback=false`
-  - `canRedeploy=true`
-- `d0e7608a-df34-425b-9d30-79d1434b1064` / `bce6b1d85bedc9da6e0fb38484e867db71cb4182`
-  - status: `REMOVED`
-  - `canRollback=false`
-  - `canRedeploy=true`
-
-Current successful staging deployment:
-
-- deployment: `368067ae-5bf4-4d00-90d9-43cc090eebc2`
-- source SHA: `e1efc19f75482f2eae5f988b2a469dc2848640d5`
-- commit: `privacy: remove orphaned public legacy videos`
+- deployment: `780ecf0d-f654-46c1-acf6-e5ec7a4e8633`
+- source SHA: `c4cb6a2e8e061d3927434285b092388c53ddf91e`
+- commit: `fix: tighten mobile footer vertical rhythm`
 - status: `SUCCESS`
 - `canRollback=true`
 - `canRedeploy=true`
 
-Current exact integration HEAD:
+Subsequent integration commits are test/docs-only and Railway correctly skipped them:
 
-- `60462d9cf0f790321b21dab531a443d11911dc21`
-- push CI `36027994092`: SUCCESS
-- PR CI `36027999164`: SUCCESS
+- `47f56cae8d150e6683a486c81566d85731ba361d` — test-only
+- `e474ad4163e515cfc77799d87a19ed02d9560732` — docs-only
+
+Latest exact integration HEAD:
+
+- `e474ad4163e515cfc77799d87a19ed02d9560732`
+- CI run `36456508014`: SUCCESS
+- Chromium acceptance: `528 passed (6.0m)`
+
+Previous-known-good rollback candidate:
+
+- deployment: `4646f5e8-d232-4696-a82c-4a0df7a017bd`
+- source SHA: `7c67587042e85cbc9240d062945c840024da94c5`
+- CI run `36447372876`: SUCCESS
+- Railway state: `REMOVED`, but currently reports `canRollback=true` / `canRedeploy=true`
+
+Treat the Railway dashboard as authoritative immediately before rehearsal; rollback eligibility may age out.
 
 ### Pre-action rules
 
@@ -254,3 +257,46 @@ CNAME record:
 9. Re-check retry/idempotency before resolving `transactional-email-delivery`.
 
 Do not use donor, beneficiary, medical, payment or case data for the first production email acceptance.
+
+
+---
+
+## E. Reserved production configuration parity
+
+### State reverified 28 September 2026
+
+The reserved production Railway service `amaana-platform` remains intentionally isolated:
+
+- source branch: `main`
+- current deployed source remains the old `main` baseline;
+- Railway-generated service domain exists;
+- **no custom domain is attached**;
+- no production cutover has occurred.
+
+The candidate production environment contract was compared against variable **names only**; secret values were not read.
+
+Exactly two required names remain absent:
+
+1. `PUBLIC_MEDIA_S3_BUCKET`
+2. `PRODUCTION_INDEXING_DECISION`
+
+Do not set these casually:
+
+- `PUBLIC_MEDIA_S3_BUCKET` must identify the production public-media bucket and must remain separate from the private assistance `S3_BUCKET`.
+- `PRODUCTION_INDEXING_DECISION` must be an explicit launch decision: `keep_disabled` or `enable`. Only `enable` may be paired with `NEXT_PUBLIC_ALLOW_INDEXING=true`.
+
+Do not attach `amaanafoundation.org` to the reserved production service until the release, production-only configuration, email/payment acceptance prerequisites and explicit cutover authorization are ready.
+
+---
+
+## F. Current Resend DNS state
+
+Reverified 28 September 2026:
+
+- domain status: `failed`
+- DKIM TXT: `failed`
+- SPF/Return-Path MX: `failed`
+- SPF TXT: `failed`
+- `rsend` CNAME: `failed`
+
+Do not trigger live email delivery while this remains unresolved. After the required DNS records are correctly published, re-run provider verification and confirm the domain becomes verified before production email acceptance.
