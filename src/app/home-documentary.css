@@ -255,3 +255,47 @@
   .v3-home-banner-actions{margin-top:.65rem}
   .v3-home-banner-actions .v3-btn{min-height:2.55rem;padding:.55rem .85rem}
 }
+
+
+/* First-viewport hero lock.
+   Desktop is a true panoramic campaign banner, never a tall editorial panel. */
+@media (min-width:901px){
+  .v3-home-banner{
+    padding:.35rem 0 .5rem;
+    background-color:#f6f0e4;
+    background-image:none;
+  }
+  .v3-home-banner>.amaana-backdrop-emblem{display:none!important}
+  .v3-home-banner-carousel{
+    width:min(calc(100% - 1.5rem),100rem);
+    height:clamp(17.5rem,22vw,21rem)!important;
+    min-height:0!important;
+    max-height:21rem!important;
+    aspect-ratio:auto;
+  }
+  .v3-home-banner-content,
+  .v3-home-banner-slide--story .v3-home-banner-content{
+    width:min(calc(100% - 2rem),94rem);
+    padding:1.15rem 51% 1.15rem clamp(1.25rem,3vw,3rem);
+  }
+  .v3-home-banner-brandline,
+  .v3-home-banner-slide--story .v3-home-banner-brandline{
+    max-width:21ch;
+    font-size:clamp(2.15rem,3vw,3rem);
+    line-height:.94;
+    text-wrap:balance;
+  }
+  .v3-home-banner-content h2{max-width:28ch;font-size:clamp(1rem,1.25vw,1.25rem);line-height:1.08}
+  .v3-home-banner-content>p:not(.v3-home-banner-kicker){max-width:38rem;margin-top:.42rem;-webkit-line-clamp:2;line-height:1.35}
+  .v3-home-banner-kicker{margin-bottom:.3rem}
+  .v3-home-banner-actions{margin-top:.58rem}
+  .v3-home-banner-actions .v3-btn{min-height:2.4rem;padding:.5rem .9rem}
+  .v3-home-banner-metric{margin-top:.4rem}
+  .v3-home-banner-story-mark{right:15%;top:24%;font-size:clamp(3.5rem,5vw,5rem)}
+  .v3-home-banner-story-year{font-size:clamp(7rem,14vw,14rem)}
+}
+@media (min-width:901px) and (max-height:800px){
+  .v3-home-banner-carousel{height:17.5rem!important;max-height:17.5rem!important}
+  .v3-home-banner-brandline,.v3-home-banner-slide--story .v3-home-banner-brandline{font-size:clamp(2rem,2.7vw,2.7rem)}
+  .v3-home-banner-content>p:not(.v3-home-banner-kicker){-webkit-line-clamp:1}
+}
