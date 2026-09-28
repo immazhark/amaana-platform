@@ -56,8 +56,7 @@ export function IslamicCompanion() {
   const [showSchedule, setShowSchedule] = useState(false);
   const [liveItems, setLiveItems] = useState<LiveRailItem[]>([]);
   const [railIndex, setRailIndex] = useState(0);
-  const readingsButton = useRef<HTMLButtonElement>(null);
-  const prayersButton = useRef<HTMLButtonElement>(null);
+  const companionButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const update = () => setNow(new Date());
@@ -117,10 +116,8 @@ export function IslamicCompanion() {
   }, [railIndex, railItems.length]);
 
   const closePanel = useCallback(() => {
-    setPanel(current => {
-      requestAnimationFrame(() => (current === "readings" ? readingsButton : prayersButton).current?.focus({ preventScroll: true }));
-      return null;
-    });
+    setPanel(null);
+    requestAnimationFrame(() => companionButton.current?.focus({ preventScroll: true }));
   }, []);
 
   const onMoonChange = useCallback((value: MoonState) => {
@@ -178,7 +175,7 @@ export function IslamicCompanion() {
               <div><dt>Throughout the day</dt><dd>Istighfar, tasbih, takbeer, tahleel and tahmeed</dd></div>
             </dl>
             <p>All windows use Hyderabad time (IST). These are on-site reading prompts, not prayer rulings or device notifications.</p>
-            <button type="button" onClick={() => { setShowSchedule(false); readingsButton.current?.focus(); }}>Close schedule</button>
+            <button type="button" onClick={() => { setShowSchedule(false); companionButton.current?.focus(); }}>Close schedule</button>
           </div>
         )}
       </section>
@@ -186,24 +183,14 @@ export function IslamicCompanion() {
       <aside className="amaana-companion" aria-label="Amaana daily companions">
         <div className="amaana-companion-dock">
           <button
-            ref={readingsButton}
+            ref={companionButton}
             type="button"
-            aria-expanded={panel === "readings"}
-            aria-controls="amaana-reading-panel"
-            onClick={() => setPanel(value => value === "readings" ? null : "readings")}
+            aria-expanded={panel !== null}
+            aria-controls="amaana-companion-panel"
+            onClick={() => setPanel(value => value ? null : "readings")}
           >
-            <CompanionIcon kind="book" />
-            <span>Ayah & Hadith</span>
-          </button>
-          <button
-            ref={prayersButton}
-            type="button"
-            aria-expanded={panel === "prayers"}
-            aria-controls="amaana-prayer-panel"
-            onClick={() => setPanel(value => value === "prayers" ? null : "prayers")}
-          >
-            <CompanionIcon kind="moon" />
-            <span>Salah & Hijri</span>
+            <span className="amaana-companion-dock-icons" aria-hidden="true"><CompanionIcon kind="book" /><CompanionIcon kind="moon" /></span>
+            <span><strong>Amaana Companion</strong><small>Qur’an · Hadith · Salah · Hijri</small></span>
           </button>
         </div>
 
@@ -212,7 +199,7 @@ export function IslamicCompanion() {
             fallback={
               <div
                 className="amaana-companion-panel"
-                id={panel === "readings" ? "amaana-reading-panel" : "amaana-prayer-panel"}
+                id="amaana-companion-panel"
                 role="status"
                 aria-live="polite"
               >
@@ -225,6 +212,7 @@ export function IslamicCompanion() {
               date={date}
               now={now}
               onClose={closePanel}
+              onPanelChange={setPanel}
               onMoonChange={onMoonChange}
             />
           </Suspense>
