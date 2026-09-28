@@ -534,3 +534,53 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
   .site-footer .footer-lead{padding-right:0;padding-top:10rem}
 }
 
+
+
+/* 2026-09-28 site-level UX architecture pass.
+   Shared chrome and L1/L2 heroes are deliberately compact, editorial and viewport-safe. */
+:root{
+  --af-chrome-height:4.25rem;
+  --af-reading-measure:62ch;
+  --af-section-space:clamp(3.75rem,6.5vw,6.25rem);
+}
+.site-header{background:rgb(255 253 248 / 97%);box-shadow:0 10px 32px rgb(18 34 57 / 4%)}
+.site-header .nav{min-height:var(--af-chrome-height)}
+.site-header .brand-official{min-width:3.8rem;min-height:3.8rem}
+.site-header .brand-lockup{width:3.8rem;max-width:3.8rem}
+.site-header .nav-link::after{content:none!important}
+.site-header .nav-link{border-radius:.45rem;transition:color var(--af-motion-fast) ease,background var(--af-motion-fast) ease}
+.site-header .nav-link:is(:hover,:focus-visible){background:rgb(70 111 170 / 7%);color:var(--af-color-navy-800)}
+.site-header .nav-link.active{color:var(--af-color-navy-950);font-weight:850}
+.site-header .nav-link.active::before{content:"";width:.3rem;height:.3rem;margin-right:.38rem;border-radius:50%;background:var(--af-color-gold-500)}
+.page-hero{
+  --min:clamp(24rem,36vw,30rem);
+  --visual:clamp(18rem,27vw,23rem);
+  --pad:clamp(2.5rem,4vw,3.75rem);
+}
+.page-hero--level2,.page-hero--action,.page-hero--information,.page-hero--recognition{--min:clamp(22rem,32vw,27rem);--visual:clamp(16rem,24vw,20rem)}
+.page-hero--trust{--min:clamp(20rem,29vw,24rem);--visual:clamp(15rem,21vw,18rem)}
+.page-hero__grid{gap:clamp(2rem,5vw,4.5rem)}
+.page-hero__description{max-width:var(--af-reading-measure);line-height:1.6}
+.page-hero__visual{box-shadow:0 18px 46px rgb(4 21 40 / 18%)}
+.page-hero__visual-fallback{padding:clamp(1.4rem,3vw,2.25rem)}
+.page-hero__visual-fallback i{width:3.5rem}
+.site-footer .amaana-backdrop-emblem{top:1.5rem;right:clamp(.75rem,2vw,2rem);opacity:.82}
+.site-footer>.container{position:relative;z-index:1}
+.site-footer .footer-lead{max-width:none;grid-template-columns:minmax(0,1.25fr) minmax(15rem,.75fr);padding-block:1.4rem 1.8rem}
+.site-footer .footer-lead h2{max-width:24ch}
+.site-footer .footer-grid-v2{padding-block:clamp(2.25rem,4vw,3.5rem)}
+.site-footer .footer-links a{min-height:2.75rem}
+@media(max-width:900px){
+  :root{--af-chrome-height:4rem}
+  .site-header .brand-official{min-width:3.55rem;min-height:3.55rem}
+  .site-header .brand-lockup{width:3.55rem;max-width:3.55rem}
+  .page-hero{--min:auto;--visual:clamp(18rem,46vw,23rem);--pad:clamp(2.75rem,7vw,4rem)}
+  .site-footer .footer-lead{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+  :root{--af-section-space:clamp(3.5rem,11vw,5rem)}
+  .page-hero{--visual:clamp(15rem,64vw,19rem);--pad:2.6rem}
+  .page-hero__description{line-height:1.58}
+  .page-hero__visual-fallback{padding:1.35rem}
+  .site-footer .amaana-backdrop-emblem{right:.5rem;top:1rem;opacity:.55}
+}
