@@ -213,3 +213,18 @@ test('private state pages keep status metadata subordinate', async ({ page }) =>
   const weights = await page.locator('.v2-reference-block span, .v2-state-steps > span').evaluateAll(nodes => nodes.map(node => Number.parseInt(getComputedStyle(node).fontWeight, 10)));
   for (const weight of weights) expect(weight).toBeLessThanOrEqual(700);
 });
+
+
+test('policy routes preserve long-form reading hierarchy', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  for (const route of ['/privacy', '/terms', '/donation-policy', '/refund-policy']) {
+    const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+    expect(response?.ok(), `${route} should render`).toBeTruthy();
+    const labels = await page.locator('.v2-policy-principles span, .v2-policy-layout > aside p').evaluateAll(nodes => nodes.map(node => Number.parseInt(getComputedStyle(node).fontWeight, 10)));
+    for (const weight of labels) expect(weight).toBeLessThanOrEqual(700);
+    const prose = page.locator('.v2-policy-sections p').first();
+    const lineHeight = await prose.evaluate(node => parseFloat(getComputedStyle(node).lineHeight) / parseFloat(getComputedStyle(node).fontSize));
+    expect(lineHeight).toBeGreaterThanOrEqual(1.65);
+  }
+});
