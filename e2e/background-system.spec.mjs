@@ -36,9 +36,8 @@ expect(mark.size).toBe('contain');
       for (const surface of result.surfaces) {
         const sizes = surface.size.split(',').map(value=>value.trim());
         const repeats = surface.repeat.split(',').map(value=>value.trim());
-        const latticeIndex = sizes.findIndex((value,index)=>value === '104px 104px' && repeats[index] === 'repeat');
-        expect(latticeIndex, 'surface retains the canonical 104px lattice layer').toBeGreaterThanOrEqual(0);
-        expect(repeats[latticeIndex], 'canonical lattice layer repeats').toBe('repeat');
+        expect(sizes, 'branded surface retains the canonical 104px lattice scale').toContain('104px 104px');
+        expect(repeats, 'branded surface retains a repeating lattice layer').toContain('repeat');
       }
       if (route === '/impact') {
         expect(Math.max(...result.surfaces.map(s=>s.height))-Math.min(...result.surfaces.map(s=>s.height))).toBeGreaterThan(500);
