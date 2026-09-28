@@ -1,5 +1,6 @@
 import Image from "next/image";
 import Link from "next/link";
+import { FooterNavGroup } from "@/components/footer-nav-group";
 
 const socialLinks = [
   ["Instagram", "https://www.instagram.com/amaanafoundation/"],
@@ -42,8 +43,7 @@ export function SiteFooter() {
             </nav>
           </div>
 
-          <details className="footer-nav-group">
-            <summary>Explore</summary>
+          <FooterNavGroup label="Explore">
             <div className="footer-links">
               <Link href="/our-work">Our Work</Link>
               <Link href="/impact">Impact</Link>
@@ -51,10 +51,9 @@ export function SiteFooter() {
               <Link href="/faith-and-reflections">Faith & Reflections</Link>
               <Link href="/about">Our Story</Link>
             </div>
-          </details>
+          </FooterNavGroup>
 
-          <details className="footer-nav-group">
-            <summary>Take part</summary>
+          <FooterNavGroup label="Take part">
             <div className="footer-links">
               <Link href="/appeals">Current Appeals</Link>
               <Link href="/get-involved">Get Involved</Link>
@@ -65,10 +64,9 @@ export function SiteFooter() {
               <Link href="/how-we-verify">How Amaana Works</Link>
               <Link href="/contact">Contact</Link>
             </div>
-          </details>
+          </FooterNavGroup>
 
-          <details className="footer-nav-group">
-            <summary>Trust & policies</summary>
+          <FooterNavGroup label="Trust & policies">
             <div className="footer-links">
               <Link href="/transparency">Transparency</Link>
               <Link href="/governance">Governance</Link>
@@ -79,7 +77,7 @@ export function SiteFooter() {
               <Link href="/privacy">Privacy</Link>
               <Link href="/terms">Terms</Link>
             </div>
-          </details>
+          </FooterNavGroup>
         </div>
 
         <div className="footer-note">

@@ -340,29 +340,40 @@ test('mobile shared footer collapses secondary navigation while preserving tap t
   await open(page, '/about', 390);
   const groups = page.locator('.site-footer .footer-nav-group');
   await expect(groups).toHaveCount(3);
-  await expect(groups.nth(0)).not.toHaveAttribute('open', '');
-  await expect(groups.nth(1)).not.toHaveAttribute('open', '');
-  await expect(groups.nth(2)).not.toHaveAttribute('open', '');
+  const toggles = page.locator('.site-footer .footer-nav-toggle');
+  await expect(toggles).toHaveCount(3);
+  await expect(toggles.nth(0)).toHaveAttribute('aria-expanded', 'false');
+  await expect(toggles.nth(1)).toHaveAttribute('aria-expanded', 'false');
+  await expect(toggles.nth(2)).toHaveAttribute('aria-expanded', 'false');
 
   const collapsed = await page.locator('.site-footer').evaluate(footer => {
-    const summaries = Array.from(footer.querySelectorAll('.footer-nav-group > summary'));
+    const buttons = Array.from(footer.querySelectorAll('.footer-nav-toggle'));
     const grid = footer.querySelector('.footer-grid-v2')?.getBoundingClientRect();
     return {
-      summaryCount: summaries.length,
-      minSummaryHeight: Math.min(...summaries.map(summary => summary.getBoundingClientRect().height)),
+      buttonCount: buttons.length,
+      minButtonHeight: Math.min(...buttons.map(button => button.getBoundingClientRect().height)),
       gridHeight: grid?.height ?? 0,
     };
   });
-  expect(collapsed.summaryCount).toBe(3);
-  expect(collapsed.minSummaryHeight).toBeGreaterThanOrEqual(44);
+  expect(collapsed.buttonCount).toBe(3);
+  expect(collapsed.minButtonHeight).toBeGreaterThanOrEqual(44);
   expect(collapsed.gridHeight).toBeLessThanOrEqual(720);
 
-  await groups.nth(0).locator('summary').click();
-  await expect(groups.nth(0)).toHaveAttribute('open', '');
+  await toggles.nth(0).click();
+  await expect(toggles.nth(0)).toHaveAttribute('aria-expanded', 'true');
   const firstGroupLinks = groups.nth(0).locator('.footer-links a');
   await expect(firstGroupLinks.first()).toBeVisible();
   const minLinkHeight = await firstGroupLinks.evaluateAll(links => Math.min(...links.map(link => link.getBoundingClientRect().height)));
   expect(minLinkHeight).toBeGreaterThanOrEqual(44);
+});
+
+test('desktop footer exposes navigation directly without disclosure controls', async ({ page }) => {
+  await open(page, '/about', 1440);
+  const toggles = page.locator('.site-footer .footer-nav-toggle');
+  await expect(toggles.first()).toBeHidden();
+  const links = page.locator('.site-footer .footer-nav-group .footer-links a');
+  await expect(links.first()).toBeVisible();
+  expect(await links.count()).toBeGreaterThan(10);
 });
 
 test('impact wall stays dense and readable across desktop and mobile', async ({ page }) => {
