@@ -237,6 +237,7 @@ jobs:
         shell: bash
         env:
           AMAANA_APP_WORKSPACE: ${{ github.workspace }}
+          AMAANA_FULL_VISUAL_REVIEW: "true"
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP/amaana-browser-acceptance"
