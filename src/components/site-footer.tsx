@@ -42,8 +42,8 @@ export function SiteFooter() {
             </nav>
           </div>
 
-          <div>
-            <h3>Explore</h3>
+          <details className="footer-nav-group">
+            <summary>Explore</summary>
             <div className="footer-links">
               <Link href="/our-work">Our Work</Link>
               <Link href="/impact">Impact</Link>
@@ -51,10 +51,10 @@ export function SiteFooter() {
               <Link href="/faith-and-reflections">Faith & Reflections</Link>
               <Link href="/about">Our Story</Link>
             </div>
-          </div>
+          </details>
 
-          <div>
-            <h3>Take part</h3>
+          <details className="footer-nav-group">
+            <summary>Take part</summary>
             <div className="footer-links">
               <Link href="/appeals">Current Appeals</Link>
               <Link href="/get-involved">Get Involved</Link>
@@ -65,10 +65,10 @@ export function SiteFooter() {
               <Link href="/how-we-verify">How Amaana Works</Link>
               <Link href="/contact">Contact</Link>
             </div>
-          </div>
+          </details>
 
-          <div>
-            <h3>Trust & policies</h3>
+          <details className="footer-nav-group">
+            <summary>Trust & policies</summary>
             <div className="footer-links">
               <Link href="/transparency">Transparency</Link>
               <Link href="/governance">Governance</Link>
@@ -79,7 +79,7 @@ export function SiteFooter() {
               <Link href="/privacy">Privacy</Link>
               <Link href="/terms">Terms</Link>
             </div>
-          </div>
+          </details>
         </div>
 
         <div className="footer-note">

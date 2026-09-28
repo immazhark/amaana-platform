@@ -301,29 +301,54 @@ test('shared footer callout remains compact and does not compete with page hero'
   expect(metrics.footerSize).toBeLessThan(metrics.heroSize);
 });
 
-test('mobile shared footer compacts navigation without shrinking tap targets', async ({ page }) => {
+test('mobile shared footer collapses secondary navigation while preserving tap targets', async ({ page }) => {
   await open(page, '/about', 390);
-  const metrics = await page.locator('.site-footer').evaluate(footer => {
-    const links = Array.from(footer.querySelectorAll('.footer-links a'));
-    const groups = Array.from(footer.querySelectorAll('.footer-grid-v2 > div:not(.footer-intro)'));
-    const groupRects = groups.map(group => group.getBoundingClientRect());
-    const policyLinks = Array.from(groups.at(-1)?.querySelectorAll('.footer-links a') ?? []);
-    const policyColumns = new Set(policyLinks.map(link => Math.round(link.getBoundingClientRect().left / 8) * 8));
+  const groups = page.locator('.site-footer .footer-nav-group');
+  await expect(groups).toHaveCount(3);
+  await expect(groups.nth(0)).not.toHaveAttribute('open', '');
+  await expect(groups.nth(1)).not.toHaveAttribute('open', '');
+  await expect(groups.nth(2)).not.toHaveAttribute('open', '');
+
+  const collapsed = await page.locator('.site-footer').evaluate(footer => {
+    const summaries = Array.from(footer.querySelectorAll('.footer-nav-group > summary'));
+    const grid = footer.querySelector('.footer-grid-v2')?.getBoundingClientRect();
     return {
-      minLinkHeight: Math.min(...links.map(link => link.getBoundingClientRect().height)),
-      linkCount: links.length,
-      groupCount: groups.length,
-      navFootprint: Math.max(...groupRects.map(rect => rect.bottom)) - Math.min(...groupRects.map(rect => rect.top)),
-      firstRowDelta: Math.abs(groupRects[0].top - groupRects[1].top),
-      policyColumnCount: policyColumns.size,
+      summaryCount: summaries.length,
+      minSummaryHeight: Math.min(...summaries.map(summary => summary.getBoundingClientRect().height)),
+      gridHeight: grid?.height ?? 0,
     };
   });
-  expect(metrics.linkCount).toBeGreaterThan(0);
-  expect(metrics.groupCount).toBe(3);
-  expect(metrics.navFootprint).toBeLessThanOrEqual(760);
-  expect(metrics.firstRowDelta).toBeLessThanOrEqual(2);
-  expect(metrics.policyColumnCount).toBeGreaterThanOrEqual(2);
-  expect(metrics.minLinkHeight).toBeGreaterThanOrEqual(44);
+  expect(collapsed.summaryCount).toBe(3);
+  expect(collapsed.minSummaryHeight).toBeGreaterThanOrEqual(44);
+  expect(collapsed.gridHeight).toBeLessThanOrEqual(720);
+
+  await groups.nth(0).locator('summary').click();
+  await expect(groups.nth(0)).toHaveAttribute('open', '');
+  const firstGroupLinks = groups.nth(0).locator('.footer-links a');
+  await expect(firstGroupLinks.first()).toBeVisible();
+  const minLinkHeight = await firstGroupLinks.evaluateAll(links => Math.min(...links.map(link => link.getBoundingClientRect().height)));
+  expect(minLinkHeight).toBeGreaterThanOrEqual(44);
+});
+
+test('impact wall stays dense and readable across desktop and mobile', async ({ page }) => {
+  for (const width of [1440, 390]) {
+    await open(page, '/impact', width);
+    const metrics = await page.locator('.v2-impact-wall').evaluate(wall => {
+      const tiles = Array.from(wall.querySelectorAll('.v2-impact-tile'));
+      const rects = tiles.map(tile => tile.getBoundingClientRect());
+      return {
+        count: tiles.length,
+        minHeight: Math.min(...rects.map(rect => rect.height)),
+        maxHeight: Math.max(...rects.map(rect => rect.height)),
+        wallWidth: wall.getBoundingClientRect().width,
+        maxTileWidth: Math.max(...rects.map(rect => rect.width)),
+      };
+    });
+    expect(metrics.count).toBeGreaterThan(0);
+    expect(metrics.minHeight).toBeGreaterThanOrEqual(width === 390 ? 200 : 230);
+    expect(metrics.maxHeight - metrics.minHeight).toBeLessThanOrEqual(width === 390 ? 180 : 260);
+    expect(metrics.maxTileWidth).toBeLessThanOrEqual(metrics.wallWidth + 1);
+  }
 });
 
 test('official Amaana mark is present in both global brand anchors', async ({ page }) => {

@@ -69,3 +69,46 @@
 :global(.v2-impact-tile-shade){transition:opacity var(--af-motion-medium) ease}
 :global(.v2-impact-tile-index),:global(.v2-impact-tile-copy small),:global(.v2-impact-tile-copy>span),:global(.v2-impact-tile-action){font-weight:700}
 :global(.v2-impact-tile-action){transition:transform var(--af-motion-medium) ease,opacity var(--af-motion-medium) ease,background var(--af-motion-medium) ease}
+
+
+/* 2026-09-28 brutal-QA refinement: remove masonry dead space and strengthen metric hierarchy. */
+:global(.v2-impact-wall){
+  grid-template-columns:repeat(3,minmax(0,1fr));
+  grid-auto-flow:row;
+  grid-auto-rows:auto;
+  align-items:stretch;
+  gap:clamp(.75rem,1.1vw,1rem)
+}
+:global(.v2-impact-tile),
+:global(.v2-impact-tile:nth-child(n)){
+  grid-column:auto;
+  grid-row:auto;
+  min-height:15.5rem;
+  padding:clamp(1.05rem,1.4vw,1.35rem)
+}
+:global(.v2-impact-tile:nth-child(6n+1)){
+  grid-column:span 2
+}
+:global(.v2-impact-tile-copy strong){
+  margin-top:.5rem;
+  font-size:clamp(2.35rem,3.35vw,3.9rem);
+  line-height:.88
+}
+:global(.v2-impact-tile-copy>span){font-size:.84rem;line-height:1.35}
+:global(.v2-impact-tile-copy h3){max-width:26ch;margin-top:.55rem;line-height:1.08}
+:global(.v2-impact-tile-action){margin-top:.6rem}
+@media(max-width:1050px){
+  :global(.v2-impact-wall){grid-template-columns:repeat(2,minmax(0,1fr))}
+  :global(.v2-impact-tile),
+  :global(.v2-impact-tile:nth-child(n)){grid-column:auto;min-height:14.75rem}
+  :global(.v2-impact-tile:nth-child(5n+1)){grid-column:1/-1;min-height:16rem}
+}
+@media(max-width:620px){
+  :global(.v2-impact-wall){grid-template-columns:1fr;gap:.7rem}
+  :global(.v2-impact-tile),
+  :global(.v2-impact-tile:nth-child(n)),
+  :global(.v2-impact-tile:nth-child(5n+1)){grid-column:auto;min-height:13.25rem;padding:1.05rem}
+  :global(.v2-impact-tile.has-media){min-height:18rem}
+  :global(.v2-impact-tile-copy strong){font-size:clamp(2.55rem,13vw,3.8rem)}
+  :global(.v2-impact-tile-copy h3){font-size:1.15rem}
+}
