@@ -13,3 +13,8 @@
 .emptyState p{max-width:48rem;margin:0}
 .emptyActions{justify-content:flex-start}
 @media(max-width:600px){.emptyState{padding:1.4rem}.emptyActions{align-items:stretch}.emptyActions :global(.v2-button){width:100%}}
+
+
+/* L1 consistency audit: empty-state metadata uses the same restrained hierarchy. */
+.emptyIcon,.emptyKicker{font-weight:700}
+.emptyState{border-color:rgb(117 86 7 / 18%);box-shadow:none}
