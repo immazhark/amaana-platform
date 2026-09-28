@@ -42,3 +42,14 @@
   .progress>p{align-items:flex-start;flex-direction:column;gap:.2rem}
   .progress button{min-height:44px}
 }
+
+
+/* Transaction audit: private intake stays calm, legible and touch-safe. */
+.form :global(.field input:not([type=checkbox]):not([type=file])),
+.form :global(.field select),
+.form :global(.field textarea),
+.form :global(.v2-form-choice),
+.form :global(.v2-file-field){border-radius:.75rem!important}
+.progress button{font-weight:600}
+.backButton{font-weight:700}
+.progress>p strong{font-weight:700}
