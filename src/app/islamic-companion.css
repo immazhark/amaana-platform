@@ -173,3 +173,17 @@
  .amaana-companion-view{max-height:calc(100dvh - 13rem)}
 }
 @media(prefers-reduced-motion:reduce){.amaana-companion-dock>button{transition:none}}
+
+
+/* Broadcast rail is intentionally passive: reminder ↔ current live appeal only. */
+.amaana-reminder-inner{grid-template-columns:auto minmax(0,1fr)}
+.amaana-live-badge.is-reminder{color:#8a6715}
+.amaana-live-badge.is-reminder span{display:none}
+.amaana-live-badge.is-live{color:#173e47}
+@media(max-width:900px){.amaana-reminder-inner{grid-template-columns:auto minmax(0,1fr)}}
+@media(max-width:640px){
+  .amaana-reminder-inner{grid-template-columns:auto minmax(0,1fr)}
+  .amaana-live-badge{font-size:.58rem;gap:.35rem}
+  .amaana-live-badge::after{content:none}
+  .amaana-live-badge.is-reminder{font-size:.55rem}
+}
