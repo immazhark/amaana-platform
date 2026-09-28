@@ -16,3 +16,10 @@
 .v2-premium-form{box-shadow:0 1rem 2.5rem rgb(18 34 57 / 5%)}
 .v2-file-dropzone{border-radius:.75rem;transition-duration:var(--af-motion-medium)}
 .v2-premium-form input:not([type=checkbox]):not([type=file]),.v2-premium-form select,.v2-premium-form textarea{transition-duration:var(--af-motion-medium)}
+
+
+/* 2026-09-28 brutal-QA: compact the form guide without reducing clarity. */
+.v2-assistance-form-layout>aside ol{margin-top:1.6rem}
+.v2-assistance-form-layout>aside li{padding:.78rem 0}
+.v2-assistance-form-layout>aside li p{line-height:1.45}
+@media(max-width:900px){.v2-assistance-form-layout>aside{padding-bottom:.35rem}}

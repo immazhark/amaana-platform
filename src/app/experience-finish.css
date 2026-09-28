@@ -719,3 +719,12 @@ body{font-weight:var(--af-weight-body)}
   .footer-nav-group .footer-links a{width:auto;min-height:2.75rem;font-size:.9rem;line-height:1.35}
   .footer-note{padding-block:1rem 0;font-size:.78rem;line-height:1.5}
 }
+
+
+/* 2026-09-28 brutal-QA: editorial heading token for programme/card identity. */
+:is(.v2-initiative-row,.v3-work-card,.canonical-pathways,.v2-stories-card,.v2-appeal-card) h3{
+  font-family:Georgia,"Times New Roman",serif;
+  font-weight:500;
+  line-height:1.08;
+  letter-spacing:-.02em
+}
