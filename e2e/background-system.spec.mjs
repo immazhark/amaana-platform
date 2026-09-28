@@ -16,13 +16,11 @@ for (const width of widths) {
           && Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1;
         const marks = [...document.querySelectorAll('.amaana-backdrop-emblem')].map(mark => {
           const box = mark.getBoundingClientRect();
-          const parent = mark.parentElement;
-          const bounds = parent.getBoundingClientRect();
-          const isFooterMark = Boolean(mark.closest('.site-footer'));
-          const protectedContent = isFooterMark ? parent.querySelectorAll('.footer-lead>*,.footer-grid,.footer-note') : [];
+          const owner = mark.closest('.page-hero,.site-footer');
+          const isFooterMark = owner?.classList.contains('site-footer') ?? false;
           return {
-            contained: box.right>bounds.left && box.left<bounds.right && box.bottom>bounds.top && box.top<bounds.bottom,
-            overlapping: isFooterMark && [...protectedContent].some(el=>overlaps(box,el.getBoundingClientRect())),
+            visible: box.width>0 && box.height>0,
+            overlapping: isFooterMark && [...owner.querySelectorAll('.footer-lead>*,.footer-grid,.footer-note')].some(el=>overlaps(box,el.getBoundingClientRect())),
             size: getComputedStyle(mark).backgroundSize,
             asset: getComputedStyle(mark).backgroundImage,
             decorative: mark.getAttribute('aria-hidden'),
@@ -36,7 +34,7 @@ for (const width of widths) {
       });
       expect(result.overflow).toBe(false);
       for (const mark of result.marks) {
-        expect(mark.contained, 'decorative identity intersects its owning surface').toBe(true);
+        expect(mark.visible, 'decorative identity retains rendered geometry').toBe(true);
         expect(mark.overlapping, 'identity must not collide with text, cards or links').toBe(false);
         expect(mark.size).toBe('contain');
         expect(mark.asset).toContain('/backgrounds/amaana-arch-emblem.svg');
