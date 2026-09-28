@@ -155,13 +155,13 @@ test('Islamic companion detail panel remains interaction-gated and functional', 
   const readingsButton = page.getByRole('button', { name: /Amaana Companion/i });
   await readingsButton.click();
 
-  const panel = page.locator('#amaana-reading-panel');
+  const panel = page.locator('#amaana-companion-panel');
   await expect(panel).toBeVisible();
-  await expect(panel.getByRole('heading', { name: 'Today’s ayah & hadith' })).toBeVisible();
+  await expect(panel.getByRole('heading', { name: 'Today’s reflection' })).toBeVisible();
 
   const geometry = await page.evaluate(() => {
     const header = document.querySelector('.site-header');
-    const panelElement = document.querySelector('#amaana-reading-panel');
+    const panelElement = document.querySelector('#amaana-companion-panel');
     const closeButton = panelElement?.querySelector('button[aria-label="Close companion"]');
     if (!(header instanceof HTMLElement) || !(panelElement instanceof HTMLElement) || !(closeButton instanceof HTMLElement)) return null;
 
