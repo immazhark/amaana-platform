@@ -1,13 +1,14 @@
 -- Extend donations to support direct UPI and bank-transfer reconciliation without weakening Razorpay accounting.
-BEGIN;
-
+-- PostgreSQL requires newly added enum values to commit before constraints may reference them.
 ALTER TYPE "DonationStatus" ADD VALUE IF NOT EXISTS 'PENDING_VERIFICATION';
 ALTER TYPE "DonationStatus" ADD VALUE IF NOT EXISTS 'REJECTED';
 
-DO $$ BEGIN
+DO $ BEGIN
   CREATE TYPE "DonationPaymentMethod" AS ENUM ('RAZORPAY', 'DIRECT_UPI', 'BANK_TRANSFER');
 EXCEPTION WHEN duplicate_object THEN NULL;
-END $$;
+END $;
+
+BEGIN;
 
 ALTER TABLE "Donation"
   ADD COLUMN "paymentMethod" "DonationPaymentMethod" NOT NULL DEFAULT 'RAZORPAY',
