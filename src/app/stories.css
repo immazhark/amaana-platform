@@ -23,3 +23,11 @@
   .v2-stories-feature-media,.v2-stories-feature-placeholder{min-height:21rem}
   .v2-stories-card-media{min-height:15rem}
 }
+
+
+/* L1 consistency audit: editorial metadata stays subordinate; interaction stays within motion budget. */
+:is(.v2-stories-feature-copy small,.v2-stories-card-copy small,.v2-stories-single-note span,.v2-stories-ethic-list span){font-weight:700}
+.v2-stories-card{transition:transform var(--af-motion-medium) cubic-bezier(.16,1,.3,1),box-shadow var(--af-motion-medium) ease,border-color var(--af-motion-medium) ease}
+.v2-stories-feature-media .v2-media-item img,.v2-stories-feature-media .v2-media-item video,
+.v2-stories-card-media .v2-media-item img,.v2-stories-card-media .v2-media-item video{transition:transform var(--af-motion-medium) cubic-bezier(.16,1,.3,1)}
+.v2-stories-card:focus-visible{transform:translateY(-.25rem);box-shadow:0 24px 50px rgb(18 34 57 / 9%)}
