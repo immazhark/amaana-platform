@@ -52,7 +52,7 @@ export function IslamicCompanion() {
   const [reducedMotion, setReducedMotion] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
-  const [reminderIndex, setReminderIndex] = useState(0);
+  const [reminderIndex] = useState(0);
   const [showSchedule, setShowSchedule] = useState(false);
   const [liveItems, setLiveItems] = useState<LiveRailItem[]>([]);
   const [railIndex, setRailIndex] = useState(0);
@@ -100,7 +100,7 @@ export function IslamicCompanion() {
     }] : [];
     return [...reminder, ...liveItems.map(item => ({ id: item.id, kind: "live" as const, live: item }))];
   }, [activeReminder, liveItems]);
-  const activeRailItem = railItems.length ? railItems[railIndex % railItems.length] : null;
+  const activeRailItem = railItems.length ? railItems[safeRailIndex] : null;
 
   useEffect(() => {
     if (paused || reducedMotion || hovered || focused || showSchedule || panel || railItems.length < 2) return;
@@ -110,11 +110,7 @@ export function IslamicCompanion() {
     return () => window.clearInterval(timer);
   }, [focused, hovered, panel, paused, reducedMotion, railItems.length, showSchedule]);
 
-  useEffect(() => {
-    if (railIndex < railItems.length) return;
-    setRailIndex(0);
-  }, [railIndex, railItems.length]);
-
+  const safeRailIndex = railItems.length ? railIndex % railItems.length : 0;
   const closePanel = useCallback(() => {
     setPanel(null);
     requestAnimationFrame(() => companionButton.current?.focus({ preventScroll: true }));
