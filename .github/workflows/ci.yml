@@ -101,12 +101,15 @@ jobs:
         run: npm run test:coverage
 
       - name: Detect browser-affecting integration changes
-        if: github.event_name == 'push'
         id: browser_changes
         shell: bash
         run: |
           set -euo pipefail
-          BEFORE="${{ github.event.before }}"
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            BEFORE="${{ github.event.pull_request.base.sha }}"
+          else
+            BEFORE="${{ github.event.before }}"
+          fi
           if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
             echo "needed=true" >> "$GITHUB_OUTPUT"
             exit 0
@@ -203,13 +206,13 @@ jobs:
           if fuser 3000/tcp >/dev/null 2>&1; then exit 1; fi
 
       - name: Prepare browser acceptance database
-        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
+        if: steps.browser_changes.outputs.needed == 'true'
         run: |
           npx prisma migrate deploy
           npm run seed:public-content
 
       - name: Build isolated browser acceptance fixture
-        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
+        if: steps.browser_changes.outputs.needed == 'true'
         shell: bash
         env:
           AMAANA_BROWSER_ACCEPTANCE: "true"
@@ -219,7 +222,7 @@ jobs:
           npm run build
 
       - name: Prepare isolated browser acceptance workspace
-        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
+        if: steps.browser_changes.outputs.needed == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -233,7 +236,7 @@ jobs:
           npm install --save-dev --package-lock=false @playwright/test@1.55.0 @axe-core/playwright@4.10.2
 
       - name: Install Chromium for browser acceptance
-        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
+        if: steps.browser_changes.outputs.needed == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -241,7 +244,7 @@ jobs:
           npx playwright install --with-deps chromium
 
       - name: Run responsive, accessibility and journey browser acceptance
-        if: github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
+        if: steps.browser_changes.outputs.needed == 'true'
         shell: bash
         env:
           AMAANA_APP_WORKSPACE: ${{ github.workspace }}
@@ -252,7 +255,7 @@ jobs:
           npx playwright test --config=playwright.config.mjs
 
       - name: Upload launch review screenshots
-        if: always() && github.event_name == 'push' && steps.browser_changes.outputs.needed == 'true'
+        if: always() && steps.browser_changes.outputs.needed == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: launch-review-screenshots-${{ github.sha }}
