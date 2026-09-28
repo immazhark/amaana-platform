@@ -301,6 +301,21 @@ test('shared footer callout remains compact and does not compete with page hero'
   expect(metrics.footerSize).toBeLessThan(metrics.heroSize);
 });
 
+test('mobile shared footer stays compact without shrinking navigation tap targets', async ({ page }) => {
+  await open(page, '/about', 390);
+  const metrics = await page.locator('.site-footer').evaluate(footer => {
+    const links = Array.from(footer.querySelectorAll('.footer-links a'));
+    return {
+      footerHeight: footer.getBoundingClientRect().height,
+      minLinkHeight: Math.min(...links.map(link => link.getBoundingClientRect().height)),
+      linkCount: links.length,
+    };
+  });
+  expect(metrics.linkCount).toBeGreaterThan(0);
+  expect(metrics.footerHeight).toBeLessThanOrEqual(1360);
+  expect(metrics.minLinkHeight).toBeGreaterThanOrEqual(44);
+});
+
 test('official Amaana mark is present in both global brand anchors', async ({ page }) => {
   await open(page, '/about');
   await expect(page.locator('.site-header img[src="/brand/amaana-mark.svg"]')).toHaveCount(1);
