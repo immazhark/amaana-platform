@@ -92,3 +92,43 @@
 }
 @media print { .amaana-companion, .amaana-reminders { display: none; } body { padding-bottom: 0; } }
 
+
+
+/* Amaana Live — compact editorial broadcast rail. */
+.amaana-reminders{position:relative;overflow:hidden;border-bottom:1px solid rgb(18 34 57 / 10%);background:linear-gradient(90deg,#f8f3e8 0%,#f4efe3 62%,#edf2ed 100%)}
+.amaana-reminders::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgb(224 179 24 / 7%) 48%,transparent);pointer-events:none}
+.amaana-reminder-inner{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:clamp(.8rem,2vw,1.5rem);min-height:4.65rem;max-width:1360px;padding:.55rem clamp(1rem,3vw,2.25rem)}
+.amaana-live-badge{display:flex;align-items:center;gap:.5rem;align-self:center;color:#173e47;font-size:.66rem;font-weight:900;letter-spacing:.13em;white-space:nowrap}
+.amaana-live-badge span{width:.48rem;height:.48rem;border-radius:50%;background:#b4432f;box-shadow:0 0 0 .24rem rgb(180 67 47 / 10%)}
+.amaana-reminder-stage{min-width:0;overflow:hidden;align-self:center}
+.amaana-reminder-content{position:relative;display:grid;grid-template-columns:auto minmax(0,auto) minmax(10rem,1fr) auto;align-items:center;gap:.35rem .75rem;max-width:none;min-height:2.8rem;animation:amaana-rail-enter .48s cubic-bezier(.22,.75,.2,1) both}
+.amaana-reminder-eyebrow{color:#8a6715;font-size:.63rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
+.amaana-reminder-content strong{min-width:0;overflow:hidden;color:#173e47;font-size:.92rem;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
+.amaana-reminder-content p{min-width:0;margin:0;overflow:hidden;color:#4e5e5c;font-size:.76rem;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}
+.amaana-reminder-source{font-size:.68rem;white-space:nowrap}
+.amaana-live-cta{display:inline-flex;align-items:center;min-height:2.25rem;padding:.42rem .78rem;border:1px solid #d4a819;border-radius:999px;background:#173e47;color:#fffaf0!important;font-size:.72rem;font-weight:850;text-decoration:none!important;white-space:nowrap;box-shadow:0 .35rem 1rem rgb(18 34 57 / 10%);transition:transform .2s ease,background .2s ease}
+.amaana-live-cta:hover{transform:translateY(-1px);background:#285763}
+.amaana-reminder-controls{align-items:center;gap:.28rem}
+.amaana-reminder-controls button{display:grid;place-items:center;width:2rem;height:2rem;min-height:2rem;padding:0;border-color:rgb(32 59 67 / 20%);border-radius:999px;background:rgb(255 255 255 / 46%);font-size:.78rem}
+.amaana-reminder-controls .amaana-schedule-trigger{width:auto;padding:0 .7rem;border-radius:999px;font-size:.68rem}
+@keyframes amaana-rail-enter{from{opacity:0;transform:translateX(1.5rem)}to{opacity:1;transform:translateX(0)}}
+@media(max-width:900px){
+  .amaana-reminder-inner{grid-template-columns:auto minmax(0,1fr) auto;min-height:4.35rem}
+  .amaana-reminder-content{grid-template-columns:auto minmax(0,1fr) auto}
+  .amaana-reminder-content p{display:none}
+  .amaana-reminder-source{display:none}
+  .amaana-reminder-controls .amaana-schedule-trigger{display:none}
+}
+@media(max-width:640px){
+  .amaana-reminder-inner{display:grid;grid-template-columns:auto minmax(0,1fr) auto;min-height:4rem;padding:.48rem .7rem;gap:.55rem}
+  .amaana-live-badge{font-size:0;gap:0}.amaana-live-badge::after{content:"LIVE";font-size:.58rem;letter-spacing:.08em}.amaana-live-badge span{margin-right:.3rem}
+  .amaana-reminder-stage{width:auto}
+  .amaana-reminder-content{width:auto;min-height:2.6rem;grid-template-columns:minmax(0,1fr) auto;gap:.12rem .45rem}
+  .amaana-reminder-eyebrow{grid-column:1;font-size:.55rem}
+  .amaana-reminder-content strong{grid-column:1;font-size:.78rem}
+  .amaana-live-cta{grid-column:2;grid-row:1 / span 2;min-height:2rem;padding:.35rem .58rem;font-size:.62rem}
+  .amaana-reminder-controls{width:auto;justify-content:flex-end}
+  .amaana-reminder-controls button:first-child{display:none}
+  .amaana-reminder-controls button{width:1.9rem;height:1.9rem;min-height:1.9rem}
+}
+@media(prefers-reduced-motion:reduce){.amaana-reminder-content{animation:none}.amaana-live-cta{transition:none}}
