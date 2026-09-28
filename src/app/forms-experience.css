@@ -6,3 +6,13 @@
 .v2-file-cta{display:inline-flex;margin-top:.45rem;padding:.65rem 1rem;border:1px solid #b8890e;border-radius:999px;background:#f3c61c;color:#122239!important;font-size:.78rem!important;font-weight:850!important;letter-spacing:0!important}
 .v2-file-selection{max-width:34rem;color:#5b6472!important;font-size:.76rem!important;font-weight:650!important;letter-spacing:0!important;line-height:1.4;overflow-wrap:break-word!important}
 .v2-file-input{position:absolute;width:1px!important;height:1px!important;padding:0!important;margin:-1px!important;overflow:hidden!important;clip:rect(0,0,0,0)!important;white-space:nowrap!important;border:0!important}
+
+
+/* Transaction audit reconciliation: one calm emphasis and motion language. */
+.v2-donate-back,.v2-donate-context>span,.v2-form-heading>span,
+.v2-premium-form .field label,.v2-donate-assurance small,
+.v2-assistance-promise>span,.v2-file-cta,.v2-assistance-note a{font-weight:700}
+.v2-file-selection{font-weight:600!important}
+.v2-premium-form{box-shadow:0 1rem 2.5rem rgb(18 34 57 / 5%)}
+.v2-file-dropzone{border-radius:.75rem;transition-duration:var(--af-motion-medium)}
+.v2-premium-form input:not([type=checkbox]):not([type=file]),.v2-premium-form select,.v2-premium-form textarea{transition-duration:var(--af-motion-medium)}
