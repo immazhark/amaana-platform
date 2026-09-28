@@ -191,3 +191,6 @@
 
 /* Rendered acceptance: keep the single mobile Companion dock compact and collision-safe. */
 @media(max-width:640px){.amaana-companion-dock>button{max-width:9rem}.amaana-companion-dock{max-width:9rem}}
+
+/* Keep the fixed Companion below sticky global chrome at every desktop height. */
+@media(min-width:901px){.amaana-companion-panel{max-height:min(44rem,calc(100dvh - var(--af-chrome-height,4.25rem) - 6.25rem));}}
