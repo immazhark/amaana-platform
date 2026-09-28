@@ -762,3 +762,10 @@ body:not(:has(main > .v3-home)) .footer-kicker{font-size:.7rem}
   .footer-nav-group>.footer-links{display:none;padding:.25rem 0 .75rem;grid-template-columns:repeat(2,minmax(0,1fr));gap:.1rem .75rem}
   .footer-nav-group[data-open="true"]>.footer-links{display:grid}
 }
+
+
+/* Footer disclosure cleanup: one separator authority after replacing details semantics. */
+@media(max-width:520px){
+  .footer-nav-group{border-top:0}
+  .footer-nav-group:last-of-type{border-bottom:0}
+}
