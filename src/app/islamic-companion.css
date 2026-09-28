@@ -189,8 +189,14 @@
 }
 
 
-/* Rendered acceptance: keep the single mobile Companion dock compact and collision-safe. */
-@media(max-width:640px){.amaana-companion-dock>button{max-width:9rem}.amaana-companion-dock{max-width:9rem}}
+/* Rendered acceptance: one visible reminder label and a truly contained mobile Companion trigger. */
+.amaana-live-badge.is-reminder + .amaana-reminder-stage .amaana-reminder-eyebrow{display:none}
+@media(max-width:640px){
+  .amaana-companion-dock{max-width:none}
+  .amaana-companion-dock>button{width:2.8rem;min-width:2.8rem;max-width:2.8rem;height:2.8rem;min-height:2.8rem;padding:0;justify-content:center;overflow:hidden}
+  .amaana-companion-dock>button>span:last-child{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap}
+  .amaana-companion-dock-icons{margin:0}
+}
 
 /* Keep the fixed Companion below sticky global chrome at every desktop height. */
 @media(min-width:901px){.amaana-companion-panel{max-height:min(44rem,calc(100dvh - var(--af-chrome-height,4.25rem) - 6.25rem));}}
