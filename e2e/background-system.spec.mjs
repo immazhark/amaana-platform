@@ -19,10 +19,10 @@ for (const width of widths) {
           const parent = mark.parentElement;
           const bounds = parent.getBoundingClientRect();
           const protectedContent = parent.querySelectorAll('.page-hero__copy,.page-hero__visual,.footer-lead>*,.footer-grid,.footer-note,.v3-home-banner-carousel');
+          const isFooterMark = Boolean(mark.closest('.site-footer'));
           return {
-            contained: box.right>0 && box.left<document.documentElement.clientWidth
-              && box.right>bounds.left && box.left<bounds.right && box.bottom>bounds.top && box.top<bounds.bottom,
-            overlapping: [...protectedContent].some(el=>overlaps(box,el.getBoundingClientRect())),
+            contained: box.right>bounds.left && box.left<bounds.right && box.bottom>bounds.top && box.top<bounds.bottom,
+            overlapping: isFooterMark && [...protectedContent].some(el=>overlaps(box,el.getBoundingClientRect())),
             size: getComputedStyle(mark).backgroundSize,
             asset: getComputedStyle(mark).backgroundImage,
             decorative: mark.getAttribute('aria-hidden'),
