@@ -188,8 +188,9 @@ test('homepage hero stays wide and compact on desktop', async ({ page }) => {
   await expect(hero).toBeVisible();
   const box = await hero.boundingBox();
   expect(box).toBeTruthy();
-  expect(box.width / box.height).toBeGreaterThan(3.1);
-  expect(box.height).toBeLessThanOrEqual(400);
+  expect(box.width / box.height).toBeGreaterThan(3.8);
+  expect(box.height).toBeLessThanOrEqual(336);
+  expect(box.y + box.height).toBeLessThanOrEqual(900);
   await expect(hero.getByText('The Story of Amaana · Hyderabad', { exact: true })).toBeVisible();
   const content = hero.locator('.v3-home-banner-content').first();
   const contentBox = await content.boundingBox();
