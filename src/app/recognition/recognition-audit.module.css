@@ -11,3 +11,9 @@
 .note{color:#5b6472;font-size:.8rem;line-height:1.55}
 @media(max-width:800px){.proof{grid-template-columns:1fr}.preview{min-height:0}.preview iframe{height:24rem}}
 @media(max-width:560px){.preview iframe{display:none}.preview{padding:1rem}.preview::after{content:"Certificate preview is available from the PDF link below.";display:block;color:#5b6472;line-height:1.5}}
+
+
+/* Institutional audit: certificate metadata is evidence, not headline typography. */
+.meta>span,.meta dt{font-weight:700}
+.meta dd{font-weight:600}
+.proof{border-radius:.9rem;box-shadow:none}
