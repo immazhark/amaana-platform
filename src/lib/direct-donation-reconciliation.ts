@@ -1,5 +1,5 @@
 import { DonationPaymentMethod, DonationStatus, NotificationChannel } from "@prisma/client";
-import { shouldMarkAppealFunded } from "@/lib/appeals";
+import { getRemainingAppealAmount, shouldMarkAppealFunded } from "@/lib/appeals";
 import { createReceiptNumber } from "@/lib/donations";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
@@ -43,6 +43,11 @@ export async function reconcileDirectDonation(input: {
       await tx.auditEvent.create({ data: { actorId: input.actorId, action: "donation.transfer.reject", entityType: "Donation", entityId: donation.id, metadata: { paymentMethod: donation.paymentMethod } } });
       return { status: DonationStatus.REJECTED, referenceNumber: donation.referenceNumber };
     }
+
+    const appealBefore = await tx.appeal.findUnique({ where: { id: donation.appealId }, select: { goalAmount: true, amountRaised: true, status: true } });
+    if (!appealBefore) throw new Error("Appeal not found");
+    const remaining = getRemainingAppealAmount(appealBefore.amountRaised, appealBefore.goalAmount);
+    if (donation.amount.toNumber() > remaining) throw new Error("This transfer exceeds the appeal's remaining verified need and requires operator review");
 
     const changed = await tx.donation.updateMany({
       where: { id: donation.id, status: DonationStatus.PENDING_VERIFICATION },
