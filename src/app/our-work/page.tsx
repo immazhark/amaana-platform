@@ -6,6 +6,7 @@ import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import { filterWork, type WorkSearch } from "@/lib/work-filters";
+import "../our-work.css";
 import "./work-filters.css";
 import auditStyles from "./work-filter-audit.module.css";
 import { programmeBySlug, programmeCategories } from '@/lib/master-copy';
