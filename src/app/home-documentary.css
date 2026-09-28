@@ -183,3 +183,75 @@
  .v3-home-banner-actions{width:auto}
  .v3-home-banner-actions .v3-btn{width:auto}
 }
+
+
+/* Locked homepage masthead composition — wide cinematic banner inspired by the approved reference direction.
+   The banner is intentionally shallow; artwork owns the right field and fades beneath the left copy. */
+.v3-home-banner{padding:.45rem 0 .65rem;background:#f6f0e4}
+.v3-home-banner>.amaana-backdrop-emblem{display:none}
+.v3-home-banner-carousel{
+  width:min(calc(100% - clamp(.75rem,2vw,2rem)),100rem);
+  height:clamp(19rem,26vw,25rem);
+  min-height:0;
+  max-height:25rem;
+  border-radius:clamp(.65rem,1vw,1rem);
+  box-shadow:0 1.15rem 3.25rem rgb(10 28 48 / 18%);
+}
+.v3-home-banner-slide{min-height:0;background:linear-gradient(105deg,#123f65 0%,#17655d 48%,#245f60 100%)}
+.v3-home-banner-content,.v3-home-banner-slide--story .v3-home-banner-content{
+  width:min(calc(100% - 2rem),94rem);
+  margin-inline:auto;
+  padding:clamp(1.4rem,2.5vw,2.5rem) 52% clamp(1.4rem,2.5vw,2.5rem) clamp(1rem,2.8vw,2.8rem);
+  justify-content:center;
+}
+.v3-home-banner-kicker{margin-bottom:.45rem;font-size:.68rem}
+.v3-home-banner-brandline{max-width:15ch;font-size:clamp(2rem,3.55vw,3.55rem);line-height:.94}
+.v3-home-banner-content h2{max-width:23ch;margin-top:.42rem;font-size:clamp(1.05rem,1.45vw,1.45rem)}
+.v3-home-banner-content>p:not(.v3-home-banner-kicker){
+  max-width:34rem;margin-top:.55rem;font-size:clamp(.82rem,.92vw,.94rem);line-height:1.42;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
+}
+.v3-home-banner-actions{gap:.55rem;margin-top:.8rem}
+.v3-home-banner-actions .v3-btn{min-height:2.65rem;padding:.62rem 1rem;font-size:.86rem}
+.v3-home-banner-metric{margin-top:.55rem}
+.v3-home-banner-metric strong{font-size:clamp(1.45rem,2vw,2rem)}
+.v3-home-banner-media{
+  left:42%!important;right:0!important;inset-block:0!important;
+  -webkit-mask-image:linear-gradient(90deg,transparent 0%,rgb(0 0 0 / .18) 8%,#000 24%,#000 100%);
+  mask-image:linear-gradient(90deg,transparent 0%,rgb(0 0 0 / .18) 8%,#000 24%,#000 100%);
+}
+.v3-home-banner-media :is(img,video){object-position:center center}
+.v3-home-banner-slide:not(.v3-home-banner-slide--story):not(.v3-home-banner-slide--appeal) .v3-home-banner-shade{
+  background:linear-gradient(90deg,#123f65 0%,#155767 35%,rgb(21 87 103 / .96) 42%,rgb(21 87 103 / .58) 52%,rgb(21 87 103 / .12) 66%,transparent 78%);
+}
+.v3-home-banner-slide--story{
+  background:linear-gradient(105deg,#123f65 0%,#17655d 54%,#2c7770 100%);
+}
+.v3-home-banner-slide--story .v3-home-banner-shade{
+  background:linear-gradient(90deg,rgb(15 57 91 / .98) 0%,rgb(20 88 91 / .88) 44%,rgb(30 106 96 / .35) 68%,transparent 86%);
+}
+.v3-home-banner-story-year{right:2%;bottom:-.18em;font-size:clamp(8rem,17vw,17rem);color:rgb(255 255 255 / 7%)}
+.v3-home-banner-story-mark{right:12%;top:18%;font-size:clamp(3rem,5.5vw,5.5rem);color:rgb(241 207 82 / 32%)}
+.v3-home-banner-slide--appeal{
+  background:radial-gradient(circle at 78% 38%,rgb(224 179 24 / 24%),transparent 25%),linear-gradient(105deg,#123f65,#17655d 58%,#2c7770);
+}
+.v3-home-banner-slide--appeal .v3-home-banner-shade{
+  background:linear-gradient(90deg,rgb(15 57 91 / .98),rgb(20 88 91 / .84) 48%,rgb(30 106 96 / .2) 78%,transparent);
+}
+@media(max-width:900px){
+  .v3-home-banner-carousel{height:clamp(21rem,42vw,25rem);max-height:25rem}
+  .v3-home-banner-content,.v3-home-banner-slide--story .v3-home-banner-content{padding:1.5rem 44% 1.5rem 1.4rem}
+  .v3-home-banner-media{left:36%!important}
+  .v3-home-banner-brandline{font-size:clamp(1.9rem,5vw,3rem)}
+}
+@media(max-width:600px){
+  .v3-home-banner{padding:.35rem 0}
+  .v3-home-banner-carousel{width:calc(100% - .5rem);height:29rem;max-height:29rem}
+  .v3-home-banner-media{left:0!important;inset:0 0 45%!important;-webkit-mask-image:linear-gradient(0deg,transparent 0%,#000 28%,#000 100%);mask-image:linear-gradient(0deg,transparent 0%,#000 28%,#000 100%)}
+  .v3-home-banner-content,.v3-home-banner-slide--story .v3-home-banner-content{justify-content:flex-end;padding:1.25rem 1rem 3.4rem}
+  .v3-home-banner-brandline{font-size:clamp(1.9rem,9vw,2.7rem)}
+  .v3-home-banner-content h2{font-size:1.1rem}
+  .v3-home-banner-content>p:not(.v3-home-banner-kicker){-webkit-line-clamp:2;font-size:.84rem}
+  .v3-home-banner-actions{margin-top:.65rem}
+  .v3-home-banner-actions .v3-btn{min-height:2.55rem;padding:.55rem .85rem}
+}
