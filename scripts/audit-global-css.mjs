@@ -1,4 +1,4 @@
-import { readFile, stat } from 'node:fs/promises';
+import { readFile, stat, readdir } from 'node:fs/promises';
 import path from 'node:path';
 
 const root = process.cwd();
@@ -15,6 +15,29 @@ const brandExpression = await readFile(brandExpressionPath, 'utf8');
 const cssImports = [...layout.matchAll(/import\s+["']\.\/([^"']+\.css)["'];/g)].map(match => match[1]);
 const uniqueImports = new Set(cssImports);
 const failures = [];
+
+// ProgrammeDetail replaced these legacy route designs. Their scoped selectors
+// have no current markup; importing them again silently bloats production CSS.
+const retiredProgrammeStyles = new Set([
+  'dates.css', 'flood.css', 'medical.css', 'qurbani.css',
+  'taleem.css', 'winter.css', 'initiative-experience.css',
+]);
+async function inspectStyleImports(directory) {
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const file = path.join(directory, entry.name);
+    if (entry.isDirectory()) {
+      await inspectStyleImports(file);
+    } else if (/\.(?:tsx?|css)$/.test(entry.name)) {
+      const source = await readFile(file, 'utf8');
+      for (const match of source.matchAll(/(?:import\s*|@import\s*)["']([^"']+\.css)["']/g)) {
+        if (retiredProgrammeStyles.has(path.basename(match[1]))) {
+          failures.push(`${path.relative(root, file)} imports retired programme stylesheet ${match[1]}.`);
+        }
+      }
+    }
+  }
+}
+await inspectStyleImports(path.join(root, 'src'));
 
 if (cssImports.length !== uniqueImports.size) {
   failures.push('Root layout contains duplicate CSS imports.');

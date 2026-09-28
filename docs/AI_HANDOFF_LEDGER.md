@@ -279,3 +279,7 @@ Explicit user takeover; verified integration e76744a28e3da94ce239e45af96f01510fc
 
 ## 2026-09-28 — Six approved revision-4 SVGs
 User explicitly approved integration. PR #105 preserves exact approved vector bytes at the six canonical background paths, removes light-body whitening overlays, and uses the header token on the homepage carousel frame. Footer sizing remains content-driven. Local hash and XML checks pass for all six files. Automated PR checks and served staging verification pending at this checkpoint; baseline typography-hierarchy failure is recorded in AI_ACTIVE_WORK.md. No production, payments, data or publication-consent changes.
+
+## 2026-09-28 — Codex resumes latest ChatGPT acceptance work
+
+Explicit user takeover from idle chat Site completion status. Reconciled integration 8e13240ea6a642823d54c419ff7ea255de1c7b66; did not reapply older background changes. Exact push CI 36410598364 failed before browser testing at CSS budget (392291/348160). Task branch fix/render-acceptance-css-budget removes unused legacy programme CSS imports and obsolete Eid selectors; preserves current shared ProgrammeDetail styles and all non-Eid home-experience rules. Local production build/TypeScript and CSS architecture audit pass; CSS 345796/348160, JS 714062/819200. Lint passes with four pre-existing warnings; unit tests: 356 passed, 6 skipped. Remote CI remains pending at this checkpoint. Next: PR verification, integration full five-width browser matrix, screenshot review. Draft #109 donations and #104 production promotion remain separate and untouched.
