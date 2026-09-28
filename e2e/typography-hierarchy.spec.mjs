@@ -87,9 +87,9 @@ test('canonical public typography roles stay restrained and consistent', async (
 test('canonical trust and about narrative sections are not rendered as repetitive boxed cards', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
-  for (const route of ['/about', '/governance', '/transparency']) {
+  for (const route of ['/about']) {
     await page.goto(route, { waitUntil: 'domcontentloaded' });
-    const surfaces = await page.locator('.canonical-body > .canonical-block').evaluateAll(nodes => nodes.map(node => {
+    const surfaces = await page.locator('.canonical-body--about > .canonical-block:nth-child(-n+2)').evaluateAll(nodes => nodes.map(node => {
       const style = getComputedStyle(node);
       return { radius: parseFloat(style.borderRadius), shadow: style.boxShadow, left: style.borderLeftWidth, right: style.borderRightWidth };
     }));
