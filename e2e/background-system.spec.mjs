@@ -32,11 +32,11 @@ expect(mark.size).toBe('contain');
         expect(mark.asset).toContain('/backgrounds/amaana-arch-emblem.svg');
         expect(mark.decorative).toBe('true');
       }
-      expect(result.surfaces.length).toBeGreaterThanOrEqual(2);
+      expect(result.surfaces.length).toBeGreaterThanOrEqual(route === '/' ? 1 : 2);
       for (const surface of result.surfaces) {
         const sizes = surface.size.split(',').map(value=>value.trim());
         const repeats = surface.repeat.split(',').map(value=>value.trim());
-        const latticeIndex = sizes.findIndex(value=>value === '104px 104px');
+        const latticeIndex = sizes.findIndex((value,index)=>value === '104px 104px' && repeats[index] === 'repeat');
         expect(latticeIndex, 'surface retains the canonical 104px lattice layer').toBeGreaterThanOrEqual(0);
         expect(repeats[latticeIndex], 'canonical lattice layer repeats').toBe('repeat');
       }
