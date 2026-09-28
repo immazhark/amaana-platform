@@ -1,3 +1,15 @@
+# Current checkpoint — Codex takeover, 28 September 2026
+
+State: **CODEX_ACTIVE**. Explicit user handover from idle ChatGPT chat **Site completion status**.
+Integration: `phase-public-site-rebuild` at `8e13240ea6a642823d54c419ff7ea255de1c7b66`.
+Task branch: `fix/render-acceptance-css-budget`.
+
+Current task: continue render-driven public-site acceptance, not the historical background patch. ChatGPT completed source-level route-family normalization and enabled the five-width matrix (390/768/1366/1440/1920) over 29 deterministic routes. Exact-head push CI 36410598364 / job 108889610891 failed **before browser acceptance** at CSS budget: 392291 bytes versus 348160 permitted. JavaScript 714062/819200. PR CI 36410603974 passed but does not run production build/browser acceptance. Classify the CSS failure PRE_EXISTING at takeover; inspect canonical CSS owners and remove safe redundant output without raising the budget or changing approved hierarchy. Next: build verification, full rendered matrix, then inspect screenshots and fix concrete defects.
+
+Draft PR #109 (multi-method donations, head 3fadd8530d31fe653b8fb2d1799cb93c9b91d531) is separate unfinished work and will not be overwritten or merged as part of this visual task. Draft production PR #104 and main remain untouched. No live payments, DNS, production configuration, private evidence or media publication actions. Historical sections below are retained as context, not current certification.
+
+---
+
 # Current checkpoint — 2026-09-28 background composition correction
 
 State: `CODEX_ACTIVE`
