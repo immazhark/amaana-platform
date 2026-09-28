@@ -192,7 +192,7 @@ export function ScrollCarousel({
         tabIndex={slideCount > 1 ? 0 : -1}
         onScroll={updateActiveFromScroll}
         onKeyDown={onKeyDown}
-        aria-label={slideCount > 1 ? `${label}. Use left and right arrow keys to move between slides.` : label}
+        aria-label={slideCount > 1 ? `Slide viewport. ${label}. Use left and right arrow keys to move between slides.` : `Slide viewport. ${label}`}
       >
         <div className={styles.track}>
           {slides.map((slide, index) => (
