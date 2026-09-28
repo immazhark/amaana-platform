@@ -212,8 +212,11 @@ test('transactional form emphasis stays readable without typographic shouting', 
 test('private state pages keep status metadata subordinate', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.goto('/request-assistance/status', { waitUntil: 'domcontentloaded' });
-  const weights = await page.locator('.v2-reference-block span, .v2-state-steps > span').evaluateAll(nodes => nodes.map(node => Number.parseInt(getComputedStyle(node).fontWeight, 10)));
-  for (const weight of weights) expect(weight).toBeLessThanOrEqual(700);
+  const nodes = page.locator('.v2-reference-block span, .v2-state-steps > span');
+  const count = await nodes.count();
+  if (count === 0) return;
+  const weights = await nodes.evaluateAll(items => items.map(node => Number.parseInt(getComputedStyle(node).fontWeight, 10)));
+  for (const weight of weights) expect(Number.isFinite(weight) && weight <= 700).toBe(true);
 });
 
 
