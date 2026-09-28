@@ -22,7 +22,16 @@ for (const width of widths) {
         });
         const surfaces = [...document.querySelectorAll('main section')].map(el => {
           const style = getComputedStyle(el);
-          return { image:style.backgroundImage, size:style.backgroundSize, repeat:style.backgroundRepeat, height:el.getBoundingClientRect().height };
+          return {
+            tag: el.tagName.toLowerCase(),
+            id: el.id,
+            className: el.className,
+            image: style.backgroundImage,
+            size: style.backgroundSize,
+            repeat: style.backgroundRepeat,
+            position: style.backgroundPosition,
+            height: el.getBoundingClientRect().height,
+          };
         }).filter(s=>s.image.includes('amaana-lattice-tile') && s.image.includes('amaana-emblem-watermark'));
         return { marks, surfaces, overflow:document.documentElement.scrollWidth>innerWidth };
       });
@@ -36,8 +45,10 @@ expect(mark.size).toBe('contain');
       for (const surface of result.surfaces) {
         const sizes = surface.size.split(',').map(value=>value.trim());
         const repeats = surface.repeat.split(',').map(value=>value.trim());
-        expect(sizes, 'branded surface retains the canonical 104px lattice scale').toContain('104px 104px');
-        expect(repeats, 'branded surface retains a repeating lattice layer').toContain('repeat');
+        const identity = `${surface.tag}${surface.id ? `#${surface.id}` : ''}${surface.className ? `.${String(surface.className).trim().replace(/\\s+/g, '.')}` : ''}`;
+        const diagnostic = `${identity} | image=${surface.image} | size=${surface.size} | repeat=${surface.repeat} | position=${surface.position}`;
+        expect(sizes, `branded surface retains the canonical 104px lattice scale: ${diagnostic}`).toContain('104px 104px');
+        expect(repeats, `branded surface retains a repeating lattice layer: ${diagnostic}`).toContain('repeat');
       }
       if (route === '/impact') {
         expect(Math.max(...result.surfaces.map(s=>s.height))-Math.min(...result.surfaces.map(s=>s.height))).toBeGreaterThan(500);
