@@ -199,7 +199,7 @@
 }
 .v3-home-banner-slide{min-height:0;background:linear-gradient(105deg,#123f65 0%,#17655d 48%,#245f60 100%)}
 .v3-home-banner-content,.v3-home-banner-slide--story .v3-home-banner-content{
-  width:min(calc(100% - 2rem),94rem);
+  width:min(calc(100% - 2rem),74rem);
   margin-inline:auto;
   padding:clamp(1.4rem,2.5vw,2.5rem) 52% clamp(1.4rem,2.5vw,2.5rem) clamp(1rem,2.8vw,2.8rem);
   justify-content:center;
@@ -275,7 +275,7 @@
   }
   .v3-home-banner-content,
   .v3-home-banner-slide--story .v3-home-banner-content{
-    width:min(calc(100% - 2rem),94rem);
+    width:min(calc(100% - 2rem),74rem);
     padding:1.15rem 51% 1.15rem clamp(1.25rem,3vw,3rem);
   }
   .v3-home-banner-brandline,
