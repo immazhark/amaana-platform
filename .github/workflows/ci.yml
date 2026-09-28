@@ -114,6 +114,10 @@ jobs:
           git cat-file -e "${BEFORE}^{commit}" 2>/dev/null || git fetch --no-tags --depth=1 origin "$BEFORE"
           CHANGED=$(git diff --name-only "$BEFORE" "${{ github.sha }}")
           printf '%s\n' "$CHANGED"
+          if printf '%s\n' "$CHANGED" | grep -Eq '^(e2e/|playwright\.config\.mjs$|\.github/workflows/ci\.yml$)'; then
+            echo "needed=true" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
           # Protected admin list/editor TSX is not exercised by the isolated browser
           # suite, which uses a synthetic operations console. Keep public pages,
           # admin login, shared components/CSS, acceptance fixtures and config as
