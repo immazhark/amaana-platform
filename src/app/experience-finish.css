@@ -584,3 +584,61 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
   .page-hero__visual-fallback{padding:1.35rem}
   .site-footer .amaana-backdrop-emblem{right:.5rem;top:1rem;opacity:.55}
 }
+
+
+/* 2026-09-28 canonical typography + interaction reconciliation.
+   This is the single late public-system owner; accessibility.css remains final authority. */
+:root{
+  --af-weight-body:400;
+  --af-weight-medium:600;
+  --af-weight-action:700;
+  --af-weight-label:700;
+  --af-weight-display:500;
+  --af-leading-body:1.68;
+  --af-leading-compact:1.35;
+  --af-link-color:var(--af-color-navy-700);
+}
+body{font-weight:var(--af-weight-body)}
+:is(.v2-section-title,.v3-heading,.page-hero__title,.canonical-block h2,.canonical-pathways h3){
+  font-family:var(--af-font-display);font-weight:var(--af-weight-display)
+}
+:is(.v2-section-label,.v2-kicker,.v3-label,.v3-kicker,.page-hero__eyebrow){
+  font-weight:var(--af-weight-label)
+}
+:is(.button,.v2-button,.v3-btn,.af-btn,.page-hero__button,.nav-donate){
+  font-weight:var(--af-weight-action)
+}
+:is(.v2-text-link,.v3-text-link,.af-link-action){
+  color:var(--af-link-color);font-weight:var(--af-weight-action);text-decoration:underline;
+  text-decoration-thickness:.075em;text-underline-offset:.22em;text-decoration-color:rgb(47 76 122 / 34%)
+}
+:is(.v2-text-link,.v3-text-link,.af-link-action):is(:hover,:focus-visible){
+  color:var(--af-color-navy-950);text-decoration-color:currentColor
+}
+.site-header .nav-link{font-weight:var(--af-weight-medium)}
+.site-header .nav-link.active{font-weight:var(--af-weight-action)}
+.canonical-block :is(p,li){color:var(--af-color-text);font-weight:var(--af-weight-body);line-height:var(--af-leading-body)}
+.canonical-block a:not(.button):not(.v2-button):not(.canonical-pathway){
+  color:var(--af-link-color);font-weight:var(--af-weight-medium);text-decoration:underline;
+  text-decoration-thickness:.075em;text-underline-offset:.2em;text-decoration-color:rgb(47 76 122 / 30%)
+}
+.canonical-block a:not(.button):not(.v2-button):not(.canonical-pathway):is(:hover,:focus-visible){
+  color:var(--af-color-navy-950);text-decoration-color:currentColor
+}
+/* Narrative pages should read as documents; reserve boxes for genuinely discrete evidence/actions. */
+.canonical-body--about .canonical-block:nth-child(3),
+.canonical-body--about .canonical-block:nth-child(4){
+  border:0;border-top:1px solid rgb(117 86 7 / 16%);border-radius:0;background:transparent;box-shadow:none
+}
+.canonical-body--comparison .canonical-block{
+  border:0;border-top:1px solid rgb(117 86 7 / 16%);border-radius:0;background:transparent;box-shadow:none
+}
+.canonical-body--comparison .canonical-block:nth-child(2),
+.canonical-body--comparison .canonical-block:last-child{background:transparent}
+.canonical-body--governance .canonical-block{
+  border:0;border-top:1px solid rgb(117 86 7 / 16%);border-radius:0;background:transparent;box-shadow:none
+}
+.canonical-body--governance .canonical-block:last-child{background:transparent}
+@media(prefers-reduced-motion:reduce){
+  :is(.v2-text-link,.v3-text-link,.af-link-action){transform:none!important}
+}
