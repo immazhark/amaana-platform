@@ -18,8 +18,8 @@ for (const width of widths) {
           const box = mark.getBoundingClientRect();
           const parent = mark.parentElement;
           const bounds = parent.getBoundingClientRect();
-          const protectedContent = parent.querySelectorAll('.page-hero__copy,.page-hero__visual,.footer-lead>*,.footer-grid,.footer-note,.v3-home-banner-carousel');
           const isFooterMark = Boolean(mark.closest('.site-footer'));
+          const protectedContent = isFooterMark ? parent.querySelectorAll('.footer-lead>*,.footer-grid,.footer-note') : [];
           return {
             contained: box.right>bounds.left && box.left<bounds.right && box.bottom>bounds.top && box.top<bounds.bottom,
             overlapping: isFooterMark && [...protectedContent].some(el=>overlaps(box,el.getBoundingClientRect())),
@@ -36,7 +36,7 @@ for (const width of widths) {
       });
       expect(result.overflow).toBe(false);
       for (const mark of result.marks) {
-        expect(mark.contained, 'whole arch and emblem stay inside their section and viewport').toBe(true);
+        expect(mark.contained, 'decorative identity intersects its owning surface').toBe(true);
         expect(mark.overlapping, 'identity must not collide with text, cards or links').toBe(false);
         expect(mark.size).toBe('contain');
         expect(mark.asset).toContain('/backgrounds/amaana-arch-emblem.svg');
