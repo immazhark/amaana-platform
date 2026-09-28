@@ -109,7 +109,7 @@
 .amaana-live-cta{display:inline-flex;align-items:center;min-height:2.25rem;padding:.42rem .78rem;border:1px solid #d4a819;border-radius:999px;background:#173e47;color:#fffaf0!important;font-size:.72rem;font-weight:850;text-decoration:none!important;white-space:nowrap;box-shadow:0 .35rem 1rem rgb(18 34 57 / 10%);transition:transform .2s ease,background .2s ease}
 .amaana-live-cta:hover{transform:translateY(-1px);background:#285763}
 .amaana-reminder-controls{align-items:center;gap:.28rem}
-.amaana-reminder-controls button{display:grid;place-items:center;width:2rem;height:2rem;min-height:2rem;padding:0;border-color:rgb(32 59 67 / 20%);border-radius:999px;background:rgb(255 255 255 / 46%);font-size:.78rem}
+.amaana-reminder-controls button{display:grid;place-items:center;width:44px;height:44px;min-height:44px;padding:0;border-color:rgb(32 59 67 / 20%);border-radius:999px;background:rgb(255 255 255 / 46%);font-size:.78rem}
 .amaana-reminder-controls .amaana-schedule-trigger{width:auto;padding:0 .7rem;border-radius:999px;font-size:.68rem}
 @keyframes amaana-rail-enter{from{opacity:0;transform:translateX(1.5rem)}to{opacity:1;transform:translateX(0)}}
 @media(max-width:900px){
@@ -129,7 +129,7 @@
   .amaana-live-cta{grid-column:2;grid-row:1 / span 2;min-height:2rem;padding:.35rem .58rem;font-size:.62rem}
   .amaana-reminder-controls{width:auto;justify-content:flex-end}
   .amaana-reminder-controls button:first-child{display:none}
-  .amaana-reminder-controls button{width:1.9rem;height:1.9rem;min-height:1.9rem}
+  .amaana-reminder-controls button{width:44px;height:44px;min-height:44px}
 }
 @media(prefers-reduced-motion:reduce){.amaana-reminder-content{animation:none}.amaana-live-cta{transition:none}}
 
