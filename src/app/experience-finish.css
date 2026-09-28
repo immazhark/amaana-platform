@@ -728,3 +728,18 @@ body{font-weight:var(--af-weight-body)}
   line-height:1.08;
   letter-spacing:-.02em
 }
+
+
+/* 2026-09-28 brutal-QA: final minor visual hierarchy corrections. */
+body:not(:has(main > .v3-home)) .footer-lead{padding-block:1.2rem}
+body:not(:has(main > .v3-home)) .footer-lead h2{max-width:36ch;font-size:clamp(1.45rem,1.8vw,2rem);line-height:1.08}
+body:not(:has(main > .v3-home)) .footer-kicker{font-size:.7rem}
+.amaana-companion{opacity:.88;transition:opacity var(--af-motion-fast) ease}
+.amaana-companion:is(:hover,:focus-within),.amaana-companion:has([aria-expanded="true"]){opacity:1}
+.amaana-companion-dock>button{box-shadow:0 4px 14px rgb(18 46 57 / 12%)}
+@media(max-width:600px){
+  .v3-proof-label::after{content:" · Swipe ↔";color:var(--af-color-muted);font-weight:700;letter-spacing:.02em;text-transform:none}
+  .amaana-companion{right:max(8px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom))}
+  .amaana-companion-dock>button{min-width:44px;min-height:44px;opacity:.94}
+}
+@media(prefers-reduced-motion:reduce){.amaana-companion{transition:none}}
