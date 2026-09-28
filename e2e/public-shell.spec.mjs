@@ -116,6 +116,25 @@ test('Stories journal CTA resolves to a real in-page target', async ({ page }) =
 });
 
 
+test('Our Work programme numbers and titles keep distinct geometry', async ({ page }) => {
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: width <= 430 ? 844 : 1000 });
+    await openPublicPage(page, '/our-work');
+
+    const first = page.locator('details[data-work-category]').first();
+    const number = first.locator('.v2-cause-number');
+    const title = first.locator('.v2-cause-summary-title');
+    await expect(number).toBeVisible();
+    await expect(title).toBeVisible();
+
+    const numberBox = await number.boundingBox();
+    const titleBox = await title.boundingBox();
+    expect(numberBox).not.toBeNull();
+    expect(titleBox).not.toBeNull();
+    expect(numberBox.x + numberBox.width).toBeLessThanOrEqual(titleBox.x - 4);
+  }
+});
+
 test('Our Work keeps the growing portfolio collapsed by programme until a visitor chooses a category', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openPublicPage(page, '/our-work');
