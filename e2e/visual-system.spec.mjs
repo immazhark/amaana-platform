@@ -165,6 +165,28 @@ test('homepage omits superseded field and closing sections', async ({ page }) =>
   await expect(page.getByText('Upholding Trust. Serving With Compassion, Dignity and Accountability.', { exact: true })).toHaveCount(0);
 });
 
+test('homepage programme carousel stays centered and wraps in both directions', async ({ page }) => {
+  await open(page, '/');
+  const carousel = page.locator('[aria-label="Amaana programme areas"]');
+  await expect(carousel).toBeVisible();
+  const status = carousel.locator('[aria-live="polite"]');
+  await expect(status).toContainText('1 / 5');
+  await carousel.getByRole('button', { name: 'Previous slide' }).click();
+  await expect(status).toContainText('5 / 5');
+  await carousel.getByRole('button', { name: 'Next slide' }).click();
+  await expect(status).toContainText('1 / 5');
+  const geometry = await carousel.evaluate(root => {
+    const active = root.querySelector('[data-active="true"]');
+    const viewport = root.querySelector('[id^="carousel-"]');
+    if (!active || !viewport) return null;
+    const a = active.getBoundingClientRect();
+    const v = viewport.getBoundingClientRect();
+    return { activeCenter: a.left + a.width / 2, viewportCenter: v.left + v.width / 2 };
+  });
+  expect(geometry).toBeTruthy();
+  expect(Math.abs(geometry.activeCenter - geometry.viewportCenter)).toBeLessThanOrEqual(4);
+});
+
 test('shared footer callout remains compact and does not compete with page hero', async ({ page }) => {
   await open(page, '/about');
   const metrics = await page.evaluate(() => {
