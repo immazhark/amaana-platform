@@ -4,14 +4,14 @@ export type DonationPaymentDetails = {
 };
 
 const CANONICAL_UPI_ID = "mab.037347029220157@axisbank";
+const CANONICAL_BANK = {
+  accountName: "AMAANA FOUNDATION",
+  accountNumber: "925020008040264",
+  ifsc: "UTIB0002922",
+  bankName: "Axis Bank",
+  branch: "MEHDIPATNAM",
+} as const;
 
 export function getDonationPaymentDetails(): DonationPaymentDetails {
-  const accountName = process.env.DONATION_BANK_ACCOUNT_NAME?.trim();
-  const accountNumber = process.env.DONATION_BANK_ACCOUNT_NUMBER?.trim();
-  const ifsc = process.env.DONATION_BANK_IFSC?.trim().toUpperCase();
-  const bankName = process.env.DONATION_BANK_NAME?.trim();
-  const branch = process.env.DONATION_BANK_BRANCH?.trim();
-  const bank = accountName && accountNumber && ifsc && bankName && branch ? { accountName, accountNumber, ifsc, bankName, branch } : null;
-  const qrImageUrl = process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL?.trim() || null;
-  return { upi: { id: CANONICAL_UPI_ID, qrImageUrl }, bank };
+  return { upi: { id: CANONICAL_UPI_ID, qrImageUrl: "/media/donation-upi-qr.svg" }, bank: { ...CANONICAL_BANK } };
 }
