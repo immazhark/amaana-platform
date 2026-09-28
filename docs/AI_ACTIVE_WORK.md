@@ -1,3 +1,12 @@
+# Current checkpoint — 2026-09-28 background composition correction
+
+State: `CODEX_ACTIVE`
+Task branch: `fix/background-composition-scale`
+Base integration SHA: `671e3ba219f01248a0154dfe81525d7518e2efdf`
+User explicitly requests uncropped header/footer emblems and uniformly small, lighter body pattern. Prior cover-based acceptance was insufficient. Preserve original six source SVGs; derive independent ornament/tile assets and test actual viewport geometry. Scope is backgrounds and their readable layout only; content, payments, main and draft promotion PR #104 remain untouched. No other implementation writer is active. Verification pending.
+
+---
+
 # Amaana Platform — Active Implementation State
 
 ## State

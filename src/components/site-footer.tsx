@@ -10,6 +10,7 @@ const socialLinks = [
 export function SiteFooter() {
   return (
     <footer className="site-footer">
+      <div className="amaana-backdrop-emblem" aria-hidden="true" />
       <div className="container">
         <div className="footer-lead">
           <p className="footer-kicker">Verified need. Responsible support. Dignified impact.</p>
@@ -90,3 +91,4 @@ export function SiteFooter() {
     </footer>
   );
 }
+

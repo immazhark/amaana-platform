@@ -78,6 +78,7 @@ export default async function HomePage() {
   return (
     <div className="v3-home">
       <section className="v3-home-banner" aria-labelledby="amaana-home-title">
+        <div className="amaana-backdrop-emblem" aria-hidden="true" />
         <h1
           id="amaana-home-title"
           style={{
