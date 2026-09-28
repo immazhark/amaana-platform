@@ -189,7 +189,7 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="v3-section v3-eid" aria-labelledby="eid-growth-title">
+      <section className="v3-section v3-eid dark" aria-labelledby="eid-growth-title">
         <div className="v3-shell">
           <div className="v3-section-head">
             <div>
