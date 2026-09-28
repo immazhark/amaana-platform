@@ -97,3 +97,14 @@
   .canonical-article .canonical-block{padding-block:2rem}
   .canonical-body--comparison{padding-block:1.5rem}
 }
+
+
+/* Institutional audit reconciliation: trust content reads like evidence, not a dashboard. */
+.canonical-body--timeline .canonical-block::before,
+.governance-summary span,.canonical-pathway span{font-weight:700}
+.canonical-body--governance .canonical-block p:first-child{font-weight:600}
+.canonical-block--card-list li{border-radius:.65rem;background:transparent}
+.canonical-body--about .canonical-block--about-record a{font-weight:600}
+.canonical-pathway{box-shadow:none;transition:transform var(--af-motion-medium) cubic-bezier(.16,1,.3,1),border-color var(--af-motion-medium) ease,background var(--af-motion-medium) ease}
+.canonical-pathway:hover{box-shadow:none}
+.canonical-pathway:focus-visible{outline-color:var(--af-color-focus)}
