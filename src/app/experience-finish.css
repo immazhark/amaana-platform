@@ -517,6 +517,9 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
   --af-surface-size:100% 100%,240px auto,104px 104px;
   --af-surface-repeat:no-repeat,no-repeat,repeat;
   --af-surface-position:center,right 2rem center,0 0;
+  background-size:100% 100%,240px auto,104px 104px!important;
+  background-repeat:no-repeat,no-repeat,repeat!important;
+  background-position:center,right 2rem center,0 0!important;
 }
 .page-hero--level1,.site-footer{
   background-size:104px 104px,100% 100%!important;
