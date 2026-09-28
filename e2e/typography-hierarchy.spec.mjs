@@ -101,3 +101,39 @@ test('canonical trust and about narrative sections are not rendered as repetitiv
     }
   }
 });
+
+
+test('L1 discovery metadata does not overpower content hierarchy', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  const checks = [
+    ['/our-work', '.v2-initiative-copy small'],
+    ['/impact', '.v2-impact-tile-copy small'],
+    ['/stories', '.v2-stories-feature-copy small, .v2-stories-card-copy small'],
+    ['/faith-and-reflections', '[class*="emptyKicker"]'],
+  ];
+  for (const [route, selector] of checks) {
+    await page.goto(route, { waitUntil: 'domcontentloaded' });
+    const nodes = page.locator(selector);
+    const count = await nodes.count();
+    for (let i = 0; i < count; i += 1) {
+      const weight = Number.parseInt(await nodes.nth(i).evaluate(node => getComputedStyle(node).fontWeight), 10);
+      expect(weight, `${route} metadata weight`).toBeLessThanOrEqual(700);
+    }
+  }
+});
+
+test('Our Work disclosure exposes a visible keyboard focus indicator', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  await page.goto('/our-work', { waitUntil: 'domcontentloaded' });
+  const summary = page.locator('.v2-cause-summary').first();
+  await summary.focus();
+  const focus = await summary.evaluate(node => {
+    const style = getComputedStyle(node);
+    return { width: parseFloat(style.outlineWidth), style: style.outlineStyle, offset: parseFloat(style.outlineOffset) };
+  });
+  expect(focus.width).toBeGreaterThanOrEqual(2);
+  expect(focus.style).not.toBe('none');
+  expect(focus.offset).toBeGreaterThanOrEqual(2);
+});
