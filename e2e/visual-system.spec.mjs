@@ -118,6 +118,41 @@ test('impact marquee uses the canonical desktop shell width and remains centered
   expect(near(boxes.marqueeLeft, boxes.marqueeRightGap), 'impact marquee should remain horizontally centered').toBeTruthy();
 });
 
+test('page hero variants stay visually differentiated inside one canonical system', async ({ page }) => {
+  const samples = [
+    ['/about', '.page-hero--level1'],
+    ['/request-assistance', '.page-hero--action'],
+    ['/privacy', '.page-hero--information'],
+  ];
+  const backgrounds = [];
+  for (const [path, selector] of samples) {
+    await open(page, path);
+    const hero = page.locator(selector);
+    await expect(hero).toBeVisible();
+    backgrounds.push(await hero.evaluate(node => `${getComputedStyle(node).backgroundColor}|${getComputedStyle(node).backgroundImage}`));
+  }
+  expect(new Set(backgrounds).size).toBeGreaterThanOrEqual(3);
+});
+
+test('mobile programme carousel explicitly signals swipe interaction', async ({ page }) => {
+  await open(page, '/', 390);
+  const carousel = page.locator('[aria-label="Amaana programme areas"]');
+  await expect(carousel).toBeVisible();
+  const cue = await carousel.evaluate(root => {
+    const toolbar = root.querySelector('[class*="toolbar"]');
+    return toolbar ? getComputedStyle(toolbar, '::before').content : '';
+  });
+  expect(cue).toContain('Swipe');
+});
+
+test('internal footer callout stays quieter than the homepage callout', async ({ page }) => {
+  await open(page, '/');
+  const homeSize = await page.locator('.footer-lead h2').evaluate(node => parseFloat(getComputedStyle(node).fontSize));
+  await open(page, '/about');
+  const internalSize = await page.locator('.footer-lead h2').evaluate(node => parseFloat(getComputedStyle(node).fontSize));
+  expect(internalSize).toBeLessThan(homeSize);
+});
+
 test('hero primary and secondary actions have equal canonical height', async ({ page }) => {
   await open(page, '/about');
   const actions = page.locator('.page-hero__actions .page-hero__button');
