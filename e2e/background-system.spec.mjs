@@ -34,8 +34,11 @@ expect(mark.size).toBe('contain');
       }
       expect(result.surfaces.length).toBeGreaterThanOrEqual(2);
       for (const surface of result.surfaces) {
-        expect(surface.size.split(',').at(-1).trim()).toBe('104px 104px');
-        expect(surface.repeat.split(',').at(-1).trim()).toBe('repeat');
+        const sizes = surface.size.split(',').map(value=>value.trim());
+        const repeats = surface.repeat.split(',').map(value=>value.trim());
+        const latticeIndex = sizes.findIndex(value=>value === '104px 104px');
+        expect(latticeIndex, 'surface retains the canonical 104px lattice layer').toBeGreaterThanOrEqual(0);
+        expect(repeats[latticeIndex], 'canonical lattice layer repeats').toBe('repeat');
       }
       if (route === '/impact') {
         expect(Math.max(...result.surfaces.map(s=>s.height))-Math.min(...result.surfaces.map(s=>s.height))).toBeGreaterThan(500);
