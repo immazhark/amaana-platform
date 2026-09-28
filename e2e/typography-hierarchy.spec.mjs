@@ -171,3 +171,26 @@ test('L2 programme metadata and prose follow canonical reading hierarchy', async
     }
   }
 });
+
+
+test('institutional routes keep evidence metadata subordinate and focus visible', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  const checks = [
+    ['/governance', '.governance-summary span, .canonical-pathway span'],
+    ['/how-we-verify', '.canonical-body--timeline .canonical-block::before'],
+    ['/recognition', '[class*="meta"] > span, [class*="meta"] dt'],
+    ['/contact', '.v2-intent-marker, .v2-intent-arrow'],
+  ];
+  for (const [route, selector] of checks) {
+    const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+    expect(response?.ok(), `${route} should render`).toBeTruthy();
+    if (selector.includes('::before')) {
+      const weights = await page.locator('.canonical-body--timeline .canonical-block').evaluateAll(nodes => nodes.map(node => Number.parseInt(getComputedStyle(node, '::before').fontWeight, 10)));
+      for (const weight of weights) expect(weight).toBeLessThanOrEqual(700);
+    } else {
+      const weights = await page.locator(selector).evaluateAll(nodes => nodes.map(node => Number.parseInt(getComputedStyle(node).fontWeight, 10)));
+      for (const weight of weights) expect(weight).toBeLessThanOrEqual(700);
+    }
+  }
+});
