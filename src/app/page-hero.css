@@ -12,3 +12,15 @@
 @media(max-width:600px){.page-hero{--visual:19rem;--pad:2.85rem;--title:clamp(2.4rem,11.5vw,3.8rem);--title-width:none;--radius:0 1.5rem 0 1.5rem}.page-hero__shell{width:min(100% - 1.25rem,74rem)}.page-hero__grid{gap:1.6rem}.page-hero__eyebrow{margin-bottom:.9rem;font-size:.7rem}.page-hero__description{margin-top:1.2rem;font-size:1rem}.page-hero__actions{margin-top:1.35rem}.page-hero__button{width:100%}.page-hero--long-title{--title:clamp(2.35rem,11.5vw,3.7rem)}}
 @media(prefers-reduced-motion:reduce){.page-hero__button{transition:none}.page-hero__button:hover{transform:none}}
 @supports not ((background-clip:text) or (-webkit-background-clip:text)){.page-hero--level1 .page-hero__title{background:none;color:#1d3150;-webkit-text-fill-color:currentColor}}
+
+
+/* 2026-09-28 brutal-QA: page-type differentiation without fragmenting the design system. */
+.page-hero--action{background:linear-gradient(132deg,#0f223b 0%,#1d3150 58%,#355f96 100%);--radius:1.65rem .45rem 1.65rem .45rem}
+.page-hero--action:before{background:radial-gradient(circle at 82% 22%,rgb(224 179 24/18%),transparent 24%),linear-gradient(135deg,transparent 32%,rgb(70 111 170/46%) 50%,transparent 68%)}
+.page-hero--trust{background:linear-gradient(145deg,#0b192c 0%,#172b47 62%,#493f1e 145%);--radius:.5rem 1.75rem .5rem 1.75rem}
+.page-hero--trust:before{background:radial-gradient(circle at 82% 18%,rgb(224 179 24/12%),transparent 25%)}
+.page-hero--information{background:linear-gradient(138deg,#182c49 0%,#2f4c7a 62%,#203b62 100%);--radius:1.75rem 1.75rem .45rem .45rem}
+.page-hero--information:before{background:linear-gradient(145deg,transparent 24%,rgb(255 255 255/5%) 47%,rgb(224 179 24/10%) 58%,transparent 74%)}
+.page-hero--recognition{background:linear-gradient(132deg,#172b47 0%,#315887 58%,#80620d 145%);--radius:.45rem 1.75rem 1.75rem .45rem}
+.page-hero--recognition:before{background:radial-gradient(circle at 78% 24%,rgb(240 213 107/16%),transparent 24%)}
+@media(max-width:600px){.page-hero--action,.page-hero--trust,.page-hero--information,.page-hero--recognition{--radius:.9rem 1.35rem .9rem 1.35rem}}

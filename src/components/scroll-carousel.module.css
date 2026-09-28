@@ -35,3 +35,10 @@
 @media(max-width:900px){.focus .track{padding-inline:max(1rem,calc((100cqw - min(80vw,38rem))/2))}.focus .slide{width:min(80vw,38rem);opacity:.72;transform:scale(.94)}}
 @media(max-width:600px){.focus .track{padding-inline:7vw}.focus .slide{width:86vw;opacity:.78;transform:scale(.96)}}
 @media(prefers-reduced-motion:reduce){.focus .slide{transition:none;transform:none}.focus .activeSlide>*{box-shadow:none}}
+
+
+/* 2026-09-28 brutal-QA: make horizontal interaction discoverable on touch screens. */
+@media(max-width:700px){
+  .gallery .toolbar::before,.cards .toolbar::before,.focus .toolbar::before{content:"Swipe ↔";margin-right:auto;color:var(--af-color-muted);font-size:.76rem;font-weight:700;letter-spacing:.025em}
+  .status{font-size:.8rem;font-weight:700}
+}

@@ -39,9 +39,9 @@ export default async function Page() {
     <CanonicalArticle
       eyebrow="Donate · Amaana Foundation"
       heroVariant="action"
-      heroVisualTitle="Give With Purpose"
+      heroVisualTitle={hasOpenAppeals ? "Give With Purpose" : "Support Responsibly"}
       heroVisualNote={hasOpenAppeals ? "Choose a verified public appeal, explore Taleem sponsorship, or ask Amaana about a currently approved programme giving route." : "There is no active public appeal right now. Explore Taleem sponsorship or ask Amaana about a currently approved programme giving route."}
-      title="Give With Confidence. Give With Purpose."
+      title={hasOpenAppeals ? "Give With Confidence. Give With Purpose." : "Find an Approved Way to Support."}
       intro={hasOpenAppeals ? "Every contribution is an amaana. Choose where your support should go: a specific verified appeal or a currently approved programme." : "Every contribution is an amaana. No public appeal is accepting donations right now, so choose an approved programme route or speak with Amaana before contributing."}
       blocks={[
         {
