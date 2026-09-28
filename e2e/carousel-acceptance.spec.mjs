@@ -48,7 +48,7 @@ test('programme carousel scrolls internally without creating mobile page overflo
   await expect(carousel).toBeVisible();
 
   const dimensions = await page.evaluate(() => {
-    const viewport = document.querySelector('[aria-label^="Programme years. Use left and right arrow keys"]');
+    const viewport = document.querySelector('[aria-label^="Slide viewport. Programme years."]');
     return {
       documentClientWidth: document.documentElement.clientWidth,
       documentScrollWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
