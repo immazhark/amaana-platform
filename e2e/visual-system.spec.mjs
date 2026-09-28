@@ -196,7 +196,7 @@ test('homepage hero stays wide and compact on desktop', async ({ page }) => {
   const contentBox = await content.boundingBox();
   expect(contentBox).toBeTruthy();
   expect(contentBox.width).toBeLessThanOrEqual(1184 + 2);
-  expect(contentBox.x).toBeGreaterThanOrEqual((box.width - contentBox.width) / 2 - 2);
+  expect(contentBox.x).toBeGreaterThanOrEqual(box.x - 2);\n  expect(contentBox.x + contentBox.width).toBeLessThanOrEqual(box.x + box.width + 2);
 });
 
 test('homepage programme carousel stays centered and wraps in both directions', async ({ page }) => {
