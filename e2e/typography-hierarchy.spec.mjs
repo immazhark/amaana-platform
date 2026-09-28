@@ -49,3 +49,55 @@ for (const width of [1440, 390]) {
     }
   });
 }
+
+
+test('canonical public typography roles stay restrained and consistent', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  for (const route of ['/about', '/get-involved', '/governance', '/transparency', '/compliance']) {
+    const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+    expect(response?.ok(), `${route} should render`).toBeTruthy();
+    const metrics = await page.evaluate(() => {
+      const hero = document.querySelector('.page-hero__title');
+      const nav = document.querySelector('.site-header .nav-link');
+      const active = document.querySelector('.site-header .nav-link.active');
+      const button = document.querySelector('.page-hero__button, .v2-button');
+      const label = document.querySelector('.page-hero__eyebrow, .v2-section-label');
+      const textLink = document.querySelector('.v2-text-link, .canonical-block a');
+      const read = node => node ? {
+        family: getComputedStyle(node).fontFamily,
+        weight: Number.parseInt(getComputedStyle(node).fontWeight, 10),
+        decoration: getComputedStyle(node).textDecorationLine,
+      } : null;
+      return { hero: read(hero), nav: read(nav), active: read(active), button: read(button), label: read(label), textLink: read(textLink) };
+    });
+    expect(metrics.hero?.family).toMatch(/Georgia|Times New Roman/i);
+    expect(metrics.hero?.weight).toBeLessThanOrEqual(500);
+    if (metrics.nav) expect(metrics.nav.weight).toBeLessThanOrEqual(600);
+    if (metrics.active) expect(metrics.active.weight).toBeLessThanOrEqual(700);
+    if (metrics.button) expect(metrics.button.weight).toBeLessThanOrEqual(700);
+    if (metrics.label) expect(metrics.label.weight).toBeLessThanOrEqual(700);
+    if (metrics.textLink) {
+      expect(metrics.textLink.weight).toBeLessThanOrEqual(700);
+      expect(metrics.textLink.decoration).toContain('underline');
+    }
+  }
+});
+
+test('canonical trust and about narrative sections are not rendered as repetitive boxed cards', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  for (const route of ['/about', '/governance', '/transparency']) {
+    await page.goto(route, { waitUntil: 'domcontentloaded' });
+    const surfaces = await page.locator('.canonical-body > .canonical-block').evaluateAll(nodes => nodes.map(node => {
+      const style = getComputedStyle(node);
+      return { radius: parseFloat(style.borderRadius), shadow: style.boxShadow, left: style.borderLeftWidth, right: style.borderRightWidth };
+    }));
+    for (const surface of surfaces) {
+      expect(surface.radius).toBeLessThanOrEqual(1);
+      expect(surface.shadow).toBe('none');
+      expect(parseFloat(surface.left)).toBe(0);
+      expect(parseFloat(surface.right)).toBe(0);
+    }
+  }
+});
