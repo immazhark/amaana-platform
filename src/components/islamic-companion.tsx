@@ -48,7 +48,7 @@ export function IslamicCompanion() {
   const [panel, setPanel] = useState<CompanionPanelKind | null>(null);
   const [now, setNow] = useState<Date | null>(null);
   const [confirmedMoon, setConfirmedMoon] = useState<MoonState | null>(null);
-  const [paused, setPaused] = useState(true);
+  const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
