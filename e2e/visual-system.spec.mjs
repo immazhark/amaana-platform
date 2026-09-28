@@ -195,7 +195,7 @@ test('homepage hero stays wide and compact on desktop', async ({ page }) => {
   const content = hero.locator('.v3-home-banner-content').first();
   const contentBox = await content.boundingBox();
   expect(contentBox).toBeTruthy();
-  expect(contentBox.width).toBeGreaterThan(box.width * 0.9);
+  expect(contentBox.width).toBeLessThanOrEqual(1184 + 2);\n  expect(contentBox.x).toBeGreaterThanOrEqual((box.width - contentBox.width) / 2 - 2);
 });
 
 test('homepage programme carousel stays centered and wraps in both directions', async ({ page }) => {
