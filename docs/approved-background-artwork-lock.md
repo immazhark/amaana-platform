@@ -14,3 +14,9 @@ Preserve these files byte-for-byte. Do not regenerate, recolour or replace them 
 | `Amaana_Website_Header_Banner.svg` | `5bc2669c19271b7497844ac083559916b57ad3a6af097223c4864631ea28f75b` |
 
 Run `npm run backgrounds:verify` to verify the six locked assets. Footer height remains content-driven. Existing dark content sections retain contrast overlays; light body sections use the approved artwork without whitening gradients. Artwork approval does not replace final human review of the integrated website.
+
+## 28 September correction — independent composition
+
+The user's follow-up explicitly authorizes correcting cropped emblems and oversized/uneven body patterns. The six originals above remain unchanged as provenance sources, but public rendering now uses three transparent derivatives: `amaana-arch-emblem.svg`, `amaana-emblem-watermark.svg`, and `amaana-lattice-tile.svg`. The emblem paths, gold treatment and dissolving arch are extracted from the approved header without tracing or regeneration. The lattice remains 104 CSS pixels across section heights; opacity is reduced from .19 to .10, and the body watermark from .035 to .025. Continuous CSS blue/champagne and blue/navy fills scale independently; the entire identity element uses contain in a content-reserved region on desktop and above content on smaller screens. Footer height remains content-driven. Body backgrounds have no gradient.
+
+`e2e/background-system.spec.mjs` checks real homepage and impact-page elements at nine widths for full ornament containment, content non-overlap, horizontal overflow and identical texture scale across different section heights. It no longer creates dummy elements or treats cover as a success criterion. Visual inspection remains required.

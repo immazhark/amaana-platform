@@ -51,6 +51,7 @@ export function PageHero({
 
   return (
     <section className={classes} aria-labelledby={id || undefined}>
+      {variant === "level1" && <div className="amaana-backdrop-emblem" aria-hidden="true" />}
       <div className="page-hero__shell">
         <div className="page-hero__grid">
           <div className="page-hero__copy">
@@ -79,3 +80,4 @@ export function PageHero({
     </section>
   );
 }
+
