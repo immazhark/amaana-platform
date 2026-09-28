@@ -76,3 +76,24 @@
 .canonical-pathway:focus-visible{outline:3px solid var(--af-color-gold-ink);outline-offset:3px}
 @media(max-width:800px){.canonical-pathways{grid-template-columns:1fr}.canonical-pathway{min-height:0}}
 @media(prefers-reduced-motion:reduce){.canonical-pathway{transition:none}.canonical-pathway:hover{transform:none}}
+
+
+/* 2026-09-28 trust/about editorial pass — reduce dashboard-card repetition. */
+.canonical-article .canonical-body{padding-inline:clamp(1rem,2vw,1.5rem)}
+.canonical-article .canonical-block{padding-block:clamp(2.2rem,4vw,3.25rem);gap:clamp(1.5rem,4vw,3.5rem)}
+.canonical-block h2{margin-top:0;letter-spacing:-.025em}
+.canonical-block p,.canonical-block li{line-height:1.72}
+.canonical-body--comparison{gap:.8rem;padding-block:2.25rem}
+.canonical-body--comparison .canonical-block{padding:clamp(1.35rem,2.4vw,1.8rem);border-radius:.85rem;box-shadow:0 .5rem 1.6rem rgb(18 34 57 / 3%)}
+.canonical-body--about{gap:0 .8rem;padding-block:.5rem 2.5rem}
+.canonical-body--about .canonical-block:nth-child(3),.canonical-body--about .canonical-block:nth-child(4){padding:1.35rem;border-radius:.85rem}
+.canonical-body--about .canonical-block--about-recognition,.canonical-body--about .canonical-block--about-record{padding:clamp(1.4rem,2.5vw,1.9rem);border-radius:.85rem}
+.canonical-body--about .canonical-block--about-record a{min-height:4.25rem;border-radius:.7rem;transition:transform var(--af-motion-fast) ease,border-color var(--af-motion-fast) ease,background var(--af-motion-fast) ease}
+.canonical-body--about .canonical-block--about-record a:is(:hover,:focus-visible){transform:translateY(-2px)}
+.canonical-pathways{gap:.7rem;margin-top:1.5rem;padding-top:1.5rem}
+.canonical-pathway{min-height:9rem;padding:1.1rem;border-radius:.8rem;box-shadow:0 .5rem 1.6rem rgb(18 34 57 / 3%)}
+@media(max-width:700px){
+  .canonical-article .canonical-body{padding-inline:1rem}
+  .canonical-article .canonical-block{padding-block:2rem}
+  .canonical-body--comparison{padding-block:1.5rem}
+}
