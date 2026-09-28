@@ -132,3 +132,44 @@
   .amaana-reminder-controls button{width:1.9rem;height:1.9rem;min-height:1.9rem}
 }
 @media(prefers-reduced-motion:reduce){.amaana-reminder-content{animation:none}.amaana-live-cta{transition:none}}
+
+
+/* Unified Amaana Companion — brand-aligned floating utility. */
+.amaana-companion{--companion-navy:#102f55;--companion-blue:#285f9f;--companion-gold:#e1b521;--companion-ivory:#fffaf0;--companion-ink:#173251}
+.amaana-companion-dock>button{position:relative;min-height:3.55rem;padding:.62rem .9rem;border:1px solid rgb(225 181 33 / 70%);border-radius:999px;background:linear-gradient(135deg,var(--companion-navy),#1d527f);color:var(--companion-ivory);box-shadow:0 .7rem 2rem rgb(16 47 85 / 24%);transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
+.amaana-companion-dock>button:hover,.amaana-companion-dock>button[aria-expanded=true]{transform:translateY(-2px);background:linear-gradient(135deg,#153c69,#2867a5);box-shadow:0 .9rem 2.4rem rgb(16 47 85 / 30%)}
+.amaana-companion-dock>button>span:last-child{display:grid;text-align:left;line-height:1.1}
+.amaana-companion-dock>button strong{font-size:.76rem;letter-spacing:.02em}
+.amaana-companion-dock>button small{margin-top:.2rem;color:rgb(255 250 240 / 72%);font-size:.56rem;font-weight:500;letter-spacing:.025em}
+.amaana-companion-dock-icons{display:flex;align-items:center;margin-right:.15rem}
+.amaana-companion-dock-icons svg{width:1.05rem;height:1.05rem}
+.amaana-companion-dock-icons svg+svg{margin-left:-.22rem;margin-top:.75rem;color:var(--companion-gold)}
+.amaana-companion-panel{bottom:calc(max(16px,env(safe-area-inset-bottom)) + 4.4rem);width:min(27.5rem,calc(100vw - 2rem));max-height:min(44rem,calc(100dvh - 8rem - env(safe-area-inset-top)));padding:0;border:1px solid rgb(225 181 33 / 42%);border-radius:1.25rem;background:linear-gradient(155deg,#fffdf7 0%,#fff9eb 100%);color:var(--companion-ink);box-shadow:0 1.5rem 4.5rem rgb(16 47 85 / 28%);overflow:hidden;scrollbar-color:#c7a73c #f6eedc}
+.amaana-companion-panel::before{content:"";position:absolute;inset:0 0 auto;height:.25rem;background:linear-gradient(90deg,var(--companion-gold),#f1d46d 42%,var(--companion-blue));z-index:2}
+.amaana-companion-head{position:sticky;top:0;z-index:3;align-items:center;padding:1.25rem 1.25rem .85rem;background:rgb(255 253 247 / 96%);backdrop-filter:blur(12px)}
+.amaana-companion-kicker{display:block;margin-bottom:.28rem;color:#a57a08;font-size:.58rem;font-weight:900;letter-spacing:.16em}
+.amaana-companion-head h2{margin:0;color:var(--companion-navy);font-size:1.55rem;line-height:1.1}
+.amaana-companion-head button{margin:0;border:1px solid rgb(16 47 85 / 10%);border-radius:999px;color:var(--companion-navy)}
+.amaana-companion-tabs{position:sticky;top:4.65rem;z-index:3;display:grid;grid-template-columns:1fr 1fr;gap:.25rem;margin:0 1.25rem;padding:.25rem;border:1px solid rgb(16 47 85 / 10%);border-radius:.8rem;background:#f3ecdd;box-shadow:inset 0 1px 2px rgb(16 47 85 / 5%)}
+.amaana-companion-tabs button{min-height:2.55rem;border:0;border-radius:.62rem;background:transparent;color:#536477;font-size:.72rem;font-weight:800}
+.amaana-companion-tabs button[aria-selected=true]{background:linear-gradient(135deg,var(--companion-navy),#245f98);color:#fffaf0;box-shadow:0 .3rem .8rem rgb(16 47 85 / 16%)}
+.amaana-companion-view{padding:1rem 1.25rem 1.35rem;overflow-y:auto;max-height:calc(min(44rem,100dvh - 8rem) - 8.2rem)}
+.amaana-companion-panel a{color:#285f9f;text-decoration-color:rgb(225 181 33 / 75%)}
+.amaana-companion-panel .amaana-companion-note{color:#637083}
+.amaana-daily-ayah{margin-top:1.15rem;padding:1rem;border:1px solid rgb(16 47 85 / 9%);border-radius:.9rem;background:rgb(255 255 255 / 58%)}
+.amaana-daily-hadith{margin-top:.8rem;padding:1rem;border:1px solid rgb(16 47 85 / 9%);border-radius:.9rem;background:rgb(255 255 255 / 58%)}
+.amaana-daily-ayah blockquote,.amaana-daily-hadith h4,.amaana-hijri strong{color:var(--companion-navy)}
+.amaana-companion-action,.amaana-companion-error button{border-color:var(--companion-navy);border-radius:999px;background:linear-gradient(135deg,var(--companion-navy),#245f98);box-shadow:0 .35rem .9rem rgb(16 47 85 / 14%)}
+.amaana-hijri{padding:1rem;border:1px solid rgb(16 47 85 / 9%);border-radius:.9rem;background:rgb(255 255 255 / 58%)}
+.amaana-asr-choice select{border-color:rgb(16 47 85 / 22%);border-radius:.65rem;background:#fffdf8}
+.amaana-next-salah{border:1px solid rgb(225 181 33 / 55%);background:linear-gradient(135deg,var(--companion-navy),#245f98);box-shadow:0 .5rem 1.3rem rgb(16 47 85 / 14%)}
+.amaana-salah-times>div{border-color:rgb(16 47 85 / 10%)}
+.amaana-salah-times .is-next{color:#9a7207}
+.amaana-companion :focus-visible{outline-color:var(--companion-gold)}
+@media(max-width:640px){
+ .amaana-companion-dock>button{min-height:2.8rem;max-width:none;padding:.45rem .7rem}
+ .amaana-companion-dock>button small{display:none}
+ .amaana-companion-panel{right:.65rem;bottom:calc(max(.6rem,env(safe-area-inset-bottom)) + 3.4rem);width:calc(100% - 1.3rem);max-height:calc(100dvh - 5.2rem - env(safe-area-inset-top));border-radius:1rem}
+ .amaana-companion-view{max-height:calc(100dvh - 13rem)}
+}
+@media(prefers-reduced-motion:reduce){.amaana-companion-dock>button{transition:none}}
