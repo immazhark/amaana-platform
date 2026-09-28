@@ -93,7 +93,7 @@ export function ScrollCarousel({
 
   const goTo = useCallback((index: number) => {
     if (!slideCount) return;
-    const bounded = Math.min(Math.max(index, 0), slideCount - 1);
+    const bounded = ((index % slideCount) + slideCount) % slideCount;
     const viewport = viewportRef.current;
     const slide = slideRefs.current[bounded];
     if (!viewport || !slide) return;
@@ -170,7 +170,6 @@ export function ScrollCarousel({
               aria-controls={viewportId}
               aria-label="Previous slide"
               onClick={() => goTo(activeIndex - 1)}
-              disabled={activeIndex === 0}
             >
               <span aria-hidden="true">←</span>
             </button>
@@ -179,7 +178,6 @@ export function ScrollCarousel({
               aria-controls={viewportId}
               aria-label="Next slide"
               onClick={() => goTo(activeIndex + 1)}
-              disabled={activeIndex === slideCount - 1}
             >
               <span aria-hidden="true">→</span>
             </button>
