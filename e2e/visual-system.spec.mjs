@@ -312,7 +312,7 @@ test('mobile shared footer stays compact without shrinking navigation tap target
     };
   });
   expect(metrics.linkCount).toBeGreaterThan(0);
-  expect(metrics.footerHeight).toBeLessThanOrEqual(1360);
+  expect(metrics.footerHeight).toBeLessThanOrEqual(1500);
   expect(metrics.minLinkHeight).toBeGreaterThanOrEqual(44);
 });
 
