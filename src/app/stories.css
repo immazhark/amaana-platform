@@ -4,3 +4,22 @@
 @media(max-width:900px){.v2-stories-hero-grid,.v2-stories-feature-grid,.v2-stories-ethic-grid,.v2-story-detail-hero-grid,.v2-story-detail-body-grid,.v2-story-detail-ethic-grid{grid-template-columns:1fr}.v2-stories-hero-mark{width:min(30rem,82vw);margin:0 auto 5rem}.v2-stories-card,.v2-stories-card.wide{grid-column:span 12}.v2-story-detail-context{max-width:35rem}.v2-story-detail-body-grid>aside{position:static}.v2-story-detail-no-media{grid-template-columns:1fr}.v2-story-detail-no-media span{grid-column:auto}}
 @media(max-width:620px){.v2-stories-hero-copy h1{font-size:clamp(4rem,18vw,6rem)}.v2-stories-feature-media,.v2-stories-feature-placeholder{min-height:26rem}.v2-stories-card,.v2-stories-card.wide{grid-template-columns:1fr;min-height:auto}.v2-stories-card-media{min-height:18rem}.v2-stories-single-note{grid-template-columns:1fr}.v2-stories-ethic-list article{grid-template-columns:2.5rem 1fr}.v2-stories-ethic-list p{grid-column:2}.v2-story-detail-hero-grid{min-height:auto;padding-block:4rem}.v2-story-detail-heading h1{font-size:clamp(3.8rem,18vw,6rem)}.v2-story-detail-back{margin-bottom:2.5rem}.v2-story-detail-lead-media{height:26rem}.v2-story-detail-no-media{min-height:24rem;padding:2rem}.v2-story-detail-rule{grid-template-columns:4rem 1fr}.v2-story-detail-prose{padding-left:0}.v2-story-detail-dropcap{left:-.5rem;top:-1.5rem}.v2-story-detail-media-grid .v2-media-item,.v2-story-detail-media-grid .v2-media-item:nth-child(3n+1),.v2-story-detail-media-grid .v2-media-item:nth-child(3n+2){grid-column:span 12}}
 @media(prefers-reduced-motion:reduce){.v2-stories-feature-media .v2-media-item img,.v2-stories-feature-media .v2-media-item video,.v2-stories-card,.v2-stories-card-media .v2-media-item img,.v2-stories-card-media .v2-media-item video{transition:none;transform:none}}
+
+
+/* 2026-09-28 journal refinement — editorial storytelling without oversized magazine panels. */
+.v2-stories-feature{padding-block:clamp(3.75rem,6vw,5.75rem)}
+.v2-stories-feature-grid{grid-template-columns:minmax(0,1.05fr) minmax(19rem,.75fr);gap:clamp(2rem,5.5vw,5.5rem)}
+.v2-stories-feature-media,.v2-stories-feature-placeholder{min-height:clamp(24rem,35vw,30rem);border-radius:1rem}
+.v2-stories-feature-copy h2{font-size:clamp(2.5rem,4.3vw,4.4rem)}
+.v2-stories-feature-copy p{margin:1.15rem 0 1.5rem;line-height:1.65}
+.v2-stories-grid{gap:.85rem;margin-top:2.25rem}
+.v2-stories-card{min-height:20rem;border:1px solid rgb(18 34 57 / 11%);border-radius:1rem;overflow:hidden}
+.v2-stories-card.wide{min-height:25rem}
+.v2-stories-card-copy{padding:clamp(1.25rem,2.4vw,2rem)}
+.v2-stories-card-copy h3{font-size:clamp(1.65rem,2.5vw,2.65rem)}
+.v2-stories-ethic-list article{padding:1.25rem 0}
+@media(max-width:620px){
+  .v2-stories-feature{padding-block:3.5rem}
+  .v2-stories-feature-media,.v2-stories-feature-placeholder{min-height:21rem}
+  .v2-stories-card-media{min-height:15rem}
+}
