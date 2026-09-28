@@ -58,3 +58,36 @@
 .taleem-process h3{margin-top:1.25rem}
 .taleem-closing{padding-block:clamp(3.75rem,6vw,5.75rem)}
 @media(max-width:760px){.taleem-hero{padding-block:3.5rem}.taleem-hero h1{font-size:clamp(3.25rem,16vw,5.4rem)}}
+
+
+/* 2026-09-29 owner monitor QA: better desktop balance across sponsorship flow. */
+@media(min-width:1000px){
+  .taleem-section-head{
+    grid-template-columns:minmax(0,1.05fr) minmax(20rem,.95fr);
+    gap:clamp(2rem,3.5vw,3.75rem)
+  }
+  .taleem-school-grid{
+    grid-template-columns:minmax(0,1fr) minmax(24rem,.95fr);
+    gap:clamp(2.5rem,4vw,4.5rem);
+    align-items:center
+  }
+  .taleem-process ol{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:0
+  }
+  .taleem-process li{
+    min-height:10rem;
+    padding:1.5rem 1.75rem 1.5rem 0;
+    border-bottom:1px solid var(--taleem-rule)
+  }
+  .taleem-process li:nth-child(even){padding-left:1.75rem;border-left:1px solid var(--taleem-rule)}
+  .taleem-process li:nth-last-child(-n+2){border-bottom:0}
+  .taleem-closing .v2-shell{
+    display:grid;
+    grid-template-columns:minmax(0,1.2fr) auto;
+    gap:clamp(2rem,5vw,5rem);
+    align-items:end
+  }
+  .taleem-closing h2{max-width:20ch}
+  .taleem-closing .v2-hero-actions{margin-top:0;justify-content:flex-end}
+}

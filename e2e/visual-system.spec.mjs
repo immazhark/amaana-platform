@@ -190,6 +190,33 @@ test('internal footer callout stays quieter than the homepage callout', async ({
   expect(internalSize).toBeLessThan(homeSize);
 });
 
+test('wide focus carousel presents three useful cards without sliver previews', async ({ page }) => {
+  await open(page, '/our-work/taleem', 1920);
+  const carousel = page.locator('.campaign-pathway-carousel');
+  if (await carousel.count() === 0) return;
+  const widths = await carousel.locator('[class*="slide"]').evaluateAll(slides => slides.slice(0,3).map(slide => slide.getBoundingClientRect().width));
+  expect(widths.length).toBeGreaterThanOrEqual(2);
+  expect(Math.max(...widths) - Math.min(...widths)).toBeLessThanOrEqual(3);
+  expect(Math.min(...widths)).toBeGreaterThanOrEqual(300);
+});
+
+test('get involved journey uses substantial desktop cards instead of a tiny five-cell strip', async ({ page }) => {
+  await open(page, '/get-involved', 1920);
+  const metrics = await page.locator('.v2-journey').evaluate(journey => {
+    const cards = Array.from(journey.querySelectorAll('.v2-journey-step')).map(card => card.getBoundingClientRect());
+    return {
+      count: cards.length,
+      firstRowCount: cards.filter(card => Math.abs(card.top - cards[0].top) <= 2).length,
+      minWidth: Math.min(...cards.map(card => card.width)),
+      rows: new Set(cards.map(card => Math.round(card.top))).size,
+    };
+  });
+  expect(metrics.count).toBe(5);
+  expect(metrics.firstRowCount).toBe(3);
+  expect(metrics.rows).toBe(2);
+  expect(metrics.minWidth).toBeGreaterThanOrEqual(300);
+});
+
 test('hero primary and secondary actions have equal canonical height', async ({ page }) => {
   await open(page, '/about');
   const actions = page.locator('.page-hero__actions .page-hero__button');

@@ -42,3 +42,20 @@
   .gallery .toolbar::before,.cards .toolbar::before,.focus .toolbar::before{content:"Swipe ↔";margin-right:auto;color:var(--af-color-muted);font-size:.76rem;font-weight:700;letter-spacing:.025em}
   .status{font-size:.8rem;font-weight:700}
 }
+
+
+/* 2026-09-29 owner monitor QA: focus mode becomes balanced discovery on wide screens. */
+@media(min-width:1200px){
+  .focus .viewport{scroll-padding-inline:0}
+  .focus .track{width:100%;min-width:100%;padding:.8rem 0 1.25rem;gap:1rem}
+  .focus .slide{
+    width:calc((100% - 2rem)/3);
+    flex:0 0 calc((100% - 2rem)/3);
+    opacity:1;
+    transform:none;
+    filter:none;
+    scroll-snap-align:start
+  }
+  .focus .activeSlide{transform:translateY(-.25rem)}
+  .focus .activeSlide>*{box-shadow:0 1rem 2.5rem rgb(18 34 57 / 10%)}
+}
