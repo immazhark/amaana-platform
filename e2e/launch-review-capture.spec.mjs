@@ -7,19 +7,39 @@ const reviewRoutes = [
   { slug: 'about', path: '/about' },
   { slug: 'our-work', path: '/our-work' },
   { slug: 'impact', path: '/impact' },
+  { slug: 'stories', path: '/stories' },
+  { slug: 'faith', path: '/faith-and-reflections' },
+  { slug: 'get-involved', path: '/get-involved' },
+  { slug: 'appeals', path: '/appeals' },
   { slug: 'compliance', path: '/compliance' },
   { slug: 'transparency', path: '/transparency' },
+  { slug: 'governance', path: '/governance' },
+  { slug: 'how-we-verify', path: '/how-we-verify' },
+  { slug: 'recognition', path: '/recognition' },
+  { slug: 'partner', path: '/partner' },
+  { slug: 'contact', path: '/contact' },
   { slug: 'privacy', path: '/privacy' },
   { slug: 'terms', path: '/terms' },
+  { slug: 'donation-policy', path: '/donation-policy' },
   { slug: 'refund-policy', path: '/refund-policy' },
   { slug: 'donate', path: '/donate' },
   { slug: 'request-assistance', path: '/request-assistance' },
-  { slug: 'partner', path: '/partner' },
+  { slug: 'request-status', path: '/request-assistance/status' },
+  { slug: 'eid-gift-kits', path: '/our-work/eid-gift-kits' },
+  { slug: 'qurbani', path: '/our-work/qurbani-meat-distribution' },
+  { slug: 'taleem', path: '/our-work/taleem' },
+  { slug: 'winter-relief', path: '/our-work/winter-relief' },
+  { slug: 'dates-distribution', path: '/our-work/dates-distribution' },
+  { slug: 'flood-relief', path: '/our-work/hyderabad-flood-relief-2020' },
+  { slug: 'medical-assistance', path: '/our-work/medical-financial-assistance' },
 ];
 
 const viewports = [
-  { name: 'desktop', width: 1440, height: 1000 },
   { name: 'mobile', width: 390, height: 844 },
+  { name: 'tablet', width: 768, height: 1024 },
+  { name: 'laptop', width: 1366, height: 900 },
+  { name: 'desktop', width: 1440, height: 1000 },
+  { name: 'large-desktop', width: 1920, height: 1080 },
 ];
 
 const outputDir = path.resolve(process.cwd(), 'launch-review');
@@ -44,6 +64,14 @@ test.describe('launch review screenshot capture', () => {
         expect(response, `Expected a document response for ${route.path}`).not.toBeNull();
         expect(response?.ok(), `Expected ${route.path} to render successfully`).toBeTruthy();
         await expect(page.locator('main#main')).toBeVisible();
+        await expect(page.locator('body')).not.toHaveClass(/error/i);
+        const geometry = await page.evaluate(() => ({
+          documentWidth: document.documentElement.scrollWidth,
+          viewportWidth: document.documentElement.clientWidth,
+          headingCount: document.querySelectorAll('main h1').length,
+        }));
+        expect(geometry.headingCount, `Expected a real route heading for ${route.path}`).toBeGreaterThanOrEqual(1);
+        expect(geometry.documentWidth, `Horizontal overflow on ${route.path} at ${viewport.name}`).toBeLessThanOrEqual(geometry.viewportWidth + 1);
 
         await page.evaluate(async () => {
           if (document.fonts?.ready) await document.fonts.ready;
