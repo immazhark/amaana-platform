@@ -157,36 +157,12 @@ test('banner heading is clearly larger than body headings and typography roles s
   expect(typography.actionFamily).toMatch(/Arial|Helvetica/i);
 });
 
-test('homepage image-overlay titles remain subordinate to the banner title', async ({ page }) => {
+test('homepage omits superseded field and closing sections', async ({ page }) => {
   await open(page, '/');
-  const typography = await page.evaluate(() => {
-    let hero = document.querySelector('.page-hero__title');
-    if (!hero) {
-      const host = document.createElement('section');
-      host.className = 'page-hero page-hero--level1';
-      host.setAttribute('data-visual-test-fixture', 'hero-host');
-      host.innerHTML = '<h1 class="page-hero__title">Amaana Foundation</h1>';
-      document.body.appendChild(host);
-      hero = host.querySelector('.page-hero__title');
-    }
-    let overlay = document.querySelector('.v3-field-copy h3');
-    if (!overlay) {
-      const fixture = document.createElement('div');
-      fixture.className = 'v3-field-card';
-      fixture.setAttribute('data-visual-test-fixture', 'field-card');
-      fixture.innerHTML = '<div class="v3-field-copy"><h3>Documented programme</h3></div>';
-      document.body.appendChild(fixture);
-      overlay = fixture.querySelector('h3');
-    }
-    return hero && overlay ? {
-      heroSize: parseFloat(getComputedStyle(hero).fontSize),
-      overlaySize: parseFloat(getComputedStyle(overlay).fontSize),
-      overlayFamily: getComputedStyle(overlay).fontFamily,
-    } : null;
-  });
-  expect(typography).toBeTruthy();
-  expect(typography.heroSize - typography.overlaySize).toBeGreaterThanOrEqual(12);
-  expect(typography.overlayFamily).toMatch(/Georgia|Times New Roman/i);
+  await expect(page.locator('.v3-field')).toHaveCount(0);
+  await expect(page.locator('.v3-closing')).toHaveCount(0);
+  await expect(page.getByText('A closer look at the work', { exact: true })).toHaveCount(0);
+  await expect(page.getByText('Upholding Trust. Serving With Compassion, Dignity and Accountability.', { exact: true })).toHaveCount(0);
 });
 
 test('shared footer callout remains compact and does not compete with page hero', async ({ page }) => {
