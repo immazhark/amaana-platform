@@ -200,6 +200,69 @@ test('homepage hero stays wide and compact on desktop', async ({ page }) => {
   expect(contentBox.x + contentBox.width).toBeLessThanOrEqual(box.x + box.width + 2);
 });
 
+test('homepage hero active slide owns the full carousel viewport on desktop and mobile', async ({ page }) => {
+  for (const width of [1440, 390]) {
+    await open(page, '/', width);
+    const hero = page.locator('section[data-carousel-mode="hero"][aria-label="Amaana Foundation story and featured work"]');
+    await expect(hero).toBeVisible();
+
+    const geometry = await hero.evaluate(root => {
+      const viewport = root.querySelector('[id^="carousel-"]');
+      const active = root.querySelector('[data-active="true"]');
+      const content = active?.querySelector('.v3-home-banner-content');
+      if (!viewport || !active || !content) return null;
+      const v = viewport.getBoundingClientRect();
+      const a = active.getBoundingClientRect();
+      const c = content.getBoundingClientRect();
+      return {
+        viewportLeft: v.left,
+        viewportRight: v.right,
+        viewportWidth: v.width,
+        activeLeft: a.left,
+        activeRight: a.right,
+        activeWidth: a.width,
+        contentLeft: c.left,
+        contentRight: c.right,
+      };
+    });
+
+    expect(geometry).toBeTruthy();
+    expect(Math.abs(geometry.activeWidth - geometry.viewportWidth), `hero slide width should match viewport at ${width}px`).toBeLessThanOrEqual(2);
+    expect(Math.abs(geometry.activeLeft - geometry.viewportLeft), `active hero should start at viewport edge at ${width}px`).toBeLessThanOrEqual(2);
+    expect(Math.abs(geometry.activeRight - geometry.viewportRight), `active hero should end at viewport edge at ${width}px`).toBeLessThanOrEqual(2);
+    expect(geometry.contentLeft).toBeGreaterThanOrEqual(geometry.activeLeft - 1);
+    expect(geometry.contentRight).toBeLessThanOrEqual(geometry.activeRight + 1);
+  }
+});
+
+test('mobile reminder rail and Companion trigger stay singular and contained', async ({ page }) => {
+  await open(page, '/', 390);
+
+  const reminderBadge = page.locator('.amaana-live-badge.is-reminder');
+  const duplicateEyebrow = page.locator('.amaana-live-badge.is-reminder + .amaana-reminder-stage .amaana-reminder-eyebrow');
+  await expect(reminderBadge).toBeVisible();
+  await expect(duplicateEyebrow).toBeHidden();
+
+  const companion = page.locator('.amaana-companion-dock > button');
+  await expect(companion).toBeVisible();
+  const geometry = await companion.evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    return {
+      viewportWidth: document.documentElement.clientWidth,
+      left: rect.left,
+      right: rect.right,
+      width: rect.width,
+      height: rect.height,
+    };
+  });
+
+  expect(geometry.left).toBeGreaterThanOrEqual(-1);
+  expect(geometry.right).toBeLessThanOrEqual(geometry.viewportWidth + 1);
+  expect(geometry.width).toBeGreaterThanOrEqual(44);
+  expect(geometry.width).toBeLessThanOrEqual(46);
+  expect(geometry.height).toBeGreaterThanOrEqual(44);
+});
+
 test('homepage programme carousel stays centered and wraps in both directions', async ({ page }) => {
   await open(page, '/');
   const carousel = page.locator('[aria-label="Amaana programme areas"]');
