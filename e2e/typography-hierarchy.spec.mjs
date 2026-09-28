@@ -153,3 +153,21 @@ test('remaining L1 metadata and action text stay within canonical emphasis', asy
     for (const weight of weights) expect(weight, `${route} metadata/action weight`).toBeLessThanOrEqual(700);
   }
 });
+
+
+test('L2 programme metadata and prose follow canonical reading hierarchy', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  const routes = ['/our-work/eid-gift-kits', '/our-work/qurbani-meat-distribution', '/our-work/taleem', '/our-work/winter-relief'];
+  for (const route of routes) {
+    const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+    expect(response?.ok(), `${route} should render`).toBeTruthy();
+    const weights = await page.locator('.campaign-breadcrumb nav, .campaign-history-note span, .campaign-clinical-note span:first-child, .canonical-facts--timeline li::before').evaluateAll(nodes => nodes.map(node => Number.parseInt(getComputedStyle(node).fontWeight, 10)));
+    for (const weight of weights) expect(weight).toBeLessThanOrEqual(700);
+    const prose = page.locator('.campaign-story-copy').first();
+    if (await prose.count()) {
+      const width = await prose.evaluate(node => parseFloat(getComputedStyle(node).maxWidth));
+      expect(width).toBeLessThanOrEqual(1024);
+    }
+  }
+});
