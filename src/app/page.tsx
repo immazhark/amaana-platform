@@ -3,6 +3,7 @@ import "./home-documentary.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AppealCard } from "@/components/appeal-card";
+import { formatINR, getRemainingAppealAmount } from "@/lib/appeals";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getHomepageAppeals } from "@/lib/public-content";
 import { eidGrowth, homepageImpact } from "@/content/amaana";
@@ -106,6 +107,21 @@ export default async function HomePage() {
               </div>
             </div>
           </article>
+          {appeals.slice(0, 1).map(appeal => (
+            <article className="v3-home-banner-slide v3-home-banner-slide--appeal" key={`appeal-${appeal.slug}`}>
+              <div className="v3-home-banner-shade" aria-hidden="true" />
+              <div className="v3-shell v3-home-banner-content">
+                <p className="v3-home-banner-kicker">Current verified appeal</p>
+                <span className="v3-home-banner-brandline">{appeal.title}</span>
+                <p>{appeal.summary}</p>
+                <div className="v3-home-banner-metric"><strong>{formatINR(getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount))}</strong><span>remaining verified need</span></div>
+                <div className="v3-home-banner-actions">
+                  <Link className="v3-btn" href={`/appeals/${appeal.slug}`}>View this appeal</Link>
+                  <Link className="v3-btn secondary" href={`/donate/${appeal.slug}`}>Support this need</Link>
+                </div>
+              </div>
+            </article>
+          ))}
           {heroSlides.map(({ drive, media }) => (
             <article className="v3-home-banner-slide" key={drive.id}>
               <div className="v3-home-banner-media"><PublicMedia asset={media} sizes="100vw" /></div>
