@@ -4,7 +4,7 @@
 .canonical-pathways article{border-top:1px solid #b9ac8f;padding:1.5rem 0}
 .canonical-pathways h3{font:1.8rem/1.2 Georgia,serif}.canonical-pathways p{line-height:1.8;max-width:65ch}
 .canonical-facts{display:grid;gap:1.5rem;max-width:70ch;line-height:1.8;padding-left:1.5rem}
-.canonical-article .canonical-body{max-width:74rem;margin:auto}.canonical-article .canonical-block{padding:3rem 0;border-bottom:1px solid #ddd4c3;display:grid;grid-template-columns:1fr 1.7fr;gap:3rem}.canonical-block h2{font:clamp(1.8rem,3vw,2.8rem)/1.15 Georgia,serif}.canonical-block p,.canonical-block li{line-height:1.85;max-width:70ch}.canonical-block ul{padding-left:1.2rem}.canonical-block h3{font:1.4rem/1.3 Georgia,serif;margin-top:1.5rem}
+.canonical-article .canonical-body{max-width:var(--af-public-shell,74rem);margin:auto}.canonical-article .canonical-block{padding:3rem 0;border-bottom:1px solid #ddd4c3;display:grid;grid-template-columns:minmax(15rem,.78fr) minmax(0,1.72fr);gap:clamp(2rem,4vw,4rem)}.canonical-block h2{font:clamp(1.8rem,3vw,2.8rem)/1.15 Georgia,serif}.canonical-block p,.canonical-block li{line-height:1.85;max-width:70ch}.canonical-block ul{padding-left:1.2rem}.canonical-block h3{font:1.4rem/1.3 Georgia,serif;margin-top:1.5rem}
 @media(max-width:700px){.canonical-pathways,.canonical-article .canonical-block{grid-template-columns:1fr;gap:1rem}.canonical-fact{padding:2rem 1.5rem}}
 
 .canonical-block--labelled h2{overflow-wrap:normal;word-break:normal;hyphens:none;text-wrap:balance}
@@ -121,4 +121,22 @@
   .canonical-article .canonical-block{gap:.75rem;padding-block:1.75rem}
   .canonical-block h2{font-size:clamp(1.65rem,8vw,2.35rem)}
   .canonical-block p,.canonical-block li{line-height:1.68}
+}
+
+
+/* 2026-09-29 wide-monitor editorial balance from owner visual QA. */
+@media(min-width:1400px){
+  .canonical-article .canonical-block p,
+  .canonical-article .canonical-block li{font-size:1.035rem;line-height:1.76}
+  .canonical-article .canonical-block h2{font-size:clamp(1.9rem,2.25vw,2.65rem);line-height:1.08}
+}
+@media(min-width:1600px){
+  .canonical-article .canonical-body{padding-inline:0}
+  .canonical-article .canonical-block{
+    grid-template-columns:minmax(17rem,.72fr) minmax(0,1.78fr);
+    gap:clamp(2.5rem,3vw,3.75rem)
+  }
+  .canonical-body--about{column-gap:2rem}
+  .canonical-body--about .canonical-block:nth-child(3),
+  .canonical-body--about .canonical-block:nth-child(4){padding:1.75rem}
 }

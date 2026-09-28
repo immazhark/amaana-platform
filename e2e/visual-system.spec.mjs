@@ -118,6 +118,43 @@ test('impact marquee uses the canonical desktop shell width and remains centered
   expect(near(boxes.marqueeLeft, boxes.marqueeRightGap), 'impact marquee should remain horizontally centered').toBeTruthy();
 });
 
+test('wide desktop shells use the canvas while preserving readable measures', async ({ page }) => {
+  await open(page, '/about', 1920);
+  const metrics = await page.evaluate(() => {
+    const shell = document.querySelector('.page-hero__shell')?.getBoundingClientRect();
+    const body = document.querySelector('.canonical-body')?.getBoundingClientRect();
+    const paragraph = document.querySelector('.canonical-block p')?.getBoundingClientRect();
+    return shell && body && paragraph ? {
+      shellWidth: shell.width,
+      bodyWidth: body.width,
+      paragraphWidth: paragraph.width,
+    } : null;
+  });
+  expect(metrics).toBeTruthy();
+  expect(metrics.shellWidth).toBeGreaterThanOrEqual(1320);
+  expect(metrics.shellWidth).toBeLessThanOrEqual(1410);
+  expect(Math.abs(metrics.bodyWidth - metrics.shellWidth)).toBeLessThanOrEqual(4);
+  expect(metrics.paragraphWidth).toBeLessThanOrEqual(760);
+});
+
+test('policy layout keeps its sidebar readable on wide monitors', async ({ page }) => {
+  await open(page, '/donation-policy', 1920);
+  const metrics = await page.locator('.v2-policy-layout').evaluate(layout => {
+    const aside = layout.querySelector(':scope > aside')?.getBoundingClientRect();
+    const sections = layout.querySelector('.v2-policy-sections')?.getBoundingClientRect();
+    return aside && sections ? {
+      asideWidth: aside.width,
+      sectionsWidth: sections.width,
+      gap: sections.left - aside.right,
+    } : null;
+  });
+  expect(metrics).toBeTruthy();
+  expect(metrics.asideWidth).toBeGreaterThanOrEqual(280);
+  expect(metrics.asideWidth).toBeLessThanOrEqual(340);
+  expect(metrics.gap).toBeLessThanOrEqual(80);
+  expect(metrics.sectionsWidth).toBeGreaterThan(760);
+});
+
 test('page hero variants stay visually differentiated inside one canonical system', async ({ page }) => {
   const samples = [
     ['/about', '.page-hero--level1'],

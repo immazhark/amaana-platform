@@ -18,3 +18,26 @@
   .v2-policy-sections article{grid-template-columns:2.5rem 1fr;gap:.75rem}
   .v2-policy-sections article>span{font-size:1rem}
 }
+
+
+/* 2026-09-29 owner monitor QA: stop legal pages collapsing into a narrow sidebar + distant body. */
+@media(min-width:1000px){
+  .v2-policy-layout{
+    grid-template-columns:minmax(18rem,20rem) minmax(0,1fr);
+    gap:clamp(2.25rem,4vw,4rem)
+  }
+  .v2-policy-layout>aside strong{
+    max-width:18ch;
+    font-size:clamp(1.45rem,1.75vw,2.05rem);
+    line-height:1.12
+  }
+  .v2-policy-sections article{
+    grid-template-columns:3rem minmax(0,1fr);
+    gap:clamp(1.25rem,2vw,2rem)
+  }
+  .v2-policy-sections h2{font-size:clamp(1.8rem,2.5vw,2.65rem)}
+  .v2-policy-sections p{font-size:1.025rem;max-width:66ch}
+}
+@media(min-width:1600px){
+  .v2-policy-body{padding:clamp(4rem,6vw,6rem) 0}
+}
