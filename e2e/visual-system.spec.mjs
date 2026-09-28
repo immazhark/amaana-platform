@@ -188,9 +188,13 @@ test('homepage hero stays wide and compact on desktop', async ({ page }) => {
   await expect(hero).toBeVisible();
   const box = await hero.boundingBox();
   expect(box).toBeTruthy();
-  expect(box.width / box.height).toBeGreaterThan(2.4);
-  expect(box.height).toBeLessThanOrEqual(500);
+  expect(box.width / box.height).toBeGreaterThan(3.1);
+  expect(box.height).toBeLessThanOrEqual(400);
   await expect(hero.getByText('The Story of Amaana · Hyderabad', { exact: true })).toBeVisible();
+  const content = hero.locator('.v3-home-banner-content').first();
+  const contentBox = await content.boundingBox();
+  expect(contentBox).toBeTruthy();
+  expect(contentBox.width).toBeGreaterThan(box.width * 0.9);
 });
 
 test('homepage programme carousel stays centered and wraps in both directions', async ({ page }) => {
