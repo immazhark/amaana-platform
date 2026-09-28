@@ -146,3 +146,40 @@
 
 
 
+
+
+/* Compact cinematic homepage masthead: intentionally wide, never viewport-height. */
+.v3-home-banner{padding:clamp(.65rem,1.25vw,1rem) 0}
+.v3-home-banner-carousel{width:min(calc(100% - clamp(1rem,4vw,3.5rem)),96rem);height:clamp(23rem,31vw,30rem);min-height:0;border-radius:clamp(.8rem,1.25vw,1.2rem)}
+.v3-home-banner-slide{background:linear-gradient(112deg,#07182a 0%,#123d55 54%,#1d5961 100%)}
+.v3-home-banner-content,.v3-home-banner-slide--story .v3-home-banner-content{padding:clamp(2rem,3.5vw,3.4rem) clamp(1.5rem,4vw,4rem);padding-right:55%;justify-content:center}
+.v3-home-banner-brandline{max-width:13ch;font-size:clamp(2.25rem,4.15vw,4rem);line-height:.94}
+.v3-home-banner-content h2{max-width:19ch;margin-top:.55rem;font-size:clamp(1.2rem,1.8vw,1.75rem)}
+.v3-home-banner-content>p:not(.v3-home-banner-kicker){max-width:36rem;margin-top:.75rem;font-size:clamp(.9rem,1.05vw,1rem);line-height:1.5}
+.v3-home-banner-actions{margin-top:1rem}
+.v3-home-banner-metric{margin-top:.8rem}
+.v3-home-banner-metric strong{font-size:clamp(1.6rem,2.5vw,2.45rem)}
+.v3-home-banner-slide:not(.v3-home-banner-slide--story):not(.v3-home-banner-slide--appeal) .v3-home-banner-media{left:38%;right:0;inset-block:0}
+.v3-home-banner-slide:not(.v3-home-banner-slide--story):not(.v3-home-banner-slide--appeal) .v3-home-banner-media :is(img,video){object-position:center}
+.v3-home-banner-slide:not(.v3-home-banner-slide--story):not(.v3-home-banner-slide--appeal) .v3-home-banner-shade{background:linear-gradient(90deg,#07182a 0%,#0b263b 30%,rgb(11 38 59 / 96%) 38%,rgb(11 38 59 / 78%) 46%,rgb(11 38 59 / 34%) 57%,rgb(11 38 59 / 8%) 70%,transparent 82%)}
+.v3-home-banner-slide--appeal{background:radial-gradient(circle at 82% 24%,rgb(224 179 24 / 22%),transparent 22%),linear-gradient(112deg,#07182a 0%,#123d55 58%,#245f60 100%)}
+.v3-home-banner-slide--appeal .v3-home-banner-shade{background:linear-gradient(90deg,rgb(7 24 42 / 96%) 0%,rgb(11 38 59 / 74%) 55%,rgb(11 38 59 / 18%) 100%)}
+.v3-home-banner-slide--story .v3-home-banner-story-year{font-size:clamp(10rem,22vw,21rem)}
+.v3-home-banner-slide--story .v3-home-banner-story-mark{top:clamp(2.5rem,7vh,4rem);font-size:clamp(3rem,6vw,6rem)}
+@media(max-width:900px){
+ .v3-home-banner-carousel{width:calc(100% - 1.25rem);height:clamp(25rem,54vw,31rem);min-height:0}
+ .v3-home-banner-content,.v3-home-banner-slide--story .v3-home-banner-content{padding:2rem clamp(1.25rem,4vw,2.5rem);padding-right:43%}
+ .v3-home-banner-slide:not(.v3-home-banner-slide--story):not(.v3-home-banner-slide--appeal) .v3-home-banner-media{left:32%}
+}
+@media(max-width:600px){
+ .v3-home-banner{padding:.5rem 0}
+ .v3-home-banner-carousel{width:calc(100% - .75rem);height:32rem;min-height:0;border-radius:.9rem}
+ .v3-home-banner-slide:not(.v3-home-banner-slide--story):not(.v3-home-banner-slide--appeal) .v3-home-banner-media{inset:0 0 44%}
+ .v3-home-banner-slide:not(.v3-home-banner-slide--story):not(.v3-home-banner-slide--appeal) .v3-home-banner-shade{background:linear-gradient(0deg,#07182a 0%,rgb(7 24 42 / 98%) 43%,rgb(7 24 42 / 58%) 62%,rgb(7 24 42 / 10%) 100%)}
+ .v3-home-banner-content,.v3-home-banner-slide--story .v3-home-banner-content{justify-content:flex-end;padding:2rem 1.1rem 3.8rem}
+ .v3-home-banner-brandline{font-size:clamp(2rem,10vw,3rem)}
+ .v3-home-banner-content h2{font-size:clamp(1.15rem,5.5vw,1.55rem)}
+ .v3-home-banner-content>p:not(.v3-home-banner-kicker){display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+ .v3-home-banner-actions{width:auto}
+ .v3-home-banner-actions .v3-btn{width:auto}
+}
