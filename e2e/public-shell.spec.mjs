@@ -393,14 +393,13 @@ test('mobile navigation backdrop dismisses the menu without entering keyboard or
   await expect(toggle).toBeFocused();
 });
 
-test('reduced-motion preference disables reminder autoplay', async ({ page }) => {
+test('reduced-motion preference keeps the passive reminder rail control-free', async ({ page }) => {
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await openPublicPage(page, '/donate');
 
   expect(await page.evaluate(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
-  const autoplay = page.locator('.amaana-reminder-controls button').first();
-  await expect(autoplay).toBeDisabled();
-  await expect(autoplay).toHaveText('Motion off');
+  await expect(page.locator('.amaana-reminder-controls')).toHaveCount(0);
+  await expect(page.locator('.amaana-reminders')).toBeVisible();
 });
 
 test('mobile floating companion and Back to top controls do not overlap', async ({ page }) => {

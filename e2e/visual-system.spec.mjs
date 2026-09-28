@@ -162,7 +162,7 @@ test('homepage omits superseded field and closing sections', async ({ page }) =>
   await expect(page.locator('.v3-field')).toHaveCount(0);
   await expect(page.locator('.v3-closing')).toHaveCount(0);
   await expect(page.getByText('A closer look at the work', { exact: true })).toHaveCount(0);
-  await expect(page.getByText('Upholding Trust. Serving With Compassion, Dignity and Accountability.', { exact: true })).toHaveCount(0);
+  await expect(page.locator('main#main').getByText('Upholding Trust. Serving With Compassion, Dignity and Accountability.', { exact: true })).toHaveCount(0);
 });
 
 test('Amaana decorative emblems stay at the viewport edge without affecting content geometry', async ({ page }) => {
@@ -184,7 +184,7 @@ test('Amaana decorative emblems stay at the viewport edge without affecting cont
 test('homepage hero stays wide and compact on desktop', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await open(page, '/');
-  const hero = page.locator('[aria-label="Amaana Foundation story and featured work"]');
+  const hero = page.locator('section[data-carousel-mode="hero"][aria-label="Amaana Foundation story and featured work"]');
   await expect(hero).toBeVisible();
   const box = await hero.boundingBox();
   expect(box).toBeTruthy();

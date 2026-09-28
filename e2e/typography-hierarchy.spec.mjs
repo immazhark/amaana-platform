@@ -162,8 +162,10 @@ test('L2 programme metadata and prose follow canonical reading hierarchy', async
   for (const route of routes) {
     const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
     expect(response?.ok(), `${route} should render`).toBeTruthy();
-    const weights = await page.locator('.campaign-breadcrumb nav, .campaign-history-note span, .campaign-clinical-note span:first-child, .canonical-facts--timeline li::before').evaluateAll(nodes => nodes.map(node => Number.parseInt(getComputedStyle(node).fontWeight, 10)));
+    const weights = await page.locator('.campaign-breadcrumb nav, .campaign-history-note span, .campaign-clinical-note span:first-child').evaluateAll(nodes => nodes.map(node => Number.parseInt(getComputedStyle(node).fontWeight, 10)));
     for (const weight of weights) expect(weight).toBeLessThanOrEqual(700);
+    const timelineWeights = await page.locator('.canonical-facts--timeline li').evaluateAll(nodes => nodes.map(node => Number.parseInt(getComputedStyle(node, '::before').fontWeight, 10)));
+    for (const weight of timelineWeights) expect(weight).toBeLessThanOrEqual(700);
     const prose = page.locator('.campaign-story-copy').first();
     if (await prose.count()) {
       const width = await prose.evaluate(node => parseFloat(getComputedStyle(node).maxWidth));

@@ -187,3 +187,7 @@
   .amaana-live-badge::after{content:none}
   .amaana-live-badge.is-reminder{font-size:.55rem}
 }
+
+
+/* Rendered acceptance: keep the single mobile Companion dock compact and collision-safe. */
+@media(max-width:640px){.amaana-companion-dock>button{max-width:9rem}.amaana-companion-dock{max-width:9rem}}

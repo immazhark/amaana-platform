@@ -152,7 +152,7 @@ test('Islamic companion detail panel remains interaction-gated and functional', 
 
   await expect(page.locator('.amaana-companion-panel')).toHaveCount(0);
 
-  const readingsButton = page.getByRole('button', { name: 'Ayah & Hadith' });
+  const readingsButton = page.getByRole('button', { name: /Amaana Companion/i });
   await readingsButton.click();
 
   const panel = page.locator('#amaana-reading-panel');

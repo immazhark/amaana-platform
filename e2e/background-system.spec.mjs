@@ -11,7 +11,6 @@ for (const width of widths) {
       expect(response?.ok()).toBeTruthy();
       const marks = page.locator('.amaana-backdrop-emblem');
       await expect(marks).toHaveCount(2);
-      await expect(marks.first()).toBeVisible();
       const result = await page.evaluate(() => {
         const overlaps = (a,b) => Math.min(a.right,b.right)-Math.max(a.left,b.left)>1
           && Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>1;

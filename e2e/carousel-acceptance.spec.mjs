@@ -28,11 +28,17 @@ test('long programme histories use a keyboard-operable compact carousel', async 
   await viewport.focus();
   await page.keyboard.press('End');
   await expect(status).toContainText(`${slideCount} / ${slideCount}`);
-  await expect(carousel.getByRole('button', { name: 'Next slide' })).toBeDisabled();
+  const next = carousel.getByRole('button', { name: 'Next slide' });
+  await expect(next).toBeEnabled();
+  await next.click();
+  await expect(status).toContainText(`1 / ${slideCount}`);
 
   await page.keyboard.press('Home');
   await expect(status).toContainText(`1 / ${slideCount}`);
-  await expect(carousel.getByRole('button', { name: 'Previous slide' })).toBeDisabled();
+  const previous = carousel.getByRole('button', { name: 'Previous slide' });
+  await expect(previous).toBeEnabled();
+  await previous.click();
+  await expect(status).toContainText(`${slideCount} / ${slideCount}`);
 });
 
 test('programme carousel scrolls internally without creating mobile page overflow', async ({ page }) => {
@@ -82,7 +88,7 @@ test('homepage documented work uses a centered user-controlled focus carousel', 
   await expect(second).toHaveAttribute('aria-current', 'true');
   await expect(page).toHaveURL(/\/$/);
 
-  await expect(carousel.getByRole('button', { name: 'Pause automatic slides' })).toHaveCount(0);
+  await expect(carousel.getByRole('button', { name: 'Pause automatic slides' })).toBeVisible();
 });
 
 test('homepage focus carousel remains centered and contained on mobile', async ({ page }) => {

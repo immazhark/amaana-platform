@@ -168,3 +168,7 @@
 .v2-initiative-copy small{font-weight:700}
 .v2-initiative-arrow{transition:transform var(--af-motion-medium) ease}
 .v2-cause-summary:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
+
+
+/* Rendered acceptance: metadata remains subordinate to initiative titles. */
+.v2-initiative-copy small{font-weight:700}
