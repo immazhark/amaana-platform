@@ -107,6 +107,26 @@ test('homepage semantic title stays screen-reader-only without creating visible 
   expect(presentation.whiteSpace).toBe('nowrap');
 });
 
+test('Home footer closes the document without trailing blank scroll area', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await openPublicPage(page, '/');
+
+  const geometry = await page.evaluate(() => {
+    const footer = document.querySelector('.site-footer');
+    if (!(footer instanceof HTMLElement)) return null;
+    const rect = footer.getBoundingClientRect();
+    const footerBottom = window.scrollY + rect.bottom;
+    return {
+      scrollHeight: document.documentElement.scrollHeight,
+      footerBottom,
+      trailingSpace: document.documentElement.scrollHeight - footerBottom,
+    };
+  });
+
+  expect(geometry).not.toBeNull();
+  expect(geometry.trailingSpace).toBeLessThanOrEqual(4);
+});
+
 test('Stories journal CTA resolves to a real in-page target', async ({ page }) => {
   await openPublicPage(page, '/stories');
 
