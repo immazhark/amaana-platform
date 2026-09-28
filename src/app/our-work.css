@@ -160,3 +160,11 @@
   .v2-initiative-row.has-media .v2-initiative-proof{grid-column:2;text-align:left}
   .v2-initiative-copy p{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 }
+
+
+/* L1 consistency audit: portfolio rows share the public interaction/typography contract. */
+.v2-initiative-row{transition:padding var(--af-motion-medium) ease,background var(--af-motion-medium) ease,border-color var(--af-motion-medium) ease}
+.v2-initiative-thumb .v2-media-item img{transition:transform var(--af-motion-medium) cubic-bezier(.16,1,.3,1)}
+.v2-initiative-copy small{font-weight:700}
+.v2-initiative-arrow{transition:transform var(--af-motion-medium) ease}
+.v2-cause-summary:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
