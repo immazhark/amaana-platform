@@ -231,17 +231,18 @@ jobs:
           mkdir -p "$BROWSER_DIR"
           cp -R e2e "$BROWSER_DIR/e2e"
           cp playwright.config.mjs "$BROWSER_DIR/playwright.config.mjs"
+          cp playwright.cross-browser.config.mjs "$BROWSER_DIR/playwright.cross-browser.config.mjs"
           cd "$BROWSER_DIR"
           npm init -y >/dev/null
           npm install --save-dev --package-lock=false @playwright/test@1.55.0 @axe-core/playwright@4.10.2
 
-      - name: Install Chromium for browser acceptance
+      - name: Install browsers for acceptance
         if: steps.browser_changes.outputs.needed == 'true'
         shell: bash
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP/amaana-browser-acceptance"
-          npx playwright install --with-deps chromium
+          npx playwright install --with-deps chromium firefox webkit
 
       - name: Run responsive, accessibility and journey browser acceptance
         if: steps.browser_changes.outputs.needed == 'true'
@@ -253,6 +254,16 @@ jobs:
           set -euo pipefail
           cd "$RUNNER_TEMP/amaana-browser-acceptance"
           npx playwright test --config=playwright.config.mjs
+
+      - name: Run Firefox and WebKit public-surface smoke
+        if: steps.browser_changes.outputs.needed == 'true'
+        shell: bash
+        env:
+          AMAANA_APP_WORKSPACE: ${{ github.workspace }}
+        run: |
+          set -euo pipefail
+          cd "$RUNNER_TEMP/amaana-browser-acceptance"
+          npx playwright test --config=playwright.cross-browser.config.mjs
 
       - name: Upload launch review screenshots
         if: always() && steps.browser_changes.outputs.needed == 'true'

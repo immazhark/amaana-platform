@@ -33,7 +33,7 @@ const representativeRoutes = [
   { path: '/refund-policy', family: 'Refund Policy' },
 ];
 
-const acceptanceWidths = [1440, 1024, 768, 430, 390, 360];
+const acceptanceWidths = [2560, 1920, 1440, 1024, 768, 430, 390, 375, 360, 320];
 
 async function openPublicPage(page, path) {
   await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));

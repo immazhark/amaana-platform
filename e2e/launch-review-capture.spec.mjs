@@ -35,6 +35,8 @@ const reviewRoutes = [
 ];
 
 const viewports = [
+  { name: 'compact-mobile', width: 320, height: 720 },
+  { name: 'small-mobile', width: 375, height: 812 },
   { name: 'mobile', width: 390, height: 844 },
   { name: 'tablet', width: 768, height: 1024 },
   { name: 'laptop', width: 1366, height: 900 },
