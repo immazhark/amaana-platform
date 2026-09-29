@@ -91,6 +91,101 @@ test('header, hero, body and footer share the same desktop content grid', async 
   }
 });
 
+test('shared public shell aligns header, reminder, L1 hero, body and footer at standard and wide desktop widths', async ({ page }) => {
+  const samples = ['/our-work', '/impact', '/donate', '/request-assistance', '/transparency', '/governance'];
+
+  for (const width of [1440, 1920]) {
+    for (const path of samples) {
+      await open(page, path, width);
+      const boxes = await page.evaluate(() => {
+        const findVisible = selector => Array.from(document.querySelectorAll(selector)).find(element => {
+          const rect = element.getBoundingClientRect();
+          return rect.width > 0 && rect.height > 0;
+        });
+        const nodes = [
+          ['header', document.querySelector('.site-header .container')],
+          ['reminder', document.querySelector('.amaana-reminder-inner')],
+          ['hero', document.querySelector('.page-hero__shell')],
+          ['body', findVisible('main .v2-shell, main .v3-shell, main .canonical-body, main .container')],
+          ['footer', document.querySelector('.site-footer > .container')],
+        ];
+        return nodes.map(([name, element]) => {
+          if (!element) return null;
+          const rect = element.getBoundingClientRect();
+          return { name, left: rect.left, right: rect.right, width: rect.width };
+        });
+      });
+
+      expect(boxes.every(Boolean), `${path} should expose every shared public shell at ${width}px`).toBeTruthy();
+      const reference = boxes[0];
+      for (const box of boxes.slice(1)) {
+        expect(near(box.left, reference.left), `${path} ${box.name} left edge should align with header at ${width}px`).toBeTruthy();
+        expect(near(box.right, reference.right), `${path} ${box.name} right edge should align with header at ${width}px`).toBeTruthy();
+        expect(near(box.width, reference.width), `${path} ${box.name} width should match header at ${width}px`).toBeTruthy();
+      }
+    }
+  }
+});
+
+test('homepage masthead is full bleed while copy and future documentary media align to the header grid', async ({ page }) => {
+  for (const width of [1440, 1920]) {
+    await open(page, '/', width);
+    const geometry = await page.evaluate(() => {
+      const header = document.querySelector('.site-header .container')?.getBoundingClientRect();
+      const banner = document.querySelector('.v3-home-banner')?.getBoundingClientRect();
+      const carousel = document.querySelector('.v3-home-banner-carousel')?.getBoundingClientRect();
+      const active = document.querySelector('.v3-home-banner-slide[data-active="true"]')
+        ?? document.querySelector('.v3-home-banner-slide');
+      const content = active?.querySelector('.v3-home-banner-content')?.getBoundingClientRect();
+      if (!header || !banner || !carousel || !active || !content) return null;
+
+      const fixture = document.createElement('div');
+      fixture.className = 'v3-home-banner-media';
+      fixture.setAttribute('data-visual-test-fixture', 'home-media-alignment');
+      active.appendChild(fixture);
+      const media = fixture.getBoundingClientRect();
+      const backgroundImage = getComputedStyle(document.querySelector('.v3-home-banner')).backgroundImage;
+      fixture.remove();
+
+      return {
+        viewport: document.documentElement.clientWidth,
+        header: { left: header.left, right: header.right, width: header.width },
+        banner: { left: banner.left, right: banner.right, width: banner.width },
+        carousel: { left: carousel.left, right: carousel.right, width: carousel.width, radius: getComputedStyle(document.querySelector('.v3-home-banner-carousel')).borderRadius },
+        content: { left: content.left, right: content.right, width: content.width },
+        media: { left: media.left, right: media.right, width: media.width },
+        backgroundImage,
+      };
+    });
+
+    expect(geometry).toBeTruthy();
+    expect(geometry.banner.left).toBeLessThanOrEqual(1);
+    expect(geometry.banner.right).toBeGreaterThanOrEqual(geometry.viewport - 1);
+    expect(geometry.carousel.left).toBeLessThanOrEqual(1);
+    expect(geometry.carousel.right).toBeGreaterThanOrEqual(geometry.viewport - 1);
+    expect(geometry.carousel.width).toBeGreaterThanOrEqual(geometry.viewport - 2);
+    expect(geometry.carousel.radius).toBe('0px');
+    expect(near(geometry.content.left, geometry.header.left), `homepage copy left edge should align at ${width}px`).toBeTruthy();
+    expect(near(geometry.content.right, geometry.header.right), `homepage copy right edge should align at ${width}px`).toBeTruthy();
+    expect(near(geometry.content.width, geometry.header.width), `homepage copy shell width should align at ${width}px`).toBeTruthy();
+    expect(near(geometry.media.right, geometry.header.right), `homepage media right edge should align at ${width}px`).toBeTruthy();
+    expect(geometry.media.left).toBeGreaterThan(geometry.header.left + geometry.header.width * 0.4);
+    expect(geometry.media.width).toBeGreaterThan(geometry.header.width * 0.35);
+    expect(geometry.backgroundImage).not.toBe('none');
+  }
+});
+
+test('L1 page hero remains compact after shared-grid reconciliation', async ({ page }) => {
+  for (const path of ['/our-work', '/impact', '/about']) {
+    await open(page, path, 1440);
+    const hero = page.locator('.page-hero--level1');
+    await expect(hero).toBeVisible();
+    const box = await hero.boundingBox();
+    expect(box).toBeTruthy();
+    expect(box.height, `${path} should not retain the old oversized L1 hero height`).toBeLessThanOrEqual(480);
+  }
+});
+
 test('impact marquee uses the canonical desktop shell width and remains centered', async ({ page }) => {
   await open(page, '/impact');
   const boxes = await page.evaluate(() => {
