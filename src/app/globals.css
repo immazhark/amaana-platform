@@ -55,7 +55,7 @@
   /* Content measure */
   --af-public-shell: 74rem;
   --af-public-gutter: clamp(.75rem, 2.2vw, 1rem);
-  --af-public-edge: max(var(--af-public-gutter), calc((100vw - var(--af-public-shell)) / 2));
+  --af-public-edge: max(var(--af-public-gutter), calc((100% - var(--af-public-shell)) / 2));
   --af-content-wide: var(--af-public-shell);
   --af-content-reading: 60ch;
   --af-content-editorial: 68ch;
