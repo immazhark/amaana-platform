@@ -30,6 +30,7 @@ export default async function AboutPage() {
     <CanonicalArticle
       eyebrow="Amaana Foundation · Hyderabad"
       heroVariant="level1"
+      heroClassName="page-hero--long-title page-hero--about"
       heroVisual={originMedia ? <PublicMedia asset={originMedia} priority /> : undefined}
       heroVisualTitle="Our Story"
       heroVisualNote="From community-led Ramadan support to a charitable trust serving verified needs with dignity and accountability."

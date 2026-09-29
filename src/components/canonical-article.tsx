@@ -22,6 +22,7 @@ type CanonicalArticleProps = {
   blocks: ArticleBlock[];
   children?: ReactNode;
   heroVariant?: PageHeroVariant;
+  heroClassName?: string;
   heroVisual?: ReactNode;
   heroVisualTitle?: string;
   heroVisualNote?: string;
@@ -76,6 +77,7 @@ export function CanonicalArticle({
   blocks,
   children,
   heroVariant = "information",
+  heroClassName,
   heroVisual,
   heroVisualTitle,
   heroVisualNote,
@@ -91,6 +93,7 @@ export function CanonicalArticle({
     <div className="v2-home canonical-article">
       <PageHero
         variant={heroVariant}
+        className={heroClassName}
         eyebrow={heroVariant === "trust" ? "Trust & Policies" : eyebrow}
         title={title}
         description={<p>{intro}</p>}
