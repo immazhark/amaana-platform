@@ -11,7 +11,7 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "Exact application HEAD `a4ef094096fea91afa1fd391bd97d32f8e34c67a` completed GitHub Actions CI run `36542904125` (#1814) SUCCESS on 2026-09-29. The verify job passed launch-readiness structure validation, canonical factual/editorial/privacy guards, Prisma validation, ESLint, TypeScript, isolated PostgreSQL refund-ledger verification, the fast test suite, the full responsive/accessibility/journey Chromium matrix (`747 passed (10.4m)`), and the Firefox/WebKit public-surface smoke (`24 passed (39.3s)`) at 375px and 1440px. The run uploaded launch-review screenshot artifact `11021473098` with SHA-256 `3b9b677ab0dce88347b43761a0075cb0d3b7479bbdf205ec7e9488e045d7a219`. Fresh exact-head screenshots were visually reviewed across representative homepage, L1, initiative, sparse/one-item, transactional, trust/policy and Companion/support collision states with no new reproducible UI defect. The earlier WebKit 375px `436px` overflow was proven to be a local acceptance loading artifact: CSP `upgrade-insecure-requests` upgraded the local HTTP fixture before canonical CSS loaded. Browser acceptance now suppresses that directive only when `AMAANA_BROWSER_ACCEPTANCE=true`; production CSP behavior remains unchanged.",
+      "evidence": "Exact integration HEAD `d1e285a2fb451f5426bcce2292615714e3a428c8` completed GitHub Actions push CI run `36569577331` (#1871) SUCCESS on 2026-09-29. The verify job passed CSS architecture validation, canonical factual/editorial/privacy guards, Prisma validation, ESLint, TypeScript, isolated PostgreSQL refund-ledger verification, coverage, production build, server smoke, the unchanged production bundle budgets, the full responsive/accessibility/journey Chromium matrix (`808 passed (10.8m)`), and Firefox/WebKit public-surface smoke (`24 passed (40.7s)`). Built static JavaScript is `714864 / 819200` bytes and built static CSS is `344389 / 348160` bytes; the CSS budget was recovered by removing retired route/cascade CSS rather than raising the cap. Exact-head launch-review screenshot artifact `11033953004` has SHA-256 `3b38cb2b5120160adb9c101bf67f371bc8f488699d0d2cdbc20e385500a6c0df`. The strengthened browser contract now locks shared header/reminder/L1/body/footer shell alignment at desktop and wide-desktop widths, 320/375/390/430 mobile optical gutters, full-bleed homepage masthead with shell-aligned copy/media, compact L1 hero geometry, mobile L1 title contrast, Companion/back-to-top/support-bar collision safety, horizontal containment and ultra-wide carousel balance. Fresh exact-head-equivalent rendered review after the CSS consolidation confirmed Home, About, Our Work, Impact, canonical programme details, footer and mobile Companion surfaces preserve the corrected geometry.",
       "verifiedAt": "2026-09-29"
     },
     {
@@ -22,7 +22,7 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "Railway staging project `amaana-platform-staging`, service `amaana-rebuild-preview`, currently serves deployment `60aecf8a-9924-4878-ac30-7b516ee6e434` with status SUCCESS on exact application SHA `a4ef094096fea91afa1fd391bd97d32f8e34c67a` (`fix: keep local browser acceptance on http`). The deployment was created 2026-09-29 and reports `canRollback=true` / `canRedeploy=true`. GitHub CI run `36542904125` (#1814) is SUCCESS on the same SHA with 747 Chromium acceptance tests plus 24 Firefox/WebKit smoke tests. The official custom domain remains attached to this preview service; the reserved production service remains separate.",
+      "evidence": "Railway staging project `amaana-platform-staging`, service `amaana-rebuild-preview`, currently serves deployment `53bd0d5b-fa02-4b47-9e0e-f927d2010186` with status SUCCESS on exact integration SHA `d1e285a2fb451f5426bcce2292615714e3a428c8` (`refactor: remove retired initiative stylesheets`). The deployment reports `canRollback=true` / `canRedeploy=true`. GitHub push CI run `36569577331` (#1871) is SUCCESS on the same SHA with 808 Chromium acceptance tests, 24 Firefox/WebKit smoke tests, production build/server smoke and the unchanged JS/CSS budgets green. The official custom domain remains attached to this preview service; the reserved production service remains separate with no custom domain.",
       "verifiedAt": "2026-09-29"
     },
     {
@@ -54,8 +54,8 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Approved Amaana background artwork is integrated across desktop and mobile surfaces. Family review was completed before the final QA cycle. Exact-head CI run `36453509694` on integration HEAD `47f56cae8d150e6683a486c81566d85731ba361d` completed SUCCESS with 528 Chromium acceptance tests, including responsive containment and branded-background coverage. Exact-head launch-review screenshot artifact `10984158299` (SHA-256 `719856a5dd7f800a2cdc5a59be8f675d9eef9846325d4cbaad8e1e724493a57d`) was visually reviewed across representative desktop/mobile homepage, L1, initiative, transactional and trust/policy surfaces; no remaining artwork positioning, blending or contrast defect requiring application-code change was identified.",
-      "verifiedAt": "2026-09-28"
+      "evidence": "Approved Amaana background artwork remains integrated across desktop and mobile surfaces. The final shell/alignment remediation was revalidated on exact integration HEAD `d1e285a2fb451f5426bcce2292615714e3a428c8`: CI #1871 passed the 808-test Chromium matrix plus 24 Firefox/WebKit smoke tests, and launch-review artifact `11033953004` was captured after the shared-grid/full-bleed/mobile-gutter corrections. Fresh rendered review of representative Home, About, Our Work, Impact, programme-detail, trust/policy and mobile surfaces found no reproducible background-positioning, blending, contrast or layout-height defect requiring further application-code change.",
+      "verifiedAt": "2026-09-29"
     },
     {
       "id": "transactional-email-delivery",
@@ -73,7 +73,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Automated coverage now includes axe WCAG A/AA checks on representative public routes, responsive containment at 1440/1024/768/430/390/360 widths, desktop keyboard order, functional skip-link focus transfer, mobile navigation focus restoration, reduced-motion behavior, one-H1/document-language checks, 200%-reflow-equivalent containment, and floating-control collision checks. Final human rendered review at representative desktop/tablet/mobile widths, actual browser 200% zoom, keyboard-only operation, reduced-motion presentation and visual/focus-quality judgement remains required."
+      "evidence": "Automated coverage now includes axe WCAG A/AA checks on representative public routes, responsive containment and shared-shell optical-gutter checks including 320/375/390/430 mobile widths plus standard/wide desktop widths, desktop keyboard order, functional skip-link focus transfer, mobile navigation focus restoration/trapping, reduced-motion behavior, one-H1/document-language checks, 200%-reflow-equivalent containment, minimum interaction-target checks and floating Companion/back-to-top/support-bar collision checks. Exact-head CI #1871 passed the complete 808-test Chromium matrix and 24 Firefox/WebKit smoke tests. Final human rendered review at representative desktop/tablet/mobile widths, actual browser 200% zoom, keyboard-only operation, screen-reader spot checks, OS reduced-motion presentation and visual/focus-quality judgement remains required."
     },
     {
       "id": "final-editorial-seo-social-review",
@@ -160,7 +160,7 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "Live Railway state was reverified on 2026-09-29. Current served staging deployment `60aecf8a-9924-4878-ac30-7b516ee6e434` is SUCCESS on exact application SHA `a4ef094096fea91afa1fd391bd97d32f8e34c67a` and reports `canRollback=true` / `canRedeploy=true`. The immediately preceding successful application deployment `92f6101f-94c8-4fa6-9715-d2941f090556` on SHA `93a399c5ba1755b42879555344a54ac3639d5396` is REMOVED but reports `canRollback=true` / `canRedeploy=true`; multiple additional recent application snapshots also remain rollback/redeploy eligible. The gate remains PENDING because no real Railway Rollback action has been executed and verified. The operator must execute one real dashboard Rollback, verify exact target/health/Test-payment/noindex/private boundaries, restore forward to the candidate, and rerun staging acceptance before this gate can be VERIFIED."
+      "evidence": "Live Railway state was reverified on 2026-09-29 after UI/grid and CSS-cascade closure. Current served staging deployment `53bd0d5b-fa02-4b47-9e0e-f927d2010186` is SUCCESS on exact integration SHA `d1e285a2fb451f5426bcce2292615714e3a428c8` and reports `canRollback=true` / `canRedeploy=true`. The recent previous application deployment `7fa0c8f3-0739-4151-8623-840ef383117d` on SHA `0b9f32f55a65e1cc53d9864c3a26eb563e319a6a` is REMOVED but still reports `canRollback=true` / `canRedeploy=true`. The gate remains PENDING because no real Railway Rollback action has been executed and verified. The operator must establish/confirm a fresh rollback pair in Railway, execute one real dashboard Rollback, verify exact target/health/Test-payment/noindex/private boundaries, restore forward to the candidate, and rerun staging acceptance before this gate can be VERIFIED."
     },
     {
       "id": "production-dns-cutover-plan",
@@ -169,7 +169,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Domain control, Cloudflare TLS and DNS ownership are established. Reverified on 2026-09-29: `amaanafoundation.org` remains attached to Railway service `amaana-rebuild-preview`, which now serves exact application SHA `a4ef094096fea91afa1fd391bd97d32f8e34c67a`; reserved production service `amaana-platform` remains sourced from `main` SHA `1a69dd179181390a488623accf1314a1ff09e319` and has no custom domain attached. Current production variable-name parity against `scripts/check-production-environment.mjs` is 20/22 required names present. The two missing required names are `PUBLIC_MEDIA_S3_BUCKET` and `PRODUCTION_INDEXING_DECISION`. Final production cutover must not occur until the approved release is promoted, production-only configuration is complete, the public-media bucket remains physically separate from private assistance storage, and the explicit indexing decision is recorded. Staging must retain Razorpay Test posture.",
+      "evidence": "Domain control, Cloudflare TLS and DNS ownership remain established. Reverified on 2026-09-29: `amaanafoundation.org` is attached only to Railway service `amaana-rebuild-preview`, which now serves exact integration SHA `d1e285a2fb451f5426bcce2292615714e3a428c8`; reserved production service `amaana-platform` remains sourced from old `main` SHA `1a69dd179181390a488623accf1314a1ff09e319` and has no custom domain attached. Variable-name parity against the current `scripts/check-production-environment.mjs` contract remains 20/22 required names present; the two missing required names are `PUBLIC_MEDIA_S3_BUCKET` and `PRODUCTION_INDEXING_DECISION`. Secret values were not read. Final production cutover must not occur until the approved release is promoted, production-only configuration is complete, the public-media bucket remains physically separate from private assistance storage, and the explicit indexing decision is recorded. Staging must retain Razorpay Test posture.",
       "verifiedAt": "2026-09-29"
     },
     {
@@ -179,7 +179,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Reverified on 2026-09-29. The reserved production Railway service remains isolated with no custom domain attached. Its environment variable-name surface contains `NEXT_PUBLIC_ALLOW_INDEXING` but does not contain the required explicit `PRODUCTION_INDEXING_DECISION`. Indexing therefore remains intentionally fail-closed. Before production build/cutover the operator must explicitly choose `keep_disabled` or `enable`; only `enable` may be paired with `NEXT_PUBLIC_ALLOW_INDEXING=true`. A production build with `APP_ENVIRONMENT=production` is required before final robots/sitemap/canonical verification."
+      "evidence": "Reverified on 2026-09-29. The reserved production Railway service remains isolated with no custom domain attached. Its variable-name surface contains `NEXT_PUBLIC_ALLOW_INDEXING` but still does not contain the required explicit `PRODUCTION_INDEXING_DECISION`. Indexing therefore remains intentionally fail-closed. Before production build/cutover the operator must explicitly choose `keep_disabled` or `enable`; only `enable` may be paired with `NEXT_PUBLIC_ALLOW_INDEXING=true`. A production build with `APP_ENVIRONMENT=production` is required before final robots/sitemap/canonical verification."
     },
     {
       "id": "main-branch-protection",
@@ -188,7 +188,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "GitHub branch metadata was rechecked on 2026-09-29. `main` remains on SHA `1a69dd179181390a488623accf1314a1ff09e319` and reports `protected=false`; branch protection is disabled, required status-check enforcement is `off`, required check contexts are empty, and repository rulesets are empty. The dedicated protection endpoint is not readable by the connected installation, but the branch metadata itself explicitly reports protection disabled and the ruleset collection is empty. Before production promotion, `main` must be protected through GitHub repository settings so direct/bypass merges cannot skip the normal CI and `Production promotion readiness` checks. This gate must remain PENDING until the protection/ruleset is enabled and re-read as active."
+      "evidence": "GitHub branch metadata was rechecked on 2026-09-29 after exact-head CI closure. `main` remains on SHA `1a69dd179181390a488623accf1314a1ff09e319`, reports `protected=false`, required status-check enforcement is `off`, required check contexts are empty, and repository rulesets are empty. Before production promotion, `main` must be protected through GitHub repository settings so direct/bypass merges cannot skip the normal CI and `Production promotion readiness` checks. This gate remains PENDING until effective protection/ruleset enforcement is enabled and re-read as active."
     },
     {
       "id": "main-promotion-and-production-approval",
