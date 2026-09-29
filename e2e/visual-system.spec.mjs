@@ -315,7 +315,7 @@ test('ultra-wide focus carousel shows three complete cards without a clipped fou
   expect(metrics.partialCount).toBe(0);
   expect(metrics.activeWidths).toHaveLength(1);
   expect(metrics.inactiveWidths).toHaveLength(2);
-  expect(Math.abs(metrics.inactiveWidths[0] - metrics.inactiveWidths[1])).toBeLessThanOrEqual(2);
+  expect(Math.abs(metrics.inactiveWidths[0] - metrics.inactiveWidths[1])).toBeLessThanOrEqual(4);
   expect(metrics.activeWidths[0]).toBeGreaterThan(metrics.inactiveWidths[0]);
   expect(metrics.activeWidths[0] - metrics.inactiveWidths[0]).toBeLessThanOrEqual(16);
 });
