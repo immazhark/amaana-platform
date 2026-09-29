@@ -319,6 +319,26 @@ test('mobile companion dock does not cover visible main-page controls', async ({
   expect(collisions).toEqual([]);
 });
 
+test('appeals completed-work section uses the intentional single-item feature layout', async ({ page }) => {
+  await open(page, '/appeals', 1920);
+  const feature = page.locator('#completed-causes .canonical-pathways--single article');
+  if (await feature.count() === 0) return;
+  const metrics = await feature.evaluate(article => {
+    const rect = article.getBoundingClientRect();
+    const visual = article.querySelector('.canonical-pathway-visual')?.getBoundingClientRect();
+    const heading = article.querySelector('h3')?.getBoundingClientRect();
+    return visual && heading ? {
+      width: rect.width,
+      visualWidth: visual.width,
+      headingWidth: heading.width,
+    } : null;
+  });
+  expect(metrics).toBeTruthy();
+  expect(metrics.width).toBeGreaterThanOrEqual(1100);
+  expect(metrics.visualWidth).toBeGreaterThanOrEqual(350);
+  expect(metrics.headingWidth).toBeGreaterThanOrEqual(450);
+});
+
 test('hero primary and secondary actions have equal canonical height', async ({ page }) => {
   await open(page, '/about');
   const actions = page.locator('.page-hero__actions .page-hero__button');
