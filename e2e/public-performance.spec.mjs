@@ -22,12 +22,14 @@ async function cssPayload(page, path) {
   return { hrefs, bytes, css: bodies.join('\n') };
 }
 
-test('homepage documentary CSS stays route-scoped', async ({ page }) => {
+test('homepage masthead CSS stays route-scoped', async ({ page }) => {
   const home = await cssPayload(page, '/');
-  expect(home.css, 'Homepage must receive documentary field layout CSS').toContain('.v3-field-grid');
+  expect(home.css, 'Homepage must receive the live full-bleed masthead media layer').toContain('.v3-home-banner-media');
+  expect(home.css, 'Retired documentary field CSS must not return to the homepage bundle').not.toContain('.v3-field-grid');
 
   const about = await cssPayload(page, '/about');
-  expect(about.css, 'Non-home routes must not receive homepage documentary field layout CSS').not.toContain('.v3-field-grid');
+  expect(about.css, 'Non-home routes must not receive homepage masthead media CSS').not.toContain('.v3-home-banner-media');
+  expect(about.css, 'Non-home routes must not receive retired documentary field CSS').not.toContain('.v3-field-grid');
 
   console.log(`CSS delivery: home=${home.bytes} bytes/${home.hrefs.length} stylesheets; about=${about.bytes} bytes/${about.hrefs.length} stylesheets`);
 });
