@@ -17,8 +17,8 @@ describe("shared responsive layout regressions", () => {
 
     expect(dockRules.length).toBeGreaterThan(0);
     expect(dockRules[0][1]).toMatch(/flex-wrap:\s*nowrap/);
-    expect(companion).toMatch(/@media\s*\(max-width:\s*640px\)[\s\S]*\.amaana-companion-dock\s*\{[^}]*flex-direction:\s*column/);
-    expect(companion).toMatch(/\.amaana-companion-dock\s*>\s*button\s*\{[^}]*max-width:\s*9rem/);
+    expect(companion).toMatch(/@media\s*\(max-width:\s*640px\)[\s\S]*\.amaana-companion-dock\s*>\s*button\s*\{[^}]*width:\s*2\.8rem[^}]*max-width:\s*2\.8rem[^}]*height:\s*2\.8rem[^}]*min-height:\s*2\.8rem/);
+    expect(companion).toMatch(/\.amaana-companion-dock\s*>\s*button\s*>\s*span:last-child\s*\{[^}]*clip-path:\s*inset\(50%\)/);
     expect(companion).not.toMatch(/Keep the launchers in flow/i);
     expect(iterationFour).not.toMatch(/\.amaana-companion\s*\{[^}]*position:\s*fixed/);
   });
@@ -30,10 +30,8 @@ describe("shared responsive layout regressions", () => {
     expect(finish).toContain("@media(max-width:1020px){.site-header .nav-links{display:none}.site-header .menu-toggle{display:grid}");
   });
 
-  it("keeps mobile reminder controls at least 44px high", () => {
-    const rules = [...companion.matchAll(/\.amaana-reminder-controls button\s*\{([^}]+)\}/g)];
-    expect(rules.length).toBeGreaterThan(0);
-    for (const rule of rules) expect(rule[1]).toMatch(/min-height:\s*44px/);
+  it("keeps the remaining mobile reminder action at least 44px high", () => {
+    expect(companion).toMatch(/@media\s*\(max-width:\s*640px\)[\s\S]*\.amaana-live-cta\s*\{[^}]*min-height:\s*44px/);
   });
 });
 
