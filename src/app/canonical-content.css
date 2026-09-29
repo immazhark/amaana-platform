@@ -35,7 +35,7 @@
 /* About: preserve editorial narrative, then give Mission/Vision equal visual weight. */
 .canonical-body--about{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 1rem;padding-block:1rem}
 .canonical-body--about .canonical-block{grid-column:1/-1}
-.canonical-body--about .canonical-block:nth-child(1) p,.canonical-body--about .canonical-block:nth-child(2) p{max-width:62ch}
+.canonical-body--about .canonical-block:nth-child(1) p,.canonical-body--about .canonical-block:nth-child(2) p{max-width:none}
 .canonical-body--about .canonical-block:nth-child(3),.canonical-body--about .canonical-block:nth-child(4){grid-column:auto;margin:1rem 0;padding:1.5rem;border:1px solid rgb(18 34 57 / 10%);border-radius:1rem;background:rgb(255 253 248 / 82%)}
 .canonical-body--about .canonical-block:nth-child(3) h2,.canonical-body--about .canonical-block:nth-child(4) h2{margin-top:0}
 
@@ -79,7 +79,7 @@
 
 
 /* 2026-09-28 trust/about editorial pass — reduce dashboard-card repetition. */
-.canonical-article .canonical-body{padding-inline:clamp(1rem,2vw,1.5rem)}
+.canonical-article .canonical-body{padding-inline:0}
 .canonical-article .canonical-block{padding-block:clamp(2.2rem,4vw,3.25rem);gap:clamp(1.5rem,4vw,3.5rem)}
 .canonical-block h2{margin-top:0;letter-spacing:-.025em}
 .canonical-block p,.canonical-block li{line-height:1.72}
@@ -93,7 +93,7 @@
 .canonical-pathways{gap:.7rem;margin-top:1.5rem;padding-top:1.5rem}
 .canonical-pathway{min-height:9rem;padding:1.1rem;border-radius:.8rem;box-shadow:0 .5rem 1.6rem rgb(18 34 57 / 3%)}
 @media(max-width:700px){
-  .canonical-article .canonical-body{padding-inline:1rem}
+  .canonical-article .canonical-body{padding-inline:0}
   .canonical-article .canonical-block{padding-block:2rem}
   .canonical-body--comparison{padding-block:1.5rem}
 }
@@ -115,7 +115,7 @@
 
 
 /* 2026-09-28 brutal-QA: long-form trust pages scan faster without losing legal/editorial content. */
-.canonical-article .canonical-block>div{max-width:70ch}
+.canonical-article .canonical-block>div{width:100%;max-width:70ch;justify-self:end}
 .canonical-article .canonical-block h2{text-wrap:balance}
 @media(max-width:700px){
   .canonical-article .canonical-block{gap:.75rem;padding-block:1.75rem}

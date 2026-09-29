@@ -254,6 +254,33 @@ test('wide desktop shells use the canvas while preserving readable measures', as
   expect(metrics.paragraphWidth).toBeLessThanOrEqual(760);
 });
 
+test('About editorial body uses the canonical shell without a double gutter', async ({ page }) => {
+  for (const width of [1920, 1440, 390]) {
+    await open(page, '/about', width);
+    const metrics = await page.evaluate(() => {
+      const shell = document.querySelector('.canonical-body--about')?.getBoundingClientRect();
+      const block = document.querySelector('.canonical-body--about .canonical-block');
+      const heading = block?.querySelector('h2')?.getBoundingClientRect();
+      const copy = block?.querySelector(':scope > div')?.getBoundingClientRect();
+      if (!shell || !heading || !copy) return null;
+      return {
+        shell: { left: shell.left, right: shell.right },
+        heading: { left: heading.left, right: heading.right },
+        copy: { left: copy.left, right: copy.right, width: copy.width },
+      };
+    });
+
+    expect(metrics).toBeTruthy();
+    expect(Math.abs(metrics.heading.left - metrics.shell.left), `About heading should start at the shell edge at ${width}px`).toBeLessThanOrEqual(2);
+    expect(Math.abs(metrics.copy.right - metrics.shell.right), `About prose should finish at the shell edge at ${width}px`).toBeLessThanOrEqual(2);
+    if (width <= 700) {
+      expect(Math.abs(metrics.copy.left - metrics.shell.left), `About mobile prose should share the shell left edge at ${width}px`).toBeLessThanOrEqual(2);
+    } else {
+      expect(metrics.copy.width, `About prose must retain a readable line length at ${width}px`).toBeLessThanOrEqual(760);
+    }
+  }
+});
+
 test('policy layout keeps its sidebar readable on wide monitors', async ({ page }) => {
   await open(page, '/donation-policy', 1920);
   const metrics = await page.locator('.v2-policy-layout').evaluate(layout => {
