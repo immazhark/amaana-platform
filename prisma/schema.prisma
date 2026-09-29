@@ -90,9 +90,17 @@ enum NotificationStatus {
 enum DonationStatus {
   CREATED
   AUTHORIZED
+  PENDING_VERIFICATION
   CAPTURED
   FAILED
+  REJECTED
   REFUNDED
+}
+
+enum DonationPaymentMethod {
+  RAZORPAY
+  DIRECT_UPI
+  BANK_TRANSFER
 }
 
 enum DonationIntent {
@@ -144,6 +152,7 @@ model User {
   sessions                Session[]
   auditEvents             AuditEvent[]             @relation("AuditActor")
   appealUpdates           AppealUpdate[]
+  reconciledDonations     Donation[]                 @relation("DonationReconciler")
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
 }
@@ -407,37 +416,50 @@ model Appeal {
 }
 
 model Donation {
-  id                  String         @id @default(cuid())
-  referenceNumber     String         @unique
-  appealId            String
-  donorName           String
-  donorEmail          String
-  donorPhone          String?
-  isAnonymous         Boolean        @default(false)
-  givingIntent        DonationIntent @default(GENERAL)
-  domesticConfirmedAt DateTime
-  amount              Decimal        @db.Decimal(12, 2)
-  refundedAmount      Decimal        @default(0) @db.Decimal(12, 2)
-  currency            String         @default("INR")
-  status              DonationStatus @default(CREATED)
-  provider            String         @default("RAZORPAY")
-  providerOrderId     String         @unique
-  providerPaymentId   String?        @unique
-  receiptNumber       String?        @unique
-  receiptTokenHash    String
-  capturedAt          DateTime?
-  failedAt            DateTime?
-  refundedAt          DateTime?
-  appeal              Appeal         @relation(fields: [appealId], references: [id])
-  events              PaymentEvent[]
-  refunds             RefundLedger[]
-  notifications       Notification[]
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  id                       String                @id @default(cuid())
+  referenceNumber          String                @unique
+  appealId                 String
+  donorName                String
+  donorEmail               String
+  donorPhone               String?
+  isAnonymous              Boolean               @default(false)
+  givingIntent             DonationIntent        @default(GENERAL)
+  domesticConfirmedAt      DateTime
+  amount                   Decimal               @db.Decimal(12, 2)
+  refundedAmount           Decimal               @default(0) @db.Decimal(12, 2)
+  currency                 String                @default("INR")
+  status                   DonationStatus        @default(CREATED)
+  paymentMethod            DonationPaymentMethod @default(RAZORPAY)
+  provider                 String?
+  providerOrderId          String?               @unique
+  providerPaymentId        String?               @unique
+  transferReference        String?               @unique
+  transferredAt            DateTime?
+  transferEvidenceKey      String?               @unique
+  transferEvidenceName     String?
+  transferEvidenceMimeType String?
+  transferEvidenceSize     Int?
+  reconciliationNotes      String?
+  reconciledAt             DateTime?
+  reconciledById           String?
+  receiptNumber            String?               @unique
+  receiptTokenHash         String
+  capturedAt               DateTime?
+  failedAt                 DateTime?
+  refundedAt               DateTime?
+  appeal                   Appeal                @relation(fields: [appealId], references: [id])
+  reconciledBy             User?                 @relation("DonationReconciler", fields: [reconciledById], references: [id], onDelete: SetNull)
+  events                   PaymentEvent[]
+  refunds                  RefundLedger[]
+  notifications            Notification[]
+  createdAt                DateTime              @default(now())
+  updatedAt                DateTime              @updatedAt
   @@index([appealId, status, createdAt])
   @@index([donorEmail, createdAt])
   @@index([status, createdAt])
+  @@index([paymentMethod, status, createdAt])
   @@index([givingIntent, createdAt])
+  @@index([reconciledById, reconciledAt])
   @@index([createdAt])
 }
 
