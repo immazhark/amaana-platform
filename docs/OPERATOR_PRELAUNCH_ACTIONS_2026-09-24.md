@@ -55,36 +55,32 @@ Do not mark PR #104 Ready for Review yet merely because protection was enabled. 
 - service: `amaana-rebuild-preview`
 - environment id: `38aede68-35aa-42de-adbc-49802e6d44e4`
 
-### Live target state reverified 28 September 2026
+### Live target state reverified 29 September 2026
 
 Current served staging application candidate:
 
-- deployment: `780ecf0d-f654-46c1-acf6-e5ec7a4e8633`
-- source SHA: `c4cb6a2e8e061d3927434285b092388c53ddf91e`
-- commit: `fix: tighten mobile footer vertical rhythm`
+- deployment: `60aecf8a-9924-4878-ac30-7b516ee6e434`
+- source SHA: `a4ef094096fea91afa1fd391bd97d32f8e34c67a`
+- commit: `fix: keep local browser acceptance on http`
 - status: `SUCCESS`
 - `canRollback=true`
 - `canRedeploy=true`
+- exact-head CI run `36542904125` (#1814): **SUCCESS**
+- Chromium acceptance: `747 passed (10.4m)`
+- Firefox/WebKit public-surface smoke: `24 passed (39.3s)`
 
-Subsequent integration commits are test/docs-only and Railway correctly skipped them:
+The subsequent readiness-refresh commits are documentation-only and should not replace this served application SHA.
 
-- `47f56cae8d150e6683a486c81566d85731ba361d` — test-only
-- `e474ad4163e515cfc77799d87a19ed02d9560732` — docs-only
+Recent previous-known-good rollback candidate:
 
-Latest exact integration HEAD:
+- deployment: `92f6101f-94c8-4fa6-9715-d2941f090556`
+- source SHA: `93a399c5ba1755b42879555344a54ac3639d5396`
+- commit: `fix: strengthen single completed appeal outcome`
+- Railway state: `REMOVED`
+- `canRollback=true`
+- `canRedeploy=true`
 
-- `e474ad4163e515cfc77799d87a19ed02d9560732`
-- CI run `36456508014`: SUCCESS
-- Chromium acceptance: `528 passed (6.0m)`
-
-Previous-known-good rollback candidate:
-
-- deployment: `4646f5e8-d232-4696-a82c-4a0df7a017bd`
-- source SHA: `7c67587042e85cbc9240d062945c840024da94c5`
-- CI run `36447372876`: SUCCESS
-- Railway state: `REMOVED`, but currently reports `canRollback=true` / `canRedeploy=true`
-
-Treat the Railway dashboard as authoritative immediately before rehearsal; rollback eligibility may age out.
+Several additional recent application snapshots also remain rollback/redeploy eligible. Treat the Railway dashboard as authoritative immediately before rehearsal because eligibility may age out.
 
 ### Pre-action rules
 
@@ -263,7 +259,7 @@ Do not use donor, beneficiary, medical, payment or case data for the first produ
 
 ## E. Reserved production configuration parity
 
-### State reverified 28 September 2026
+### State reverified 29 September 2026
 
 The reserved production Railway service `amaana-platform` remains intentionally isolated:
 
@@ -273,7 +269,7 @@ The reserved production Railway service `amaana-platform` remains intentionally 
 - **no custom domain is attached**;
 - no production cutover has occurred.
 
-The candidate production environment contract was compared against variable **names only**; secret values were not read.
+The candidate production environment contract was re-compared against `scripts/check-production-environment.mjs` using variable **names only**; secret values were not read. Current parity is **20/22 required names present**.
 
 Exactly two required names remain absent:
 
@@ -291,7 +287,7 @@ Do not attach `amaanafoundation.org` to the reserved production service until th
 
 ## F. Current Resend DNS state
 
-Reverified 28 September 2026:
+Reverified 29 September 2026:
 
 - domain status: `failed`
 - DKIM TXT: `failed`
