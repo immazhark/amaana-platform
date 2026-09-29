@@ -186,6 +186,28 @@ test('L1 page hero remains compact after shared-grid reconciliation', async ({ p
   }
 });
 
+test('mobile L1 hero title remains readable on the stacked brand surface', async ({ page }) => {
+  for (const path of ['/about', '/our-work', '/impact']) {
+    await open(page, path, 390);
+    const title = page.locator('.page-hero--level1 .page-hero__title');
+    await expect(title).toBeVisible();
+
+    const presentation = await title.evaluate(element => {
+      const style = getComputedStyle(element);
+      return {
+        color: style.color,
+        backgroundImage: style.backgroundImage,
+        webkitTextFillColor: style.webkitTextFillColor,
+      };
+    });
+
+    expect(presentation.backgroundImage, `${path} mobile L1 title must not use transparent gradient text`).toBe('none');
+    expect(presentation.color, `${path} mobile L1 title must have an explicit foreground color`).not.toBe('rgba(0, 0, 0, 0)');
+    expect(presentation.webkitTextFillColor, `${path} mobile L1 title fill must remain visible`).not.toBe('transparent');
+    expect(presentation.webkitTextFillColor, `${path} mobile L1 title fill must remain visible`).not.toBe('rgba(0, 0, 0, 0)');
+  }
+});
+
 test('impact marquee uses the canonical desktop shell width and remains centered', async ({ page }) => {
   await open(page, '/impact');
   const boxes = await page.evaluate(() => {

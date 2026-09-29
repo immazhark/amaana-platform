@@ -60,6 +60,7 @@
     opacity:.82;
     transform:scale(.97);
     filter:saturate(.9);
+    transition:opacity .28s ease,filter .28s ease;
     scroll-snap-align:center
   }
   .focus .activeSlide{opacity:1;transform:translateY(-.25rem) scale(1);filter:none}

@@ -594,6 +594,17 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
   .site-header .brand-official{min-width:3.55rem;min-height:3.55rem}
   .site-header .brand-lockup{width:3.55rem;max-width:3.55rem}
   .page-hero{--min:auto;--visual:clamp(18rem,46vw,23rem);--pad:clamp(2.75rem,7vw,4rem)}
+  .page-hero--level1{
+    background-image:var(--amaana-pattern),linear-gradient(180deg,#eee5d2 0%,#eee5d2 54%,#d9ddd3 74%,#4575a1 100%)!important;
+    background-position:0 0,center!important;
+    background-size:104px 104px,100% 100%!important;
+    background-repeat:repeat,no-repeat!important
+  }
+  .page-hero--level1 .page-hero__title{
+    background:none!important;
+    color:var(--af-color-navy-950)!important;
+    -webkit-text-fill-color:currentColor!important
+  }
   .site-footer .footer-lead{grid-template-columns:1fr}
 }
 @media(max-width:600px){
