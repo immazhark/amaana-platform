@@ -200,6 +200,107 @@ test('unknown public routes return a branded, navigable and noindex 404', async 
   expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
 });
 
+test.describe('mobile public-shell alignment and viewport-edge safety', () => {
+  const mobileWidths = [430, 390, 375, 320];
+  const shellRoutes = [
+    '/about',
+    '/our-work',
+    '/impact',
+    '/stories',
+    '/appeals',
+    '/donate',
+    '/request-assistance',
+    '/how-we-verify',
+    '/get-involved',
+    '/transparency',
+    '/governance',
+    '/compliance',
+    '/contact',
+  ];
+
+  for (const path of shellRoutes) {
+    for (const width of mobileWidths) {
+      test(`${path} shares one optical gutter at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 844 });
+        await openPublicPage(page, path);
+
+        const geometry = await page.evaluate(() => {
+          const visible = selector => Array.from(document.querySelectorAll(selector)).find(element => {
+            const rect = element.getBoundingClientRect();
+            const style = getComputedStyle(element);
+            return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+          });
+
+          const nodes = [
+            ['header', document.querySelector('.site-header .container')],
+            ['reminder', document.querySelector('.amaana-reminder-inner')],
+            ['hero', document.querySelector('.page-hero__shell')],
+            ['body', visible('main .v2-shell, main .v3-shell, main .canonical-body, main .container')],
+            ['footer', document.querySelector('.site-footer > .container')],
+          ];
+
+          const boxes = nodes.map(([name, element]) => {
+            if (!(element instanceof HTMLElement)) return null;
+            const rect = element.getBoundingClientRect();
+            return { name, left: rect.left, right: rect.right, width: rect.width };
+          });
+
+          const viewport = document.documentElement.clientWidth;
+          return { viewport, boxes };
+        });
+
+        expect(geometry.boxes.every(Boolean), `${path} should expose every shared shell at ${width}px`).toBeTruthy();
+        const [reference, ...rest] = geometry.boxes;
+        expect(reference.left, `${path} header must retain a real left gutter at ${width}px`).toBeGreaterThanOrEqual(10);
+        expect(geometry.viewport - reference.right, `${path} header must retain a real right gutter at ${width}px`).toBeGreaterThanOrEqual(10);
+
+        for (const box of rest) {
+          expect(Math.abs(box.left - reference.left), `${path} ${box.name} left edge should match header at ${width}px`).toBeLessThanOrEqual(2);
+          expect(Math.abs(box.right - reference.right), `${path} ${box.name} right edge should match header at ${width}px`).toBeLessThanOrEqual(2);
+          expect(Math.abs(box.width - reference.width), `${path} ${box.name} width should match header at ${width}px`).toBeLessThanOrEqual(2);
+        }
+      });
+    }
+  }
+
+  for (const width of mobileWidths) {
+    test(`homepage keeps only the masthead surface full bleed at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 844 });
+      await openPublicPage(page, '/');
+
+      const geometry = await page.evaluate(() => {
+        const viewport = document.documentElement.clientWidth;
+        const header = document.querySelector('.site-header .container')?.getBoundingClientRect();
+        const reminder = document.querySelector('.amaana-reminder-inner')?.getBoundingClientRect();
+        const banner = document.querySelector('.v3-home-banner')?.getBoundingClientRect();
+        const content = document.querySelector('.v3-home-banner-content')?.getBoundingClientRect();
+        const body = document.querySelector('.v3-home .v3-shell')?.getBoundingClientRect();
+        const footer = document.querySelector('.site-footer > .container')?.getBoundingClientRect();
+        if (!header || !reminder || !banner || !content || !body || !footer) return null;
+        return {
+          viewport,
+          header: { left: header.left, right: header.right },
+          reminder: { left: reminder.left, right: reminder.right },
+          banner: { left: banner.left, right: banner.right },
+          content: { left: content.left, right: content.right },
+          body: { left: body.left, right: body.right },
+          footer: { left: footer.left, right: footer.right },
+        };
+      });
+
+      expect(geometry).not.toBeNull();
+      expect(geometry.banner.left).toBeLessThanOrEqual(1);
+      expect(geometry.banner.right).toBeGreaterThanOrEqual(geometry.viewport - 1);
+      for (const key of ['reminder', 'content', 'body', 'footer']) {
+        expect(Math.abs(geometry[key].left - geometry.header.left), `${key} left edge should align at ${width}px`).toBeLessThanOrEqual(2);
+        expect(Math.abs(geometry[key].right - geometry.header.right), `${key} right edge should align at ${width}px`).toBeLessThanOrEqual(2);
+      }
+      expect(geometry.header.left).toBeGreaterThanOrEqual(10);
+      expect(geometry.viewport - geometry.header.right).toBeGreaterThanOrEqual(10);
+    });
+  }
+});
+
 test.describe('responsive containment', () => {
   for (const route of representativeRoutes) {
     for (const width of acceptanceWidths) {
