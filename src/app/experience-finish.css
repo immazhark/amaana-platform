@@ -206,7 +206,7 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
   :is(.v2-section-title,.v3-heading){max-width:15ch}
 }
 @media(max-width:768px){
-  :root{--af-public-gutter:.625rem;--af-section-space:clamp(4rem,12vw,6rem)}
+  :root{--af-public-gutter:1rem;--af-section-space:clamp(4rem,12vw,6rem)}
   .page-hero--level1{background-image:var(--amaana-bg-hero)!important;background-position:top right!important}
   .site-footer{background-image:var(--amaana-bg-footer)!important;background-position:top right!important}
 }

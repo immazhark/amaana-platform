@@ -251,8 +251,8 @@ test.describe('mobile public-shell alignment and viewport-edge safety', () => {
 
         expect(geometry.boxes.every(Boolean), `${path} should expose every shared shell at ${width}px`).toBeTruthy();
         const [reference, ...rest] = geometry.boxes;
-        expect(reference.left, `${path} header must retain a real left gutter at ${width}px`).toBeGreaterThanOrEqual(10);
-        expect(geometry.viewport - reference.right, `${path} header must retain a real right gutter at ${width}px`).toBeGreaterThanOrEqual(10);
+        expect(reference.left, `${path} header must retain a real left gutter at ${width}px`).toBeGreaterThanOrEqual(15);
+        expect(geometry.viewport - reference.right, `${path} header must retain a real right gutter at ${width}px`).toBeGreaterThanOrEqual(15);
 
         for (const box of rest) {
           expect(Math.abs(box.left - reference.left), `${path} ${box.name} left edge should match header at ${width}px`).toBeLessThanOrEqual(2);
@@ -295,8 +295,8 @@ test.describe('mobile public-shell alignment and viewport-edge safety', () => {
         expect(Math.abs(geometry[key].left - geometry.header.left), `${key} left edge should align at ${width}px`).toBeLessThanOrEqual(2);
         expect(Math.abs(geometry[key].right - geometry.header.right), `${key} right edge should align at ${width}px`).toBeLessThanOrEqual(2);
       }
-      expect(geometry.header.left).toBeGreaterThanOrEqual(10);
-      expect(geometry.viewport - geometry.header.right).toBeGreaterThanOrEqual(10);
+      expect(geometry.header.left).toBeGreaterThanOrEqual(15);
+      expect(geometry.viewport - geometry.header.right).toBeGreaterThanOrEqual(15);
     });
   }
 });
