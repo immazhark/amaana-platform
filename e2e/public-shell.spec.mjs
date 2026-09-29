@@ -524,7 +524,8 @@ test('mobile floating companion and Back to top controls do not overlap', async 
       bottomGap: viewportHeight - box.bottom,
       dockWidth: dockBox.width,
       dockHeight: dockBox.height,
-      dockDirection: getComputedStyle(dock).flexDirection,
+      dockDisplay: getComputedStyle(dock).display,
+      dockButtons: dock.querySelectorAll(':scope > button').length,
     };
   });
 
@@ -534,7 +535,8 @@ test('mobile floating companion and Back to top controls do not overlap', async 
   expect(fixedGeometry.rightGap).toBeLessThanOrEqual(24);
   expect(fixedGeometry.bottomGap).toBeGreaterThanOrEqual(48);
   expect(fixedGeometry.bottomGap).toBeLessThanOrEqual(80);
-  expect(fixedGeometry.dockDirection).toBe('column');
+  expect(fixedGeometry.dockDisplay).toBe('flex');
+  expect(fixedGeometry.dockButtons).toBe(1);
   expect(fixedGeometry.dockWidth).toBeLessThanOrEqual(150);
   expect(fixedGeometry.dockHeight).toBeLessThanOrEqual(100);
 
