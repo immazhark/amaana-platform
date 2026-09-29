@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "updatedAt": "2026-09-28",
+  "updatedAt": "2026-09-29",
   "principle": "Green automation is necessary but not sufficient for production launch. External, human-review and cutover gates remain pending until evidence is recorded; main/indexing/payment activation actions remain explicitly controlled.",
   "gates": [
     {
@@ -11,8 +11,8 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "Exact integration HEAD `e474ad4163e515cfc77799d87a19ed02d9560732` completed GitHub Actions CI run `36456508014` SUCCESS on 2026-09-28. The verify job passed launch-readiness structure validation, canonical factual/editorial/privacy guards, Prisma validation, ESLint, TypeScript, isolated PostgreSQL refund-ledger verification, the fast test suite and the full responsive/accessibility/journey Chromium acceptance matrix. Chromium completed `528 passed (6.0m)`. The run also uploaded launch-review screenshot artifact `10985971760` with SHA-256 `f269b0635fda134f65162d8d956e88b739f57717aa3d820d69363f502346c142`. Railway correctly skipped this documentation-only HEAD, so the served application remains the already-validated application build on SHA `c4cb6a2e8e061d3927434285b092388c53ddf91e`.",
-      "verifiedAt": "2026-09-27"
+      "evidence": "Exact application HEAD `a4ef094096fea91afa1fd391bd97d32f8e34c67a` completed GitHub Actions CI run `36542904125` (#1814) SUCCESS on 2026-09-29. The verify job passed launch-readiness structure validation, canonical factual/editorial/privacy guards, Prisma validation, ESLint, TypeScript, isolated PostgreSQL refund-ledger verification, the fast test suite, the full responsive/accessibility/journey Chromium matrix (`747 passed (10.4m)`), and the Firefox/WebKit public-surface smoke (`24 passed (39.3s)`) at 375px and 1440px. The run uploaded launch-review screenshot artifact `11021473098` with SHA-256 `3b9b677ab0dce88347b43761a0075cb0d3b7479bbdf205ec7e9488e045d7a219`. Fresh exact-head screenshots were visually reviewed across representative homepage, L1, initiative, sparse/one-item, transactional, trust/policy and Companion/support collision states with no new reproducible UI defect. The earlier WebKit 375px `436px` overflow was proven to be a local acceptance loading artifact: CSP `upgrade-insecure-requests` upgraded the local HTTP fixture before canonical CSS loaded. Browser acceptance now suppresses that directive only when `AMAANA_BROWSER_ACCEPTANCE=true`; production CSP behavior remains unchanged.",
+      "verifiedAt": "2026-09-29"
     },
     {
       "id": "railway-preview-deployment-baseline",
@@ -22,8 +22,8 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "Railway staging project amaana-platform-staging reports SUCCESS for deployment d0e7608a-df34-425b-9d30-79d1434b1064 on exact integration SHA bce6b1d85bedc9da6e0fb38484e867db71cb4182 (`fix: harden shadowed medical relief redirect`) on 2026-09-24. The strict `/api/health/ready` healthcheck eventually passed after a prolonged real Neon outage. During startup, Prisma migration, reviewed-campaign import, RBAC seed and staging-acceptance seed all exercised bounded transient-database retry paths; reviewed-campaign import recovered on attempt 3, RBAC seed on attempt 2, staging acceptance on attempt 4, Next.js reached Ready, and Railway promoted the exact candidate only after DB-backed readiness became healthy. Earlier exact-SHA deployment failures during the same outage remain valid fail-closed evidence rather than application-success claims.",
-      "verifiedAt": "2026-09-24"
+      "evidence": "Railway staging project `amaana-platform-staging`, service `amaana-rebuild-preview`, currently serves deployment `60aecf8a-9924-4878-ac30-7b516ee6e434` with status SUCCESS on exact application SHA `a4ef094096fea91afa1fd391bd97d32f8e34c67a` (`fix: keep local browser acceptance on http`). The deployment was created 2026-09-29 and reports `canRollback=true` / `canRedeploy=true`. GitHub CI run `36542904125` (#1814) is SUCCESS on the same SHA with 747 Chromium acceptance tests plus 24 Firefox/WebKit smoke tests. The official custom domain remains attached to this preview service; the reserved production service remains separate.",
+      "verifiedAt": "2026-09-29"
     },
     {
       "id": "domestic-only-boundary",
@@ -64,7 +64,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Reverified on 2026-09-28 through Resend. The sending-domain resource for `amaanafoundation.org` remains status `failed`; DKIM TXT `resend._domainkey`, SPF/Return-Path MX `send`, SPF TXT `send`, and CNAME `rsend` each individually report `failed`. Sending remains enabled at the provider resource, receiving disabled, and open/click tracking disabled. Application delivery remains fail-closed; no production transactional email was sent. The gate remains PENDING until the required DNS records are published correctly and Resend verifies the domain, an approved production sender/API key is configured outside Git/chat, `EMAIL_DELIVERY_MODE=live` is enabled only for the controlled production acceptance window, exactly one approved synthetic staff test email is received, the notification queue records SENT/provider message ID, retry/idempotency behavior is checked, and no duplicate delivery occurs."
+      "evidence": "Reverified on 2026-09-29 through Resend. The sending-domain resource for `amaanafoundation.org` remains status `failed`; DKIM TXT `resend._domainkey`, SPF/Return-Path MX `send`, SPF TXT `send`, and CNAME `rsend` each individually report `failed`. Sending remains enabled at the provider resource, receiving disabled, and open/click tracking disabled. Application delivery remains fail-closed; no production transactional email was sent. The gate remains PENDING until the required DNS records are published correctly and Resend verifies the domain, an approved production sender/API key is configured outside Git/chat, `EMAIL_DELIVERY_MODE=live` is enabled only for the controlled production acceptance window, exactly one approved synthetic staff test email is received, the notification queue records SENT/provider message ID, retry/idempotency behavior is checked, and no duplicate delivery occurs."
     },
     {
       "id": "manual-rendered-accessibility-review",
@@ -160,7 +160,7 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "Live Railway state was reverified on 2026-09-28. Current served staging application deployment `780ecf0d-f654-46c1-acf6-e5ec7a4e8633` is SUCCESS on application SHA `c4cb6a2e8e061d3927434285b092388c53ddf91e` and reports `canRollback=true` / `canRedeploy=true`; subsequent HEADs `47f56cae8d150e6683a486c81566d85731ba361d` and `e474ad4163e515cfc77799d87a19ed02d9560732` were test/docs-only and correctly SKIPPED by Railway. Previous-known-good deployment `4646f5e8-d232-4696-a82c-4a0df7a017bd` on SHA `7c67587042e85cbc9240d062945c840024da94c5` is REMOVED but still reports `canRollback=true` / `canRedeploy=true`; that SHA had its own successful CI run `36447372876`. The gate remains PENDING because a real Railway Rollback action has not yet been executed. The connected Railway action surface still does not expose historical rollback directly; the operator must execute one real dashboard Rollback, verify exact target/health/Test-payment/noindex/private boundaries, restore forward to the candidate, and rerun staging acceptance before this gate can be VERIFIED."
+      "evidence": "Live Railway state was reverified on 2026-09-29. Current served staging deployment `60aecf8a-9924-4878-ac30-7b516ee6e434` is SUCCESS on exact application SHA `a4ef094096fea91afa1fd391bd97d32f8e34c67a` and reports `canRollback=true` / `canRedeploy=true`. The immediately preceding successful application deployment `92f6101f-94c8-4fa6-9715-d2941f090556` on SHA `93a399c5ba1755b42879555344a54ac3639d5396` is REMOVED but reports `canRollback=true` / `canRedeploy=true`; multiple additional recent application snapshots also remain rollback/redeploy eligible. The gate remains PENDING because no real Railway Rollback action has been executed and verified. The operator must execute one real dashboard Rollback, verify exact target/health/Test-payment/noindex/private boundaries, restore forward to the candidate, and rerun staging acceptance before this gate can be VERIFIED."
     },
     {
       "id": "production-dns-cutover-plan",
@@ -169,8 +169,8 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Domain control, Cloudflare TLS and DNS ownership are established. Reverified on 2026-09-28: `amaanafoundation.org` remains attached to the Railway family/staging service, while reserved production service `amaana-platform` remains sourced from `main` and has no custom domain attached. The reserved production service currently lacks exactly two required production-contract variable names: `PUBLIC_MEDIA_S3_BUCKET` and `PRODUCTION_INDEXING_DECISION`. Final production cutover must not occur until the approved release is promoted, production-only configuration is complete, the public-media bucket remains physically separate from private assistance storage, and the explicit indexing decision is recorded. Staging must retain Razorpay Test posture.",
-      "verifiedAt": "2026-09-17"
+      "evidence": "Domain control, Cloudflare TLS and DNS ownership are established. Reverified on 2026-09-29: `amaanafoundation.org` remains attached to Railway service `amaana-rebuild-preview`, which now serves exact application SHA `a4ef094096fea91afa1fd391bd97d32f8e34c67a`; reserved production service `amaana-platform` remains sourced from `main` SHA `1a69dd179181390a488623accf1314a1ff09e319` and has no custom domain attached. Current production variable-name parity against `scripts/check-production-environment.mjs` is 20/22 required names present. The two missing required names are `PUBLIC_MEDIA_S3_BUCKET` and `PRODUCTION_INDEXING_DECISION`. Final production cutover must not occur until the approved release is promoted, production-only configuration is complete, the public-media bucket remains physically separate from private assistance storage, and the explicit indexing decision is recorded. Staging must retain Razorpay Test posture.",
+      "verifiedAt": "2026-09-29"
     },
     {
       "id": "production-indexing-decision",
@@ -179,7 +179,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Reverified on 2026-09-28. The reserved production Railway service remains isolated with no custom domain attached. Its environment variable-name surface contains `NEXT_PUBLIC_ALLOW_INDEXING` but does not yet contain the required explicit `PRODUCTION_INDEXING_DECISION`. Indexing therefore remains intentionally fail-closed. Before production build/cutover the operator must explicitly choose `keep_disabled` or `enable`; only `enable` may be paired with `NEXT_PUBLIC_ALLOW_INDEXING=true`. A production build with `APP_ENVIRONMENT=production` is required before final robots/sitemap/canonical verification."
+      "evidence": "Reverified on 2026-09-29. The reserved production Railway service remains isolated with no custom domain attached. Its environment variable-name surface contains `NEXT_PUBLIC_ALLOW_INDEXING` but does not contain the required explicit `PRODUCTION_INDEXING_DECISION`. Indexing therefore remains intentionally fail-closed. Before production build/cutover the operator must explicitly choose `keep_disabled` or `enable`; only `enable` may be paired with `NEXT_PUBLIC_ALLOW_INDEXING=true`. A production build with `APP_ENVIRONMENT=production` is required before final robots/sitemap/canonical verification."
     },
     {
       "id": "main-branch-protection",
@@ -188,7 +188,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "GitHub branch metadata was rechecked on 2026-09-28. `main` still reports `protected=false`; protection is disabled, required status-check enforcement is `off`, required check contexts are empty, and repository rulesets are empty. The connected GitHub installation can read this state but does not expose administration writes for branch protection/rulesets. Before production promotion, `main` must be protected through GitHub repository settings so direct/bypass merges cannot skip the normal CI and `Production promotion readiness` checks. This gate must remain PENDING until the protection/ruleset is enabled and re-read from GitHub as active."
+      "evidence": "GitHub branch metadata was rechecked on 2026-09-29. `main` remains on SHA `1a69dd179181390a488623accf1314a1ff09e319` and reports `protected=false`; branch protection is disabled, required status-check enforcement is `off`, required check contexts are empty, and repository rulesets are empty. The dedicated protection endpoint is not readable by the connected installation, but the branch metadata itself explicitly reports protection disabled and the ruleset collection is empty. Before production promotion, `main` must be protected through GitHub repository settings so direct/bypass merges cannot skip the normal CI and `Production promotion readiness` checks. This gate must remain PENDING until the protection/ruleset is enabled and re-read as active."
     },
     {
       "id": "main-promotion-and-production-approval",
