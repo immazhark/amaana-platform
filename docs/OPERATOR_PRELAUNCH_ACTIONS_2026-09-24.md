@@ -59,28 +59,32 @@ Do not mark PR #104 Ready for Review yet merely because protection was enabled. 
 
 Current served staging application candidate:
 
-- deployment: `60aecf8a-9924-4878-ac30-7b516ee6e434`
-- source SHA: `a4ef094096fea91afa1fd391bd97d32f8e34c67a`
-- commit: `fix: keep local browser acceptance on http`
+- deployment: `53bd0d5b-fa02-4b47-9e0e-f927d2010186`
+- source SHA: `d1e285a2fb451f5426bcce2292615714e3a428c8`
+- commit: `refactor: remove retired initiative stylesheets`
 - status: `SUCCESS`
 - `canRollback=true`
 - `canRedeploy=true`
-- exact-head CI run `36542904125` (#1814): **SUCCESS**
-- Chromium acceptance: `747 passed (10.4m)`
-- Firefox/WebKit public-surface smoke: `24 passed (39.3s)`
+- exact-application push CI run `36569577331` (#1871): **SUCCESS**
+- Chromium acceptance: `808 passed (10.8m)`
+- Firefox/WebKit public-surface smoke: `24 passed (40.7s)`
+- production JS bundle: `714864 / 819200` bytes
+- production CSS bundle: `344389 / 348160` bytes
+- launch-review screenshot artifact: `11033953004`
+- screenshot SHA-256: `3b38cb2b5120160adb9c101bf67f371bc8f488699d0d2cdbc20e385500a6c0df`
 
-The subsequent readiness-refresh commits are documentation-only and should not replace this served application SHA.
+The subsequent readiness-documentation commits are documentation-only and must not be mistaken for a newer served application SHA.
 
 Recent previous-known-good rollback candidate:
 
-- deployment: `92f6101f-94c8-4fa6-9715-d2941f090556`
-- source SHA: `93a399c5ba1755b42879555344a54ac3639d5396`
-- commit: `fix: strengthen single completed appeal outcome`
+- deployment: `7fa0c8f3-0739-4151-8623-840ef383117d`
+- source SHA: `0b9f32f55a65e1cc53d9864c3a26eb563e319a6a`
+- commit: `refactor: retire obsolete initiative route styles`
 - Railway state: `REMOVED`
 - `canRollback=true`
 - `canRedeploy=true`
 
-Several additional recent application snapshots also remain rollback/redeploy eligible. Treat the Railway dashboard as authoritative immediately before rehearsal because eligibility may age out.
+The current candidate is the post-alignment/post-CSS-consolidation image: shared public-shell alignment, mobile optical gutters, full-bleed homepage masthead, compact L1 geometry, singular bottom-right Companion behavior and production CSS-budget recovery are already regression-locked. Treat the Railway dashboard as authoritative immediately before rehearsal because rollback eligibility may age out.
 
 ### Pre-action rules
 
