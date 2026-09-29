@@ -249,6 +249,33 @@ test('our work disclosure controls remain visually attached to the category titl
   expect(metrics.countToToggle).toBeLessThanOrEqual(24);
 });
 
+test('single-programme categories use an intentional editorial feature layout', async ({ page }) => {
+  await open(page, '/programmes/medical-financial-relief', 1920);
+  const metrics = await page.locator('.canonical-pathways--single article').evaluate(article => {
+    const rect = article.getBoundingClientRect();
+    const visual = article.querySelector('.canonical-pathway-visual')?.getBoundingClientRect();
+    const heading = article.querySelector('h2')?.getBoundingClientRect();
+    return visual && heading ? {
+      articleWidth: rect.width,
+      visualWidth: visual.width,
+      headingWidth: heading.width,
+      visualHeight: visual.height,
+    } : null;
+  });
+  expect(metrics).toBeTruthy();
+  expect(metrics.articleWidth).toBeGreaterThanOrEqual(1100);
+  expect(metrics.visualWidth).toBeGreaterThanOrEqual(350);
+  expect(metrics.headingWidth).toBeGreaterThanOrEqual(450);
+  expect(metrics.visualHeight).toBeGreaterThanOrEqual(300);
+});
+
+test('recognition record never relies on an embedded PDF renderer for its primary visual', async ({ page }) => {
+  await open(page, '/recognition', 1920);
+  await expect(page.locator('#recognition-record iframe')).toHaveCount(0);
+  await expect(page.getByText('Original recognition document')).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Open original certificate' })).toBeVisible();
+});
+
 test('hero primary and secondary actions have equal canonical height', async ({ page }) => {
   await open(page, '/about');
   const actions = page.locator('.page-hero__actions .page-hero__button');

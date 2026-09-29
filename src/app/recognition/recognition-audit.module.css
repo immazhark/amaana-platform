@@ -1,7 +1,12 @@
 
 .proof{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1.25fr) minmax(16rem,.75fr);gap:1rem;margin-top:1.5rem;padding:1rem;border:1px solid rgb(18 34 57 / 10%);border-radius:1.25rem;background:#f7f3eb}
-.preview{min-height:28rem;overflow:hidden;border:1px solid rgb(18 34 57 / 10%);border-radius:.9rem;background:#fff}
-.preview iframe{display:block;width:100%;height:32rem;border:0}
+.document{position:relative;min-height:28rem;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(1.5rem,3vw,2.4rem);border:1px solid rgb(18 34 57 / 10%);border-radius:.9rem;background:linear-gradient(145deg,#102039 0%,#1d3150 62%,#315887 100%);color:#fffdf8}
+.document::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 84% 18%,rgb(224 179 24 / 18%),transparent 24%);pointer-events:none}
+.document>span{position:relative;color:#f0d56b;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.document>strong{position:relative;max-width:12ch;margin:.6rem 0 .8rem;font:500 clamp(2.4rem,4vw,4.4rem)/.94 Georgia,"Times New Roman",serif;letter-spacing:-.04em}
+.document>p{position:relative;max-width:34rem;margin:0 0 1.4rem;color:rgb(255 253 248 / 72%);line-height:1.6}
+.document .v2-button{position:relative;align-self:flex-start}
+.documentMark{position:absolute;right:clamp(1.2rem,2.5vw,2rem);top:clamp(1.2rem,2.5vw,2rem);display:grid;place-items:center;width:4.25rem;height:5.5rem;border:1px solid rgb(240 213 107 / 55%);border-radius:.65rem;color:#f0d56b;font-weight:800;letter-spacing:.08em}
 .meta{display:grid;align-content:start;gap:.75rem;padding:1rem}
 .meta>span{color:#8a6a0a;font-size:.7rem;font-weight:850;letter-spacing:.1em;text-transform:uppercase}
 .meta dl{margin:0;display:grid;gap:.75rem}
@@ -9,8 +14,8 @@
 .meta dt{color:#596573;font-size:.7rem;font-weight:800;letter-spacing:.06em;text-transform:uppercase}
 .meta dd{margin:.2rem 0 0;color:#122239;font-weight:750;line-height:1.45}
 .note{color:#5b6472;font-size:.8rem;line-height:1.55}
-@media(max-width:800px){.proof{grid-template-columns:1fr}.preview{min-height:0}.preview iframe{height:24rem}}
-@media(max-width:560px){.preview iframe{display:none}.preview{padding:1rem}.preview::after{content:"Certificate preview is available from the PDF link below.";display:block;color:#5b6472;line-height:1.5}}
+@media(max-width:800px){.proof{grid-template-columns:1fr}.document{min-height:22rem}}
+@media(max-width:560px){.document{min-height:20rem}.documentMark{width:3.5rem;height:4.5rem}}
 
 
 /* Institutional audit: certificate metadata is evidence, not headline typography. */

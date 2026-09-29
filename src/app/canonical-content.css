@@ -171,3 +171,53 @@
 @media(max-width:700px){
   .canonical-body>[data-trust-evidence-boundary] .grid.stats{grid-template-columns:1fr}
 }
+
+
+/* 2026-09-29 owner monitor QA: a one-programme category is an editorial feature, not a lonely grid card. */
+.canonical-pathways--single{
+  grid-template-columns:minmax(0,1fr);
+  max-width:none
+}
+.canonical-pathways--single article{
+  display:grid;
+  grid-template-columns:minmax(19rem,.72fr) minmax(0,1.28fr);
+  grid-template-areas:
+    "visual title"
+    "visual copy"
+    "visual action";
+  gap:.7rem clamp(2rem,4vw,4rem);
+  align-items:start;
+  min-height:0;
+  padding:clamp(1.1rem,2vw,1.5rem)
+}
+.canonical-pathways--single .canonical-pathway-visual{
+  grid-area:visual;
+  min-height:22rem;
+  align-self:stretch
+}
+.canonical-pathways--single article h2{
+  grid-area:title;
+  align-self:end;
+  margin:clamp(.75rem,2vw,1.25rem) 0 0;
+  max-width:18ch;
+  font:500 clamp(2.35rem,4vw,4rem)/.96 var(--af-font-display);
+  letter-spacing:-.04em
+}
+.canonical-pathways--single article>p{
+  grid-area:copy;
+  max-width:58ch;
+  font-size:1.04rem;
+  line-height:1.72
+}
+.canonical-pathways--single article>.v2-text-link{
+  grid-area:action;
+  align-self:start
+}
+@media(max-width:900px){
+  .canonical-pathways--single article{
+    grid-template-columns:1fr;
+    grid-template-areas:"visual" "title" "copy" "action";
+    gap:1rem
+  }
+  .canonical-pathways--single .canonical-pathway-visual{min-height:18rem}
+}
