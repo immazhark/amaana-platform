@@ -1,202 +1,505 @@
-/* Companion surfaces inherit Amaana's ink, cream and restrained gold. */
-.amaana-reminders { background: #f4efe3; color: #203b43; border-bottom: 1px solid #d7cfbc; }
-.amaana-reminder-inner { width: min(calc(100% - (var(--af-public-gutter) * 2)), var(--af-public-shell)); max-width: none; margin-inline: auto; padding: 14px 0; display: flex; gap: 28px; align-items: center; justify-content: space-between; }
-.amaana-reminder-content { max-width: 82ch; min-width: 0; }
-.amaana-reminder-content strong { font-size: 15px; line-height: 1.4; }
-.amaana-reminder-content p { margin: 3px 0; font-size: 13px; line-height: 1.55; }
-.amaana-reminder-links { display: flex; flex-wrap: wrap; gap: 8px 18px; font-size: 12px; }
-.amaana-reminders a, .amaana-companion a { color: #234e67; text-decoration: underline; text-underline-offset: 3px; }
-.amaana-reminder-controls { display: flex; gap: 6px; flex-shrink: 0; }
-.amaana-reminders button, .amaana-companion button, .amaana-companion select { font: inherit; cursor: pointer; }
-.amaana-reminder-controls button, .amaana-reminder-schedule > button { min-height: 44px; padding: 8px 12px; border: 1px solid #9b927c; border-radius: 6px; color: #203b43; background: transparent; font-size: 12px; }
-.amaana-reminders button:hover { background: #e7ddc8; }
-.amaana-reminders button:disabled { opacity: .7; cursor: default; }
-.amaana-reminder-schedule { width: min(calc(100% - (var(--af-public-gutter) * 2)), var(--af-public-shell)); max-width: none; margin-inline: auto; padding: 8px 0 24px; }
-.amaana-reminder-schedule h2 { font: 26px/1.3 Georgia, serif; margin: 12px 0 20px; }
-.amaana-reminder-schedule dl { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 32px; margin: 0; }
-.amaana-reminder-schedule dt { font-weight: 700; font-size: 14px; }
-.amaana-reminder-schedule dd { margin: 4px 0 0; font-size: 14px; }
-.amaana-reminder-schedule > p { font-size: 12px; margin: 20px 0; }
-.amaana-companion {
-  position: fixed;
-  z-index: 1000;
-  right: max(16px, env(safe-area-inset-right));
-  bottom: max(14px, env(safe-area-inset-bottom));
-  width: auto;
-  color: #203b43;
-  background: transparent;
-  border: 0;
-  pointer-events: none;
+/* Amaana reminder rail + fixed bottom-right Companion.
+   This file matches the currently rendered DOM; retired schedule/control generations are intentionally absent. */
+
+.amaana-reminders{
+  position:relative;
+  overflow:hidden;
+  color:#203b43;
+  border-bottom:1px solid rgb(18 34 57 / 10%);
+  background:linear-gradient(90deg,#f8f3e8 0%,#f4efe3 62%,#edf2ed 100%)
 }
-.amaana-companion-dock {
-  max-width: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-wrap: nowrap;
-  justify-content: flex-end;
-  gap: 8px;
-  pointer-events: auto;
+.amaana-reminders::before{
+  content:"";
+  position:absolute;
+  inset:0;
+  background:linear-gradient(90deg,transparent,rgb(224 179 24 / 7%) 48%,transparent);
+  pointer-events:none
 }
-.amaana-companion-dock > button { display: flex; align-items: center; gap: 9px; min-height: 48px; padding: 12px 16px; border: 1px solid #476069; border-radius: 8px; background: #173e47; color: #fffaf0; box-shadow: 0 6px 22px #122e3926; font-size: 13px; font-weight: 650; }
-.amaana-companion-dock > button:hover, .amaana-companion-dock > button[aria-expanded="true"] { background: #285763; }
-.amaana-companion-panel { position: fixed; z-index: 1100; bottom: calc(max(16px, env(safe-area-inset-bottom)) + 60px); pointer-events: auto; right: max(20px, env(safe-area-inset-right)); width: min(440px, calc(100vw - 32px)); max-height: calc(100dvh - 11rem - env(safe-area-inset-top)); overflow-y: auto; overscroll-behavior: contain; padding: 24px; border: 1px solid #d4c9b4; border-radius: 14px; background: #fffcf5; box-shadow: 0 18px 60px #102e3940; scrollbar-color: #75857d #f0eadf; scrollbar-width: thin; }
-.amaana-companion-head { display: flex; gap: 12px; justify-content: space-between; align-items: start; }
-.amaana-companion-head h2 { font: 28px/1.15 Georgia, serif; margin: 2px 0 12px; color: #173e47; letter-spacing: -.02em; }
-.amaana-companion-head button { flex: 0 0 44px; width: 44px; height: 44px; display: grid; place-items: center; margin: -8px -10px 0 0; border: 0; border-radius: 6px; background: transparent; color: #203b43; }
-.amaana-companion-head button:hover { background: #eee6d5; }
-.amaana-companion-panel p { font-size: 15px; line-height: 1.65; }
-.amaana-companion-panel .amaana-companion-note { font-size: 12px; line-height: 1.55; color: #50605c; margin: 8px 0 14px; }
-.amaana-daily-ayah { margin-top: 28px; }
-.amaana-companion-panel h3 { font-size: 14px; margin: 0 0 14px; color: #294e54; }
-.amaana-companion-panel .amaana-arabic { font-family: "Noto Naskh Arabic", "Traditional Arabic", "Geeza Pro", serif; font-size: 30px; line-height: 1.95; font-weight: 400; text-align: right; margin: 20px 0; }
-.amaana-daily-ayah blockquote { margin: 0; font: 20px/1.55 Georgia, serif; color: #203b43; }
-.amaana-daily-ayah > a, .amaana-daily-hadith > a { display: inline-block; font-size: 13px; line-height: 1.6; padding: 6px 0; }
-.amaana-daily-hadith { border-top: 1px solid #ded5c5; padding-top: 24px; margin-top: 28px; }
-.amaana-daily-hadith h4 { font: 22px/1.3 Georgia, serif; margin: 0 0 12px; }
-.amaana-companion-action, .amaana-companion-error button { display: inline-block; min-height: 44px; padding: 10px 16px; margin-top: 20px; background: #173e47; color: #fffaf0; border: 1px solid #173e47; border-radius: 6px; font-size: 13px; }
-.amaana-companion-action:hover, .amaana-companion-error button:hover { background: #285763; }
-.amaana-companion-details { margin-top: 20px; padding-top: 16px; border-top: 1px solid #ded5c5; font-size: 13px; }
-.amaana-companion-details summary { min-height: 32px; cursor: pointer; color: #234e67; }
-.amaana-companion-details p { font-size: 13px; }
-.amaana-companion-location { margin: 0 0 24px; font-weight: 650; }
-.amaana-companion-location span { display: block; margin-top: 3px; font-size: 12px; font-weight: 400; }
-.amaana-hijri { padding: 20px 0; border-top: 1px solid #ded5c5; border-bottom: 1px solid #ded5c5; }
-.amaana-hijri strong { font: 25px/1.35 Georgia, serif; display: block; }
-.amaana-hijri p { font-size: 13px; margin: 10px 0 6px; }
-.amaana-hijri small { font-size: 11px; line-height: 1.6; display: block; color: #50605c; }
-.amaana-asr-choice { display: block; margin: 22px 0; font-size: 13px; }
-.amaana-asr-choice select { display: block; width: 100%; margin-top: 8px; min-height: 44px; background: #fffdf8; color: #203b43; border: 1px solid #a69c86; border-radius: 5px; padding: 10px; font-size: 14px; }
-.amaana-next-salah { background: #173e47; color: #fffaf0; padding: 18px; border-radius: 8px; }
-.amaana-next-salah span { display: block; font-size: 12px; margin-bottom: 8px; }
-.amaana-next-salah strong { display: flex; justify-content: space-between; gap: 16px; font: 27px/1.3 Georgia, serif; }
-.amaana-salah-times { margin: 16px 0; font-variant-numeric: tabular-nums; }
-.amaana-salah-times > div { display: flex; justify-content: space-between; gap: 16px; padding: 11px 4px; border-bottom: 1px solid #e4dccc; font-size: 14px; }
-.amaana-salah-times dd { margin: 0; font-weight: 650; }
-.amaana-salah-times .is-next { color: #164f42; font-weight: 750; }
-.amaana-companion-error p { color: #853b26; }
-.amaana-reminders :focus-visible, .amaana-companion :focus-visible { outline: 3px solid #8f691e; outline-offset: 4px; }
-.amaana-reminders ::selection, .amaana-companion ::selection { background: #d9c18b; color: #173e47; }
-@media (max-width: 640px) {
-  .amaana-reminder-inner { padding: 14px 18px; gap: 10px; flex-wrap: wrap; }
-  .amaana-reminder-content { width: 100%; min-height: 74px; }
-  .amaana-reminder-controls { width: 100%; justify-content: flex-end; }
-  .amaana-reminder-controls button { min-height: 44px; }
-  .amaana-reminder-schedule { padding: 8px 18px 24px; }
-  .amaana-reminder-schedule dl { grid-template-columns: 1fr; }
-  .amaana-companion { right: max(var(--af-public-gutter), env(safe-area-inset-right)); bottom: max(var(--af-public-gutter), env(safe-area-inset-bottom)); }
-  .amaana-companion-dock { flex-direction: column; align-items: flex-end; gap: 6px; }
-  .amaana-companion-dock > button { min-height: 42px; max-width: 9rem; padding: 8px 10px; gap: 6px; border-radius: 999px; font-size: 11.5px; line-height: 1.2; white-space: nowrap; box-shadow: 0 4px 16px #122e3920; }
-  .amaana-companion-panel { right: var(--af-public-gutter); bottom: calc(max(var(--af-public-gutter), env(safe-area-inset-bottom)) + 100px); width: calc(100% - (var(--af-public-gutter) * 2)); max-height: calc(100dvh - 9rem - env(safe-area-inset-top)); padding: 22px; }
-  .amaana-companion-head h2 { font-size: 26px; }
+.amaana-reminders a{
+  color:#234e67;
+  text-decoration:underline;
+  text-underline-offset:3px
 }
-@media print { .amaana-companion, .amaana-reminders { display: none; } body { padding-bottom: 0; } }
-
-
-
-/* Amaana Live — compact editorial broadcast rail. */
-.amaana-reminders{position:relative;overflow:hidden;border-bottom:1px solid rgb(18 34 57 / 10%);background:linear-gradient(90deg,#f8f3e8 0%,#f4efe3 62%,#edf2ed 100%)}
-.amaana-reminders::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgb(224 179 24 / 7%) 48%,transparent);pointer-events:none}
-.amaana-reminder-inner{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:clamp(.8rem,2vw,1.5rem);width:min(calc(100% - (var(--af-public-gutter) * 2)),var(--af-public-shell));max-width:none;min-height:4.65rem;margin-inline:auto;padding:.55rem 0}
-.amaana-live-badge{display:flex;align-items:center;gap:.5rem;align-self:center;color:#173e47;font-size:.66rem;font-weight:900;letter-spacing:.13em;white-space:nowrap}
-.amaana-live-badge span{width:.48rem;height:.48rem;border-radius:50%;background:#b4432f;box-shadow:0 0 0 .24rem rgb(180 67 47 / 10%)}
-.amaana-reminder-stage{min-width:0;overflow:hidden;align-self:center}
-.amaana-reminder-content{position:relative;display:grid;grid-template-columns:auto minmax(0,auto) minmax(10rem,1fr) auto;align-items:center;gap:.35rem .75rem;max-width:none;min-height:2.8rem;animation:amaana-rail-enter .24s cubic-bezier(.16,1,.3,1) both}
-.amaana-reminder-eyebrow{color:#8a6715;font-size:.63rem;font-weight:900;letter-spacing:.1em;text-transform:uppercase;white-space:nowrap}
-.amaana-reminder-content strong{min-width:0;overflow:hidden;color:#173e47;font-size:.92rem;line-height:1.2;text-overflow:ellipsis;white-space:nowrap}
-.amaana-reminder-content p{min-width:0;margin:0;overflow:hidden;color:#4e5e5c;font-size:.76rem;line-height:1.35;text-overflow:ellipsis;white-space:nowrap}
-.amaana-reminder-source{font-size:.68rem;white-space:nowrap}
-.amaana-live-cta{display:inline-flex;align-items:center;min-height:2.25rem;padding:.42rem .78rem;border:1px solid #d4a819;border-radius:999px;background:#173e47;color:#fffaf0!important;font-size:.72rem;font-weight:850;text-decoration:none!important;white-space:nowrap;box-shadow:0 .35rem 1rem rgb(18 34 57 / 10%);transition:transform .2s ease,background .2s ease}
-.amaana-live-cta:hover{transform:translateY(-1px);background:#285763}
-.amaana-reminder-controls{align-items:center;gap:.28rem}
-.amaana-reminder-controls button{display:grid;place-items:center;width:44px;height:44px;min-height:44px;padding:0;border-color:rgb(32 59 67 / 20%);border-radius:999px;background:rgb(255 255 255 / 46%);font-size:.78rem}
-.amaana-reminder-controls .amaana-schedule-trigger{width:auto;padding:0 .7rem;border-radius:999px;font-size:.68rem}
-@keyframes amaana-rail-enter{from{opacity:0;transform:translateX(1.5rem)}to{opacity:1;transform:translateX(0)}}
-@media(max-width:900px){
-  .amaana-reminder-inner{grid-template-columns:auto minmax(0,1fr) auto;min-height:4.35rem}
-  .amaana-reminder-content{grid-template-columns:auto minmax(0,1fr) auto}
-  .amaana-reminder-content p{display:none}
-  .amaana-reminder-source{display:none}
-  .amaana-reminder-controls .amaana-schedule-trigger{display:none}
+.amaana-reminder-inner{
+  position:relative;
+  display:grid;
+  grid-template-columns:auto minmax(0,1fr);
+  gap:clamp(.8rem,2vw,1.5rem);
+  width:min(calc(100% - (var(--af-public-gutter) * 2)),var(--af-public-shell));
+  max-width:none;
+  min-height:4.65rem;
+  margin-inline:auto;
+  padding:.55rem 0
 }
-@media(max-width:640px){
-  .amaana-reminder-inner{display:grid;grid-template-columns:auto minmax(0,1fr) auto;min-height:4rem;padding:.48rem 0;gap:.55rem}
-  .amaana-live-badge{font-size:0;gap:0}.amaana-live-badge::after{content:"LIVE";font-size:.58rem;letter-spacing:.08em}.amaana-live-badge span{margin-right:.3rem}
-  .amaana-reminder-stage{width:auto}
-  .amaana-reminder-content{width:auto;min-height:2.6rem;grid-template-columns:minmax(0,1fr) auto;gap:.12rem .45rem}
-  .amaana-reminder-eyebrow{grid-column:1;font-size:.55rem}
-  .amaana-reminder-content strong{grid-column:1;font-size:.78rem}
-  .amaana-live-cta{grid-column:2;grid-row:1 / span 2;min-height:2rem;padding:.35rem .58rem;font-size:.62rem}
-  .amaana-reminder-controls{width:auto;justify-content:flex-end}
-  .amaana-reminder-controls button:first-child{display:none}
-  .amaana-reminder-controls button{width:44px;height:44px;min-height:44px}
+.amaana-live-badge{
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+  align-self:center;
+  color:#173e47;
+  font-size:.66rem;
+  font-weight:900;
+  letter-spacing:.13em;
+  white-space:nowrap
 }
-@media(prefers-reduced-motion:reduce){.amaana-reminder-content{animation:none}.amaana-live-cta{transition:none}}
-
-
-/* Unified Amaana Companion — brand-aligned floating utility. */
-.amaana-companion{--companion-navy:#102f55;--companion-blue:#285f9f;--companion-gold:#e1b521;--companion-ivory:#fffaf0;--companion-ink:#173251}
-.amaana-companion-dock>button{position:relative;min-height:3.55rem;padding:.62rem .9rem;border:1px solid rgb(225 181 33 / 70%);border-radius:999px;background:linear-gradient(135deg,var(--companion-navy),#1d527f);color:var(--companion-ivory);box-shadow:0 .7rem 2rem rgb(16 47 85 / 24%);transition:transform .2s ease,box-shadow .2s ease,background .2s ease}
-.amaana-companion-dock>button:hover,.amaana-companion-dock>button[aria-expanded=true]{transform:translateY(-2px);background:linear-gradient(135deg,#153c69,#2867a5);box-shadow:0 .9rem 2.4rem rgb(16 47 85 / 30%)}
-.amaana-companion-dock>button>span:last-child{display:grid;text-align:left;line-height:1.1}
-.amaana-companion-dock>button strong{font-size:.76rem;letter-spacing:.02em}
-.amaana-companion-dock>button small{margin-top:.2rem;color:rgb(255 250 240 / 72%);font-size:.56rem;font-weight:500;letter-spacing:.025em}
-.amaana-companion-dock-icons{display:flex;align-items:center;margin-right:.15rem}
-.amaana-companion-dock-icons svg{width:1.05rem;height:1.05rem}
-.amaana-companion-dock-icons svg+svg{margin-left:-.22rem;margin-top:.75rem;color:var(--companion-gold)}
-.amaana-companion-panel{bottom:calc(max(16px,env(safe-area-inset-bottom)) + 4.4rem);width:min(27.5rem,calc(100vw - 2rem));max-height:min(44rem,calc(100dvh - 8rem - env(safe-area-inset-top)));padding:0;border:1px solid rgb(225 181 33 / 42%);border-radius:1.25rem;background:linear-gradient(155deg,#fffdf7 0%,#fff9eb 100%);color:var(--companion-ink);box-shadow:0 1.5rem 4.5rem rgb(16 47 85 / 28%);overflow:hidden;scrollbar-color:#c7a73c #f6eedc}
-.amaana-companion-panel::before{content:"";position:absolute;inset:0 0 auto;height:.25rem;background:linear-gradient(90deg,var(--companion-gold),#f1d46d 42%,var(--companion-blue));z-index:2}
-.amaana-companion-head{position:sticky;top:0;z-index:3;align-items:center;padding:1.25rem 1.25rem .85rem;background:rgb(255 253 247 / 96%);backdrop-filter:blur(12px)}
-.amaana-companion-kicker{display:block;margin-bottom:.28rem;color:#a57a08;font-size:.58rem;font-weight:900;letter-spacing:.16em}
-.amaana-companion-head h2{margin:0;color:var(--companion-navy);font-size:1.55rem;line-height:1.1}
-.amaana-companion-head button{margin:0;border:1px solid rgb(16 47 85 / 10%);border-radius:999px;color:var(--companion-navy)}
-.amaana-companion-tabs{position:sticky;top:4.65rem;z-index:3;display:grid;grid-template-columns:1fr 1fr;gap:.25rem;margin:0 1.25rem;padding:.25rem;border:1px solid rgb(16 47 85 / 10%);border-radius:.8rem;background:#f3ecdd;box-shadow:inset 0 1px 2px rgb(16 47 85 / 5%)}
-.amaana-companion-tabs button{min-height:2.55rem;border:0;border-radius:.62rem;background:transparent;color:#536477;font-size:.72rem;font-weight:800}
-.amaana-companion-tabs button[aria-selected=true]{background:linear-gradient(135deg,var(--companion-navy),#245f98);color:#fffaf0;box-shadow:0 .3rem .8rem rgb(16 47 85 / 16%)}
-.amaana-companion-view{padding:1rem 1.25rem 1.35rem;overflow-y:auto;max-height:calc(min(44rem,100dvh - 8rem) - 8.2rem)}
-.amaana-companion-panel a{color:#285f9f;text-decoration-color:rgb(225 181 33 / 75%)}
-.amaana-companion-panel .amaana-companion-note{color:#637083}
-.amaana-daily-ayah{margin-top:1.15rem;padding:1rem;border:1px solid rgb(16 47 85 / 9%);border-radius:.9rem;background:rgb(255 255 255 / 58%)}
-.amaana-daily-hadith{margin-top:.8rem;padding:1rem;border:1px solid rgb(16 47 85 / 9%);border-radius:.9rem;background:rgb(255 255 255 / 58%)}
-.amaana-daily-ayah blockquote,.amaana-daily-hadith h4,.amaana-hijri strong{color:var(--companion-navy)}
-.amaana-companion-action,.amaana-companion-error button{border-color:var(--companion-navy);border-radius:999px;background:linear-gradient(135deg,var(--companion-navy),#245f98);box-shadow:0 .35rem .9rem rgb(16 47 85 / 14%)}
-.amaana-hijri{padding:1rem;border:1px solid rgb(16 47 85 / 9%);border-radius:.9rem;background:rgb(255 255 255 / 58%)}
-.amaana-asr-choice select{border-color:rgb(16 47 85 / 22%);border-radius:.65rem;background:#fffdf8}
-.amaana-next-salah{border:1px solid rgb(225 181 33 / 55%);background:linear-gradient(135deg,var(--companion-navy),#245f98);box-shadow:0 .5rem 1.3rem rgb(16 47 85 / 14%)}
-.amaana-salah-times>div{border-color:rgb(16 47 85 / 10%)}
-.amaana-salah-times .is-next{color:#9a7207}
-.amaana-companion :focus-visible{outline-color:var(--companion-gold)}
-@media(max-width:640px){
- .amaana-companion-dock>button{min-height:2.8rem;max-width:none;padding:.45rem .7rem}
- .amaana-companion-dock>button small{display:none}
- .amaana-companion-panel{right:var(--af-public-gutter);bottom:calc(max(var(--af-public-gutter),env(safe-area-inset-bottom)) + 3.4rem);width:calc(100% - (var(--af-public-gutter) * 2));max-height:calc(100dvh - 5.2rem - env(safe-area-inset-top));border-radius:1rem}
- .amaana-companion-view{max-height:calc(100dvh - 13rem)}
+.amaana-live-badge span{
+  width:.48rem;
+  height:.48rem;
+  border-radius:50%;
+  background:#b4432f;
+  box-shadow:0 0 0 .24rem rgb(180 67 47 / 10%)
 }
-@media(prefers-reduced-motion:reduce){.amaana-companion-dock>button{transition:none}}
-
-
-/* Broadcast rail is intentionally passive: reminder ↔ current live appeal only. */
-.amaana-reminder-inner{grid-template-columns:auto minmax(0,1fr)}
 .amaana-live-badge.is-reminder{color:#8a6715}
 .amaana-live-badge.is-reminder span{display:none}
 .amaana-live-badge.is-live{color:#173e47}
-@media(max-width:900px){.amaana-reminder-inner{grid-template-columns:auto minmax(0,1fr)}}
+.amaana-reminder-stage{min-width:0;overflow:hidden;align-self:center}
+.amaana-reminder-content{
+  position:relative;
+  display:grid;
+  grid-template-columns:auto minmax(0,auto) minmax(10rem,1fr) auto;
+  align-items:center;
+  gap:.35rem .75rem;
+  max-width:none;
+  min-width:0;
+  min-height:2.8rem;
+  animation:amaana-rail-enter .24s cubic-bezier(.16,1,.3,1) both
+}
+.amaana-reminder-eyebrow{
+  color:#8a6715;
+  font-size:.63rem;
+  font-weight:900;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  white-space:nowrap
+}
+.amaana-live-badge.is-reminder + .amaana-reminder-stage .amaana-reminder-eyebrow{display:none}
+.amaana-reminder-content strong{
+  min-width:0;
+  overflow:hidden;
+  color:#173e47;
+  font-size:.92rem;
+  line-height:1.2;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.amaana-reminder-content p{
+  min-width:0;
+  margin:0;
+  overflow:hidden;
+  color:#4e5e5c;
+  font-size:.76rem;
+  line-height:1.35;
+  text-overflow:ellipsis;
+  white-space:nowrap
+}
+.amaana-reminder-source{font-size:.68rem;white-space:nowrap}
+.amaana-live-cta{
+  display:inline-flex;
+  align-items:center;
+  min-height:2.25rem;
+  padding:.42rem .78rem;
+  border:1px solid #d4a819;
+  border-radius:999px;
+  background:#173e47;
+  color:#fffaf0!important;
+  font-size:.72rem;
+  font-weight:850;
+  text-decoration:none!important;
+  white-space:nowrap;
+  box-shadow:0 .35rem 1rem rgb(18 34 57 / 10%);
+  transition:transform .2s ease,background .2s ease
+}
+.amaana-live-cta:hover{transform:translateY(-1px);background:#285763}
+@keyframes amaana-rail-enter{
+  from{opacity:0;transform:translateX(1.5rem)}
+  to{opacity:1;transform:translateX(0)}
+}
+
+.amaana-companion{
+  --companion-navy:#102f55;
+  --companion-blue:#285f9f;
+  --companion-gold:#e1b521;
+  --companion-ivory:#fffaf0;
+  --companion-ink:#173251;
+  position:fixed;
+  z-index:1000;
+  right:max(16px,env(safe-area-inset-right));
+  bottom:max(14px,env(safe-area-inset-bottom));
+  width:auto;
+  color:#203b43;
+  background:transparent;
+  border:0;
+  pointer-events:none
+}
+.amaana-companion a{
+  color:#285f9f;
+  text-decoration:underline;
+  text-decoration-color:rgb(225 181 33 / 75%);
+  text-underline-offset:3px
+}
+.amaana-companion button,.amaana-companion select{font:inherit;cursor:pointer}
+.amaana-companion-dock{
+  max-width:none;
+  margin:0;
+  padding:0;
+  display:flex;
+  flex-wrap:nowrap;
+  justify-content:flex-end;
+  gap:8px;
+  pointer-events:auto
+}
+.amaana-companion-dock>button{
+  position:relative;
+  display:flex;
+  align-items:center;
+  gap:9px;
+  min-height:3.55rem;
+  padding:.62rem .9rem;
+  border:1px solid rgb(225 181 33 / 70%);
+  border-radius:999px;
+  background:linear-gradient(135deg,var(--companion-navy),#1d527f);
+  color:var(--companion-ivory);
+  box-shadow:0 .7rem 2rem rgb(16 47 85 / 24%);
+  font-size:13px;
+  font-weight:650;
+  transition:transform .2s ease,box-shadow .2s ease,background .2s ease
+}
+.amaana-companion-dock>button:hover,
+.amaana-companion-dock>button[aria-expanded=true]{
+  transform:translateY(-2px);
+  background:linear-gradient(135deg,#153c69,#2867a5);
+  box-shadow:0 .9rem 2.4rem rgb(16 47 85 / 30%)
+}
+.amaana-companion-dock>button>span:last-child{display:grid;text-align:left;line-height:1.1}
+.amaana-companion-dock>button strong{font-size:.76rem;letter-spacing:.02em}
+.amaana-companion-dock>button small{
+  margin-top:.2rem;
+  color:rgb(255 250 240 / 72%);
+  font-size:.56rem;
+  font-weight:500;
+  letter-spacing:.025em
+}
+.amaana-companion-dock-icons{display:flex;align-items:center;margin-right:.15rem}
+.amaana-companion-dock-icons svg{width:1.05rem;height:1.05rem}
+.amaana-companion-dock-icons svg+svg{
+  margin-left:-.22rem;
+  margin-top:.75rem;
+  color:var(--companion-gold)
+}
+
+.amaana-companion-panel{
+  position:fixed;
+  z-index:1100;
+  right:max(20px,env(safe-area-inset-right));
+  bottom:calc(max(16px,env(safe-area-inset-bottom)) + 4.4rem);
+  width:min(27.5rem,calc(100vw - 2rem));
+  max-height:min(44rem,calc(100dvh - 8rem - env(safe-area-inset-top)));
+  pointer-events:auto;
+  overflow:hidden;
+  padding:0;
+  border:1px solid rgb(225 181 33 / 42%);
+  border-radius:1.25rem;
+  background:linear-gradient(155deg,#fffdf7 0%,#fff9eb 100%);
+  color:var(--companion-ink);
+  box-shadow:0 1.5rem 4.5rem rgb(16 47 85 / 28%);
+  overscroll-behavior:contain;
+  scrollbar-color:#c7a73c #f6eedc;
+  scrollbar-width:thin
+}
+.amaana-companion-panel::before{
+  content:"";
+  position:absolute;
+  inset:0 0 auto;
+  z-index:2;
+  height:.25rem;
+  background:linear-gradient(90deg,var(--companion-gold),#f1d46d 42%,var(--companion-blue))
+}
+.amaana-companion-panel>p{padding:1.25rem}
+.amaana-companion-panel p{font-size:15px;line-height:1.65}
+.amaana-companion-head{
+  position:sticky;
+  top:0;
+  z-index:3;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  padding:1.25rem 1.25rem .85rem;
+  background:rgb(255 253 247 / 96%);
+  backdrop-filter:blur(12px)
+}
+.amaana-companion-kicker{
+  display:block;
+  margin-bottom:.28rem;
+  color:#a57a08;
+  font-size:.58rem;
+  font-weight:900;
+  letter-spacing:.16em
+}
+.amaana-companion-head h2{
+  margin:0;
+  color:var(--companion-navy);
+  font:28px/1.1 Georgia,serif;
+  letter-spacing:-.02em
+}
+.amaana-companion-head button{
+  flex:0 0 44px;
+  display:grid;
+  place-items:center;
+  width:44px;
+  height:44px;
+  margin:0;
+  border:1px solid rgb(16 47 85 / 10%);
+  border-radius:999px;
+  background:transparent;
+  color:var(--companion-navy)
+}
+.amaana-companion-head button:hover{background:#eee6d5}
+.amaana-companion-tabs{
+  position:sticky;
+  top:4.65rem;
+  z-index:3;
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:.25rem;
+  margin:0 1.25rem;
+  padding:.25rem;
+  border:1px solid rgb(16 47 85 / 10%);
+  border-radius:.8rem;
+  background:#f3ecdd;
+  box-shadow:inset 0 1px 2px rgb(16 47 85 / 5%)
+}
+.amaana-companion-tabs button{
+  min-height:2.55rem;
+  border:0;
+  border-radius:.62rem;
+  background:transparent;
+  color:#536477;
+  font-size:.72rem;
+  font-weight:800
+}
+.amaana-companion-tabs button[aria-selected=true]{
+  background:linear-gradient(135deg,var(--companion-navy),#245f98);
+  color:#fffaf0;
+  box-shadow:0 .3rem .8rem rgb(16 47 85 / 16%)
+}
+.amaana-companion-view{
+  max-height:calc(min(44rem,100dvh - 8rem) - 8.2rem);
+  padding:1rem 1.25rem 1.35rem;
+  overflow-y:auto
+}
+.amaana-companion-panel .amaana-companion-note{
+  margin:8px 0 14px;
+  color:#637083;
+  font-size:12px;
+  line-height:1.55
+}
+.amaana-companion-panel h3{margin:0 0 14px;color:#294e54;font-size:14px}
+.amaana-companion-panel .amaana-arabic{
+  margin:20px 0;
+  color:var(--companion-navy);
+  font-family:"Noto Naskh Arabic","Traditional Arabic","Geeza Pro",serif;
+  font-size:30px;
+  font-weight:400;
+  line-height:1.95;
+  text-align:right
+}
+.amaana-daily-ayah{
+  margin-top:1.15rem;
+  padding:1rem;
+  border:1px solid rgb(16 47 85 / 9%);
+  border-radius:.9rem;
+  background:rgb(255 255 255 / 58%)
+}
+.amaana-daily-ayah blockquote{
+  margin:0;
+  color:var(--companion-navy);
+  font:20px/1.55 Georgia,serif
+}
+.amaana-daily-ayah>a,.amaana-daily-hadith>a{
+  display:inline-block;
+  padding:6px 0;
+  font-size:13px;
+  line-height:1.6
+}
+.amaana-daily-hadith{
+  margin-top:.8rem;
+  padding:1rem;
+  border:1px solid rgb(16 47 85 / 9%);
+  border-radius:.9rem;
+  background:rgb(255 255 255 / 58%)
+}
+.amaana-daily-hadith h4{
+  margin:0 0 12px;
+  color:var(--companion-navy);
+  font:22px/1.3 Georgia,serif
+}
+.amaana-companion-action,.amaana-companion-error button{
+  display:inline-block;
+  min-height:44px;
+  margin-top:20px;
+  padding:10px 16px;
+  border:1px solid var(--companion-navy);
+  border-radius:999px;
+  background:linear-gradient(135deg,var(--companion-navy),#245f98);
+  color:#fffaf0;
+  box-shadow:0 .35rem .9rem rgb(16 47 85 / 14%);
+  font-size:13px
+}
+.amaana-companion-action:hover,.amaana-companion-error button:hover{background:#285763}
+.amaana-companion-details{
+  margin-top:20px;
+  padding-top:16px;
+  border-top:1px solid #ded5c5;
+  font-size:13px
+}
+.amaana-companion-details summary{min-height:32px;cursor:pointer;color:#234e67}
+.amaana-companion-details p{font-size:13px}
+.amaana-companion-location{margin:0 0 24px;font-weight:650}
+.amaana-companion-location span{
+  display:block;
+  margin-top:3px;
+  font-size:12px;
+  font-weight:400
+}
+.amaana-hijri{
+  padding:1rem;
+  border:1px solid rgb(16 47 85 / 9%);
+  border-radius:.9rem;
+  background:rgb(255 255 255 / 58%)
+}
+.amaana-hijri strong{
+  display:block;
+  color:var(--companion-navy);
+  font:25px/1.35 Georgia,serif
+}
+.amaana-hijri p{margin:10px 0 6px;font-size:13px}
+.amaana-hijri small{
+  display:block;
+  color:#50605c;
+  font-size:11px;
+  line-height:1.6
+}
+.amaana-asr-choice{display:block;margin:22px 0;font-size:13px}
+.amaana-asr-choice select{
+  display:block;
+  width:100%;
+  min-height:44px;
+  margin-top:8px;
+  padding:10px;
+  border:1px solid rgb(16 47 85 / 22%);
+  border-radius:.65rem;
+  background:#fffdf8;
+  color:#203b43;
+  font-size:14px
+}
+.amaana-next-salah{
+  padding:18px;
+  border:1px solid rgb(225 181 33 / 55%);
+  border-radius:8px;
+  background:linear-gradient(135deg,var(--companion-navy),#245f98);
+  color:#fffaf0;
+  box-shadow:0 .5rem 1.3rem rgb(16 47 85 / 14%)
+}
+.amaana-next-salah span{display:block;margin-bottom:8px;font-size:12px}
+.amaana-next-salah strong{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  font:27px/1.3 Georgia,serif
+}
+.amaana-salah-times{margin:16px 0;font-variant-numeric:tabular-nums}
+.amaana-salah-times>div{
+  display:flex;
+  justify-content:space-between;
+  gap:16px;
+  padding:11px 4px;
+  border-bottom:1px solid rgb(16 47 85 / 10%);
+  font-size:14px
+}
+.amaana-salah-times dd{margin:0;font-weight:650}
+.amaana-salah-times .is-next{color:#9a7207;font-weight:750}
+.amaana-companion-error p{color:#853b26}
+.amaana-reminders :focus-visible,.amaana-companion :focus-visible{
+  outline:3px solid var(--companion-gold,#8f691e);
+  outline-offset:4px
+}
+.amaana-reminders ::selection,.amaana-companion ::selection{background:#d9c18b;color:#173e47}
+
+@media(max-width:900px){
+  .amaana-reminder-inner{min-height:4.35rem}
+  .amaana-reminder-content{grid-template-columns:auto minmax(0,1fr) auto}
+  .amaana-reminder-content p,.amaana-reminder-source{display:none}
+}
 @media(max-width:640px){
-  .amaana-reminder-inner{grid-template-columns:auto minmax(0,1fr)}
+  .amaana-reminder-inner{
+    grid-template-columns:auto minmax(0,1fr);
+    min-height:4rem;
+    padding:.48rem 0;
+    gap:.55rem
+  }
   .amaana-live-badge{font-size:.58rem;gap:.35rem}
   .amaana-live-badge::after{content:none}
   .amaana-live-badge.is-reminder{font-size:.55rem}
-}
+  .amaana-reminder-stage{width:auto}
+  .amaana-reminder-content{
+    width:auto;
+    min-height:2.6rem;
+    grid-template-columns:minmax(0,1fr) auto;
+    gap:.12rem .45rem
+  }
+  .amaana-reminder-eyebrow{grid-column:1;font-size:.55rem}
+  .amaana-reminder-content strong{grid-column:1;font-size:.78rem}
+  .amaana-live-cta{
+    grid-column:2;
+    grid-row:1 / span 2;
+    min-height:2rem;
+    padding:.35rem .58rem;
+    font-size:.62rem
+  }
 
-
-/* Rendered acceptance: one visible reminder label and a truly contained mobile Companion trigger. */
-.amaana-live-badge.is-reminder + .amaana-reminder-stage .amaana-reminder-eyebrow{display:none}
-@media(max-width:640px){
   .amaana-companion-dock{max-width:none}
-  .amaana-companion-dock>button{width:2.8rem;min-width:2.8rem;max-width:2.8rem;height:2.8rem;min-height:2.8rem;padding:0;justify-content:center;overflow:hidden}
-  .amaana-companion-dock>button>span:last-child{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap}
+  .amaana-companion-dock>button{
+    width:2.8rem;
+    min-width:2.8rem;
+    max-width:2.8rem;
+    height:2.8rem;
+    min-height:2.8rem;
+    padding:0;
+    justify-content:center;
+    overflow:hidden
+  }
+  .amaana-companion-dock>button>span:last-child{
+    position:absolute;
+    width:1px;
+    height:1px;
+    padding:0;
+    margin:-1px;
+    overflow:hidden;
+    clip:rect(0,0,0,0);
+    clip-path:inset(50%);
+    white-space:nowrap
+  }
   .amaana-companion-dock-icons{margin:0}
+  .amaana-companion-panel{
+    right:var(--af-public-gutter);
+    bottom:calc(max(var(--af-public-gutter),env(safe-area-inset-bottom)) + 3.4rem);
+    width:calc(100% - (var(--af-public-gutter) * 2));
+    max-height:calc(100dvh - 5.2rem - env(safe-area-inset-top));
+    border-radius:1rem
+  }
+  .amaana-companion-view{max-height:calc(100dvh - 13rem)}
 }
-
-/* Keep the fixed Companion below sticky global chrome at every desktop height. */
-@media(min-width:901px){.amaana-companion-panel{max-height:min(44rem,calc(100dvh - var(--af-chrome-height,4.25rem) - 6.25rem));}}
+@media(min-width:901px){
+  .amaana-companion-panel{
+    max-height:min(44rem,calc(100dvh - var(--af-chrome-height,4.25rem) - 6.25rem))
+  }
+}
+@media(prefers-reduced-motion:reduce){
+  .amaana-reminder-content{animation:none}
+  .amaana-live-cta,.amaana-companion-dock>button{transition:none}
+}
+@media print{
+  .amaana-companion,.amaana-reminders{display:none}
+  body{padding-bottom:0}
+}
