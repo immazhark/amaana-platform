@@ -284,22 +284,40 @@ test('ultra-wide focus carousel shows three complete cards without a clipped fou
 
   const metrics = await carousel.evaluate(root => {
     const viewport = root.querySelector('[id^="carousel-"]')?.getBoundingClientRect();
-    const slides = Array.from(root.querySelectorAll('[class*="slide"]')).map(slide => slide.getBoundingClientRect());
+    const slides = Array.from(root.querySelectorAll('[class*="slide"]'));
     if (!viewport) return null;
-    const visible = slides.filter(rect => rect.right > viewport.left + 1 && rect.left < viewport.right - 1);
-    const fullyVisible = visible.filter(rect => rect.left >= viewport.left - 1 && rect.right <= viewport.right + 1);
+
+    const visible = slides
+      .map(slide => ({
+        rect: slide.getBoundingClientRect(),
+        active: slide.className.includes('activeSlide'),
+      }))
+      .filter(item => item.rect.right > viewport.left + 1 && item.rect.left < viewport.right - 1);
+
+    const fullyVisible = visible.filter(
+      item => item.rect.left >= viewport.left - 1 && item.rect.right <= viewport.right + 1,
+    );
+    const inactiveWidths = fullyVisible.filter(item => !item.active).map(item => item.rect.width);
+    const activeWidths = fullyVisible.filter(item => item.active).map(item => item.rect.width);
+
     return {
       visibleCount: visible.length,
       fullyVisibleCount: fullyVisible.length,
       partialCount: visible.length - fullyVisible.length,
-      widths: fullyVisible.map(rect => rect.width),
+      inactiveWidths,
+      activeWidths,
     };
   });
+
   expect(metrics).toBeTruthy();
   expect(metrics.visibleCount).toBe(3);
   expect(metrics.fullyVisibleCount).toBe(3);
   expect(metrics.partialCount).toBe(0);
-  expect(Math.max(...metrics.widths) - Math.min(...metrics.widths)).toBeLessThanOrEqual(2);
+  expect(metrics.activeWidths).toHaveLength(1);
+  expect(metrics.inactiveWidths).toHaveLength(2);
+  expect(Math.abs(metrics.inactiveWidths[0] - metrics.inactiveWidths[1])).toBeLessThanOrEqual(2);
+  expect(metrics.activeWidths[0]).toBeGreaterThan(metrics.inactiveWidths[0]);
+  expect(metrics.activeWidths[0] - metrics.inactiveWidths[0]).toBeLessThanOrEqual(16);
 });
 
 test('mobile companion dock does not cover visible main-page controls', async ({ page }) => {
