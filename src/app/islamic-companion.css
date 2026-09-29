@@ -214,7 +214,6 @@
   height:.25rem;
   background:linear-gradient(90deg,var(--companion-gold),#f1d46d 42%,var(--companion-blue))
 }
-.amaana-companion-panel>p{padding:1.25rem}
 .amaana-companion-panel p{font-size:15px;line-height:1.65}
 .amaana-companion-head{
   position:sticky;
@@ -239,7 +238,9 @@
 .amaana-companion-head h2{
   margin:0;
   color:var(--companion-navy);
-  font:28px/1.1 Georgia,serif;
+  font-family:Georgia,serif;
+  font-size:1.55rem;
+  line-height:1.1;
   letter-spacing:-.02em
 }
 .amaana-companion-head button{
@@ -297,7 +298,6 @@
 .amaana-companion-panel h3{margin:0 0 14px;color:#294e54;font-size:14px}
 .amaana-companion-panel .amaana-arabic{
   margin:20px 0;
-  color:var(--companion-navy);
   font-family:"Noto Naskh Arabic","Traditional Arabic","Geeza Pro",serif;
   font-size:30px;
   font-weight:400;
