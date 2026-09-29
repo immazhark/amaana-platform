@@ -53,7 +53,10 @@
   --af-text-display: clamp(2.55rem, 7vw, 5rem);
 
   /* Content measure */
-  --af-content-wide: 74rem;
+  --af-public-shell: 74rem;
+  --af-public-gutter: clamp(.75rem, 2.2vw, 1rem);
+  --af-public-edge: max(var(--af-public-gutter), calc((100vw - var(--af-public-shell)) / 2));
+  --af-content-wide: var(--af-public-shell);
   --af-content-reading: 60ch;
   --af-content-editorial: 68ch;
 
@@ -98,7 +101,7 @@ a { color: inherit; text-decoration: none; }
 button, input, select, textarea { font: inherit; }
 button, a { -webkit-tap-highlight-color: transparent; }
 :focus-visible { outline: 3px solid var(--af-color-focus); outline-offset: 3px; }
-.container { width: min(calc(100% - 2rem), var(--max-width)); margin-inline: auto; }
+.container { width: min(calc(100% - (var(--af-public-gutter) * 2)), var(--af-public-shell)); margin-inline: auto; }
 .section { padding-block: var(--space-section); }
 .eyebrow { color: var(--color-primary); font-size: .78rem; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
 h1, h2, h3 { line-height: 1.12; letter-spacing: -.025em; margin: 0 0 1rem; }
@@ -243,3 +246,5 @@ dd { margin: .25rem 0 0; white-space: pre-wrap; }
 
 @media (min-width: 761px) { .mobile-menu-backdrop { display: none; } }
 @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
+@media (min-width: 1600px) { :root { --af-public-shell: 88rem; } }

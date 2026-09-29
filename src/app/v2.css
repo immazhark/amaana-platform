@@ -13,7 +13,7 @@
   color: var(--v2-ink);
   overflow: hidden;
 }
-.v2-shell { width: min(calc(100% - 2rem), 74rem); margin-inline: auto; }
+.v2-shell { width: min(calc(100% - (var(--af-public-gutter) * 2)), var(--af-public-shell)); margin-inline: auto; }
 .v2-impact-marquee-track { max-width: 74rem; }
 .v2-kicker,.v2-section-label { color: var(--v2-gold-ink); font-size: .76rem; font-weight: 800; letter-spacing: .16em; text-transform: uppercase; }
 .v2-section.dark :is(.v2-kicker,.v2-section-label) { color: var(--v2-gold-soft); }

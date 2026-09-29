@@ -143,14 +143,12 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 /* Canonical cross-route visual reconciliation.
    Route styles may own composition; these rules keep geometry, rhythm and surfaces recognizably Amaana. */
 :root{
-  --af-public-shell:74rem;
-  --af-public-gutter:clamp(.75rem,2.2vw,1rem);
   --af-section-space:clamp(4.5rem,8vw,7.5rem);
   --af-card-radius:1.25rem;
   --af-card-border:rgb(117 86 7 / 16%);
   --af-card-shadow:0 16px 42px rgb(18 34 57 / 7%);
 }
-:is(.v2-shell,.v3-shell,.page-hero__shell,.site-header .container,.site-footer>.container){
+:is(.v2-shell,.v3-shell,.page-hero__shell,main .container,.site-header .container,.site-footer>.container){
   width:min(calc(100% - (var(--af-public-gutter) * 2)),var(--af-public-shell));
   margin-inline:auto;
 }
@@ -344,10 +342,18 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 .site-header .nav-link:is(:hover,:focus-visible,.active)::after{opacity:1;transform:scaleX(1)}
 .site-footer{border-top:1px solid rgb(240 213 107 / 16%)}
 .site-footer .footer-lead{
-  max-width:58rem;
+  width:100%;
+  max-width:none;
   margin-bottom:0;
   padding-block:1.25rem;
+  grid-template-columns:minmax(0,1fr) auto;
+  grid-template-areas:"kicker actions" "title actions";
+  column-gap:clamp(2rem,5vw,5rem);
+  align-items:end;
 }
+.site-footer .footer-kicker{grid-area:kicker}
+.site-footer .footer-lead h2{grid-area:title}
+.site-footer .footer-lead-actions{grid-area:actions;align-self:center}
 .site-footer .footer-lead h2{
   max-width:18ch;
   margin:.35rem 0 .65rem;
@@ -373,6 +379,10 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 @media(max-width:900px){
   .site-header .nav{min-height:4.25rem}
   .site-header .brand-lockup{width:4.25rem}
+}
+@media(max-width:760px){
+  .site-footer .footer-lead{grid-template-columns:1fr;grid-template-areas:"kicker" "title" "actions";align-items:start}
+  .site-footer .footer-lead-actions{justify-content:flex-start}
 }
 @media(max-width:600px){
   .site-footer .footer-lead{padding-block:1.4rem}
@@ -767,7 +777,6 @@ body:not(:has(main > .v3-home)) .footer-kicker{font-size:.7rem}
 
 /* 2026-09-29 wide-monitor composition: use the canvas without stretching reading measure. */
 @media(min-width:1600px){
-  :root{--af-public-shell:88rem}
   :is(.v2-section-head,.v3-section-head){
     grid-template-columns:minmax(0,1.08fr) minmax(20rem,.92fr);
     gap:clamp(2rem,3vw,3.5rem);

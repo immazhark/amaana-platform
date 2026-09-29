@@ -1,6 +1,6 @@
 /* Companion surfaces inherit Amaana's ink, cream and restrained gold. */
 .amaana-reminders { background: #f4efe3; color: #203b43; border-bottom: 1px solid #d7cfbc; }
-.amaana-reminder-inner { max-width: 1320px; margin: auto; padding: 14px 32px; display: flex; gap: 28px; align-items: center; justify-content: space-between; }
+.amaana-reminder-inner { width: min(calc(100% - (var(--af-public-gutter) * 2)), var(--af-public-shell)); max-width: none; margin-inline: auto; padding: 14px 0; display: flex; gap: 28px; align-items: center; justify-content: space-between; }
 .amaana-reminder-content { max-width: 82ch; min-width: 0; }
 .amaana-reminder-content strong { font-size: 15px; line-height: 1.4; }
 .amaana-reminder-content p { margin: 3px 0; font-size: 13px; line-height: 1.55; }
@@ -11,7 +11,7 @@
 .amaana-reminder-controls button, .amaana-reminder-schedule > button { min-height: 44px; padding: 8px 12px; border: 1px solid #9b927c; border-radius: 6px; color: #203b43; background: transparent; font-size: 12px; }
 .amaana-reminders button:hover { background: #e7ddc8; }
 .amaana-reminders button:disabled { opacity: .7; cursor: default; }
-.amaana-reminder-schedule { max-width: 1320px; margin: auto; padding: 8px 32px 24px; }
+.amaana-reminder-schedule { width: min(calc(100% - (var(--af-public-gutter) * 2)), var(--af-public-shell)); max-width: none; margin-inline: auto; padding: 8px 0 24px; }
 .amaana-reminder-schedule h2 { font: 26px/1.3 Georgia, serif; margin: 12px 0 20px; }
 .amaana-reminder-schedule dl { display: grid; grid-template-columns: 1fr 1fr; gap: 18px 32px; margin: 0; }
 .amaana-reminder-schedule dt { font-weight: 700; font-size: 14px; }
@@ -97,7 +97,7 @@
 /* Amaana Live — compact editorial broadcast rail. */
 .amaana-reminders{position:relative;overflow:hidden;border-bottom:1px solid rgb(18 34 57 / 10%);background:linear-gradient(90deg,#f8f3e8 0%,#f4efe3 62%,#edf2ed 100%)}
 .amaana-reminders::before{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgb(224 179 24 / 7%) 48%,transparent);pointer-events:none}
-.amaana-reminder-inner{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:clamp(.8rem,2vw,1.5rem);min-height:4.65rem;max-width:1360px;padding:.55rem clamp(1rem,3vw,2.25rem)}
+.amaana-reminder-inner{position:relative;display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:clamp(.8rem,2vw,1.5rem);width:min(calc(100% - (var(--af-public-gutter) * 2)),var(--af-public-shell));max-width:none;min-height:4.65rem;margin-inline:auto;padding:.55rem 0}
 .amaana-live-badge{display:flex;align-items:center;gap:.5rem;align-self:center;color:#173e47;font-size:.66rem;font-weight:900;letter-spacing:.13em;white-space:nowrap}
 .amaana-live-badge span{width:.48rem;height:.48rem;border-radius:50%;background:#b4432f;box-shadow:0 0 0 .24rem rgb(180 67 47 / 10%)}
 .amaana-reminder-stage{min-width:0;overflow:hidden;align-self:center}
@@ -120,7 +120,7 @@
   .amaana-reminder-controls .amaana-schedule-trigger{display:none}
 }
 @media(max-width:640px){
-  .amaana-reminder-inner{display:grid;grid-template-columns:auto minmax(0,1fr) auto;min-height:4rem;padding:.48rem .7rem;gap:.55rem}
+  .amaana-reminder-inner{display:grid;grid-template-columns:auto minmax(0,1fr) auto;min-height:4rem;padding:.48rem 0;gap:.55rem}
   .amaana-live-badge{font-size:0;gap:0}.amaana-live-badge::after{content:"LIVE";font-size:.58rem;letter-spacing:.08em}.amaana-live-badge span{margin-right:.3rem}
   .amaana-reminder-stage{width:auto}
   .amaana-reminder-content{width:auto;min-height:2.6rem;grid-template-columns:minmax(0,1fr) auto;gap:.12rem .45rem}
