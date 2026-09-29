@@ -431,8 +431,8 @@ test('mobile floating companion and Back to top controls do not overlap', async 
   expect(fixedGeometry.position).toBe('fixed');
   expect(fixedGeometry.rightGap).toBeGreaterThanOrEqual(0);
   expect(fixedGeometry.rightGap).toBeLessThanOrEqual(24);
-  expect(fixedGeometry.bottomGap).toBeGreaterThanOrEqual(0);
-  expect(fixedGeometry.bottomGap).toBeLessThanOrEqual(24);
+  expect(fixedGeometry.bottomGap).toBeGreaterThanOrEqual(48);
+  expect(fixedGeometry.bottomGap).toBeLessThanOrEqual(80);
   expect(fixedGeometry.dockDirection).toBe('column');
   expect(fixedGeometry.dockWidth).toBeLessThanOrEqual(150);
   expect(fixedGeometry.dockHeight).toBeLessThanOrEqual(100);

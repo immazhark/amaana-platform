@@ -278,7 +278,11 @@ test('recognition record never relies on an embedded PDF renderer for its primar
 
 test('ultra-wide focus carousel shows three complete cards without a clipped fourth preview', async ({ page }) => {
   await open(page, '/', 2560);
-  const metrics = await page.locator('[aria-label="Amaana programme areas"]').evaluate(root => {
+  const carousel = page.locator('[aria-label="Amaana programme areas"]');
+  await carousel.getByRole('button', { name: 'Next slide' }).click();
+  await expect(carousel.locator('[aria-live="polite"]')).toContainText('2 / 5');
+
+  const metrics = await carousel.evaluate(root => {
     const viewport = root.querySelector('[id^="carousel-"]')?.getBoundingClientRect();
     const slides = Array.from(root.querySelectorAll('[class*="slide"]')).map(slide => slide.getBoundingClientRect());
     if (!viewport) return null;
