@@ -5,6 +5,7 @@ const root = process.cwd();
 const layoutPath = path.join(root, 'src/app/layout.tsx');
 const homePath = path.join(root, 'src/app/page.tsx');
 const homeDocumentaryPath = path.join(root, 'src/app/home-documentary.css');
+const retiredHomeMediaPolishPath = path.join(root, 'src/app/home-media-polish.css');
 const brandExpressionPath = path.join(root, 'src/app/brand-expression.css');
 const retiredIterationThreePath = path.join(root, 'src/app/iteration-three.css');
 const layout = await readFile(layoutPath, 'utf8');
@@ -57,8 +58,21 @@ if (!home.match(/import\s+["']\.\/home-documentary\.css["'];/)) {
   failures.push('Homepage must import its route-scoped home-documentary.css stylesheet.');
 }
 
-if (!homeDocumentary.match(/@import\s+["']\.\/home-media-polish\.css["'];/)) {
-  failures.push('home-documentary.css must carry the homepage-only hero media layer.');
+for (const requiredRule of [
+  '.v3-home-banner-media{',
+  '.v3-home-banner-media>.v2-media-item',
+  '.v3-home-banner-media :is(img,video)',
+]) {
+  if (!homeDocumentary.includes(requiredRule)) {
+    failures.push(`home-documentary.css is missing live homepage hero-media rule ${requiredRule}.`);
+  }
+}
+
+try {
+  await stat(retiredHomeMediaPolishPath);
+  failures.push('Retired src/app/home-media-polish.css still exists; the live homepage hero-media layer now belongs directly to home-documentary.css.');
+} catch (error) {
+  if (!error || typeof error !== 'object' || !('code' in error) || error.code !== 'ENOENT') throw error;
 }
 
 let sourceBytes = 0;
