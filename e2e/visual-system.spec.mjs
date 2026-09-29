@@ -276,6 +276,49 @@ test('recognition record never relies on an embedded PDF renderer for its primar
   await expect(page.getByRole('link', { name: 'Open original certificate' })).toBeVisible();
 });
 
+test('ultra-wide focus carousel shows three complete cards without a clipped fourth preview', async ({ page }) => {
+  await open(page, '/', 2560);
+  const metrics = await page.locator('[aria-label="Amaana programme areas"]').evaluate(root => {
+    const viewport = root.querySelector('[id^="carousel-"]')?.getBoundingClientRect();
+    const slides = Array.from(root.querySelectorAll('[class*="slide"]')).map(slide => slide.getBoundingClientRect());
+    if (!viewport) return null;
+    const visible = slides.filter(rect => rect.right > viewport.left + 1 && rect.left < viewport.right - 1);
+    const fullyVisible = visible.filter(rect => rect.left >= viewport.left - 1 && rect.right <= viewport.right + 1);
+    return {
+      visibleCount: visible.length,
+      fullyVisibleCount: fullyVisible.length,
+      partialCount: visible.length - fullyVisible.length,
+      widths: fullyVisible.map(rect => rect.width),
+    };
+  });
+  expect(metrics).toBeTruthy();
+  expect(metrics.visibleCount).toBe(3);
+  expect(metrics.fullyVisibleCount).toBe(3);
+  expect(metrics.partialCount).toBe(0);
+  expect(Math.max(...metrics.widths) - Math.min(...metrics.widths)).toBeLessThanOrEqual(2);
+});
+
+test('mobile companion dock does not cover visible main-page controls', async ({ page }) => {
+  await open(page, '/about', 390);
+  const collisions = await page.evaluate(() => {
+    const dock = document.querySelector('.amaana-companion-dock')?.getBoundingClientRect();
+    if (!dock) return ['missing companion dock'];
+    const overlaps = (a, b) => !(
+      a.right <= b.left || b.right <= a.left || a.bottom <= b.top || b.bottom <= a.top
+    );
+    return Array.from(document.querySelectorAll('main a, main button'))
+      .filter(element => {
+        const style = getComputedStyle(element);
+        const rect = element.getBoundingClientRect();
+        const visible = style.display !== 'none' && style.visibility !== 'hidden' && Number(style.opacity) > 0;
+        const inViewport = rect.bottom > 0 && rect.top < innerHeight && rect.right > 0 && rect.left < innerWidth;
+        return visible && inViewport && overlaps(dock, rect);
+      })
+      .map(element => (element.getAttribute('aria-label') || element.textContent || element.tagName).trim().slice(0, 80));
+  });
+  expect(collisions).toEqual([]);
+});
+
 test('hero primary and secondary actions have equal canonical height', async ({ page }) => {
   await open(page, '/about');
   const actions = page.locator('.page-hero__actions .page-hero__button');

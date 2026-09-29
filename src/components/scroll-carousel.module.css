@@ -46,16 +46,17 @@
 
 /* 2026-09-29 owner monitor QA: balanced wide discovery without breaking centered focus semantics. */
 @media(min-width:1200px){
-  .focus .viewport{scroll-padding-inline:calc((100cqw - min(30cqw,26rem))/2)}
+  .focus{--focus-wide-slide:calc((100cqw - 2rem)/3)}
+  .focus .viewport{scroll-padding-inline:calc((100cqw - var(--focus-wide-slide))/2)}
   .focus .track{
     width:max-content;
     min-width:100%;
-    padding:.8rem calc((100cqw - min(30cqw,26rem))/2) 1.25rem;
+    padding:.8rem calc((100cqw - var(--focus-wide-slide))/2) 1.25rem;
     gap:1rem
   }
   .focus .slide{
-    width:min(30cqw,26rem);
-    flex:0 0 min(30cqw,26rem);
+    width:var(--focus-wide-slide);
+    flex:0 0 var(--focus-wide-slide);
     opacity:.82;
     transform:scale(.97);
     filter:saturate(.9);

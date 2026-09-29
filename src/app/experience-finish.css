@@ -803,3 +803,15 @@ body:not(:has(main > .v3-home)) .footer-kicker{font-size:.7rem}
   :root{--af-section-space:clamp(3.75rem,4.5vw,5rem)}
   :is(.v2-closing,.v3-closing){padding-block:clamp(4rem,5vw,5.5rem)}
 }
+
+
+/* 2026-09-29 mobile collision safety: keep Companion bottom-right without covering primary page actions. */
+@media(max-width:600px){
+  .amaana-companion{
+    --af-companion-mobile-bottom:max(4.25rem,calc(env(safe-area-inset-bottom) + 1rem));
+    bottom:var(--af-companion-mobile-bottom)
+  }
+  .amaana-companion-panel{
+    bottom:calc(var(--af-companion-mobile-bottom) + 3.4rem)
+  }
+}
