@@ -541,10 +541,11 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 .page-hero--level1 .page-hero__visual-fallback strong{color:#fffdf8}
 .site-footer .footer-lead{max-width:none;padding-right:var(--amaana-emblem-space);min-height:calc(var(--amaana-emblem-width) * 500 / 276)}
 @media(max-width:900px){
-  .page-hero--level1 .page-hero__shell{padding-right:0;padding-top:12rem}
-  .page-hero--level1 .page-hero__grid{grid-template-columns:1fr;padding-top:1.5rem}
-  .page-hero--level1 .page-hero__copy{background:#eee5d2;border:1px solid rgb(117 86 7 / 12%);border-radius:1rem;padding:1.25rem}
-  .site-footer .footer-lead{padding-right:0;padding-top:10rem}
+  .page-hero--level1>.amaana-backdrop-emblem,.site-footer>.amaana-backdrop-emblem{display:none}
+  .page-hero--level1 .page-hero__shell{padding-right:0;padding-top:0}
+  .page-hero--level1 .page-hero__grid{grid-template-columns:1fr;padding-top:0}
+  .page-hero--level1 .page-hero__copy{background:transparent;border:0;border-radius:0;padding:0}
+  .site-footer .footer-lead{min-height:0;padding-right:0;padding-top:1.4rem}
 }
 
 
@@ -818,6 +819,7 @@ body:not(:has(main > .v3-home)) .footer-kicker{font-size:.7rem}
 @media(max-width:600px){
   .amaana-companion{
     --af-companion-mobile-bottom:max(4.25rem,calc(env(safe-area-inset-bottom) + 1rem));
+    right:max(var(--af-public-gutter),env(safe-area-inset-right));
     bottom:var(--af-companion-mobile-bottom)
   }
   .amaana-companion-panel{

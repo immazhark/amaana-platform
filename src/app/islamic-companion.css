@@ -84,10 +84,10 @@
   .amaana-reminder-controls button { min-height: 44px; }
   .amaana-reminder-schedule { padding: 8px 18px 24px; }
   .amaana-reminder-schedule dl { grid-template-columns: 1fr; }
-  .amaana-companion { right: max(8px, env(safe-area-inset-right)); bottom: max(8px, env(safe-area-inset-bottom)); }
+  .amaana-companion { right: max(var(--af-public-gutter), env(safe-area-inset-right)); bottom: max(var(--af-public-gutter), env(safe-area-inset-bottom)); }
   .amaana-companion-dock { flex-direction: column; align-items: flex-end; gap: 6px; }
   .amaana-companion-dock > button { min-height: 42px; max-width: 9rem; padding: 8px 10px; gap: 6px; border-radius: 999px; font-size: 11.5px; line-height: 1.2; white-space: nowrap; box-shadow: 0 4px 16px #122e3920; }
-  .amaana-companion-panel { right: 12px; bottom: calc(max(8px, env(safe-area-inset-bottom)) + 100px); width: calc(100% - 24px); max-height: calc(100dvh - 9rem - env(safe-area-inset-top)); padding: 22px; }
+  .amaana-companion-panel { right: var(--af-public-gutter); bottom: calc(max(var(--af-public-gutter), env(safe-area-inset-bottom)) + 100px); width: calc(100% - (var(--af-public-gutter) * 2)); max-height: calc(100dvh - 9rem - env(safe-area-inset-top)); padding: 22px; }
   .amaana-companion-head h2 { font-size: 26px; }
 }
 @media print { .amaana-companion, .amaana-reminders { display: none; } body { padding-bottom: 0; } }
@@ -169,7 +169,7 @@
 @media(max-width:640px){
  .amaana-companion-dock>button{min-height:2.8rem;max-width:none;padding:.45rem .7rem}
  .amaana-companion-dock>button small{display:none}
- .amaana-companion-panel{right:.65rem;bottom:calc(max(.6rem,env(safe-area-inset-bottom)) + 3.4rem);width:calc(100% - 1.3rem);max-height:calc(100dvh - 5.2rem - env(safe-area-inset-top));border-radius:1rem}
+ .amaana-companion-panel{right:var(--af-public-gutter);bottom:calc(max(var(--af-public-gutter),env(safe-area-inset-bottom)) + 3.4rem);width:calc(100% - (var(--af-public-gutter) * 2));max-height:calc(100dvh - 5.2rem - env(safe-area-inset-top));border-radius:1rem}
  .amaana-companion-view{max-height:calc(100dvh - 13rem)}
 }
 @media(prefers-reduced-motion:reduce){.amaana-companion-dock>button{transition:none}}
