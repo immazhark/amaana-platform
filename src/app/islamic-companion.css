@@ -453,7 +453,7 @@
   .amaana-live-cta{
     grid-column:2;
     grid-row:1 / span 2;
-    min-height:2rem;
+    min-height:44px;
     padding:.35rem .58rem;
     font-size:.62rem
   }
