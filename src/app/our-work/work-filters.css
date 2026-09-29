@@ -96,3 +96,15 @@
 .v2-cause-panel{padding-inline:.85rem}
 }
 @media(prefers-reduced-motion:reduce){.v2-cause-summary-toggle{transition:none}}
+
+
+/* 2026-09-29 owner monitor QA: disclosure metadata stays attached to its category title on wide canvases. */
+@media(min-width:1100px){
+  .v2-cause-summary-heading{
+    grid-template-columns:3.15rem minmax(18rem,34rem) auto 2.2rem;
+    justify-content:start;
+    column-gap:.85rem
+  }
+  .v2-cause-summary-count{justify-self:start}
+  .v2-cause-summary-toggle{justify-self:start}
+}

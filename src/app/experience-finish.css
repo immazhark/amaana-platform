@@ -796,3 +796,10 @@ body:not(:has(main > .v3-home)) .footer-kicker{font-size:.7rem}
     radial-gradient(circle at 82% 18%,rgb(224 179 24 / 12%),transparent 25%),
     linear-gradient(145deg,#0b192c 0%,#172b47 62%,#493f1e 145%)!important
 }
+
+
+/* 2026-09-29 owner monitor QA: cap wide-desktop vertical rhythm so content does not float in oversized cream zones. */
+@media(min-width:1200px){
+  :root{--af-section-space:clamp(3.75rem,4.5vw,5rem)}
+  :is(.v2-closing,.v3-closing){padding-block:clamp(4rem,5vw,5.5rem)}
+}

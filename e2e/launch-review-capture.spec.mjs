@@ -40,13 +40,14 @@ const viewports = [
   { name: 'laptop', width: 1366, height: 900 },
   { name: 'desktop', width: 1440, height: 1000 },
   { name: 'large-desktop', width: 1920, height: 1080 },
+  { name: 'ultra-wide', width: 2560, height: 1440 },
 ];
 
 const outputDir = path.resolve(process.cwd(), 'launch-review');
 const runFullReview = process.env.AMAANA_FULL_VISUAL_REVIEW === 'true';
 const reviewViewports = runFullReview
   ? viewports
-  : viewports.filter(viewport => viewport.name === 'mobile' || viewport.name === 'desktop');
+  : viewports.filter(viewport => viewport.name === 'mobile' || viewport.name === 'desktop' || viewport.name === 'large-desktop');
 
 test.beforeAll(async () => {
   await fs.mkdir(outputDir, { recursive: true });

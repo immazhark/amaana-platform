@@ -217,6 +217,38 @@ test('get involved journey uses substantial desktop cards instead of a tiny five
   expect(metrics.minWidth).toBeGreaterThanOrEqual(300);
 });
 
+test('transparency evidence boundary spans the full canonical comparison grid', async ({ page }) => {
+  await open(page, '/transparency', 1920);
+  const metrics = await page.evaluate(() => {
+    const body = document.querySelector('.canonical-body--comparison')?.getBoundingClientRect();
+    const boundary = document.querySelector('[data-trust-evidence-boundary="transparency"]')?.getBoundingClientRect();
+    return body && boundary ? {
+      bodyWidth: body.width,
+      boundaryWidth: boundary.width,
+      leftDelta: Math.abs(body.left - boundary.left),
+    } : null;
+  });
+  expect(metrics).toBeTruthy();
+  expect(metrics.leftDelta).toBeLessThanOrEqual(2);
+  expect(Math.abs(metrics.bodyWidth - metrics.boundaryWidth)).toBeLessThanOrEqual(4);
+});
+
+test('our work disclosure controls remain visually attached to the category title on wide screens', async ({ page }) => {
+  await open(page, '/our-work', 1920);
+  const metrics = await page.locator('.v2-cause-summary-heading').first().evaluate(row => {
+    const title = row.querySelector('.v2-cause-summary-title')?.getBoundingClientRect();
+    const count = row.querySelector('.v2-cause-summary-count')?.getBoundingClientRect();
+    const toggle = row.querySelector('.v2-cause-summary-toggle')?.getBoundingClientRect();
+    return title && count && toggle ? {
+      titleToCount: count.left - title.right,
+      countToToggle: toggle.left - count.right,
+    } : null;
+  });
+  expect(metrics).toBeTruthy();
+  expect(metrics.titleToCount).toBeLessThanOrEqual(32);
+  expect(metrics.countToToggle).toBeLessThanOrEqual(24);
+});
+
 test('hero primary and secondary actions have equal canonical height', async ({ page }) => {
   await open(page, '/about');
   const actions = page.locator('.page-hero__actions .page-hero__button');
