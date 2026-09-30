@@ -1,6 +1,6 @@
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
-import { randomUUID } from "node:crypto";
+import { createHash, randomUUID } from "node:crypto";
 
 const allowedTypes = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
 const publicMediaTypes = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
@@ -281,6 +281,65 @@ export async function deletePublicMediaObject(objectKey: string) {
   if (!isManagedPublicMediaKey(objectKey)) throw new Error("Invalid managed public media key");
   const { bucket, client } = getPublicMediaStorage();
   await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: objectKey }));
+}
+
+function isPreconditionFailed(error: unknown) {
+  if (!error || typeof error !== "object" || !("$metadata" in error)) return false;
+  return (error as { $metadata?: { httpStatusCode?: number } }).$metadata?.httpStatusCode === 412;
+}
+
+export async function uploadCuratedPublicMediaFile(
+  file: File,
+  objectKey: string,
+  expectedSha256: string,
+) {
+  validatePublicMediaFile(file);
+  if (!isManagedPublicMediaKey(objectKey)) throw new Error("Invalid curated media storage key");
+  if (!/^[a-f0-9]{64}$/.test(expectedSha256)) throw new Error("Invalid curated media SHA-256");
+
+  const bytes = Buffer.from(await file.arrayBuffer());
+  const actualSha256 = createHash("sha256").update(bytes).digest("hex");
+  if (actualSha256 !== expectedSha256) throw new Error("Curated media bytes do not match the approved manifest");
+  if (!hasValidSignature(bytes, file.type)) throw new Error("The curated media does not match its declared file type");
+
+  const dimensions = file.type.startsWith("image/")
+    ? validatePublicImageDimensions(readImageDimensions(bytes, file.type))
+    : null;
+
+  const { bucket, client } = getPublicMediaStorage();
+  try {
+    await client.send(new PutObjectCommand({
+      Bucket: bucket,
+      Key: objectKey,
+      Body: bytes,
+      ContentType: file.type,
+      IfNoneMatch: "*",
+      CacheControl: PRIVATE_OBJECT_CACHE_CONTROL,
+      Metadata: {
+        sha256: expectedSha256,
+        originalName: file.name.slice(0, 255),
+        curatedBatch: "owner-curated-2026-09-30",
+      },
+    }));
+  } catch (error) {
+    if (!isPreconditionFailed(error)) throw error;
+    const existing = await client.send(new HeadObjectCommand({ Bucket: bucket, Key: objectKey }));
+    if (existing.Metadata?.sha256 !== expectedSha256 ||
+        existing.ContentLength !== file.size ||
+        existing.ContentType !== file.type) {
+      throw new Error("Existing curated media object does not match the approved manifest");
+    }
+  }
+
+  return {
+    objectKey,
+    publicUrl: `/media/${objectKey}`,
+    originalName: file.name.slice(0, 255),
+    mimeType: file.type,
+    sizeBytes: file.size,
+    width: dimensions?.width ?? null,
+    height: dimensions?.height ?? null,
+  };
 }
 
 export async function uploadPublicMediaFile(file: File) {
