@@ -123,7 +123,30 @@ export function CuratedGalleryImporter() {
   }
 
   useEffect(() => {
-    void refreshStatus();
+    let cancelled = false;
+    void fetch("/api/admin/media/curated-gallery/status", {
+      credentials: "same-origin",
+      cache: "no-store",
+    })
+      .then(responseJson)
+      .then(result => {
+        if (cancelled) return;
+        const current = result as ImportStatus;
+        setStatus(current);
+        if (current.uploaded === CURATED_GALLERY_RECORD_COUNT && current.published === CURATED_GALLERY_RECORD_COUNT) {
+          setProgress(100);
+          setPhase("All 154 approved gallery images are published.");
+        } else if (current.uploaded === CURATED_GALLERY_RECORD_COUNT) {
+          setProgress(100);
+          setPhase("154 gallery originals are uploaded and attached as unpublished review records. Publication is ready.");
+        }
+      })
+      .catch(() => {
+        // The importer remains usable even if the initial status probe is unavailable.
+      });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   async function publishApprovedBatch() {
