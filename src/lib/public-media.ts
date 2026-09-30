@@ -72,7 +72,6 @@ export function isIdentityPublicImage(asset: PublicMediaCandidate) {
 }
 
 export function selectIdentityPublicImage<T extends PublicMediaCandidate>(assets: readonly T[]) {
-  return assets.find(asset => isIdentityPublicImage(asset))
-    ?? assets.find(asset => isDocumentaryPublicImage(asset))
-    ?? assets.find(asset => asset.kind === "IMAGE" && canRenderPublicMedia(asset));
+  // Supporting-gallery approval is not approval for hero/discovery placement.
+  return assets.find(asset => isIdentityPublicImage(asset));
 }
