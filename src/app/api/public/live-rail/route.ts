@@ -12,8 +12,10 @@ export async function GET() {
       eyebrow: "Live appeal",
       title: appeal.title,
       subtitle: appeal.summary,
-      href: `/donate/${appeal.slug}`,
-      cta: "Donate now",
+      detailsHref: `/appeals/${appeal.slug}`,
+      supportHref: `/donate/${appeal.slug}`,
+      detailsCta: "View",
+      supportCta: "Donate",
     }));
 
     return NextResponse.json(
