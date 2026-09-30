@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
 import { canExposePublicAppeal } from "@/lib/public-environment";
+import { IDENTITY_MEDIA_SORT_ORDER } from "@/lib/public-media";
 import {
   getPublishedFaithContentBySlug,
   getPublishedInitiativeBySlug,
@@ -17,6 +18,11 @@ export const PUBLIC_APPROVED_IMAGE_WHERE = {
   privacyApprovedAt: { not: null },
   publicUrl: { not: null },
   altText: { not: "" },
+};
+
+export const PUBLIC_IDENTITY_IMAGE_WHERE = {
+  ...PUBLIC_APPROVED_IMAGE_WHERE,
+  sortOrder: IDENTITY_MEDIA_SORT_ORDER,
 };
 
 export const PUBLIC_IMAGE_SELECT = {
@@ -98,6 +104,7 @@ export const getHomepageHeroMedia = cache(async () => {
       isPublic: true,
       privacyApprovedAt: { not: null },
       publicUrl: { not: null },
+      sortOrder: IDENTITY_MEDIA_SORT_ORDER,
       OR: [
         { initiative: { status: "PUBLISHED", cause: { status: "PUBLISHED" } } },
         { story: { status: "PUBLISHED", privacyApprovedAt: { not: null } } },
@@ -143,9 +150,9 @@ export const getHomepageDiscoveryData = cache(async () => {
     primaryMetricLabel: true,
     cause: { select: { title: true } },
     mediaAssets: {
-      where: PUBLIC_APPROVED_IMAGE_WHERE,
-      orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
-      take: 3,
+      where: PUBLIC_IDENTITY_IMAGE_WHERE,
+      orderBy: [{ sourceYear: "desc" }, { createdAt: "desc" }],
+      take: 1,
       select: PUBLIC_IMAGE_SELECT,
     },
   } satisfies Prisma.InitiativeSelect;
@@ -156,7 +163,7 @@ export const getHomepageDiscoveryData = cache(async () => {
         status: "PUBLISHED",
         cause: { status: "PUBLISHED" },
         isFeatured: true,
-        mediaAssets: { some: PUBLIC_APPROVED_IMAGE_WHERE },
+        mediaAssets: { some: PUBLIC_IDENTITY_IMAGE_WHERE },
       },
       orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
       take: 5,
@@ -179,15 +186,15 @@ export const getHomepageDiscoveryData = cache(async () => {
         initiatives: {
           where: {
             status: "PUBLISHED",
-            mediaAssets: { some: PUBLIC_APPROVED_IMAGE_WHERE },
+            mediaAssets: { some: PUBLIC_IDENTITY_IMAGE_WHERE },
           },
           orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
           take: 4,
           select: {
             mediaAssets: {
-              where: PUBLIC_APPROVED_IMAGE_WHERE,
-              orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
-              take: 3,
+              where: PUBLIC_IDENTITY_IMAGE_WHERE,
+              orderBy: [{ sourceYear: "desc" }, { createdAt: "desc" }],
+              take: 1,
               select: PUBLIC_IMAGE_SELECT,
             },
           },
@@ -245,9 +252,9 @@ export const getOurWorkIndexData = cache(async () => {
           primaryMetric: true,
           primaryMetricLabel: true,
           mediaAssets: {
-            where: PUBLIC_APPROVED_IMAGE_WHERE,
-            orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
-            take: 3,
+            where: PUBLIC_IDENTITY_IMAGE_WHERE,
+            orderBy: [{ sourceYear: "desc" }],
+            take: 1,
             select: PUBLIC_IMAGE_SELECT,
           },
         },
@@ -274,9 +281,9 @@ export const getImpactPageData = cache(async () => {
       primaryMetricLabel: true,
       cause: { select: { title: true } },
       mediaAssets: {
-        where: PUBLIC_APPROVED_IMAGE_WHERE,
-        orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
-        take: 3,
+        where: PUBLIC_IDENTITY_IMAGE_WHERE,
+        orderBy: [{ sourceYear: "desc" }],
+        take: 1,
         select: PUBLIC_IMAGE_SELECT,
       },
     },
@@ -298,9 +305,9 @@ export const getCompletedAidShowcaseData = cache(async () => {
     select: {
       slug: true,
       mediaAssets: {
-        where: PUBLIC_APPROVED_IMAGE_WHERE,
-        orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
-        take: 3,
+        where: PUBLIC_IDENTITY_IMAGE_WHERE,
+        orderBy: [{ sourceYear: "desc" }],
+        take: 1,
         select: PUBLIC_IMAGE_SELECT,
       },
     },
@@ -396,9 +403,9 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
     select: {
       slug: true,
       mediaAssets: {
-        where: PUBLIC_APPROVED_IMAGE_WHERE,
-        orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
-        take: 3,
+        where: PUBLIC_IDENTITY_IMAGE_WHERE,
+        orderBy: [{ sourceYear: "desc" }, { createdAt: "desc" }],
+        take: 1,
         select: PUBLIC_IMAGE_SELECT,
       },
     },

@@ -102,7 +102,7 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
   if (!initiative) notFound();
 
   const media = initiative.mediaAssets.filter(canRenderPublicMedia).filter((asset,index,list)=>list.findIndex(other=>resolvePublicMediaUrl(other)===resolvePublicMediaUrl(asset))===index);
-  const leadMedia = media.find(asset => asset.kind === "IMAGE");
+  const leadMedia = selectIdentityPublicImage(media) ?? null;
   const gallery = media.filter(asset => asset.id !== leadMedia?.id);
   const period = formatYears(initiative.startYear, initiative.endYear, initiative.year);
   const paragraphs = distinctStoryParagraphs(initiative.summary, initiative.story || initiative.summary);
