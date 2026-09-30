@@ -1,6 +1,11 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser, hasPermission } from "@/lib/auth";
-import { CURATED_GALLERY_BATCH } from "@/lib/curated-gallery-contract";
+import {
+  CURATED_GALLERY_BATCH,
+  CURATED_GALLERY_EXPECTED_COUNTS,
+  type CuratedGallerySlug,
+} from "@/lib/curated-gallery-contract";
+import { reconcileCuratedGalleryPublicRecord } from "@/lib/curated-gallery-reconciliation";
 import {
   CURATED_GALLERY_ENTITY_TYPE,
   CURATED_GALLERY_START_ACTION,
@@ -9,6 +14,7 @@ import {
   parseCuratedGallerySessionMetadata,
 } from "@/lib/curated-gallery-server";
 import { prisma } from "@/lib/prisma";
+import { getPublishedInitiativeBySlug } from "@/lib/public-content";
 
 const privateHeaders = {
   "Cache-Control": "no-store, private",
@@ -37,24 +43,37 @@ export async function GET() {
     if (!session) {
       return NextResponse.json({ initialized: false, uploaded: 0, published: 0, missing: 154 }, { headers: privateHeaders });
     }
+
     const manifest = parseCuratedGallerySessionMetadata(session.metadata);
-    const assets = await prisma.mediaAsset.findMany({
-      where: { id: { in: manifest.records.map(item => item.id) } },
-      select: {
-        id: true,
-        initiative: { select: { slug: true } },
-        kind: true,
-        storageKey: true,
-        publicUrl: true,
-        sortOrder: true,
-        isPublic: true,
-        privacyApprovedAt: true,
-      },
-    });
+    const slugs = Object.keys(CURATED_GALLERY_EXPECTED_COUNTS) as CuratedGallerySlug[];
+    const curatedIdsBySlug = new Map<CuratedGallerySlug, Set<string>>(
+      slugs.map(slug => [
+        slug,
+        new Set(manifest.records.filter(record => record.slug === slug).map(record => record.id)),
+      ]),
+    );
+
+    const [assets, publicRecords] = await Promise.all([
+      prisma.mediaAsset.findMany({
+        where: { id: { in: manifest.records.map(item => item.id) } },
+        select: {
+          id: true,
+          initiative: { select: { slug: true } },
+          kind: true,
+          storageKey: true,
+          publicUrl: true,
+          sortOrder: true,
+          isPublic: true,
+          privacyApprovedAt: true,
+        },
+      }),
+      Promise.all(slugs.map(slug => getPublishedInitiativeBySlug(slug))),
+    ]);
+
     const assetMap = new Map(assets.map(asset => [asset.id, asset]));
     const missing: string[] = [];
     const mismatches: string[] = [];
-    const perInitiative = new Map<string, number>();
+    const validAssetIds = new Set<string>();
 
     for (const record of manifest.records) {
       const asset = assetMap.get(record.id);
@@ -72,8 +91,48 @@ export async function GET() {
         mismatches.push(record.id);
         continue;
       }
-      perInitiative.set(record.slug, (perInitiative.get(record.slug) ?? 0) + 1);
+      validAssetIds.add(record.id);
     }
+
+    const initiatives = slugs.map((slug, index) => {
+      const curatedIds = curatedIdsBySlug.get(slug) ?? new Set<string>();
+      const uploaded = manifest.records.filter(record =>
+        record.slug === slug && validAssetIds.has(record.id),
+      ).length;
+      const published = assets.filter(asset =>
+        curatedIds.has(asset.id) &&
+        asset.isPublic &&
+        Boolean(asset.privacyApprovedAt),
+      ).length;
+      const publicRecord = publicRecords[index];
+      const render = publicRecord
+        ? reconcileCuratedGalleryPublicRecord(slug, publicRecord.mediaAssets, curatedIds)
+        : {
+            slug,
+            expected: CURATED_GALLERY_EXPECTED_COUNTS[slug],
+            publicSafeCount: 0,
+            galleryVisibleCount: 0,
+            curatedHeroSelected: false,
+            curatedHighlightSelected: false,
+            ready: false,
+          };
+
+      return {
+        slug,
+        expected: CURATED_GALLERY_EXPECTED_COUNTS[slug],
+        uploaded,
+        published,
+        publicRecordFound: Boolean(publicRecord),
+        publicSafeCount: render.publicSafeCount,
+        galleryVisibleCount: render.galleryVisibleCount,
+        curatedHeroSelected: render.curatedHeroSelected,
+        curatedHighlightSelected: render.curatedHighlightSelected,
+        ready:
+          uploaded === CURATED_GALLERY_EXPECTED_COUNTS[slug] &&
+          published === CURATED_GALLERY_EXPECTED_COUNTS[slug] &&
+          render.ready,
+      };
+    });
 
     return NextResponse.json(
       {
@@ -86,7 +145,8 @@ export async function GET() {
         missingIds: missing,
         mismatches,
         galleryOnly: assets.every(asset => asset.sortOrder >= 0),
-        perInitiative: Object.fromEntries(perInitiative),
+        renderingReady: initiatives.every(item => item.ready),
+        initiatives,
       },
       { headers: privateHeaders },
     );

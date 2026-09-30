@@ -25,6 +25,19 @@ type ImportStatus = {
   missing?: number;
   mismatches?: string[];
   galleryOnly?: boolean;
+  renderingReady?: boolean;
+  initiatives?: Array<{
+    slug: string;
+    expected: number;
+    uploaded: number;
+    published: number;
+    publicRecordFound: boolean;
+    publicSafeCount: number;
+    galleryVisibleCount: number;
+    curatedHeroSelected: boolean;
+    curatedHighlightSelected: boolean;
+    ready: boolean;
+  }>;
 };
 
 function hex(buffer: ArrayBuffer) {
@@ -292,8 +305,43 @@ export function CuratedGalleryImporter() {
         <>
           <p className="muted" style={{ marginTop: ".75rem" }}>
             Uploaded {status.uploaded ?? 0}/{status.expected ?? CURATED_GALLERY_RECORD_COUNT} ·
-            Published {status.published ?? 0} · Missing {status.missing ?? 0}
+            Published {status.published ?? 0} · Missing {status.missing ?? 0} ·
+            Public render {status.renderingReady === true ? "22/22 verified" : status.renderingReady === false ? "requires review" : "checking"}
           </p>
+          {status.initiatives?.length ? (
+            <div className="admin-table-wrap" style={{ marginTop: "1rem" }}>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Initiative</th>
+                    <th>Expected</th>
+                    <th>Uploaded</th>
+                    <th>Published</th>
+                    <th>Public gallery</th>
+                    <th>Hero lock</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {status.initiatives.map(item => (
+                    <tr key={item.slug}>
+                      <td>
+                        <a href={`/our-work/${item.slug}`} target="_blank" rel="noreferrer">
+                          {item.slug}
+                        </a>
+                      </td>
+                      <td>{item.expected}</td>
+                      <td>{item.uploaded}</td>
+                      <td>{item.published}</td>
+                      <td>{item.galleryVisibleCount}</td>
+                      <td>{item.curatedHeroSelected || item.curatedHighlightSelected ? "FAIL" : "Locked"}</td>
+                      <td><span className="status-badge">{item.ready ? "PASS" : "CHECK"}</span></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : null}
           {status.uploaded === CURATED_GALLERY_RECORD_COUNT &&
            status.published !== CURATED_GALLERY_RECORD_COUNT &&
            status.missing === 0 &&
