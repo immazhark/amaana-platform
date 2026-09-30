@@ -1,5 +1,6 @@
 import { z } from "zod";
-import { MAX_FILE_BYTES, MAX_PUBLIC_IMAGE_PIXELS } from "@/lib/storage";
+const CURATED_MAX_FILE_BYTES = 5 * 1024 * 1024;
+const CURATED_MAX_IMAGE_PIXELS = 40_000_000;
 
 export const CURATED_GALLERY_PACKAGE_SHA256 = "1216eed498c6f5ea0378c1e236137faf455ece735aaeefea8bb2c08d5472ff6f";
 export const CURATED_GALLERY_PACKAGE_BYTES = 147_133_042;
@@ -44,7 +45,7 @@ const curatedGalleryRecordSchema = z.object({
   originalName: z.string().min(1).max(255),
   relativePath: z.string().min(1).max(700),
   sha256: z.string().regex(/^[a-f0-9]{64}$/),
-  bytes: z.number().int().min(1).max(MAX_FILE_BYTES),
+  bytes: z.number().int().min(1).max(CURATED_MAX_FILE_BYTES),
   mimeType: z.enum(["image/jpeg", "image/png"]),
   width: z.number().int().positive(),
   height: z.number().int().positive(),
@@ -82,7 +83,7 @@ export const curatedGalleryManifestSchema = z.object({
     }
     orderKeys.add(orderKey);
 
-    if (record.width > MAX_PUBLIC_IMAGE_PIXELS / record.height) {
+    if (record.width > CURATED_MAX_IMAGE_PIXELS / record.height) {
       ctx.addIssue({ code: "custom", path: ["records", index, "width"], message: "Image exceeds pixel safety limit" });
     }
     if (record.originalName.includes("/") || record.originalName.includes("\\")) {

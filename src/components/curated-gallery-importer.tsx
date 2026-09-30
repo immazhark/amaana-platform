@@ -32,9 +32,7 @@ function hex(buffer: ArrayBuffer) {
 }
 
 async function sha256(bytes: ArrayBuffer | Uint8Array) {
-  const value = bytes instanceof Uint8Array
-    ? bytes.buffer.slice(bytes.byteOffset, bytes.byteOffset + bytes.byteLength)
-    : bytes;
+  const value = bytes instanceof Uint8Array ? Uint8Array.from(bytes) : new Uint8Array(bytes);
   return hex(await crypto.subtle.digest("SHA-256", value));
 }
 
