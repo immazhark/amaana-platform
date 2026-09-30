@@ -1,14 +1,17 @@
-# Current checkpoint — 2026-09-30 initiative gallery rendered QA
+# Current checkpoint — 2026-09-30 site chrome + footer + homepage hero correction
 
 State: `CHATGPT_ACTIVE`
-Task branch: `fix/initiative-gallery-render-qa-20260930`
-Integration base / current phase HEAD at claim: `63ef40322ed5786aab9c6d77a081f7cef95b7d9f`.
+Task branch: `fix/site-chrome-footer-hero-20260930`
+Integration base / current phase HEAD at claim: `883d2c6c680bd4ac2796eb68defe16875a9b7bab`.
 
-Owner-visible reconciliation is now confirmed on staging: **Public render 22/22 verified**, with each initiative showing expected = uploaded = published = public-gallery count, Hero lock = Locked, and PASS. The exact owner-approved batch remains 154/154 published, 0 missing, gallery-only.
+Owner-authorized Block #1 + Block #2 implementation:
+- footer geometry/spacing/typography/site-wide parity, gold link states, official social icons, Threads support, future social extensibility;
+- slightly taller global header with larger logo, restored thick animated gold nav underline, canonical Support a need CTA;
+- split compact Reminder + independent Amaana Live rail below navigation;
+- homepage hero breathing room, 45/55 copy/media composition, image fade boundary, removal of decorative 2020/Arabic story graphics;
+- fifth homepage Highlights metric for the canonical medical/financial assistance aggregate.
 
-Current atomic task: harden the individual initiative gallery/lightbox itself for desktop and mobile after real-data publication. Preserve original-photo aspect ratio in the full view, keep thumbnails compact, verify keyboard/focus behavior, eliminate overlay collisions with the fixed Islamic Companion/mobile support UI, correct responsive image sizing, and add browser-acceptance coverage for 320/390/1440 widths.
-
-Do not touch main, DNS, indexing, production promotion, Live Razorpay, banner/header/thumbnail assignments, or the fixed bottom-right Islamic Companion placement.
+Do not repurpose any of the 154 gallery photographs as hero/banner/thumbnail media. Do not touch main, DNS, indexing, reserved production service, Live Razorpay, or fixed bottom-right Islamic Companion placement.
 
 
 ---
