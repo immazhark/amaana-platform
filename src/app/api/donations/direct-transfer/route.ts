@@ -45,7 +45,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Transfer submission could not be parsed." }, { status: 400, headers: privateHeaders });
     }
     const evidenceEntry = form.get("evidence");
-    if (evidenceEntry !== null && !(evidenceEntry instanceof File)) {
+    if (evidenceEntry !== null && evidenceEntry !== "" && !(evidenceEntry instanceof File)) {
       return NextResponse.json({ error: "Please attach a valid transfer screenshot or PDF." }, { status: 400, headers: privateHeaders });
     }
     const evidence = evidenceEntry instanceof File && evidenceEntry.size > 0 ? evidenceEntry : null;
