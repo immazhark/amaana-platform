@@ -920,6 +920,12 @@ body{font-weight:var(--af-weight-body)}
 }
 .amaana-reminder-eyebrow{font-size:.58rem}
 .amaana-reminder-source{font-size:.64rem}
+.amaana-live-actions{display:flex;align-items:center;justify-content:flex-end;gap:.35rem;white-space:nowrap}
+.amaana-live-link{
+  display:inline-flex;align-items:center;min-height:2rem;padding:.3rem .45rem;color:#234e67!important;
+  font-size:.67rem;font-weight:800;text-decoration:none!important
+}
+.amaana-live-link:is(:hover,:focus-visible){color:#8a6715!important;text-decoration:underline!important;text-underline-offset:3px}
 .amaana-live-cta{min-height:2rem;padding:.34rem .68rem;font-size:.68rem}
 
 /* Footer */
@@ -1015,7 +1021,7 @@ body{font-weight:var(--af-weight-body)}
   .amaana-reminder-source{grid-column:2}
   .amaana-live-content{grid-template-columns:minmax(0,1fr) auto}
   .amaana-live-content .amaana-reminder-eyebrow{display:none}
-  .amaana-live-cta{grid-column:2;grid-row:1}
+  .amaana-live-actions{grid-column:2;grid-row:1}
   .site-footer .footer-lead{padding-block:1.05rem 1.2rem}
   .site-footer .footer-lead h2{font-size:clamp(1.75rem,8vw,2.3rem)}
   .site-footer .footer-grid-v2{grid-template-columns:1fr;gap:.75rem;padding-block:1.35rem 1.1rem}
