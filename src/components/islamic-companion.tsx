@@ -24,8 +24,10 @@ type LiveRailItem = {
   eyebrow: string;
   title: string;
   subtitle: string;
-  href: string;
-  cta: string;
+  detailsHref: string;
+  supportHref: string;
+  detailsCta: string;
+  supportCta: string;
 };
 
 const IslamicCompanionPanel = lazy(() =>
@@ -140,13 +142,18 @@ export function IslamicCompanion() {
               <div className="amaana-live-content" key={activeLiveItem.id} aria-live="polite" aria-atomic="true">
                 <span className="amaana-reminder-eyebrow">{activeLiveItem.eyebrow}</span>
                 <strong>{activeLiveItem.title}</strong>
-                <Link className="amaana-live-cta" href={activeLiveItem.href}>{activeLiveItem.cta}<span aria-hidden="true"> →</span></Link>
+                <span className="amaana-live-actions">
+                  <Link className="amaana-live-link" href={activeLiveItem.detailsHref}>{activeLiveItem.detailsCta}</Link>
+                  <Link className="amaana-live-cta" href={activeLiveItem.supportHref}>{activeLiveItem.supportCta}<span aria-hidden="true"> →</span></Link>
+                </span>
               </div>
             ) : (
               <div className="amaana-live-content">
                 <span className="amaana-reminder-eyebrow">Foundation updates</span>
                 <strong>No public appeal is open right now.</strong>
-                <Link className="amaana-live-cta" href="/our-work">Explore our work<span aria-hidden="true"> →</span></Link>
+                <span className="amaana-live-actions">
+                  <Link className="amaana-live-cta" href="/our-work">Explore our work<span aria-hidden="true"> →</span></Link>
+                </span>
               </div>
             )}
           </div>
