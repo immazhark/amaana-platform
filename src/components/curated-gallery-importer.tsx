@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import {
   CURATED_GALLERY_ARCHIVE_ENTRY_COUNT,
   CURATED_GALLERY_BATCH,
@@ -102,6 +102,71 @@ export function CuratedGalleryImporter() {
   const [progress, setProgress] = useState(0);
   const [busy, setBusy] = useState(false);
   const [status, setStatus] = useState<ImportStatus | null>(null);
+
+  async function refreshStatus() {
+    try {
+      const current = await responseJson(await fetch("/api/admin/media/curated-gallery/status", {
+        credentials: "same-origin",
+        cache: "no-store",
+      })) as ImportStatus;
+      setStatus(current);
+      if (current.uploaded === CURATED_GALLERY_RECORD_COUNT && current.published === CURATED_GALLERY_RECORD_COUNT) {
+        setProgress(100);
+        setPhase("All 154 approved gallery images are published.");
+      } else if (current.uploaded === CURATED_GALLERY_RECORD_COUNT) {
+        setProgress(100);
+        setPhase("154 gallery originals are uploaded and attached as unpublished review records. Publication is ready.");
+      }
+    } catch {
+      // The importer remains usable even if the initial status probe is unavailable.
+    }
+  }
+
+  useEffect(() => {
+    let cancelled = false;
+    void fetch("/api/admin/media/curated-gallery/status", {
+      credentials: "same-origin",
+      cache: "no-store",
+    })
+      .then(responseJson)
+      .then(result => {
+        if (cancelled) return;
+        const current = result as ImportStatus;
+        setStatus(current);
+        if (current.uploaded === CURATED_GALLERY_RECORD_COUNT && current.published === CURATED_GALLERY_RECORD_COUNT) {
+          setProgress(100);
+          setPhase("All 154 approved gallery images are published.");
+        } else if (current.uploaded === CURATED_GALLERY_RECORD_COUNT) {
+          setProgress(100);
+          setPhase("154 gallery originals are uploaded and attached as unpublished review records. Publication is ready.");
+        }
+      })
+      .catch(() => {
+        // The importer remains usable even if the initial status probe is unavailable.
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  async function publishApprovedBatch() {
+    if (!window.confirm("Publish all 154 owner-approved gallery images now? This will not assign any hero, banner, identity or thumbnail role.")) return;
+    setBusy(true);
+    setPhase("Publishing the exact owner-approved 154-image gallery batch…");
+    try {
+      await responseJson(await fetch("/api/admin/media/curated-gallery/publish", {
+        method: "POST",
+        credentials: "same-origin",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ confirmation: "PUBLISH_EXACT_OWNER_CURATED_154" }),
+      }));
+      await refreshStatus();
+    } catch (error) {
+      setPhase(error instanceof Error ? error.message : "Curated gallery publication failed.");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function run(file: File) {
     setBusy(true);
@@ -224,10 +289,26 @@ export function CuratedGalleryImporter() {
         <progress value={progress} max={100} style={{ width: "100%", marginTop: ".5rem" }}>{progress}%</progress>
       </div>
       {status && (
-        <p className="muted" style={{ marginTop: ".75rem" }}>
-          Uploaded {status.uploaded ?? 0}/{status.expected ?? CURATED_GALLERY_RECORD_COUNT} ·
-          Published {status.published ?? 0} · Missing {status.missing ?? 0}
-        </p>
+        <>
+          <p className="muted" style={{ marginTop: ".75rem" }}>
+            Uploaded {status.uploaded ?? 0}/{status.expected ?? CURATED_GALLERY_RECORD_COUNT} ·
+            Published {status.published ?? 0} · Missing {status.missing ?? 0}
+          </p>
+          {status.uploaded === CURATED_GALLERY_RECORD_COUNT &&
+           status.published !== CURATED_GALLERY_RECORD_COUNT &&
+           status.missing === 0 &&
+           (status.mismatches?.length ?? 0) === 0 &&
+           status.galleryOnly === true && (
+            <div style={{ marginTop: "1rem" }}>
+              <button type="button" className="button" disabled={busy} onClick={() => void publishApprovedBatch()}>
+                Publish all 154 approved gallery images
+              </button>
+              <p className="muted" style={{ marginTop: ".5rem" }}>
+                Uses the exact verified batch only. Hero, identity, banner and thumbnail assignments remain untouched.
+              </p>
+            </div>
+          )}
+        </>
       )}
     </section>
   );
