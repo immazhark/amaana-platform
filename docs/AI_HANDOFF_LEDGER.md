@@ -1,5 +1,9 @@
 # Amaana Platform — Implementation Handoff Ledger
 
+## 2026-09-30 — Codex curated-media preparation checkpoint
+
+User requested Start Integration. Task branch `content/curated-gallery-20260930` is based on verified integration `9d299b19d3f76c3e25f91010b0d5a956ca245edb`; current Git/PR state supersedes older active-work background notes. Prepared and byte-verified 154 selected images across 22 canonical initiatives without modifying originals. Added fail-closed draft importer, retained ordering and fixed unintended gallery-to-hero fallback. No upload/database/publication/deployment occurred. Importer tests (5), media selector tests (8), complete image decode/hash verification and full-package dry run passed. Detailed remaining approval, configuration, alt-text and rendered-verification steps: `docs/CURATED_GALLERY_INTEGRATION_2026-09-30.md`. Existing UI remediation, payments and main remain untouched.
+
 Append-only record of implementation ownership changes between Codex and ChatGPT.
 
 ---
@@ -279,3 +283,7 @@ Explicit user takeover; verified integration e76744a28e3da94ce239e45af96f01510fc
 
 ## 2026-09-28 — Six approved revision-4 SVGs
 User explicitly approved integration. PR #105 preserves exact approved vector bytes at the six canonical background paths, removes light-body whitening overlays, and uses the header token on the homepage carousel frame. Footer sizing remains content-driven. Local hash and XML checks pass for all six files. Automated PR checks and served staging verification pending at this checkpoint; baseline typography-hierarchy failure is recorded in AI_ACTIVE_WORK.md. No production, payments, data or publication-consent changes.
+
+## 2026-09-30 — Gallery publication approval and execution-access handoff
+
+Owner explicitly approved publishing all selected gallery images. Codex verified unchanged integration head `9d299b19d3f76c3e25f91010b0d5a956ca245edb`, staging storage variable-name completeness, and reran all five draft-import tests plus the 154-image hash-checked dry run successfully. Railway OAuth redacts secret values; no local staging execution credentials are configured. Both browser and Windows Computer Use initialization fail with kernel asset path error 3. BrowserAct/uv are absent and were not installed. Git push did not complete and was safely interrupted; GitHub connector is the fallback for publishing the code branch. No image upload, DB change, gallery publication or deployment occurred. Continue branch `content/curated-gallery-20260930` after restoring authenticated publishing access, with alt-text review and audited publication still to execute. Owner consent is no longer a blocker; hero/banner use and production promotion remain separate. State: HANDOFF_PENDING.

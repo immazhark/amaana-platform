@@ -8,6 +8,13 @@ import {
 } from "./public-media";
 
 describe("public media safety", () => {
+  it("never promotes supporting gallery images into an unassigned identity slot", () => {
+    expect(selectIdentityPublicImage([
+      { kind: "IMAGE", publicUrl: "/media/gallery.jpg", altText: "Eid kits", sortOrder: 0 },
+      { kind: "IMAGE", publicUrl: "/media/update.png", altText: "Update", title: "Results update", sortOrder: 1 },
+    ])).toBeUndefined();
+    expect(selectIdentityPublicImage([])).toBeUndefined();
+  });
   it("accepts HTTPS and safe root-relative media URLs", () => {
     expect(resolvePublicMediaUrl({ kind: "IMAGE", publicUrl: "https://cdn.example.org/photo.jpg", altText: "Packing Eid Gift Kits" })).toBe("https://cdn.example.org/photo.jpg");
     expect(resolvePublicMediaUrl({ kind: "DOCUMENT", publicUrl: "/reports/eid-2025.pdf" })).toBe("/reports/eid-2025.pdf");
