@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { hyderabadClock, remindersFor } from "@/lib/daily-companion";
 import type { CompanionPanelKind } from "@/components/islamic-companion-panel";
 
@@ -92,23 +92,15 @@ export function IslamicCompanion() {
   const currentMoon = confirmedMoon?.date === date ? confirmedMoon.moon : null;
   const reminders = now ? remindersFor(now, currentMoon) : [];
   const activeReminder = reminders.length ? reminders[reminderIndex % reminders.length] : null;
-  const railItems = useMemo(() => {
-    const reminder = activeReminder ? [{
-      id: `reminder-${activeReminder.id}`, kind: "reminder" as const, reminder: activeReminder,
-    }] : [];
-    const currentAppeal = liveItems.find(item => item.kind === "appeal");
-    return [...reminder, ...(currentAppeal ? [{ id: currentAppeal.id, kind: "live" as const, live: currentAppeal }] : [])];
-  }, [activeReminder, liveItems]);
-  const safeRailIndex = railItems.length ? railIndex % railItems.length : 0;
-  const activeRailItem = railItems.length ? railItems[safeRailIndex] : null;
+  const activeLiveItem = liveItems.length ? liveItems[railIndex % liveItems.length] : null;
 
   useEffect(() => {
-    if (reducedMotion || hovered || focused || panel || railItems.length < 2) return;
+    if (reducedMotion || hovered || focused || panel || liveItems.length < 2) return;
     const timer = window.setInterval(() => {
       if (!document.hidden) setRailIndex(index => index + 1);
     }, 12_000);
     return () => window.clearInterval(timer);
-  }, [focused, hovered, panel, reducedMotion, railItems.length]);
+  }, [focused, hovered, panel, reducedMotion, liveItems.length]);
 
   const closePanel = useCallback(() => {
     setPanel(null);
@@ -124,7 +116,7 @@ export function IslamicCompanion() {
     <>
       <section
         className="amaana-reminders"
-        aria-label="Daily Islamic reminders"
+        aria-label="Amaana reminder and live updates"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
         onFocusCapture={() => setFocused(true)}
@@ -133,21 +125,28 @@ export function IslamicCompanion() {
         }}
       >
         <div className="amaana-reminder-inner">
-          <div className={`amaana-live-badge${activeRailItem?.kind === "live" ? " is-live" : " is-reminder"}`} aria-hidden="true"><span />{activeRailItem?.kind === "live" ? "AMAANA LIVE" : "TODAY’S REMINDER"}</div>
-          <div className="amaana-reminder-stage" aria-live="polite" aria-atomic="true">
-            {activeRailItem?.kind === "live" ? (
-              <div className="amaana-reminder-content amaana-reminder-content--live" key={activeRailItem.id}>
-                <span className="amaana-reminder-eyebrow">{activeRailItem.live.eyebrow}</span>
-                <strong>{activeRailItem.live.title}</strong>
-                <p>{activeRailItem.live.subtitle}</p>
-                <Link className="amaana-live-cta" href={activeRailItem.live.href}>{activeRailItem.live.cta}<span aria-hidden="true"> →</span></Link>
+          <div className="amaana-reminder-lane" aria-label="Current reminder">
+            <span className="amaana-rail-label">Reminder</span>
+            <div className="amaana-reminder-content" aria-live="polite" aria-atomic="true">
+              <strong>{activeReminder?.title ?? "A moment for remembrance"}</strong>
+              <p>{activeReminder?.text ?? "Daily readings and gentle reminders, on Hyderabad time."}</p>
+              {activeReminder && <a className="amaana-reminder-source" href={activeReminder.source} target="_blank" rel="noopener noreferrer">{activeReminder.reference}</a>}
+            </div>
+          </div>
+
+          <div className="amaana-live-lane" aria-label="Amaana live updates">
+            <span className="amaana-live-badge"><span aria-hidden="true" />AMAANA LIVE</span>
+            {activeLiveItem ? (
+              <div className="amaana-live-content" key={activeLiveItem.id} aria-live="polite" aria-atomic="true">
+                <span className="amaana-reminder-eyebrow">{activeLiveItem.eyebrow}</span>
+                <strong>{activeLiveItem.title}</strong>
+                <Link className="amaana-live-cta" href={activeLiveItem.href}>{activeLiveItem.cta}<span aria-hidden="true"> →</span></Link>
               </div>
             ) : (
-              <div className="amaana-reminder-content" key={activeRailItem?.id ?? "fallback"}>
-                <span className="amaana-reminder-eyebrow">Today’s reminder</span>
-                <strong>{activeReminder?.title ?? "A moment for remembrance"}</strong>
-                <p>{activeReminder?.text ?? "Daily readings and gentle reminders, on Hyderabad time."}</p>
-                {activeReminder && <a className="amaana-reminder-source" href={activeReminder.source} target="_blank" rel="noopener noreferrer">{activeReminder.reference}</a>}
+              <div className="amaana-live-content">
+                <span className="amaana-reminder-eyebrow">Foundation updates</span>
+                <strong>No public appeal is open right now.</strong>
+                <Link className="amaana-live-cta" href="/our-work">Explore our work<span aria-hidden="true"> →</span></Link>
               </div>
             )}
           </div>
