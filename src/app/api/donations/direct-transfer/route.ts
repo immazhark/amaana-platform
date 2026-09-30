@@ -31,10 +31,12 @@ export async function POST(request: Request) {
       }
       throw error;
     }
+    const boundedBody = new ArrayBuffer(body.byteLength);
+    new Uint8Array(boundedBody).set(body);
     const boundedRequest = new Request(request.url, {
       method: "POST",
       headers: { "content-type": contentType },
-      body,
+      body: boundedBody,
     });
     let form: FormData;
     try {
