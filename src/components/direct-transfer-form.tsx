@@ -23,6 +23,12 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
     event.preventDefault(); setError(""); setBusy(true);
     try {
       const values = new FormData(event.currentTarget);
+      const localTransferredAt = String(values.get("transferredAt") ?? "").trim();
+      if (localTransferredAt) {
+        const transferredAt = new Date(localTransferredAt);
+        if (Number.isNaN(transferredAt.getTime())) throw new Error("Please enter a valid transfer date and time.");
+        values.set("transferredAt", transferredAt.toISOString());
+      }
       values.set("appealId", appealId); values.set("paymentMethod", method);
       values.set("isAnonymous", values.get("isAnonymous") === "on" ? "true" : "false");
       values.set("domesticConfirmed", values.get("domesticConfirmed") === "on" ? "true" : "false");
