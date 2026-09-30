@@ -43,6 +43,19 @@ export default async function HomePage() {
     .filter(item => !isLegacyOurWorkSlug(item.slug))
     .map(item => ({ ...item, causeTitle: item.cause.title }));
   const hasOpenAppeals = appeals.length > 0;
+  const medicalFinancialAidTotal = programmes
+    .filter(programme => programme.causeSlug === "medical-financial-relief")
+    .reduce((total, programme) => {
+      const amount = Number(String(programme.primaryMetric ?? "").replace(/[^0-9]/g, ""));
+      return Number.isFinite(amount) ? total + amount : total;
+    }, 0);
+  const homepageHighlights = [
+    ...homepageImpact,
+    {
+      value: formatINR(medicalFinancialAidTotal),
+      label: "medical, livelihood & financial assistance across documented cases",
+    },
+  ];
   const heroSlides = featured
     .filter(item => item.isFeatured)
     .map(drive => ({ drive, media: selectIdentityPublicImage(drive.mediaAssets) }))
@@ -91,10 +104,6 @@ export default async function HomePage() {
         </h1>
         <ScrollCarousel label="Amaana Foundation story and featured work" mode="hero" className="v3-home-banner-carousel" autoAdvanceMs={7000}>
           <article className="v3-home-banner-slide v3-home-banner-slide--story">
-            <div className="v3-home-banner-story-art" aria-hidden="true">
-              <span className="v3-home-banner-story-year">2020</span>
-              <span className="v3-home-banner-story-mark">اَمَانَة</span>
-            </div>
             <div className="v3-home-banner-shade" aria-hidden="true" />
             <div className="v3-shell v3-home-banner-content">
               <p className="v3-home-banner-kicker">The Story of Amaana · Hyderabad</p>
@@ -143,7 +152,7 @@ export default async function HomePage() {
 
       <section className="v3-proof" aria-labelledby="homepage-highlights-title">
         <div className="v3-shell"><p className="v3-proof-label" id="homepage-highlights-title">Highlights</p><div className="v3-proof-grid">
-          {homepageImpact.map(item => (
+          {homepageHighlights.map(item => (
             <div className="v3-proof-item" key={item.label}>
               <strong>{item.value}</strong>
               <span>{item.label}</span>
