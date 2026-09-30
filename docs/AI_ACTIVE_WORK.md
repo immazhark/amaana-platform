@@ -1,14 +1,14 @@
-# Current checkpoint — 2026-09-30 curated gallery audited batch publication
+# Current checkpoint — 2026-09-30 curated gallery render reconciliation
 
 State: `CHATGPT_ACTIVE`
-Task branch: `content/curated-gallery-batch-publish-20260930`
-Integration base / current phase HEAD at claim: `27eb0a43e63919efa148feb05e5d3d1789f71561`.
+Task branch: `qa/curated-gallery-render-reconciliation-20260930`
+Integration base / current phase HEAD at claim: `69bab7d43ac1db5381aa00e2024e9857eb64d025`.
 
-Verified staging import is complete: exact owner-approved ZIP initialized successfully, all 154 curated gallery originals uploaded with HTTP 200, final reconciliation returned 154/154 uploaded, 0 missing, 0 failed, and 0 published. The owner explicitly reconfirmed that all selected images were privacy-reviewed/filtered and approved for website publication.
+The exact owner-approved gallery batch is complete on staging: 154/154 uploaded, 154/154 published, 0 missing. Railway recorded the exact publication POST and post-publication reconciliation as HTTP 200. All 154 records remain gallery-only with non-negative sortOrder; no header/banner/thumbnail/identity assignment is allowed from this batch.
 
-Current atomic task: add one authenticated, staging-only, exact-batch publication control that revalidates all 154 MediaAsset records against the immutable curated manifest/session, records per-asset privacy/publication audit events, publishes only non-identity gallery records, and reconciles 154/154 published. No hero/identity/banner/thumbnail assignment, no production promotion, no unrelated UI changes.
+Current atomic task: verify the full public rendering data path for all 22 curated initiative slugs against the immutable expected counts, verify the public-page query actually sees the published records, verify no identity/hero asset is selected from this batch, surface exact per-initiative reconciliation in Admin > Media, and close any gallery-specific QA defects without redesigning unrelated surfaces.
 
-Do not touch main, DNS, indexing, reserved production service, Live Razorpay, Islamic Companion placement, unrelated UI, or media outside the exact curated IDs.
+Do not touch main, DNS, indexing, reserved production service, Live Razorpay, Islamic Companion placement, unrelated UI, or banner/header/thumbnail assignments.
 
 
 ---
