@@ -117,7 +117,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               onClick={() => setActiveIndex(index)}
               aria-label={`Open image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
             >
-              {canOptimizeLocally(item.url) ? <Image src={item.url} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 640px) 50vw, (max-width: 1100px) 33vw, 25vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
+              {canOptimizeLocally(item.url) ? <Image src={item.url} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
               {privacyProtected ? <span className={styles.privacyLabel}>Privacy protected</span> : null}
               <span className={styles.openLabel}>Enlarge</span>
             </button>
@@ -131,7 +131,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
         const width = active.width && active.width > 0 ? active.width : 1600;
         const height = active.height && active.height > 0 ? active.height : 1200;
         return (
-        <div className={styles.backdrop} role="presentation" onMouseDown={event => {
+        <div className={styles.backdrop} role="presentation" onPointerDown={event => {
           if (event.currentTarget === event.target) close();
         }}>
           <div
