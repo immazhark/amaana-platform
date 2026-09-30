@@ -18,7 +18,6 @@ import "./page-hero.css";
 // Canonical visual-system reconciliation: route layers may define structure,
 // but the shared Amaana surface/action system must resolve after them.
 import "./experience-finish.css";
-import "./site-chrome.css";
 // Accessibility remains the final authority for focus, motion and readability.
 import "./accessibility.css";
 import { SiteFooter } from "@/components/site-footer";
