@@ -130,42 +130,50 @@ export async function POST(request: Request) {
       }
 
       const approvedAt = new Date();
-      for (const asset of publishable) {
+      const publishIds = publishable.map(asset => asset.id);
+      if (publishIds.length) {
         const claimed = await tx.mediaAsset.updateMany({
-          where: { id: asset.id, isPublic: false, privacyApprovedAt: null, updatedAt: asset.updatedAt },
+          where: {
+            id: { in: publishIds },
+            isPublic: false,
+            privacyApprovedAt: null,
+            sortOrder: { gte: 0 },
+          },
           data: { isPublic: true, privacyApprovedAt: approvedAt },
         });
-        if (claimed.count !== 1) throw new Error(`Curated media changed during publication: ${asset.id}`);
+        if (claimed.count !== publishIds.length) {
+          throw new Error(`Curated media changed during publication: expected ${publishIds.length}, claimed ${claimed.count}`);
+        }
 
-        await tx.auditEvent.create({
-          data: {
-            actorId: user.id,
-            action: "media.privacy_reviewed",
-            entityType: "MediaAsset",
-            entityId: asset.id,
-            metadata: {
-              ...ownerApprovedBatchReview,
-              curatedBatch: CURATED_GALLERY_BATCH,
-              importSessionId: session.id,
-              galleryOnly: true,
-              identityImage: false,
-            } as Prisma.InputJsonValue,
-          },
-        });
-        await tx.auditEvent.create({
-          data: {
-            actorId: user.id,
-            action: "media.published",
-            entityType: "MediaAsset",
-            entityId: asset.id,
-            metadata: {
-              privacyGate: "passed",
-              curatedBatch: CURATED_GALLERY_BATCH,
-              importSessionId: session.id,
-              galleryOnly: true,
-              identityImage: false,
-            } as Prisma.InputJsonValue,
-          },
+        await tx.auditEvent.createMany({
+          data: publishIds.flatMap(entityId => [
+            {
+              actorId: user.id,
+              action: "media.privacy_reviewed",
+              entityType: "MediaAsset",
+              entityId,
+              metadata: {
+                ...ownerApprovedBatchReview,
+                curatedBatch: CURATED_GALLERY_BATCH,
+                importSessionId: session.id,
+                galleryOnly: true,
+                identityImage: false,
+              } as Prisma.InputJsonValue,
+            },
+            {
+              actorId: user.id,
+              action: "media.published",
+              entityType: "MediaAsset",
+              entityId,
+              metadata: {
+                privacyGate: "passed",
+                curatedBatch: CURATED_GALLERY_BATCH,
+                importSessionId: session.id,
+                galleryOnly: true,
+                identityImage: false,
+              } as Prisma.InputJsonValue,
+            },
+          ]),
         });
       }
 
