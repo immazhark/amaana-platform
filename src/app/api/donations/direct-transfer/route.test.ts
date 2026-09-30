@@ -12,6 +12,11 @@ const mocks = vi.hoisted(() => ({
   isDonationAmountAllowedForRemaining: vi.fn(),
 }));
 
+vi.mock("@/lib/bounded-request-body", async importOriginal => {
+  const actual = await importOriginal<typeof import("@/lib/bounded-request-body")>();
+  return actual;
+});
+
 vi.mock("@/lib/appeals", () => ({
   getRemainingAppealAmount: () => 900,
   isAppealOpenForDonations: () => true,
@@ -104,6 +109,35 @@ beforeEach(() => {
 });
 
 describe("direct donation transfer submission", () => {
+  it("rejects oversized multipart submissions before form parsing or database work", async () => {
+    const response = await POST(new Request("https://amaana.example/api/donations/direct-transfer", {
+      method: "POST",
+      headers: {
+        "Content-Type": "multipart/form-data; boundary=test",
+        "Content-Length": String(5 * 1024 * 1024 + 256 * 1024 + 1),
+      },
+      body: "--test--\r\n",
+    }));
+    const body = await response.json();
+
+    expect(response.status).toBe(413);
+    expect(body.error).toMatch(/too large/i);
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects non-multipart direct-transfer submissions before parsing", async () => {
+    const response = await POST(new Request("https://amaana.example/api/donations/direct-transfer", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    }));
+
+    expect(response.status).toBe(400);
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+  });
+
   it("creates an explicitly pending direct-transfer claim without counting it as received", async () => {
     const response = await POST(requestWith());
     const body = await response.json();

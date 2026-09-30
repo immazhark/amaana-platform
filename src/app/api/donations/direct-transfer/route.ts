@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
+import { RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { createDonationReference, createReceiptToken, directTransferSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { canExposePublicAppeal } from "@/lib/public-environment";
@@ -16,10 +17,26 @@ export async function POST(request: Request) {
     validateProductionEnvironment();
     if (!isSameOrigin(request)) return NextResponse.json({ error: "Invalid request origin." }, { status: 403, headers: privateHeaders });
     if (!(await enforceDonationRateLimit(request))) return NextResponse.json({ error: "Too many donation submissions. Please try again later." }, { status: 429, headers: { ...privateHeaders, "Retry-After": "3600" } });
-    const declaredLength = Number(request.headers.get("content-length"));
-    if (Number.isFinite(declaredLength) && declaredLength > MAX_MULTIPART_BYTES) return NextResponse.json({ error: "Transfer submission is too large." }, { status: 413, headers: privateHeaders });
+    const contentType = request.headers.get("content-type") ?? "";
+    if (!contentType.toLowerCase().startsWith("multipart/form-data;")) {
+      return NextResponse.json({ error: "Transfer submission must use multipart form data." }, { status: 400, headers: privateHeaders });
+    }
 
-    const form = await request.formData();
+    let body: Uint8Array;
+    try {
+      body = await readBodyBytesWithLimit(request, MAX_MULTIPART_BYTES);
+    } catch (error) {
+      if (error instanceof RequestBodyTooLargeError) {
+        return NextResponse.json({ error: "Transfer submission is too large." }, { status: 413, headers: privateHeaders });
+      }
+      throw error;
+    }
+    const boundedRequest = new Request(request.url, {
+      method: "POST",
+      headers: { "content-type": contentType },
+      body,
+    });
+    const form = await boundedRequest.formData();
     const evidence = form.get("evidence");
     if (evidence !== null && (!(evidence instanceof File) || evidence.size <= 0)) return NextResponse.json({ error: "Please attach a valid transfer screenshot or PDF." }, { status: 400, headers: privateHeaders });
     if (evidence instanceof File && evidence.size > MAX_FILE_BYTES) return NextResponse.json({ error: "Transfer evidence must be 5 MB or smaller." }, { status: 413, headers: privateHeaders });
