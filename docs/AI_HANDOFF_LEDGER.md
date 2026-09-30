@@ -1,3 +1,7 @@
+## 2026-10-01 IST — publication recovered; mobile footer disclosure correction
+
+Direct owner continuation authorized delivery. GitHub connector published the exact locally tested tree as `12cd093d4024bcb2775ab83c07f0b77fcd5b472a` after terminal credentials were unavailable. PR CI 36762269001: 822 Chromium passed, one mobile footer-collapse failure. Removed redundant generic footer display:grid override so existing mobile disclosure state wins; failing test passes locally and all 11 focused chrome checks remain green. Full rerun/green merge/integration production budgets/staging verification pending. Main, production, indexing, gallery identity and fixed Companion locks preserved.
+
 # Amaana Platform — Implementation Handoff Ledger
 
 ## 2026-09-30 — Codex curated-media preparation checkpoint

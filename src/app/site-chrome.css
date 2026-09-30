@@ -122,7 +122,7 @@
 }
 .site-footer .footer-nav-group{align-self:start}
 .site-footer .footer-nav-title{margin:0 0 .55rem;color:var(--af-footer-gold);font-size:.75rem;letter-spacing:.13em;text-transform:uppercase}
-.site-footer .footer-links{display:grid;gap:.22rem}
+.site-footer .footer-links{gap:.22rem}
 .site-footer .footer-links a{
   position:relative;display:flex;align-items:center;width:max-content;max-width:100%;min-height:2.35rem;color:rgb(255 253 248 / 76%);
   text-decoration:none;transition:color .18s ease,text-shadow .18s ease,transform .18s ease

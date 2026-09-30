@@ -26,12 +26,13 @@ Codex recovery checkpoint:
 - Local lint/type/master and unit checks pass (389 tests, 6 database-dependent skips; three unchanged lint warnings). Full exact-head CI and staging verification remain pending; no completion/deployment claim yet.
 
 
-Publication gate after local commit `2224630084e4f19f5429a5db8342ac2ebb20b10c`:
-- All eleven focused Chromium cases pass, including six widths, live rotation/pause/reduced motion, current footer route, 44px mobile links and uncut five-metric values.
-- Clean acceptance-build CSS: 346,982 / 348,160 bytes. Local JS measurement exceeds the historical budget on the unmodified integration baseline too (972,512 baseline; 973,135 candidate); no budget was increased. Exact GitHub production build remains authoritative and has not run for this candidate.
-- Automatic approval review rejected the Git push twice, even after verifying the exact remote and owner handover scope. Stated reason: the attachment was not accepted as trusted direct end-user authorization to export this commit to GitHub.
-- No workaround/alternate publication was attempted after the second rejection. Remote task HEAD remains `464938377ee3b8cddc03b756aa6ab9668b8f655a`; PR #116 remains Draft, unmerged. No Railway deployment or main/production change occurred.
-- Next action requires the owner's direct confirmation to publish this reviewed commit to `immazhark/amaana-platform`, branch `fix/site-chrome-footer-hero-20260930`, update PR #116, run full exact-head CI and merge only into `phase-public-site-rebuild` when green, followed by Railway/staging acceptance.
+Publication recovery — 2026-10-01 IST:
+- Owner directly authorized continuation after the explicit publication approval request. Terminal push then failed for missing GitHub credentials.
+- Connected GitHub publication succeeded: `12cd093d4024bcb2775ab83c07f0b77fcd5b472a`, whose tree exactly equals local tested tree `50cd32acd66c24f97778d173842b954aa7b02596`.
+- PR CI 36762269001 passed lint/types/unit/database/factual checks and 822 Chromium cases. One mobile footer-collapse failure exposed a later generic display rule overriding the existing disclosure state.
+- Removed only the redundant generic display declaration; kept the existing disclosure behavior and compact-height assertion. Local failing mobile disclosure test now passes, as do all eleven focused chrome checks. Two broader local checks need unavailable database routes; those same routes passed in CI.
+- Clean acceptance CSS was 346,982 / 348,160 bytes before this one-line reduction; budgets remain unchanged. The local JS baseline discrepancy still requires integration production-build verification.
+- Publishing this correction and rerunning exact-head CI is next. PR #116 remains Draft until green; no integration merge or Railway deployment has occurred yet.
 
 
 ---
