@@ -157,10 +157,12 @@ export function CuratedGalleryImporter() {
       for (const [index, record] of manifest.records.entries()) {
         const entry = entries.get(archivePathForCuratedRecord(record));
         if (!entry) throw new Error(`Missing verified entry for ${record.id}.`);
+        const uploadBuffer = new ArrayBuffer(entry.bytes.byteLength);
+        new Uint8Array(uploadBuffer).set(entry.bytes);
         const body = new FormData();
         body.set("batch", CURATED_GALLERY_BATCH);
         body.set("recordId", record.id);
-        body.set("file", new File([entry.bytes], record.originalName, { type: record.mimeType }));
+        body.set("file", new File([uploadBuffer], record.originalName, { type: record.mimeType }));
         await responseJson(await fetch("/api/admin/media/curated-gallery/upload", {
           method: "POST",
           credentials: "same-origin",

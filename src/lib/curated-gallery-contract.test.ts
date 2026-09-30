@@ -50,8 +50,11 @@ describe("curated gallery contract", () => {
   });
 
   it("rejects hero/public state and initiative-count drift", () => {
-    const hero = validManifest();
-    hero.records[0] = { ...hero.records[0], heroEligible: true };
+    const base = validManifest();
+    const hero = {
+      ...base,
+      records: base.records.map((record, index) => index === 0 ? { ...record, heroEligible: true } : record),
+    };
     expect(curatedGalleryManifestSchema.safeParse(hero).success).toBe(false);
 
     const drift = validManifest();
