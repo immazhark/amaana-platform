@@ -326,12 +326,12 @@ test('mobile programme carousel explicitly signals swipe interaction', async ({ 
   expect(cue).toContain('Swipe');
 });
 
-test('internal footer callout stays quieter than the homepage callout', async ({ page }) => {
+test('footer heading uses the same typography on Home and internal pages', async ({ page }) => {
   await open(page, '/');
   const homeSize = await page.locator('.footer-lead h2').evaluate(node => parseFloat(getComputedStyle(node).fontSize));
   await open(page, '/about');
   const internalSize = await page.locator('.footer-lead h2').evaluate(node => parseFloat(getComputedStyle(node).fontSize));
-  expect(internalSize).toBeLessThan(homeSize);
+  expect(internalSize).toBe(homeSize);
 });
 
 test('wide focus carousel presents three useful cards without sliver previews', async ({ page }) => {
@@ -625,10 +625,10 @@ test('homepage hero active slide owns the full carousel viewport on desktop and 
 test('mobile reminder rail and Companion trigger stay singular and contained', async ({ page }) => {
   await open(page, '/', 390);
 
-  const reminderBadge = page.locator('.amaana-live-badge.is-reminder');
-  const duplicateEyebrow = page.locator('.amaana-live-badge.is-reminder + .amaana-reminder-stage .amaana-reminder-eyebrow');
-  await expect(reminderBadge).toBeVisible();
-  await expect(duplicateEyebrow).toBeHidden();
+  await expect(page.locator('.amaana-reminder-lane .amaana-rail-label')).toHaveText('Reminder');
+  await expect(page.locator('.amaana-live-lane .amaana-live-badge')).toHaveText('AMAANA LIVE');
+  await expect(page.locator('.amaana-reminder-lane')).toBeVisible();
+  await expect(page.locator('.amaana-live-lane')).toBeVisible();
 
   const companion = page.locator('.amaana-companion-dock > button');
   await expect(companion).toBeVisible();

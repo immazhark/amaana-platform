@@ -6,11 +6,13 @@ import { AppealCard } from "@/components/appeal-card";
 import { formatINR, getRemainingAppealAmount } from "@/lib/appeals";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getHomepageAppeals } from "@/lib/public-content";
-import { eidGrowth, homepageImpact } from "@/content/amaana";
+import { eidGrowth } from "@/content/amaana";
 import { getHomepageDiscoveryData } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
 import { ScrollCarousel } from "@/components/scroll-carousel";
 import { programmeCategories, programmes } from '@/lib/master-copy';
+import { HomeStorySlide } from "@/components/home-story-slide";
+import { HomeHighlights } from "@/components/home-highlights";
 import { programmeCategoryPath } from '@/lib/programme-category-routing';
 import { selectIdentityPublicImage } from '@/lib/public-media';
 import { openGraphShareImages, twitterShareImages } from '@/lib/social-share-media';
@@ -43,19 +45,6 @@ export default async function HomePage() {
     .filter(item => !isLegacyOurWorkSlug(item.slug))
     .map(item => ({ ...item, causeTitle: item.cause.title }));
   const hasOpenAppeals = appeals.length > 0;
-  const medicalFinancialAidTotal = programmes
-    .filter(programme => programme.causeSlug === "medical-financial-relief")
-    .reduce((total, programme) => {
-      const amount = Number(String(programme.primaryMetric ?? "").replace(/[^0-9]/g, ""));
-      return Number.isFinite(amount) ? total + amount : total;
-    }, 0);
-  const homepageHighlights = [
-    ...homepageImpact,
-    {
-      value: formatINR(medicalFinancialAidTotal),
-      label: "medical, livelihood & financial assistance across documented cases",
-    },
-  ];
   const heroSlides = featured
     .filter(item => item.isFeatured)
     .map(drive => ({ drive, media: selectIdentityPublicImage(drive.mediaAssets) }))
@@ -103,19 +92,7 @@ export default async function HomePage() {
           Amaana Foundation — Trust, Turned Into Action.
         </h1>
         <ScrollCarousel label="Amaana Foundation story and featured work" mode="hero" className="v3-home-banner-carousel" autoAdvanceMs={7000}>
-          <article className="v3-home-banner-slide v3-home-banner-slide--story">
-            <div className="v3-home-banner-shade" aria-hidden="true" />
-            <div className="v3-shell v3-home-banner-content">
-              <p className="v3-home-banner-kicker">The Story of Amaana · Hyderabad</p>
-              <span className="v3-home-banner-brandline">A trust that began around one family table.</span>
-              <h2>From a Ramadan effort in 2020 to Amaana Foundation today.</h2>
-              <p>What began as a small grassroots effort to support families with dignity grew, year by year, into recurring community programmes and a formally organised charitable foundation. The purpose has remained the same: treat every contribution as an amaana — a trust.</p>
-              <div className="v3-home-banner-actions">
-                <Link className="v3-btn" href="/about">Discover our story</Link>
-                <Link className="v3-btn secondary" href="/our-work">Explore our work</Link>
-              </div>
-            </div>
-          </article>
+          <HomeStorySlide />
           {appeals.slice(0, 1).map(appeal => (
             <article className="v3-home-banner-slide v3-home-banner-slide--appeal" key={`appeal-${appeal.slug}`}>
               <div className="v3-home-banner-shade" aria-hidden="true" />
@@ -150,16 +127,7 @@ export default async function HomePage() {
         </ScrollCarousel>
       </section>
 
-      <section className="v3-proof" aria-labelledby="homepage-highlights-title">
-        <div className="v3-shell"><p className="v3-proof-label" id="homepage-highlights-title">Highlights</p><div className="v3-proof-grid">
-          {homepageHighlights.map(item => (
-            <div className="v3-proof-item" key={item.label}>
-              <strong>{item.value}</strong>
-              <span>{item.label}</span>
-            </div>
-          ))}
-        </div></div>
-      </section>
+      <HomeHighlights />
 
       {visibleProgrammeCategories.length > 0 && (
         <section className="v3-section v3-work" aria-labelledby="featured-work-title">

@@ -51,6 +51,7 @@ test('shared header, reminder/live rail and footer use one deliberate desktop sy
 
   const ourWork = page.locator('.site-header .nav-link', { hasText: 'Our Work' });
   await ourWork.hover();
+  await expect.poll(() => ourWork.evaluate(element => Number(getComputedStyle(element, '::after').opacity))).toBe(1);
   const underline = await ourWork.evaluate(element => {
     const style = getComputedStyle(element, '::after');
     return { opacity: Number(style.opacity), height: Number.parseFloat(style.height), transform: style.transform };
@@ -74,8 +75,7 @@ test('shared header, reminder/live rail and footer use one deliberate desktop sy
   const footerLink = page.locator('.footer-links a').first();
   const before = await footerLink.evaluate(element => getComputedStyle(element).color);
   await footerLink.hover();
-  const after = await footerLink.evaluate(element => getComputedStyle(element).color);
-  expect(after).not.toBe(before);
+  await expect.poll(() => footerLink.evaluate(element => getComputedStyle(element).color)).not.toBe(before);
 });
 
 test('shared chrome and footer remain overflow-free on 390px mobile', async ({ page }) => {
@@ -99,8 +99,8 @@ test('homepage hero fixture preserves breathing room and the 45/55 editorial spl
 
   const result = await page.evaluate(() => {
     const carousel = document.querySelector('.v3-home-banner-carousel');
-    const content = document.querySelector('.v3-home-banner-content');
-    const actions = document.querySelector('.v3-home-banner-actions');
+    const content = document.querySelector('[data-active="true"] .v3-home-banner-content');
+    const actions = document.querySelector('[data-active="true"] .v3-home-banner-actions');
     if (!carousel || !content || !actions) return null;
     const carouselRect = carousel.getBoundingClientRect();
     const actionsRect = actions.getBoundingClientRect();
@@ -123,4 +123,86 @@ test('homepage hero fixture preserves breathing room and the 45/55 editorial spl
   expect(result.paddingRight / result.contentWidth).toBeLessThan(0.58);
   expect(result.decorativeCount).toBe(0);
   expect(result.scrollWidth).toBeLessThanOrEqual(result.viewport + 1);
+});
+
+for (const width of [1440, 1280, 1024, 768, 390, 320]) {
+  test(`shared chrome, real home carousel and five Highlights at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.route('**/api/public/live-rail', route => route.fulfill({ json: { items: [] } }));
+    await page.goto('/browser-acceptance/home-hero', { waitUntil: 'domcontentloaded' });
+    await expect(page.locator('.v3-proof-item')).toHaveCount(5);
+    await expect(page.locator('.v3-proof-item').last()).toContainText('₹12,14,520');
+    const metricWidths = await page.locator('.v3-proof-item strong').evaluateAll(nodes => nodes.map(node => ({ width: node.clientWidth, scroll: node.scrollWidth })));
+    for (const metric of metricWidths) expect(metric.scroll).toBeLessThanOrEqual(metric.width + 1);
+    const geometry = await page.evaluate(() => {
+      const rect = selector => document.querySelector(selector).getBoundingClientRect();
+      const hero = rect('.v3-home-banner-carousel');
+      const buttons = rect('[data-active="true"] .v3-home-banner-actions');
+      const copy = rect('[data-active="true"] .v3-home-banner-content');
+      const nav = rect('.site-header .nav');
+      const footer = rect('.site-footer > .container');
+      const lead = rect('.footer-lead');
+      const grid = rect('.footer-grid-v2');
+      const reminder = rect('.amaana-reminder-inner');
+      return {
+        overflow: document.documentElement.scrollWidth > innerWidth + 1,
+        bottomGap: hero.bottom - buttons.bottom,
+        topGap: buttons.top - hero.top,
+        edges: [copy.left, footer.left, reminder.left], navLeft: nav.left,
+        footerGap: grid.top - lead.bottom,
+        companionPosition: getComputedStyle(document.querySelector('.amaana-companion')).position,
+      };
+    });
+    expect(geometry.overflow).toBe(false);
+    expect(geometry.bottomGap).toBeGreaterThanOrEqual(20);
+    expect(geometry.topGap).toBeGreaterThanOrEqual(0);
+    for (const left of geometry.edges) expect(Math.abs(left - geometry.navLeft)).toBeLessThanOrEqual(1);
+    expect(geometry.footerGap).toBeLessThanOrEqual(1);
+    expect(geometry.companionPosition).toBe('fixed');
+    await page.locator('.site-footer').scrollIntoViewIfNeeded();
+    if (width <= 520) {
+      await page.locator('.footer-nav-toggle').first().click();
+      const targets = await page.locator('.footer-nav-group').first().locator('.footer-links a').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().height));
+      for (const height of targets) expect(height).toBeGreaterThanOrEqual(44);
+    }
+  });
+}
+
+test('footer current route stays gold and matches Home typography', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await page.goto('/browser-acceptance/home-hero');
+  const home = await page.locator('.footer-lead h2').evaluate(node => getComputedStyle(node).fontSize);
+  await page.goto('/about');
+  await expect(page.locator('.footer-links a[aria-current="page"]')).toHaveText('Our Story');
+  const current = await page.locator('.footer-links a[aria-current="page"]').evaluate(node => getComputedStyle(node).color);
+  expect(current).toBe('rgb(255, 217, 90)');
+  expect(await page.locator('.footer-lead h2').evaluate(node => getComputedStyle(node).fontSize)).toBe(home);
+});
+
+test('Amaana Live rotates independently and pauses for hover, focus and reduced motion', async ({ page }) => {
+  await page.clock.install();
+  const items = ['First verified need', 'Second verified need'].map((title, index) => ({
+    id: `fixture-${index}`, kind: 'appeal', eyebrow: 'Live appeal', title,
+    detailsHref: '/appeals', supportHref: '/donate', detailsCta: 'View', supportCta: 'Donate',
+  }));
+  await page.route('**/api/public/live-rail', route => route.fulfill({ json: { items } }));
+  await page.goto('/browser-acceptance/home-hero');
+  const title = page.locator('.amaana-live-content strong');
+  await expect(title).toHaveText(items[0].title);
+  const reminder = await page.locator('.amaana-reminder-content strong').textContent();
+  await page.clock.runFor(12_100);
+  await expect(title).toHaveText(items[1].title);
+  await expect(page.locator('.amaana-reminder-content strong')).toHaveText(reminder);
+  await page.locator('.amaana-live-lane').hover();
+  await page.clock.runFor(24_100);
+  await expect(title).toHaveText(items[1].title);
+  await page.mouse.move(1, 500);
+  await page.locator('.amaana-live-link').focus();
+  await page.clock.runFor(24_100);
+  await expect(title).toHaveText(items[1].title);
+  await page.locator('.amaana-live-link').evaluate(node => node.blur());
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await page.clock.runFor(24_100);
+  await expect(title).toHaveText(items[1].title);
 });

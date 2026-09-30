@@ -1,8 +1,10 @@
 # Current checkpoint — 2026-09-30 site chrome + footer + homepage hero correction
 
-State: `CHATGPT_ACTIVE`
+State: `CODEX_ACTIVE`
 Task branch: `fix/site-chrome-footer-hero-20260930`
 Integration base / current phase HEAD at claim: `883d2c6c680bd4ac2796eb68defe16875a9b7bab`.
+
+Incoming Codex ownership explicitly handed over by the owner continuation prompt. Verified task HEAD `464938377ee3b8cddc03b756aa6ab9668b8f655a`, integration HEAD `883d2c6c680bd4ac2796eb68defe16875a9b7bab`, Draft PR #116. CI 36748468904: 808 Chromium checks passed, seven failures under investigation. No concurrent implementation writer is active.
 
 Owner-authorized Block #1 + Block #2 implementation:
 - footer geometry/spacing/typography/site-wide parity, gold link states, official social icons, Threads support, future social extensibility;
@@ -12,6 +14,24 @@ Owner-authorized Block #1 + Block #2 implementation:
 - fifth homepage Highlights metric for the canonical medical/financial assistance aggregate.
 
 Do not repurpose any of the 154 gallery photographs as hero/banner/thumbnail media. Do not touch main, DNS, indexing, reserved production service, Live Razorpay, or fixed bottom-right Islamic Companion placement.
+
+
+Codex recovery checkpoint:
+- Recovered Draft PR #116, inspected all 19 implementation commits and all seven exact-head browser failures.
+- Established `site-chrome.css` after `experience-finish.css`; retired conflicting nav/footer/reminder generations rather than increasing specificity or bundle budgets.
+- Fixed footer implicit grid tracks and inherited 48–80px lead margin; restored 44px mobile link targets, canonical active-route gold, safe bottom spacing, and consistent typography.
+- Corrected the hero split relative to the public container and secondary CTA contrast; actual Home story and Highlights are shared with the isolated carousel fixture.
+- Guarded assistance total against malformed measures, duplicated cases, missing cases and future rollups. Canonical total remains ₹12,14,520; ten focused unit cases pass.
+- Expanded rendered acceptance across 1440/1280/1024/768/390/320, including uncut metric values, footer shell parity and fixed Companion positioning. Obsolete tests now enforce the owner’s newer same-footer/two-lane requirements.
+- Local lint/type/master and unit checks pass (389 tests, 6 database-dependent skips; three unchanged lint warnings). Full exact-head CI and staging verification remain pending; no completion/deployment claim yet.
+
+
+Publication gate after local commit `2224630084e4f19f5429a5db8342ac2ebb20b10c`:
+- All eleven focused Chromium cases pass, including six widths, live rotation/pause/reduced motion, current footer route, 44px mobile links and uncut five-metric values.
+- Clean acceptance-build CSS: 346,982 / 348,160 bytes. Local JS measurement exceeds the historical budget on the unmodified integration baseline too (972,512 baseline; 973,135 candidate); no budget was increased. Exact GitHub production build remains authoritative and has not run for this candidate.
+- Automatic approval review rejected the Git push twice, even after verifying the exact remote and owner handover scope. Stated reason: the attachment was not accepted as trusted direct end-user authorization to export this commit to GitHub.
+- No workaround/alternate publication was attempted after the second rejection. Remote task HEAD remains `464938377ee3b8cddc03b756aa6ab9668b8f655a`; PR #116 remains Draft, unmerged. No Railway deployment or main/production change occurred.
+- Next action requires the owner's direct confirmation to publish this reviewed commit to `immazhark/amaana-platform`, branch `fix/site-chrome-footer-hero-20260930`, update PR #116, run full exact-head CI and merge only into `phase-public-site-rebuild` when green, followed by Railway/staging acceptance.
 
 
 ---

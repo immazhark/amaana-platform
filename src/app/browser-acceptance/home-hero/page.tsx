@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { HomeStorySlide } from "@/components/home-story-slide";
+import { HomeHighlights } from "@/components/home-highlights";
+import { ScrollCarousel } from "@/components/scroll-carousel";
 import { notFound } from "next/navigation";
+import "@/app/home-showcase.css";
 import "@/app/home-documentary.css";
 
 export const dynamic = "force-dynamic";
@@ -16,22 +19,13 @@ export default function HomeHeroBrowserAcceptanceFixture() {
   return (
     <div className="v3-home">
       <section className="v3-home-banner" aria-labelledby="fixture-home-title">
-        <div className="v3-home-banner-carousel">
-          <article className="v3-home-banner-slide v3-home-banner-slide--story">
-            <div className="v3-home-banner-shade" aria-hidden="true" />
-            <div className="v3-shell v3-home-banner-content">
-              <p className="v3-home-banner-kicker">The Story of Amaana · Hyderabad</p>
-              <span className="v3-home-banner-brandline" id="fixture-home-title">A trust that began around one family table.</span>
-              <h2>From a Ramadan effort in 2020 to Amaana Foundation today.</h2>
-              <p>What began as a small grassroots effort to support families with dignity grew into recurring community programmes.</p>
-              <div className="v3-home-banner-actions">
-                <Link className="v3-btn" href="/about">Discover our story</Link>
-                <Link className="v3-btn secondary" href="/our-work">Explore our work</Link>
-              </div>
-            </div>
-          </article>
-        </div>
+        <h1 id="fixture-home-title" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clipPath: "inset(50%)", whiteSpace: "nowrap" }}>Amaana story browser fixture</h1>
+        <ScrollCarousel label="Amaana Foundation story and featured work" mode="hero" className="v3-home-banner-carousel" autoAdvanceMs={7000}>
+          <HomeStorySlide />
+          <HomeStorySlide />
+        </ScrollCarousel>
       </section>
+      <HomeHighlights />
     </div>
   );
 }
