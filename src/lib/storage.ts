@@ -154,6 +154,32 @@ export function isManagedPrivateDocumentKey(objectKey: string, requestId: string
   return new RegExp(`^assistance/${escapedRequestId}/[0-9a-f-]{36}\\.(?:pdf|jpg|png|webp)$`, "i").test(objectKey);
 }
 
+export function isManagedDonationEvidenceKey(objectKey: string, donationId: string) {
+  return objectKey.startsWith(`donations/${donationId}/`) && /^donations\/[^/]+\/[0-9a-f-]{36}\.(?:pdf|jpg|png|webp)$/i.test(objectKey);
+}
+
+export async function uploadDonationEvidence(file: File, donationId: string) {
+  if (!allowedTypes.has(file.type)) throw new Error("Transfer evidence must be PDF, JPEG, PNG or WebP");
+  if (file.size <= 0 || file.size > MAX_FILE_BYTES) throw new Error("Transfer evidence must be between 1 byte and 5 MB");
+  const bytes = Buffer.from(await file.arrayBuffer());
+  if (!hasValidSignature(bytes, file.type)) throw new Error("The transfer evidence does not match its declared file type");
+  const objectKey = `donations/${donationId}/${randomUUID()}.${extensionForMimeType(file.type)}`;
+  const { bucket, client } = getPrivateStorage();
+  await client.send(new PutObjectCommand({ Bucket: bucket, Key: objectKey, Body: bytes, ContentType: file.type, CacheControl: PRIVATE_OBJECT_CACHE_CONTROL, Metadata: { donationId } }));
+  return { objectKey, originalName: file.name.slice(0, 255), mimeType: file.type, sizeBytes: file.size };
+}
+
+export async function getDonationEvidenceUrl(objectKey: string, donationId: string) {
+  if (!isManagedDonationEvidenceKey(objectKey, donationId)) throw new Error("Invalid managed donation evidence key");
+  const { bucket, client } = getPrivateStorage();
+  return getSignedUrl(client, new GetObjectCommand({ Bucket: bucket, Key: objectKey, ResponseCacheControl: PRIVATE_OBJECT_CACHE_CONTROL }), { expiresIn: 60 });
+}
+
+export async function deleteDonationEvidenceObject(objectKey: string, donationId: string) {
+  if (!isManagedDonationEvidenceKey(objectKey, donationId)) throw new Error("Invalid managed donation evidence key");
+  const { bucket, client } = getPrivateStorage();
+  await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: objectKey }));
+}
 export async function uploadPrivateDocument(file: File, requestId: string) {
   if (!allowedTypes.has(file.type)) throw new Error("Only PDF, JPEG, PNG and WebP documents are accepted");
   if (file.size > MAX_FILE_BYTES) throw new Error("Each document must be 5 MB or smaller");

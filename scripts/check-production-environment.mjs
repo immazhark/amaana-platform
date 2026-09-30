@@ -73,6 +73,16 @@ export function validateProductionEnvironmentContract(env) {
     }
   }
 
+  const qrUrl = requireValue(env, "NEXT_PUBLIC_DONATION_UPI_QR_URL", problems);
+  if (qrUrl) {
+    try {
+      const url = new URL(qrUrl);
+      if (url.protocol !== "https:" || url.hostname !== "amaanafoundation.org") problems.push("NEXT_PUBLIC_DONATION_UPI_QR_URL must use the official HTTPS Amaana domain.");
+    } catch { problems.push("NEXT_PUBLIC_DONATION_UPI_QR_URL must be a valid URL."); }
+  }
+  for (const name of ["DONATION_BANK_ACCOUNT_NAME", "DONATION_BANK_ACCOUNT_NUMBER", "DONATION_BANK_IFSC", "DONATION_BANK_NAME", "DONATION_BANK_BRANCH"]) requireValue(env, name, problems);
+  if (env.DONATION_BANK_IFSC && !/^[A-Z]{4}0[A-Z0-9]{6}$/.test(env.DONATION_BANK_IFSC.trim().toUpperCase())) problems.push("DONATION_BANK_IFSC must be a valid Indian IFSC.");
+
   const keyId = requireValue(env, "NEXT_PUBLIC_RAZORPAY_KEY_ID", problems);
   if (keyId && !keyId.startsWith("rzp_live_")) {
     problems.push("NEXT_PUBLIC_RAZORPAY_KEY_ID must be a Razorpay Live key.");
