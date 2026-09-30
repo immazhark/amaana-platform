@@ -334,6 +334,75 @@ test.describe('donation journey without real payment', () => {
   });
 });
 
+test.describe('direct donation browser journey without real transfer', () => {
+  test('direct UPI stays pending until reconciliation and scrubs the private token', async ({ page }) => {
+    await mockAnalytics(page);
+    let submittedBody = '';
+
+    await page.route('**/api/donations/direct-transfer', async route => {
+      const body = route.request().postDataBuffer();
+      submittedBody = body ? body.toString('utf8') : '';
+      await route.fulfill({
+        status: 202,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          referenceNumber: 'AFD-DIRECT-ACCEPT-001',
+          receiptToken,
+          status: 'PENDING_VERIFICATION',
+        }),
+      });
+    });
+    await page.route('**/api/donations/acknowledgement', route => route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        found: true,
+        presentation: {
+          tone: 'pending',
+          heading: 'Your transfer is awaiting verification.',
+          summary: 'Amaana recorded the submitted UTR. It will count only after bank reconciliation.',
+          statusLabel: 'Verification pending',
+        },
+        donation: {
+          referenceNumber: 'AFD-DIRECT-ACCEPT-001',
+          receiptNumber: null,
+          donorName: 'Acceptance Donor',
+          givingIntent: 'GENERAL',
+          amount: 250,
+          refundedAmount: 0,
+          recordDate: '2026-09-30T05:00:00.000Z',
+          providerPaymentId: null,
+          appeal: { title: 'Browser Acceptance Appeal', slug: 'browser-acceptance-appeal' },
+        },
+      }),
+    }));
+
+    const response = await page.goto('/browser-acceptance/direct-donation', { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBeTruthy();
+    await expect(page.getByRole('heading', { name: 'Mocked multi-method donation journey' })).toBeVisible();
+
+    await page.getByRole('button', { name: 'Direct UPI / QR' }).click();
+    await expect(page.getByText('mab.037347029220157@axisbank')).toBeVisible();
+    await expect(page.getByText(/Verified QR image is not configured yet/)).toBeVisible();
+
+    await page.getByLabel('Full name').fill('Acceptance Donor');
+    await page.getByLabel('Email').fill('acceptance@example.test');
+    await page.getByLabel('Amount (INR)').fill('250');
+    await page.getByLabel('UTR / transaction reference').fill('UTRACCEPT12345');
+    await page.getByLabel('Transfer date and time').fill('2026-09-30T10:30');
+    await page.locator('input[name="domesticConfirmed"]').check();
+    await page.getByRole('button', { name: 'Submit transfer for verification' }).click();
+
+    await expect(page.getByRole('heading', { name: 'Your transfer is awaiting verification.' })).toBeVisible();
+    expect(page.url()).toBe('http://127.0.0.1:3000/donations/AFD-DIRECT-ACCEPT-001/acknowledgement');
+    expect(submittedBody).toContain('name="paymentMethod"');
+    expect(submittedBody).toContain('DIRECT_UPI');
+    expect(submittedBody).toContain('UTRACCEPT12345');
+    expect(submittedBody).toContain('name="domesticConfirmed"');
+    expect(submittedBody).toContain('true');
+  });
+});
+
 test.describe('private assistance journey', () => {
   test('guided form blocks step progression until required contact fields are complete', async ({ page }) => {
     await openAssistance(page);
