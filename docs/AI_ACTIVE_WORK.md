@@ -1,15 +1,14 @@
-# Current checkpoint — 2026-09-30 curated gallery publication recovery
+# Current checkpoint — 2026-09-30 curated gallery audited batch publication
 
 State: `CHATGPT_ACTIVE`
-Task branch: `content/curated-gallery-publication-20260930`
-Integration base / current phase HEAD at claim: `703c72bb32987b4d18a081f66c81e68f44548d5a`.
-Owner handed ChatGPT the exact Codex package after Codex stopped at authenticated execution access. The attached ZIP was independently verified in this conversation: 147133042 bytes, SHA-256 `1216eed498c6f5ea0378c1e236137faf455ece735aaeefea8bb2c08d5472ff6f`, 156 safe archive entries, 154 byte/hash-valid images, 22 initiative slugs, no traversal/absolute paths, no count mismatches, and oral-cancer-surgery-support correctly contains one image.
+Task branch: `content/curated-gallery-batch-publish-20260930`
+Integration base / current phase HEAD at claim: `27eb0a43e63919efa148feb05e5d3d1789f71561`.
 
-PR #111 and PR #109 are merged. Railway staging deployment `c3c8e687-fbf9-487c-bf9e-78185b753421` for `703c72bb...` is SUCCESS. PR #104 remains Draft and protected from production promotion.
+Verified staging import is complete: exact owner-approved ZIP initialized successfully, all 154 curated gallery originals uploaded with HTTP 200, final reconciliation returned 154/154 uploaded, 0 missing, 0 failed, and 0 published. The owner explicitly reconfirmed that all selected images were privacy-reviewed/filtered and approved for website publication.
 
-Current atomic task: add a narrowly scoped, admin-authenticated staging intake path that lets the owner select this one verified ZIP once, validates the exact package/manifest client-side, uploads each original unchanged through the existing dedicated public-media storage boundary, creates the exact gallery-only unpublished MediaAsset records idempotently, and preserves all identity/hero/banner/thumbnail exclusions. No image bytes or .curated-media package will be committed to Git. Publication remains through audited governance records only.
+Current atomic task: add one authenticated, staging-only, exact-batch publication control that revalidates all 154 MediaAsset records against the immutable curated manifest/session, records per-asset privacy/publication audit events, publishes only non-identity gallery records, and reconciles 154/154 published. No hero/identity/banner/thumbnail assignment, no production promotion, no unrelated UI changes.
 
-Do not touch main, DNS, indexing, reserved production service, Live Razorpay, Islamic Companion placement, unrelated UI, or hero/banner/thumbnail assignments.
+Do not touch main, DNS, indexing, reserved production service, Live Razorpay, Islamic Companion placement, unrelated UI, or media outside the exact curated IDs.
 
 
 ---
