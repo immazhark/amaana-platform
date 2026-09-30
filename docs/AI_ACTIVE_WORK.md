@@ -1,14 +1,14 @@
-# Current checkpoint — 2026-09-30 curated gallery render reconciliation
+# Current checkpoint — 2026-09-30 initiative gallery rendered QA
 
 State: `CHATGPT_ACTIVE`
-Task branch: `qa/curated-gallery-render-reconciliation-20260930`
-Integration base / current phase HEAD at claim: `69bab7d43ac1db5381aa00e2024e9857eb64d025`.
+Task branch: `fix/initiative-gallery-render-qa-20260930`
+Integration base / current phase HEAD at claim: `63ef40322ed5786aab9c6d77a081f7cef95b7d9f`.
 
-The exact owner-approved gallery batch is complete on staging: 154/154 uploaded, 154/154 published, 0 missing. Railway recorded the exact publication POST and post-publication reconciliation as HTTP 200. All 154 records remain gallery-only with non-negative sortOrder; no header/banner/thumbnail/identity assignment is allowed from this batch.
+Owner-visible reconciliation is now confirmed on staging: **Public render 22/22 verified**, with each initiative showing expected = uploaded = published = public-gallery count, Hero lock = Locked, and PASS. The exact owner-approved batch remains 154/154 published, 0 missing, gallery-only.
 
-Current atomic task: verify the full public rendering data path for all 22 curated initiative slugs against the immutable expected counts, verify the public-page query actually sees the published records, verify no identity/hero asset is selected from this batch, surface exact per-initiative reconciliation in Admin > Media, and close any gallery-specific QA defects without redesigning unrelated surfaces.
+Current atomic task: harden the individual initiative gallery/lightbox itself for desktop and mobile after real-data publication. Preserve original-photo aspect ratio in the full view, keep thumbnails compact, verify keyboard/focus behavior, eliminate overlay collisions with the fixed Islamic Companion/mobile support UI, correct responsive image sizing, and add browser-acceptance coverage for 320/390/1440 widths.
 
-Do not touch main, DNS, indexing, reserved production service, Live Razorpay, Islamic Companion placement, unrelated UI, or banner/header/thumbnail assignments.
+Do not touch main, DNS, indexing, production promotion, Live Razorpay, banner/header/thumbnail assignments, or the fixed bottom-right Islamic Companion placement.
 
 
 ---
