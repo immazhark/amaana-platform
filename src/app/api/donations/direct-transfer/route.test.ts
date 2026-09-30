@@ -138,6 +138,26 @@ describe("direct donation transfer submission", () => {
     expect(mocks.donationCreate).not.toHaveBeenCalled();
   });
 
+  it("treats an empty optional evidence file as no evidence", async () => {
+    const form = new FormData();
+    form.set("appealId", validData.appealId);
+    form.set("donorName", validData.donorName);
+    form.set("donorEmail", validData.donorEmail);
+    form.set("amount", String(validData.amount));
+    form.set("givingIntent", validData.givingIntent);
+    form.set("paymentMethod", validData.paymentMethod);
+    form.set("transferReference", validData.transferReference);
+    form.set("transferredAt", "2026-09-30T05:00:00.000Z");
+    form.set("domesticConfirmed", "true");
+    form.set("evidence", new File([], "", { type: "application/octet-stream" }));
+
+    const response = await POST(new Request("https://amaana.example/api/donations/direct-transfer", { method: "POST", body: form }));
+
+    expect(response.status).toBe(202);
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    expect(mocks.donationUpdate).not.toHaveBeenCalled();
+  });
+
   it("creates an explicitly pending direct-transfer claim without counting it as received", async () => {
     const response = await POST(requestWith());
     const body = await response.json();
