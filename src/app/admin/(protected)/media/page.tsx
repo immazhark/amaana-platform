@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { CuratedGalleryImporter } from "@/components/curated-gallery-importer";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -77,6 +78,8 @@ export default async function AdminMediaPage({ searchParams }: Props) {
       </div>
       {!storage.deliveryReady && <p className="muted" style={{ marginTop: "1rem" }}>You may continue documenting existing reviewed public URLs. Direct file uploads should not be treated as publication-ready until the preflight is fully green.</p>}
     </section>
+
+    {canEdit && canApprove && storage.uploadReady && <CuratedGalleryImporter />}
 
     {canEdit && <section className="admin-card" style={{ marginBottom: "2rem" }}>
       <h2>Add reviewed media</h2>

@@ -1,15 +1,16 @@
-# Current checkpoint — 2026-09-30 curated gallery integration
+# Current checkpoint — 2026-09-30 curated gallery publication recovery
 
-State: `HANDOFF_PENDING`
-Task branch: `content/curated-gallery-20260930`
-Verified integration base: `9d299b19d3f76c3e25f91010b0d5a956ca245edb`.
-User instructed "Start Integration" after selecting 154 attachments across 22 initiatives. All files are now copied privately and byte-verified, and canonical gallery mappings prepared. Import dry run, 5 importer tests, 8 public-media tests, targeted lint, TypeScript and diff checks pass. Next: resolve website/required-consent approval, review alt text, verify staging storage, import unpublished drafts and run rendered gallery acceptance before publication. No upload, database mutation, push or deployment occurred. Banner/thumbnail selection remains separate. No production promotion, live payment, DNS or indexing changes. Existing local UI-remediation work is excluded. Open PRs #104, #109 and #110 remain untouched. See `CURATED_GALLERY_INTEGRATION_2026-09-30.md` for the complete handoff.
+State: `CHATGPT_ACTIVE`
+Task branch: `content/curated-gallery-publication-20260930`
+Integration base / current phase HEAD at claim: `703c72bb32987b4d18a081f66c81e68f44548d5a`.
+Owner handed ChatGPT the exact Codex package after Codex stopped at authenticated execution access. The attached ZIP was independently verified in this conversation: 147133042 bytes, SHA-256 `1216eed498c6f5ea0378c1e236137faf455ece735aaeefea8bb2c08d5472ff6f`, 156 safe archive entries, 154 byte/hash-valid images, 22 initiative slugs, no traversal/absolute paths, no count mismatches, and oral-cancer-surgery-support correctly contains one image.
 
-## Publication continuation — owner approval received
+PR #111 and PR #109 are merged. Railway staging deployment `c3c8e687-fbf9-487c-bf9e-78185b753421` for `703c72bb...` is SUCCESS. PR #104 remains Draft and protected from production promotion.
 
-The owner explicitly confirmed: "Yes all images are okay to go ahead publish, start the integration immediately and publish them". This is owner-attested approval for the selected gallery package; no further publication-consent question is pending. It is not independent verification of underlying consent documents and does not approve hero/banner assignments.
+Current atomic task: add a narrowly scoped, admin-authenticated staging intake path that lets the owner select this one verified ZIP once, validates the exact package/manifest client-side, uploads each original unchanged through the existing dedicated public-media storage boundary, creates the exact gallery-only unpublished MediaAsset records idempotently, and preserves all identity/hero/banner/thumbnail exclusions. No image bytes or .curated-media package will be committed to Git. Publication remains through audited governance records only.
 
-Integration head remains `9d299b19d3f76c3e25f91010b0d5a956ca245edb`; open PRs remain #104, #109 and #110. Staging has all required PUBLIC_MEDIA_S3 variable names, but Railway OAuth withholds their values. There are no task-local upload/database credentials or Railway CLI available. Both unified browser and Windows Computer Use fail at initialization with `failed to write kernel assets: The system cannot find the path specified. (os error 3)`. BrowserAct and uv are absent; no software installed. Actual uploads/publication are blocked on authenticated execution access, not owner approval. Do not weaken the existing private-storage/publication boundary to work around missing access.
+Do not touch main, DNS, indexing, reserved production service, Live Razorpay, Islamic Companion placement, unrelated UI, or hero/banner/thumbnail assignments.
+
 
 ---
 
