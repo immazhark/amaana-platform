@@ -18,3 +18,18 @@
 
 /* Browser accessibility close-out: small gold labels on light paper use the canonical high-contrast ink. */
 .v3-trust-grid>div:last-child>.v3-label,.v3-appeals .v3-label{color:var(--af-color-gold-ink)}
+
+/* Five factual Highlights: five columns only when each remains readable. */
+@media(min-width:1300px){
+  .v3-proof-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+  .v3-proof-item{padding-inline:1rem}
+  .v3-proof-item strong{font-size:clamp(1.75rem,2.5vw,2.6rem)}
+}
+@media(min-width:601px) and (max-width:1299px){
+  .v3-proof-grid{grid-template-columns:repeat(6,minmax(0,1fr))}
+  .v3-proof-item{grid-column:span 2;border-bottom:1px solid #e0d5bd}
+  .v3-proof-item:nth-child(n+4){grid-column:span 3;border-bottom:0}
+  .v3-proof-item:nth-child(2n){border-right:1px solid #e0d5bd}
+  .v3-proof-item:nth-child(3),.v3-proof-item:last-child{border-right:0}
+  .v3-proof-item strong{font-size:clamp(1.75rem,3vw,2.5rem)}
+}

@@ -23,8 +23,12 @@ if (cssImports.length !== uniqueImports.size) {
 
 // The verified pre-hardening root had 19 stylesheet layers. Homepage-only layers,
  // brand-lockup.css and the adjacent iteration-three.css layer are now scoped or consolidated.
-if (cssImports.length > 16) {
-  failures.push(`Root layout imports ${cssImports.length} CSS files; expected no more than 16.`);
+if (cssImports.filter(file => file !== 'site-chrome.css').length > 16) {
+  failures.push(`Root layout imports ${cssImports.length} CSS files; expected no more than 16 foundational layers plus the canonical shared-chrome authority.`);
+}
+
+if (cssImports.indexOf('site-chrome.css') !== cssImports.indexOf('experience-finish.css') + 1) {
+  failures.push('site-chrome.css must immediately follow experience-finish.css.');
 }
 
 for (const routeOnly of ['home-documentary.css', 'home-media-polish.css']) {

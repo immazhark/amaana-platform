@@ -1,14 +1,38 @@
-# Current checkpoint — 2026-09-30 initiative gallery rendered QA
+# Current checkpoint — 2026-09-30 site chrome + footer + homepage hero correction
 
-State: `CHATGPT_ACTIVE`
-Task branch: `fix/initiative-gallery-render-qa-20260930`
-Integration base / current phase HEAD at claim: `63ef40322ed5786aab9c6d77a081f7cef95b7d9f`.
+State: `CODEX_ACTIVE`
+Task branch: `fix/site-chrome-footer-hero-20260930`
+Integration base / current phase HEAD at claim: `883d2c6c680bd4ac2796eb68defe16875a9b7bab`.
 
-Owner-visible reconciliation is now confirmed on staging: **Public render 22/22 verified**, with each initiative showing expected = uploaded = published = public-gallery count, Hero lock = Locked, and PASS. The exact owner-approved batch remains 154/154 published, 0 missing, gallery-only.
+Incoming Codex ownership explicitly handed over by the owner continuation prompt. Verified task HEAD `464938377ee3b8cddc03b756aa6ab9668b8f655a`, integration HEAD `883d2c6c680bd4ac2796eb68defe16875a9b7bab`, Draft PR #116. CI 36748468904: 808 Chromium checks passed, seven failures under investigation. No concurrent implementation writer is active.
 
-Current atomic task: harden the individual initiative gallery/lightbox itself for desktop and mobile after real-data publication. Preserve original-photo aspect ratio in the full view, keep thumbnails compact, verify keyboard/focus behavior, eliminate overlay collisions with the fixed Islamic Companion/mobile support UI, correct responsive image sizing, and add browser-acceptance coverage for 320/390/1440 widths.
+Owner-authorized Block #1 + Block #2 implementation:
+- footer geometry/spacing/typography/site-wide parity, gold link states, official social icons, Threads support, future social extensibility;
+- slightly taller global header with larger logo, restored thick animated gold nav underline, canonical Support a need CTA;
+- split compact Reminder + independent Amaana Live rail below navigation;
+- homepage hero breathing room, 45/55 copy/media composition, image fade boundary, removal of decorative 2020/Arabic story graphics;
+- fifth homepage Highlights metric for the canonical medical/financial assistance aggregate.
 
-Do not touch main, DNS, indexing, production promotion, Live Razorpay, banner/header/thumbnail assignments, or the fixed bottom-right Islamic Companion placement.
+Do not repurpose any of the 154 gallery photographs as hero/banner/thumbnail media. Do not touch main, DNS, indexing, reserved production service, Live Razorpay, or fixed bottom-right Islamic Companion placement.
+
+
+Codex recovery checkpoint:
+- Recovered Draft PR #116, inspected all 19 implementation commits and all seven exact-head browser failures.
+- Established `site-chrome.css` after `experience-finish.css`; retired conflicting nav/footer/reminder generations rather than increasing specificity or bundle budgets.
+- Fixed footer implicit grid tracks and inherited 48–80px lead margin; restored 44px mobile link targets, canonical active-route gold, safe bottom spacing, and consistent typography.
+- Corrected the hero split relative to the public container and secondary CTA contrast; actual Home story and Highlights are shared with the isolated carousel fixture.
+- Guarded assistance total against malformed measures, duplicated cases, missing cases and future rollups. Canonical total remains ₹12,14,520; ten focused unit cases pass.
+- Expanded rendered acceptance across 1440/1280/1024/768/390/320, including uncut metric values, footer shell parity and fixed Companion positioning. Obsolete tests now enforce the owner’s newer same-footer/two-lane requirements.
+- Local lint/type/master and unit checks pass (389 tests, 6 database-dependent skips; three unchanged lint warnings). Full exact-head CI and staging verification remain pending; no completion/deployment claim yet.
+
+
+Publication recovery — 2026-10-01 IST:
+- Owner directly authorized continuation after the explicit publication approval request. Terminal push then failed for missing GitHub credentials.
+- Connected GitHub publication succeeded: `12cd093d4024bcb2775ab83c07f0b77fcd5b472a`, whose tree exactly equals local tested tree `50cd32acd66c24f97778d173842b954aa7b02596`.
+- PR CI 36762269001 passed lint/types/unit/database/factual checks and 822 Chromium cases. One mobile footer-collapse failure exposed a later generic display rule overriding the existing disclosure state.
+- Removed only the redundant generic display declaration; kept the existing disclosure behavior and compact-height assertion. Local failing mobile disclosure test now passes, as do all eleven focused chrome checks. Two broader local checks need unavailable database routes; those same routes passed in CI.
+- Clean acceptance CSS was 346,982 / 348,160 bytes before this one-line reduction; budgets remain unchanged. The local JS baseline discrepancy still requires integration production-build verification.
+- Publishing this correction and rerunning exact-head CI is next. PR #116 remains Draft until green; no integration merge or Railway deployment has occurred yet.
 
 
 ---
