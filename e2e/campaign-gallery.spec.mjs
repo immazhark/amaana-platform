@@ -102,4 +102,16 @@ test('initiative gallery lightbox remains contained at 320px and preserves usabl
 
   await expect(dialog.getByRole('button', { name: '← Previous' })).toBeVisible();
   await expect(dialog.getByRole('button', { name: 'Next →' })).toBeVisible();
+
+  const imageBox = await dialog.locator('img').evaluate(image => {
+    const rect = image.getBoundingClientRect();
+    return {
+      ratio: rect.width / rect.height,
+      naturalRatio: image.naturalWidth / image.naturalHeight,
+    };
+  });
+  expect(Math.abs(imageBox.ratio - imageBox.naturalRatio)).toBeLessThan(0.02);
+
+  await page.mouse.click(2, 2);
+  await expect(dialog).toHaveCount(0);
 });

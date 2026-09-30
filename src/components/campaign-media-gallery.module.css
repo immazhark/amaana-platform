@@ -6,14 +6,14 @@
 .openLabel{position:absolute;right:.65rem;bottom:.65rem;padding:.3rem .55rem;border-radius:999px;background:rgb(15 33 55 / 82%);color:#fff;font-size:.68rem;font-weight:800;letter-spacing:.04em}
 .card figcaption{padding:.65rem .75rem .8rem;color:#5b6472;font-size:.8rem;line-height:1.5;overflow-wrap:break-word}
 .trigger:focus-visible,.dialog button:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
-.backdrop{position:fixed;inset:0;z-index:1400;display:grid;place-items:center;padding:1rem;background:rgb(8 18 31 / 90%);overscroll-behavior:contain}
+.backdrop{position:fixed;inset:0;z-index:1400;display:grid;place-items:center;padding:max(1rem,env(safe-area-inset-top)) max(1rem,env(safe-area-inset-right)) max(1rem,env(safe-area-inset-bottom)) max(1rem,env(safe-area-inset-left));background:rgb(8 18 31 / 90%);overscroll-behavior:contain}
 .dialog{width:min(96vw,72rem);max-height:94dvh;overflow:auto;overscroll-behavior:contain;padding:1rem;border:1px solid rgb(255 255 255 / 14%);border-radius:1rem;background:#0f2137;color:#fff;box-shadow:0 2rem 6rem rgb(0 0 0 / 40%)}
 .dialogTop,.controls{display:flex;align-items:center;justify-content:space-between;gap:1rem}
 .dialogTop{margin-bottom:.75rem;color:rgb(255 255 255 / 72%);font-size:.82rem}
 .dialogTop>span{min-width:0;overflow-wrap:anywhere;line-height:1.4}
 .dialogTop>button{flex:0 0 auto}
 .dialog button{min-height:2.75rem;padding:.6rem .85rem;border:1px solid rgb(255 255 255 / 24%);border-radius:.7rem;background:transparent;color:#fff;font:inherit;font-weight:750;cursor:pointer;touch-action:manipulation}
-.fullImage{display:block;width:100%;height:auto;max-height:72dvh;object-fit:contain;background:#07111f}
+.fullImage{display:block;width:auto;max-width:100%;height:auto;max-height:72dvh;margin-inline:auto;object-fit:contain;background:#07111f}
 .caption{margin:.8rem 0 0;color:rgb(255 255 255 / 76%);line-height:1.55;overflow-wrap:break-word}
 .controls{margin-top:1rem}
 @media(prefers-reduced-motion:reduce){.trigger img{transition:none}}
@@ -24,7 +24,7 @@
 
 @media(max-width:900px){.grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:600px){
-  .backdrop{padding:.5rem}
+  .backdrop{padding:max(.5rem,env(safe-area-inset-top)) max(.5rem,env(safe-area-inset-right)) max(.5rem,env(safe-area-inset-bottom)) max(.5rem,env(safe-area-inset-left))}
   .dialog{width:100%;max-height:calc(100dvh - 1rem);padding:.75rem;border-radius:.85rem}
   .dialogTop{align-items:flex-start;gap:.75rem}
   .fullImage{max-height:65dvh}

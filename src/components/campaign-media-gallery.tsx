@@ -131,7 +131,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
         const width = active.width && active.width > 0 ? active.width : 1600;
         const height = active.height && active.height > 0 ? active.height : 1200;
         return (
-        <div className={styles.backdrop} role="presentation" onMouseDown={event => {
+        <div className={styles.backdrop} role="presentation" onPointerDown={event => {
           if (event.currentTarget === event.target) close();
         }}>
           <div
