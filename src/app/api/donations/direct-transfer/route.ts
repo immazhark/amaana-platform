@@ -36,7 +36,12 @@ export async function POST(request: Request) {
       headers: { "content-type": contentType },
       body,
     });
-    const form = await boundedRequest.formData();
+    let form: FormData;
+    try {
+      form = await boundedRequest.formData();
+    } catch {
+      return NextResponse.json({ error: "Transfer submission could not be parsed." }, { status: 400, headers: privateHeaders });
+    }
     const evidenceEntry = form.get("evidence");
     if (evidenceEntry !== null && !(evidenceEntry instanceof File)) {
       return NextResponse.json({ error: "Please attach a valid transfer screenshot or PDF." }, { status: 400, headers: privateHeaders });
@@ -73,7 +78,12 @@ export async function POST(request: Request) {
         }, select: { id: true, referenceNumber: true },
       });
     } catch (error) {
-      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") return NextResponse.json({ error: "This transfer reference has already been submitted. Please do not submit it again." }, { status: 409, headers: privateHeaders });
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        const target = Array.isArray(error.meta?.target) ? error.meta.target.join(",") : String(error.meta?.target ?? "");
+        if (target.includes("transferReference")) {
+          return NextResponse.json({ error: "This transfer reference has already been submitted. Please do not submit it again." }, { status: 409, headers: privateHeaders });
+        }
+      }
       throw error;
     }
 
