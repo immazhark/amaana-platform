@@ -1,4 +1,4 @@
-import { z } from "zod";
+import * as z from "zod";
 const CURATED_MAX_FILE_BYTES = 5 * 1024 * 1024;
 const CURATED_MAX_IMAGE_PIXELS = 40_000_000;
 
