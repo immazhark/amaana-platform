@@ -12,8 +12,10 @@ async function openFixture(page, width = 1440) {
         eyebrow: 'Live appeal',
         title: 'Verified medical support',
         subtitle: 'Synthetic browser acceptance item.',
-        href: '/appeals',
-        cta: 'Donate now',
+        detailsHref: '/appeals',
+        supportHref: '/donate',
+        detailsCta: 'View',
+        supportCta: 'Donate',
       }],
     }),
   }));
