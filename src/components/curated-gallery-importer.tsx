@@ -277,7 +277,7 @@ export function CuratedGalleryImporter() {
            (status.mismatches?.length ?? 0) === 0 &&
            status.galleryOnly === true && (
             <div style={{ marginTop: "1rem" }}>
-              <button type="button" className="primary-button" disabled={busy} onClick={() => void publishApprovedBatch()}>
+              <button type="button" className="button" disabled={busy} onClick={() => void publishApprovedBatch()}>
                 Publish all 154 approved gallery images
               </button>
               <p className="muted" style={{ marginTop: ".5rem" }}>
