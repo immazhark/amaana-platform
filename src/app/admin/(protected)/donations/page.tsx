@@ -23,12 +23,13 @@ export default async function DonationsPage({ searchParams }: Props) {
     ...(selectedIntent ? { givingIntent: selectedIntent } : {}),
   };
 
-  const [totalItems, reconciliation, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, statusGroups, intentGroups] = await Promise.all([
+  const [totalItems, reconciliation, pendingDirectTransfers, unmatchedCriticalEventCount, unmatchedCriticalEvents, missingAcknowledgements, refundedWithoutCompletionTime, statusGroups, intentGroups] = await Promise.all([
     prisma.donation.count({ where }),
     prisma.donation.aggregate({
       where: { status: { in: ["CAPTURED", "REFUNDED"] } },
       _sum: { amount: true, refundedAmount: true },
     }),
+    prisma.donation.count({ where: { status: DonationStatus.PENDING_VERIFICATION, paymentMethod: { in: ["DIRECT_UPI", "BANK_TRANSFER"] } } }),
     prisma.paymentEvent.count({
       where: {
         donationId: null,
@@ -134,6 +135,7 @@ export default async function DonationsPage({ searchParams }: Props) {
         <span className="status-badge">{operational.status === "healthy" ? "HEALTHY" : `${operational.attention} NEED ATTENTION`}</span>
       </div>
       <div className="card-grid">
+        <article className="card"><strong>{pendingDirectTransfers}</strong><p>Direct UPI/bank transfers awaiting statement verification</p></article>
         <article className="card"><strong>{operational.unmatchedCriticalEvents}</strong><p>Unmatched critical payment events</p></article>
         <article className="card"><strong>{operational.missingAcknowledgements}</strong><p>Captured/refunded donations without acknowledgement numbers</p></article>
         <article className="card"><strong>{operational.refundedWithoutCompletionTime}</strong><p>Refunded donations missing completion time</p></article>
@@ -168,12 +170,13 @@ export default async function DonationsPage({ searchParams }: Props) {
     </div>
     <div className="admin-table-wrap">
       <table>
-        <thead><tr><th>Reference</th><th>Donor</th><th>Appeal</th><th>Intent</th><th>Amount</th><th>Refunded</th><th>Status</th><th>Date</th></tr></thead>
+        <thead><tr><th>Reference</th><th>Donor</th><th>Appeal</th><th>Intent</th><th>Method</th><th>Amount</th><th>Refunded</th><th>Status</th><th>Date</th></tr></thead>
         <tbody>{donations.map(donation => <tr key={donation.id}>
           <td><Link href={`/admin/donations/${donation.id}`}><strong>{donation.referenceNumber}</strong></Link></td>
           <td>{donation.donorName}<br/><small>{donation.donorEmail}</small></td>
           <td>{donation.appeal.title}</td>
           <td>{donationIntentLabel(donation.givingIntent)}</td>
+          <td>{donation.paymentMethod === "DIRECT_UPI" ? "Direct UPI" : donation.paymentMethod === "BANK_TRANSFER" ? "Bank transfer" : "Razorpay"}</td>
           <td>{formatINR(donation.amount.toNumber())}</td>
           <td>{formatINR(donation.refundedAmount.toNumber())}</td>
           <td><span className="status-badge">{donation.status}</span></td>

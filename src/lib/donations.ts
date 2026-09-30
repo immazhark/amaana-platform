@@ -16,6 +16,12 @@ export const donationSchema = z.object({
   domesticConfirmed: z.literal(true),
 });
 
+export const directTransferSchema = donationSchema.extend({
+  paymentMethod: z.enum(["DIRECT_UPI", "BANK_TRANSFER"]),
+  transferReference: z.string().trim().min(6).max(100).regex(/^[A-Za-z0-9._\/-]+$/),
+  transferredAt: z.coerce.date().refine(value => value.getTime() <= Date.now() + 5 * 60_000, "Transfer date cannot be in the future"),
+});
+
 export function isDonationAmountAllowedForRemaining(amount: number, remainingAmount: number) {
   if (!Number.isInteger(amount) || amount < 1 || amount > MAX_DONATION_AMOUNT) return false;
   if (amount > remainingAmount) return false;
@@ -59,6 +65,24 @@ export function getDonationAcknowledgementPresentation(
           summary: "Amaana Foundation gratefully acknowledges your contribution and the trust placed in this appeal.",
           statusLabel: "Payment verified",
         };
+  }
+
+  if (status === "PENDING_VERIFICATION") {
+    return {
+      tone: "pending",
+      heading: "Your transfer is awaiting verification.",
+      summary: "Amaana has recorded the transfer details you submitted. This contribution will count toward the appeal only after the UTR/reference is matched against funds received by Amaana Foundation. Keep your bank or UPI confirmation and do not submit the same transfer again.",
+      statusLabel: "Verification pending",
+    };
+  }
+
+  if (status === "REJECTED") {
+    return {
+      tone: "failed",
+      heading: "This transfer could not be verified.",
+      summary: "Amaana could not match the submitted transfer reference to a received contribution. Please review the reference or contact Amaana before submitting another claim.",
+      statusLabel: "Transfer not verified",
+    };
   }
 
   if (status === "FAILED") {
