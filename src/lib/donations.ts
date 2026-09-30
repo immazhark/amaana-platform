@@ -67,6 +67,15 @@ export function getDonationAcknowledgementPresentation(
         };
   }
 
+  if (status === "PENDING_VERIFICATION") {
+    return {
+      tone: "pending",
+      heading: "Your transfer is awaiting verification.",
+      summary: "Amaana has recorded the transfer details you submitted. This contribution will count toward the appeal only after the UTR/reference is matched against funds received by Amaana Foundation. Keep your bank or UPI confirmation and do not submit the same transfer again.",
+      statusLabel: "Verification pending",
+    };
+  }
+
   if (status === "REJECTED") {
     return {
       tone: "failed",

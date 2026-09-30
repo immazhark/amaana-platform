@@ -42,7 +42,9 @@ describe("donation acknowledgement presentation", () => {
     const view = getDonationAcknowledgementPresentation("PENDING_VERIFICATION", 1_000, 0);
     expect(view.tone).toBe("pending");
     expect(view.statusLabel).toBe("Verification pending");
-    expect(view.summary.toLowerCase()).not.toContain("received");
+    expect(view.summary.toLowerCase()).toContain("utr/reference");
+    expect(view.summary.toLowerCase()).toContain("bank or upi");
+    expect(view.summary.toLowerCase()).not.toContain("razorpay");
   });
 
   it("shows rejected transfer claims as not verified", () => {
