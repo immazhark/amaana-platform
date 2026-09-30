@@ -1,3 +1,7 @@
+## 2026-10-01 IST — Blocks #1/#2 deployed; bundle certification correction
+
+PR #116 merged as `3107555782a4b9632300bcfb7ef65271e86592fb` after 823 Chromium and 24 Firefox/WebKit cases passed. Railway staging `b4c52092-3072-4249-9566-be32d4e3fdc8` SUCCESS; rendered homepage confirms implemented chrome/hero/five Highlights. Integration JS guard exposed existing Zod namespace object import bloat in curated-gallery contract (973,135 vs 819,200 bytes); ES module namespace import reduces clean production JS to 805,951 without validation changes. CSS 346,969 passes unchanged cap; typecheck and three contract tests pass. Isolated correction publication, CI, merge and exact deployed SHA verification pending.
+
 ## 2026-10-01 IST — publication recovered; mobile footer disclosure correction
 
 Direct owner continuation authorized delivery. GitHub connector published the exact locally tested tree as `12cd093d4024bcb2775ab83c07f0b77fcd5b472a` after terminal credentials were unavailable. PR CI 36762269001: 822 Chromium passed, one mobile footer-collapse failure. Removed redundant generic footer display:grid override so existing mobile disclosure state wins; failing test passes locally and all 11 focused chrome checks remain green. Full rerun/green merge/integration production budgets/staging verification pending. Main, production, indexing, gallery identity and fixed Companion locks preserved.
