@@ -336,6 +336,8 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          # Firefox requires its existing home directory to belong to the runner user.
+          chown "$(id -u):$(id -g)" "$HOME"
           cd "$GITHUB_WORKSPACE/amaana-browser-acceptance"
           node - <<'JS'
           const { chromium, firefox, webkit } = require('@playwright/test');
