@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { getGetInvolvedHeroMedia } from "@/lib/get-involved-media";
+import { ParticipationCards } from "@/components/participation-card";
 import styles from "./get-involved-audit.module.css";
 
 export const dynamic = "force-dynamic";
@@ -87,9 +88,7 @@ export default async function GetInvolvedPage() {
       <section className="v2-intent" aria-labelledby="ways-to-help-title">
         <div className="v2-shell">
           <div className="v2-intent-heading"><div><p className="v2-section-label">Choose your way in</p><h2 id="ways-to-help-title">Different people can contribute differently.</h2></div><p>Start with what is realistic for you and what the current work actually needs.</p></div>
-          <div className={`v2-intent-grid v2-intent-grid--five ${styles.intent}`}>
-            {waysToHelp.map(item => <Link className="v2-intent-card" href={item.href} key={item.number} aria-label={`${item.title}: ${item.action}`}><span className="v2-intent-marker" aria-hidden="true">{item.number}</span><div><h3>{item.title}</h3><p>{item.copy}</p></div><span className="v2-intent-arrow">{item.action} ↗</span></Link>)}
-          </div>
+          <ParticipationCards paths={waysToHelp.map(({ number, ...item }) => ({ ...item, marker: number }))} />
         </div>
       </section>
 

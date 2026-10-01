@@ -3,6 +3,13 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
+  { paths: /^src\/components\/(participation-card|social-icon)(\.|\/)/, tests: ['participation-contact.spec.mjs', 'site-chrome-footer.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  { paths: /^src\/app\/(get-involved|contact|appeals)\/(page\.tsx|[^/]+\.module\.css)$/, tests: ['participation-contact.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  { paths: /^src\/components\/work-visual-placeholder\.module\.css$/, tests: ['participation-contact.spec.mjs', 'background-system.spec.mjs', 'owner-screenshot-polish.spec.mjs'] },
+  { paths: /^e2e\/(participation-contact|visual-system)\.spec\.mjs$/, tests: ['participation-contact.spec.mjs', 'visual-system.spec.mjs'] },
+  // Planner-only changes run their mandatory Node regression suite in plan;
+  // workflow, auth, database and unknown paths still select full acceptance.
+  { paths: /^scripts\/(ci-plan|test-ci-plan)\.mjs$/, tests: [] },
   { paths: /^src\/components\/(site-header|site-footer|footer-nav-group|home-story-slide|home-highlights|home-evidence|work-portfolio|work-visual-placeholder|action-icon)(\.|\/)/, tests: ['site-chrome-footer.spec.mjs', 'owner-screenshot-polish.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/app\/(home[^/]*|our-work[^/]*)\.css$/, tests: ['site-chrome-footer.spec.mjs', 'owner-screenshot-polish.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/content\/.*\.json$/, tests: ['public-seo.spec.mjs', 'site-chrome-footer.spec.mjs'] },

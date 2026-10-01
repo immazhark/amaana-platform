@@ -1,0 +1,17 @@
+.grid.grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:1rem;border:0}
+.card.card{grid-column:span 2;display:flex;flex-direction:column;justify-content:flex-start;gap:1.25rem;min-height:19rem;padding:1.5rem;border:1px solid var(--af-color-border);border-radius:1rem;background:rgb(255 253 248 / 86%);color:var(--af-color-navy-950);overflow:visible;animation:none;transition:border-color .2s,background-color .2s,box-shadow .2s,transform .2s}
+.grid.grid .card:nth-last-child(2):nth-child(4),.grid.grid .card:last-child:nth-child(5){grid-column:span 3}
+.card.card::before{content:none}
+.card.card h3{max-width:22ch;margin:0;font-family:var(--af-font-display);font-size:clamp(1.5rem,2vw,2rem);font-weight:500;line-height:1.15;letter-spacing:-.02em;color:inherit}
+.card.card p{margin:0;color:var(--af-color-muted);font-size:1rem;line-height:1.65}
+.marker{display:inline-flex;align-self:flex-start;align-items:center;justify-content:center;min-width:2.5rem;height:2.5rem;padding-inline:.5rem;border-radius:.75rem;background:var(--af-color-gold-soft);color:var(--af-color-gold-ink);font-size:.75rem;font-weight:700;letter-spacing:.08em}
+.copy{display:grid;gap:.75rem}
+.action{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:auto;padding-top:1rem;border-top:1px solid var(--af-color-border);color:var(--af-color-blue-600);font-size:.95rem;font-weight:700;line-height:1.5}
+.action svg{width:1.125rem;height:1.125rem;flex-shrink:0;transition:transform .2s}
+.card.card:is(:hover,:focus-visible){background:var(--af-color-surface);color:var(--af-color-navy-950);border-color:var(--af-color-gold-ink);box-shadow:0 .5rem 1.25rem rgb(15 23 42 / 7%);transform:translateY(-2px)}
+.card.card:is(:hover,:focus-visible) p{color:var(--af-color-muted)}
+.card:is(:hover,:focus-visible) .action svg{transform:translateX(3px)}
+.card.card:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:4px}
+@media(max-width:900px){.grid.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.grid.grid .card.card:nth-child(n){grid-column:auto;min-height:18rem}.grid.grid .card:last-child:nth-child(odd){grid-column:1/-1}}
+@media(max-width:620px){.grid.grid{grid-template-columns:1fr}.grid.grid .card.card:nth-child(n){grid-column:auto;min-height:0;padding:1.25rem}}
+@media(prefers-reduced-motion:reduce){.card.card,.action svg{transition:none}.card.card:is(:hover,:focus-visible),.card:is(:hover,:focus-visible) .action svg{transform:none}}
