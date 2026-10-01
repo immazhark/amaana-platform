@@ -18,51 +18,42 @@
 .hero .controls button{border-color:rgb(255 255 255 / 24%);background:rgb(255 255 255 / 9%);color:#fff;box-shadow:none}
 .hero .controls button:hover:not(:disabled){border-color:rgb(255 255 255 / 48%);background:rgb(255 255 255 / 16%)}
 .hero .viewport,.hero .track,.hero .slide{height:100%}
-.hero .track{width:100%;min-width:100%;gap:0}
+.hero .track{position:relative;width:100%;min-width:100%;gap:0}
 .hero .slide{width:100%;flex-basis:100%}
 .srOnly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:700px){.gallery .slide{width:min(82vw,21rem)}.cards .slide{width:min(86vw,28rem)}.toolbar{justify-content:space-between}}
 @media(prefers-reduced-motion:reduce){.controls button{transition:none}}
 
-/* Center-focused editorial carousel for programme/content discovery.
-   Adjacent cards remain visible as context while the active card owns the reading focus. */
-.focus{container-type:inline-size}
-.focus .viewport{scroll-padding-inline:clamp(1rem,8vw,7rem)}
-.focus .track{align-items:center;padding-inline:max(1rem,calc((100cqw - min(72vw,48rem))/2));padding-block:.8rem 1.25rem}
-.focus .slide{width:min(72vw,48rem);scroll-snap-align:center;opacity:.64;transform:scale(.9);transform-origin:center;filter:saturate(.72);transition:transform .34s var(--af-ease-standard),opacity .28s ease,filter .28s ease}
-.focus .activeSlide{opacity:1;transform:scale(1);filter:none;z-index:2}
-.focus .activeSlide>*{box-shadow:0 1.25rem 3.25rem rgb(18 34 57 / 14%)}
-@media(max-width:900px){.focus .track{padding-inline:max(1rem,calc((100cqw - min(80vw,38rem))/2))}.focus .slide{width:min(80vw,38rem);opacity:.72;transform:scale(.94)}}
-@media(max-width:600px){.focus .track{padding-inline:7vw}.focus .slide{width:86vw;opacity:.78;transform:scale(.96)}}
-@media(prefers-reduced-motion:reduce){.focus .slide{transition:none;transform:none}.focus .activeSlide>*{box-shadow:none}}
+/* Body tracks share left alignment and an 18% next-card preview. */
+.cards,.gallery,.focus{container-type:inline-size;--card-gap:1rem;--card-width:calc((100cqw - var(--card-gap))/1.18)}
+.cards .track,.gallery .track,.focus .track{position:relative;gap:var(--card-gap);padding: .5rem 0 1rem;padding-right:calc(100cqw - var(--card-width))}
+.cards .slide,.gallery .slide,.focus .slide{width:var(--card-width);flex-basis:var(--card-width);scroll-snap-align:start}
+.slide>*{height:100%}
+.progress{height:3px;background:rgb(70 111 170 / 14%);overflow:hidden;border-radius:3px;margin-top:.5rem}
+.progress span{display:block;width:100%;height:100%;background:var(--af-color-blue-600,#466faa);transform-origin:left;transform:scaleX(0)}
+@media(min-width:700px){.cards,.gallery,.focus{--card-width:calc((100cqw - var(--card-gap) * 2)/2.18)}}
+@media(min-width:1200px){.cards,.gallery,.focus{--card-width:calc((100cqw - var(--card-gap) * 3)/3.18)}}
+
+.header{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-bottom:1rem}.heading{flex:1;min-width:0}.heading h2{margin:0}.header .toolbar{margin:0;flex-shrink:0}.hero .header{margin:0}
+.cards .slide>:is(article,a),.focus .slide>:is(article,a){display:flex;flex-direction:column;overflow:hidden;border-radius:1.25rem;background:var(--af-color-surface,#fffdf8);border:1px solid rgb(18 34 57 / 12%);box-shadow:0 .5rem 1.5rem rgb(18 34 57 / 7%);min-height:30rem}
+.slide :global(.v3-work-card-media),.slide :global(.canonical-pathway-visual){aspect-ratio:16/9;height:auto;flex-shrink:0;width:100%;margin:0;border-radius:0;overflow:hidden}
+.slide :global(.canonical-pathway-visual) :is(img,figure){width:100%;height:100%;margin:0;object-fit:cover}
+.slide :global(.campaign-pathway-card){padding:0}
+.slide :global(.campaign-pathway-card)>:not(:first-child){margin-left:1.25rem;margin-right:1.25rem}
+.slide :global(.campaign-pathway-card)>:last-child{margin-top:auto;margin-bottom:1.25rem}
+@media(max-width:600px){.header{align-items:flex-start;flex-wrap:wrap}.heading{flex-basis:100%}.header .toolbar{margin-left:auto}}
+
+.slide :global(.v2-impact-witness-item)>:global(.v2-media-item){aspect-ratio:16/9;position:relative;inset:auto;aspect-ratio:16/9;height:auto;overflow:hidden;margin:0}
+.slide :global(.v2-impact-witness-item) img{height:100%;width:100%;object-fit:cover}
+.root:global(.body-carousel--home-showcase) .slide>*{box-shadow:0 .7rem 2rem rgb(70 111 170 / 12%)}
+.root:global(.body-carousel--timeline-impact) .slide h3{font-size:1.6rem;line-height:1.15}
+.cards .viewport,.focus .viewport{cursor:grab}.cards .viewport:active,.focus .viewport:active{cursor:grabbing}
+.cards .slide :global(.v2-impact-witness-item){color:var(--af-color-navy-950)}
+.cards .slide :global(.v2-impact-witness-item) h3{color:var(--af-color-navy-950)}
+.cards .slide :global(.v2-impact-witness-item)>div{position:static;inset:auto;background:none;padding:1.25rem;flex:1;display:flex;flex-direction:column}
+.cards .slide :global(.v2-impact-witness-item)>div>span{margin-top:auto;color:var(--af-color-blue-600,#466faa)}
+.cards .slide :global(.v2-impact-witness-item) figcaption{display:none}
+.cards .slide :global(.campaign-pathway-card)>p:not(:global(.v2-section-label)){display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;line-height:1.6}
 
 
-/* 2026-09-28 brutal-QA: make horizontal interaction discoverable on touch screens. */
-@media(max-width:700px){
-  .gallery .toolbar::before,.cards .toolbar::before,.focus .toolbar::before{content:"Swipe ↔";margin-right:auto;color:var(--af-color-muted);font-size:.76rem;font-weight:700;letter-spacing:.025em}
-  .status{font-size:.8rem;font-weight:700}
-}
-
-
-/* 2026-09-29 owner monitor QA: balanced wide discovery without breaking centered focus semantics. */
-@media(min-width:1200px){
-  .focus{--focus-wide-slide:calc((100cqw - 2rem)/3)}
-  .focus .viewport{scroll-padding-inline:calc((100cqw - var(--focus-wide-slide))/2)}
-  .focus .track{
-    width:max-content;
-    min-width:100%;
-    padding:.8rem calc((100cqw - var(--focus-wide-slide))/2) 1.25rem;
-    gap:1rem
-  }
-  .focus .slide{
-    width:var(--focus-wide-slide);
-    flex:0 0 var(--focus-wide-slide);
-    opacity:.82;
-    transform:scale(.97);
-    filter:saturate(.9);
-    transition:opacity .28s ease,filter .28s ease;
-    scroll-snap-align:center
-  }
-  .focus .activeSlide{opacity:1;transform:translateY(-.25rem) scale(1);filter:none}
-  .focus .activeSlide>*{box-shadow:0 1rem 2.5rem rgb(18 34 57 / 10%)}
-}
+.cards .slide :global(.v2-impact-witness-item){margin-top:0;transform:none}

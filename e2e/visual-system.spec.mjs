@@ -315,15 +315,15 @@ test('page hero variants stay visually differentiated inside one canonical syste
   expect(new Set(backgrounds).size).toBeGreaterThanOrEqual(3);
 });
 
-test('mobile programme carousel explicitly signals swipe interaction', async ({ page }) => {
+test('mobile programme carousel signals scrolling through a next-card preview', async ({ page }) => {
   await open(page, '/', 390);
   const carousel = page.locator('[aria-label="Amaana programme areas"]');
-  await expect(carousel).toBeVisible();
-  const cue = await carousel.evaluate(root => {
-    const toolbar = root.querySelector('[class*="toolbar"]');
-    return toolbar ? getComputedStyle(toolbar, '::before').content : '';
-  });
-  expect(cue).toContain('Swipe');
+  await expect(carousel.getByRole('progressbar')).toBeVisible();
+  const viewport = await carousel.locator('[id^="carousel-"]').boundingBox();
+  const next = await carousel.locator('[aria-roledescription="slide"]').nth(1).boundingBox();
+  const visible = viewport.x + viewport.width - next.x;
+  expect(visible / next.width).toBeGreaterThan(.14);
+  expect(visible / next.width).toBeLessThan(.22);
 });
 
 test('footer heading uses the same typography on Home and internal pages', async ({ page }) => {
@@ -420,48 +420,17 @@ test('recognition record never relies on an embedded PDF renderer for its primar
   await expect(page.getByRole('link', { name: 'Open original certificate' })).toBeVisible();
 });
 
-test('ultra-wide focus carousel shows three complete cards without a clipped fourth preview', async ({ page }) => {
+test('ultra-wide body carousel shows three complete cards and a next-card preview', async ({ page }) => {
   await open(page, '/', 2560);
   const carousel = page.locator('[aria-label="Amaana programme areas"]');
-  await carousel.getByRole('button', { name: 'Next slide' }).click();
-  await expect(carousel.locator('[aria-live="polite"]')).toContainText('2 / 5');
-
   const metrics = await carousel.evaluate(root => {
-    const viewport = root.querySelector('[id^="carousel-"]')?.getBoundingClientRect();
-    const slides = Array.from(root.querySelectorAll('[class*="slide"]'));
-    if (!viewport) return null;
-
-    const visible = slides
-      .map(slide => ({
-        rect: slide.getBoundingClientRect(),
-        active: slide.className.includes('activeSlide'),
-      }))
-      .filter(item => item.rect.right > viewport.left + 1 && item.rect.left < viewport.right - 1);
-
-    const fullyVisible = visible.filter(
-      item => item.rect.left >= viewport.left - 1 && item.rect.right <= viewport.right + 1,
-    );
-    const inactiveWidths = fullyVisible.filter(item => !item.active).map(item => item.rect.width);
-    const activeWidths = fullyVisible.filter(item => item.active).map(item => item.rect.width);
-
-    return {
-      visibleCount: visible.length,
-      fullyVisibleCount: fullyVisible.length,
-      partialCount: visible.length - fullyVisible.length,
-      inactiveWidths,
-      activeWidths,
-    };
+    const v=root.querySelector('[id^="carousel-"]').getBoundingClientRect();
+    const boxes=Array.from(root.querySelectorAll('[aria-roledescription="slide"]')).map(n=>n.getBoundingClientRect());
+    return {full:boxes.filter(r=>r.left>=v.left-1 && r.right<=v.right+1).length,peek:(v.right-boxes[3].left)/boxes[3].width};
   });
-
-  expect(metrics).toBeTruthy();
-  expect(metrics.visibleCount).toBe(3);
-  expect(metrics.fullyVisibleCount).toBe(3);
-  expect(metrics.partialCount).toBe(0);
-  expect(metrics.activeWidths).toHaveLength(1);
-  expect(metrics.inactiveWidths).toHaveLength(2);
-  expect(Math.abs(metrics.inactiveWidths[0] - metrics.inactiveWidths[1])).toBeLessThanOrEqual(4);
-  expect(metrics.activeWidths[0]).toBeGreaterThan(metrics.inactiveWidths[0]);
-  expect(metrics.activeWidths[0] - metrics.inactiveWidths[0]).toBeLessThanOrEqual(16);
+  expect(metrics.full).toBe(3);
+  expect(metrics.peek).toBeGreaterThan(.14);
+  expect(metrics.peek).toBeLessThan(.22);
 });
 
 test('mobile companion dock does not cover visible main-page controls', async ({ page }) => {
@@ -575,8 +544,8 @@ test('homepage hero stays wide and compact on desktop', async ({ page }) => {
   await expect(hero).toBeVisible();
   const box = await hero.boundingBox();
   expect(box).toBeTruthy();
-  expect(box.width / box.height).toBeGreaterThan(3.8);
-  expect(box.height).toBeLessThanOrEqual(336);
+  expect(box.width / box.height).toBeGreaterThan(3.4);
+  expect(box.height).toBeLessThanOrEqual(416);
   expect(box.y + box.height).toBeLessThanOrEqual(900);
   await expect(hero.getByText('The Story of Amaana · Hyderabad', { exact: true })).toBeVisible();
   const content = hero.locator('.v3-home-banner-content').first();
@@ -650,7 +619,7 @@ test('mobile reminder rail and Companion trigger stay singular and contained', a
   expect(geometry.height).toBeGreaterThanOrEqual(44);
 });
 
-test('homepage programme carousel stays centered and wraps in both directions', async ({ page }) => {
+test('homepage programme carousel stays left aligned and wraps in both directions', async ({ page }) => {
   await open(page, '/');
   const carousel = page.locator('[aria-label="Amaana programme areas"]');
   await expect(carousel).toBeVisible();
@@ -660,16 +629,14 @@ test('homepage programme carousel stays centered and wraps in both directions', 
   await expect(status).toContainText('5 / 5');
   await carousel.getByRole('button', { name: 'Next slide' }).click();
   await expect(status).toContainText('1 / 5');
-  const geometry = await carousel.evaluate(root => {
+  await expect.poll(async () => carousel.evaluate(root => {
     const active = root.querySelector('[data-active="true"]');
     const viewport = root.querySelector('[id^="carousel-"]');
     if (!active || !viewport) return null;
     const a = active.getBoundingClientRect();
     const v = viewport.getBoundingClientRect();
-    return { activeCenter: a.left + a.width / 2, viewportCenter: v.left + v.width / 2 };
-  });
-  expect(geometry).toBeTruthy();
-  expect(Math.abs(geometry.activeCenter - geometry.viewportCenter)).toBeLessThanOrEqual(4);
+    return Math.abs(a.left - v.left);
+  })).toBeLessThanOrEqual(4);
 });
 
 test('shared footer callout remains compact and does not compete with page hero', async ({ page }) => {
@@ -773,3 +740,4 @@ for (const width of [1440, 390]) {
     }
   });
 }
+

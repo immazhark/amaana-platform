@@ -1,8 +1,8 @@
+import { BodyCarousel } from "@/components/body-carousel";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
-import { ScrollCarousel } from "@/components/scroll-carousel";
 import { TrustEvidenceBoundary } from "@/components/trust-evidence-boundary";
 import { programmeBySlug } from "@/lib/master-copy";
 import { getImpactPageData } from "@/lib/public-page-data";
@@ -76,7 +76,7 @@ export default async function ImpactPage() {
         </div>
       </section>
 
-      {initiativesWithMedia.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p><h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2></div><p className="v2-section-intro">Only photographs suitable for public sharing appear here. Personal documents and sensitive verification material remain private.</p></div><ScrollCarousel label="Documented impact photographs" mode="cards" className="v2-impact-witness-carousel">{initiativesWithMedia.slice(0, 6).map(item => { const media=selectIdentityPublicImage(item.mediaAssets); if(!media) return null; return <Link href={`/our-work/${item.slug}`} className="v2-impact-witness-item" key={item.id} aria-label={`Open ${item.title}`}><PublicMedia asset={media} /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Explore this work →</span></div></Link>; })}</ScrollCarousel></div></section>}
+      {initiativesWithMedia.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p></div><p className="v2-section-intro">Only photographs suitable for public sharing appear here. Personal documents and sensitive verification material remain private.</p></div><BodyCarousel heading={<h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2>} label="Documented impact photographs" className="v2-impact-witness-carousel">{initiativesWithMedia.slice(0, 6).map(item => { const media=selectIdentityPublicImage(item.mediaAssets); if(!media) return null; return <Link href={`/our-work/${item.slug}`} className="v2-impact-witness-item" key={item.id} aria-label={`Open ${item.title}`}><PublicMedia asset={media} /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Explore this work →</span></div></Link>; })}</BodyCarousel></div></section>}
 
       <section className="v2-section v2-impact-philosophy">
         <div className="v2-shell v2-impact-philosophy-grid">
