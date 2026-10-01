@@ -394,7 +394,8 @@ test('our work disclosure controls align to the right edge on wide screens', asy
 });
 
 test('single-programme categories use an intentional editorial feature layout', async ({ page }) => {
-  await open(page, '/programmes/medical-financial-relief', 1920);
+  // Seasonal Relief has one canonical parent programme; medical relief contains several cases.
+  await open(page, '/programmes/seasonal-relief', 1920);
   const metrics = await page.locator('.canonical-pathways--single article').evaluate(article => {
     const rect = article.getBoundingClientRect();
     const visual = article.querySelector('.canonical-pathway-visual')?.getBoundingClientRect();

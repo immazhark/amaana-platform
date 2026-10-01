@@ -10,23 +10,10 @@ import { getProgrammeChildMedia } from '@/lib/public-page-data';
 import { programmeBySlug, programmeChildren } from '@/lib/master-copy';
 import { PublicMedia } from '@/components/public-media';
 import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from '@/lib/public-media';
-import { buildPublicRecordFallback, distinctStoryParagraphs, heroTeaser } from '@/lib/public-copy';
+import { buildPublicRecordFallback, programmeStoryParagraphs, heroTeaser } from '@/lib/public-copy';
 import { CampaignMediaGallery } from '@/components/campaign-media-gallery';
 import '@/app/our-work/[slug]/campaign.css';
 import '@/app/canonical-content.css';
-
-const clinicalGlossary = [
- { term: 'ARDS', meaning: 'Acute respiratory distress syndrome' },
- { term: 'ECMO', meaning: 'Extracorporeal membrane oxygenation' },
- { term: 'HFOV', meaning: 'High-frequency oscillatory ventilation' },
- { term: 'PICU', meaning: 'Paediatric intensive care unit' },
- { term: 'CPAP', meaning: 'Continuous positive airway pressure' },
-] as const;
-
-function clinicalTermsIn(text: string) {
- const normalized=text.replace(/C-PAP/gi,'CPAP').toUpperCase();
- return clinicalGlossary.filter(item=>normalized.includes(item.term));
-}
 
 export async function ProgrammeDetail({slug}:{slug:string}) {
  const record=await getPublishedInitiativeBySlug(slug);if(!record)notFound();
@@ -51,8 +38,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const parentRecord=parentCandidate?await getPublishedInitiativeBySlug(parentCandidate.slug):null;
  const parent=parentRecord?parentCandidate:undefined;
  const facts=canonical&&'facts' in canonical?canonical.facts:[];
- const storyParagraphs=distinctStoryParagraphs(summary,story||summary);
- const clinicalTerms=clinicalTermsIn(`${summary} ${story}`);
+ const storyParagraphs=programmeStoryParagraphs(summary,story);
  const historicalGrassroots=['hyderabad-flood-relief-2020','covid-essential-support-2020'].includes(slug);
  const fallbackStory=buildPublicRecordFallback({metric:primaryMetric,metricLabel:primaryMetricLabel});
  const factsClass=slug==='hyderabad-flood-relief-2020'?'canonical-facts canonical-facts--timeline':'canonical-facts';
@@ -87,9 +73,9 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
     visual={lead?<PublicMedia asset={lead} priority />:<WorkVisualPlaceholder label={title} className="campaign-lead-placeholder" />}
   />
   {(primaryMetric||primaryMetricLabel)&&<section className="campaign-impact-strip" aria-label="Programme impact summary"><div className="v2-shell"><div><span>Documented impact</span><strong>{primaryMetric??"Published record"}</strong><p>{primaryMetricLabel??statusLabel}</p></div><div><span>Status</span><strong>{statusLabel}</strong></div></div></section>}
-  <section className="campaign-story v2-shell" id="programme-story"><div><p className="v2-section-label">The work</p><h2>How the programme took shape</h2></div><div className="campaign-story-copy">{storyParagraphs.length>0?storyParagraphs.map((paragraph,index)=><p key={index}>{paragraph}</p>):<p>{fallbackStory}</p>}</div></section>
+  <section className="campaign-story" id="programme-story"><div className="v2-shell campaign-story-layout"><div><p className="v2-section-label">The work</p><h2>How the programme took shape</h2></div><div className="campaign-story-copy">{storyParagraphs.length>0?storyParagraphs.map((paragraph,index)=><p key={index}>{paragraph}</p>):<p>{fallbackStory}</p>}</div></div></section>
   {historicalGrassroots&&<section className="campaign-history-note"><div className="v2-shell"><span>Historical grassroots record</span><p>This work predates Amaana Foundation&apos;s later formal registration and is presented as part of the community effort that preceded the registered trust.</p></div></section>}
-  {clinicalTerms.length>0&&<section className="campaign-clinical-note" aria-labelledby="clinical-terms-title"><div className="v2-shell"><div><span>Plain-language context</span><h2 id="clinical-terms-title">Clinical terms mentioned in this case</h2><p>These short explanations clarify abbreviations in the documented case record; they are not medical advice.</p></div><ul>{clinicalTerms.map(item=><li key={item.term}><strong>{item.term}</strong><span>{item.meaning}</span></li>)}</ul></div></section>}
+
   {facts&&facts.length>0&&<section className="v2-section paper"><div className="v2-shell"><h2>Programme details</h2><ol className={factsClass}>{facts.map(f=><li key={f}>{f}</li>)}</ol></div></section>}
   {publishedChildren.length>0&&<section className="v2-section paper" id="programme-pathways"><div className="v2-shell"><BodyCarousel label={slug==='taleem'?'Taleem programme pathways':'Programme years'} variant="timeline-impact" className="campaign-pathway-carousel" heading={<h2>{slug==='taleem'?'One Initiative. Different Pathways to Learning.':'View Year-by-Year Impact'}</h2>}>{publishedChildren.map(child=>{const mediaAsset=childMedia.get(child.slug)??null;return <article className="campaign-pathway-card" key={child.slug}><div className="canonical-pathway-visual">{mediaAsset&&canRenderPublicMedia(mediaAsset)?<PublicMedia asset={mediaAsset}/>:<WorkVisualPlaceholder label={child.title}/>}</div><p className="v2-section-label">{'year' in child?child.year:child.programmeStatus==='EXPANDING'?'Developing pathway':'Continuing sponsorship'}</p><h3><Link href={`/our-work/${child.slug}`}>{child.title}</Link></h3><p>{child.summary}</p>{'primaryMetric' in child&&child.primaryMetric&&<div className="canonical-pathway-metric"><strong>{child.primaryMetric}</strong>{'primaryMetricLabel' in child&&child.primaryMetricLabel&&<span>{child.primaryMetricLabel}</span>}</div>}<Link className="v2-text-link" href={`/our-work/${child.slug}`}>Explore this {child.programmeStatus==='EXPANDING'?'pathway':'programme'} →</Link></article>})}</BodyCarousel></div></section>}
   {highlightMedia&&<section className="campaign-data-visual"><div className="v2-shell"><div><span className="v2-section-label">Beneficiary breakdown</span><h2>Who the 2026 Eid Gift Kits reached</h2><p>{highlightMedia.caption}</p></div><PublicMedia asset={highlightMedia}/></div></section>}
