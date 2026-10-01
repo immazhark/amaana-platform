@@ -35,7 +35,7 @@
   font-weight:var(--af-weight-action);transition:transform .2s ease,box-shadow .2s ease,background .2s ease
 }
 .af-support-cta:is(:hover,:focus-visible),.site-header .nav-donate:is(:hover,:focus-visible){
-  transform:translateY(-1px);background:linear-gradient(135deg,#244f83 0%,#3d73b5 100%);
+  color:#fffdf8;transform:translateY(-1px);background:linear-gradient(135deg,#244f83 0%,#3d73b5 100%);
   box-shadow:0 .72rem 1.55rem rgb(18 34 57 / 19%),0 0 0 2px rgb(224 179 24 / 15%)
 }
 .af-support-cta:active,.site-header .nav-donate:active{transform:translateY(0)}
@@ -92,7 +92,7 @@
   width:min(calc(100% - (var(--af-public-gutter) * 2)),var(--af-public-shell));margin-inline:auto
 }
 .site-footer .footer-lead{
-  display:grid;grid-template-columns:minmax(0,1.12fr) minmax(22rem,.88fr);grid-template-areas:none;
+  display:grid;grid-template-columns:minmax(0,1.45fr) minmax(18rem,.55fr);grid-template-areas:none;
   align-items:end;gap:clamp(1.5rem,4vw,4rem);margin:0;padding-block:1.25rem 1.45rem;
   border-bottom:1px solid rgb(240 213 107 / 15%)
 }
@@ -102,8 +102,8 @@
   margin:0 0 .45rem;color:var(--af-footer-gold);font-size:.68rem;line-height:1.35;letter-spacing:.13em
 }
 .site-footer .footer-lead h2{
-  max-width:23ch;margin:0;color:#fffdf8;font-family:var(--af-font-display);font-weight:500;font-size:clamp(1.9rem,2.55vw,2.7rem);
-  line-height:1.03;letter-spacing:-.038em
+  max-width:36ch;margin:0;color:#fffdf8;font-family:var(--af-font-display);font-weight:500;font-size:clamp(1.65rem,2.1vw,2.2rem);
+  line-height:1.12;letter-spacing:-.028em
 }
 .site-footer .footer-lead-actions{
   display:flex;flex-wrap:wrap;justify-content:flex-end;align-items:center;gap:clamp(.9rem,2vw,1.4rem);align-self:end;padding-bottom:.22rem
@@ -184,7 +184,7 @@
   .amaana-live-link,.amaana-live-cta{min-height:2.75rem}
   .site-footer .footer-lead{padding-block:1.05rem 1.2rem;gap:1rem}
   .site-footer .footer-links a,.site-footer .footer-socials a{min-height:2.75rem}
-  .site-footer .footer-lead h2{font-size:clamp(1.75rem,8vw,2.3rem)}
+  .site-footer .footer-lead h2{font-size:clamp(1.55rem,6.5vw,1.95rem)}
   .site-footer .footer-grid-v2{grid-template-columns:1fr;gap:.75rem;padding-block:1.35rem 1.1rem}
   .site-footer .footer-intro{grid-column:auto;padding-bottom:.25rem}
   .site-footer .footer-note{grid-template-columns:1fr;padding-block:.9rem 6rem}
