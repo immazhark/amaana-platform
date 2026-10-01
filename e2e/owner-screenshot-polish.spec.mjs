@@ -65,7 +65,18 @@ for (const width of [1920, 1440, 1024, 768, 390, 320]) {
       return row.right - toggle.right;
     });
     expect(alignment).toBeLessThanOrEqual(25);
+    const number = summary.locator('.v2-cause-number');
+    await expect(number).toBeVisible();
+    const numberBox = await number.boundingBox();
+    const titleBox = await summary.locator('.v2-cause-summary-title').boundingBox();
+    expect(numberBox.x + numberBox.width).toBeLessThanOrEqual(titleBox.x - 4);
     await summary.focus();
+    await page.keyboard.press("Shift+Tab");
+    await page.keyboard.press("Tab");
+    await expect(summary).toBeFocused();
+    const focus = await summary.evaluate(node => ({ width: parseFloat(getComputedStyle(node).outlineWidth), offset: parseFloat(getComputedStyle(node).outlineOffset) }));
+    expect(focus.width).toBeGreaterThanOrEqual(2);
+    expect(focus.offset).toBeGreaterThanOrEqual(2);
     await page.keyboard.press('Enter');
     await expect(page.locator('details').first()).toHaveAttribute('open', '');
     const rows = await page.locator('details').first().locator('.v2-initiative-row').evaluateAll(nodes => nodes.map(node => {
