@@ -1,7 +1,9 @@
 name: CI
 
 on:
+  workflow_dispatch:
   pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
     branches:
       - main
       - phase-public-site-rebuild
@@ -16,25 +18,43 @@ concurrency:
 
 permissions:
   contents: read
+  actions: read
 
 jobs:
-  verify:
+  plan:
+    runs-on: ubuntu-latest
+    outputs:
+      app: ${{ steps.plan.outputs.app }}
+      database: ${{ steps.plan.outputs.database }}
+      browser: ${{ steps.plan.outputs.browser }}
+      mode: ${{ steps.plan.outputs.mode }}
+      tests: ${{ steps.plan.outputs.tests }}
+      crossBrowser: ${{ steps.plan.outputs.crossBrowser }}
+      visual: ${{ steps.plan.outputs.visual }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Verify and calculate impact plan
+        id: plan
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          CI_BASE: ${{ github.event.pull_request.base.sha || github.event.before }}
+          CI_EVENT: ${{ github.event_name }}
+          CI_TARGET: ${{ github.base_ref || github.ref_name }}
+          CI_RELEASE: ${{ github.event_name == 'workflow_dispatch' }}
+        run: |
+          node --test scripts/test-ci-plan.mjs
+          node scripts/ci-plan.mjs
+
+  fast:
+    needs: plan
+    if: needs.plan.outputs.app == 'true' && github.event.action != 'ready_for_review'
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: amaana
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd "pg_isready -U postgres -d amaana"
-          --health-interval 5s
-          --health-timeout 5s
-          --health-retries 10
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/amaana?schema=public
       NEXT_PUBLIC_APP_URL: https://amaanafoundation.org
@@ -84,6 +104,45 @@ jobs:
       - run: npm run lint
       - run: npm run typecheck
 
+      - name: Run fast test suite for pull requests
+        if: github.event_name == 'pull_request'
+        run: npm test
+
+      - name: Run coverage suite for integration pushes
+        if: github.event_name != 'pull_request'
+        run: npm run test:coverage
+
+
+
+  database:
+    needs: [plan, fast]
+    if: needs.plan.outputs.database == 'true' && github.event.action != 'ready_for_review'
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: amaana
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d amaana"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/amaana?schema=public
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run prisma:generate
       - name: Verify refund ledger against isolated PostgreSQL
         env:
           AMAANA_DATABASE_TESTS: "true"
@@ -92,57 +151,47 @@ jobs:
           node scripts/test-refund-ledger-migration.mjs
           npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts
 
-      - name: Run fast test suite for pull requests
-        if: github.event_name == 'pull_request'
-        run: npm test
 
-      - name: Run coverage suite for integration pushes
-        if: github.event_name == 'push'
-        run: npm run test:coverage
+  production:
+    needs: [plan, fast]
+    if: needs.plan.outputs.app == 'true' && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: amaana
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d amaana"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/amaana?schema=public
+      NEXT_PUBLIC_APP_URL: https://amaanafoundation.org
+      NEXT_PUBLIC_ALLOW_INDEXING: "false"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
 
-      - name: Detect browser-affecting integration changes
-        id: browser_changes
-        shell: bash
-        run: |
-          set -euo pipefail
-          if [ "${{ github.event_name }}" = "pull_request" ]; then
-            BEFORE="${{ github.event.pull_request.base.sha }}"
-          else
-            BEFORE="${{ github.event.before }}"
-          fi
-          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
-            echo "needed=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          if git diff --name-only HEAD^ HEAD | grep -Eq '^(e2e/|playwright\.config\.mjs$|\.github/workflows/ci\.yml$)'; then
-            echo "needed=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          git cat-file -e "${BEFORE}^{commit}" 2>/dev/null || git fetch --no-tags --depth=1 origin "$BEFORE"
-          CHANGED=$(git diff --name-only "$BEFORE" "${{ github.sha }}")
-          printf '%s\n' "$CHANGED"
-          if printf '%s\n' "$CHANGED" | grep -Eq '^(e2e/|playwright\.config\.mjs$|\.github/workflows/ci\.yml$)'; then
-            echo "needed=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-          # Protected admin list/editor TSX is not exercised by the isolated browser
-          # suite, which uses a synthetic operations console. Keep public pages,
-          # admin login, shared components/CSS, acceptance fixtures and config as
-          # browser-affecting while avoiding a second build + Chromium install for
-          # protected-admin-only rendering changes.
-          BROWSER_CHANGED=$(printf '%s\n' "$CHANGED" | grep -Ev '^src/app/admin/\(protected\)/.*\.tsx$' || true)
-          if printf '%s\n' "$BROWSER_CHANGED" | grep -Eq '^(src/app/.*\.(tsx|css)|src/components/|src/.*\.css$|public/|prisma/|Dockerfile$|e2e/|playwright\.config\.mjs$|next\.config\.ts$|\.github/workflows/ci\.yml$)'; then
-            echo "needed=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "needed=false" >> "$GITHUB_OUTPUT"
-          fi
-
+      - run: npm run prisma:generate
       - name: Build production application
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request'
         run: npm run build
 
       - name: Enforce production bundle budgets
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
@@ -159,7 +208,7 @@ jobs:
           test "$CSS_BYTES" -le "$CSS_BUDGET"
 
       - name: Run post-build server smoke checks
-        if: github.event_name == 'push'
+        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
@@ -205,14 +254,49 @@ jobs:
           trap - EXIT
           if fuser 3000/tcp >/dev/null 2>&1; then exit 1; fi
 
+
+  browser:
+    needs: [plan, fast]
+    if: needs.plan.outputs.browser == 'true' && github.event.action != 'ready_for_review'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: amaana
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d amaana"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/amaana?schema=public
+      NEXT_PUBLIC_APP_URL: https://amaanafoundation.org
+      NEXT_PUBLIC_ALLOW_INDEXING: "false"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+
+      - run: npm run prisma:generate
       - name: Prepare browser acceptance database
-        if: steps.browser_changes.outputs.needed == 'true'
+        if: needs.plan.outputs.browser == 'true'
         run: |
           npx prisma migrate deploy
           npm run seed:public-content
 
       - name: Build isolated browser acceptance fixture
-        if: steps.browser_changes.outputs.needed == 'true'
+        if: needs.plan.outputs.browser == 'true'
         shell: bash
         env:
           AMAANA_BROWSER_ACCEPTANCE: "true"
@@ -222,7 +306,7 @@ jobs:
           npm run build
 
       - name: Prepare isolated browser acceptance workspace
-        if: steps.browser_changes.outputs.needed == 'true'
+        if: needs.plan.outputs.browser == 'true'
         shell: bash
         run: |
           set -euo pipefail
@@ -237,26 +321,38 @@ jobs:
           npm install --save-dev --package-lock=false @playwright/test@1.55.0 @axe-core/playwright@4.10.2
 
       - name: Install browsers for acceptance
-        if: steps.browser_changes.outputs.needed == 'true'
+        env:
+          CROSS_BROWSER: ${{ needs.plan.outputs.crossBrowser }}
+        if: needs.plan.outputs.browser == 'true'
         shell: bash
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP/amaana-browser-acceptance"
-          npx playwright install --with-deps chromium firefox webkit
+          if [ "$CROSS_BROWSER" = "true" ]; then
+            npx playwright install --with-deps chromium firefox webkit
+          else
+            npx playwright install --with-deps chromium
+          fi
 
       - name: Run responsive, accessibility and journey browser acceptance
-        if: steps.browser_changes.outputs.needed == 'true'
+        if: needs.plan.outputs.browser == 'true'
         shell: bash
         env:
+          CI_BROWSER_TESTS: ${{ needs.plan.outputs.tests }}
           AMAANA_APP_WORKSPACE: ${{ github.workspace }}
-          AMAANA_FULL_VISUAL_REVIEW: "true"
+          AMAANA_FULL_VISUAL_REVIEW: ${{ needs.plan.outputs.visual }}
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP/amaana-browser-acceptance"
-          npx playwright test --config=playwright.config.mjs
+          if [ -n "$CI_BROWSER_TESTS" ]; then
+            read -r -a SELECTED_TESTS <<< "$CI_BROWSER_TESTS"
+            npx playwright test --config=playwright.config.mjs "${SELECTED_TESTS[@]}"
+          else
+            npx playwright test --config=playwright.config.mjs
+          fi
 
       - name: Run Firefox and WebKit public-surface smoke
-        if: steps.browser_changes.outputs.needed == 'true'
+        if: needs.plan.outputs.crossBrowser == 'true'
         shell: bash
         env:
           AMAANA_APP_WORKSPACE: ${{ github.workspace }}
@@ -266,13 +362,35 @@ jobs:
           npx playwright test --config=playwright.cross-browser.config.mjs
 
       - name: Upload launch review screenshots
-        if: always() && steps.browser_changes.outputs.needed == 'true'
+        if: always() && needs.plan.outputs.browser == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: launch-review-screenshots-${{ github.sha }}
-          path: ${{ runner.temp }}/amaana-browser-acceptance/launch-review
+          path: |
+            ${{ runner.temp }}/amaana-browser-acceptance/launch-review
+            ${{ runner.temp }}/amaana-browser-acceptance/test-results
+            ${{ runner.temp }}/amaana-browser-acceptance/playwright-report
           if-no-files-found: warn
           retention-days: 7
+
+
+  verify:
+    if: always()
+    needs: [plan, fast, database, production, browser]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require every selected check to pass
+        env:
+          PLAN: ${{ needs.plan.result }}
+          FAST: ${{ needs.fast.result }}
+          DATABASE: ${{ needs.database.result }}
+          PRODUCTION: ${{ needs.production.result }}
+          BROWSER: ${{ needs.browser.result }}
+        run: |
+          test "$PLAN" = success
+          for result in "$FAST" "$DATABASE" "$PRODUCTION" "$BROWSER"; do
+            case "$result" in success|skipped) ;; *) exit 1 ;; esac
+          done
 
 
   production-promotion-readiness:
