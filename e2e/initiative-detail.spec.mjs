@@ -1,0 +1,40 @@
+import { expect, test } from '@playwright/test';
+
+const cases = [
+  ['auto-rickshaw-livelihood-support', 'auto-rickshaw', '₹95,000'],
+  ['emergency-neonatal-medical-aid', 'discharged', '₹107,520'],
+];
+for (const width of [320, 390, 768, 1024, 1440, 1920]) {
+  test(`initiative narratives and shared detail geometry at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204 }));
+    for (const [slug, detail, amount] of cases) {
+      const response = await page.goto(`/our-work/${slug}`);
+      expect(response.ok()).toBe(true);
+      const story = page.locator('#programme-story');
+      await expect(story).toContainText(detail);
+      await expect(story).toContainText(amount);
+      await expect(story).not.toContainText('The documented outcome for this work is');
+      await expect(page.locator('.campaign-clinical-note')).toHaveCount(0);
+      const geometry = await page.evaluate(() => {
+        const next = document.querySelector('.campaign-next');
+        const title = next.querySelector('h2').getBoundingClientRect();
+        const actions = next.querySelector('.v2-hero-actions').getBoundingClientRect();
+        return {
+          overflow: document.documentElement.scrollWidth > innerWidth + 1,
+          actionGap: actions.top - title.bottom,
+          backgrounds: [...document.querySelectorAll('.canonical-programme>section:not(.page-hero)')].map(node => getComputedStyle(node).backgroundImage),
+          parentPattern: getComputedStyle(document.querySelector('.canonical-programme')).backgroundImage,
+          footerPadding: parseFloat(getComputedStyle(document.querySelector('.footer-lead')).paddingTop),
+          companion: getComputedStyle(document.querySelector('.amaana-companion')).position,
+        };
+      });
+      expect(geometry.overflow).toBe(false);
+      expect(geometry.actionGap).toBeGreaterThanOrEqual(20);
+      expect(geometry.backgrounds.every(background => background === 'none')).toBe(true);
+      expect(geometry.parentPattern).toContain('amaana-lattice-tile');
+      expect(geometry.footerPadding).toBeGreaterThanOrEqual(28);
+      expect(geometry.companion).toBe('fixed');
+    }
+  });
+}
