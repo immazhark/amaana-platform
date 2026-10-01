@@ -50,3 +50,16 @@ export function buildPublicRecordFallback({
   const privacySentence = `Only information suitable for public sharing is included here; personal documents and sensitive details remain private.`;
   return [metricSentence, privacySentence].filter(Boolean).join(" ");
 }
+
+/** The hero displays a teaser; the detail section must retain the complete record. */
+export function programmeStoryParagraphs(summary: string, story?: string | null) {
+  const text = story?.trim() || summary.trim();
+  const seen = new Set<string>();
+  return text.split(/\n\s*\n/).map(paragraph => paragraph.trim()).filter(paragraph => {
+    if (!paragraph) return false;
+    const normalized = normalizePublicCopy(paragraph);
+    if (seen.has(normalized)) return false;
+    seen.add(normalized);
+    return true;
+  });
+}

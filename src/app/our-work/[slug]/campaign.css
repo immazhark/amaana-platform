@@ -11,7 +11,7 @@
 .campaign-lead .v2-media-item { margin: 0; background: transparent; border: 0; border-radius: 0; overflow: visible; }
 .campaign-lead .v2-media-item img { display: block; width: 100%; height: clamp(280px, 31vw, 470px); object-fit: contain; background: #122239; }
 .campaign-lead figcaption { color: #edf2fa; font-size: .85rem; line-height: 1.5; padding: 12px 0 0; }
-.campaign-story { display: grid; grid-template-columns: 1fr 1.65fr; gap: clamp(28px, 6vw, 90px); padding-block: clamp(40px, 6vw, 80px); }
+.campaign-story-layout { display: grid; grid-template-columns: 1fr 1.65fr; gap: clamp(28px, 6vw, 90px); padding-block: clamp(40px, 6vw, 80px); }
 .campaign-page h2 { font-size: clamp(1.8rem, 3vw, 2.75rem); line-height: 1.2; letter-spacing: -.02em; margin: 0 0 22px; }
 .campaign-story-copy { max-width: 70ch; font-size: 1.0625rem; line-height: 1.8; }
 .campaign-story-copy p { margin: 0 0 22px; }
@@ -39,7 +39,7 @@
 .campaign-page ::selection { background: #e0b318; color: #122239; }
 .campaign-page [id] { scroll-margin-top: 100px; }
 @media (max-width: 760px) {
-  .campaign-hero-grid, .campaign-story { grid-template-columns: 1fr; }
+  .campaign-hero-grid, .campaign-story-layout { grid-template-columns: 1fr; }
   .campaign-gallery-grid { grid-template-columns: 1fr; gap: 20px; }
   .campaign-heading h1 { max-width: 18ch; }
   .campaign-lead .v2-media-item img { height: auto; max-height: 420px; }
@@ -72,16 +72,7 @@
 .campaign-history-note>.v2-shell{display:grid;grid-template-columns:minmax(10rem,.35fr) minmax(0,1fr);gap:1.25rem;align-items:start}
 .campaign-history-note span{color:#7b5c08;font-size:.72rem;font-weight:850;letter-spacing:.08em;text-transform:uppercase}
 .campaign-history-note p{margin:0;color:#5f594b;line-height:1.6}
-.campaign-clinical-note{padding-block:clamp(2.5rem,5vw,4rem);background-color:var(--af-color-canvas);background-image:var(--af-surface-light-alt);background-repeat:no-repeat;background-size:cover;background-position:var(--af-surface-position)}
-.campaign-clinical-note>.v2-shell{display:grid;grid-template-columns:minmax(0,.8fr) minmax(0,1.2fr);gap:clamp(1.5rem,5vw,4rem);align-items:start}
-.campaign-clinical-note span:first-child{color:#2f4c7a;font-size:.7rem;font-weight:850;letter-spacing:.09em;text-transform:uppercase}
-.campaign-clinical-note h2{margin:.4rem 0 .6rem}
-.campaign-clinical-note p{color:#5b6472;line-height:1.6}
-.campaign-clinical-note ul{display:flex;flex-wrap:wrap;gap:.65rem;margin:0;padding:0;list-style:none}
-.campaign-clinical-note li{display:grid;gap:.2rem;padding:.7rem .8rem;border:1px solid rgb(70 111 170 / 16%);border-radius:.8rem;background:#fff}
-.campaign-clinical-note li strong{color:#1d3150}
-.campaign-clinical-note li span{color:#5b6472;font-size:.75rem;line-height:1.35;text-transform:none;letter-spacing:normal}
-@media(max-width:700px){.campaign-history-note>.v2-shell,.campaign-clinical-note>.v2-shell{grid-template-columns:1fr}}
+@media(max-width:700px){.campaign-history-note>.v2-shell{grid-template-columns:1fr}}
 
 .campaign-data-visual{padding-block:clamp(2.5rem,5vw,4rem);background:#fffdf8}
 .campaign-data-visual>.v2-shell{display:grid;grid-template-columns:minmax(0,.75fr) minmax(18rem,1.25fr);gap:clamp(1.5rem,5vw,4rem);align-items:center}
@@ -102,7 +93,7 @@
 
 
 /* L2 audit reconciliation: detail pages use restrained metadata, readable narrative rhythm and one interaction language. */
-.campaign-breadcrumb nav,.campaign-history-note span,.campaign-clinical-note span:first-child,.canonical-facts--timeline li::before{font-weight:700}
+.campaign-breadcrumb nav,.campaign-history-note span,.canonical-facts--timeline li::before{font-weight:700}
 .campaign-breadcrumb a{text-decoration:underline;text-decoration-thickness:.075em;text-underline-offset:.2em;text-decoration-color:rgb(47 76 122 / 28%)}
 .campaign-breadcrumb a:is(:hover,:focus-visible){text-decoration-color:currentColor}
 .campaign-story-copy{max-width:64ch}
@@ -116,3 +107,20 @@
 .campaign-pathway-carousel a:focus-visible,.canonical-pathways a:focus-visible,.campaign-breadcrumb a:focus-visible{
   outline:3px solid var(--af-color-focus);outline-offset:3px
 }
+
+/* One full-width surface; transparent sections cannot restart the lattice or emblem. */
+.campaign-page.canonical-programme{
+  background-image:var(--amaana-bg-body)!important;
+  background-size:240px auto,104px 104px!important;
+  background-repeat:no-repeat,repeat!important;
+  background-position:right 2rem top 32rem,0 0!important;
+}
+.campaign-page.canonical-programme>section:not(.page-hero){background:transparent!important}
+.campaign-page .campaign-story{display:block}
+.campaign-story-layout{align-items:start;padding-block:0}
+.campaign-page .campaign-next>.v2-shell{
+  display:flex;flex-direction:column;align-items:center;gap:1.5rem;text-align:center;
+}
+.campaign-page .campaign-next h2{max-width:24ch;margin:0;font-family:var(--af-font-display);font-weight:500;line-height:1.15}
+.campaign-page .campaign-next .v2-hero-actions{margin:0;justify-content:center;gap:1rem}
+@media(max-width:760px){.campaign-story-layout{grid-template-columns:1fr;gap:1.5rem}}

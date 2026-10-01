@@ -93,7 +93,7 @@
 }
 .site-footer .footer-lead{
   display:grid;grid-template-columns:minmax(0,1.45fr) minmax(18rem,.55fr);grid-template-areas:none;
-  align-items:end;gap:clamp(1.5rem,4vw,4rem);margin:0;padding-block:1.25rem 1.45rem;
+  align-items:end;gap:clamp(1.5rem,4vw,4rem);margin:0;padding-block:2.25rem;
   border-bottom:1px solid rgb(240 213 107 / 15%)
 }
 .site-footer .footer-lead-copy{min-width:0}
@@ -182,7 +182,7 @@
   .amaana-live-content .amaana-reminder-eyebrow{display:none}
   .amaana-live-actions{grid-column:2;grid-row:1}
   .amaana-live-link,.amaana-live-cta{min-height:2.75rem}
-  .site-footer .footer-lead{padding-block:1.05rem 1.2rem;gap:1rem}
+  .site-footer .footer-lead{padding-block:1.75rem;gap:1rem}
   .site-footer .footer-links a,.site-footer .footer-socials a{min-height:2.75rem}
   .site-footer .footer-lead h2{font-size:clamp(1.55rem,6.5vw,1.95rem)}
   .site-footer .footer-grid-v2{grid-template-columns:1fr;gap:.75rem;padding-block:1.35rem 1.1rem}
