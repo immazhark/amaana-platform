@@ -4,7 +4,9 @@ const appWorkspace = process.env.AMAANA_APP_WORKSPACE ?? process.cwd();
 
 export default defineConfig({
   testDir: './e2e',
-  testIgnore: /cross-browser-smoke\.spec\.mjs/,
+  testIgnore: process.env.AMAANA_FULL_VISUAL_REVIEW === 'true'
+    ? /cross-browser-smoke\.spec\.mjs/
+    : /(cross-browser-smoke|launch-review-capture)\.spec\.mjs/,
   timeout: 30_000,
   expect: { timeout: 7_500 },
   fullyParallel: false,

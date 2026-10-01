@@ -323,3 +323,11 @@ Owner requested careful implementation while collecting further observations. Ve
 
 ## 2026-10-01 — Screenshot corrections complete locally; publication review block
 Implementation c911884 completes all six annotated screenshot groups. Nine production browser checks and eleven existing chrome checks pass; lint/types/master/CSS audit/build and 389 unit tests pass, with six local DB skips. Production JS818873/CSS340731 within unchanged budgets. Screenshots inspected and logo clipping/mobile CTA-control overlap corrected. Automatic approval review rejected task-branch GitHub push for lack of explicit export authorization to the repository. No workaround attempted. Task branch confirmed absent remotely via read-only GitHub 404. State REVIEW_PENDING; next is direct user publication authorization, then branch push/PR/full CI/integration merge/exact staging verification.
+
+
+## 2026-10-01 — Change-aware verification
+Implemented chore/change-aware-ci-20261001 from verified integration72fcfe3. Complete diff planner: docs skip app checks; explicit carousel/gallery dependency maps select focused suites; unknown/shared/critical paths fail closed to full acceptance. Bulk launch capture reserved for main/manual release. Integration reuse requires exact merge tree and latest successful task PR CI; direct pushes/errors retain acceptance. Ready transition preserves production readiness without repeat app suite. Eight planner tests, lint, YAML and shell parsing, JS syntax and diff checks pass. Remote publication/CI pending; production unchanged. Specification: docs/CHANGE_AWARE_VERIFICATION.md.
+
+
+## 2026-10-01 — Explicit fast/heavy CI separation
+Extended change-aware branch per owner operating mandates. Separate fast/database/production/browser jobs, stable fail-closed verify aggregator, routine chrome/Home/portfolio/content/brand/informational-route mappings, database ledger skipped for presentation-only changes, failure artifacts retained. Ready-only successful runs excluded as reuse proof. Twelve planner tests plus lint, YAML/job-structure/shell/JS syntax and diff checks pass. Remote execution not performed; prior auto-review publication rejection still requires explicit authorization of this branch/change set. No speculative caching/index/database changes or production promotion performed.
