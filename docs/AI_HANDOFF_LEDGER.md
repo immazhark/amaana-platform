@@ -335,3 +335,14 @@ Extended change-aware branch per owner operating mandates. Separate fast/databas
 
 ## 2026-10-01 — Initiative detail narrative and surface corrections
 Six owner screenshots inspected. Canonical story==summary was being discarded, leaving generic record fallback. Dedicated programme narrative helper retains all full narratives, tested across30 canonical records; story section wraps full-width surface around canonical shell. Removed Clinical terms module and retired CSS. One approved full-page lattice/watermark with transparent detail sections eliminates restarts/seams. Closing CTA centered above its actions; footer lead gets36px desktop/28px mobile vertical spacing. Lint/types/master/CSS audit/build pass; narrative8 tests pass; full unit391 passes before last catalogue test. Representative production-CSS harness at320/390/768/1024/1440/1920 passes containment/action gap/background reset/footer spacing; actual DB-backed full pages not locally checked. JS818873/CSS340119 below unchanged budgets. Publication/remote CI/staging pending.
+
+
+2026-10-01 delivery checkpoint: PR122 head7e09e584, CI36891312920 active. All six new detail regressions passed; previous full acceptance613pass/1 fixture assumption failure corrected to Taleem category. No merge/deploy yet. Complete green gate and exact-source staging verification next.
+
+
+2026-10-01 participation/contact/appeals screenshot corrections: shared participation cards, clean journey labels/descriptions, reused socialSVGs, completed-support carousel and brand-lattice fallback implemented. Six-width actual Contact/Get Involved and desktop axe pass; bundle818873JS/344406CSS under lockedcaps. New focused presentation mappings and13planner tests pass. Remote delivery next after PR122 green.
+
+
+## 2026-10-01 — Participation, Contact and Appeals delivery checkpoint
+
+PR #123 contains the six latest screenshot fixes and targeted CI dependency mapping. Shared participation cards, stacked journey copy, official social marks, completed Appeals carousel and approved brand lattice fallbacks are implemented. Local units 392 passed / six database-dependent skipped; build/types/lint/content/global CSS and 13 planner regressions passed. Production JS 818873 and CSS 344906 pass unchanged budgets. Six-width actual Contact/Get Involved checks and shared carousel fixture passed; actual seeded Appeals awaits remote acceptance. PR #122 CI 36896947301 is running the Firefox HOME ownership repair after its prior Chromium suite passed. Merge/retarget/focused CI/exact-source deployment verification remain pending; no main or production promotion.

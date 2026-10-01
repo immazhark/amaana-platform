@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
+import { ParticipationCards } from "@/components/participation-card";
+import { SocialIcon } from "@/components/social-icon";
 import styles from "./contact-audit.module.css";
 
 export const metadata: Metadata = {
@@ -30,9 +32,9 @@ const contactPaths = [
 ] as const;
 
 const socialLinks = [
-  { label: "Instagram", handle: "@amaanafoundation", href: "https://www.instagram.com/amaanafoundation/" },
-  { label: "Facebook", handle: "amaanafoundation24", href: "https://www.facebook.com/amaanafoundation24/" },
-  { label: "YouTube", handle: "@amaanafoundation", href: "https://www.youtube.com/@amaanafoundation" },
+  { network: "instagram", label: "Instagram", handle: "@amaanafoundation", href: "https://www.instagram.com/amaanafoundation/" },
+  { network: "facebook", label: "Facebook", handle: "amaanafoundation24", href: "https://www.facebook.com/amaanafoundation24/" },
+  { network: "youtube", label: "YouTube", handle: "@amaanafoundation", href: "https://www.youtube.com/@amaanafoundation" },
 ] as const;
 
 export default function ContactPage() {
@@ -55,11 +57,11 @@ export default function ContactPage() {
       <section className="v2-section paper">
         <div className="v2-shell">
           <div className="v2-section-head"><div><p className="v2-section-label">Choose your path</p><h2 className="v2-section-title">Reach the right part of the team.</h2></div><p className="v2-section-intro">Keeping enquiries separated helps Amaana respond responsibly while protecting private beneficiary information.</p></div>
-          <div className={`v2-intent-grid v2-intent-grid--five ${styles.grid}`}>{contactPaths.map(path => <Link className="v2-intent-card" data-contact-kind={path.marker} href={path.href} key={path.marker} aria-label={`${path.title}: ${path.action}`}><span className="v2-intent-marker" aria-hidden="true">{path.marker}</span><div><h3>{path.title}</h3><p>{path.copy}</p><span className="v2-text-link">{path.action} →</span></div><span className="v2-intent-arrow" aria-hidden="true">↗</span></Link>)}</div>
+          <ParticipationCards paths={contactPaths} />
         </div>
       </section>
 
-      <section className="v2-contact-social-section"><div className="v2-shell v2-contact-social-grid"><div><p className="v2-section-label">Stay connected</p><h2>Follow the work where Amaana shares it.</h2><p>Use Amaana Foundation&apos;s official public channels for programme updates, campaign notices and documented community work.</p></div><div className="v2-contact-social-links">{socialLinks.map(link => <a href={link.href} target="_blank" rel="noreferrer" key={link.label} aria-label={`Open Amaana Foundation on ${link.label} in a new tab`}><span>{link.label}</span><strong>{link.handle}</strong><i aria-hidden="true">↗</i></a>)}</div></div></section>
+      <section className={`v2-contact-social-section ${styles.socialSection}`}><div className={`v2-shell v2-contact-social-grid ${styles.socialGrid}`}><div><p className="v2-section-label">Stay connected</p><h2>Follow the work where Amaana shares it.</h2><p>Use Amaana Foundation&apos;s official public channels for programme updates, campaign notices and documented community work.</p></div><div className={`v2-contact-social-links ${styles.socialLinks}`}>{socialLinks.map(link => <a href={link.href} target="_blank" rel="noreferrer" key={link.label} aria-label={`Open Amaana Foundation on ${link.label} in a new tab`}><span className={styles.socialIcon}><SocialIcon network={link.network}/></span><span className={styles.socialCopy}><span>{link.label}</span><strong>{link.handle}</strong></span><i aria-hidden="true">↗</i></a>)}</div></div></section>
 
       <section className="v2-section"><div className={`v2-shell v2-contact-safety ${styles.privacy}`}><div><p className="v2-section-label">Privacy matters</p><h2 className="v2-section-title">Sensitive documents do not belong in a general inbox.</h2></div><div className="v2-contact-safety-copy"><p>Medical reports, identity documents, bank information and other sensitive verification material should be submitted only through the approved assistance workflow or another channel specifically requested by an authorized Amaana team member.</p><p>For payment support, a transaction reference may help the team investigate. Never send card numbers, UPI PINs, passwords or OTPs.</p><Link className="v2-button" href="/request-assistance">Use the private assistance form</Link></div></div></section>
 

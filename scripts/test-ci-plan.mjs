@@ -28,3 +28,12 @@ test('presentation changes skip database ledger checks; core changes and release
   assert.equal(planChanges(['docs/a.md']).database,false);
   assert.equal(planChanges(['docs/a.md'],{release:true}).database,true);
 });
+
+
+test('participation and contact presentation changes use focused browser checks', () => {
+  const plan = planChanges(['src/components/participation-card.tsx', 'src/app/contact/page.tsx', 'src/app/get-involved/get-involved-audit.module.css', 'src/components/work-visual-placeholder.module.css', 'e2e/participation-contact.spec.mjs', 'scripts/ci-plan.mjs']);
+  assert.equal(plan.mode, 'focused');
+  assert.equal(plan.database, false);
+  assert.equal(plan.crossBrowser, false);
+  assert.ok(plan.tests.includes('participation-contact.spec.mjs'));
+});
