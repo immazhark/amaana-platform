@@ -1,3 +1,7 @@
+## Carousel validation checkpoint
+
+Draft PR #118; initial CI lint issue corrected. Final local lint/type/build pass, 389 unit passes (6 DB skips), eight Chromium checks pass including six widths, exact peek, manual pause, reduced motion, drag and direct-link navigation. JS 818889/819200; CSS 347534/348160. Full exact-head CI and preview deployment pending.
+
 # Current task — 2026-10-01 unified body carousels
 
 State: `CODEX_ACTIVE`

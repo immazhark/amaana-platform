@@ -43,7 +43,7 @@ export function ScrollCarousel({
   const suppressClick = useRef(false);
   const [activeIndex, setActiveIndex] = useState(() => Math.min(Math.max(startAt, 0), Math.max(slideCount - 1, 0)));
   const activeIndexRef = useRef(activeIndex);
-  activeIndexRef.current = activeIndex;
+  useEffect(() => { activeIndexRef.current = activeIndex; }, [activeIndex]);
   const id = useId().replaceAll(":", "");
   const viewportId = `carousel-${id}`;
   const prefersReducedMotion = useRef(false);

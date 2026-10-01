@@ -1,4 +1,4 @@
-export function WorkVisualPlaceholder({ label = "Amaana Foundation", className = "", theme = "brand" }: { label?: string; className?: string; theme?: "brand" | "education" | "seasonal" }) {
+export function WorkVisualPlaceholder({ label = "Amaana Foundation", className = "", theme = /taleem|learn|education/i.test(label) ? "education" : /eid|ramadan|qurbani|dates|winter/i.test(label) ? "seasonal" : "brand" }: { label?: string; className?: string; theme?: "brand" | "education" | "seasonal" }) {
   return (
     <div className={`work-visual-placeholder${className ? ` ${className}` : ""}`} aria-hidden="true" style={{background:theme === "education" ? "linear-gradient(145deg,#122239,#466faa)" : theme === "seasonal" ? "linear-gradient(145deg,#122239,#466faa 55%,#c69b12)" : undefined}}>
       <svg viewBox="0 0 480 270" aria-hidden="true" style={{position:"absolute",inset:0,width:"100%",height:"100%",opacity:.2}} fill="none">
