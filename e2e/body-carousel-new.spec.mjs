@@ -1,0 +1,20 @@
+import {test,expect} from '@playwright/test';
+for(const width of [375,600,768,1024,1440,1920])test(`left alignment and controls at ${width}`,async({page})=>{
+ await page.setViewportSize({width,height:1000});
+ await page.goto('/browser-acceptance/body-carousel');
+ const carousel=page.getByRole('region',{name:'Body carousel acceptance'});
+ await expect(carousel).toBeVisible();
+ const viewport=carousel.locator('[id^="carousel-"]');
+ const first=carousel.getByRole('group',{name:'1 of 7',exact:true});
+ const v=await viewport.boundingBox(),f=await first.boundingBox();
+ expect(Math.abs(v.x-f.x)).toBeLessThan(2);
+ expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+ const visual=first.locator('.canonical-pathway-visual');const image=await visual.boundingBox();expect(image.width/image.height).toBeCloseTo(16/9,1);
+ await carousel.getByRole('button',{name:'Pause automatic slides'}).click();
+ await carousel.getByRole('button',{name:'Next slide',exact:true}).click();
+ await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow','2');
+ await page.waitForTimeout(700);
+ const second=await carousel.getByRole('group',{name:'2 of 7',exact:true}).boundingBox();expect(Math.abs(v.x-second.x)).toBeLessThan(2);
+ await viewport.focus();await page.keyboard.press('End');await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow','7');
+ await page.waitForTimeout(700);const last=await carousel.getByRole('group',{name:'7 of 7',exact:true}).boundingBox();expect(Math.abs(v.x-last.x)).toBeLessThan(2);
+});

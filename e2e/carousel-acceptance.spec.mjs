@@ -62,51 +62,17 @@ test('programme carousel scrolls internally without creating mobile page overflo
 });
 
 
-test('homepage documented work uses a centered user-controlled focus carousel', async ({ page }) => {
-  await open(page, '/', 1440);
-
-  const carousel = page.getByRole('region', { name: 'Amaana programme areas' });
-  await expect(carousel).toHaveAttribute('data-carousel-mode', 'focus');
-
-  const slides = carousel.locator('[aria-roledescription="slide"]');
-  expect(await slides.count()).toBeGreaterThan(2);
-  await expect(slides.filter({ has: page.locator('[aria-current="true"]') })).toHaveCount(0);
-
-  const active = carousel.locator('[aria-roledescription="slide"][aria-current="true"]');
-  await expect(active).toHaveCount(1);
-
-  const viewport = carousel.locator('[tabindex="0"]');
-  const centered = await Promise.all([viewport.boundingBox(), active.boundingBox()]);
-  expect(centered[0]).not.toBeNull();
-  expect(centered[1]).not.toBeNull();
-  const viewportCenter = centered[0].x + centered[0].width / 2;
-  const activeCenter = centered[1].x + centered[1].width / 2;
-  expect(Math.abs(viewportCenter - activeCenter)).toBeLessThanOrEqual(3);
-
-  const second = slides.nth(1);
-  await second.evaluate(element => element.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true })));
-  await expect(second).toHaveAttribute('aria-current', 'true');
-  await expect(page).toHaveURL(/\/$/);
-
-  await expect(carousel.getByRole('button', { name: 'Pause automatic slides' })).toBeVisible();
-});
-
-test('homepage focus carousel remains centered and contained on mobile', async ({ page }) => {
-  await open(page, '/', 390);
-
-  const carousel = page.getByRole('region', { name: 'Amaana programme areas' });
-  const active = carousel.locator('[aria-roledescription="slide"][aria-current="true"]');
-  const viewport = carousel.locator('[tabindex="0"]');
-  const boxes = await Promise.all([viewport.boundingBox(), active.boundingBox()]);
-  expect(boxes[0]).not.toBeNull();
-  expect(boxes[1]).not.toBeNull();
-  expect(Math.abs((boxes[0].x + boxes[0].width / 2) - (boxes[1].x + boxes[1].width / 2))).toBeLessThanOrEqual(4);
-
-  const dimensions = await page.evaluate(() => ({
-    clientWidth: document.documentElement.clientWidth,
-    scrollWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
-  }));
-  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
-});
-
-
+for (const width of [390, 1440]) {
+  test(`homepage carousel begins at the left edge at ${width}`, async ({ page }) => {
+    await open(page, '/', width);
+    const carousel = page.getByRole('region', { name: 'Amaana programme areas' });
+    const first = carousel.locator('[aria-roledescription="slide"]').first();
+    const viewport = carousel.locator('[tabindex="0"]');
+    const [v, f] = await Promise.all([viewport.boundingBox(), first.boundingBox()]);
+    expect(Math.abs(v.x - f.x)).toBeLessThanOrEqual(2);
+    await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '1');
+    await expect(first.locator('a')).toHaveAttribute('href', /our-work/);
+    const dimensions = await page.evaluate(() => ({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
+    expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.client + 1);
+  });
+}

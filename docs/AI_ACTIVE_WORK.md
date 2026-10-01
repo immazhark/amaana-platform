@@ -1,3 +1,13 @@
+# Current task — 2026-10-01 unified body carousels
+
+State: `CODEX_ACTIVE`
+Task branch: `feat/unified-body-carousels-20261001`
+Verified integration base: `5908d16b6c31f5919033e68b49b33962068e5a71`.
+
+Owner requests all body carousels start flush left; one design system for Home/L1/L2, fixed visual headers, brand-themed SVG fallbacks, equal card geometry, 15–20% next-card peek, heading-aligned controls and progress line. New explicit instruction requires Framer Motion site-wide where appropriate. Preserve native scroll snap/touch and motion preferences, factual locks, identity media separation and fixed Companion. Only open PR at claim is reserved production PR #104; no competing implementation writer. Prior #116/#117 delivery is complete: 823 Chromium + 24 Firefox/WebKit passed, final integration CI green, Railway success on 5908d16, JS 805951/CSS 346969 within unchanged budgets. Implement and verify this new coherent task before integration; no production promotion.
+
+---
+
 # Current delivery checkpoint — 2026-10-01 IST
 
 State: `CODEX_ACTIVE`
