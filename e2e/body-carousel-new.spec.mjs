@@ -52,3 +52,23 @@ test('mouse drag scrolls cards and a normal card-link click opens directly',asyn
  await carousel.getByRole('link',{name:'Explore programme'}).first().click();
  await expect(page).toHaveURL(/\/about$/);
 });
+
+
+test('rapid end-to-start controls finish at the requested card', async ({page}) => {
+ await page.goto('/browser-acceptance/body-carousel');
+ const carousel=page.getByRole('region',{name:'Body carousel acceptance'});
+ await carousel.getByRole('button',{name:'Pause automatic slides'}).click();
+ const viewport=carousel.locator('[id^="carousel-"]');
+ await viewport.focus();
+ await page.keyboard.press('End');
+ await carousel.getByRole('button',{name:'Next slide',exact:true}).click();
+ await expect.poll(()=>viewport.evaluate(n=>n.scrollLeft)).toBeLessThan(2);
+ await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1');
+ await carousel.getByRole('button',{name:'Previous slide',exact:true}).click();
+ await expect.poll(()=>carousel.evaluate(root=>{
+  const v=root.querySelector('[id^="carousel-"]');
+  const last=root.querySelector('[aria-label="7 of 7"]');
+  return Math.abs(v.getBoundingClientRect().left-last.getBoundingClientRect().left);
+ })).toBeLessThan(2);
+ await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow','7');
+});

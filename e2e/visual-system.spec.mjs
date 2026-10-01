@@ -544,8 +544,8 @@ test('homepage hero stays wide and compact on desktop', async ({ page }) => {
   await expect(hero).toBeVisible();
   const box = await hero.boundingBox();
   expect(box).toBeTruthy();
-  expect(box.width / box.height).toBeGreaterThan(3.8);
-  expect(box.height).toBeLessThanOrEqual(336);
+  expect(box.width / box.height).toBeGreaterThan(3.4);
+  expect(box.height).toBeLessThanOrEqual(416);
   expect(box.y + box.height).toBeLessThanOrEqual(900);
   await expect(hero.getByText('The Story of Amaana · Hyderabad', { exact: true })).toBeVisible();
   const content = hero.locator('.v3-home-banner-content').first();
@@ -629,16 +629,14 @@ test('homepage programme carousel stays left aligned and wraps in both direction
   await expect(status).toContainText('5 / 5');
   await carousel.getByRole('button', { name: 'Next slide' }).click();
   await expect(status).toContainText('1 / 5');
-  const geometry = await carousel.evaluate(root => {
+  await expect.poll(async () => carousel.evaluate(root => {
     const active = root.querySelector('[data-active="true"]');
     const viewport = root.querySelector('[id^="carousel-"]');
     if (!active || !viewport) return null;
     const a = active.getBoundingClientRect();
     const v = viewport.getBoundingClientRect();
-    return { activeCenter: a.left, viewportCenter: v.left };
-  });
-  expect(geometry).toBeTruthy();
-  expect(Math.abs(geometry.activeCenter - geometry.viewportCenter)).toBeLessThanOrEqual(4);
+    return Math.abs(a.left - v.left);
+  })).toBeLessThanOrEqual(4);
 });
 
 test('shared footer callout remains compact and does not compete with page hero', async ({ page }) => {
@@ -742,3 +740,4 @@ for (const width of [1440, 390]) {
     }
   });
 }
+

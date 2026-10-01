@@ -18,7 +18,7 @@
 .hero .controls button{border-color:rgb(255 255 255 / 24%);background:rgb(255 255 255 / 9%);color:#fff;box-shadow:none}
 .hero .controls button:hover:not(:disabled){border-color:rgb(255 255 255 / 48%);background:rgb(255 255 255 / 16%)}
 .hero .viewport,.hero .track,.hero .slide{height:100%}
-.hero .track{width:100%;min-width:100%;gap:0}
+.hero .track{position:relative;width:100%;min-width:100%;gap:0}
 .hero .slide{width:100%;flex-basis:100%}
 .srOnly{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 @media(max-width:700px){.gallery .slide{width:min(82vw,21rem)}.cards .slide{width:min(86vw,28rem)}.toolbar{justify-content:space-between}}
@@ -43,14 +43,17 @@
 .slide :global(.campaign-pathway-card)>:last-child{margin-top:auto;margin-bottom:1.25rem}
 @media(max-width:600px){.header{align-items:flex-start;flex-wrap:wrap}.heading{flex-basis:100%}.header .toolbar{margin-left:auto}}
 
-.slide :global(.v2-impact-witness-item)>:global(.v2-media-item){aspect-ratio:16/9;height:auto;overflow:hidden;margin:0}
+.slide :global(.v2-impact-witness-item)>:global(.v2-media-item){aspect-ratio:16/9;position:relative;inset:auto;aspect-ratio:16/9;height:auto;overflow:hidden;margin:0}
 .slide :global(.v2-impact-witness-item) img{height:100%;width:100%;object-fit:cover}
 .root:global(.body-carousel--home-showcase) .slide>*{box-shadow:0 .7rem 2rem rgb(70 111 170 / 12%)}
 .root:global(.body-carousel--timeline-impact) .slide h3{font-size:1.6rem;line-height:1.15}
 .cards .viewport,.focus .viewport{cursor:grab}.cards .viewport:active,.focus .viewport:active{cursor:grabbing}
 .cards .slide :global(.v2-impact-witness-item){color:var(--af-color-navy-950)}
 .cards .slide :global(.v2-impact-witness-item) h3{color:var(--af-color-navy-950)}
-.cards .slide :global(.v2-impact-witness-item)>div{padding:1.25rem;flex:1;display:flex;flex-direction:column}
+.cards .slide :global(.v2-impact-witness-item)>div{position:static;inset:auto;background:none;padding:1.25rem;flex:1;display:flex;flex-direction:column}
 .cards .slide :global(.v2-impact-witness-item)>div>span{margin-top:auto;color:var(--af-color-blue-600,#466faa)}
 .cards .slide :global(.v2-impact-witness-item) figcaption{display:none}
 .cards .slide :global(.campaign-pathway-card)>p:not(:global(.v2-section-label)){display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden;line-height:1.6}
+
+
+.cards .slide :global(.v2-impact-witness-item){margin-top:0;transform:none}

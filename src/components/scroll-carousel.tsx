@@ -35,15 +35,15 @@ export function ScrollCarousel({
   heading,
 }: ScrollCarouselProps) {
   const slides = Children.toArray(children);
-  const slideCount = Children.count(children);
+  const slideCount = slides.length;
   const viewportRef = useRef<HTMLDivElement>(null);
   const slideRefs = useRef<Array<HTMLDivElement | null>>([]);
   const frameRef = useRef<number | null>(null);
+  const navigation = useRef<number | null>(null);
   const drag = useRef<{x:number; scroll:number; moved:boolean} | null>(null);
   const suppressClick = useRef(false);
   const [activeIndex, setActiveIndex] = useState(() => Math.min(Math.max(startAt, 0), Math.max(slideCount - 1, 0)));
   const activeIndexRef = useRef(activeIndex);
-  useEffect(() => { activeIndexRef.current = activeIndex; }, [activeIndex]);
   const id = useId().replaceAll(":", "");
   const viewportId = `carousel-${id}`;
   const prefersReducedMotion = useRef(false);
@@ -68,6 +68,9 @@ export function ScrollCarousel({
     if (!viewport || slideCount < 2) return;
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
     frameRef.current = requestAnimationFrame(() => {
+      const pending = navigation.current;
+      if (pending !== null && Math.abs(viewport.scrollLeft - pending) > 2) return;
+      navigation.current = null;
       let closestIndex = 0;
       let closestDistance = Number.POSITIVE_INFINITY;
       slideRefs.current.forEach((slide, index) => {
@@ -79,6 +82,7 @@ export function ScrollCarousel({
           closestIndex = index;
         }
       });
+      activeIndexRef.current = closestIndex;
       setActiveIndex(closestIndex);
     });
   }, [slideCount]);
@@ -86,9 +90,7 @@ export function ScrollCarousel({
   useEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
-    let initialized = false;
     const observer = new ResizeObserver(() => {
-      if (!initialized) { initialized = true; return; }
       const slide = slideRefs.current[activeIndexRef.current];
       if (slide) viewport.scrollTo({ left: slide.offsetLeft, behavior: "auto" });
     });
@@ -112,6 +114,8 @@ export function ScrollCarousel({
     const viewport = viewportRef.current;
     const slide = slideRefs.current[bounded];
     if (!viewport || !slide) return;
+    navigation.current = slide.offsetLeft;
+    activeIndexRef.current = bounded;
     viewport.scrollTo({
       left: slide.offsetLeft,
       behavior: prefersReducedMotion.current ? "auto" : "smooth",
@@ -131,10 +135,10 @@ export function ScrollCarousel({
     if (event.currentTarget !== event.target) return;
     if (event.key === "ArrowLeft") {
       event.preventDefault();
-      goTo(activeIndex - 1);
+      goTo(activeIndexRef.current - 1);
     } else if (event.key === "ArrowRight") {
       event.preventDefault();
-      goTo(activeIndex + 1);
+      goTo(activeIndexRef.current + 1);
     } else if (event.key === "Home") {
       event.preventDefault();
       goTo(0);
@@ -179,7 +183,7 @@ export function ScrollCarousel({
               type="button"
               aria-controls={viewportId}
               aria-label="Previous slide"
-              onClick={() => goTo(activeIndex - 1)}
+              onClick={() => goTo(activeIndexRef.current - 1)}
             >
               <span aria-hidden="true">←</span>
             </button>
@@ -187,7 +191,7 @@ export function ScrollCarousel({
               type="button"
               aria-controls={viewportId}
               aria-label="Next slide"
-              onClick={() => goTo(activeIndex + 1)}
+              onClick={() => goTo(activeIndexRef.current + 1)}
             >
               <span aria-hidden="true">→</span>
             </button>
@@ -202,6 +206,7 @@ export function ScrollCarousel({
         id={viewportId}
         tabIndex={slideCount > 1 ? 0 : -1}
         onPointerDown={event => {
+          navigation.current = null;
           if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 || (event.target instanceof Element && event.target.closest("button,video,input"))) return;
           drag.current = {x:event.clientX, scroll:event.currentTarget.scrollLeft, moved:false};
           suppressClick.current = false;
@@ -226,6 +231,7 @@ export function ScrollCarousel({
         onPointerCancel={event => { drag.current = null; event.currentTarget.style.removeProperty("scroll-snap-type"); setInteracting(false); }}
         onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}
         onDragStart={event => { if (mode !== "hero") event.preventDefault(); }}
+        onWheel={() => { navigation.current = null; }}
         onScroll={updateActiveFromScroll}
         onKeyDown={onKeyDown}
         aria-label={slideCount > 1 ? `Slide viewport. ${label}. Use left and right arrow keys to move between slides.` : `Slide viewport. ${label}`}

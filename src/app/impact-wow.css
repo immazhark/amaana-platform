@@ -23,17 +23,17 @@
 .v2-impact-ledger-metric strong{color:var(--amaana-gold-deep)}
 .v2-impact-witness{position:relative;background:radial-gradient(circle at 12% 8%,rgb(70 111 170 / 18%),transparent 26%),linear-gradient(145deg,#0d1b2e,#1d3150 62%,#2f4c7a)}
 .v2-impact-witness::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(120deg,transparent 0 74%,rgb(224 179 24 / 5%) 74% 74.2%,transparent 74.2%)}
-.v2-impact-witness-item{box-shadow:0 28px 70px rgb(2 12 26 / 24%);transition:transform .45s cubic-bezier(.22,1,.36,1),box-shadow .45s ease}
-.v2-impact-witness-item:is(:hover,:focus-visible){transform:translateY(-.45rem);box-shadow:0 38px 90px rgb(2 12 26 / 34%)}
-.v2-impact-witness-item>div:last-child{background:linear-gradient(transparent 0%,rgb(8 17 30 / 42%) 32%,rgb(8 17 30 / 94%) 100%)}
+
+
+
 .v2-impact-philosophy{background:radial-gradient(circle at 82% 16%,rgb(224 179 24 / 9%),transparent 22%),linear-gradient(145deg,var(--amaana-cream-muted),var(--amaana-cream) 48%,var(--amaana-paper))}
 .v2-impact-principles{border-top-color:var(--amaana-border-warm)}
 .v2-impact-principles article{border-bottom-color:var(--amaana-border-warm)}
 .v2-impact-principles span{color:var(--amaana-gold-deep)}
 .v2-impact-principles p{color:var(--amaana-ink-soft)}
 .v2-impact-trust{background:radial-gradient(circle at 82% 78%,rgb(224 179 24 / 9%),transparent 28%),linear-gradient(135deg,#0f2036,#1d3150 70%,#2f4c7a)}
-@media(prefers-reduced-motion:no-preference){.v2-impact-hero-orbit{animation:v2-impact-float 7s ease-in-out infinite alternate}.v2-impact-witness-item:nth-child(even){transform:translateY(1.4rem)}.v2-impact-witness-item:nth-child(even):is(:hover,:focus-visible){transform:translateY(.9rem)}}
+@media(prefers-reduced-motion:no-preference){.v2-impact-hero-orbit{animation:v2-impact-float 7s ease-in-out infinite alternate}}
 @keyframes v2-impact-float{from{transform:translateY(0) rotate(-.35deg)}to{transform:translateY(-.7rem) rotate(.35deg)}}
-@media(max-width:900px){.v2-impact-witness-item:nth-child(even){transform:none}.v2-impact-hero-orbit{max-width:27rem}}
-@media(max-width:620px){.v2-impact-ledger-row:is(:hover,:focus-visible){padding-left:.55rem;padding-right:.55rem}.v2-impact-witness-item{box-shadow:0 18px 48px rgb(2 12 26 / 24%)}}
-@media(prefers-reduced-motion:reduce){.v2-impact-hero-orbit,.v2-impact-witness-item,.v2-impact-witness-item:nth-child(even){animation:none;transform:none;transition:none}.v2-impact-ledger-row::before{transition:none}}
+@media(max-width:900px){.v2-impact-hero-orbit{max-width:27rem}}
+@media(max-width:620px){.v2-impact-ledger-row:is(:hover,:focus-visible){padding-left:.55rem;padding-right:.55rem}}
+@media(prefers-reduced-motion:reduce){.v2-impact-hero-orbit{animation:none;transform:none}.v2-impact-ledger-row::before{transition:none}}

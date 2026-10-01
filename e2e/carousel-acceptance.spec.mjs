@@ -71,8 +71,9 @@ for (const width of [390, 1440]) {
     const [v, f] = await Promise.all([viewport.boundingBox(), first.boundingBox()]);
     expect(Math.abs(v.x - f.x)).toBeLessThanOrEqual(2);
     await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '1');
-    await expect(first.locator('a')).toHaveAttribute('href', /our-work/);
+    await expect(first.locator('a')).toHaveAttribute('href', '/programmes/medical-financial-relief');
     const dimensions = await page.evaluate(() => ({client:document.documentElement.clientWidth,scroll:document.documentElement.scrollWidth}));
     expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.client + 1);
   });
 }
+
