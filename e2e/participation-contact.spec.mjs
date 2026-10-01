@@ -17,6 +17,9 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
       expect(geometry.every(card => card.gap >= 8 && card.decoration === 'none')).toBe(true);
       await first.hover();
       await first.focus();
+      await page.keyboard.press('Tab');
+      await page.keyboard.press('Shift+Tab');
+      await expect(first).toBeFocused();
       expect(await first.evaluate(card => getComputedStyle(card).outlineStyle)).toBe('solid');
       if (route === '/get-involved') {
         const journey = await page.locator('.v2-journey-step').evaluateAll(steps => steps.map(step => ({

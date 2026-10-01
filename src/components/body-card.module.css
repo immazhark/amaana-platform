@@ -1,0 +1,3 @@
+.card.card h3{margin-block:1.25rem .75rem;min-height:2.4em;font-family:var(--af-font-display);font-size:clamp(1.45rem,2vw,1.75rem);font-weight:500;line-height:1.2;color:var(--af-color-navy-950)}
+.card.card>p{color:var(--af-color-muted);line-height:1.65}
+.card.card>a:last-child{min-height:2.75rem;display:flex;align-items:center;line-height:1.5}
