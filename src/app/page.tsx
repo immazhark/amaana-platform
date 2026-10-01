@@ -7,7 +7,7 @@ import { AppealCard } from "@/components/appeal-card";
 import { formatINR, getRemainingAppealAmount } from "@/lib/appeals";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getHomepageAppeals } from "@/lib/public-content";
-import { eidGrowth } from "@/content/amaana";
+import { HomeGrowth, HomeTrust } from "@/components/home-evidence";
 import { getHomepageDiscoveryData } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
 import { ScrollCarousel } from "@/components/scroll-carousel";
@@ -161,58 +161,8 @@ export default async function HomePage() {
         </section>
       )}
 
-      <section className="v3-section v3-eid dark" aria-labelledby="eid-growth-title">
-        <div className="v3-shell">
-          <div className="v3-section-head">
-            <div>
-              <p className="v3-label">Seven documented distributions</p>
-              <h2 className="v3-heading" id="eid-growth-title">85 families became 710 — one year at a time.</h2>
-            </div>
-            <p className="v3-intro">The year-by-year record shows the scale of the Eid Gift Kits programme more clearly than another retelling of its origin: steady continuity, documented across seven Ramadan distributions.</p>
-          </div>
-
-          <div className="v3-timeline" aria-label="Eid Gift Kits growth from 2020 to 2026">
-            {eidGrowth.map(item => (
-              <div className="v3-year" key={item.year}>
-                <strong>{item.year}</strong>
-                <span>{item.families}</span>
-                <small>families</small>
-              </div>
-            ))}
-          </div>
-
-          <div className="v3-actions">
-            <Link className="v3-btn" href={eidProgrammePublished ? "/our-work/eid-gift-kits" : "/our-work"}>
-              {eidProgrammePublished ? "Explore the seven-year story" : "Explore published programmes"}
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      <section className="v3-section v3-trust" aria-labelledby="trust-title">
-        <div className="v3-shell v3-trust-grid">
-          <div className="v3-trust-panel">
-            <p className="v3-label">Trust is part of the work</p>
-            <h2 id="trust-title">Compassion With Accountability</h2>
-            <p>Good intentions matter. So does what happens next. Amaana Foundation works close to the communities it serves, reviews needs before mobilising support, protects sensitive beneficiary information, and reports documented outcomes wherever records permit. Our responsibility is not only to collect support, but to ensure that it is directed toward the purpose for which it was entrusted.</p>
-            <div className="v3-actions">
-              <Link className="v3-btn" href="/transparency">Explore transparency</Link>
-              <Link className="v3-btn secondary" href="/how-we-verify">How Amaana works</Link>
-            </div>
-          </div>
-
-          <div>
-            <p className="v3-label">Take the next step</p>
-            <div className="v3-quick-links">
-              <Link href="/our-work"><span>Explore our work</span><span aria-hidden="true">↗</span></Link>
-              <Link href={hasOpenAppeals ? "/appeals" : "/get-involved"}><span>{hasOpenAppeals ? "Support a verified need" : "Ways to support Amaana"}</span><span aria-hidden="true">↗</span></Link>
-              <Link href="/request-assistance"><span>Request assistance privately</span><span aria-hidden="true">↗</span></Link>
-              <Link href="/get-involved"><span>Volunteer time or skills</span><span aria-hidden="true">↗</span></Link>
-              <Link href="/contact"><span>Contact Amaana</span><span aria-hidden="true">↗</span></Link>
-            </div>
-          </div>
-        </div>
-      </section>
+      <HomeGrowth eidProgrammePublished={eidProgrammePublished} />
+      <HomeTrust hasOpenAppeals={hasOpenAppeals} />
 
       <section className="v3-section v3-appeals" aria-labelledby="appeals-title">
         <div className="v3-shell">

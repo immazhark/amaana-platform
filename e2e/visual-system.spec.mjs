@@ -377,19 +377,19 @@ test('transparency evidence boundary spans the full canonical comparison grid', 
   expect(Math.abs(metrics.bodyWidth - metrics.boundaryWidth)).toBeLessThanOrEqual(4);
 });
 
-test('our work disclosure controls remain visually attached to the category title on wide screens', async ({ page }) => {
+test('our work disclosure controls align to the right edge on wide screens', async ({ page }) => {
   await open(page, '/our-work', 1920);
   const metrics = await page.locator('.v2-cause-summary-heading').first().evaluate(row => {
     const title = row.querySelector('.v2-cause-summary-title')?.getBoundingClientRect();
     const count = row.querySelector('.v2-cause-summary-count')?.getBoundingClientRect();
     const toggle = row.querySelector('.v2-cause-summary-toggle')?.getBoundingClientRect();
     return title && count && toggle ? {
-      titleToCount: count.left - title.right,
+      rightGap: row.getBoundingClientRect().right - toggle.right,
       countToToggle: toggle.left - count.right,
     } : null;
   });
   expect(metrics).toBeTruthy();
-  expect(metrics.titleToCount).toBeLessThanOrEqual(32);
+  expect(metrics.rightGap).toBeLessThanOrEqual(25);
   expect(metrics.countToToggle).toBeLessThanOrEqual(24);
 });
 
@@ -537,15 +537,15 @@ test('Amaana decorative emblems stay at the viewport edge without affecting cont
   expect(geometry.parentWidth).toBeGreaterThan(geometry.contentWidth);
 });
 
-test('homepage hero stays wide and compact on desktop', async ({ page }) => {
+test('homepage hero preserves the owner-requested taller desktop composition', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await open(page, '/');
   const hero = page.locator('section[data-carousel-mode="hero"][aria-label="Amaana Foundation story and featured work"]');
   await expect(hero).toBeVisible();
   const box = await hero.boundingBox();
   expect(box).toBeTruthy();
-  expect(box.width / box.height).toBeGreaterThan(3.4);
-  expect(box.height).toBeLessThanOrEqual(416);
+  expect(box.width / box.height).toBeGreaterThan(2.8);
+  expect(box.height).toBeLessThanOrEqual(496);
   expect(box.y + box.height).toBeLessThanOrEqual(900);
   await expect(hero.getByText('The Story of Amaana · Hyderabad', { exact: true })).toBeVisible();
   const content = hero.locator('.v3-home-banner-content').first();

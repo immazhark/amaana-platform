@@ -481,7 +481,7 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
   --af-section-space:clamp(3.75rem,6.5vw,6.25rem);
 }
 .site-header{background:rgb(255 253 248 / 97%);box-shadow:0 10px 32px rgb(18 34 57 / 4%)}
-.site-header .nav-link:is(:hover,:focus-visible){background:rgb(70 111 170 / 7%);color:var(--af-color-navy-800)}
+
 .page-hero{
   --min:clamp(22rem,30vw,27rem);
   --visual:clamp(17rem,23vw,21rem);

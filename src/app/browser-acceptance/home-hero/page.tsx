@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { HomeStorySlide } from "@/components/home-story-slide";
+import { HomeGrowth, HomeTrust } from "@/components/home-evidence";
 import { HomeHighlights } from "@/components/home-highlights";
 import { ScrollCarousel } from "@/components/scroll-carousel";
 import { notFound } from "next/navigation";
@@ -26,6 +27,8 @@ export default function HomeHeroBrowserAcceptanceFixture() {
         </ScrollCarousel>
       </section>
       <HomeHighlights />
+      <HomeGrowth />
+      <HomeTrust />
     </div>
   );
 }

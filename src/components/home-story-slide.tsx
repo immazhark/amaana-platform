@@ -1,9 +1,11 @@
+import Image from "next/image";
 import Link from "next/link";
 
 export function HomeStorySlide() {
   return (
 <article className="v3-home-banner-slide v3-home-banner-slide--story">
             <div className="v3-home-banner-shade" aria-hidden="true" />
+            <div className="v3-home-story-logo" aria-hidden="true"><span><Image src="/brand/amaana-mark.svg" width={320} height={320} alt="" priority /></span></div>
             <div className="v3-shell v3-home-banner-content">
               <p className="v3-home-banner-kicker">The Story of Amaana · Hyderabad</p>
               <span className="v3-home-banner-brandline">A trust that began around one family table.</span>

@@ -13,9 +13,9 @@
 .v3-home-banner-carousel{
   width:100%;
   max-width:none;
-  height:clamp(23.5rem,29vw,26rem);
+  height:clamp(27rem,33vw,31rem);
   min-height:0;
-  max-height:26rem;
+  max-height:31rem;
   margin:0;
   border:0;
   border-radius:0;
@@ -83,7 +83,7 @@
   .v3-home-banner-brandline{font-size:clamp(1.9rem,5vw,3rem)}
 }
 @media(max-width:600px){
-  .v3-home-banner-carousel{height:29rem;max-height:29rem}
+  .v3-home-banner-carousel{height:32rem;max-height:32rem}
   .v3-home-banner-media{
     top:0;
     right:var(--af-public-edge);
@@ -93,14 +93,14 @@
     mask-image:linear-gradient(0deg,transparent 0%,#000 28%,#000 100%)
   }
   .v3-home-banner-shade{background:linear-gradient(0deg,rgb(18 34 57 / 99%) 0%,rgb(29 49 80 / 96%) 48%,rgb(70 111 170 / 46%) 68%,rgb(70 111 170 / 8%) 100%)}
-  .v3-home-banner-content,.v3-home-banner-slide--story .v3-home-banner-content{justify-content:flex-end;padding:1.25rem 0 3.4rem}
+  .v3-home-banner-content,.v3-home-banner-slide--story .v3-home-banner-content{justify-content:flex-end;padding:1.25rem 0 5rem}
   .v3-home-banner-brandline{font-size:clamp(1.9rem,9vw,2.7rem)}
   .v3-home-banner-content h2{font-size:1.1rem}
   .v3-home-banner-content>p:not(.v3-home-banner-kicker){-webkit-line-clamp:2;font-size:.84rem}
   .v3-home-banner-actions{margin-top:.65rem}
   .v3-home-banner-actions .v3-btn{min-height:2.55rem;padding:.55rem .85rem}
-  .v3-home-banner-story-year{right:var(--af-public-edge);font-size:clamp(7rem,34vw,10rem)}
-  .v3-home-banner-story-mark{right:calc(var(--af-public-edge) + 1rem);top:12%;font-size:clamp(2.8rem,15vw,4.3rem)}
+
+
 }
 
 /* Homepage programme strip: compact discovery without five stacked editorial rows. */
@@ -176,3 +176,23 @@
 .v3-trust-panel{border:1px solid rgb(18 34 57 / 10%);box-shadow:0 .75rem 2rem rgb(18 34 57 / 7%)}
 
 .v3-home-banner-actions .v3-btn.secondary:is(:hover,:focus-visible){color:#fffdf8;background:rgb(255 253 248 / 10%);border-color:var(--af-color-gold-soft)}
+
+/* Owner screenshot review: restrained brand fallback and readable dark surfaces. */
+.v3-home-story-logo{position:absolute;left:calc(var(--af-public-edge) + (100% - var(--af-public-edge) * 2) * .56);right:var(--af-public-edge);top:0;bottom:0;display:grid;place-items:center;pointer-events:none}
+.v3-home-story-logo>span{display:block;width:clamp(14rem,21vw,20rem);padding:2.5rem;border-radius:50%;background:var(--af-color-canvas);box-shadow:0 1rem 3rem rgb(0 0 0 / 12%)}
+.v3-proof-item strong{background-size:240% 100%;animation:af-highlight-gradient 9s ease-in-out infinite alternate}
+@keyframes af-highlight-gradient{from{background-position:0% 50%}to{background-position:100% 50%}}
+.v3-home :is(.v3-eid,.v3-trust){background-image:var(--amaana-pattern),linear-gradient(132deg,var(--af-color-navy-950),var(--af-color-navy-800) 52%,var(--af-color-navy-700))!important;background-size:104px 104px,100% 100%!important;background-repeat:repeat,no-repeat!important;background-position:0 0,center!important;background-blend-mode:normal}
+.v3-eid::before{content:none}
+.v3-trust-grid>div:last-child>.v3-label,.v3-trust-panel>.v3-label{color:var(--af-color-gold-soft)}
+.v3-trust-panel>p:not(.v3-label){color:rgb(255 253 248 / 85%)}
+.v3-trust .v3-quick-links{border-color:rgb(255 253 248 / 22%)}
+.v3-trust .v3-quick-links a{display:grid;grid-template-columns:2.5rem minmax(0,1fr) 1.25rem;align-items:center;gap:.85rem;min-height:4rem;padding:.8rem .25rem;border-color:rgb(255 253 248 / 22%);color:#fffdf8;font-weight:600}
+.v3-trust .v3-quick-links a>.af-action-icon:first-child{width:2.5rem;height:2.5rem;padding:.6rem;border:1px solid rgb(241 207 82 / 30%);border-radius:.65rem;color:var(--af-color-gold-soft);background:rgb(255 253 248 / 4%)}
+.v3-trust .v3-quick-links a>.af-action-icon:last-child{width:1.25rem;height:1.25rem;color:var(--af-color-gold-soft)}
+.v3-trust .v3-quick-links a:is(:hover,:focus-visible){color:var(--af-color-gold-soft);background:rgb(255 253 248 / 5%)}
+@media(max-width:900px){.v3-home-story-logo{left:calc(var(--af-public-edge) + (100% - var(--af-public-edge) * 2) * .56)}.v3-home-story-logo>span{width:clamp(10rem,23vw,14rem)}}
+@media(max-width:600px){.v3-home-story-logo{inset:.75rem var(--af-public-edge) auto auto}.v3-home-story-logo>span{width:5.5rem;padding:.8rem}.v3-home-banner-slide--story .v3-home-banner-content{justify-content:flex-end}}
+@media(prefers-reduced-motion:reduce){.v3-proof-item strong{animation:none}}
+
+.v3-home-story-logo img{display:block;width:100%;height:auto;object-fit:contain}
