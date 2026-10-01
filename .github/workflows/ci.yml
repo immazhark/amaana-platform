@@ -259,6 +259,12 @@ jobs:
     needs: [plan, fast]
     if: needs.plan.outputs.browser == 'true' && github.event.action != 'ready_for_review'
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.0-noble
+      options: --ipc=host
+    defaults:
+      run:
+        shell: bash
     timeout-minutes: 20
     services:
       postgres:
@@ -275,7 +281,7 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
-      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/amaana?schema=public
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/amaana?schema=public
       NEXT_PUBLIC_APP_URL: https://amaanafoundation.org
       NEXT_PUBLIC_ALLOW_INDEXING: "false"
     steps:
@@ -320,19 +326,18 @@ jobs:
           npm init -y >/dev/null
           npm install --save-dev --package-lock=false @playwright/test@1.55.0 @axe-core/playwright@4.10.2
 
-      - name: Install browsers for acceptance
-        env:
-          CROSS_BROWSER: ${{ needs.plan.outputs.crossBrowser }}
-        if: needs.plan.outputs.browser == 'true'
+      - name: Verify pinned preinstalled browser runtime
         shell: bash
         run: |
           set -euo pipefail
           cd "$RUNNER_TEMP/amaana-browser-acceptance"
-          if [ "$CROSS_BROWSER" = "true" ]; then
-            npx playwright install --with-deps chromium firefox webkit
-          else
-            npx playwright install --with-deps chromium
-          fi
+          node - <<'JS'
+          const { chromium, firefox, webkit } = require('@playwright/test');
+          const fs = require('node:fs');
+          for (const browser of [chromium, firefox, webkit]) {
+            if (!fs.existsSync(browser.executablePath())) throw new Error(`Missing pinned browser: ${browser.name()}`);
+          }
+          JS
 
       - name: Run responsive, accessibility and journey browser acceptance
         if: needs.plan.outputs.browser == 'true'
