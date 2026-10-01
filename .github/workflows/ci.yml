@@ -300,6 +300,12 @@ jobs:
         run: |
           npx prisma migrate deploy
           npm run seed:public-content
+          node --input-type=module - <<'JS'
+          import { PrismaClient } from '@prisma/client';
+          import { applyMasterContent } from './prisma/apply-master-content.mjs';
+          const prisma = new PrismaClient();
+          try { await applyMasterContent(prisma); } finally { await prisma.$disconnect(); }
+          JS
 
       - name: Build isolated browser acceptance fixture
         if: needs.plan.outputs.browser == 'true'
@@ -316,7 +322,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          BROWSER_DIR="$RUNNER_TEMP/amaana-browser-acceptance"
+          BROWSER_DIR="$GITHUB_WORKSPACE/.browser-acceptance"
           rm -rf "$BROWSER_DIR"
           mkdir -p "$BROWSER_DIR"
           cp -R e2e "$BROWSER_DIR/e2e"
@@ -330,7 +336,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          cd "$RUNNER_TEMP/amaana-browser-acceptance"
+          cd "$GITHUB_WORKSPACE/.browser-acceptance"
           node - <<'JS'
           const { chromium, firefox, webkit } = require('@playwright/test');
           const fs = require('node:fs');
@@ -348,7 +354,7 @@ jobs:
           AMAANA_FULL_VISUAL_REVIEW: ${{ needs.plan.outputs.visual }}
         run: |
           set -euo pipefail
-          cd "$RUNNER_TEMP/amaana-browser-acceptance"
+          cd "$GITHUB_WORKSPACE/.browser-acceptance"
           if [ -n "$CI_BROWSER_TESTS" ]; then
             read -r -a SELECTED_TESTS <<< "$CI_BROWSER_TESTS"
             npx playwright test --config=playwright.config.mjs "${SELECTED_TESTS[@]}"
@@ -363,7 +369,7 @@ jobs:
           AMAANA_APP_WORKSPACE: ${{ github.workspace }}
         run: |
           set -euo pipefail
-          cd "$RUNNER_TEMP/amaana-browser-acceptance"
+          cd "$GITHUB_WORKSPACE/.browser-acceptance"
           npx playwright test --config=playwright.cross-browser.config.mjs
 
       - name: Upload launch review screenshots
@@ -372,9 +378,9 @@ jobs:
         with:
           name: launch-review-screenshots-${{ github.sha }}
           path: |
-            ${{ runner.temp }}/amaana-browser-acceptance/launch-review
-            ${{ runner.temp }}/amaana-browser-acceptance/test-results
-            ${{ runner.temp }}/amaana-browser-acceptance/playwright-report
+            ${{ github.workspace }}/.browser-acceptance/launch-review
+            ${{ github.workspace }}/.browser-acceptance/test-results
+            ${{ github.workspace }}/.browser-acceptance/playwright-report
           if-no-files-found: warn
           retention-days: 7
 

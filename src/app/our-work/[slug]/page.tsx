@@ -10,7 +10,7 @@ import Link from "next/link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { PublicMedia } from "@/components/public-media";
 import { getInitiativePageData } from "@/lib/public-page-data";
-import { buildPublicRecordFallback, distinctStoryParagraphs, heroTeaser } from "@/lib/public-copy";
+import { buildPublicRecordFallback, programmeStoryParagraphs, heroTeaser } from "@/lib/public-copy";
 import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
 import { PublicContentStructuredData } from "@/components/public-content-structured-data";
 import { isAppealOpenForDonations } from "@/lib/appeals";
@@ -105,13 +105,13 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
   const leadMedia = selectIdentityPublicImage(media) ?? null;
   const gallery = media.filter(asset => asset.id !== leadMedia?.id);
   const period = formatYears(initiative.startYear, initiative.endYear, initiative.year);
-  const paragraphs = distinctStoryParagraphs(initiative.summary, initiative.story || initiative.summary);
+  const paragraphs = programmeStoryParagraphs(initiative.summary, initiative.story || initiative.summary);
   const fallbackStory = buildPublicRecordFallback({ metric: initiative.primaryMetric, metricLabel: initiative.primaryMetricLabel });
   const activeAppeals = initiative.appeals.filter(appeal => canExposePublicAppeal(appeal) && isAppealOpenForDonations(appeal));
   const isTaleemInitiative = initiative.slug.startsWith("taleem-");
 
   return (
-    <div className="v2-home campaign-page">
+    <div className="v2-home campaign-page canonical-programme">
       <PublicContentStructuredData
         type="WebPage"
         title={initiative.title}
@@ -126,7 +126,7 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
       <div className="v2-shell campaign-breadcrumb"><nav aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true"> / </span><Link href="/our-work">Our work</Link><span aria-hidden="true"> / </span><span>{initiative.title}</span></nav></div>
       <PageHero variant="level2" eyebrow={`${initiative.cause.title} · ${period}`} title={initiative.title} description={<p>{heroTeaser(initiative.summary)}</p>} actions={[{label:"Read about the drive",href:"#campaign-story"},...(gallery.length>0?[{label:"View media and updates",href:"#campaign-gallery",secondary:true} as const]:[])]} visual={leadMedia ? <PublicMedia asset={leadMedia} priority /> : <WorkVisualPlaceholder label={initiative.title} className="campaign-lead-placeholder" />} />
 
-      <section className="campaign-story v2-shell" id="campaign-story"><div><p className="v2-section-label">The record</p><h2>How this work unfolded</h2>{initiative.primaryMetric && <div className="campaign-outcome"><strong>{initiative.primaryMetric}</strong><p>{initiative.primaryMetricLabel}</p></div>}</div><div className="campaign-story-copy">{paragraphs.length > 0 ? paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>{fallbackStory}</p>}</div></section>
+      <section className="campaign-story" id="campaign-story"><div className="v2-shell campaign-story-layout"><div><p className="v2-section-label">The record</p><h2>How this work unfolded</h2>{initiative.primaryMetric && <div className="campaign-outcome"><strong>{initiative.primaryMetric}</strong><p>{initiative.primaryMetricLabel}</p></div>}</div><div className="campaign-story-copy">{paragraphs.length > 0 ? paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>{fallbackStory}</p>}</div></div></section>
 
       {gallery.length > 0 && <section className="campaign-gallery" id="campaign-gallery"><div className="v2-shell"><div className="campaign-section-heading"><h2>From the drive</h2><p>Original photographs, privacy-protected videos and campaign updates from this edition.</p></div><CampaignMediaGallery items={gallery.filter(asset => asset.kind === "IMAGE").map(asset => ({ id: asset.id, url: resolvePublicMediaUrl(asset) ?? "", alt: asset.altText, caption: asset.caption })).filter(item => Boolean(item.url))} /><div className="campaign-gallery-grid">{gallery.filter(asset => asset.kind !== "IMAGE").map(asset => <PublicMedia asset={asset} key={asset.id} />)}</div></div></section>}
 
