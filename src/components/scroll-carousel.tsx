@@ -48,7 +48,6 @@ export function ScrollCarousel({
   const viewportId = `carousel-${id}`;
   const prefersReducedMotion = useRef(false);
   const [paused, setPaused] = useState(false);
-  const [interacting, setInteracting] = useState(false);
   const progressRef = useRef<HTMLSpanElement>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
 
@@ -124,12 +123,12 @@ export function ScrollCarousel({
   }, [slideCount]);
 
   useEffect(() => {
-    if (!autoAdvanceMs || slideCount < 2 || paused || interacting || reducedMotion) return;
+    if (!autoAdvanceMs || slideCount < 2 || paused || reducedMotion) return;
     const timer = window.setInterval(() => {
-      if (!document.hidden) goTo(activeIndex + 1);
+      if (!document.hidden && !drag.current && !viewportRef.current?.closest("section")?.matches(":hover, :focus-within")) goTo(activeIndexRef.current + 1);
     }, autoAdvanceMs);
     return () => window.clearInterval(timer);
-  }, [autoAdvanceMs, activeIndex, goTo, paused, interacting, reducedMotion, slideCount]);
+  }, [autoAdvanceMs, activeIndex, goTo, paused, reducedMotion, slideCount]);
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.currentTarget !== event.target) return;
@@ -162,14 +161,7 @@ export function ScrollCarousel({
       aria-label={label}
       aria-roledescription="carousel"
       data-carousel-mode={mode}
-      onMouseEnter={() => autoAdvanceMs && setInteracting(true)}
-      onMouseLeave={() => autoAdvanceMs && setInteracting(false)}
-      onFocusCapture={() => autoAdvanceMs && setInteracting(true)}
-      onBlurCapture={event => {
-        if (!autoAdvanceMs) return;
-        const nextFocus = event.relatedTarget;
-        if (!(nextFocus instanceof Node) || !event.currentTarget.contains(nextFocus)) setInteracting(false);
-      }}
+
     >
       <div className={styles.header}>{heading ? <div className={styles.heading}>{heading}</div> : null}
       {slideCount > 1 ? (
@@ -210,7 +202,6 @@ export function ScrollCarousel({
           if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 || (event.target instanceof Element && event.target.closest("button,video,input"))) return;
           drag.current = {x:event.clientX, scroll:event.currentTarget.scrollLeft, moved:false};
           suppressClick.current = false;
-          setInteracting(true);
         }}
         onPointerMove={event => {
           const state = drag.current;
@@ -226,9 +217,8 @@ export function ScrollCarousel({
           suppressClick.current = Boolean(drag.current?.moved);
           drag.current = null;
           event.currentTarget.style.removeProperty("scroll-snap-type");
-          setInteracting(false);
         }}
-        onPointerCancel={event => { drag.current = null; event.currentTarget.style.removeProperty("scroll-snap-type"); setInteracting(false); }}
+        onPointerCancel={event => { drag.current = null; event.currentTarget.style.removeProperty("scroll-snap-type"); }}
         onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}
         onDragStart={event => { if (mode !== "hero") event.preventDefault(); }}
         onWheel={() => { navigation.current = null; }}

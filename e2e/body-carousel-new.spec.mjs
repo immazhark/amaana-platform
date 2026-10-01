@@ -72,3 +72,15 @@ test('rapid end-to-start controls finish at the requested card', async ({page}) 
  })).toBeLessThan(2);
  await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow','7');
 });
+
+
+test('keyboard focus keeps autoplay paused after the pointer leaves',async({page})=>{
+ await page.goto('/browser-acceptance/body-carousel');
+ const root=page.getByRole('region',{name:'Body carousel acceptance'});
+ const viewport=root.locator('[id^="carousel-"]');
+ await viewport.focus();await page.mouse.move(0,0);
+ await page.waitForTimeout(3300);
+ await expect(root.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1');
+ await viewport.evaluate(n=>n.blur());
+ await expect(root.getByRole('progressbar')).toHaveAttribute('aria-valuenow','2',{timeout:4000});
+});
