@@ -1,3 +1,9 @@
+# Follow-up UI verification — 2026-10-02 IST
+
+State: `CODEX_ACTIVE`. Branch `fix/ui-followup-audit-20261002`; verified integration base `f5458a98188fb8deed78b07a6fad0191453c1d9c`. Owner requests continued inspection and correction of existing issues. Browser/workspace access restored. No competing task PR; production PR104 remains protected. First inspect previously blocked deployed states and evidence closings, then forms/navigation and confirmed legacy conflicts. Preserve approved design, canonical facts/media/privacy/payment/indexing and fixed Companion. Confirmed assistance Before/After repeating-gradient defect and bypassed heading fixed. Build/types/lint, 18 planner tests, content/SVG/global CSS guards pass; JS819087/CSS344667 within unchanged caps. Local browser launch infrastructure-blocked, no responsive success claim. Focused seeded CI, merge and exact-source review deployment pending. See UI_FOLLOWUP_AUDIT_2026-10-02.md.
+
+---
+
 # Latest delivery — UI consistency and legacy-rule audit — 2026-10-02 IST
 
 State: `IDLE`. Outgoing: Codex; incoming: next available implementation agent. Integration `phase-public-site-rebuild`. Application PR [#128](https://github.com/immazhark/amaana-platform/pull/128) merged as `c670a94239aeeed83a72c74b6ce5338a630aeb20`; tested task head `b60aa42e8e8002095c9bdbdf6ed800207a6710c8`. Documentation closure branch `docs/ui-audit-delivery-20261002`.

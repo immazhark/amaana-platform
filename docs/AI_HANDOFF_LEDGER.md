@@ -398,3 +398,8 @@ Owner requested site-wide UI/UX inspection and confirmed fixes while away. Task 
 ## 2026-10-02 — Codex UI audit delivered; ownership IDLE
 
 PR128 mergedc670a94239aeeed83a72c74b6ce5338a630aeb20. Final tested headb60aa42e8e8002095c9bdbdf6ed800207a6710c8: CI37036140425 SUCCESS,153 Chromium pass on first attempt,392 units pass. Integrationpush37037096503 SUCCESS; unchanged budgets JS819087/819200, CSS344368/348160; exact-tree task acceptance reused. Railwayreview2d1e38aa-b97f-4694-9920-5243d2e5f310 SUCCESS on exact app mergeSHA. Confirmed banner/readability/background/heading/evidence-layout/spacing/legacy-rule fixes delivered. Scoped presentation dependencies select153 rather than554 cases; unknown/core/release gates preserved. Workspace/browser returned409 environment_offline after merge, so no final live screenshot/rendered verification claim. Owner resumes UI review; next agent checks deployed confirmation and evidence closings when reconnected. Main/production PR104 protected and its independent full release CI is not a blocker for review delivery. StateIDLE; no implementation writer remains.
+
+
+## 2026-10-02 — Follow-up UI audit
+
+Codex claims fix/ui-followup-audit-20261002 from verified f5458a9 after owner continuation. Browser access restored; previously blocked states/evidence surfaces verified at desktop. Request Assistance Before/After gradients were repeated at shared tile sizes, producing checkerboard bands. Corrected artwork layering and shared Before heading, removed obsolete route overrides. Build/types/lint/content/SVG/CSS and18planner checks pass; unchanged budgets JS819087/CSS344667. Local browser launch is infrastructure-blocked; six-width seeded CI and existing journeys pending. Main protected.
