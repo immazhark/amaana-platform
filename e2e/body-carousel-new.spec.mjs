@@ -17,10 +17,9 @@ for(const width of [375,600,768,1024,1440,1920])test(`left alignment and control
  await carousel.getByRole('button',{name:'Pause automatic slides'}).click();
  await carousel.getByRole('button',{name:'Next slide',exact:true}).click();
  await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow','2');
- await page.waitForTimeout(700);
- const second=await carousel.getByRole('group',{name:'2 of 7',exact:true}).boundingBox();expect(Math.abs(v.x-second.x)).toBeLessThan(2);
+ await expect.poll(async()=>Math.abs(v.x-(await carousel.getByRole('group',{name:'2 of 7',exact:true}).boundingBox()).x)).toBeLessThan(2);
  await viewport.focus();await page.keyboard.press('End');await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow','7');
- await page.waitForTimeout(700);const last=await carousel.getByRole('group',{name:'7 of 7',exact:true}).boundingBox();expect(Math.abs(v.x-last.x)).toBeLessThan(2);
+ await expect.poll(async()=>Math.abs(v.x-(await carousel.getByRole('group',{name:'7 of 7',exact:true}).boundingBox()).x)).toBeLessThan(2);
 });
 
 test('manual pause survives pointer exit and reduced motion disables autoplay',async({page})=>{

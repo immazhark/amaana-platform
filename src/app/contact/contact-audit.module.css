@@ -1,8 +1,6 @@
 .privacy{padding:clamp(1.5rem,4vw,2.5rem);border:1px solid var(--af-color-border);border-left:4px solid var(--af-color-gold-500);border-radius:1rem;background:var(--af-color-surface)}
 .socialSection{padding-block:clamp(2.5rem,5vw,4rem)}
 .socialGrid{display:grid;gap:2rem}
-.socialGrid h2{max-width:26ch;margin:.75rem 0;font-family:var(--af-font-display);font-size:clamp(2rem,3.5vw,3rem);font-weight:500;line-height:1.15;color:var(--af-color-navy-950)}
-.socialGrid p{max-width:65ch;color:var(--af-color-muted);line-height:1.65}
 .socialLinks.socialLinks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
 .socialLinks a{display:flex;align-items:center;gap:1rem;min-height:6rem;padding:1.25rem;border:1px solid var(--af-color-border);border-radius:1rem;background:var(--af-color-surface);color:var(--af-color-navy-950);transition:border-color .2s,box-shadow .2s,transform .2s}
 .socialIcon{display:grid;place-items:center;flex-shrink:0;width:2.75rem;height:2.75rem;border-radius:.75rem;background:var(--af-color-gold-soft);color:var(--af-color-blue-600)}

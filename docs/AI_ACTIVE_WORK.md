@@ -1,3 +1,9 @@
+# UI consistency and legacy-rule audit — 2026-10-02 IST
+
+State: `CODEX_ACTIVE`. Branch `fix/ui-consistency-audit-20261002`; verified integration base `8fcc88b935eed87f740dba2159d67f0d3eb8e231`. Owner authorizes reviewing all screens and fixing confirmed UI/UX inconsistencies and conflicting legacy rules while away. Only protected production PR104 is open. Confirmed state/receipt foreground/type conflict, Home hover contrast, Contact social heading and retired intent CSS fixed. Local six-width UI/a11y regression and ten carousel cases pass; build/types/lint/editorial/CSS guards and 16 CI planner regressions pass. JS819087/819200; CSS342523/348160. See UI_CONSISTENCY_AUDIT_2026-10-02.md. Seeded focused CI, merge and exact-source review deployment pending. Preserve approved banners/background SVGs, canonical content/media/privacy/payment/indexing gates and fixed bottom-right Companion.
+
+---
+
 # Latest delivery — site-wide approved L1 banners — 2026-10-02 IST
 
 State: `IDLE`. Outgoing agent: Codex; incoming agent: next available implementation agent. Integration: `phase-public-site-rebuild`. Completed task branch: `fix/sitewide-l1-banners-20261002`. PR [#126](https://github.com/immazhark/amaana-platform/pull/126) merged at `a6cea782514fdf49837af7a41e7d4aa178a4821e`; tested task head `494421b4e727ff65314b7ac82f9f91d273926b37`. Documentation closure branch: `docs/sitewide-banner-delivery-20261002`.

@@ -58,3 +58,14 @@ test("owner screenshot acceptance edits retain focused verification", () => {
   assert.equal(plan.crossBrowser, false);
   assert.ok(plan.tests.includes("owner-screenshot-polish.spec.mjs"));
 });
+
+
+test('state and shared participation CSS retain their presentation and journey regressions', () => {
+  const p = planChanges(['src/app/state-experience.css', 'src/app/home-experience.css', 'src/app/home-documentary.css', 'e2e/ui-consistency.spec.mjs', 'e2e/body-carousel-new.spec.mjs']);
+  assert.equal(p.mode, 'focused');
+  assert.equal(p.database, false);
+  assert.equal(p.crossBrowser, false);
+  for (const name of ['ui-consistency.spec.mjs', 'page-banner-standardization.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'participation-contact.spec.mjs', 'body-carousel-new.spec.mjs']) assert.ok(p.tests.includes(name));
+  assert.ok(planChanges(['src/app/home-documentary.css']).tests.includes('ui-consistency.spec.mjs'));
+  assert.equal(planChanges(['src/components/donation-acknowledgement-client.tsx']).mode, 'full');
+});

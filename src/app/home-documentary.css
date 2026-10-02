@@ -175,7 +175,7 @@
 .v3-quick-links a:focus-visible,.v3-work-card:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:4px}
 .v3-trust-panel{border:1px solid rgb(18 34 57 / 10%);box-shadow:0 .75rem 2rem rgb(18 34 57 / 7%)}
 
-.v3-home-banner-actions .v3-btn.secondary:is(:hover,:focus-visible){color:#fffdf8;background:rgb(255 253 248 / 10%);border-color:var(--af-color-gold-soft)}
+.v3-home-banner-actions .v3-btn.secondary:is(:hover,:focus-visible){color:var(--af-color-navy-950);background:rgb(18 34 57 / 6%);border-color:rgb(18 34 57 / 48%)}
 
 /* Owner screenshot review: restrained brand fallback and readable dark surfaces. */
 .v3-home-story-logo{position:absolute;left:calc(var(--af-public-edge) + (100% - var(--af-public-edge) * 2) * .56);right:var(--af-public-edge);top:0;bottom:0;display:grid;place-items:center;pointer-events:none}
