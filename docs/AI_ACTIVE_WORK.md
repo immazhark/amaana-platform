@@ -1,3 +1,19 @@
+# Latest delivery — body section headings and footer spacing — 2026-10-02 UTC
+
+State: `IDLE`. Outgoing agent: Codex; incoming agent: next available implementation agent. Integration: `phase-public-site-rebuild`. Completed task branch: `fix/section-headings-footer-spacing-20261002`. PR [#124](https://github.com/immazhark/amaana-platform/pull/124) merged at `892aa722294b2ebb307e6934a444fad3ffee5361`; task head `d837253610ce26e07c5784c21d0edaae84d101ad`. Documentation closure branch: `docs/heading-footer-delivery-20261002`.
+
+Completed: shared server-rendered body introductions use a 40px rule and eyebrow above the left title, subtitle on the right; mobile stacks. Additional right-side content retains its composition. Site-wide footer outer spacing shares one token: 80px desktop, 96px plus safe area on mobile. Canonical/legacy programme galleries and eligible public introductions use the shared component. Content, approved background foundations, factual locks and fixed Companion preserved.
+
+Validation: local production build, lint/types/content/CSS guards, 392 unit tests (six database-dependent skipped locally), 15 CI planner regressions, and 30 local production page/viewport combinations passed. PR CI 36948217424 passed all 507 Chromium cases, including six widths. Integration CI 36949106614 passed build, budgets and server smoke, reusing exact-head PR acceptance and skipping duplicate browsers. JS 818873/819200 and CSS 347314/348160; caps unchanged. Optional-gallery fixture assertion and real keyboard-navigation setup corrected; no current failing application checks.
+
+Railway preview deployment `b7ef3970-885d-4017-bdce-de9f4c6176ff` is SUCCESS on exact application SHA `892aa722294b2ebb307e6934a444fad3ffee5361`. Final public-site visual inspection could not finish because the browser/container transport disconnected with `409 environment_offline`; no post-deployment screenshot or live visual claim is made. Seeded browser acceptance and exact-source deployment are confirmed.
+
+Current implementation task: complete. Exact next action: owner continues UI testing on the deployed review site; when browser access returns, inspect /impact shared introductions and footer, and /our-work/emergency-neonatal-medical-aid gallery. No additional code edits are required for this delivery. Main/production promotion PR #104 remains a separate protected release checkpoint. Do not casually change factual/content locks, private evidence boundaries, payments/indexing gates, approved geometric foundations or Companion positioning.
+
+All older active/pending entries below are historical and superseded by this delivery record.
+
+---
+
 # Body section headings and footer spacing — 2026-10-02
 
 State: `CODEX_ACTIVE`. Branch `fix/section-headings-footer-spacing-20261002`, verified integration `2235263272d0083fa280fc7a1ed0b34acdd6ba88`. Only open PR is protected production #104. Owner requests equal outer footer top/bottom breathing room and a consistent body heading: line + eyebrow, title left, subtitle right; retain compositions with extra content on the right, stack on mobile. Screenshots recovered and inspected. Prior PR122/123 merged with green CI and exact preview deployments; older pending notes below are historical. Shared server-rendered heading implemented across standard public introductions, closings and galleries; original content, hero layouts, content-panel exceptions, card headings and fixed Companion preserved. Thirty actual production page/viewport combinations pass at 320/390/768/1024/1440/1920. Local lint/types/content/CSS audit/build and 392 unit tests pass (six DB-dependent skipped locally); 14 planner regressions pass. Final JS 818873/819200 and CSS 347314/348160, caps unchanged. Footer outer top/bottom uses one token: 80px desktop, 96px mobile plus safe area. Focused seeded CI, green merge and exact-source preview deployment verification remain pending.
