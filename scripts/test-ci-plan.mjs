@@ -37,3 +37,24 @@ test('participation and contact presentation changes use focused browser checks'
   assert.equal(plan.crossBrowser, false);
   assert.ok(plan.tests.includes('participation-contact.spec.mjs'));
 });
+
+
+test('shared public heading and footer styles use comprehensive focused presentation checks', () => {
+  const plan = planChanges(['src/components/section-heading.module.css', 'src/components/canonical-article.tsx', 'src/app/site-chrome.css', 'src/app/our-work/[slug]/page.tsx', 'src/app/get-involved/sponsor-education/page.tsx']);
+  assert.equal(plan.mode, 'focused');
+  assert.equal(plan.database, false);
+  assert.equal(plan.crossBrowser, false);
+  assert.ok(plan.tests.includes('section-heading.spec.mjs'));
+  assert.ok(plan.tests.includes('public-shell.spec.mjs'));
+  assert.ok(plan.tests.includes('initiative-detail.spec.mjs'));
+  assert.equal(planChanges(['src/app/api/webhooks/razorpay/route.ts']).mode, 'full');
+});
+
+
+test("owner screenshot acceptance edits retain focused verification", () => {
+  const plan = planChanges(["e2e/owner-screenshot-polish.spec.mjs"]);
+  assert.equal(plan.mode, "focused");
+  assert.equal(plan.database, false);
+  assert.equal(plan.crossBrowser, false);
+  assert.ok(plan.tests.includes("owner-screenshot-polish.spec.mjs"));
+});

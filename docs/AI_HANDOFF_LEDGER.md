@@ -346,3 +346,8 @@ Six owner screenshots inspected. Canonical story==summary was being discarded, l
 ## 2026-10-01 — Participation, Contact and Appeals delivery checkpoint
 
 PR #123 contains the six latest screenshot fixes and targeted CI dependency mapping. Shared participation cards, stacked journey copy, official social marks, completed Appeals carousel and approved brand lattice fallbacks are implemented. Local units 392 passed / six database-dependent skipped; build/types/lint/content/global CSS and 13 planner regressions passed. Production JS 818873 and CSS 344906 pass unchanged budgets. Six-width actual Contact/Get Involved checks and shared carousel fixture passed; actual seeded Appeals awaits remote acceptance. PR #122 CI 36896947301 is running the Firefox HOME ownership repair after its prior Chromium suite passed. Merge/retarget/focused CI/exact-source deployment verification remain pending; no main or production promotion.
+
+
+## 2026-10-02 — Body heading and footer spacing implementation
+
+Owner supplied two references. Shared SectionHeading preserves eyebrow/title/subtitle order, 40px rule, left serif title, right subtitle and mobile stack across standard public introductions/closings and programme galleries. Existing media/list/action panels on the right retain their composition. Canonical article headers gain contextual eyebrows. Footer top and bottom share 80px desktop/96px mobile-safe edge token. Thirty production static page/viewport combinations pass; lint/types/content/CSS architecture/build, 392 units (six local DB skips), 14 planner regressions pass. Final JS818873/CSS347314 under unchanged caps. Focused CI, integration merge and exact-source preview verification next. Main unchanged.
