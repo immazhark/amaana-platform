@@ -351,3 +351,17 @@ PR #123 contains the six latest screenshot fixes and targeted CI dependency mapp
 ## 2026-10-02 — Body heading and footer spacing implementation
 
 Owner supplied two references. Shared SectionHeading preserves eyebrow/title/subtitle order, 40px rule, left serif title, right subtitle and mobile stack across standard public introductions/closings and programme galleries. Existing media/list/action panels on the right retain their composition. Canonical article headers gain contextual eyebrows. Footer top and bottom share 80px desktop/96px mobile-safe edge token. Thirty production static page/viewport combinations pass; lint/types/content/CSS architecture/build, 392 units (six local DB skips), 14 planner regressions pass. Final JS818873/CSS347314 under unchanged caps. Focused CI, integration merge and exact-source preview verification next. Main unchanged.
+
+
+## 2026-10-02 UTC — PR #124 deployed; section headings and footer spacing completed
+
+State: `IDLE`. Outgoing agent: Codex; incoming agent: next available implementation agent. Integration: `phase-public-site-rebuild`. Completed task branch: `fix/section-headings-footer-spacing-20261002`. PR [#124](https://github.com/immazhark/amaana-platform/pull/124) merged at `892aa722294b2ebb307e6934a444fad3ffee5361`; task head `d837253610ce26e07c5784c21d0edaae84d101ad`. Documentation closure branch: `docs/heading-footer-delivery-20261002`.
+
+Completed: shared server-rendered body introductions use a 40px rule and eyebrow above the left title, subtitle on the right; mobile stacks. Additional right-side content retains its composition. Site-wide footer outer spacing shares one token: 80px desktop, 96px plus safe area on mobile. Canonical/legacy programme galleries and eligible public introductions use the shared component. Content, approved background foundations, factual locks and fixed Companion preserved.
+
+Validation: local production build, lint/types/content/CSS guards, 392 unit tests (six database-dependent skipped locally), 15 CI planner regressions, and 30 local production page/viewport combinations passed. PR CI 36948217424 passed all 507 Chromium cases, including six widths. Integration CI 36949106614 passed build, budgets and server smoke, reusing exact-head PR acceptance and skipping duplicate browsers. JS 818873/819200 and CSS 347314/348160; caps unchanged. Optional-gallery fixture assertion and real keyboard-navigation setup corrected; no current failing application checks.
+
+Railway preview deployment `b7ef3970-885d-4017-bdce-de9f4c6176ff` is SUCCESS on exact application SHA `892aa722294b2ebb307e6934a444fad3ffee5361`. Final public-site visual inspection could not finish because the browser/container transport disconnected with `409 environment_offline`; no post-deployment screenshot or live visual claim is made. Seeded browser acceptance and exact-source deployment are confirmed.
+
+Current implementation task: complete. Exact next action: owner continues UI testing on the deployed review site; when browser access returns, inspect /impact shared introductions and footer, and /our-work/emergency-neonatal-medical-aid gallery. No additional code edits are required for this delivery. Main/production promotion PR #104 remains a separate protected release checkpoint. Do not casually change factual/content locks, private evidence boundaries, payments/indexing gates, approved geometric foundations or Companion positioning.
+
