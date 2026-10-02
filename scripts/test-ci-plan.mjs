@@ -84,13 +84,14 @@ test('audited page and evidence layout paths avoid the whole-site shell matrix',
 });
 
 test('private intake presentation selects its surfaces and existing transactional journeys', () => {
-  const p = planChanges(['src/app/request-assistance/page.tsx', 'src/app/request-assistance/assistance-surface.module.css', 'src/app/assistance-wow.css', 'e2e/assistance-surface.spec.mjs']);
+  const p = planChanges(['src/app/request-assistance/page.tsx', 'src/app/request-assistance/assistance-surface.module.css', 'src/app/assistance-wow.css', 'src/components/assistance-form.module.css', 'e2e/assistance-surface.spec.mjs']);
   assert.equal(p.mode, 'focused');
   assert.equal(p.database, false);
   assert.equal(p.crossBrowser, false);
   assert.ok(!p.tests.includes('public-shell.spec.mjs'));
   for (const name of ['assistance-surface.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'page-banner-standardization.spec.mjs', 'typography-hierarchy.spec.mjs']) assert.ok(p.tests.includes(name));
   assert.equal(planChanges(['src/app/request-assistance/page.tsx', 'src/app/api/assistance/route.ts']).mode, 'full');
+  assert.equal(planChanges(['src/components/assistance-form.tsx']).mode, 'full');
   assert.equal(planChanges(['src/app/request-assistance/page.tsx'], { target: 'main' }).mode, 'full');
 });
 
