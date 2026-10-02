@@ -1,3 +1,4 @@
+import evidenceStyles from "@/components/evidence-pathway.module.css";
 import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel } from "@/components/body-carousel";
 import type { Metadata } from "next";
@@ -62,7 +63,7 @@ export default async function ImpactPage() {
 
       <section className="v2-section paper v2-impact-wall-section" id="evidence" aria-labelledby="impact-wall-title">
         <div className="v2-shell">
-          <TrustEvidenceBoundary context="impact" />
+          <TrustEvidenceBoundary context="impact" className={evidenceStyles.boundary} />
           <SectionHeading eyebrow={<>Wall of impact</>} title={<>See what each initiative achieved.</>} subtitle={<>Explore an outcome, then open the initiative to understand the work behind it.</>} id="impact-wall-title" />
           {initiatives.length > 0 ? <div className="v2-impact-wall">{initiatives.map((item, index) => {
             const thumbnail = selectIdentityPublicImage(item.mediaAssets) ?? null;
@@ -86,7 +87,7 @@ export default async function ImpactPage() {
         </div>
       </section>
 
-      <section className="v2-section dark v2-impact-trust"><div className="v2-shell v2-faith-grid"><div><p className="v2-section-label">Transparency</p><h2 className="v2-section-title">Follow trust from support to outcome.</h2><p className="v2-section-intro">The public evidence trail is designed to explain what happened without publishing identity documents, medical records, bank details or private verification material.</p><Link className="v2-button" href="/transparency">Explore transparency</Link></div><div className="v2-reminder"><span className="v2-reminder-label">The evidence chain</span><blockquote>Need → trust → preparation → delivery → known outcome.</blockquote><p>Public evidence. Private proofs.</p></div></div></section>
+      <section className={`v2-section dark v2-impact-trust ${evidenceStyles.surface}`}><div className={`v2-shell ${evidenceStyles.grid}`}><div><p className="v2-section-label">Transparency</p><h2 className="v2-section-title">Follow trust from support to outcome.</h2><p className="v2-section-intro">The public evidence trail is designed to explain what happened without publishing identity documents, medical records, bank details or private verification material.</p><Link className="v2-button" href="/transparency">Explore transparency</Link></div><div className="v2-reminder"><span className="v2-reminder-label">The evidence chain</span><blockquote>Need → trust → preparation → delivery → known outcome.</blockquote><p>Public evidence. Private proofs.</p></div></div></section>
     </div>
   );
 }

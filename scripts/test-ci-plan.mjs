@@ -68,5 +68,6 @@ test('state and shared participation CSS retain their presentation and journey r
   for (const name of ['ui-consistency.spec.mjs', 'page-banner-standardization.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'participation-contact.spec.mjs', 'body-carousel-new.spec.mjs']) assert.ok(p.tests.includes(name));
   assert.ok(planChanges(['src/app/home-documentary.css']).tests.includes('ui-consistency.spec.mjs'));
   assert.ok(planChanges(['src/app/faith-and-reflections/page.tsx']).tests.includes('ui-consistency.spec.mjs'));
+  assert.equal(planChanges(['src/components/evidence-pathway.module.css']).mode, 'focused');
   assert.equal(planChanges(['src/components/donation-acknowledgement-client.tsx']).mode, 'full');
 });

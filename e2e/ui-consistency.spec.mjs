@@ -51,5 +51,29 @@ for (const width of [390, 1440]) {
     const surface = page.locator('.v2-faith-standard');
     expect(await surface.evaluate(node => getComputedStyle(node).backgroundImage)).toContain('amaana-lattice-tile.svg');
     expect(await surface.evaluate(node => getComputedStyle(node).backgroundRepeat)).toBe('no-repeat, repeat');
+    expect(await page.locator('.v2-faith-action').evaluate(node => getComputedStyle(node).backgroundImage)).toMatch(/^url\(.*amaana-lattice-tile/);
+  });
+}
+
+for (const width of [390, 1440]) {
+  test(`evidence closing layouts and section spacing at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    for (const path of ['/impact', '/our-work']) {
+      expect((await page.goto(path)).ok()).toBe(true);
+      const closing = page.locator('main > div > section').last();
+      const geometry = await closing.evaluate(node => {
+        const shell = node.querySelector('.v2-shell');
+        const first = shell.children[0].getBoundingClientRect();
+        const second = shell.children[1].getBoundingClientRect();
+        return { firstRight: first.right, firstBottom: first.bottom, secondLeft: second.left, secondTop: second.top, background: getComputedStyle(node).backgroundImage };
+      });
+      expect(geometry.background).toMatch(/^url\(.*amaana-lattice-tile/);
+      if (width > 900) expect(geometry.secondLeft).toBeGreaterThan(geometry.firstRight);
+      else expect(geometry.secondTop).toBeGreaterThan(geometry.firstBottom);
+      if (path === '/impact') {
+        const gap = await page.evaluate(() => document.querySelector('#impact-wall-title').getBoundingClientRect().top - document.querySelector('[data-trust-evidence-boundary]').getBoundingClientRect().bottom);
+        expect(gap).toBeGreaterThanOrEqual(48);
+      }
+    }
   });
 }

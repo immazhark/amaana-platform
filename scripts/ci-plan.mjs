@@ -3,6 +3,7 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
+  { paths: /^src\/components\/evidence-pathway\.module\.css$/, tests: ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/app\/faith-and-reflections\/page\.tsx$/, tests: ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'public-shell.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/app\/state-experience\.css$/, tests: ['ui-consistency.spec.mjs', 'page-banner-standardization.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/app\/home-experience\.css$/, tests: ['ui-consistency.spec.mjs', 'participation-contact.spec.mjs', 'typography-hierarchy.spec.mjs'] },

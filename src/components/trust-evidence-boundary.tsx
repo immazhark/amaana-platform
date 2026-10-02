@@ -1,6 +1,7 @@
 import { SectionHeading } from "@/components/section-heading";
 type TrustEvidenceBoundaryProps = {
   context: "impact" | "transparency";
+  className?: string;
 };
 
 const COPY = {
@@ -34,12 +35,12 @@ const EVIDENCE_ITEMS = [
   },
 ] as const;
 
-export function TrustEvidenceBoundary({ context }: TrustEvidenceBoundaryProps) {
+export function TrustEvidenceBoundary({ context, className }: TrustEvidenceBoundaryProps) {
   const copy = COPY[context];
   const headingId = `trust-evidence-${context}`;
 
   return (
-    <section aria-labelledby={headingId} data-trust-evidence-boundary={context}>
+    <section className={className} aria-labelledby={headingId} data-trust-evidence-boundary={context}>
       <SectionHeading eyebrow={<>{copy.eyebrow}</>} title={<>{copy.title}</>} subtitle={<>{copy.intro}</>} id={headingId} />
       <div className="grid stats">
         {EVIDENCE_ITEMS.map(item => (
