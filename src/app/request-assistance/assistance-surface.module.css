@@ -1,0 +1,7 @@
+/* Keep artwork tiled and the dark colour field continuous, independently of legacy route CSS. */
+.before.before{background-color:var(--af-color-navy-950);background-image:var(--amaana-pattern),linear-gradient(132deg,var(--af-color-navy-950),var(--af-color-navy-800) 52%,var(--af-color-navy-700))!important;background-size:104px 104px,100% 100%!important;background-repeat:repeat,no-repeat!important;background-position:0 0,center!important;color:#fffdf8}
+.before :global(.af-section-heading){margin-bottom:0}
+.before :global(.v2-section-label){color:var(--af-color-gold-soft)}
+.before :global(.v2-section-intro){opacity:1;color:rgb(255 253 248 / 85%)}
+.privacy{display:block;margin-top:1rem}
+.privacy strong{color:var(--af-color-gold-soft)}
