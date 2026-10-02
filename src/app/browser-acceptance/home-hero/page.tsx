@@ -20,6 +20,7 @@ export default function HomeHeroBrowserAcceptanceFixture() {
   return (
     <div className="v3-home">
       <section className="v3-home-banner" aria-labelledby="fixture-home-title">
+        <div className="amaana-backdrop-emblem" aria-hidden="true" />
         <h1 id="fixture-home-title" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clipPath: "inset(50%)", whiteSpace: "nowrap" }}>Amaana story browser fixture</h1>
         <ScrollCarousel label="Amaana Foundation story and featured work" mode="hero" className="v3-home-banner-carousel" autoAdvanceMs={7000}>
           <HomeStorySlide />

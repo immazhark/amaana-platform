@@ -243,23 +243,6 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
   border-top-color:rgb(240 213 107 / 10%);
 }
 /* Level-2 and trust heroes share one dark editorial family; level-1 remains the approved light artwork. */
-:is(.page-hero--level2,.page-hero--trust,.page-hero--action,.page-hero--information,.page-hero--recognition){
-  background-color:var(--af-color-navy-800);
-  background-image:var(--af-surface-dark);
-  background-repeat:var(--af-surface-repeat);
-  background-size:var(--af-surface-size);
-  background-position:center center;
-}
-:is(.page-hero--level2,.page-hero--trust,.page-hero--action,.page-hero--information,.page-hero--recognition) .page-hero__visual{
-  border-radius:var(--af-media-radius);
-  box-shadow:var(--af-media-shadow);
-}
-@media(max-width:768px){
-  :is(.page-hero--level2,.page-hero--trust,.page-hero--action,.page-hero--information,.page-hero--recognition){
-    background-size:var(--af-surface-size);
-    background-position:center top;
-  }
-}
 
 
 /* Canonical action geometry and section transition polish. */
@@ -434,7 +417,7 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 
 
 /* Artwork composition: fixed texture scale, independently bounded identity. */
-:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust,.v3-closing,.page-hero--level2,.page-hero--trust,.page-hero--action,.page-hero--information,.page-hero--recognition){
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust,.v3-closing){
   --af-surface-size:100% 100%,240px auto,104px 104px;
   --af-surface-repeat:no-repeat,no-repeat,repeat;
   --af-surface-position:center,right 2rem center,0 0;
@@ -478,8 +461,6 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
   --visual:clamp(17rem,22vw,20rem);
   --pad:clamp(2.25rem,3.25vw,3rem);
 }
-.page-hero--level2,.page-hero--action,.page-hero--information,.page-hero--recognition{--min:clamp(22rem,32vw,27rem);--visual:clamp(16rem,24vw,20rem)}
-.page-hero--trust{--min:clamp(20rem,29vw,24rem);--visual:clamp(15rem,21vw,18rem)}
 .page-hero__grid{gap:clamp(2rem,5vw,4.5rem)}
 .page-hero__description{max-width:var(--af-reading-measure);line-height:1.6}
 .page-hero__visual{box-shadow:0 18px 46px rgb(4 21 40 / 18%)}
@@ -689,24 +670,6 @@ body{font-weight:var(--af-weight-body)}
 
 
 /* 2026-09-29 final hero-family authority: preserve recognisable page intent after canonical surface consolidation. */
-.page-hero--action{
-  background-color:#132844!important;
-  background-image:
-    radial-gradient(circle at 80% 18%,rgb(224 179 24 / 18%),transparent 24%),
-    linear-gradient(132deg,#0f223b 0%,#1d3150 58%,#355f96 100%)!important
-}
-.page-hero--information{
-  background-color:#203b62!important;
-  background-image:
-    linear-gradient(145deg,transparent 24%,rgb(255 255 255 / 5%) 47%,rgb(224 179 24 / 10%) 58%,transparent 74%),
-    linear-gradient(138deg,#182c49 0%,#2f4c7a 62%,#203b62 100%)!important
-}
-.page-hero--trust{
-  background-color:#0b192c!important;
-  background-image:
-    radial-gradient(circle at 82% 18%,rgb(224 179 24 / 12%),transparent 25%),
-    linear-gradient(145deg,#0b192c 0%,#172b47 62%,#493f1e 145%)!important
-}
 
 
 /* 2026-09-29 owner monitor QA: cap wide-desktop vertical rhythm so content does not float in oversized cream zones. */
@@ -727,3 +690,28 @@ body{font-weight:var(--af-weight-body)}
     bottom:calc(var(--af-companion-mobile-bottom) + 3.4rem)
   }
 }
+
+/* One approved L1 banner surface for every page family; purpose remains semantic. */
+:root{--amaana-page-banner:var(--amaana-bg-hero)}
+:is(.page-hero,.v3-home-banner,.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page,.v2-loading-page,.admin-heading){position:relative;isolation:isolate;color:var(--af-color-navy-950);background-color:#eee5d2!important;background-image:var(--amaana-page-banner)!important;background-size:104px 104px,100% 100%!important;background-repeat:repeat,no-repeat!important;background-position:0 0,center!important}
+:is(.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page,.v2-loading-page,.admin-heading)::after{content:"";position:absolute;top:clamp(1.5rem,5vw,3rem);right:clamp(.75rem,2vw,2rem);width:var(--amaana-emblem-width);aspect-ratio:276/500;background:url("/backgrounds/amaana-arch-emblem.svg?v=20260928-r5") top center/contain no-repeat;pointer-events:none;z-index:-1}
+:is(.page-hero,.v3-home-banner)>.amaana-backdrop-emblem{display:block;z-index:2}
+:is(.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page,.v2-loading-page) h1{max-width:15ch;font:500 clamp(3rem,5.25vw,5.15rem)/.98 var(--af-font-display);letter-spacing:-.045em;text-wrap:balance}
+:is(.v2-state-hero,.v2-receipt-hero)>.v2-shell{padding-block:clamp(2.25rem,3.25vw,3rem)}
+.v2-state-grid{min-height:27rem}
+:is(.v2-state-grid>div>p,.v2-state-hero>.v2-shell>p,.v2-receipt-hero>.v2-shell>p,.v2-not-found-content>p,.v2-error-content>p,.v2-reference-block small,.v2-receipt-status small,.admin-heading .muted,.admin-heading .lead){color:#4d5d72}
+:is(.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page) :is(.v2-section-label,.v2-text-link),.v2-reference-block span,.v2-receipt-status span{color:var(--af-color-gold-ink)}
+.v2-reference-block,.v2-receipt-status{border-color:rgb(29 49 80/20%)}
+.v2-state-steps{background:var(--af-color-navy-800);color:#fffaf1}
+.v2-not-found-orbit,.v2-error-orbit{display:none}
+.admin-heading{padding:clamp(1.25rem,3vw,2rem);overflow:hidden}
+.v3-home-banner-slide{background:var(--amaana-page-banner)!important;background-size:104px 104px,100% 100%!important;background-repeat:repeat,no-repeat!important;background-position:0 0,center!important}
+.v3-home-banner-shade{display:none}
+.v3-home-banner-brandline,.v3-home-banner-metric strong{color:var(--af-color-navy-950);text-shadow:none}
+.v3-home-banner-kicker,.v3-home-banner-content h2,.v3-home-banner-metric span{color:var(--af-color-gold-ink)}
+.v3-home-banner-content>p:not(.v3-home-banner-kicker){color:#4d5d72}
+.v3-home-banner-actions .v3-btn.secondary{color:var(--af-color-navy-800);border-color:rgb(29 49 80/28%);background:rgb(255 255 255/64%)}
+.v3-home-banner-actions .v3-btn:focus-visible{outline-color:var(--af-color-navy-800)}
+@media(max-width:900px){:root{--amaana-page-banner:var(--amaana-pattern),linear-gradient(180deg,#eee5d2 0%,#eee5d2 54%,#d9ddd3 74%,#4575a1 100%)}:is(.page-hero,.v3-home-banner)>.amaana-backdrop-emblem{opacity:.25}:is(.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page,.v2-loading-page,.admin-heading)::after{opacity:.25}}
+@media(max-width:600px){:is(.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page,.v2-loading-page) h1{font-size:clamp(2.4rem,11.5vw,3.8rem)}}
+@media print{.v2-receipt-hero{background:#fff!important;color:#000!important}.v2-receipt-hero::after{display:none}}
