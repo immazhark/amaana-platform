@@ -408,3 +408,8 @@ Codex claims fix/ui-followup-audit-20261002 from verified f5458a9 after owner co
 ## 2026-10-03 IST — Follow-up audit delivered, ownership IDLE
 
 PR130 merged2044bf97364674e89c9fe558ea6808999d49892b. CI37047981721 green:62 Chromium first-attempt pass;392 units. All14 local responsive/axe/private journeys pass after pinned headless runtime restored. IntegrationCI37048619969 green, budgets unchanged, exact-tree acceptance reused. Railway7ee3334c-dbf2-45a1-81d3-83217b0c4cb7 SUCCESS on exact app merge. Live desktop assistance screenshot/DOM confirms continuous approved geometry, shared heading and no overflow. Task complete; owner UI review next. Main/production protected. StateIDLE.
+
+
+## 2026-10-03 — Policy navigation and nonvisual labels
+
+Codex continues fix/policy-navigation-20261003 from verified e81ba99. Confirmed deployed anchor headings obscured by sticky header and30px contents links; corrected shared scroll offsets,44px grid targets, short-screen sidebar reachability and900px breakpoint parity. Restored missing shared sr-only utility discovered in Privacy, loader and private notification label. Nine local browser tests pass (24 policy viewports/full axe, keyboard/fragment/short-screen and two delayed loader cases). Build/types/lint/content/global CSS/detector/20planner checks pass; JS819087/CSS345331 unchanged caps. Full acceptance appropriate for shared accessibility foundation; remote CI/merge/exact review deployment pending. Main protected.

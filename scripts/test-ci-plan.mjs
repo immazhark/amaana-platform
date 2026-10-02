@@ -93,3 +93,21 @@ test('private intake presentation selects its surfaces and existing transactiona
   assert.equal(planChanges(['src/app/request-assistance/page.tsx', 'src/app/api/assistance/route.ts']).mode, 'full');
   assert.equal(planChanges(['src/app/request-assistance/page.tsx'], { target: 'main' }).mode, 'full');
 });
+
+test('policy navigation styles retain reading and anchor checks without the whole-site matrix', () => {
+  const p = planChanges(['src/app/policy-experience.css', 'src/components/policy-toc.module.css', 'e2e/policy-navigation.spec.mjs']);
+  assert.equal(p.mode, 'focused');
+  assert.equal(p.database, false);
+  assert.equal(p.crossBrowser, false);
+  assert.ok(!p.tests.includes('public-shell.spec.mjs'));
+  for (const name of ['policy-navigation.spec.mjs', 'typography-hierarchy.spec.mjs', 'public-performance.spec.mjs']) assert.ok(p.tests.includes(name));
+  assert.equal(planChanges(['src/app/policy-experience.css', 'src/lib/auth.ts']).mode, 'full');
+  assert.equal(planChanges(['src/components/policy-toc.module.css'], { target: 'main' }).mode, 'full');
+});
+
+test('shared accessibility utility changes retain full global acceptance', () => {
+  const p = planChanges(['src/app/policy-experience.css', 'src/app/accessibility.css', 'e2e/policy-navigation.spec.mjs']);
+  assert.equal(p.mode, 'full');
+  assert.equal(p.database, true);
+  assert.equal(p.crossBrowser, true);
+});
