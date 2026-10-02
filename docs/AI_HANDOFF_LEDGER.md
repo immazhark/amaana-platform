@@ -373,3 +373,18 @@ Codex continues fix/sitewide-l1-banners-20261002 from verified integration 4f845
 
 
 PR126 first CI37002628565: 631 Chromium passes, one stale About prose-selector failure from prior heading wrapper. Application layout unchanged; corrected test selects final direct prose div and passes against production at1920/1440/390. New seeded six-width banners all passed. Fast/database green; corrected acceptance remains pending.
+
+
+## Delivery closure — site-wide approved L1 banners — 2026-10-02 IST
+
+State: `IDLE`. Outgoing agent: Codex; incoming agent: next available implementation agent. Integration: `phase-public-site-rebuild`. Completed task branch: `fix/sitewide-l1-banners-20261002`. PR [#126](https://github.com/immazhark/amaana-platform/pull/126) merged at `a6cea782514fdf49837af7a41e7d4aa178a4821e`; tested task head `494421b4e727ff65314b7ac82f9f91d273926b37`. Documentation closure branch: `docs/sitewide-banner-delivery-20261002`.
+
+Completed: all shared PageHero purposes use the approved L1 gradient, geometric lattice and right-side Arabic Amaana motif. Home, assistance success/tracking, donation acknowledgement, error/loading and admin headings share the same surface. Page purposes remain semantic. Mobile Home copy stays on the light field; global error uses an independent equivalent; acknowledgement print stays readable. Retired variant styles removed. Canonical content, media, actions, auth and fixed Companion preserved.
+
+Validation: production build/types, lint (three existing warnings), 392 units (six DB-dependent local skips), 15 planner regressions, content/factual/CSS/SVG guards, sixty local production page/viewport checks and eighteen axe audits passed. All six seeded banner tests passed at320/390/768/1024/1440/1920. PR CI37004033430 green:631 Chromium cases passed first attempt, one body-carousel1024px animation timing assertion passed on built-in retry;24 Firefox/WebKit smoke cases passed. The earlier631pass/1fail run exposed a stale About prose selector from prior PR124; corrected to the actual prose column and verified locally, with no layout change. No current failing required checks. JS819087/819200 and CSS346628/348160; caps unchanged.
+
+Integration CI37005131492 passed production build, budgets, database/fast guards and server smoke; exact-tree PR acceptance reused, duplicate browsers skipped. Railway review deployment `503b31d2-e2ff-4fbd-a76b-95a4a81eab50` SUCCESS on exact application SHA `a6cea782514fdf49837af7a41e7d4aa178a4821e`. Live Home, Contact and neonatal initiative DOM confirms identical surface, visible approved Arabic motif and no horizontal overflow. Deployed Contact screenshot inspected and saved. Live neonatal page retains full case narrative and ₹107,520; gallery remains supporting media.
+
+Current implementation task: complete. Exact next action: owner continues UI review on the deployed review website. Future page-specific banner exceptions are deferred until requested. One existing carousel geometry test has a timing-sensitive700ms wait and0.09375px first-attempt overshoot; retry passes, recorded for future test stabilization rather than broadening this banner change. Main/production promotion PR104 remains a separate protected checkpoint. Preserve all canonical factual/compliance/privacy/media/payment/indexing gates, approved SVG bytes and fixed Companion. Older active/pending entries below are historical and superseded.
+
+---
