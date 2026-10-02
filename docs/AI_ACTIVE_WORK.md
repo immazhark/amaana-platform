@@ -1,3 +1,17 @@
+# Latest delivery — follow-up UI audit — 2026-10-03 IST
+
+State: `IDLE`. Outgoing: Codex; incoming: next available implementation agent. Integration `phase-public-site-rebuild`. Application PR [#130](https://github.com/immazhark/amaana-platform/pull/130) merged as `2044bf97364674e89c9fe558ea6808999d49892b`; exact tested task head `93ee64399a30f834314c5cc56627e45231b7f38e`, tree `73b95c7c3cdf917871ac4e936bd247335e8a9563`.
+
+Completed: corrected Request Assistance Before/After checkerboard bands caused by inherited tiling sizes applied to legacy gradients; restored approved lattice/body surfaces and shared Before heading. Retired corresponding route overrides. Previously blocked state, Contact/Faith and Impact/Our Work surface verification resumed. Canonical content/privacy/payment/media/indexing, approved SVG bytes and fixed Companion preserved.
+
+Validation: build/types/lint (three unchanged warnings),18 planner regressions, content/editorial/SVG/CSS guards and detector pass. All14 local browser checks pass: six widths with full-page axe plus eight private assistance journeys. Desktop/mobile captures inspected. Initial local full Chromium failure was workspace socket permissions; the installed pinned headless runtime resolved it. Final PR CI37047981721 SUCCESS:62 Chromium checks passed on first attempt in2minutes;392 units pass, six database-dependent fast skips. Integration CI37048619969 SUCCESS; exact-tree PR browser acceptance reused, duplicate browsers/database skipped. JS819087/819200 and CSS344667/348160; caps unchanged.
+
+Railway review deployment `7ee3334c-dbf2-45a1-81d3-83217b0c4cb7` SUCCESS on exact application merge SHA. Live /request-assistance DOM and screenshot confirm approved dark lattice with repeat/no-repeat104px/100% layering, shared split heading, approved After body background and no horizontal overflow. Local/seeded tests cover320/390/768/1024/1440/1920; live verification is desktop. See UI_FOLLOWUP_AUDIT_2026-10-02.md.
+
+Current task: complete. Next: owner continues UI observations; no failing required task checks remain. Authenticated private staff-record states were outside this public audit. Production PR104/main promotion and separate release gates remain protected. Older entries below are historical.
+
+---
+
 # Follow-up UI verification — 2026-10-02 IST
 
 State: `CODEX_ACTIVE`. Branch `fix/ui-followup-audit-20261002`; verified integration base `f5458a98188fb8deed78b07a6fad0191453c1d9c`. Owner requests continued inspection and correction of existing issues. Browser/workspace access restored. No competing task PR; production PR104 remains protected. First inspect previously blocked deployed states and evidence closings, then forms/navigation and confirmed legacy conflicts. Preserve approved design, canonical facts/media/privacy/payment/indexing and fixed Companion. Confirmed assistance Before/After repeating-gradient defect and bypassed heading fixed. Build/types/lint, 18 planner tests, content/SVG/global CSS guards pass; JS819087/CSS344667 within unchanged caps. Local browser launch infrastructure-blocked, no responsive success claim. Focused seeded CI, merge and exact-source review deployment pending. See UI_FOLLOWUP_AUDIT_2026-10-02.md.
