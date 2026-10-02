@@ -60,7 +60,7 @@ for (const width of [390, 1440]) {
     await page.setViewportSize({ width, height: 1000 });
     for (const path of ['/impact', '/our-work']) {
       expect((await page.goto(path)).ok()).toBe(true);
-      const closing = page.locator('main > div > section').last();
+      const closing = page.locator('main section').filter({ has: page.getByText(path === '/impact' ? 'The evidence chain' : 'Follow the trail', { exact: true }) });
       const geometry = await closing.evaluate(node => {
         const shell = node.querySelector('.v2-shell');
         const first = shell.children[0].getBoundingClientRect();

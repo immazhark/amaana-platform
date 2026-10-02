@@ -76,9 +76,8 @@ for (const width of [1920, 1440, 1024, 768, 390, 320]) {
       if (await summary.evaluate(node => document.activeElement === node)) break;
     }
     await expect(summary).toBeFocused();
-    const focus = await summary.evaluate(node => ({ width: parseFloat(getComputedStyle(node).outlineWidth), offset: parseFloat(getComputedStyle(node).outlineOffset) }));
-    expect(focus.width).toBeGreaterThanOrEqual(2);
-    expect(focus.offset).toBeGreaterThanOrEqual(2);
+    await expect.poll(() => summary.evaluate(node => parseFloat(getComputedStyle(node).outlineWidth))).toBeGreaterThanOrEqual(2);
+    await expect.poll(() => summary.evaluate(node => parseFloat(getComputedStyle(node).outlineOffset))).toBeGreaterThanOrEqual(2);
     await page.keyboard.press('Enter');
     await expect(page.locator('details').first()).toHaveAttribute('open', '');
     const rows = await page.locator('details').first().locator('.v2-initiative-row').evaluateAll(nodes => nodes.map(node => {

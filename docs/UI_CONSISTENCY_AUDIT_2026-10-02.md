@@ -14,7 +14,7 @@ Owner requested a site review and confirmed-issue fixes while away. Reference is
 | Medium | Contact social and Faith editorial sections omitted the approved geometric body surface. | Reuse the existing body backdrop utility on those full-width sections; no new artwork or override layer. |
 | Medium | Impact and Our Work referenced a retired closing-grid rule; the evidence panel and CTA stacked without a layout. Impact evidence cards touched the next heading. | Replace the old class with an explicit shared responsive CSS module, style the supporting evidence panel and add a48px minimum section gap on Impact. The shared closing surface puts the geometric tile above its dark gradient; Faith closing reuses it. |
 | Low | Route CSS still defined the retired intent-card design, circle decoration, grid balancing and entrance animations, despite ParticipationCard owning the complete replacement. | Remove those obsolete rules. Keep Contact layout and the Get Involved section rules. Visibility no longer depends on a delayed route entrance animation. |
-| Verification | Carousel geometry acceptance used a fixed 700ms delay and intermittently sampled an unsettled position. | Poll actual settled alignment with the existing 2px tolerance. Do not relax the geometry requirement. |
+| Verification | Carousel geometry acceptance used a fixed 700ms delay and intermittently sampled an unsettled position. | Poll actual settled alignment with the existing 2px tolerance. Do not relax the geometry requirement. Keyboard focus checks also wait for the visible outline without reducing the required width/offset. |
 
 ## Coverage and findings classification
 
@@ -28,6 +28,8 @@ Owner requested a site review and confirmed-issue fixes while away. Reference is
 - Mechanical detector warnings concern existing privacy/receipt disclaimer accent borders. They are intentional semantic notices and do not warrant unrelated redesign.
 
 ## Delivery and remaining boundaries
+
+Initial153-case CI completed151pass, one retry-passing focus check and one failure in a new test that incorrectly selected Our Work’s final CTA instead of its evidence section. Corrected that selector and stabilized the focus observation. Final revision acceptance is required before merge.
 
 Application task branch: `fix/ui-consistency-audit-20261002`. Faith backdrop/closing and Impact/Our Work closing geometry/spacing regressions require seeded CI because those pages depend on PostgreSQL locally. Seeded focused CI, merge and exact-source Railway review deployment verification are pending at this checkpoint. CI maps the affected presentation styles to their banner, journey, participation, typography, chrome, performance and regression suites. Unknown/server/security/payment/config changes and releases continue to select full verification.
 
