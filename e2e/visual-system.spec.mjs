@@ -261,7 +261,7 @@ test('About editorial body uses the canonical shell without a double gutter', as
       const shell = document.querySelector('.canonical-body--about')?.getBoundingClientRect();
       const block = document.querySelector('.canonical-body--about .canonical-block');
       const heading = block?.querySelector('h2')?.getBoundingClientRect();
-      const copy = block?.querySelector(':scope > div')?.getBoundingClientRect();
+      const copy = block?.querySelector(':scope > div:last-child')?.getBoundingClientRect();
       if (!shell || !heading || !copy) return null;
       return {
         shell: { left: shell.left, right: shell.right },
