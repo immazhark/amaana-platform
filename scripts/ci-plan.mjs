@@ -5,7 +5,7 @@ import { pathToFileURL } from 'node:url';
 const groups = [
   // Specific page families precede broad page mappings: no whole-site matrix for scoped presentation.
   { paths: /^(src\/app\/policy-experience\.css|src\/components\/policy-toc(?:\.tsx|\.module\.css)|e2e\/policy-navigation\.spec\.mjs)$/, tests: ['policy-navigation.spec.mjs', 'typography-hierarchy.spec.mjs'] },
-  { paths: /^(src\/app\/request-assistance\/(page\.tsx|assistance-surface\.module\.css)|src\/app\/assistance-wow\.css|e2e\/assistance-surface\.spec\.mjs)$/, tests: ['assistance-surface.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'page-banner-standardization.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  { paths: /^(src\/app\/request-assistance\/(page\.tsx|assistance-surface\.module\.css)|src\/app\/assistance-wow\.css|src\/components\/assistance-form\.module\.css|e2e\/assistance-surface\.spec\.mjs)$/, tests: ['assistance-surface.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'page-banner-standardization.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/app\/(get-involved|contact|appeals)\/(page\.tsx|[^/]+\.module\.css)$/, tests: ['ui-consistency.spec.mjs', 'participation-contact.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/components\/(evidence-pathway\.module\.css|trust-evidence-boundary\.tsx)$/, tests: ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/app\/faith-and-reflections\/page\.tsx$/, tests: ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },

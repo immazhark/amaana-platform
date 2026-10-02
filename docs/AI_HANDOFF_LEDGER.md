@@ -422,3 +422,8 @@ PR [#132](https://github.com/immazhark/amaana-platform/pull/132) merged as5e505c
 Railway review4652b782-1492-4c60-8601-531c4e83f729 SUCCESS on exact application merge. Live desktop Privacy fragment screenshot/DOM verified heading152.33px vs header bottom81px, full-width312px contents rows at least44px, viewport-bounded sidebar and1px clipped nonvisual label still named in the accessibility tree, no overflow. Mobile/six-width/short-screen proof is local/seeded. Documentation closure branch docs/policy-audit-delivery-20261003; ownership IDLE.
 
 Main/production promotion is protected. Private staff-record states were not opened; the shared CSS correction applies to their existing nonvisual label without changing record/permission/action behavior. Approved artwork, canonical content/factual locks, media/privacy/payment/indexing and fixed Companion remain intact. Next: owner continues UI observations; new confirmed defects use a separate atomic task.
+
+
+## 2026-10-03 — Assistance form progress and actions
+
+Codex claims fix/public-controls-20261003 from verified b8d7555. Live intake progress12.16px/disabled opacity.48 and broken scoped global-button selector confirmed. Mobile width masked by existing global styles; desktop forward action left-aligned. Scoped presentation correction and six-width/all-step verification pending; no transactional logic changes. Main protected.

@@ -1,3 +1,9 @@
+# Assistance progress and actions audit — 2026-10-03 IST
+
+State: `CODEX_ACTIVE`. Branch `fix/public-controls-20261003`, verified integration base `b8d75553b254705baabd42f4a0f80f57a406ddcc`. Owner authorizes continued UI/UX checking and fixes. Only protected production PR104 is open. Confirmed live assistance progress labels12.16px and disabled opacity.48; CSS-module action selector does not match global v2-button, leaving desktop forward action left-aligned. Mobile global rules currently mask width mismatch. Scoped presentation fixed;19 local browser checks pass across24 step/viewports and seven private journeys. Build/types/lint/content/CSS guards and20planner checks pass, CSS345202/JavaScript819031 within unchanged caps. Publish/CI/merge/exact review delivery next. See ASSISTANCE_PROGRESS_AUDIT_2026-10-03.md. Preserve canonical content, artwork, payment/privacy/indexing and fixed Companion.
+
+---
+
 # Latest delivery — policy navigation and accessibility — 2026-10-03 IST
 
 State: `IDLE`. Outgoing: Codex; incoming: next available implementation agent. Integration `phase-public-site-rebuild`. Application PR [#132](https://github.com/immazhark/amaana-platform/pull/132) merged as `5e505ce4758f7cf8ed6fd6d4a0a7538e1e509ab4`; exact tested task head `0bf13028804bdb67045c41ef660d66eb65329b08`, tree `77b4c8175cc11072c3d7108a098bbf99157d79ab`. Documentation closure branch `docs/policy-audit-delivery-20261003`.
