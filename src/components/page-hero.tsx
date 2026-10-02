@@ -47,11 +47,11 @@ export function PageHero({
   id,
   className = "",
 }: PageHeroProps) {
-  const classes = ["page-hero", `page-hero--${variant}`, className].filter(Boolean).join(" ");
+  const classes = ["page-hero", "page-hero--level1", className].filter(Boolean).join(" ");
 
   return (
-    <section className={classes} aria-labelledby={id || undefined}>
-      {variant === "level1" && <div className="amaana-backdrop-emblem" aria-hidden="true" />}
+    <section className={classes} aria-labelledby={id || undefined} data-hero-purpose={variant}>
+      <div className="amaana-backdrop-emblem" aria-hidden="true" />
       <div className="page-hero__shell">
         <div className="page-hero__grid">
           <div className="page-hero__copy">

@@ -1,3 +1,13 @@
+# Site-wide approved L1 banners — 2026-10-02 IST
+
+State: `CODEX_ACTIVE`. Integration base `4f8459967845b2a7bc988adaaf62b073a624faf6`; task branch `fix/sitewide-l1-banners-20261002`. Owner explicitly requests the approved L1 gradient/geometric/Arabic-right artwork on every website header banner, with future per-page exceptions deferred. No other implementation writer or task PR is active; only protected production PR #104 is open. Current task: audit shared PageHero and custom/transactional banners, standardize surfaces without changing canonical content or interactions, then focused validation, integration PR/CI/merge and exact-source preview verification. Prior live browser transport failure is historical; retry verification for this delivery. Preserve factual/media/privacy/payment gates, approved SVG bytes and fixed Companion. Older entries below are historical.
+
+Local validation complete: production build/typecheck, lint (three existing warnings), 392 unit tests (six DB-dependent local skips), 15 CI planner regressions, content/factual/CSS guards and all six approved SVG hashes pass. Sixty production page/viewport combinations and eighteen axe audits pass at 320/390/768/1024/1440/1920; local Home uses the production hero fixture and DB-backed initiative is reserved for seeded CI. Desktop/mobile rendered inspection passed. Final JS 819087/819200 and CSS 346628/348160; fixed budgets unchanged. Implementation complete; publication, seeded full shared-surface CI, green merge and exact-source review deployment remain pending.
+
+Delivery checkpoint: PR #126, head 481d009eb1e19ced645dbd1f41dd4f4a26077812. CI 37002628565 fast/database green; Chromium 631 passed, one pre-existing stale About prose selector failed. The heading wrap introduced in prior PR124 caused the test to measure the left heading as prose. Selector corrected to the actual last direct prose div; unchanged production layout passes locally at 1920/1440/390. All six actual seeded banner tests passed. Corrected acceptance run and deployment remain pending.
+
+---
+
 # Latest delivery — body section headings and footer spacing — 2026-10-02 UTC
 
 State: `IDLE`. Outgoing agent: Codex; incoming agent: next available implementation agent. Integration: `phase-public-site-rebuild`. Completed task branch: `fix/section-headings-footer-spacing-20261002`. PR [#124](https://github.com/immazhark/amaana-platform/pull/124) merged at `892aa722294b2ebb307e6934a444fad3ffee5361`; task head `d837253610ce26e07c5784c21d0edaae84d101ad`. Documentation closure branch: `docs/heading-footer-delivery-20261002`.

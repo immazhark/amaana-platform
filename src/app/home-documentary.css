@@ -4,12 +4,12 @@
   position:relative;
   overflow:hidden;
   padding:0;
-  color:#fffdf8;
+  color:var(--af-color-navy-950);
   background:
     radial-gradient(circle at 82% 20%,rgb(224 179 24 / 18%),transparent 24%),
     linear-gradient(108deg,var(--af-color-navy-950) 0%,var(--af-color-navy-800) 54%,var(--af-color-blue-600) 100%)
 }
-.v3-home-banner>.amaana-backdrop-emblem{display:none}
+
 .v3-home-banner-carousel{
   width:100%;
   max-width:none;
@@ -61,17 +61,17 @@
   justify-content:center;
   align-items:flex-start
 }
-.v3-home-banner-kicker{margin:0 0 .3rem;color:var(--af-color-gold-soft);font-size:.7rem;font-weight:850;letter-spacing:.14em;text-transform:uppercase}
-.v3-home-banner-brandline{display:block;max-width:21ch;color:#fffdf8;font:500 clamp(2.15rem,3vw,3rem)/.94 var(--af-font-display);letter-spacing:-.045em;text-wrap:balance;text-shadow:0 16px 45px rgb(0 0 0 / 24%)}
-.v3-home-banner-content h2{max-width:28ch;margin:.45rem 0 0;color:var(--af-color-gold-soft);font:500 clamp(1rem,1.25vw,1.25rem)/1.08 var(--af-font-display);letter-spacing:-.025em;text-wrap:balance}
-.v3-home-banner-content>p:not(.v3-home-banner-kicker){max-width:38rem;margin:.45rem 0 0;color:rgb(255 253 248 / 84%);font-size:clamp(.88rem,1vw,.98rem);line-height:1.42;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.v3-home-banner-kicker{margin:0 0 .3rem;color:var(--af-color-gold-ink);font-size:.7rem;font-weight:850;letter-spacing:.14em;text-transform:uppercase}
+.v3-home-banner-brandline{display:block;max-width:21ch;color:var(--af-color-navy-950);font:500 clamp(2.15rem,3vw,3rem)/.94 var(--af-font-display);letter-spacing:-.045em;text-wrap:balance;text-shadow:none}
+.v3-home-banner-content h2{max-width:28ch;margin:.45rem 0 0;color:var(--af-color-gold-ink);font:500 clamp(1rem,1.25vw,1.25rem)/1.08 var(--af-font-display);letter-spacing:-.025em;text-wrap:balance}
+.v3-home-banner-content>p:not(.v3-home-banner-kicker){max-width:38rem;margin:.45rem 0 0;color:#4d5d72;font-size:clamp(.88rem,1vw,.98rem);line-height:1.42;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .v3-home-banner-metric{display:flex;align-items:baseline;gap:.65rem;margin-top:.45rem}
-.v3-home-banner-metric strong{color:#fffdf8;font:500 clamp(1.55rem,2.3vw,2.35rem)/1 var(--af-font-display);font-variant-numeric:tabular-nums;white-space:nowrap}
-.v3-home-banner-metric span{max-width:20rem;color:var(--af-color-gold-soft);font-size:.76rem;font-weight:800;line-height:1.3}
+.v3-home-banner-metric strong{color:var(--af-color-navy-950);font:500 clamp(1.55rem,2.3vw,2.35rem)/1 var(--af-font-display);font-variant-numeric:tabular-nums;white-space:nowrap}
+.v3-home-banner-metric span{max-width:20rem;color:var(--af-color-gold-ink);font-size:.76rem;font-weight:800;line-height:1.3}
 .v3-home-banner-actions{display:flex;flex-wrap:wrap;gap:.55rem;margin-top:.65rem}
 .v3-home-banner-actions .v3-btn{min-height:2.55rem;padding:.56rem .95rem;font-size:.86rem}
-.v3-home-banner-actions .v3-btn.secondary{color:#fffdf8;border-color:rgb(255 255 255 / 42%);background:rgb(18 34 57 / 26%);backdrop-filter:blur(10px)}
-.v3-home-banner-actions .v3-btn:focus-visible{outline:3px solid #fff;outline-offset:4px}
+.v3-home-banner-actions .v3-btn.secondary{color:var(--af-color-navy-950);border-color:rgb(29 49 80 / 28%);background:rgb(255 255 255 / 64%);backdrop-filter:blur(10px)}
+.v3-home-banner-actions .v3-btn:focus-visible{outline:3px solid var(--af-color-navy-800);outline-offset:4px}
 .v3-home-banner-slide--story{background:var(--af-color-navy-950);background-image:linear-gradient(108deg,var(--af-color-navy-950) 0%,var(--af-color-navy-800) 45%,var(--af-color-blue-600) 100%)}
 .v3-home-banner-slide--story .v3-home-banner-shade{background:linear-gradient(90deg,rgb(18 34 57 / 99%) 0%,rgb(29 49 80 / 94%) 46%,rgb(70 111 170 / 34%) 72%,transparent 90%)}
 .v3-home-banner-slide--appeal{background:radial-gradient(circle at 82% 24%,rgb(224 179 24 / 22%),transparent 24%),linear-gradient(108deg,var(--af-color-navy-950),var(--af-color-navy-800) 58%,var(--af-color-blue-600))}
@@ -196,3 +196,6 @@
 @media(prefers-reduced-motion:reduce){.v3-proof-item strong{animation:none}}
 
 .v3-home-story-logo img{display:block;width:100%;height:auto;object-fit:contain}
+
+/* Stacked L1 banner: copy stays on the light field, media follows below. */
+@media(max-width:600px){.v3-home-banner-content,.v3-home-banner-slide--story .v3-home-banner-content{justify-content:flex-start}.v3-home-banner-media{top:55%;bottom:0;-webkit-mask-image:linear-gradient(180deg,transparent,#000 28%);mask-image:linear-gradient(180deg,transparent,#000 28%)}.v3-home-story-logo{top:auto;bottom:1rem}}

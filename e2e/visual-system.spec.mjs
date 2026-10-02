@@ -261,7 +261,7 @@ test('About editorial body uses the canonical shell without a double gutter', as
       const shell = document.querySelector('.canonical-body--about')?.getBoundingClientRect();
       const block = document.querySelector('.canonical-body--about .canonical-block');
       const heading = block?.querySelector('h2')?.getBoundingClientRect();
-      const copy = block?.querySelector(':scope > div')?.getBoundingClientRect();
+      const copy = block?.querySelector(':scope > div:last-child')?.getBoundingClientRect();
       if (!shell || !heading || !copy) return null;
       return {
         shell: { left: shell.left, right: shell.right },
@@ -299,11 +299,11 @@ test('policy layout keeps its sidebar readable on wide monitors', async ({ page 
   expect(metrics.sectionsWidth).toBeGreaterThan(760);
 });
 
-test('page hero variants stay visually differentiated inside one canonical system', async ({ page }) => {
+test('all page purposes use the approved L1 banner surface', async ({ page }) => {
   const samples = [
     ['/about', '.page-hero--level1'],
-    ['/request-assistance', '.page-hero--action'],
-    ['/contact', '.page-hero--information'],
+    ['/request-assistance', '.page-hero--level1'],
+    ['/contact', '.page-hero--level1'],
   ];
   const backgrounds = [];
   for (const [path, selector] of samples) {
@@ -312,7 +312,7 @@ test('page hero variants stay visually differentiated inside one canonical syste
     await expect(hero).toBeVisible();
     backgrounds.push(await hero.evaluate(node => `${getComputedStyle(node).backgroundColor}|${getComputedStyle(node).backgroundImage}`));
   }
-  expect(new Set(backgrounds).size).toBeGreaterThanOrEqual(3);
+  expect(new Set(backgrounds).size).toBe(1);
 });
 
 test('mobile programme carousel signals scrolling through a next-card preview', async ({ page }) => {
