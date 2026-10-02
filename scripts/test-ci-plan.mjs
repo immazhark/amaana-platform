@@ -49,3 +49,12 @@ test('shared public heading and footer styles use comprehensive focused presenta
   assert.ok(plan.tests.includes('initiative-detail.spec.mjs'));
   assert.equal(planChanges(['src/app/api/webhooks/razorpay/route.ts']).mode, 'full');
 });
+
+
+test("owner screenshot acceptance edits retain focused verification", () => {
+  const plan = planChanges(["e2e/owner-screenshot-polish.spec.mjs"]);
+  assert.equal(plan.mode, "focused");
+  assert.equal(plan.database, false);
+  assert.equal(plan.crossBrowser, false);
+  assert.ok(plan.tests.includes("owner-screenshot-polish.spec.mjs"));
+});

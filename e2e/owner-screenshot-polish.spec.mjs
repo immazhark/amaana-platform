@@ -70,9 +70,11 @@ for (const width of [1920, 1440, 1024, 768, 390, 320]) {
     const numberBox = await number.boundingBox();
     const titleBox = await summary.locator('.v2-cause-summary-title').boundingBox();
     expect(numberBox.x + numberBox.width).toBeLessThanOrEqual(titleBox.x - 4);
-    await summary.focus();
-    await page.keyboard.press("Shift+Tab");
-    await page.keyboard.press("Tab");
+    // Reach the disclosure through actual keyboard navigation, preserving focus-visible modality.
+    for (let step = 0; step < 40; step++) {
+      await page.keyboard.press("Tab");
+      if (await summary.evaluate(node => document.activeElement === node)) break;
+    }
     await expect(summary).toBeFocused();
     const focus = await summary.evaluate(node => ({ width: parseFloat(getComputedStyle(node).outlineWidth), offset: parseFloat(getComputedStyle(node).outlineOffset) }));
     expect(focus.width).toBeGreaterThanOrEqual(2);
