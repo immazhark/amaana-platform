@@ -413,3 +413,12 @@ PR130 merged2044bf97364674e89c9fe558ea6808999d49892b. CI37047981721 green:62 Chr
 ## 2026-10-03 — Policy navigation and nonvisual labels
 
 Codex continues fix/policy-navigation-20261003 from verified e81ba99. Confirmed deployed anchor headings obscured by sticky header and30px contents links; corrected shared scroll offsets,44px grid targets, short-screen sidebar reachability and900px breakpoint parity. Restored missing shared sr-only utility discovered in Privacy, loader and private notification label. Nine local browser tests pass (24 policy viewports/full axe, keyboard/fragment/short-screen and two delayed loader cases). Build/types/lint/content/global CSS/detector/20planner checks pass; JS819087/CSS345331 unchanged caps. Full acceptance appropriate for shared accessibility foundation; remote CI/merge/exact review deployment pending. Main protected.
+
+
+## 2026-10-03 IST — Policy audit delivered, ownership IDLE
+
+PR [#132](https://github.com/immazhark/amaana-platform/pull/132) merged as5e505ce4758f7cf8ed6fd6d4a0a7538e1e509ab4. Tested remote head0bf13028804bdb67045c41ef660d66eb65329b08 exactly matches local tree77b4c8175cc11072c3d7108a098bbf99157d79ab. PR CI37050971480 SUCCESS:657 Chromium first-attempt pass (10.4minutes),24 Firefox/WebKit checks pass,392 units pass (six database-dependent fast skips), isolated database green. Integration push37052641854 SUCCESS; exact-tree acceptance reused, duplicate browsers skipped; build/coverage/database/smoke green. JavaScript819087/819200 and CSS345331/348160, caps unchanged.
+
+Railway review4652b782-1492-4c60-8601-531c4e83f729 SUCCESS on exact application merge. Live desktop Privacy fragment screenshot/DOM verified heading152.33px vs header bottom81px, full-width312px contents rows at least44px, viewport-bounded sidebar and1px clipped nonvisual label still named in the accessibility tree, no overflow. Mobile/six-width/short-screen proof is local/seeded. Documentation closure branch docs/policy-audit-delivery-20261003; ownership IDLE.
+
+Main/production promotion is protected. Private staff-record states were not opened; the shared CSS correction applies to their existing nonvisual label without changing record/permission/action behavior. Approved artwork, canonical content/factual locks, media/privacy/payment/indexing and fixed Companion remain intact. Next: owner continues UI observations; new confirmed defects use a separate atomic task.

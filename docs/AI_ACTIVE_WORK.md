@@ -1,3 +1,19 @@
+# Latest delivery — policy navigation and accessibility — 2026-10-03 IST
+
+State: `IDLE`. Outgoing: Codex; incoming: next available implementation agent. Integration `phase-public-site-rebuild`. Application PR [#132](https://github.com/immazhark/amaana-platform/pull/132) merged as `5e505ce4758f7cf8ed6fd6d4a0a7538e1e509ab4`; exact tested task head `0bf13028804bdb67045c41ef660d66eb65329b08`, tree `77b4c8175cc11072c3d7108a098bbf99157d79ab`. Documentation closure branch `docs/policy-audit-delivery-20261003`.
+
+Completed: native policy headings clear sticky chrome; full-width 44px contents targets, keyboard focus and responsive breakpoint parity restored; long desktop contents scroll within short viewports. Restored missing global sr-only utility for Privacy, navigation-loader and private notification labels without removing their accessibility names or changing legal content/action behavior.
+
+Validation: nine local browser tests pass across 24 policy page/viewports at320/390/768/1024/1440/1920 with full axe, real keyboard jumps, direct fragments, short1440x600 sidebar reachability and delayed-loader states. Build/types/lint (three unchanged warnings),20 planner regressions, content/editorial/global CSS/detector/diff checks pass. PR CI37050971480 SUCCESS:657 Chromium checks passed on first attempt in10.4minutes;24 Firefox/WebKit smoke checks pass;392 unit checks pass with six database-dependent fast skips; isolated database verification passes. Shared accessibility CSS correctly retained full acceptance; policy-only paths now have focused coverage.
+
+Integration push CI37052641854 SUCCESS: exact tested tree preserved and duplicate browser suite skipped; production build, coverage, database and smoke checks green. Unchanged caps: JavaScript819087/819200; CSS345331/348160.
+
+Railway review deployment `4652b782-1492-4c60-8601-531c4e83f729` SUCCESS on exact application merge SHA. Live desktop Privacy #policy-03 screenshot/DOM confirms target heading152.33px below header bottom81px, full-width312px contents rows at least44px, viewport-bounded scrolling sidebar, clipped1px sr-only label still present in named accessibility region, and no horizontal overflow. Six-width/mobile/short-screen coverage is local/seeded; live proof is desktop.
+
+Current task: complete. Next: owner continues UI observations; next agent inspects new confirmed defects in a separate atomic branch. Private authenticated staff-record states were not opened. Preserve canonical factual/media/privacy/payment/indexing gates, approved artwork and fixed Companion. Production PR104/main promotion remains protected. See POLICY_NAVIGATION_AUDIT_2026-10-03.md. Older entries below are historical.
+
+---
+
 # Policy navigation audit — 2026-10-03 IST
 
 State: `CODEX_ACTIVE`. Branch `fix/policy-navigation-20261003`; verified integration base `e81ba99fef5455f8d065853993d5e2b8adc4e6d6`. Owner requests continued checking and correction. Only protected production PR104 is open; no competing writer. Confirmed deployed Privacy contents links are30px high and #policy-03 settles with its heading at47.56px beneath81px sticky header. Fix shared policy navigation and anchor offsets across Privacy/Terms/Donation/Refund without changing legal content. Inspect short-screen sidebar reachability and breakpoint parity. Policy anchor/link/sidebar/breakpoint corrections and missing shared sr-only utility implemented. Nine local browser tests pass across24 policy page/viewports, full axe, short-screen/fragment and delayed-loader scenarios. Build/types/lint/content/global CSS/detector and20planner checks pass; JS819087/CSS345331 within caps. Shared accessibility correction intentionally retains full exact-head acceptance. Publication/CI/integration review delivery next. See POLICY_NAVIGATION_AUDIT_2026-10-03.md. Preserve approved media/backgrounds/factual/privacy/payment/indexing and fixed Companion.
