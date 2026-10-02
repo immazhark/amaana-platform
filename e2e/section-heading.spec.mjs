@@ -17,10 +17,12 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
           const line = getComputedStyle(label, '::before');
           return { label: label.textContent.trim(), title: title.textContent.trim(), intro: intro.textContent.trim(), lineWidth: parseFloat(line.width), lineContent: line.content, horizontal: b.left >= a.right - 1, stacked: b.top >= a.bottom + 19, baselineGap: Math.abs(b.bottom - a.bottom), weight: getComputedStyle(title).fontWeight };
         });
-        return { headings, top: parseFloat(getComputedStyle(document.querySelector('.footer-lead')).paddingTop), bottom: parseFloat(getComputedStyle(document.querySelector('.footer-note')).paddingBottom), overflow: document.documentElement.scrollWidth > innerWidth + 1, companion: getComputedStyle(document.querySelector('.amaana-companion')).position };
+        return { headings, gallery: Boolean(document.querySelector("#campaign-gallery")), story: document.querySelector("#programme-story .campaign-story-copy")?.textContent.trim(), top: parseFloat(getComputedStyle(document.querySelector('.footer-lead')).paddingTop), bottom: parseFloat(getComputedStyle(document.querySelector('.footer-note')).paddingBottom), overflow: document.documentElement.scrollWidth > innerWidth + 1, companion: getComputedStyle(document.querySelector('.amaana-companion')).position };
       });
-      // The review timeline has full process content on the right, rather than a subtitle.
-      if (path !== "/how-we-verify") expect(result.headings.length, path).toBeGreaterThan(0);
+      // Full process/story content retains its composition; photograph introductions exist only with a gallery.
+      const programme = path === "/our-work/emergency-neonatal-medical-aid";
+      if (programme) expect(result.story?.length, path).toBeGreaterThan(0);
+      if (path !== "/how-we-verify" && (!programme || result.gallery)) expect(result.headings.length, path).toBeGreaterThan(0);
       for (const heading of result.headings) {
         expect(heading.label.length, path).toBeGreaterThan(0);
         expect(heading.title.length, path).toBeGreaterThan(0);
