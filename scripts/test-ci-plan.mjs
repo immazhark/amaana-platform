@@ -71,3 +71,14 @@ test('state and shared participation CSS retain their presentation and journey r
   assert.equal(planChanges(['src/components/evidence-pathway.module.css']).mode, 'focused');
   assert.equal(planChanges(['src/components/donation-acknowledgement-client.tsx']).mode, 'full');
 });
+
+
+test('audited page and evidence layout paths avoid the whole-site shell matrix', () => {
+  const p = planChanges(['src/app/contact/page.tsx', 'src/app/contact/contact-audit.module.css', 'src/app/faith-and-reflections/page.tsx', 'src/app/impact/page.tsx', 'src/app/our-work/page.tsx', 'src/components/trust-evidence-boundary.tsx', 'src/components/evidence-pathway.module.css']);
+  assert.equal(p.mode, 'focused');
+  assert.ok(!p.tests.includes('public-shell.spec.mjs'));
+  for (const t of ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'typography-hierarchy.spec.mjs', 'public-seo.spec.mjs', 'participation-contact.spec.mjs', 'initiative-detail.spec.mjs']) assert.ok(p.tests.includes(t));
+  assert.equal(planChanges(['src/components/section-heading.module.css']).tests.includes('public-shell.spec.mjs'), true);
+  assert.equal(planChanges(['src/app/impact/page.tsx', 'src/lib/public-page-data.ts']).mode, 'full');
+  assert.equal(planChanges(['src/app/contact/page.tsx'], {release:true}).mode, 'full');
+});

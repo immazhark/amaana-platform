@@ -3,8 +3,11 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
-  { paths: /^src\/components\/evidence-pathway\.module\.css$/, tests: ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs'] },
-  { paths: /^src\/app\/faith-and-reflections\/page\.tsx$/, tests: ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'public-shell.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  // Specific page families precede broad page mappings: no whole-site matrix for scoped presentation.
+  { paths: /^src\/app\/(get-involved|contact|appeals)\/(page\.tsx|[^/]+\.module\.css)$/, tests: ['ui-consistency.spec.mjs', 'participation-contact.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  { paths: /^src\/components\/(evidence-pathway\.module\.css|trust-evidence-boundary\.tsx)$/, tests: ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  { paths: /^src\/app\/faith-and-reflections\/page\.tsx$/, tests: ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  { paths: /^src\/app\/(impact|our-work)\/page\.tsx$/, tests: ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'public-seo.spec.mjs', 'initiative-detail.spec.mjs', 'carousel-acceptance.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/app\/state-experience\.css$/, tests: ['ui-consistency.spec.mjs', 'page-banner-standardization.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/app\/home-experience\.css$/, tests: ['ui-consistency.spec.mjs', 'participation-contact.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^e2e\/(ui-consistency|body-carousel-new)\.spec\.mjs$/, tests: ['ui-consistency.spec.mjs', 'body-carousel-new.spec.mjs'] },
@@ -15,7 +18,6 @@ const groups = [
   { paths: /^e2e\/owner-screenshot-polish\.spec\.mjs$/, tests: ['owner-screenshot-polish.spec.mjs'] },
   { paths: /^e2e\/section-heading\.spec\.mjs$/, tests: ['section-heading.spec.mjs'] },
   { paths: /^src\/components\/(participation-card|social-icon)(\.|\/)/, tests: ['participation-contact.spec.mjs', 'site-chrome-footer.spec.mjs', 'typography-hierarchy.spec.mjs'] },
-  { paths: /^src\/app\/(get-involved|contact|appeals)\/(page\.tsx|[^/]+\.module\.css)$/, tests: ['participation-contact.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/components\/work-visual-placeholder\.module\.css$/, tests: ['participation-contact.spec.mjs', 'background-system.spec.mjs', 'owner-screenshot-polish.spec.mjs'] },
   { paths: /^e2e\/(participation-contact|visual-system)\.spec\.mjs$/, tests: ['participation-contact.spec.mjs', 'visual-system.spec.mjs'] },
   // Planner-only changes run their mandatory Node regression suite in plan;

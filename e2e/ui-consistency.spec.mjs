@@ -73,7 +73,13 @@ for (const width of [390, 1440]) {
       if (path === '/impact') {
         const gap = await page.evaluate(() => document.querySelector('#impact-wall-title').getBoundingClientRect().top - document.querySelector('[data-trust-evidence-boundary]').getBoundingClientRect().bottom);
         expect(gap).toBeGreaterThanOrEqual(48);
+        await expect(page.locator('[data-trust-evidence-boundary] .card')).toHaveCount(3);
       }
     }
+    expect((await page.goto('/transparency')).ok()).toBe(true);
+    const boundary = page.locator('[data-trust-evidence-boundary="transparency"]');
+    await expect(boundary.locator('.card')).toHaveCount(3);
+    await expect(boundary).toContainText('Proofs that remain outside the public site');
+    expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
   });
 }

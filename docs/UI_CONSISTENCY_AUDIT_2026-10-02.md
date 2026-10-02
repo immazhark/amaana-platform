@@ -23,7 +23,7 @@ Owner requested a site review and confirmed-issue fixes while away. Reference is
 - Final targeted regression checks run at 320/390/768/1024/1440/1920: state heading foreground and size, state-panel accessibility, Home hover/focus, Contact heading geometry and full Contact axe scan. All six pass locally.
 - Ten carousel interaction/geometry cases pass locally, including drag, keyboard controls, reduced motion, rapid transitions and autoplay pause.
 - Nine existing Home/portfolio screenshot and interaction cases pass locally. The participation/contact suite reached and passed its Contact/Get Involved assertions at all six widths but cannot finish its database-backed Appeals segment locally; seeded CI remains the authoritative end-to-end gate.
-- Build, types, lint (zero errors; three unchanged warnings), editorial check, root CSS architecture and 16 planner regressions pass. JavaScript is unchanged at 819,087 / 819,200 bytes; CSS is 344,368 / 348,160 bytes. Budget caps remain unchanged.
+- Build, types, lint (zero errors; three unchanged warnings), editorial check, root CSS architecture and 17 planner regressions pass. JavaScript is unchanged at 819,087 / 819,200 bytes; CSS is 344,368 / 348,160 bytes. Budget caps remain unchanged.
 - Early Contact contrast warnings sampled a legacy entrance animation mid-opacity. They did not justify a palette change. The removed obsolete animation and final full Contact scans resolve this transient reading issue.
 - Mechanical detector warnings concern existing privacy/receipt disclaimer accent borders. They are intentional semantic notices and do not warrant unrelated redesign.
 
