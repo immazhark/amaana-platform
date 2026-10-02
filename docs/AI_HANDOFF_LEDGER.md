@@ -403,3 +403,8 @@ PR128 mergedc670a94239aeeed83a72c74b6ce5338a630aeb20. Final tested headb60aa42e8
 ## 2026-10-02 — Follow-up UI audit
 
 Codex claims fix/ui-followup-audit-20261002 from verified f5458a9 after owner continuation. Browser access restored; previously blocked states/evidence surfaces verified at desktop. Request Assistance Before/After gradients were repeated at shared tile sizes, producing checkerboard bands. Corrected artwork layering and shared Before heading, removed obsolete route overrides. Build/types/lint/content/SVG/CSS and18planner checks pass; unchanged budgets JS819087/CSS344667. Local browser launch is infrastructure-blocked; six-width seeded CI and existing journeys pending. Main protected.
+
+
+## 2026-10-03 IST — Follow-up audit delivered, ownership IDLE
+
+PR130 merged2044bf97364674e89c9fe558ea6808999d49892b. CI37047981721 green:62 Chromium first-attempt pass;392 units. All14 local responsive/axe/private journeys pass after pinned headless runtime restored. IntegrationCI37048619969 green, budgets unchanged, exact-tree acceptance reused. Railway7ee3334c-dbf2-45a1-81d3-83217b0c4cb7 SUCCESS on exact app merge. Live desktop assistance screenshot/DOM confirms continuous approved geometry, shared heading and no overflow. Task complete; owner UI review next. Main/production protected. StateIDLE.
