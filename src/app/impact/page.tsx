@@ -1,3 +1,4 @@
+import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel } from "@/components/body-carousel";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -62,7 +63,7 @@ export default async function ImpactPage() {
       <section className="v2-section paper v2-impact-wall-section" id="evidence" aria-labelledby="impact-wall-title">
         <div className="v2-shell">
           <TrustEvidenceBoundary context="impact" />
-          <div className="v2-section-head"><div><p className="v2-section-label">Wall of impact</p><h2 className="v2-section-title" id="impact-wall-title">See what each initiative achieved.</h2></div><p className="v2-section-intro">Explore an outcome, then open the initiative to understand the work behind it.</p></div>
+          <SectionHeading eyebrow={<>Wall of impact</>} title={<>See what each initiative achieved.</>} subtitle={<>Explore an outcome, then open the initiative to understand the work behind it.</>} id="impact-wall-title" />
           {initiatives.length > 0 ? <div className="v2-impact-wall">{initiatives.map((item, index) => {
             const thumbnail = selectIdentityPublicImage(item.mediaAssets) ?? null;
             return <Link href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id} aria-label={`Open ${item.title}`}>

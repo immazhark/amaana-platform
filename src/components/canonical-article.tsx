@@ -1,3 +1,4 @@
+import { SectionHeading } from "@/components/section-heading";
 import type { ReactNode } from "react";
 import { PageHero, type PageHeroVariant } from "@/components/page-hero";
 import "@/app/canonical-content.css";
@@ -116,11 +117,11 @@ export function CanonicalArticle({
               className={`canonical-block${block.presentation === "labelled" ? " canonical-block--labelled" : ""}${block.presentation === "card-list" ? " canonical-block--card-list" : ""}`}
               key={`${block.title}-${index}`}
             >
-              <h2>{block.title}</h2>
+              {!bodyClassName && !block.presentation && block.paragraphs?.length === 1 && !block.items?.length ? <SectionHeading eyebrow={eyebrow} title={block.title} subtitle={block.paragraphs[0]} /> : <><div><p className="v2-section-label">{eyebrow}</p><h2>{block.title}</h2></div>
               <div>
                 {block.paragraphs?.map((paragraph, paragraphIndex) => <p key={paragraphIndex}>{paragraph}</p>)}
                 {block.items?.length ? <ul>{block.items.map((item, itemIndex) => <li key={itemIndex}>{item}</li>)}</ul> : null}
-              </div>
+              </div></>}
             </section>
           ))}
 

@@ -1,3 +1,4 @@
+import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AssistanceForm } from "@/components/assistance-form";
@@ -19,6 +20,6 @@ export default function RequestAssistancePage() {
 
     <section className="v2-section paper" id="request-form" aria-labelledby="assistance-form-heading"><div className="v2-shell v2-assistance-form-layout"><aside><p className="v2-section-label">Your request</p><h2>One careful step at a time.</h2><ol><li><span>01</span><p><strong>Contact</strong>Your basic details so the team can reach you.</p></li><li><span>02</span><p><strong>Need</strong>What kind of assistance is being requested.</p></li><li><span>03</span><p><strong>Supporting evidence</strong>Optional private documents that help verification.</p></li><li><span>04</span><p><strong>Confirm</strong>Review the declaration before secure submission.</p></li></ol></aside><AssistanceForm /></div></section>
 
-    <section className="v2-assistance-after"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">After submission</p><h2 className="v2-section-title">Reference. Review. Follow-up.</h2></div><p className="v2-section-intro">A successful submission gives you a tracking reference. Amaana then reviews the information and contacts you if clarification is needed.</p></div><div className="v2-assistance-after-flow"><div><span>01</span><strong>Received</strong></div><div><span>02</span><strong>Reviewed</strong></div><div><span>03</span><strong>Follow-up if needed</strong></div><div><span>04</span><strong>Decision communicated</strong></div></div><p className="v2-assistance-note"><Link href="/how-we-verify">See how requests are reviewed →</Link></p></div></section>
+    <section className="v2-assistance-after"><div className="v2-shell"><SectionHeading eyebrow={<>After submission</>} title={<>Reference. Review. Follow-up.</>} subtitle={<>A successful submission gives you a tracking reference. Amaana then reviews the information and contacts you if clarification is needed.</>} /><div className="v2-assistance-after-flow"><div><span>01</span><strong>Received</strong></div><div><span>02</span><strong>Reviewed</strong></div><div><span>03</span><strong>Follow-up if needed</strong></div><div><span>04</span><strong>Decision communicated</strong></div></div><p className="v2-assistance-note"><Link href="/how-we-verify">See how requests are reviewed →</Link></p></div></section>
   </div>;
 }

@@ -1,3 +1,4 @@
+import { SectionHeading } from "@/components/section-heading";
 import Link from "next/link";
 import { eidGrowth } from "@/content/amaana";
 import { ActionIcon } from "@/components/action-icon";
@@ -6,13 +7,7 @@ export function HomeGrowth({ eidProgrammePublished = true }: { eidProgrammePubli
   return (
       <section className="v3-section v3-eid dark" aria-labelledby="eid-growth-title">
         <div className="v3-shell">
-          <div className="v3-section-head">
-            <div>
-              <p className="v3-label">Seven documented distributions</p>
-              <h2 className="v3-heading" id="eid-growth-title">85 families became 710 — one year at a time.</h2>
-            </div>
-            <p className="v3-intro">The year-by-year record shows the scale of the Eid Gift Kits programme more clearly than another retelling of its origin: steady continuity, documented across seven Ramadan distributions.</p>
-          </div>
+          <SectionHeading eyebrow={<>Seven documented distributions</>} title={<>85 families became 710 — one year at a time.</>} subtitle={<>The year-by-year record shows the scale of the Eid Gift Kits programme more clearly than another retelling of its origin: steady continuity, documented across seven Ramadan distributions.</>} id="eid-growth-title" className="v3-section-head" titleClassName="v3-heading" />
 
           <div className="v3-timeline" aria-label="Eid Gift Kits growth from 2020 to 2026">
             {eidGrowth.map(item => (

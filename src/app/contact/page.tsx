@@ -1,3 +1,4 @@
+import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
@@ -56,7 +57,7 @@ export default function ContactPage() {
 
       <section className="v2-section paper">
         <div className="v2-shell">
-          <div className="v2-section-head"><div><p className="v2-section-label">Choose your path</p><h2 className="v2-section-title">Reach the right part of the team.</h2></div><p className="v2-section-intro">Keeping enquiries separated helps Amaana respond responsibly while protecting private beneficiary information.</p></div>
+          <SectionHeading eyebrow={<>Choose your path</>} title={<>Reach the right part of the team.</>} subtitle={<>Keeping enquiries separated helps Amaana respond responsibly while protecting private beneficiary information.</>} />
           <ParticipationCards paths={contactPaths} />
         </div>
       </section>
@@ -65,7 +66,7 @@ export default function ContactPage() {
 
       <section className="v2-section"><div className={`v2-shell v2-contact-safety ${styles.privacy}`}><div><p className="v2-section-label">Privacy matters</p><h2 className="v2-section-title">Sensitive documents do not belong in a general inbox.</h2></div><div className="v2-contact-safety-copy"><p>Medical reports, identity documents, bank information and other sensitive verification material should be submitted only through the approved assistance workflow or another channel specifically requested by an authorized Amaana team member.</p><p>For payment support, a transaction reference may help the team investigate. Never send card numbers, UPI PINs, passwords or OTPs.</p><Link className="v2-button" href="/request-assistance">Use the private assistance form</Link></div></div></section>
 
-      <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Amaana Foundation</p><h2>Listen first. Respond with care.</h2><p>Email <a className="v2-text-link" href="mailto:amaanafoundation24@gmail.com">amaanafoundation24@gmail.com</a> or call <a className="v2-text-link" href="tel:+919908002694">+91-9908002694</a>.</p><div className="v2-hero-actions v2-actions-center"><Link className="v2-button" href="/our-work">Explore our work</Link><Link className="v2-text-link" href="/transparency">See how trust is handled →</Link></div></div></section>
+      <section className="v2-closing"><div className="v2-shell"><SectionHeading eyebrow={<>Amaana Foundation</>} title={<>Listen first. Respond with care.</>} subtitle={<>Email <a className="v2-text-link" href="mailto:amaanafoundation24@gmail.com">amaanafoundation24@gmail.com</a> or call <a className="v2-text-link" href="tel:+919908002694">+91-9908002694</a>.</>} /><div className="v2-hero-actions v2-actions-center"><Link className="v2-button" href="/our-work">Explore our work</Link><Link className="v2-text-link" href="/transparency">See how trust is handled →</Link></div></div></section>
     </div>
   );
 }

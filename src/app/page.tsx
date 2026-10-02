@@ -1,3 +1,4 @@
+import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel } from "@/components/body-carousel";
 import "./home-showcase.css";
 import "./home-documentary.css";
@@ -166,13 +167,7 @@ export default async function HomePage() {
 
       <section className="v3-section v3-appeals" aria-labelledby="appeals-title">
         <div className="v3-shell">
-          <div className="v3-section-head">
-            <div>
-              <p className="v3-label">Current verified appeals</p>
-              <h2 className="v3-heading" id="appeals-title">When there is a need, we share it responsibly.</h2>
-            </div>
-            <p className="v3-intro">Active public appeals appear here after review. Completed work remains available even when there is no current fundraising appeal.</p>
-          </div>
+          <SectionHeading eyebrow={<>Current verified appeals</>} title={<>When there is a need, we share it responsibly.</>} subtitle={<>Active public appeals appear here after review. Completed work remains available even when there is no current fundraising appeal.</>} id="appeals-title" className="v3-section-head" titleClassName="v3-heading" />
 
           {appeals.length ? (
             <div className="grid appeal-grid">

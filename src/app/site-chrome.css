@@ -87,13 +87,13 @@
 .amaana-live-cta{min-height:2rem;padding:.34rem .68rem;font-size:.68rem}
 
 /* Footer */
-.site-footer{padding-block:0}
+.site-footer{--af-footer-edge-space:5rem;padding-block:0}
 .site-footer>.container{
   width:min(calc(100% - (var(--af-public-gutter) * 2)),var(--af-public-shell));margin-inline:auto
 }
 .site-footer .footer-lead{
   display:grid;grid-template-columns:minmax(0,1.45fr) minmax(18rem,.55fr);grid-template-areas:none;
-  align-items:end;gap:clamp(1.5rem,4vw,4rem);margin:0;padding-block:2.25rem;
+  align-items:end;gap:clamp(1.5rem,4vw,4rem);margin:0;padding-block:var(--af-footer-edge-space) 2.25rem;
   border-bottom:1px solid rgb(240 213 107 / 15%)
 }
 .site-footer .footer-lead-copy{min-width:0}
@@ -148,7 +148,7 @@
 .footer-social-icon .social-icon-cutout{fill:#163b5c;stroke:none}
 .site-footer .footer-note{
   display:grid;grid-template-columns:minmax(0,1fr) auto minmax(18rem,1.15fr);
-  gap:1rem 1.5rem;margin:0;padding-block:1.05rem 5rem;border-top:1px solid rgb(240 213 107 / 13%);
+  gap:1rem 1.5rem;margin:0;padding-block:1.05rem var(--af-footer-edge-space);border-top:1px solid rgb(240 213 107 / 13%);
   color:rgb(255 253 248 / 68%)
 }
 .site-footer .footer-note a{color:rgb(255 253 248 / 78%);text-decoration:none}
@@ -182,12 +182,13 @@
   .amaana-live-content .amaana-reminder-eyebrow{display:none}
   .amaana-live-actions{grid-column:2;grid-row:1}
   .amaana-live-link,.amaana-live-cta{min-height:2.75rem}
-  .site-footer .footer-lead{padding-block:1.75rem;gap:1rem}
+  .site-footer{--af-footer-edge-space:max(6rem,calc(6rem + env(safe-area-inset-bottom)))}
+  .site-footer .footer-lead{padding-block:var(--af-footer-edge-space) 1.75rem;gap:1rem}
   .site-footer .footer-links a,.site-footer .footer-socials a{min-height:2.75rem}
   .site-footer .footer-lead h2{font-size:clamp(1.55rem,6.5vw,1.95rem)}
   .site-footer .footer-grid-v2{grid-template-columns:1fr;gap:.75rem;padding-block:1.35rem 1.1rem}
   .site-footer .footer-intro{grid-column:auto;padding-bottom:.25rem}
-  .site-footer .footer-note{grid-template-columns:1fr;padding-block:.9rem 6rem}
+  .site-footer .footer-note{grid-template-columns:1fr;padding-block:.9rem var(--af-footer-edge-space)}
   .site-footer .footer-note span:last-child{grid-column:auto}
   .site-footer .footer-socials a{padding:.48rem .62rem}
 }

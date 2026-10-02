@@ -1,3 +1,4 @@
+import { SectionHeading } from "@/components/section-heading";
 type TrustEvidenceBoundaryProps = {
   context: "impact" | "transparency";
 };
@@ -39,13 +40,7 @@ export function TrustEvidenceBoundary({ context }: TrustEvidenceBoundaryProps) {
 
   return (
     <section aria-labelledby={headingId} data-trust-evidence-boundary={context}>
-      <div className="v2-section-head">
-        <div>
-          <p className="v2-section-label">{copy.eyebrow}</p>
-          <h2 className="v2-section-title" id={headingId}>{copy.title}</h2>
-        </div>
-        <p className="v2-section-intro">{copy.intro}</p>
-      </div>
+      <SectionHeading eyebrow={<>{copy.eyebrow}</>} title={<>{copy.title}</>} subtitle={<>{copy.intro}</>} id={headingId} />
       <div className="grid stats">
         {EVIDENCE_ITEMS.map(item => (
           <article className="card" key={item.label}>

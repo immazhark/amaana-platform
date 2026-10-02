@@ -3,6 +3,11 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
+  // Public heading/layout presentation only; APIs, auth, database and unknown paths remain full.
+  { paths: /^src\/components\/(section-heading|canonical-article|programme-detail|trust-evidence-boundary|home-evidence)(\.|\/)/, tests: ['section-heading.spec.mjs', 'initiative-detail.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs', 'site-chrome-footer.spec.mjs', 'campaign-gallery.spec.mjs'] },
+  { paths: /^src\/app\/(site-chrome|canonical-content)\.css$/, tests: ['section-heading.spec.mjs', 'site-chrome-footer.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs', 'owner-screenshot-polish.spec.mjs'] },
+  { paths: /^src\/app\/(page\.tsx|(?:our-work|appeals|stories|faith-and-reflections|get-involved|contact|compliance|impact|request-assistance)(?:\/\[slug\]|\/sponsor-education)?\/page\.tsx)$/, tests: ['section-heading.spec.mjs', 'public-shell.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs', 'participation-contact.spec.mjs', 'initiative-detail.spec.mjs', 'carousel-acceptance.spec.mjs'] },
+  { paths: /^e2e\/section-heading\.spec\.mjs$/, tests: ['section-heading.spec.mjs'] },
   { paths: /^src\/components\/(participation-card|social-icon)(\.|\/)/, tests: ['participation-contact.spec.mjs', 'site-chrome-footer.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/app\/(get-involved|contact|appeals)\/(page\.tsx|[^/]+\.module\.css)$/, tests: ['participation-contact.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/components\/work-visual-placeholder\.module\.css$/, tests: ['participation-contact.spec.mjs', 'background-system.spec.mjs', 'owner-screenshot-polish.spec.mjs'] },
