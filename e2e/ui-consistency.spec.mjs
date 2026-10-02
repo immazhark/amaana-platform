@@ -25,6 +25,7 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     }
     await page.goto('/contact');
     const social = page.locator('.v2-contact-social-section');
+    expect(await social.evaluate(node => getComputedStyle(node).backgroundImage)).toContain("amaana-lattice-tile.svg");
     const geometry = await social.evaluate(node => {
       const title = node.querySelector('h2').getBoundingClientRect();
       const subtitle = node.querySelector('.v2-section-intro').getBoundingClientRect();
@@ -40,5 +41,15 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     await expect.poll(() => action.evaluate(node => getComputedStyle(node).color)).toBe('rgb(18, 34, 57)');
     await action.focus();
     await expect.poll(() => action.evaluate(node => getComputedStyle(node).color)).toBe('rgb(18, 34, 57)');
+  });
+}
+
+for (const width of [390, 1440]) {
+  test(`faith editorial body uses the approved geometric backdrop at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    expect((await page.goto('/faith-and-reflections')).ok()).toBe(true);
+    const surface = page.locator('.v2-faith-standard');
+    expect(await surface.evaluate(node => getComputedStyle(node).backgroundImage)).toContain('amaana-lattice-tile.svg');
+    expect(await surface.evaluate(node => getComputedStyle(node).backgroundRepeat)).toBe('no-repeat, repeat');
   });
 }
