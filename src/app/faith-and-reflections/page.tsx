@@ -1,3 +1,4 @@
+import evidenceStyles from "@/components/evidence-pathway.module.css";
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -53,7 +54,7 @@ export default async function FaithAndReflectionsPage() {
         visualNote="Reviewed religious content only. Sources, attribution and verification remain part of the public record."
       />
 
-      <section className="v2-faith-standard" aria-labelledby="faith-standard-title">
+      <section className="v2-faith-standard amaana-bg-body" aria-labelledby="faith-standard-title">
         <div className="v2-shell v2-faith-standard-grid"><div><p className="v2-section-label">Editorial trust</p><h2 id="faith-standard-title">Religious content should be handled with care.</h2></div><div><p>Qur&apos;an citations, translations, hadith references and religious claims stay out of the public library until their review state is verified.</p><p>Amaana shares beneficial material without presenting itself as a scholarly authority.</p></div></div>
       </section>
 
@@ -70,7 +71,7 @@ export default async function FaithAndReflectionsPage() {
 
       <section className="v2-section paper v2-faith-topics"><div className="v2-shell"><SectionHeading eyebrow={<>Themes</>} title={<>A library that grows with meaning.</>} subtitle={<>Themes appear as reviewed reflections are published, helping related ideas stay connected without forcing content into artificial categories.</>} />{topics.length > 0 ? <div className="v2-faith-topic-cloud">{topics.map(([slug,name],index)=><span key={slug}><b>{String(index+1).padStart(2,"0")}</b>{name}</span>)}</div> : <p className="v2-section-intro">Topics will appear when reviewed Faith content is published.</p>}</div></section>
 
-      <section className="v2-section dark v2-faith-action"><div className="v2-shell v2-faith-action-grid"><div><p className="v2-section-label">Reflection into service</p><h2 className="v2-section-title">Faith is not only read. It is lived.</h2></div><div><p>Where appropriate, reviewed content connects naturally to Amaana&apos;s real initiatives so visitors can move from understanding a value to seeing how that value is carried into service.</p><div className="v2-hero-actions"><Link className="v2-button" href="/our-work">Explore our work</Link><Link className="v2-text-link" href="/about">Our story →</Link></div></div></div></section>
+      <section className={`v2-section dark v2-faith-action ${evidenceStyles.surface}`}><div className="v2-shell v2-faith-action-grid"><div><p className="v2-section-label">Reflection into service</p><h2 className="v2-section-title">Faith is not only read. It is lived.</h2></div><div><p>Where appropriate, reviewed content connects naturally to Amaana&apos;s real initiatives so visitors can move from understanding a value to seeing how that value is carried into service.</p><div className="v2-hero-actions"><Link className="v2-button" href="/our-work">Explore our work</Link><Link className="v2-text-link" href="/about">Our story →</Link></div></div></div></section>
     </div>
   );
 }

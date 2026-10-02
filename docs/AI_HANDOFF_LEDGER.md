@@ -388,3 +388,8 @@ Integration CI37005131492 passed production build, budgets, database/fast guards
 Current implementation task: complete. Exact next action: owner continues UI review on the deployed review website. Future page-specific banner exceptions are deferred until requested. One existing carousel geometry test has a timing-sensitive700ms wait and0.09375px first-attempt overshoot; retry passes, recorded for future test stabilization rather than broadening this banner change. Main/production promotion PR104 remains a separate protected checkpoint. Preserve all canonical factual/compliance/privacy/media/payment/indexing gates, approved SVG bytes and fixed Companion. Older active/pending entries below are historical and superseded.
 
 ---
+
+
+## 2026-10-02 — Codex public UI/legacy-rule audit implementation checkpoint
+
+Owner requested site-wide UI/UX inspection and confirmed fixes while away. Task `fix/ui-consistency-audit-20261002`, base8fcc88b. All30 canonical live initiatives and four category overview pages inspected; local public static desktop/mobile and focused six-width regression pass. Corrected state/receipt legacy white text/oversized type, Home hover/focus contrast, Contact social heading and removed retired intent-card route rules. Carousel geometry waits now observe settled alignment. Build/types/lint/editorial/root CSS and17planner regressions pass; JS819087/819200, CSS344368/348160. SeededCI/merge/exact-sourceRailwayreviewpending. Detailed coverage/limitations in UI_CONSISTENCY_AUDIT_2026-10-02.md. Production PR104 remains protected.

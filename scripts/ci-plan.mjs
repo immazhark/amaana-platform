@@ -3,6 +3,14 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
+  // Specific page families precede broad page mappings: no whole-site matrix for scoped presentation.
+  { paths: /^src\/app\/(get-involved|contact|appeals)\/(page\.tsx|[^/]+\.module\.css)$/, tests: ['ui-consistency.spec.mjs', 'participation-contact.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  { paths: /^src\/components\/(evidence-pathway\.module\.css|trust-evidence-boundary\.tsx)$/, tests: ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  { paths: /^src\/app\/faith-and-reflections\/page\.tsx$/, tests: ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  { paths: /^src\/app\/(impact|our-work)\/page\.tsx$/, tests: ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'public-seo.spec.mjs', 'initiative-detail.spec.mjs', 'carousel-acceptance.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  { paths: /^src\/app\/state-experience\.css$/, tests: ['ui-consistency.spec.mjs', 'page-banner-standardization.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  { paths: /^src\/app\/home-experience\.css$/, tests: ['ui-consistency.spec.mjs', 'participation-contact.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  { paths: /^e2e\/(ui-consistency|body-carousel-new)\.spec\.mjs$/, tests: ['ui-consistency.spec.mjs', 'body-carousel-new.spec.mjs'] },
   // Public heading/layout presentation only; APIs, auth, database and unknown paths remain full.
   { paths: /^src\/components\/(section-heading|canonical-article|programme-detail|trust-evidence-boundary|home-evidence)(\.|\/)/, tests: ['section-heading.spec.mjs', 'initiative-detail.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs', 'site-chrome-footer.spec.mjs', 'campaign-gallery.spec.mjs'] },
   { paths: /^src\/app\/(site-chrome|canonical-content)\.css$/, tests: ['section-heading.spec.mjs', 'site-chrome-footer.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs', 'owner-screenshot-polish.spec.mjs'] },
@@ -10,14 +18,13 @@ const groups = [
   { paths: /^e2e\/owner-screenshot-polish\.spec\.mjs$/, tests: ['owner-screenshot-polish.spec.mjs'] },
   { paths: /^e2e\/section-heading\.spec\.mjs$/, tests: ['section-heading.spec.mjs'] },
   { paths: /^src\/components\/(participation-card|social-icon)(\.|\/)/, tests: ['participation-contact.spec.mjs', 'site-chrome-footer.spec.mjs', 'typography-hierarchy.spec.mjs'] },
-  { paths: /^src\/app\/(get-involved|contact|appeals)\/(page\.tsx|[^/]+\.module\.css)$/, tests: ['participation-contact.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/components\/work-visual-placeholder\.module\.css$/, tests: ['participation-contact.spec.mjs', 'background-system.spec.mjs', 'owner-screenshot-polish.spec.mjs'] },
   { paths: /^e2e\/(participation-contact|visual-system)\.spec\.mjs$/, tests: ['participation-contact.spec.mjs', 'visual-system.spec.mjs'] },
   // Planner-only changes run their mandatory Node regression suite in plan;
   // workflow, auth, database and unknown paths still select full acceptance.
   { paths: /^scripts\/(ci-plan|test-ci-plan)\.mjs$/, tests: [] },
   { paths: /^src\/components\/(site-header|site-footer|footer-nav-group|home-story-slide|home-highlights|home-evidence|work-portfolio|work-visual-placeholder|action-icon)(\.|\/)/, tests: ['site-chrome-footer.spec.mjs', 'owner-screenshot-polish.spec.mjs', 'typography-hierarchy.spec.mjs'] },
-  { paths: /^src\/app\/(home[^/]*|our-work[^/]*)\.css$/, tests: ['site-chrome-footer.spec.mjs', 'owner-screenshot-polish.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  { paths: /^src\/app\/(home[^/]*|our-work[^/]*)\.css$/, tests: ['site-chrome-footer.spec.mjs', 'owner-screenshot-polish.spec.mjs', 'typography-hierarchy.spec.mjs', 'ui-consistency.spec.mjs'] },
   { paths: /^src\/content\/.*\.json$/, tests: ['public-seo.spec.mjs', 'site-chrome-footer.spec.mjs'] },
   { paths: /^public\/(brand|backgrounds)\//, tests: ['background-system.spec.mjs', 'site-chrome-footer.spec.mjs', 'owner-screenshot-polish.spec.mjs'] },
   { paths: /^src\/app\/(about|contact|governance|transparency|compliance|recognition|partner)\/page\.tsx$/, tests: ['public-seo.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs'] },
