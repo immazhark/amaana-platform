@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { planChanges } from './ci-plan.mjs';
 
 test('owner policy and institutional surface polish selects responsive regressions', () => {
-  const files = ['src/app/canonical-content.css', 'src/app/policy-experience.css', 'src/components/trust-evidence-boundary.module.css', 'src/app/refund-policy/refund-audit.module.css', 'src/app/compliance/compliance-audit.module.css'];
+  const files = ['src/app/canonical-content.css', 'src/app/policy-experience.css', 'src/components/trust-evidence-boundary.module.css', 'src/app/refund-policy/page.tsx', 'src/app/refund-policy/refund-audit.module.css', 'src/app/compliance/compliance-audit.module.css'];
   const plan = planChanges(files);
   assert.equal(plan.mode, 'focused');
   assert.ok(plan.tests.includes('owner-surface-polish.spec.mjs'));
