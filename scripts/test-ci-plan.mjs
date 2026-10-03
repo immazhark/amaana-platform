@@ -184,3 +184,14 @@ test('owner nine-surface presentation stays focused with its regression suite', 
  const p=planChanges(["src/components/ui-icon.tsx","src/components/programme-artwork.tsx","src/app/programmes/[slug]/page.tsx","public/programme-artwork/eid-diagonal-v2.webp","public/programme-artwork/provenance.json"]);
  assert.equal(p.mode,"focused"); assert.equal(p.database,false); assert.ok(p.tests.includes("premium-carousel.spec.mjs")); assert.ok(p.tests.includes("navigation-resilience.spec.mjs")); assert.equal(planChanges(["src/components/ui-icon.tsx"],{release:true}).mode,"full");
 });
+
+
+test('gallery SVG label acceptance remains focused and core changes fail closed', () => {
+  const p = planChanges(['src/components/campaign-media-gallery.tsx', 'e2e/campaign-gallery.spec.mjs']);
+  assert.equal(p.mode, 'focused');
+  assert.equal(p.database, false);
+  assert.equal(p.crossBrowser, false);
+  assert.ok(p.tests.includes('campaign-gallery.spec.mjs'));
+  assert.equal(planChanges(['e2e/campaign-gallery.spec.mjs', 'src/lib/auth.ts']).mode, 'full');
+  assert.equal(planChanges(['e2e/campaign-gallery.spec.mjs'], { target: 'main' }).mode, 'full');
+});

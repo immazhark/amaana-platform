@@ -41,7 +41,7 @@ const groups = [
   { paths: /^public\/(brand|backgrounds)\//, tests: ['background-system.spec.mjs', 'site-chrome-footer.spec.mjs', 'owner-screenshot-polish.spec.mjs'] },
   { paths: /^src\/app\/(about|contact|governance|transparency|compliance|recognition|partner)\/page\.tsx$/, tests: ['public-seo.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/components\/(body-carousel|body-card|scroll-carousel)(\.|\/)/, tests: ['body-carousel-new.spec.mjs', 'carousel-acceptance.spec.mjs', 'site-chrome-footer.spec.mjs'] },
-  { paths: /^src\/components\/campaign-media-gallery(\.|\/)/, tests: ['campaign-gallery.spec.mjs'] },
+  { paths: /^(src\/components\/campaign-media-gallery(?:\.|\/)|e2e\/campaign-gallery\.spec\.mjs$)/, tests: ['campaign-gallery.spec.mjs'] },
 ];
 export function planChanges(files, { event = 'pull_request', target = 'phase-public-site-rebuild', release = false, validatedMerge = false } = {}) {
   const docsOnly = files.length > 0 && files.every(p => /^(docs\/.*\.md|README\.md)$/.test(p));
