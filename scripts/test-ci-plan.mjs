@@ -2,6 +2,16 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { planChanges } from './ci-plan.mjs';
 
+test('donation and sponsorship presentation uses focused route acceptance', () => {
+  const files = ['src/app/donate/page.tsx', 'src/app/get-involved/sponsor-education/sponsor-education.css', 'e2e/donate-sponsorship-layout.spec.mjs'];
+  const plan = planChanges(files);
+  assert.equal(plan.mode, 'focused');
+  assert.ok(plan.tests.includes('donate-sponsorship-layout.spec.mjs'));
+  assert.ok(plan.tests.includes('donation-assistance-journeys.spec.mjs'));
+  assert.equal(planChanges([...files, 'src/app/api/donations/order/route.ts']).mode, 'full');
+  assert.equal(planChanges(files, {target: 'main'}).mode, 'full');
+});
+
 test('expanded Companion presentation selects its keyboard and chrome checks', () => {
   const files = ['src/components/islamic-companion.tsx', 'src/components/islamic-companion-panel.tsx', 'src/components/islamic-companion-panel.module.css', 'e2e/companion-panel.spec.mjs'];
   const plan = planChanges(files);

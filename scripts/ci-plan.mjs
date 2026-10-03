@@ -3,6 +3,7 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
+  { paths: /^(src\/app\/donate\/(page\.tsx|donate-audit\.module\.css)|src\/app\/get-involved\/sponsor-education\/sponsor-education\.css|e2e\/donate-sponsorship-layout\.spec\.mjs)$/, tests: ['donate-sponsorship-layout.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'participation-contact.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^(src\/components\/islamic-companion(?:-panel)?(?:\.tsx|\.module\.css)|e2e\/companion-panel\.spec\.mjs)$/, tests: ['companion-panel.spec.mjs', 'navigation-resilience.spec.mjs', 'site-chrome-footer.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^(src\/components\/site-header(?:\.tsx|\.module\.css)|e2e\/navigation-resilience\.spec\.mjs)$/, tests: ['navigation-resilience.spec.mjs', 'site-chrome-footer.spec.mjs', 'typography-hierarchy.spec.mjs', 'page-banner-standardization.spec.mjs'] },
   // Specific page families precede broad page mappings: no whole-site matrix for scoped presentation.
