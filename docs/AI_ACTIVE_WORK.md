@@ -1,3 +1,9 @@
+# Owner surface polish — 2026-10-03 IST
+
+State: `CODEX_ACTIVE`. Branch `fix/owner-surface-polish-20261003`, verified integration base `afef269e7d4289a65cad635ab7bda91c00e76c95`. All 19 owner screenshots recovered and inspected. Scope: sponsorship process/closing, assistance follow-up, canonical institutional grids/headings, partnership actions, compliance guardrails, policy principles/prose/security notice and approved geometric pattern visibility. Preserve factual/legal/payment/form/media contracts, fixed Companion and protected main/PR104. Focused responsive/accessibility validation and review deployment pending.
+
+---
+
 # Donate and sponsorship screenshot correction — 2026-10-03 IST
 
 State: `IDLE`. Task completed through PR142, merge `e20149276b6bb864c082f5a15b718eeeec85bc4a`. Donate section1 now matches section2's canonical grid/font; Sponsor Education supporting copy uses body typography/top alignment. PR CI37117208040 SUCCESS:103 first-attempt Chromium checks in1.9minutes, including six widths320/390/768/1024/1440/1920. Integration CI37117505771 SUCCESS; duplicate browsers skipped by exact-tree acceptance. Local typecheck/build/lint (one existing importer warning), detector and23 planner checks pass. JS819181/819200,CSS347746/348160; caps unchanged.

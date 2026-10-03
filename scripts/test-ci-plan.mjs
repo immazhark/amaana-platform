@@ -2,6 +2,17 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { planChanges } from './ci-plan.mjs';
 
+test('owner policy and institutional surface polish selects responsive regressions', () => {
+  const files = ['src/app/canonical-content.css', 'src/app/policy-experience.css', 'src/components/trust-evidence-boundary.module.css', 'src/app/refund-policy/page.tsx', 'src/app/refund-policy/refund-audit.module.css', 'src/app/compliance/compliance-audit.module.css'];
+  const plan = planChanges(files);
+  assert.equal(plan.mode, 'focused');
+  assert.ok(plan.tests.includes('owner-surface-polish.spec.mjs'));
+  assert.ok(plan.tests.includes('policy-navigation.spec.mjs'));
+  assert.equal(planChanges([...files, 'src/app/api/assistance/route.ts']).mode, 'full');
+  assert.equal(planChanges([...files, 'unknown-module.css']).mode, 'full');
+  assert.equal(planChanges(files, {target:'main'}).mode, 'full');
+});
+
 test('donation and sponsorship presentation uses focused route acceptance', () => {
   const files = ['src/app/donate/page.tsx', 'src/app/get-involved/sponsor-education/sponsor-education.css', 'e2e/donate-sponsorship-layout.spec.mjs'];
   const plan = planChanges(files);
