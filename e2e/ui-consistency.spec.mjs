@@ -38,9 +38,9 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     await page.goto('/browser-acceptance/home-hero');
     const action = page.locator('.v3-home-banner-actions .page-hero__button--secondary').first();
     await action.hover();
-    await expect.poll(() => action.evaluate(node => getComputedStyle(node).color)).toBe('rgb(18, 34, 57)');
+    await expect.poll(() => action.evaluate(node => getComputedStyle(node).color)).toBe('rgb(29, 49, 80)');
     await action.focus();
-    await expect.poll(() => action.evaluate(node => getComputedStyle(node).color)).toBe('rgb(18, 34, 57)');
+    await expect.poll(() => action.evaluate(node => getComputedStyle(node).color)).toBe('rgb(29, 49, 80)');
   });
 }
 

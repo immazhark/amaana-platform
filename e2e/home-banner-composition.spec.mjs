@@ -7,6 +7,9 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/browser-acceptance/home-hero');
     const carousel = page.getByRole('region', { name: 'Amaana Foundation story and featured work' });
+    const secondary = carousel.locator('.page-hero__button--secondary').first();
+    await secondary.hover();
+    expect(await secondary.evaluate(node => getComputedStyle(node).color)).toBe('rgb(29, 49, 80)');
     const slide = page.locator('.v3-home-banner-slide').first();
     const geometry = await slide.evaluate(node => {
       const bounds = node.getBoundingClientRect();
