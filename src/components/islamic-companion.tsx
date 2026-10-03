@@ -53,7 +53,6 @@ export function IslamicCompanion() {
   const [reducedMotion, setReducedMotion] = useState(true);
   const [hovered, setHovered] = useState(false);
   const [focused, setFocused] = useState(false);
-  const [reminderIndex] = useState(0);
   const [liveItems, setLiveItems] = useState<LiveRailItem[]>([]);
   const [railIndex, setRailIndex] = useState(0);
   const companionButton = useRef<HTMLButtonElement>(null);
@@ -93,7 +92,7 @@ export function IslamicCompanion() {
   const date = now ? hyderabadClock(now).date : "";
   const currentMoon = confirmedMoon?.date === date ? confirmedMoon.moon : null;
   const reminders = now ? remindersFor(now, currentMoon) : [];
-  const activeReminder = reminders.length ? reminders[reminderIndex % reminders.length] : null;
+  const activeReminder = reminders[0];
   const activeLiveItem = liveItems.length ? liveItems[railIndex % liveItems.length] : null;
 
   useEffect(() => {
@@ -106,7 +105,7 @@ export function IslamicCompanion() {
 
   const closePanel = useCallback(() => {
     setPanel(null);
-    requestAnimationFrame(() => companionButton.current?.focus({ preventScroll: true }));
+    companionButton.current?.focus({ preventScroll: true });
   }, []);
 
   const onMoonChange = useCallback((value: MoonState) => {
