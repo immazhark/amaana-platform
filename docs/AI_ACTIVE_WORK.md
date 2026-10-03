@@ -1,3 +1,9 @@
+# Homepage banner composition — 2026-10-03 IST
+
+State: `CODEX_ACTIVE`. Branch `fix/home-banner-composition-20261003`, base separator merge f015aa3fa5705c1f20e99c34c6ae5072a44484a2. Two new owner screenshots inspected. Standard eyebrow/title/subtitle/CTA hierarchy, full readable subtitle, larger unaltered Amaana mark without hard circle, softly fading right-side imagery, retain actual auto/manual banner carousel. Preserve media identity-only policy, canonical facts, approved header pattern and fixed Companion. Separator PR149 already complete:56 first-attempt focused checks/CI37134716223 SUCCESS, integration37135066159 SUCCESS, reviewec2230d5-1a39-49d3-9ca7-6b5b2da444aa SUCCESS; all four policy pages verified live borders1px,1px,0px. Main/PR104 protected.
+
+---
+
 # Policy trailing separator — 2026-10-03 IST
 
 State: `CODEX_ACTIVE`. Branch `fix/policy-trailing-separator-20261003`, base ddbd4d9181c33d806d51746a6f46f7a5c9ace27e. Three owner screenshots show the trailing vertical rule after the third policy principle on Terms/Privacy/Refund. Donation Policy already suppresses it; generalize that existing shared rule to every policy page. Preserve internal dividers/content/backgrounds/responsive layout. Focused existing CI plus desktop/mobile border inspection; main/PR104 protected.

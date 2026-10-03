@@ -155,3 +155,13 @@ test('shared accessibility utility changes retain full global acceptance', () =>
   assert.equal(p.database, true);
   assert.equal(p.crossBrowser, true);
 });
+
+test('home banner composition is scoped and shared logic still fails closed', () => {
+  const p = planChanges(['src/app/page.tsx', 'src/app/home-documentary.css', 'src/components/home-story-slide.tsx', 'src/app/browser-acceptance/home-hero/page.tsx', 'e2e/home-banner-composition.spec.mjs']);
+  assert.equal(p.mode, 'focused');
+  assert.equal(p.crossBrowser, false);
+  assert.ok(p.tests.includes('home-banner-composition.spec.mjs'));
+  assert.ok(p.tests.includes('public-seo.spec.mjs'));
+  assert.equal(planChanges(['src/app/page.tsx', 'src/lib/auth.ts']).mode, 'full');
+  assert.equal(planChanges(['src/app/page.tsx'], { target: 'main' }).mode, 'full');
+});

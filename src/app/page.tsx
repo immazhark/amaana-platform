@@ -5,7 +5,6 @@ import "./home-documentary.css";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { AppealCard } from "@/components/appeal-card";
-import { formatINR, getRemainingAppealAmount } from "@/lib/appeals";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getHomepageAppeals } from "@/lib/public-content";
 import { HomeGrowth, HomeTrust } from "@/components/home-evidence";
@@ -13,7 +12,7 @@ import { getHomepageDiscoveryData } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
 import { ScrollCarousel } from "@/components/scroll-carousel";
 import { programmeCategories, programmes } from '@/lib/master-copy';
-import { HomeStorySlide } from "@/components/home-story-slide";
+import { HomeBannerSlide, HomeStorySlide } from "@/components/home-story-slide";
 import { HomeHighlights } from "@/components/home-highlights";
 import { programmeCategoryPath } from '@/lib/programme-category-routing';
 import { selectIdentityPublicImage } from '@/lib/public-media';
@@ -47,11 +46,10 @@ export default async function HomePage() {
     .filter(item => !isLegacyOurWorkSlug(item.slug))
     .map(item => ({ ...item, causeTitle: item.cause.title }));
   const hasOpenAppeals = appeals.length > 0;
-  const heroSlides = featured
-    .filter(item => item.isFeatured)
-    .map(drive => ({ drive, media: selectIdentityPublicImage(drive.mediaAssets) }))
-    .filter((item): item is typeof item & { media: NonNullable<typeof item.media> } => Boolean(item.media))
-    .slice(0, 5);
+  const featuredHeroWork = featured.filter(item => item.isFeatured);
+  const heroSlides = (featuredHeroWork.length ? featuredHeroWork : featured)
+    .slice(0, 5)
+    .map(drive => ({ drive, media: selectIdentityPublicImage(drive.mediaAssets) }));
   const publicProgrammeSlugs = new Set(discovery.publishedProgrammeSlugs);
   const eidProgrammePublished = publicProgrammeSlugs.has("eid-gift-kits");
   const visibleProgrammeCategories = programmeCategories.filter(category => {
@@ -96,35 +94,10 @@ export default async function HomePage() {
         <ScrollCarousel label="Amaana Foundation story and featured work" mode="hero" className="v3-home-banner-carousel" autoAdvanceMs={7000}>
           <HomeStorySlide />
           {appeals.slice(0, 1).map(appeal => (
-            <article className="v3-home-banner-slide v3-home-banner-slide--appeal" key={`appeal-${appeal.slug}`}>
-              <div className="v3-home-banner-shade" aria-hidden="true" />
-              <div className="v3-shell v3-home-banner-content">
-                <p className="v3-home-banner-kicker">Current verified appeal</p>
-                <span className="v3-home-banner-brandline">{appeal.title}</span>
-                <p>{appeal.summary}</p>
-                <div className="v3-home-banner-metric"><strong>{formatINR(getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount))}</strong><span>remaining verified need</span></div>
-                <div className="v3-home-banner-actions">
-                  <Link className="v3-btn" href={`/appeals/${appeal.slug}`}>View this appeal</Link>
-                  <Link className="v3-btn secondary" href={`/donate/${appeal.slug}`}>Support this need</Link>
-                </div>
-              </div>
-            </article>
+            <HomeBannerSlide key={`appeal-${appeal.slug}`} className="v3-home-banner-slide--appeal" eyebrow="Current verified appeal" title={appeal.title} description={appeal.summary} actions={[{ href: `/appeals/${appeal.slug}`, label: "View this appeal" }, { href: `/donate/${appeal.slug}`, label: "Support this need", secondary: true }]} />
           ))}
           {heroSlides.map(({ drive, media }) => (
-            <article className="v3-home-banner-slide" key={drive.id}>
-              <div className="v3-home-banner-media"><PublicMedia asset={media} sizes="100vw" /></div>
-              <div className="v3-home-banner-shade" aria-hidden="true" />
-              <div className="v3-shell v3-home-banner-content">
-                <p className="v3-home-banner-kicker">Amaana Foundation · {drive.causeTitle}</p>
-                <span className="v3-home-banner-brandline">{drive.title}</span>
-                <p>{drive.summary}</p>
-                {drive.primaryMetric ? <div className="v3-home-banner-metric"><strong>{drive.primaryMetric}</strong><span>{drive.primaryMetricLabel ?? "Documented impact"}</span></div> : null}
-                <div className="v3-home-banner-actions">
-                  <Link className="v3-btn" href={canonicalOurWorkDestination(drive.slug)}>Explore this initiative</Link>
-                  <Link className="v3-btn secondary" href={hasOpenAppeals ? "/appeals" : "/get-involved"}>{hasOpenAppeals ? "Support a verified need" : "Ways to support"}</Link>
-                </div>
-              </div>
-            </article>
+            <HomeBannerSlide key={drive.id} eyebrow={`Amaana Foundation · ${drive.causeTitle}`} title={drive.title} description={drive.summary} visual={media ? <div className="v3-home-banner-media"><PublicMedia asset={media} sizes="(max-width: 900px) 100vw, 60vw" /></div> : undefined} actions={[{ href: canonicalOurWorkDestination(drive.slug), label: "Explore this initiative" }, { href: hasOpenAppeals ? "/appeals" : "/get-involved", label: hasOpenAppeals ? "Support a verified need" : "Ways to support", secondary: true }]} />
           ))}
         </ScrollCarousel>
       </section>
