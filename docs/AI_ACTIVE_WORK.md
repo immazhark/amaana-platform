@@ -1,6 +1,6 @@
 # Participation and Appeals pattern correction — 2026-10-03 IST
 
-State: `CODEX_ACTIVE`. Branch `fix/participation-appeals-patterns-20261003`, base `dd184a0cf6328a42250fd74e44b8d2a1e75a4446`. Four owner screenshots recovered and inspected. Scope: restore approved lattice on Get Involved participation and Appeals completed support/review/privacy sections; adopt shared privacy heading hierarchy and action spacing. Preserve factual copy, carousel, artwork and donation contracts. Open PR104 protected; use focused two-page responsive regression and unchanged performance caps before integration/review deployment.
+State: `CODEX_ACTIVE`. Corrective branch `fix/appeals-pattern-layer-20261003`, base application merge `1c640c08d6f336ce7600a3cae3df0c8bf816adff`. PR146 / CI37127642192 / review deployment dfef4b0e-dde4-4fb0-9076-53c4b96ce4f7 delivered the four screenshot changes. Live verification caught a global important dark-surface rule covering the lattice despite the image being present. Correct the layer order with scoped specificity and assert that the lattice is the topmost image. Lighter surfaces and shared12px-label/56px-title privacy heading verified live. Main/PR104 protected; focused checks and unchanged caps retained.
 
 ---
 
