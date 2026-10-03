@@ -1,3 +1,9 @@
+# Shared navigation resilience — 2026-10-03 IST
+
+State: `CODEX_ACTIVE`. Branch `fix/navigation-audit-20261003`, verified integration base `a35ec4227853a034722483141e463dd244f0cdcd`. Owner requests further UI/UX checks and confirmed fixes. Only protected PR104/main is open. Restored current source after transient workspace reverted to an older checkout. Audit menu/backdrop breakpoint parity (760 vs1020), resizing, short-screen reachability, body scrolling, keyboard focus and floating controls. Preserve approved artwork/content, privacy/payment/indexing and fixed bottom-right Companion. Exact checks, PR/CI/integration/review delivery pending.
+
+---
+
 # Latest delivery — assistance progress and actions — 2026-10-03 IST
 
 State: `IDLE`. Outgoing: Codex; incoming: next available implementation agent. Integration `phase-public-site-rebuild`.
@@ -579,4 +585,3 @@ User explicitly requested integration of all six revision-4 SVGs after design re
 - Shared responsive token paths retained. Light body whitening gradients removed; dark-section contrast layers retained. Homepage carousel frame now consumes the header token. Footer height is still content-driven.
 - PR CI and staging/browser verification pending at this checkpoint. Do not infer production approval.
 - Pre-existing integration CI 36341349733 fails typography-hierarchy at 1440/390 (Arial vs serif expectation); unrelated to this asset change and not suppressed.
-

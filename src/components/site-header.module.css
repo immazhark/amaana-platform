@@ -1,0 +1,15 @@
+/* Keep dismissal and scroll containment on the navigation's actual breakpoint. */
+.backdrop:global(.mobile-menu-backdrop){display:block}
+.header:global(.site-header) :global(.mobile-menu.open){
+  max-height:calc(100vh - var(--af-chrome-height) - 1px);
+  max-height:calc(100dvh - var(--af-chrome-height) - 1px);
+  scrollbar-width:thin;
+  scrollbar-color:var(--af-color-gold-ink) var(--af-color-surface);
+}
+@media(max-width:1020px){
+  :global(body):has(.header :global(.mobile-menu.open)){overflow:hidden}
+}
+@media(min-width:1021px){
+  .backdrop:global(.mobile-menu-backdrop),
+  .header:global(.site-header) :global(.mobile-menu.open){display:none}
+}
