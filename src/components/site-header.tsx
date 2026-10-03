@@ -1,4 +1,5 @@
 "use client";
+import { UIIcon } from "./ui-icon";
 
 import Image from "next/image";
 import Link from "next/link";
@@ -88,7 +89,7 @@ export function SiteHeader() {
         </Link>
 
         <button ref={toggleRef} className="menu-toggle" type="button" aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? "Close navigation menu" : "Open navigation menu"} onClick={() => setOpenForPath(current => current === pathname ? null : pathname)}>
-          <span aria-hidden="true">{open ? "×" : "☰"}</span>
+          <UIIcon name={open ? "close" : "menu"} />
         </button>
 
         <div className="nav-links">

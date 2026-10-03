@@ -1,3 +1,7 @@
+import { BodyCarousel, BodyCard } from "@/components/body-carousel";
+import { SectionHeading } from "@/components/section-heading";
+import { ProgrammeArtwork, hasProgrammeArtwork } from "@/components/programme-artwork";
+import styles from "./programme-list.module.css";
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound, permanentRedirect } from 'next/navigation';
@@ -121,6 +125,16 @@ export default async function Page({ params }: Props) {
     <BreadcrumbStructuredData items={[{ name: 'Home', path: '/' }, { name: 'Our Work', path: '/our-work' }, { name: category.title, path: canonical }]} />
     <div className="v2-shell campaign-breadcrumb"><nav aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true"> / </span><Link href="/our-work">Our Work</Link><span aria-hidden="true"> / </span><span>{category.title}</span></nav></div>
     <PageHero variant="level2" eyebrow="Our Work · Programme Category" title={category.title} description={<p>{category.description}</p>} actions={[{label:'Explore programmes',href:'#programme-list'},{label:'Back to Our Work',href:'/our-work',secondary:true}]} visual={leadPhoto ? <PublicMedia asset={leadPhoto} priority /> : <WorkVisualPlaceholder label={category.title} />} />
-    <section className="v2-section paper" id="programme-list"><div className={`v2-shell canonical-pathways${items.length === 1 ? ' canonical-pathways--single' : ''}`}>{items.map(item => { const record = recordBySlug.get(item.slug); const photo = record ? selectIdentityPublicImage(record.mediaAssets) : null; return <article key={item.slug}><div className="canonical-pathway-visual">{photo ? <PublicMedia asset={photo} /> : <WorkVisualPlaceholder label={item.title} />}</div><h2><Link href={`/our-work/${item.slug}`}>{item.title}</Link></h2><p>{item.summary}</p><Link className="v2-text-link" href={`/our-work/${item.slug}`}>See the documented work →</Link></article>; })}</div></section>
+    <section className="v2-section paper" id="programme-list"><div className="v2-shell">
+      <SectionHeading eyebrow="Programme pathways" title="Explore the documented work" subtitle={category.summary} />
+      {items.length === 1 ? <div className={`canonical-pathways canonical-pathways--single ${styles.single}`}>{items.map(item => <article key={item.slug}><div className="canonical-pathway-visual">{hasProgrammeArtwork(item.slug) ? <ProgrammeArtwork slug={item.slug} /> : leadPhoto ? <PublicMedia asset={leadPhoto} /> : <WorkVisualPlaceholder label={item.title} />}</div><h2><Link href={`/our-work/${item.slug}`}>{item.title}</Link></h2><p>{item.summary}</p><Link className="v2-text-link" href={`/our-work/${item.slug}`}>See the documented work →</Link></article>)}</div> : <BodyCarousel label={`${category.title} programmes`} variant="content-deck">
+        {items.map(item => {
+          const record = recordBySlug.get(item.slug);
+          const photo = record ? selectIdentityPublicImage(record.mediaAssets) : null;
+          const visual = hasProgrammeArtwork(item.slug) ? <ProgrammeArtwork slug={item.slug} /> : photo ? <PublicMedia asset={photo} /> : <WorkVisualPlaceholder label={item.title} />;
+          return <BodyCard key={item.slug} title={<Link href={`/our-work/${item.slug}`}>{item.title}</Link>} visual={visual} meta="Documented programme"><p>{item.summary}</p><Link className="v2-text-link" href={`/our-work/${item.slug}`}>See the documented work →</Link></BodyCard>;
+        })}
+      </BodyCarousel>}
+    </div></section>
   </div>;
 }

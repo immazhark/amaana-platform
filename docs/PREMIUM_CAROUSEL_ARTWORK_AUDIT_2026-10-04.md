@@ -1,0 +1,11 @@
+# Premium controls and programme artwork — 2026-10-04 IST
+
+Owner's four screenshots inspected. Screenshot1 identifies old character-glyph hero controls;2/3 establish diagonal photo joins;4 shows oversized static emergency category cards and requests authentic programme imagery.
+
+- Shared24px SVG optical grid replaces carousel glyphs, mobile menu glyphs, gallery arrows and back-to-top. Consistent1.75 stroke, rounded terminals, original accessible button labels and44–48px targets. Official social logo geometry preserved.
+- Six new sibling collage assets: Eid, Taleem, Qurbani, Dates, Winter and Flood.1536x1024 WebP derivatives; diagonal ivory joins. Built-in image generation uses only relevant original sources. Gallery originals and existing hero files unchanged. Output/source SHA256 and authorization in public/programme-artwork/provenance.json. Source archive hash verified. Flood privacy blur/caption preserved.
+- Home slides2/4/5 reference new diagonal derivatives. Existing gradient, side/bottom mask, configured focal point, backend overrides, autoplay, reduced motion and admin editing preserved.
+- Homepage five umbrella programme cards all have relevant collage imagery. Multi-programme category pages use the shared BodyCarousel/BodyCard with restrained display-font h3, consistent16:9 visual and CTA spacing. Decorative legacy grid separator removed by replacing that grid. The existing full-width single-programme feature is preserved.
+- COVID has no separately identified photo in the supplied archive. Its branded fallback remains; no unrelated flood photo or invented scene is attributed to COVID. Medical case cards retain their actual selected photos and factual identity.
+
+Validation: TypeScript and production build pass, lint zero errors (one pre-existing importer warning). Aggregate JS811105/819200 and CSS343900/348160 bytes before final single-programme scoped CSS; budgets unchanged.27 planner tests pass.17 applicable existing local fixture checks passed; published-home checks cannot run without local DATABASE_URL and are delegated to seeded CI. Six-width derivative/control/axe checks and seeded category acceptance pending publication. No database schema/dependency/payment change.

@@ -3,6 +3,7 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
+  { paths: /^(public\/programme-artwork\/[^/]+|src\/components\/(?:programme-artwork|ui-icon|back-to-top)\.tsx|src\/app\/programmes\/\[slug\]\/(?:page\.tsx|programme-list\.module\.css)|e2e\/premium-carousel\.spec\.mjs)$/, tests: ["premium-carousel.spec.mjs", "body-carousel-new.spec.mjs", "carousel-acceptance.spec.mjs", "home-banner-composition.spec.mjs", "initiative-detail.spec.mjs", "navigation-resilience.spec.mjs", "typography-hierarchy.spec.mjs"] },
   // Typography-only CSS: rendered six-width heading/focus/overflow coverage; JSX retains shell/journey dependencies.
   { paths: /^src\/components\/section-heading\.module\.css$/, tests: ['section-heading.spec.mjs', 'typography-hierarchy.spec.mjs', 'ui-consistency.spec.mjs', 'owner-nine-surfaces.spec.mjs'] },
   // Owner surface routes and removal of TSX-unreferenced legacy hero selectors.

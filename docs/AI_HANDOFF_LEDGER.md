@@ -1,3 +1,7 @@
+## 2026-10-04 IST — Nine surfaces delivered; premium carousel batch active
+
+PR156 merged a5180bf343b7f3e82e9966a3bd4d0e99b7ef6623 after tested head bc9fcb99908cb3883a382646f1a07748d75ad20b passed155 focused Chromium checks in3.7minutes,414 unit checks and26 planner checks. Railway dc26dfdb-ccb2-47e7-bb52-98cab031dc93 SUCCESS. Live six routes verified patterns, typography, icons and no desktop overflow. Two acceptance-caught mobile/tablet hierarchy issues corrected with9-width local proof. Browser suite remained focused. Current owner CODEX_ACTIVE on fix/premium-carousel-artwork-20261004: four new screenshots, shared SVG functional controls, diagonal hero2/4/5, programme carousels and6 photo-derived collages. Single-programme editorial layout retained. Main/PR104 protected.
+
 # Nine owner screenshot surfaces — 2026-10-04 IST
 
 State: `CODEX_ACTIVE`. Branch `fix/owner-nine-surfaces-20261004`, base `67b3fc256f1f05c29ebde694ba830559f2e91444`. All nine supplied screenshots inspected. Scope Stories ethic pattern; Faith library width/editorial typography; Contact privacy pattern/closing contact icons; sponsorship closing placement; Partner areas; Compliance status/pending patterns and presentation. Preserve factual copy, approved assets, fixed Companion, original headers, unchanged budgets and protected main/draft PR104. Focused responsive/a11y and CI delivery.

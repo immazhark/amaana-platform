@@ -1,5 +1,6 @@
 
 "use client";
+import { UIIcon } from "./ui-icon";
 /* eslint-disable @next/next/no-img-element */
 
 import Image from "next/image";
@@ -150,8 +151,8 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
             {active.caption ? <p className={styles.caption}>{active.caption}</p> : null}
             {safeItems.length > 1 ? (
               <div className={styles.controls}>
-                <button type="button" onClick={previous}>← Previous</button>
-                <button type="button" onClick={next}>Next →</button>
+                <button type="button" onClick={previous}><UIIcon name="previous" />Previous</button>
+                <button type="button" onClick={next}>Next<UIIcon name="next" /></button>
               </div>
             ) : null}
           </div>

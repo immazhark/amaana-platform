@@ -1,0 +1,91 @@
+{
+  "authorization": "Owner request 2026-10-04 IST: premium carousel derivatives from supplied initiative photos",
+  "method": "AI-assisted compositing; presentation artwork, not documentary originals. No source gallery bytes altered.",
+  "archiveSha256": "1216eed498c6f5ea0378c1e236137faf455ece735aaeefea8bb2c08d5472ff6f",
+  "records": [
+    {
+      "name": "eid",
+      "output": "/programme-artwork/eid-diagonal-v2.webp",
+      "sha256": "c3d71d6e80f36146f97fa80afe25a32865f01b71db6ab429ebcdbe1ed041ef13",
+      "bytes": 138478,
+      "sources": [
+        {
+          "path": "eid-gift-kits-2025/001/beforePacking.jpeg",
+          "sha256": "624911bb56503dece4a24d3bde7e52eea9c61f858fd8cf732acdfd722e1bc650"
+        },
+        {
+          "path": "eid-gift-kits-2026/003/20260315_162836.jpg.jpeg",
+          "sha256": "2d51dbce6b35dc5c969b5ac3beffcabac400733e2af81e9f6cb6a6e09bb9d99d"
+        }
+      ]
+    },
+    {
+      "name": "taleem",
+      "output": "/programme-artwork/taleem-diagonal-v2.webp",
+      "sha256": "bc4c6efb659c74d34d94e13ccebf2aa4add98027a3dbf684cff88339dac6bf2f",
+      "bytes": 348636,
+      "sources": [
+        {
+          "path": "taleem-initiative-2025/002/WhatsApp Image 2026-09-14 at 4.34.51 AM (1).jpeg",
+          "sha256": "02aee4f8f615bc3ad311103c46b8243d5bfd3cac41a2ee1de7bba13c6d8c7ac9"
+        },
+        {
+          "path": "taleem-initiative-2025/003/WhatsApp Image 2026-09-14 at 4.34.51 AM.jpeg",
+          "sha256": "9e315a344151f54ddef726da719f372fc351d00e9686ddae3ebe3159600b396a"
+        }
+      ]
+    },
+    {
+      "name": "qurbani",
+      "output": "/programme-artwork/qurbani-diagonal-v2.webp",
+      "sha256": "0a7e47b6b9b10ec5c88e335461c474f4627ed57b729d92ecab6cec04b21cc9aa",
+      "bytes": 134190,
+      "sources": [
+        {
+          "path": "qurbani-meat-distribution-2025/001/WhatsApp Image 2025-06-13 at 12.00.57 AM.jpeg",
+          "sha256": "2710087e4beddee614b67f06b0812f7b871b62d975b0af2e5e062b68dc65273b"
+        },
+        {
+          "path": "qurbani-meat-distribution-2025/003/WhatsApp Image 2025-06-13 at 12.01.44 AM (1).jpeg",
+          "sha256": "7ab27cd30c94837d1354896669c131aa61ebcc1223cfb5127d786ebe00105023"
+        }
+      ]
+    },
+    {
+      "name": "winter",
+      "output": "/programme-artwork/winter-diagonal-v2.webp",
+      "sha256": "fbe534bf2d6341360452878b6acae8fdb37b4d7741b14d6d1b88558c0484b00d",
+      "bytes": 213626,
+      "sources": [
+        {
+          "path": "winter-relief/005/WhatsApp Image 2026-02-18 at 1.02.01 PM (2).jpeg",
+          "sha256": "8dffea4ea84292a60fd46ec0dd1c4da5b149a8ffe8991cf0ec22b9cd39246fd0"
+        }
+      ]
+    },
+    {
+      "name": "dates",
+      "output": "/programme-artwork/dates-diagonal-v2.webp",
+      "sha256": "55c507a14f8221b0168ee07369fa2ef9dfefd617e51d2fc08295c47e1dd87b08",
+      "bytes": 113798,
+      "sources": [
+        {
+          "path": "dates-distribution-2025/001/DDD20252.jpeg",
+          "sha256": "b61fd1fd445f4427c22f3c5760462beeb1292bee49d642e4a8cbd47197944c65"
+        }
+      ]
+    },
+    {
+      "name": "flood",
+      "output": "/programme-artwork/flood-diagonal-v2.webp",
+      "sha256": "724169a831ff6461f443d0eec81c8f0b0c103ccc8980010acc201c64812a267b",
+      "bytes": 89408,
+      "sources": [
+        {
+          "path": "hyderabad-flood-relief-2020/002/WhatsApp Image 2026-09-09 at 2.20.39 AM (1).jpg",
+          "sha256": "4c51fd6c696c828949f89668500900ab453d19928b7515eda28552b907153ce8"
+        }
+      ]
+    }
+  ]
+}
