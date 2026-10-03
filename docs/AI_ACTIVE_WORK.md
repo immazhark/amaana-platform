@@ -1,3 +1,9 @@
+# Section hierarchy and alignment — 2026-10-03 IST
+
+State: `CODEX_ACTIVE`. Branch `fix/section-hierarchy-alignment-20261003`, verified integration base `5ba040e2e2898b674693d301dd2ebcec1273a31e`. Only protected production PR104 is open. Owner requests site-wide body H2 maximum3.5rem, stronger homepage banner hierarchy, split homepage introduction, full-shell closing alignment with actions beside supporting copy, and vertically grouped evidence labels/headings. Seven supplied screenshots inspected and implementation complete. Final16 local Chromium checks pass in20.2seconds at seven widths, WCAG A/AA, hierarchy/closing geometry and existing carousel/chrome regressions.392 units,22 planner and editorial checks pass; lint one existing warning; clean build/types pass. JavaScript819181/CSS347649 within unchanged caps. Local database-backed routes unavailable; exact-head seeded CI required. Existing footer wordmark detector warning outside scope. Publication/CI/integration review delivery pending. See SECTION_HIERARCHY_AUDIT_2026-10-03.md. Preserve approved artwork, content, privacy/payment/indexing and fixed Companion.
+
+---
+
 # Latest delivery — Companion panel accessibility — 2026-10-03 IST
 
 State: `IDLE`. Outgoing: Codex; incoming: next available implementation agent. Integration: `phase-public-site-rebuild`. Expanded Companion task complete; documentation closure branch `docs/companion-panel-delivery-20261003`.

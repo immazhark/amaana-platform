@@ -200,7 +200,7 @@
   align-self:end;
   margin:clamp(.75rem,2vw,1.25rem) 0 0;
   max-width:18ch;
-  font:500 clamp(2.35rem,4vw,4rem)/.96 var(--af-font-display);
+  font:500 clamp(2.35rem,4vw,3.5rem)/.96 var(--af-font-display);
   letter-spacing:-.04em
 }
 .canonical-pathways--single article>p{

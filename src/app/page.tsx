@@ -134,9 +134,8 @@ export default async function HomePage() {
       {visibleProgrammeCategories.length > 0 && (
         <section className="v3-section v3-work" aria-labelledby="featured-work-title">
           <div className="v3-shell">
-            <p className="v3-label">How Amaana serves</p>
-            <p className="v3-intro">Some needs return every year. Others arrive without warning. Amaana’s work therefore combines recurring programmes with verified case-led assistance—from Eid Gift Kits and Qurbani distribution to Taleem, winter relief, emergency response and urgent medical or financial support.</p>
-            <BodyCarousel label="Amaana programme areas" variant="home-showcase" className="v3-work-carousel" autoAdvanceMs={6500} heading={<h2 className="v3-heading" id="featured-work-title">Different Needs. One Standard of Care.</h2>}>
+            <SectionHeading eyebrow="How Amaana serves" title="Different Needs. One Standard of Care." subtitle="Some needs return every year. Others arrive without warning. Amaana’s work therefore combines recurring programmes with verified case-led assistance—from Eid Gift Kits and Qurbani distribution to Taleem, winter relief, emergency response and urgent medical or financial support." id="featured-work-title" />
+            <BodyCarousel label="Amaana programme areas" variant="home-showcase" className="v3-work-carousel" autoAdvanceMs={6500}>
               {visibleProgrammeCategories.map((category, index) => {
                 const media = programmeMedia.get(category.slug);
                 return (

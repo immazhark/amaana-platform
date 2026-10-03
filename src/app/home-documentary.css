@@ -62,7 +62,7 @@
   align-items:flex-start
 }
 .v3-home-banner-kicker{margin:0 0 .3rem;color:var(--af-color-gold-ink);font-size:.7rem;font-weight:850;letter-spacing:.14em;text-transform:uppercase}
-.v3-home-banner-brandline{display:block;max-width:21ch;color:var(--af-color-navy-950);font:500 clamp(2.15rem,3vw,3rem)/.94 var(--af-font-display);letter-spacing:-.045em;text-wrap:balance;text-shadow:none}
+.v3-home-banner-brandline{display:block;max-width:21ch;color:var(--af-color-navy-950);font:500 clamp(2.6rem,4.8vw,4rem)/1 var(--af-font-display);letter-spacing:-.04em;text-wrap:balance;text-shadow:none}
 .v3-home-banner-content h2{max-width:28ch;margin:.45rem 0 0;color:var(--af-color-gold-ink);font:500 clamp(1rem,1.25vw,1.25rem)/1.08 var(--af-font-display);letter-spacing:-.025em;text-wrap:balance}
 .v3-home-banner-content>p:not(.v3-home-banner-kicker){max-width:38rem;margin:.45rem 0 0;color:#4d5d72;font-size:clamp(.88rem,1vw,.98rem);line-height:1.42;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .v3-home-banner-metric{display:flex;align-items:baseline;gap:.65rem;margin-top:.45rem}
@@ -80,7 +80,7 @@
   .v3-home-banner-carousel{height:clamp(23rem,45vw,27rem);max-height:27rem}
   .v3-home-banner-content,.v3-home-banner-slide--story .v3-home-banner-content{padding:1.75rem calc((100% - var(--af-public-edge) * 2) * .48) 1.9rem 0}
   .v3-home-banner-media{left:calc(var(--af-public-edge) + (100% - var(--af-public-edge) * 2) * .52)}
-  .v3-home-banner-brandline{font-size:clamp(1.9rem,5vw,3rem)}
+  .v3-home-banner-brandline{font-size:clamp(2.6rem,5vw,3.5rem)}
 }
 @media(max-width:600px){
   .v3-home-banner-carousel{height:32rem;max-height:32rem}
@@ -94,7 +94,7 @@
   }
   .v3-home-banner-shade{background:linear-gradient(0deg,rgb(18 34 57 / 99%) 0%,rgb(29 49 80 / 96%) 48%,rgb(70 111 170 / 46%) 68%,rgb(70 111 170 / 8%) 100%)}
   .v3-home-banner-content,.v3-home-banner-slide--story .v3-home-banner-content{justify-content:flex-end;padding:1.25rem 0 5rem}
-  .v3-home-banner-brandline{font-size:clamp(1.9rem,9vw,2.7rem)}
+  .v3-home-banner-brandline{font-size:clamp(2.6rem,10vw,3rem)}
   .v3-home-banner-content h2{font-size:1.1rem}
   .v3-home-banner-content>p:not(.v3-home-banner-kicker){-webkit-line-clamp:2;font-size:.84rem}
   .v3-home-banner-actions{margin-top:.65rem}
@@ -133,7 +133,7 @@
    Preserve the locked cinematic masthead; reduce competing visual weight below it. */
 .v3-home .v3-section{padding-block:clamp(3.5rem,5.8vw,5.5rem)}
 .v3-home .v3-section-head{margin-bottom:clamp(2rem,3.8vw,3.25rem)}
-.v3-home .v3-heading{font-size:clamp(2.25rem,4vw,3.9rem);line-height:1}
+.v3-home .v3-heading{font-size:clamp(2.25rem,4vw,3.5rem);line-height:1}
 .v3-home .v3-intro{max-width:39rem;line-height:1.68}
 .v3-proof{padding-block:.45rem!important}
 .v3-proof-label{margin:0;padding:.85rem 0 .15rem;color:var(--af-color-gold-ink);font-size:.7rem;font-weight:850;letter-spacing:.15em;text-transform:uppercase}
