@@ -155,7 +155,7 @@ export async function getFeaturedFaithContent() {
  * this projection narrow lowers database work, serialization and server render
  * cost while preserving the publication/privacy gates used elsewhere.
  */
-export async function getHomepageAppeals() {
+export async function getHomepageAppeals(limit = 3) {
   const appeals = await prisma.appeal.findMany({
     where: { status: "PUBLISHED" },
     orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
@@ -165,6 +165,7 @@ export async function getHomepageAppeals() {
       summary: true,
       category: true,
       beneficiaryLocation: true,
+      coverImageUrl: true,
       status: true,
       goalAmount: true,
       amountRaised: true,
@@ -174,7 +175,7 @@ export async function getHomepageAppeals() {
 
   return appeals
     .filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && isAppealOpenForDonations(appeal))
-    .slice(0, 3);
+    .slice(0, Math.min(20, Math.max(1, limit)));
 }
 
 export async function getHomepagePublicContent() {

@@ -623,3 +623,10 @@ model Notification {
   @@index([status, createdAt])
 }
 
+
+model HomeCarousel {
+  id        String   @id @default("homepage")
+  config    Json
+  revision  Int      @default(1)
+  updatedAt DateTime @updatedAt
+}

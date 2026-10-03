@@ -8,16 +8,17 @@ import { AppealCard } from "@/components/appeal-card";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getHomepageAppeals } from "@/lib/public-content";
 import { HomeGrowth, HomeTrust } from "@/components/home-evidence";
-import { getHomepageDiscoveryData } from "@/lib/public-page-data";
+import { getHomepageDiscoveryData, getAppealCoverMedia } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
 import { ScrollCarousel } from "@/components/scroll-carousel";
 import { programmeCategories, programmes } from '@/lib/master-copy';
-import { HomeBannerSlide, HomeStorySlide } from "@/components/home-story-slide";
+import { ConfiguredHomeSlide } from "@/components/home-story-slide";
+import { getHomeCarouselConfig, getHomeCarouselImages } from "@/lib/home-carousel-data";
+import { composeHomeSlides, defaultHomeSlides } from "@/lib/home-carousel";
 import { HomeHighlights } from "@/components/home-highlights";
 import { programmeCategoryPath } from '@/lib/programme-category-routing';
 import { selectIdentityPublicImage } from '@/lib/public-media';
 import { openGraphShareImages, twitterShareImages } from '@/lib/social-share-media';
-import { canonicalOurWorkDestination, isLegacyOurWorkSlug } from '@/lib/our-work-routing';
 
 export const dynamic = "force-dynamic";
 
@@ -41,15 +42,13 @@ export const metadata: Metadata = {
 };
 
 export default async function HomePage() {
-  const [appeals, discovery] = await Promise.all([getHomepageAppeals(), getHomepageDiscoveryData()]);
-  const featured = discovery.initiatives
-    .filter(item => !isLegacyOurWorkSlug(item.slug))
-    .map(item => ({ ...item, causeTitle: item.cause.title }));
-  const hasOpenAppeals = appeals.length > 0;
-  const featuredHeroWork = featured.filter(item => item.isFeatured);
-  const heroSlides = (featuredHeroWork.length ? featuredHeroWork : featured)
-    .slice(0, 5)
-    .map(drive => ({ drive, media: selectIdentityPublicImage(drive.mediaAssets) }));
+  const [liveAppeals, discovery, { config }] = await Promise.all([getHomepageAppeals(20), getHomepageDiscoveryData(), getHomeCarouselConfig()]);
+  const appeals = liveAppeals.slice(0, 3);
+  const [images, appealImages] = await Promise.all([getHomeCarouselImages(config.slides.map(s => s.image)), Promise.all(liveAppeals.map(a => getAppealCoverMedia(a.coverImageUrl)))]);
+  const appealSlides = liveAppeals.map((appeal, index) => ({ ...defaultHomeSlides[0], id: `appeal-${appeal.slug}`, eyebrow: 'Current verified appeal', title: appeal.title, description: appeal.summary, primaryLabel: 'View this appeal', primaryHref: `/appeals/${appeal.slug}`, secondaryLabel: 'Support this need', secondaryHref: `/donate/${appeal.slug}`, appealSlug: appeal.slug, image: appealImages[index] ? `asset:${appealImages[index]!.id}` : 'logo', imageAlt: appealImages[index]?.altText || '', order: index }));
+  appealImages.forEach(asset => { if (asset) images.set(asset.id, asset); });
+  const heroSlides = composeHomeSlides(config, appealSlides);
+  const hasOpenAppeals = liveAppeals.length > 0;
   const publicProgrammeSlugs = new Set(discovery.publishedProgrammeSlugs);
   const eidProgrammePublished = publicProgrammeSlugs.has("eid-gift-kits");
   const visibleProgrammeCategories = programmeCategories.filter(category => {
@@ -91,14 +90,8 @@ export default async function HomePage() {
         >
           Amaana Foundation — Trust, Turned Into Action.
         </h1>
-        <ScrollCarousel label="Amaana Foundation story and featured work" mode="hero" className="v3-home-banner-carousel" autoAdvanceMs={7000}>
-          <HomeStorySlide />
-          {appeals.slice(0, 1).map(appeal => (
-            <HomeBannerSlide key={`appeal-${appeal.slug}`} className="v3-home-banner-slide--appeal" eyebrow="Current verified appeal" title={appeal.title} description={appeal.summary} actions={[{ href: `/appeals/${appeal.slug}`, label: "View this appeal" }, { href: `/donate/${appeal.slug}`, label: "Support this need", secondary: true }]} />
-          ))}
-          {heroSlides.map(({ drive, media }) => (
-            <HomeBannerSlide key={drive.id} eyebrow={`Amaana Foundation · ${drive.causeTitle}`} title={drive.title} description={drive.summary} visual={media ? <div className="v3-home-banner-media"><PublicMedia asset={media} sizes="(max-width: 900px) 100vw, 60vw" /></div> : undefined} actions={[{ href: canonicalOurWorkDestination(drive.slug), label: "Explore this initiative" }, { href: hasOpenAppeals ? "/appeals" : "/get-involved", label: hasOpenAppeals ? "Support a verified need" : "Ways to support", secondary: true }]} />
-          ))}
+        <ScrollCarousel cinematic label="Amaana Foundation story and featured work" mode="hero" className="v3-home-banner-carousel" autoAdvanceMs={7000}>
+          {heroSlides.map((slide, index) => <ConfiguredHomeSlide key={slide.id} slide={slide} asset={images.get(slide.image.slice(6))} priority={index === 0} />)}
         </ScrollCarousel>
       </section>
 

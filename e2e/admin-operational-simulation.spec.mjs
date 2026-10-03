@@ -73,6 +73,7 @@ test.describe('admin operational simulation without shared records', () => {
       'Assistance queue',
       'Appeals',
       'Media review',
+      'Home carousel',
       'Retention review',
       'Donations',
       'Notification delivery',

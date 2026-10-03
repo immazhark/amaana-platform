@@ -39,7 +39,7 @@ const profiles: Record<string, Profile> = {
     permissions: [
       "assistance.view", "assistance.update", "assistance.assign", "assistance.approve",
       "appeal.view", "appeal.create", "appeal.update", "appeal.publish",
-      "content.view", "content.publish", "donation.view", "notification.view",
+      "content.view", "content.update", "content.approve", "content.publish", "donation.view", "notification.view",
     ],
   },
   none: {

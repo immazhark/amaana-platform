@@ -26,7 +26,15 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
       expect(result.repeat, path).toBe('repeat, no-repeat');
       expect(result.mark, path).toContain('amaana-arch-emblem.svg');
       expect(result.markSize, path).toBe('contain');
-      expect(result.markVisible, path).toBe(true);
+      if (path === '/') {
+        // Homepage owner override: reviewed artwork replaces the decorative emblem;
+        // the shared gradient/lattice remains identical and the logo is only a fallback.
+        expect(result.markVisible, path).toBe(false);
+        const photo = page.locator('[data-active="true"] .v3-home-banner-media figure img');
+        await expect(photo, path).toBeVisible();
+        await expect.poll(() => photo.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+        expect(await page.locator('[data-active="true"] .v3-home-banner-media').evaluate(node => getComputedStyle(node).maskImage)).toContain('linear-gradient');
+      } else expect(result.markVisible, path).toBe(true);
       expect(result.overflow, path).toBe(false);
       expect(result.h1, path).toBe(1);
       if (path === '/contact' || path === '/request-assistance/status' || path === '/admin/login') {

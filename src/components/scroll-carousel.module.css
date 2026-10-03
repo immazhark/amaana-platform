@@ -57,3 +57,5 @@
 
 
 .cards .slide :global(.v2-impact-witness-item){margin-top:0;transform:none}
+
+.hero[data-cinematic] :is(.viewport,.track,.slide){height:auto}
