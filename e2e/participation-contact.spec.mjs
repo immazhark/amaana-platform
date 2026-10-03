@@ -22,6 +22,7 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
       await expect(first).toBeFocused();
       expect(await first.evaluate(card => getComputedStyle(card).outlineStyle)).toBe('solid');
       if (route === '/get-involved') {
+        expect(await page.locator('.v2-intent').evaluate(node => getComputedStyle(node).backgroundImage)).toContain('amaana-lattice-tile');
         const journey = await page.locator('.v2-journey-step').evaluateAll(steps => steps.map(step => ({
           gap: step.querySelector('span').getBoundingClientRect().top - step.querySelector('b').getBoundingClientRect().bottom,
           decoration: getComputedStyle(step, '::before').content,
@@ -43,6 +44,37 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
       }
     }
     expect((await page.goto('/appeals')).ok()).toBe(true);
+    for (const selector of ['#completed-causes', '.v2-appeal-method', '.v2-appeals-boundary']) {
+      const surface = page.locator(selector);
+      expect(await surface.evaluate(node => getComputedStyle(node).backgroundImage)).toContain('amaana-lattice-tile');
+      expect(await surface.evaluate(node => getComputedStyle(node).backgroundSize)).toContain('104px 104px');
+    }
+    expect(await page.locator('.v2-appeal-method').evaluate(node => getComputedStyle(node, '::after').content)).toBe('none');
+    const boundary = page.locator('.v2-appeals-boundary [data-section-heading="split"]');
+    const geometry = await boundary.evaluate(node => {
+      const label = node.querySelector('.v2-section-label');
+      const title = node.querySelector('h2');
+      const copy = node.querySelector('.v2-section-intro');
+      const action = copy.querySelector('span');
+      return {
+        labelSize: parseFloat(getComputedStyle(label).fontSize),
+        titleSize: parseFloat(getComputedStyle(title).fontSize),
+        labelRule: getComputedStyle(label, '::before').width,
+        actionGap: parseFloat(getComputedStyle(action).marginTop),
+        border: getComputedStyle(copy).borderLeftWidth,
+        title: title.getBoundingClientRect().toJSON(), copy: copy.getBoundingClientRect().toJSON(),
+      };
+    });
+    expect(geometry.labelSize).toBe(12);
+    expect(geometry.labelRule).toBe('40px');
+    expect(geometry.titleSize).toBeLessThanOrEqual(56);
+    expect(geometry.actionGap).toBeGreaterThanOrEqual(20);
+    expect(geometry.border).toBe('0px');
+    if (width > 900) expect(geometry.copy.left).toBeGreaterThan(geometry.title.right);
+    else expect(geometry.copy.top).toBeGreaterThan(geometry.title.bottom);
+    if (width === 390 || width === 1440) {
+      expect((await new AxeBuilder({ page }).include('.v2-appeal-method').include('.v2-appeals-boundary').analyze()).violations).toEqual([]);
+    }
     const carousel = page.getByRole('region', { name: 'Completed support outcomes', exact: true });
     await expect(carousel).toHaveAttribute('aria-roledescription', 'carousel');
     const slides = carousel.locator('[data-body-card]');

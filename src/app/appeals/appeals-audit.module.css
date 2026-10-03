@@ -1,4 +1,8 @@
 
+.method.method{background-image:var(--amaana-pattern),linear-gradient(140deg,#0d1b2e,#1d3150 66%,#2f4c7a);background-size:104px 104px,100% 100%;background-repeat:repeat,no-repeat}
+.method.method::after{content:none}
+.boundary.boundary{margin-bottom:0}
+.boundaryAction{display:block;margin-top:1.25rem}
 .lifecycle{padding:.9rem 0;background:transparent}
 .lifecycleTrack{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:.55rem;padding:.8rem 1rem;border:1px solid rgb(224 179 24 / 24%);border-radius:1rem;background:rgb(255 248 224 / 82%);color:#5b4a12}
 .lifecycleTrack span{font-size:.78rem;font-weight:800;letter-spacing:.02em}
