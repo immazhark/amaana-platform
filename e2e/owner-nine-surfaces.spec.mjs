@@ -25,6 +25,8 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
       if (route === '/faith-and-reflections') {
         const heading = page.locator('#faith-standard-title');
         expect(await heading.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeLessThanOrEqual(56);
+        const sizes = await page.evaluate(() => [document.querySelector('.page-hero__title'), document.querySelector('#faith-standard-title')].map(node => parseFloat(getComputedStyle(node).fontSize)));
+        expect(sizes[0] - sizes[1]).toBeGreaterThanOrEqual(8);
         await expect(heading.locator('..').locator('..')).toHaveAttribute('data-section-heading', 'split');
         const empty = page.locator('[class*="emptyState"]');
         if (await empty.count()) expect(await empty.evaluate(node => Math.abs(node.getBoundingClientRect().width - node.parentElement.getBoundingClientRect().width))).toBeLessThan(2);
