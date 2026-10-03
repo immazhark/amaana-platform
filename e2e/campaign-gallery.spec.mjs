@@ -64,7 +64,7 @@ test('initiative gallery lightbox owns the modal layer, traps focus and restores
   await expect(dialog).toContainText('Image 1 of 13');
 
   await page.keyboard.press('Shift+Tab');
-  await expect(page.getByRole('button', { name: 'Next →' })).toBeFocused();
+  await expect(page.getByRole('button', { name: 'Next', exact: true })).toBeFocused();
 
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
@@ -100,8 +100,11 @@ test('initiative gallery lightbox remains contained at 320px and preserves usabl
   expect(geometry.minButtonHeight).toBeGreaterThanOrEqual(44);
   expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.viewportWidth + 1);
 
-  await expect(dialog.getByRole('button', { name: '← Previous' })).toBeVisible();
-  await expect(dialog.getByRole('button', { name: 'Next →' })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Previous', exact: true })).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Next', exact: true })).toBeVisible();
+  for (const name of ['Previous', 'Next']) {
+    await expect(dialog.getByRole('button', { name, exact: true }).locator('svg')).toHaveAttribute('aria-hidden', 'true');
+  }
 
   const imageBox = await dialog.locator('img').evaluate(image => {
     const rect = image.getBoundingClientRect();
