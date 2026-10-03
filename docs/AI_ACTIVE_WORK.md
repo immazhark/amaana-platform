@@ -1,12 +1,16 @@
-# Premium carousel controls and programme artwork — 2026-10-04 IST
+# Premium carousel controls and programme artwork — delivered 2026-10-04 IST
 
-State: `CODEX_ACTIVE`. Branch `fix/premium-carousel-artwork-20261004`, based on tested nine-surface head bc9fcb99908cb3883a382646f1a07748d75ad20b. PR156 acceptance continues independently. Owner requests coherent SVG icon controls, diagonal joins for hero slides 2/4/5, category body carousels and authentic programme artwork derivatives. Preserve original photographs/privacy, factual copy, existing gradients and Companion.
+Ownership `IDLE`. PR157 delivered to `phase-public-site-rebuild`: tested head `6320b7d082b15164942831711d0a8bd9e2cccf85`, merge `d7ee5c64a9c317674d55df6a673b0701481cc0f0`; local/tested/remote/merged tree `90a2d98ff7cb1b0e00272bf1a68e5e1444cecf8c` identical. Final CI37161334707 SUCCESS:173 focused Chromium checks passed without retries in2.8minutes,414 units pass (six isolated-database fast skips),28 planner checks pass. Integration37161688907 SUCCESS: production build, unchanged JS811105/819200 and CSS344018/348160 budgets and server smoke; duplicate browser/database acceptance skipped.
+
+Railway `8d91d45f-1674-47d7-8dc7-a0e811e06f36` SUCCESS on exact merge. Live desktop verification confirms hero slides2/4/5 new derivatives loaded,3 SVG hero controls48px, all5 umbrella card images loaded, emergency shared carousel full1184px width with27.26px display headings and44px SVG controls, relevant flood derivative/privacy blur and COVID branded fallback; seasonal full-width feature/winter imagery retained. Original gradient/pattern/fade, admin overrides, canonical links and Companion preserved. No desktop overflow on verified routes. Mobile/responsive proof is six-width local and seeded CI, not live cloud emulation. Two final live screenshots captured and inspected.
+
+Initial acceptance171/173 passed; two legacy glyph-label selectors corrected to exact semantic labels and aria-hidden SVG checks. All3 gallery checks pass locally. Gallery test path initially selected unknown/full; explicit mapping and regression added, superseded run37161156585 automatically cancelled. Final planner confirms focused union and database skipped; unknown/core/auth/security and main-release paths still fail closed to full. Six authentic source-derived sibling WebP collages have source/output hashes and provenance; gallery originals unchanged. No separately identified COVID source exists, so its branded fallback remains. No database/schema/dependency/payment/email/indexing change. Main/draft PR104 protected. No whole-site defect-free claim. New confirmed defects use a separate task branch.
 
 ---
 
 # Nine owner screenshot surfaces — 2026-10-04 IST
 
-State: `CODEX_ACTIVE`. Branch `fix/owner-nine-surfaces-20261004`, base `67b3fc256f1f05c29ebde694ba830559f2e91444`. All nine supplied screenshots inspected. Scope Stories ethic pattern; Faith library width/editorial typography; Contact privacy pattern/closing contact icons; sponsorship closing placement; Partner areas; Compliance status/pending patterns and presentation. Preserve factual copy, approved assets, fixed Companion, original headers, unchanged budgets and protected main/draft PR104. Focused responsive/a11y and CI delivery.
+State: `IDLE` (delivered PR156; see final ledger). Historical branch `fix/owner-nine-surfaces-20261004`, base `67b3fc256f1f05c29ebde694ba830559f2e91444`. All nine supplied screenshots inspected. Scope Stories ethic pattern; Faith library width/editorial typography; Contact privacy pattern/closing contact icons; sponsorship closing placement; Partner areas; Compliance status/pending patterns and presentation. Preserve factual copy, approved assets, fixed Companion, original headers, unchanged budgets and protected main/draft PR104. Focused responsive/a11y and CI delivery.
 
 ---
 
