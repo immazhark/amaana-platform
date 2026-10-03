@@ -1,6 +1,14 @@
-# Shared navigation resilience — 2026-10-03 IST
+# Latest delivery — shared navigation resilience — 2026-10-03 IST
 
-State: `CODEX_ACTIVE`. Branch `fix/navigation-audit-20261003`, verified integration base `a35ec4227853a034722483141e463dd244f0cdcd`. Owner requests further UI/UX checks and confirmed fixes. Only protected PR104/main is open. Restored current source after transient workspace reverted to an older checkout. Audit menu/backdrop breakpoint parity (760 vs1020), resizing, short-screen reachability, body scrolling, keyboard focus and floating controls. Preserve approved artwork/content, privacy/payment/indexing and fixed bottom-right Companion. Exact checks, PR/CI/integration/review delivery pending.
+State: `IDLE`. Outgoing: Codex; incoming: next available implementation agent. Integration: `phase-public-site-rebuild`. Atomic shared-navigation task complete; documentation closure branch `docs/navigation-audit-delivery-20261003`.
+
+Completed: corrected 760/1020px backdrop breakpoint mismatch, locked background scrolling only while mobile navigation is open, cleared stale menu state on desktop resize with visible home-link focus, and used shared chrome-height/dynamic viewport tokens for short-screen reachability. Reused immutable links for keyboard wrapping; dismissal restores focus without unnecessary animation-frame scheduling. Approved design, banners and fixed Companion unchanged.
+
+Validation: final 11 local responsive/keyboard/header-WCAG checks pass across five widths/two heights; 392 units pass (six database-dependent skips), 21 planner regressions pass. Production build/types/lint pass (three existing warnings). UI audit detector has no emitted findings. PR CI 37099076391 SUCCESS: 57 Chromium checks pass on first attempt in1.5minutes. Integration CI 37099358020 SUCCESS; exact-tree PR acceptance reused, duplicate browsers/database skipped, build/budgets/coverage/server smoke retained. JavaScript819175/819200 and CSS345824/348160 bytes, caps unchanged.
+
+Delivery: PR [#136](https://github.com/immazhark/amaana-platform/pull/136), tested remote head `52fa5a362270cf2a52f9408cdbfa65b48e9d5dc4`, merge `838bf7d7519cf50996cf49c51f084eb78a39c31a`; both tested and merged tree `d2cdefbfba7bf12fec6607a64c845dcd38e3a88d` matches local tree. Railway review deployment `79349c3e-b715-4e54-8aef-3f5c28fc2621` SUCCESS on exact merge SHA. Live desktop /about screenshot/DOM confirms loaded header CSS Module, menu hidden/expanded=false, body overflow visible, no horizontal overflow, approved gradient/geometry/Arabic branding and fixed bottom-right Companion intact. Mobile/tablet and short-screen proof is local/seeded CI, not live cloud-browser resizing.
+
+Next: owner continues UI observations; new confirmed defects use a separate atomic branch after incoming checks. No claim that the entire site is defect-free. Main/production PR104 remains protected. Canonical factual/media/privacy/payment/indexing locks preserved. See `UI_NAVIGATION_AUDIT_2026-10-03.md`.
 
 ---
 
