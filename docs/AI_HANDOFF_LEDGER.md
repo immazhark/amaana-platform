@@ -1,3 +1,7 @@
+## 2026-10-04 IST — Homepage edge blend and controls
+
+CODEX_ACTIVE on fix/home-carousel-edge-blend-20261004 from f894b07d9395347d67577944538ebc9c9eb7af3e. Three screenshots show sharp photo right/bottom edges and boxed carousel controls. Preserve original gradient/lattice, crop/container geometry, programmes and backend; scoped CSS refinement with focused CI.
+
 ## 2026-10-04 IST — Dynamic homepage carousel delivery complete
 
 Ownership `IDLE`. Delivered PR152, tested head `9ef0f45ed0bd2bc1ca9fecc92f62640899effdf9`, merge `4d87df7c57eaaab070697fd1244193f9b7c63797`; tested/local/remote/merged tree `5a6493c8e80556bb46969f754f894fd88dab92c2` identical. Final PR CI37145322111 SUCCESS:745 Chromium checks in10.5minutes and24 Firefox/WebKit smoke checks in26.2seconds;414 units and isolated PostgreSQL migration/persistence/revision/rollback checks pass. First core run had736 passes/nine superseded banner expectations; updated assertions preserve gradient/image/edge/fade/grid/overflow/height requirements, final run no retries/flaky failures. Integration CI37146239534 SUCCESS, duplicate browsers correctly skipped; production JavaScript810705/819200 and CSS348088/348160 bytes, unchanged limits.
