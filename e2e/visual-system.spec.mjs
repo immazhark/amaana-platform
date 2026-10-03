@@ -127,7 +127,7 @@ test('shared public shell aligns header, reminder, L1 hero, body and footer at s
   }
 });
 
-test('homepage masthead is full bleed while copy and future documentary media align to the header grid', async ({ page }) => {
+test('homepage masthead is full bleed while copy and photographic media align to the header grid', async ({ page }) => {
   for (const width of [1440, 1920]) {
     await open(page, '/', width);
     const geometry = await page.evaluate(() => {
@@ -169,7 +169,9 @@ test('homepage masthead is full bleed while copy and future documentary media al
     expect(near(geometry.content.right, geometry.header.right), `homepage copy right edge should align at ${width}px`).toBeTruthy();
     expect(near(geometry.content.width, geometry.header.width), `homepage copy shell width should align at ${width}px`).toBeTruthy();
     expect(near(geometry.media.right, geometry.header.right), `homepage media right edge should align at ${width}px`).toBeTruthy();
-    expect(geometry.media.left).toBeGreaterThan(geometry.header.left + geometry.header.width * 0.4);
+    const fadeStart = (geometry.media.left - geometry.header.left) / geometry.header.width;
+    expect(fadeStart).toBeGreaterThan(0.3);
+    expect(fadeStart).toBeLessThan(0.5);
     expect(geometry.media.width).toBeGreaterThan(geometry.header.width * 0.35);
     expect(geometry.backgroundImage).not.toBe('none');
   }
@@ -526,15 +528,15 @@ test('Amaana decorative emblems stay at the viewport edge without affecting cont
   expect(geometry.parentWidth).toBeGreaterThan(geometry.contentWidth);
 });
 
-test('homepage hero preserves the owner-requested taller desktop composition', async ({ page }) => {
+test('homepage hero preserves the owner-requested compact adaptive desktop composition', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await open(page, '/');
   const hero = page.locator('section[data-carousel-mode="hero"][aria-label="Amaana Foundation story and featured work"]');
   await expect(hero).toBeVisible();
   const box = await hero.boundingBox();
   expect(box).toBeTruthy();
-  expect(box.width / box.height).toBeGreaterThan(2.8);
-  expect(box.height).toBeLessThanOrEqual(496);
+  expect(box.height).toBeGreaterThanOrEqual(500);
+  expect(box.height).toBeLessThanOrEqual(608);
   expect(box.y + box.height).toBeLessThanOrEqual(900);
   await expect(hero.getByText('The Story of Amaana · Hyderabad', { exact: true })).toBeVisible();
   const content = hero.locator('.v3-home-banner-content').first();
