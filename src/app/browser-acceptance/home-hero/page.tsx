@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { HomeStorySlide } from "@/components/home-story-slide";
+import { HomeBannerSlide, HomeStorySlide } from "@/components/home-story-slide";
+import Image from "next/image";
 import { HomeGrowth, HomeTrust } from "@/components/home-evidence";
 import { HomeHighlights } from "@/components/home-highlights";
 import { ScrollCarousel } from "@/components/scroll-carousel";
@@ -24,7 +25,7 @@ export default function HomeHeroBrowserAcceptanceFixture() {
         <h1 id="fixture-home-title" style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", clipPath: "inset(50%)", whiteSpace: "nowrap" }}>Amaana story browser fixture</h1>
         <ScrollCarousel label="Amaana Foundation story and featured work" mode="hero" className="v3-home-banner-carousel" autoAdvanceMs={7000}>
           <HomeStorySlide />
-          <HomeStorySlide />
+          <HomeBannerSlide eyebrow="Amaana Foundation · Our Work" title="Different Needs. One Standard of Care." description="Amaana’s work combines recurring programmes with verified case-led assistance, education, seasonal relief and emergency response." visual={<div className="v3-home-banner-media"><figure className="v2-media-item"><Image src="/backgrounds/Amaana_Website_Header_Banner.svg" width={1600} height={900} alt="Approved Amaana header artwork" sizes="(max-width: 900px) 100vw, 60vw" /></figure></div>} actions={[{ href: "/our-work", label: "Explore our work" }, { href: "/get-involved", label: "Ways to support", secondary: true }]} />
         </ScrollCarousel>
       </section>
       <HomeHighlights />

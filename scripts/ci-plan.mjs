@@ -3,6 +3,7 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
+  { paths: /^(src\/app\/(page\.tsx|home-documentary\.css|browser-acceptance\/home-hero\/page\.tsx)|src\/components\/home-story-slide\.tsx|e2e\/home-banner-composition\.spec\.mjs)$/, tests: ['home-banner-composition.spec.mjs', 'owner-screenshot-polish.spec.mjs', 'typography-hierarchy.spec.mjs', 'public-seo.spec.mjs', 'ui-consistency.spec.mjs'] },
   { paths: /^(e2e\/owner-surface-polish\.spec\.mjs|src\/components\/trust-evidence-boundary\.module\.css|src\/app\/(?:refund-policy|privacy)\/(?:page\.tsx|[^/]+\.module\.css)|src\/app\/compliance\/compliance-audit\.module\.css)$/, tests: ['owner-surface-polish.spec.mjs', 'policy-navigation.spec.mjs', 'ui-consistency.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^(src\/app\/donate\/(page\.tsx|donate-audit\.module\.css)|src\/app\/get-involved\/sponsor-education\/sponsor-education\.css|e2e\/donate-sponsorship-layout\.spec\.mjs)$/, tests: ['donate-sponsorship-layout.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'participation-contact.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^(src\/components\/islamic-companion(?:-panel)?(?:\.tsx|\.module\.css)|e2e\/companion-panel\.spec\.mjs)$/, tests: ['companion-panel.spec.mjs', 'navigation-resilience.spec.mjs', 'site-chrome-footer.spec.mjs', 'typography-hierarchy.spec.mjs'] },
