@@ -1,0 +1,1299 @@
+[
+  {
+    "slug": "taleem-initiative-2025",
+    "title": "Taleem Initiative 2025",
+    "summary": "Educational-kit support for students, with Amaana's donor update reporting support reaching 50 orphan children.",
+    "story": "Amaana's Taleem Initiative is an educational-kit distribution drive for students. The original campaign banner states that purpose, and the supplied archive places this edition in 2025.\n\nA donor appreciation update thanks an individual supporter whose contribution, Amaana reports, helped bring joy to 50 orphan children. This is the campaign's reported figure, not a separately audited beneficiary count. The donor is not named in the update.\n\nThe gallery preserves the original campaign banner, donor update and carousel cover. These are campaign graphics, not photographs of distribution. The available records do not specify the kit contents, expenditure, distribution date or subsequent educational outcomes; those details have not been inferred.",
+    "year": 2025,
+    "primaryMetric": "50 children",
+    "primaryMetricLabel": "supported · campaign-reported",
+    "displayOrder": 2,
+    "cause": { "slug": "amaana-taleem" },
+    "media": [
+      {
+        "id": "1bi1n3KNP475Y1kh0jyV5lU8t6jgYIiZr",
+        "url": "/media/taleem-2025-banner.webp",
+        "alt": "Original Amaana Taleem Initiative banner describing an educational kits distribution drive for students",
+        "caption": "Original campaign banner: educational-kit distribution for students. This is a campaign graphic."
+      },
+      {
+        "id": "18aYdx9Fi-urxxfvuXusZc2h760Qsnu9Y",
+        "url": "/media/taleem-2025-update.webp",
+        "alt": "Amaana donor appreciation graphic reporting support reaching 50 orphan children",
+        "caption": "Amaana's donor update reports support reaching 50 orphan children; the donor remains unnamed."
+      },
+      {
+        "id": "14OyZ2OOaE3xoJxFD7tQpPr5SUH9gA32F",
+        "url": "/media/taleem-2025-cover.webp",
+        "alt": "Original Amaana Taleem Initiative social carousel cover",
+        "caption": "The original Taleem Initiative carousel cover from the 2025 archive."
+      }
+    ]
+  },
+  {
+    "slug": "winter-drive-2025-26",
+    "title": "Winter Drive 2025–26",
+    "summary": "A winter-kit distribution for people in need, with Amaana's impact update reporting 234 kits distributed.",
+    "story": "Amaana's Winter Drive 2025–26 provided winter kits to people in need. The campaign's impact update reports 234 kits distributed, each including a sweater or jacket, a blanket and a beanie cap.\n\nThe original photographs show the preparation stage: patterned bags arranged together with folded winter items visible inside. No recipients appear in the two selected field photographs. Amaana's separate thank-you update describes many of those reached as madrasah students, orphan children, widows, labourers and domestic workers.\n\nThe impact graphic also refers to dates and carpets. Those are distinct activities and are not counted as part of this page's winter-kit result. This page uses Amaana's reported figure and does not infer additional recipients, expenditure or outcomes from the photographs.",
+    "year": null,
+    "startYear": 2025,
+    "endYear": 2026,
+    "primaryMetric": "234 kits",
+    "primaryMetricLabel": "distributed · campaign-reported",
+    "displayOrder": 1,
+    "cause": { "slug": "seasonal-relief" },
+    "media": [
+      {
+        "id": "local-winter-preparation-1",
+        "source": "user-upload:winter-2025-26/WhatsApp Image 2026-02-18 at 1.02.01 PM (1).jpeg",
+        "url": "/media/winter-2025-26-preparation.webp",
+        "alt": "Winter kits arranged in patterned bags with folded clothing and blankets visible",
+        "caption": "Winter kits arranged during preparation; no recipients appear in this photograph."
+      },
+      {
+        "id": "local-winter-preparation-3",
+        "source": "user-upload:winter-2025-26/WhatsApp Image 2026-02-18 at 1.02.01 PM (3).jpeg",
+        "url": "/media/winter-2025-26-preparation-wide.webp",
+        "alt": "Rows of patterned Winter Drive bags with folded blankets and clothing visible",
+        "caption": "A wider view of prepared winter kits before distribution."
+      },
+      {
+        "id": "1EP9MoK2xJrXgR8O20jr3LWaKv8dxaO2Z",
+        "url": "/media/winter-2025-26-impact.webp",
+        "alt": "Amaana Winter Drive impact update reporting 234 winter kits distributed",
+        "caption": "Campaign impact update: 234 winter kits, each reported to include a sweater or jacket, blanket and beanie cap."
+      },
+      {
+        "id": "1C7x5v0zG6M4AeQ6Zgbw1aBKdbRl3KZjj",
+        "url": "/media/winter-2025-26-banner.webp",
+        "alt": "Original Amaana Winter Drive campaign banner",
+        "caption": "The original Amaana Winter Drive campaign banner from the supplied 2025–26 archive."
+      }
+    ]
+  },
+  {
+    "slug": "dates-distribution-2025",
+    "title": "Dates Distribution 2025",
+    "summary": "Ramadan dates prepared for community distribution, with Amaana reporting 90 kg distributed in this 2025 edition.",
+    "story": "Amaana's 2025 Dates Distribution brought together 90 kg of dates for Ramadan community support. The supplied photographs document the preparation stage: wholesale cartons, individually packed containers and Amaana's Ramadan 1446 Hijri labels.\n\nThe photographs show the dates being organized before handover. No recipient total, expenditure figure or list of distribution locations appears in the supplied records, so those details have not been inferred.\n\nThe 90 kg quantity is Amaana's campaign-reported figure. This edition is preserved separately from the 2023, 2024 and 2026 drives so each year's evidence remains clear.",
+    "year": 2025,
+    "primaryMetric": "90 kg",
+    "primaryMetricLabel": "dates distributed · campaign-reported",
+    "displayOrder": 3,
+    "cause": { "slug": "ramadan-eid" },
+    "media": [
+      {
+        "id": "local-dates-2025-1",
+        "source": "user-upload:dates-2025/DDD20251.jpeg",
+        "url": "/media/dates-2025-packs-in-carton.webp",
+        "alt": "Amaana-labelled dates containers arranged inside an open carton for the 2025 drive",
+        "caption": "Individually labelled dates containers arranged during preparation."
+      },
+      {
+        "id": "local-dates-2025-2",
+        "source": "user-upload:dates-2025/DDD20252.jpeg",
+        "url": "/media/dates-2025-labelled-pack.webp",
+        "alt": "Amaana Ramadan 1446 Hijri dates container displayed with wholesale cartons",
+        "caption": "An Amaana-labelled pack shown with the wholesale date cartons."
+      },
+      {
+        "id": "local-dates-2025-3",
+        "source": "user-upload:dates-2025/DDD20253.jpeg",
+        "url": "/media/dates-2025-cartons.webp",
+        "alt": "Stack of wholesale Kimia dates cartons prepared for Amaana's 2025 distribution",
+        "caption": "Wholesale cartons brought together for the 90 kg drive."
+      },
+      {
+        "id": "local-dates-2025-4",
+        "source": "user-upload:dates-2025/WhatsApp Image 2026-09-14 at 5.30.07 AM.jpeg",
+        "url": "/media/dates-2025-pack-closeup.webp",
+        "alt": "Close view of an Amaana Foundation Ramadan dates container for 1446 Hijri",
+        "caption": "The original 2025 campaign packaging and Ramadan label."
+      }
+    ]
+  },
+  {
+    "slug": "dates-distribution-2024",
+    "title": "Dates Distribution 2024",
+    "summary": "A Ramadan dates handover documented in Amaana's archive, with 90 kg reported for the 2024 edition.",
+    "story": "Amaana's 2024 Dates Distribution provided 90 kg of dates during Ramadan. The surviving source for this edition is a distribution video showing date boxes being presented to children.\n\nFor public use, identifiable faces in the video and its poster frame have been deliberately blurred. The edited derivative preserves the handover activity while protecting the identity of the children shown; the supplied original remains unchanged.\n\nThe archive does not state a recipient count, expenditure total or detailed location. The page therefore records the campaign-reported weight without estimating reach from the footage.",
+    "year": 2024,
+    "primaryMetric": "90 kg",
+    "primaryMetricLabel": "dates distributed · campaign-reported",
+    "displayOrder": 4,
+    "cause": { "slug": "ramadan-eid" },
+    "media": [
+      {
+        "id": "local-dates-2024-poster",
+        "source": "user-upload:dates-2024/video-poster-derived-and-face-blurred",
+        "url": "/media/dates-2024-video-poster.webp",
+        "alt": "Privacy-blurred still from Amaana's 2024 Dates Distribution video",
+        "caption": "A privacy-protected still from the 2024 distribution."
+      },
+      {
+        "id": "local-dates-2024-video",
+        "kind": "VIDEO",
+        "source": "user-upload:dates-2024/WhatsApp Video 2026-09-14 at 3.30.45 AM.mp4#face-blurred",
+        "url": "/media/dates-2024-distribution-blurred.mp4",
+        "alt": "Privacy-blurred video documenting the 2024 dates handover",
+        "caption": "Documentary video of the 2024 handover; identifiable faces have been blurred."
+      }
+    ]
+  },
+  {
+    "slug": "dates-distribution-2023",
+    "title": "Dates Distribution 2023",
+    "summary": "Amaana's 2023 Ramadan dates drive, documented through prepared cartons and a privacy-protected handover video; 78 kg reported.",
+    "story": "Amaana's 2023 Dates Distribution prepared and distributed 78 kg of dates during Ramadan. The supplied photograph shows the original wholesale cartons assembled for the drive.\n\nThe short selected video records the handover activity. Identifiable faces in both the photograph and video have been blurred for public display. Two substantially longer videos supplied for reference were intentionally omitted in favour of this concise 38-second record.\n\nNo beneficiary count, expenditure figure or detailed location is stated in the supplied material. The 78 kg result is presented as Amaana's campaign-reported quantity without further estimation.",
+    "year": 2023,
+    "primaryMetric": "78 kg",
+    "primaryMetricLabel": "dates distributed · campaign-reported",
+    "displayOrder": 5,
+    "cause": { "slug": "ramadan-eid" },
+    "media": [
+      {
+        "id": "local-dates-2023-photo",
+        "source": "user-upload:dates-2023/WhatsApp Image 2026-09-14 at 3.30.17 AM.jpeg#face-blurred",
+        "url": "/media/dates-2023-cartons-blurred.webp",
+        "alt": "Wholesale dates cartons from Amaana's 2023 drive with an identifiable face blurred",
+        "caption": "Cartons prepared for the 2023 drive; the visible face has been blurred."
+      },
+      {
+        "id": "local-dates-2023-video",
+        "kind": "VIDEO",
+        "source": "user-upload:dates-2023/WhatsApp Video 2026-09-14 at 3.32.09 AM (2).mp4#face-blurred",
+        "url": "/media/dates-2023-distribution-3-blurred.mp4",
+        "alt": "Privacy-blurred video documenting Amaana's 2023 dates handover",
+        "caption": "Selected 38-second handover video; identifiable faces have been blurred."
+      }
+    ]
+  },
+  {
+    "slug": "meat-distribution-2026",
+    "title": "Meat Distribution Drive 2026",
+    "summary": "An Eid al-Adha meat distribution documented from livestock and preparation through packed portions, with Amaana reporting support for 350 families.",
+    "story": "Amaana's 2026 Meat Distribution Drive prepared meat portions for families around Eid al-Adha. The supplied archive documents livestock assembled for the drive, weighing and packing, labelled containers, insulated transport boxes and cartons prepared for dispatch.\n\nAmaana reports that this edition supported 350 families. This is the campaign-reported reach; the photographs do not provide an independently auditable recipient list or expenditure figure.\n\nOne distant identifiable person in the livestock photograph has been deliberately blurred for public display. No additional locations, quantities or outcomes have been inferred from the images.",
+    "year": 2026,
+    "primaryMetric": "350 families",
+    "primaryMetricLabel": "supported · campaign-reported",
+    "displayOrder": 6,
+    "cause": { "slug": "ramadan-eid" },
+    "media": [
+      {
+        "id": "local-meat-2026-1",
+        "source": "user-upload:meat-2026/image (2).png",
+        "url": "/media/meat-2026-cold-box.webp",
+        "alt": "Amaana-labelled meat portions stored inside an insulated box for the 2026 drive",
+        "caption": "Packed portions placed in insulated storage during preparation."
+      },
+      {
+        "id": "local-meat-2026-2",
+        "source": "user-upload:meat-2026/image (3).png",
+        "url": "/media/meat-2026-labelled-packs.webp",
+        "alt": "Rows of labelled meat containers prepared for Amaana's 2026 distribution",
+        "caption": "Labelled meat containers arranged before dispatch."
+      },
+      {
+        "id": "local-meat-2026-3",
+        "source": "user-upload:meat-2026/image (4).png",
+        "url": "/media/meat-2026-weighing.webp",
+        "alt": "A packaged meat portion being weighed during Amaana's 2026 preparation",
+        "caption": "A portion being checked on the weighing scale."
+      },
+      {
+        "id": "local-meat-2026-4",
+        "source": "user-upload:meat-2026/image (8).png",
+        "url": "/media/meat-2026-cartons.webp",
+        "alt": "Sealed cartons displayed beneath Amaana's Meat Distribution Drive 2026 banner",
+        "caption": "Sealed cartons assembled for the 2026 drive."
+      },
+      {
+        "id": "local-meat-2026-5",
+        "source": "user-upload:meat-2026/WhatsApp Image 2026-06-05 at 10.02.44 PM (2).jpeg",
+        "url": "/media/meat-2026-livestock.webp",
+        "alt": "Livestock assembled beneath Amaana's Meat Distribution Drive banner in 2026",
+        "caption": "Livestock documented before preparation."
+      },
+      {
+        "id": "local-meat-2026-6",
+        "source": "user-upload:meat-2026/WhatsApp Image 2026-07-04 at 10.58.23 PM (3).jpeg#face-blurred",
+        "url": "/media/meat-2026-livestock-blurred.webp",
+        "alt": "Livestock assembled for Amaana's 2026 drive with a distant person's face blurred",
+        "caption": "Livestock at the preparation site; the visible person's identity is protected."
+      },
+      {
+        "id": "local-meat-2026-7",
+        "source": "user-upload:meat-2026/WhatsApp Image 2026-07-04 at 11.02.01 PM.jpeg",
+        "url": "/media/meat-2026-pack-closeup.webp",
+        "alt": "Close view of an Amaana Meat Distribution Drive 2026 labelled container",
+        "caption": "The original 2026 campaign label on a prepared container."
+      }
+    ]
+  },
+  {
+    "slug": "meat-distribution-2025",
+    "title": "Meat Distribution Drive 2025",
+    "summary": "An Eid al-Adha meat distribution documented through preparation and packing, with Amaana reporting support for 150 families.",
+    "story": "Amaana's 2025 Meat Distribution Drive prepared individually packed meat portions around Eid al-Adha. The supplied photographs document livestock, portioning, labelled containers and the distribution preparation site.\n\nAmaana reports that the drive supported 150 families. This is the campaign-reported figure, not a separately audited household count.\n\nThe archive does not state the total meat weight, expenditure or a detailed distribution location. Those details have not been inferred from the number of visible packs or photographs.",
+    "year": 2025,
+    "primaryMetric": "150 families",
+    "primaryMetricLabel": "supported · campaign-reported",
+    "displayOrder": 7,
+    "cause": { "slug": "ramadan-eid" },
+    "media": [
+      {
+        "id": "local-meat-2025-1",
+        "source": "user-upload:meat-2025/MDD 2.png",
+        "url": "/media/meat-2025-donor-update.webp",
+        "alt": "Amaana donor appreciation graphic reporting support for more than 150 families in 2025",
+        "caption": "Campaign update thanking donors and reporting support for more than 150 families."
+      },
+      {
+        "id": "local-meat-2025-2",
+        "source": "user-upload:meat-2025/WhatsApp Image 2025-06-11 at 10.48.44 PM (2).jpeg",
+        "url": "/media/meat-2025-labelled-packs.webp",
+        "alt": "Rows of Amaana-labelled meat containers prepared for the 2025 drive",
+        "caption": "Labelled meat portions arranged during preparation."
+      },
+      {
+        "id": "local-meat-2025-3",
+        "source": "user-upload:meat-2025/WhatsApp Image 2025-06-11 at 10.48.45 PM (1).jpeg",
+        "url": "/media/meat-2025-pack-closeup.webp",
+        "alt": "Close view of an Amaana Meat Distribution Drive 2025 container",
+        "caption": "A prepared portion carrying the original campaign label."
+      },
+      {
+        "id": "local-meat-2025-4",
+        "source": "user-upload:meat-2025/WhatsApp Image 2025-06-11 at 10.48.45 PM (2).jpeg",
+        "url": "/media/meat-2025-preparation.webp",
+        "alt": "Prepared meat containers beneath Amaana's 2025 campaign banner",
+        "caption": "The packing area during preparation for distribution."
+      },
+      {
+        "id": "local-meat-2025-5",
+        "source": "user-upload:meat-2025/WhatsApp Image 2025-06-11 at 10.48.45 PM (3).jpeg",
+        "url": "/media/meat-2025-livestock.webp",
+        "alt": "Livestock assembled for Amaana's 2025 Meat Distribution Drive",
+        "caption": "Livestock documented before preparation."
+      },
+      {
+        "id": "local-meat-2025-6",
+        "source": "user-upload:meat-2025/WhatsApp Image 2025-06-11 at 10.48.45 PM (5).jpeg",
+        "url": "/media/meat-2025-portions.webp",
+        "alt": "Many meat portions arranged in clear containers during Amaana's 2025 drive",
+        "caption": "Individual portions arranged during the packing process."
+      },
+      {
+        "id": "local-meat-2025-7",
+        "source": "user-upload:meat-2025/WhatsApp Image 2025-06-13 at 12.01.44 AM.jpeg",
+        "url": "/media/meat-2025-distribution-site.webp",
+        "alt": "Amaana Meat Distribution Drive 2025 preparation site with packed portions",
+        "caption": "The preparation site with packed portions ready for the drive."
+      }
+    ]
+  },
+  {
+    "slug": "financial-aid-auto-rickshaw-2025",
+    "title": "Financial Aid for an Auto-Rickshaw",
+    "summary": "Livelihood support that funded an auto-rickshaw, with Amaana reporting ₹95,000 raised and the vehicle handed over.",
+    "story": "Amaana organised this completed financial-aid appeal to help a young sole breadwinner obtain an auto-rickshaw and build a more dependable livelihood.\n\nThe campaign update reports that ₹95,000 was raised. Amaana then assisted with procuring the vehicle, handed it over and provided an additional amount intended to ease the recipient's immediate monthly financial burden.\n\nThe photographs document the vehicle and handover. The recipient's face has been deliberately blurred for public display. The archive contains no claim about later earnings, so no longer-term financial outcome has been inferred.",
+    "year": 2025,
+    "primaryMetric": "₹95,000",
+    "primaryMetricLabel": "raised · campaign-reported",
+    "displayOrder": 8,
+    "cause": { "slug": "medical-financial-relief" },
+    "media": [
+      {
+        "id": "local-aid-auto-rickshaw",
+        "source": "user-upload:financial-aid-auto/WhatsApp Image 2025-08-03 at 1.25.08 AM.jpeg",
+        "url": "/media/aid-auto-rickshaw.webp",
+        "alt": "Yellow auto-rickshaw procured through Amaana's livelihood-support appeal",
+        "caption": "The auto-rickshaw documented before handover."
+      },
+      {
+        "id": "local-aid-auto-handover",
+        "source": "user-upload:financial-aid-auto/WhatsApp Image 2025-08-03 at 1.25.09 AM.jpeg#face-blurred",
+        "url": "/media/aid-auto-handover-blurred.webp",
+        "alt": "Privacy-protected photograph of the recipient beside the funded auto-rickshaw",
+        "caption": "The recipient beside the vehicle; his face has been blurred."
+      },
+      {
+        "id": "local-aid-auto-update",
+        "source": "user-upload:financial-aid-auto/WhatsApp Image 2026-09-09 at 4.05.36 AM.jpeg",
+        "url": "/media/aid-auto-update.webp",
+        "alt": "Amaana update reporting ₹95,000 raised and an auto-rickshaw handed over",
+        "caption": "Campaign update reporting the amount raised and completed handover."
+      }
+    ]
+  },
+  {
+    "slug": "medical-aid-eight-day-old-baby",
+    "title": "Medical Aid for an Eight-Day-Old Baby",
+    "summary": "Emergency neonatal treatment support, with Amaana reporting ₹1,07,520 raised and handed to the family.",
+    "story": "This completed emergency appeal concerned an eight-day-old baby who required oxygen-supported hospital care. The family reported having exhausted its available resources while meeting recent medical costs and caring responsibilities.\n\nThe original appeal estimated that a further ₹1.2 lakh would be needed through discharge. Amaana's subsequent update reports that ₹1,07,520 was raised and handed to the family for treatment.\n\nThe supplied records do not state the baby's eventual clinical outcome. This archive therefore documents the appeal and financial handover without making a recovery claim.",
+    "year": null,
+    "primaryMetric": "₹1,07,520",
+    "primaryMetricLabel": "raised and handed over · campaign-reported",
+    "displayOrder": 9,
+    "cause": { "slug": "medical-financial-relief" },
+    "media": [
+      {
+        "id": "local-aid-baby-appeal",
+        "source": "user-upload:medical-aid-eight-day-old-baby/appeal-poster",
+        "url": "/media/aid-baby-appeal.webp",
+        "alt": "Original emergency appeal describing hospital care for an eight-day-old baby",
+        "caption": "The original appeal; its requested amount was an estimate at the time."
+      },
+      {
+        "id": "local-aid-baby-update",
+        "source": "user-upload:medical-aid-eight-day-old-baby/impact-update",
+        "url": "/media/aid-baby-update.webp",
+        "alt": "Amaana update reporting ₹1,07,520 raised for the baby's treatment",
+        "caption": "Campaign update reporting the amount raised and handed to the family."
+      },
+      {
+        "id": "local-aid-baby-handover",
+        "source": "user-upload:medical-aid-eight-day-old-baby/handover-graphic",
+        "url": "/media/aid-baby-handover.webp",
+        "alt": "Amaana impact graphic documenting a cash handover for medical treatment",
+        "caption": "Handover evidence supplied with the completed campaign archive."
+      }
+    ]
+  },
+  {
+    "slug": "medical-aid-stage-three-cancer-2025",
+    "title": "Medical Aid for a Cancer Patient",
+    "summary": "Surgery support for a patient with stage-three oral cancer, with Amaana reporting ₹3,19,000 raised and handed to his wife.",
+    "story": "Amaana organised this medical-aid appeal for a patient reported to have stage-three oral cancer and to need surgery in Hyderabad in May 2025.\n\nThe campaign's impact update reports that friends and family contributed ₹3,19,000 and that the amount was handed to the patient's wife. A photograph supplied with the update documents the cash handover.\n\nThe concluded appeal's bank account, QR code and payment phone number have been omitted from the public archive. No post-treatment clinical outcome appears in the supplied records, so none has been inferred.",
+    "year": 2025,
+    "primaryMetric": "₹3,19,000",
+    "primaryMetricLabel": "raised and handed over · campaign-reported",
+    "displayOrder": 10,
+    "cause": { "slug": "medical-financial-relief" },
+    "media": [
+      {
+        "id": "local-aid-cancer-appeal",
+        "source": "user-upload:medical-aid-cancer/Amaana Fundraisers Appeals.png#payment-details-omitted",
+        "url": "/media/aid-cancer-appeal-cropped.webp",
+        "alt": "Cropped historical appeal describing surgery support for a patient with stage-three oral cancer",
+        "caption": "Historical appeal narrative; obsolete banking, QR and phone details were omitted."
+      },
+      {
+        "id": "local-aid-cancer-update",
+        "source": "user-upload:medical-aid-cancer/3.png",
+        "url": "/media/aid-cancer-update.webp",
+        "alt": "Amaana update reporting ₹3,19,000 raised for a stage-three cancer patient",
+        "caption": "Campaign update reporting the amount raised and handed to the patient's wife."
+      },
+      {
+        "id": "local-aid-cancer-handover",
+        "source": "user-upload:medical-aid-cancer/WhatsApp Image 2026-09-09 at 4.07.10 AM.jpeg",
+        "url": "/media/aid-cancer-handover.webp",
+        "alt": "Cash handover documented for the completed cancer-treatment appeal",
+        "caption": "Handover evidence supplied with the completed campaign archive."
+      },
+      {
+        "id": "local-aid-cancer-closing",
+        "source": "user-upload:medical-aid-cancer/4.png",
+        "url": "/media/aid-cancer-closing.webp",
+        "alt": "Amaana closing message offering prayers for people undergoing treatment",
+        "caption": "The campaign's original closing message."
+      }
+    ]
+  },
+  {
+    "slug": "medical-aid-ailing-mother",
+    "title": "Medical Aid for an Ailing Mother",
+    "summary": "Treatment support for a mother with severe burn injuries, with Amaana reporting ₹72,000 raised and handed to her daughter.",
+    "story": "This appeal supported a mother reported to have suffered burns over 45% of her body. Her daughter approached Amaana after the family had already spent ₹4.2 lakh and exhausted its available resources.\n\nAmaana's impact update describes the patient as a single mother of two and reports that ₹72,000 was raised for treatment. The update states that the amount was handed directly to her daughter.\n\nThe supplied archive documents the request and handover but does not state a later clinical outcome. This page therefore makes no recovery claim.",
+    "year": null,
+    "primaryMetric": "₹72,000",
+    "primaryMetricLabel": "raised and handed over · campaign-reported",
+    "displayOrder": 11,
+    "cause": { "slug": "medical-financial-relief" },
+    "media": [
+      {
+        "id": "local-aid-mother-appeal",
+        "source": "user-upload:medical-aid-mother/Amaana Fundraisers Appeals.png",
+        "url": "/media/aid-mother-appeal.webp",
+        "alt": "Historical appeal describing treatment needs for a mother with severe burn injuries",
+        "caption": "The original appeal describing the family's reported treatment costs and need."
+      },
+      {
+        "id": "local-aid-mother-update",
+        "source": "user-upload:medical-aid-mother/Untitled Design.png",
+        "url": "/media/aid-mother-update.webp",
+        "alt": "Amaana update reporting ₹72,000 raised for the mother's treatment",
+        "caption": "Campaign update reporting the amount raised and handed to the patient's daughter."
+      },
+      {
+        "id": "local-aid-mother-handover",
+        "source": "user-upload:medical-aid-mother/1.jpg",
+        "url": "/media/aid-mother-handover.webp",
+        "alt": "Amaana impact graphic documenting a cash handover for the mother's treatment",
+        "caption": "Handover evidence supplied with the completed campaign archive."
+      }
+    ]
+  },
+  {
+    "slug": "medical-aid-aliza-ards-2026",
+    "title": "Medical Aid for Aliza — ARDS",
+    "summary": "Critical-care support for Aliza during treatment for ARDS, with Amaana reporting ₹4,82,700 raised and handed over.",
+    "story": "Amaana opened this medical-aid appeal after Aliza was reported to have developed severe pneumonia that progressed to Acute Respiratory Distress Syndrome (ARDS) with refractory hypoxemia. The campaign materials describe escalation from high-frequency ventilation to ECMO and mechanical ventilation in paediatric intensive care.\n\nAmaana's impact update reports that ₹4,82,700 was raised for treatment and that a cheque was handed to the family. A message supplied by Aliza's father acknowledges receipt and thanks donors for their support and prayers.\n\nFor public display, Aliza's face has been heavily blurred and the family's phone and contact details have been redacted. The archived donation card and its bank account, QR code and payment phone number are not published. The materials express hope for recovery but do not establish a final clinical outcome, so none is claimed here.",
+    "year": 2026,
+    "primaryMetric": "₹4,82,700",
+    "primaryMetricLabel": "raised and handed over · campaign-reported",
+    "displayOrder": 12,
+    "cause": { "slug": "medical-financial-relief" },
+    "media": [
+      {
+        "id": "local-aid-aliza-update",
+        "source": "user-upload:medical-aid-aliza/2.png",
+        "url": "/media/aid-aliza-update.webp",
+        "alt": "Amaana update reporting ₹4,82,700 raised and a cheque handed to Aliza's family",
+        "caption": "Campaign update reporting the amount raised and completed handover."
+      },
+      {
+        "id": "local-aid-aliza-photos",
+        "source": "user-upload:medical-aid-aliza/2 (2).png#faces-blurred-and-name-line-omitted",
+        "url": "/media/aid-aliza-photos-blurred.webp",
+        "alt": "Two privacy-protected photographs of Aliza before and during hospital treatment",
+        "caption": "Campaign photographs with Aliza's face heavily blurred and the full-name line omitted."
+      },
+      {
+        "id": "local-aid-aliza-message",
+        "source": "user-upload:medical-aid-aliza/Amaana Thanks and Impact review (4).png#contact-details-redacted",
+        "url": "/media/aid-aliza-family-message-redacted.webp",
+        "alt": "Redacted message from Aliza's father acknowledging receipt of the treatment funds",
+        "caption": "The father's acknowledgement; phone and contact details have been redacted."
+      }
+    ]
+  },
+  {
+    "slug": "eid-gift-kits-2020",
+    "title": "Eid Gift Kits 2020",
+    "summary": "The first documented Eid Gift Kits edition, with Amaana's existing campaign record reporting support for 85 families.",
+    "story": "Amaana's 2020 Eid Gift Kits drive prepared festive food support for families ahead of Eid. The photographs document the kit contents and the completed white gift bags, each finished with an Eid greeting and campaign label.\n\nAmaana's existing campaign record reports that this first edition supported 85 families. This is a campaign-reported figure rather than a separately audited household count.\n\nNo expenditure total, detailed distribution location or recipient list was supplied for this edition. Those details have not been inferred from the visible bags.",
+    "year": 2020,
+    "primaryMetric": "85 families",
+    "primaryMetricLabel": "supported · campaign-reported",
+    "displayOrder": 20,
+    "cause": { "slug": "ramadan-eid" },
+    "media": [
+      {
+        "id": "local-eid-kits-2020-gallery-01",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.50.53 AM (1).jpeg",
+        "url": "/media/eid-kits-2020-gallery-01.webp",
+        "alt": "Selected documentary photograph 1 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 1 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-02",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.50.53 AM (2).jpeg",
+        "url": "/media/eid-kits-2020-gallery-02.webp",
+        "alt": "Selected documentary photograph 2 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 2 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-03",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.50.53 AM.jpeg",
+        "url": "/media/eid-kits-2020-gallery-03.webp",
+        "alt": "Selected documentary photograph 3 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 3 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-04",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.50.54 AM.jpeg",
+        "url": "/media/eid-kits-2020-gallery-04.webp",
+        "alt": "Selected documentary photograph 4 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 4 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-05",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.50.55 AM.jpeg",
+        "url": "/media/eid-kits-2020-gallery-05.webp",
+        "alt": "Selected documentary photograph 5 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 5 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-06",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.50.56 AM (1).jpeg",
+        "url": "/media/eid-kits-2020-gallery-06.webp",
+        "alt": "Selected documentary photograph 6 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 6 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-07",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.50.56 AM.jpeg",
+        "url": "/media/eid-kits-2020-gallery-07.webp",
+        "alt": "Selected documentary photograph 7 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 7 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-08",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.50.57 AM.jpeg",
+        "url": "/media/eid-kits-2020-gallery-08.webp",
+        "alt": "Selected documentary photograph 8 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 8 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-09",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.50.58 AM (1).jpeg",
+        "url": "/media/eid-kits-2020-gallery-09.webp",
+        "alt": "Selected documentary photograph 9 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 9 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-10",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.50.58 AM (2).jpeg",
+        "url": "/media/eid-kits-2020-gallery-10.webp",
+        "alt": "Selected documentary photograph 10 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 10 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-11",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.50.58 AM.jpeg",
+        "url": "/media/eid-kits-2020-gallery-11.webp",
+        "alt": "Selected documentary photograph 11 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 11 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-12",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.50.59 AM.jpeg",
+        "url": "/media/eid-kits-2020-gallery-12.webp",
+        "alt": "Selected documentary photograph 12 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 12 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-13",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.51.00 AM.jpeg",
+        "url": "/media/eid-kits-2020-gallery-13.webp",
+        "alt": "Selected documentary photograph 13 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 13 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-14",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.51.01 AM (1).jpeg",
+        "url": "/media/eid-kits-2020-gallery-14.webp",
+        "alt": "Selected documentary photograph 14 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 14 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-15",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.51.01 AM.jpeg",
+        "url": "/media/eid-kits-2020-gallery-15.webp",
+        "alt": "Selected documentary photograph 15 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 15 from the 2020 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2020-gallery-16",
+        "source": "user-upload:eid-kits-2020/WhatsApp Image 2026-09-09 at 1.51.02 AM.jpeg",
+        "url": "/media/eid-kits-2020-gallery-16.webp",
+        "alt": "Selected documentary photograph 16 from Amaana's 2020 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 16 from the 2020 Eid Gift Kits archive."
+      }
+    ]
+  },
+  {
+    "slug": "eid-gift-kits-2021",
+    "title": "Eid Gift Kits 2021",
+    "summary": "A festive food-kit distribution with 171 kits recorded in Amaana's 2021 expenditure summary.",
+    "story": "Amaana's 2021 Eid Gift Kits edition assembled staple foods, cooking ingredients, spices, dry fruits, milk and a cash allowance for meat and curd. The selected photographs show both a representative set of contents and the completed labelled bags.\n\nThe supplied summary records 171 kits at ₹1,327 per kit. It reports ₹230,027 in total expenditure, including packaging and transport. These are Amaana's campaign records and have not been independently audited.\n\nThe page preserves preparation evidence without publishing donor or recipient lists, and does not estimate additional reach from the photographs.",
+    "year": 2021,
+    "primaryMetric": "171 kits",
+    "primaryMetricLabel": "prepared · campaign-reported",
+    "displayOrder": 19,
+    "cause": { "slug": "ramadan-eid" },
+    "media": [
+      {
+        "id": "local-eid-kits-2021-gallery-01",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.40.16 AM (2).jpeg",
+        "url": "/media/eid-kits-2021-gallery-01.webp",
+        "alt": "Selected documentary photograph 1 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 1 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-02",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.40.16 AM.jpeg",
+        "url": "/media/eid-kits-2021-gallery-02.webp",
+        "alt": "Selected documentary photograph 2 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 2 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-03",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.40.50 AM (1).jpeg",
+        "url": "/media/eid-kits-2021-gallery-03.webp",
+        "alt": "Selected documentary photograph 3 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 3 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-04",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.40.50 AM.jpeg",
+        "url": "/media/eid-kits-2021-gallery-04.webp",
+        "alt": "Selected documentary photograph 4 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 4 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-05",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.58.03 AM (1).jpeg",
+        "url": "/media/eid-kits-2021-gallery-05.webp",
+        "alt": "Selected documentary photograph 5 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 5 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-06",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.58.03 AM (2).jpeg",
+        "url": "/media/eid-kits-2021-gallery-06.webp",
+        "alt": "Selected documentary photograph 6 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 6 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-07",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.58.03 AM (3).jpeg",
+        "url": "/media/eid-kits-2021-gallery-07.webp",
+        "alt": "Selected documentary photograph 7 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 7 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-08",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.58.03 AM (4).jpeg",
+        "url": "/media/eid-kits-2021-gallery-08.webp",
+        "alt": "Selected documentary photograph 8 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 8 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-09",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.58.03 AM (5).jpeg",
+        "url": "/media/eid-kits-2021-gallery-09.webp",
+        "alt": "Selected documentary photograph 9 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 9 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-10",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.58.03 AM (6).jpeg",
+        "url": "/media/eid-kits-2021-gallery-10.webp",
+        "alt": "Selected documentary photograph 10 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 10 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-11",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.58.03 AM (7).jpeg",
+        "url": "/media/eid-kits-2021-gallery-11.webp",
+        "alt": "Selected documentary photograph 11 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 11 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-12",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.58.03 AM (8).jpeg",
+        "url": "/media/eid-kits-2021-gallery-12.webp",
+        "alt": "Selected documentary photograph 12 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 12 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-13",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.58.03 AM (9).jpeg",
+        "url": "/media/eid-kits-2021-gallery-13.webp",
+        "alt": "Selected documentary photograph 13 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 13 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-14",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.58.03 AM.jpeg",
+        "url": "/media/eid-kits-2021-gallery-14.webp",
+        "alt": "Selected documentary photograph 14 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 14 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-15",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.58.04 AM (1).jpeg",
+        "url": "/media/eid-kits-2021-gallery-15.webp",
+        "alt": "Selected documentary photograph 15 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 15 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-16",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.58.04 AM (2).jpeg",
+        "url": "/media/eid-kits-2021-gallery-16.webp",
+        "alt": "Selected documentary photograph 16 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 16 from the 2021 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2021-gallery-17",
+        "source": "user-upload:eid-kits-2021/WhatsApp Image 2026-09-09 at 2.58.04 AM.jpeg",
+        "url": "/media/eid-kits-2021-gallery-17.webp",
+        "alt": "Selected documentary photograph 17 from Amaana's 2021 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 17 from the 2021 Eid Gift Kits archive."
+      }
+    ]
+  },
+  {
+    "slug": "eid-gift-kits-2022",
+    "title": "Eid Gift Kits 2022",
+    "summary": "Amaana's documented 2022 Eid Gift Kits edition, with 339 kits recorded in the verified campaign history.",
+    "story": "Amaana's 2022 drive prepared Eid food kits containing staple foods, cooking ingredients, spices, dry fruits and a cash allowance for meat and curd. The photographs document the kit contents, finished bags and dispatch preparation.\n\nAmaana's verified campaign history records 339 kits. The supplied expenditure summary also documents 12 customized kits and reports total expenditure of ₹506,130, including packaging and transport. The public headline follows the canonical 339-kit figure; these campaign records have not been independently audited.\n\nNo recipient identities or detailed delivery locations are published, and the page does not estimate reach by counting visible bags.",
+    "year": 2022,
+    "primaryMetric": "339 kits",
+    "primaryMetricLabel": "prepared · campaign-reported",
+    "displayOrder": 18,
+    "cause": { "slug": "ramadan-eid" },
+    "media": [
+      {
+        "id": "local-eid-kits-2022-gallery-01",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.00.42 AM (1).jpeg",
+        "url": "/media/eid-kits-2022-gallery-01.webp",
+        "alt": "Selected documentary photograph 1 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 1 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-02",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.00.42 AM (2).jpeg",
+        "url": "/media/eid-kits-2022-gallery-02.webp",
+        "alt": "Selected documentary photograph 2 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 2 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-03",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.00.42 AM (3).jpeg",
+        "url": "/media/eid-kits-2022-gallery-03.webp",
+        "alt": "Selected documentary photograph 3 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 3 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-04",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.00.42 AM (4).jpeg",
+        "url": "/media/eid-kits-2022-gallery-04.webp",
+        "alt": "Selected documentary photograph 4 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 4 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-05",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.00.42 AM (5).jpeg",
+        "url": "/media/eid-kits-2022-gallery-05.webp",
+        "alt": "Selected documentary photograph 5 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 5 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-06",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.00.42 AM (6).jpeg",
+        "url": "/media/eid-kits-2022-gallery-06.webp",
+        "alt": "Selected documentary photograph 6 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 6 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-07",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.00.42 AM.jpeg",
+        "url": "/media/eid-kits-2022-gallery-07.webp",
+        "alt": "Selected documentary photograph 7 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 7 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-08",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.03.10 AM.jpeg",
+        "url": "/media/eid-kits-2022-gallery-08.webp",
+        "alt": "Selected documentary photograph 8 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 8 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-09",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.45.00 AM.jpeg",
+        "url": "/media/eid-kits-2022-gallery-09.webp",
+        "alt": "Selected documentary photograph 9 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 9 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-10",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.45.01 AM (1).jpeg",
+        "url": "/media/eid-kits-2022-gallery-10.webp",
+        "alt": "Selected documentary photograph 10 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 10 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-11",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.45.01 AM (2).jpeg",
+        "url": "/media/eid-kits-2022-gallery-11.webp",
+        "alt": "Selected documentary photograph 11 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 11 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-12",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.45.01 AM (3).jpeg",
+        "url": "/media/eid-kits-2022-gallery-12.webp",
+        "alt": "Selected documentary photograph 12 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 12 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-13",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.45.01 AM (4).jpeg",
+        "url": "/media/eid-kits-2022-gallery-13.webp",
+        "alt": "Selected documentary photograph 13 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 13 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-14",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.45.01 AM (5).jpeg",
+        "url": "/media/eid-kits-2022-gallery-14.webp",
+        "alt": "Selected documentary photograph 14 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 14 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-15",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.45.01 AM.jpeg",
+        "url": "/media/eid-kits-2022-gallery-15.webp",
+        "alt": "Selected documentary photograph 15 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 15 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-16",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.45.02 AM (1).jpeg",
+        "url": "/media/eid-kits-2022-gallery-16.webp",
+        "alt": "Selected documentary photograph 16 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 16 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-17",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.45.02 AM (2).jpeg",
+        "url": "/media/eid-kits-2022-gallery-17.webp",
+        "alt": "Selected documentary photograph 17 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 17 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-18",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.45.02 AM.jpeg",
+        "url": "/media/eid-kits-2022-gallery-18.webp",
+        "alt": "Selected documentary photograph 18 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 18 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-19",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.48.41 AM (1).jpeg",
+        "url": "/media/eid-kits-2022-gallery-19.webp",
+        "alt": "Selected documentary photograph 19 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 19 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-20",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.48.41 AM (2).jpeg",
+        "url": "/media/eid-kits-2022-gallery-20.webp",
+        "alt": "Selected documentary photograph 20 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 20 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-21",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.48.41 AM (3).jpeg",
+        "url": "/media/eid-kits-2022-gallery-21.webp",
+        "alt": "Selected documentary photograph 21 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 21 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-22",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.48.41 AM (4).jpeg",
+        "url": "/media/eid-kits-2022-gallery-22.webp",
+        "alt": "Selected documentary photograph 22 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 22 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-23",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.48.41 AM (5).jpeg",
+        "url": "/media/eid-kits-2022-gallery-23.webp",
+        "alt": "Selected documentary photograph 23 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 23 from the 2022 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2022-gallery-24",
+        "source": "user-upload:eid-kits-2022/WhatsApp Image 2026-09-09 at 2.48.41 AM.jpeg",
+        "url": "/media/eid-kits-2022-gallery-24.webp",
+        "alt": "Selected documentary photograph 24 from Amaana's 2022 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 24 from the 2022 Eid Gift Kits archive."
+      }
+    ]
+  },
+  {
+    "slug": "eid-gift-kits-2023",
+    "title": "Eid Gift Kits 2023",
+    "summary": "Amaana's 2023 Eid Gift Kits edition, with the verified campaign history recording 408 kits.",
+    "story": "Amaana's 2023 Eid Gift Kits edition brought together rice, flour, cooking oil, spices, dry fruits, milk and other festive essentials. A representative basket records the contents, while the wider photograph shows the prepared kits arranged in rows.\n\nEach completed bag carried Amaana's campaign label and an Eid greeting. Some kits also included an envelope for meat and curd expenses.\n\nAmaana's verified campaign history records 408 kits for this edition. The page does not estimate any additional reach from the number of visible bags.",
+    "year": 2023,
+    "displayOrder": 17,
+    "cause": { "slug": "ramadan-eid" },
+    "media": [
+      {
+        "id": "local-eid-kits-2023-gallery-01",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/IMG_3511.JPG",
+        "url": "/media/eid-kits-2023-gallery-01.webp",
+        "alt": "Selected documentary photograph 1 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 1 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-02",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/IMG_3513.JPG",
+        "url": "/media/eid-kits-2023-gallery-02.webp",
+        "alt": "Selected documentary photograph 2 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 2 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-03",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/IMG_3514.JPG",
+        "url": "/media/eid-kits-2023-gallery-03.webp",
+        "alt": "Selected documentary photograph 3 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 3 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-04",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/IMG_3550.JPG",
+        "url": "/media/eid-kits-2023-gallery-04.webp",
+        "alt": "Selected documentary photograph 4 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 4 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-05",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/IMG_3552.JPG",
+        "url": "/media/eid-kits-2023-gallery-05.webp",
+        "alt": "Selected documentary photograph 5 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 5 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-06",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/IMG_3556.JPG",
+        "url": "/media/eid-kits-2023-gallery-06.webp",
+        "alt": "Selected documentary photograph 6 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 6 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-07",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/IMG_3563.JPG",
+        "url": "/media/eid-kits-2023-gallery-07.webp",
+        "alt": "Selected documentary photograph 7 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 7 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-08",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/IMG_3566.JPG",
+        "url": "/media/eid-kits-2023-gallery-08.webp",
+        "alt": "Selected documentary photograph 8 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 8 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-09",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/IMG_3568.JPG",
+        "url": "/media/eid-kits-2023-gallery-09.webp",
+        "alt": "Selected documentary photograph 9 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 9 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-10",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/IMG_3569.JPG",
+        "url": "/media/eid-kits-2023-gallery-10.webp",
+        "alt": "Selected documentary photograph 10 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 10 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-11",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/IMG_3584.JPG",
+        "url": "/media/eid-kits-2023-gallery-11.webp",
+        "alt": "Selected documentary photograph 11 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 11 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-12",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/IMG_3587.JPG",
+        "url": "/media/eid-kits-2023-gallery-12.webp",
+        "alt": "Selected documentary photograph 12 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 12 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-13",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/IMG_3592.JPG",
+        "url": "/media/eid-kits-2023-gallery-13.webp",
+        "alt": "Selected documentary photograph 13 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 13 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-14",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/IMG_3596.JPG",
+        "url": "/media/eid-kits-2023-gallery-14.webp",
+        "alt": "Selected documentary photograph 14 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 14 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-15",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/WhatsApp Image 2026-09-09 at 3.02.39 AM (1).jpeg",
+        "url": "/media/eid-kits-2023-gallery-15.webp",
+        "alt": "Selected documentary photograph 15 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 15 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-16",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/WhatsApp Image 2026-09-09 at 3.02.39 AM.jpeg",
+        "url": "/media/eid-kits-2023-gallery-16.webp",
+        "alt": "Selected documentary photograph 16 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 16 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-17",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/WhatsApp Image 2026-09-09 at 3.02.40 AM (1).jpeg",
+        "url": "/media/eid-kits-2023-gallery-17.webp",
+        "alt": "Selected documentary photograph 17 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 17 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-18",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/WhatsApp Image 2026-09-09 at 3.02.40 AM (2).jpeg",
+        "url": "/media/eid-kits-2023-gallery-18.webp",
+        "alt": "Selected documentary photograph 18 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 18 from the 2023 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2023-gallery-19",
+        "source": "user-upload:eid-kits-2023/Eid Kits 2023 Pics/WhatsApp Image 2026-09-09 at 3.02.40 AM.jpeg",
+        "url": "/media/eid-kits-2023-gallery-19.webp",
+        "alt": "Selected documentary photograph 19 from Amaana's 2023 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 19 from the 2023 Eid Gift Kits archive."
+      }
+    ],
+    "primaryMetric": "408 kits",
+    "primaryMetricLabel": "prepared · campaign-reported"
+  },
+  {
+    "slug": "eid-gift-kits-2024",
+    "title": "Eid Gift Kits 2024",
+    "summary": "A 467-kit Eid distribution documented in Amaana's 2024 campaign summary and preparation photographs.",
+    "story": "Amaana's 2024 edition prepared food kits with staple groceries, cooking ingredients, spices, dry fruits, milk, tea and a cash allowance for meat and curd. The selected images show a representative kit and the completed Amaana-labelled bags.\n\nThe supplied summary records 467 kits at ₹1,500 each and total expenditure of ₹710,500 including packaging and transport. These are campaign-reported figures and have not been independently audited.\n\nThe public record focuses on the preparation itself. It does not publish beneficiary identities or infer additional recipients from the photographs.",
+    "year": 2024,
+    "primaryMetric": "467 kits",
+    "primaryMetricLabel": "prepared · campaign-reported",
+    "displayOrder": 16,
+    "cause": { "slug": "ramadan-eid" },
+    "media": [
+      {
+        "id": "local-eid-kits-2024-gallery-01",
+        "source": "user-upload:eid-kits-2024/IMG_3626.JPG",
+        "url": "/media/eid-kits-2024-gallery-01.webp",
+        "alt": "Selected documentary photograph 1 from Amaana's 2024 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 1 from the 2024 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2024-gallery-02",
+        "source": "user-upload:eid-kits-2024/IMG_3627.JPG",
+        "url": "/media/eid-kits-2024-gallery-02.webp",
+        "alt": "Selected documentary photograph 2 from Amaana's 2024 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 2 from the 2024 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2024-gallery-03",
+        "source": "user-upload:eid-kits-2024/IMG_3635.JPG",
+        "url": "/media/eid-kits-2024-gallery-03.webp",
+        "alt": "Selected documentary photograph 3 from Amaana's 2024 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 3 from the 2024 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2024-gallery-04",
+        "source": "user-upload:eid-kits-2024/IMG_3668.JPG",
+        "url": "/media/eid-kits-2024-gallery-04.webp",
+        "alt": "Selected documentary photograph 4 from Amaana's 2024 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 4 from the 2024 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2024-gallery-05",
+        "source": "user-upload:eid-kits-2024/IMG_3679.JPG",
+        "url": "/media/eid-kits-2024-gallery-05.webp",
+        "alt": "Selected documentary photograph 5 from Amaana's 2024 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 5 from the 2024 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2024-gallery-06",
+        "source": "user-upload:eid-kits-2024/IMG_3683.JPG",
+        "url": "/media/eid-kits-2024-gallery-06.webp",
+        "alt": "Selected documentary photograph 6 from Amaana's 2024 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 6 from the 2024 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2024-gallery-07",
+        "source": "user-upload:eid-kits-2024/IMG_3762.JPG",
+        "url": "/media/eid-kits-2024-gallery-07.webp",
+        "alt": "Selected documentary photograph 7 from Amaana's 2024 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 7 from the 2024 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2024-gallery-08",
+        "source": "user-upload:eid-kits-2024/IMG_3772.JPG",
+        "url": "/media/eid-kits-2024-gallery-08.webp",
+        "alt": "Selected documentary photograph 8 from Amaana's 2024 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 8 from the 2024 Eid Gift Kits archive."
+      }
+    ]
+  },
+  {
+    "slug": "eid-gift-kits-2025",
+    "title": "Eid Gift Kits 2025",
+    "summary": "Amaana's 2025 summary records 650 Eid Gift Kits prepared with staple and festive foods.",
+    "story": "Amaana's 2025 Eid Gift Kits combined staple groceries, cooking oil, spices, dry fruits, milk and a cash allowance for meat and curd. The archive documents the kit contents, the packing stages and the completed Amaana-labelled bags.\n\nThe supplied summary records 650 kits at ₹1,709 each. It reports ₹1,125,742.53 in total expenditure, with packaging and transport explicitly described as not taken from donations. These are Amaana's campaign records and have not been independently audited.\n\nThe selected photographs contain no recipients. The page does not publish donor lists or infer any additional reach.",
+    "year": 2025,
+    "primaryMetric": "650 kits",
+    "primaryMetricLabel": "prepared · campaign-reported",
+    "displayOrder": 15,
+    "cause": { "slug": "ramadan-eid" },
+    "media": [
+      {
+        "id": "local-eid-kits-2025-gallery-01",
+        "source": "user-upload:eid-kits-2025/2025Eid Kit.jpeg",
+        "url": "/media/eid-kits-2025-gallery-01.webp",
+        "alt": "Selected documentary photograph 1 from Amaana's 2025 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 1 from the 2025 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2025-gallery-02",
+        "source": "user-upload:eid-kits-2025/afterPacking.jpeg",
+        "url": "/media/eid-kits-2025-gallery-02.webp",
+        "alt": "Selected documentary photograph 2 from Amaana's 2025 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 2 from the 2025 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2025-gallery-03",
+        "source": "user-upload:eid-kits-2025/AlKhair.jpeg",
+        "url": "/media/eid-kits-2025-gallery-03.webp",
+        "alt": "Selected documentary photograph 3 from Amaana's 2025 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 3 from the 2025 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2025-gallery-04",
+        "source": "user-upload:eid-kits-2025/beforePacking.jpeg",
+        "url": "/media/eid-kits-2025-gallery-04.webp",
+        "alt": "Selected documentary photograph 4 from Amaana's 2025 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 4 from the 2025 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2025-gallery-05",
+        "source": "user-upload:eid-kits-2025/last kit.jpeg",
+        "url": "/media/eid-kits-2025-gallery-05.webp",
+        "alt": "Selected documentary photograph 5 from Amaana's 2025 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 5 from the 2025 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2025-gallery-06",
+        "source": "user-upload:eid-kits-2025/packedkits.jpeg",
+        "url": "/media/eid-kits-2025-gallery-06.webp",
+        "alt": "Selected documentary photograph 6 from Amaana's 2025 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 6 from the 2025 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2025-gallery-07",
+        "source": "user-upload:eid-kits-2025/WhatsApp Image 2025-05-17 at 1.35.33 AM (2).jpeg",
+        "url": "/media/eid-kits-2025-gallery-07.webp",
+        "alt": "Selected documentary photograph 7 from Amaana's 2025 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 7 from the 2025 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2025-gallery-08",
+        "source": "user-upload:eid-kits-2025/WhatsApp Image 2025-05-17 at 1.35.34 AM.jpeg",
+        "url": "/media/eid-kits-2025-gallery-08.webp",
+        "alt": "Selected documentary photograph 8 from Amaana's 2025 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 8 from the 2025 Eid Gift Kits archive."
+      }
+    ]
+  },
+  {
+    "slug": "eid-gift-kits-2026",
+    "title": "Eid Gift Kits 2026",
+    "summary": "Amaana's 2026 impact graphic reports 710 families supported through the Eid Gift Kits distribution.",
+    "story": "Amaana's 2026 Eid Gift Kits edition assembled staple groceries, cooking ingredients, milk, spices and festive foods in individually labelled bags. The photographs document a representative kit, rows of completed bags and transport preparation. The kits were funded through non-Zakat contributions.\n\nAmaana reports 710 families supported: 201 women-led households facing hardship, 134 children and students, 86 masjid-linked beneficiaries, 118 other financially vulnerable households, 65 daily-wage or skilled workers, 55 widows, 33 drivers or transport workers, and 18 people facing medical or disability hardship. The supplied impact graphic has been corrected to these canonical figures. These categories and the overall reach are campaign-reported and have not been independently audited.\n\nNo recipient identities are shown in the selected public photographs, and the page does not infer expenditure or additional reach beyond the supplied campaign record.",
+    "year": 2026,
+    "primaryMetric": "710 families",
+    "primaryMetricLabel": "supported · campaign-reported",
+    "displayOrder": 14,
+    "cause": { "slug": "ramadan-eid" },
+    "media": [
+      {
+        "id": "local-eid-kits-2026-gallery-01",
+        "source": "user-upload:eid-kits-2026/20260315_212905.jpg.jpeg",
+        "url": "/media/eid-kits-2026-gallery-01.webp",
+        "alt": "Selected documentary photograph 1 from Amaana's 2026 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 1 from the 2026 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2026-gallery-02",
+        "source": "user-upload:eid-kits-2026/20260315_212912.jpg.jpeg",
+        "url": "/media/eid-kits-2026-gallery-02.webp",
+        "alt": "Selected documentary photograph 2 from Amaana's 2026 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 2 from the 2026 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2026-gallery-03",
+        "source": "user-upload:eid-kits-2026/20260315_213006.jpg.jpeg",
+        "url": "/media/eid-kits-2026-gallery-03.webp",
+        "alt": "Selected documentary photograph 3 from Amaana's 2026 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 3 from the 2026 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2026-gallery-04",
+        "source": "user-upload:eid-kits-2026/20260315_233046.jpg.jpeg",
+        "url": "/media/eid-kits-2026-gallery-04.webp",
+        "alt": "Selected documentary photograph 4 from Amaana's 2026 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 4 from the 2026 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2026-gallery-05",
+        "source": "user-upload:eid-kits-2026/20260319_002748.jpg.jpeg",
+        "url": "/media/eid-kits-2026-gallery-05.webp",
+        "alt": "Selected documentary photograph 5 from Amaana's 2026 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 5 from the 2026 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2026-gallery-06",
+        "source": "user-upload:eid-kits-2026/20260319_002849.jpg.jpeg",
+        "url": "/media/eid-kits-2026-gallery-06.webp",
+        "alt": "Selected documentary photograph 6 from Amaana's 2026 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 6 from the 2026 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2026-gallery-07",
+        "source": "user-upload:eid-kits-2026/20260319_002905.jpg.jpeg",
+        "url": "/media/eid-kits-2026-gallery-07.webp",
+        "alt": "Selected documentary photograph 7 from Amaana's 2026 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 7 from the 2026 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2026-gallery-09",
+        "source": "user-upload:eid-kits-2026/ChatGPT Image Jun 22, 2026, 03_25_38 PM.png#corrected-55-widows-18-medical-disability",
+        "url": "/media/eid-kits-2026-gallery-09.webp",
+        "alt": "Corrected Amaana Eid Kits 2026 impact graphic reporting 710 families, including 55 widows and 18 people facing medical or disability hardship",
+        "caption": "Corrected campaign impact graphic using Amaana's canonical 2026 beneficiary breakdown."
+      },
+      {
+        "id": "local-eid-kits-2026-gallery-10",
+        "source": "user-upload:eid-kits-2026/IMG_0135.jpg",
+        "url": "/media/eid-kits-2026-gallery-10.webp",
+        "alt": "Selected documentary photograph 10 from Amaana's 2026 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 10 from the 2026 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2026-gallery-12",
+        "source": "user-upload:eid-kits-2026/IMG_0138.jpg",
+        "url": "/media/eid-kits-2026-gallery-12.webp",
+        "alt": "Selected documentary photograph 12 from Amaana's 2026 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 12 from the 2026 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2026-gallery-13",
+        "source": "user-upload:eid-kits-2026/IMG_0160.jpg",
+        "url": "/media/eid-kits-2026-gallery-13.webp",
+        "alt": "Selected documentary photograph 13 from Amaana's 2026 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 13 from the 2026 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2026-gallery-15",
+        "source": "user-upload:eid-kits-2026/IMG_0238.jpg",
+        "url": "/media/eid-kits-2026-gallery-15.webp",
+        "alt": "Selected documentary photograph 15 from Amaana's 2026 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 15 from the 2026 Eid Gift Kits archive."
+      },
+      {
+        "id": "local-eid-kits-2026-gallery-16",
+        "source": "user-upload:eid-kits-2026/IMG_0251.JPG.jpeg",
+        "url": "/media/eid-kits-2026-gallery-16.webp",
+        "alt": "Selected documentary photograph 16 from Amaana's 2026 Eid Gift Kits initiative",
+        "caption": "Original selected photograph 16 from the 2026 Eid Gift Kits archive."
+      }
+    ]
+  }
+]
+

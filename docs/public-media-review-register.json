@@ -1,0 +1,95 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-24",
+  "purpose": "Coverage and launch-readiness register for public/media after the 21 September 2026 programme-image reset. Legacy programme images were removed so future media can be reintroduced only from the curated, initiative-by-initiative selection with an explicit hero/identity image and ordered supporting assets.",
+  "groups": [
+    {
+      "id": "completed-assistance",
+      "pattern": "^aid-",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": true,
+      "notes": "Completed assistance derivatives may contain beneficiaries, patients or family context. Redacted/blurred/cropped naming is only a processing hint and is not proof of consent or approval.",
+      "reviewPriority": "CRITICAL"
+    },
+    {
+      "id": "dates-distribution",
+      "pattern": "^dates-",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": true,
+      "notes": "Campaign media requires source, visible-person and website-channel review before launch certification. This mixed field-media group defaults to sensitive context; an individual preparation/product-only asset may be explicitly overridden to sensitiveContext=false only after human inspection.",
+      "reviewPriority": "HIGH"
+    },
+    {
+      "id": "eid-gift-kits",
+      "pattern": "^eid-kits-",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": true,
+      "notes": "Multi-year field media remains pending individual human privacy, consent and provenance review. This mixed field-media group defaults to sensitive context; an individual preparation/product-only asset may be explicitly overridden to sensitiveContext=false only after human inspection.",
+      "reviewPriority": "HIGH"
+    },
+    {
+      "id": "hyderabad-flood-relief",
+      "pattern": "^hyderabad-flood-",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": true,
+      "notes": "Historical relief media remains pending individual website-use review. This mixed field-media group defaults to sensitive context; an individual preparation/product-only asset may be explicitly overridden to sensitiveContext=false only after human inspection.",
+      "reviewPriority": "HIGH"
+    },
+    {
+      "id": "jewellery-release-outcome",
+      "pattern": "^jewellery-release-",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": true,
+      "notes": "Financial-assistance outcome media is treated as sensitive until a human reviewer records a decision.",
+      "reviewPriority": "CRITICAL"
+    },
+    {
+      "id": "qurbani-meat-distribution",
+      "pattern": "^(?:meat-|qurbani-meat-)",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": true,
+      "notes": "Campaign field and preparation media remains pending individual human review. This mixed field-media group defaults to sensitive context; an individual preparation/product-only asset may be explicitly overridden to sensitiveContext=false only after human inspection.",
+      "reviewPriority": "HIGH"
+    },
+    {
+      "id": "taleem",
+      "pattern": "^taleem-",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": true,
+      "notes": "Education media can involve minors and therefore remains sensitive until individual review is documented.",
+      "reviewPriority": "CRITICAL"
+    },
+    {
+      "id": "winter-relief",
+      "pattern": "^winter-",
+      "humanReview": "PENDING_HUMAN_REVIEW",
+      "provenance": "PARTIAL",
+      "consent": "UNKNOWN",
+      "sensitiveContext": true,
+      "notes": "Winter relief media can include students or beneficiaries and remains pending individual review.",
+      "reviewPriority": "CRITICAL"
+    }
+  ],
+  "overrides": [],
+  "inventorySummary": {
+    "totalAssets": 0,
+    "totalImages": 0,
+    "retainedNonImageAssets": 0,
+    "generatedAt": "2026-09-24",
+    "note": "All legacy drive/cause/initiative media files have now been removed from public/media. New programme media must enter through the curated review/publish workflow rather than direct static-file retention."
+  }
+}

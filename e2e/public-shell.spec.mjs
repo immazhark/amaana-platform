@@ -1,0 +1,632 @@
+import AxeBuilder from '@axe-core/playwright';
+import { expect, test } from '@playwright/test';
+
+const representativeRoutes = [
+  { path: '/', family: 'Home' },
+  { path: '/about', family: 'About' },
+  { path: '/our-work', family: 'Our Work' },
+  { path: '/our-work/eid-gift-kits', family: 'Eid Gift Kits' },
+  { path: '/our-work/qurbani-meat-distribution', family: 'Qurbani' },
+  { path: '/our-work/winter-relief', family: 'Winter Relief' },
+  { path: '/our-work/taleem', family: 'Taleem' },
+  { path: '/our-work/dates-distribution', family: 'Dates Distribution' },
+  { path: '/our-work/hyderabad-flood-relief-2020', family: 'Flood Relief' },
+  { path: '/programmes/medical-financial-relief', family: 'Medical & Financial Relief' },
+  { path: '/impact', family: 'Impact' },
+  { path: '/stories', family: 'Stories' },
+  { path: '/appeals', family: 'Appeals' },
+  { path: '/donate', family: 'Donate' },
+  { path: '/request-assistance', family: 'Request Assistance' },
+  { path: '/how-we-verify', family: 'How We Work' },
+  { path: '/get-involved', family: 'Get Involved' },
+  { path: '/get-involved/sponsor-education', family: 'Sponsor Education' },
+  { path: '/partner', family: 'Partner' },
+  { path: '/faith-and-reflections', family: 'Faith & Reflections' },
+  { path: '/transparency', family: 'Transparency' },
+  { path: '/governance', family: 'Governance' },
+  { path: '/compliance', family: 'Compliance' },
+  { path: '/recognition', family: 'Recognition' },
+  { path: '/contact', family: 'Contact' },
+  { path: '/privacy', family: 'Privacy' },
+  { path: '/terms', family: 'Terms' },
+  { path: '/donation-policy', family: 'Donation Policy' },
+  { path: '/refund-policy', family: 'Refund Policy' },
+];
+
+const acceptanceWidths = [2560, 1920, 1440, 1024, 768, 430, 390, 375, 360, 320];
+
+async function openPublicPage(page, path) {
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  const response = await page.goto(path, { waitUntil: 'domcontentloaded' });
+  expect(response, `Expected a document response for ${path}`).not.toBeNull();
+  expect(response?.ok(), `Expected ${path} to render successfully`).toBeTruthy();
+  await expect(page.locator('main#main')).toBeVisible();
+}
+
+function rectanglesOverlap(first, second) {
+  return !(
+    first.x + first.width <= second.x ||
+    second.x + second.width <= first.x ||
+    first.y + first.height <= second.y ||
+    second.y + second.height <= first.y
+  );
+}
+
+test.describe('representative public accessibility', () => {
+  for (const route of representativeRoutes) {
+    test(`${route.family}: ${route.path} has no serious or critical axe violations`, async ({ page }) => {
+      await openPublicPage(page, route.path);
+
+      const results = await new AxeBuilder({ page })
+        .withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'])
+        .analyze();
+
+      const blocking = results.violations
+        .filter(violation => violation.impact === 'critical' || violation.impact === 'serious')
+        .map(violation => ({
+          id: violation.id,
+          impact: violation.impact,
+          help: violation.help,
+          nodes: violation.nodes.map(node => ({
+            target: node.target,
+            html: node.html,
+            failureSummary: node.failureSummary,
+          })),
+        }));
+
+      expect(blocking, `Blocking accessibility violations on ${route.path}`).toEqual([]);
+    });
+  }
+});
+
+
+test('homepage semantic title stays screen-reader-only without creating visible hero text', async ({ page }) => {
+  await openPublicPage(page, '/');
+
+  const title = page.locator('#amaana-home-title');
+  await expect(title).toHaveCount(1);
+
+  const presentation = await title.evaluate(element => {
+    const style = getComputedStyle(element);
+    const box = element.getBoundingClientRect();
+    return {
+      position: style.position,
+      width: box.width,
+      height: box.height,
+      overflow: style.overflow,
+      clipPath: style.clipPath,
+      whiteSpace: style.whiteSpace,
+    };
+  });
+
+  expect(presentation.position).toBe('absolute');
+  expect(presentation.width).toBeLessThanOrEqual(1);
+  expect(presentation.height).toBeLessThanOrEqual(1);
+  expect(presentation.overflow).toBe('hidden');
+  expect(presentation.clipPath).toBe('inset(50%)');
+  expect(presentation.whiteSpace).toBe('nowrap');
+});
+
+test('Home footer closes the document without trailing blank scroll area', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await openPublicPage(page, '/');
+
+  const geometry = await page.evaluate(() => {
+    const footer = document.querySelector('.site-footer');
+    if (!(footer instanceof HTMLElement)) return null;
+    const rect = footer.getBoundingClientRect();
+    const footerBottom = window.scrollY + rect.bottom;
+    return {
+      scrollHeight: document.documentElement.scrollHeight,
+      footerBottom,
+      trailingSpace: document.documentElement.scrollHeight - footerBottom,
+    };
+  });
+
+  expect(geometry).not.toBeNull();
+  expect(geometry.trailingSpace).toBeLessThanOrEqual(4);
+});
+
+test('Stories journal CTA resolves to a real in-page target', async ({ page }) => {
+  await openPublicPage(page, '/stories');
+
+  const journalLink = page.getByRole('link', { name: 'Enter the journal' });
+  await expect(journalLink).toHaveAttribute('href', '#journal');
+  await expect(page.locator('#journal')).toHaveCount(1);
+});
+
+
+test('Our Work programme numbers and titles keep distinct geometry', async ({ page }) => {
+  for (const width of [1440, 390]) {
+    await page.setViewportSize({ width, height: width <= 430 ? 844 : 1000 });
+    await openPublicPage(page, '/our-work');
+
+    const first = page.locator('details[data-work-category]').first();
+    const number = first.locator('.v2-cause-number');
+    const title = first.locator('.v2-cause-summary-title');
+    await expect(number).toBeVisible();
+    await expect(title).toBeVisible();
+
+    const numberBox = await number.boundingBox();
+    const titleBox = await title.boundingBox();
+    expect(numberBox).not.toBeNull();
+    expect(titleBox).not.toBeNull();
+    expect(numberBox.x + numberBox.width).toBeLessThanOrEqual(titleBox.x - 4);
+  }
+});
+
+test('Our Work keeps the growing portfolio collapsed by programme until a visitor chooses a category', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPublicPage(page, '/our-work');
+
+  const groups = page.locator('details[data-work-category]');
+  expect(await groups.count()).toBeGreaterThan(1);
+  await expect(page.locator('details[data-work-category][open]')).toHaveCount(0);
+
+  const first = groups.first();
+  const firstSummary = first.locator('summary');
+  await expect(firstSummary).toBeVisible();
+  await firstSummary.click();
+  await expect(first).toHaveAttribute('open', '');
+  await expect(first.locator('a[href^="/our-work/"]').first()).toBeVisible();
+
+  await openPublicPage(page, '/our-work?programme=ramadan-eid');
+  const filteredGroups = page.locator('details[data-work-category]');
+  await expect(filteredGroups).toHaveCount(1);
+  await expect(filteredGroups.first()).toHaveAttribute('open', '');
+  await expect(filteredGroups.first().locator('summary')).toContainText(/Ramadan|Eid/i);
+});
+
+test('unknown public routes return a branded, navigable and noindex 404', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const response = await page.goto('/definitely-not-an-amaana-route', { waitUntil: 'domcontentloaded' });
+
+  expect(response?.status()).toBe(404);
+  await expect(page.getByRole('heading', { name: "We Couldn't Find That Page" })).toBeVisible();
+  await expect(page.getByRole('link', { name: 'Return home' })).toHaveAttribute('href', '/');
+  const recoveryActions = page.locator('main#main');
+  await expect(recoveryActions.getByRole('link', { name: /Explore our work/ })).toHaveAttribute('href', '/our-work');
+  await expect(recoveryActions.getByRole('link', { name: /Current appeals/ })).toHaveAttribute('href', '/appeals');
+
+  const robots = page.locator('meta[name="robots"]');
+  expect(await robots.count()).toBeGreaterThan(0);
+  const robotValues = await robots.evaluateAll(nodes => nodes.map(node => node.getAttribute('content') ?? ''));
+  expect(robotValues.every(value => /noindex/i.test(value))).toBe(true);
+
+  const dimensions = await page.evaluate(() => ({
+    clientWidth: document.documentElement.clientWidth,
+    scrollWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+  }));
+  expect(dimensions.scrollWidth).toBeLessThanOrEqual(dimensions.clientWidth + 1);
+});
+
+test.describe('mobile public-shell alignment and viewport-edge safety', () => {
+  const mobileWidths = [430, 390, 375, 320];
+  const shellRoutes = [
+    '/about',
+    '/our-work',
+    '/impact',
+    '/stories',
+    '/appeals',
+    '/donate',
+    '/request-assistance',
+    '/how-we-verify',
+    '/get-involved',
+    '/transparency',
+    '/governance',
+    '/compliance',
+    '/contact',
+  ];
+
+  for (const path of shellRoutes) {
+    for (const width of mobileWidths) {
+      test(`${path} shares one optical gutter at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 844 });
+        await openPublicPage(page, path);
+
+        const geometry = await page.evaluate(() => {
+          const visible = selector => Array.from(document.querySelectorAll(selector)).find(element => {
+            const rect = element.getBoundingClientRect();
+            const style = getComputedStyle(element);
+            return rect.width > 0 && rect.height > 0 && style.display !== 'none' && style.visibility !== 'hidden';
+          });
+
+          const nodes = [
+            ['header', document.querySelector('.site-header .container')],
+            ['reminder', document.querySelector('.amaana-reminder-inner')],
+            ['hero', document.querySelector('.page-hero__shell')],
+            ['body', visible('main .v2-shell, main .v3-shell, main .canonical-body, main .container')],
+            ['footer', document.querySelector('.site-footer > .container')],
+          ];
+
+          const boxes = nodes.map(([name, element]) => {
+            if (!(element instanceof HTMLElement)) return null;
+            const rect = element.getBoundingClientRect();
+            return { name, left: rect.left, right: rect.right, width: rect.width };
+          });
+
+          const viewport = document.documentElement.clientWidth;
+          return { viewport, boxes };
+        });
+
+        expect(geometry.boxes.every(Boolean), `${path} should expose every shared shell at ${width}px`).toBeTruthy();
+        const [reference, ...rest] = geometry.boxes;
+        expect(reference.left, `${path} header must retain a real left gutter at ${width}px`).toBeGreaterThanOrEqual(15);
+        expect(geometry.viewport - reference.right, `${path} header must retain a real right gutter at ${width}px`).toBeGreaterThanOrEqual(15);
+
+        for (const box of rest) {
+          expect(Math.abs(box.left - reference.left), `${path} ${box.name} left edge should match header at ${width}px`).toBeLessThanOrEqual(2);
+          expect(Math.abs(box.right - reference.right), `${path} ${box.name} right edge should match header at ${width}px`).toBeLessThanOrEqual(2);
+          expect(Math.abs(box.width - reference.width), `${path} ${box.name} width should match header at ${width}px`).toBeLessThanOrEqual(2);
+        }
+      });
+    }
+  }
+
+  for (const width of mobileWidths) {
+    test(`homepage keeps only the masthead surface full bleed at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 844 });
+      await openPublicPage(page, '/');
+
+      const geometry = await page.evaluate(() => {
+        const viewport = document.documentElement.clientWidth;
+        const header = document.querySelector('.site-header .container')?.getBoundingClientRect();
+        const reminder = document.querySelector('.amaana-reminder-inner')?.getBoundingClientRect();
+        const banner = document.querySelector('.v3-home-banner')?.getBoundingClientRect();
+        const content = document.querySelector('.v3-home-banner-content')?.getBoundingClientRect();
+        const body = document.querySelector('.v3-home .v3-shell')?.getBoundingClientRect();
+        const footer = document.querySelector('.site-footer > .container')?.getBoundingClientRect();
+        if (!header || !reminder || !banner || !content || !body || !footer) return null;
+        return {
+          viewport,
+          header: { left: header.left, right: header.right },
+          reminder: { left: reminder.left, right: reminder.right },
+          banner: { left: banner.left, right: banner.right },
+          content: { left: content.left, right: content.right },
+          body: { left: body.left, right: body.right },
+          footer: { left: footer.left, right: footer.right },
+        };
+      });
+
+      expect(geometry).not.toBeNull();
+      expect(geometry.banner.left).toBeLessThanOrEqual(1);
+      expect(geometry.banner.right).toBeGreaterThanOrEqual(geometry.viewport - 1);
+      for (const key of ['reminder', 'content', 'body', 'footer']) {
+        expect(Math.abs(geometry[key].left - geometry.header.left), `${key} left edge should align at ${width}px`).toBeLessThanOrEqual(2);
+        expect(Math.abs(geometry[key].right - geometry.header.right), `${key} right edge should align at ${width}px`).toBeLessThanOrEqual(2);
+      }
+      expect(geometry.header.left).toBeGreaterThanOrEqual(15);
+      expect(geometry.viewport - geometry.header.right).toBeGreaterThanOrEqual(15);
+    });
+  }
+});
+
+test.describe('responsive containment', () => {
+  for (const route of representativeRoutes) {
+    for (const width of acceptanceWidths) {
+      test(`${route.family}: ${route.path} contains content at ${width}px`, async ({ page }) => {
+        await page.setViewportSize({ width, height: width <= 430 ? 844 : 900 });
+        await openPublicPage(page, route.path);
+
+        const dimensions = await page.evaluate(() => ({
+          clientWidth: document.documentElement.clientWidth,
+          scrollWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+        }));
+
+        expect(
+          dimensions.scrollWidth,
+          `${route.path} overflowed horizontally at ${width}px`,
+        ).toBeLessThanOrEqual(dimensions.clientWidth + 1);
+      });
+    }
+  }
+});
+
+test.describe('200 percent zoom reflow', () => {
+  for (const path of ['/', '/donate', '/request-assistance', '/our-work/eid-gift-kits']) {
+    test(`${path} remains horizontally contained at 200 percent zoom equivalent`, async ({ page }) => {
+      // WCAG reflow at 200% on a 1280 CSS-pixel viewport is equivalent to a 640 CSS-pixel layout viewport.
+      await page.setViewportSize({ width: 640, height: 900 });
+      await openPublicPage(page, path);
+      const dimensions = await page.evaluate(() => ({
+        clientWidth: document.documentElement.clientWidth,
+        scrollWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+      }));
+      expect(dimensions.scrollWidth, `${path} overflowed at 200% zoom equivalent`).toBeLessThanOrEqual(dimensions.clientWidth + 1);
+    });
+  }
+});
+
+test('skip link moves focus to the main content landmark', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openPublicPage(page, '/about');
+
+  const skipLink = page.getByRole('link', { name: 'Skip to content' });
+  const main = page.locator('main#main');
+  await page.keyboard.press('Tab');
+  await expect(skipLink).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(main).toBeFocused();
+});
+
+test('representative public pages expose one primary heading and an English document language', async ({ page }) => {
+  for (const route of representativeRoutes) {
+    await openPublicPage(page, route.path);
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(page.locator('main#main')).toHaveCount(1);
+    await expect(page.locator('h1')).toHaveCount(1);
+  }
+});
+
+test('desktop keyboard order starts with the skip link and primary home link', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openPublicPage(page, '/about');
+
+  const skipLink = page.getByRole('link', { name: 'Skip to content' });
+  const primaryNav = page.getByRole('navigation', { name: 'Primary navigation' });
+  const homeLink = primaryNav.getByRole('link', { name: 'Amaana Foundation home' });
+
+  await page.keyboard.press('Tab');
+  await expect(skipLink).toBeFocused();
+  await page.keyboard.press('Tab');
+  await expect(homeLink).toBeFocused();
+});
+
+test('mobile navigation opens, moves focus inside, closes with Escape and restores focus', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPublicPage(page, '/about');
+
+  const toggle = page.locator('button[aria-controls="mobile-navigation"]');
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+  await toggle.focus();
+  await page.keyboard.press('Enter');
+
+  const mobileNav = page.getByRole('navigation', { name: 'Mobile navigation' });
+  await expect(mobileNav).toBeVisible();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'true');
+  await expect(mobileNav.getByRole('link', { name: 'Our Work' })).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(mobileNav).toBeHidden();
+  await expect(toggle).toBeFocused();
+  await expect(toggle).toHaveAttribute('aria-expanded', 'false');
+});
+
+test('navigation marks current primary, support and secondary routes consistently', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 900 });
+  await openPublicPage(page, '/our-work/eid-gift-kits');
+
+  const primaryNav = page.getByRole('navigation', { name: 'Primary navigation' });
+  await expect(primaryNav.getByRole('link', { name: 'Our Work' })).toHaveAttribute('aria-current', 'page');
+  await expect(primaryNav.getByRole('link', { name: 'Impact' })).not.toHaveAttribute('aria-current', 'page');
+
+  await openPublicPage(page, '/appeals');
+  await expect(primaryNav.getByRole('link', { name: 'Support a need' })).toHaveAttribute('aria-current', 'page');
+
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPublicPage(page, '/transparency');
+  const toggle = page.locator('button[aria-controls="mobile-navigation"]');
+  await toggle.click();
+
+  const mobileNav = page.getByRole('navigation', { name: 'Mobile navigation' });
+  const transparency = mobileNav.getByRole('link', { name: 'Transparency' });
+  await expect(transparency).toHaveAttribute('aria-current', 'page');
+  await expect(transparency).toHaveClass(/active/);
+  await expect(mobileNav.getByRole('link', { name: 'Governance' })).not.toHaveAttribute('aria-current', 'page');
+});
+
+test('impact and transparency expose the same explicit public/private evidence boundary', async ({ page }) => {
+  for (const path of ['/impact', '/transparency']) {
+    await openPublicPage(page, path);
+
+    const boundary = page.locator('[data-trust-evidence-boundary]');
+    await expect(boundary).toHaveCount(1);
+    await expect(boundary.getByRole('heading', { level: 3 })).toHaveCount(3);
+
+    const text = await boundary.innerText();
+    expect(text).toMatch(/public record/i);
+    expect(text).toMatch(/private verification/i);
+    expect(text).toMatch(/publication gate/i);
+    expect(text).toMatch(/identity documents/i);
+    expect(text).toMatch(/privacy-review requirements/i);
+  }
+});
+
+test('canonical continuation routes expose unique internal destinations on partner and recognition pages', async ({ page }) => {
+  const expected = {
+    '/partner': ['/how-we-verify', '/transparency', '/get-involved'],
+    '/recognition': ['/governance', '/transparency', '/our-work'],
+  };
+
+  for (const [path, destinations] of Object.entries(expected)) {
+    await openPublicPage(page, path);
+
+    const continuation = page.getByRole('navigation', { name: 'Continue exploring Amaana' });
+    await expect(continuation).toBeVisible();
+
+    const hrefs = await continuation.locator('a').evaluateAll(links =>
+      links.map(link => link.getAttribute('href')).filter(Boolean),
+    );
+
+    expect(hrefs, `${path} should expose the expected continuation routes`).toEqual(destinations);
+    expect(new Set(hrefs).size, `${path} continuation routes must be unique`).toBe(hrefs.length);
+    expect(
+      hrefs.every(href => href.startsWith('/') && !href.startsWith('//') && !/\s/.test(href)),
+      `${path} continuation routes must remain safe internal paths`,
+    ).toBe(true);
+  }
+});
+
+test('mobile navigation backdrop dismisses the menu without entering keyboard order', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPublicPage(page, '/about');
+
+  const toggle = page.locator('button[aria-controls="mobile-navigation"]');
+  await toggle.click();
+  const backdrop = page.locator('.mobile-menu-backdrop');
+  await expect(backdrop).toBeVisible();
+  await expect(backdrop).toHaveAttribute('tabindex', '-1');
+
+  const clickPoint = await page.evaluate(() => {
+    const backdropElement = document.querySelector('.mobile-menu-backdrop');
+    const menuElement = document.querySelector('#mobile-navigation');
+    if (!(backdropElement instanceof HTMLElement) || !(menuElement instanceof HTMLElement)) return null;
+
+    const backdropRect = backdropElement.getBoundingClientRect();
+    const menuRect = menuElement.getBoundingClientRect();
+    const x = Math.max(backdropRect.left + 8, Math.min(backdropRect.right - 8, backdropRect.left + backdropRect.width / 2));
+    const availableBelow = backdropRect.bottom - Math.max(backdropRect.top, menuRect.bottom);
+    const availableAbove = Math.min(backdropRect.bottom, menuRect.top) - backdropRect.top;
+    const y = availableBelow >= 16
+      ? Math.max(backdropRect.top + 8, menuRect.bottom + Math.min(24, availableBelow / 2))
+      : availableAbove >= 16
+        ? Math.min(backdropRect.bottom - 8, menuRect.top - Math.min(24, availableAbove / 2))
+        : null;
+
+    return y === null ? null : { x, y };
+  });
+
+  expect(clickPoint, 'Open mobile navigation must leave a pointer-accessible backdrop region').not.toBeNull();
+  const topmostClass = await page.evaluate(({ x, y }) => document.elementFromPoint(x, y)?.className ?? '', clickPoint);
+  expect(String(topmostClass), 'The exposed dismiss region must belong to the mobile navigation backdrop').toContain('mobile-menu-backdrop');
+  await page.mouse.click(clickPoint.x, clickPoint.y);
+  await expect(page.getByRole('navigation', { name: 'Mobile navigation' })).toBeHidden();
+  await expect(toggle).toBeFocused();
+});
+
+test('reduced-motion preference keeps the passive reminder rail control-free', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await openPublicPage(page, '/donate');
+
+  expect(await page.evaluate(() => window.matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+  await expect(page.locator('.amaana-reminder-controls')).toHaveCount(0);
+  await expect(page.locator('.amaana-reminders')).toBeVisible();
+});
+
+test('mobile floating companion and Back to top controls do not overlap', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await openPublicPage(page, '/about');
+
+  const fixedGeometry = await page.evaluate(() => {
+    const companion = document.querySelector('.amaana-companion');
+    const dock = document.querySelector('.amaana-companion-dock');
+    if (!(companion instanceof HTMLElement) || !(dock instanceof HTMLElement)) return null;
+
+    const box = companion.getBoundingClientRect();
+    const dockBox = dock.getBoundingClientRect();
+    const viewportWidth = document.documentElement.clientWidth;
+    const viewportHeight = window.innerHeight;
+
+    return {
+      position: getComputedStyle(companion).position,
+      rightGap: viewportWidth - box.right,
+      bottomGap: viewportHeight - box.bottom,
+      dockWidth: dockBox.width,
+      dockHeight: dockBox.height,
+      dockDisplay: getComputedStyle(dock).display,
+      dockButtons: dock.querySelectorAll(':scope > button').length,
+    };
+  });
+
+  expect(fixedGeometry).not.toBeNull();
+  expect(fixedGeometry.position).toBe('fixed');
+  expect(fixedGeometry.rightGap).toBeGreaterThanOrEqual(0);
+  expect(fixedGeometry.rightGap).toBeLessThanOrEqual(24);
+  expect(fixedGeometry.bottomGap).toBeGreaterThanOrEqual(48);
+  expect(fixedGeometry.bottomGap).toBeLessThanOrEqual(80);
+  expect(fixedGeometry.dockDisplay).toBe('flex');
+  expect(fixedGeometry.dockButtons).toBe(1);
+  expect(fixedGeometry.dockWidth).toBeLessThanOrEqual(150);
+  expect(fixedGeometry.dockHeight).toBeLessThanOrEqual(100);
+
+  await page.evaluate(() => window.scrollTo(0, Math.max(1000, document.body.scrollHeight)));
+
+  const backToTop = page.getByRole('button', { name: 'Back to top' });
+  const companion = page.locator('.amaana-companion-dock');
+  await expect(backToTop).toBeVisible();
+  await expect(companion).toBeVisible();
+
+  const backBox = await backToTop.boundingBox();
+  const companionBox = await companion.boundingBox();
+  expect(backBox).not.toBeNull();
+  expect(companionBox).not.toBeNull();
+  expect(rectanglesOverlap(backBox, companionBox), 'Floating controls overlap at 390px').toBe(false);
+
+  await backToTop.click();
+  await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThan(10);
+});
+
+
+test('client navigation uses a full-screen branded blocking overlay without collapsing the page shell', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPublicPage(page, '/');
+
+  await page.route('**/about?*', async route => {
+    await new Promise(resolve => setTimeout(resolve, 700));
+    await route.continue();
+  });
+
+  const before = await page.locator('main#main').boundingBox();
+  expect(before).not.toBeNull();
+
+  await page.getByRole('button', { name: 'Open navigation menu' }).click();
+  await page.getByRole('navigation', { name: 'Mobile navigation' }).getByRole('link', { name: 'About' }).click({ noWaitAfter: true });
+
+  const overlay = page.locator('.amaana-navigation-loading');
+  await expect(overlay).toBeVisible();
+  await expect(overlay.locator('.amaana-loading-logo')).toBeVisible();
+  await expect(overlay.locator('.amaana-loading-dots i')).toHaveCount(3);
+
+  const geometry = await overlay.boundingBox();
+  expect(geometry).not.toBeNull();
+  expect(geometry.x).toBeLessThanOrEqual(1);
+  expect(geometry.width).toBeGreaterThanOrEqual(389);
+  expect(await page.evaluate(() => document.body.style.overflow)).toBe('hidden');
+
+  const during = await page.locator('main#main').boundingBox();
+  expect(during).not.toBeNull();
+  expect(during.height).toBeGreaterThan(0);
+
+  await page.waitForURL('**/about');
+  await expect(overlay).toHaveCount(0);
+  expect(await page.evaluate(() => document.body.style.overflow)).not.toBe('hidden');
+});
+
+
+test('mobile navigation traps keyboard focus while open and does not expose the page behind it', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await openPublicPage(page, '/about');
+
+  const toggle = page.locator('button[aria-controls="mobile-navigation"]');
+  await toggle.click();
+  const mobileNav = page.getByRole('navigation', { name: 'Mobile navigation' });
+  await expect(mobileNav).toBeVisible();
+
+  const focusables = await mobileNav.locator('a[href], button:not([disabled])').count();
+  expect(focusables).toBeGreaterThan(1);
+
+  for (let index = 0; index < focusables + 2; index += 1) {
+    await page.keyboard.press('Tab');
+    const insideMenu = await page.evaluate(() => {
+      const nav = document.querySelector('#mobile-navigation');
+      const toggleButton = document.querySelector('button[aria-controls="mobile-navigation"]');
+      return Boolean(nav?.contains(document.activeElement) || toggleButton === document.activeElement);
+    });
+    expect(insideMenu, 'Keyboard focus escaped the open mobile navigation').toBe(true);
+  }
+
+  await page.keyboard.press('Escape');
+  await expect(mobileNav).toBeHidden();
+  await expect(toggle).toBeFocused();
+});
+
+test('reduced motion disables smooth document scrolling and keeps navigation usable', async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await openPublicPage(page, '/about');
+
+  expect(await page.evaluate(() => getComputedStyle(document.documentElement).scrollBehavior)).toBe('auto');
+  await page.getByRole('link', { name: 'Skip to content' }).focus();
+  await page.keyboard.press('Enter');
+  await expect(page.locator('main#main')).toBeFocused();
+});

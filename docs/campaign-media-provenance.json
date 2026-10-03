@@ -1,0 +1,12 @@
+{
+  "reviewedAt": "2026-09-13",
+  "method": "Original Drive downloads; Sharp orientation correction, bounded resize without enlargement, WebP encoding, EXIF removal and full pixel decode validation. No generated image content.",
+  "assets": [
+    { "path": "public/media/dates-2026-announcement.webp", "driveId": "1cSTYGrQaFLPoOFpWY0pLdlovk8KCMzvO", "role": "Original campaign cover, not a documentary photograph", "gitBlobSha": "d4b044827895ff0b2e16f259e1971dc94ae0ba8c" },
+    { "path": "public/media/dates-2026-results.webp", "driveId": "15ZnZc61IDGr6fqSOzzBQCmDgfCvSPUSY", "role": "Campaign-reported results graphic", "gitBlobSha": "611ae88af708258c1782596c49f7c5396f780a15" },
+    { "path": "public/media/meat-2026-labels.webp", "driveId": "18RXikdPjwE34vGDiyJltcPWqSLsII1lM", "role": "Documentary packaging close-up", "gitBlobSha": "3a32b3fd20cbe32262adb5be2033dd956ec3b132" },
+    { "path": "public/media/meat-2026-cartons.webp", "driveId": "1pwoQHj-Hf1P5tllyifLtPtsPndkvsf_M", "role": "Documentary sealed cartons and campaign banner", "gitBlobSha": "119dc616ef9149d9ba2aef01053fe4398fa5e368" },
+    { "path": "public/media/dates-distribution-2026.webp", "driveId": "19xGmJ26fbwo1wZ2ABhZR88KmOT6i41r-", "role": "Documentary labelled packages; restored in earlier repair", "gitBlobSha": "ccc446399d889821199d96af0289cc5830ae0f2a" },
+    { "path": "public/media/qurbani-meat-distribution-2026.webp", "driveId": "1KwWNywqnoILWc1Oo1HKQKxgZ6gWN_Lly", "role": "Documentary distribution containers; restored in earlier repair", "gitBlobSha": "4d8b380c645078bd1b0868b20d30ec89fd9e2284" }
+  ]
+}

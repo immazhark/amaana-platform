@@ -1,0 +1,8 @@
+.v3-hero-photo .v2-media-item, .v3-field-image .v2-media-item { margin: 0; width: 100%; height: 100%; }
+.v3-hero-photo .v2-media-item img, .v3-field-image .v2-media-item img { width: 100%; height: 100%; object-fit: cover; }
+.v3-hero-photo figcaption, .v3-field-image figcaption { display: none; }
+.v3-title { font-size: clamp(3rem, 6vw, 5.8rem); line-height: 1.02; letter-spacing: -.035em; background: none; color: #fffdf8; }
+.v3-hero-grid { padding-block: clamp(2.5rem, 6vw, 5rem); gap: clamp(24px, 4vw, 56px); }
+.v3-hero { min-height: auto; }
+.v3-lead { color: #edf2fa; }
+@media (max-width: 760px) { .v3-hero-grid { grid-template-columns: 1fr; } .v3-title { max-width: 15ch; } }

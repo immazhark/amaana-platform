@@ -1,10 +1,86 @@
 import type { MetadataRoute } from "next";
+import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
+import { publicFaithWhere } from "@/lib/faith-publication";
 import { prisma } from "@/lib/prisma";
+import { canExposePublicAppeal } from "@/lib/public-environment";
+import { PUBLIC_STATIC_ROUTES } from "@/lib/public-routing";
+import { publishedProgrammeCategoryPaths } from "@/lib/sitemap-programme-categories";
+import { shouldAllowIndexing } from "@/lib/site-indexing";
+import { canListAppealInSitemap } from "@/lib/sitemap-privacy";
+import { isLegacyOurWorkSlug } from "@/lib/our-work-routing";
 
-const base = "https://amaanafoundation.org";
-export const dynamic = "force-dynamic";
+const configuredBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
+const base = configuredBase.replace(/\/$/, "");
+
+export const revalidate = 3600;
+
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const appeals = await prisma.appeal.findMany({ where: { status: { in: ["PUBLISHED", "FUNDED", "CLOSED"] } }, select: { slug: true, updatedAt: true } });
-  const pages = ["", "/appeals", "/about", "/impact", "/how-we-verify", "/request-assistance", "/contact", "/compliance", "/privacy", "/terms", "/donation-policy", "/refund-policy"];
-  return [...pages.map(path => ({ url: `${base}${path}`, lastModified: new Date(), changeFrequency: path === "" || path === "/appeals" ? "daily" as const : "monthly" as const, priority: path === "" ? 1 : path === "/appeals" ? .9 : .6 })), ...appeals.map(appeal => ({ url: `${base}/appeals/${appeal.slug}`, lastModified: appeal.updatedAt, changeFrequency: "weekly" as const, priority: .8 }))];
+  if (!shouldAllowIndexing(configuredBase, process.env.NEXT_PUBLIC_ALLOW_INDEXING)) return [];
+
+  const [appeals, initiatives, stories, faithContent] = await Promise.all([
+    prisma.appeal.findMany({
+      where: { status: { in: ["PUBLISHED", "FUNDED", "CLOSED"] } },
+      select: {
+        slug: true,
+        title: true,
+        status: true,
+        updatedAt: true,
+        assistanceRequest: {
+          select: {
+            verification: {
+              select: {
+                confidentialityLevel: true,
+                archiveConsent: true,
+              },
+            },
+          },
+        },
+      },
+    }),
+    prisma.initiative.findMany({
+      where: {
+        status: "PUBLISHED",
+        cause: { status: "PUBLISHED" },
+      },
+      select: { slug: true, updatedAt: true },
+    }),
+    prisma.story.findMany({
+      where: { status: "PUBLISHED", privacyApprovedAt: { not: null } },
+      select: { slug: true, updatedAt: true },
+    }),
+    prisma.faithContent.findMany({
+      where: publicFaithWhere,
+      select: { slug: true, updatedAt: true },
+    }),
+  ]);
+
+  const canonicalInitiatives = initiatives.filter(item => !isLegacyOurWorkSlug(item.slug));
+  const publishedInitiativeSlugs = new Set(canonicalInitiatives.map(item => item.slug));
+  const availableProgrammeCategoryPaths = publishedProgrammeCategoryPaths(publishedInitiativeSlugs);
+
+  const staticPages: MetadataRoute.Sitemap = PUBLIC_STATIC_ROUTES
+    .filter(route => !route.path.startsWith("/programmes/") || availableProgrammeCategoryPaths.has(route.path))
+    .map(route => ({
+      url: `${base}${route.path}`,
+      changeFrequency: route.changeFrequency,
+      priority: route.priority,
+    }));
+
+  const searchableAppeals = appeals.filter(item =>
+    canExposePublicAppeal(item)
+    && canExposeAppealArchive({
+      appealStatus: item.status,
+      hasAssistanceRequest: Boolean(item.assistanceRequest),
+      archiveConsent: item.assistanceRequest?.verification?.archiveConsent,
+    })
+    && canListAppealInSitemap(item.assistanceRequest?.verification?.confidentialityLevel),
+  );
+
+  return [
+    ...staticPages,
+    ...canonicalInitiatives.map(item => ({ url: `${base}/our-work/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.8 })),
+    ...stories.map(item => ({ url: `${base}/stories/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.75 })),
+    ...faithContent.map(item => ({ url: `${base}/faith-and-reflections/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "monthly" as const, priority: 0.7 })),
+    ...searchableAppeals.map(item => ({ url: `${base}/appeals/${item.slug}`, lastModified: item.updatedAt, changeFrequency: "weekly" as const, priority: 0.85 })),
+  ];
 }

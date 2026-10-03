@@ -1,0 +1,35 @@
+/* Composable derivatives of the approved SVGs: fill, fixed lattice, bounded emblem.
+   Keep source artwork byte-locked; never size identity artwork with cover. */
+:root{
+  --amaana-pattern:url("/backgrounds/amaana-lattice-tile.svg?v=20260928-r5");
+  --amaana-watermark:url("/backgrounds/amaana-emblem-watermark.svg?v=20260928-r5");
+  --amaana-bg-body:var(--amaana-watermark),var(--amaana-pattern);
+  --amaana-bg-hero:var(--amaana-pattern),linear-gradient(235deg,#4575a1 0%,#4575a1 16%,#91a6b0 34%,#cecfc0 48%,#eee5d2 70%);
+  --amaana-bg-footer:var(--amaana-pattern),linear-gradient(235deg,#4575a1 0%,#2c557b 45%,#163b5c 100%);
+  --amaana-emblem-width:clamp(7rem,12vw,11rem);
+  --amaana-emblem-space:calc(var(--amaana-emblem-width) + 2rem);
+  --af-surface-size:240px auto,104px 104px;
+  --af-surface-repeat:no-repeat,repeat;
+  --af-surface-position:right clamp(.75rem,2vw,2rem) center,0 0;
+}
+.amaana-bg-hero,.amaana-bg-body,.amaana-bg-footer,.site-footer{position:relative}
+.amaana-bg-hero{background-color:#eee5d2;background-image:var(--amaana-bg-hero);background-size:104px 104px,100% 100%;background-repeat:repeat,no-repeat}
+.amaana-bg-body{background-color:#faf7ef!important;background-image:var(--amaana-bg-body)!important;background-size:var(--af-surface-size)!important;background-repeat:var(--af-surface-repeat)!important;background-position:var(--af-surface-position)!important}
+.amaana-bg-footer,.site-footer{background-color:#163b5c;background-image:var(--amaana-bg-footer);background-size:104px 104px,100% 100%;background-repeat:repeat,no-repeat}
+.site-footer:before{content:none}
+.amaana-section-shell{position:relative;isolation:isolate}
+.amaana-section-content{position:relative;z-index:1}
+.amaana-backdrop-emblem{
+  position:absolute;top:clamp(1.5rem,5vw,3rem);right:clamp(.75rem,2vw,2rem);z-index:0;
+  width:var(--amaana-emblem-width);aspect-ratio:276/500;
+  background:url("/backgrounds/amaana-arch-emblem.svg?v=20260928-r5") top center/contain no-repeat;
+  pointer-events:none;user-select:none;
+}
+.amaana-bg-hero>:not(.amaana-backdrop-emblem),.amaana-bg-body>:not(.amaana-backdrop-emblem),.amaana-bg-footer>:not(.amaana-backdrop-emblem),.site-footer>.container{position:relative;z-index:1}
+.amaana-bg-hero,.amaana-bg-body,.amaana-bg-footer,.site-footer{overflow:hidden}
+
+@media(max-width:900px){
+  :root{--amaana-emblem-width:6rem}
+  .amaana-backdrop-emblem{top:1rem;right:1.25rem}
+}
+

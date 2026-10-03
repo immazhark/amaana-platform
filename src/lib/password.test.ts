@@ -1,4 +1,16 @@
 import { describe, expect, it } from "vitest";
 import { hashPassword, verifyPassword } from "./password";
 
-describe("staff passwords", () => { it("verifies the right password and rejects a wrong one", async () => { const hash = await hashPassword("a strong example password"); expect(await verifyPassword("a strong example password", hash)).toBe(true); expect(await verifyPassword("wrong password", hash)).toBe(false); }); it("rejects malformed stored hashes", async () => expect(await verifyPassword("password", "invalid")).toBe(false)); });
+describe("staff passwords", () => {
+  it("verifies the right password and rejects a wrong one", async () => {
+    const hash = await hashPassword("a strong example password");
+    expect(await verifyPassword("a strong example password", hash)).toBe(true);
+    expect(await verifyPassword("wrong password", hash)).toBe(false);
+  });
+
+  it("rejects malformed or missing stored hashes after running the verification path", async () => {
+    expect(await verifyPassword("password", "invalid")).toBe(false);
+    expect(await verifyPassword("password", "")).toBe(false);
+    expect(await verifyPassword("password", "scrypt:not-hex:not-hex")).toBe(false);
+  });
+});

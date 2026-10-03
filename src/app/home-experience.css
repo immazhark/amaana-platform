@@ -1,0 +1,12 @@
+/* Contact layout and Get Involved section only. ParticipationCard owns card styles. */
+.v2-intent{padding-block:clamp(4rem,8vw,7rem);background:linear-gradient(180deg,#fffdf8 0%,#f4ede2 100%);border-bottom:1px solid rgb(15 27 43 / 8%)}
+.v2-contact-safety{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(18rem,.9fr);gap:clamp(2rem,7vw,7rem);align-items:start}
+.v2-contact-safety .v2-section-title{max-width:11ch}
+.v2-contact-safety-copy{padding:clamp(1.5rem,3vw,2.5rem);border-left:1px solid rgb(15 27 43 / 12%)}
+.v2-contact-safety-copy p{margin:0 0 1.25rem;color:#68717a;line-height:1.7}
+.v2-contact-safety-copy .v2-button{margin-top:.5rem}
+
+@media(max-width:900px){
+  .v2-contact-safety{grid-template-columns:1fr}
+  .v2-contact-safety-copy{padding-left:0;border-left:0;border-top:1px solid rgb(15 27 43 / 12%)}
+}

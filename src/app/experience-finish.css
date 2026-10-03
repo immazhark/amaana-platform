@@ -1,0 +1,713 @@
+/* Amaana Foundation — experience finish layer
+   Brand values are owned by tokens.css; this file owns finishing interactions only. */
+
+/* Global rhythm + optical alignment */
+main{overflow:clip}.container,.v3-shell{padding-inline:max(0px,env(safe-area-inset-left));padding-right:max(0px,env(safe-area-inset-right))}.v3-section-head>*{min-width:0}.v3-heading{text-wrap:balance}.v3-intro,.footer-intro p{text-wrap:pretty}.v3-section-head{align-items:start}.v3-section-head .v3-intro{padding-top:.45rem}.v3-label,.v3-kicker{line-height:1.35}.v3-btn,.button,.nav-donate{touch-action:manipulation}
+
+/* Header: cleaner hierarchy, larger hit area, no visual jitter */.brand-official{min-width:4.25rem;min-height:4.25rem}.brand-lockup{display:block;max-width:4rem;height:auto}.nav-donate{min-height:3.25rem;padding-inline:1.2rem}.menu-toggle{min-width:2.85rem;min-height:2.85rem;place-items:center}.menu-toggle span{line-height:1;font-size:1.35rem}.mobile-menu-inner{padding-block:1.4rem 1.75rem}.mobile-menu-primary{display:grid}.mobile-menu-primary a{padding-block:.8rem;border-bottom:1px solid rgb(18 34 57 / 8%)}.mobile-menu-secondary{padding-top:1rem}.mobile-menu-secondary a{min-height:2.75rem;display:inline-flex;align-items:center}
+
+/* Switch the complete navigation together before labels crowd tablet widths. */
+@media(max-width:1020px){.site-header .nav-links{display:none}.site-header .menu-toggle{display:grid}.site-header .mobile-menu.open{display:block;max-height:calc(100vh - 7.2rem);max-height:calc(100dvh - 7.2rem);overflow-y:auto;overscroll-behavior:contain}}
+
+/* Proof strip: clearer baseline and stronger grouping */
+.v3-proof-grid{align-items:stretch}.v3-proof-item{display:flex;min-height:9rem;flex-direction:column;justify-content:center}.v3-proof-item strong{font-variant-numeric:tabular-nums}.v3-proof-item span{max-width:17rem}
+
+/* Eid timeline: legible on wide and narrow screens */
+.v3-timeline{gap:clamp(.65rem,2vw,1.5rem)}.v3-year{min-width:0}.v3-year span{font-variant-numeric:tabular-nums}.v3-year small{line-height:1.35}.v3-eid .v3-actions{margin-top:clamp(2.5rem,5vw,4.5rem)}
+
+/* Appeal/empty state */
+.v3-empty{box-shadow:0 20px 55px rgb(18 34 57 / 7%)}.v3-empty h3{text-wrap:balance}.v3-empty .v3-actions{justify-content:flex-end}.v2-appeal-card{border-radius:1.25rem;overflow:hidden}.v2-appeal-card-link{min-height:3.5rem}
+
+/* Footer: official brand lockup and cleaner columns */
+.footer-brand-lockup{display:inline-flex;align-items:center;gap:.9rem;width:max-content;max-width:100%;color:#fffdf8}.footer-brand-mark{width:4.2rem;height:4.2rem;display:grid;place-items:center;border-radius:50%;background:rgb(255 253 248 / 94%);box-shadow:0 16px 40px rgb(0 0 0 / 18%)}.footer-brand-mark img{width:78%;height:auto;object-fit:contain}.footer-brand-copy{display:grid;gap:.18rem;line-height:1}.footer-brand-copy strong{font-size:1.1rem;letter-spacing:.16em;background:linear-gradient(105deg,#fffdf8 0%,#f1cf52 78%);-webkit-background-clip:text;background-clip:text;color:transparent}.footer-brand-copy small{font-size:.62rem;letter-spacing:.28em;color:rgb(255 253 248 / 62%)}.footer-intro>p{max-width:31rem}
+
+/* Better states and safer long content */
+:is(a,button,input,textarea,select){-webkit-tap-highlight-color:transparent}.v3-home a,.site-header a,.site-footer a{text-decoration-thickness:.08em}.v3-home img,.site-header img,.site-footer img{max-width:100%}.v3-home h1,.v3-home h2,.v3-home h3,.site-footer h2{overflow-wrap:normal;word-break:normal}.v3-home p,.site-footer p{orphans:2;widows:2}
+
+@media (hover:hover){.footer-brand-lockup:hover .footer-brand-mark{transform:translateY(-2px);box-shadow:0 22px 46px rgb(0 0 0 / 24%)}.footer-brand-mark{transition:transform .25s ease,box-shadow .25s ease}}
+
+@media(max-width:1020px){.nav-links{gap:.5rem}.v3-work-row{grid-template-columns:6rem minmax(0,1fr) minmax(10rem,.4fr) 1.5rem}}
+
+@media(max-width:900px){.v3-section-head{gap:1.25rem}.v3-section-head .v3-intro{max-width:42rem;padding-top:0}.v3-hero-media-caption{padding-right:1rem}.v3-work-row{grid-template-columns:5.2rem minmax(0,1fr) 1.5rem}.v3-timeline{grid-template-columns:repeat(4,minmax(0,1fr));gap:2.25rem 1rem}.v3-year{padding-right:.25rem}.footer-intro{grid-column:1/-1;max-width:42rem}}
+
+@media(max-width:760px){.brand-official{min-width:3.7rem;min-height:3.7rem}.brand-lockup{max-width:3.55rem}.mobile-menu-primary a{font-size:clamp(1.35rem,6vw,2rem)}.v3-section{padding-block:clamp(4rem,12vw,6rem)}.v3-hero-grid{padding-top:4.75rem}.v3-proof-item{min-height:8rem}.v3-work-row{padding-block:1.55rem}.v3-timeline{grid-template-columns:repeat(2,minmax(0,1fr));gap:2rem 1rem}.footer-intro{grid-column:auto}.footer-brand-mark{width:3.8rem;height:3.8rem}}
+
+@media(max-width:520px){.site-footer{padding-block:2.25rem 1.25rem}.footer-intro{grid-column:1/-1}.footer-intro>p{font-size:.92rem;line-height:1.55;margin-bottom:.8rem}.footer-grid-v2>div:last-child{grid-column:1/-1}.footer-grid-v2>div:last-child .footer-links{grid-template-columns:repeat(2,minmax(0,1fr));column-gap:1rem}.v3-shell{width:min(calc(100% - (var(--af-public-gutter) * 2)),var(--af-public-shell))}.v3-title{font-size:clamp(3.6rem,18vw,5.4rem);line-height:.87}.v3-lead{font-size:1rem;line-height:1.65}.v3-hero-media{min-height:27rem;border-radius:1.1rem 1.1rem 3.2rem 1.1rem}.v3-hero-media-caption{left:1.2rem;right:1.2rem;bottom:1.35rem}.v3-hero-media-caption>strong{font-size:2.1rem}.v3-proof-grid{grid-template-columns:1fr}.v3-proof-item{border-right:0;border-bottom:1px solid var(--af-border)!important;padding:1.25rem .15rem}.v3-proof-item:last-child{border-bottom:0!important}.v3-work-row{grid-template-columns:1fr auto}.v3-work-row small{grid-column:1/-1}.v3-work-row h3{font-size:2.05rem}.v3-timeline{gap:1.5rem .7rem}.v3-trust-panel{border-radius:1rem}.v3-empty{border-radius:1rem}.footer-brand-copy strong{font-size:1rem}}
+
+@media(prefers-reduced-motion:reduce){.v3-work-row:before,.v3-arrow,.v3-quick-links a span:last-child,.footer-brand-mark{transition:none!important}.v3-work-row:hover .v3-arrow,.v3-work-row:focus-visible .v3-arrow,.v3-quick-links a:hover span:last-child,.v3-quick-links a:focus-visible span:last-child,.footer-brand-lockup:hover .footer-brand-mark{transform:none!important}}
+
+
+
+/* Consolidated canonical section surfaces */
+/* Amaana Foundation canonical public-section surface system.
+   One approved body artwork, expressed through controlled light/alternate/dark gradients.
+   Route CSS owns layout; this layer owns public page atmosphere and transitions. */
+:root{
+  --af-surface-art:var(--amaana-bg-body);
+  --af-surface-light:var(--af-surface-art);
+  --af-surface-light-alt:var(--af-surface-art);
+  --af-surface-dark:linear-gradient(132deg,rgb(10 26 46 / 94%) 0%,rgb(29 49 80 / 92%) 52%,rgb(47 76 122 / 90%) 100%),var(--af-surface-art);
+  --af-surface-dark-alt:linear-gradient(148deg,rgb(18 34 57 / 95%) 0%,rgb(29 49 80 / 90%) 58%,rgb(117 86 7 / 24%) 140%),var(--af-surface-art);
+
+}
+main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
+:is(.v2-section.paper,.v3-section,.amaana-bg-body){
+  background-color:var(--af-color-canvas)!important;background-image:var(--af-surface-light)!important;
+  background-repeat:var(--af-surface-repeat)!important;background-size:var(--af-surface-size)!important;background-position:var(--af-surface-position)!important;background-blend-mode:normal,luminosity
+}
+.v3-home>.v3-section:not(.dark):nth-of-type(even),.v2-home>.v2-section.paper:not(.dark):nth-of-type(even){background-image:var(--af-surface-light-alt)!important}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust){
+  color:#fffdf8;background-color:var(--af-color-navy-800)!important;background-image:var(--af-surface-dark)!important;
+  background-repeat:var(--af-surface-repeat)!important;background-size:var(--af-surface-size)!important;background-position:var(--af-surface-position)!important;background-blend-mode:normal,soft-light
+}
+:is(.v2-impact-trust,.v3-closing){
+  background-color:var(--af-color-navy-950)!important;background-image:var(--af-surface-dark-alt)!important;
+  background-repeat:var(--af-surface-repeat)!important;background-size:var(--af-surface-size)!important;background-position:var(--af-surface-position)!important;background-blend-mode:normal,soft-light
+}
+:is(.v2-impact-trust,.v2-impact-witness,.v2-impact-philosophy)::before,:is(.v2-impact-trust,.v2-impact-witness,.v2-impact-philosophy)::after{content:none!important}
+.v2-impact-philosophy{background-color:var(--af-color-canvas)!important;background-image:var(--af-surface-light-alt)!important;background-repeat:var(--af-surface-repeat)!important;background-size:var(--af-surface-size)!important;background-position:var(--af-surface-position)!important}
+:is(.v2-section,.v3-section){position:relative}
+:is(.v2-section,.v3-section)+:is(.v2-section,.v3-section){border-top:1px solid rgb(117 86 7 / 8%)}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust)+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust){border-top-color:rgb(240 213 107 / 10%)}
+.page-hero--level1{background-image:var(--amaana-bg-hero)!important;background-blend-mode:normal}
+.site-footer{background-image:var(--amaana-bg-footer)!important}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(h1,h2,h3,h4,strong){color:inherit}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(.v2-section-intro,.v3-intro){color:rgb(255 253 248 / 72%)}
+@media(max-width:768px){
+  :root{--af-surface-position:right 2rem center,0 0}
+  :is(.v2-section.paper,.v3-section,.amaana-bg-body,.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust,.v2-impact-philosophy,.v3-closing){background-size:var(--af-surface-size)!important}
+}
+
+
+
+/* Consolidated canonical action hierarchy */
+/* Canonical Amaana action hierarchy.
+   Primary = gold filled, Secondary = outlined, Link = text action.
+   Context may invert ink/border for dark surfaces, but geometry and hierarchy stay identical. */
+:root{
+  --af-action-height:3.25rem;
+  --af-action-pad-x:1.35rem;
+  --af-action-primary-bg:var(--af-color-gold-500);
+  --af-action-primary-hover:#f0ca39;
+  --af-action-primary-ink:var(--af-color-navy-950);
+  --af-action-secondary-border:rgb(18 34 57 / 28%);
+  --af-action-secondary-ink:var(--af-color-navy-950);
+  --af-action-link:var(--af-color-gold-ink);
+}
+:is(.button,.v2-button,.v3-btn,.af-btn){
+  display:inline-flex;align-items:center;justify-content:center;gap:.45rem;
+  min-height:var(--af-action-height);height:auto;padding:.72rem var(--af-action-pad-x);
+  border:1px solid var(--af-action-primary-bg);border-radius:var(--af-radius-pill);
+  background:var(--af-action-primary-bg);color:var(--af-action-primary-ink);
+  font:800 .94rem/1.2 var(--af-font-body);text-align:center;text-decoration:none;
+  white-space:normal;cursor:pointer;
+  box-shadow:0 8px 22px rgb(117 86 7 / 12%);
+  transition:transform var(--af-motion-medium) var(--af-ease-standard),box-shadow var(--af-motion-medium) ease,background var(--af-motion-medium) ease,border-color var(--af-motion-medium) ease,color var(--af-motion-medium) ease
+}
+:is(.button,.v2-button,.v3-btn,.af-btn):is(:hover,:focus-visible){
+  background:var(--af-action-primary-hover);border-color:var(--af-action-primary-hover);color:var(--af-action-primary-ink);
+  transform:translateY(-2px);box-shadow:0 14px 30px rgb(117 86 7 / 18%)
+}
+:is(.button.secondary,.v2-button.secondary,.v2-button.ghost,.v2-button--paper-secondary,.v3-btn.secondary,.v3-btn.ghost,.af-btn--secondary){
+  background:transparent;color:var(--af-action-secondary-ink);border-color:var(--af-action-secondary-border);box-shadow:none
+}
+:is(.button.secondary,.v2-button.secondary,.v2-button.ghost,.v2-button--paper-secondary,.v3-btn.secondary,.v3-btn.ghost,.af-btn--secondary):is(:hover,:focus-visible){
+  background:rgb(18 34 57 / 6%);color:var(--af-color-navy-950);border-color:rgb(18 34 57 / 48%);box-shadow:none
+}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(.button.secondary,.v2-button.secondary,.v2-button.ghost,.v3-btn.secondary,.v3-btn.ghost,.af-btn--secondary){
+  color:#fffdf8;border-color:rgb(255 253 248 / 42%);background:transparent
+}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(.button.secondary,.v2-button.secondary,.v2-button.ghost,.v3-btn.secondary,.v3-btn.ghost,.af-btn--secondary):is(:hover,:focus-visible){
+  color:#fffdf8;border-color:rgb(240 213 107 / 62%);background:rgb(255 253 248 / 8%)
+}
+:is(.v2-text-link,.v3-text-link,.af-link-action){
+  display:inline-flex;align-items:center;gap:.35rem;min-height:2.75rem;padding:.15rem 0;
+  border:0;border-radius:0;background:transparent;box-shadow:none;color:var(--af-action-link);
+  font:800 .94rem/1.3 var(--af-font-body);text-decoration:none;cursor:pointer;
+  transition:color var(--af-motion-fast) ease,transform var(--af-motion-fast) ease
+}
+:is(.v2-text-link,.v3-text-link,.af-link-action):is(:hover,:focus-visible){color:var(--af-color-navy-800);transform:translateX(.16rem)}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(.v2-text-link,.v3-text-link,.af-link-action){color:var(--af-color-gold-soft)}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(.v2-text-link,.v3-text-link,.af-link-action):is(:hover,:focus-visible){color:#fffdf8}
+.site-header :is(.button,.nav-donate){min-height:3rem;padding:.68rem 1.2rem}
+:is(.v2-hero-actions,.v3-actions,.actions){display:flex;flex-wrap:wrap;align-items:center;gap:.75rem}
+@media(max-width:560px){:is(.v2-hero-actions,.v3-actions,.actions) :is(.button,.v2-button,.v3-btn,.af-btn){width:100%}}
+@media(prefers-reduced-motion:reduce){:is(.button,.v2-button,.v3-btn,.af-btn,.v2-text-link,.v3-text-link,.af-link-action){transition:none!important;transform:none!important}}
+
+
+
+/* Canonical cross-route visual reconciliation.
+   Route styles may own composition; these rules keep geometry, rhythm and surfaces recognizably Amaana. */
+:root{
+  --af-section-space:clamp(4.5rem,8vw,7.5rem);
+  --af-card-radius:1.25rem;
+  --af-card-border:rgb(117 86 7 / 16%);
+  --af-card-shadow:0 16px 42px rgb(18 34 57 / 7%);
+}
+:is(.v2-shell,.v3-shell,.page-hero__shell,main .container,.site-header .container,.site-footer>.container){
+  width:min(calc(100% - (var(--af-public-gutter) * 2)),var(--af-public-shell));
+  margin-inline:auto;
+}
+:is(.v2-section,.v3-section){padding-block:var(--af-section-space)}
+:is(.v2-section-head,.v3-section-head){
+  display:grid;
+  grid-template-columns:minmax(0,1.15fr) minmax(18rem,.85fr);
+  gap:clamp(2rem,6vw,6rem);
+  align-items:end;
+  margin-bottom:clamp(2.5rem,5vw,4.5rem);
+}
+:is(.v2-section-title,.v3-heading){
+  max-width:18ch;
+  margin:.7rem 0 0;
+  font-family:Georgia,"Times New Roman",serif;
+  font-size:clamp(2.4rem,4.6vw,3.5rem);
+  font-weight:500;
+  line-height:.98;
+  letter-spacing:-.04em;
+  text-wrap:balance;
+}
+:is(.v2-section-intro,.v3-intro){
+  max-width:42rem;
+  font-size:clamp(1rem,1.6vw,1.18rem);
+  line-height:1.75;
+}
+:is(.v2-section-label,.v2-kicker,.v3-label,.v3-kicker,.page-hero__eyebrow){
+  font-size:.76rem;
+  font-weight:800;
+  line-height:1.35;
+  letter-spacing:.16em;
+  text-transform:uppercase;
+}
+:is(.v2-documentary-card,.v2-stories-card,.v2-appeal-card,.canonical-pathways article,.v3-empty){
+  border-radius:var(--af-card-radius);
+  border-color:var(--af-card-border);
+  box-shadow:var(--af-card-shadow);
+}
+.page-hero--level1{
+  background-color:var(--af-color-canvas)!important;
+  background-image:var(--amaana-bg-hero)!important;
+  background-repeat:var(--af-surface-repeat)!important;
+  background-size:var(--af-surface-size)!important;
+  background-position:center center!important;
+}
+.site-footer{
+  background-color:var(--af-color-navy-800)!important;
+  background-image:var(--amaana-bg-footer)!important;
+  background-repeat:var(--af-surface-repeat)!important;
+  background-size:var(--af-surface-size)!important;
+  background-position:center center!important;
+}
+@media(max-width:900px){
+  :is(.v2-section-head,.v3-section-head){grid-template-columns:1fr;gap:1.25rem;align-items:start}
+  :is(.v2-section-title,.v3-heading){max-width:15ch}
+}
+@media(max-width:768px){
+  :root{--af-public-gutter:1rem;--af-section-space:clamp(4rem,12vw,6rem)}
+  .page-hero--level1{background-image:var(--amaana-bg-hero)!important;background-position:top right!important}
+  .site-footer{background-image:var(--amaana-bg-footer)!important;background-position:top right!important}
+}
+@media(max-width:600px){
+  :is(.v2-section-title,.v3-heading){font-size:clamp(2.2rem,9vw,3.4rem)}
+}
+
+
+/* Canonical media + card language.
+   Individual routes may vary composition, never the underlying visual vocabulary. */
+:root{
+  --af-media-radius:1.15rem;
+  --af-media-border:rgb(117 86 7 / 16%);
+  --af-media-shadow:0 18px 46px rgb(18 34 57 / 9%);
+  --af-card-pad:clamp(1.15rem,2vw,1.6rem);
+}
+:is(.v2-media-item,.v2-documentary-card,.v2-stories-card-media,.canonical-pathway-visual,.work-thumb,.v2-impact-ledger-thumb){
+  border-radius:var(--af-media-radius);
+}
+:is(.v2-documentary-card,.v2-stories-card,.v2-appeal-card,.canonical-pathways article){
+  overflow:hidden;
+  border:1px solid var(--af-card-border);
+  background:rgb(255 253 248 / 88%);
+  box-shadow:var(--af-card-shadow);
+}
+:is(.v2-documentary-card,.v2-stories-card,.v2-appeal-card,.canonical-pathways article) :is(img,video){
+  display:block;
+  width:100%;
+  object-fit:cover;
+}
+:is(.v2-section,.v3-section)+:is(.v2-section,.v3-section){
+  border-top:1px solid rgb(117 86 7 / 8%);
+}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust)+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust){
+  border-top-color:rgb(240 213 107 / 10%);
+}
+/* Level-2 and trust heroes share one dark editorial family; level-1 remains the approved light artwork. */
+
+
+/* Canonical action geometry and section transition polish. */
+:is(.button,.v2-button,.v3-btn,.af-btn){
+  min-height:2.875rem;
+  padding:.78rem 1.15rem;
+  border-radius:999px;
+  font-size:.92rem;
+  font-weight:800;
+  line-height:1.15;
+  letter-spacing:.01em;
+  text-decoration:none;
+}
+:is(.v2-text-link,.v3-text-link,.af-link-action){
+  display:inline-flex;
+  align-items:center;
+  gap:.4rem;
+  min-height:2.75rem;
+  padding:.25rem 0;
+  font-weight:800;
+  text-underline-offset:.24em;
+}
+:is(.v2-actions,.v3-actions,.page-hero__actions){
+  display:flex;
+  flex-wrap:wrap;
+  gap:.75rem;
+  align-items:center;
+}
+:is(.v2-section,.v3-section)>:is(.v2-shell,.v3-shell){
+  position:relative;
+  z-index:1;
+}
+@media(max-width:600px){
+  :is(.v2-actions,.v3-actions,.page-hero__actions) :is(.button,.v2-button,.v3-btn,.af-btn){
+    width:100%;
+    justify-content:center;
+  }
+  :is(.v2-actions,.v3-actions,.page-hero__actions) :is(.v2-text-link,.v3-text-link,.af-link-action){
+    width:auto;
+  }
+}
+
+
+/* Shared chrome reconciliation: header and footer should frame every route identically. */
+.site-header{
+  border-bottom:1px solid rgb(117 86 7 / 12%);
+  box-shadow:0 8px 28px rgb(18 34 57 / 5%);
+}
+.site-header .nav-links{gap:clamp(.7rem,1.4vw,1.25rem)}
+.site-footer{border-top:1px solid rgb(240 213 107 / 16%)}
+@media(max-width:760px){
+  .site-footer .footer-lead-actions{justify-content:flex-start}
+}
+
+
+/* Canonical closing/pre-footer family: one recognisable end-of-page rhythm across discovery routes. */
+:is(.v2-closing,.v3-closing){
+  position:relative;
+  overflow:hidden;
+  padding-block:clamp(4.5rem,8vw,7rem);
+  text-align:left;
+  background-color:var(--af-color-canvas);
+  background-image:var(--af-surface-light-alt);
+  background-repeat:var(--af-surface-repeat);
+  background-size:var(--af-surface-size);
+  background-position:var(--af-surface-position);
+  border-top:1px solid rgb(117 86 7 / 10%);
+}
+:is(.v2-closing,.v3-closing) :is(.v2-shell,.v3-shell){
+  width:min(calc(100% - (var(--af-public-gutter) * 2)),var(--af-public-shell));
+  margin-inline:auto;
+  display:grid;
+  grid-template-columns:minmax(0,1.08fr) minmax(0,.92fr);
+  column-gap:clamp(2rem,3vw,3.5rem);
+  align-items:center;
+}
+:is(.v2-closing,.v3-closing) .af-section-heading.af-section-heading{display:contents}
+:is(.v2-closing,.v3-closing) .af-section-heading>div{grid-column:1;grid-row:1/3}
+:is(.v2-closing,.v3-closing) .af-section-heading.af-section-heading .v2-section-title{max-width:20ch}
+:is(.v2-closing,.v3-closing) .af-section-heading.af-section-heading .v2-section-intro{grid-column:2;align-self:end;justify-self:start}
+:is(.v2-closing,.v3-closing) :is(.v2-hero-actions,.v3-actions){
+  grid-column:2;
+  align-self:start;
+  justify-content:flex-start;
+  margin:1.5rem 0 0;
+}
+@media(max-width:900px){
+  :is(.v2-closing,.v3-closing) :is(.v2-shell,.v3-shell){display:block}
+  :is(.v2-closing,.v3-closing) .af-section-heading.af-section-heading{display:grid;margin-bottom:0}
+  :is(.v2-closing,.v3-closing) .af-section-heading>div,:is(.v2-closing,.v3-closing) .af-section-heading.af-section-heading .v2-section-intro{grid-column:auto;grid-row:auto}
+}
+@media(max-width:600px){
+  :is(.v2-closing,.v3-closing){padding-block:4rem}
+}
+
+
+/* Special-route sections keep their purpose while inheriting the shared Amaana surface rhythm. */
+:is(.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-history-note,.campaign-data-visual,.campaign-gallery,.campaign-next){
+  position:relative;
+  background-color:var(--af-color-canvas);
+  background-image:var(--af-surface-light);
+  background-repeat:var(--af-surface-repeat);
+  background-size:var(--af-surface-size);
+  background-position:var(--af-surface-position);
+}
+:is(.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-history-note,.campaign-data-visual,.campaign-gallery,.campaign-next){
+  border-top:1px solid rgb(117 86 7 / 8%);
+}
+:is(.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-data-visual,.campaign-gallery,.campaign-next){
+  padding-block:var(--af-section-space);
+}
+:is(.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-data-visual,.campaign-gallery,.campaign-next)>:is(.v2-shell,[class*="v2-shell"]){
+  width:min(calc(100% - (var(--af-public-gutter) * 2)),var(--af-public-shell));
+  margin-inline:auto;
+}
+
+
+
+/* Assistance flow: align process geometry with the same card vocabulary used elsewhere. */
+.v2-assistance-before-grid,.v2-assistance-form-layout{gap:clamp(1.5rem,4vw,4rem)}
+.v2-assistance-form-layout>aside{
+  border:1px solid var(--af-card-border);
+  border-radius:var(--af-card-radius);
+  padding:var(--af-card-pad);
+  background:rgb(255 253 248 / 78%);
+  box-shadow:var(--af-card-shadow);
+}
+.v2-assistance-form-layout>aside ol{display:grid;gap:.75rem;margin:1.25rem 0 0;padding:0;list-style:none}
+.v2-assistance-form-layout>aside li{
+  display:grid;
+  grid-template-columns:2.25rem minmax(0,1fr);
+  gap:.8rem;
+  align-items:start;
+  padding:.85rem 0;
+  border-top:1px solid rgb(117 86 7 / 10%);
+}
+.v2-assistance-form-layout>aside li>span{font-weight:850;color:var(--af-color-gold-ink)}
+.v2-assistance-form-layout>aside li p{margin:0;line-height:1.55}
+.v2-assistance-form-layout>aside li strong{display:block;margin-bottom:.15rem;color:var(--af-color-navy-800)}
+.v2-assistance-after-flow{
+  display:grid;
+  grid-template-columns:repeat(4,minmax(0,1fr));
+  gap:.8rem;
+  margin-top:clamp(1.5rem,3vw,2.5rem);
+}
+.v2-assistance-after-flow>div{
+  min-width:0;
+  padding:1.15rem;
+  border:1px solid var(--af-card-border);
+  border-radius:var(--af-card-radius);
+  background:rgb(255 253 248 / 78%);
+  box-shadow:0 10px 28px rgb(18 34 57 / 5%);
+}
+.v2-assistance-after-flow span{display:block;margin-bottom:.7rem;color:var(--af-color-gold-ink);font-size:.75rem;font-weight:850;letter-spacing:.12em}
+.v2-assistance-after-flow strong{display:block;color:var(--af-color-navy-800);line-height:1.25}
+@media(max-width:900px){.v2-assistance-after-flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.v2-assistance-after-flow{grid-template-columns:1fr}.v2-assistance-form-layout>aside{padding:1rem}}
+
+/* Browser acceptance corrections: canonical body art, hero controls and compact footer. */
+:is(.v2-section.paper,.v3-section,.amaana-bg-body,.v2-closing,.v3-closing,.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-history-note,.campaign-data-visual,.campaign-gallery,.campaign-next){background-size:var(--af-surface-size)!important}
+.page-hero__button{min-height:3.1875rem!important;padding-block:.82rem!important}
+
+/* Accessibility audit: readable ink on light compliance/legal surfaces. */
+.v2-compliance-guardrail-grid article>span{color:var(--af-color-gold-ink)!important;font-weight:800}
+.v2-compliance-guardrail-grid article>p{color:var(--af-color-navy-800)!important}
+.v2-compliance-page :is(.v2-section.paper,.v2-compliance-guardrails) :is(.v2-section-intro,p){color:var(--af-color-navy-800)}
+
+
+/* Acceptance consolidation: homepage body surface. */
+.v3-work{background-size:var(--af-surface-size)!important;background-position:var(--af-surface-position)!important;background-repeat:var(--af-surface-repeat)!important}
+
+
+/* Artwork composition: fixed texture scale, independently bounded identity. */
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust,.v3-closing){
+  --af-surface-size:100% 100%,240px auto,104px 104px;
+  --af-surface-repeat:no-repeat,no-repeat,repeat;
+  --af-surface-position:center,right 2rem center,0 0;
+  background-size:100% 100%,240px auto,104px 104px!important;
+  background-repeat:no-repeat,no-repeat,repeat!important;
+  background-position:center,right 2rem center,0 0!important;
+}
+.page-hero--level1,.site-footer{
+  background-size:104px 104px,100% 100%!important;
+  background-repeat:repeat,no-repeat!important;
+  background-position:0 0,center!important;
+}
+.page-hero--level1 .page-hero__shell{padding-right:0}
+.page-hero--level1 .page-hero__grid{grid-template-columns:minmax(0,1.05fr) minmax(0,.95fr);gap:clamp(1.5rem,3vw,3rem)}
+.page-hero--level1 .page-hero__visual-fallback strong{color:#fffdf8}
+@media(max-width:900px){
+  .page-hero--level1>.amaana-backdrop-emblem,.site-footer>.amaana-backdrop-emblem{display:none}
+  .page-hero--level1 .page-hero__shell{padding-right:0;padding-top:0}
+  .page-hero--level1 .page-hero__grid{grid-template-columns:1fr;padding-top:0}
+  .page-hero--level1 .page-hero__copy{background:transparent;border:0;border-radius:0;padding:0}
+}
+
+
+
+/* 2026-09-28 site-level UX architecture pass.
+   Shared chrome and L1/L2 heroes are deliberately compact, editorial and viewport-safe. */
+:root{
+  --af-chrome-height:4.25rem;
+  --af-reading-measure:62ch;
+  --af-section-space:clamp(3.75rem,6.5vw,6.25rem);
+}
+.site-header{background:rgb(255 253 248 / 97%);box-shadow:0 10px 32px rgb(18 34 57 / 4%)}
+
+.page-hero{
+  --min:clamp(22rem,30vw,27rem);
+  --visual:clamp(17rem,23vw,21rem);
+  --pad:clamp(2.25rem,3.5vw,3.25rem);
+}
+.page-hero--level1{
+  --min:clamp(23rem,30vw,27rem);
+  --visual:clamp(17rem,22vw,20rem);
+  --pad:clamp(2.25rem,3.25vw,3rem);
+}
+.page-hero__grid{gap:clamp(2rem,5vw,4.5rem)}
+.page-hero__description{max-width:var(--af-reading-measure);line-height:1.6}
+.page-hero__visual{box-shadow:0 18px 46px rgb(4 21 40 / 18%)}
+.page-hero__visual-fallback{padding:clamp(1.4rem,3vw,2.25rem)}
+.page-hero__visual-fallback i{width:3.5rem}
+.site-footer .amaana-backdrop-emblem{top:1.5rem;right:clamp(.75rem,2vw,2rem);opacity:.82}
+.site-footer>.container{position:relative;z-index:1}
+@media(max-width:900px){
+  :root{--af-chrome-height:4rem}
+  .page-hero{--min:auto;--visual:clamp(18rem,46vw,23rem);--pad:clamp(2.75rem,7vw,4rem)}
+  .page-hero--level1{
+    background-image:var(--amaana-pattern),linear-gradient(180deg,#eee5d2 0%,#eee5d2 54%,#d9ddd3 74%,#4575a1 100%)!important;
+    background-position:0 0,center!important;
+    background-size:104px 104px,100% 100%!important;
+    background-repeat:repeat,no-repeat!important
+  }
+  .page-hero--level1 .page-hero__title{
+    background:none!important;
+    color:var(--af-color-navy-950)!important;
+    -webkit-text-fill-color:currentColor!important
+  }
+}
+@media(max-width:600px){
+  :root{--af-section-space:clamp(3.5rem,11vw,5rem)}
+  .page-hero{--visual:clamp(15rem,64vw,19rem);--pad:2.6rem}
+  .page-hero__description{line-height:1.58}
+  .page-hero__visual-fallback{padding:1.35rem}
+  .site-footer .amaana-backdrop-emblem{right:.5rem;top:1rem;opacity:.55}
+}
+
+
+/* 2026-09-28 canonical typography + interaction reconciliation.
+   This is the single late public-system owner; accessibility.css remains final authority. */
+:root{
+  --af-weight-body:400;
+  --af-weight-medium:600;
+  --af-weight-action:700;
+  --af-weight-label:700;
+  --af-weight-display:500;
+  --af-leading-body:1.68;
+  --af-leading-compact:1.35;
+  --af-link-color:var(--af-color-navy-700);
+}
+body{font-weight:var(--af-weight-body)}
+:is(.v2-section-title,.v3-heading,.page-hero__title,.canonical-block h2,.canonical-pathways h3){
+  font-family:var(--af-font-display);font-weight:var(--af-weight-display)
+}
+:is(.v2-section-label,.v2-kicker,.v3-label,.v3-kicker,.page-hero__eyebrow){
+  font-weight:var(--af-weight-label)
+}
+:is(.button,.v2-button,.v3-btn,.af-btn,.page-hero__button,.nav-donate){
+  font-weight:var(--af-weight-action)
+}
+:is(.v2-text-link,.v3-text-link,.af-link-action){
+  color:var(--af-link-color);font-weight:var(--af-weight-action);text-decoration:underline;
+  text-decoration-thickness:.075em;text-underline-offset:.22em;text-decoration-color:rgb(47 76 122 / 34%)
+}
+:is(.v2-text-link,.v3-text-link,.af-link-action):is(:hover,:focus-visible){
+  color:var(--af-color-navy-950);text-decoration-color:currentColor
+}
+.canonical-block :is(p,li){color:var(--af-color-text);font-weight:var(--af-weight-body);line-height:var(--af-leading-body)}
+.canonical-block a:not(.button):not(.v2-button):not(.canonical-pathway){
+  color:var(--af-link-color);font-weight:var(--af-weight-medium);text-decoration:underline;
+  text-decoration-thickness:.075em;text-underline-offset:.2em;text-decoration-color:rgb(47 76 122 / 30%)
+}
+.canonical-block a:not(.button):not(.v2-button):not(.canonical-pathway):is(:hover,:focus-visible){
+  color:var(--af-color-navy-950);text-decoration-color:currentColor
+}
+/* Narrative pages should read as documents; reserve boxes for genuinely discrete evidence/actions. */
+.canonical-body--about .canonical-block:nth-child(3),
+.canonical-body--about .canonical-block:nth-child(4){
+  border:0;border-top:1px solid rgb(117 86 7 / 16%);border-radius:0;background:transparent;box-shadow:none
+}
+.canonical-body--comparison .canonical-block{
+  border:0;border-top:1px solid rgb(117 86 7 / 16%);border-radius:0;background:transparent;box-shadow:none
+}
+.canonical-body--comparison .canonical-block:nth-child(2),
+.canonical-body--comparison .canonical-block:last-child{background:transparent}
+.canonical-body--governance .canonical-block{
+  border:0;border-top:1px solid rgb(117 86 7 / 16%);border-radius:0;background:transparent;box-shadow:none
+}
+.canonical-body--governance .canonical-block:last-child{background:transparent}
+@media(prefers-reduced-motion:reduce){
+  :is(.v2-text-link,.v3-text-link,.af-link-action){transform:none!important}
+}
+
+
+/* Canonical public interaction contract: one visible keyboard focus language. */
+:where(
+  .site-header a,.site-header button,
+  main a,main button,
+  .site-footer a,.site-footer button,
+  .amaana-companion-dock,.amaana-companion-panel button
+):focus-visible{
+  outline:3px solid var(--af-color-focus)!important;
+  outline-offset:3px!important;
+}
+:where(.v2-impact-tile,.v2-initiative-row,.v2-intent-card,.v2-stories-card,.canonical-pathway):focus-visible{
+  outline:3px solid var(--af-color-focus)!important;
+  outline-offset:4px!important;
+}
+:where(.v2-impact-tile,.v2-initiative-row,.v2-intent-card,.v2-stories-card,.canonical-pathway):focus:not(:focus-visible){
+  outline:none
+}
+/* Focus must not create a different layout from hover. */
+:where(.v2-initiative-row,.v2-intent-card,.v2-stories-card,.canonical-pathway):focus-visible{
+  border-color:rgb(70 111 170 / 36%)
+}
+/* Keep labels informational rather than visually shouting over headings/body. */
+:is(
+  .v2-initiative-copy small,.v2-stories-feature-copy small,.v2-stories-card-copy small,
+  .v2-story-source-note span,.v2-story-detail-rule span,.v2-story-detail-context>span,
+  .governance-summary span,.canonical-pathway span
+){font-weight:var(--af-weight-label)}
+
+
+/* L2 editorial detail reconciliation: Story/Faith metadata must remain subordinate to prose. */
+:is(
+ .v2-story-detail-rule span,.v2-story-source-note span,
+ .v2-faith-detail-source span,.v2-faith-detail-standard span,
+ .v2-faith-detail-topics span
+){font-weight:700}
+.v2-story-detail-prose,.v2-faith-detail-body{max-width:64ch}
+.v2-story-detail-prose>p,.v2-faith-detail-body{line-height:1.72}
+.v2-story-detail-page a:not(.v2-button):focus-visible,
+.v2-faith-detail-page a:not(.v2-button):focus-visible{
+ outline:3px solid var(--af-color-focus);outline-offset:3px
+}
+
+
+/* 2026-09-28 final visual QA: mobile footer + secondary-type readability. */
+.footer-nav-group{min-width:0}
+@media(min-width:521px){
+    .footer-nav-group:not([open])>.footer-links{display:grid}
+}
+.footer-intro p,.site-footer .footer-note a{color:rgb(255 253 248 / 74%)}
+:is(.v2-section-label,.v3-label,.v3-kicker,.page-hero__eyebrow){font-size:max(.75rem,12px);font-weight:700;line-height:1.4;letter-spacing:.09em}
+:is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(.v2-section-label,.v3-label,.v3-kicker){color:var(--af-color-gold-soft)}
+@media(max-width:520px){
+  .site-footer{padding-block:1.75rem 1rem}
+  .footer-lead-actions{gap:.65rem;justify-content:flex-start}
+  .footer-intro{grid-column:auto;padding-bottom:.4rem}
+  .footer-intro>p{font-size:.95rem;line-height:1.58;margin-bottom:.7rem}
+  .footer-nav-group{border-top:1px solid rgb(255 253 248 / 12%)}
+  .footer-nav-group:last-of-type{border-bottom:1px solid rgb(255 253 248 / 12%)}
+    .footer-nav-group>.footer-links{padding:.25rem 0 .75rem;grid-template-columns:repeat(2,minmax(0,1fr));gap:.1rem .75rem}
+  .footer-nav-group .footer-links a{width:auto;min-height:2.75rem;font-size:.9rem;line-height:1.35}
+}
+
+
+/* 2026-09-28 brutal-QA: editorial heading token for programme/card identity. */
+:is(.v2-initiative-row,.v3-work-card,.canonical-pathways,.v2-stories-card,.v2-appeal-card) h3{
+  font-family:Georgia,"Times New Roman",serif;
+  font-weight:500;
+  line-height:1.08;
+  letter-spacing:-.02em
+}
+
+
+/* 2026-09-28 brutal-QA: final minor visual hierarchy corrections. */
+.amaana-companion{opacity:.88;transition:opacity var(--af-motion-fast) ease}
+.amaana-companion:is(:hover,:focus-within),.amaana-companion:has([aria-expanded="true"]){opacity:1}
+.amaana-companion-dock>button{box-shadow:0 4px 14px rgb(18 46 57 / 12%)}
+@media(max-width:600px){
+  .v3-proof-label::after{content:" · Swipe ↔";color:var(--af-color-muted);font-weight:700;letter-spacing:.02em;text-transform:none}
+  .amaana-companion{right:max(8px,env(safe-area-inset-right));bottom:max(8px,env(safe-area-inset-bottom))}
+  .amaana-companion-dock>button{min-width:44px;min-height:44px;opacity:.94}
+}
+@media(prefers-reduced-motion:reduce){.amaana-companion{transition:none}}
+
+
+/* 2026-09-28 semantic footer disclosure correction. */
+.footer-nav-title{margin:0}
+.footer-nav-label{display:block;color:#f1cf52;font-size:.75rem;font-weight:700;letter-spacing:.11em;line-height:1.35;text-transform:uppercase}
+.footer-nav-toggle{display:none}
+@media(max-width:520px){
+  .footer-nav-label{display:none}
+  .footer-nav-title{border-top:1px solid rgb(255 253 248 / 12%)}
+  .footer-nav-group:last-of-type .footer-nav-title{border-bottom:1px solid rgb(255 253 248 / 12%)}
+  .footer-nav-toggle{
+    width:100%;min-height:3rem;padding:.7rem .1rem;border:0;background:transparent;color:#f1cf52;
+    display:flex;align-items:center;justify-content:space-between;text-align:left;
+    font:700 .75rem/1.35 var(--af-font-body);letter-spacing:.11em;text-transform:uppercase;cursor:pointer
+  }
+  .footer-nav-toggle-icon{color:rgb(255 253 248 / 72%);font-size:1.15rem;font-weight:500;line-height:1}
+  .footer-nav-group>.footer-links{display:none;padding:.25rem 0 .75rem;grid-template-columns:repeat(2,minmax(0,1fr));gap:.1rem .75rem}
+  .footer-nav-group[data-open="true"]>.footer-links{display:grid}
+}
+
+
+/* Footer disclosure cleanup: one separator authority after replacing details semantics. */
+@media(max-width:520px){
+  .footer-nav-group{border-top:0}
+  .footer-nav-group:last-of-type{border-bottom:0}
+}
+
+
+/* 2026-09-29 wide-monitor composition: use the canvas without stretching reading measure. */
+@media(min-width:1600px){
+  :is(.v2-section-head,.v3-section-head){
+    grid-template-columns:minmax(0,1.08fr) minmax(20rem,.92fr);
+    gap:clamp(2rem,3vw,3.5rem);
+    margin-bottom:clamp(2.5rem,3.5vw,3.75rem)
+  }
+  :is(.v2-section-intro,.v3-intro){max-width:38rem}
+}
+
+
+/* 2026-09-29 final hero-family authority: preserve recognisable page intent after canonical surface consolidation. */
+
+
+/* 2026-09-29 owner monitor QA: cap wide-desktop vertical rhythm so content does not float in oversized cream zones. */
+@media(min-width:1200px){
+  :root{--af-section-space:clamp(3.75rem,4.5vw,5rem)}
+  :is(.v2-closing,.v3-closing){padding-block:clamp(4rem,5vw,5.5rem)}
+}
+
+
+/* 2026-09-29 mobile collision safety: keep Companion bottom-right without covering primary page actions. */
+@media(max-width:600px){
+  .amaana-companion{
+    --af-companion-mobile-bottom:max(4.25rem,calc(env(safe-area-inset-bottom) + 1rem));
+    right:max(var(--af-public-gutter),env(safe-area-inset-right));
+    bottom:var(--af-companion-mobile-bottom)
+  }
+  .amaana-companion-panel{
+    bottom:calc(var(--af-companion-mobile-bottom) + 3.4rem)
+  }
+}
+
+/* One approved L1 banner surface for every page family; purpose remains semantic. */
+:root{--amaana-page-banner:var(--amaana-bg-hero)}
+:is(.page-hero,.v3-home-banner,.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page,.v2-loading-page,.admin-heading){position:relative;isolation:isolate;color:var(--af-color-navy-950);background-color:#eee5d2!important;background-image:var(--amaana-page-banner)!important;background-size:104px 104px,100% 100%!important;background-repeat:repeat,no-repeat!important;background-position:0 0,center!important}
+:is(.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page,.v2-loading-page,.admin-heading)::after{content:"";position:absolute;top:clamp(1.5rem,5vw,3rem);right:clamp(.75rem,2vw,2rem);width:var(--amaana-emblem-width);aspect-ratio:276/500;background:url("/backgrounds/amaana-arch-emblem.svg?v=20260928-r5") top center/contain no-repeat;pointer-events:none;z-index:-1}
+:is(.page-hero,.v3-home-banner)>.amaana-backdrop-emblem{display:block;z-index:2}
+:is(.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page,.v2-loading-page) h1{max-width:15ch;font:500 clamp(3rem,5.25vw,5.15rem)/.98 var(--af-font-display);letter-spacing:-.045em;text-wrap:balance}
+:is(.v2-state-hero,.v2-receipt-hero)>.v2-shell{padding-block:clamp(2.25rem,3.25vw,3rem)}
+.v2-state-grid{min-height:27rem}
+:is(.v2-state-grid>div>p,.v2-state-hero>.v2-shell>p,.v2-receipt-hero>.v2-shell>p,.v2-not-found-content>p,.v2-error-content>p,.v2-reference-block small,.v2-receipt-status small,.admin-heading .muted,.admin-heading .lead){color:#4d5d72}
+:is(.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page) :is(.v2-section-label,.v2-text-link),.v2-reference-block span,.v2-receipt-status span{color:var(--af-color-gold-ink)}
+.v2-reference-block,.v2-receipt-status{border-color:rgb(29 49 80/20%)}
+.v2-state-steps{background:var(--af-color-navy-800);color:#fffaf1}
+.v2-not-found-orbit,.v2-error-orbit{display:none}
+.admin-heading{padding:clamp(1.25rem,3vw,2rem);overflow:hidden}
+.v3-home-banner-slide{background:var(--amaana-page-banner)!important;background-size:104px 104px,100% 100%!important;background-repeat:repeat,no-repeat!important;background-position:0 0,center!important}
+.v3-home-banner-shade{display:none}
+.v3-home-banner-brandline,.v3-home-banner-metric strong{color:var(--af-color-navy-950);text-shadow:none}
+.v3-home-banner-kicker,.v3-home-banner-content h2,.v3-home-banner-metric span{color:var(--af-color-gold-ink)}
+.v3-home-banner-content>p:not(.v3-home-banner-kicker){color:#4d5d72}
+.v3-home-banner-actions .v3-btn.secondary{color:var(--af-color-navy-800);border-color:rgb(29 49 80/28%);background:rgb(255 255 255/64%)}
+.v3-home-banner-actions .v3-btn:focus-visible{outline-color:var(--af-color-navy-800)}
+@media(max-width:900px){:root{--amaana-page-banner:var(--amaana-pattern),linear-gradient(180deg,#eee5d2 0%,#eee5d2 54%,#d9ddd3 74%,#4575a1 100%)}:is(.page-hero,.v3-home-banner)>.amaana-backdrop-emblem{opacity:.25}:is(.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page,.v2-loading-page,.admin-heading)::after{opacity:.25}}
+@media(max-width:600px){:is(.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page,.v2-loading-page) h1{font-size:clamp(2.4rem,11.5vw,3.8rem)}}
+@media print{.v2-receipt-hero{background:#fff!important;color:#000!important}.v2-receipt-hero::after{display:none}}

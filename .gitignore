@@ -1,10 +1,11 @@
 node_modules
 .next
 out
-.env
-.env.local
-.env.*.local
+.env*
+!.env.example
 *.log
 .DS_Store
 prisma/dev.db
 coverage
+.curated-media/
+*.tsbuildinfo

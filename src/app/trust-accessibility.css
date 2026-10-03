@@ -1,0 +1,17 @@
+.v2-verify-steps article > span,
+.v2-transparency-chain article > span,
+.v2-transparency-do-dont span,
+.v2-compliance-ledger article > span,
+.v2-compliance-guardrail-grid article > span {
+  color: var(--v2-blue);
+}
+
+@media (forced-colors: active) {
+  .v2-verify-signal,
+  .v2-transparency-folio-sheet,
+  .v2-compliance-seal,
+  .v2-compliance-hold,
+  .v2-transparency-do-dont article {
+    border-color: CanvasText;
+  }
+}

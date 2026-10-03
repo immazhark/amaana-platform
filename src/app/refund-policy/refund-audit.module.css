@@ -1,0 +1,6 @@
+.securityCallout{display:grid;grid-template-columns:auto minmax(0,1fr);gap:1.25rem;align-items:start;margin:0 0 2.5rem;padding:clamp(1.25rem,3vw,2rem);border:1px solid #b9a36b;border-radius:.75rem;background:rgb(255 253 248 / 45%);color:#122239}
+.shield{width:2.75rem;height:2.75rem;display:grid;place-items:center;border-radius:50%;background:#f1e4db;color:#8f2d2d}
+.kicker{margin:0 0 .65rem;color:#8f2d2d;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
+.securityCallout h2{max-width:none;margin:0 0 .8rem!important;font-size:clamp(1.25rem,2vw,1.65rem)!important;line-height:1.35!important;letter-spacing:-.015em!important;text-wrap:balance}
+.securityCallout p:last-child{max-width:none;margin:0;color:#4d5b6c;line-height:1.7}
+@media(max-width:620px){.securityCallout{gap:.85rem}.shield{width:2.2rem;height:2.2rem}}
