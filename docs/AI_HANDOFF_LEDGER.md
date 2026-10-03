@@ -460,3 +460,19 @@ PR [#138](https://github.com/immazhark/amaana-platform/pull/138) merged as `7d2e
 Railway review `32edc17f-2650-4358-9954-53549444a074` SUCCESS on exact application merge SHA. Live desktop /about confirms44px named/roving tabs, real Right/Left switching/focus, panel header/dock clearance, fixed dock/no overflow and Escape focus restoration. Mobile/tablet/short-height evidence is local/seeded CI. Approved visuals/source text and prayer/date/API/content/privacy/payment/indexing behavior preserved; main/PR104 production promotion untouched.
 
 Ownership IDLE; documentation closure branch `docs/companion-panel-delivery-20261003`. Next: continue observations/new confirmed defects through a separate atomic task. No claim that every page/device is defect-free. Generated-output and locator-method failures were fixed; actual tablet overlap corrected rather than weakening assertions.
+
+
+## 2026-10-03 IST — Section hierarchy/alignment deployed; live verification infrastructure block
+
+State: `IDLE`. Outgoing: Codex; incoming: next available implementation agent. Integration: `phase-public-site-rebuild`. Implementation/CI/review deployment complete. Documentation closure branch `docs/section-hierarchy-delivery-20261003`.
+
+Completed: body display H2 cap3.5rem across shared and legacy route rules; homepage banner titles exceed body display headings, max4rem; shared homepage title-left/description-right introduction; full-shell closings with right-column supporting copy and aligned actions, mobile stacking; block evidence headings above their labels; wider heading measures. Corrected short Contact closing copy specificity and pre-existing390x844 menu backdrop reachability with a3rem dismiss strip. Approved artwork/content and fixed Companion preserved.
+
+Validation: final24 local responsive/keyboard/scroll/WCAG/Contact/backdrop regressions pass.392 units pass with six database-dependent skips,22 planner and editorial checks pass; lint one existing importer warning. Exact-head PR CI37107270067 SUCCESS:706 Chromium first-attempt checks in10.0minutes and24 Firefox/WebKit smoke checks in51.3seconds. Initial PR CI37106160672 had698pass/3fail; two task-introduced Contact alignment failures and one pre-existing backdrop failure fixed without disabling assertions. Production build/types/coverage/database/server smoke and unchanged budgets green:JavaScript819181/819200,CSS347689/348160. Integration CI37108057516 SUCCESS; exact-tree PR browser acceptance reused, browser job skipped.
+
+Delivery: application PR [#140](https://github.com/immazhark/amaana-platform/pull/140), final head `69f93b5e3ace613a4e5ec16daab598354e7efc52`, merge `3d83e2df7ba5a80687d95d04903c3ed731b7aa7d`; local/tested/remote/merged tree `45cbb6609900ab6c3c72ae66bb98582f1af4cdba` identical. Railway review deployment `e78d725e-3399-410f-aee9-ef12739c2514` SUCCESS on exact application merge. Main/production PR104 remains protected.
+
+Verification limit and next action: desktop/mobile local captures inspected and seeded real-route CI passes. Live /our-work was reachable before deployment, but post-deployment reload failed because the execution environment disconnected (409 environment_offline). No post-deployment live visual confirmation is claimed. Workspace/local checkout refresh also became unavailable. Restore the workspace connection, fetch latest rebuild integration/documentation before any writes, then verify deployed Home/Our Work/Stories/Impact/Contact geometry. No application change or full-suite rerun is needed solely to resume live verification. See SECTION_HIERARCHY_AUDIT_2026-10-03.md. No whole-site defect-free claim; canonical factual/privacy/payment/media/indexing locks preserved.
+
+---
+
