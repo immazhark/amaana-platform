@@ -1,5 +1,26 @@
 import { expect, test } from '@playwright/test';
 
+for (const width of [320, 390, 768, 1024, 1440, 1920]) {
+  test(`banner hierarchy and grouped evidence headings at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.goto('/browser-acceptance/home-hero');
+    const banner = await page.locator('.v3-home-banner-slide--story').first().evaluate(node => {
+      const title = node.querySelector('.v3-home-banner-brandline');
+      const r = node.getBoundingClientRect();
+      return { font: parseFloat(getComputedStyle(title).fontSize), inside: [...node.querySelectorAll('.v3-home-banner-content > *')].every(el => { const b = el.getBoundingClientRect(); return b.top >= r.top && b.bottom <= r.bottom; }) };
+    });
+    const bodySize = await page.locator('.v3-section h2').evaluateAll(nodes => Math.max(...nodes.map(node => parseFloat(getComputedStyle(node).fontSize))));
+    expect(banner.font).toBeGreaterThan(bodySize);
+    expect(banner.inside).toBe(true);
+    for (const path of ['/our-work', '/impact', '/stories', '/faith-and-reflections', '/request-assistance', '/our-work/eid-gift-kits']) {
+      await page.goto(path);
+      const metrics = await page.locator('main h2').evaluateAll(nodes => nodes.filter(n => !n.closest('.v3-home-banner')).map(node => ({ font: parseFloat(getComputedStyle(node).fontSize), grouped: !node.classList.contains('v2-section-title') || !node.previousElementSibling?.classList.contains('v2-section-label') || node.previousElementSibling.getBoundingClientRect().bottom <= node.getBoundingClientRect().top })));
+      for (const metric of metrics) { expect(metric.font, path).toBeLessThanOrEqual(56); expect(metric.grouped, path).toBe(true); }
+    }
+  });
+}
+
 const cases = [
   { route: '/stories', selector: '.v2-stories-feature-copy h2', fixture: '<div class="v2-stories-feature-copy"><h2>Featured field note</h2></div>' },
   { route: '/faith-and-reflections', selector: '.v2-faith-standard h2', fixture: '<section class="v2-faith-standard"><h2>Editorial trust</h2></section>' },
