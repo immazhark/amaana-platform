@@ -22,4 +22,8 @@ Fresh production build: JavaScript819181/819200 and CSS347670/348160 bytes, caps
 
 ## Delivery
 
-Final local25 Companion/navigation tests pass in39.9seconds;392 units pass with six database-dependent skips. Desktop/mobile confirmation screenshots show labelled44px tabs, visible close/header controls and reachable final actions. Exact PR/CI/merge and Railway/live confirmation pending. This targeted audit does not certify every page or every browser/device combination.
+Final local25 Companion/navigation tests pass in39.9seconds;392 units pass with six database-dependent skips. Desktop/mobile confirmation screenshots show labelled44px tabs, visible close/header controls and reachable final actions.
+
+PR [#138](https://github.com/immazhark/amaana-platform/pull/138) head `b94d81bec44b368ff584b8a1dab3f0bb2d679c75` passed CI37101750482:65 first-attempt Chromium checks in1.5minutes. Merge `7d2e3ffe62bf284eee5b18e25459e9a6b5dc46ce` passed integration CI37102025429 with exact-tree browser reuse and green build/budget/coverage/server smoke. Local/tested/merged tree `770db4f9d7496143e6e0c971a87c4cdb20063692` identical. JavaScript819181/CSS347670 confirmed remotely, caps unchanged.
+
+Railway review `32edc17f-2650-4358-9954-53549444a074` SUCCESS on exact application merge SHA. Live desktop /about screenshot/accessibility/DOM proves actual labelled44px tabs, inactive tab excluded from sequential focus, real Right/Left activation and focus, panel top145.61px vs81px header bottom, panel bottom849.61px vs865.20px dock top, fixed dock, no horizontal overflow, and Escape removes panel/restores dock focus with expanded=false. Mobile/tablet/short-screen evidence is local/seeded CI, not live cloud viewport resizing. Main/PR104 remains protected. This targeted audit does not certify every page or every browser/device combination.
