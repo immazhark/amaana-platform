@@ -36,7 +36,7 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     const contactAudit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
     expect(contactAudit.violations.map(v => ({ id: v.id, nodes: v.nodes.map(n => n.target) }))).toEqual([]);
     await page.goto('/browser-acceptance/home-hero');
-    const action = page.locator('.v3-home-banner-actions .v3-btn.secondary').first();
+    const action = page.locator('.v3-home-banner-actions .page-hero__button--secondary').first();
     await action.hover();
     await expect.poll(() => action.evaluate(node => getComputedStyle(node).color)).toBe('rgb(18, 34, 57)');
     await action.focus();
