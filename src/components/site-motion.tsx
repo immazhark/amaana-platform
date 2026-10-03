@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect } from "react";
-import { animate } from "framer-motion/dom/mini";
 
 // One delegated motion policy covers server-rendered cards and actions on every route.
 // Content stays visible before hydration; native scrolling remains browser-owned.
@@ -9,14 +8,13 @@ export function SiteMotion() {
   useEffect(() => {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const selector = '[data-body-card], .v2-button, .v3-btn, .page-hero__button, .af-support-cta';
-    const running = new Map<HTMLElement, ReturnType<typeof animate>>();
+    const running = new Map<HTMLElement, Animation>();
     const move = (element: HTMLElement, raised: boolean) => {
-      running.forEach((animation, node) => { if (!node.isConnected) { animation.stop(); running.delete(node); } });
-      running.get(element)?.stop();
+      running.forEach((animation, node) => { if (!node.isConnected) { animation.cancel(); running.delete(node); } });
+      const from = getComputedStyle(element).transform;
+      running.get(element)?.cancel();
       if (preference.matches) { element.style.removeProperty("transform"); return; }
-      running.set(element, animate(element, { transform: raised ? "translateY(-3px)" : "translateY(0px)" }, {
-        duration: .22, ease: [.2, .8, .2, 1],
-      }));
+      running.set(element, element.animate([{ transform: from }, { transform: raised ? "translateY(-3px)" : "translateY(0px)" }], { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)", fill: "forwards" }));
     };
     const target = (event: Event) => event.target instanceof Element ? event.target.closest<HTMLElement>(selector) : null;
     const enter = (event: Event) => {
@@ -37,7 +35,7 @@ export function SiteMotion() {
     };
     const reset = () => {
       if (!preference.matches) return;
-      running.forEach((animation, element) => { animation.stop(); element.style.removeProperty("transform"); });
+      running.forEach((animation, element) => { animation.cancel(); element.style.removeProperty("transform"); });
       running.clear();
     };
     document.addEventListener("pointerover", enter);
@@ -51,7 +49,7 @@ export function SiteMotion() {
       document.removeEventListener("focusin", enter);
       document.removeEventListener("focusout", leave);
       preference.removeEventListener("change", reset);
-      running.forEach(animation => animation.stop());
+      running.forEach(animation => animation.cancel());
     };
   }, []);
   return null;

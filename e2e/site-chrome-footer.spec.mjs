@@ -91,7 +91,7 @@ test('shared chrome and footer remain overflow-free on 390px mobile', async ({ p
   await expect(page.getByText('AMAANA LIVE', { exact: true })).toBeVisible();
 });
 
-test('homepage hero fixture preserves breathing room and the 45/55 editorial split', async ({ page }) => {
+test('homepage hero fixture preserves breathing room and two-column editorial alignment', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 900 });
   await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
   const response = await page.goto('/browser-acceptance/home-hero', { waitUntil: 'domcontentloaded' });
@@ -108,7 +108,8 @@ test('homepage hero fixture preserves breathing room and the 45/55 editorial spl
     return {
       height: carouselRect.height,
       bottomGap: carouselRect.bottom - actionsRect.bottom,
-      paddingRight: Number.parseFloat(style.paddingRight),
+      copyWidth: content.querySelector(".v3-home-banner-copy").getBoundingClientRect().width,
+      columns: style.gridTemplateColumns.split(" ").length,
       contentWidth: content.getBoundingClientRect().width,
       decorativeCount: document.querySelectorAll('.v3-home-banner-story-art,.v3-home-banner-story-year,.v3-home-banner-story-mark').length,
       viewport: document.documentElement.clientWidth,
@@ -119,8 +120,9 @@ test('homepage hero fixture preserves breathing room and the 45/55 editorial spl
   expect(result).not.toBeNull();
   expect(result.height).toBeGreaterThanOrEqual(360);
   expect(result.bottomGap).toBeGreaterThanOrEqual(20);
-  expect(result.paddingRight / result.contentWidth).toBeGreaterThan(0.52);
-  expect(result.paddingRight / result.contentWidth).toBeLessThan(0.58);
+  expect(result.columns).toBe(2);
+  expect(result.copyWidth / result.contentWidth).toBeGreaterThan(0.48);
+  expect(result.copyWidth / result.contentWidth).toBeLessThan(0.55);
   expect(result.decorativeCount).toBe(0);
   expect(result.scrollWidth).toBeLessThanOrEqual(result.viewport + 1);
 });
