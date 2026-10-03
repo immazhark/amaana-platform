@@ -440,3 +440,11 @@ Task complete, ownership IDLE. Next: owner continues UI observations; subsequent
 ## 2026-10-03 — Shared navigation resilience
 
 Codex claims fix/navigation-audit-20261003 from verified a35ec4227853a034722483141e463dd244f0cdcd. Confirmed 760/1020px backdrop mismatch at 900×600, missing background scroll containment and stale open state after desktop resize. Scoped CSS and open-only breakpoint/focus management corrected. Eleven new local checks pass across five widths/two heights; 392 units and21 planner regressions pass, six database-dependent unit skips. Final optimized build, PR/CI/integration/exact review deployment pending. Budgets unchanged. Protected PR104/main, approved visuals/content/privacy/payment/indexing and fixed Companion preserved.
+
+## 2026-10-03 IST — Shared navigation delivered, ownership IDLE
+
+PR [#136](https://github.com/immazhark/amaana-platform/pull/136) merged as `838bf7d7519cf50996cf49c51f084eb78a39c31a`. Tested remote head `52fa5a362270cf2a52f9408cdbfa65b48e9d5dc4`; tested/merged/local tree `d2cdefbfba7bf12fec6607a64c845dcd38e3a88d` identical. PR CI37099076391 SUCCESS: 57 Chromium first-attempt passes in1.5minutes; 392 units pass (six database-dependent skips). Integration CI37099358020 SUCCESS; exact-tree acceptance reused, duplicate browser/database checks skipped, production build/budgets/coverage/server smoke green. JavaScript819175/819200; CSS345824/348160, caps unchanged.
+
+Railway review `79349c3e-b715-4e54-8aef-3f5c28fc2621` SUCCESS on exact application merge SHA. Live desktop /about screenshot/DOM verifies new header CSS Module loaded, closed menu/expanded=false, normal body scrolling and no horizontal overflow; approved banner/Companion presentation preserved. Five-width/two-height mobile navigation proof is local/seeded CI. Local final11 navigation checks,21 planner regressions/build/types/lint/detector pass; three existing lint warnings unchanged.
+
+Task complete, ownership IDLE. Documentation closure branch `docs/navigation-audit-delivery-20261003`. Next: continue owner observations and new confirmed defects as separate atomic tasks. Protected PR104/main release and canonical content/media/privacy/payment/indexing/fixed Companion unchanged. No whole-site defect-free claim.
