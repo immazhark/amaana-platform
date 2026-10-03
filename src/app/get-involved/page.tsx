@@ -86,7 +86,7 @@ export default async function GetInvolvedPage() {
         visualNote="Choose a path that matches what you can offer and what the work needs now."
       />
 
-      <section className="v2-intent" aria-labelledby="ways-to-help-title">
+      <section className="v2-intent amaana-bg-body" aria-labelledby="ways-to-help-title">
         <div className="v2-shell">
           <SectionHeading eyebrow={<>Choose your way in</>} title={<>Different people can contribute differently.</>} subtitle={<>Start with what is realistic for you and what the current work actually needs.</>} id="ways-to-help-title" />
           <ParticipationCards paths={waysToHelp.map(({ number, ...item }) => ({ ...item, marker: number }))} />

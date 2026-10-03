@@ -1,3 +1,9 @@
+# Participation and Appeals pattern correction — 2026-10-03 IST
+
+State: `CODEX_ACTIVE`. Branch `fix/participation-appeals-patterns-20261003`, base `dd184a0cf6328a42250fd74e44b8d2a1e75a4446`. Four owner screenshots recovered and inspected. Scope: restore approved lattice on Get Involved participation and Appeals completed support/review/privacy sections; adopt shared privacy heading hierarchy and action spacing. Preserve factual copy, carousel, artwork and donation contracts. Open PR104 protected; use focused two-page responsive regression and unchanged performance caps before integration/review deployment.
+
+---
+
 # Owner surface polish — 2026-10-03 IST
 
 State: `IDLE`. All 19 owner screenshot corrections delivered through PR144, merge `5c0e61c2390c5ca339a754af4550925d525df830`. Local/tested/remote/merged tree `12277a804c87e4b3253969aca22d801fac08531c` identical. Sponsorship process/closing/cards, assistance follow-up, canonical institutional grids/headings, partnership actions, compliance guardrails, policy principles/prose/security notice and approved lattice visibility corrected. PR CI37124521399 SUCCESS:586 Chromium checks passed first attempt in9.6minutes. Integration CI37125268532 SUCCESS; exact-tree acceptance reused, duplicate browser/database skipped. Local15 responsive/navigation checks,24 planner regressions, build/types/lint and design detector pass. JS819181/819200,CSS347615/348160; caps unchanged, CSS smaller than baseline.
