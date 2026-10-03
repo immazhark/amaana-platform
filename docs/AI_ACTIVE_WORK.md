@@ -1,6 +1,8 @@
 # Donate and sponsorship screenshot correction — 2026-10-03 IST
 
-State: `CODEX_ACTIVE`. Branch `fix/donate-heading-alignment-20261003`, verified integration base `230077ee56fb65d44628c9fd8131d224b3a0938f`. Only protected production PR104 is open. Owner requests Donate section1 match section2 alignment/type; second supplied screenshot marks oversized Sponsor Education supporting copy. Apply scoped presentation fixes, verify responsive geometry and unchanged content; publish through rebuild PR/CI. Main/payment/privacy/indexing and approved visual locks preserved.
+State: `IDLE`. Task completed through PR142, merge `e20149276b6bb864c082f5a15b718eeeec85bc4a`. Donate section1 now matches section2's canonical grid/font; Sponsor Education supporting copy uses body typography/top alignment. PR CI37117208040 SUCCESS:103 first-attempt Chromium checks in1.9minutes, including six widths320/390/768/1024/1440/1920. Integration CI37117505771 SUCCESS; duplicate browsers skipped by exact-tree acceptance. Local typecheck/build/lint (one existing importer warning), detector and23 planner checks pass. JS819181/819200,CSS347746/348160; caps unchanged.
+
+Railway review deployment `f58aa5cc-5729-4f35-ba59-35bed9156977` SUCCESS on exact merge. Live desktop Donate confirms both headings40.89px,left82px; both copy columns643.11px. Sponsor lead changed from40px Georgia/70px line-height to18.88px Arial/33.04px, equal column tops1657.75px and no overflow. Responsive proof is seeded CI; live browser is desktop. See DONATE_SPONSORSHIP_LAYOUT_AUDIT_2026-10-03.md. Source/query/payment/copy/artwork/Companion unchanged. Only protected production PR104 remains; no main promotion. Next: owner continues observations; new confirmed issues use a separate task branch. Documentation closure branch `docs/donate-sponsorship-delivery-20261003`.
 
 ---
 
