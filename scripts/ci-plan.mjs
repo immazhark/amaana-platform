@@ -3,11 +3,12 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
+  { paths: /^(e2e\/owner-surface-polish\.spec\.mjs|src\/components\/trust-evidence-boundary\.module\.css|src\/app\/(?:refund-policy|privacy)\/[^/]+\.module\.css|src\/app\/compliance\/compliance-audit\.module\.css)$/, tests: ['owner-surface-polish.spec.mjs', 'policy-navigation.spec.mjs', 'ui-consistency.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^(src\/app\/donate\/(page\.tsx|donate-audit\.module\.css)|src\/app\/get-involved\/sponsor-education\/sponsor-education\.css|e2e\/donate-sponsorship-layout\.spec\.mjs)$/, tests: ['donate-sponsorship-layout.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'participation-contact.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^(src\/components\/islamic-companion(?:-panel)?(?:\.tsx|\.module\.css)|e2e\/companion-panel\.spec\.mjs)$/, tests: ['companion-panel.spec.mjs', 'navigation-resilience.spec.mjs', 'site-chrome-footer.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^(src\/components\/site-header(?:\.tsx|\.module\.css)|e2e\/navigation-resilience\.spec\.mjs)$/, tests: ['navigation-resilience.spec.mjs', 'site-chrome-footer.spec.mjs', 'typography-hierarchy.spec.mjs', 'page-banner-standardization.spec.mjs'] },
   // Specific page families precede broad page mappings: no whole-site matrix for scoped presentation.
-  { paths: /^(src\/app\/policy-experience\.css|src\/components\/policy-toc(?:\.tsx|\.module\.css)|e2e\/policy-navigation\.spec\.mjs)$/, tests: ['policy-navigation.spec.mjs', 'typography-hierarchy.spec.mjs'] },
+  { paths: /^(src\/app\/policy-experience\.css|src\/components\/policy-toc(?:\.tsx|\.module\.css)|e2e\/policy-navigation\.spec\.mjs)$/, tests: ['owner-surface-polish.spec.mjs', 'policy-navigation.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^(src\/app\/request-assistance\/(page\.tsx|assistance-surface\.module\.css)|src\/app\/assistance-wow\.css|src\/components\/assistance-form\.module\.css|e2e\/assistance-surface\.spec\.mjs)$/, tests: ['assistance-surface.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'page-banner-standardization.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/app\/(get-involved|contact|appeals)\/(page\.tsx|[^/]+\.module\.css)$/, tests: ['ui-consistency.spec.mjs', 'participation-contact.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/components\/(evidence-pathway\.module\.css|trust-evidence-boundary\.tsx)$/, tests: ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'typography-hierarchy.spec.mjs'] },
@@ -18,7 +19,7 @@ const groups = [
   { paths: /^e2e\/(ui-consistency|body-carousel-new)\.spec\.mjs$/, tests: ['ui-consistency.spec.mjs', 'body-carousel-new.spec.mjs'] },
   // Public heading/layout presentation only; APIs, auth, database and unknown paths remain full.
   { paths: /^src\/components\/(section-heading|canonical-article|programme-detail|trust-evidence-boundary|home-evidence)(\.|\/)/, tests: ['section-heading.spec.mjs', 'initiative-detail.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs', 'site-chrome-footer.spec.mjs', 'campaign-gallery.spec.mjs'] },
-  { paths: /^src\/app\/(site-chrome|canonical-content)\.css$/, tests: ['section-heading.spec.mjs', 'site-chrome-footer.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs', 'owner-screenshot-polish.spec.mjs'] },
+  { paths: /^src\/app\/(site-chrome|canonical-content)\.css$/, tests: ['owner-surface-polish.spec.mjs', 'section-heading.spec.mjs', 'site-chrome-footer.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs', 'owner-screenshot-polish.spec.mjs'] },
   { paths: /^src\/app\/(page\.tsx|(?:our-work|appeals|stories|faith-and-reflections|get-involved|contact|compliance|impact|request-assistance)(?:\/\[slug\]|\/sponsor-education)?\/page\.tsx)$/, tests: ['section-heading.spec.mjs', 'public-shell.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs', 'participation-contact.spec.mjs', 'initiative-detail.spec.mjs', 'carousel-acceptance.spec.mjs'] },
   { paths: /^e2e\/owner-screenshot-polish\.spec\.mjs$/, tests: ['owner-screenshot-polish.spec.mjs'] },
   { paths: /^e2e\/section-heading\.spec\.mjs$/, tests: ['section-heading.spec.mjs'] },
