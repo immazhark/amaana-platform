@@ -1,5 +1,5 @@
 
-.method.method{background-image:var(--amaana-pattern),linear-gradient(140deg,#0d1b2e,#1d3150 66%,#2f4c7a);background-size:104px 104px,100% 100%;background-repeat:repeat,no-repeat}
+.method.method.method{background:var(--amaana-pattern) 0 0/104px 104px,linear-gradient(140deg,#0d1b2e,#1d3150 66%,#2f4c7a) 0 0/100% 100%!important;background-blend-mode:normal}
 .method.method::after{content:none}
 .boundary.boundary{margin-bottom:0}
 .boundaryAction{display:block;margin-top:1.25rem}

@@ -50,6 +50,8 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
       expect(await surface.evaluate(node => getComputedStyle(node).backgroundSize)).toContain('104px 104px');
     }
     expect(await page.locator('.v2-appeal-method').evaluate(node => getComputedStyle(node, '::after').content)).toBe('none');
+    expect(await page.locator('.v2-appeal-method').evaluate(node => getComputedStyle(node).backgroundImage)).toMatch(/^url\(".*amaana-lattice-tile/);
+    expect(await page.locator('.v2-appeal-method').evaluate(node => getComputedStyle(node).backgroundBlendMode)).toMatch(/^normal/);
     const boundary = page.locator('.v2-appeals-boundary [data-section-heading="split"]');
     const geometry = await boundary.evaluate(node => {
       const label = node.querySelector('.v2-section-label');
