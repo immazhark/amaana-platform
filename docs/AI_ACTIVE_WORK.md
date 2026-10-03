@@ -1,3 +1,9 @@
+# Donate and sponsorship screenshot correction — 2026-10-03 IST
+
+State: `CODEX_ACTIVE`. Branch `fix/donate-heading-alignment-20261003`, verified integration base `230077ee56fb65d44628c9fd8131d224b3a0938f`. Only protected production PR104 is open. Owner requests Donate section1 match section2 alignment/type; second supplied screenshot marks oversized Sponsor Education supporting copy. Apply scoped presentation fixes, verify responsive geometry and unchanged content; publish through rebuild PR/CI. Main/payment/privacy/indexing and approved visual locks preserved.
+
+---
+
 # Latest delivery — section hierarchy and alignment — 2026-10-03 IST
 
 State: `IDLE`. Outgoing: Codex; incoming: next available implementation agent. Integration: `phase-public-site-rebuild`. Implementation/CI/review deployment complete. Documentation closure branch `docs/section-hierarchy-delivery-20261003`.

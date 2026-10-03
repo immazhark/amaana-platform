@@ -46,6 +46,7 @@ export default async function Page() {
       blocks={[
         {
           title: "Choose where your support should go.",
+          presentation: "default",
           paragraphs: [
             "Support an active verified need, enquire about an ongoing programme such as Taleem or seasonal relief, or explore the work behind completed cases. Programme contributions and general giving are arranged only when Amaana confirms an available approved destination.",
           ],
