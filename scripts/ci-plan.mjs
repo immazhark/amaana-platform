@@ -3,6 +3,7 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
+  { paths: /^(src\/components\/site-header(?:\.tsx|\.module\.css)|e2e\/navigation-resilience\.spec\.mjs)$/, tests: ['navigation-resilience.spec.mjs', 'site-chrome-footer.spec.mjs', 'typography-hierarchy.spec.mjs', 'page-banner-standardization.spec.mjs'] },
   // Specific page families precede broad page mappings: no whole-site matrix for scoped presentation.
   { paths: /^(src\/app\/policy-experience\.css|src\/components\/policy-toc(?:\.tsx|\.module\.css)|e2e\/policy-navigation\.spec\.mjs)$/, tests: ['policy-navigation.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^(src\/app\/request-assistance\/(page\.tsx|assistance-surface\.module\.css)|src\/app\/assistance-wow\.css|src\/components\/assistance-form\.module\.css|e2e\/assistance-surface\.spec\.mjs)$/, tests: ['assistance-surface.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'page-banner-standardization.spec.mjs', 'typography-hierarchy.spec.mjs'] },

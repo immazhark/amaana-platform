@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import styles from "./site-header.module.css";
 
 const primaryLinks = [
   ["Our Work", "/our-work"],
@@ -35,46 +36,52 @@ export function SiteHeader() {
   const closeMenu = () => setOpenForPath(null);
   const closeMenuAndRestoreFocus = () => {
     setOpenForPath(null);
-    requestAnimationFrame(() => toggleRef.current?.focus());
+    toggleRef.current?.focus();
   };
 
   useEffect(() => {
     if (!open) return;
-    const firstLink = mobileNavRef.current?.querySelector<HTMLElement>("a");
-    firstLink?.focus();
+    const nav = mobileNavRef.current;
+    const toggle = toggleRef.current;
+    if (!nav || !toggle) return;
+    const focusable = [toggle, ...nav.getElementsByTagName("a")];
+    focusable[1].focus();
+    const mobile = window.matchMedia("(max-width: 1020px)");
+    const onBreakpoint = () => {
+      if (mobile.matches) return;
+      setOpenForPath(null);
+      toggle.parentElement?.querySelector<HTMLElement>("a")?.focus();
+    };
+    mobile.addEventListener("change", onBreakpoint);
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setOpenForPath(null);
-        requestAnimationFrame(() => toggleRef.current?.focus());
+        toggle.focus();
         return;
       }
       if (event.key !== "Tab") return;
-      const nav = mobileNavRef.current;
-      const toggle = toggleRef.current;
-      if (!nav || !toggle) return;
-      const focusable = [toggle, ...Array.from(nav.querySelectorAll<HTMLElement>("a[href], button:not([disabled])"))]
-        .filter(element => element.getClientRects().length > 0);
-      if (focusable.length < 2) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
+      const last = focusable.at(-1)!;
       const active = document.activeElement;
-      if (event.shiftKey && active === first) {
+      if (event.shiftKey && active === toggle) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && active === last) {
         event.preventDefault();
-        first.focus();
+        toggle.focus();
       }
     };
 
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      mobile.removeEventListener("change", onBreakpoint);
+    };
   }, [open]);
 
   return (
     <>
-      <header className="site-header">
+      <header className={`site-header ${styles.header}`}>
       <nav className="container nav" aria-label="Primary navigation">
         <Link className="brand brand-official" href="/" aria-label="Amaana Foundation home" onClick={closeMenu}>
           <Image className="brand-lockup" src="/brand/amaana-mark.svg" width={108} height={108} alt="Amaana Foundation — Upholding Trust" priority />
@@ -111,7 +118,7 @@ export function SiteHeader() {
         </div>
       </nav>
       </header>
-      {open ? <button type="button" className="mobile-menu-backdrop" tabIndex={-1} aria-label="Close navigation menu" onClick={closeMenuAndRestoreFocus} /> : null}
+      {open ? <button type="button" className={`mobile-menu-backdrop ${styles.backdrop}`} tabIndex={-1} aria-label="Close navigation menu" onClick={closeMenuAndRestoreFocus} /> : null}
     </>
   );
 }

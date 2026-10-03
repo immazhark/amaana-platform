@@ -1,6 +1,17 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { planChanges } from './ci-plan.mjs';
+
+test('shared menu presentation and interaction select navigation resilience coverage', () => {
+  const plan = planChanges(['src/components/site-header.tsx', 'src/components/site-header.module.css', 'e2e/navigation-resilience.spec.mjs']);
+  assert.equal(plan.mode, 'focused');
+  assert.equal(plan.database, false);
+  assert.ok(plan.tests.includes('navigation-resilience.spec.mjs'));
+  assert.ok(plan.tests.includes('site-chrome-footer.spec.mjs'));
+  assert.ok(plan.tests.includes('page-banner-standardization.spec.mjs'));
+  assert.equal(planChanges(['src/components/site-header.tsx', 'src/lib/auth.ts']).mode, 'full');
+  assert.equal(planChanges(['src/components/site-header.tsx'], { target: 'main' }).mode, 'full');
+});
 test('docs skip application checks', () => { const p = planChanges(['docs/guide.md']); assert.equal(p.app,false); assert.equal(p.mode,'none'); });
 test('carousel selects dependency and performance tests', () => { const p = planChanges(['src/components/body-carousel.tsx']); assert.equal(p.mode,'focused'); assert.ok(p.tests.includes('carousel-acceptance.spec.mjs')); assert.ok(p.tests.includes('public-performance.spec.mjs')); });
 test('gallery CSS selects gallery suite', () => assert.ok(planChanges(['src/components/campaign-media-gallery.module.css']).tests.includes('campaign-gallery.spec.mjs')));
