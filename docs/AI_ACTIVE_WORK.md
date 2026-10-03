@@ -1,3 +1,9 @@
+# Companion panel accessibility audit — 2026-10-03 IST
+
+State: `CODEX_ACTIVE`. Branch `fix/companion-panel-a11y-20261003`, verified integration base `7627282b00402bb1dccfa4377a8cdbb15e43615a`; only protected production PR104 is open. Owner authorizes further UI/UX checking and fixes. Audit expanded Companion keyboard tab navigation, ARIA relationships, target sizes and short-screen content reachability. Preserve fixed bottom-right dock, approved branding/content, prayer/date calculation, privacy/payment/indexing and main/production protections. Delivery pending.
+
+---
+
 # Latest delivery — shared navigation resilience — 2026-10-03 IST
 
 State: `IDLE`. Outgoing: Codex; incoming: next available implementation agent. Integration: `phase-public-site-rebuild`. Atomic shared-navigation task complete; documentation closure branch `docs/navigation-audit-delivery-20261003`.

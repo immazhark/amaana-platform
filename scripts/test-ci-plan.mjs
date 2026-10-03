@@ -2,6 +2,17 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { planChanges } from './ci-plan.mjs';
 
+test('expanded Companion presentation selects its keyboard and chrome checks', () => {
+  const files = ['src/components/islamic-companion.tsx', 'src/components/islamic-companion-panel.tsx', 'src/components/islamic-companion-panel.module.css', 'e2e/companion-panel.spec.mjs'];
+  const plan = planChanges(files);
+  assert.equal(plan.mode, 'focused');
+  assert.equal(plan.database, false);
+  assert.ok(plan.tests.includes('companion-panel.spec.mjs'));
+  assert.ok(plan.tests.includes('navigation-resilience.spec.mjs'));
+  assert.equal(planChanges([...files, 'src/app/api/public/islamic-companion/route.ts']).mode, 'full');
+  assert.equal(planChanges(files, {target: 'main'}).mode, 'full');
+});
+
 test('shared menu presentation and interaction select navigation resilience coverage', () => {
   const plan = planChanges(['src/components/site-header.tsx', 'src/components/site-header.module.css', 'e2e/navigation-resilience.spec.mjs']);
   assert.equal(plan.mode, 'focused');

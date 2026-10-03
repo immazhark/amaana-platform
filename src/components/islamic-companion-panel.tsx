@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import styles from "./islamic-companion-panel.module.css";
 import {
   AYAHS,
   HADITHS,
@@ -35,6 +36,7 @@ type PrayerData = {
 };
 
 export type CompanionPanelKind = "readings" | "prayers";
+const panelKinds = ["readings", "prayers"] as const;
 
 type MoonState = {
   date: string;
@@ -50,8 +52,7 @@ type IslamicCompanionPanelProps = {
   onMoonChange: (value: MoonState) => void;
 };
 
-function CloseIcon() {
-  return (
+const closeIcon = (
     <svg
       width="20"
       height="20"
@@ -60,13 +61,11 @@ function CloseIcon() {
       stroke="currentColor"
       strokeWidth="1.7"
       strokeLinecap="round"
-      strokeLinejoin="round"
       aria-hidden="true"
     >
       <path d="m6 6 12 12M6 18 18 6" />
     </svg>
-  );
-}
+);
 
 function isPrayerData(value: unknown, date: string, school: string): value is PrayerData {
   if (!value || typeof value !== "object") return false;
@@ -90,8 +89,6 @@ export function IslamicCompanionPanel({
   const [loading, setLoading] = useState(false);
   const [copyMessage, setCopyMessage] = useState("");
   const panelRef = useRef<HTMLDivElement>(null);
-  const readingsTabRef = useRef<HTMLButtonElement>(null);
-  const prayersTabRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     panelRef.current?.focus({ preventScroll: true });
@@ -164,7 +161,7 @@ export function IslamicCompanionPanel({
 
   return (
     <div
-      className="amaana-companion-panel"
+      className={`amaana-companion-panel ${styles.panel}`}
       id="amaana-companion-panel"
       ref={panelRef}
       tabIndex={-1}
@@ -173,15 +170,24 @@ export function IslamicCompanionPanel({
     >
       <header className="amaana-companion-head">
         <div><span className="amaana-companion-kicker">AMAANA COMPANION</span><h2 id="companion-panel-title">{panel === "readings" ? "Today’s reflection" : "Prayer & Hijri"}</h2></div>
-        <button type="button" onClick={onClose} aria-label="Close companion"><CloseIcon /></button>
+        <button type="button" onClick={onClose} aria-label="Close companion">{closeIcon}</button>
       </header>
-      <div className="amaana-companion-tabs" role="tablist" aria-label="Companion sections">
-        <button type="button" role="tab" aria-selected={panel === "readings"} aria-controls="companion-readings" onClick={() => onPanelChange("readings")}>Ayah & Hadith</button>
-        <button type="button" role="tab" aria-selected={panel === "prayers"} aria-controls="companion-prayers" onClick={() => onPanelChange("prayers")}>Salah & Hijri</button>
+      <div className="amaana-companion-tabs" role="tablist" aria-label="Companion sections" onKeyDown={event => {
+        const key = ["Home", "End", "ArrowLeft", "ArrowRight"].indexOf(event.key);
+        if (key < 0) return;
+        event.preventDefault();
+        const index = key < 2 ? key : Number(panel === "readings");
+        onPanelChange(panelKinds[index]);
+        (event.currentTarget.children[index] as HTMLButtonElement).focus();
+      }}>
+        {panelKinds.map(kind => (
+          <button key={kind} id={`companion-${kind}`} type="button" role="tab" tabIndex={panel === kind ? 0 : -1} aria-selected={panel === kind} aria-controls="companion-view" onClick={() => onPanelChange(kind)}>{kind === "readings" ? "Ayah & Hadith" : "Salah & Hijri"}</button>
+        ))}
       </div>
 
+      <div id="companion-view" role="tabpanel" tabIndex={0} aria-labelledby={`companion-${panel}`} className="amaana-companion-view">
       {panel === "readings" ? (
-        <div id="companion-readings" role="tabpanel" aria-labelledby="companion-tab-readings" className="amaana-companion-view">
+        <>
           <p className="amaana-companion-note">{date || "Today"} · Changes at midnight in Hyderabad</p>
           {reading ? (
             <>
@@ -207,9 +213,9 @@ export function IslamicCompanionPanel({
               </details>
             </>
           ) : <p>Preparing today’s reading…</p>}
-        </div>
+        </>
       ) : (
-        <div id="companion-prayers" role="tabpanel" aria-labelledby="companion-tab-prayers" className="amaana-companion-view">
+        <>
           <p className="amaana-companion-location">Hyderabad, India <span>IST · UTC+05:30</span></p>
           <div className="amaana-hijri">
             <h3>Hijri date</h3>
@@ -253,8 +259,9 @@ export function IslamicCompanionPanel({
               </details>
             </>
           )}
-        </div>
+        </>
       )}
+      </div>
     </div>
   );
 }

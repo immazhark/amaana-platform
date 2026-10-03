@@ -1,0 +1,27 @@
+/* Bound the expanded panel between sticky chrome and its existing fixed dock. */
+.panel:global(.amaana-companion-panel){
+  --panel-bottom:calc(max(16px,env(safe-area-inset-bottom)) + 4.4rem);
+  display:flex;
+  flex-direction:column;
+  bottom:var(--panel-bottom);
+  max-height:min(44rem,calc(100dvh - var(--af-chrome-height) - var(--panel-bottom) - max(var(--af-public-gutter),env(safe-area-inset-top))));
+}
+.panel :is(:global(.amaana-companion-head),:global(.amaana-companion-tabs)){flex-shrink:0}
+.panel :global(.amaana-companion-view){min-height:0;max-height:none;overscroll-behavior:contain}
+.panel :global(.amaana-companion-tabs) button{min-height:44px;font-size:.875rem}
+.panel :global(.amaana-companion-view):focus-visible{outline:3px solid var(--af-color-focus);outline-offset:-3px}
+.panel :is(:global(.amaana-daily-ayah),:global(.amaana-daily-hadith))>a,
+.panel :global(.amaana-companion-view) :is(button,summary,select){min-height:44px}
+.panel :is(:global(.amaana-daily-ayah),:global(.amaana-daily-hadith))>a{display:inline-flex;align-items:center}
+@media(max-width:900px){
+  .panel:global(.amaana-companion-panel){--panel-bottom:calc(max(var(--af-public-gutter),env(safe-area-inset-bottom)) + 4rem)}
+}
+@media(max-width:600px){
+  .panel:global(.amaana-companion-panel){--panel-bottom:calc(var(--af-companion-mobile-bottom) + 4rem)}
+}
+/* Landscape/short windows scroll the entire panel, retaining every control. */
+@media(max-height:480px){
+  .panel:global(.amaana-companion-panel){display:block;overflow-y:auto}
+  .panel :is(:global(.amaana-companion-head),:global(.amaana-companion-tabs)){position:static}
+  .panel :global(.amaana-companion-view){overflow:visible}
+}
