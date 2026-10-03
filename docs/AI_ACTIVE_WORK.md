@@ -1,6 +1,16 @@
-# Companion panel accessibility audit — 2026-10-03 IST
+# Latest delivery — Companion panel accessibility — 2026-10-03 IST
 
-State: `CODEX_ACTIVE`. Branch `fix/companion-panel-a11y-20261003`, verified integration base `7627282b00402bb1dccfa4377a8cdbb15e43615a`; only protected production PR104 is open. Owner authorizes further UI/UX checking and fixes. Audit expanded Companion keyboard tab navigation, ARIA relationships, target sizes and short-screen content reachability. Preserve fixed bottom-right dock, approved branding/content, prayer/date calculation, privacy/payment/indexing and main/production protections. Delivery pending.
+State: `IDLE`. Outgoing: Codex; incoming: next available implementation agent. Integration: `phase-public-site-rebuild`. Expanded Companion task complete; documentation closure branch `docs/companion-panel-delivery-20261003`.
+
+Completed: labelled tab IDs/shared content panel, roving Tab order, ArrowLeft/Right wrapping and Home/End activation;44px tabs/source controls; scoped panel bounds below sticky chrome and above the existing fixed dock. Normal-height panels flex the scrolling content, short windows scroll the whole panel. Removed unused immutable reminder state, unused refs and delayed focus scheduling; reused static line icon. Fixed dock location, approved visuals/source text and prayer/date/API behavior unchanged.
+
+Verification:25 local responsive/keyboard/header-navigation/WCAG/retry/reachability checks pass in39.9seconds across seven widths and short/tall windows.392 units pass (six database-dependent skips),22 planner regressions pass; fresh build/types/lint green (one existing import warning; two dead-ref warnings removed). Detector emitted no findings before final static-icon optimization. Initial failures classified as stale generated output, alert-locator ambiguity and real subpixel tablet dock overlap; source/test fixes completed without suppressing failing requirements. JavaScript819181/819200 and CSS347670/348160 bytes, unchanged caps.
+
+Delivery: PR [#138](https://github.com/immazhark/amaana-platform/pull/138), tested head `b94d81bec44b368ff584b8a1dab3f0bb2d679c75`, merge `7d2e3ffe62bf284eee5b18e25459e9a6b5dc46ce`; local/tested/merged tree `770db4f9d7496143e6e0c971a87c4cdb20063692` identical. PR CI37101750482 SUCCESS:65 Chromium first-attempt checks pass in1.5minutes. Integration CI37102025429 SUCCESS: exact-tree browser acceptance reused, duplicate browser/database skipped, build/budgets/coverage/server smoke green. Railway review `32edc17f-2650-4358-9954-53549444a074` SUCCESS on exact application merge SHA.
+
+Live desktop /about screenshot/accessibility/DOM confirms44px tabs, actual IDs, selected-only Tab order, named content, real Right/Left activation/focus, panel top145.61px below81px header and bottom849.61px above865.20px dock, fixed Companion, no horizontal overflow. Escape removes the panel and restores dock focus/expanded=false. Mobile/tablet/short-screen proof is local/seeded CI; live cloud-browser viewport resizing not claimed. See `COMPANION_PANEL_AUDIT_2026-10-03.md`.
+
+Next: owner continues UI observations; new confirmed defects use a separate atomic task after incoming checks. Main/production PR104 remains protected. Canonical factual/media/privacy/payment/indexing and fixed Companion locks preserved. No whole-site defect-free claim.
 
 ---
 

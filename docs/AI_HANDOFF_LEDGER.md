@@ -452,3 +452,11 @@ Task complete, ownership IDLE. Documentation closure branch `docs/navigation-aud
 ## 2026-10-03 — Companion expanded-panel accessibility
 
 Codex claims `fix/companion-panel-a11y-20261003` from verified `7627282b00402bb1dccfa4377a8cdbb15e43615a`; only protected production PR104 is open. Confirmed missing tab IDs, absent arrow-key activation,40.8px tab targets and mobile/short-screen panel header clipping. Scoped bounds, scroll containment and keyboard/ARIA corrections implemented without moving the fixed dock or changing prayer/date/API/content behavior. Fresh build JavaScript819181/CSS347670 within unchanged caps. Final responsive verification and PR/CI/integration/exact review delivery pending. See COMPANION_PANEL_AUDIT_2026-10-03.md.
+
+## 2026-10-03 IST — Companion panel delivered, ownership IDLE
+
+PR [#138](https://github.com/immazhark/amaana-platform/pull/138) merged as `7d2e3ffe62bf284eee5b18e25459e9a6b5dc46ce`. Tested head `b94d81bec44b368ff584b8a1dab3f0bb2d679c75`; local/tested/merged tree `770db4f9d7496143e6e0c971a87c4cdb20063692` identical. PR CI37101750482 SUCCESS:65 Chromium first-attempt checks in1.5minutes. Integration CI37102025429 SUCCESS: exact-tree acceptance reused, duplicate browser/database skipped, production build/budgets/coverage/server smoke green. JavaScript819181/819200; CSS347670/348160; caps unchanged.392 units and22 planner regressions pass;25 local responsive/navigation checks pass in39.9seconds. One existing lint warning remains; two unused refs removed.
+
+Railway review `32edc17f-2650-4358-9954-53549444a074` SUCCESS on exact application merge SHA. Live desktop /about confirms44px named/roving tabs, real Right/Left switching/focus, panel header/dock clearance, fixed dock/no overflow and Escape focus restoration. Mobile/tablet/short-height evidence is local/seeded CI. Approved visuals/source text and prayer/date/API/content/privacy/payment/indexing behavior preserved; main/PR104 production promotion untouched.
+
+Ownership IDLE; documentation closure branch `docs/companion-panel-delivery-20261003`. Next: continue observations/new confirmed defects through a separate atomic task. No claim that every page/device is defect-free. Generated-output and locator-method failures were fixed; actual tablet overlap corrected rather than weakening assertions.
