@@ -5,7 +5,7 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     await page.setViewportSize({ width, height: 1000 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.goto('/browser-acceptance/home-hero');
-    const banner = await page.locator('.v3-home-banner-slide--story').evaluate(node => {
+    const banner = await page.locator('.v3-home-banner-slide--story').first().evaluate(node => {
       const title = node.querySelector('.v3-home-banner-brandline');
       const r = node.getBoundingClientRect();
       return { font: parseFloat(getComputedStyle(title).fontSize), inside: [...node.querySelectorAll('.v3-home-banner-content > *')].every(el => { const b = el.getBoundingClientRect(); return b.top >= r.top && b.bottom <= r.bottom; }) };
