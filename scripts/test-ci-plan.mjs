@@ -121,7 +121,11 @@ test('audited page and evidence layout paths avoid the whole-site shell matrix',
   assert.equal(p.mode, 'focused');
   assert.ok(!p.tests.includes('public-shell.spec.mjs'));
   for (const t of ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'typography-hierarchy.spec.mjs', 'public-seo.spec.mjs', 'participation-contact.spec.mjs', 'initiative-detail.spec.mjs']) assert.ok(p.tests.includes(t));
-  assert.equal(planChanges(['src/components/section-heading.module.css']).tests.includes('public-shell.spec.mjs'), true);
+  const headingCSS = planChanges(['src/components/section-heading.module.css']);
+  assert.equal(headingCSS.tests.includes('public-shell.spec.mjs'), false);
+  for (const suite of ['section-heading.spec.mjs', 'typography-hierarchy.spec.mjs', 'ui-consistency.spec.mjs', 'owner-nine-surfaces.spec.mjs']) assert.ok(headingCSS.tests.includes(suite));
+  assert.equal(planChanges(['src/components/section-heading.tsx']).tests.includes('public-shell.spec.mjs'), true);
+  assert.equal(planChanges(['src/components/section-heading.module.css'], {release:true}).mode, 'full');
   assert.equal(planChanges(['src/app/impact/page.tsx', 'src/lib/public-page-data.ts']).mode, 'full');
   assert.equal(planChanges(['src/app/contact/page.tsx'], {release:true}).mode, 'full');
 });
@@ -164,4 +168,14 @@ test('home banner composition is scoped and shared logic still fails closed', ()
   assert.ok(p.tests.includes('public-seo.spec.mjs'));
   assert.equal(planChanges(['src/app/page.tsx', 'src/lib/auth.ts']).mode, 'full');
   assert.equal(planChanges(['src/app/page.tsx'], { target: 'main' }).mode, 'full');
+});
+
+test('owner nine-surface presentation stays focused with its regression suite', () => {
+  const plan = planChanges(['src/app/faith.css', 'src/app/stories-wow.css', 'src/app/trust-experience.css', 'src/app/faith-and-reflections/faith-audit.module.css', 'src/app/partner/partner-audit.module.css', 'src/app/compliance/page.tsx', 'e2e/owner-nine-surfaces.spec.mjs']);
+  assert.equal(plan.mode, 'focused');
+  assert.equal(plan.database, false);
+  assert.equal(plan.crossBrowser, false);
+  assert.ok(plan.tests.includes('owner-nine-surfaces.spec.mjs'));
+  assert.ok(plan.tests.includes('background-system.spec.mjs'));
+  assert.equal(planChanges(['src/app/api/new/route.ts']).mode, 'full');
 });

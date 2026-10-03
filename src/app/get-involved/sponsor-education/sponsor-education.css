@@ -24,7 +24,7 @@
 .taleem-process h3{margin:0 0 .65rem;font:500 clamp(1.25rem,2vw,1.65rem)/1.25 Georgia,serif}
 .taleem-process p{margin:0;color:#5b6472;line-height:1.7}
 .taleem-closing{padding-block:clamp(3.75rem,6vw,5.75rem);background:#e6dcc3 var(--amaana-pattern) 0 0/104px 104px}
-.taleem-closing .v2-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.95fr);gap:clamp(2rem,4vw,4.5rem);align-items:start}
+.taleem-closing .v2-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.95fr);gap:clamp(2rem,4vw,4.5rem);align-items:center}
 .taleem-closing .v2-section-label{margin:0 0 1rem}
-.taleem-closing .v2-hero-actions{margin:0;align-items:start;flex-direction:column;gap:1.25rem}
+.taleem-closing .v2-hero-actions{margin:0;align-items:center;align-self:center;flex-wrap:wrap;gap:1rem}
 @media(max-width:760px){.taleem-islamic-grid,.taleem-process ol,.taleem-school-grid,.taleem-closing .v2-shell{grid-template-columns:1fr}.taleem-path{padding:1.5rem}}

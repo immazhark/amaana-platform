@@ -1,3 +1,9 @@
+# Nine owner screenshot surfaces — 2026-10-04 IST
+
+State: `CODEX_ACTIVE`. Branch `fix/owner-nine-surfaces-20261004`, base `67b3fc256f1f05c29ebde694ba830559f2e91444`. All nine supplied screenshots inspected. Scope Stories ethic pattern; Faith library width/editorial typography; Contact privacy pattern/closing contact icons; sponsorship closing placement; Partner areas; Compliance status/pending patterns and presentation. Preserve factual copy, approved assets, fixed Companion, original headers, unchanged budgets and protected main/draft PR104. Focused responsive/a11y and CI delivery.
+
+---
+
 # Homepage image edge blend and controls — 2026-10-04 IST
 
 Ownership `IDLE`. Homepage edge blend and control refinements delivered through PR154. Tested head `a56bbbf0a4e05ea72be7e93dad4e5b92ea795bae`, merge `a9b84271bd0023106fb06a9faa5b3be67ab6bbf1`; tested and merged tree `0fed7715aa1e36241e309151feb2e13da38b2db8` identical. PR CI37149189924 SUCCESS:110 focused browser checks passed first attempt in1.6minutes. Integration CI37152618989 SUCCESS; duplicate browser/database work skipped. Production JavaScript810705/819200 and CSS348141/348160 bytes, unchanged limits.
