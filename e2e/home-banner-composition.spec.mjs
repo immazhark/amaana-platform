@@ -45,7 +45,10 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     const mask = await page.locator('[data-active="true"] .v3-home-banner-media').evaluate(node => getComputedStyle(node).maskImage);
     expect(mask).toContain('linear-gradient');
     if (width > 900) expect(mask).toContain('90deg');
-    else expect(mask).not.toContain('90deg');
+    else expect(mask).toMatch(/^linear-gradient\((?:180deg, )?rgba/);
+    expect((mask.match(/linear-gradient/g) || []).length).toBe(2);
+    expect(mask).toMatch(/rgba\(0, 0, 0, 0\)\)/);
+    expect(await page.locator('[data-active="true"] .v3-home-banner-media').evaluate(node => getComputedStyle(node).maskComposite)).toContain('intersect');
     if ([390, 1440].includes(width)) {
       await page.screenshot({ path: `test-results/banner-${width}.png` });
       const results = await new AxeBuilder({ page }).include('.v3-home-banner').analyze();
