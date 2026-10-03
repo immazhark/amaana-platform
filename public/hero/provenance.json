@@ -1,0 +1,83 @@
+{
+  "authorization": "Owner request 2026-10-03: programme homepage collage derivatives from supplied original images",
+  "method": "AI-assisted photo collage artwork, not documentary originals or receipts; original gallery photographs unchanged",
+  "archiveSha256": "1216eed498c6f5ea0378c1e236137faf455ece735aaeefea8bb2c08d5472ff6f",
+  "records": [
+    {
+      "name": "origin",
+      "output": "/hero/origin.webp",
+      "sha256": "32fdbca0329d6d3bfa6cf6fbe0546117ae2ba99d8352b37dba7b79a177455223",
+      "bytes": 210462,
+      "sources": [
+        {
+          "path": "eid-gift-kits-2025/001/beforePacking.jpeg",
+          "sha256": "624911bb56503dece4a24d3bde7e52eea9c61f858fd8cf732acdfd722e1bc650"
+        },
+        {
+          "path": "taleem-initiative-2025/002/WhatsApp Image 2026-09-14 at 4.34.51 AM (1).jpeg",
+          "sha256": "02aee4f8f615bc3ad311103c46b8243d5bfd3cac41a2ee1de7bba13c6d8c7ac9"
+        },
+        {
+          "path": "qurbani-meat-distribution-2025/001/WhatsApp Image 2025-06-13 at 12.00.57 AM.jpeg",
+          "sha256": "2710087e4beddee614b67f06b0812f7b871b62d975b0af2e5e062b68dc65273b"
+        }
+      ]
+    },
+    {
+      "name": "eid",
+      "output": "/hero/eid.webp",
+      "sha256": "58540ec2f7716ff47e6b0a4905530f789c07e50dc8cb359ea2dfc5364d5a0b98",
+      "bytes": 145066,
+      "sources": [
+        {
+          "path": "eid-gift-kits-2025/001/beforePacking.jpeg",
+          "sha256": "624911bb56503dece4a24d3bde7e52eea9c61f858fd8cf732acdfd722e1bc650"
+        },
+        {
+          "path": "eid-gift-kits-2026/003/20260315_162836.jpg.jpeg",
+          "sha256": "2d51dbce6b35dc5c969b5ac3beffcabac400733e2af81e9f6cb6a6e09bb9d99d"
+        }
+      ]
+    },
+    {
+      "name": "medical",
+      "output": "/hero/medical.webp",
+      "sha256": "c869d8db36cafeff96458d2d566a3292cad519c8fe9ecca5c96999c94195d182",
+      "bytes": 233342,
+      "sources": [
+        {
+          "path": "auto-rickshaw-livelihood-support/001/WhatsApp Image 2025-08-03 at 1.25.08 AM.jpeg",
+          "sha256": "2065c441e4ee54e8e5725bee0551d8b67926ea77b092a1a82afb2159a893c7c5"
+        },
+        {
+          "path": "severe-burn-treatment-support/001/1 - Copy.jpg",
+          "sha256": "e6886e3704ac98dd56ee202e8f480fcc354fddddf28eef6affe6a53a23fdb65e"
+        }
+      ]
+    },
+    {
+      "name": "taleem",
+      "output": "/hero/taleem.webp",
+      "sha256": "ec5c37b27f7e0e0d0fff776e592e08b0f1037c66fb1824758b565a183a4acafb",
+      "bytes": 297630,
+      "sources": [
+        {
+          "path": "taleem-initiative-2025/002/WhatsApp Image 2026-09-14 at 4.34.51 AM (1).jpeg",
+          "sha256": "02aee4f8f615bc3ad311103c46b8243d5bfd3cac41a2ee1de7bba13c6d8c7ac9"
+        }
+      ]
+    },
+    {
+      "name": "qurbani",
+      "output": "/hero/qurbani.webp",
+      "sha256": "8f3e0d7c712a6727011f853b0abb76b5913cb7f26ce5751476d890a1b1a5bc92",
+      "bytes": 120012,
+      "sources": [
+        {
+          "path": "qurbani-meat-distribution-2025/001/WhatsApp Image 2025-06-13 at 12.00.57 AM.jpeg",
+          "sha256": "2710087e4beddee614b67f06b0812f7b871b62d975b0af2e5e062b68dc65273b"
+        }
+      ]
+    }
+  ]
+}
