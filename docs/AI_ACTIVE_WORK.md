@@ -1,3 +1,9 @@
+# Premium carousel controls and programme artwork — 2026-10-04 IST
+
+State: `CODEX_ACTIVE`. Branch `fix/premium-carousel-artwork-20261004`, based on tested nine-surface head bc9fcb99908cb3883a382646f1a07748d75ad20b. PR156 acceptance continues independently. Owner requests coherent SVG icon controls, diagonal joins for hero slides 2/4/5, category body carousels and authentic programme artwork derivatives. Preserve original photographs/privacy, factual copy, existing gradients and Companion.
+
+---
+
 # Nine owner screenshot surfaces — 2026-10-04 IST
 
 State: `CODEX_ACTIVE`. Branch `fix/owner-nine-surfaces-20261004`, base `67b3fc256f1f05c29ebde694ba830559f2e91444`. All nine supplied screenshots inspected. Scope Stories ethic pattern; Faith library width/editorial typography; Contact privacy pattern/closing contact icons; sponsorship closing placement; Partner areas; Compliance status/pending patterns and presentation. Preserve factual copy, approved assets, fixed Companion, original headers, unchanged budgets and protected main/draft PR104. Focused responsive/a11y and CI delivery.

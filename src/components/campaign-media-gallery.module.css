@@ -31,3 +31,5 @@
   .controls{gap:.6rem}
   .controls button{flex:1 1 0;min-width:0}
 }
+
+.controls button{display:flex;align-items:center;justify-content:center;gap:.65rem;border-radius:999px}.controls button svg{width:1.2rem;height:1.2rem}

@@ -3,6 +3,7 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
+  { paths: /^(public\/programme-artwork\/[^/]+|src\/components\/(?:programme-artwork|ui-icon|back-to-top)\.tsx|src\/app\/programmes\/\[slug\]\/(?:page\.tsx|programme-list\.module\.css)|e2e\/premium-carousel\.spec\.mjs)$/, tests: ["premium-carousel.spec.mjs", "body-carousel-new.spec.mjs", "carousel-acceptance.spec.mjs", "home-banner-composition.spec.mjs", "initiative-detail.spec.mjs", "navigation-resilience.spec.mjs", "typography-hierarchy.spec.mjs"] },
   // Typography-only CSS: rendered six-width heading/focus/overflow coverage; JSX retains shell/journey dependencies.
   { paths: /^src\/components\/section-heading\.module\.css$/, tests: ['section-heading.spec.mjs', 'typography-hierarchy.spec.mjs', 'ui-consistency.spec.mjs', 'owner-nine-surfaces.spec.mjs'] },
   // Owner surface routes and removal of TSX-unreferenced legacy hero selectors.
@@ -40,7 +41,7 @@ const groups = [
   { paths: /^public\/(brand|backgrounds)\//, tests: ['background-system.spec.mjs', 'site-chrome-footer.spec.mjs', 'owner-screenshot-polish.spec.mjs'] },
   { paths: /^src\/app\/(about|contact|governance|transparency|compliance|recognition|partner)\/page\.tsx$/, tests: ['public-seo.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/components\/(body-carousel|body-card|scroll-carousel)(\.|\/)/, tests: ['body-carousel-new.spec.mjs', 'carousel-acceptance.spec.mjs', 'site-chrome-footer.spec.mjs'] },
-  { paths: /^src\/components\/campaign-media-gallery(\.|\/)/, tests: ['campaign-gallery.spec.mjs'] },
+  { paths: /^(src\/components\/campaign-media-gallery(?:\.|\/)|e2e\/campaign-gallery\.spec\.mjs$)/, tests: ['campaign-gallery.spec.mjs'] },
 ];
 export function planChanges(files, { event = 'pull_request', target = 'phase-public-site-rebuild', release = false, validatedMerge = false } = {}) {
   const docsOnly = files.length > 0 && files.every(p => /^(docs\/.*\.md|README\.md)$/.test(p));

@@ -1,5 +1,6 @@
 "use client";
 
+import { UIIcon } from "./ui-icon";
 import { useEffect, useState } from "react";
 
 export function BackToTop() {
@@ -24,9 +25,7 @@ export function BackToTop() {
         window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
       }}
     >
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-        <path d="m6 14 6-6 6 6" />
-      </svg>
+      <UIIcon name="up" />
     </button>
   );
 }

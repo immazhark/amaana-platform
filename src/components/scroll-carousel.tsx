@@ -11,6 +11,7 @@ import {
   useState,
 } from "react";
 import styles from "./scroll-carousel.module.css";
+import { UIIcon } from "./ui-icon";
 
 type CarouselMode = "hero" | "gallery" | "cards" | "focus";
 
@@ -165,7 +166,7 @@ export function ScrollCarousel({
             <span className={styles.srOnly}>Slide </span>{activeIndex + 1} / {slideCount}
           </span>
           <div className={`${styles.controls}${cinematic ? " hero-controls" : ""}`}>
-            {autoAdvanceMs && !reducedMotion ? <button type="button" aria-label={paused ? "Resume automatic slides" : "Pause automatic slides"} onClick={() => setPaused(value => !value)}><span aria-hidden="true">{paused ? "▶" : "Ⅱ"}</span></button> : null}
+            {autoAdvanceMs && !reducedMotion ? <button type="button" aria-label={paused ? "Resume automatic slides" : "Pause automatic slides"} onClick={() => setPaused(value => !value)}><UIIcon name={paused ? "play" : "pause"} /></button> : null}
             <button
               type="button"
               aria-controls={viewportId}
@@ -173,7 +174,7 @@ export function ScrollCarousel({
               aria-label="Previous slide"
               onClick={() => goTo(activeIndexRef.current - 1)}
             >
-              <span aria-hidden="true">{cinematic ? "‹" : "←"}</span>
+              <UIIcon name="previous" />
             </button>
             <button
               type="button"
@@ -182,7 +183,7 @@ export function ScrollCarousel({
               aria-label="Next slide"
               onClick={() => goTo(activeIndexRef.current + 1)}
             >
-              <span aria-hidden="true">{cinematic ? "›" : "→"}</span>
+              <UIIcon name="next" />
             </button>
           </div>
         </div>

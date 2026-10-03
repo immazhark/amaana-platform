@@ -21,3 +21,7 @@ Clean production build and TypeScript pass after regenerating the local Prisma c
 Initial focused CI:154 passed, one introduced mobile typography failure. Shared SectionHeading now uses a fluid30–38.4px mobile scale, retaining the56px desktop cap and an8px minimum separation from the smallest banner title. Assertions strengthened; no threshold weakened. Final CI pending.
 
 Expanded shared-heading CI:572 passed, one tablet hierarchy failure at1024px identified by the strengthened assertion. Body-heading fluid scaling now follows the banner scale with a10px offset, retaining38.4px desktop minimum/56px maximum and30–38.4px mobile scale. CSS-only heading changes select responsive heading/typography/UI regressions; shared JSX still includes shell and journey coverage, release/unknown/core changes retain full checks.
+
+## Delivery verified
+
+PR156 merged `a5180bf343b7f3e82e9966a3bd4d0e99b7ef6623`; final tested head `bc9fcb99908cb3883a382646f1a07748d75ad20b`, tree `8452987e8dd24a64ba367333c8209a9972a8bf4d`.155 focused checks pass in3.7minutes,414 units and26 planner regressions. Railway `dc26dfdb-ccb2-47e7-bb52-98cab031dc93` SUCCESS. Live six-route desktop verification confirms topmost dark lattice, Contact privacy body pattern and contact icons,56px body title cap, Partner8 icons and no overflow. Responsive proof from CI and9-width local check. Main/draftPR104 unchanged.

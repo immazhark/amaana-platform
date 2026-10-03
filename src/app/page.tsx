@@ -1,3 +1,5 @@
+import { ProgrammeArtwork, hasProgrammeArtwork } from "@/components/programme-artwork";
+import { UIIcon } from "@/components/ui-icon";
 import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel } from "@/components/body-carousel";
 import "./home-showcase.css";
@@ -107,7 +109,7 @@ export default async function HomePage() {
                 return (
                   <Link className="v3-work-card" href={programmeCategoryPath(category.slug)} key={category.slug}>
                     <div className="v3-work-card-media">
-                      {media ? (
+                      {hasProgrammeArtwork(category.slug) ? <ProgrammeArtwork slug={category.slug} /> : media ? (
                         <PublicMedia asset={media} sizes="(max-width: 700px) 86vw, 30rem" />
                       ) : (
                         <WorkVisualPlaceholder label={category.title} />
@@ -117,7 +119,7 @@ export default async function HomePage() {
                       <small>{String(index + 1).padStart(2, '0')} · Our Work</small>
                       <h3>{category.title}</h3>
                       <p>{category.summary}</p>
-                      <span>Explore programme <i aria-hidden="true">↗</i></span>
+                      <span>Explore programme <UIIcon name="next" /></span>
                     </div>
                   </Link>
                 );
