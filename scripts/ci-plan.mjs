@@ -3,6 +3,8 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
+  // Owner surface routes and removal of TSX-unreferenced legacy hero selectors.
+  { paths: /^(e2e\/owner-nine-surfaces\.spec\.mjs|src\/app\/(?:faith(?:-wow)?|stories(?:-wow)?|trust-experience)\.css|src\/app\/(?:faith-and-reflections|stories|partner|compliance)\/(?:page\.tsx|[^/]+\.module\.css))$/, tests: ['owner-nine-surfaces.spec.mjs', 'owner-surface-polish.spec.mjs', 'section-heading.spec.mjs', 'public-seo.spec.mjs', 'ui-consistency.spec.mjs', 'typography-hierarchy.spec.mjs', 'background-system.spec.mjs'] },
   { paths: /^(src\/app\/(page\.tsx|home-documentary\.css|browser-acceptance\/home-hero\/page\.tsx)|src\/components\/home-story-slide\.tsx|e2e\/home-banner-composition\.spec\.mjs)$/, tests: ['home-banner-composition.spec.mjs', 'owner-screenshot-polish.spec.mjs', 'typography-hierarchy.spec.mjs', 'public-seo.spec.mjs', 'ui-consistency.spec.mjs'] },
   { paths: /^(e2e\/owner-surface-polish\.spec\.mjs|src\/components\/trust-evidence-boundary\.module\.css|src\/app\/(?:refund-policy|privacy)\/(?:page\.tsx|[^/]+\.module\.css)|src\/app\/compliance\/compliance-audit\.module\.css)$/, tests: ['owner-surface-polish.spec.mjs', 'policy-navigation.spec.mjs', 'ui-consistency.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^(src\/app\/donate\/(page\.tsx|donate-audit\.module\.css)|src\/app\/get-involved\/sponsor-education\/sponsor-education\.css|e2e\/donate-sponsorship-layout\.spec\.mjs)$/, tests: ['donate-sponsorship-layout.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'participation-contact.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs'] },

@@ -54,8 +54,8 @@ export default async function FaithAndReflectionsPage() {
         visualNote="Reviewed religious content only. Sources, attribution and verification remain part of the public record."
       />
 
-      <section className="v2-faith-standard amaana-bg-body" aria-labelledby="faith-standard-title">
-        <div className="v2-shell v2-faith-standard-grid"><div><p className="v2-section-label">Editorial trust</p><h2 id="faith-standard-title">Religious content should be handled with care.</h2></div><div><p>Qur&apos;an citations, translations, hadith references and religious claims stay out of the public library until their review state is verified.</p><p>Amaana shares beneficial material without presenting itself as a scholarly authority.</p></div></div>
+      <section className={`v2-faith-standard amaana-bg-body ${styles.standard}`} aria-labelledby="faith-standard-title">
+        <div className="v2-shell"><SectionHeading eyebrow="Editorial trust" title="Religious content should be handled with care." id="faith-standard-title" subtitle={<><span>Qur’an citations, translations, hadith references and religious claims stay out of the public library until their review state is verified.</span><span className={styles.trustNote}>Amaana shares beneficial material without presenting itself as a scholarly authority.</span></>} /></div>
       </section>
 
       <section className="v2-section paper" id="library" aria-labelledby="faith-library-title">

@@ -1,0 +1,6 @@
+.areas{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin:0;padding:0;list-style:none}
+.areas li{display:flex;align-items:center;gap:1rem;min-width:0;padding:1.5rem;border:1px solid var(--af-color-border);border-radius:var(--af-card-radius);background:rgb(255 253 248 / 55%);color:var(--af-color-navy-950);line-height:1.6;text-wrap:pretty}
+.icon{display:grid;place-items:center;flex:0 0 3rem;aspect-ratio:1;border-radius:.75rem;background:var(--af-color-gold-soft);color:var(--af-color-blue-600)}
+.icon svg{width:1.5rem;height:1.5rem}
+.actions.actions{display:flex;justify-content:flex-start;padding-top:2rem;border:0}
+@media(max-width:760px){.areas{grid-template-columns:1fr}.areas li{padding:1.25rem}}

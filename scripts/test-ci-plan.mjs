@@ -165,3 +165,13 @@ test('home banner composition is scoped and shared logic still fails closed', ()
   assert.equal(planChanges(['src/app/page.tsx', 'src/lib/auth.ts']).mode, 'full');
   assert.equal(planChanges(['src/app/page.tsx'], { target: 'main' }).mode, 'full');
 });
+
+test('owner nine-surface presentation stays focused with its regression suite', () => {
+  const plan = planChanges(['src/app/faith.css', 'src/app/stories-wow.css', 'src/app/trust-experience.css', 'src/app/faith-and-reflections/faith-audit.module.css', 'src/app/partner/partner-audit.module.css', 'src/app/compliance/page.tsx', 'e2e/owner-nine-surfaces.spec.mjs']);
+  assert.equal(plan.mode, 'focused');
+  assert.equal(plan.database, false);
+  assert.equal(plan.crossBrowser, false);
+  assert.ok(plan.tests.includes('owner-nine-surfaces.spec.mjs'));
+  assert.ok(plan.tests.includes('background-system.spec.mjs'));
+  assert.equal(planChanges(['src/app/api/new/route.ts']).mode, 'full');
+});
