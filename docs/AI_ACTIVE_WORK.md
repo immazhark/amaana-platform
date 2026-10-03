@@ -1,6 +1,8 @@
 # Homepage image edge blend and controls — 2026-10-04 IST
 
-State: `CODEX_ACTIVE`. Branch `fix/home-carousel-edge-blend-20261004`, base f894b07d9395347d67577944538ebc9c9eb7af3e. Three owner screenshots inspected: feather the right/bottom photo edges into the original banner gradient, refine previous/next/play controls into translucent circular surfaces. CSS-only implementation; preserve programme content, image crop/edge position, backend, keyboard/swipe/pause behavior and original gradients/lattice. Focused existing banner/a11y/typography CI and unchanged asset budgets. Main/production PR104 protected.
+Ownership `IDLE`. Homepage edge blend and control refinements delivered through PR154. Tested head `a56bbbf0a4e05ea72be7e93dad4e5b92ea795bae`, merge `a9b84271bd0023106fb06a9faa5b3be67ab6bbf1`; tested and merged tree `0fed7715aa1e36241e309151feb2e13da38b2db8` identical. PR CI37149189924 SUCCESS:110 focused browser checks passed first attempt in1.6minutes. Integration CI37152618989 SUCCESS; duplicate browser/database work skipped. Production JavaScript810705/819200 and CSS348141/348160 bytes, unchanged limits.
+
+Railway deployment `c33bffa1-0db0-4a00-8026-b4dff894b267` SUCCESS on exact merge. Live https://amaanafoundation.org/ verified all five image elements have intersecting side/bottom masks, all three cinematic controls have48px circular translucent surfaces and8px backdrop blur, original gradient/lattice remains, and no desktop horizontal overflow. Final live screenshot inspected and saved. Responsive/mobile proof remains the local14-check six-width validation and focused CI; live cloud proof is desktop. Programme content, crop, backend, fallback and carousel behavior preserved. No pending implementation in this atomic task. Main and draft PR104 remain protected. New confirmed defects use a separate atomic branch; no whole-site defect-free claim.
 
 ---
 
