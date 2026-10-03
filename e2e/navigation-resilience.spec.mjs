@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
 for (const width of [320, 390, 768, 900, 1020]) {
-  for (const height of [320, 1000]) {
+  for (const height of [320, 844, 1000]) {
     test(`shared navigation dismissal, scrolling and focus at ${width}x${height}`, async ({ page }) => {
       await page.setViewportSize({ width, height });
       await page.emulateMedia({ reducedMotion: 'reduce' });
@@ -29,7 +29,7 @@ for (const width of [320, 390, 768, 900, 1020]) {
       await expect(support).toBeFocused();
       expect((await new AxeBuilder({ page }).include('.site-header').withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze()).violations).toEqual([]);
       expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
-      if (height === 1000) {
+      if (height >= 844) {
         const headerBottom = await page.locator('.site-header').evaluate(node => node.getBoundingClientRect().bottom);
         expect(headerBottom).toBeLessThan(height - 2);
         await page.mouse.click(8, height - 2);

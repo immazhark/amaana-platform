@@ -28,5 +28,8 @@ for (const width of [320, 390, 768, 900, 1024, 1440, 1920]) {
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
     expect(results.violations).toEqual([]);
     if (width === 390 || width === 1920) await page.screenshot({ path: `/tmp/amaana-sections-${width}.png`, fullPage: true });
+    await page.goto('/contact');
+    const contact = await page.locator('.v2-closing').evaluate(node => ({ intro: node.querySelector('.v2-section-intro').getBoundingClientRect().left, actions: node.querySelector('.v2-hero-actions').getBoundingClientRect().left }));
+    expect(Math.abs(contact.intro - contact.actions)).toBeLessThan(2);
   });
 }

@@ -319,7 +319,7 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 :is(.v2-closing,.v3-closing) .af-section-heading.af-section-heading{display:contents}
 :is(.v2-closing,.v3-closing) .af-section-heading>div{grid-column:1;grid-row:1/3}
 :is(.v2-closing,.v3-closing) .af-section-heading.af-section-heading .v2-section-title{max-width:20ch}
-:is(.v2-closing,.v3-closing) .af-section-heading .v2-section-intro{grid-column:2;align-self:end;justify-self:start}
+:is(.v2-closing,.v3-closing) .af-section-heading.af-section-heading .v2-section-intro{grid-column:2;align-self:end;justify-self:start}
 :is(.v2-closing,.v3-closing) :is(.v2-hero-actions,.v3-actions){
   grid-column:2;
   align-self:start;
@@ -329,7 +329,7 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 @media(max-width:900px){
   :is(.v2-closing,.v3-closing) :is(.v2-shell,.v3-shell){display:block}
   :is(.v2-closing,.v3-closing) .af-section-heading.af-section-heading{display:grid;margin-bottom:0}
-  :is(.v2-closing,.v3-closing) .af-section-heading>div,:is(.v2-closing,.v3-closing) .af-section-heading .v2-section-intro{grid-column:auto;grid-row:auto}
+  :is(.v2-closing,.v3-closing) .af-section-heading>div,:is(.v2-closing,.v3-closing) .af-section-heading.af-section-heading .v2-section-intro{grid-column:auto;grid-row:auto}
 }
 @media(max-width:600px){
   :is(.v2-closing,.v3-closing){padding-block:4rem}

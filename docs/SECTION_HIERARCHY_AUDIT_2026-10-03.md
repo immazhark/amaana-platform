@@ -17,4 +17,6 @@ Final local confirmation:16 Chromium checks pass in20.2seconds, including strict
 
 Mechanical detector warning: existing footer wordmark gradient text in experience-finish.css; unchanged official treatment, outside requested heading/layout fix.
 
-Release: PR/integration CI, exact review deployment and live verification pending. Protected main/PR104, canonical facts, artwork bytes, privacy/payment/media/indexing and fixed bottom-right Companion preserved.
+PR140 first complete seeded CI37106160672:698/701 Chromium checks pass; two task-introduced Contact closing left-edge failures and one pre-existing mobile backdrop failure at390x844. Fixed closing intro specificity for short/contact-link copy, retaining mobile column reset. Reserved3rem beneath the viewport-bounded menu for pointer dismissal; public header remains accessible. Added actual Contact checks at all seven widths and844px navigation windows across five widths. Final correction confirmation:23 layout/navigation/WCAG checks pass in29.2seconds, plus the exact legacy backdrop regression passes in2.5seconds. Fresh build/types and unchanged budgets pass:JavaScript819181/819200,CSS347689/348160. No failing assertions removed or relaxed.
+
+Release: final exact-head PR140 CI, integration CI, exact review deployment and live verification pending. Protected main/PR104, canonical facts, artwork bytes, privacy/payment/media/indexing and fixed bottom-right Companion preserved.
