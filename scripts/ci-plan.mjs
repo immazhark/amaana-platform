@@ -3,6 +3,8 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
+  // Typography-only CSS: rendered six-width heading/focus/overflow coverage; JSX retains shell/journey dependencies.
+  { paths: /^src\/components\/section-heading\.module\.css$/, tests: ['section-heading.spec.mjs', 'typography-hierarchy.spec.mjs', 'ui-consistency.spec.mjs', 'owner-nine-surfaces.spec.mjs'] },
   // Owner surface routes and removal of TSX-unreferenced legacy hero selectors.
   { paths: /^(e2e\/owner-nine-surfaces\.spec\.mjs|src\/app\/(?:faith(?:-wow)?|stories(?:-wow)?|trust-experience)\.css|src\/app\/(?:faith-and-reflections|stories|partner|compliance)\/(?:page\.tsx|[^/]+\.module\.css))$/, tests: ['owner-nine-surfaces.spec.mjs', 'owner-surface-polish.spec.mjs', 'section-heading.spec.mjs', 'public-seo.spec.mjs', 'ui-consistency.spec.mjs', 'typography-hierarchy.spec.mjs', 'background-system.spec.mjs'] },
   { paths: /^(src\/app\/(page\.tsx|home-documentary\.css|browser-acceptance\/home-hero\/page\.tsx)|src\/components\/home-story-slide\.tsx|e2e\/home-banner-composition\.spec\.mjs)$/, tests: ['home-banner-composition.spec.mjs', 'owner-screenshot-polish.spec.mjs', 'typography-hierarchy.spec.mjs', 'public-seo.spec.mjs', 'ui-consistency.spec.mjs'] },

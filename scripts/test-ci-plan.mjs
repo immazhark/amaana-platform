@@ -121,7 +121,11 @@ test('audited page and evidence layout paths avoid the whole-site shell matrix',
   assert.equal(p.mode, 'focused');
   assert.ok(!p.tests.includes('public-shell.spec.mjs'));
   for (const t of ['ui-consistency.spec.mjs', 'section-heading.spec.mjs', 'typography-hierarchy.spec.mjs', 'public-seo.spec.mjs', 'participation-contact.spec.mjs', 'initiative-detail.spec.mjs']) assert.ok(p.tests.includes(t));
-  assert.equal(planChanges(['src/components/section-heading.module.css']).tests.includes('public-shell.spec.mjs'), true);
+  const headingCSS = planChanges(['src/components/section-heading.module.css']);
+  assert.equal(headingCSS.tests.includes('public-shell.spec.mjs'), false);
+  for (const suite of ['section-heading.spec.mjs', 'typography-hierarchy.spec.mjs', 'ui-consistency.spec.mjs', 'owner-nine-surfaces.spec.mjs']) assert.ok(headingCSS.tests.includes(suite));
+  assert.equal(planChanges(['src/components/section-heading.tsx']).tests.includes('public-shell.spec.mjs'), true);
+  assert.equal(planChanges(['src/components/section-heading.module.css'], {release:true}).mode, 'full');
   assert.equal(planChanges(['src/app/impact/page.tsx', 'src/lib/public-page-data.ts']).mode, 'full');
   assert.equal(planChanges(['src/app/contact/page.tsx'], {release:true}).mode, 'full');
 });
