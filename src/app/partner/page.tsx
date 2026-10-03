@@ -1,3 +1,4 @@
+import "@/app/canonical-content.css";
 import { PageHero } from '@/components/page-hero';
 import { SectionHeading } from '@/components/section-heading';
 import { masterSection, copyBetween } from '@/lib/master-copy';
