@@ -46,3 +46,26 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     }
   });
 }
+
+for (const width of [390, 1440]) {
+  for (const slug of ['eid-gift-kits', 'taleem']) {
+    test(`umbrella programme keeps one continuous background: ${slug} at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204 }));
+      const response = await page.goto(`/our-work/${slug}`);
+      expect(response.ok()).toBe(true);
+      await expect(page.locator('#programme-pathways')).toBeVisible();
+      const backgrounds = await page.locator('.canonical-programme').evaluate(node => ({
+        parent: getComputedStyle(node).backgroundImage,
+        sections: [...node.querySelectorAll(':scope > section:not(.page-hero)')].map(section => ({
+          id: section.id,
+          image: getComputedStyle(section).backgroundImage,
+          color: getComputedStyle(section).backgroundColor,
+        })),
+      }));
+      expect(backgrounds.parent).toContain('amaana-lattice-tile');
+      expect(backgrounds.sections.length).toBeGreaterThan(2);
+      expect(backgrounds.sections.every(section => section.image === 'none' && section.color === 'rgba(0, 0, 0, 0)')).toBe(true);
+    });
+  }
+}
