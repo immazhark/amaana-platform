@@ -31,6 +31,11 @@ for (const [device, width, height] of [['mobile', 390, 844], ['desktop', 1440, 1
         return { overflow: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth) > viewport + 1, headingOversize, escapedTracks, brokenAnchors };
       });
       expect(metrics).toEqual({ overflow: false, headingOversize: [], escapedTracks: [], brokenAnchors: [] });
+      if (route === '/programmes/seasonal-relief' && device === 'desktop') {
+        const feature = page.locator('.canonical-pathways--single article');
+        const gap = await feature.evaluate(n => n.querySelector('h2').getBoundingClientRect().left - n.querySelector('.canonical-pathway-visual').getBoundingClientRect().right);
+        expect(gap).toBeGreaterThanOrEqual(24);
+      }
       if (route === '/contact') {
         const markers = page.locator('.v2-intent-card > span[aria-hidden="true"]');
         await expect(markers).toHaveCount(6);

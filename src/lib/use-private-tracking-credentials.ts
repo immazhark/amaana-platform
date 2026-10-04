@@ -27,6 +27,14 @@ function createTrackingStore() {
       initialized = true;
       notify();
     };
+    // Next.js commits its URL after rendering the new client route. Reconcile
+    // at subscription time, while retaining captured data after URL scrubbing.
+    const committed = parsePrivateTrackingLocation(window.location.search, window.location.hash);
+    if (committed && (captured?.reference !== committed.reference || captured?.token !== committed.token)) {
+      captured = committed;
+      initialized = true;
+      notify();
+    }
     window.addEventListener("hashchange", update);
     window.addEventListener("popstate", update);
     return () => {

@@ -621,7 +621,7 @@ test('homepage programme carousel stays left aligned and wraps in both direction
   await open(page, '/');
   const carousel = page.locator('[aria-label="Amaana programme areas"]');
   await expect(carousel).toBeVisible();
-  const status = carousel.locator('[aria-live="polite"]');
+  const status = carousel.locator('[aria-atomic="true"]');
   await expect(status).toContainText('1 / 5');
   await carousel.getByRole('button', { name: 'Previous slide' }).click();
   await expect(status).toContainText('5 / 5');
