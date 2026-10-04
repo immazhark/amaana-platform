@@ -12,7 +12,7 @@ const sourcePages = pages(path.join(workspace,'src/app'));
 const normalize = file=>'/'+path.relative(path.join(workspace,'src/app'),path.dirname(file)).split(path.sep).filter(p=>p&&!p.startsWith('(')).join('/');
 const sourceRoutes = sourcePages.map(file=>({file:path.relative(workspace,file),route:normalize(file)}));
 const staticRoutes = sourceRoutes.filter(r=>!r.route.includes('[')).map(r=>r.route);
-const adminDetail = [`/admin/requests/${seed.requestId}`,`/admin/appeals/${seed.appealId}`,`/admin/donations/${seed.donationId}`];
+const adminDetail = [`/admin/requests/${seed.requestId}`,`/admin/appeals/${seed.appealId}`,`/admin/appeals/${seed.draftId}`,`/admin/donations/${seed.donationId}`];
 const routes = [...new Set([...staticRoutes,...seed.publicRoutes,...adminDetail,'/programmes/medical-financial-relief','/programmes/emergency-relief','/programmes/ramadan-eid','/programmes/seasonal-relief','/donations/invalid/acknowledgement'])].sort();
 test.describe.configure({retries:0});
 for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])for(const route of routes)test(`complete page audit ${device} ${route}`,async({page,context})=>{
