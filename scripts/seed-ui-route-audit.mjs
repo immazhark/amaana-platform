@@ -30,6 +30,8 @@ try {
   await prisma.story.upsert({where:{slug:'synthetic-ui-audit-story'},update:storyData,create:{slug:'synthetic-ui-audit-story',...storyData}});
   const faithData = {type:'ARTICLE',title:'Synthetic reading layout audit',excerpt:'Synthetic content for reading layout checks.',body:'This is a layout test containing no religious quotation or guidance. It is available only in the disposable acceptance database.',status:'PUBLISHED',religiousReviewStatus:'VERIFIED',sourceCitation:'Synthetic layout fixture; no religious quotation or guidance.',verifiedAt:now,publishedAt:now};
   await prisma.faithContent.upsert({where:{slug:'synthetic-ui-audit-reading'},update:faithData,create:{slug:'synthetic-ui-audit-reading',...faithData}});
+  await prisma.auditEvent.upsert({where:{id:'ui-audit-synthetic-event'},update:{},create:{id:'ui-audit-synthetic-event',actorId:user.id,action:'UI_AUDIT_ONLY',entityType:'SyntheticFixture',entityId:request.id,metadata:{note:'Disposable layout audit only'}}});
+  await prisma.notification.upsert({where:{id:'ui-audit-synthetic-notification'},update:{},create:{id:'ui-audit-synthetic-notification',channel:'EMAIL',status:'FAILED',recipient:'ui-audit@example.invalid',templateKey:'ui-audit-only',subject:'Synthetic delivery audit',payload:{synthetic:true},failureReason:'Synthetic failure for layout verification; never sent.',attempts:1,userId:user.id}});
   const [initiatives,stories,faith] = await Promise.all([
     prisma.initiative.findMany({where:{status:'PUBLISHED',cause:{status:'PUBLISHED'}},select:{slug:true}}),
     prisma.story.findMany({where:{status:'PUBLISHED',privacyApprovedAt:{not:null}},select:{slug:true}}),

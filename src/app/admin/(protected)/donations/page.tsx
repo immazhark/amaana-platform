@@ -168,7 +168,7 @@ export default async function DonationsPage({ searchParams }: Props) {
       <Link href={intentHref()} aria-current={!selectedIntent ? "page" : undefined}>All</Link>
       {Object.values(DonationIntent).map(item => <Link key={item} href={intentHref(item)} aria-current={selectedIntent === item ? "page" : undefined}>{donationIntentLabel(item)} ({intentCounts.get(item) ?? 0})</Link>)}
     </div>
-    <div className="admin-table-wrap">
+    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Donation records">
       <table>
         <thead><tr><th>Reference</th><th>Donor</th><th>Appeal</th><th>Intent</th><th>Method</th><th>Amount</th><th>Refunded</th><th>Status</th><th>Date</th></tr></thead>
         <tbody>{donations.map(donation => <tr key={donation.id}>

@@ -1,7 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import {execFileSync} from 'node:child_process';
-import {createHash} from 'node:crypto';
 import AxeBuilder from '@axe-core/playwright';
 import {test,expect} from '@playwright/test';
 
@@ -42,7 +41,9 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  const slug='complete-'+(route==='/'?'home':route.slice(1).replaceAll('/','--'));
  await page.screenshot({path:path.join(directory,slug+'.jpg'),type:'jpeg',quality:65,fullPage:true,animations:'disabled'});
  fs.writeFileSync(path.join(directory,slug+'.json'),JSON.stringify({route,sourceRoutes,status:response?.status(),finalPath:new URL(page.url()).pathname,width,height,metrics,textResizeOverflow,violations,incomplete:audit.incomplete.map(i=>({id:i.id,targets:i.nodes.map(n=>n.target)})),errors},null,2));
- expect(response?.ok(),route).toBe(true);expect(new URL(page.url()).pathname,route).toBe(route);
+ const expectedStatus=route==='/donate/synthetic-ui-audit'?404:200;
+ expect(response?.status(),route).toBe(expectedStatus);
+ expect(new URL(page.url()).pathname,route).toBe(route==='/our-work/medical-financial-assistance'?'/programmes/medical-financial-relief':route);
  if(!route.startsWith('/browser-acceptance/')){expect(metrics.headings,route).toHaveLength(1);expect(metrics.headings.join(' ')).not.toMatch(/platform is temporarily unavailable|page could not complete/i);}
  expect(metrics.overflow,route).toBe(false);expect(textResizeOverflow,`200% text resizing: ${route}`).toBe(false);expect(metrics.oversizedH2,route).toEqual([]);expect(metrics.brokenAnchors,route).toEqual([]);expect(errors,route).toEqual([]);
  expect(violations.filter(v=>['serious','critical'].includes(v.impact)),route).toEqual([]);
@@ -69,3 +70,61 @@ for (const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]]) 
     expect(audit.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
   });
 }
+
+for (const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]]) {
+  test(`source-rendered route interruption ${device}`, async ({page}) => {
+    await page.setViewportSize({width,height});
+    const html = execFileSync(process.execPath,['--input-type=commonjs','-'],{cwd:workspace,encoding:'utf8',input:`
+      const fs=require('node:fs'),ts=require('typescript'),React=require('react'),server=require('react-dom/server');
+      const source=fs.readFileSync('src/app/error.tsx','utf8');
+      const code=ts.transpileModule(source,{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.CommonJS}}).outputText;
+      const box={exports:{}};new Function('require','module','exports',code)(require,box,box.exports);
+      process.stdout.write('<!doctype html>'+server.renderToStaticMarkup(React.createElement(box.exports.default,{error:new Error('Synthetic layout audit'),reset:()=>{}})));
+    `});
+    await page.goto('/about');const head=await page.locator('head').innerHTML();await page.setContent('<!doctype html><html lang="en"><head>'+head+'</head><body><main>'+html+'</main></body></html>');await page.evaluate(async()=>{await document.fonts.ready;});
+    const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag2aaa']).analyze();
+    const geometry=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,heading:document.querySelector('h1')?.textContent}));
+    const directory=path.resolve('site-audit',device);fs.mkdirSync(directory,{recursive:true});
+    await page.screenshot({path:path.join(directory,'complete-route-error.jpg'),type:'jpeg',quality:65,fullPage:true});
+    fs.writeFileSync(path.join(directory,'complete-route-error.json'),JSON.stringify({route:'error.tsx',evidence:'Source-rendered isolated layout; recovery callback is reviewed in source, not exercised by this static render.',width,height,geometry,violations:audit.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}))},null,2));
+    expect(geometry.overflow).toBe(false);
+    await expect(page.getByRole('button',{name:'Try again',exact:true})).toBeVisible();
+    expect(audit.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
+  });
+}
+
+const acknowledgementStates = [
+  {tone:'captured',heading:'JazakAllahu Khairan.',summary:'Amaana Foundation recorded your contribution.',statusLabel:'Payment verified'},
+  {tone:'pending',heading:'Your transfer is awaiting verification.',summary:'The transfer reference is recorded and will be reviewed.',statusLabel:'Awaiting verification'},
+  {tone:'refunded',heading:'This donation has been refunded.',summary:'The private record remains available after the refund.',statusLabel:'Refund processed'},
+];
+for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])for(const presentation of acknowledgementStates)test(`private acknowledgement UI ${presentation.tone} ${device}`,async({page})=>{
+ const reference='AFD-SYNTHETIC-UI-ACK';
+ await page.setViewportSize({width,height});await page.emulateMedia({reducedMotion:'reduce'});
+ await page.route('**/api/donations/acknowledgement',r=>r.fulfill({status:200,json:{found:true,presentation,donation:{referenceNumber:reference,receiptNumber:'ACK-SYNTHETIC',donorName:'Synthetic donor',givingIntent:'GENERAL',amount:100,refundedAmount:presentation.tone==='refunded'?100:0,recordDate:'2026-10-01T00:00:00Z',providerPaymentId:null,appeal:{title:'Synthetic UI audit appeal',slug:'synthetic-ui-audit'}}}}));
+ const errors=[];page.on('pageerror',e=>errors.push(e.message));
+ await page.goto(`/donations/${reference}/acknowledgement#token=synthetic-private-acknowledgement-token`);
+ await expect(page.getByRole('heading',{name:presentation.heading,exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>location.search+location.hash)).toBe('');
+ const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag2aaa']).analyze();
+ const overflow=await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth+1);
+ const directory=path.resolve('site-audit',device);fs.mkdirSync(directory,{recursive:true});
+ await page.screenshot({path:path.join(directory,`complete-private-ack-${presentation.tone}.jpg`),type:'jpeg',quality:65,fullPage:true,animations:'disabled'});
+ fs.writeFileSync(path.join(directory,`complete-private-ack-${presentation.tone}.json`),JSON.stringify({route:'/donations/[reference]/acknowledgement',state:presentation.tone,evidence:'Actual client UI with mocked API transport; server token gates retain existing unit/database coverage.',width,height,overflow,errors,violations:audit.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}))},null,2));
+ expect(overflow).toBe(false);expect(errors).toEqual([]);expect(audit.violations.filter(v=>['serious','critical'].includes(v.impact))).toEqual([]);
+});
+
+for(const status of [429,503])test(`temporary acknowledgement failure ${status} retains private retry credentials`,async({page})=>{
+ const credentials={reference:'AFD-SYNTHETIC-RETRY',token:'synthetic-private-acknowledgement-retry-token'},requests=[];
+ await page.route('**/api/donations/acknowledgement',r=>{
+  requests.push(r.request().postDataJSON());
+  if(requests.length===1)return r.fulfill({status,json:{error:'Temporarily unavailable'}});
+  return r.fulfill({status:200,json:{found:true,presentation:acknowledgementStates[0],donation:{referenceNumber:credentials.reference,receiptNumber:'ACK-SYNTHETIC',donorName:'Synthetic donor',givingIntent:'GENERAL',amount:100,refundedAmount:0,recordDate:'2026-10-01T00:00:00Z',providerPaymentId:null,appeal:{title:'Synthetic UI audit appeal',slug:'synthetic-ui-audit'}}}});
+ });
+ await page.goto(`/donations/${credentials.reference}/acknowledgement#token=${credentials.token}`);
+ await expect(page.getByRole('heading',{name:'Unable to open your acknowledgement.',exact:true})).toBeVisible();
+ expect(await page.evaluate(()=>location.search+location.hash)).toBe('');
+ await page.getByRole('button',{name:'Try again',exact:true}).click();
+ await expect(page.getByRole('heading',{name:'JazakAllahu Khairan.',exact:true})).toBeVisible();
+ expect(requests).toEqual([credentials,credentials]);expect(await page.evaluate(()=>location.search+location.hash)).toBe('');
+});

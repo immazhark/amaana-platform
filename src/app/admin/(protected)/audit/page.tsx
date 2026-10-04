@@ -66,7 +66,7 @@ export default async function AuditHistoryPage({ searchParams }: Props) {
       </Link>)}
     </div>
     {action && <p className="muted">Showing exact action <strong>{action}</strong>. <Link href={entityHref(entityType)}>Clear action filter</Link></p>}
-    <div className="admin-table-wrap">
+    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Audit events">
       <table>
         <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead>
         <tbody>{events.map(event => <tr key={event.id}>
