@@ -1,56 +1,109 @@
 "use client";
 
+import { usePathname } from "next/navigation";
 import { useEffect } from "react";
+import { animate } from "framer-motion/dom/mini";
+import { useSiteScroll } from "./site-scroll";
 
-// One delegated motion policy covers server-rendered cards and actions on every route.
-// Content stays visible before hydration; native scrolling remains browser-owned.
+type Playback = ReturnType<typeof animate>;
+const actions = "a[href], button, summary";
+const hoverEvents = ["pointerover", "pointerout", "focusin", "focusout"];
+const pressEvents = ["pointerdown", "pointerup", "pointercancel", "keydown", "keyup"];
+const introductions = "[data-section-heading], .v2-section-head, .v3-section-head";
+
+/** One delegated enhancement; server content stays readable before hydration. */
 export function SiteMotion() {
+  const pathname = usePathname();
+  useSiteScroll(pathname);
   useEffect(() => {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const selector = '[data-body-card], .v2-button, .v3-btn, .page-hero__button, .af-support-cta';
-    const running = new Map<HTMLElement, Animation>();
-    const move = (element: HTMLElement, raised: boolean) => {
-      running.forEach((animation, node) => { if (!node.isConnected) { animation.cancel(); running.delete(node); } });
-      const from = getComputedStyle(element).transform;
-      running.get(element)?.cancel();
-      if (preference.matches) { element.style.removeProperty("transform"); return; }
-      running.set(element, element.animate([{ transform: from }, { transform: raised ? "translateY(-3px)" : "translateY(0px)" }], { duration: 220, easing: "cubic-bezier(.2,.8,.2,1)", fill: "forwards" }));
+    const running = new Map<HTMLElement, Playback>();
+    const owned = new Set<HTMLElement>();
+    const seen = new WeakSet<HTMLElement>();
+    let disposed = false;
+    const clear = (element: HTMLElement) => {
+      running.get(element)?.stop();
+      running.delete(element);
+      for (const property of ["translate", "scale", "opacity"]) element.style.removeProperty(property);
+      owned.delete(element);
     };
-    const target = (event: Event) => event.target instanceof Element ? event.target.closest<HTMLElement>(selector) : null;
-    const enter = (event: Event) => {
-      const element = target(event);
-      if (!element) return;
-      const related = (event as PointerEvent | FocusEvent).relatedTarget;
-      if (related instanceof Node && element.contains(related)) return;
+    const feedback = async (element: HTMLElement, pressed = false) => {
+      if (preference.matches) { clear(element); return; }
+      if (disposed || !element.isConnected) return;
+      running.get(element)?.stop();
+      const raised = element.matches(":hover, :focus-visible");
+      owned.add(element);
+      const animation = animate(element, { translate: raised && !pressed ? "0 -1px" : "0 0px", scale: pressed ? "0.98" : "1" }, { duration: pressed ? 0.1 : 0.22, ease: [0.2, 0.8, 0.2, 1] });
+      running.set(element, animation);
+      await animation;
+      if (running.get(element) !== animation) return;
+      running.delete(element);
+      if (!raised && !pressed) clear(element);
+    };
+    const target = (event: Event) => {
+      const element = event.target instanceof Element ? event.target.closest<HTMLElement>(actions) : null;
+      return element && !element.matches(":disabled, [aria-disabled='true']") ? element : null;
+    };
+    const hover = (event: Event) => {
       if (event instanceof PointerEvent && event.pointerType !== "mouse") return;
-      move(element, true);
-    };
-    const leave = (event: Event) => {
       const element = target(event);
       if (!element) return;
       const related = (event as PointerEvent | FocusEvent).relatedTarget;
       if (related instanceof Node && element.contains(related)) return;
-      if (element.matches(":hover, :focus-within")) return;
-      move(element, false);
+      void feedback(element);
     };
-    const reset = () => {
-      if (!preference.matches) return;
-      running.forEach((animation, element) => { animation.cancel(); element.style.removeProperty("transform"); });
-      running.clear();
+    const press = (event: Event) => {
+      if (event instanceof PointerEvent && event.button !== 0) return;
+      if (event instanceof KeyboardEvent && (event.repeat || !["Enter", " "].includes(event.key))) return;
+      const element = target(event);
+      if (element) void feedback(element, event.type === "pointerdown" || event.type === "keydown");
     };
-    document.addEventListener("pointerover", enter);
-    document.addEventListener("pointerout", leave);
-    document.addEventListener("focusin", enter);
-    document.addEventListener("focusout", leave);
+    const observer = new IntersectionObserver(entries => {
+      for (const entry of entries) {
+        if (!entry.isIntersecting || !(entry.target instanceof HTMLElement)) continue;
+        const element = entry.target;
+        observer.unobserve(element);
+        if (preference.matches || entry.boundingClientRect.top < 80) continue;
+        void (async () => {
+          if (disposed || preference.matches || !element.isConnected) return;
+          owned.add(element);
+          const animation = animate(element, { opacity: [0.86, 1], translate: ["0 8px", "0 0px"] }, { duration: 0.38, ease: [0.2, 0.8, 0.2, 1] });
+          running.set(element, animation);
+          await animation;
+          if (running.get(element) === animation) clear(element);
+        })();
+      }
+    }, { threshold: 0.12 });
+    const register = (root: Element) => {
+      const elements = [...root.querySelectorAll<HTMLElement>(introductions)];
+      if (root instanceof HTMLElement && root.matches(introductions)) elements.push(root);
+      for (const element of elements) {
+        if (seen.has(element)) continue;
+        seen.add(element);
+        observer.observe(element);
+      }
+    };
+    const main = document.getElementById("main");
+    if (main && !pathname.startsWith("/admin")) register(main);
+    const mutations = new MutationObserver(records => {
+      for (const record of records) for (const node of record.addedNodes) {
+        if (node instanceof Element && !pathname.startsWith("/admin")) register(node);
+      }
+      for (const element of owned) if (!element.isConnected) clear(element);
+    });
+    if (main) mutations.observe(main, { childList: true, subtree: true });
+    const reset = () => { if (preference.matches) for (const element of owned) clear(element); };
+    for (const event of hoverEvents) document.addEventListener(event, hover);
+    for (const event of pressEvents) document.addEventListener(event, press);
     preference.addEventListener("change", reset);
     return () => {
-      document.removeEventListener("pointerover", enter);
-      document.removeEventListener("pointerout", leave);
-      document.removeEventListener("focusin", enter);
-      document.removeEventListener("focusout", leave);
+      disposed = true;
+      observer.disconnect(); mutations.disconnect();
       preference.removeEventListener("change", reset);
-      running.forEach(animation => animation.cancel());
+      for (const event of hoverEvents) document.removeEventListener(event, hover);
+      for (const event of pressEvents) document.removeEventListener(event, press);
+      for (const element of owned) clear(element);
     };
-  }, []);
+  }, [pathname]);
   return null;
 }

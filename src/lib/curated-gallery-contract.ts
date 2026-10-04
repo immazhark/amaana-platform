@@ -1,4 +1,5 @@
-import * as z from "zod";
+import { strictObject, string, int, literal, nullable, array, regex, minLength, maxLength, minimum, maximum, positive, trim, length, superRefine, enum as enumeration } from "zod/mini";
+import type { infer as Infer } from "zod/mini";
 const CURATED_MAX_FILE_BYTES = 5 * 1024 * 1024;
 const CURATED_MAX_IMAGE_PIXELS = 40_000_000;
 
@@ -36,33 +37,33 @@ export const CURATED_GALLERY_EXPECTED_COUNTS = {
 
 export type CuratedGallerySlug = keyof typeof CURATED_GALLERY_EXPECTED_COUNTS;
 
-const curatedGalleryRecordSchema = z.object({
-  id: z.string().regex(/^curated-[a-f0-9]{32}$/),
-  slug: z.string().min(1),
-  batch: z.string().min(1).max(120),
-  role: z.literal("general-gallery"),
-  sortOrder: z.number().int().min(0),
-  originalName: z.string().min(1).max(255),
-  relativePath: z.string().min(1).max(700),
-  sha256: z.string().regex(/^[a-f0-9]{64}$/),
-  bytes: z.number().int().min(1).max(CURATED_MAX_FILE_BYTES),
-  mimeType: z.enum(["image/jpeg", "image/png"]),
-  width: z.number().int().positive(),
-  height: z.number().int().positive(),
-  sourceYear: z.number().int().min(2000).max(2100).nullable(),
-  altText: z.string().trim().min(1).max(300),
-  caption: z.string().max(1000).nullable(),
-  isPublic: z.literal(false),
-  privacyApprovedAt: z.null(),
-  heroEligible: z.literal(false),
-}).strict();
+const curatedGalleryRecordSchema = strictObject({
+  id: string().check(regex(/^curated-[a-f0-9]{32}$/)),
+  slug: string().check(minLength(1)),
+  batch: string().check(minLength(1), maxLength(120)),
+  role: literal("general-gallery"),
+  sortOrder: int().check(minimum(0)),
+  originalName: string().check(minLength(1), maxLength(255)),
+  relativePath: string().check(minLength(1), maxLength(700)),
+  sha256: string().check(regex(/^[a-f0-9]{64}$/)),
+  bytes: int().check(minimum(1), maximum(CURATED_MAX_FILE_BYTES)),
+  mimeType: enumeration(["image/jpeg", "image/png"]),
+  width: int().check(positive()),
+  height: int().check(positive()),
+  sourceYear: nullable(int().check(minimum(2000), maximum(2100))),
+  altText: string().check(trim(), minLength(1), maxLength(300)),
+  caption: nullable(string().check(maxLength(1000))),
+  isPublic: literal(false),
+  privacyApprovedAt: literal(null),
+  heroEligible: literal(false),
+});
 
-export const curatedGalleryManifestSchema = z.object({
-  version: z.literal(1),
-  batch: z.literal(CURATED_GALLERY_BATCH),
-  status: z.literal("prepared-unpublished"),
-  records: z.array(curatedGalleryRecordSchema).length(CURATED_GALLERY_RECORD_COUNT),
-}).strict().superRefine((manifest, ctx) => {
+export const curatedGalleryManifestSchema = strictObject({
+  version: literal(1),
+  batch: literal(CURATED_GALLERY_BATCH),
+  status: literal("prepared-unpublished"),
+  records: array(curatedGalleryRecordSchema).check(length(CURATED_GALLERY_RECORD_COUNT)),
+}).check(superRefine((manifest, ctx) => {
   const ids = new Set<string>();
   const orderKeys = new Set<string>();
   const counts = new Map<string, number>();
@@ -107,9 +108,9 @@ export const curatedGalleryManifestSchema = z.object({
       ctx.addIssue({ code: "custom", path: ["records"], message: `Count mismatch for ${slug}` });
     }
   }
-});
+}));
 
-export type CuratedGalleryManifest = z.infer<typeof curatedGalleryManifestSchema>;
+export type CuratedGalleryManifest = Infer<typeof curatedGalleryManifestSchema>;
 export type CuratedGalleryRecord = CuratedGalleryManifest["records"][number];
 
 export function archivePathForCuratedRecord(record: CuratedGalleryRecord) {

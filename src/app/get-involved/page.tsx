@@ -31,6 +31,7 @@ export const metadata: Metadata = {
 const waysToHelp = [
   {
     number: "01",
+    icon: "work" as const,
     title: "Sponsor a student",
     copy: "Support Quran Nazira, Hifdh, or a child’s school or college education through the Amaana Taleem Initiative.",
     href: "/get-involved/sponsor-education",
@@ -38,6 +39,7 @@ const waysToHelp = [
   },
   {
     number: "02",
+    icon: "support" as const,
     title: "Stand with a verified appeal",
     copy: "When a reviewed public need is active, you can understand the case first and decide whether you want to support it.",
     href: "/appeals",
@@ -45,6 +47,7 @@ const waysToHelp = [
   },
   {
     number: "03",
+    icon: "volunteer" as const,
     title: "Offer your time or skills",
     copy: "Packing, documentation, creative work, technology and field support can all matter. Availability depends on the needs of each initiative.",
     href: "/contact",
@@ -52,6 +55,7 @@ const waysToHelp = [
   },
   {
     number: "04",
+    icon: "message" as const,
     title: "Share the work responsibly",
     copy: "Help genuine initiatives reach people who may care, without exposing private beneficiary information or creating artificial urgency.",
     href: "/stories",
@@ -59,6 +63,7 @@ const waysToHelp = [
   },
   {
     number: "05",
+    icon: "assistance" as const,
     title: "Help someone reach Amaana",
     copy: "If you know a person or family facing genuine hardship, guide them to the private assistance-request process rather than sharing their documents publicly.",
     href: "/request-assistance",

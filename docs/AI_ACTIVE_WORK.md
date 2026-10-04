@@ -1,3 +1,8 @@
+# Sitewide experience polish — 2026-10-04 IST
+
+Ownership `CODEX_ACTIVE`. Branch `feat/site-experience-polish-20261004`, base `ad1a9941f087297235492795f9ac42c82e2cd557`. Owner delegates page-by-page/batched implementation of motion, micro-interactions, smooth scrolling, responsive/accessibility and performance polish. First inspect all routes and shared foundations, preserve approved brand/content/media and protected main/draft PR104. Motion respects reduced-motion and content remains available before hydration; keyboard/touch/nested scrolling stays native. Keep existing bundle ceilings, verify dependency lifecycle and full shared-system acceptance. Do not claim AAA certification from automated tests. No delegation.
+
+---
 # Initiative photo banners and detail polish — delivered 2026-10-04 IST
 
 Ownership `IDLE`. PR161 merged into `phase-public-site-rebuild`. Tested head `f13ab2a8b3b67192242b8b8f4688d97a980fcba6`; merge `3f7d5e88b16a6c981b2ef59b3e2c0cef65e0a41e`; tested/local/remote/merged tree `df9068cf20bb2266114e5ecd6762f0c9d0a1f532` identical. CI37205921770 SUCCESS:571 focused Chromium checks passed in8.6minutes without retries. Local417 unit checks and29 planner checks pass. Integration37206621914 SUCCESS: production build, JS813541/819200 and CSS345943/348160 budgets and server smoke; duplicate browser/database work skipped.

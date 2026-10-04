@@ -3,6 +3,7 @@
 .form :global(.field select),
 .form :global(.field textarea){width:100%;border:1px solid rgb(18 34 57 / 17%)!important;border-radius:.9rem!important;background:#fff!important;padding:.82rem .9rem!important;box-shadow:none!important;transition:border-color .18s ease,box-shadow .18s ease,background-color .18s ease}
 .form :global(.field textarea){min-height:10rem}
+.form :global(.v2-form-heading p){color:var(--af-color-muted)}
 .form :global(.field input:not([type=checkbox]):not([type=file]):focus),
 .form :global(.field select:focus),
 .form :global(.field textarea:focus){border-color:var(--af-color-focus)!important;box-shadow:0 0 0 3px rgb(178 119 0 / 18%)!important;background:#fffdf8!important;outline:0}
