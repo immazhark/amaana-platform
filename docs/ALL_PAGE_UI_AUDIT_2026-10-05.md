@@ -70,3 +70,5 @@ Evidence dimensions: source review, desktop/mobile geometry and capture, serious
 ## Current findings
 
 Awaiting the first complete seeded desktop/mobile audit. Confirmed failures will be classified and fixed together, then verified once. No page-specific pass is inferred solely from a shared component pass. No full AAA certification is claimed.
+
+Initial diagnostic setup failed before page capture because the synthetic donation omitted the payment-method shape required by the existing database constraint. Corrected the fixture to a pending synthetic direct transfer; the financial guard remains unchanged. This setup failure is not counted as a product UI defect. Local source-rendered root interruption checks pass at390/1440px. A separate actual-client mocked503 reproduction confirms private acknowledgements lack retry and misclassify temporary transport failure as unavailable credentials.
