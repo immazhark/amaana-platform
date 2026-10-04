@@ -1,3 +1,9 @@
+# Site regression audit — 2026-10-04 IST
+
+State: `CODEX_ACTIVE`. Branch `fix/site-regression-audit-20261004`, integration base `1e1a542c2762d85671473256f022e73d6b610060`, identical starting tree `bf096d82867ad52b9a7f48df7d95444fdf490954`. Owner requests comprehensive site regression, UI/UX audit and fixes. Inspect all public page families, dynamic details and protected/simulated operational journeys across mobile/tablet/desktop, keyboard/zoom/reduced motion, backgrounds/typography/carousels/forms and error states. Preserve approved design, canonical facts, original media, fixed Companion, budgets, payments/security, main/draft PR104. Reuse existing current-head full acceptance as baseline evidence; implement confirmed defects and deliver full final regression. No new agent delegation.
+
+---
+
 ## 2026-10-04 IST — Premium carousel and artwork delivery complete
 
 Ownership `IDLE`. PR157 delivered to `phase-public-site-rebuild`: tested head `6320b7d082b15164942831711d0a8bd9e2cccf85`, merge `d7ee5c64a9c317674d55df6a673b0701481cc0f0`; local/tested/remote/merged tree `90a2d98ff7cb1b0e00272bf1a68e5e1444cecf8c` identical. Final CI37161334707 SUCCESS:173 focused Chromium checks passed without retries in2.8minutes,414 units pass (six isolated-database fast skips),28 planner checks pass. Integration37161688907 SUCCESS: production build, unchanged JS811105/819200 and CSS344018/348160 budgets and server smoke; duplicate browser/database acceptance skipped.

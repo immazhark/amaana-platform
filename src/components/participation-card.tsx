@@ -1,7 +1,8 @@
 import Link from "next/link";
+import { ActionIcon, type ActionIconKind } from "./action-icon";
 import styles from "./participation-card.module.css";
 
-export type ParticipationPath = { marker: string; title: string; copy: string; action: string; href: string };
+export type ParticipationPath = { marker: string; icon?: ActionIconKind; title: string; copy: string; action: string; href: string };
 export function ParticipationCards({ paths }: { paths: readonly ParticipationPath[] }) {
-  return <div className={`v2-intent-grid ${styles.grid}`}>{paths.map(path => <Link className={`v2-intent-card ${styles.card}`} data-contact-kind={path.marker} href={path.href} key={path.marker} aria-label={`${path.title}: ${path.action}`}><span className={styles.marker} aria-hidden="true">{path.marker}</span><div className={styles.copy}><h3>{path.title}</h3><p>{path.copy}</p></div><span className={styles.action}>{path.action}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg></span></Link>)}</div>;
+  return <div className={`v2-intent-grid ${styles.grid}`}>{paths.map(path => <Link className={`v2-intent-card ${styles.card}`} data-contact-kind={path.marker} href={path.href} key={path.marker} aria-label={`${path.title}: ${path.action}`}><span className={styles.marker} aria-hidden="true">{path.icon ? <ActionIcon kind={path.icon} /> : path.marker}</span><div className={styles.copy}><h3>{path.title}</h3><p>{path.copy}</p></div><span className={styles.action}>{path.action}<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round"/></svg></span></Link>)}</div>;
 }

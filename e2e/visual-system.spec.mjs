@@ -56,6 +56,13 @@ async function expectContained(page, route) {
       .filter(element => {
         const style = getComputedStyle(element);
         if (style.display === 'none' || style.visibility === 'hidden' || element.closest('[aria-hidden="true"]')) return false;
+        const carousel = element.closest('[data-carousel-mode]');
+        const trackViewport = carousel?.querySelector('[id^="carousel-"]');
+        if (trackViewport?.contains(element)) {
+          const clip = trackViewport.getBoundingClientRect();
+          const overflow = getComputedStyle(trackViewport).overflowX;
+          if (['auto', 'scroll', 'hidden', 'clip'].includes(overflow) && clip.left >= -1 && clip.right <= viewport + 1) return false;
+        }
         const rect = element.getBoundingClientRect();
         return rect.width > 0 && (rect.left < -1 || rect.right > viewport + 1);
       })
@@ -614,7 +621,7 @@ test('homepage programme carousel stays left aligned and wraps in both direction
   await open(page, '/');
   const carousel = page.locator('[aria-label="Amaana programme areas"]');
   await expect(carousel).toBeVisible();
-  const status = carousel.locator('[aria-live="polite"]');
+  const status = carousel.locator('[aria-atomic="true"]');
   await expect(status).toContainText('1 / 5');
   await carousel.getByRole('button', { name: 'Previous slide' }).click();
   await expect(status).toContainText('5 / 5');

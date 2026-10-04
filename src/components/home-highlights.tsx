@@ -1,3 +1,4 @@
+import styles from "./home-highlights.module.css";
 import { homepageImpact } from '@/content/amaana';
 import { documentedAssistanceTotal } from '@/lib/documented-assistance';
 import { formatINR } from '@/lib/appeals';
@@ -12,7 +13,7 @@ export function HomeHighlights() {
     <section className="v3-proof" aria-labelledby="homepage-highlights-title">
       <div className="v3-shell">
         <p className="v3-proof-label" id="homepage-highlights-title">Highlights</p>
-        <div className="v3-proof-grid">
+        <div className={`v3-proof-grid ${styles.track}`} role="region" aria-labelledby="homepage-highlights-title" tabIndex={0}>
           {highlights.map(item => (
             <div className="v3-proof-item" key={item.label}>
               <strong>{item.value}</strong>
