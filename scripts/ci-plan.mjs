@@ -3,6 +3,8 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
+  // Programme closing is presentation-only; cover its shared fixture and real detail pages.
+  { paths: /^(src\/components\/programme-next\.tsx|src\/app\/browser-acceptance\/section-layout\/page\.tsx|e2e\/(?:section-layout|initiative-detail)\.spec\.mjs)$/, tests: ['section-layout.spec.mjs', 'initiative-detail.spec.mjs', 'section-heading.spec.mjs', 'typography-hierarchy.spec.mjs', 'page-banner-standardization.spec.mjs'] },
   { paths: /^(src\/lib\/initiative-banner-media(?:\.test)?\.ts|src\/components\/initiative-banner\.module\.css|src\/app\/our-work\/\[slug\]\/campaign\.css|e2e\/initiative-banners\.spec\.mjs)$/, tests: ["initiative-banners.spec.mjs", "initiative-detail.spec.mjs", "campaign-gallery.spec.mjs", "section-heading.spec.mjs", "page-banner-standardization.spec.mjs", "typography-hierarchy.spec.mjs"] },
   { paths: /^(public\/programme-artwork\/[^/]+|src\/components\/(?:programme-artwork|ui-icon|back-to-top)\.tsx|src\/app\/programmes\/\[slug\]\/(?:page\.tsx|programme-list\.module\.css)|e2e\/premium-carousel\.spec\.mjs)$/, tests: ["initiative-banners.spec.mjs", "premium-carousel.spec.mjs", "body-carousel-new.spec.mjs", "carousel-acceptance.spec.mjs", "home-banner-composition.spec.mjs", "initiative-detail.spec.mjs", "navigation-resilience.spec.mjs", "typography-hierarchy.spec.mjs"] },
   // Typography-only CSS: rendered six-width heading/focus/overflow coverage; JSX retains shell/journey dependencies.

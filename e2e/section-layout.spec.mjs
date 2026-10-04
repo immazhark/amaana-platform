@@ -25,6 +25,16 @@ for (const width of [320, 390, 768, 900, 1024, 1440, 1920]) {
     expect(layout.actions.top - layout.intro.bottom).toBeGreaterThanOrEqual(23);
     if (width > 900) expect(layout.intro.left).toBeGreaterThan(layout.title.right);
     else expect(layout.intro.top - layout.title.bottom).toBeGreaterThanOrEqual(19);
+    const programme = await page.locator('.campaign-next').evaluate(node => {
+      const title = node.querySelector('h2').getBoundingClientRect();
+      const actions = node.querySelector('.v2-hero-actions').getBoundingClientRect();
+      const shell = node.querySelector('.v2-shell').getBoundingClientRect();
+      return { title, actions, shell, display: getComputedStyle(node.querySelector('[data-section-heading]')).display };
+    });
+    expect(programme.display).toBe('grid');
+    expect(Math.abs(programme.title.left - programme.shell.left)).toBeLessThan(2);
+    if (width > 900) expect(programme.actions.left).toBeGreaterThan(programme.title.right);
+    else expect(programme.actions.top - programme.title.bottom).toBeGreaterThanOrEqual(19);
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21aa']).analyze();
     expect(results.violations).toEqual([]);
     if (width === 390 || width === 1920) await page.screenshot({ path: `/tmp/amaana-sections-${width}.png`, fullPage: true });

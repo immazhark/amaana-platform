@@ -1,3 +1,10 @@
+# Programme closing alignment — published 2026-10-04 UTC
+
+Ownership `CODEX_ACTIVE`. PR164 on `fix/programme-closing-alignment-20261004` validates the remaining programme closing alignment using the existing body heading grid. Initial head `2e2d6c130651e427b2188e8b15e0cf81f2396841`, tree `0ce66f6ef162ec1455beb07ec486359220ba0e6f`; seven local responsive/axe fixture checks and30 planner checks pass. Next action: finish seeded focused CI, merge once green and verify exact-source Railway deployment. Main and draft PR104 protected.
+
+PR163 merged as `cb3cf8b90f2e76044669e500410a2f0c7d3de68d`. Exact tested head `8ff82a0757d72526a57b9aadf1498bef09c7df16`; tested/local/remote/merged tree `04797598d2dd5743717193bd1686e7f2a2e896ae`. CI37225113277 SUCCESS:888 Chromium checks without retries in16.5minutes,24 Firefox/WebKit checks in34.2seconds, fast and isolated database jobs green. Mobile hidden-link Motion crash, five contrast families and compact fine-pointer menu background scroll resolved. Shared Motion/Lenis delivery awaits integration build/Railway/live verification.
+
+---
 # Sitewide experience polish — 2026-10-04 IST
 
 Ownership `CODEX_ACTIVE`. Branch `feat/site-experience-polish-20261004`, base `ad1a9941f087297235492795f9ac42c82e2cd557`. Owner delegates page-by-page/batched implementation of motion, micro-interactions, smooth scrolling, responsive/accessibility and performance polish. First inspect all routes and shared foundations, preserve approved brand/content/media and protected main/draft PR104. Motion respects reduced-motion and content remains available before hydration; keyboard/touch/nested scrolling stays native. Keep existing bundle ceilings, verify dependency lifecycle and full shared-system acceptance. Do not claim AAA certification from automated tests. No delegation.
