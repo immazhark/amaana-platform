@@ -1,3 +1,8 @@
+# Complete route/state UI audit — 2026-10-05 IST
+
+Ownership `CODEX_ACTIVE`. Owner requests every site page receive the same audit, including dynamic children and protected operational states. Atomic branch `fix/all-route-audit-20261005`, verified integration base2caccb9fb83424f75a4c78ffa4c9339ae2e15ad7. Only draft PR104 is open; main/release promotion protected. Build an explicit source route/state inventory, inspect actual desktop/mobile public renders and isolated admin/private journeys, fix confirmed defects, preserve factual copy/approved media/design and unchanged performance caps. Shared polish alone never counts as page-specific review. New complete inventory must distinguish source review, visual review, browser interaction and isolated-state evidence; unknown/unavailable states remain explicit. No subagents, real payments, beneficiary submissions or live staff mutations.
+
+---
 # Sitewide experience polish — three batches delivered, 2026-10-05 IST
 
 Ownership `IDLE` for this delivered batch. PR163 shared Motion/Lenis, contrast, navigation crash and compact menu containment fixes; PR164 programme closing alignment; PR165 continuous umbrella lattice are merged to `phase-public-site-rebuild`, deployed and live verified. Main and draft PR104 remain protected; live environment remains staging with test payments. Prior entries below are historical checkpoints.
