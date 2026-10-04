@@ -3,7 +3,8 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
-  { paths: /^(public\/programme-artwork\/[^/]+|src\/components\/(?:programme-artwork|ui-icon|back-to-top)\.tsx|src\/app\/programmes\/\[slug\]\/(?:page\.tsx|programme-list\.module\.css)|e2e\/premium-carousel\.spec\.mjs)$/, tests: ["premium-carousel.spec.mjs", "body-carousel-new.spec.mjs", "carousel-acceptance.spec.mjs", "home-banner-composition.spec.mjs", "initiative-detail.spec.mjs", "navigation-resilience.spec.mjs", "typography-hierarchy.spec.mjs"] },
+  { paths: /^(src\/lib\/initiative-banner-media(?:\.test)?\.ts|src\/components\/initiative-banner\.module\.css|src\/app\/our-work\/\[slug\]\/campaign\.css|e2e\/initiative-banners\.spec\.mjs)$/, tests: ["initiative-banners.spec.mjs", "initiative-detail.spec.mjs", "campaign-gallery.spec.mjs", "section-heading.spec.mjs", "page-banner-standardization.spec.mjs", "typography-hierarchy.spec.mjs"] },
+  { paths: /^(public\/programme-artwork\/[^/]+|src\/components\/(?:programme-artwork|ui-icon|back-to-top)\.tsx|src\/app\/programmes\/\[slug\]\/(?:page\.tsx|programme-list\.module\.css)|e2e\/premium-carousel\.spec\.mjs)$/, tests: ["initiative-banners.spec.mjs", "premium-carousel.spec.mjs", "body-carousel-new.spec.mjs", "carousel-acceptance.spec.mjs", "home-banner-composition.spec.mjs", "initiative-detail.spec.mjs", "navigation-resilience.spec.mjs", "typography-hierarchy.spec.mjs"] },
   // Typography-only CSS: rendered six-width heading/focus/overflow coverage; JSX retains shell/journey dependencies.
   { paths: /^src\/components\/section-heading\.module\.css$/, tests: ['section-heading.spec.mjs', 'typography-hierarchy.spec.mjs', 'ui-consistency.spec.mjs', 'owner-nine-surfaces.spec.mjs'] },
   // Owner surface routes and removal of TSX-unreferenced legacy hero selectors.
@@ -24,7 +25,7 @@ const groups = [
   { paths: /^src\/app\/home-experience\.css$/, tests: ['ui-consistency.spec.mjs', 'participation-contact.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^e2e\/(ui-consistency|body-carousel-new)\.spec\.mjs$/, tests: ['ui-consistency.spec.mjs', 'body-carousel-new.spec.mjs'] },
   // Public heading/layout presentation only; APIs, auth, database and unknown paths remain full.
-  { paths: /^src\/components\/(section-heading|canonical-article|programme-detail|trust-evidence-boundary|home-evidence)(\.|\/)/, tests: ['section-heading.spec.mjs', 'initiative-detail.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs', 'site-chrome-footer.spec.mjs', 'campaign-gallery.spec.mjs'] },
+  { paths: /^src\/components\/(section-heading|canonical-article|programme-detail|trust-evidence-boundary|home-evidence)(\.|\/)/, tests: ['initiative-banners.spec.mjs', 'section-heading.spec.mjs', 'initiative-detail.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs', 'site-chrome-footer.spec.mjs', 'campaign-gallery.spec.mjs'] },
   { paths: /^src\/app\/(site-chrome|canonical-content)\.css$/, tests: ['owner-surface-polish.spec.mjs', 'section-heading.spec.mjs', 'site-chrome-footer.spec.mjs', 'public-shell.spec.mjs', 'typography-hierarchy.spec.mjs', 'owner-screenshot-polish.spec.mjs'] },
   { paths: /^src\/app\/(page\.tsx|(?:our-work|appeals|stories|faith-and-reflections|get-involved|contact|compliance|impact|request-assistance)(?:\/\[slug\]|\/sponsor-education)?\/page\.tsx)$/, tests: ['section-heading.spec.mjs', 'public-shell.spec.mjs', 'public-seo.spec.mjs', 'typography-hierarchy.spec.mjs', 'participation-contact.spec.mjs', 'initiative-detail.spec.mjs', 'carousel-acceptance.spec.mjs'] },
   { paths: /^e2e\/owner-screenshot-polish\.spec\.mjs$/, tests: ['owner-screenshot-polish.spec.mjs'] },

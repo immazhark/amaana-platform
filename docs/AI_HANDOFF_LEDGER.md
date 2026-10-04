@@ -1,3 +1,9 @@
+# Initiative photo banners and detail polish — 2026-10-04 IST
+
+State: `CODEX_ACTIVE`. Branch `fix/initiative-photo-banners-20261004`, base `6857a1d6fb076491efc465bb0e06fbbfc734e036`. Owner explicitly authorizes using existing initiative photographs in individual headers (single photo; collages only for umbrella pages), blended home-style left/right/bottom edges, pale differentiated impact/status gradients, display-font story heading and narrative filling its column to the container right edge. Retain published-media/privacy gate, brand lattice/gradient, factual locks, galleries, Companion and unchanged budgets; no additional animation dependency. Verify available photo choices and all shared detail templates, responsive/a11y tests and delivery. Main/draft PR104 protected. No delegation.
+
+---
+
 # Site regression audit — delivered 2026-10-04 IST
 
 Ownership `IDLE`. PR159 merged to `phase-public-site-rebuild` after full acceptance. Tested head `8ddb7cb4ae640e8d728ec1e95f0d43f71672e43e`; merge `c4bddf7db9e579d14c7ff4a72b6daee9b8a0cd63`; tested/local/remote/merged tree `f8c1d1097f41533d9e49db1aa93f13f89deb0024` identical. CI37202065296 SUCCESS:842 Chromium checks in10.8minutes and24 Firefox/WebKit checks in22.2seconds, no retries; fast and isolated PostgreSQL checks pass. Integration37203377607 SUCCESS: production build, JS813541/819200 and CSS344253/348160 budgets, server smoke and database checks; duplicate browsers skipped. Local414 unit checks and28 planner checks pass.

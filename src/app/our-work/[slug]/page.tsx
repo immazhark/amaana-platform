@@ -1,3 +1,5 @@
+import bannerStyles from "@/components/initiative-banner.module.css";
+import { selectInitiativeBannerImage } from "@/lib/initiative-banner-media";
 import { SectionHeading } from "@/components/section-heading";
 import "./campaign.css";
 import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
@@ -103,8 +105,8 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
   if (!initiative) notFound();
 
   const media = initiative.mediaAssets.filter(canRenderPublicMedia).filter((asset,index,list)=>list.findIndex(other=>resolvePublicMediaUrl(other)===resolvePublicMediaUrl(asset))===index);
-  const leadMedia = selectIdentityPublicImage(media) ?? null;
-  const gallery = media.filter(asset => asset.id !== leadMedia?.id);
+  const leadMedia = selectInitiativeBannerImage(media) ?? null;
+  const gallery = media;
   const period = formatYears(initiative.startYear, initiative.endYear, initiative.year);
   const paragraphs = programmeStoryParagraphs(initiative.summary, initiative.story || initiative.summary);
   const fallbackStory = buildPublicRecordFallback({ metric: initiative.primaryMetric, metricLabel: initiative.primaryMetricLabel });
@@ -125,7 +127,7 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
       />
       <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Our Work", path: "/our-work" }, { name: initiative.title, path: `/our-work/${initiative.slug}` }]} />
       <div className="v2-shell campaign-breadcrumb"><nav aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true"> / </span><Link href="/our-work">Our work</Link><span aria-hidden="true"> / </span><span>{initiative.title}</span></nav></div>
-      <PageHero variant="level2" eyebrow={`${initiative.cause.title} · ${period}`} title={initiative.title} description={<p>{heroTeaser(initiative.summary)}</p>} actions={[{label:"Read about the drive",href:"#campaign-story"},...(gallery.length>0?[{label:"View media and updates",href:"#campaign-gallery",secondary:true} as const]:[])]} visual={leadMedia ? <PublicMedia asset={leadMedia} priority /> : <WorkVisualPlaceholder label={initiative.title} className="campaign-lead-placeholder" />} />
+      <PageHero variant="level2" className={leadMedia ? bannerStyles.photo : undefined} eyebrow={`${initiative.cause.title} · ${period}`} title={initiative.title} description={<p>{heroTeaser(initiative.summary)}</p>} actions={[{label:"Read about the drive",href:"#campaign-story"},...(gallery.length>0?[{label:"View media and updates",href:"#campaign-gallery",secondary:true} as const]:[])]} visual={leadMedia ? <PublicMedia asset={leadMedia} priority sizes="(max-width: 900px) 90vw, 45vw" /> : <WorkVisualPlaceholder label={initiative.title} className="campaign-lead-placeholder" />} />
 
       <section className="campaign-story" id="campaign-story"><div className="v2-shell campaign-story-layout"><div><p className="v2-section-label">The record</p><h2>How this work unfolded</h2>{initiative.primaryMetric && <div className="campaign-outcome"><strong>{initiative.primaryMetric}</strong><p>{initiative.primaryMetricLabel}</p></div>}</div><div className="campaign-story-copy">{paragraphs.length > 0 ? paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>{fallbackStory}</p>}</div></div></section>
 
