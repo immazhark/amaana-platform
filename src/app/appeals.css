@@ -24,5 +24,5 @@
 .v2-appeal-donation-panel>div>small,.v2-appeal-progress-foot,.v2-appeal-privacy-note span,.v2-appeal-update-line article>span{font-weight:700}
 .v2-appeal-story-copy{max-width:64ch}
 .v2-appeal-story{line-height:1.72}
-.v2-appeal-context-strip small{line-height:1.5}
+.v2-appeal-context-strip small{color:var(--af-color-navy-700);line-height:1.5}
 .v2-appeal-giving-note .v2-text-link:focus-visible,.v2-appeal-donation-panel a:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
