@@ -388,6 +388,24 @@ jobs:
           retention-days: 7
 
 
+      - name: Upload mobile site audit captures
+        if: always() && needs.plan.outputs.browser == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-audit-mobile-${{ github.sha }}
+          path: amaana-browser-acceptance/site-audit/mobile
+          if-no-files-found: ignore
+          retention-days: 7
+      - name: Upload desktop site audit captures
+        if: always() && needs.plan.outputs.browser == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: site-audit-desktop-${{ github.sha }}
+          path: amaana-browser-acceptance/site-audit/desktop
+          if-no-files-found: ignore
+          retention-days: 7
+
+
   verify:
     if: always()
     needs: [plan, fast, database, production, browser]

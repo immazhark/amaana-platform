@@ -162,7 +162,7 @@ export function ScrollCarousel({
       <div className={styles.header}>{heading ? <div className={styles.heading}>{heading}</div> : null}
       {slideCount > 1 ? (
         <div className={`${styles.toolbar}${cinematic ? " hero-toolbar" : ""}`}>
-          <span className={styles.status} aria-live="polite" aria-atomic="true">
+          <span className={styles.status} aria-live={autoAdvanceMs && !paused && !reducedMotion ? "off" : "polite"} aria-atomic="true">
             <span className={styles.srOnly}>Slide </span>{activeIndex + 1} / {slideCount}
           </span>
           <div className={`${styles.controls}${cinematic ? " hero-controls" : ""}`}>

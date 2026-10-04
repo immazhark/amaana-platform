@@ -56,6 +56,13 @@ async function expectContained(page, route) {
       .filter(element => {
         const style = getComputedStyle(element);
         if (style.display === 'none' || style.visibility === 'hidden' || element.closest('[aria-hidden="true"]')) return false;
+        const carousel = element.closest('[data-carousel-mode]');
+        const trackViewport = carousel?.querySelector('[id^="carousel-"]');
+        if (trackViewport?.contains(element)) {
+          const clip = trackViewport.getBoundingClientRect();
+          const overflow = getComputedStyle(trackViewport).overflowX;
+          if (['auto', 'scroll', 'hidden', 'clip'].includes(overflow) && clip.left >= -1 && clip.right <= viewport + 1) return false;
+        }
         const rect = element.getBoundingClientRect();
         return rect.width > 0 && (rect.left < -1 || rect.right > viewport + 1);
       })
