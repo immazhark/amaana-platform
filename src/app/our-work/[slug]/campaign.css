@@ -119,7 +119,8 @@
   background-repeat:no-repeat,repeat!important;
   background-position:right 2rem top 32rem,0 0!important;
 }
-.campaign-page.canonical-programme>section:not(.page-hero){background:transparent!important}
+/* Outrank the legacy alternating .v2-section.paper surface: the parent owns one continuous lattice. */
+.v2-home.campaign-page.canonical-programme>section:not(.page-hero):nth-of-type(n){background:transparent!important}
 .campaign-page .campaign-story{display:block}
 .campaign-story-layout{align-items:start;padding-block:0}
 /* Closing actions share the established body-heading grid and responsive hierarchy. */

@@ -1,3 +1,10 @@
+# Sitewide experience polish — programme pattern follow-up, 2026-10-05 IST
+
+Ownership `CODEX_ACTIVE`. Shared batch PR163 and programme alignment PR164 are merged, deployed and exact-version verified. PR163:888 Chromium +24 Firefox/WebKit checks passed; integration37226470652 and Railway08ff3623-78b7-439a-ac13-5a087ab9a5ea green; six live contrast/navigation checks passed. PR164:479 focused Chromium checks passed without retries; integration37227379178 and Railway58157547-5387-467a-85e7-a43de73b48f0 green on merge2ec02ceb4505b3853f324f338a73a38e145af9f6/tree1240ae48ff8bd98517051f488606e84459f47734. Live individual detail alignment passes at390/1440px; umbrella closing geometry passes, but live background checks exposed the legacy alternating paper surface restarting the lattice on umbrella pathways.
+
+Active atomic branch `fix/programme-continuous-pattern-20261005`: make the canonical parent background rule outrank the legacy alternating surface, with Eid/Taleem umbrella regressions. Finish scoped CI and exact-source deployment before closure. Approved media/copy/colors, main and draft PR104 remain protected. This is no AAA certification or whole-site defect-free claim.
+
+---
 # Programme closing alignment — published 2026-10-04 UTC
 
 Ownership `CODEX_ACTIVE`. PR164 on `fix/programme-closing-alignment-20261004` validates the remaining programme closing alignment using the existing body heading grid. Initial head `2e2d6c130651e427b2188e8b15e0cf81f2396841`, tree `0ce66f6ef162ec1455beb07ec486359220ba0e6f`; seven local responsive/axe fixture checks and30 planner checks pass. Next action: finish seeded focused CI, merge once green and verify exact-source Railway deployment. Main and draft PR104 protected.
