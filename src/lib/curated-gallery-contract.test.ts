@@ -62,6 +62,33 @@ describe("curated gallery contract", () => {
     expect(curatedGalleryManifestSchema.safeParse(drift).success).toBe(false);
   });
 
+  it.each([
+    { id: "invalid" }, { sha256: "not-a-hash" }, { sortOrder: -1 }, { sortOrder: 0.5 },
+    { bytes: 0 }, { bytes: 5 * 1024 * 1024 + 1 }, { width: 0 }, { height: 1.5 },
+    { width: 40_000_001 }, { sourceYear: 1999 }, { sourceYear: 2101 },
+    { originalName: "../image.jpg" }, { relativePath: "../image.jpg" },
+    { relativePath: "/absolute.jpg" }, { altText: "   " }, { altText: "a".repeat(301) },
+    { caption: "a".repeat(1001) }, { mimeType: "image/svg+xml" }, { isPublic: true },
+    { privacyApprovedAt: "2026-10-04" }, { extraField: true }, { slug: "unknown" },
+  ])("retains strict publication and decoded-media safety checks for %j", mutation => {
+    const manifest = validManifest();
+    Object.assign(manifest.records[0], mutation);
+    expect(curatedGalleryManifestSchema.safeParse(manifest).success).toBe(false);
+  });
+
+  it("retains duplicate/order guards and trims valid alternative text", () => {
+    const duplicate = validManifest();
+    duplicate.records[1].id = duplicate.records[0].id;
+    expect(curatedGalleryManifestSchema.safeParse(duplicate).success).toBe(false);
+    const order = validManifest();
+    order.records[1].sortOrder = order.records[0].sortOrder;
+    expect(curatedGalleryManifestSchema.safeParse(order).success).toBe(false);
+    const manifest = validManifest();
+    manifest.records[0].altText = "  Programme photograph  ";
+    expect(curatedGalleryManifestSchema.parse(manifest).records[0].altText).toBe("Programme photograph");
+    expect(curatedGalleryManifestSchema.safeParse({ ...manifest, unexpected: true }).success).toBe(false);
+  });
+
   it("derives deterministic managed storage keys without identity ordering", () => {
     const record = {
       ...sample,
