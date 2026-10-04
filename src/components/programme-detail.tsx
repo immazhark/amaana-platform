@@ -1,3 +1,6 @@
+import bannerStyles from "./initiative-banner.module.css";
+import { ProgrammeArtwork, hasProgrammeArtwork } from "@/components/programme-artwork";
+import { selectInitiativeBannerImage } from "@/lib/initiative-banner-media";
 import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel } from "@/components/body-carousel";
 import Link from 'next/link';
@@ -28,9 +31,11 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
  const publishedChildren=children.filter(child=>publishedChildSlugs.has(child.slug));
  const childMedia=new Map(childMediaRecords.map(item=>[item.slug,selectIdentityPublicImage(item.mediaAssets)??null]));
  const media=record.mediaAssets.filter(canRenderPublicMedia).filter((asset,index,list)=>list.findIndex(other=>resolvePublicMediaUrl(other)===resolvePublicMediaUrl(asset))===index);
- const lead=selectIdentityPublicImage(media);
+ const umbrella=children.length>0;
+ const collage=umbrella&&hasProgrammeArtwork(slug);
+ const lead=umbrella?selectIdentityPublicImage(media):selectInitiativeBannerImage(media);
  const highlightMedia=slug==='eid-gift-kits-2026'?media.find(asset=>/beneficiar|impact graphic/i.test(`${asset.title??''} ${asset.caption??''}`)):undefined;
- const gallery=media.filter(m=>m.id!==lead?.id&&m.id!==highlightMedia?.id);
+ const gallery=media.filter(m=>m.id!==highlightMedia?.id);
  const status=canonical?.programmeStatus??'RECURRING';
  const primaryMetric=record.primaryMetric;
  const primaryMetricLabel=record.primaryMetricLabel;
@@ -64,6 +69,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
   <div className="v2-shell campaign-breadcrumb"><nav aria-label="Breadcrumb"><Link href="/our-work">Our Work</Link> / {parent?<><Link href={`/our-work/${parent.slug}`}>{parent.title}</Link> / </>:null}<span>{title}</span></nav></div>
   <PageHero
     variant="level2"
+    className={lead||collage?bannerStyles.photo:undefined}
     eyebrow={`${record.cause.title} · ${statusLabel}`}
     title={title}
     description={<p>{heroTeaser(summary)}</p>}
@@ -71,7 +77,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
       {label: publishedChildren.length>0?(slug==='taleem'?'Explore Taleem Programmes':'View Year-by-Year Impact'):'Read about this work',href:publishedChildren.length>0?'#programme-pathways':'#programme-story'},
       ...(media.length>0?[{label:'View photographs',href:'#campaign-gallery',secondary:true} as const]:[]),
     ]}
-    visual={lead?<PublicMedia asset={lead} priority />:<WorkVisualPlaceholder label={title} className="campaign-lead-placeholder" />}
+    visual={collage?<ProgrammeArtwork slug={slug} sizes="(max-width: 900px) 90vw, 45vw" />:lead?<PublicMedia asset={lead} priority sizes="(max-width: 900px) 90vw, 45vw" />:<WorkVisualPlaceholder label={title} className="campaign-lead-placeholder" />}
   />
   {(primaryMetric||primaryMetricLabel)&&<section className="campaign-impact-strip" aria-label="Programme impact summary"><div className="v2-shell"><div><span>Documented impact</span><strong>{primaryMetric??"Published record"}</strong><p>{primaryMetricLabel??statusLabel}</p></div><div><span>Status</span><strong>{statusLabel}</strong></div></div></section>}
   <section className="campaign-story" id="programme-story"><div className="v2-shell campaign-story-layout"><div><p className="v2-section-label">The work</p><h2>How the programme took shape</h2></div><div className="campaign-story-copy">{storyParagraphs.length>0?storyParagraphs.map((paragraph,index)=><p key={index}>{paragraph}</p>):<p>{fallbackStory}</p>}</div></div></section>

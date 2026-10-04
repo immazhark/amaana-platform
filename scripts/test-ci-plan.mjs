@@ -195,3 +195,13 @@ test('gallery SVG label acceptance remains focused and core changes fail closed'
   assert.equal(planChanges(['e2e/campaign-gallery.spec.mjs', 'src/lib/auth.ts']).mode, 'full');
   assert.equal(planChanges(['e2e/campaign-gallery.spec.mjs'], { target: 'main' }).mode, 'full');
 });
+
+
+test('initiative photo selection and detail styling retain focused dependency coverage', () => {
+ const files = ['src/lib/initiative-banner-media.ts','src/lib/initiative-banner-media.test.ts','src/components/initiative-banner.module.css','src/components/programme-detail.tsx','src/app/our-work/[slug]/page.tsx','src/app/our-work/[slug]/campaign.css','src/app/programmes/[slug]/page.tsx','e2e/initiative-banners.spec.mjs'];
+ const plan = planChanges(files);
+ assert.equal(plan.mode,'focused'); assert.equal(plan.database,false);
+ assert.ok(plan.tests.includes('initiative-banners.spec.mjs')); assert.ok(plan.tests.includes('campaign-gallery.spec.mjs'));
+ assert.equal(planChanges([...files,'src/lib/public-content.ts']).mode,'full');
+ assert.equal(planChanges(files,{target:'main'}).mode,'full');
+});
