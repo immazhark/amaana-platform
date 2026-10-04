@@ -38,7 +38,7 @@ export function useSiteScroll(pathname: string) {
           lerp: 0.16, smoothWheel: true, syncTouch: false,
           prevent: node => node.matches(nested),
           virtualScroll: ({ event: input }) => !input.ctrlKey && document.body.style.overflow !== "hidden"
-            && !document.querySelector(".amaana-navigation-loading, [role='dialog'][aria-modal='true'], dialog[open]"),
+            && !document.querySelector(".mobile-menu.open, .amaana-navigation-loading, [role='dialog'][aria-modal='true'], dialog[open]"),
         });
         instance.on("scroll", wake);
       } finally { loading = false; }

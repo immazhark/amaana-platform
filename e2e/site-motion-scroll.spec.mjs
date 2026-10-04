@@ -36,6 +36,26 @@ test('fine-pointer smoothing loads on demand, settles and releases reduced-motio
   expect(errors).toEqual([]);
 });
 
+test('compact fine-pointer menus contain wheel scrolling and release it on dismissal', async ({ page }) => {
+  await page.setViewportSize({ width: 900, height: 1000 });
+  await open(page);
+  await page.mouse.move(700, 650);
+  await page.mouse.wheel(0, 180);
+  await expect(page.locator('html')).toHaveClass(/lenis/);
+  await page.keyboard.press('Home');
+  await expect.poll(() => page.evaluate(() => scrollY)).toBe(0);
+  await page.getByRole('button', { name: 'Open navigation menu', exact: true }).click();
+  await expect(page.locator('#mobile-navigation')).toBeVisible();
+  await page.mouse.move(10, 990);
+  await page.mouse.wheel(0, 500);
+  await page.waitForTimeout(500);
+  expect(await page.evaluate(() => scrollY)).toBe(0);
+  await page.keyboard.press('Escape');
+  await expect(page.locator('#mobile-navigation')).toBeHidden();
+  await page.mouse.wheel(0, 300);
+  await expect.poll(() => page.evaluate(() => scrollY)).toBeGreaterThan(250);
+});
+
 test('Motion feedback restores styles and responds to live preference changes', async ({ page }) => {
   await open(page);
   const action = page.locator('.nav-donate');
