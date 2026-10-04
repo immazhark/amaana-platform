@@ -54,10 +54,10 @@
 .campaign-impact-strip>.v2-shell>div:nth-child(2)>span{color:var(--af-color-navy-800)}
 .campaign-impact-strip span{display:block;color:#8a6a0a;font-size:.68rem;font-weight:850;letter-spacing:.1em;text-transform:uppercase}
 .campaign-impact-strip strong{display:block;margin:.3rem 0;color:#122239;font-size:clamp(1.25rem,2.4vw,1.8rem);font-variant-numeric:tabular-nums;overflow-wrap:normal;word-break:normal}
-.campaign-impact-strip p{margin:0;color:#5b6472;font-size:.82rem;line-height:1.5}
+.campaign-impact-strip p{margin:0;color:var(--af-color-muted);font-size:.82rem;line-height:1.5}
 .canonical-pathway-metric{display:grid;gap:.15rem;margin:1rem 0;padding-top:.8rem;border-top:1px solid rgb(18 34 57 / 10%)}
 .canonical-pathway-metric strong{color:#1d3150;font-size:1.15rem;font-variant-numeric:tabular-nums;white-space:nowrap}
-.canonical-pathway-metric span{color:#5b6472;font-size:.75rem;line-height:1.35}
+.canonical-pathway-metric span{color:var(--af-color-muted);font-size:.75rem;line-height:1.35}
 .canonical-pathways--timeline{grid-template-columns:repeat(4,minmax(0,1fr));gap:.8rem}
 .canonical-pathways--timeline article{display:flex;flex-direction:column;min-width:0;padding:1rem;border:1px solid rgb(18 34 57 / 9%);border-radius:1rem;background:#fffdf8}
 .canonical-pathways--timeline .canonical-pathway-visual{aspect-ratio:4/3;overflow:hidden;border-radius:.75rem}
@@ -79,7 +79,7 @@
 .campaign-data-visual{padding-block:clamp(2.5rem,5vw,4rem);background:#fffdf8}
 .campaign-data-visual>.v2-shell{display:grid;grid-template-columns:minmax(0,.75fr) minmax(18rem,1.25fr);gap:clamp(1.5rem,5vw,4rem);align-items:center}
 .campaign-data-visual h2{margin:.35rem 0 .65rem;font-family:Georgia,"Times New Roman",serif;font-size:clamp(2rem,4vw,3.4rem);font-weight:500;line-height:1}
-.campaign-data-visual p{color:#5b6472;line-height:1.65}
+.campaign-data-visual p{color:var(--af-color-muted);line-height:1.65}
 .campaign-data-visual .v2-media-item{margin:0;overflow:hidden;border:1px solid rgb(18 34 57 / 10%);border-radius:1rem;background:#f7f3eb}
 .campaign-data-visual .v2-media-item img{width:100%;height:auto;object-fit:contain}
 @media(max-width:760px){.campaign-data-visual>.v2-shell{grid-template-columns:1fr}}

@@ -113,7 +113,7 @@ for (const route of ['/', '/about', '/our-work', '/impact', '/stories', '/faith-
   test(`enhanced text contrast: ${route}`, async ({ page }) => {
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await open(page, route, false);
-    await expect(page.locator('main h1')).not.toContainText(/Something went wrong|could not|not found/i);
+    await expect(page.locator('main h1')).not.toContainText(/Something went wrong|temporarily unavailable|could not|not found/i);
     const audit = await new AxeBuilder({ page }).withTags(['wcag2aaa']).analyze();
     expect(audit.violations.map(v => ({ id: v.id, targets: v.nodes.map(n => n.target) }))).toEqual([]);
   });

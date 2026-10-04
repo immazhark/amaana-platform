@@ -2,6 +2,9 @@
 
 Ownership `CODEX_ACTIVE`. Branch `feat/site-experience-polish-20261004`, base `ad1a9941f087297235492795f9ac42c82e2cd557`. Owner delegates page-by-page/batched implementation of motion, micro-interactions, smooth scrolling, responsive/accessibility and performance polish. First inspect all routes and shared foundations, preserve approved brand/content/media and protected main/draft PR104. Motion respects reduced-motion and content remains available before hydration; keyboard/touch/nested scrolling stays native. Keep existing bundle ceilings, verify dependency lifecycle and full shared-system acceptance. Do not claim AAA certification from automated tests. No delegation.
 
+
+PR163 remains open and undeployed. Resumed from head96733dfeedd20bc7edd66da90a532d39928d0051. Initial seeded CI37215501401 exposed five contrast failures and a mobile route crash: Motion committed styles after a menu link became hidden. Replaced stop with cancellation; strengthened regression against page errors/global interruption fallback; moved legacy text colors to approved contrast tokens. Corrected CI and delivery pending; main and draft PR104 protected.
+
 ---
 # Initiative photo banners and detail polish — delivered 2026-10-04 IST
 

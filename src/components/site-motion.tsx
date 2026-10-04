@@ -21,8 +21,9 @@ export function SiteMotion() {
     const owned = new Set<HTMLElement>();
     const seen = new WeakSet<HTMLElement>();
     let disposed = false;
+    // Cancellation must not commit styles: a menu or route may already be hidden.
     const clear = (element: HTMLElement) => {
-      running.get(element)?.stop();
+      running.get(element)?.cancel();
       running.delete(element);
       for (const property of ["translate", "scale", "opacity"]) element.style.removeProperty(property);
       owned.delete(element);
@@ -30,7 +31,7 @@ export function SiteMotion() {
     const feedback = async (element: HTMLElement, pressed = false) => {
       if (preference.matches) { clear(element); return; }
       if (disposed || !element.isConnected) return;
-      running.get(element)?.stop();
+      running.get(element)?.cancel();
       const raised = element.matches(":hover, :focus-visible");
       owned.add(element);
       const animation = animate(element, { translate: raised && !pressed ? "0 -1px" : "0 0px", scale: pressed ? "0.98" : "1" }, { duration: pressed ? 0.1 : 0.22, ease: [0.2, 0.8, 0.2, 1] });

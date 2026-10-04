@@ -54,6 +54,8 @@ for (const width of [320, 390, 768, 900, 1020]) {
 }
 
 test('menu route navigation closes the overlay and releases scrolling', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
   await page.setViewportSize({ width: 900, height: 1000 });
   expect((await page.goto('/about')).ok()).toBe(true);
   await page.getByRole('button', { name: 'Open navigation menu', exact: true }).click();
@@ -62,4 +64,6 @@ test('menu route navigation closes the overlay and releases scrolling', async ({
   await expect(page.getByRole('button', { name: 'Open navigation menu', exact: true })).toHaveAttribute('aria-expanded', 'false');
   await expect(page.locator('.mobile-menu-backdrop')).toHaveCount(0);
   expect(await page.evaluate(() => getComputedStyle(document.body).overflowY)).not.toBe('hidden');
+  await expect(page.locator('main h1')).toHaveText('Start with the right conversation.');
+  expect(errors).toEqual([]);
 });
