@@ -205,3 +205,15 @@ test('initiative photo selection and detail styling retain focused dependency co
  assert.equal(planChanges([...files,'src/lib/public-content.ts']).mode,'full');
  assert.equal(planChanges(files,{target:'main'}).mode,'full');
 });
+
+
+test('programme closing presentation selects real detail and responsive fixture coverage', () => {
+  const files = ['src/components/programme-next.tsx', 'src/components/programme-detail.tsx', 'src/app/our-work/[slug]/campaign.css', 'src/app/browser-acceptance/section-layout/page.tsx', 'e2e/initiative-detail.spec.mjs', 'e2e/section-layout.spec.mjs'];
+  const plan = planChanges(files);
+  assert.equal(plan.mode, 'focused');
+  assert.equal(plan.database, false);
+  assert.equal(plan.crossBrowser, false);
+  for (const name of ['section-layout.spec.mjs', 'initiative-detail.spec.mjs', 'section-heading.spec.mjs', 'public-performance.spec.mjs', 'typography-hierarchy.spec.mjs']) assert.ok(plan.tests.includes(name));
+  for (const extra of ['src/lib/auth.ts', 'src/components/site-scroll.tsx', 'src/app/api/donations/order/route.ts', 'unmapped-component.tsx', '.github/workflows/ci.yml']) assert.equal(planChanges([...files, extra]).mode, 'full');
+  assert.equal(planChanges(files, { target: 'main' }).mode, 'full');
+});

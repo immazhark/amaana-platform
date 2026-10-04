@@ -122,9 +122,9 @@
 .campaign-page.canonical-programme>section:not(.page-hero){background:transparent!important}
 .campaign-page .campaign-story{display:block}
 .campaign-story-layout{align-items:start;padding-block:0}
-.campaign-page .campaign-next>.v2-shell{
-  display:flex;flex-direction:column;align-items:center;gap:1.5rem;text-align:center;
-}
-.campaign-page .campaign-next h2{max-width:24ch;margin:0;font-family:var(--af-font-display);font-weight:500;line-height:1.15}
-.campaign-page .campaign-next .v2-hero-actions{margin:0;justify-content:center;gap:1rem}
+/* Closing actions share the established body-heading grid and responsive hierarchy. */
+.campaign-page .campaign-next>.v2-shell{display:block;text-align:left}
+.campaign-page .campaign-next .af-section-heading{margin-bottom:0}
+.campaign-page .campaign-next .v2-section-intro{opacity:1}
+.campaign-page .campaign-next .v2-hero-actions{margin:0;justify-content:flex-start;gap:1rem}
 @media(max-width:760px){.campaign-story-layout{grid-template-columns:1fr;gap:1.5rem}}

@@ -1,3 +1,8 @@
+# Programme closing alignment — preparation active 2026-10-04 UTC
+
+Ownership `CODEX_ACTIVE`. Published PR163 remains frozen at `8ff82a0757d72526a57b9aadf1498bef09c7df16`, tree `04797598d2dd5743717193bd1686e7f2a2e896ae`; CI37225113277 is validating shared Motion/Lenis/contrast. Separate next atomic branch `fix/programme-closing-alignment-20261004` prepares the remaining programme closing alignment using the existing body heading grid. No competing writer or changes to PR163 while acceptance runs. Next action: finish PR163 acceptance/merge/deployment, then reconcile this branch to the integration merge before publication. Main and draft PR104 protected.
+
+---
 # Sitewide experience polish — 2026-10-04 IST
 
 Ownership `CODEX_ACTIVE`. Branch `feat/site-experience-polish-20261004`, base `ad1a9941f087297235492795f9ac42c82e2cd557`. Owner delegates page-by-page/batched implementation of motion, micro-interactions, smooth scrolling, responsive/accessibility and performance polish. First inspect all routes and shared foundations, preserve approved brand/content/media and protected main/draft PR104. Motion respects reduced-motion and content remains available before hydration; keyboard/touch/nested scrolling stays native. Keep existing bundle ceilings, verify dependency lifecycle and full shared-system acceptance. Do not claim AAA certification from automated tests. No delegation.

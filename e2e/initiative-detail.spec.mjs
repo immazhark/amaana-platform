@@ -23,6 +23,11 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
         return {
           overflow: document.documentElement.scrollWidth > innerWidth + 1,
           actionGap: actions.top - title.bottom,
+          actionLeft: actions.left,
+          titleRight: title.right,
+          titleLeft: title.left,
+          shellLeft: next.querySelector('.v2-shell').getBoundingClientRect().left,
+          headingSize: parseFloat(getComputedStyle(next.querySelector('h2')).fontSize),
           backgrounds: [...document.querySelectorAll('.canonical-programme>section:not(.page-hero)')].map(node => getComputedStyle(node).backgroundImage),
           parentPattern: getComputedStyle(document.querySelector('.canonical-programme')).backgroundImage,
           footerPadding: parseFloat(getComputedStyle(document.querySelector('.footer-lead')).paddingTop),
@@ -30,7 +35,10 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
         };
       });
       expect(geometry.overflow).toBe(false);
-      expect(geometry.actionGap).toBeGreaterThanOrEqual(20);
+      expect(Math.abs(geometry.titleLeft - geometry.shellLeft)).toBeLessThan(2);
+      expect(geometry.headingSize).toBeLessThanOrEqual(56);
+      if (width > 900) expect(geometry.actionLeft).toBeGreaterThan(geometry.titleRight);
+      else expect(geometry.actionGap).toBeGreaterThanOrEqual(19);
       expect(geometry.backgrounds.every(background => background === 'none')).toBe(true);
       expect(geometry.parentPattern).toContain('amaana-lattice-tile');
       expect(geometry.footerPadding).toBeGreaterThanOrEqual(28);
