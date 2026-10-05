@@ -473,6 +473,36 @@ test('shared page heroes expose their semantic visual-family hooks and L2 photo 
   expect(fade.border).toBe('0px');
 });
 
+test('branded programme artwork overscans inside the L2 fade instead of reading as a framed card', async ({ page }) => {
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: width < 700 ? 844 : 1000 });
+    await openPublicPage(page, '/our-work/winter-relief');
+
+    const visual = page.locator('.page-hero__visual');
+    const artwork = visual.locator('img[data-programme-artwork]');
+    await expect(artwork).toHaveCount(1);
+
+    const geometry = await visual.evaluate(node => {
+      const image = node.querySelector('img[data-programme-artwork]');
+      const parent = node.getBoundingClientRect();
+      const child = image?.getBoundingClientRect();
+      const style = getComputedStyle(node);
+      return {
+        border: style.borderLeftWidth,
+        mask: style.maskImage || style.webkitMaskImage,
+        parentWidth: parent.width,
+        parentHeight: parent.height,
+        childWidth: child?.width ?? 0,
+        childHeight: child?.height ?? 0,
+      };
+    });
+    expect(geometry.border).toBe('0px');
+    expect(geometry.mask).not.toBe('none');
+    expect(geometry.childWidth).toBeGreaterThan(geometry.parentWidth * 1.03);
+    expect(geometry.childHeight).toBeGreaterThan(geometry.parentHeight * 1.03);
+  }
+});
+
 test('canonical continuation routes expose unique internal destinations on partner and recognition pages', async ({ page }) => {
   const expected = {
     '/partner': ['/how-we-verify', '/transparency', '/get-involved'],
