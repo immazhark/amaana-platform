@@ -102,6 +102,7 @@ test('five programme slides have usable artwork, centered selectors and containe
     const img=active.locator('figure img');
     if(index){
       await expect.poll(()=>img.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+      if(index <= 3) await expect(img).toHaveAttribute('src', /diagonal-v3\.webp/);
       const edges=await active.evaluate(node=>({photo:node.querySelector('.v3-home-banner-media').getBoundingClientRect().right,container:node.querySelector('.v3-shell').getBoundingClientRect().right}));
       expect(Math.abs(edges.photo-edges.container)).toBeLessThan(1);
     }else await expect(active.locator('.v3-home-story-logo img')).toBeVisible();
