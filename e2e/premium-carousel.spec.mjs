@@ -39,7 +39,7 @@ test('homepage diagonal derivatives load and functional controls contain SVG rat
   expect(origin.ok()).toBe(true);
   expect(origin.headers()['content-type']).toContain('image/webp');
   for (const name of ['eid', 'taleem', 'qurbani', 'winter', 'dates', 'flood']) {
-    const response = await request.get(`/programme-artwork/${name}-diagonal-v2.webp`);
+    const response = await request.get(`/programme-artwork/${name}-diagonal-v3.webp`);
     expect(response.ok()).toBe(true);
     expect(response.headers()['content-type']).toContain('image/webp');
   }
