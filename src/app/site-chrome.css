@@ -164,6 +164,7 @@
   .amaana-reminder-inner{grid-template-columns:1fr}
   .amaana-reminder-lane{border-right:0;border-bottom:1px solid rgb(18 34 57 / 8%);padding-right:0}
   .amaana-live-lane{padding-left:0}
+  .amaana-reminder-content strong,.amaana-live-content strong,.amaana-reminder-content p{overflow:visible;text-overflow:clip;white-space:normal;text-wrap:pretty}
   .site-footer .footer-lead{grid-template-columns:1fr;align-items:start}
   .site-footer .footer-lead-actions{justify-content:flex-start}
   .site-footer .footer-grid-v2{grid-template-columns:repeat(2,minmax(0,1fr))}
