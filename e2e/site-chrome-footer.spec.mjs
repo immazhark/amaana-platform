@@ -89,6 +89,13 @@ test('shared chrome and footer remain overflow-free on 390px mobile', async ({ p
   expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.viewport + 1);
   await expect(page.getByText('Reminder', { exact: true })).toBeVisible();
   await expect(page.getByText('AMAANA LIVE', { exact: true })).toBeVisible();
+  const railText = await page.locator('.amaana-reminder-content strong, .amaana-live-content strong').evaluateAll(nodes =>
+    nodes.map(node => ({ textOverflow: getComputedStyle(node).textOverflow, whiteSpace: getComputedStyle(node).whiteSpace })),
+  );
+  for (const item of railText) {
+    expect(item.textOverflow).not.toBe('ellipsis');
+    expect(item.whiteSpace).not.toBe('nowrap');
+  }
 });
 
 test('homepage hero fixture preserves breathing room and two-column editorial alignment', async ({ page }) => {
