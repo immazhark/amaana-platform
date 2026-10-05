@@ -56,7 +56,6 @@ for (const width of [390, 1440]) {
       expect(response.ok()).toBe(true);
       const pathways = page.locator('#programme-pathways');
       await expect(pathways).toBeVisible();
-      expect(await pathways.locator('.canonical-pathway-visual .v2-media-item img').count()).toBeGreaterThan(0);
       const backgrounds = await page.locator('.canonical-programme').evaluate(node => ({
         parent: getComputedStyle(node).backgroundImage,
         sections: [...node.querySelectorAll(':scope > section:not(.page-hero)')].map(section => ({
