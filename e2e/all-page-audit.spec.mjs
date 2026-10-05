@@ -14,6 +14,25 @@ const staticRoutes = sourceRoutes.filter(r=>!r.route.includes('[')).map(r=>r.rou
 const adminDetail = [`/admin/requests/${seed.requestId}`,`/admin/appeals/${seed.appealId}`,`/admin/appeals/${seed.draftId}`,`/admin/donations/${seed.donationId}`];
 const routes = [...new Set([...staticRoutes,...seed.publicRoutes,...adminDetail,'/programmes/medical-financial-relief','/programmes/emergency-relief','/programmes/ramadan-eid','/programmes/seasonal-relief','/donations/invalid/acknowledgement'])].sort();
 test.describe.configure({retries:0});
+const horizontalOverflowDetails=()=>{
+ const viewportWidth=document.documentElement.clientWidth;
+ const scrollWidth=Math.max(document.documentElement.scrollWidth,document.body.scrollWidth);
+ const offenders=[...document.body.querySelectorAll('*')].flatMap(node=>{
+  const rect=node.getBoundingClientRect();
+  if(rect.width<=0||(rect.right<=viewportWidth+1&&rect.left>=-1))return [];
+  let scrollAncestor=null;
+  for(let parent=node.parentElement;parent&&parent!==document.body;parent=parent.parentElement){
+   const style=getComputedStyle(parent);
+   if(['auto','scroll','hidden','clip'].includes(style.overflowX)){
+    const parentRect=parent.getBoundingClientRect();
+    scrollAncestor={tag:parent.tagName.toLowerCase(),className:parent.className||'',overflowX:style.overflowX,left:Math.round(parentRect.left),right:Math.round(parentRect.right)};
+    break;
+   }
+  }
+  return [{tag:node.tagName.toLowerCase(),id:node.id||'',className:typeof node.className==='string'?node.className:'',text:(node.textContent||'').trim().replace(/\\s+/g,' ').slice(0,96),left:Math.round(rect.left),right:Math.round(rect.right),width:Math.round(rect.width),scrollAncestor}];
+ }).slice(0,12);
+ return {overflow:scrollWidth>viewportWidth+1,viewportWidth,scrollWidth,offenders};
+};
 for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])for(const route of routes)test(`complete page audit ${device} ${route}`,async({page,context})=>{
  test.setTimeout(60000);
  await page.setViewportSize({width,height});await page.emulateMedia({reducedMotion:'reduce'});
@@ -22,6 +41,7 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  const response=await page.goto(route,{waitUntil:'load'});
  await page.evaluate(async()=>{await document.fonts.ready;});
+ const overflowDetails=await page.evaluate(horizontalOverflowDetails);
  const metrics=await page.evaluate(()=>{
   const visible=n=>n.getBoundingClientRect().width>0&&!n.closest('[hidden],[inert],[aria-hidden="true"]');
   return {overflow:Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)>document.documentElement.clientWidth+1,
@@ -32,7 +52,8 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  });
  const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag2aaa']).analyze();
  const resizeStyle=await page.addStyleTag({content:'html{font-size:200%!important}'});
- const textResizeOverflow=await page.evaluate(()=>Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)>document.documentElement.clientWidth+1);
+ const textResizeDetails=await page.evaluate(horizontalOverflowDetails);
+ const textResizeOverflow=textResizeDetails.overflow;
  await resizeStyle.evaluate(n=>n.remove());
  const violations=audit.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}));
  await page.addStyleTag({content:'*{content-visibility:visible!important}'});
@@ -40,12 +61,12 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  const directory=path.resolve('site-audit',device);fs.mkdirSync(directory,{recursive:true});
  const slug='complete-'+(route==='/'?'home':route.slice(1).replaceAll('/','--'));
  await page.screenshot({path:path.join(directory,slug+'.jpg'),type:'jpeg',quality:65,fullPage:true,animations:'disabled'});
- fs.writeFileSync(path.join(directory,slug+'.json'),JSON.stringify({route,sourceRoutes,status:response?.status(),finalPath:new URL(page.url()).pathname,width,height,metrics,textResizeOverflow,violations,incomplete:audit.incomplete.map(i=>({id:i.id,targets:i.nodes.map(n=>n.target)})),errors},null,2));
+ fs.writeFileSync(path.join(directory,slug+'.json'),JSON.stringify({route,sourceRoutes,status:response?.status(),finalPath:new URL(page.url()).pathname,width,height,metrics,overflowDetails,textResizeOverflow,textResizeDetails,violations,incomplete:audit.incomplete.map(i=>({id:i.id,targets:i.nodes.map(n=>n.target)})),errors},null,2));
  const expectedStatus=route==='/donate/synthetic-ui-audit'?404:200;
  expect(response?.status(),route).toBe(expectedStatus);
  expect(new URL(page.url()).pathname,route).toBe(route==='/our-work/medical-financial-assistance'?'/programmes/medical-financial-relief':route);
  if(!route.startsWith('/browser-acceptance/')){expect(metrics.headings,route).toHaveLength(1);expect(metrics.headings.join(' ')).not.toMatch(/platform is temporarily unavailable|page could not complete/i);}
- expect(metrics.overflow,route).toBe(false);expect(textResizeOverflow,`200% text resizing: ${route}`).toBe(false);expect(metrics.oversizedH2,route).toEqual([]);expect(metrics.brokenAnchors,route).toEqual([]);expect(errors,route).toEqual([]);
+ expect(metrics.overflow,`${route}: ${JSON.stringify(overflowDetails)}`).toBe(false);expect(textResizeOverflow,`200% text resizing: ${route}: ${JSON.stringify(textResizeDetails)}`).toBe(false);expect(metrics.oversizedH2,route).toEqual([]);expect(metrics.brokenAnchors,route).toEqual([]);expect(errors,route).toEqual([]);
  expect(violations.filter(v=>['serious','critical'].includes(v.impact)),route).toEqual([]);
 });
 
