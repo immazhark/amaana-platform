@@ -39,6 +39,28 @@ export const PUBLIC_IMAGE_SELECT = {
   sortOrder: true,
 } as const;
 
+export const COMPLETED_AID_SHOWCASE_MEDIA_PROJECTION = {
+  where: PUBLIC_APPROVED_IMAGE_WHERE,
+  orderBy: [
+    { sortOrder: "asc" as const },
+    { sourceYear: "desc" as const },
+    { createdAt: "desc" as const },
+  ],
+  take: 12,
+  select: PUBLIC_IMAGE_SELECT,
+};
+
+export const PROGRAMME_CHILD_MEDIA_PROJECTION = {
+  where: PUBLIC_APPROVED_IMAGE_WHERE,
+  orderBy: [
+    { sortOrder: "asc" as const },
+    { sourceYear: "desc" as const },
+    { createdAt: "desc" as const },
+  ],
+  take: 12,
+  select: PUBLIC_IMAGE_SELECT,
+};
+
 /**
  * React request memoization for dynamic routes whose metadata and page body
  * need the same public record. This keeps metadata generation from causing a
@@ -304,12 +326,7 @@ export const getCompletedAidShowcaseData = cache(async () => {
     orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
     select: {
       slug: true,
-      mediaAssets: {
-        where: PUBLIC_APPROVED_IMAGE_WHERE,
-        orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
-        take: 12,
-        select: PUBLIC_IMAGE_SELECT,
-      },
+      mediaAssets: COMPLETED_AID_SHOWCASE_MEDIA_PROJECTION,
     },
   });
 });
@@ -403,12 +420,7 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
     where: { slug: { in: slugs }, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     select: {
       slug: true,
-      mediaAssets: {
-        where: PUBLIC_APPROVED_IMAGE_WHERE,
-        orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
-        take: 12,
-        select: PUBLIC_IMAGE_SELECT,
-      },
+      mediaAssets: PROGRAMME_CHILD_MEDIA_PROJECTION,
     },
   });
 });
