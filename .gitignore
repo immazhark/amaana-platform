@@ -10,3 +10,4 @@ coverage
 .curated-media/
 *.tsbuildinfo
 public/programme-artwork/*-diagonal-v3.webp
+public/hero/origin-hairline.webp
