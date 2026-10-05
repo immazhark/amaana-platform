@@ -63,7 +63,7 @@
 .canonical-pathways--timeline .canonical-pathway-visual{aspect-ratio:4/3;overflow:hidden;border-radius:.75rem}
 .canonical-pathways--timeline .canonical-pathway-visual :is(figure,img,.work-visual-placeholder){width:100%;height:100%}
 .canonical-pathways--timeline .canonical-pathway-visual img{object-fit:cover}
-.canonical-pathways--timeline article>p:not(.v2-section-label){display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.canonical-pathways--timeline article>p:not(.v2-section-label){display:block;overflow:visible}
 .canonical-pathways--timeline .v2-text-link{margin-top:auto;padding-top:.75rem}
 .canonical-pathways--growth,.canonical-pathways--comparison{gap:1rem}
 .canonical-pathways--growth article,.canonical-pathways--comparison article{padding:1.15rem;border:1px solid rgb(18 34 57 / 9%);border-radius:1rem;background:#fffdf8}
