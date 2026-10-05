@@ -54,8 +54,7 @@ export function SiteHeader() {
       toggle.parentElement?.querySelector<HTMLElement>("a")?.focus();
     };
     mobile.addEventListener("change", onBreakpoint);
-    const previousBodyOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
+    document.body.classList.add("af-menu-lock");
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
@@ -77,7 +76,7 @@ export function SiteHeader() {
 
     window.addEventListener("keydown", onKeyDown);
     return () => {
-      document.body.style.overflow = previousBodyOverflow;
+      document.body.classList.remove("af-menu-lock");
       window.removeEventListener("keydown", onKeyDown);
       mobile.removeEventListener("change", onBreakpoint);
     };
