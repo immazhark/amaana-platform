@@ -30,7 +30,7 @@
 .v2-initiative-copy small{display:block;margin:0 0 .35rem;color:var(--af-color-gold-ink);font-size:.7rem;font-weight:600;letter-spacing:.06em;text-transform:uppercase}
 .v2-initiative-copy h3{margin:0;font:500 clamp(1.5rem,2.2vw,2rem)/1.12 var(--af-font-display);letter-spacing:-.025em;text-wrap:balance}
 .v2-initiative-copy p{max-width:65ch;margin:.6rem 0 0;color:var(--af-color-muted);line-height:1.6}
-.v2-initiative-proof{display:grid;gap:.35rem;justify-items:start;padding:.75rem 0 .75rem 1rem;border-left:2px solid rgb(224 179 24 / 40%);text-align:left}
+.v2-initiative-proof{display:grid;gap:.35rem;justify-items:start;padding:.75rem 0;text-align:left}
 .v2-initiative-proof strong{color:var(--af-color-navy-800);font:600 1.2rem/1.3 var(--af-font-display);white-space:nowrap;font-variant-numeric:tabular-nums}
 .v2-initiative-proof span{color:var(--af-color-muted);font-size:.75rem;line-height:1.5}
 .v2-initiative-proof:empty{display:none}
