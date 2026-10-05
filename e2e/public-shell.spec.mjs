@@ -136,6 +136,38 @@ test('Stories journal CTA resolves to a real in-page target', async ({ page }) =
 });
 
 
+test('Our Work hero service metric keeps a readable hierarchy without clipping', async ({ page }) => {
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: width < 700 ? 844 : 1000 });
+    await openPublicPage(page, '/our-work');
+
+    const stat = page.locator('.page-hero__stat-row');
+    await expect(stat).toBeVisible();
+    const geometry = await stat.evaluate(node => {
+      const value = node.querySelector('b');
+      const label = node.querySelector('small');
+      const parent = node.parentElement;
+      const rect = node.getBoundingClientRect();
+      const parentRect = parent?.getBoundingClientRect();
+      return {
+        width: rect.width,
+        parentWidth: parentRect?.width ?? rect.width,
+        valueSize: parseFloat(getComputedStyle(value).fontSize),
+        labelSize: parseFloat(getComputedStyle(label).fontSize),
+        labelWhiteSpace: getComputedStyle(label).whiteSpace,
+        labelClippedX: label.scrollWidth > label.clientWidth + 1,
+        labelClippedY: label.scrollHeight > label.clientHeight + 1,
+      };
+    });
+
+    expect(geometry.width / geometry.parentWidth).toBeGreaterThan(.82);
+    expect(geometry.valueSize).toBeGreaterThan(geometry.labelSize * 2);
+    expect(geometry.labelWhiteSpace).not.toBe('nowrap');
+    expect(geometry.labelClippedX).toBe(false);
+    expect(geometry.labelClippedY).toBe(false);
+  }
+});
+
 test('Our Work programme numbers and titles keep distinct geometry', async ({ page }) => {
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: width <= 430 ? 844 : 1000 });
@@ -413,6 +445,23 @@ test('navigation marks current primary, support and secondary routes consistentl
   await expect(transparency).toHaveAttribute('aria-current', 'page');
   await expect(transparency).toHaveClass(/active/);
   await expect(mobileNav.getByRole('link', { name: 'Governance' })).not.toHaveAttribute('aria-current', 'page');
+});
+
+test('programme-category carousels use each programme own approved media instead of blank artwork', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await openPublicPage(page, '/programmes/ramadan-eid');
+
+  const section = page.locator('#programme-list');
+  await expect(section).toBeVisible();
+  const cards = section.locator('[role="group"]');
+  expect(await cards.count()).toBe(3);
+  await expect(section.locator('.work-visual-placeholder')).toHaveCount(0);
+
+  const images = section.locator('.canonical-pathway-visual img');
+  await expect(images).toHaveCount(3);
+  for (const img of await images.all()) {
+    await expect.poll(() => img.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
+  }
 });
 
 test('appeals completed-support carousel uses approved case media instead of generic placeholders', async ({ page }) => {
