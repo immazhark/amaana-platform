@@ -10,7 +10,7 @@ import { BreadcrumbStructuredData } from '@/components/breadcrumb-structured-dat
 import { PublicContentStructuredData } from '@/components/public-content-structured-data';
 import { PageHero } from '@/components/page-hero';
 import { WorkVisualPlaceholder } from '@/components/work-visual-placeholder';
-import { programmeCategories, programmes } from '@/lib/master-copy';
+import { programmeCardMediaSlugs, programmeCategories, programmes } from '@/lib/master-copy';
 import { legacyProgrammeRoute, programmeCategoryFromRoute, programmeCategoryPath } from '@/lib/programme-category-routing';
 import { getOurWorkIndexData, getProgrammeChildMedia } from '@/lib/public-page-data';
 import { PublicMedia } from '@/components/public-media';
@@ -111,8 +111,17 @@ export default async function Page({ params }: Props) {
   );
   if (items.length === 0) notFound();
 
-  const childMediaRecords = await getProgrammeChildMedia(items.map(item => item.slug));
+  const mediaSlugsByProgramme = new Map(
+    items.map(item => [item.slug, programmeCardMediaSlugs(item.slug)] as const),
+  );
+  const mediaSlugs = Array.from(new Set(
+    items.flatMap(item => mediaSlugsByProgramme.get(item.slug) ?? [item.slug]),
+  ));
+  const childMediaRecords = await getProgrammeChildMedia(mediaSlugs);
   const childMediaBySlug = new Map(childMediaRecords.map(record => [record.slug, record.mediaAssets] as const));
+  const galleryCandidatesFor = (programmeSlug: string) => (
+    mediaSlugsByProgramme.get(programmeSlug) ?? [programmeSlug]
+  ).flatMap(mediaSlug => childMediaBySlug.get(mediaSlug) ?? []);
 
   const canonical = programmeCategoryPath(category.slug);
   const leadPhoto = items.map(item => { const record = recordBySlug.get(item.slug); return record ? selectIdentityPublicImage(record.mediaAssets) : null; }).find(Boolean) ?? null;
@@ -132,7 +141,7 @@ export default async function Page({ params }: Props) {
     <section className="v2-section paper" id="programme-list"><div className="v2-shell">
       <SectionHeading eyebrow="Programme pathways" title="Explore the documented work" subtitle={category.summary} />
       {items.length === 1 ? <div className={`canonical-pathways canonical-pathways--single ${styles.single}`}>{items.map(item => {
-        const photo = selectGalleryPublicImage(childMediaBySlug.get(item.slug) ?? []);
+        const photo = selectGalleryPublicImage(galleryCandidatesFor(item.slug));
         const visual = photo && !isIdentityPublicImage(photo)
           ? <PublicMedia asset={photo} />
           : hasProgrammeArtwork(item.slug)
@@ -143,7 +152,7 @@ export default async function Page({ params }: Props) {
         return <article key={item.slug}><div className="canonical-pathway-visual">{visual}</div><h2><Link href={`/our-work/${item.slug}`}>{item.title}</Link></h2><p>{item.summary}</p><Link className="v2-text-link" href={`/our-work/${item.slug}`}>See the documented work →</Link></article>;
       })}</div> : <BodyCarousel label={`${category.title} programmes`} variant="content-deck">
         {items.map(item => {
-          const photo = selectGalleryPublicImage(childMediaBySlug.get(item.slug) ?? []);
+          const photo = selectGalleryPublicImage(galleryCandidatesFor(item.slug));
           const visual = photo && !isIdentityPublicImage(photo)
             ? <PublicMedia asset={photo} />
             : hasProgrammeArtwork(item.slug)
