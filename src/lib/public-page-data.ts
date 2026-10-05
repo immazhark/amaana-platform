@@ -50,6 +50,17 @@ export const COMPLETED_AID_SHOWCASE_MEDIA_PROJECTION = {
   select: PUBLIC_IMAGE_SELECT,
 };
 
+export const PROGRAMME_CHILD_MEDIA_PROJECTION = {
+  where: PUBLIC_APPROVED_IMAGE_WHERE,
+  orderBy: [
+    { sourceYear: "desc" as const },
+    { sortOrder: "asc" as const },
+    { createdAt: "desc" as const },
+  ],
+  take: 12,
+  select: PUBLIC_IMAGE_SELECT,
+};
+
 /**
  * React request memoization for dynamic routes whose metadata and page body
  * need the same public record. This keeps metadata generation from causing a
@@ -408,12 +419,7 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
     where: { slug: { in: slugs }, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     select: {
       slug: true,
-      mediaAssets: {
-        where: PUBLIC_IDENTITY_IMAGE_WHERE,
-        orderBy: [{ sourceYear: "desc" }, { createdAt: "desc" }],
-        take: 1,
-        select: PUBLIC_IMAGE_SELECT,
-      },
+      mediaAssets: PROGRAMME_CHILD_MEDIA_PROJECTION,
     },
   });
 });
