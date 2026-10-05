@@ -14,7 +14,7 @@ import { programmeCategories, programmes } from '@/lib/master-copy';
 import { legacyProgrammeRoute, programmeCategoryFromRoute, programmeCategoryPath } from '@/lib/programme-category-routing';
 import { getOurWorkIndexData, getProgrammeChildMedia } from '@/lib/public-page-data';
 import { PublicMedia } from '@/components/public-media';
-import { resolvePublicMediaUrl, selectGalleryPublicImage, selectIdentityPublicImage } from '@/lib/public-media';
+import { isIdentityPublicImage, resolvePublicMediaUrl, selectGalleryPublicImage, selectIdentityPublicImage } from '@/lib/public-media';
 import { openGraphShareImages, twitterShareImages } from '@/lib/social-share-media';
 import '@/app/canonical-content.css';
 
@@ -133,11 +133,12 @@ export default async function Page({ params }: Props) {
       <SectionHeading eyebrow="Programme pathways" title="Explore the documented work" subtitle={category.summary} />
       {items.length === 1 ? <div className={`canonical-pathways canonical-pathways--single ${styles.single}`}>{items.map(item => {
         const photo = selectGalleryPublicImage(childMediaBySlug.get(item.slug) ?? []);
-        return <article key={item.slug}><div className="canonical-pathway-visual">{photo ? <PublicMedia asset={photo} /> : hasProgrammeArtwork(item.slug) ? <ProgrammeArtwork slug={item.slug} /> : <WorkVisualPlaceholder label={item.title} />}</div><h2><Link href={`/our-work/${item.slug}`}>{item.title}</Link></h2><p>{item.summary}</p><Link className="v2-text-link" href={`/our-work/${item.slug}`}>See the documented work →</Link></article>;
+        const visual = photo && !isIdentityPublicImage(photo) ? <PublicMedia asset={photo} /> : hasProgrammeArtwork(item.slug) ? <ProgrammeArtwork slug={item.slug} /> : photo ? <PublicMedia asset={photo} /> : <WorkVisualPlaceholder label={item.title} />;
+        return <article key={item.slug}><div className="canonical-pathway-visual">{visual}</div><h2><Link href={`/our-work/${item.slug}`}>{item.title}</Link></h2><p>{item.summary}</p><Link className="v2-text-link" href={`/our-work/${item.slug}`}>See the documented work →</Link></article>;
       })}</div> : <BodyCarousel label={`${category.title} programmes`} variant="content-deck">
         {items.map(item => {
           const photo = selectGalleryPublicImage(childMediaBySlug.get(item.slug) ?? []);
-          const visual = photo ? <PublicMedia asset={photo} /> : hasProgrammeArtwork(item.slug) ? <ProgrammeArtwork slug={item.slug} /> : <WorkVisualPlaceholder label={item.title} />;
+          const visual = photo && !isIdentityPublicImage(photo) ? <PublicMedia asset={photo} /> : hasProgrammeArtwork(item.slug) ? <ProgrammeArtwork slug={item.slug} /> : photo ? <PublicMedia asset={photo} /> : <WorkVisualPlaceholder label={item.title} />;
           return <BodyCard key={item.slug} title={<Link href={`/our-work/${item.slug}`}>{item.title}</Link>} visual={visual} meta="Documented programme"><p>{item.summary}</p><Link className="v2-text-link" href={`/our-work/${item.slug}`}>See the documented work →</Link></BodyCard>;
         })}
       </BodyCarousel>}
