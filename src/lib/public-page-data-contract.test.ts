@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   COMPLETED_AID_SHOWCASE_MEDIA_PROJECTION,
+  PROGRAMME_CHILD_MEDIA_PROJECTION,
   PUBLIC_APPROVED_IMAGE_WHERE,
   PUBLIC_IMAGE_SELECT,
 } from "./public-page-data";
@@ -30,5 +31,17 @@ describe("public page media projection contract", () => {
       { createdAt: "desc" },
     ]);
     expect(COMPLETED_AID_SHOWCASE_MEDIA_PROJECTION.select).toBe(PUBLIC_IMAGE_SELECT);
+  });
+
+  it("loads bounded approved gallery candidates for programme-hub thumbnails", () => {
+    expect(PROGRAMME_CHILD_MEDIA_PROJECTION.where).toBe(PUBLIC_APPROVED_IMAGE_WHERE);
+    expect(PROGRAMME_CHILD_MEDIA_PROJECTION.where).not.toHaveProperty("sortOrder");
+    expect(PROGRAMME_CHILD_MEDIA_PROJECTION.take).toBe(12);
+    expect(PROGRAMME_CHILD_MEDIA_PROJECTION.orderBy).toEqual([
+      { sourceYear: "desc" },
+      { sortOrder: "asc" },
+      { createdAt: "desc" },
+    ]);
+    expect(PROGRAMME_CHILD_MEDIA_PROJECTION.select).toBe(PUBLIC_IMAGE_SELECT);
   });
 });
