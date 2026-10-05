@@ -415,6 +415,23 @@ test('navigation marks current primary, support and secondary routes consistentl
   await expect(mobileNav.getByRole('link', { name: 'Governance' })).not.toHaveAttribute('aria-current', 'page');
 });
 
+test('appeals completed-support carousel uses approved case media instead of generic placeholders', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await openPublicPage(page, '/appeals');
+
+  const section = page.locator('#completed-causes');
+  await expect(section).toBeVisible();
+  const cards = section.locator('[role="group"]');
+  expect(await cards.count()).toBeGreaterThan(1);
+
+  await expect(section.locator('.work-visual-placeholder')).toHaveCount(0);
+  expect(await section.locator('img').count()).toBeGreaterThanOrEqual(await cards.count());
+
+  for (const img of await section.locator('img').all()) {
+    await expect.poll(() => img.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
+  }
+});
+
 test('impact and transparency expose the same explicit public/private evidence boundary', async ({ page }) => {
   for (const path of ['/impact', '/transparency']) {
     await openPublicPage(page, path);
