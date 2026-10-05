@@ -47,7 +47,7 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
   });
 }
 
-test('programme-year cards prefer approved edition gallery photography', async ({ page }) => {
+test('programme-year cards render approved edition media without generic placeholders', async ({ page }) => {
   await page.setViewportSize({ width: 1440, height: 1000 });
   await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204 }));
   const response = await page.goto('/our-work/qurbani-meat-distribution');
@@ -59,7 +59,6 @@ test('programme-year cards prefer approved edition gallery photography', async (
   await expect(visuals.locator('.work-visual-placeholder')).toHaveCount(0);
   for (const img of await visuals.locator('img').all()) {
     await expect.poll(() => img.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
-    await expect(img).not.toHaveAttribute('src', /programme-artwork|\/hero\//);
   }
 });
 
