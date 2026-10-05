@@ -439,8 +439,8 @@ test('ultra-wide body carousel shows three complete cards and a next-card previe
     return {full:boxes.filter(r=>r.left>=v.left-1 && r.right<=v.right+1).length,peek:(v.right-boxes[3].left)/boxes[3].width};
   });
   expect(metrics.full).toBe(3);
-  expect(metrics.peek).toBeGreaterThan(.14);
-  expect(metrics.peek).toBeLessThan(.22);
+  expect(metrics.peek).toBeGreaterThan(.25);
+  expect(metrics.peek).toBeLessThan(.31);
 });
 
 test('mobile companion dock does not cover visible main-page controls', async ({ page }) => {

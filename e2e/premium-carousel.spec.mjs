@@ -35,13 +35,17 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
 }
 
 test('homepage diagonal derivatives load and functional controls contain SVG rather than glyphs', async ({ page, request }) => {
+  const origin = await request.get('/hero/origin-hairline.webp');
+  expect(origin.ok()).toBe(true);
+  expect(origin.headers()['content-type']).toContain('image/webp');
   for (const name of ['eid', 'taleem', 'qurbani', 'winter', 'dates', 'flood']) {
-    const response = await request.get(`/programme-artwork/${name}-diagonal-v2.webp`);
+    const response = await request.get(`/programme-artwork/${name}-diagonal-v3.webp`);
     expect(response.ok()).toBe(true);
     expect(response.headers()['content-type']).toContain('image/webp');
   }
   await page.goto('/');
   const hero = page.locator('[data-cinematic]');
+  await expect(hero.locator('img[src*="origin-hairline.webp"]')).toHaveCount(1);
   for (const label of ['Previous slide', 'Next slide', 'Pause automatic slides']) await expect(hero.getByRole('button', { name: label }).locator('svg')).toHaveAttribute('aria-hidden', 'true');
   for (const index of [2, 4, 5]) {
     await hero.getByRole('button', { name: `Show slide ${index} of 5` }).click();

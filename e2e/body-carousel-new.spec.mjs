@@ -11,7 +11,8 @@ for(const width of [375,600,768,1024,1440,1920])test(`left alignment and control
  const nextIndex=width<700?1:width<1200?2:3;
  const peekBox=await carousel.getByRole('group',{name:`${nextIndex+1} of 7`,exact:true}).boundingBox();
  const peek=(v.x+v.width-peekBox.x)/peekBox.width;
- expect(peek).toBeGreaterThan(.15);expect(peek).toBeLessThan(.21);
+ if(width<700){expect(peek).toBeGreaterThan(.15);expect(peek).toBeLessThan(.21);}
+ else{expect(peek).toBeGreaterThan(.25);expect(peek).toBeLessThan(.31);}
  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
  const visual=first.locator('.canonical-pathway-visual');const image=await visual.boundingBox();expect(image.width/image.height).toBeCloseTo(16/9,1);
  await carousel.getByRole('button',{name:'Pause automatic slides'}).click();

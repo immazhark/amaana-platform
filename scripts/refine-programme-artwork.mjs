@@ -3,19 +3,27 @@ import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 
-const directory = path.resolve("public/programme-artwork");
-const provenancePath = path.join(directory, "provenance.json");
-const provenance = JSON.parse(await readFile(provenancePath, "utf8"));
-const records = provenance.records.map(record => {
-  if (!record.output || !record.refinedOutput || !record.sha256) {
-    throw new Error(`Incomplete programme artwork provenance for ${record.name ?? "unknown record"}.`);
+const sources = [
+  { directory: path.resolve("public/programme-artwork"), provenance: "provenance.json", include: () => true },
+  { directory: path.resolve("public/hero"), provenance: "provenance.json", include: record => record.name === "origin" },
+];
+
+const records = [];
+for (const source of sources) {
+  const provenancePath = path.join(source.directory, source.provenance);
+  const provenance = JSON.parse(await readFile(provenancePath, "utf8"));
+  for (const record of provenance.records.filter(source.include)) {
+    if (!record.output || !record.refinedOutput || !record.sha256) {
+      throw new Error(`Incomplete artwork provenance for ${record.name ?? "unknown record"}.`);
+    }
+    records.push({
+      directory: source.directory,
+      inputName: path.basename(record.output),
+      outputName: path.basename(record.refinedOutput),
+      expectedSha256: record.sha256,
+    });
   }
-  return [
-    path.basename(record.output),
-    path.basename(record.refinedOutput),
-    record.sha256,
-  ];
-});
+}
 
 const template = {
   width: 1536,
@@ -39,7 +47,7 @@ function paintPixel(target, channels, width, y, x, rgba) {
   for (let channel = 0; channel < channels; channel += 1) target[offset + channel] = rgba[channel];
 }
 
-async function refine(inputName, outputName, expectedSha256) {
+async function refine({ directory, inputName, outputName, expectedSha256 }) {
   const inputPath = path.join(directory, inputName);
   const outputPath = path.join(directory, outputName);
   const bytes = await readFile(inputPath);
@@ -81,9 +89,9 @@ async function refine(inputName, outputName, expectedSha256) {
     raw: { width: info.width, height: info.height, channels: info.channels },
   }).webp({ quality: 88, smartSubsample: true, effort: 6 }).toBuffer();
 
+  await mkdir(directory, { recursive: true });
   await writeFile(outputPath, encoded);
-  process.stdout.write(`${outputName}: ${encoded.length} bytes (source ${bytes.length})\n`);
+  process.stdout.write(`${path.relative(process.cwd(), outputPath)}: ${encoded.length} bytes (source ${bytes.length})\n`);
 }
 
-await mkdir(directory, { recursive: true });
-for (const record of records) await refine(...record);
+for (const record of records) await refine(record);
