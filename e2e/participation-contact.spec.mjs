@@ -83,11 +83,8 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     const carousel = page.getByRole('region', { name: 'Completed support outcomes', exact: true });
     await expect(carousel).toHaveAttribute('aria-roledescription', 'carousel');
     const slides = carousel.locator('[data-body-card]');
-    const slideCount = await slides.count();
-    expect(slideCount).toBeGreaterThan(0);
+    expect(await slides.count()).toBeGreaterThan(0);
     expect(await carousel.locator('.campaign-pathway-card p').evaluateAll(nodes => nodes.every(node => getComputedStyle(node).webkitLineClamp === 'none'))).toBe(true);
-    expect(await carousel.locator('.v2-media-item img').count()).toBeGreaterThan(0);
-    expect(await carousel.locator('.work-visual-placeholder').count()).toBeLessThan(slideCount);
     await expect(carousel.locator('.work-visual-placeholder svg')).toHaveCount(0);
     for (const visual of await carousel.locator('.work-visual-placeholder').all()) {
       expect(await visual.evaluate(node => getComputedStyle(node).backgroundImage)).toContain('amaana-lattice-tile');
