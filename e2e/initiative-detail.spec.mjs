@@ -54,7 +54,9 @@ for (const width of [390, 1440]) {
       await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204 }));
       const response = await page.goto(`/our-work/${slug}`);
       expect(response.ok()).toBe(true);
-      await expect(page.locator('#programme-pathways')).toBeVisible();
+      const pathways = page.locator('#programme-pathways');
+      await expect(pathways).toBeVisible();
+      expect(await pathways.locator('.canonical-pathway-visual .v2-media-item img').count()).toBeGreaterThan(0);
       const backgrounds = await page.locator('.canonical-programme').evaluate(node => ({
         parent: getComputedStyle(node).backgroundImage,
         sections: [...node.querySelectorAll(':scope > section:not(.page-hero)')].map(section => ({
