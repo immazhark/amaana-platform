@@ -1,3 +1,15 @@
+# ChatGPT emergency takeover — 2026-10-05 16:32 IST
+
+Ownership `CHATGPT_ACTIVE` by explicit owner handover after Codex/Work interruption. Continue existing PR #167 on `fix/all-route-audit-20261005`; do not start a competing branch. Verified remote head before takeover: `bd4feedb9fb41a60ad2b6b9f40b06c8c11cf59db`, base `phase-public-site-rebuild` at `2caccb9fb83424f75a4c78ffa4c9339ae2e15ad7`. PR is open, mergeable and unmerged. Main/production PR #104, production indexing, Live Razorpay/payment/refund actions and factual/media locks remain protected.
+
+Latest remote CI run 37290562293: plan, fast and isolated database jobs passed; browser acceptance completed 1076/1078 with exactly two failures, both complete-page audit containment for `/admin/notifications` at mobile and desktop. The last remote containment patch is `bd4feed…`; this failure remains unresolved remotely and must be reverified/fixed, not waived.
+
+The immediately following owner screenshot batch was partially implemented in the interrupted local workspace but was not pushed after `bd4feed…`. Reconstruct on this same branch from repository truth and the owner's latest directives: narrow all slant separators to ~2px; remove text truncation across widths; elevate Areas of Service styling; remove specified left gold separators; add polished glossy hover/focus treatment with reduced-motion safety; restore individual gallery images into the relevant carousels; correct dropdown padding; ensure WhatsApp opens a new tab; apply these patterns consistently site-wide. Preserve the fixed bottom-right Islamic Companion, approved background/media architecture, canonical facts/content, accessibility, performance caps and responsive containment.
+
+Next atomic actions: inspect exact current source for the screenshot surfaces and shared primitives; implement reconstructed fixes plus the remaining notification containment defect; add/adjust focused regressions; then run/trigger scoped checks before the full PR gate. Do not claim complete AAA or defect-free status from automation alone.
+
+---
+
 # Complete route/state UI audit — 2026-10-05 IST
 
 Ownership `CODEX_ACTIVE`. Owner requests every site page receive the same audit, including dynamic children and protected operational states. Atomic branch `fix/all-route-audit-20261005`, verified integration base2caccb9fb83424f75a4c78ffa4c9339ae2e15ad7. Only draft PR104 is open; main/release promotion protected. Build an explicit source route/state inventory, inspect actual desktop/mobile public renders and isolated admin/private journeys, fix confirmed defects, preserve factual copy/approved media/design and unchanged performance caps. Shared polish alone never counts as page-specific review. New complete inventory must distinguish source review, visual review, browser interaction and isolated-state evidence; unknown/unavailable states remain explicit. No subagents, real payments, beneficiary submissions or live staff mutations.
