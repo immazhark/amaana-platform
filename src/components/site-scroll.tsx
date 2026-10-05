@@ -37,8 +37,9 @@ export function useSiteScroll(pathname: string) {
         instance = new SmoothScroll({
           lerp: 0.16, smoothWheel: true, syncTouch: false,
           prevent: node => node.matches(nested),
-          virtualScroll: ({ event: input }) => !input.ctrlKey && document.body.style.overflow !== "hidden"
-            && !document.querySelector(".mobile-menu.open, .amaana-navigation-loading, [role='dialog'][aria-modal='true'], dialog[open]"),
+          virtualScroll: ({ event: input }) => !input.ctrlKey
+            && !document.body.matches(".af-menu-lock,.af-navigation-lock")
+            && !document.querySelector("[role='dialog'][aria-modal='true'],dialog[open]"),
         });
         instance.on("scroll", wake);
       } finally { loading = false; }
