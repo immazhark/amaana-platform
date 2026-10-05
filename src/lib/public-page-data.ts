@@ -409,8 +409,8 @@ export const getTransparencyPageData = cache(async () => {
 
 
 /**
- * One reviewed image per child programme, fetched in a single query.
- * Used by programme hubs so authentic media can replace generic placeholders
+ * A bounded set of approved image candidates per child programme, fetched in one query.
+ * Programme hubs can prefer documentary thumbnails while retaining identity/fallback media
  * without introducing N+1 reads or bypassing publication/privacy gates.
  */
 export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
