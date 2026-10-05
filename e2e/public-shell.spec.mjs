@@ -136,6 +136,38 @@ test('Stories journal CTA resolves to a real in-page target', async ({ page }) =
 });
 
 
+test('Our Work hero service metric keeps a readable hierarchy without clipping', async ({ page }) => {
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: width < 700 ? 844 : 1000 });
+    await openPublicPage(page, '/our-work');
+
+    const stat = page.locator('.page-hero__stat-row');
+    await expect(stat).toBeVisible();
+    const geometry = await stat.evaluate(node => {
+      const value = node.querySelector('b');
+      const label = node.querySelector('small');
+      const parent = node.parentElement;
+      const rect = node.getBoundingClientRect();
+      const parentRect = parent?.getBoundingClientRect();
+      return {
+        width: rect.width,
+        parentWidth: parentRect?.width ?? rect.width,
+        valueSize: parseFloat(getComputedStyle(value).fontSize),
+        labelSize: parseFloat(getComputedStyle(label).fontSize),
+        labelWhiteSpace: getComputedStyle(label).whiteSpace,
+        labelClippedX: label.scrollWidth > label.clientWidth + 1,
+        labelClippedY: label.scrollHeight > label.clientHeight + 1,
+      };
+    });
+
+    expect(geometry.width / geometry.parentWidth).toBeGreaterThan(.82);
+    expect(geometry.valueSize).toBeGreaterThan(geometry.labelSize * 2);
+    expect(geometry.labelWhiteSpace).not.toBe('nowrap');
+    expect(geometry.labelClippedX).toBe(false);
+    expect(geometry.labelClippedY).toBe(false);
+  }
+});
+
 test('Our Work programme numbers and titles keep distinct geometry', async ({ page }) => {
   for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: width <= 430 ? 844 : 1000 });
