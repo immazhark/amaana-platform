@@ -392,9 +392,10 @@ export const getTransparencyPageData = cache(async () => {
 
 
 /**
- * One reviewed image per child programme, fetched in a single query.
- * Used by programme hubs so authentic media can replace generic placeholders
- * without introducing N+1 reads or bypassing publication/privacy gates.
+ * Reviewed image candidates per child programme, fetched in a single query.
+ * Programme-year cards prefer an approved documentary gallery photograph and
+ * fall back to the explicit identity image. Publication/privacy gates remain
+ * identical for every candidate and the bounded projection avoids N+1 reads.
  */
 export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
   if (!slugs.length) return [];
@@ -403,9 +404,9 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
     select: {
       slug: true,
       mediaAssets: {
-        where: PUBLIC_IDENTITY_IMAGE_WHERE,
-        orderBy: [{ sourceYear: "desc" }, { createdAt: "desc" }],
-        take: 1,
+        where: PUBLIC_APPROVED_IMAGE_WHERE,
+        orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
+        take: 12,
         select: PUBLIC_IMAGE_SELECT,
       },
     },
