@@ -47,6 +47,22 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
   });
 }
 
+test('programme-year cards prefer approved edition gallery photography', async ({ page }) => {
+  await page.setViewportSize({ width: 1440, height: 1000 });
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204 }));
+  const response = await page.goto('/our-work/qurbani-meat-distribution');
+  expect(response.ok()).toBe(true);
+  const cards = page.locator('#programme-pathways .campaign-pathway-card');
+  expect(await cards.count()).toBeGreaterThan(1);
+  const visuals = cards.locator('.canonical-pathway-visual');
+  await expect(visuals.locator('img')).toHaveCount(await cards.count());
+  await expect(visuals.locator('.work-visual-placeholder')).toHaveCount(0);
+  for (const img of await visuals.locator('img').all()) {
+    await expect.poll(() => img.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
+    await expect(img).not.toHaveAttribute('src', /programme-artwork|\/hero\//);
+  }
+});
+
 for (const width of [390, 1440]) {
   for (const slug of ['eid-gift-kits', 'taleem']) {
     test(`umbrella programme keeps one continuous background: ${slug} at ${width}px`, async ({ page }) => {
