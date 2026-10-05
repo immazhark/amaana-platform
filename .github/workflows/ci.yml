@@ -266,7 +266,8 @@ jobs:
     defaults:
       run:
         shell: bash
-    timeout-minutes: 20
+    # Expanded all-route captures retain a bounded full-suite allowance.
+    timeout-minutes: ${{ needs.plan.outputs.mode == 'full' && 35 || 20 }}
     services:
       postgres:
         image: postgres:16-alpine

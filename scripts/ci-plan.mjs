@@ -3,6 +3,8 @@ import { appendFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 
 const groups = [
+  // Disposable all-route diagnostics change no runtime code. Authentication/security changes still fail closed below.
+  { paths: /^(e2e\/all-page-audit\.spec\.mjs|scripts\/seed-ui-route-audit\.mjs)$/, tests: ['all-page-audit.spec.mjs', 'admin-operational-simulation.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'navigation-resilience.spec.mjs', 'site-motion-scroll.spec.mjs'] },
   // Programme closing is presentation-only; cover its shared fixture and real detail pages.
   { paths: /^(src\/components\/programme-next\.tsx|src\/app\/browser-acceptance\/section-layout\/page\.tsx|e2e\/(?:section-layout|initiative-detail)\.spec\.mjs)$/, tests: ['section-layout.spec.mjs', 'initiative-detail.spec.mjs', 'section-heading.spec.mjs', 'typography-hierarchy.spec.mjs', 'page-banner-standardization.spec.mjs'] },
   { paths: /^(src\/lib\/initiative-banner-media(?:\.test)?\.ts|src\/components\/initiative-banner\.module\.css|src\/app\/our-work\/\[slug\]\/campaign\.css|e2e\/initiative-banners\.spec\.mjs)$/, tests: ["initiative-banners.spec.mjs", "initiative-detail.spec.mjs", "campaign-gallery.spec.mjs", "section-heading.spec.mjs", "page-banner-standardization.spec.mjs", "typography-hierarchy.spec.mjs"] },

@@ -102,12 +102,35 @@ test('five programme slides have usable artwork, centered selectors and containe
     const img=active.locator('figure img');
     if(index){
       await expect.poll(()=>img.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
+      if(index <= 3) await expect(img).toHaveAttribute('src', /diagonal-v3\.webp/);
       const edges=await active.evaluate(node=>({photo:node.querySelector('.v3-home-banner-media').getBoundingClientRect().right,container:node.querySelector('.v3-shell').getBoundingClientRect().right}));
       expect(Math.abs(edges.photo-edges.container)).toBeLessThan(1);
     }else await expect(active.locator('.v3-home-story-logo img')).toBeVisible();
   }
   const center=await carousel.locator('.hero-dots').evaluate(node=>{const r=node.getBoundingClientRect();return r.left+r.width/2;});
   expect(Math.abs(center-720)).toBeLessThan(1);
+});
+
+test('homepage programme cards keep full summaries and equal track heights', async ({page}) => {
+  await page.setViewportSize({width:1440,height:1000});
+  await page.emulateMedia({reducedMotion:'reduce'});
+  await page.goto('/');
+  const cards=page.locator('.v3-work-card');
+  expect(await cards.count()).toBeGreaterThan(1);
+  const result=await cards.evaluateAll(nodes=>nodes.map(node=>{
+    const copy=node.querySelector('.v3-work-card-body p');
+    const style=getComputedStyle(copy);
+    return {
+      height:Math.round(node.getBoundingClientRect().height),
+      clamp:style.webkitLineClamp,
+      clipped:copy.scrollHeight>copy.clientHeight+1,
+    };
+  }));
+  expect(new Set(result.map(item=>item.height)).size).toBe(1);
+  for(const item of result){
+    expect(item.clamp).toBe('none');
+    expect(item.clipped).toBe(false);
+  }
 });
 
 test('homepage carousel editor requires authentication',async({page})=>{

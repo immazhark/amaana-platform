@@ -281,9 +281,9 @@ export const getImpactPageData = cache(async () => {
       primaryMetricLabel: true,
       cause: { select: { title: true } },
       mediaAssets: {
-        where: PUBLIC_IDENTITY_IMAGE_WHERE,
-        orderBy: [{ sourceYear: "desc" }],
-        take: 1,
+        where: PUBLIC_APPROVED_IMAGE_WHERE,
+        orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
+        take: 12,
         select: PUBLIC_IMAGE_SELECT,
       },
     },
@@ -293,7 +293,7 @@ export const getImpactPageData = cache(async () => {
 /**
  * Completed-case showcase for /appeals. Keep this intentionally narrow: only
  * published initiatives under the canonical medical/financial relief cause and
- * at most one approved public image per record are needed for the card strip.
+ * a bounded set of approved public images per record is used so the card strip can prefer documentary gallery photography.
  */
 export const getCompletedAidShowcaseData = cache(async () => {
   return prisma.initiative.findMany({

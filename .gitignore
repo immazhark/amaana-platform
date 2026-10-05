@@ -9,3 +9,4 @@ prisma/dev.db
 coverage
 .curated-media/
 *.tsbuildinfo
+public/programme-artwork/*-diagonal-v3.webp

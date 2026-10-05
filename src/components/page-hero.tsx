@@ -47,7 +47,7 @@ export function PageHero({
   id,
   className = "",
 }: PageHeroProps) {
-  const classes = ["page-hero", "page-hero--level1", className].filter(Boolean).join(" ");
+  const classes = ["page-hero", "page-hero--level1", `page-hero--${variant}`, className].filter(Boolean).join(" ");
 
   return (
     <section className={classes} aria-labelledby={id || undefined} data-hero-purpose={variant}>

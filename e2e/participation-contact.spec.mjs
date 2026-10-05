@@ -30,6 +30,9 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
         expect(journey).toHaveLength(5);
         expect(journey.every(step => step.gap >= 8 && step.decoration === 'none')).toBe(true);
       } else {
+        const whatsapp = page.locator('.v2-intent-card[href^="https://wa.me/"]');
+        await expect(whatsapp).toHaveAttribute('target', '_blank');
+        await expect(whatsapp).toHaveAttribute('rel', /noopener/);
         const socials = page.locator('.v2-contact-social-links a');
         await expect(socials).toHaveCount(3);
         for (const social of await socials.all()) {
@@ -81,6 +84,7 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
     await expect(carousel).toHaveAttribute('aria-roledescription', 'carousel');
     const slides = carousel.locator('[data-body-card]');
     expect(await slides.count()).toBeGreaterThan(0);
+    expect(await carousel.locator('.campaign-pathway-card p').evaluateAll(nodes => nodes.every(node => getComputedStyle(node).webkitLineClamp === 'none'))).toBe(true);
     await expect(carousel.locator('.work-visual-placeholder svg')).toHaveCount(0);
     for (const visual of await carousel.locator('.work-visual-placeholder').all()) {
       expect(await visual.evaluate(node => getComputedStyle(node).backgroundImage)).toContain('amaana-lattice-tile');

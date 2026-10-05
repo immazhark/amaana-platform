@@ -4,6 +4,7 @@ import {
   canRenderPublicMedia,
   normalizeSafePublicMediaUrl,
   resolvePublicMediaUrl,
+  selectGalleryPublicImage,
   selectIdentityPublicImage,
 } from "./public-media";
 
@@ -57,5 +58,15 @@ describe("public media safety", () => {
       { kind: "IMAGE" as const, publicUrl: "/media/hero.webp", altText: "Identity photograph", sortOrder: IDENTITY_MEDIA_SORT_ORDER },
     ];
     expect(selectIdentityPublicImage(gallery)?.publicUrl).toBe("/media/hero.webp");
+  });
+
+  it("prefers an approved documentary gallery image for lower-prominence showcase cards", () => {
+    const media = [
+      { kind: "IMAGE" as const, publicUrl: "/media/identity.webp", altText: "Identity artwork", sortOrder: IDENTITY_MEDIA_SORT_ORDER },
+      { kind: "IMAGE" as const, publicUrl: "/media/results.png", altText: "Results graphic", title: "Impact graphic", sortOrder: 1 },
+      { kind: "IMAGE" as const, publicUrl: "/media/gallery.webp", altText: "Volunteer packing support kits", title: "Packing day", sortOrder: 2 },
+    ];
+    expect(selectGalleryPublicImage(media)?.publicUrl).toBe("/media/gallery.webp");
+    expect(selectGalleryPublicImage([media[0]])?.publicUrl).toBe("/media/identity.webp");
   });
 });

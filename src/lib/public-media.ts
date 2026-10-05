@@ -75,3 +75,14 @@ export function selectIdentityPublicImage<T extends PublicMediaCandidate>(assets
   // Supporting-gallery approval is not approval for hero/discovery placement.
   return assets.find(asset => isIdentityPublicImage(asset));
 }
+
+/**
+ * Select a public-safe supporting photograph for lower-prominence gallery/showcase cards.
+ * Identity artwork remains the fallback when a record has no separate approved gallery image.
+ */
+export function selectGalleryPublicImage<T extends PublicMediaCandidate>(assets: readonly T[]) {
+  return assets.find(asset => isDocumentaryPublicImage(asset) && !isIdentityPublicImage(asset))
+    ?? assets.find(asset => asset.kind === "IMAGE" && canRenderPublicMedia(asset) && !isIdentityPublicImage(asset))
+    ?? selectIdentityPublicImage(assets)
+    ?? null;
+}

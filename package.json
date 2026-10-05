@@ -34,7 +34,10 @@
     "rehearsal:verify-target": "node scripts/verify-rollback-target.mjs",
     "launch:env:production": "node scripts/check-production-environment.mjs",
     "launch:env:production:indexing-enabled": "PRODUCTION_INDEXING_DECISION=enable NEXT_PUBLIC_ALLOW_INDEXING=true node scripts/check-production-environment.mjs",
-    "launch:env:production:indexing-disabled": "PRODUCTION_INDEXING_DECISION=keep_disabled NEXT_PUBLIC_ALLOW_INDEXING=false node scripts/check-production-environment.mjs"
+    "launch:env:production:indexing-disabled": "PRODUCTION_INDEXING_DECISION=keep_disabled NEXT_PUBLIC_ALLOW_INDEXING=false node scripts/check-production-environment.mjs",
+    "artwork:refine": "node scripts/refine-programme-artwork.mjs",
+    "prebuild": "npm run artwork:refine",
+    "predev": "npm run artwork:refine"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1128.0",
@@ -56,6 +59,7 @@
     "eslint-config-next": "16.3.4",
     "prisma": "6.12.0",
     "typescript": "5.9.2",
-    "vitest": "5.0.0"
+    "vitest": "5.0.0",
+    "sharp": "0.35.4"
   }
 }

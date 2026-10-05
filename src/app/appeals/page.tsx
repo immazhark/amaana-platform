@@ -12,7 +12,7 @@ import { isAppealOpenForDonations } from "@/lib/appeals";
 import { getAppealsIndexData, getCompletedAidShowcaseData } from "@/lib/public-page-data";
 import styles from "./appeals-audit.module.css";
 import { canExposeSyntheticStagingContent, isSyntheticStagingAppeal } from "@/lib/public-environment";
-import { selectIdentityPublicImage } from "@/lib/public-media";
+import { selectGalleryPublicImage } from "@/lib/public-media";
 
 export const metadata: Metadata = {
   title: "Verified Appeals",
@@ -31,7 +31,7 @@ export default async function AppealsPage() {
   ]);
   const isStaging = canExposeSyntheticStagingContent();
   const appeals = appealRecords.filter(appeal => isAppealOpenForDonations(appeal) && (isStaging || !isSyntheticStagingAppeal(appeal)));
-  const completedAidMedia = new Map(completedAid.map(item => [item.slug, selectIdentityPublicImage(item.mediaAssets) ?? null]));
+  const completedAidMedia = new Map(completedAid.map(item => [item.slug, selectGalleryPublicImage(item.mediaAssets)]));
   const publishedCompletedProgrammes = programmes.filter(
     programme => programme.causeSlug === "medical-financial-relief" && completedAidMedia.has(programme.slug),
   );

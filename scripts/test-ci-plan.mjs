@@ -217,3 +217,12 @@ test('programme closing presentation selects real detail and responsive fixture 
   for (const extra of ['src/lib/auth.ts', 'src/components/site-scroll.tsx', 'src/app/api/donations/order/route.ts', 'unmapped-component.tsx', '.github/workflows/ci.yml']) assert.equal(planChanges([...files, extra]).mode, 'full');
   assert.equal(planChanges(files, { target: 'main' }).mode, 'full');
 });
+
+test('complete route diagnostics run the disposable audit and retain auth fail-closed coverage', () => {
+  const audit = planChanges(['e2e/all-page-audit.spec.mjs', 'scripts/seed-ui-route-audit.mjs']);
+  assert.equal(audit.mode, 'focused');
+  assert.ok(audit.tests.includes('all-page-audit.spec.mjs'));
+  assert.ok(audit.tests.includes('site-motion-scroll.spec.mjs'));
+  assert.equal(planChanges(['e2e/all-page-audit.spec.mjs', 'src/lib/auth.ts']).mode, 'full');
+  assert.equal(planChanges(['scripts/seed-ui-route-audit.mjs', 'unknown-runtime.ts']).mode, 'full');
+});

@@ -54,7 +54,7 @@
 .v3-work-card-body{display:flex;min-width:0;flex:1;flex-direction:column;padding:1.35rem}
 .v3-work-card-body small{color:var(--af-color-gold-ink);font-size:.7rem;letter-spacing:.09em;text-transform:uppercase}
 .v3-work-card-body h3{margin:.6rem 0 .75rem;color:var(--af-color-navy-800);font:500 clamp(1.75rem,2.7vw,2.7rem)/1 var(--af-font-display);letter-spacing:-.035em;text-wrap:balance}
-.v3-work-card-body p{display:-webkit-box;margin:0;color:var(--af-color-muted);line-height:1.6;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.v3-work-card-body p{display:block;margin:0;color:var(--af-color-muted);line-height:1.6;overflow:visible}
 .v3-work-card-body>span{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:auto;padding-top:1.25rem;color:var(--af-color-navy-700);font-weight:800}
 .v3-work-card-body i{color:var(--af-color-gold-ink);font-style:normal;transition:transform var(--af-motion-medium) var(--af-ease-standard)}
 

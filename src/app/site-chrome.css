@@ -164,6 +164,7 @@
   .amaana-reminder-inner{grid-template-columns:1fr}
   .amaana-reminder-lane{border-right:0;border-bottom:1px solid rgb(18 34 57 / 8%);padding-right:0}
   .amaana-live-lane{padding-left:0}
+  .amaana-reminder-content strong,.amaana-live-content strong,.amaana-reminder-content p{overflow:visible;text-overflow:clip;white-space:normal;text-wrap:pretty}
   .site-footer .footer-lead{grid-template-columns:1fr;align-items:start}
   .site-footer .footer-lead-actions{justify-content:flex-start}
   .site-footer .footer-grid-v2{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -174,11 +175,11 @@
 @media(max-width:600px){
   :root{--af-chrome-height:4.5rem;--af-chrome-logo:4rem}
   .amaana-reminder-inner{gap:0}
-  .amaana-reminder-lane,.amaana-live-lane{grid-template-columns:1fr;gap:.18rem;padding-block:.38rem}
-  .amaana-reminder-content{grid-template-columns:minmax(0,1fr) auto}
+  .amaana-reminder-lane,.amaana-live-lane{grid-template-columns:auto minmax(0,1fr);align-items:center;gap:.55rem;padding-block:.28rem}
+  .amaana-reminder-content{grid-template-columns:minmax(0,1fr) auto;gap:.35rem .5rem}
   .amaana-reminder-content p{display:none}
-  .amaana-reminder-source{grid-column:2}
-  .amaana-live-content{grid-template-columns:minmax(0,1fr) auto}
+  .amaana-reminder-source{grid-column:2;align-self:center}
+  .amaana-live-content{grid-template-columns:minmax(0,1fr) auto;gap:.35rem}
   .amaana-live-content .amaana-reminder-eyebrow{display:none}
   .amaana-live-actions{grid-column:2;grid-row:1}
   .amaana-live-link,.amaana-live-cta{min-height:2.75rem}

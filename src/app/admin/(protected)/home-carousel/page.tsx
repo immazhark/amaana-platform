@@ -15,7 +15,7 @@ export default async function HomeCarouselEditor({ searchParams }: { searchParam
   ]);
   const canPublish = hasPermission(user, 'content.approve');
   return <section className={styles.editor}>
-    <header><p className="eyebrow">Website content</p><h1>Homepage carousel</h1><p>Manage the order, text, links and images. Drafts stay private. Published slides appear during their scheduled window.</p><Link href="/">View homepage →</Link></header>
+    <header className="admin-heading"><div><p className="eyebrow">Website content</p><h1>Homepage carousel</h1><p className="muted">Manage the order, text, links and images. Drafts stay private. Published slides appear during their scheduled window.</p><Link href="/">View homepage →</Link></div></header>
     {params.error ? <p role="alert" className={styles.error}>{params.error}</p> : params.saved ? <p role="status" className={styles.success}>Carousel saved. The homepage now uses the latest published configuration.</p> : null}
     <div className={styles.settings}>
       <div><h2>Live appeals appear automatically</h2><p>Published appeals appear only while fundraising is open. Paused, funded, closed or expired appeals disappear automatically. A linked custom slide follows the same rule.</p></div>

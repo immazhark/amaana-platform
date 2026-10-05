@@ -160,7 +160,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
       ))}
     </div>
 
-    <div className="admin-table-wrap">
+    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Notification delivery records">
       <table>
         <thead>
           <tr>

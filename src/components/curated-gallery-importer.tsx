@@ -309,7 +309,7 @@ export function CuratedGalleryImporter() {
             Public render {status.renderingReady === true ? "22/22 verified" : status.renderingReady === false ? "requires review" : "checking"}
           </p>
           {status.initiatives?.length ? (
-            <div className="admin-table-wrap" style={{ marginTop: "1rem" }}>
+            <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Gallery import records" style={{ marginTop: "1rem" }}>
               <table>
                 <thead>
                   <tr>

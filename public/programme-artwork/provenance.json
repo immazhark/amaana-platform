@@ -17,7 +17,8 @@
           "path": "eid-gift-kits-2026/003/20260315_162836.jpg.jpeg",
           "sha256": "2d51dbce6b35dc5c969b5ac3beffcabac400733e2af81e9f6cb6a6e09bb9d99d"
         }
-      ]
+      ],
+      "refinedOutput": "/programme-artwork/eid-diagonal-v3.webp"
     },
     {
       "name": "taleem",
@@ -33,7 +34,8 @@
           "path": "taleem-initiative-2025/003/WhatsApp Image 2026-09-14 at 4.34.51 AM.jpeg",
           "sha256": "9e315a344151f54ddef726da719f372fc351d00e9686ddae3ebe3159600b396a"
         }
-      ]
+      ],
+      "refinedOutput": "/programme-artwork/taleem-diagonal-v3.webp"
     },
     {
       "name": "qurbani",
@@ -49,7 +51,8 @@
           "path": "qurbani-meat-distribution-2025/003/WhatsApp Image 2025-06-13 at 12.01.44 AM (1).jpeg",
           "sha256": "7ab27cd30c94837d1354896669c131aa61ebcc1223cfb5127d786ebe00105023"
         }
-      ]
+      ],
+      "refinedOutput": "/programme-artwork/qurbani-diagonal-v3.webp"
     },
     {
       "name": "winter",
@@ -61,7 +64,8 @@
           "path": "winter-relief/005/WhatsApp Image 2026-02-18 at 1.02.01 PM (2).jpeg",
           "sha256": "8dffea4ea84292a60fd46ec0dd1c4da5b149a8ffe8991cf0ec22b9cd39246fd0"
         }
-      ]
+      ],
+      "refinedOutput": "/programme-artwork/winter-diagonal-v3.webp"
     },
     {
       "name": "dates",
@@ -73,7 +77,8 @@
           "path": "dates-distribution-2025/001/DDD20252.jpeg",
           "sha256": "b61fd1fd445f4427c22f3c5760462beeb1292bee49d642e4a8cbd47197944c65"
         }
-      ]
+      ],
+      "refinedOutput": "/programme-artwork/dates-diagonal-v3.webp"
     },
     {
       "name": "flood",
@@ -85,7 +90,15 @@
           "path": "hyderabad-flood-relief-2020/002/WhatsApp Image 2026-09-09 at 2.20.39 AM (1).jpg",
           "sha256": "4c51fd6c696c828949f89668500900ab453d19928b7515eda28552b907153ce8"
         }
-      ]
+      ],
+      "refinedOutput": "/programme-artwork/flood-diagonal-v3.webp"
     }
-  ]
+  ],
+  "refinement": {
+    "script": "scripts/refine-programme-artwork.mjs",
+    "purpose": "Owner-directed narrow diagonal separator treatment for programme presentation artwork.",
+    "sourceOutputsPreserved": true,
+    "generatedOutputsIgnored": true,
+    "method": "SHA-256-guarded build-time pixel repair around the existing diagonal seam, followed by a narrow Amaana gold hairline. Documentary source files and approved v2 composites remain unchanged."
+  }
 }

@@ -1,4 +1,4 @@
-.privacy{padding:clamp(1.5rem,4vw,2.5rem);border:1px solid var(--af-color-border);border-left:4px solid var(--af-color-gold-500);border-radius:1rem;background:var(--af-color-surface)}
+.privacy{padding:clamp(1.5rem,4vw,2.5rem);border:1px solid var(--af-color-border);border-radius:1rem;background:var(--af-color-surface)}
 .socialSection{padding-block:clamp(2.5rem,5vw,4rem)}
 .socialGrid{display:grid;gap:2rem}
 .socialLinks.socialLinks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1rem}
