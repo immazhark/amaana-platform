@@ -432,6 +432,30 @@ test('impact and transparency expose the same explicit public/private evidence b
   }
 });
 
+test('shared page heroes expose their semantic visual-family hooks and L2 photo fade', async ({ page }) => {
+  const families = [
+    ['/partner', 'page-hero--action'],
+    ['/compliance', 'page-hero--trust'],
+    ['/contact', 'page-hero--information'],
+    ['/recognition', 'page-hero--recognition'],
+    ['/our-work/eid-gift-kits', 'page-hero--level2'],
+  ];
+
+  for (const [path, className] of families) {
+    await openPublicPage(page, path);
+    await expect(page.locator('.page-hero')).toHaveClass(new RegExp(className));
+  }
+
+  const visual = page.locator('.page-hero__visual');
+  const fade = await visual.evaluate(node => ({
+    mask: getComputedStyle(node).maskImage,
+    webkitMask: getComputedStyle(node).webkitMaskImage,
+    border: getComputedStyle(node).borderLeftWidth,
+  }));
+  expect(fade.mask === 'none' && fade.webkitMask === 'none').toBe(false);
+  expect(fade.border).toBe('0px');
+});
+
 test('canonical continuation routes expose unique internal destinations on partner and recognition pages', async ({ page }) => {
   const expected = {
     '/partner': ['/how-we-verify', '/transparency', '/get-involved'],
