@@ -84,9 +84,11 @@ test('shared chrome and footer remain overflow-free on 390px mobile', async ({ p
     viewport: document.documentElement.clientWidth,
     scrollWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
     logoWidth: document.querySelector('.site-header .brand-lockup')?.getBoundingClientRect().width ?? 0,
+    railHeight: document.querySelector('.amaana-reminders')?.getBoundingClientRect().height ?? 0,
   }));
   expect(geometry.logoWidth).toBeGreaterThanOrEqual(60);
   expect(geometry.scrollWidth).toBeLessThanOrEqual(geometry.viewport + 1);
+  expect(geometry.railHeight).toBeLessThanOrEqual(110);
   await expect(page.getByText('Reminder', { exact: true })).toBeVisible();
   await expect(page.getByText('AMAANA LIVE', { exact: true })).toBeVisible();
   const railText = await page.locator('.amaana-reminder-content strong, .amaana-live-content strong').evaluateAll(nodes =>
