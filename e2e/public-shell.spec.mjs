@@ -606,7 +606,7 @@ test('client navigation uses a full-screen branded blocking overlay without coll
   expect(geometry).not.toBeNull();
   expect(geometry.x).toBeLessThanOrEqual(1);
   expect(geometry.width).toBeGreaterThanOrEqual(389);
-  expect(await page.evaluate(() => document.body.style.overflow)).toBe('hidden');
+  expect(await page.evaluate(() => getComputedStyle(document.body).overflowY)).toBe('hidden');
 
   const during = await page.locator('main#main').boundingBox();
   expect(during).not.toBeNull();

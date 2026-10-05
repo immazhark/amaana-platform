@@ -93,10 +93,10 @@ for (const width of [390, 1440]) {
       expect(label.clip).toBe('inset(50%)');
       expect(label.hidden).not.toBe('true');
       await expect(overlay.locator('.amaana-loading-dots i')).toHaveCount(3);
-      expect(await page.evaluate(() => document.body.style.overflow)).toBe('hidden');
+      expect(await page.evaluate(() => getComputedStyle(document.body).overflowY)).toBe('hidden');
     } finally { release(); }
     await expect(page).toHaveURL(/\/terms$/);
     await expect(page.locator('.amaana-navigation-loading')).toHaveCount(0);
-    await expect.poll(() => page.evaluate(() => document.body.style.overflow)).not.toBe('hidden');
+    await expect.poll(() => page.evaluate(() => getComputedStyle(document.body).overflowY)).not.toBe('hidden');
   });
 }

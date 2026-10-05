@@ -37,13 +37,21 @@ export function useSiteScroll(pathname: string) {
         instance = new SmoothScroll({
           lerp: 0.16, smoothWheel: true, syncTouch: false,
           prevent: node => node.matches(nested),
-          virtualScroll: ({ event: input }) => !input.ctrlKey && document.body.style.overflow !== "hidden"
-            && !document.querySelector(".mobile-menu.open, .amaana-navigation-loading, [role='dialog'][aria-modal='true'], dialog[open]"),
+          virtualScroll: ({ event: input }) => !input.ctrlKey
+            && !document.body.matches(".af-menu-lock,.af-navigation-lock")
+            && !document.querySelector("[role='dialog'][aria-modal='true'],dialog[open]"),
         });
         instance.on("scroll", wake);
       } finally { loading = false; }
     };
-    const wheel = (event: WheelEvent) => { wake(); void initialize(event); };
+    const wheel = (event: WheelEvent) => {
+      if (document.body.matches(".af-menu-lock,.af-navigation-lock")) {
+        event.preventDefault();
+        return;
+      }
+      wake();
+      void initialize(event);
+    };
     const native = () => {
       if (frame !== undefined) cancelAnimationFrame(frame);
       frame = undefined;
@@ -56,7 +64,7 @@ export function useSiteScroll(pathname: string) {
       if (event.target instanceof Element && event.target.closest("a[href], button, summary")) native();
     };
     const sync = () => { if (!eligible()) destroy(); };
-    window.addEventListener("wheel", wheel, { passive: true });
+    window.addEventListener("wheel", wheel, { passive: false });
     window.addEventListener("keydown", key, true);
     window.addEventListener("click", click, true);
     window.addEventListener("popstate", native);

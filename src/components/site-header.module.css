@@ -6,6 +6,7 @@
   scrollbar-width:thin;
   scrollbar-color:var(--af-color-gold-ink) var(--af-color-surface);
 }
+:global(html):has(body.af-menu-lock),:global(html):has(body.af-navigation-lock),:global(body.af-menu-lock),:global(body.af-navigation-lock){overflow:hidden}
 @media(max-width:1020px){
   :global(body):has(.header :global(.mobile-menu.open)){overflow:hidden}
 }
