@@ -25,6 +25,9 @@ export const PUBLIC_IDENTITY_IMAGE_WHERE = {
   sortOrder: IDENTITY_MEDIA_SORT_ORDER,
 };
 
+export const PUBLIC_GALLERY_IMAGE_WHERE = PUBLIC_APPROVED_IMAGE_WHERE;
+export const PUBLIC_GALLERY_IMAGE_TAKE = 12;
+
 export const PUBLIC_IMAGE_SELECT = {
   id: true,
   kind: true,
@@ -307,9 +310,9 @@ export const getCompletedAidShowcaseData = cache(async () => {
     select: {
       slug: true,
       mediaAssets: {
-        where: PUBLIC_APPROVED_IMAGE_WHERE,
+        where: PUBLIC_GALLERY_IMAGE_WHERE,
         orderBy: [{ sourceYear: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }],
-        take: 12,
+        take: PUBLIC_GALLERY_IMAGE_TAKE,
         select: PUBLIC_IMAGE_SELECT,
       },
     },
@@ -406,9 +409,9 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
     select: {
       slug: true,
       mediaAssets: {
-        where: PUBLIC_APPROVED_IMAGE_WHERE,
+        where: PUBLIC_GALLERY_IMAGE_WHERE,
         orderBy: [{ sourceYear: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }],
-        take: 12,
+        take: PUBLIC_GALLERY_IMAGE_TAKE,
         select: PUBLIC_IMAGE_SELECT,
       },
     },
