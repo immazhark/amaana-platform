@@ -12,9 +12,8 @@ export function NavigationProgress() {
 
   useEffect(() => {
     if (!visible) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => { document.body.style.overflow = previousOverflow; };
+    document.body.classList.add("af-navigation-lock");
+    return () => { document.body.classList.remove("af-navigation-lock"); };
   }, [visible]);
 
   useEffect(() => {
@@ -36,9 +35,7 @@ export function NavigationProgress() {
       setPendingFrom(current.pathname);
     };
 
-    const finishHistoryNavigation = () => {
-      setPendingFrom(null);
-    };
+    const finishHistoryNavigation = () => setPendingFrom(null);
 
     document.addEventListener("click", begin, true);
     window.addEventListener("popstate", finishHistoryNavigation);
