@@ -21,7 +21,8 @@
           "path": "qurbani-meat-distribution-2025/001/WhatsApp Image 2025-06-13 at 12.00.57 AM.jpeg",
           "sha256": "2710087e4beddee614b67f06b0812f7b871b62d975b0af2e5e062b68dc65273b"
         }
-      ]
+      ],
+      "refinedOutput": "/hero/origin-hairline.webp"
     },
     {
       "name": "eid",
@@ -79,5 +80,12 @@
         }
       ]
     }
-  ]
+  ],
+  "refinement": {
+    "script": "scripts/refine-programme-artwork.mjs",
+    "purpose": "Owner-directed narrow diagonal separator treatment for presentation artwork.",
+    "sourceOutputsPreserved": true,
+    "generatedOutputsIgnored": true,
+    "method": "SHA-256-guarded build-time pixel repair around the existing diagonal seam followed by a narrow Amaana gold hairline."
+  }
 }
