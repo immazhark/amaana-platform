@@ -293,7 +293,9 @@ export const getImpactPageData = cache(async () => {
 /**
  * Completed-case showcase for /appeals. Keep this intentionally narrow: only
  * published initiatives under the canonical medical/financial relief cause and
- * a bounded set of approved public images per record is used so the card strip can prefer documentary gallery photography.
+ * a bounded set of already-approved public images per record. The view-layer
+ * selector prefers documentary gallery photography and falls back to identity
+ * artwork only when no supporting image is available.
  */
 export const getCompletedAidShowcaseData = cache(async () => {
   return prisma.initiative.findMany({
@@ -305,9 +307,9 @@ export const getCompletedAidShowcaseData = cache(async () => {
     select: {
       slug: true,
       mediaAssets: {
-        where: PUBLIC_IDENTITY_IMAGE_WHERE,
-        orderBy: [{ sourceYear: "desc" }],
-        take: 1,
+        where: PUBLIC_APPROVED_IMAGE_WHERE,
+        orderBy: [{ sourceYear: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }],
+        take: 12,
         select: PUBLIC_IMAGE_SELECT,
       },
     },
@@ -392,9 +394,10 @@ export const getTransparencyPageData = cache(async () => {
 
 
 /**
- * One reviewed image per child programme, fetched in a single query.
- * Used by programme hubs so authentic media can replace generic placeholders
- * without introducing N+1 reads or bypassing publication/privacy gates.
+ * A bounded set of reviewed images per child programme, fetched in one query.
+ * Programme hubs can therefore prefer authentic approved gallery photography
+ * while retaining identity artwork as a safe fallback, without N+1 reads or
+ * bypassing publication/privacy gates.
  */
 export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
   if (!slugs.length) return [];
@@ -403,9 +406,9 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
     select: {
       slug: true,
       mediaAssets: {
-        where: PUBLIC_IDENTITY_IMAGE_WHERE,
-        orderBy: [{ sourceYear: "desc" }, { createdAt: "desc" }],
-        take: 1,
+        where: PUBLIC_APPROVED_IMAGE_WHERE,
+        orderBy: [{ sourceYear: "desc" }, { sortOrder: "asc" }, { createdAt: "desc" }],
+        take: 12,
         select: PUBLIC_IMAGE_SELECT,
       },
     },
