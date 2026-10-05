@@ -305,9 +305,9 @@ export const getCompletedAidShowcaseData = cache(async () => {
     select: {
       slug: true,
       mediaAssets: {
-        where: PUBLIC_IDENTITY_IMAGE_WHERE,
-        orderBy: [{ sourceYear: "desc" }],
-        take: 1,
+        where: PUBLIC_APPROVED_IMAGE_WHERE,
+        orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }, { createdAt: "desc" }],
+        take: 12,
         select: PUBLIC_IMAGE_SELECT,
       },
     },
