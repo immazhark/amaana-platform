@@ -4,14 +4,18 @@ import path from "node:path";
 import sharp from "sharp";
 
 const directory = path.resolve("public/programme-artwork");
-const records = [
-  ["eid-diagonal-v2.webp", "eid-diagonal-v3.webp", "c3d71d6e80f36146f97fa80afe25a32865f01b71db6ab429ebcdbe1ed041ef13"],
-  ["taleem-diagonal-v2.webp", "taleem-diagonal-v3.webp", "bc4c6efb659c74d34d94e13ccebf2aa4add98027a3dbf684cff88339dac6bf2f"],
-  ["qurbani-diagonal-v2.webp", "qurbani-diagonal-v3.webp", "0a7e47b6b9b10ec5c88e335461c474f4627ed57b729d92ecab6cec04b21cc9aa"],
-  ["winter-diagonal-v2.webp", "winter-diagonal-v3.webp", "fbe534bf2d6341360452878b6acae8fdb37b4d7741b14d6d1b88558c0484b00d"],
-  ["dates-diagonal-v2.webp", "dates-diagonal-v3.webp", "55c507a14f8221b0168ee07369fa2ef9dfefd617e51d2fc08295c47e1dd87b08"],
-  ["flood-diagonal-v2.webp", "flood-diagonal-v3.webp", "724169a831ff6461f443d0eec81c8f0b0c103ccc8980010acc201c64812a267b"],
-];
+const provenancePath = path.join(directory, "provenance.json");
+const provenance = JSON.parse(await readFile(provenancePath, "utf8"));
+const records = provenance.records.map(record => {
+  if (!record.output || !record.refinedOutput || !record.sha256) {
+    throw new Error(`Incomplete programme artwork provenance for ${record.name ?? "unknown record"}.`);
+  }
+  return [
+    path.basename(record.output),
+    path.basename(record.refinedOutput),
+    record.sha256,
+  ];
+});
 
 const template = {
   width: 1536,
