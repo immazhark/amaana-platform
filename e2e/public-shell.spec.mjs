@@ -462,6 +462,9 @@ test('programme-category carousels use each programme own approved media instead
   for (const img of await images.all()) {
     await expect.poll(() => img.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
   }
+
+  const eidCard = section.locator('[role="group"]').filter({ hasText: 'Eid Gift Kits' });
+  await expect(eidCard.locator('img')).toHaveAttribute('src', /eid-diagonal-v3\.webp/);
 });
 
 test('appeals completed-support carousel uses approved case media instead of generic placeholders', async ({ page }) => {
