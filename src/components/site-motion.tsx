@@ -29,7 +29,7 @@ export function SiteMotion() {
       element.style.translate = element.style.scale = element.style.opacity = "";
       owned.delete(element);
     };
-    const feedback = async (element: HTMLElement, pressed = false) => {
+    const feedback = (element: HTMLElement, pressed = false) => {
       if (preference.matches) { clear(element); return; }
       if (disposed || !element.isConnected) return;
       running.get(element)?.cancel();
@@ -37,10 +37,11 @@ export function SiteMotion() {
       owned.add(element);
       const animation = animate(element, { translate: raised && !pressed ? "0 -1px" : "0 0px", scale: pressed ? "0.98" : "1" }, { duration: pressed ? 0.1 : 0.22, ease: easing });
       running.set(element, animation);
-      await animation;
-      if (running.get(element) !== animation) return;
-      running.delete(element);
-      if (!raised && !pressed) clear(element);
+      void animation.then(() => {
+        if (running.get(element) !== animation) return;
+        running.delete(element);
+        if (!raised && !pressed) clear(element);
+      });
     };
     const target = (event: Event) => {
       const element = event.target instanceof Element ? event.target.closest<HTMLElement>(actions) : null;
@@ -52,28 +53,26 @@ export function SiteMotion() {
       if (!element) return;
       const related = (event as PointerEvent | FocusEvent).relatedTarget;
       if (related instanceof Node && element.contains(related)) return;
-      void feedback(element);
+      feedback(element);
     };
     const press = (event: Event) => {
       if (event instanceof PointerEvent && event.button !== 0) return;
       if (event instanceof KeyboardEvent && (event.repeat || !["Enter", " "].includes(event.key))) return;
       const element = target(event);
-      if (element) void feedback(element, event.type === "pointerdown" || event.type === "keydown");
+      if (element) feedback(element, event.type === "pointerdown" || event.type === "keydown");
     };
     const observer = new IntersectionObserver(entries => {
       for (const entry of entries) {
         if (!entry.isIntersecting || !(entry.target instanceof HTMLElement)) continue;
         const element = entry.target;
         observer.unobserve(element);
-        if (preference.matches || entry.boundingClientRect.top < 80) continue;
-        void (async () => {
-          if (disposed || preference.matches || !element.isConnected) return;
-          owned.add(element);
-          const animation = animate(element, { opacity: [0.86, 1], translate: ["0 8px", "0 0px"] }, { duration: 0.38, ease: easing });
-          running.set(element, animation);
-          await animation;
+        if (preference.matches || entry.boundingClientRect.top < 80 || disposed || !element.isConnected) continue;
+        owned.add(element);
+        const animation = animate(element, { opacity: [0.86, 1], translate: ["0 8px", "0 0px"] }, { duration: 0.38, ease: easing });
+        running.set(element, animation);
+        void animation.then(() => {
           if (running.get(element) === animation) clear(element);
-        })();
+        });
       }
     }, { threshold: 0.12 });
     const register = (root: Element) => {
