@@ -1,12 +1,15 @@
 import { cache } from 'react';
+import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
 import { defaultHomeConfig, parseHomeConfig } from '@/lib/home-carousel';
 import { getAppealCoverMediaBatch, type ApprovedAppealCoverMedia } from '@/lib/public-page-data';
 
-export const getHomeCarouselConfig = cache(async () => {
+const getHomeCarouselConfigCached = unstable_cache(async () => {
   const row = await prisma.homeCarousel.findUnique({ where: { id: 'homepage' } });
   return { config: row ? parseHomeConfig(row.config) : structuredClone(defaultHomeConfig), revision: row?.revision ?? 0 };
-});
+}, ['home-carousel-config'], { revalidate: 300, tags: ['home-carousel'] });
+
+export const getHomeCarouselConfig = cache(getHomeCarouselConfigCached);
 export const getHomeCarouselImages = cache(async (images: string[]) => {
   const ids = [...new Set(images.filter(i => i.startsWith('asset:')).map(i => i.slice(6)))];
   if (!ids.length) return new Map<string, ApprovedAppealCoverMedia>();
