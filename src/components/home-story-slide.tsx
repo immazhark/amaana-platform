@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import type { HomeSlide } from "@/lib/home-carousel";
+import { HOME_ARTWORK_SRC, type HomeSlide } from "@/lib/home-carousel";
 import { PublicMedia } from "@/components/public-media";
 import type { getAppealCoverMedia } from "@/lib/public-page-data";
 
@@ -43,7 +43,7 @@ export function ConfiguredHomeSlide({ slide, asset, priority = false }: { slide:
   const hasArtwork = ['origin', 'eid', 'medical', 'taleem', 'qurbani'].includes(slide.image);
   const visual = asset || hasArtwork ? <div className="v3-home-banner-media" style={{ '--home-focal-x': `${slide.focalX}%`, '--home-focal-y': `${slide.focalY}%` } as import('react').CSSProperties}>
     <HomeBannerLogo />
-    {asset ? <PublicMedia asset={{ ...asset, altText: slide.imageAlt || asset.altText }} priority={priority} sizes="(max-width: 900px) 100vw, 60vw" /> : <figure className="v2-media-item"><Image src={({ origin: "/hero/origin.webp", eid: "/hero/eid.webp", taleem: "/hero/taleem.webp", qurbani: "/hero/qurbani.webp", medical: "/hero/medical.webp" } as Record<string, string>)[slide.image] ?? `/hero/${slide.image}.webp`} width={1536} height={1024} alt={slide.imageAlt} sizes="(max-width: 900px) 100vw, 60vw" priority={priority} /></figure>}
+    {asset ? <PublicMedia asset={{ ...asset, altText: slide.imageAlt || asset.altText }} priority={priority} sizes="(max-width: 900px) 100vw, 60vw" /> : <figure className="v2-media-item"><Image src={HOME_ARTWORK_SRC[slide.image as keyof typeof HOME_ARTWORK_SRC] ?? `/hero/${slide.image}.webp`} width={1536} height={1024} alt={slide.imageAlt} sizes="(max-width: 900px) 100vw, 60vw" priority={priority} /></figure>}
   </div> : undefined;
   return <HomeBannerSlide className={slide.id === "origin" ? "v3-home-banner-slide--story" : ""} eyebrow={slide.eyebrow} title={slide.title} description={slide.description} visual={visual} priority={priority} actions={[{ href: slide.primaryHref, label: slide.primaryLabel }, ...(slide.secondaryLabel ? [{ href: slide.secondaryHref, label: slide.secondaryLabel, secondary: true }] : [])]} />;
 }
