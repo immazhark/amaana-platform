@@ -485,7 +485,7 @@ export async function getAppealCoverMediaBatch(
 
     approved.set(asset.publicUrl, {
       id: asset.id,
-      kind: asset.kind,
+      kind: "IMAGE",
       title: asset.title,
       publicUrl: asset.publicUrl,
       externalUrl: asset.externalUrl,
