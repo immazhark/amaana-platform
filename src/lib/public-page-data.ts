@@ -421,13 +421,36 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
  * library record. Public rendering repeats the same fail-closed publication
  * boundary so an old or subsequently revoked URL cannot leak into the hero.
  */
-export const getAppealCoverMedia = cache(async (coverImageUrl: string | null | undefined) => {
-  if (!coverImageUrl) return null;
+type ApprovedAppealCoverMedia = {
+  id: string;
+  kind: "IMAGE";
+  title: string | null;
+  publicUrl: string | null;
+  externalUrl: string | null;
+  altText: string | null;
+  caption: string | null;
+  sourceYear: number | null;
+  width: number | null;
+  height: number | null;
+  sortOrder: number;
+};
 
-  const media = await prisma.mediaAsset.findFirst({
+/**
+ * Batch the reviewed cover-media lookup used by homepage and carousel surfaces.
+ *
+ * This preserves the existing privacy-review fail-closed rule while avoiding
+ * two extra database reads per appeal/image (media + audit event).
+ */
+export async function getAppealCoverMediaBatch(
+  coverImageUrls: readonly (string | null | undefined)[],
+) {
+  const urls = [...new Set(coverImageUrls.filter((url): url is string => Boolean(url)))];
+  if (!urls.length) return new Map<string, ApprovedAppealCoverMedia>();
+
+  const media = await prisma.mediaAsset.findMany({
     where: {
       ...PUBLIC_APPROVED_IMAGE_WHERE,
-      publicUrl: coverImageUrl,
+      publicUrl: { in: urls },
     },
     select: {
       ...PUBLIC_IMAGE_SELECT,
@@ -435,31 +458,51 @@ export const getAppealCoverMedia = cache(async (coverImageUrl: string | null | u
       privacyApprovedAt: true,
     },
   });
-  if (!media) return null;
 
-  const review = await prisma.auditEvent.findFirst({
+  if (!media.length) return new Map<string, ApprovedAppealCoverMedia>();
+
+  const reviews = await prisma.auditEvent.findMany({
     where: {
       entityType: "MediaAsset",
-      entityId: media.id,
+      entityId: { in: media.map(asset => asset.id) },
       action: "media.privacy_reviewed",
     },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    select: { metadata: true },
+    select: { entityId: true, metadata: true },
   });
 
-  if (getAppealCoverMediaIssues(media, review?.metadata).length > 0) return null;
+  const latestReviewByAsset = new Map<string, (typeof reviews)[number]["metadata"]>();
+  for (const review of reviews) {
+    if (!latestReviewByAsset.has(review.entityId)) {
+      latestReviewByAsset.set(review.entityId, review.metadata);
+    }
+  }
 
-  return {
-    id: media.id,
-    kind: media.kind,
-    title: media.title,
-    publicUrl: media.publicUrl,
-    externalUrl: media.externalUrl,
-    altText: media.altText,
-    caption: media.caption,
-    sourceYear: media.sourceYear,
-    width: media.width,
-    height: media.height,
-    sortOrder: media.sortOrder,
-  };
+  const approved = new Map<string, ApprovedAppealCoverMedia>();
+  for (const asset of media) {
+    if (!asset.publicUrl) continue;
+    if (getAppealCoverMediaIssues(asset, latestReviewByAsset.get(asset.id)).length > 0) continue;
+
+    approved.set(asset.publicUrl, {
+      id: asset.id,
+      kind: asset.kind,
+      title: asset.title,
+      publicUrl: asset.publicUrl,
+      externalUrl: asset.externalUrl,
+      altText: asset.altText,
+      caption: asset.caption,
+      sourceYear: asset.sourceYear,
+      width: asset.width,
+      height: asset.height,
+      sortOrder: asset.sortOrder,
+    });
+  }
+
+  return approved;
+}
+
+export const getAppealCoverMedia = cache(async (coverImageUrl: string | null | undefined) => {
+  if (!coverImageUrl) return null;
+  const media = await getAppealCoverMediaBatch([coverImageUrl]);
+  return media.get(coverImageUrl) ?? null;
 });
