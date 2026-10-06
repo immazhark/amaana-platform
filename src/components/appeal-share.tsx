@@ -44,7 +44,7 @@ export function AppealShare({ title, summary, path }: AppealShareProps) {
   }
 
   return (
-    <div className="v2-appeal-share" aria-label="Share this appeal">
+    <div className="v2-appeal-share" role="group" aria-label="Share this appeal">
       <div>
         <span className="v2-section-label">Share responsibly</span>
         <p>Help this verified appeal reach someone who may be able to support it.</p>
