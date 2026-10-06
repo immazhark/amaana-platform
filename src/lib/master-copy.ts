@@ -29,7 +29,6 @@ export const programmeChildren = (slug: string) => programmes.filter(item => 'pa
 function programmeRecency(item: (typeof programmes)[number]) {
  if ('year' in item && typeof item.year === 'number') return item.year;
  if ('endYear' in item && typeof item.endYear === 'number') return item.endYear;
- if ('startYear' in item && typeof item.startYear === 'number') return item.startYear;
  return Number.NEGATIVE_INFINITY;
 }
 
