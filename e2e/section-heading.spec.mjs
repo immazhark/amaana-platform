@@ -29,8 +29,7 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
         expect(heading.label.length, path).toBeGreaterThan(0);
         expect(heading.title.length, path).toBeGreaterThan(0);
         expect(heading.intro.length, path).toBeGreaterThan(0);
-        expect(heading.lineContent, path).not.toBe('none');
-        expect(heading.lineWidth, path).toBe(40);
+        expect(heading.lineContent, path).toBe('none');
         expect(heading.weight, path).toBe('500');
         expect(heading.font, path).toBeLessThanOrEqual(56);
         if (width > 900) { expect(heading.horizontal, path).toBe(true); if (!heading.closing) expect(heading.baselineGap, path).toBeLessThan(2); }
