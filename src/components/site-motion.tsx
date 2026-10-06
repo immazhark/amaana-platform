@@ -20,7 +20,6 @@ export function SiteMotion() {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const running = new Map<HTMLElement, Playback>();
     const owned = new Set<HTMLElement>();
-    const seen = new WeakSet<HTMLElement>();
     let disposed = false;
     const clear = (element: HTMLElement) => {
       running.get(element)?.cancel();
@@ -77,8 +76,6 @@ export function SiteMotion() {
     if (!pathname.startsWith("/admin")) {
       const main = document.getElementById("main");
       if (main) for (const element of main.querySelectorAll<HTMLElement>(introductions)) {
-        if (seen.has(element)) continue;
-        seen.add(element);
         observer.observe(element);
       }
     }

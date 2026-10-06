@@ -150,7 +150,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
       </section>
     )}
 
-    <div className="filter-row" aria-label="Notification status filter">
+    <div className="filter-row" role="group" aria-label="Notification status filter">
       <strong>Status:</strong>
       <Link href="/admin/notifications" aria-current={!selected ? "page" : undefined}>All</Link>
       {statusOrder.map(item => (

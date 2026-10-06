@@ -8,7 +8,7 @@ export function DonationRemountFixture() {
 
   return (
     <div>
-      <div aria-label="Donation checkout remount controls" style={{ display: "flex", gap: ".75rem", marginBottom: "1rem" }}>
+      <div role="group" aria-label="Donation checkout remount controls" style={{ display: "flex", gap: ".75rem", marginBottom: "1rem" }}>
         <button type="button" onClick={() => setMounted(false)} disabled={!mounted}>
           Unmount donation form
         </button>
