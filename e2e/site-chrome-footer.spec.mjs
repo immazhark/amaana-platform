@@ -135,6 +135,8 @@ test('homepage hero fixture preserves breathing room and two-column editorial al
   expect(result.copyWidth / result.contentWidth).toBeGreaterThan(0.48);
   expect(result.copyWidth / result.contentWidth).toBeLessThan(0.55);
   expect(result.decorativeCount).toBe(0);
+  await expect(page.locator('.hero-dots')).toHaveAttribute('role', 'group');
+  await expect(page.getByRole('group', { name: 'Choose a banner slide' })).toBeVisible();
   expect(result.scrollWidth).toBeLessThanOrEqual(result.viewport + 1);
 });
 
