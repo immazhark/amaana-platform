@@ -46,7 +46,13 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const [liveAppeals, discovery, { config }] = await Promise.all([getHomepageAppeals(20), getHomepageDiscoveryData(), getHomeCarouselConfig()]);
   const appeals = liveAppeals.slice(0, 3);
-  const [images, appealCoverMedia] = await Promise.all([\n    getHomeCarouselImages(config.slides.map(s => s.image)),\n    getAppealCoverMediaBatch(liveAppeals.map(appeal => appeal.coverImageUrl)),\n  ]);\n  const appealImages = liveAppeals.map(appeal =>\n    appeal.coverImageUrl ? appealCoverMedia.get(appeal.coverImageUrl) ?? null : null,\n  );
+  const [images, appealCoverMedia] = await Promise.all([
+    getHomeCarouselImages(config.slides.map(s => s.image)),
+    getAppealCoverMediaBatch(liveAppeals.map(appeal => appeal.coverImageUrl)),
+  ]);
+  const appealImages = liveAppeals.map(appeal =>
+    appeal.coverImageUrl ? appealCoverMedia.get(appeal.coverImageUrl) ?? null : null,
+  );
   const appealSlides = liveAppeals.map((appeal, index) => ({ ...defaultHomeSlides[0], id: `appeal-${appeal.slug}`, eyebrow: 'Current verified appeal', title: appeal.title, description: appeal.summary, primaryLabel: 'View this appeal', primaryHref: `/appeals/${appeal.slug}`, secondaryLabel: 'Support this need', secondaryHref: `/donate/${appeal.slug}`, appealSlug: appeal.slug, image: appealImages[index] ? `asset:${appealImages[index]!.id}` : 'logo', imageAlt: appealImages[index]?.altText || '', order: index }));
   appealImages.forEach(asset => { if (asset) images.set(asset.id, asset); });
   const heroSlides = composeHomeSlides(config, appealSlides);
