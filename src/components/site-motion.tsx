@@ -21,7 +21,6 @@ export function SiteMotion() {
     const running = new Map<HTMLElement, Playback>();
     const owned = new Set<HTMLElement>();
     const seen = new WeakSet<HTMLElement>();
-    const publicPage = !pathname.startsWith("/admin");
     let disposed = false;
     const clear = (element: HTMLElement) => {
       running.get(element)?.cancel();
@@ -75,31 +74,21 @@ export function SiteMotion() {
         });
       }
     }, { threshold: 0.12 });
-    const register = (root: Element) => {
-      const elements = [...root.querySelectorAll<HTMLElement>(introductions)];
-      if (root instanceof HTMLElement && root.matches(introductions)) elements.push(root);
-      for (const element of elements) {
+    if (!pathname.startsWith("/admin")) {
+      const main = document.getElementById("main");
+      if (main) for (const element of main.querySelectorAll<HTMLElement>(introductions)) {
         if (seen.has(element)) continue;
         seen.add(element);
         observer.observe(element);
       }
-    };
-    const main = document.getElementById("main");
-    if (main && publicPage) register(main);
-    const mutations = new MutationObserver(records => {
-      for (const record of records) for (const node of record.addedNodes) {
-        if (node instanceof Element && publicPage) register(node);
-      }
-      for (const element of owned) if (!element.isConnected) clear(element);
-    });
-    if (main) mutations.observe(main, { childList: true, subtree: true });
+    }
     const reset = () => { if (preference.matches) for (const element of owned) clear(element); };
     for (const event of hoverEvents) document.addEventListener(event, hover);
     for (const event of pressEvents) document.addEventListener(event, press);
     preference.addEventListener("change", reset);
     return () => {
       disposed = true;
-      observer.disconnect(); mutations.disconnect();
+      observer.disconnect();
       preference.removeEventListener("change", reset);
       for (const event of hoverEvents) document.removeEventListener(event, hover);
       for (const event of pressEvents) document.removeEventListener(event, press);
