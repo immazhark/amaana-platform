@@ -42,6 +42,7 @@ export function NavigationProgress() {
       <div className="amaana-loading-indicator">
         <Image className="amaana-loading-logo" src="/brand/amaana-mark.svg" alt="" aria-hidden="true" width={96} height={96} priority />
         <span className="amaana-loading-dots" aria-hidden="true"><i /><i /><i /></span>
+        <span className="sr-only">Loading page</span>
       </div>
     </div>
   ) : null;
