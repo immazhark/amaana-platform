@@ -56,6 +56,7 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  const textResizeOverflow=textResizeDetails.overflow;
  await resizeStyle.evaluate(n=>n.remove());
  const violations=audit.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}));
+ const prohibitedAria=audit.incomplete.filter(i=>i.id==='aria-prohibited-attr').flatMap(i=>i.nodes.map(n=>n.target));
  await page.addStyleTag({content:'*{content-visibility:visible!important}'});
  await page.evaluate(async()=>{for(let top=0;top<document.documentElement.scrollHeight;top+=innerHeight*.8){window.scrollTo(0,top);await new Promise(r=>setTimeout(r,30));}window.scrollTo(0,0);});
  const directory=path.resolve('site-audit',device);fs.mkdirSync(directory,{recursive:true});
@@ -68,6 +69,7 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  if(!route.startsWith('/browser-acceptance/')){expect(metrics.headings,route).toHaveLength(1);expect(metrics.headings.join(' ')).not.toMatch(/platform is temporarily unavailable|page could not complete/i);}
  expect(metrics.overflow,`${route}: ${JSON.stringify(overflowDetails)}`).toBe(false);expect(textResizeOverflow,`200% text resizing: ${route}: ${JSON.stringify(textResizeDetails)}`).toBe(false);expect(metrics.oversizedH2,route).toEqual([]);expect(metrics.brokenAnchors,route).toEqual([]);expect(errors,route).toEqual([]);
  expect(violations.filter(v=>['serious','critical'].includes(v.impact)),route).toEqual([]);
+ expect(prohibitedAria,`aria-prohibited-attr: ${route}`).toEqual([]);
 });
 
 for (const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]]) {
