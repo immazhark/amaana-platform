@@ -57,7 +57,7 @@ export default async function Page() {
         },
       ]}
     >
-      <div className={styles.routes} aria-label="Donation routes">
+      <div className={styles.routes} role="group" aria-label="Donation routes">
         <article className={styles.route}><span>Route 01</span><h3>{hasOpenAppeals ? "Support a verified public appeal" : "Public appeals"}</h3><p>{hasOpenAppeals ? `There ${openAppeals.length === 1 ? "is" : "are"} currently ${openAppeals.length} reviewed public ${openAppeals.length === 1 ? "appeal" : "appeals"} accepting support. Review the context and remaining verified target before continuing to secure domestic INR checkout.` : "No public appeal is accepting donations right now. Completed cases remain visible for accountability, and new urgent appeals appear only after review."}</p><Link className="v2-button" href="/appeals">{hasOpenAppeals ? "See verified appeals" : "View appeals and completed cases"}</Link></article>
         <article className={styles.route}><span>Route 02</span><h3>Support education or another approved programme</h3><p>Taleem sponsorship and programme giving begin with the currently available programme route or a conversation with Amaana about an approved destination.</p><Link className="v2-button v2-button--paper-secondary" href="/get-involved/sponsor-education">Explore Taleem sponsorship</Link><Link className="v2-text-link" href="/contact">Ask about programme giving →</Link></article>
       </div>
