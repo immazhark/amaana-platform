@@ -58,7 +58,7 @@ export default async function AuditHistoryPage({ searchParams }: Props) {
         <p className="lead">Read-only history of sensitive administrative actions recorded by the platform.</p>
       </div>
     </div>
-    <div className="filter-row" aria-label="Audit entity filter">
+    <div className="filter-row" role="group" aria-label="Audit entity filter">
       <strong>Entity:</strong>
       <Link href={entityHref()} aria-current={!entityType ? "page" : undefined}>All</Link>
       {facets.map(item => <Link key={item.entityType} href={entityHref(item.entityType)} aria-current={entityType === item.entityType ? "page" : undefined}>
