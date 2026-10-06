@@ -46,7 +46,7 @@
   position:relative;width:min(calc(100% - (var(--af-public-gutter) * 2)),var(--af-public-shell));margin-inline:auto;
   display:grid;grid-template-columns:minmax(0,1.12fr) minmax(24rem,.88fr);gap:0;min-height:3.25rem;padding:0
 }
-.amaana-reminder-lane,.amaana-live-lane{min-width:0;display:grid;align-items:center}
+.amaana-reminder-lane,.amaana-live-lane{min-width:0;min-height:3.25rem;display:grid;align-items:center}
 .amaana-reminder-lane{
   grid-template-columns:auto minmax(0,1fr);gap:.8rem;padding:.38rem clamp(.8rem,1.5vw,1.25rem) .38rem 0;
   border-right:1px solid rgb(18 34 57 / 10%)
@@ -161,6 +161,7 @@
 }
 @media(max-width:1020px){:root{--af-chrome-height:4.75rem;--af-chrome-logo:4.3rem}}
 @media(max-width:900px){
+  .amaana-reminders{min-height:6.5rem}
   .amaana-reminder-inner{grid-template-columns:1fr}
   .amaana-reminder-lane{border-right:0;border-bottom:1px solid rgb(18 34 57 / 8%);padding-right:0}
   .amaana-live-lane{padding-left:0}
