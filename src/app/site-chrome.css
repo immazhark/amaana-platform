@@ -198,3 +198,9 @@
     transition:none!important;animation:none!important
   }
 }
+
+/* Owner monitor QA: the official mark must read clearly at header scale without growing the chrome track. */
+.site-header .brand-official{overflow:visible}
+.site-header .brand-lockup{transform:scale(1.14);transform-origin:left center}
+@media(max-width:1020px){.site-header .brand-lockup{transform:scale(1.1)}}
+@media(prefers-reduced-motion:reduce){.site-header .brand-lockup{transition:none}}
