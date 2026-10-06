@@ -102,7 +102,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
 
   return (
     <>
-      <div className={styles.grid} aria-label="Programme photographs">
+      <div className={styles.grid} role="group" aria-label="Programme photographs">
         {safeItems.map((item, index) => {
           const descriptor = `${item.alt ?? ""} ${item.caption ?? ""}`;
           const privacyProtected = /(privacy|blurred|identit(?:y|ies) protected)/i.test(descriptor);
