@@ -194,6 +194,7 @@ export function ScrollCarousel({
         ref={viewportRef}
         className={styles.viewport}
         id={viewportId}
+        role="group"
         tabIndex={slideCount > 1 ? 0 : -1}
         onPointerDown={event => {
           navigation.current = null;
@@ -245,7 +246,7 @@ export function ScrollCarousel({
           ))}
         </div>
       </div>
-      {cinematic && slideCount > 1 ? <div className="hero-dots" aria-label="Choose a banner slide">{slides.map((_, index) => <button key={index} type="button" aria-label={`Show slide ${index + 1} of ${slideCount}`} aria-current={index === activeIndex ? "true" : undefined} aria-controls={viewportId} onClick={() => goTo(index)}><span aria-hidden="true" /></button>)}</div> : null}
+      {cinematic && slideCount > 1 ? <div className="hero-dots" role="group" aria-label="Choose a banner slide">{slides.map((_, index) => <button key={index} type="button" aria-label={`Show slide ${index + 1} of ${slideCount}`} aria-current={index === activeIndex ? "true" : undefined} aria-controls={viewportId} onClick={() => goTo(index)}><span aria-hidden="true" /></button>)}</div> : null}
       {mode !== "hero" && slideCount > 1 ? <div className={styles.progress} role="progressbar" aria-label="Carousel progress" aria-valuemin={1} aria-valuemax={slideCount} aria-valuenow={activeIndex + 1}><span style={{ transform: `scaleX(${(activeIndex + 1) / slideCount})`, transition: reducedMotion ? "none" : "transform .24s ease" }} /></div> : null}
     </section>
   );
