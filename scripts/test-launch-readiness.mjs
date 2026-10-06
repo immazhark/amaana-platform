@@ -2,26 +2,39 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { loadLaunchReadinessRegister, readinessSummary, validateLaunchReadinessRegister } from './check-launch-readiness.mjs';
 
-test('current launch register is structurally valid and remains intentionally blocked', async () => {
+test('current launch register is structurally valid and tracks the remaining launch gates exactly', async () => {
   const { gates } = await loadLaunchReadinessRegister();
   const rehearsal = readinessSummary(gates, 'rehearsal');
   const production = readinessSummary(gates, 'production');
 
   assert.deepEqual(
     rehearsal.unresolved.map(gate => gate.id).sort(),
-    ['rollback-rehearsal'],
+    [
+      'railway-preview-deployment-baseline',
+      'rollback-rehearsal',
+    ],
   );
-  assert.ok(production.unresolved.some(gate => gate.id === 'manual-rendered-accessibility-review'));
-  assert.ok(production.unresolved.some(gate => gate.id === 'final-editorial-seo-social-review'));
-  assert.ok(production.unresolved.some(gate => gate.id === 'public-media-human-review'));
-  assert.ok(production.unresolved.some(gate => gate.id === 'transactional-email-delivery'));
+
+  assert.deepEqual(
+    production.unresolved.map(gate => gate.id).sort(),
+    [
+      'controlled-live-donation-acceptance',
+      'final-editorial-seo-social-review',
+      'main-branch-protection',
+      'main-promotion-and-production-approval',
+      'manual-rendered-accessibility-review',
+      'public-media-human-review',
+      'railway-preview-deployment-baseline',
+      'refund-receipt-operational-check',
+      'rollback-rehearsal',
+      'transactional-email-delivery',
+    ],
+  );
+
+  assert.ok(production.ready.some(gate => gate.id === 'production-dns-cutover-plan'));
+  assert.ok(production.ready.some(gate => gate.id === 'production-indexing-decision'));
   assert.ok(production.ready.some(gate => gate.id === 'public-media-upload-delivery'));
   assert.ok(production.ready.some(gate => gate.id === 'razorpay-live-kyc-readiness'));
-  assert.ok(production.unresolved.some(gate => gate.id === 'controlled-live-donation-acceptance'));
-  assert.ok(production.unresolved.some(gate => gate.id === 'refund-receipt-operational-check'));
-  assert.ok(production.unresolved.some(gate => gate.id === 'production-indexing-decision'));
-  assert.ok(production.unresolved.some(gate => gate.id === 'main-branch-protection'));
-  assert.ok(production.unresolved.some(gate => gate.id === 'main-promotion-and-production-approval'));
 });
 
 test('VERIFIED gates require evidence date and unresolved gates cannot impersonate verification', () => {
