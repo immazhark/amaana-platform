@@ -2,6 +2,7 @@ import type { NextConfig } from "next";
 
 const devEval = process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
 const browserAcceptance = process.env.AMAANA_BROWSER_ACCEPTANCE === "true";
+const allowPublicIndexing = process.env.NEXT_PUBLIC_ALLOW_INDEXING === "true";
 const upgradeInsecureRequests = browserAcceptance ? "" : "; upgrade-insecure-requests";
 
 const securityHeaders = [
@@ -14,6 +15,7 @@ const securityHeaders = [
   { key: "Cross-Origin-Resource-Policy", value: "same-site" },
   { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
+  ...(!allowPublicIndexing ? [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }] : []),
 ];
 
 const noStoreHeaders = [{ key: "Cache-Control", value: "private, no-store, max-age=0" }];
