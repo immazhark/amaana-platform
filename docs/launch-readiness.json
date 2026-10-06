@@ -22,8 +22,7 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "The preview service remains online on its previous healthy deployment `eed6c1e1-d667-462b-b15c-4d2ca59ced6d` and has no official custom domain attached. Fresh preview deployments on current integration HEAD fail closed because `NEXT_PUBLIC_RAZORPAY_KEY_ID` is not a Razorpay Test key; the staging environment contract correctly refuses a Live key. `NEXT_PUBLIC_APP_URL` and fail-closed indexing variables were restored to the generated preview domain on 2026-10-06. Before preview payment acceptance is used again, configure a matching Razorpay Test key pair and redeploy; do not weaken the environment validator.",
-      "verifiedAt": "2026-09-29"
+      "evidence": "The preview service remains online on its previous healthy deployment `eed6c1e1-d667-462b-b15c-4d2ca59ced6d` and has no official custom domain attached. Fresh preview deployments on current integration HEAD fail closed because `NEXT_PUBLIC_RAZORPAY_KEY_ID` is not a Razorpay Test key; the staging environment contract correctly refuses a Live key. `NEXT_PUBLIC_APP_URL` and fail-closed indexing variables were restored to the generated preview domain on 2026-10-06. Before preview payment acceptance is used again, configure a matching Razorpay Test key pair and redeploy; do not weaken the environment validator."
     },
     {
       "id": "domestic-only-boundary",
