@@ -9,7 +9,7 @@ export function HomeGrowth({ eidProgrammePublished = true }: { eidProgrammePubli
         <div className="v3-shell">
           <SectionHeading eyebrow={<>Seven documented distributions</>} title={<>85 families became 710 — one year at a time.</>} subtitle={<>The year-by-year record shows the scale of the Eid Gift Kits programme more clearly than another retelling of its origin: steady continuity, documented across seven Ramadan distributions.</>} id="eid-growth-title" className="v3-section-head" titleClassName="v3-heading" />
 
-          <div className="v3-timeline" aria-label="Eid Gift Kits growth from 2020 to 2026">
+          <div className="v3-timeline" role="group" aria-label="Eid Gift Kits growth from 2020 to 2026">
             {eidGrowth.map(item => (
               <div className="v3-year" key={item.year}>
                 <strong>{item.year}</strong>
