@@ -421,7 +421,7 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
  * library record. Public rendering repeats the same fail-closed publication
  * boundary so an old or subsequently revoked URL cannot leak into the hero.
  */
-type ApprovedAppealCoverMedia = {
+export type ApprovedAppealCoverMedia = {
   id: string;
   kind: "IMAGE";
   title: string | null;
