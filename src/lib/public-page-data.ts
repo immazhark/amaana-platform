@@ -39,6 +39,17 @@ export const PUBLIC_IMAGE_SELECT = {
   sortOrder: true,
 } as const;
 
+export const PUBLIC_GALLERY_MEDIA_PROJECTION = {
+  where: PUBLIC_APPROVED_IMAGE_WHERE,
+  orderBy: [
+    { sortOrder: "asc" as const },
+    { sourceYear: "desc" as const },
+    { createdAt: "desc" as const },
+  ],
+  take: 12,
+  select: PUBLIC_IMAGE_SELECT,
+};
+
 /**
  * React request memoization for dynamic routes whose metadata and page body
  * need the same public record. This keeps metadata generation from causing a
@@ -304,12 +315,7 @@ export const getCompletedAidShowcaseData = cache(async () => {
     orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
     select: {
       slug: true,
-      mediaAssets: {
-        where: PUBLIC_IDENTITY_IMAGE_WHERE,
-        orderBy: [{ sourceYear: "desc" }],
-        take: 1,
-        select: PUBLIC_IMAGE_SELECT,
-      },
+      mediaAssets: PUBLIC_GALLERY_MEDIA_PROJECTION,
     },
   });
 });
@@ -392,9 +398,9 @@ export const getTransparencyPageData = cache(async () => {
 
 
 /**
- * One reviewed image per child programme, fetched in a single query.
- * Used by programme hubs so authentic media can replace generic placeholders
- * without introducing N+1 reads or bypassing publication/privacy gates.
+ * A bounded set of reviewed image candidates per child programme, fetched in one query.
+ * Programme surfaces can prefer authentic approved gallery photography while retaining
+ * identity/artwork fallbacks without N+1 reads or weaker privacy gates.
  */
 export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
   if (!slugs.length) return [];
@@ -402,12 +408,7 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
     where: { slug: { in: slugs }, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     select: {
       slug: true,
-      mediaAssets: {
-        where: PUBLIC_IDENTITY_IMAGE_WHERE,
-        orderBy: [{ sourceYear: "desc" }, { createdAt: "desc" }],
-        take: 1,
-        select: PUBLIC_IMAGE_SELECT,
-      },
+      mediaAssets: PUBLIC_GALLERY_MEDIA_PROJECTION,
     },
   });
 });

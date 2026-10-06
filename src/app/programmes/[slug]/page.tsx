@@ -10,11 +10,11 @@ import { BreadcrumbStructuredData } from '@/components/breadcrumb-structured-dat
 import { PublicContentStructuredData } from '@/components/public-content-structured-data';
 import { PageHero } from '@/components/page-hero';
 import { WorkVisualPlaceholder } from '@/components/work-visual-placeholder';
-import { programmeCategories, programmes } from '@/lib/master-copy';
+import { programmeCardMediaSlugs, programmeCategories, programmes } from '@/lib/master-copy';
 import { legacyProgrammeRoute, programmeCategoryFromRoute, programmeCategoryPath } from '@/lib/programme-category-routing';
-import { getOurWorkIndexData } from '@/lib/public-page-data';
+import { getOurWorkIndexData, getProgrammeChildMedia } from '@/lib/public-page-data';
 import { PublicMedia } from '@/components/public-media';
-import { resolvePublicMediaUrl, selectIdentityPublicImage } from '@/lib/public-media';
+import { isIdentityPublicImage, resolvePublicMediaUrl, selectGalleryPublicImage, selectIdentityPublicImage } from '@/lib/public-media';
 import { openGraphShareImages, twitterShareImages } from '@/lib/social-share-media';
 import '@/app/canonical-content.css';
 
@@ -111,6 +111,18 @@ export default async function Page({ params }: Props) {
   );
   if (items.length === 0) notFound();
 
+  const mediaSlugsByProgramme = new Map(
+    items.map(item => [item.slug, programmeCardMediaSlugs(item.slug)] as const),
+  );
+  const mediaSlugs = Array.from(new Set(
+    items.flatMap(item => mediaSlugsByProgramme.get(item.slug) ?? [item.slug]),
+  ));
+  const childMediaRecords = await getProgrammeChildMedia(mediaSlugs);
+  const childMediaBySlug = new Map(childMediaRecords.map(record => [record.slug, record.mediaAssets] as const));
+  const galleryCandidatesFor = (programmeSlug: string) => (
+    mediaSlugsByProgramme.get(programmeSlug) ?? [programmeSlug]
+  ).flatMap(mediaSlug => childMediaBySlug.get(mediaSlug) ?? []);
+
   const canonical = programmeCategoryPath(category.slug);
   const leadPhoto = items.map(item => { const record = recordBySlug.get(item.slug); return record ? selectIdentityPublicImage(record.mediaAssets) : null; }).find(Boolean) ?? null;
 
@@ -128,11 +140,26 @@ export default async function Page({ params }: Props) {
     <PageHero variant="level2" className={hasProgrammeArtwork(category.slug)||leadPhoto?bannerStyles.photo:undefined} eyebrow="Our Work · Programme Category" title={category.title} description={<p>{category.description}</p>} actions={[{label:'Explore programmes',href:'#programme-list'},{label:'Back to Our Work',href:'/our-work',secondary:true}]} visual={hasProgrammeArtwork(category.slug) ? <ProgrammeArtwork slug={category.slug} sizes="(max-width: 900px) 90vw, 45vw" /> : leadPhoto ? <PublicMedia asset={leadPhoto} priority /> : <WorkVisualPlaceholder label={category.title} />} />
     <section className="v2-section paper" id="programme-list"><div className="v2-shell">
       <SectionHeading eyebrow="Programme pathways" title="Explore the documented work" subtitle={category.summary} />
-      {items.length === 1 ? <div className={`canonical-pathways canonical-pathways--single ${styles.single}`}>{items.map(item => <article key={item.slug}><div className="canonical-pathway-visual">{hasProgrammeArtwork(item.slug) ? <ProgrammeArtwork slug={item.slug} /> : leadPhoto ? <PublicMedia asset={leadPhoto} /> : <WorkVisualPlaceholder label={item.title} />}</div><h2><Link href={`/our-work/${item.slug}`}>{item.title}</Link></h2><p>{item.summary}</p><Link className="v2-text-link" href={`/our-work/${item.slug}`}>See the documented work →</Link></article>)}</div> : <BodyCarousel label={`${category.title} programmes`} variant="content-deck">
+      {items.length === 1 ? <div className={`canonical-pathways canonical-pathways--single ${styles.single}`}>{items.map(item => {
+        const photo = selectGalleryPublicImage(galleryCandidatesFor(item.slug));
+        const visual = photo && !isIdentityPublicImage(photo)
+          ? <PublicMedia asset={photo} />
+          : hasProgrammeArtwork(item.slug)
+            ? <ProgrammeArtwork slug={item.slug} />
+            : photo
+              ? <PublicMedia asset={photo} />
+              : <WorkVisualPlaceholder label={item.title} />;
+        return <article key={item.slug}><div className="canonical-pathway-visual">{visual}</div><h2><Link href={`/our-work/${item.slug}`}>{item.title}</Link></h2><p>{item.summary}</p><Link className="v2-text-link" href={`/our-work/${item.slug}`}>See the documented work →</Link></article>;
+      })}</div> : <BodyCarousel label={`${category.title} programmes`} variant="content-deck">
         {items.map(item => {
-          const record = recordBySlug.get(item.slug);
-          const photo = record ? selectIdentityPublicImage(record.mediaAssets) : null;
-          const visual = hasProgrammeArtwork(item.slug) ? <ProgrammeArtwork slug={item.slug} /> : photo ? <PublicMedia asset={photo} /> : <WorkVisualPlaceholder label={item.title} />;
+          const photo = selectGalleryPublicImage(galleryCandidatesFor(item.slug));
+          const visual = photo && !isIdentityPublicImage(photo)
+            ? <PublicMedia asset={photo} />
+            : hasProgrammeArtwork(item.slug)
+              ? <ProgrammeArtwork slug={item.slug} />
+              : photo
+                ? <PublicMedia asset={photo} />
+                : <WorkVisualPlaceholder label={item.title} />;
           return <BodyCard key={item.slug} title={<Link href={`/our-work/${item.slug}`}>{item.title}</Link>} visual={visual} meta="Documented programme"><p>{item.summary}</p><Link className="v2-text-link" href={`/our-work/${item.slug}`}>See the documented work →</Link></BodyCard>;
         })}
       </BodyCarousel>}

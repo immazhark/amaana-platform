@@ -25,6 +25,25 @@ export const programmes = master.initiatives.map(item => {
 export const programmeCategories = master.categories;
 export const programmeBySlug = (slug: string) => programmes.find(item => item.slug === slug);
 export const programmeChildren = (slug: string) => programmes.filter(item => 'parentSlug' in item && item.parentSlug === slug);
+
+function programmeRecency(item: (typeof programmes)[number]) {
+ if ('year' in item && typeof item.year === 'number') return item.year;
+ if ('endYear' in item && typeof item.endYear === 'number') return item.endYear;
+ return Number.NEGATIVE_INFINITY;
+}
+
+/**
+ * Lower-prominence programme cards may use documentary media from the latest
+ * published edition when the umbrella record itself has only identity artwork.
+ * Keep this intentionally bounded to one child slug so category pages do not
+ * load every historical gallery.
+ */
+export function programmeCardMediaSlugs(slug: string) {
+ const children = programmeChildren(slug);
+ if (!children.length) return [slug];
+ const latest = [...children].sort((a, b) => programmeRecency(b) - programmeRecency(a))[0];
+ return [slug, latest.slug];
+}
 export const complianceCopy = {
  domestic: 'Domestic donations only. Amaana Foundation is not FCRA-registered.',
  tax: 'Amaana Foundation currently holds provisional approval under Section 80G via Form 10AC dated 26 January 2026 for AY 2026–27 through AY 2028–29. Tax treatment depends on applicable law, donor eligibility and valid receipt/compliance requirements.',
