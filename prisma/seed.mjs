@@ -1,14 +1,22 @@
 import { PrismaClient } from "@prisma/client";
 import { randomBytes, scrypt as nodeScrypt } from "node:crypto";
-import { promisify } from "node:util";
 
 const prisma = new PrismaClient();
-const scrypt = promisify(nodeScrypt);
+const SCRYPT = { N: 131072, r: 8, p: 1, keyLength: 64, maxmem: 256 * 1024 * 1024 };
+
+function derivePassword(password, salt) {
+  return new Promise((resolve, reject) => {
+    nodeScrypt(password, salt, SCRYPT.keyLength, SCRYPT, (error, derivedKey) => {
+      if (error) reject(error);
+      else resolve(Buffer.from(derivedKey));
+    });
+  });
+}
 
 async function hashPassword(password) {
   const salt = randomBytes(16);
-  const derived = await scrypt(password, salt, 64);
-  return `scrypt:${salt.toString("hex")}:${Buffer.from(derived).toString("hex")}`;
+  const derived = await derivePassword(password, salt);
+  return ["scrypt", SCRYPT.N, SCRYPT.r, SCRYPT.p, salt.toString("hex"), derived.toString("hex")].join("$");
 }
 
 const permissions = [
