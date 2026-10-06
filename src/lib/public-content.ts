@@ -1,3 +1,4 @@
+import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { publicFaithWhere } from "@/lib/faith-publication";
@@ -155,7 +156,7 @@ export async function getFeaturedFaithContent() {
  * this projection narrow lowers database work, serialization and server render
  * cost while preserving the publication/privacy gates used elsewhere.
  */
-export async function getHomepageAppeals(limit = 3) {
+const getHomepageAppealsCached = unstable_cache(async (limit: number) => {
   const appeals = await prisma.appeal.findMany({
     where: { status: "PUBLISHED" },
     orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
@@ -176,6 +177,10 @@ export async function getHomepageAppeals(limit = 3) {
   return appeals
     .filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && isAppealOpenForDonations(appeal))
     .slice(0, Math.min(20, Math.max(1, limit)));
+}, ["homepage-appeals"], { revalidate: 300, tags: ["appeals"] });
+
+export async function getHomepageAppeals(limit = 3) {
+  return getHomepageAppealsCached(limit);
 }
 
 export async function getHomepagePublicContent() {
