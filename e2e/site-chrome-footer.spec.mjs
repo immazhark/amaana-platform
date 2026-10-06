@@ -46,6 +46,8 @@ test('shared header, reminder/live rail and footer use one deliberate desktop sy
   expect(chrome.scrollWidth).toBeLessThanOrEqual(chrome.viewport + 1);
 
   await expect(page.getByText('Reminder', { exact: true })).toBeVisible();
+  await expect(page.locator('.amaana-reminder-lane')).toHaveAttribute('role', 'group');
+  await expect(page.locator('.amaana-live-lane')).toHaveAttribute('role', 'group');
   await expect(page.getByText('AMAANA LIVE', { exact: true })).toBeVisible();
   await expect(page.getByText('Verified medical support', { exact: true })).toBeVisible();
 
@@ -133,6 +135,8 @@ test('homepage hero fixture preserves breathing room and two-column editorial al
   expect(result.copyWidth / result.contentWidth).toBeGreaterThan(0.48);
   expect(result.copyWidth / result.contentWidth).toBeLessThan(0.55);
   expect(result.decorativeCount).toBe(0);
+  await expect(page.locator('.hero-dots')).toHaveAttribute('role', 'group');
+  await expect(page.getByRole('group', { name: 'Choose a banner slide' })).toBeVisible();
   expect(result.scrollWidth).toBeLessThanOrEqual(result.viewport + 1);
 });
 
@@ -143,6 +147,7 @@ for (const width of [1440, 1280, 1024, 768, 390, 320]) {
     await page.route('**/api/public/live-rail', route => route.fulfill({ json: { items: [] } }));
     await page.goto('/browser-acceptance/home-hero', { waitUntil: 'domcontentloaded' });
     await expect(page.locator('.v3-proof-item')).toHaveCount(5);
+    await expect(page.locator('.v3-timeline')).toHaveAttribute('role', 'group');
     await expect(page.locator('.v3-proof-item').last()).toContainText('₹12,14,520');
     const metricWidths = await page.locator('.v3-proof-item strong').evaluateAll(nodes => nodes.map(node => ({ width: node.clientWidth, scroll: node.scrollWidth })));
     for (const metric of metricWidths) expect(metric.scroll).toBeLessThanOrEqual(metric.width + 1);

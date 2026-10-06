@@ -25,6 +25,7 @@ test('long programme histories use a keyboard-operable compact carousel', async 
   await expect(status).toContainText(`2 / ${slideCount}`);
 
   const viewport = carousel.locator('[tabindex="0"]');
+  await expect(viewport).toHaveAttribute('role', 'group');
   await viewport.focus();
   await page.keyboard.press('End');
   await expect(status).toContainText(`${slideCount} / ${slideCount}`);
@@ -68,6 +69,7 @@ for (const width of [390, 1440]) {
     const carousel = page.getByRole('region', { name: 'Amaana programme areas' });
     const first = carousel.locator('[aria-roledescription="slide"]').first();
     const viewport = carousel.locator('[tabindex="0"]');
+    await expect(viewport).toHaveAttribute('role', 'group');
     const [v, f] = await Promise.all([viewport.boundingBox(), first.boundingBox()]);
     expect(Math.abs(v.x - f.x)).toBeLessThanOrEqual(2);
     await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '1');

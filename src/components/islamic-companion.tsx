@@ -126,7 +126,7 @@ export function IslamicCompanion() {
         }}
       >
         <div className="amaana-reminder-inner">
-          <div className="amaana-reminder-lane" aria-label="Current reminder">
+          <div className="amaana-reminder-lane" role="group" aria-label="Current reminder">
             <span className="amaana-rail-label">Reminder</span>
             <div className="amaana-reminder-content" aria-live="polite" aria-atomic="true">
               <strong>{activeReminder?.title ?? "A moment for remembrance"}</strong>
@@ -135,7 +135,7 @@ export function IslamicCompanion() {
             </div>
           </div>
 
-          <div className="amaana-live-lane" aria-label="Amaana live updates">
+          <div className="amaana-live-lane" role="group" aria-label="Amaana live updates">
             <span className="amaana-live-badge"><span aria-hidden="true" />AMAANA LIVE</span>
             {activeLiveItem ? (
               <div className="amaana-live-content" key={activeLiveItem.id} aria-live="polite" aria-atomic="true">
