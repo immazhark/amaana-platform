@@ -51,7 +51,7 @@ html {
 
 
 /* WCAG 2.1 AAA interaction baseline: preserve a visible 3px keyboard indicator
-   and a 44px minimum target for discrete controls without inflating inline prose links. */
+   and a 48px minimum target for discrete controls without inflating inline prose links. */
 :where(
   button,
   [role="button"],
@@ -74,8 +74,8 @@ html {
   .v3-btn,
   .menu-toggle
 ){
-  min-inline-size:44px;
-  min-block-size:44px;
+  min-inline-size:48px;
+  min-block-size:48px;
 }
 
 :where(input,select,textarea):focus-visible{
@@ -92,6 +92,6 @@ html {
     .amaana-live-cta,
     .v2-appeal-card-link
   ){
-    min-block-size:44px;
+    min-block-size:48px;
   }
 }
