@@ -11,7 +11,12 @@ const CURRENT_SCRYPT = {
 const DUMMY_SALT = Buffer.alloc(16);
 const DUMMY_HASH = Buffer.alloc(CURRENT_SCRYPT.keyLength);
 
-type ScryptParams = Pick<typeof CURRENT_SCRYPT, "N" | "r" | "p" | "maxmem">;
+type ScryptParams = {
+  N: number;
+  r: number;
+  p: number;
+  maxmem: number;
+};
 
 function derivePassword(
   password: string,
