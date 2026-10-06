@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 import "./v2.css";
 import "./brand.css";
@@ -21,8 +21,6 @@ import "./experience-finish.css";
 import "./site-chrome.css";
 // Accessibility remains the final authority for focus, motion and readability.
 import "./accessibility.css";
-import { SiteMotion } from "@/components/site-motion";
-import "lenis/dist/lenis.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { IslamicCompanion } from "@/components/islamic-companion";
@@ -36,6 +34,13 @@ const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org"
 const allowIndexing = shouldAllowIndexing(appUrl, process.env.NEXT_PUBLIC_ALLOW_INDEXING);
 const organizationDescription = "Amaana Foundation is a Hyderabad-based registered charitable trust supporting verified community needs through relief, education, seasonal programmes and case-led assistance with dignity, transparency and accountability.";
 const socialAlt = "Amaana Foundation — Upholding Trust. Serving With Compassion, Dignity and Accountability.";
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  themeColor: "#122239",
+  colorScheme: "light",
+};
 
 export const metadata: Metadata = {
   metadataBase: new URL(appUrl),
@@ -63,12 +68,11 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en">
+    <html lang="en-IN">
       <body>
         <a className="v2-skip-link" href="#main">Skip to content</a>
         <StructuredData />
         <Analytics />
-        <SiteMotion />
         <NavigationProgress />
         <SiteHeader />
         <IslamicCompanion />
