@@ -91,7 +91,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
 
     <section className="admin-card">
       <div className="admin-heading"><div><p className="eyebrow">Private evidence</p><h2>Assistance documents</h2></div><span className="status-badge">{pagination.totalItems} in view</span></div>
-      <div className="filter-row" aria-label="Retention eligibility filter">
+      <div className="filter-row" role="group" aria-label="Retention eligibility filter">
         <strong>Workflow state:</strong>
         <Link href="/admin/retention" aria-current={!selectedState ? "page" : undefined}>All ({totalDocuments})</Link>
         <Link href="/admin/retention?state=eligible" aria-current={selectedState === "eligible" ? "page" : undefined}>Review eligible ({eligibleDocuments})</Link>
