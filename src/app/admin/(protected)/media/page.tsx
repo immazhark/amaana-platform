@@ -102,7 +102,7 @@ export default async function AdminMediaPage({ searchParams }: Props) {
 
     <section className="admin-card">
       <div className="admin-heading"><div><p className="eyebrow">Publication gate</p><h2>Media library</h2></div><span className="status-badge">{pagination.totalItems} records</span></div>
-      <div className="filter-row" aria-label="Media publication filter">
+      <div className="filter-row" role="group" aria-label="Media publication filter">
         <strong>Visibility:</strong>
         <Link href="/admin/media" aria-current={!selectedVisibility ? "page" : undefined}>All</Link>
         <Link href="/admin/media?visibility=review" aria-current={selectedVisibility === "review" ? "page" : undefined}>Private review ({visibilityCounts.get(false) ?? 0})</Link>
