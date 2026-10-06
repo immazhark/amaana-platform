@@ -41,3 +41,10 @@ html {
 
 /* Nonvisual labels stay available to assistive technology without affecting layout. */
 .sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);clip-path:inset(50%);white-space:nowrap;border:0}
+
+/* Owner-approved heading treatment: no decorative leader/underline rules on section labels. */
+:is(.v2-section-label,.v3-label,.v3-kicker)::before,
+:is(.v2-section-label,.v3-label,.v3-kicker)::after{
+  content:none!important;
+  display:none!important;
+}
