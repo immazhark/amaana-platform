@@ -10,7 +10,7 @@ const securityHeaders = [
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
-  { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+  { key: "Cross-Origin-Opener-Policy", value: "same-origin-allow-popups" },
   { key: "Cross-Origin-Resource-Policy", value: "same-site" },
   { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains; preload" },
@@ -27,8 +27,16 @@ const nextConfig: NextConfig = {
       bodySizeLimit: "6mb",
     },
   },
+  images: {
+    formats: ["image/avif", "image/webp"],
+    deviceSizes: [360, 412, 640, 768, 1024, 1280, 1536, 1920],
+    imageSizes: [32, 48, 64, 96, 128, 256, 384],
+    minimumCacheTTL: 31_536_000,
+  },
   async headers() {
     return [
+      { source: "/media/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
+      { source: "/brand/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
       { source: "/(.*)", headers: securityHeaders },
       { source: "/api/:path*", headers: noStoreHeaders },
       { source: "/admin/:path*", headers: noStoreHeaders },
