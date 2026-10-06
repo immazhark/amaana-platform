@@ -48,3 +48,50 @@ html {
   content:none!important;
   display:none!important;
 }
+
+
+/* WCAG 2.1 AAA interaction baseline: preserve a visible 3px keyboard indicator
+   and a 44px minimum target for discrete controls without inflating inline prose links. */
+:where(
+  button,
+  [role="button"],
+  .button,
+  .v2-button,
+  .v3-btn,
+  .menu-toggle,
+  .hero-dots button,
+  .amaana-companion button
+):focus-visible{
+  outline:3px solid var(--af-color-focus);
+  outline-offset:3px;
+}
+
+:where(
+  button,
+  [role="button"],
+  .button,
+  .v2-button,
+  .v3-btn,
+  .menu-toggle
+){
+  min-inline-size:44px;
+  min-block-size:44px;
+}
+
+:where(input,select,textarea):focus-visible{
+  outline:3px solid var(--af-color-focus);
+  outline-offset:3px;
+}
+
+@media (pointer: coarse){
+  :where(
+    .nav-link,
+    .mobile-menu a,
+    .v2-text-link,
+    .amaana-live-link,
+    .amaana-live-cta,
+    .v2-appeal-card-link
+  ){
+    min-block-size:44px;
+  }
+}
