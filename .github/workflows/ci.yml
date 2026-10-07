@@ -32,10 +32,10 @@ jobs:
       crossBrowser: ${{ steps.plan.outputs.crossBrowser }}
       visual: ${{ steps.plan.outputs.visual }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7.0.0
         with:
           node-version: 22
       - name: Verify and calculate impact plan
@@ -60,10 +60,10 @@ jobs:
       NEXT_PUBLIC_APP_URL: https://amaanafoundation.org
       NEXT_PUBLIC_ALLOW_INDEXING: "false"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 2
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -152,8 +152,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/amaana?schema=public
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -193,10 +193,10 @@ jobs:
       NEXT_PUBLIC_APP_URL: https://amaanafoundation.org
       NEXT_PUBLIC_ALLOW_INDEXING: "false"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 2
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -306,10 +306,10 @@ jobs:
       NEXT_PUBLIC_APP_URL: https://amaanafoundation.org
       NEXT_PUBLIC_ALLOW_INDEXING: "false"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 2
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -397,7 +397,7 @@ jobs:
 
       - name: Upload launch review screenshots
         if: always() && needs.plan.outputs.browser == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: launch-review-screenshots-${{ github.sha }}
           path: |
@@ -410,7 +410,7 @@ jobs:
 
       - name: Upload mobile site audit captures
         if: always() && needs.plan.outputs.browser == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: site-audit-mobile-${{ github.sha }}
           path: amaana-browser-acceptance/site-audit/mobile
@@ -418,7 +418,7 @@ jobs:
           retention-days: 7
       - name: Upload desktop site audit captures
         if: always() && needs.plan.outputs.browser == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: site-audit-desktop-${{ github.sha }}
           path: amaana-browser-acceptance/site-audit/desktop
@@ -452,7 +452,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
 
       - name: Validate launch-readiness register structure
         run: node scripts/check-launch-readiness.mjs
