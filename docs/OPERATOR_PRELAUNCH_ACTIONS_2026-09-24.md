@@ -1,302 +1,196 @@
-# Amaana Platform — Operator Pre-Launch Actions
+# Amaana Foundation — Final Operator Prelaunch Actions
 
-Date: 24 September 2026  
-Integration branch: `phase-public-site-rebuild`  
-Current protected candidate head at creation: `bb6483a357443cd56c7157cf532440d7e917df26`  
-Production PR: #104 (Draft)
+Updated: 7 October 2026
 
-This checklist exists for the small number of launch controls that require an authenticated human/operator action outside the connected automation surface. It does **not** authorize production launch, merging `main`, Live Razorpay activity, DNS cutover, indexing, or live transactional email.
+This document contains only the operator/external work that cannot be completed safely by repository automation. It does not authorize a production merge, a real payment, beneficiary submission, media publication or email delivery by itself.
 
-## A. Protect `main` in GitHub
+## Frozen engineering candidate
 
-### Current observed state
+- Integration branch: `phase-public-site-rebuild`
+- Final integration SHA: `9bd04887cb57c28a73f201f8a5c7002657f2b427`
+- Git tree: `7c42f5b8b452b16f2aea698a8068baf57a969009`
+- Exact Railway preview: `c2b5327d-94ee-49f6-b10c-d7f70673a1fa` — SUCCESS
+- Preview source is pinned to the exact SHA above.
+- Preview pre-deploy: `node prisma/railway-predeploy.mjs`, timeout 300s.
+- Preview healthcheck: `/api/health/ready` — passed.
+- Production source: `main`
+- Current production/main SHA: `29c7627ed3bffd0b581935c5b934ad903aeca2cd`
+- Current production deployment: `b7f9f2e2-9234-4a64-8085-a9fdb326944a` — SUCCESS
+- PR #104 remains Draft.
+- Fixed budgets remain JavaScript 819200 bytes and CSS 348160 bytes; do not raise them.
 
-Repository metadata currently reports:
+## 1. Clear the neutral Railway staged patch
 
-- `main.protected = false`
-- required status-check enforcement = off
-- required status-check contexts = none
-- repository rulesets = none
+Railway environment patch `45c0bc6c-46db-4ed8-82cb-3a8f02dfb483` is a non-destructive no-op created during pre-deploy sequencing analysis.
 
-The connected GitHub installation can verify this state but cannot administer branch protection/rulesets.
+Its two entries are exactly:
 
-### Required operator action
+- production `preDeployCommand`: current value → identical current value
+- production `preDeployTimeoutSeconds`: `60 → 60`
 
-In GitHub repository settings for `immazhark/amaana-platform`, create protection/ruleset coverage for branch `main`.
+It has never been deployed and has zero live effect.
 
-Minimum intended policy:
+Before any production cutover, remove/discard this staged patch in the Railway dashboard. **Do not use Accept & Deploy merely to clear this metadata**, because that would trigger a production deployment for no functional change.
 
-1. Require the pull-request path for normal promotion to `main`.
-2. Require status checks before merging.
-3. Require the normal CI verification check.
-4. Require the `Production promotion readiness` check.
-5. Keep the production PR owner-controlled; do not enable automatic merge merely because checks are green.
-6. Do not enable ordinary force-push or deletion of `main`.
-7. Review administrator/bypass behavior. The protection is only useful if production controls cannot be casually bypassed.
-8. Prefer strict/up-to-date required checks if the repository workflow remains compatible with that policy.
+After discarding it, re-read the environment and confirm there are no staged changes or applying workflows.
 
-GitHub documents that protected branches can require pull requests and passing status checks before merge, and that required checks must pass on the latest applicable commit. The exact UI wording can vary; validate the effective policy after saving rather than relying on the form state.
+## 2. Enforce GitHub `main` protection
 
-### Evidence to capture after saving
+Current evidence:
 
-Return to ChatGPT with **no secrets required**. We will re-read repository metadata.
+- `main` reports `protected=false`
+- required status-check enforcement is off
+- repository ruleset collection is empty
+- the connected GitHub App cannot administer branch protection
 
-The gate may be marked VERIFIED only when the repository reports effective protection/ruleset enforcement for `main`, with the intended required checks.
+Before PR #104 leaves Draft, configure GitHub protection/ruleset so normal promotion requires:
 
-Do not mark PR #104 Ready for Review yet merely because protection was enabled. All other production gates must still resolve.
+1. pull-request based changes to `main`;
+2. current CI success on the latest PR head;
+3. `Production promotion readiness`;
+4. no ordinary force-push or branch deletion;
+5. reviewed administrator/bypass behavior.
 
----
+Then re-read GitHub's effective `main` branch/ruleset state and record that evidence. Do not mark the gate verified merely because a rule was created.
 
-## B. Execute the Railway staging rollback rehearsal
+## 3. Complete one real Railway rollback rehearsal on preview
 
-### Fixed staging service
+The connected Railway tools expose redeploy but not the real **Rollback** mutation. Redeploy is not an acceptable substitute.
 
-- project: `amaana-platform-staging`
-- service: `amaana-rebuild-preview`
-- environment id: `38aede68-35aa-42de-adbc-49802e6d44e4`
+Current rollback target:
 
-### Live target state reverified 29 September 2026
+- final preview deployment: `c2b5327d-94ee-49f6-b10c-d7f70673a1fa`
+- final candidate SHA: `9bd04887cb57c28a73f201f8a5c7002657f2b427`
+- Railway reports `canRollback=true`
 
-Current served staging application candidate:
+In the Railway dashboard:
 
-- deployment: `53bd0d5b-fa02-4b47-9e0e-f927d2010186`
-- source SHA: `d1e285a2fb451f5426bcce2292615714e3a428c8`
-- commit: `refactor: remove retired initiative stylesheets`
-- status: `SUCCESS`
-- `canRollback=true`
-- `canRedeploy=true`
-- exact-application push CI run `36569577331` (#1871): **SUCCESS**
-- Chromium acceptance: `808 passed (10.8m)`
-- Firefox/WebKit public-surface smoke: `24 passed (40.7s)`
-- production JS bundle: `714864 / 819200` bytes
-- production CSS bundle: `344389 / 348160` bytes
-- launch-review screenshot artifact: `11033953004`
-- screenshot SHA-256: `3b38cb2b5120160adb9c101bf67f371bc8f488699d0d2cdbc20e385500a6c0df`
+1. ensure no preview deployment is BUILDING/DEPLOYING;
+2. identify the immediate previous known-good preview deployment that Railway still offers through **Rollback**;
+3. choose **Rollback** exactly once;
+4. wait for terminal SUCCESS;
+5. verify target deployment/SHA, `/api/health/live`, `/api/health/ready`, noindex, Razorpay Test posture and private-route boundaries;
+6. restore forward to the exact final candidate;
+7. wait for terminal SUCCESS;
+8. repeat health/posture/private-boundary checks;
+9. record rollback and restore-forward deployment IDs/timestamps.
 
-The subsequent readiness-documentation commits are documentation-only and must not be mistaken for a newer served application SHA.
+Do not touch the production service during this rehearsal.
 
-Recent previous-known-good rollback candidate:
+## 4. Finish Resend domain verification and controlled email acceptance
 
-- deployment: `7fa0c8f3-0739-4151-8623-840ef383117d`
-- source SHA: `0b9f32f55a65e1cc53d9864c3a26eb563e319a6a`
-- commit: `refactor: retire obsolete initiative route styles`
-- Railway state: `REMOVED`
-- `canRollback=true`
-- `canRedeploy=true`
+As of 7 October 2026, Resend has moved `amaanafoundation.org` from failed to **pending** after a fresh provider verification was triggered.
 
-The current candidate is the post-alignment/post-CSS-consolidation image: shared public-shell alignment, mobile optical gutters, full-bleed homepage masthead, compact L1 geometry, singular bottom-right Companion behavior and production CSS-budget recovery are already regression-locked. Treat the Railway dashboard as authoritative immediately before rehearsal because rollback eligibility may age out.
+All required records currently report pending:
 
-### Pre-action rules
+- DKIM TXT `resend._domainkey`
+- Return-Path MX `send`
+- SPF TXT `send`
+- CNAME `rsend`
 
-1. Confirm there is no BUILDING/DEPLOYING workflow already running for `amaana-rebuild-preview`.
-2. Do not trigger duplicate rollback/redeploy actions.
-3. Do not alter the Git branch/source to simulate rollback.
-4. Do not touch the reserved production `amaana-platform` service.
-5. Keep staging on Razorpay Test posture.
-6. Keep indexing disabled.
-7. Do not perform any real payment.
-8. Treat Railway's currently visible **Rollback** action as the authority for historical-image eligibility; stale documentation is not sufficient.
+Production application email must remain disabled until the provider reports the domain verified.
 
-### Fresh-pair preparation
+After verification:
 
-Because the original historical images are no longer rollback-eligible, establish a fresh rehearsal pair in Railway before the actual rollback:
+1. confirm the approved `EMAIL_FROM` identity;
+2. enable application email only in the approved production acceptance window;
+3. send exactly one synthetic/non-beneficiary message to an Amaana-controlled recipient;
+4. verify provider acceptance/receipt;
+5. verify the queue reaches SENT and stores the provider message ID;
+6. repeat the retry/idempotency path without producing a duplicate;
+7. disable or retain production email mode only according to the approved operating decision.
 
-1. In **Deployments**, select a known-good historical deployment whose exact SHA is already accepted for staging.
-2. If Railway exposes only **Redeploy** for that old artifact, using **Redeploy** may be used only to create a fresh known-good baseline image; it does not by itself satisfy the rollback gate.
-3. Wait for that fresh baseline deployment to reach terminal SUCCESS and verify its exact SHA, `/api/health/live`, `/api/health/ready`, staging posture, Razorpay Test mode and noindex.
-4. Restore the current staging candidate through Railway's supported historical deployment action so that the fresh baseline becomes a recent previous deployment inside the rollback-retention window.
-5. Verify the restored candidate by exact deployment metadata and the same health/posture checks.
-6. Record both fresh deployment IDs and SHAs before continuing.
+Never use donor, beneficiary, medical, payment or case data for the first production email acceptance.
 
-### Real rollback action
+## 5. Complete the genuinely human review
 
-Only after the fresh pair is established:
-
-1. Open the fresh previous-known-good deployment's **...** menu.
-2. Confirm **Rollback** is visibly available.
-3. Choose **Rollback** exactly once.
-4. Wait for the rollback-generated deployment to reach a terminal state.
-5. Do not begin restore-forward while rollback is BUILDING/DEPLOYING.
+Automation has already covered the broad route matrix, axe checks, responsive containment, keyboard/focus regressions, metadata, factual locks, structured data and cross-browser public smoke.
 
-### Rollback verification
+The remaining human review is intentionally narrow. Use `docs/FINAL_HUMAN_LAUNCH_QA_CHECKLIST.md` against the exact final candidate and record reviewer/date/outcome.
 
-After rollback is terminal:
+Do not substitute another automated run for the screen-reader/actual-zoom/visual judgement portion.
 
-- verify Railway deployment metadata maps to the recorded previous-known-good SHA;
-- verify `/api/health/live`;
-- verify `/api/health/ready`;
-- verify staging environment posture;
-- verify Razorpay payment mode remains Test;
-- verify indexing/noindex remains fail-closed;
-- verify representative public routes and private-boundary routes;
-- run the repository target verifier with the exact recorded rollback SHA:
+## 6. Release-scoped non-blockers
 
-```bash
-STAGING_BASE_URL="https://<staging-host>" \
-EXPECTED_COMMIT_SHA="<fresh-rollback-sha>" \
-npm run rehearsal:verify-target
-```
+The following gates are resolved as `NOT_APPLICABLE` for this release, not as fabricated verification:
 
-Do not infer success if the version endpoint cannot prove the target. Use Railway deployment metadata plus the required health/posture checks.
+- **Public-media human review:** no new unreviewed public programme media is introduced by the frozen release. Future curated/owner-supplied media must re-enter the privacy/consent/provenance workflow before publication.
+- **Controlled live donation acceptance:** no legitimate appeal is currently live; do not create a dummy appeal or unnecessary real-money charge.
+- **Live refund/receipt operational observation:** provider-backed Test Mode refund/receipt behavior is already verified, but no legitimate live captured donation exists to refund. Observe this on the first legitimate live donation.
 
-### Restore-forward action
+These conditions reactivate operationally when the underlying real-world event exists.
 
-Only after rollback verification succeeds:
+## 7. Race-free production cutover sequence
 
-1. Use Railway's supported historical deployment action on the recorded fresh candidate deployment.
-2. Confirm once.
-3. Wait for terminal status.
-4. Verify the exact recorded candidate SHA.
-5. Repeat live/readiness health.
-6. Repeat Test-payment/noindex posture verification.
-7. Re-run staging acceptance.
+Perform only after every required production gate is VERIFIED or evidence-backed NOT_APPLICABLE and the owner explicitly authorizes production promotion.
 
-Repository verifier:
+### 7.1 Freeze current production triggers
 
-```bash
-STAGING_BASE_URL="https://<staging-host>" \
-EXPECTED_COMMIT_SHA="<fresh-candidate-sha>" \
-npm run rehearsal:verify-target
-```
+To prevent `main` merge from racing Railway configuration:
 
-### Evidence required before resolving the gate
+1. record current web deployment and cron deployment;
+2. pin the production web service to current known-good main SHA `29c7627ed3bffd0b581935c5b934ad903aeca2cd`;
+3. pin `amaana-notification-cron` to the same known-good main SHA;
+4. allow any same-SHA Railway operation triggered by pinning to settle SUCCESS before proceeding.
 
-Record:
+### 7.2 Configure the next production web deployment
 
-- fresh previous-known-good deployment ID and SHA;
-- fresh candidate deployment ID and SHA;
-- rollback action timestamp;
-- rollback-generated deployment ID;
-- target SHA evidence;
-- health/readiness outcome;
-- Test-payment posture outcome;
-- noindex outcome;
-- restore-forward action timestamp;
-- restore-forward deployment ID;
-- restored candidate SHA evidence;
-- final health/readiness outcome;
-- staging acceptance outcome.
+While the web service is pinned:
 
-Do not put secrets, credentials, private beneficiary data, or full database URLs in the readiness register.
+- set production pre-deploy command to `node prisma/railway-predeploy.mjs`;
+- set pre-deploy timeout to 300 seconds;
+- retain `/api/health/ready` healthcheck;
+- do not change payment, indexing, domain or secret posture.
 
----
+The current old production image does not contain this wrapper, which is why the service must remain pinned until the new main SHA exists.
 
-## C. Sequence after A and B
+### 7.3 Promote repository
 
-After GitHub protection is verified and the Railway rehearsal succeeds:
+1. verify PR #104 latest head is still the frozen approved candidate;
+2. verify required checks/protection;
+3. mark PR #104 Ready only after the readiness register permits it;
+4. merge according to the approved method;
+5. record the resulting exact `main` merge SHA.
 
-1. update only the readiness gates directly supported by evidence;
-2. keep PR #104 Draft;
-3. complete human rendered accessibility/background QA;
-4. complete public-media privacy/consent/provenance review;
-5. complete final editorial/SEO/social-preview review;
-6. complete production email acceptance in the approved production environment;
-7. configure production-only Railway variables and service parity;
-8. make the explicit production indexing decision;
-9. only after explicit authorization, promote PR #104 out of Draft / merge according to the approved production flow;
-10. perform controlled Live payment/refund acceptance only within the explicitly approved scope.
+### 7.4 Deploy the web service deliberately
 
-A green CI state does not replace these operator gates.
+1. connect production web source to `main` pinned to the exact new main merge SHA;
+2. wait for pre-deploy and deployment SUCCESS;
+3. prove the pre-deploy logs ran the production environment contract and database release preparation;
+4. verify `/api/health/live` and `/api/health/ready`;
+5. verify the official domain, TLS, security headers, robots, sitemap, canonical URLs, indexing posture and private-route boundaries;
+6. verify production Razorpay remains Live-only;
+7. confirm HTTP 5xx remains zero during the acceptance window.
 
----
+Only after acceptance, reconnect the web source to `main` without a commit pin so normal main-following deployment behavior resumes.
 
-## D. Verify the Resend production sending domain
+### 7.5 Promote the notification cron
 
-A production sending-domain resource now exists in Resend:
+After the web service is healthy on the new main SHA:
 
-- domain: `amaanafoundation.org`
-- provider status: `not_started`
-- sending: enabled
-- receiving: disabled
-- open tracking: disabled
-- click tracking: disabled
-- production email delivery remains disabled in Railway
-- no transactional email has been sent
+1. connect the cron to the same exact new main SHA;
+2. verify the deployment settles;
+3. verify the next scheduled execution succeeds;
+4. reconnect the cron to `main` without a commit pin.
 
-Add the following DNS records in the authoritative DNS provider for `amaanafoundation.org`.
+## 8. Production payment rule
 
-### DKIM
+Do not manufacture a real payment for release bookkeeping.
 
-TXT record:
+The first legitimate public appeal must receive an observed Live order/checkout/capture/signed-webhook/reconciliation path. Perform a live refund only when operationally appropriate for a legitimate transaction.
 
-- name: `resend._domainkey`
-- value: `p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUxz7mTdpmCy0t5/jxTdA4b9VhZLj3bjDAM6+btZdiPFlLljdeX7g5EsXKJ5YsgtFWW9DutfaUcvrO/7L7+Exi6GNeYzxNohTdvnIG/+TEV/Hou/Oneo5Pj8Qr7YKvh/7wC7svPPIJJfqleoogwHdb5mFaFNDPdqY9ZLOaVHj22QIDAQAB`
-- TTL: Auto/default
+## 9. Final evidence to record
 
-### SPF / Return-Path
+After production promotion, update `docs/RELEASE_STATUS.md` and the readiness register with:
 
-MX record:
+- final main SHA;
+- production web deployment ID;
+- cron deployment ID and successful execution;
+- exact pre-deploy evidence;
+- official-domain health/indexing/security checks;
+- branch-protection evidence;
+- rollback rehearsal evidence;
+- Resend/email acceptance evidence;
+- human review outcome.
 
-- name: `send`
-- target: `feedback-smtp.us-east-1.amazonses.com`
-- priority: `10`
-- TTL: Auto/default
-
-TXT record:
-
-- name: `send`
-- value: `v=spf1 include:amazonses.com ~all`
-- TTL: Auto/default
-
-CNAME record:
-
-- name: `rsend`
-- target: `send.forge.rmta.net`
-- TTL: Auto/default
-
-### After DNS is saved
-
-1. Do not enable live application email yet.
-2. Return to the Resend domain and start/recheck provider verification.
-3. Confirm all required DKIM/SPF records report verified.
-4. Only then prepare a production sending API key outside Git/chat.
-5. Configure the approved `EMAIL_FROM` identity on `amaanafoundation.org`.
-6. Keep `EMAIL_DELIVERY_MODE=disabled` until the controlled acceptance step is explicitly authorized.
-7. During acceptance, send exactly one synthetic/non-beneficiary test email to an approved staff recipient.
-8. Verify provider receipt, queue `SENT` state, stored provider message ID and no duplicate delivery.
-9. Re-check retry/idempotency before resolving `transactional-email-delivery`.
-
-Do not use donor, beneficiary, medical, payment or case data for the first production email acceptance.
-
-
----
-
-## E. Reserved production configuration parity
-
-### State reverified 29 September 2026
-
-The reserved production Railway service `amaana-platform` remains intentionally isolated:
-
-- source branch: `main`
-- current deployed source remains the old `main` baseline;
-- Railway-generated service domain exists;
-- **no custom domain is attached**;
-- no production cutover has occurred.
-
-The candidate production environment contract was re-compared against `scripts/check-production-environment.mjs` using variable **names only**; secret values were not read. Current parity is **20/22 required names present**.
-
-Exactly two required names remain absent:
-
-1. `PUBLIC_MEDIA_S3_BUCKET`
-2. `PRODUCTION_INDEXING_DECISION`
-
-Do not set these casually:
-
-- `PUBLIC_MEDIA_S3_BUCKET` must identify the production public-media bucket and must remain separate from the private assistance `S3_BUCKET`.
-- `PRODUCTION_INDEXING_DECISION` must be an explicit launch decision: `keep_disabled` or `enable`. Only `enable` may be paired with `NEXT_PUBLIC_ALLOW_INDEXING=true`.
-
-Do not attach `amaanafoundation.org` to the reserved production service until the release, production-only configuration, email/payment acceptance prerequisites and explicit cutover authorization are ready.
-
----
-
-## F. Current Resend DNS state
-
-Reverified 29 September 2026:
-
-- domain status: `failed`
-- DKIM TXT: `failed`
-- SPF/Return-Path MX: `failed`
-- SPF TXT: `failed`
-- `rsend` CNAME: `failed`
-
-Do not trigger live email delivery while this remains unresolved. After the required DNS records are correctly published, re-run provider verification and confirm the domain becomes verified before production email acceptance.
+Never record credentials, tokens, private beneficiary data or full database URLs.
