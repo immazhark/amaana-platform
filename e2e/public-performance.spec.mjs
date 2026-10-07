@@ -120,6 +120,46 @@ for (const path of criticalPublicRoutes) {
   });
 }
 
+
+const webVitalRoutes = ['/', '/donate', '/appeals', '/our-work', '/about', '/impact', '/contact', '/request-assistance'];
+
+for (const path of webVitalRoutes) {
+  test(`${path} stays within synthetic LCP and blocking-time launch budgets`, async ({ page }) => {
+    await page.addInitScript(() => {
+      window.__amaanaLCP = 0;
+      window.__amaanaBlockingTime = 0;
+
+      new PerformanceObserver(list => {
+        const entries = list.getEntries();
+        const latest = entries.at(-1);
+        if (latest) window.__amaanaLCP = latest.startTime;
+      }).observe({ type: 'largest-contentful-paint', buffered: true });
+
+      new PerformanceObserver(list => {
+        for (const entry of list.getEntries()) {
+          window.__amaanaBlockingTime += Math.max(0, entry.duration - 50);
+        }
+      }).observe({ type: 'longtask', buffered: true });
+    });
+
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+    const response = await page.goto(path, { waitUntil: 'load' });
+    expect(response?.ok(), `Expected ${path} to render successfully`).toBeTruthy();
+    await page.waitForTimeout(750);
+
+    const metrics = await page.evaluate(() => ({
+      lcp: window.__amaanaLCP ?? 0,
+      blockingTime: window.__amaanaBlockingTime ?? 0,
+    }));
+
+    console.log(`Synthetic CWV ${path}: LCP=${metrics.lcp.toFixed(1)}ms; blocking=${metrics.blockingTime.toFixed(1)}ms`);
+    expect(metrics.lcp, `${path} exceeded the 2.5s synthetic LCP launch budget`).toBeGreaterThan(0);
+    expect(metrics.lcp, `${path} exceeded the 2.5s synthetic LCP launch budget`).toBeLessThanOrEqual(2500);
+    expect(metrics.blockingTime, `${path} exceeded the 200ms synthetic blocking-time launch budget`).toBeLessThanOrEqual(200);
+  });
+}
+
+
 test('critical public routes do not load Razorpay before a donation journey needs checkout', async ({ page }) => {
   for (const path of ['/', '/about', '/our-work', '/appeals', '/request-assistance']) {
     await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
