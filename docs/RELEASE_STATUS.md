@@ -88,19 +88,19 @@ The production job compiled Next.js 16.3.8 successfully and passed the fixed JS/
 
 ### PR #104 exact-head confirmation
 
-PR #104 CI run `37650889150` (#2384) is the final redundant exact-head promotion-path confirmation on `9bd04887...`.
-
-At this document checkpoint:
+PR #104 CI run `37650889150` (#2384) is fully SUCCESS on exact final SHA `9bd04887cb57c28a73f201f8a5c7002657f2b427`.
 
 - Production promotion readiness — SUCCESS
 - plan — SUCCESS
 - fast — SUCCESS
 - database — SUCCESS
-- browser — IN PROGRESS
+- browser — SUCCESS
+- Firefox/WebKit public-surface smoke — SUCCESS
+- screenshot artifact uploads — SUCCESS
+- verify — SUCCESS
 - production — skipped as expected for pull-request event
-- verify — waits for browser
 
-PR #104 must remain Draft until this run and all genuine readiness gates are resolved.
+PR #104 remains Draft because green CI does not replace the six genuine operator/external readiness gates.
 
 ## Exact Railway preview
 
