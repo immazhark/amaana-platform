@@ -68,6 +68,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Audit production dependencies
+        run: npm run audit:prod
 
       - name: Audit global CSS architecture
         run: node scripts/audit-global-css.mjs
