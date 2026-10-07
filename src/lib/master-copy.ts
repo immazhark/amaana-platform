@@ -42,6 +42,7 @@ export function programmeCardMediaSlugs(slug: string) {
  const children = programmeChildren(slug);
  if (!children.length) return [slug];
  const latest = [...children].sort((a, b) => programmeRecency(b) - programmeRecency(a))[0];
+ if (!latest) return [slug];
  return [slug, latest.slug];
 }
 export const complianceCopy = {
@@ -54,4 +55,9 @@ export function copyBetween(text: string, start: string, end?: string) {
  const rest=text.slice(offset+start.length); const last=end?rest.indexOf(end):-1;
  return cleanCopy(last<0?rest:rest.slice(0,last));
 }
-export function masterSection(number: number) { const pages=master.pages as Record<string,{name:string;source:string}>;return pages[String(number)].source; }
+export function masterSection(number: number) {
+ const pages = master.pages as Record<string, { name: string; source: string }>;
+ const page = pages[String(number)];
+ if (!page) throw new Error(`Missing canonical master-copy page ${number}`);
+ return page.source;
+}
