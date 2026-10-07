@@ -9,7 +9,7 @@ export const amaanaBodyFont = Manrope({
 
 export const amaanaDisplayFont = Cormorant_Garamond({
   subsets: ["latin"],
-  weight: ["500", "600", "700"],
+  weight: "variable",
   display: "swap",
   variable: "--font-amaana-display",
   fallback: ["Georgia", "Times New Roman", "serif"],
