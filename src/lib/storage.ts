@@ -123,6 +123,7 @@ export function readImageDimensions(bytes: Buffer, mimeType: string): ImageDimen
     while (offset + 3 < bytes.length) {
       if (bytes[offset] !== 0xff) { offset += 1; continue; }
       const marker = bytes[offset + 1];
+      if (marker === undefined) return null;
       offset += 2;
       if (marker === 0xd8 || marker === 0xd9 || marker === 0x01 || (marker >= 0xd0 && marker <= 0xd7)) continue;
       if (offset + 2 > bytes.length) return null;

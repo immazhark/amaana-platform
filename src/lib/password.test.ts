@@ -33,4 +33,14 @@ describe("staff passwords", () => {
     expect(await verifyPassword("password", "")).toBe(false);
     expect(await verifyPassword("password", "scrypt:not-hex:not-hex")).toBe(false);
   }, 30_000);
+
+  it("rejects attacker-controlled scrypt work factors above the application ceiling", async () => {
+    const salt = "00".repeat(16);
+    const hash = "00".repeat(64);
+
+    await expect(verifyPassword("password", `scrypt$262144$8$1${salt}${hash}`)).resolves.toBe(false);
+    await expect(verifyPassword("password", `scrypt$131072$16$1${salt}${hash}`)).resolves.toBe(false);
+    await expect(verifyPassword("password", `scrypt$131072$8$2${salt}${hash}`)).resolves.toBe(false);
+  }, 30_000);
+
 });

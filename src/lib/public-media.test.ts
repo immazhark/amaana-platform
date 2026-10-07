@@ -67,6 +67,8 @@ describe("public media safety", () => {
       { kind: "IMAGE" as const, publicUrl: "/media/gallery.webp", altText: "Volunteer packing support kits", title: "Packing day", sortOrder: 2 },
     ];
     expect(selectGalleryPublicImage(media)?.publicUrl).toBe("/media/gallery.webp");
-    expect(selectGalleryPublicImage([media[0]])?.publicUrl).toBe("/media/identity.webp");
+    const identity = media[0];
+    if (!identity) throw new Error("Expected identity-media fixture.");
+    expect(selectGalleryPublicImage([identity])?.publicUrl).toBe("/media/identity.webp");
   });
 });

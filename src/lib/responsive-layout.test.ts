@@ -16,7 +16,9 @@ describe("shared responsive layout regressions", () => {
     expect(companionRule![1]).toMatch(/bottom:\s*max\(/);
 
     expect(dockRules.length).toBeGreaterThan(0);
-    expect(dockRules[0][1]).toMatch(/flex-wrap:\s*nowrap/);
+    const firstDockRule = dockRules[0];
+    if (!firstDockRule) throw new Error("Expected a companion dock CSS rule.");
+    expect(firstDockRule[1] ?? "").toMatch(/flex-wrap:\s*nowrap/);
     expect(companion).toMatch(/@media\s*\(max-width:\s*640px\)[\s\S]*\.amaana-companion-dock\s*>\s*button\s*\{[^}]*width:\s*2\.8rem[^}]*max-width:\s*2\.8rem[^}]*height:\s*2\.8rem[^}]*min-height:\s*2\.8rem/);
     expect(companion).toMatch(/\.amaana-companion-dock\s*>\s*button\s*>\s*span:last-child\s*\{[^}]*clip-path:\s*inset\(50%\)/);
     expect(companion).not.toMatch(/Keep the launchers in flow/i);

@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useState } from "react";
+import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";

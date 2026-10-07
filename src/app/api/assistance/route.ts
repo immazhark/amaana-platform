@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { deletePrivateDocumentObject, MAX_FILE_BYTES, MAX_FILES, uploadPrivateDocument } from "@/lib/storage";
 import { validateProductionEnvironment } from "@/lib/env";
 import { enforceAssistanceRateLimit, isSameOrigin } from "@/lib/request-security";
+import { logServerError } from "@/lib/server-log";
 
 export const runtime = "nodejs";
 const privateHeaders = {
@@ -144,15 +145,13 @@ export async function POST(request: Request) {
       );
       cleanupResults.forEach((result, index) => {
         if (result.status === "rejected") {
-          console.error("Assistance private-document cleanup failed", {
-            documentIndex: index,
-          });
+          logServerError("assistance.private_document_cleanup_failed", { documentIndex: index });
         }
       });
       throw submissionError;
     }
   } catch {
-    console.error("Assistance submission failed");
+    logServerError("assistance.submission_failed");
     return NextResponse.json(
       { error: "We could not securely submit your request. Please try again later." },
       { status: 500, headers: privateHeaders },

@@ -26,7 +26,11 @@
       "@/*": [
         "./src/*"
       ]
-    }
+    },
+    "noUncheckedIndexedAccess": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "verbatimModuleSyntax": true
   },
   "include": [
     "next-env.d.ts",

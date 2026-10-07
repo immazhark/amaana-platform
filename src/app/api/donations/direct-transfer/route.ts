@@ -8,6 +8,7 @@ import { canExposePublicAppeal } from "@/lib/public-environment";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
 import { deleteDonationEvidenceObject, MAX_FILE_BYTES, uploadDonationEvidence } from "@/lib/storage";
 import { validateProductionEnvironment } from "@/lib/env";
+import { logServerError } from "@/lib/server-log";
 
 const privateHeaders = { "Cache-Control": "no-store, private", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow, noarchive" };
 const MAX_MULTIPART_BYTES = MAX_FILE_BYTES + 256 * 1024;
@@ -104,7 +105,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ referenceNumber: donation.referenceNumber, receiptToken, status: "PENDING_VERIFICATION" }, { status: 202, headers: privateHeaders });
   } catch {
-    console.error("Direct donation transfer submission failed");
+    logServerError("donation.direct_transfer_submission_failed");
     return NextResponse.json({ error: "We could not submit this transfer for verification. Please try again." }, { status: 500, headers: privateHeaders });
   }
 }
