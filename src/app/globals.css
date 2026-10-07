@@ -47,8 +47,8 @@
   --af-shadow-raised: 0 24px 58px rgb(4 21 40 / 18%);
 
   /* Typography */
-  --af-font-body: Arial, Helvetica, sans-serif;
-  --af-font-display: Georgia, "Times New Roman", serif;
+  --af-font-body: var(--font-amaana-body), Arial, Helvetica, sans-serif;
+  --af-font-display: var(--font-amaana-display), Georgia, "Times New Roman", serif;
   --af-text-xs: .76rem;
   --af-text-sm: .9rem;
   --af-text-body: 1rem;

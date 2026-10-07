@@ -1,4 +1,4 @@
-FROM node:22-alpine AS dependencies
+FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS dependencies
 WORKDIR /app
 RUN apk add --no-cache openssl
 COPY package.json package-lock.json ./
@@ -22,7 +22,7 @@ COPY . .
 RUN npx prisma generate
 RUN npm run build
 
-FROM node:22-alpine AS runner
+FROM node:22-alpine@sha256:0a7108bf6c7bf5de370ffb1a3ed6be93d405b43ff159f681a8d18c0e2bc2e402 AS runner
 WORKDIR /app
 ENV NODE_ENV=production
 RUN apk add --no-cache openssl && addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
@@ -35,4 +35,5 @@ COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
 USER nextjs
 EXPOSE 3000
 ENV PORT=3000 HOSTNAME=0.0.0.0
-CMD ["sh", "-c", "node prisma/migrate-deploy-with-retry.mjs && node prisma/run-db-script-with-retry.mjs prisma/import-reviewed-campaigns.mjs && if [ \"$APP_ENVIRONMENT\" = \"staging\" ]; then node prisma/run-db-script-with-retry.mjs prisma/seed.mjs && node prisma/run-db-script-with-retry.mjs prisma/seed-staging-acceptance.mjs; fi && if [ \"$APP_ENVIRONMENT\" = \"staging\" ] && [ \"$PUBLIC_MEDIA_ACCEPTANCE_ON_START\" = \"true\" ]; then npm run acceptance:public-media; fi && if [ \"$APP_ENVIRONMENT\" = \"staging\" ] && [ \"$STAGING_ACCEPTANCE_ON_START\" = \"true\" ]; then node prisma/staging-start-with-acceptance.mjs; else node server.js; fi"]
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 CMD wget -qO- "http://127.0.0.1:${PORT:-3000}/api/health/ready" >/dev/null || exit 1
+CMD ["sh", "-c", "if [ \"$APP_ENVIRONMENT\" = \"staging\" ] && [ \"$PUBLIC_MEDIA_ACCEPTANCE_ON_START\" = \"true\" ]; then npm run acceptance:public-media; fi && if [ \"$APP_ENVIRONMENT\" = \"staging\" ] && [ \"$STAGING_ACCEPTANCE_ON_START\" = \"true\" ]; then node prisma/staging-start-with-acceptance.mjs; else node server.js; fi"]

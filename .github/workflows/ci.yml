@@ -71,6 +71,8 @@ jobs:
 
       - name: Audit global CSS architecture
         run: node scripts/audit-global-css.mjs
+      - name: Verify branded application icons
+        run: npm run icons:verify
       - name: Decode and validate public campaign media
         run: |
           node --test scripts/test-public-media.mjs

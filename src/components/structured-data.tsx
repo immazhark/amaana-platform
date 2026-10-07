@@ -7,6 +7,7 @@ export function StructuredData() {
         "@type": ["Organization", "NGO"],
         "@id": `${siteUrl}/#organization`,
         name: "Amaana Foundation",
+        alternateName: ["Amaana Foundation Hyderabad", "Amaana"],
         url: siteUrl,
         email: "amaanafoundation24@gmail.com",
         telephone: "+91-9908002694",
