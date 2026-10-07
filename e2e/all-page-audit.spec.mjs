@@ -58,7 +58,7 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
  const violations=audit.violations.map(v=>({id:v.id,impact:v.impact,nodes:v.nodes.map(n=>({target:n.target,summary:n.failureSummary}))}));
  const prohibitedAria=audit.incomplete.filter(i=>i.id==='aria-prohibited-attr').flatMap(i=>i.nodes.map(n=>n.target));
  await page.addStyleTag({content:'*{content-visibility:visible!important}'});
- await page.evaluate(async()=>{const bottom=document.documentElement.scrollHeight,step=Math.max(1,innerHeight*.8);for(let top=0;top<bottom;top+=step){window.scrollTo(0,top);await new Promise(r=>setTimeout(r,30));}window.scrollTo(0,0);});
+ await page.evaluate(()=>{for(const image of document.querySelectorAll('img[loading="lazy"]'))image.loading='eager';window.scrollTo(0,0);});
  const directory=path.resolve('site-audit',device);fs.mkdirSync(directory,{recursive:true});
  const slug='complete-'+(route==='/'?'home':route.slice(1).replaceAll('/','--'));
  await page.screenshot({path:path.join(directory,slug+'.jpg'),type:'jpeg',quality:65,fullPage:true,animations:'disabled'});
