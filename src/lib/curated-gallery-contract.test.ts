@@ -72,20 +72,32 @@ describe("curated gallery contract", () => {
     { privacyApprovedAt: "2026-10-04" }, { extraField: true }, { slug: "unknown" },
   ])("retains strict publication and decoded-media safety checks for %j", mutation => {
     const manifest = validManifest();
-    Object.assign(manifest.records[0], mutation);
+    const record = manifest.records[0];
+    if (!record) throw new Error("Expected a curated gallery fixture record.");
+    Object.assign(record, mutation);
     expect(curatedGalleryManifestSchema.safeParse(manifest).success).toBe(false);
   });
 
   it("retains duplicate/order guards and trims valid alternative text", () => {
     const duplicate = validManifest();
-    duplicate.records[1].id = duplicate.records[0].id;
+    const duplicateFirst = duplicate.records[0];
+    const duplicateSecond = duplicate.records[1];
+    if (!duplicateFirst || !duplicateSecond) throw new Error("Expected duplicate-guard fixture records.");
+    duplicateSecond.id = duplicateFirst.id;
     expect(curatedGalleryManifestSchema.safeParse(duplicate).success).toBe(false);
     const order = validManifest();
-    order.records[1].sortOrder = order.records[0].sortOrder;
+    const orderFirst = order.records[0];
+    const orderSecond = order.records[1];
+    if (!orderFirst || !orderSecond) throw new Error("Expected order-guard fixture records.");
+    orderSecond.sortOrder = orderFirst.sortOrder;
     expect(curatedGalleryManifestSchema.safeParse(order).success).toBe(false);
     const manifest = validManifest();
-    manifest.records[0].altText = "  Programme photograph  ";
-    expect(curatedGalleryManifestSchema.parse(manifest).records[0].altText).toBe("Programme photograph");
+    const firstRecord = manifest.records[0];
+    if (!firstRecord) throw new Error("Expected an alt-text fixture record.");
+    firstRecord.altText = "  Programme photograph  ";
+    const parsedFirst = curatedGalleryManifestSchema.parse(manifest).records[0];
+    if (!parsedFirst) throw new Error("Expected parsed curated gallery record.");
+    expect(parsedFirst.altText).toBe("Programme photograph");
     expect(curatedGalleryManifestSchema.safeParse({ ...manifest, unexpected: true }).success).toBe(false);
   });
 
