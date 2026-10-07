@@ -10,7 +10,7 @@ import { AppealCard } from "@/components/appeal-card";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getHomepageAppeals } from "@/lib/public-content";
 import { HomeGrowth, HomeTrust } from "@/components/home-evidence";
-import { getHomepageDiscoveryData, getAppealCoverMedia } from "@/lib/public-page-data";
+import { getHomepageDiscoveryData, getAppealCoverMediaBatch } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
 import { ScrollCarousel } from "@/components/scroll-carousel";
 import { programmeCategories, programmes } from '@/lib/master-copy';
@@ -22,23 +22,23 @@ import { programmeCategoryPath } from '@/lib/programme-category-routing';
 import { selectIdentityPublicImage } from '@/lib/public-media';
 import { openGraphShareImages, twitterShareImages } from '@/lib/social-share-media';
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export const metadata: Metadata = {
-  title: { absolute: "Amaana Foundation | Verified Relief, Education & Community Support in Hyderabad" },
-  description: "Amaana Foundation is a Hyderabad-based registered charitable trust supporting verified needs through Eid Gift Kits, Taleem, Qurbani, seasonal relief, emergency response and medical or financial assistance.",
+  title: { absolute: "Amaana Foundation | Charity & Relief in Hyderabad" },
+  description: "Amaana Foundation supports verified needs in Hyderabad through education, seasonal relief, emergency response and community assistance with dignity and transparency.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     url: "/",
-    title: "Amaana Foundation | Verified Relief, Education & Community Support in Hyderabad",
-    description: "A Hyderabad-based registered charitable trust supporting verified community needs through relief, education, seasonal programmes and case-led assistance.",
+    title: "Amaana Foundation | Charity & Relief in Hyderabad",
+    description: "Verified education, relief and community support in Hyderabad, delivered with dignity, transparency and accountability.",
     images: openGraphShareImages(),
   },
   twitter: {
     card: "summary_large_image",
-    title: "Amaana Foundation | Verified Relief, Education & Community Support in Hyderabad",
-    description: "A Hyderabad-based registered charitable trust supporting verified community needs through relief, education, seasonal programmes and case-led assistance.",
+    title: "Amaana Foundation | Charity & Relief in Hyderabad",
+    description: "Verified education, relief and community support in Hyderabad, delivered with dignity, transparency and accountability.",
     images: twitterShareImages(),
   },
 };
@@ -46,7 +46,13 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const [liveAppeals, discovery, { config }] = await Promise.all([getHomepageAppeals(20), getHomepageDiscoveryData(), getHomeCarouselConfig()]);
   const appeals = liveAppeals.slice(0, 3);
-  const [images, appealImages] = await Promise.all([getHomeCarouselImages(config.slides.map(s => s.image)), Promise.all(liveAppeals.map(a => getAppealCoverMedia(a.coverImageUrl)))]);
+  const [images, appealCoverMedia] = await Promise.all([
+    getHomeCarouselImages(config.slides.map(s => s.image)),
+    getAppealCoverMediaBatch(liveAppeals.map(appeal => appeal.coverImageUrl)),
+  ]);
+  const appealImages = liveAppeals.map(appeal =>
+    appeal.coverImageUrl ? appealCoverMedia.get(appeal.coverImageUrl) ?? null : null,
+  );
   const appealSlides = liveAppeals.map((appeal, index) => ({ ...defaultHomeSlides[0], id: `appeal-${appeal.slug}`, eyebrow: 'Current verified appeal', title: appeal.title, description: appeal.summary, primaryLabel: 'View this appeal', primaryHref: `/appeals/${appeal.slug}`, secondaryLabel: 'Support this need', secondaryHref: `/donate/${appeal.slug}`, appealSlug: appeal.slug, image: appealImages[index] ? `asset:${appealImages[index]!.id}` : 'logo', imageAlt: appealImages[index]?.altText || '', order: index }));
   appealImages.forEach(asset => { if (asset) images.set(asset.id, asset); });
   const heroSlides = composeHomeSlides(config, appealSlides);

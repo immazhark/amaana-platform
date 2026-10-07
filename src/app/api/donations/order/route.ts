@@ -32,7 +32,23 @@ export async function POST(request: Request) {
     }
 
     const parsed = donationSchema.safeParse(body);
-    if (!parsed.success) return NextResponse.json({ error: "Please check the donation information." }, { status: 400, headers: privateHeaders });
+    if (!parsed.success) {
+      const fields = parsed.error.flatten().fieldErrors;
+      return NextResponse.json(
+        {
+          error: "Please check the highlighted donation information.",
+          fields: {
+            donorName: fields.donorName,
+            donorEmail: fields.donorEmail,
+            donorPhone: fields.donorPhone,
+            amount: fields.amount,
+            givingIntent: fields.givingIntent,
+            domesticConfirmed: fields.domesticConfirmed,
+          },
+        },
+        { status: 400, headers: privateHeaders },
+      );
+    }
     const appeal = await prisma.appeal.findFirst({
       where: { id: parsed.data.appealId, status: "PUBLISHED" },
       select: {

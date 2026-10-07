@@ -48,3 +48,86 @@ html {
   content:none!important;
   display:none!important;
 }
+
+
+/* Accessibility interaction baseline: preserve a visible 3px keyboard indicator
+   and a 48px minimum target for discrete controls without inflating inline prose links. */
+:where(
+  button,
+  [role="button"],
+  .button,
+  .v2-button,
+  .v3-btn,
+  .menu-toggle,
+  .hero-dots button,
+  .amaana-companion button
+):focus-visible{
+  outline:3px solid var(--af-color-focus);
+  outline-offset:3px;
+}
+
+:where(
+  button,
+  [role="button"],
+  .button,
+  .v2-button,
+  .v3-btn,
+  .menu-toggle
+){
+  min-inline-size:48px;
+  min-block-size:48px;
+}
+
+:where(input,select,textarea):focus-visible{
+  outline:3px solid var(--af-color-focus);
+  outline-offset:3px;
+}
+
+@media (pointer: coarse){
+  :where(
+    .nav-link,
+    .mobile-menu a,
+    .v2-text-link,
+    .amaana-live-link,
+    .amaana-live-cta,
+    .v2-appeal-card-link
+  ){
+    min-block-size:48px;
+  }
+}
+
+
+/* Audit-verified light-surface contrast authority.
+   Brand gold remains available for borders, fills and dark-surface accents;
+   small text on cream/ivory uses darker semantic ink. */
+:is(
+  .v2-policy-layout>aside p,
+  .v2-assistance-promise>span,
+  .v2-governance-record>span,
+  .v2-governance-record dt,
+  .v2-amount-field label span,
+  .v3-work-row small
+){
+  color:var(--af-color-label)!important;
+}
+
+:is(
+  .v2-policy-sections article>span,
+  .v2-governance-people article>span,
+  .v2-amount-input b,
+  .v2-donate-guide-list article>span,
+  .v2-assistance-form legend>span,
+  .v2-assistance-form-layout>aside li>span,
+  .v2-form-heading>span,
+  .v3-arrow
+){
+  color:var(--af-color-accent-text)!important;
+}
+
+:is(
+  .v2-assistance-promise>span,
+  .v2-amount-field label span,
+  .v2-form-heading>span
+){
+  font-size:max(.75rem,1em);
+}

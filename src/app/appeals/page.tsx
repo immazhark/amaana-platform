@@ -22,7 +22,7 @@ export const metadata: Metadata = {
   twitter: { images: ["/twitter-image"], card: "summary_large_image", title: "Verified Appeals | Amaana Foundation", description: "Explore current reviewed support appeals from Amaana Foundation in Hyderabad." },
 };
 
-export const dynamic = "force-dynamic";
+export const revalidate = 300;
 
 export default async function AppealsPage() {
   const [appealRecords, completedAid] = await Promise.all([

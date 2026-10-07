@@ -4,7 +4,7 @@ const m = vi.hoisted(()=>({permission:vi.fn(),publish:vi.fn(),find:vi.fn(),updat
 vi.mock('@/lib/auth',()=>({requirePermission:m.permission,hasPermission:m.publish}));
 vi.mock('@/lib/prisma',()=>({prisma:{}}));
 vi.mock('@/lib/prisma-transaction',()=>({withSerializableTransactionRetry:(cb:(tx:unknown)=>unknown)=>cb({homeCarousel:{findUnique:m.find,updateMany:m.update,create:m.create},auditEvent:{create:m.audit,findFirst:m.review},mediaAsset:{findUnique:m.media},appeal:{findUnique:m.appeal}})}));
-vi.mock('next/cache',()=>({revalidatePath:vi.fn()}));
+vi.mock('next/cache',()=>({revalidatePath:vi.fn(),revalidateTag:vi.fn()}));
 vi.mock('next/navigation',()=>({redirect:(url:string)=>{throw new Error(url);}}));
 import {saveHomeCarousel} from './actions';
 function form(extra:Record<string,string>={}) { const data=new FormData(); Object.entries({...defaultHomeConfig.slides[0],revision:'1',operation:'save',...extra}).forEach(([k,v])=>data.set(k,String(v))); return data; }

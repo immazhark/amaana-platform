@@ -104,7 +104,7 @@ describe("donation order request bounds", () => {
   });
 
   it("keeps checkout order responses private even when validation fails", async () => {
-    mocks.safeParse.mockReturnValue({ success: false, error: {} });
+    mocks.safeParse.mockReturnValue({ success: false, error: { flatten: () => ({ fieldErrors: {} }) } });
 
     const response = await POST(new Request("https://amaana.example/api/donations/order", {
       method: "POST",

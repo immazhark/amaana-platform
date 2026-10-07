@@ -7,7 +7,7 @@ import { createSession, destroySession, getCurrentUser } from "@/lib/auth";
 import { parseAdminLoginInput } from "@/lib/admin-login-input";
 import { isLoginSubjectLocked, recordFailedLoginAttempt } from "@/lib/auth-rate-limit";
 import { getTrustedClientAddress } from "@/lib/client-address";
-import { verifyPassword } from "@/lib/password";
+import { hashPassword, passwordNeedsRehash, verifyPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
 
 function getAuthenticationRateLimitPepper() {
@@ -52,6 +52,22 @@ export async function login(formData: FormData) {
   if (!user || user.status !== "ACTIVE" || !passwordMatches) {
     const recorded = await recordFailedLoginAttempt(subjectHash);
     redirect(recorded ? "/admin/login?error=invalid" : "/admin/login?error=locked");
+  }
+
+  if (user.credential && passwordNeedsRehash(user.credential.passwordHash)) {
+    const upgradedHash = await hashPassword(password);
+    await prisma.passwordCredential.update({
+      where: { userId: user.id },
+      data: { passwordHash: upgradedHash },
+    });
+    await prisma.auditEvent.create({
+      data: {
+        actorId: user.id,
+        action: "credential.password_rehashed",
+        entityType: "User",
+        entityId: user.id,
+      },
+    });
   }
 
   await prisma.loginAttempt.create({ data: { subjectHash, succeeded: true } });

@@ -4,7 +4,7 @@ import { UIIcon } from "./ui-icon";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./site-header.module.css";
 
 const primaryLinks = [
@@ -40,7 +40,7 @@ export function SiteHeader() {
     toggleRef.current?.focus();
   };
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!open) return;
     const nav = mobileNavRef.current;
     const toggle = toggleRef.current;
