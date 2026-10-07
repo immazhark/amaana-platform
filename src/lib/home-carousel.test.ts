@@ -1,10 +1,17 @@
+import fs from 'node:fs';
+import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { composeHomeSlides, defaultHomeConfig, defaultHomeSlides, parseHomeConfig, safeHomeHref, validateHomeSlide, visibleHomeSlides } from './home-carousel';
+import { HOME_ARTWORK_SRC, composeHomeSlides, defaultHomeConfig, defaultHomeSlides, parseHomeConfig, safeHomeHref, validateHomeSlide, visibleHomeSlides } from './home-carousel';
 const now = new Date('2026-10-03T18:00:00Z');
 describe('homepage carousel publication and schedules', () => {
   it('seeds five programme-level slides in the requested order', () => {
     expect(parseHomeConfig(defaultHomeConfig).slides.map(s => s.id)).toEqual(['origin','eid','medical','taleem','qurbani']);
     expect(defaultHomeSlides.every(s => !/20\d\d/.test(s.title + s.eyebrow))).toBe(true);
+  });
+  it('keeps every built-in artwork fallback backed by a committed public asset', () => {
+    for (const src of Object.values(HOME_ARTWORK_SRC)) {
+      expect(fs.existsSync(path.join(process.cwd(), 'public', src.slice(1))), src).toBe(true);
+    }
   });
   it('uses UTC for editor dates and applies inclusive start/exclusive end', () => {
     const slide = validateHomeSlide({ ...defaultHomeSlides[0], startsAt: '2026-10-03T18:00', endsAt: '2026-10-03T19:00' });
