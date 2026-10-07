@@ -189,6 +189,9 @@ jobs:
       - run: npm ci
 
       - run: npm run prisma:generate
+      - name: Prepare isolated production-build database
+        if: github.event_name != 'pull_request'
+        run: npx prisma migrate deploy
       - name: Build production application
         if: github.event_name != 'pull_request'
         run: npm run build
