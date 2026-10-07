@@ -102,8 +102,8 @@ test('five programme slides have usable artwork, centered selectors and containe
     const img=active.locator('figure img');
     if(index){
       await expect.poll(()=>img.evaluate(img=>img.complete&&img.naturalWidth>0)).toBe(true);
-      const expectedArtwork = ['/hero/eid.webp', '/hero/medical.webp', '/hero/taleem.webp', '/hero/qurbani.webp'][index - 1];
-      await expect(img).toHaveAttribute('src', new RegExp(encodeURIComponent(expectedArtwork).replaceAll('%','%25') + '|' + expectedArtwork.replaceAll('/','\\/')));
+      const expectedArtwork = ['eid.webp', 'medical.webp', 'taleem.webp', 'qurbani.webp'][index - 1];
+      await expect(img).toHaveAttribute('src', new RegExp(`(?:%2F|/)hero(?:%2F|/)${expectedArtwork}`));
       const edges=await active.evaluate(node=>({photo:node.querySelector('.v3-home-banner-media').getBoundingClientRect().right,container:node.querySelector('.v3-shell').getBoundingClientRect().right}));
       expect(Math.abs(edges.photo-edges.container)).toBeLessThan(1);
     }else await expect(active.locator('.v3-home-story-logo img')).toBeVisible();
