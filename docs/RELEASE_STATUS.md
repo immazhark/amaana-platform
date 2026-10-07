@@ -57,12 +57,16 @@ Current genuine blockers include:
 1. Resend domain verification and one controlled production delivery/retry/idempotency acceptance.
 2. Manual rendered accessibility review.
 3. Final editorial/SEO/social human review.
-4. Public-media human privacy/provenance review for future owner-supplied launch photography.
-5. One real Railway rollback rehearsal on preview, followed by forward restoration and acceptance rerun.
-6. Main branch protection/ruleset configuration. GitHub reports `main protected=false`; the connected integration cannot administer branch protection.
-7. First legitimate live-donation observation and operational refund/receipt acceptance when a real appeal exists.
+4. One real Railway rollback rehearsal on preview, followed by forward restoration and acceptance rerun.
+5. Main branch protection/ruleset configuration. GitHub reports `main protected=false`; the connected integration cannot administer branch protection.
 
-Do not manufacture a dummy appeal or real-money transaction to clear payment gates.
+Condition-triggered obligations are not blockers for this release when their triggering condition does not exist:
+
+- Future owner-supplied or newly curated public photography still requires privacy, consent, provenance and hero-use review before publication.
+- The first legitimate Live Razorpay donation must be observed end-to-end when a real public appeal is next published.
+- Live refund/receipt acceptance must be observed when a legitimate captured production donation makes that operationally appropriate.
+
+Do not manufacture a dummy appeal, expose unreviewed media or create a real-money transaction merely to clear a checklist.
 
 ## Production promotion gate
 
@@ -73,11 +77,14 @@ Do not manufacture a dummy appeal or real-money transaction to clear payment gat
 5. The exact Railway preview build and readiness healthcheck succeed.
 6. Payment-sensitive changes preserve production-safe Razorpay boundaries.
 7. Remaining fail-closed readiness gates are genuinely VERIFIED or intentionally NOT_APPLICABLE with evidence.
-8. Integration is merged to `main` only after the exact promotion candidate is verified.
-9. Production Railway pre-deploy is then migrated from the legacy inline validator to `node prisma/railway-predeploy.mjs`, only after that wrapper exists on `main`.
-10. Railway production and notification deployments finish successfully.
-11. Run production health, official-domain, robots/sitemap, canonical/indexing, security-header, private-route and cron checks.
-12. Record the promoted SHA in this file.
+8. Railway must have no unresolved staged environment patch. The current no-op production pre-deploy patch must be discarded rather than accepted merely to clear metadata.
+9. Before merging PR #104, pin both `amaana-platform` and `amaana-notification-cron` to the current known-good production `main` SHA. This freezes production while `main` advances.
+10. While production is pinned, update `amaana-platform` pre-deploy to `node prisma/railway-predeploy.mjs` with a 300-second timeout. Do not redeploy the old pinned image after this command change because the wrapper does not exist in the old main image.
+11. Merge the exact verified integration candidate to `main`. The pinned production services must remain on the known-good old SHA during this repository promotion.
+12. Reconnect `amaana-platform` to the `main` branch without a commit pin. Its first candidate deployment must therefore run the new migration-aware pre-deploy wrapper before the application starts.
+13. After the application deployment is healthy and exact-SHA verified, reconnect `amaana-notification-cron` to `main` without a commit pin and verify its next execution.
+14. Run production health, official-domain, robots/sitemap, canonical/indexing, security-header, private-route, payment-boundary and cron checks.
+15. Record the promoted SHA, deployment IDs and final runtime posture in this file.
 
 ## Rollback rule
 
