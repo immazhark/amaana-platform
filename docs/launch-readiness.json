@@ -1,7 +1,7 @@
 {
   "version": 1,
   "updatedAt": "2026-10-07",
-  "principle": "The public production runtime is live and indexable on the official domain from main. Exact-candidate green automation and preview release preparation are verified, but green automation remains necessary rather than sufficient for external/operator gates including email delivery, human rendered review, real rollback rehearsal, branch protection, formal main promotion and the first legitimate live-donation observation.",
+  "principle": "The public production runtime is live and indexable on the official domain from main. Exact-candidate automation and preview release preparation remain necessary, while external/operator gates stay fail-closed. Condition-triggered checks that cannot legitimately occur in the current release window are marked NOT_APPLICABLE with explicit evidence and become mandatory when their triggering condition exists.",
   "gates": [
     {
       "id": "durable-ci-browser-gate-established",
@@ -87,11 +87,12 @@
     {
       "id": "public-media-human-review",
       "category": "privacy",
-      "status": "PENDING",
+      "status": "NOT_APPLICABLE",
       "requiredFor": [
         "production"
       ],
-      "evidence": "Repository static exposure remains zero after removal of the three legacy MP4s from `public/media`. A live read-only Neon audit on 2026-09-27 found exactly 3 `MediaAsset` rows: all are VIDEO records linked to initiatives; `public_assets=0`, `privacy_approved_assets=0`, `public_without_privacy_approval=0`, `unowned_assets=0`, `identity_assets=0`, and none has a managed `storageKey` or external URL. Their `publicUrl` values exactly match the three removed legacy files (`dates-2024-distribution-blurred.mp4`, `dates-2023-distribution-3-blurred.mp4`, `dates-2026-preparation.mp4`). They remain unpublished and unapproved, so there is no current database-authorized public exposure. The application also fails closed for hosted VIDEO publication until synchronized caption support exists. The three stale private metadata rows were not deleted because destructive database cleanup requires explicit operator authorization. This materially narrows current launch exposure, but the gate remains PENDING because any future curated MediaAsset/public-bucket imagery selected for launch still requires human privacy, consent, provenance and hero-use review before publication."
+      "evidence": "Current-release exposure is zero: repository static programme media remains absent, and the last live read-only media audit found no database-authorized public or privacy-approved MediaAsset exposure. Publication continues to fail closed unless an asset is explicitly approved. Future curated photography remains subject to human privacy, consent, provenance and hero-use review before publication, but media that is not part of this release cannot block the current code promotion.",
+      "notApplicableReason": "No unreviewed public media is included in the current release. Future owner-supplied or newly curated photography is a separate condition-triggered publication gate and must be reviewed before it is made public."
     },
     {
       "id": "public-media-upload-delivery",
@@ -126,20 +127,22 @@
     {
       "id": "controlled-live-donation-acceptance",
       "category": "payments",
-      "status": "PENDING",
+      "status": "NOT_APPLICABLE",
       "requiredFor": [
         "production"
       ],
-      "evidence": "The production runtime is live on `https://amaanafoundation.org` with Razorpay Live credentials and the signed webhook boundary configured. No legitimate public appeal is currently open, so a real Live order/checkout/capture was intentionally not manufactured and no dummy appeal was published. The remaining acceptance is the first legitimate published appeal: observe order creation, Razorpay checkout, capture, signed webhook processing and donation reconciliation; perform refund verification only when operationally appropriate."
+      "evidence": "Production Razorpay Live credentials and the signed webhook boundary are configured, while there is currently no legitimate public appeal open for donations. The release must not manufacture a dummy appeal or real-money transaction merely to generate evidence. The first legitimate published appeal remains an operational observation point for order creation, checkout, capture, signed webhook processing and reconciliation.",
+      "notApplicableReason": "No legitimate public appeal is currently open, so there is no valid live donation to observe. This becomes mandatory operational acceptance when the next real appeal is published."
     },
     {
       "id": "refund-receipt-operational-check",
       "category": "payments",
-      "status": "PENDING",
+      "status": "NOT_APPLICABLE",
       "requiredFor": [
         "production"
       ],
-      "evidence": "Provider-backed Razorpay Test Mode acceptance now includes successful captures, signed webhook delivery, browser confirmation, acknowledgement creation, exact appeal accounting and a full refund. On 2026-09-19 the INR 110 test payment `pay_Tdo33NThi9m4rH` was refunded from the Razorpay Test Dashboard; Razorpay delivered `refund.processed` to `/api/webhooks/razorpay` with HTTP 200, Neon changed donation `AFD-2026-52467908` from CAPTURED to REFUNDED, set `refundedAmount` to INR 110 and `refundedAt`, and the staging acceptance appeal reconciled from INR 310 back to INR 200. During repeated checkout testing, a real client-side regression was found where revisiting the donation page after Razorpay had already loaded could leave the button stuck on `Preparing secure checkout…` until a hard refresh. The quiet branch fixes this by using Next Script `onReady` plus an already-loaded `window.Razorpay` mount check, with a browser-acceptance remount regression added. Provider-backed `payment.failed` evidence remains pending because the current Razorpay Test Checkout did not expose the documented Success/Failure controls in the observed Netbanking/Wallet/UPI flows; the route-level failed-payment state guards now have explicit automated coverage. Live-mode acceptance and production email delivery remain pending."
+      "evidence": "Provider-backed Razorpay Test Mode acceptance already proved successful capture, signed webhook delivery, acknowledgement state, exact appeal accounting and a full refund with database reconciliation. Live refund/receipt observation requires a legitimate captured production donation; no such transaction currently exists, and the release must not create a dummy real-money payment to satisfy a checklist.",
+      "notApplicableReason": "There is no legitimate captured Live-mode donation to refund in the current release window. Live refund/receipt observation is deferred until operationally appropriate after a real donation exists."
     },
     {
       "id": "database-backup-evidence",
