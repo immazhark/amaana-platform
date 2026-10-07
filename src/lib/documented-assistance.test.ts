@@ -3,7 +3,7 @@ import { programmes } from '@/lib/master-copy';
 import { documentedAssistanceTotal } from './documented-assistance';
 
 const cases = programmes.filter(record => record.causeSlug === 'medical-financial-relief');
-const firstCase = firstCase;
+const firstCase = cases[0];
 if (!firstCase) throw new Error('Expected at least one canonical medical/financial case fixture.');
 
 describe('documented assistance total', () => {
