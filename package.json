@@ -38,7 +38,8 @@
     "artwork:refine": "node scripts/refine-programme-artwork.mjs",
     "prebuild": "npm run artwork:refine && npm run icons:generate",
     "predev": "npm run artwork:refine && npm run icons:generate",
-    "icons:generate": "node scripts/generate-brand-icons.mjs"
+    "icons:generate": "node scripts/generate-brand-icons.mjs",
+    "icons:verify": "npm run icons:generate && node scripts/verify-brand-icons.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1128.0",
