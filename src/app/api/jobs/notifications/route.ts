@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { isEmailDeliveryEnabled } from "@/lib/env";
 import { processPendingEmailNotifications } from "@/lib/notifications";
 import { pruneEphemeralSecurityLedgers } from "@/lib/security-ledger-retention";
+import { logServerError } from "@/lib/server-log";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -25,7 +26,7 @@ async function runRetentionMaintenance() {
     const result = await pruneEphemeralSecurityLedgers();
     return { status: "ok" as const, ...result };
   } catch {
-    console.error("Security-ledger retention maintenance failed");
+    logServerError("notifications.retention_maintenance_failed");
     return { status: "failed" as const };
   }
 }
@@ -54,7 +55,7 @@ export async function POST(request: Request) {
       { headers: privateHeaders },
     );
   } catch {
-    console.error("Notification delivery job failed");
+    logServerError("notifications.delivery_job_failed");
     return NextResponse.json(
       { status: "failed", retention },
       { status: 500, headers: privateHeaders },
