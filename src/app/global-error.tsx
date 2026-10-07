@@ -2,7 +2,10 @@
 
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <html lang="en">
+    <html lang="en-IN">
+      <head>
+        <title>Temporary interruption | Amaana Foundation</title>
+      </head>
       <body style={{ margin: 0, fontFamily: "Arial, Helvetica, sans-serif", background: "#eee5d2", color: "#122239" }}>
         <main style={{ minHeight: "100vh", display: "grid", placeItems: "center", padding: "2rem", boxSizing: "border-box", background: "url(/backgrounds/amaana-arch-emblem.svg) right 1rem top 1rem/clamp(6rem,12vw,11rem) auto no-repeat,url(/backgrounds/amaana-lattice-tile.svg) 0 0/104px 104px repeat,linear-gradient(235deg,#4575a1 16%,#91a6b0 34%,#cecfc0 48%,#eee5d2 70%)" }}>
           <section style={{ width: "min(900px,100%)", borderTop: "1px solid rgba(224,179,24,.55)", paddingTop: "2rem" }}>

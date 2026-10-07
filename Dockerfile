@@ -5,6 +5,11 @@ COPY package.json package-lock.json ./
 RUN npm ci
 
 FROM dependencies AS builder
+# Public ISR routes perform read-only Prisma queries during `next build`.
+# Railway exposes service variables to Docker builds only when the ARG is
+# declared in the stage that needs it. Keep DATABASE_URL build-scoped: never
+# promote it to ENV or copy it into the runtime image.
+ARG DATABASE_URL
 # Next.js resolves NEXT_PUBLIC_* values for prerendered/static metadata during `next build`.
 # Railway Docker builds require explicit ARG opt-in for build-time variables.
 ARG APP_ENVIRONMENT=staging
