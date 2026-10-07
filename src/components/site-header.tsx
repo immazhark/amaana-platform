@@ -10,13 +10,13 @@ import styles from "./site-header.module.css";
 const primaryLinks = [
   ["Our Work", "/our-work"],
   ["Impact", "/impact"],
-  ["Stories", "/stories"],
-  ["Faith & Reflections", "/faith-and-reflections"],
   ["About", "/about"],
   ["Get Involved", "/get-involved"],
 ] as const;
 
 const secondaryLinks = [
+  ["Stories", "/stories"],
+  ["Faith & Reflections", "/faith-and-reflections"],
   ["Request assistance", "/request-assistance"],
   ["How we work", "/how-we-verify"],
   ["Transparency", "/transparency"],
