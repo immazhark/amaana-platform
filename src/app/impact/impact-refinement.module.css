@@ -81,7 +81,7 @@
   display:block;
   width:100%;
   margin:.5rem 0 0;
-  font-family:Georgia,"Times New Roman",serif;
+  font-family:var(--af-font-display);
   font-size:clamp(2.35rem,3.35vw,3.9rem);
   font-weight:400;
   line-height:.88;
@@ -102,7 +102,7 @@
 :global(.v2-impact-tile-copy h3){
   max-width:26ch;
   margin:.55rem 0 0;
-  font-family:Georgia,"Times New Roman",serif;
+  font-family:var(--af-font-display);
   font-size:clamp(1.08rem,1.35vw,1.38rem);
   font-weight:500;
   line-height:1.08

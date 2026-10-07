@@ -6,7 +6,7 @@
 .taleem-islamic-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:clamp(1.5rem,4vw,3.5rem)}
 .taleem-path{min-width:0;display:flex;flex-direction:column;align-items:start;padding:clamp(1.5rem,3vw,2.5rem);border:1px solid var(--taleem-rule);border-radius:.8rem;background:rgb(255 253 248 / 35%)}
 .taleem-path>span{color:var(--taleem-gold-text);font-size:.75rem;letter-spacing:.12em}
-.taleem-path h3{margin:1rem 0;font:500 clamp(1.7rem,2.8vw,2.4rem)/1.16 Georgia,serif;letter-spacing:-.025em;text-wrap:balance}
+.taleem-path h3{margin:1rem 0;font:500 clamp(1.7rem,2.8vw,2.4rem)/1.16 var(--af-font-display);letter-spacing:-.025em;text-wrap:balance}
 .taleem-path p{margin:0 0 1.5rem;color:#5b6472;line-height:1.75}
 .taleem-path a{display:inline-flex;align-items:center;gap:.5rem;min-height:44px;margin-top:auto;color:#2f4c7a;font-weight:600;text-decoration:underline;text-underline-offset:.3em}
 .taleem-path a:hover{color:var(--af-color-gold-ink)}
@@ -14,14 +14,14 @@
 .taleem-school{padding-block:clamp(3.75rem,6.5vw,6rem);color:#fffdf8;background:#2f4c7a var(--amaana-pattern) 0 0/104px 104px}
 .taleem-school-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.95fr);gap:clamp(2rem,4vw,4.5rem);align-items:start}
 .taleem-school .v2-section-label{color:#f0d56b;margin:0 0 1rem}
-.taleem-school h2,.taleem-closing h2{margin:0;font:500 clamp(2.45rem,4.6vw,3.5rem)/1.06 Georgia,serif;letter-spacing:-.035em;text-wrap:balance}
+.taleem-school h2,.taleem-closing h2{margin:0;font:500 clamp(2.45rem,4.6vw,3.5rem)/1.06 var(--af-font-display);letter-spacing:-.035em;text-wrap:balance}
 .taleem-school-grid>div:last-child p{color:rgb(255 253 248 / 85%);line-height:1.75}
 .taleem-school-grid>div:last-child .taleem-school-lead{margin-top:0;color:#fffdf8;font:500 clamp(1rem,1.6vw,1.18rem)/1.75 var(--af-font-body,Arial,sans-serif)}
 .taleem-school .v2-button{margin-top:1rem}
 .taleem-process ol{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.25rem 2rem;margin:0;padding:0;list-style:none}
 .taleem-process li{display:grid;grid-template-columns:2.5rem minmax(0,1fr);gap:1rem;padding:1.5rem 0;border-top:1px solid var(--taleem-rule)}
 .taleem-process li>span{display:grid;place-items:center;align-self:start;aspect-ratio:1;border-radius:50%;background:#ece5d3;color:var(--taleem-gold-text);font-size:.8rem;font-weight:600}
-.taleem-process h3{margin:0 0 .65rem;font:500 clamp(1.25rem,2vw,1.65rem)/1.25 Georgia,serif}
+.taleem-process h3{margin:0 0 .65rem;font:500 clamp(1.25rem,2vw,1.65rem)/1.25 var(--af-font-display)}
 .taleem-process p{margin:0;color:#5b6472;line-height:1.7}
 .taleem-closing{padding-block:clamp(3.75rem,6vw,5.75rem);background:#e6dcc3 var(--amaana-pattern) 0 0/104px 104px}
 .taleem-closing .v2-shell{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,.95fr);gap:clamp(2rem,4vw,4.5rem);align-items:center}

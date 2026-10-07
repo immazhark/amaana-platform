@@ -2,8 +2,8 @@
 .v2-impact-philosophy-grid{display:grid;grid-template-columns:minmax(0,.9fr) minmax(24rem,1.1fr);gap:clamp(3rem,8vw,8rem);align-items:start}
 .v2-impact-principles{border-top:1px solid rgb(18 34 57 / 14%)}
 .v2-impact-principles article{display:grid;grid-template-columns:3rem 10rem minmax(0,1fr);gap:1rem;padding:1.6rem 0;border-bottom:1px solid rgb(18 34 57 / 12%);align-items:baseline}
-.v2-impact-principles span{color:var(--v2-gold);font-family:Georgia,"Times New Roman",serif}
-.v2-impact-principles h3{margin:0;font-family:Georgia,"Times New Roman",serif;font-size:1.6rem;font-weight:500}
+.v2-impact-principles span{color:var(--v2-gold);font-family:var(--af-font-display)}
+.v2-impact-principles h3{margin:0;font-family:var(--af-font-display);font-size:1.6rem;font-weight:500}
 .v2-impact-principles p{margin:0;color:#68717a;line-height:1.6}
 .v2-impact-trust{position:relative;overflow:hidden}
 .v2-impact-trust::after{content:"";position:absolute;width:24rem;height:24rem;border:1px solid rgb(224 179 24 / 16%);border-radius:50%;right:-8rem;bottom:-12rem}
