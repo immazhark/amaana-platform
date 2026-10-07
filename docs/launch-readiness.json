@@ -87,12 +87,11 @@
     {
       "id": "public-media-human-review",
       "category": "privacy",
-      "status": "NOT_APPLICABLE",
+      "status": "PENDING",
       "requiredFor": [
         "production"
       ],
-      "evidence": "Current-release exposure is zero: repository static programme media remains absent, and the last live read-only media audit found no database-authorized public or privacy-approved MediaAsset exposure. Publication continues to fail closed unless an asset is explicitly approved. Future curated photography remains subject to human privacy, consent, provenance and hero-use review before publication, but media that is not part of this release cannot block the current code promotion.",
-      "notApplicableReason": "No unreviewed public media is included in the current release. Future owner-supplied or newly curated photography is a separate condition-triggered publication gate and must be reviewed before it is made public."
+      "evidence": "The previous zero-exposure media audit is dated 2026-09-27 and predates later initiative-photo/banner work. The application publication path remains fail-closed, but current-release media privacy, consent, provenance and hero-use status must be re-established against the current published/selected asset set before this gate can be resolved. Do not infer present-day approval from the older zero-asset snapshot."
     },
     {
       "id": "public-media-upload-delivery",
