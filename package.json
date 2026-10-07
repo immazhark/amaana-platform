@@ -36,10 +36,11 @@
     "launch:env:production:indexing-enabled": "PRODUCTION_INDEXING_DECISION=enable NEXT_PUBLIC_ALLOW_INDEXING=true node scripts/check-production-environment.mjs",
     "launch:env:production:indexing-disabled": "PRODUCTION_INDEXING_DECISION=keep_disabled NEXT_PUBLIC_ALLOW_INDEXING=false node scripts/check-production-environment.mjs",
     "artwork:refine": "node scripts/refine-programme-artwork.mjs",
-    "prebuild": "npm run artwork:refine && npm run icons:generate",
-    "predev": "npm run artwork:refine && npm run icons:generate",
+    "prebuild": "npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
+    "predev": "npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
     "icons:generate": "node scripts/generate-brand-icons.mjs",
-    "icons:verify": "npm run icons:generate && node scripts/verify-brand-icons.mjs"
+    "icons:verify": "npm run icons:generate && node scripts/verify-brand-icons.mjs",
+    "browser-fixtures:materialize": "node scripts/materialize-browser-acceptance.mjs"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1128.0",
