@@ -352,7 +352,7 @@ test('skip link moves focus to the main content landmark', async ({ page }) => {
 test('representative public pages expose one primary heading and an English document language', async ({ page }) => {
   for (const route of representativeRoutes) {
     await openPublicPage(page, route.path);
-    await expect(page.locator('html')).toHaveAttribute('lang', 'en');
+    await expect(page.locator('html')).toHaveAttribute('lang', 'en-IN');
     await expect(page.locator('main#main')).toHaveCount(1);
     await expect(page.locator('h1')).toHaveCount(1);
   }
