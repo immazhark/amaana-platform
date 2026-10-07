@@ -28,26 +28,6 @@
   color: var(--amaana-blue-mid);
   letter-spacing: -.015em;
 }
-
-.brand-wordmark {
-  display: inline-flex;
-  flex-direction: column;
-  align-items: flex-start;
-  line-height: 1;
-  font-weight: 850;
-  letter-spacing: -.025em;
-}
-
-.brand-name { font-size: 1rem; }
-.brand-location {
-  margin-top: .24rem;
-  color: var(--amaana-gold-deep);
-  font-size: .58rem;
-  font-weight: 800;
-  letter-spacing: .14em;
-  text-transform: uppercase;
-}
-
 .nav-links .nav-link {
   position: relative;
   transition: color .22s ease;

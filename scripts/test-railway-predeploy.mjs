@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+import { readFile } from "node:fs/promises";
 import { validateRailwayDeployEnvironment } from "../prisma/railway-predeploy.mjs";
 
 function base() {
@@ -74,4 +75,12 @@ test("never echoes secret values in validation failures", () => {
   const problems = validateRailwayDeployEnvironment(env);
   assert.ok(problems.some(problem => problem.includes("RAZORPAY_KEY_SECRET")));
   assert.ok(problems.every(problem => !problem.includes("tiny")));
+});
+
+test("wrapper runs release preparation before declaring pre-deploy completion", async () => {
+  const source = await readFile("prisma/railway-predeploy.mjs", "utf8");
+  const releasePrepare = source.indexOf('await import("./release-prepare.mjs")');
+  const completion = source.indexOf('Railway pre-deploy release preparation verified.');
+  assert.ok(releasePrepare >= 0);
+  assert.ok(completion > releasePrepare);
 });
