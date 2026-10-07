@@ -117,7 +117,18 @@ jobs:
         if: github.event_name != 'pull_request'
         run: npm run test:coverage
 
-
+      - name: Verify pruned runtime dependency contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm prune --omit=dev
+          npm run audit:prod
+          test -x node_modules/.bin/prisma
+          test ! -e node_modules/eslint
+          test ! -e node_modules/vitest
+          test ! -e node_modules/braces
+          node -e "require.resolve('next'); require.resolve('@prisma/client'); require.resolve('@aws-sdk/client-s3'); require.resolve('sharp')"
+          npm run prisma:validate
 
   database:
     needs: [plan, fast]
