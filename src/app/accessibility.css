@@ -50,7 +50,7 @@ html {
 }
 
 
-/* WCAG 2.1 AAA interaction baseline: preserve a visible 3px keyboard indicator
+/* Accessibility interaction baseline: preserve a visible 3px keyboard indicator
    and a 48px minimum target for discrete controls without inflating inline prose links. */
 :where(
   button,
@@ -94,4 +94,40 @@ html {
   ){
     min-block-size:48px;
   }
+}
+
+
+/* Audit-verified light-surface contrast authority.
+   Brand gold remains available for borders, fills and dark-surface accents;
+   small text on cream/ivory uses darker semantic ink. */
+:is(
+  .v2-policy-layout>aside p,
+  .v2-assistance-promise>span,
+  .v2-governance-record>span,
+  .v2-governance-record dt,
+  .v2-amount-field label span,
+  .v3-work-row small
+){
+  color:var(--af-color-label)!important;
+}
+
+:is(
+  .v2-policy-sections article>span,
+  .v2-governance-people article>span,
+  .v2-amount-input b,
+  .v2-donate-guide-list article>span,
+  .v2-assistance-form legend>span,
+  .v2-assistance-form-layout>aside li>span,
+  .v2-form-heading>span,
+  .v3-arrow
+){
+  color:var(--af-color-accent-text)!important;
+}
+
+:is(
+  .v2-assistance-promise>span,
+  .v2-amount-field label span,
+  .v2-form-heading>span
+){
+  font-size:max(.75rem,1em);
 }
