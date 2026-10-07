@@ -53,7 +53,9 @@ export default async function HomePage() {
   const appealImages = liveAppeals.map(appeal =>
     appeal.coverImageUrl ? appealCoverMedia.get(appeal.coverImageUrl) ?? null : null,
   );
-  const appealSlides = liveAppeals.map((appeal, index) => ({ ...defaultHomeSlides[0], id: `appeal-${appeal.slug}`, eyebrow: 'Current verified appeal', title: appeal.title, description: appeal.summary, primaryLabel: 'View this appeal', primaryHref: `/appeals/${appeal.slug}`, secondaryLabel: 'Support this need', secondaryHref: `/donate/${appeal.slug}`, appealSlug: appeal.slug, image: appealImages[index] ? `asset:${appealImages[index]!.id}` : 'logo', imageAlt: appealImages[index]?.altText || '', order: index }));
+  const appealTemplate = defaultHomeSlides[0];
+  if (!appealTemplate) throw new Error("Homepage carousel requires a default slide template");
+  const appealSlides = liveAppeals.map((appeal, index) => ({ ...appealTemplate, id: `appeal-${appeal.slug}`, eyebrow: 'Current verified appeal', title: appeal.title, description: appeal.summary, primaryLabel: 'View this appeal', primaryHref: `/appeals/${appeal.slug}`, secondaryLabel: 'Support this need', secondaryHref: `/donate/${appeal.slug}`, appealSlug: appeal.slug, image: appealImages[index] ? `asset:${appealImages[index]!.id}` : 'logo', imageAlt: appealImages[index]?.altText || '', order: index }));
   appealImages.forEach(asset => { if (asset) images.set(asset.id, asset); });
   const heroSlides = composeHomeSlides(config, appealSlides);
   const hasOpenAppeals = liveAppeals.length > 0;
