@@ -16,6 +16,7 @@ import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { canRenderPublicMedia } from "@/lib/public-media";
 import { isSameOrigin } from "@/lib/request-security";
+import { logServerError } from "@/lib/server-log";
 
 const privateHeaders = {
   "Cache-Control": "no-store, private",
@@ -214,7 +215,9 @@ export async function POST(request: Request) {
       { headers: privateHeaders },
     );
   } catch (error) {
-    console.error("Curated gallery publication failed", error);
+    logServerError("curated_gallery.publish_failed", {
+      errorName: error instanceof Error ? error.name : "unknown",
+    });
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Curated gallery publication failed safely." },
       { status: 500, headers: privateHeaders },
