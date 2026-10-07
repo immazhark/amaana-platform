@@ -21,6 +21,7 @@ test('current launch register is structurally valid and tracks the remaining lau
       'main-branch-protection',
       'main-promotion-and-production-approval',
       'manual-rendered-accessibility-review',
+      'public-media-human-review',
       'rollback-rehearsal',
       'transactional-email-delivery',
     ],
@@ -30,7 +31,7 @@ test('current launch register is structurally valid and tracks the remaining lau
   assert.ok(production.ready.some(gate => gate.id === 'production-indexing-decision'));
   assert.ok(production.ready.some(gate => gate.id === 'public-media-upload-delivery'));
   assert.ok(production.ready.some(gate => gate.id === 'razorpay-live-kyc-readiness'));
-  for (const id of ['public-media-human-review', 'controlled-live-donation-acceptance', 'refund-receipt-operational-check']) {
+  for (const id of ['controlled-live-donation-acceptance', 'refund-receipt-operational-check']) {
     const gate = production.ready.find(candidate => candidate.id === id);
     assert.equal(gate?.status, 'NOT_APPLICABLE', `${id} must be explicitly release-scoped as not applicable`);
     assert.ok(gate?.notApplicableReason?.length > 20, `${id} needs an explicit condition-triggered reason`);
