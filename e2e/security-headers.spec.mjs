@@ -6,7 +6,7 @@ const globalHeaders = [
   ["x-content-type-options", /^nosniff$/i],
   ["x-frame-options", /^DENY$/i],
   ["permissions-policy", /camera=\(\).*microphone=\(\).*geolocation=\(\).*payment=\(\)/i],
-  ["cross-origin-opener-policy", /^same-origin$/i],
+  ["cross-origin-opener-policy", /^same-origin-allow-popups$/i],
   ["cross-origin-resource-policy", /^same-site$/i],
   ["x-permitted-cross-domain-policies", /^none$/i],
   ["strict-transport-security", /max-age=63072000.*includeSubDomains.*preload/i],
@@ -22,6 +22,7 @@ for (const path of ["/", "/about", "/donate", "/request-assistance", "/admin/log
     }
 
     const csp = response.headers()["content-security-policy"];
+    expect(csp).toContain("object-src 'none'");
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).toContain("base-uri 'self'");
     expect(csp).toContain("form-action 'self'");
