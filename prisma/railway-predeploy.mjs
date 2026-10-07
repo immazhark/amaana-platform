@@ -115,6 +115,7 @@ async function run() {
   const label = process.env.APP_ENVIRONMENT === "production" ? "Production" : "Staging";
   console.log(`${label} environment shape passed; no secret values printed.`);
   await import("./release-prepare.mjs");
+  console.log("Railway pre-deploy release preparation verified.");
 }
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
