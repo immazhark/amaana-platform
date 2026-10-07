@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-06",
-  "principle": "The public production runtime is live and indexable on the official domain. Green automation remains necessary but not sufficient for remaining operational gates such as email delivery, preview Test-payment posture, branch protection, formal main promotion, live donation observation and human review.",
+  "updatedAt": "2026-10-07",
+  "principle": "The public production runtime is live and indexable on the official domain from main. Exact-candidate green automation and preview release preparation are verified, but green automation remains necessary rather than sufficient for external/operator gates including email delivery, human rendered review, real rollback rehearsal, branch protection, formal main promotion and the first legitimate live-donation observation.",
   "gates": [
     {
       "id": "durable-ci-browser-gate-established",
@@ -11,18 +11,19 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "Exact integration HEAD `a835ea2e7d703163bdbce27a2582c1f6109f5471` passed PR #183 CI run `37473281276` (#2224): plan, fast, database, browser and verify all SUCCESS. The merged push then passed CI run `37476466195` (#2225): plan, fast, database, production and verify SUCCESS. The production bundle remains inside the fixed budgets without increasing them: JavaScript `819158 / 819200` bytes and CSS `345236 / 348160` bytes. The current build exposes `/icon.svg`, `/robots.txt` and runtime `/sitemap.xml` in the expected route manifest.",
-      "verifiedAt": "2026-10-06"
+      "evidence": "Exact integration code candidate `52063ad7ab7d9b0127023c17096284ca18681ab8` passed push CI run `37620193326` (#2364): plan, fast, database, production, browser and verify all SUCCESS. The same SHA passed PR #104 CI run `37620199081` (#2365): plan, Production promotion readiness, fast, database, browser and verify all SUCCESS; the production job was skipped as expected for the pull-request event. The fixed bundle gates remained unchanged and passing: JavaScript `806040 / 819200` bytes and CSS `346301 / 348160` bytes.",
+      "verifiedAt": "2026-10-07"
     },
     {
       "id": "railway-preview-deployment-baseline",
       "category": "technical",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "requiredFor": [
         "rehearsal",
         "production"
       ],
-      "evidence": "The preview service remains online on its previous healthy deployment `eed6c1e1-d667-462b-b15c-4d2ca59ced6d` and has no official custom domain attached. Fresh preview deployments on current integration HEAD fail closed because `NEXT_PUBLIC_RAZORPAY_KEY_ID` is not a Razorpay Test key; the staging environment contract correctly refuses a Live key. `NEXT_PUBLIC_APP_URL` and fail-closed indexing variables were restored to the generated preview domain on 2026-10-06. Before preview payment acceptance is used again, configure a matching Razorpay Test key pair and redeploy; do not weaken the environment validator."
+      "evidence": "Railway preview deployment `c8a59b26-7f74-4f0f-9fe5-664bf6f2534c` is SUCCESS on exact integration code candidate `52063ad7ab7d9b0127023c17096284ca18681ab8`, with 1/1 replica online and zero active warning/critical notifications. Service source is pinned to `phase-public-site-rebuild` at that exact commit, generated domain `amaana-rebuild-preview-production.up.railway.app`, and preDeployCommand `node prisma/railway-predeploy.mjs`. Deployment logs prove: `Staging environment shape passed; no secret values printed.`, 15 migrations detected, `No pending migrations to apply.`, `Database release preparation completed.`, `Railway pre-deploy release preparation verified.`, and `/api/health/ready` healthcheck succeeded. The staging contract preserves noindex and Razorpay Test posture; production remains isolated on main.",
+      "verifiedAt": "2026-10-07"
     },
     {
       "id": "domestic-only-boundary",
@@ -159,7 +160,7 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "Live Railway state was reverified on 2026-09-29 after UI/grid and CSS-cascade closure. Current served staging deployment `53bd0d5b-fa02-4b47-9e0e-f927d2010186` is SUCCESS on exact integration SHA `d1e285a2fb451f5426bcce2292615714e3a428c8` and reports `canRollback=true` / `canRedeploy=true`. The recent previous application deployment `7fa0c8f3-0739-4151-8623-840ef383117d` on SHA `0b9f32f55a65e1cc53d9864c3a26eb563e319a6a` is REMOVED but still reports `canRollback=true` / `canRedeploy=true`. The gate remains PENDING because no real Railway Rollback action has been executed and verified. The operator must establish/confirm a fresh rollback pair in Railway, execute one real dashboard Rollback, verify exact target/health/Test-payment/noindex/private boundaries, restore forward to the candidate, and rerun staging acceptance before this gate can be VERIFIED."
+      "evidence": "Current preview deployment `c8a59b26-7f74-4f0f-9fe5-664bf6f2534c` is SUCCESS on exact candidate `52063ad7ab7d9b0127023c17096284ca18681ab8` and reports `canRollback=true` / `canRedeploy=true`. Previous preview deployment `9c4f253d-4275-4fe4-a664-a8293a8320c9` is REMOVED and also reports `canRollback=true` / `canRedeploy=true`. The connected Railway toolset exposes redeploy but no unambiguous rollback mutation, so the gate remains PENDING. Verification still requires one real preview-only rollback action, exact-target/health/noindex/Test-payment/private-boundary checks, forward restoration to the current candidate, and acceptance rerun."
     },
     {
       "id": "production-dns-cutover-plan",
@@ -168,8 +169,8 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Cutover completed on 2026-10-06. `amaanafoundation.org` was detached from `amaana-rebuild-preview` and attached to Railway service `amaana-platform`; Cloudflare CNAME now targets the production Railway domain. Railway reports DNS propagated, ownership verified and the certificate valid. The production service is online on deployment `9cbd38d1-7032-4903-894a-2258812a3f1e` at integration SHA `a835ea2e7d703163bdbce27a2582c1f6109f5471`, with 1/1 replica and no current warnings or critical issues.",
-      "verifiedAt": "2026-10-06"
+      "evidence": "The official domain remains attached to Railway service `amaana-platform`, whose source is `main`. Current known-good production deployment `b7f9f2e2-9234-4a64-8085-a9fdb326944a` is SUCCESS on main commit `29c7627ed3bffd0b581935c5b934ad903aeca2cd`, with 1/1 replica online and no active warning/critical notification. The preview service has only its generated Railway domain and no custom domain. Production remains public/indexable on the official host while preview remains isolated.",
+      "verifiedAt": "2026-10-07"
     },
     {
       "id": "production-indexing-decision",
@@ -188,7 +189,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Rechecked on 2026-10-06. `main` remains at SHA `1a69dd179181390a488623accf1314a1ff09e319`, reports `protected=false`, and required status-check enforcement is off. Production currently follows `phase-public-site-rebuild`. Enable an effective branch protection/ruleset before or alongside formal main promotion."
+      "evidence": "Rechecked on 2026-10-07. `main` is currently `29c7627ed3bffd0b581935c5b934ad903aeca2cd`; GitHub branch metadata reports `protected=false` with required status-check enforcement off, and the repository ruleset collection is empty. The connected GitHub integration receives HTTP 403 on the branch-protection administration endpoint (`Resource not accessible by integration`), so this remains an explicit manual operator gate. Production correctly follows `main`."
     },
     {
       "id": "main-promotion-and-production-approval",
@@ -197,7 +198,7 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "The public production runtime is already healthy on the approved integration branch, but PR #104 remains Draft and unmerged into `main`. Its description was refreshed on 2026-10-06 with the exact production state and remaining gates. Formal `main` promotion remains an explicit owner approval boundary."
+      "evidence": "PR #104 remains open, Draft, mergeable and targets `main` from `phase-public-site-rebuild`. The exact code candidate `52063ad7ab7d9b0127023c17096284ca18681ab8` has completed both final CI paths successfully and its exact Railway preview is healthy. Formal main promotion has not yet occurred; production remains on known-good main commit `29c7627ed3bffd0b581935c5b934ad903aeca2cd`. This gate remains PENDING until the repository's fail-closed readiness conditions and required operator gates permit promotion."
     }
   ]
 }
