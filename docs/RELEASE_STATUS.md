@@ -57,12 +57,12 @@ Current genuine blockers include:
 1. Resend domain verification and one controlled production delivery/retry/idempotency acceptance.
 2. Manual rendered accessibility review.
 3. Final editorial/SEO/social human review.
-4. One real Railway rollback rehearsal on preview, followed by forward restoration and acceptance rerun.
-5. Main branch protection/ruleset configuration. GitHub reports `main protected=false`; the connected integration cannot administer branch protection.
+4. Current-release public-media privacy/consent/provenance review. The older zero-exposure audit predates later initiative-photo work and cannot clear the present gate by itself.
+5. One real Railway rollback rehearsal on preview, followed by forward restoration and acceptance rerun.
+6. Main branch protection/ruleset configuration. GitHub reports `main protected=false`; the connected integration cannot administer branch protection.
 
 Condition-triggered obligations are not blockers for this release when their triggering condition does not exist:
 
-- Future owner-supplied or newly curated public photography still requires privacy, consent, provenance and hero-use review before publication.
 - The first legitimate Live Razorpay donation must be observed end-to-end when a real public appeal is next published.
 - Live refund/receipt acceptance must be observed when a legitimate captured production donation makes that operationally appropriate.
 
