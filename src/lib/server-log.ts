@@ -1,5 +1,3 @@
-import "server-only";
-
 type SafeLogValue = string | number | boolean | null | undefined;
 type SafeLogContext = Readonly<Record<string, SafeLogValue>>;
 
