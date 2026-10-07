@@ -25,7 +25,9 @@ export function notificationRetryDelayMs(attemptNumber: number) {
   if (!Number.isInteger(attemptNumber) || attemptNumber < 1) {
     throw new Error("Notification attempt number must be a positive integer");
   }
-  return RETRY_DELAYS_MS[Math.min(attemptNumber - 1, RETRY_DELAYS_MS.length - 1)];
+  const delay = RETRY_DELAYS_MS[Math.min(attemptNumber - 1, RETRY_DELAYS_MS.length - 1)];
+  if (delay === undefined) throw new Error("Notification retry schedule is empty");
+  return delay;
 }
 
 export function isRetryableEmailProviderResponse(status: number, providerCode?: string | null) {
