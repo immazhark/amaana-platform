@@ -46,7 +46,7 @@ export function SiteHeader() {
     const toggle = toggleRef.current;
     if (!nav || !toggle) return;
     const focusable = [toggle, ...nav.getElementsByTagName("a")];
-    focusable[1].focus();
+    focusable[1]?.focus();
     const mobile = window.matchMedia("(max-width: 1020px)");
     const onBreakpoint = () => {
       if (mobile.matches) return;

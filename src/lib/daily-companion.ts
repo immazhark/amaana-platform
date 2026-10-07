@@ -19,8 +19,8 @@ export function shiftDate(date: string, days: number) {
 
 export function timeMinutes(time: unknown): number | null {
   if (typeof time !== "string" || !/^([01]\d|2[0-3]):[0-5]\d$/.test(time)) return null;
-  const [hour, minute] = time.split(":").map(Number);
-  return hour * 60 + minute;
+  const separator = time.indexOf(":");
+  return Number(time.slice(0, separator)) * 60 + Number(time.slice(separator + 1));
 }
 
 export const PRAYERS = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"] as const;
@@ -57,7 +57,9 @@ export function observedHijri(date: string, announcements: readonly MoonAnnounce
         ![29, 30].includes(item.confirmedDays) || !item.authority.trim() || !/^https:\/\//.test(item.sourceUrl)) continue;
     const day = Math.floor((Date.parse(`${date}T00:00:00Z`) - first) / DAY) + 1;
     if (day >= 1 && day <= item.confirmedDays) {
-      return { day, month: item.month, year: item.year, label: `${day} ${MONTHS[item.month - 1]} ${item.year} AH`, authority: item.authority, sourceUrl: item.sourceUrl };
+      const monthName = MONTHS[item.month - 1];
+      if (!monthName) continue;
+      return { day, month: item.month, year: item.year, label: `${day} ${monthName} ${item.year} AH`, authority: item.authority, sourceUrl: item.sourceUrl };
     }
   }
   return null;
@@ -91,7 +93,13 @@ export const HADITHS = [
 
 export function dailyReading(now: Date) {
   const { dayNumber, date } = hyderabadClock(now);
-  return { date, ayah: AYAHS[((dayNumber % AYAHS.length) + AYAHS.length) % AYAHS.length], hadith: HADITHS[((dayNumber % HADITHS.length) + HADITHS.length) % HADITHS.length] };
+  const ayahIndex = ((dayNumber % AYAHS.length) + AYAHS.length) % AYAHS.length;
+  const hadithIndex = ((dayNumber % HADITHS.length) + HADITHS.length) % HADITHS.length;
+  return {
+    date,
+    ayah: AYAHS[ayahIndex] ?? AYAHS[0],
+    hadith: HADITHS[hadithIndex] ?? HADITHS[0],
+  };
 }
 
 export type Reminder = { id: string; title: string; text: string; reference: string; source: string; readUrl?: string };

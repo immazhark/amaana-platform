@@ -29,8 +29,11 @@ describe("public page gallery media query contracts", () => {
 
     expect(mocks.initiativeFindMany).toHaveBeenCalledTimes(2);
 
-    const completedArgs = mocks.initiativeFindMany.mock.calls[0][0];
-    const childArgs = mocks.initiativeFindMany.mock.calls[1][0];
+    const completedCall = mocks.initiativeFindMany.mock.calls[0];
+    const childCall = mocks.initiativeFindMany.mock.calls[1];
+    if (!completedCall || !childCall) throw new Error("Expected both initiative media queries.");
+    const completedArgs = completedCall[0];
+    const childArgs = childCall[0];
 
     for (const mediaQuery of [
       completedArgs.select.mediaAssets,

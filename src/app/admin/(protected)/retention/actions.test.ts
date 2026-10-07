@@ -145,10 +145,14 @@ describe("private document retention deletion", () => {
       "assistance/request_123/123e4567-e89b-12d3-a456-426614174000.pdf",
       "request_123",
     );
-    expect(mocks.createAudit.mock.invocationCallOrder[0])
-      .toBeLessThan(mocks.deletePrivateDocumentObject.mock.invocationCallOrder[0]);
-    expect(mocks.deletePrivateDocumentObject.mock.invocationCallOrder[0])
-      .toBeLessThan(mocks.transaction.mock.invocationCallOrder[0]);
+    const auditOrder = mocks.createAudit.mock.invocationCallOrder[0];
+    const deleteObjectOrder = mocks.deletePrivateDocumentObject.mock.invocationCallOrder[0];
+    const transactionOrder = mocks.transaction.mock.invocationCallOrder[0];
+    if (auditOrder === undefined || deleteObjectOrder === undefined || transactionOrder === undefined) {
+      throw new Error("Expected retention deletion call ordering.");
+    }
+    expect(auditOrder).toBeLessThan(deleteObjectOrder);
+    expect(deleteObjectOrder).toBeLessThan(transactionOrder);
     expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
         action: "assistance.document_deleted",

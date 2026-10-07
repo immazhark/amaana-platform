@@ -7,6 +7,7 @@ import { prisma } from "@/lib/prisma";
 import { fetchRazorpayPayment, verifyCheckoutSignature } from "@/lib/razorpay";
 import { isSameOrigin } from "@/lib/request-security";
 import { validateProductionEnvironment } from "@/lib/env";
+import { logServerError } from "@/lib/server-log";
 
 const privateHeaders = {
   "Cache-Control": "no-store, private",
@@ -101,7 +102,7 @@ export async function POST(request: Request) {
       { headers: privateHeaders },
     );
   } catch {
-    console.error("Donation confirmation failed");
+    logServerError("donation.confirmation_failed");
     return NextResponse.json(
       { error: "Payment is being verified. Please retain your payment confirmation." },
       { status: 500, headers: privateHeaders },

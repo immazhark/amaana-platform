@@ -71,7 +71,9 @@ export function composeHomeSlides(config: HomeCarouselConfig, appealSlides: Home
   const linked = new Set(visible.map(s => s.appealSlug).filter(Boolean));
   const automatic = appealSlides.filter(s => !linked.has(s.appealSlug));
   // Valid admin saves retain an unscheduled fallback. Protect rendering of old/corrupt empty visibility windows too.
-  const general = visible.length ? visible : [defaultHomeSlides[0]];
+  const fallback = defaultHomeSlides[0];
+  if (!fallback) throw new Error("Homepage carousel requires a canonical fallback slide.");
+  const general: HomeSlide[] = visible.length ? visible : [fallback];
   const position = Math.min(config.appealPosition, general.length);
   return [...general.slice(0, position), ...automatic, ...general.slice(position)];
 }

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { validateProductionEnvironment } from "@/lib/env";
 import { prisma } from "@/lib/prisma";
+import { logServerError } from "@/lib/server-log";
 
 const headers = { "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow, noarchive" };
 const READINESS_TIMEOUT_MS = 2_500;
@@ -23,14 +24,14 @@ export async function GET() {
   try {
     validateProductionEnvironment();
   } catch {
-    console.error("Readiness check failed", { component: "environment" });
+    logServerError("readiness.environment_failed");
     return NextResponse.json({ status: "not_ready" }, { status: 503, headers });
   }
 
   try {
     await databaseReady();
   } catch {
-    console.error("Readiness check failed", { component: "database" });
+    logServerError("readiness.database_failed");
     return NextResponse.json({ status: "not_ready" }, { status: 503, headers });
   }
 

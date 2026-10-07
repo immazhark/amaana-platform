@@ -106,8 +106,12 @@ describe("identity media creation concurrency", () => {
       }),
       select: { id: true },
     }));
-    expect(mocks.findMany.mock.invocationCallOrder[0]).toBeLessThan(mocks.updateMany.mock.invocationCallOrder[0]);
-    expect(mocks.updateMany.mock.invocationCallOrder[0]).toBeLessThan(mocks.createRecord.mock.invocationCallOrder[0]);
+    const findOrder = mocks.findMany.mock.invocationCallOrder[0];
+    const updateOrder = mocks.updateMany.mock.invocationCallOrder[0];
+    const createOrder = mocks.createRecord.mock.invocationCallOrder[0];
+    if (findOrder === undefined || updateOrder === undefined || createOrder === undefined) throw new Error("Expected media creation call ordering.");
+    expect(findOrder).toBeLessThan(updateOrder);
+    expect(updateOrder).toBeLessThan(createOrder);
     expect(mocks.createRecord).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({ sortOrder: -1000, isPublic: false, causeId: "cause_1" }),
     }));
@@ -360,8 +364,12 @@ describe("admin media deletion", () => {
         expect(arg.data.metadata).not.toHaveProperty("sourcePath");
       }
     }
-    expect(mocks.createAudit.mock.invocationCallOrder[0]).toBeLessThan(mocks.deletePublicMediaObject.mock.invocationCallOrder[0]);
-    expect(mocks.deletePublicMediaObject.mock.invocationCallOrder[0]).toBeLessThan(mocks.transaction.mock.invocationCallOrder[0]);
+    const auditOrder = mocks.createAudit.mock.invocationCallOrder[0];
+    const deleteObjectOrder = mocks.deletePublicMediaObject.mock.invocationCallOrder[0];
+    const transactionOrder = mocks.transaction.mock.invocationCallOrder[0];
+    if (auditOrder === undefined || deleteObjectOrder === undefined || transactionOrder === undefined) throw new Error("Expected media deletion call ordering.");
+    expect(auditOrder).toBeLessThan(deleteObjectOrder);
+    expect(deleteObjectOrder).toBeLessThan(transactionOrder);
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/media");
   });
 });

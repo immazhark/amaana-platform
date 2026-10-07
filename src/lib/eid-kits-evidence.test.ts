@@ -31,13 +31,17 @@ describe("parseEidKitsEvidence", () => {
 
   it("fails closed when category totals do not equal 710", () => {
     const invalid = structuredClone(validEvidence);
-    invalid.breakdown2026[7].count = 17;
+    const category = invalid.breakdown2026[7];
+    if (!category) throw new Error("Expected the eighth 2026 evidence category.");
+    category.count = 17;
     expect(parseEidKitsEvidence(invalid)).toBeNull();
   });
 
   it("fails closed when the 2026 historical record is not exactly 710", () => {
     const invalid = structuredClone(validEvidence);
-    invalid.history[6].families = 709;
+    const edition = invalid.history[6];
+    if (!edition) throw new Error("Expected the 2026 evidence history entry.");
+    edition.families = 709;
     expect(parseEidKitsEvidence(invalid)).toBeNull();
   });
 });
