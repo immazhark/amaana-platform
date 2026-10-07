@@ -10,7 +10,6 @@ test('current launch register is structurally valid and tracks the remaining lau
   assert.deepEqual(
     rehearsal.unresolved.map(gate => gate.id).sort(),
     [
-      'railway-preview-deployment-baseline',
       'rollback-rehearsal',
     ],
   );
@@ -24,7 +23,6 @@ test('current launch register is structurally valid and tracks the remaining lau
       'main-promotion-and-production-approval',
       'manual-rendered-accessibility-review',
       'public-media-human-review',
-      'railway-preview-deployment-baseline',
       'refund-receipt-operational-check',
       'rollback-rehearsal',
       'transactional-email-delivery',
