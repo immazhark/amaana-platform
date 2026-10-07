@@ -1,3 +1,17 @@
+# ChatGPT release-hardening checkpoint — 2026-10-07
+
+Ownership `CHATGPT_ACTIVE`. Frozen integration candidate: `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. PR #197 patched source-map-js CVE-2026-93749; PR #198 patched current brace-expansion/Sharp production advisories and added fail-closed `npm audit --omit=dev --audit-level=high`; PR #199 moved GitHub first-party actions to Node-24 releases, promoted Prisma CLI to the legitimate runtime dependency set and pruned dev tooling from the Docker runtime. Exact PR #199 CI #2382 passed fast/database/browser/verify; final merge push CI #2383 passed fast/database/production/verify with JavaScript 806040/819200 bytes and CSS 346301/348160 bytes. The PR #199 tested head and final integration merge have an identical Git tree.
+
+Exact Railway preview deployment `c2b5327d-94ee-49f6-b10c-d7f70673a1fa` is SUCCESS on `9bd04887...`, 1/1 online with zero warning/critical notifications. Pre-deploy ran `node prisma/railway-predeploy.mjs`, found 15 migrations and none pending, completed release preparation and passed `/api/health/ready`. Production remains untouched on main `29c7627ed3bffd0b581935c5b934ad903aeca2cd`. PR #104 remains Draft. PR #195 route-level loading boundaries was closed as a regression branch after 41 browser failures including CLS ~0.814.
+
+Final readiness normalization is on branch `docs/final-release-evidence-20261007`. Release-scoped non-applicable gates: no new unreviewed programme media, no legitimate live appeal, no legitimate live refund target. Genuine unresolved gates: Resend/email acceptance, human rendered accessibility review, final human editorial/social judgement, real Railway Rollback rehearsal, main branch protection and formal production promotion. Resend domain changed from failed to pending on 7 Oct and a fresh verification was triggered; all four records remain pending at last check. Main remains unprotected with no ruleset.
+
+Railway environment contains one non-destructive staged no-op patch `45c0bc6c-46db-4ed8-82cb-3a8f02dfb483`: production preDeployCommand current→identical current and timeout 60→60. It has no live effect. The connected Railway API exposes no discard operation, so remove it in the dashboard before cutover; do not Accept & Deploy merely to clear metadata.
+
+Protected behavior: main/production not to be changed before readiness gates and explicit production authorization; no dummy appeal, real-money payment/refund, beneficiary submission or unreviewed public media; no JS/CSS budget increase; provisional 12A/12AB and 80G wording; no FCRA claim; Islamic Companion remains bottom-right.
+
+---
+
 # ChatGPT emergency takeover — 2026-10-05 16:32 IST
 
 Ownership `CHATGPT_ACTIVE` by explicit owner handover after Codex/Work interruption. Continue existing PR #167 on `fix/all-route-audit-20261005`; do not start a competing branch. Verified remote head before takeover: `bd4feedb9fb41a60ad2b6b9f40b06c8c11cf59db`, base `phase-public-site-rebuild` at `2caccb9fb83424f75a4c78ffa4c9339ae2e15ad7`. PR is open, mergeable and unmerged. Main/production PR #104, production indexing, Live Razorpay/payment/refund actions and factual/media locks remain protected.
