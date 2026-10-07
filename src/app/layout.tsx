@@ -21,6 +21,8 @@ import "./experience-finish.css";
 import "./site-chrome.css";
 // Accessibility remains the final authority for focus, motion and readability.
 import "./accessibility.css";
+import { SiteMotion } from "@/components/site-motion";
+import "lenis/dist/lenis.css";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { IslamicCompanion } from "@/components/islamic-companion";
@@ -73,6 +75,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a className="v2-skip-link" href="#main">Skip to content</a>
         <StructuredData />
         <Analytics />
+        <SiteMotion />
         <NavigationProgress />
         <SiteHeader />
         <IslamicCompanion />
