@@ -1,8 +1,8 @@
 "use client";
 
-import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { RouteLoading } from "./route-loading";
 
 export function NavigationProgress() {
   const pathname = usePathname();
@@ -37,13 +37,5 @@ export function NavigationProgress() {
     };
   }, []);
 
-  return visible ? (
-    <div className="amaana-loading-overlay amaana-navigation-loading" role="status" aria-live="polite" aria-label="Loading page">
-      <div className="amaana-loading-indicator">
-        <Image className="amaana-loading-logo" src="/brand/amaana-mark.svg" alt="" aria-hidden="true" width={96} height={96} priority />
-        <span className="amaana-loading-dots" aria-hidden="true"><i /><i /><i /></span>
-        <span className="sr-only">Loading page</span>
-      </div>
-    </div>
-  ) : null;
+  return visible ? <RouteLoading /> : null;
 }
