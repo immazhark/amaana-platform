@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { amaanaBodyFont, amaanaDisplayFont } from "./fonts";
 import "./globals.css";
 import "./v2.css";
 import "./brand.css";
@@ -78,7 +79,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en-IN">
+    <html lang="en-IN" className={`${amaanaBodyFont.variable} ${amaanaDisplayFont.variable}`}>
       <body>
         <a className="v2-skip-link" href="#main">Skip to content</a>
         <StructuredData />
