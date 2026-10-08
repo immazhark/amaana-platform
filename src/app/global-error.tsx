@@ -1,10 +1,8 @@
 "use client";
 
-import { amaanaBodyFont, amaanaDisplayFont } from "./fonts";
-
 export default function GlobalError({ reset }: { error: Error & { digest?: string }; reset: () => void }) {
   return (
-    <html lang="en-IN" className={`${amaanaBodyFont.variable} ${amaanaDisplayFont.variable}`}>
+    <html lang="en-IN">
       <head>
         <title>Temporary interruption | Amaana Foundation</title>
       </head>

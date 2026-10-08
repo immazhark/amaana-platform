@@ -36,7 +36,7 @@ describe("canonical Amaana typography", () => {
     const globalError = readFileSync("src/app/global-error.tsx", "utf8");
 
     expect(globals).toContain("--af-font-display: var(--font-amaana-display), serif;");
-    expect(globalError).toContain("amaanaDisplayFont.variable");
+    expect(globalError).not.toContain('from "./fonts"');
     expect(globalError).toContain('fontFamily: "var(--font-amaana-display), serif"');
   });
 });
