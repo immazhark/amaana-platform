@@ -236,6 +236,12 @@ test('read-only Resend DNS diagnostic does not launch unrelated application acce
   assert.equal(planned.database, false);
   assert.equal(planned.browser, false);
   assert.equal(planned.mode, 'none');
+  const combined = planChanges([path, 'scripts/ci-plan.mjs', 'scripts/test-ci-plan.mjs']);
+  assert.equal(combined.app, false);
+  assert.equal(combined.database, false);
+  assert.equal(combined.browser, false);
+  assert.equal(combined.mode, 'none');
+  assert.equal(planChanges([path, 'scripts/ci-plan.mjs', 'src/app/api/donations/order/route.ts']).mode, 'full');
   assert.equal(planChanges([path, 'src/app/api/donations/order/route.ts']).mode, 'full');
   assert.equal(planChanges([path], { target: 'main' }).mode, 'full');
   assert.equal(planChanges([path], { release: true }).mode, 'full');
