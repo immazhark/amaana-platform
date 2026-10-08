@@ -16,7 +16,7 @@
 .guardrails.guardrails{background:#edf0ed var(--amaana-pattern) 0 0/104px 104px}
 .guardrails :global(.v2-compliance-guardrail-grid){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1.5rem 2.5rem;border:0}
 .guardrails :global(.v2-compliance-guardrail-grid) article{min-width:0;padding:1.5rem 0;border:0;border-top:1px solid rgb(18 34 57 / 20%)}
-.guardrails :global(.v2-compliance-guardrail-grid) h3{margin:.65rem 0;font:500 clamp(1.3rem,2vw,1.75rem)/1.25 Georgia,serif;letter-spacing:-.015em}
+.guardrails :global(.v2-compliance-guardrail-grid) h3{margin:.65rem 0;font:500 clamp(1.3rem,2vw,1.75rem)/1.25 var(--af-font-display);letter-spacing:-.015em}
 .guardrails :global(.v2-compliance-guardrail-grid) p{margin:0;line-height:1.7}
 @media(max-width:760px){.guardrails :global(.v2-compliance-guardrail-grid){grid-template-columns:1fr}}
 

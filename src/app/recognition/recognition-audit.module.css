@@ -3,7 +3,7 @@
 .document{position:relative;min-height:28rem;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;padding:clamp(1.5rem,3vw,2.4rem);border:1px solid rgb(18 34 57 / 10%);border-radius:.9rem;background:linear-gradient(145deg,#102039 0%,#1d3150 62%,#315887 100%);color:#fffdf8}
 .document::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 84% 18%,rgb(224 179 24 / 18%),transparent 24%);pointer-events:none}
 .document>span{position:relative;color:#f0d56b;font-size:.72rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-.document>strong{position:relative;max-width:12ch;margin:.6rem 0 .8rem;font:500 clamp(2.4rem,4vw,4.4rem)/.94 Georgia,"Times New Roman",serif;letter-spacing:-.04em}
+.document>strong{position:relative;max-width:12ch;margin:.6rem 0 .8rem;font:500 clamp(2.4rem,4vw,4.4rem)/.94 var(--af-font-display);letter-spacing:-.04em}
 .document>p{position:relative;max-width:34rem;margin:0 0 1.4rem;color:rgb(255 253 248 / 72%);line-height:1.6}
 .document .v2-button{position:relative;align-self:flex-start}
 .documentMark{position:absolute;right:clamp(1.2rem,2.5vw,2rem);top:clamp(1.2rem,2.5vw,2rem);display:grid;place-items:center;width:4.25rem;height:5.5rem;border:1px solid rgb(240 213 107 / 55%);border-radius:.65rem;color:#f0d56b;font-weight:800;letter-spacing:.08em}

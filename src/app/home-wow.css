@@ -42,7 +42,7 @@
 }
 
 .v2-home-hero-proof .v2-proof-number {
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--af-font-display);
   font-size: clamp(2.8rem, 5vw, 5.2rem);
   line-height: .9;
   color: var(--v2-gold-soft);
@@ -150,7 +150,7 @@
 .v2-home-hero-placeholder strong {
   max-width: 8ch;
   margin-top: auto;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--af-font-display);
   font-size: clamp(3.8rem, 7vw, 7.4rem);
   font-weight: 400;
   line-height: .86;

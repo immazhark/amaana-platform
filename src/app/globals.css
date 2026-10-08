@@ -48,7 +48,7 @@
 
   /* Typography */
   --af-font-body: var(--font-amaana-body), Arial, Helvetica, sans-serif;
-  --af-font-display: var(--font-amaana-display), Georgia, "Times New Roman", serif;
+  --af-font-display: var(--font-amaana-display), serif;
   --af-text-xs: .76rem;
   --af-text-sm: .9rem;
   --af-text-body: 1rem;

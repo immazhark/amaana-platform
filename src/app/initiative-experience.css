@@ -80,7 +80,7 @@
 
 .v2-initiative-evidence-panel strong {
   margin-top: auto;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--af-font-display);
   font-size: clamp(5rem, 10vw, 10rem);
   font-weight: 400;
   line-height: .76;
@@ -90,7 +90,7 @@
 .v2-initiative-evidence-panel p {
   max-width: 22rem;
   margin: 1.5rem 0 .8rem;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--af-font-display);
   font-size: clamp(1.5rem, 2.5vw, 2.4rem);
   line-height: 1.05;
 }
@@ -125,7 +125,7 @@
 
 .v2-initiative-facts strong {
   display: block;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--af-font-display);
   font-size: clamp(1.45rem, 2.5vw, 2.35rem);
   font-weight: 500;
   line-height: 1.05;
@@ -198,7 +198,7 @@
 
 .v2-initiative-faith-grid h3 {
   margin: 4rem 0 1rem;
-  font-family: Georgia, "Times New Roman", serif;
+  font-family: var(--af-font-display);
   font-size: clamp(1.7rem, 2.5vw, 2.7rem);
   font-weight: 500;
   line-height: 1;
