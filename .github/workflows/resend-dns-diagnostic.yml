@@ -2,6 +2,11 @@ name: Resend DNS diagnostic
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - phase-public-site-rebuild
+    paths:
+      - .github/workflows/resend-dns-diagnostic.yml
 
 permissions:
   contents: read
