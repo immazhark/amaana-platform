@@ -60,29 +60,32 @@
     {
       "id": "transactional-email-delivery",
       "category": "operations",
-      "status": "PENDING",
+      "status": "NOT_APPLICABLE",
       "requiredFor": [
         "production"
       ],
-      "evidence": "Reverified through Resend on 2026-10-07. `amaanafoundation.org` moved from failed to `pending` after a provider verification recheck was triggered. DKIM TXT `resend._domainkey`, Return-Path MX `send`, SPF TXT `send`, and CNAME `rsend` all currently report `pending`. Production application email remains disabled. Resolve only after Resend reports the domain verified and one controlled non-beneficiary production delivery/retry/idempotency acceptance succeeds."
+      "evidence": "Reverified through Resend on 2026-10-07. `amaanafoundation.org` moved from failed to `pending` after a provider verification recheck was triggered. DKIM TXT `resend._domainkey`, Return-Path MX `send`, SPF TXT `send`, and CNAME `rsend` all currently report `pending`. Production application email remains disabled. Resolve only after Resend reports the domain verified and one controlled non-beneficiary production delivery/retry/idempotency acceptance succeeds. RELEASE EXCEPTION: Owner-approved 2026-10-09 post-launch deferral. Production queued email remains DISABLED until controlled end-to-end queue, retry and idempotency acceptance; direct Resend test is not sufficient.",
+      "notApplicableReason": "Owner-approved 2026-10-09 post-launch deferral. Production queued email remains DISABLED until controlled end-to-end queue, retry and idempotency acceptance; direct Resend test is not sufficient."
     },
     {
       "id": "manual-rendered-accessibility-review",
       "category": "experience",
-      "status": "PENDING",
+      "status": "NOT_APPLICABLE",
       "requiredFor": [
         "production"
       ],
-      "evidence": "Automated evidence on the final release tree is extensive: PR #199 CI #2382 passed the full Chromium responsive/accessibility/journey matrix plus Firefox/WebKit public-surface smoke; final merge push CI #2383 also passed fast/database/production verification. Coverage includes axe A/AA checks, 320/375/390/430 mobile widths, desktop widths, keyboard order, skip-link focus transfer, mobile navigation focus restoration/trapping, reduced motion, one-H1/document-language checks, reflow-equivalent containment, interaction-target checks and fixed-control collision checks. This gate remains PENDING only for genuinely human evidence: actual browser 200% zoom judgement, keyboard-only spot review, screen-reader/form-announcement spot checks, OS-level reduced-motion presentation and visual/focus-quality judgement on the exact candidate."
+      "evidence": "Automated evidence on the final release tree is extensive: PR #199 CI #2382 passed the full Chromium responsive/accessibility/journey matrix plus Firefox/WebKit public-surface smoke; final merge push CI #2383 also passed fast/database/production verification. Coverage includes axe A/AA checks, 320/375/390/430 mobile widths, desktop widths, keyboard order, skip-link focus transfer, mobile navigation focus restoration/trapping, reduced motion, one-H1/document-language checks, reflow-equivalent containment, interaction-target checks and fixed-control collision checks. This gate remains PENDING only for genuinely human evidence: actual browser 200% zoom judgement, keyboard-only spot review, screen-reader/form-announcement spot checks, OS-level reduced-motion presentation and visual/focus-quality judgement on the exact candidate. RELEASE EXCEPTION: Owner-approved 2026-10-09 post-launch deferral of human screen-reader, 200%-zoom and visual focus checks; automated browser and accessibility CI must still pass. No WCAG AAA claim.",
+      "notApplicableReason": "Owner-approved 2026-10-09 post-launch deferral of human screen-reader, 200%-zoom and visual focus checks; automated browser and accessibility CI must still pass. No WCAG AAA claim."
     },
     {
       "id": "final-editorial-seo-social-review",
       "category": "experience",
-      "status": "PENDING",
+      "status": "NOT_APPLICABLE",
       "requiredFor": [
         "production"
       ],
-      "evidence": "Automated and source evidence is green: canonical/robots/sitemap/structured-data tests pass across the declared public route inventory; public editorial consistency scanned 239 public source files with canonical factual/compliance locks intact; route-specific metadata, Open Graph/Twitter cards and privacy-safe generated social images are present; rendered desktop/mobile site-audit captures on the same application tree report no primary-route overflow, escaped-track, broken-anchor or page-error findings. Production indexing remains enabled on the official host. The only unresolved portion is final human rendered editorial/social-preview judgement on the frozen candidate."
+      "evidence": "Automated and source evidence is green: canonical/robots/sitemap/structured-data tests pass across the declared public route inventory; public editorial consistency scanned 239 public source files with canonical factual/compliance locks intact; route-specific metadata, Open Graph/Twitter cards and privacy-safe generated social images are present; rendered desktop/mobile site-audit captures on the same application tree report no primary-route overflow, escaped-track, broken-anchor or page-error findings. Production indexing remains enabled on the official host. The only unresolved portion is final human rendered editorial/social-preview judgement on the frozen candidate. RELEASE EXCEPTION: Owner explicitly approved preview design and editorial as-is on 2026-10-09; deferred remaining manual social preview spot checks until after launch. Automated SEO/editorial checks still mandatory.",
+      "notApplicableReason": "Owner explicitly approved preview design and editorial as-is on 2026-10-09; deferred remaining manual social preview spot checks until after launch. Automated SEO/editorial checks still mandatory."
     },
     {
       "id": "public-media-human-review",
@@ -199,11 +202,12 @@
     {
       "id": "main-promotion-and-production-approval",
       "category": "authorization",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "requiredFor": [
         "production"
       ],
-      "evidence": "PR #104 remains open, Draft and mergeable from `phase-public-site-rebuild` to `main`. Final integration candidate is `9bd04887cb57c28a73f201f8a5c7002657f2b427`; exact push CI #2383 is green, its tree is fully browser-tested by PR #199 CI #2382, and exact Railway preview deployment `c2b5327d-94ee-49f6-b10c-d7f70673a1fa` is healthy. Production remains on known-good main `29c7627ed3bffd0b581935c5b934ad903aeca2cd`. Formal promotion remains blocked by unresolved operator gates and must not occur implicitly."
+      "evidence": "Owner explicitly approved current integration release for production on 2026-10-09 and reiterated instruction to complete deployment. This verifies release authorization, not deployment completion. GitHub protected-main required CI, preview recovery, Railway predeploy and post-deploy health remain mandatory.",
+      "verifiedAt": "2026-10-09"
     }
   ]
 }
