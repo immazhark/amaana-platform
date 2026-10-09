@@ -14,14 +14,15 @@ test('current launch register is structurally valid and tracks the remaining lau
 
   assert.deepEqual(
     production.unresolved.map(gate => gate.id).sort(),
-    [
-      'final-editorial-seo-social-review',
-      'main-promotion-and-production-approval',
-      'manual-rendered-accessibility-review',
-      'transactional-email-delivery',
-    ],
+    [],
   );
 
+  assert.equal(production.ready.find(gate => gate.id === 'main-promotion-and-production-approval')?.status, 'VERIFIED');
+  for (const id of ['transactional-email-delivery', 'manual-rendered-accessibility-review', 'final-editorial-seo-social-review']) {
+    const gate = production.ready.find(item => item.id === id);
+    assert.equal(gate?.status, 'NOT_APPLICABLE');
+    assert.match(gate.notApplicableReason, /deferr|DISABLED|post-launch|after launch/i);
+  }
   assert.equal(production.ready.find(gate => gate.id === 'main-branch-protection')?.status, 'VERIFIED');
   assert.equal(production.ready.find(gate => gate.id === 'rollback-rehearsal')?.status, 'VERIFIED');
   assert.ok(production.ready.some(gate => gate.id === 'production-dns-cutover-plan'));
