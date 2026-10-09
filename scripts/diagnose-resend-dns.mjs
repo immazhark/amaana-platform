@@ -3,6 +3,29 @@
 // No credentials, environment variables, or DNS writes are required.
 import { Resolver } from "node:dns/promises";
 
+// Diagnose delegation independently; a recursive ENODATA response is not proof of absence.
+const systemResolver = new Resolver();
+const publicResolvers = [{ name: "Cloudflare", ip: "1.1.1.1" }, { name: "Google", ip: "8.8.8.8" }];
+async function diagnoseDelegation(domain) {
+  for (const server of publicResolvers) {
+    const probe = new Resolver();
+    probe.setServers([server.ip]);
+    try {
+      const ns = await probe.resolveNs(domain);
+      console.log(`DELEGATION ${server.name}: ${ns.join(", ") || "(empty answer)"}`);
+    } catch (error) {
+      console.error(`DELEGATION UNKNOWN ${server.name}: ${error.code ?? "DNS_ERROR"}`);
+    }
+  }
+  try {
+    const ns = await systemResolver.resolveNs(domain);
+    console.log(`DELEGATION system: ${ns.join(", ") || "(empty answer)"}`);
+  } catch (error) {
+    console.error(`DELEGATION UNKNOWN system: ${error.code ?? "DNS_ERROR"}`);
+  }
+}
+
+
 const domain = "amaanafoundation.org";
 // Resend-issued DKIM public key (not a signing private key). Update only after provider rotation.
 const expectedDkim = "p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDUxz7mTdpmCy0t5/jxTdA4b9VhZLj3bjDAM6+btZdiPFlLljdeX7g5EsXKJ5YsgtFWW9DutfaUcvrO/7L7+Exi6GNeYzxNohTdvnIG/+TEV/Hou/Oneo5Pj8Qr7YKvh/7wC7svPPIJJfqleoogwHdb5mFaFNDPdqY9ZLOaVHj22QIDAQAB";
@@ -19,6 +42,8 @@ const checks = [
   { id: "Tracking CNAME", type: "CNAME", host: `rsend.${domain}`,
     valid: (answers) => answers.some((value) => value.replace(/\.$/, "").toLowerCase() === "send.forge.rmta.net") },
 ];
+
+await diagnoseDelegation(domain);
 
 let failures = 0;
 for (const check of checks) {
