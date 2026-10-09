@@ -7,6 +7,7 @@ on:
       - phase-public-site-rebuild
     paths:
       - .github/workflows/resend-dns-diagnostic.yml
+      - scripts/diagnose-resend-dns.mjs
 
 permissions:
   contents: read
