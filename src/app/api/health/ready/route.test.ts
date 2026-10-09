@@ -36,7 +36,7 @@ describe("readiness health", () => {
     const response = await GET();
     expect(response.status).toBe(503);
     expect(mocks.queryRaw).not.toHaveBeenCalled();
-    expect(consoleError).toHaveBeenCalledWith("Readiness check failed", { component: "environment" });
+    expect(consoleError).toHaveBeenCalledWith(JSON.stringify({ level: "error", event: "readiness.environment_failed" }));
     expect(JSON.stringify(consoleError.mock.calls)).not.toContain("invalid environment");
   });
 
@@ -47,6 +47,6 @@ describe("readiness health", () => {
     const response = await responsePromise;
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toEqual({ status: "not_ready" });
-    expect(consoleError).toHaveBeenCalledWith("Readiness check failed", { component: "database" });
+    expect(consoleError).toHaveBeenCalledWith(JSON.stringify({ level: "error", event: "readiness.database_failed" }));
   });
 });

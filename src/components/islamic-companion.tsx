@@ -80,13 +80,32 @@ export function IslamicCompanion() {
 
   useEffect(() => {
     const controller = new AbortController();
-    fetch("/api/public/live-rail", { cache: "no-store", signal: controller.signal })
-      .then(response => response.ok ? response.json() : { items: [] })
-      .then((payload: { items?: LiveRailItem[] }) => {
-        if (!controller.signal.aborted && Array.isArray(payload.items)) setLiveItems(payload.items);
-      })
-      .catch(() => undefined);
-    return () => controller.abort();
+    let timeout: number | undefined;
+    let idleHandle: number | undefined;
+    const idleWindow = window as Window & typeof globalThis & {
+      requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
+      cancelIdleCallback?: (handle: number) => void;
+    };
+    const load = () => {
+      fetch("/api/public/live-rail", { cache: "no-store", signal: controller.signal })
+        .then(response => response.ok ? response.json() : { items: [] })
+        .then((payload: { items?: LiveRailItem[] }) => {
+          if (!controller.signal.aborted && Array.isArray(payload.items)) setLiveItems(payload.items);
+        })
+        .catch(() => undefined);
+    };
+
+    if (idleWindow.requestIdleCallback) {
+      idleHandle = idleWindow.requestIdleCallback(load, { timeout: 1800 });
+    } else {
+      timeout = window.setTimeout(load, 900);
+    }
+
+    return () => {
+      controller.abort();
+      if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.(idleHandle);
+      if (timeout !== undefined) window.clearTimeout(timeout);
+    };
   }, []);
 
   const date = now ? hyderabadClock(now).date : "";

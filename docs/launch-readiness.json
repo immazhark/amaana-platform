@@ -1,7 +1,7 @@
 {
   "version": 1,
-  "updatedAt": "2026-10-06",
-  "principle": "The public production runtime is live and indexable on the official domain. Green automation remains necessary but not sufficient for remaining operational gates such as email delivery, preview Test-payment posture, branch protection, formal main promotion, live donation observation and human review.",
+  "updatedAt": "2026-10-07",
+  "principle": "The public production runtime remains live and indexable from main while the hardened release candidate is frozen on integration and verified on an exact Railway preview. Automation is necessary but not sufficient: unresolved operator gates are transactional email acceptance, human rendered accessibility/editorial review, a real Railway rollback rehearsal, enforced main protection and formal production promotion. Future-only public-media publication and real-money donation/refund observation are not release blockers when those conditions do not exist.",
   "gates": [
     {
       "id": "durable-ci-browser-gate-established",
@@ -11,18 +11,19 @@
         "rehearsal",
         "production"
       ],
-      "evidence": "Exact integration HEAD `a835ea2e7d703163bdbce27a2582c1f6109f5471` passed PR #183 CI run `37473281276` (#2224): plan, fast, database, browser and verify all SUCCESS. The merged push then passed CI run `37476466195` (#2225): plan, fast, database, production and verify SUCCESS. The production bundle remains inside the fixed budgets without increasing them: JavaScript `819158 / 819200` bytes and CSS `345236 / 348160` bytes. The current build exposes `/icon.svg`, `/robots.txt` and runtime `/sitemap.xml` in the expected route manifest.",
-      "verifiedAt": "2026-10-06"
+      "evidence": "Final integration tree `7c42f5b8b452b16f2aea698a8068baf57a969009` was fully exercised on PR #199 head `37c5df534e70f4a32975df14ab9529f485400e67` by CI run `37647013360` (#2382): plan, fast, database, browser and verify SUCCESS. That tested head and final integration merge `9bd04887cb57c28a73f201f8a5c7002657f2b427` have the identical Git tree. Exact merge push CI `37650880241` (#2383) passed plan, fast, database, production and verify on `9bd04887...`. PR #104 exact-head CI `37650889150` (#2384) then passed Production promotion readiness, plan, fast, database, full Chromium browser acceptance, Firefox/WebKit public-surface smoke, screenshot artifact uploads and verify on the exact final SHA; the production job was skipped as expected for the pull-request event. Production dependency audit reported 0 vulnerabilities at High/Critical severity after source-map-js, brace-expansion and Sharp remediation. Fixed bundle gates remain unchanged and passing: JavaScript `806040 / 819200` bytes and CSS `346301 / 348160` bytes. CI first-party actions are on Node-24 releases, and the pruned runtime contract verifies Prisma CLI/Client, Next, AWS SDK and Sharp remain present while ESLint/Vitest/braces are absent from the runtime dependency tree.",
+      "verifiedAt": "2026-10-07"
     },
     {
       "id": "railway-preview-deployment-baseline",
       "category": "technical",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "requiredFor": [
         "rehearsal",
         "production"
       ],
-      "evidence": "The preview service remains online on its previous healthy deployment `eed6c1e1-d667-462b-b15c-4d2ca59ced6d` and has no official custom domain attached. Fresh preview deployments on current integration HEAD fail closed because `NEXT_PUBLIC_RAZORPAY_KEY_ID` is not a Razorpay Test key; the staging environment contract correctly refuses a Live key. `NEXT_PUBLIC_APP_URL` and fail-closed indexing variables were restored to the generated preview domain on 2026-10-06. Before preview payment acceptance is used again, configure a matching Razorpay Test key pair and redeploy; do not weaken the environment validator."
+      "evidence": "Railway preview deployment `c2b5327d-94ee-49f6-b10c-d7f70673a1fa` is SUCCESS on exact final integration SHA `9bd04887cb57c28a73f201f8a5c7002657f2b427`, with 1/1 replica online, zero warning/critical notifications and zero recent failed deployments. Preview source is pinned to `phase-public-site-rebuild` at that SHA. The deployment uses `node prisma/railway-predeploy.mjs` with a 300-second timeout; logs prove staging environment shape passed, 15 migrations were detected, no migrations were pending, canonical-content/RBAC/staging-acceptance release preparation completed, `Railway pre-deploy release preparation verified`, Next.js 16.3.8 started successfully and `/api/health/ready` passed. Railway HTTP metrics observed 12 requests in the verification window with 12×2xx and 0×4xx/5xx. A redundant identical redeploy request was safely SKIPPED because the exact SHA was already deployed.",
+      "verifiedAt": "2026-10-07"
     },
     {
       "id": "domestic-only-boundary",
@@ -59,38 +60,42 @@
     {
       "id": "transactional-email-delivery",
       "category": "operations",
-      "status": "PENDING",
+      "status": "NOT_APPLICABLE",
       "requiredFor": [
         "production"
       ],
-      "evidence": "Reverified through Resend on 2026-10-06. `amaanafoundation.org` remains status `failed`. DKIM TXT `resend._domainkey`, Return-Path MX `send`, SPF TXT `send`, and CNAME `rsend` all remain failed. Production `EMAIL_DELIVERY_MODE` stays disabled. The gate remains pending until DNS is added, Resend verifies the domain and one controlled production delivery/retry/idempotency acceptance is completed."
+      "evidence": "Reverified through Resend on 2026-10-07. `amaanafoundation.org` moved from failed to `pending` after a provider verification recheck was triggered. DKIM TXT `resend._domainkey`, Return-Path MX `send`, SPF TXT `send`, and CNAME `rsend` all currently report `pending`. Production application email remains disabled. Resolve only after Resend reports the domain verified and one controlled non-beneficiary production delivery/retry/idempotency acceptance succeeds. RELEASE EXCEPTION: Owner-approved 2026-10-09 post-launch deferral. Production queued email remains DISABLED until controlled end-to-end queue, retry and idempotency acceptance; direct Resend test is not sufficient.",
+      "notApplicableReason": "Owner-approved 2026-10-09 post-launch deferral. Production queued email remains DISABLED until controlled end-to-end queue, retry and idempotency acceptance; direct Resend test is not sufficient."
     },
     {
       "id": "manual-rendered-accessibility-review",
       "category": "experience",
-      "status": "PENDING",
+      "status": "NOT_APPLICABLE",
       "requiredFor": [
         "production"
       ],
-      "evidence": "Automated coverage now includes axe WCAG A/AA checks on representative public routes, responsive containment and shared-shell optical-gutter checks including 320/375/390/430 mobile widths plus standard/wide desktop widths, desktop keyboard order, functional skip-link focus transfer, mobile navigation focus restoration/trapping, reduced-motion behavior, one-H1/document-language checks, 200%-reflow-equivalent containment, minimum interaction-target checks and floating Companion/back-to-top/support-bar collision checks. Exact-head CI #1871 passed the complete 808-test Chromium matrix and 24 Firefox/WebKit smoke tests. Final human rendered review at representative desktop/tablet/mobile widths, actual browser 200% zoom, keyboard-only operation, screen-reader spot checks, OS reduced-motion presentation and visual/focus-quality judgement remains required."
+      "evidence": "Automated evidence on the final release tree is extensive: PR #199 CI #2382 passed the full Chromium responsive/accessibility/journey matrix plus Firefox/WebKit public-surface smoke; final merge push CI #2383 also passed fast/database/production verification. Coverage includes axe A/AA checks, 320/375/390/430 mobile widths, desktop widths, keyboard order, skip-link focus transfer, mobile navigation focus restoration/trapping, reduced motion, one-H1/document-language checks, reflow-equivalent containment, interaction-target checks and fixed-control collision checks. This gate remains PENDING only for genuinely human evidence: actual browser 200% zoom judgement, keyboard-only spot review, screen-reader/form-announcement spot checks, OS-level reduced-motion presentation and visual/focus-quality judgement on the exact candidate. RELEASE EXCEPTION: Owner-approved 2026-10-09 post-launch deferral of human screen-reader, 200%-zoom and visual focus checks; automated browser and accessibility CI must still pass. No WCAG AAA claim.",
+      "notApplicableReason": "Owner-approved 2026-10-09 post-launch deferral of human screen-reader, 200%-zoom and visual focus checks; automated browser and accessibility CI must still pass. No WCAG AAA claim."
     },
     {
       "id": "final-editorial-seo-social-review",
       "category": "experience",
-      "status": "PENDING",
+      "status": "NOT_APPLICABLE",
       "requiredFor": [
         "production"
       ],
-      "evidence": "Production indexing is now enabled on the official host. Search Console domain ownership is verified. Google live URL inspection reports the homepage available, crawl allowed, page fetch successful, indexing allowed and the user-declared canonical `https://amaanafoundation.org/`; indexing was requested for the homepage and six priority L1 pages. Googlebot now reaches `/robots.txt` and `/sitemap.xml` with HTTP 200 after Cloudflare search-bot policy correction. Canonical metadata was re-audited across the declared public route inventory and is present. Professional/legal editorial review and final human rendered social-preview judgement remain pending, so this gate is not marked fully verified."
+      "evidence": "Automated and source evidence is green: canonical/robots/sitemap/structured-data tests pass across the declared public route inventory; public editorial consistency scanned 239 public source files with canonical factual/compliance locks intact; route-specific metadata, Open Graph/Twitter cards and privacy-safe generated social images are present; rendered desktop/mobile site-audit captures on the same application tree report no primary-route overflow, escaped-track, broken-anchor or page-error findings. Production indexing remains enabled on the official host. The only unresolved portion is final human rendered editorial/social-preview judgement on the frozen candidate. RELEASE EXCEPTION: Owner explicitly approved preview design and editorial as-is on 2026-10-09; deferred remaining manual social preview spot checks until after launch. Automated SEO/editorial checks still mandatory.",
+      "notApplicableReason": "Owner explicitly approved preview design and editorial as-is on 2026-10-09; deferred remaining manual social preview spot checks until after launch. Automated SEO/editorial checks still mandatory."
     },
     {
       "id": "public-media-human-review",
       "category": "privacy",
-      "status": "PENDING",
+      "status": "NOT_APPLICABLE",
       "requiredFor": [
         "production"
       ],
-      "evidence": "Repository static exposure remains zero after removal of the three legacy MP4s from `public/media`. A live read-only Neon audit on 2026-09-27 found exactly 3 `MediaAsset` rows: all are VIDEO records linked to initiatives; `public_assets=0`, `privacy_approved_assets=0`, `public_without_privacy_approval=0`, `unowned_assets=0`, `identity_assets=0`, and none has a managed `storageKey` or external URL. Their `publicUrl` values exactly match the three removed legacy files (`dates-2024-distribution-blurred.mp4`, `dates-2023-distribution-3-blurred.mp4`, `dates-2026-preparation.mp4`). They remain unpublished and unapproved, so there is no current database-authorized public exposure. The application also fails closed for hosted VIDEO publication until synchronized caption support exists. The three stale private metadata rows were not deleted because destructive database cleanup requires explicit operator authorization. This materially narrows current launch exposure, but the gate remains PENDING because any future curated MediaAsset/public-bucket imagery selected for launch still requires human privacy, consent, provenance and hero-use review before publication."
+      "evidence": "The current launch review register reports `inventorySummary.totalAssets=0`, `totalImages=0` and no retained public programme media in `public/media`; the earlier read-only database audit also found no public or privacy-approved MediaAsset rows. No new MediaAsset/public-bucket programme imagery is being introduced by the frozen release candidate. Future owner-supplied or curated programme media remains fail-closed behind the human privacy/consent/provenance workflow and must be reviewed before publication.",
+      "notApplicableReason": "No new unreviewed public programme media is part of this release. The gate becomes applicable again when future curated or owner-supplied media is selected for publication."
     },
     {
       "id": "public-media-upload-delivery",
@@ -125,20 +130,22 @@
     {
       "id": "controlled-live-donation-acceptance",
       "category": "payments",
-      "status": "PENDING",
+      "status": "NOT_APPLICABLE",
       "requiredFor": [
         "production"
       ],
-      "evidence": "The production runtime is live on `https://amaanafoundation.org` with Razorpay Live credentials and the signed webhook boundary configured. No legitimate public appeal is currently open, so a real Live order/checkout/capture was intentionally not manufactured and no dummy appeal was published. The remaining acceptance is the first legitimate published appeal: observe order creation, Razorpay checkout, capture, signed webhook processing and donation reconciliation; perform refund verification only when operationally appropriate."
+      "evidence": "Production Razorpay Live configuration and signed webhook boundaries are already verified, but no legitimate public appeal is currently open. A real-money transaction was intentionally not manufactured merely to satisfy release bookkeeping. The first legitimate published appeal must receive an operational observation covering order creation, checkout, capture, signed webhook processing and reconciliation.",
+      "notApplicableReason": "There is no legitimate live appeal to fund in this release window; creating a dummy appeal or unnecessary real-money charge would be inappropriate. This operational gate reactivates with the first legitimate published appeal."
     },
     {
       "id": "refund-receipt-operational-check",
       "category": "payments",
-      "status": "PENDING",
+      "status": "NOT_APPLICABLE",
       "requiredFor": [
         "production"
       ],
-      "evidence": "Provider-backed Razorpay Test Mode acceptance now includes successful captures, signed webhook delivery, browser confirmation, acknowledgement creation, exact appeal accounting and a full refund. On 2026-09-19 the INR 110 test payment `pay_Tdo33NThi9m4rH` was refunded from the Razorpay Test Dashboard; Razorpay delivered `refund.processed` to `/api/webhooks/razorpay` with HTTP 200, Neon changed donation `AFD-2026-52467908` from CAPTURED to REFUNDED, set `refundedAmount` to INR 110 and `refundedAt`, and the staging acceptance appeal reconciled from INR 310 back to INR 200. During repeated checkout testing, a real client-side regression was found where revisiting the donation page after Razorpay had already loaded could leave the button stuck on `Preparing secure checkout…` until a hard refresh. The quiet branch fixes this by using Next Script `onReady` plus an already-loaded `window.Razorpay` mount check, with a browser-acceptance remount regression added. Provider-backed `payment.failed` evidence remains pending because the current Razorpay Test Checkout did not expose the documented Success/Failure controls in the observed Netbanking/Wallet/UPI flows; the route-level failed-payment state guards now have explicit automated coverage. Live-mode acceptance and production email delivery remain pending."
+      "evidence": "Provider-backed Razorpay Test Mode acceptance has already demonstrated capture, signed webhook delivery, browser confirmation, acknowledgement creation, exact appeal accounting and full refund reconciliation, including the previously recorded INR 110 refund path. The current release has no legitimate live captured donation on which a production refund/receipt observation can be performed. Live refund/receipt/email behavior remains an operational observation for the first legitimate live donation rather than a reason to fabricate a transaction.",
+      "notApplicableReason": "No legitimate live captured donation exists to refund during this release. Test-mode refund/receipt behavior is already provider-verified; live operational observation becomes applicable after the first legitimate live donation."
     },
     {
       "id": "database-backup-evidence",
@@ -154,12 +161,13 @@
     {
       "id": "rollback-rehearsal",
       "category": "recovery",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "requiredFor": [
         "rehearsal",
         "production"
       ],
-      "evidence": "Live Railway state was reverified on 2026-09-29 after UI/grid and CSS-cascade closure. Current served staging deployment `53bd0d5b-fa02-4b47-9e0e-f927d2010186` is SUCCESS on exact integration SHA `d1e285a2fb451f5426bcce2292615714e3a428c8` and reports `canRollback=true` / `canRedeploy=true`. The recent previous application deployment `7fa0c8f3-0739-4151-8623-840ef383117d` on SHA `0b9f32f55a65e1cc53d9864c3a26eb563e319a6a` is REMOVED but still reports `canRollback=true` / `canRedeploy=true`. The gate remains PENDING because no real Railway Rollback action has been executed and verified. The operator must establish/confirm a fresh rollback pair in Railway, execute one real dashboard Rollback, verify exact target/health/Test-payment/noindex/private boundaries, restore forward to the candidate, and rerun staging acceptance before this gate can be VERIFIED."
+      "evidence": "2026-10-09 owner executed real Railway Rollback on amaana-rebuild-preview (NOT Redeploy): PR #201 974e925f0c53366e6525bfd7d7763b18d067692c -> PR #199 9bd04887cb57c28a73f201f8a5c7002657f2b427, deployment ab89297a-e75c-4801-ad87-f723e3717dba SUCCESS; real Rollback again restoring PR #201 at deployment 5f849a5e-e3fd-4b94-ad7b-a907e2839f48 SUCCESS. Railway 1/1 online, zero warning/critical, predeploy 15 migrations found/none pending, ready healthcheck, owner inspected homepage, robots.txt User-Agent * Disallow /, and anonymous /admin redirects to /admin/login. Preview rail predeploy enforces APP_ENVIRONMENT=staging, rzp_test_, indexing false, email disabled. No real payment, beneficiary submission or production service mutation.",
+      "verifiedAt": "2026-10-09"
     },
     {
       "id": "production-dns-cutover-plan",
@@ -168,8 +176,8 @@
       "requiredFor": [
         "production"
       ],
-      "evidence": "Cutover completed on 2026-10-06. `amaanafoundation.org` was detached from `amaana-rebuild-preview` and attached to Railway service `amaana-platform`; Cloudflare CNAME now targets the production Railway domain. Railway reports DNS propagated, ownership verified and the certificate valid. The production service is online on deployment `9cbd38d1-7032-4903-894a-2258812a3f1e` at integration SHA `a835ea2e7d703163bdbce27a2582c1f6109f5471`, with 1/1 replica and no current warnings or critical issues.",
-      "verifiedAt": "2026-10-06"
+      "evidence": "The official domain remains attached to Railway service `amaana-platform`, whose source is `main`. Current known-good production deployment `b7f9f2e2-9234-4a64-8085-a9fdb326944a` is SUCCESS on main commit `29c7627ed3bffd0b581935c5b934ad903aeca2cd`, with 1/1 replica online and no active warning/critical notification. The preview service has only its generated Railway domain and no custom domain. Production remains public/indexable on the official host while preview remains isolated.",
+      "verifiedAt": "2026-10-07"
     },
     {
       "id": "production-indexing-decision",
@@ -184,20 +192,22 @@
     {
       "id": "main-branch-protection",
       "category": "authorization",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "requiredFor": [
         "production"
       ],
-      "evidence": "Rechecked on 2026-10-06. `main` remains at SHA `1a69dd179181390a488623accf1314a1ff09e319`, reports `protected=false`, and required status-check enforcement is off. Production currently follows `phase-public-site-rebuild`. Enable an effective branch protection/ruleset before or alongside formal main promotion."
+      "evidence": "2026-10-09 GitHub API verification: main protected=true, ruleset #24799711 `Amaana — Production Main Protection` active and targets only refs/heads/main; bypass list empty; PR-only merges with discussion resolution, force-push/deletion restricted; required GitHub Actions statuses verify and Production promotion readiness. Production main SHA unchanged 29c7627ed3bffd0b581935c5b934ad903aeca2cd.",
+      "verifiedAt": "2026-10-09"
     },
     {
       "id": "main-promotion-and-production-approval",
       "category": "authorization",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "requiredFor": [
         "production"
       ],
-      "evidence": "The public production runtime is already healthy on the approved integration branch, but PR #104 remains Draft and unmerged into `main`. Its description was refreshed on 2026-10-06 with the exact production state and remaining gates. Formal `main` promotion remains an explicit owner approval boundary."
+      "evidence": "Owner explicitly approved current integration release for production on 2026-10-09 and reiterated instruction to complete deployment. This verifies release authorization, not deployment completion. GitHub protected-main required CI, preview recovery, Railway predeploy and post-deploy health remain mandatory.",
+      "verifiedAt": "2026-10-09"
     }
   ]
 }

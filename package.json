@@ -36,16 +36,21 @@
     "launch:env:production:indexing-enabled": "PRODUCTION_INDEXING_DECISION=enable NEXT_PUBLIC_ALLOW_INDEXING=true node scripts/check-production-environment.mjs",
     "launch:env:production:indexing-disabled": "PRODUCTION_INDEXING_DECISION=keep_disabled NEXT_PUBLIC_ALLOW_INDEXING=false node scripts/check-production-environment.mjs",
     "artwork:refine": "node scripts/refine-programme-artwork.mjs",
-    "prebuild": "npm run artwork:refine",
-    "predev": "npm run artwork:refine"
+    "prebuild": "npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
+    "predev": "npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
+    "icons:generate": "node scripts/generate-brand-icons.mjs",
+    "icons:verify": "npm run icons:generate && node scripts/verify-brand-icons.mjs",
+    "browser-fixtures:materialize": "node scripts/materialize-browser-acceptance.mjs",
+    "audit:prod": "npm audit --omit=dev --audit-level=high"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1128.0",
     "@aws-sdk/s3-request-presigner": "3.1128.0",
     "@prisma/client": "6.12.0",
-    "framer-motion": "^13.4.6",
+    "framer-motion": "13.4.6",
     "lenis": "1.3.26",
-    "next": "16.3.4",
+    "next": "16.3.8",
+    "prisma": "6.12.0",
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "zod": "4.1.5"
@@ -56,10 +61,15 @@
     "@types/react-dom": "19.1.9",
     "@vitest/coverage-v8": "5.0.0",
     "eslint": "9.35.0",
-    "eslint-config-next": "16.3.4",
-    "prisma": "6.12.0",
+    "eslint-config-next": "16.3.8",
     "typescript": "5.9.2",
     "vitest": "5.0.0",
-    "sharp": "0.35.4"
-  }
+    "sharp": "0.35.5"
+  },
+  "browserslist": [
+    "chrome >= 107",
+    "firefox >= 104",
+    "safari >= 16",
+    "edge >= 107"
+  ]
 }

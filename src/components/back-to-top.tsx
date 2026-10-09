@@ -7,10 +7,24 @@ export function BackToTop() {
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    const update = () => setVisible(window.scrollY > 720);
+    let frame: number | null = null;
+    const update = () => {
+      frame = null;
+      setVisible(current => {
+        const next = window.scrollY > 720;
+        return current === next ? current : next;
+      });
+    };
+    const schedule = () => {
+      if (frame !== null) return;
+      frame = window.requestAnimationFrame(update);
+    };
     update();
-    window.addEventListener("scroll", update, { passive: true });
-    return () => window.removeEventListener("scroll", update);
+    window.addEventListener("scroll", schedule, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", schedule);
+      if (frame !== null) window.cancelAnimationFrame(frame);
+    };
   }, []);
 
   if (!visible) return null;

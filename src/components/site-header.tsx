@@ -4,19 +4,19 @@ import { UIIcon } from "./ui-icon";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import styles from "./site-header.module.css";
 
 const primaryLinks = [
   ["Our Work", "/our-work"],
   ["Impact", "/impact"],
-  ["Stories", "/stories"],
-  ["Faith & Reflections", "/faith-and-reflections"],
   ["About", "/about"],
   ["Get Involved", "/get-involved"],
 ] as const;
 
 const secondaryLinks = [
+  ["Stories", "/stories"],
+  ["Faith & Reflections", "/faith-and-reflections"],
   ["Request assistance", "/request-assistance"],
   ["How we work", "/how-we-verify"],
   ["Transparency", "/transparency"],
@@ -40,13 +40,13 @@ export function SiteHeader() {
     toggleRef.current?.focus();
   };
 
-  useLayoutEffect(() => {
+  useEffect(() => {
     if (!open) return;
     const nav = mobileNavRef.current;
     const toggle = toggleRef.current;
     if (!nav || !toggle) return;
     const focusable = [toggle, ...nav.getElementsByTagName("a")];
-    focusable[1].focus();
+    focusable[1]?.focus();
     const mobile = window.matchMedia("(max-width: 1020px)");
     const onBreakpoint = () => {
       if (mobile.matches) return;

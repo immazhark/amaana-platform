@@ -19,6 +19,7 @@ import { prisma } from "@/lib/prisma";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { isSameOrigin } from "@/lib/request-security";
 import { getPublicMediaStorageReadiness } from "@/lib/storage";
+import { logServerError } from "@/lib/server-log";
 
 const privateHeaders = {
   "Cache-Control": "no-store, private",
@@ -125,7 +126,9 @@ export async function POST(request: Request) {
       { headers: privateHeaders },
     );
   } catch (error) {
-    console.error("Curated gallery start failed", error);
+    logServerError("curated_gallery.start_failed", {
+      errorName: error instanceof Error ? error.name : "unknown",
+    });
     return NextResponse.json({ error: "Curated gallery import could not be initialized safely." }, { status: 500, headers: privateHeaders });
   }
 }

@@ -15,6 +15,7 @@ import {
 } from "@/lib/curated-gallery-server";
 import { prisma } from "@/lib/prisma";
 import { getPublishedInitiativeBySlug } from "@/lib/public-content";
+import { logServerError } from "@/lib/server-log";
 
 const privateHeaders = {
   "Cache-Control": "no-store, private",
@@ -151,7 +152,9 @@ export async function GET() {
       { headers: privateHeaders },
     );
   } catch (error) {
-    console.error("Curated gallery status failed", error);
+    logServerError("curated_gallery.status_failed", {
+      errorName: error instanceof Error ? error.name : "unknown",
+    });
     return NextResponse.json({ error: "Curated gallery status could not be verified." }, { status: 500, headers: privateHeaders });
   }
 }

@@ -12,6 +12,7 @@ import {
   normalizeSafePublicMediaUrl,
 } from "@/lib/public-media";
 import { deletePublicMediaObject, uploadPublicMediaFile, validatePublicMediaFile } from "@/lib/storage";
+import { logServerError } from "@/lib/server-log";
 
 type TargetFields = { causeId?: string; initiativeId?: string; storyId?: string; faithContentId?: string };
 
@@ -112,7 +113,7 @@ export async function createMediaAsset(formData: FormData) {
       try {
         await deletePublicMediaObject(uploaded.objectKey);
       } catch {
-        console.error("Public media record creation failed and uploaded-object cleanup also failed");
+        logServerError("admin_media.create_cleanup_failed");
       }
     }
     throw error;

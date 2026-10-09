@@ -41,8 +41,8 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
         width={width}
         height={height}
         sizes={sizes}
-        loading={priority ? "eager" : "lazy"}
-        fetchPriority={priority ? "high" : "auto"}
+        preload={priority}
+        loading={priority ? undefined : "lazy"}
         decoding="async"
       />
     ) : (

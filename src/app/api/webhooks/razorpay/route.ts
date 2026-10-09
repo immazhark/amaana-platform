@@ -10,6 +10,7 @@ import { verifyWebhookSignature } from "@/lib/razorpay";
 import { calculateRefundAccounting } from "@/lib/refund-accounting";
 import { validateProductionEnvironment } from "@/lib/env";
 import { isPrismaUniqueConstraintError } from "@/lib/webhook-idempotency";
+import { logServerError } from "@/lib/server-log";
 
 const MAX_RAZORPAY_WEBHOOK_BYTES = 256 * 1024;
 
@@ -63,8 +64,8 @@ export async function POST(request: Request) {
     });
     if (alreadyProcessed) {
       if (alreadyProcessed.eventType !== payload.event) {
-        console.error("Razorpay webhook event id collision", {
-          providerEventId,
+        logServerError("razorpay.webhook_event_id_collision", {
+          hasProviderEventId: true,
           storedEventType: alreadyProcessed.eventType,
           receivedEventType: payload.event,
         });
@@ -298,7 +299,10 @@ export async function POST(request: Request) {
       }
     }
 
-    console.error("Razorpay webhook failed", { eventType: receivedEventType ?? "unknown", hasProviderEventId: Boolean(providerEventId) });
+    logServerError("razorpay.webhook_failed", {
+      eventType: receivedEventType ?? "unknown",
+      hasProviderEventId: Boolean(providerEventId),
+    });
     return new NextResponse("Webhook processing failed", { status: 500 });
   }
 }

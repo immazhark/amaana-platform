@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { FormEvent, useRef, useState } from "react";
+import { type FormEvent, useRef, useState } from "react";
 import { privateTrackingPath } from "@/lib/private-tracking";
 import styles from "./assistance-form.module.css";
 

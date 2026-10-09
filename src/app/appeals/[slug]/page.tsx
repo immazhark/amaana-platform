@@ -3,6 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
+import { AppealStructuredData } from "@/components/appeal-structured-data";
 import { PageHero } from "@/components/page-hero";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { PublicMedia } from "@/components/public-media";
@@ -30,7 +31,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function AppealDetailPage({ params }: Props) {
   const { slug } = await params;
-  const appeal = await getAppealPageData(slug);
+  const [appeal, confidentialityLevel] = await Promise.all([
+    getAppealPageData(slug),
+    getAppealSearchPrivacy(slug),
+  ]);
   if (!appeal) notFound();
   const coverUrl = normalizeSafePublicMediaUrl(appeal.coverImageUrl);
   const coverMedia = await getAppealCoverMedia(coverUrl);
@@ -38,9 +42,11 @@ export default async function AppealDetailPage({ params }: Props) {
   const goal = appeal.goalAmount.toNumber();
   const progress = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
   const isOpen = isAppealOpenForDonations(appeal);
+  const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE";
 
   return (
     <div className="v2-home v2-appeal-detail-page">
+      <AppealStructuredData slug={appeal.slug} title={appeal.title} summary={appeal.summary} isOpen={isOpen} highlySensitive={highlySensitive} />
       <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Verified Appeals", path: "/appeals" }, { name: appeal.title, path: `/appeals/${appeal.slug}` }]} />
       <PageHero
         variant="level2"

@@ -49,7 +49,7 @@ const groups = [
   { paths: /^(src\/components\/campaign-media-gallery(?:\.|\/)|e2e\/campaign-gallery\.spec\.mjs$)/, tests: ['campaign-gallery.spec.mjs'] },
 ];
 export function planChanges(files, { event = 'pull_request', target = 'phase-public-site-rebuild', release = false, validatedMerge = false } = {}) {
-  const docsOnly = files.length > 0 && files.every(p => /^(docs\/.*\.md|README\.md)$/.test(p));
+  const docsOnly = files.length > 0 && files.every(p => /^(docs\/.*\.md|README\.md|scripts\/(?:diagnose-resend-dns|ci-plan|test-ci-plan)\.mjs|\.github\/workflows\/resend-dns-diagnostic\.yml)$/.test(p));
   const fullRelease = release || target === 'main';
   const tests = new Set(['public-performance.spec.mjs']);
   let mapped = files.length > 0;

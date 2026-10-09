@@ -19,5 +19,10 @@ export function analyticsDateForHyderabad(now: Date) {
       .map(part => [part.type, Number(part.value)]),
   );
 
-  return new Date(Date.UTC(parts.year, parts.month - 1, parts.day));
+  const { year, month, day } = parts;
+  if (year === undefined || month === undefined || day === undefined) {
+    throw new Error("Unable to resolve the Hyderabad analytics date");
+  }
+
+  return new Date(Date.UTC(year, month - 1, day));
 }

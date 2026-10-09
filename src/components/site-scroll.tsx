@@ -4,8 +4,9 @@ import { useEffect } from "react";
 import type Lenis from "lenis";
 
 const nested = "[data-carousel-mode], .mobile-menu, .amaana-companion-panel, [data-native-scroll], [role='dialog'], dialog, textarea, select, input, iframe";
+const nativeKeyboardNavigation = ["Tab", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "];
 
-/** Wheel-only enhancement; native touch, anchors, focus and history retain their semantics. */
+/** Wheel-only enhancement; native touch, keyboard, anchors, focus and history retain their semantics. */
 export function useSiteScroll(pathname: string) {
   useEffect(() => {
     if (pathname.startsWith("/admin")) return;
@@ -58,7 +59,12 @@ export function useSiteScroll(pathname: string) {
       instance?.scrollTo(window.scrollY, { immediate: true });
     };
     const key = (event: KeyboardEvent) => {
-      if (["Tab", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "].includes(event.key)) native();
+      if (!nativeKeyboardNavigation.includes(event.key)) return;
+      // Lenis is deliberately a wheel-only progressive enhancement. Destroy it
+      // before native keyboard navigation so Home/End/Page/Arrow/Space and focus
+      // movement retain the browser's exact scrolling semantics. A later wheel
+      // gesture can initialize a fresh instance at the browser's current offset.
+      destroy();
     };
     const click = (event: MouseEvent) => {
       if (event.target instanceof Element && event.target.closest("a[href], button, summary")) native();

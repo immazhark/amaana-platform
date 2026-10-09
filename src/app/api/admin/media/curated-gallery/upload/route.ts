@@ -15,6 +15,7 @@ import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { isSameOrigin } from "@/lib/request-security";
 import { MAX_FILE_BYTES, getPublicMediaStorageReadiness, uploadCuratedPublicMediaFile } from "@/lib/storage";
+import { logServerError } from "@/lib/server-log";
 
 const privateHeaders = {
   "Cache-Control": "no-store, private",
@@ -165,7 +166,9 @@ export async function POST(request: Request) {
       { headers: privateHeaders },
     );
   } catch (error) {
-    console.error("Curated gallery image upload failed", error);
+    logServerError("curated_gallery.upload_failed", {
+      errorName: error instanceof Error ? error.name : "unknown",
+    });
     return NextResponse.json({ error: "Curated image could not be imported safely." }, { status: 500, headers: privateHeaders });
   }
 }

@@ -1,0 +1,29 @@
+name: Resend DNS diagnostic
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - phase-public-site-rebuild
+    paths:
+      - .github/workflows/resend-dns-diagnostic.yml
+      - scripts/diagnose-resend-dns.mjs
+
+permissions:
+  contents: read
+
+jobs:
+  dns-diagnostic:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v7.0.1
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.0.0
+        with:
+          node-version: '22'
+      - name: Validate DNS diagnostic syntax
+        run: node --check scripts/diagnose-resend-dns.mjs
+      - name: Verify public DNS records against Resend values
+        run: node scripts/diagnose-resend-dns.mjs

@@ -1,5 +1,5 @@
 'use server';
-import { revalidatePath } from 'next/cache';
+import { revalidatePath, revalidateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
@@ -27,7 +27,9 @@ export async function saveHomeCarousel(form: FormData) {
         config.appealPosition = Number(form.get('appealPosition'));
       } else if (operation === 'add') {
         if (config.slides.length >= 20) throw new Error('Twenty slides is the carousel limit.');
-        config.slides.push({ ...defaultHomeConfig.slides[0], id: `slide-${randomUUID()}`, eyebrow: 'Amaana Foundation', title: 'New Amaana slide', image: 'logo', order: Math.min(1000, Math.max(...config.slides.map(s => s.order)) + 1), status: 'DRAFT' });
+        const template = defaultHomeConfig.slides[0];
+        if (!template) throw new Error('The homepage carousel default template is unavailable.');
+        config.slides.push({ ...template, id: `slide-${randomUUID()}`, eyebrow: 'Amaana Foundation', title: 'New Amaana slide', image: 'logo', order: Math.min(1000, Math.max(...config.slides.map(s => s.order)) + 1), status: 'DRAFT' });
       } else {
         if (!current) throw new Error('Slide no longer exists. Refresh before editing.');
         if (current.status === 'PUBLISHED' && !hasPermission(user, 'content.approve')) throw new Error('Publishing permission is required to modify a live slide.');
@@ -58,7 +60,7 @@ export async function saveHomeCarousel(form: FormData) {
       } else await tx.homeCarousel.create({ data: { id: 'homepage', config: json } });
       await tx.auditEvent.create({ data: { actorId: user.id, action: `home_carousel.${operation}`, entityType: 'HomeCarousel', entityId: 'homepage', metadata: { slideId: id || null, revision: revision + 1 } } });
     });
-    revalidatePath('/'); revalidatePath('/admin/home-carousel');
+    revalidateTag('home-carousel', 'max'); revalidatePath('/'); revalidatePath('/admin/home-carousel');
   } catch (error) {
     notice = error instanceof Prisma.PrismaClientKnownRequestError ? 'Unable to save. Refresh and try again.' : error instanceof Error ? error.message : 'Unable to save the carousel.';
     redirect(`/admin/home-carousel?error=${encodeURIComponent(notice.slice(0,400))}`);

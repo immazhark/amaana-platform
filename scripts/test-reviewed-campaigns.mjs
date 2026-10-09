@@ -6,6 +6,7 @@ import { importReviewedCampaigns, isReviewedCampaignImportTarget } from "../pris
 const campaigns = JSON.parse(await readFile(new URL("../prisma/campaigns-2026.json", import.meta.url), "utf8"));
 const historical = JSON.parse(await readFile(new URL("../prisma/campaigns-archive.json", import.meta.url), "utf8"));
 const dockerfile = await readFile(new URL("../Dockerfile", import.meta.url), "utf8");
+const releasePrepare = await readFile(new URL("../prisma/release-prepare.mjs", import.meta.url), "utf8");
 const CANONICAL_CAUSE_SLUGS = new Set([
   "medical-financial-relief",
   "emergency-humanitarian-relief",
@@ -53,15 +54,16 @@ function database({
   };
 }
 
-test("reviewed campaign bootstrap uses the bounded transient database retry wrapper", () => {
+test("release preparation uses bounded database retries and app startup remains migration-free", () => {
   assert.match(
-    dockerfile,
-    /node prisma\/migrate-deploy-with-retry\.mjs && node prisma\/run-db-script-with-retry\.mjs prisma\/import-reviewed-campaigns\.mjs &&/,
+    releasePrepare,
+    /run\(process\.execPath, \["prisma\/migrate-deploy-with-retry\.mjs"\]\)/,
   );
-  assert.doesNotMatch(
-    dockerfile,
-    /node prisma\/migrate-deploy-with-retry\.mjs && node prisma\/import-reviewed-campaigns\.mjs &&/,
+  assert.match(
+    releasePrepare,
+    /run\(process\.execPath, \["prisma\/run-db-script-with-retry\.mjs", "prisma\/import-reviewed-campaigns\.mjs"\]\)/,
   );
+  assert.doesNotMatch(dockerfile, /CMD[^\n]*(?:migrate-deploy-with-retry|import-reviewed-campaigns)/);
 });
 
 test("reviewed campaign bootstrap targets only the designated staging preview service", () => {

@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { canRenderPublicMedia } from "@/lib/public-media";
 import { getPublicMediaObject, isManagedPublicMediaKey } from "@/lib/storage";
+import { logServerError } from "@/lib/server-log";
 
 const notFoundHeaders = {
   "Cache-Control": "no-store",
@@ -47,8 +48,7 @@ export async function GET(
     const object = await getPublicMediaObject(objectKey);
     const expectedContentType = contentTypeForKey(objectKey);
     if (object.contentType.toLowerCase() !== expectedContentType) {
-      console.error("Approved public media content-type mismatch", {
-        objectKey,
+      logServerError("public_media.content_type_mismatch", {
         expectedContentType,
         storedContentType: object.contentType,
       });
@@ -77,7 +77,9 @@ export async function GET(
     return new Response(body, { status: 200, headers });
   } catch (error) {
     if (error instanceof Error && (error.name === "NoSuchKey" || error.name === "NotFound")) return notFound();
-    console.error("Unable to serve approved public media", error);
+    logServerError("public_media.serve_failed", {
+      errorName: error instanceof Error ? error.name : "unknown",
+    });
     return new Response(null, {
       status: 503,
       headers: {

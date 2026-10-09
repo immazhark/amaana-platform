@@ -6,6 +6,13 @@ export type HomeSlide = {
 };
 export type HomeCarouselConfig = { slides: HomeSlide[]; appealPosition: number };
 export const HOME_ARTWORK = ['logo', 'origin', 'eid', 'medical', 'taleem', 'qurbani'] as const;
+export const HOME_ARTWORK_SRC = {
+  origin: '/hero/origin.webp',
+  eid: '/hero/eid.webp',
+  medical: '/hero/medical.webp',
+  taleem: '/hero/taleem.webp',
+  qurbani: '/hero/qurbani.webp',
+} as const;
 export const defaultHomeSlides: HomeSlide[] = [
   { id: 'origin', eyebrow: 'The Story of Amaana · Hyderabad', title: 'A trust that began around one family table.', description: 'What began as a small grassroots effort to support families with dignity grew into recurring community programmes and a formally organised charitable foundation. Our purpose remains the same: treat every contribution as an amaana — a trust.', primaryLabel: 'Discover our story', primaryHref: '/about', secondaryLabel: 'Explore our work', secondaryHref: '/our-work', image: 'origin', imageAlt: 'Photo-based collage illustrating Amaana community programmes', focalX: 50, focalY: 50, order: 0, status: 'PUBLISHED', startsAt: '', endsAt: '', appealSlug: '' },
   { id: 'eid', eyebrow: 'Ramadan & Eid · A recurring initiative', title: 'Eid Gift Kits. Thoughtful support, year after year.', description: 'Our Eid Gift Kits initiative brings practical essentials to families facing financial hardship, with care for their needs and dignity. Explore the programme’s history and its documented distributions across the years.', primaryLabel: 'Explore Eid Gift Kits', primaryHref: '/our-work/eid-gift-kits', secondaryLabel: 'Ways to support', secondaryHref: '/get-involved', image: 'eid', imageAlt: 'Photo-based collage of Amaana Eid Gift Kit preparation and distribution', focalX: 50, focalY: 50, order: 1, status: 'PUBLISHED', startsAt: '', endsAt: '', appealSlug: '' },
@@ -64,7 +71,9 @@ export function composeHomeSlides(config: HomeCarouselConfig, appealSlides: Home
   const linked = new Set(visible.map(s => s.appealSlug).filter(Boolean));
   const automatic = appealSlides.filter(s => !linked.has(s.appealSlug));
   // Valid admin saves retain an unscheduled fallback. Protect rendering of old/corrupt empty visibility windows too.
-  const general = visible.length ? visible : [defaultHomeSlides[0]];
+  const fallback = defaultHomeSlides[0];
+  if (!fallback) throw new Error("Homepage carousel requires a canonical fallback slide.");
+  const general: HomeSlide[] = visible.length ? visible : [fallback];
   const position = Math.min(config.appealPosition, general.length);
   return [...general.slice(0, position), ...automatic, ...general.slice(position)];
 }

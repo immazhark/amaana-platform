@@ -32,10 +32,10 @@ jobs:
       crossBrowser: ${{ steps.plan.outputs.crossBrowser }}
       visual: ${{ steps.plan.outputs.visual }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 0
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7.0.0
         with:
           node-version: 22
       - name: Verify and calculate impact plan
@@ -47,6 +47,7 @@ jobs:
           CI_TARGET: ${{ github.base_ref || github.ref_name }}
           CI_RELEASE: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
+          node --check scripts/diagnose-resend-dns.mjs
           node --test scripts/test-ci-plan.mjs
           node scripts/ci-plan.mjs
 
@@ -60,17 +61,21 @@ jobs:
       NEXT_PUBLIC_APP_URL: https://amaanafoundation.org
       NEXT_PUBLIC_ALLOW_INDEXING: "false"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 2
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7.0.0
         with:
           node-version: 22
           cache: npm
       - run: npm ci
+      - name: Audit production dependencies
+        run: npm run audit:prod
 
       - name: Audit global CSS architecture
         run: node scripts/audit-global-css.mjs
+      - name: Verify branded application icons
+        run: npm run icons:verify
       - name: Decode and validate public campaign media
         run: |
           node --test scripts/test-public-media.mjs
@@ -81,6 +86,7 @@ jobs:
         run: |
           node --test scripts/test-launch-readiness.mjs
           node --test scripts/test-production-environment.mjs
+          node --test scripts/test-railway-predeploy.mjs
           node scripts/check-launch-readiness.mjs
       - name: Verify non-destructive campaign import
         run: node --test scripts/test-reviewed-campaigns.mjs scripts/test-reviewed-campaign-revisions.mjs scripts/test-reviewed-campaign-feature-normalization.mjs scripts/test-reviewed-campaign-video-normalization.mjs
@@ -112,7 +118,18 @@ jobs:
         if: github.event_name != 'pull_request'
         run: npm run test:coverage
 
-
+      - name: Verify pruned runtime dependency contract
+        shell: bash
+        run: |
+          set -euo pipefail
+          npm prune --omit=dev
+          npm run audit:prod
+          test -x node_modules/.bin/prisma
+          test ! -e node_modules/eslint
+          test ! -e node_modules/vitest
+          test ! -e node_modules/braces
+          node -e "require.resolve('next'); require.resolve('@prisma/client'); require.resolve('@aws-sdk/client-s3'); require.resolve('sharp')"
+          npm run prisma:validate
 
   database:
     needs: [plan, fast]
@@ -136,8 +153,8 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/amaana?schema=public
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -177,16 +194,19 @@ jobs:
       NEXT_PUBLIC_APP_URL: https://amaanafoundation.org
       NEXT_PUBLIC_ALLOW_INDEXING: "false"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 2
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7.0.0
         with:
           node-version: 22
           cache: npm
       - run: npm ci
 
       - run: npm run prisma:generate
+      - name: Prepare isolated production-build database
+        if: github.event_name != 'pull_request'
+        run: npx prisma migrate deploy
       - name: Build production application
         if: github.event_name != 'pull_request'
         run: npm run build
@@ -287,10 +307,10 @@ jobs:
       NEXT_PUBLIC_APP_URL: https://amaanafoundation.org
       NEXT_PUBLIC_ALLOW_INDEXING: "false"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
         with:
           fetch-depth: 2
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -378,7 +398,7 @@ jobs:
 
       - name: Upload launch review screenshots
         if: always() && needs.plan.outputs.browser == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: launch-review-screenshots-${{ github.sha }}
           path: |
@@ -391,7 +411,7 @@ jobs:
 
       - name: Upload mobile site audit captures
         if: always() && needs.plan.outputs.browser == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: site-audit-mobile-${{ github.sha }}
           path: amaana-browser-acceptance/site-audit/mobile
@@ -399,7 +419,7 @@ jobs:
           retention-days: 7
       - name: Upload desktop site audit captures
         if: always() && needs.plan.outputs.browser == 'true'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7.0.2
         with:
           name: site-audit-desktop-${{ github.sha }}
           path: amaana-browser-acceptance/site-audit/desktop
@@ -433,7 +453,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7.0.1
 
       - name: Validate launch-readiness register structure
         run: node scripts/check-launch-readiness.mjs

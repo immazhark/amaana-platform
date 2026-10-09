@@ -64,7 +64,8 @@ export async function importReviewedCampaigns(prisma, campaigns) {
     let created = 0;
     for (const [index, item] of campaigns.entries()) {
       const { slug, causeSlug } = requireCampaignShape(item, index);
-      const { media, cause: _campaignCause, ...campaign } = item;
+      const { media, ...campaign } = item;
+      delete campaign.cause;
 
       if (await tx.initiative.findUnique({
         where: { slug },

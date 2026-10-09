@@ -1,3 +1,23 @@
+# 2026-10-07 — Final release-hardening handoff
+
+State: `CHATGPT_ACTIVE`. Current integration SHA `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. Production remains main `29c7627ed3bffd0b581935c5b934ad903aeca2cd`. PR #104 remains Draft. Exact Railway preview `c2b5327d-94ee-49f6-b10c-d7f70673a1fa` is SUCCESS on final integration candidate.
+
+Security/runtime train delivered:
+- PR #197: source-map-js 1.2.2 patch.
+- PR #198: brace-expansion current patched lines; Sharp 0.35.5; production-only High/Critical npm audit gate.
+- PR #199: Node-24 first-party GitHub Actions; Prisma CLI retained in production dependencies; dev tooling pruned from runtime container with CI proof.
+- Production dependency audit returns 0 vulnerabilities.
+- Bundle caps unchanged: JS 806040/819200, CSS 346301/348160.
+- PR #195 loading-boundary experiment is retired/closed after 41 browser regressions.
+
+Current external/operator blockers only: Resend domain/email acceptance, human accessibility/editorial rendered review, true Railway Rollback rehearsal, enforced main protection, formal production promotion. Release-scoped future media and live-payment/refund observation are NOT_APPLICABLE when those real-world conditions do not exist.
+
+Evidence branch `docs/final-release-evidence-20261007` updates readiness/runbooks. Before final production promotion: discard the neutral Railway staged patch `45c0bc6c-46db-4ed8-82cb-3a8f02dfb483` from dashboard without deploying it; protect main; complete real preview Rollback + restore; finish Resend verification/controlled synthetic delivery; record human review. Use the race-free cutover sequence in `docs/OPERATOR_PRELAUNCH_ACTIONS_2026-09-24.md`.
+
+Do not touch main/production or perform real payments merely to clear gates.
+
+---
+
 # 2026-10-05 16:32 IST — Codex/Work → ChatGPT takeover
 
 State: `CHATGPT_ACTIVE`. User explicitly handed repository implementation to ChatGPT. Continue PR #167 / `fix/all-route-audit-20261005` from verified remote head `bd4feedb9fb41a60ad2b6b9f40b06c8c11cf59db`; do not touch `main` or production PR #104. Latest CI 37290562293 passed plan/fast/database and failed browser only at `/admin/notifications` desktop/mobile, yielding 1076/1078 passes. Later screenshot-directed UI fixes reported in chat were not pushed, so incoming agent reconstructs them from current repo plus owner directives rather than assuming hidden workspace changes. Protected locks: fixed bottom-right Islamic Companion, canonical factual/compliance copy, approved media/background architecture, payment/indexing/release controls and unchanged bundle ceilings.

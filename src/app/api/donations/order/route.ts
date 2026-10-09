@@ -7,6 +7,7 @@ import { createRazorpayOrder } from "@/lib/razorpay";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
 import { validateProductionEnvironment } from "@/lib/env";
 import { canExposePublicAppeal } from "@/lib/public-environment";
+import { logServerError } from "@/lib/server-log";
 
 const privateHeaders = {
   "Cache-Control": "no-store, private",
@@ -32,7 +33,23 @@ export async function POST(request: Request) {
     }
 
     const parsed = donationSchema.safeParse(body);
-    if (!parsed.success) return NextResponse.json({ error: "Please check the donation information." }, { status: 400, headers: privateHeaders });
+    if (!parsed.success) {
+      const fields = parsed.error.flatten().fieldErrors;
+      return NextResponse.json(
+        {
+          error: "Please check the highlighted donation information.",
+          fields: {
+            donorName: fields.donorName,
+            donorEmail: fields.donorEmail,
+            donorPhone: fields.donorPhone,
+            amount: fields.amount,
+            givingIntent: fields.givingIntent,
+            domesticConfirmed: fields.domesticConfirmed,
+          },
+        },
+        { status: 400, headers: privateHeaders },
+      );
+    }
     const appeal = await prisma.appeal.findFirst({
       where: { id: parsed.data.appealId, status: "PUBLISHED" },
       select: {
@@ -90,5 +107,8 @@ export async function POST(request: Request) {
       select: { id: true, donorName: true, donorEmail: true, donorPhone: true },
     });
     return NextResponse.json({ donationId: donation.id, orderId: order.id, amount: amountPaise, currency: "INR", keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, appealTitle: appeal.title, donor: { name: donation.donorName, email: donation.donorEmail, contact: donation.donorPhone }, receiptToken }, { status: 201, headers: privateHeaders });
-  } catch { console.error("Donation order creation failed"); return NextResponse.json({ error: "We could not start the secure payment. Please try again." }, { status: 500, headers: privateHeaders }); }
+  } catch {
+    logServerError("donation.order_creation_failed");
+    return NextResponse.json({ error: "We could not start the secure payment. Please try again." }, { status: 500, headers: privateHeaders });
+  }
 }

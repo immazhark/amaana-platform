@@ -12,6 +12,7 @@ export function heroTeaser(summary: string) {
   const sentences = clean.match(/[^.!?]+[.!?]+|[^.!?]+$/g)?.map(sentence => sentence.trim()).filter(Boolean) ?? [];
   if (sentences.length === 0) return clean;
   const first = sentences[0];
+  if (!first) return clean;
   if (first.length <= 180) return first;
   const clipped = first.slice(0, 177).replace(/\s+\S*$/, "").trim();
   return `${clipped}…`;

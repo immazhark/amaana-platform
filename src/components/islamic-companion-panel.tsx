@@ -177,8 +177,11 @@ export function IslamicCompanionPanel({
         if (key < 0) return;
         event.preventDefault();
         const index = key < 2 ? key : Number(panel === "readings");
-        onPanelChange(panelKinds[index]);
-        (event.currentTarget.children[index] as HTMLButtonElement).focus();
+        const nextPanel = panelKinds[index];
+        const nextTab = event.currentTarget.children.item(index);
+        if (!nextPanel || !(nextTab instanceof HTMLButtonElement)) return;
+        onPanelChange(nextPanel);
+        nextTab.focus();
       }}>
         {panelKinds.map(kind => (
           <button key={kind} id={`companion-${kind}`} type="button" role="tab" tabIndex={panel === kind ? 0 : -1} aria-selected={panel === kind} aria-controls="companion-view" onClick={() => onPanelChange(kind)}>{kind === "readings" ? "Ayah & Hadith" : "Salah & Hijri"}</button>

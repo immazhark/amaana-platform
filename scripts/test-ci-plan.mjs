@@ -226,3 +226,41 @@ test('complete route diagnostics run the disposable audit and retain auth fail-c
   assert.equal(planChanges(['e2e/all-page-audit.spec.mjs', 'src/lib/auth.ts']).mode, 'full');
   assert.equal(planChanges(['scripts/seed-ui-route-audit.mjs', 'unknown-runtime.ts']).mode, 'full');
 });
+
+// The isolated DNS inspection utility changes no application or deployment runtime.
+// Full release / main validation must still fail closed.
+test('read-only Resend DNS diagnostic does not launch unrelated application acceptance', () => {
+  const path = 'scripts/diagnose-resend-dns.mjs';
+  const planned = planChanges([path]);
+  assert.equal(planned.app, false);
+  assert.equal(planned.database, false);
+  assert.equal(planned.browser, false);
+  assert.equal(planned.mode, 'none');
+  const combined = planChanges([path, 'scripts/ci-plan.mjs', 'scripts/test-ci-plan.mjs']);
+  assert.equal(combined.app, false);
+  assert.equal(combined.database, false);
+  assert.equal(combined.browser, false);
+  assert.equal(combined.mode, 'none');
+  assert.equal(planChanges([path, 'scripts/ci-plan.mjs', 'src/app/api/donations/order/route.ts']).mode, 'full');
+  assert.equal(planChanges([path, 'src/app/api/donations/order/route.ts']).mode, 'full');
+  assert.equal(planChanges([path], { target: 'main' }).mode, 'full');
+  assert.equal(planChanges([path], { release: true }).mode, 'full');
+});
+
+// Only the read-only DNS diagnostic workflow is exempt from application checks.
+// Core CI workflows and mixed source/config changes must still fail closed.
+test('read-only DNS workflow does not run the application browser matrix', () => {
+  const workflow = '.github/workflows/resend-dns-diagnostic.yml';
+  for (const files of [[workflow], [workflow, 'scripts/diagnose-resend-dns.mjs']]) {
+    const result = planChanges(files);
+    assert.equal(result.mode, 'none');
+    assert.equal(result.app, false);
+    assert.equal(result.database, false);
+    assert.equal(result.browser, false);
+  }
+  for (const path of ['.github/workflows/ci.yml', '.github/workflows/deploy.yml', 'src/lib/auth.ts', 'src/app/api/donations/order/route.ts', 'package-lock.json']) {
+    assert.equal(planChanges([workflow, path]).mode, 'full');
+  }
+  assert.equal(planChanges([workflow], { target: 'main' }).mode, 'full');
+  assert.equal(planChanges([workflow], { release: true }).mode, 'full');
+});
