@@ -9,23 +9,21 @@ test('current launch register is structurally valid and tracks the remaining lau
 
   assert.deepEqual(
     rehearsal.unresolved.map(gate => gate.id).sort(),
-    [
-      'rollback-rehearsal',
-    ],
+    [],
   );
 
   assert.deepEqual(
     production.unresolved.map(gate => gate.id).sort(),
     [
       'final-editorial-seo-social-review',
-      'main-branch-protection',
       'main-promotion-and-production-approval',
       'manual-rendered-accessibility-review',
-      'rollback-rehearsal',
       'transactional-email-delivery',
     ],
   );
 
+  assert.equal(production.ready.find(gate => gate.id === 'main-branch-protection')?.status, 'VERIFIED');
+  assert.equal(production.ready.find(gate => gate.id === 'rollback-rehearsal')?.status, 'VERIFIED');
   assert.ok(production.ready.some(gate => gate.id === 'production-dns-cutover-plan'));
   assert.ok(production.ready.some(gate => gate.id === 'production-indexing-decision'));
   assert.ok(production.ready.some(gate => gate.id === 'public-media-upload-delivery'));

@@ -158,12 +158,13 @@
     {
       "id": "rollback-rehearsal",
       "category": "recovery",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "requiredFor": [
         "rehearsal",
         "production"
       ],
-      "evidence": "Exact final preview deployment `c2b5327d-94ee-49f6-b10c-d7f70673a1fa` is SUCCESS on `9bd04887cb57c28a73f201f8a5c7002657f2b427` and reports `canRollback=true` / `canRedeploy=true`. Previous exact candidate deployment `c8a59b26-7f74-4f0f-9fe5-664bf6f2534c` is REMOVED and also reports rollback eligibility. Railway documentation distinguishes Rollback (restores a previous deployment image and variables) from Redeploy (rebuild/redeploy) and the connected Railway toolset exposes no true rollback mutation. This gate therefore remains PENDING until one real preview-only Rollback action is executed in Railway, target/health/noindex/Test-payment/private-boundary checks pass, and the final candidate is restored forward and reaccepted."
+      "evidence": "2026-10-09 owner executed real Railway Rollback on amaana-rebuild-preview (NOT Redeploy): PR #201 974e925f0c53366e6525bfd7d7763b18d067692c -> PR #199 9bd04887cb57c28a73f201f8a5c7002657f2b427, deployment ab89297a-e75c-4801-ad87-f723e3717dba SUCCESS; real Rollback again restoring PR #201 at deployment 5f849a5e-e3fd-4b94-ad7b-a907e2839f48 SUCCESS. Railway 1/1 online, zero warning/critical, predeploy 15 migrations found/none pending, ready healthcheck, owner inspected homepage, robots.txt User-Agent * Disallow /, and anonymous /admin redirects to /admin/login. Preview rail predeploy enforces APP_ENVIRONMENT=staging, rzp_test_, indexing false, email disabled. No real payment, beneficiary submission or production service mutation.",
+      "verifiedAt": "2026-10-09"
     },
     {
       "id": "production-dns-cutover-plan",
@@ -188,11 +189,12 @@
     {
       "id": "main-branch-protection",
       "category": "authorization",
-      "status": "PENDING",
+      "status": "VERIFIED",
       "requiredFor": [
         "production"
       ],
-      "evidence": "Rechecked on 2026-10-07. `main` remains `29c7627ed3bffd0b581935c5b934ad903aeca2cd`; GitHub branch metadata reports `protected=false`, required status-check enforcement is off, and the repository ruleset collection is empty. The connected GitHub App lacks administration permission for branch-protection mutation. This remains a manual operator gate: require pull-request promotion plus normal CI and `Production promotion readiness`, disable ordinary force-push/deletion bypasses, then re-read effective protection before resolving."
+      "evidence": "2026-10-09 GitHub API verification: main protected=true, ruleset #24799711 `Amaana — Production Main Protection` active and targets only refs/heads/main; bypass list empty; PR-only merges with discussion resolution, force-push/deletion restricted; required GitHub Actions statuses verify and Production promotion readiness. Production main SHA unchanged 29c7627ed3bffd0b581935c5b934ad903aeca2cd.",
+      "verifiedAt": "2026-10-09"
     },
     {
       "id": "main-promotion-and-production-approval",
