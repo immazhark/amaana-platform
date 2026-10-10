@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { readFile } from 'node:fs/promises';
 
 const LEGACY_CATEGORY_TARGETS = {
@@ -21,11 +22,8 @@ function replaceLockedText(value, replacements = []) {
   );
 }
 
-async function applyInitiativeFactualLock(tx, locksVersion, lock, slug) {
-  const existing = await tx.initiative.findUnique({ where: { slug } });
-  if (!existing) return;
-
-  const data = {
+function factualLockData(locksVersion, lock, existing) {
+  return {
     primaryMetric: lock.primaryMetric ?? existing.primaryMetric,
     primaryMetricLabel: lock.primaryMetricLabel ?? existing.primaryMetricLabel,
     summary: lock.summary ?? replaceLockedText(existing.summary, lock.textReplacements),
@@ -39,32 +37,79 @@ async function applyInitiativeFactualLock(tx, locksVersion, lock, slug) {
         : {}),
     },
   };
-
-  await tx.initiative.update({ where: { id: existing.id }, data });
 }
 
 async function applyCanonicalFactualLocks(tx, locks) {
-  for (const lock of locks.initiatives) {
-    await applyInitiativeFactualLock(tx, locks.version, lock, lock.slug);
-    for (const legacySlug of lock.legacySlugs || []) {
-      await applyInitiativeFactualLock(tx, locks.version, lock, legacySlug);
-    }
-  }
+  const targets = locks.initiatives.flatMap((lock) => [
+    { lock, slug: lock.slug },
+    ...(lock.legacySlugs || []).map((slug) => ({ lock, slug })),
+  ]);
+  const existingRecords = await tx.initiative.findMany({
+    where: { slug: { in: targets.map((target) => target.slug) } },
+  });
+  const existingBySlug = new Map(existingRecords.map((record) => [record.slug, record]));
+
+  await Promise.all(
+    targets.flatMap(({ lock, slug }) => {
+      const existing = existingBySlug.get(slug);
+      if (!existing) return [];
+      return [tx.initiative.update({
+        where: { id: existing.id },
+        data: factualLockData(locks.version, lock, existing),
+      })];
+    }),
+  );
 }
 
 async function reconcileLegacyCategories(tx) {
-  for (const [oldSlug, targetSlug] of Object.entries(LEGACY_CATEGORY_TARGETS)) {
-    const [category, target] = await Promise.all([
-      tx.cause.findUnique({ where: { slug: oldSlug } }),
-      tx.cause.findUnique({ where: { slug: targetSlug } }),
-    ]);
-    if (!category || !target || category.id === target.id) continue;
+  const mappingValues = Prisma.join(
+    Object.entries(LEGACY_CATEGORY_TARGETS).map(([oldSlug, targetSlug]) =>
+      Prisma.sql`(${oldSlug}, ${targetSlug})`,
+    ),
+  );
 
-    await tx.initiative.updateMany({ where: { causeId: category.id }, data: { causeId: target.id } });
-    await tx.appeal.updateMany({ where: { causeId: category.id }, data: { causeId: target.id } });
-    await tx.story.updateMany({ where: { causeId: category.id }, data: { causeId: target.id } });
-    await tx.cause.update({ where: { id: category.id }, data: { status: 'ARCHIVED' } });
-  }
+  await tx.$executeRaw(Prisma.sql`
+    WITH mapping("oldSlug", "targetSlug") AS (VALUES ${mappingValues})
+    UPDATE "Initiative" AS record
+    SET "causeId" = target.id
+    FROM mapping
+    JOIN "Cause" AS legacy ON legacy.slug = mapping."oldSlug"
+    JOIN "Cause" AS target ON target.slug = mapping."targetSlug"
+    WHERE record."causeId" = legacy.id
+      AND legacy.id <> target.id
+  `);
+
+  await tx.$executeRaw(Prisma.sql`
+    WITH mapping("oldSlug", "targetSlug") AS (VALUES ${mappingValues})
+    UPDATE "Appeal" AS record
+    SET "causeId" = target.id
+    FROM mapping
+    JOIN "Cause" AS legacy ON legacy.slug = mapping."oldSlug"
+    JOIN "Cause" AS target ON target.slug = mapping."targetSlug"
+    WHERE record."causeId" = legacy.id
+      AND legacy.id <> target.id
+  `);
+
+  await tx.$executeRaw(Prisma.sql`
+    WITH mapping("oldSlug", "targetSlug") AS (VALUES ${mappingValues})
+    UPDATE "Story" AS record
+    SET "causeId" = target.id
+    FROM mapping
+    JOIN "Cause" AS legacy ON legacy.slug = mapping."oldSlug"
+    JOIN "Cause" AS target ON target.slug = mapping."targetSlug"
+    WHERE record."causeId" = legacy.id
+      AND legacy.id <> target.id
+  `);
+
+  await tx.$executeRaw(Prisma.sql`
+    WITH mapping("oldSlug", "targetSlug") AS (VALUES ${mappingValues})
+    UPDATE "Cause" AS legacy
+    SET status = 'ARCHIVED'
+    FROM mapping
+    JOIN "Cause" AS target ON target.slug = mapping."targetSlug"
+    WHERE legacy.slug = mapping."oldSlug"
+      AND legacy.id <> target.id
+  `);
 }
 
 export async function applyMasterContent(prisma) {
@@ -95,9 +140,15 @@ export async function applyMasterContent(prisma) {
         ids.set(category.slug, row.id);
       }
 
+      const existingInitiatives = await tx.initiative.findMany({
+        where: { slug: { in: master.initiatives.map((record) => record.slug) } },
+        select: { slug: true, financialSummary: true },
+      });
+      const existingInitiativeBySlug = new Map(existingInitiatives.map((record) => [record.slug, record]));
+
       for (const [displayOrder, record] of master.initiatives.entries()) {
         const { causeSlug, parentSlug, programmeStatus, facts, dataCaveat, ...copy } = record;
-        const existing = await tx.initiative.findUnique({ where: { slug: copy.slug } });
+        const existing = existingInitiativeBySlug.get(copy.slug);
         const data = {
           ...copy,
           causeId: ids.get(causeSlug),
@@ -131,40 +182,61 @@ export async function applyMasterContent(prisma) {
         },
       });
 
-      const winter = await tx.initiative.findUnique({ where: { slug: 'winter-relief' } });
-      for (const slug of ['winter-drive-2025-26', 'winter-relief-2025-26']) {
-        const legacyWinter = await tx.initiative.findUnique({ where: { slug } });
-        if (winter && legacyWinter) {
-          await tx.mediaAsset.updateMany({
-            where: { initiativeId: legacyWinter.id },
-            data: { initiativeId: winter.id },
-          });
-        }
+      const winterRecords = await tx.initiative.findMany({
+        where: { slug: { in: ['winter-relief', 'winter-drive-2025-26', 'winter-relief-2025-26'] } },
+        select: { id: true, slug: true },
+      });
+      const winter = winterRecords.find((record) => record.slug === 'winter-relief');
+      const legacyWinterIds = winterRecords
+        .filter((record) => record.slug !== 'winter-relief')
+        .map((record) => record.id);
+      if (winter && legacyWinterIds.length) {
+        await tx.mediaAsset.updateMany({
+          where: { initiativeId: { in: legacyWinterIds } },
+          data: { initiativeId: winter.id },
+        });
       }
 
       const assets = await readJson('./integration-media.json');
-      for (const [sortIndex, asset] of assets.entries()) {
-        const initiative = await tx.initiative.findUnique({ where: { slug: asset.slug } });
-        if (!initiative) continue;
-        if (await tx.mediaAsset.findFirst({ where: { initiativeId: initiative.id, publicUrl: asset.url } })) {
-          continue;
-        }
-        await tx.mediaAsset.create({
-          data: {
-            initiativeId: initiative.id,
-            kind: 'IMAGE',
-            publicUrl: asset.url,
-            title: asset.alt,
-            altText: asset.alt,
-            caption: asset.caption,
-            sourcePath: asset.source,
-            sourceYear: asset.year,
-            sortOrder: -20 + sortIndex,
-            isPublic: true,
-            privacyApprovedAt: new Date(),
-          },
-        });
-      }
+      const assetSlugs = [...new Set(assets.map((asset) => asset.slug))];
+      const assetInitiatives = await tx.initiative.findMany({
+        where: { slug: { in: assetSlugs } },
+        select: { id: true, slug: true },
+      });
+      const assetInitiativeBySlug = new Map(assetInitiatives.map((record) => [record.slug, record.id]));
+      const initiativeIds = assetInitiatives.map((record) => record.id);
+      const assetUrls = [...new Set(assets.map((asset) => asset.url))];
+      const existingAssets = initiativeIds.length && assetUrls.length
+        ? await tx.mediaAsset.findMany({
+            where: {
+              initiativeId: { in: initiativeIds },
+              publicUrl: { in: assetUrls },
+            },
+            select: { initiativeId: true, publicUrl: true },
+          })
+        : [];
+      const existingAssetKeys = new Set(
+        existingAssets.map((asset) => `${asset.initiativeId}\u0000${asset.publicUrl}`),
+      );
+      const privacyApprovedAt = new Date();
+      const missingAssets = assets.flatMap((asset, sortIndex) => {
+        const initiativeId = assetInitiativeBySlug.get(asset.slug);
+        if (!initiativeId || existingAssetKeys.has(`${initiativeId}\u0000${asset.url}`)) return [];
+        return [{
+          initiativeId,
+          kind: 'IMAGE',
+          publicUrl: asset.url,
+          title: asset.alt,
+          altText: asset.alt,
+          caption: asset.caption,
+          sourcePath: asset.source,
+          sourceYear: asset.year,
+          sortOrder: -20 + sortIndex,
+          isPublic: true,
+          privacyApprovedAt,
+        }];
+      });
+      if (missingAssets.length) await tx.mediaAsset.createMany({ data: missingAssets });
 
       const medical = master.categories[0];
       await tx.initiative.updateMany({
