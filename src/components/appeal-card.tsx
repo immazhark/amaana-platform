@@ -25,7 +25,7 @@ export function AppealCard({ appeal }: { appeal: PublicAppeal }) {
           <div className="v2-appeal-progress-foot"><span>{progress}% supported</span><span>Verified appeal</span></div>
         </div>
       </div>
-      <Link href={`/appeals/${appeal.slug}`} className="v2-appeal-card-link" aria-label={`Understand the need: ${appeal.title}`}><span>Understand this need</span><strong aria-hidden="true">↗</strong></Link>
+      <Link href={`/appeals/${appeal.slug}`} className="v2-appeal-card-link" aria-label={`Understand this need: ${appeal.title}`}><span>Understand this need</span><strong aria-hidden="true">↗</strong></Link>
     </article>
   );
 }
