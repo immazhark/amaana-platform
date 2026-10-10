@@ -171,6 +171,7 @@ test.describe('donation journey without real payment', () => {
     expect(orderCalls).toBe(1);
 
     await email.fill('corrected@example.test');
+    await expect(email).toBeFocused();
     await expect(page.locator('#donor-email-error')).toHaveCount(0);
     await expect(email).not.toHaveAttribute('aria-invalid', 'true');
   });
