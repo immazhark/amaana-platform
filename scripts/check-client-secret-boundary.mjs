@@ -33,12 +33,23 @@ try {
   process.exit(1);
 }
 
+// Secret names are useful heuristics, but an inlined value can leak without
+// the original environment variable identifier appearing in the client bundle.
+// Never print a matched value, even when the check fails.
+const secretValues = [...new Set([
+  ...forbiddenMarkers.map((name) => process.env[name]),
+  process.env.AMAANA_CLIENT_SECRET_CANARY,
+].filter((value) => typeof value === "string" && value.length >= 16))];
+
 const offenders = [];
 for (const file of files) {
   if (!/\.(?:js|mjs|css|map)$/i.test(file)) continue;
   const content = await readFile(file, "utf8");
   for (const marker of forbiddenMarkers) {
     if (content.includes(marker)) offenders.push({ file: path.relative(process.cwd(), file), marker });
+  }
+  if (secretValues.some((value) => content.includes(value))) {
+    offenders.push({ file: path.relative(process.cwd(), file), marker: "[REDACTED SECRET VALUE]" });
   }
 }
 
