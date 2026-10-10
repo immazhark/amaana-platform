@@ -51,3 +51,16 @@ test("policy labels and aside copy use semantic label ink", () => {
   assert.match(css, /\.v2-policy-page aside>p\s*\{color:var\(--af-color-label\)!important\}/);
   assert.doesNotMatch(css, /#5f4b31/i);
 });
+
+test("Impact, Contact and initiative copy avoid low-contrast literal", () => {
+  for (const [file, selector] of [
+    ["impact.css", ".v2-impact-principles p"],
+    ["home-experience.css", ".v2-contact-safety-copy p"],
+    ["initiative-experience.css", ".v2-initiative-faith-grid p"],
+  ]) {
+    const css = readFileSync(new URL("../src/app/" + file, import.meta.url), "utf8");
+    assert.ok(css.includes(selector), "Missing audited selector " + selector);
+    assert.ok(css.slice(css.indexOf(selector)).match(/^.{0,1000}color:\\s*var\\(--af-color-meta\\)/s), "Expected semantic ink near " + selector);
+    assert.doesNotMatch(css, /color:\\s*#68717a/i);
+  }
+});
