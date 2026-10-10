@@ -102,6 +102,8 @@ jobs:
         run: node --test scripts/test-public-data-boundaries.mjs
       - name: Guard client-bundle secret scanner behavior
         run: node --test scripts/test-client-secret-boundary.mjs
+      - name: Enforce audited muted text contrast
+        run: node --test scripts/test-audited-muted-contrast.mjs
       - name: Verify archive filters
         run: node --experimental-strip-types --test scripts/test-work-filters.mjs
       - name: Verify daily readings, reminder windows and local calendar boundaries
