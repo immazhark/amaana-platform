@@ -37,9 +37,19 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
 
   useEffect(() => {
     if (!error) return;
-    const frame = window.requestAnimationFrame(() => errorRef.current?.focus());
+    const firstRejectedField = (["amount", "donorName", "donorEmail", "donorPhone", "givingIntent", "domesticConfirmed"] as DonationField[])
+      .find(field => fieldErrors[field]?.length);
+    const frame = window.requestAnimationFrame(() => {
+      if (!firstRejectedField) {
+        errorRef.current?.focus();
+        return;
+      }
+      const control = formRef.current?.elements.namedItem(firstRejectedField);
+      if (control instanceof HTMLElement) control.focus();
+      else errorRef.current?.focus();
+    });
     return () => window.cancelAnimationFrame(frame);
-  }, [error]);
+  }, [error, fieldErrors]);
 
   const busy = phase === "opening" || phase === "verifying";
   const submissionLocked = busy || phase === "reconciliation";

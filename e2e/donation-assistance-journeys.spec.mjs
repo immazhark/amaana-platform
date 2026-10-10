@@ -145,6 +145,36 @@ async function finishAssistanceConfirmation(page) {
 
 // Release-candidate browser gate: keep this suite active whenever checkout or runtime hardening changes.
 test.describe('donation journey without real payment', () => {
+  test('donation order validation focuses the rejected field, not only the summary', async ({ page }) => {
+    let orderCalls = 0;
+    await page.route('**/api/donations/order', async route => {
+      orderCalls += 1;
+      await route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          error: 'Please correct the highlighted donation details.',
+          fields: { donorEmail: ['Check the email address.'] },
+        }),
+      });
+    });
+    const submit = await openDonationFixture(page, 'dismiss');
+    await fillDonationForm(page);
+    await submit.click();
+
+    const email = page.getByLabel('Email');
+    await expect(email).toBeFocused();
+    await expect(email).toHaveAttribute('aria-invalid', 'true');
+    await expect(email).toHaveAttribute('aria-describedby', /donor-email-error/);
+    await expect(page.locator('#donor-email-error')).toHaveText('Check the email address.');
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('Please correct the highlighted donation details.');
+    expect(orderCalls).toBe(1);
+
+    await email.fill('corrected@example.test');
+    await expect(page.locator('#donor-email-error')).toHaveCount(0);
+    await expect(email).not.toHaveAttribute('aria-invalid', 'true');
+  });
+
   test('invalid donation fields expose inline linked errors before checkout', async ({ page }) => {
     let orderCalls = 0;
     await page.route('**/api/donations/order', route => {
