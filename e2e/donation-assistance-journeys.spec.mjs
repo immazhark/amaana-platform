@@ -145,6 +145,25 @@ async function finishAssistanceConfirmation(page) {
 
 // Release-candidate browser gate: keep this suite active whenever checkout or runtime hardening changes.
 test.describe('donation journey without real payment', () => {
+  test('invalid donation fields expose inline linked errors before checkout', async ({ page }) => {
+    let orderCalls = 0;
+    await page.route('**/api/donations/order', route => {
+      orderCalls += 1;
+      return route.fulfill({ status: 500, body: 'unexpected order request' });
+    });
+    const submit = await openDonationFixture(page, 'dismiss');
+    await submit.click();
+    const amount = page.getByLabel(/Donation amount/);
+    await expect(amount).toBeFocused();
+    await expect(amount).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#amount-error')).toBeVisible();
+    await expect(amount).toHaveAttribute('aria-describedby', /amount-error/);
+
+    await amount.fill('250');
+    await expect(page.locator('#amount-error')).toHaveCount(0);
+    expect(orderCalls).toBe(0);
+  });
+
   test('browser constraints require an allowed amount and domestic confirmation before checkout', async ({ page }) => {
     let orderCalls = 0;
     await page.route('**/api/donations/order', route => {
