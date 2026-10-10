@@ -213,6 +213,10 @@ jobs:
         if: github.event_name != 'pull_request'
         run: npm run build
 
+      - name: Enforce client bundle secret boundary
+        if: github.event_name != 'pull_request'
+        run: node scripts/check-client-secret-boundary.mjs
+
       - name: Enforce production bundle budgets
         if: github.event_name != 'pull_request'
         shell: bash
