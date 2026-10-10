@@ -89,6 +89,24 @@ async function openAssistance(page) {
   await expect(page.getByRole('heading', { name: 'Tell us about the request.' })).toBeVisible();
 }
 
+test('assistance step validation announces required fields and moves focus', async ({ page }) => {
+  await openAssistance(page);
+  await page.getByRole('button', { name: 'Continue to need →' }).click();
+  const name = page.getByLabel('Applicant name');
+  await expect(name).toBeFocused();
+  await expect(name).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#name-error')).toBeVisible();
+  await expect(name).toHaveAttribute('aria-describedby', 'name-error');
+
+  await name.fill('Acceptance Applicant');
+  await expect(page.locator('#name-error')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Continue to need →' }).click();
+  const phone = page.getByLabel('Phone number');
+  await expect(phone).toBeFocused();
+  await expect(phone).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#phone-error')).toBeVisible();
+});
+
 async function fillAssistanceForm(page, { stopAtEvidence = false } = {}) {
   await page.getByLabel('Applicant name').fill('Acceptance Applicant');
   await page.getByLabel('Phone number').fill('9000000000');
