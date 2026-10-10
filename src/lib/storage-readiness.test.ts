@@ -48,6 +48,23 @@ describe("getPublicMediaStorageReadiness", () => {
     });
   });
 
+  it("uses dedicated server-only media credentials when configured", () => {
+    process.env.S3_REGION = "ap-south-1";
+    process.env.S3_BUCKET = "private-assistance";
+    process.env.S3_ACCESS_KEY_ID = "private-key";
+    process.env.S3_SECRET_ACCESS_KEY = "private-secret";
+    process.env.PUBLIC_MEDIA_S3_BUCKET = "public-media";
+    process.env.MEDIA_S3_ACCESS_KEY_ID = "media-key";
+    process.env.MEDIA_S3_SECRET_ACCESS_KEY = "media-secret";
+    process.env.PUBLIC_MEDIA_BASE_URL = "https://media.example.org";
+
+    expect(getPublicMediaStorageReadiness()).toMatchObject({
+      uploadReady: true,
+      deliveryReady: true,
+      usingFallbackCredentials: false,
+    });
+  });
+
   it("rejects using the private assistance bucket as public media storage", () => {
     process.env.S3_REGION = "ap-south-1";
     process.env.S3_BUCKET = "same-bucket";
