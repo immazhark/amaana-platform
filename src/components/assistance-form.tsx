@@ -59,7 +59,9 @@ export function AssistanceForm() {
     if (assistanceFieldOrder.includes(field)) {
       setFieldErrors(current => ({ ...current, [field]: [invalid.validationMessage || "Please check this field."] }));
     }
-    invalid.focus();
+    // Let React render aria-invalid and the linked error before moving focus.
+    // A native validity popup would compete with the persistent inline message.
+    requestAnimationFrame(() => requestAnimationFrame(() => invalid.focus()));
     return false;
   }
 
@@ -91,7 +93,6 @@ export function AssistanceForm() {
       requestAnimationFrame(() => requestAnimationFrame(() => {
         const control = form.elements.namedItem(invalidControl.field);
         if (control instanceof HTMLInputElement || control instanceof HTMLSelectElement || control instanceof HTMLTextAreaElement) {
-          control.reportValidity();
           control.focus();
         }
       }));
