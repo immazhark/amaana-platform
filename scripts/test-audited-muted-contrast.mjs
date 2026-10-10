@@ -33,3 +33,21 @@ test("public media caption and appeal card copy use metadata token", () => {
   assert.doesNotMatch(media, /color:\s*#68717a/i);
   assert.doesNotMatch(appeal, /color:\s*#68717a/i);
 });
+
+test("semantic ink tokens meet AA contrast across light surfaces", () => {
+  const css = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
+  for (const name of ["label", "meta", "accent-text"]) {
+    const match = css.match(new RegExp("--af-color-" + name + ":\\\\s*(#[0-9a-f]{6})\\\\s*;", "i"));
+    assert.ok(match, "Missing semantic ink token: " + name);
+    for (const background of ["#faf6ec", "#fffdf8", "#f3eddd"]) {
+      assert.ok(contrast(match[1], background) >= 4.5, name + " contrast below WCAG AA on " + background);
+    }
+  }
+});
+
+test("policy labels and aside copy use semantic label ink", () => {
+  const css = readFileSync(new URL("../src/app/accessibility.css", import.meta.url), "utf8");
+  assert.match(css, /\\.v2-policy-page \\.v2-section-label\\s*\\{color:var\\(--af-color-label\\)!important\\}/);
+  assert.match(css, /\\.v2-policy-page aside>p\\s*\\{color:var\\(--af-color-label\\)!important\\}/);
+  assert.doesNotMatch(css, /#5f4b31/i);
+});
