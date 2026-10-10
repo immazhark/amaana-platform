@@ -1,24 +1,70 @@
+.routes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: .75rem;
+  margin: 1.25rem 0;
+}
 
-.routes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem;margin:1.5rem 0}
-.route{display:grid;gap:.75rem;padding:1.25rem;border:1px solid rgb(18 34 57 / 10%);border-radius:1rem;background:#fffdf8;box-shadow:0 .6rem 1.8rem rgb(18 34 57 / 4%)}
-.route span{color:var(--af-color-gold-ink);font-size:.68rem;font-weight:850;letter-spacing:.1em;text-transform:uppercase}
-.route h3{margin:0;font-family:var(--af-font-display);font-size:1.5rem;font-weight:500;color:#122239}
-.route p{margin:0;color:var(--af-color-muted);line-height:1.6}
-.route a{margin-top:auto;width:max-content;max-width:100%}
-.note{margin-top:.9rem;padding:.85rem 1rem;border-left:3px solid #466faa;border-radius:.35rem;background:#eef3fa;color:var(--af-color-muted);font-size:.82rem;line-height:1.55}
-@media(max-width:700px){.routes{grid-template-columns:1fr}}
+.route {
+  display: grid;
+  gap: .75rem;
+  min-height: 14rem;
+  padding: 1.1rem;
+  border: 1px solid rgb(18 34 57 / 10%);
+  border-radius: .75rem;
+  background: var(--af-color-surface);
+  box-shadow: none;
+}
 
+.route:focus-within {
+  border-color: rgb(70 111 170 / 36%);
+}
 
-/* Donation route choice should read as a decision, not two oversized generic cards. */
-.routes{gap:.75rem;margin:1.25rem 0}
-.route{min-height:14rem;padding:1.1rem;border-radius:.85rem;box-shadow:0 .45rem 1.4rem rgb(18 34 57 / 3%)}
-.route h3{font-size:clamp(1.35rem,2vw,1.7rem)}
-.route p{line-height:1.55}
-.note{margin-top:.75rem}
-@media(max-width:700px){.route{min-height:0}}
+.route span {
+  color: var(--af-color-gold-ink);
+  font-size: .68rem;
+  font-weight: 700;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+}
 
+.route h3 {
+  margin: 0;
+  color: var(--af-color-navy-950);
+  font-family: var(--af-font-display);
+  font-size: clamp(1.35rem, 2vw, 1.7rem);
+  font-weight: 500;
+}
 
-/* Transaction audit: route choice remains clear without oversized card emphasis. */
-.route{border-radius:.75rem;box-shadow:none}
-.route span{font-weight:700}
-.route:focus-within{border-color:rgb(70 111 170 / 36%)}
+.route p {
+  margin: 0;
+  color: var(--af-color-muted);
+  line-height: 1.55;
+}
+
+.route a {
+  width: max-content;
+  max-width: 100%;
+  margin-top: auto;
+}
+
+.note {
+  margin-top: .75rem;
+  padding: .85rem 1rem;
+  border-left: 3px solid var(--af-color-blue-600);
+  border-radius: .35rem;
+  background: var(--af-color-blue-note);
+  color: var(--af-color-muted);
+  font-size: .82rem;
+  line-height: 1.55;
+}
+
+@media (max-width: 700px) {
+  .routes {
+    grid-template-columns: 1fr;
+  }
+
+  .route {
+    min-height: 0;
+  }
+}
