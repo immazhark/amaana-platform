@@ -18,6 +18,7 @@ declare global { interface Window { Razorpay: new (options: RazorpayOptions) => 
 export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible = false }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean }) {
   const router = useRouter();
   const errorRef = useRef<HTMLDivElement>(null);
+  const focusedErrorRef = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<DonationFieldErrors>({});
@@ -36,7 +37,14 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
   }, []);
 
   useEffect(() => {
-    if (!error) return;
+    if (!error) {
+      focusedErrorRef.current = null;
+      return;
+    }
+    // Editing a field may change fieldErrors while the alert remains displayed.
+    // Do not steal focus from the donor after the initial error announcement.
+    if (focusedErrorRef.current === error) return;
+    focusedErrorRef.current = error;
     const firstRejectedField = (["amount", "donorName", "donorEmail", "donorPhone", "givingIntent", "domesticConfirmed"] as DonationField[])
       .find(field => fieldErrors[field]?.length);
     const frame = window.requestAnimationFrame(() => {
