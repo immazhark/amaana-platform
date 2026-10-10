@@ -1,3 +1,4 @@
+import "server-only";
 import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { createHash, randomUUID } from "node:crypto";
@@ -40,11 +41,23 @@ function getPrivateStorage(): StorageConfig {
   };
 }
 
+function getMediaCredentialPair() {
+  const mediaAccessKey = process.env.MEDIA_S3_ACCESS_KEY_ID?.trim();
+  const mediaSecretKey = process.env.MEDIA_S3_SECRET_ACCESS_KEY?.trim();
+  if (Boolean(mediaAccessKey) !== Boolean(mediaSecretKey)) {
+    throw new Error("Dedicated media storage credentials must be configured as a complete pair");
+  }
+  return {
+    accessKeyId: mediaAccessKey || process.env.S3_ACCESS_KEY_ID,
+    secretAccessKey: mediaSecretKey || process.env.S3_SECRET_ACCESS_KEY,
+    usingFallbackCredentials: !mediaAccessKey,
+  };
+}
+
 function getPublicMediaStorage(): StorageConfig {
   const region = process.env.PUBLIC_MEDIA_S3_REGION || process.env.S3_REGION;
   const bucket = process.env.PUBLIC_MEDIA_S3_BUCKET;
-  const accessKeyId = process.env.PUBLIC_MEDIA_S3_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY;
+  const { accessKeyId, secretAccessKey } = getMediaCredentialPair();
   if (!region || !bucket || !accessKeyId || !secretAccessKey) throw new Error("Public media storage is not configured");
   return {
     bucket,
@@ -228,8 +241,7 @@ export function getPublicMediaStorageReadiness(): PublicMediaStorageReadiness {
   const bucket = process.env.PUBLIC_MEDIA_S3_BUCKET?.trim();
   const privateBucket = process.env.S3_BUCKET?.trim();
   const region = process.env.PUBLIC_MEDIA_S3_REGION || process.env.S3_REGION;
-  const accessKeyId = process.env.PUBLIC_MEDIA_S3_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY;
+  const { accessKeyId, secretAccessKey, usingFallbackCredentials } = getMediaCredentialPair();
   const baseUrl = process.env.PUBLIC_MEDIA_BASE_URL?.trim();
 
   let baseUrlSecure = false;
@@ -249,7 +261,7 @@ export function getPublicMediaStorageReadiness(): PublicMediaStorageReadiness {
     uploadReady,
     deliveryReady,
     separateBucketConfigured,
-    usingFallbackCredentials: !process.env.PUBLIC_MEDIA_S3_ACCESS_KEY_ID || !process.env.PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY,
+    usingFallbackCredentials,
     baseUrlConfigured: Boolean(baseUrl),
     baseUrlSecure,
   };

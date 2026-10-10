@@ -117,7 +117,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               type="button"
               className={styles.trigger}
               onClick={() => setActiveIndex(index)}
-              aria-label={`Open image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
+              aria-label={`Enlarge image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
             >
               {canOptimizeLocally(item.url) ? <Image src={item.url} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
               {privacyProtected ? <span className={styles.privacyLabel}>Privacy protected</span> : null}

@@ -67,7 +67,7 @@ export default async function ImpactPage() {
           <SectionHeading eyebrow={<>Wall of impact</>} title={<>See what each initiative achieved.</>} subtitle={<>Explore an outcome, then open the initiative to understand the work behind it.</>} id="impact-wall-title" />
           {initiatives.length > 0 ? <div className="v2-impact-wall">{initiatives.map((item, index) => {
             const thumbnail = selectIdentityPublicImage(item.mediaAssets) ?? null;
-            return <Link href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id} aria-label={`Open ${item.title}`}>
+            return <Link href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id} aria-label={`Explore impact: ${item.title}`}>
               {thumbnail ? <div className="v2-impact-tile-media" aria-hidden="true"><PublicMedia asset={thumbnail} /></div> : null}
               <div className="v2-impact-tile-shade" aria-hidden="true" />
               <span className="v2-impact-tile-index">{String(index + 1).padStart(2, "0")}</span>

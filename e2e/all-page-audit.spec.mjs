@@ -14,6 +14,41 @@ const staticRoutes = sourceRoutes.filter(r=>!r.route.includes('[')).map(r=>r.rou
 const adminDetail = [`/admin/requests/${seed.requestId}`,`/admin/appeals/${seed.appealId}`,`/admin/appeals/${seed.draftId}`,`/admin/donations/${seed.donationId}`];
 const routes = [...new Set([...staticRoutes,...seed.publicRoutes,...adminDetail,'/programmes/medical-financial-relief','/programmes/emergency-relief','/programmes/ramadan-eid','/programmes/seasonal-relief','/donations/invalid/acknowledgement'])].sort();
 test.describe.configure({retries:0});
+function renderErrorSource(sourceFile) {
+ return execFileSync(process.execPath,['--input-type=module','-'],{
+  cwd:workspace,
+  encoding:'utf8',
+  env:{...process.env,AMAANA_ERROR_SOURCE:sourceFile},
+  input:`
+    import fs from 'node:fs';
+    import path from 'node:path';
+    import {pathToFileURL} from 'node:url';
+    import ts from 'typescript';
+    import React from 'react';
+    import server from 'react-dom/server';
+
+    const sourceFile=process.env.AMAANA_ERROR_SOURCE;
+    if(!sourceFile)throw new Error('AMAANA_ERROR_SOURCE is required');
+    // This isolated static renderer runs outside Next.js. Resolve its Link component
+    // to a semantic anchor here; production imports and navigation remain untouched.
+    const source=fs.readFileSync(sourceFile,'utf8').replace(
+      /^import Link from ["']next\\/link["'];?$/m,
+      'import React from "react"; const Link = ({href,children,...props}) => React.createElement("a",{...props,href},children);'
+    );
+    const code=ts.transpileModule(source,{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
+    const tempDir=fs.mkdtempSync(path.join(process.cwd(),'.amaana-source-audit-'));
+    const tempFile=path.join(tempDir,'module.mjs');
+    try{
+      fs.writeFileSync(tempFile,code,'utf8');
+      const mod=await import(pathToFileURL(tempFile).href);
+      process.stdout.write(server.renderToStaticMarkup(React.createElement(mod.default,{error:new Error('Synthetic layout audit'),reset:()=>{}})));
+    }finally{
+      fs.rmSync(tempDir,{recursive:true,force:true});
+    }
+  `
+ });
+}
+
 const horizontalOverflowDetails=()=>{
  const viewportWidth=document.documentElement.clientWidth;
  const scrollWidth=Math.max(document.documentElement.scrollWidth,document.body.scrollWidth);
@@ -75,13 +110,7 @@ for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])fo
 for (const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]]) {
   test(`source-rendered root interruption ${device}`, async ({page}) => {
     await page.setViewportSize({width,height});
-    const html = execFileSync(process.execPath,['--input-type=commonjs','-'],{cwd:workspace,encoding:'utf8',input:`
-      const fs=require('node:fs'),ts=require('typescript'),React=require('react'),server=require('react-dom/server');
-      const source=fs.readFileSync('src/app/global-error.tsx','utf8');
-      const code=ts.transpileModule(source,{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.CommonJS}}).outputText;
-      const box={exports:{}};new Function('require','module','exports',code)(require,box,box.exports);
-      process.stdout.write('<!doctype html>'+server.renderToStaticMarkup(React.createElement(box.exports.default,{error:new Error('Synthetic layout audit'),reset:()=>{}})));
-    `});
+    const html = '<!doctype html>'+renderErrorSource('src/app/global-error.tsx');
     await page.goto('/about');await page.setContent(html);
     const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag2aaa']).analyze();
     const geometry=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,heading:document.querySelector('h1')?.textContent}));
@@ -97,13 +126,7 @@ for (const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]]) 
 for (const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]]) {
   test(`source-rendered route interruption ${device}`, async ({page}) => {
     await page.setViewportSize({width,height});
-    const html = execFileSync(process.execPath,['--input-type=commonjs','-'],{cwd:workspace,encoding:'utf8',input:`
-      const fs=require('node:fs'),ts=require('typescript'),React=require('react'),server=require('react-dom/server');
-      const source=fs.readFileSync('src/app/error.tsx','utf8');
-      const code=ts.transpileModule(source,{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.CommonJS}}).outputText;
-      const box={exports:{}};new Function('require','module','exports',code)(require,box,box.exports);
-      process.stdout.write('<!doctype html>'+server.renderToStaticMarkup(React.createElement(box.exports.default,{error:new Error('Synthetic layout audit'),reset:()=>{}})));
-    `});
+    const html = renderErrorSource('src/app/error.tsx');
     await page.goto('/about');const head=await page.locator('head').innerHTML();await page.setContent('<!doctype html><html lang="en"><head>'+head+'</head><body><main>'+html+'</main></body></html>');await page.evaluate(async()=>{await document.fonts.ready;});
     const audit=await new AxeBuilder({page}).withTags(['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag2aaa']).analyze();
     const geometry=await page.evaluate(()=>({overflow:document.documentElement.scrollWidth>innerWidth+1,heading:document.querySelector('h1')?.textContent}));

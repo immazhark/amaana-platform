@@ -100,6 +100,18 @@ jobs:
           node scripts/check-public-editorial-consistency.mjs
       - name: Guard public/private data boundaries
         run: node --test scripts/test-public-data-boundaries.mjs
+      - name: Guard client-bundle secret scanner behavior
+        run: node --test scripts/test-client-secret-boundary.mjs
+      - name: Enforce audited muted text contrast
+        run: node --test scripts/test-audited-muted-contrast.mjs
+      - name: Enforce accessible public-media link names
+        run: node --test scripts/test-public-media-link-name.mjs
+      - name: Enforce appeal and faith link action names
+        run: node --test scripts/test-appeal-faith-link-labels.mjs
+      - name: Enforce impact tile accessible action names
+        run: node --test scripts/test-impact-link-label.mjs
+      - name: Enforce participation card accessible action names
+        run: node --test scripts/test-participation-link-label.mjs
       - name: Verify archive filters
         run: node --experimental-strip-types --test scripts/test-work-filters.mjs
       - name: Verify daily readings, reminder windows and local calendar boundaries
@@ -172,9 +184,11 @@ jobs:
 
   production:
     needs: [plan, fast]
-    if: needs.plan.outputs.app == 'true' && github.event_name != 'pull_request'
+    if: needs.plan.outputs.app == 'true' && github.event.action != 'ready_for_review'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    permissions:
+      contents: read
     services:
       postgres:
         image: postgres:16-alpine
@@ -205,14 +219,14 @@ jobs:
 
       - run: npm run prisma:generate
       - name: Prepare isolated production-build database
-        if: github.event_name != 'pull_request'
         run: npx prisma migrate deploy
       - name: Build production application
-        if: github.event_name != 'pull_request'
         run: npm run build
 
+      - name: Enforce client bundle secret boundary
+        run: node scripts/check-client-secret-boundary.mjs
+
       - name: Enforce production bundle budgets
-        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
@@ -229,7 +243,6 @@ jobs:
           test "$CSS_BYTES" -le "$CSS_BUDGET"
 
       - name: Run post-build server smoke checks
-        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail

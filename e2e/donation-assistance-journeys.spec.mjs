@@ -89,6 +89,40 @@ async function openAssistance(page) {
   await expect(page.getByRole('heading', { name: 'Tell us about the request.' })).toBeVisible();
 }
 
+test('assistance errors are linked before keyboard focus reaches invalid input', async ({ page }) => {
+  await openAssistance(page);
+  await page.evaluate(() => {
+    window.__amaanaInvalidFocusLinked = null;
+    document.addEventListener('focusin', (event) => {
+      if (event.target instanceof HTMLInputElement && event.target.name === 'applicantName' && event.target.getAttribute('aria-invalid') === 'true') {
+        const describedBy = event.target.getAttribute('aria-describedby');
+        window.__amaanaInvalidFocusLinked = Boolean(describedBy && document.getElementById(describedBy));
+      }
+    });
+  });
+  await page.getByRole('button', { name: 'Continue to need →' }).click();
+  await expect(page.getByLabel('Applicant name')).toBeFocused();
+  await expect.poll(() => page.evaluate(() => window.__amaanaInvalidFocusLinked)).toBe(true);
+});
+
+test('assistance step validation announces required fields and moves focus', async ({ page }) => {
+  await openAssistance(page);
+  await page.getByRole('button', { name: 'Continue to need →' }).click();
+  const name = page.getByLabel('Applicant name');
+  await expect(name).toBeFocused();
+  await expect(name).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#name-error')).toBeVisible();
+  await expect(name).toHaveAttribute('aria-describedby', 'name-error');
+
+  await name.fill('Acceptance Applicant');
+  await expect(page.locator('#name-error')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Continue to need →' }).click();
+  const phone = page.getByLabel('Phone number');
+  await expect(phone).toBeFocused();
+  await expect(phone).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#phone-error')).toBeVisible();
+});
+
 async function fillAssistanceForm(page, { stopAtEvidence = false } = {}) {
   await page.getByLabel('Applicant name').fill('Acceptance Applicant');
   await page.getByLabel('Phone number').fill('9000000000');
@@ -111,6 +145,56 @@ async function finishAssistanceConfirmation(page) {
 
 // Release-candidate browser gate: keep this suite active whenever checkout or runtime hardening changes.
 test.describe('donation journey without real payment', () => {
+  test('donation order validation focuses the rejected field, not only the summary', async ({ page }) => {
+    let orderCalls = 0;
+    await page.route('**/api/donations/order', async route => {
+      orderCalls += 1;
+      await route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          error: 'Please correct the highlighted donation details.',
+          fields: { donorEmail: ['Check the email address.'] },
+        }),
+      });
+    });
+    const submit = await openDonationFixture(page, 'dismiss');
+    await fillDonationForm(page);
+    await submit.click();
+
+    const email = page.getByLabel('Email');
+    await expect(email).toBeFocused();
+    await expect(email).toHaveAttribute('aria-invalid', 'true');
+    await expect(email).toHaveAttribute('aria-describedby', /donor-email-error/);
+    await expect(page.locator('#donor-email-error')).toHaveText('Check the email address.');
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('Please correct the highlighted donation details.');
+    expect(orderCalls).toBe(1);
+
+    await email.fill('corrected@example.test');
+    await expect(email).toBeFocused();
+    await expect(page.locator('#donor-email-error')).toHaveCount(0);
+    await expect(email).not.toHaveAttribute('aria-invalid', 'true');
+  });
+
+  test('invalid donation fields expose inline linked errors before checkout', async ({ page }) => {
+    let orderCalls = 0;
+    await page.route('**/api/donations/order', route => {
+      orderCalls += 1;
+      return route.fulfill({ status: 500, body: 'unexpected order request' });
+    });
+    const submit = await openDonationFixture(page, 'dismiss');
+    await submit.click();
+    const amount = page.getByLabel(/Donation amount/);
+    await expect(amount).toBeFocused();
+    await expect(amount).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#amount-error')).toBeVisible();
+    await expect(amount).toHaveAttribute('aria-describedby', /amount-error/);
+
+    await amount.fill('250');
+    await expect(page.locator('#amount-error')).toHaveCount(0);
+    expect(orderCalls).toBe(0);
+  });
+
   test('browser constraints require an allowed amount and domestic confirmation before checkout', async ({ page }) => {
     let orderCalls = 0;
     await page.route('**/api/donations/order', route => {

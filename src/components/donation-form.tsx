@@ -18,6 +18,7 @@ declare global { interface Window { Razorpay: new (options: RazorpayOptions) => 
 export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible = false }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean }) {
   const router = useRouter();
   const errorRef = useRef<HTMLDivElement>(null);
+  const focusedErrorRef = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<DonationFieldErrors>({});
@@ -36,10 +37,27 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
   }, []);
 
   useEffect(() => {
-    if (!error) return;
-    const frame = window.requestAnimationFrame(() => errorRef.current?.focus());
+    if (!error) {
+      focusedErrorRef.current = null;
+      return;
+    }
+    // Editing a field may change fieldErrors while the alert remains displayed.
+    // Do not steal focus from the donor after the initial error announcement.
+    if (focusedErrorRef.current === error) return;
+    focusedErrorRef.current = error;
+    const firstRejectedField = (["amount", "donorName", "donorEmail", "donorPhone", "givingIntent", "domesticConfirmed"] as DonationField[])
+      .find(field => fieldErrors[field]?.length);
+    const frame = window.requestAnimationFrame(() => {
+      if (!firstRejectedField) {
+        errorRef.current?.focus();
+        return;
+      }
+      const control = formRef.current?.elements.namedItem(firstRejectedField);
+      if (control instanceof HTMLElement) control.focus();
+      else errorRef.current?.focus();
+    });
     return () => window.cancelAnimationFrame(frame);
-  }, [error]);
+  }, [error, fieldErrors]);
 
   const busy = phase === "opening" || phase === "verifying";
   const submissionLocked = busy || phase === "reconciliation";
@@ -65,6 +83,24 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
 
   function clearFieldError(field: DonationField) {
     setFieldErrors(current => current[field] ? { ...current, [field]: undefined } : current);
+  }
+
+  function handleInvalid(event: FormEvent<HTMLFormElement>) {
+    // React bubbles invalid events; replace transient browser popups with a
+    // persistent field-specific explanation linked through aria-describedby.
+    event.preventDefault();
+    const control = event.target;
+    if (!(control instanceof HTMLInputElement || control instanceof HTMLSelectElement)) return;
+    const field = control.name as DonationField;
+    if (!(["donorName", "donorEmail", "donorPhone", "amount", "givingIntent", "domesticConfirmed"] as string[]).includes(field)) return;
+    setFieldErrors(current => ({
+      ...current,
+      [field]: [control.validationMessage || "Please check this field."],
+    }));
+    // Only focus the first invalid control after React commits its error.
+    if (formRef.current?.querySelector(":invalid") === control) {
+      requestAnimationFrame(() => requestAnimationFrame(() => control.focus()));
+    }
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -161,7 +197,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         showError("Secure checkout could not load. Please refresh and try again.");
       }}
     />
-    <form ref={formRef} className="v2-premium-form v2-donation-form" onSubmit={submit} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
+    <form ref={formRef} className="v2-premium-form v2-donation-form" onSubmit={submit} onInvalid={handleInvalid} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
       <div className="v2-form-heading"><span>Secure contribution</span><h2 id="donation-form-heading">Choose how you would like to support.</h2><p id="donation-form-description">Only the information needed to process and acknowledge your contribution is requested.</p></div>
       <p id="donation-checkout-status" className={styles.status} role="status" aria-live="polite">{statusText}</p>
       {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{remainingHint !== null ? <p><button type="button" className="v2-text-link" onClick={() => { const input = formRef.current?.elements.namedItem("amount"); if (input instanceof HTMLInputElement) { input.value = String(remainingHint); input.focus(); } }}>Use the current remaining amount: ₹{remainingHint.toLocaleString("en-IN")}</button></p> : null}</div>}

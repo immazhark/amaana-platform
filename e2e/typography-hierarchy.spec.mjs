@@ -22,10 +22,10 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
 }
 
 const cases = [
-  { route: '/stories', selector: '.v2-stories-feature-copy h2', fixture: '<div class="v2-stories-feature-copy"><h2>Featured field note</h2></div>' },
-  { route: '/faith-and-reflections', selector: '.v2-faith-standard h2', fixture: '<section class="v2-faith-standard"><h2>Editorial trust</h2></section>' },
-  { route: '/faith-and-reflections', selector: '.v2-faith-feature-copy h2', fixture: '<div class="v2-faith-feature-copy"><h2>Featured reflection</h2></div>' },
-  { route: '/our-work', selector: '.v2-cause-summary-title', fixture: '<details class="v2-cause-disclosure"><summary class="v2-cause-summary"><h2 class="v2-cause-summary-heading"><span class="v2-cause-summary-copy"><span class="v2-cause-summary-title">Medical & Financial Relief</span></span></h2></summary></details>' },
+  { route: '/stories', selector: '.v2-stories-feature-copy h2', fixtureKind: 'stories-feature' },
+  { route: '/faith-and-reflections', selector: '.v2-faith-standard h2', fixtureKind: 'faith-standard' },
+  { route: '/faith-and-reflections', selector: '.v2-faith-feature-copy h2', fixtureKind: 'faith-feature' },
+  { route: '/our-work', selector: '.v2-cause-summary-title', fixtureKind: 'cause-summary' },
 ];
 
 for (const width of [1440, 390]) {
@@ -37,24 +37,42 @@ for (const width of [1440, 390]) {
       const response = await page.goto(sample.route, { waitUntil: 'domcontentloaded' });
       expect(response?.ok(), `${sample.route} should render`).toBeTruthy();
 
-      const metrics = await page.evaluate(({ selector, fixture }) => {
+      const metrics = await page.evaluate(({ selector, fixtureKind }) => {
+        const add = (parent, tag, className, text) => {
+          const node = document.createElement(tag);
+          if (className) node.className = className;
+          if (text) node.textContent = text;
+          parent.appendChild(node);
+          return node;
+        };
+
         let hero = document.querySelector('.page-hero__title');
         if (!hero) {
-          const host = document.createElement('section');
-          host.className = 'page-hero page-hero--level1';
+          const host = add(document.body, 'section', 'page-hero page-hero--level1');
           host.setAttribute('data-visual-test-fixture', 'page-hero');
-          host.innerHTML = '<div class="page-hero__shell"><div class="page-hero__grid"><div class="page-hero__copy"><h1 class="page-hero__title">Amaana Foundation</h1></div></div></div>';
-          document.body.appendChild(host);
-          hero = host.querySelector('.page-hero__title');
+          const shell = add(host, 'div', 'page-hero__shell');
+          const grid = add(shell, 'div', 'page-hero__grid');
+          const copy = add(grid, 'div', 'page-hero__copy');
+          hero = add(copy, 'h1', 'page-hero__title', 'Amaana Foundation');
         }
 
         let heading = document.querySelector(selector);
         if (!heading) {
-          const host = document.createElement('div');
+          const host = add(document.body, 'div');
           host.setAttribute('data-visual-test-fixture', 'route-heading');
-          host.innerHTML = fixture;
-          document.body.appendChild(host);
-          heading = document.querySelector(selector);
+
+          if (fixtureKind === 'stories-feature') {
+            heading = add(add(host, 'div', 'v2-stories-feature-copy'), 'h2', '', 'Featured field note');
+          } else if (fixtureKind === 'faith-standard') {
+            heading = add(add(host, 'section', 'v2-faith-standard'), 'h2', '', 'Editorial trust');
+          } else if (fixtureKind === 'faith-feature') {
+            heading = add(add(host, 'div', 'v2-faith-feature-copy'), 'h2', '', 'Featured reflection');
+          } else if (fixtureKind === 'cause-summary') {
+            const details = add(host, 'details', 'v2-cause-disclosure');
+            const summary = add(details, 'summary', 'v2-cause-summary');
+            const title = add(add(add(summary, 'h2', 'v2-cause-summary-heading'), 'span', 'v2-cause-summary-copy'), 'span', 'v2-cause-summary-title', 'Medical & Financial Relief');
+            heading = title;
+          }
         }
 
         return hero && heading ? {

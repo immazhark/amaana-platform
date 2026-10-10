@@ -35,7 +35,7 @@ import { shouldAllowIndexing } from "@/lib/site-indexing";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
 const allowIndexing = shouldAllowIndexing(appUrl, process.env.NEXT_PUBLIC_ALLOW_INDEXING);
-const organizationDescription = "Amaana Foundation is a Hyderabad-based registered charitable trust supporting verified community needs through relief, education, seasonal programmes and case-led assistance with dignity, transparency and accountability.";
+const organizationDescription = "Amaana Foundation is a Hyderabad charitable trust supporting verified needs through education, seasonal relief and community assistance with dignity.";
 const socialAlt = "Amaana Foundation — Upholding Trust. Serving With Compassion, Dignity and Accountability.";
 
 export const viewport: Viewport = {

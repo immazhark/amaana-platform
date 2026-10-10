@@ -88,7 +88,7 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
     <article className="v2-media-link">
       <small>{asset.kind === "DOCUMENT" ? "Document" : "Video"}{asset.sourceYear ? ` · ${asset.sourceYear}` : ""}</small>
       <h3>{asset.title ?? asset.caption ?? "View approved source"}</h3>
-      <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`Open ${linkTitle} in a new tab`}>Open approved source ↗</a>
+      <a href={url} target="_blank" rel="noopener noreferrer" aria-label={`Open approved source: ${linkTitle} (new tab)`}>Open approved source ↗</a>
     </article>
   );
 }

@@ -39,7 +39,7 @@ Public campaign media and private assistance documents have different trust boun
 
 1. Create a dedicated public-media bucket. Set `PUBLIC_MEDIA_S3_BUCKET` to that bucket and **never** point it to the private `S3_BUCKET` used for assistance documents.
 2. Configure `PUBLIC_MEDIA_S3_REGION` and `PUBLIC_MEDIA_S3_ENDPOINT` where the public-media provider differs from the private storage provider. When the same provider/account is used, the application may fall back to the `S3_*` region/endpoint and credentials, but the bucket itself must still be separate.
-3. Set dedicated `PUBLIC_MEDIA_S3_ACCESS_KEY_ID` / `PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY` when desired. Shared provider-account credentials are supported as a low-cost convenience; they do not remove the separate-bucket requirement.
+3. Set dedicated `MEDIA_S3_ACCESS_KEY_ID` / `MEDIA_S3_SECRET_ACCESS_KEY` when desired. Shared provider-account credentials are supported as a low-cost convenience; they do not remove the separate-bucket requirement.
 4. Configure `PUBLIC_MEDIA_BASE_URL` as the HTTPS CDN or public object origin, without a trailing slash. HTTP origins are intentionally not publication-ready.
 5. Deploy, then open `/admin/media`. The preflight must show:
    - Separate public bucket ✓

@@ -113,10 +113,10 @@ export function validateProductionEnvironmentContract(env) {
   validateHttpsEndpoint(env, "PUBLIC_MEDIA_S3_ENDPOINT", problems);
   validateBooleanString(env, "PUBLIC_MEDIA_S3_FORCE_PATH_STYLE", problems);
 
-  const publicAccessKey = nonEmpty(env, "PUBLIC_MEDIA_S3_ACCESS_KEY_ID");
-  const publicSecretKey = nonEmpty(env, "PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY");
+  const publicAccessKey = nonEmpty(env, "MEDIA_S3_ACCESS_KEY_ID");
+  const publicSecretKey = nonEmpty(env, "MEDIA_S3_SECRET_ACCESS_KEY");
   if (Boolean(publicAccessKey) !== Boolean(publicSecretKey)) {
-    problems.push("PUBLIC_MEDIA_S3_ACCESS_KEY_ID and PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY must be configured together when overriding public-media credentials.");
+    problems.push("MEDIA_S3_ACCESS_KEY_ID and MEDIA_S3_SECRET_ACCESS_KEY must be configured together when overriding public-media credentials.");
   }
   if (privateBucket && publicBucket && privateBucket === publicBucket) {
     problems.push("PUBLIC_MEDIA_S3_BUCKET must differ from the private assistance S3_BUCKET.");
