@@ -1,3 +1,4 @@
+import { Prisma } from '@prisma/client';
 import { readFile } from 'node:fs/promises';
 
 const LEGACY_CATEGORY_TARGETS = {
@@ -53,18 +54,54 @@ async function applyCanonicalFactualLocks(tx, locks) {
 }
 
 async function reconcileLegacyCategories(tx) {
-  for (const [oldSlug, targetSlug] of Object.entries(LEGACY_CATEGORY_TARGETS)) {
-    const [category, target] = await Promise.all([
-      tx.cause.findUnique({ where: { slug: oldSlug } }),
-      tx.cause.findUnique({ where: { slug: targetSlug } }),
-    ]);
-    if (!category || !target || category.id === target.id) continue;
+  const mappingValues = Prisma.join(
+    Object.entries(LEGACY_CATEGORY_TARGETS).map(([oldSlug, targetSlug]) =>
+      Prisma.sql`(${oldSlug}, ${targetSlug})`,
+    ),
+  );
 
-    await tx.initiative.updateMany({ where: { causeId: category.id }, data: { causeId: target.id } });
-    await tx.appeal.updateMany({ where: { causeId: category.id }, data: { causeId: target.id } });
-    await tx.story.updateMany({ where: { causeId: category.id }, data: { causeId: target.id } });
-    await tx.cause.update({ where: { id: category.id }, data: { status: 'ARCHIVED' } });
-  }
+  await tx.$executeRaw(Prisma.sql`
+    WITH mapping("oldSlug", "targetSlug") AS (VALUES ${mappingValues})
+    UPDATE "Initiative" AS record
+    SET "causeId" = target.id
+    FROM mapping
+    JOIN "Cause" AS legacy ON legacy.slug = mapping."oldSlug"
+    JOIN "Cause" AS target ON target.slug = mapping."targetSlug"
+    WHERE record."causeId" = legacy.id
+      AND legacy.id <> target.id
+  `);
+
+  await tx.$executeRaw(Prisma.sql`
+    WITH mapping("oldSlug", "targetSlug") AS (VALUES ${mappingValues})
+    UPDATE "Appeal" AS record
+    SET "causeId" = target.id
+    FROM mapping
+    JOIN "Cause" AS legacy ON legacy.slug = mapping."oldSlug"
+    JOIN "Cause" AS target ON target.slug = mapping."targetSlug"
+    WHERE record."causeId" = legacy.id
+      AND legacy.id <> target.id
+  `);
+
+  await tx.$executeRaw(Prisma.sql`
+    WITH mapping("oldSlug", "targetSlug") AS (VALUES ${mappingValues})
+    UPDATE "Story" AS record
+    SET "causeId" = target.id
+    FROM mapping
+    JOIN "Cause" AS legacy ON legacy.slug = mapping."oldSlug"
+    JOIN "Cause" AS target ON target.slug = mapping."targetSlug"
+    WHERE record."causeId" = legacy.id
+      AND legacy.id <> target.id
+  `);
+
+  await tx.$executeRaw(Prisma.sql`
+    WITH mapping("oldSlug", "targetSlug") AS (VALUES ${mappingValues})
+    UPDATE "Cause" AS legacy
+    SET status = 'ARCHIVED'
+    FROM mapping
+    JOIN "Cause" AS target ON target.slug = mapping."targetSlug"
+    WHERE legacy.slug = mapping."oldSlug"
+      AND legacy.id <> target.id
+  `);
 }
 
 export async function applyMasterContent(prisma) {
