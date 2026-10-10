@@ -6,7 +6,8 @@ async function openGallery(page, width) {
   const response = await page.goto('/browser-acceptance/gallery', { waitUntil: 'domcontentloaded' });
   expect(response?.ok()).toBeTruthy();
   await expect(page.getByRole('heading', { name: 'Initiative gallery interaction' })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Open image/ })).toHaveCount(13);
+  await expect(page.getByRole('button', { name: /Enlarge image/ })).toHaveCount(13);
+  await expect(page.getByRole('button', { name: /^Enlarge image 1 of 13:/ })).toBeVisible();
 }
 
 test('initiative gallery keeps three desktop columns and two compact mobile columns without overflow', async ({ page }) => {
@@ -35,7 +36,7 @@ test('initiative gallery keeps three desktop columns and two compact mobile colu
 test('initiative gallery lightbox owns the modal layer, traps focus and restores the triggering thumbnail', async ({ page }) => {
   await openGallery(page, 390);
 
-  const first = page.getByRole('button', { name: /Open image 1 of 13/ });
+  const first = page.getByRole('button', { name: /Enlarge image 1 of 13/ });
   await first.click();
 
   const dialog = page.getByRole('dialog');
@@ -75,7 +76,7 @@ test('initiative gallery lightbox owns the modal layer, traps focus and restores
 
 test('initiative gallery lightbox remains contained at 320px and preserves usable controls', async ({ page }) => {
   await openGallery(page, 320);
-  await page.getByRole('button', { name: /Open image 2 of 13/ }).click();
+  await page.getByRole('button', { name: /Enlarge image 2 of 13/ }).click();
 
   const dialog = page.getByRole('dialog');
   const geometry = await dialog.evaluate(element => {
