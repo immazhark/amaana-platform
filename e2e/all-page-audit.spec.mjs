@@ -29,7 +29,12 @@ function renderErrorSource(sourceFile) {
 
     const sourceFile=process.env.AMAANA_ERROR_SOURCE;
     if(!sourceFile)throw new Error('AMAANA_ERROR_SOURCE is required');
-    const source=fs.readFileSync(sourceFile,'utf8');
+    // This isolated static renderer runs outside Next.js. Resolve its Link component
+    // to a semantic anchor here; production imports and navigation remain untouched.
+    const source=fs.readFileSync(sourceFile,'utf8').replace(
+      /^import Link from ["']next\\/link["'];?$/m,
+      'import React from "react"; const Link = ({href,children,...props}) => React.createElement("a",{...props,href},children);'
+    );
     const code=ts.transpileModule(source,{compilerOptions:{jsx:ts.JsxEmit.ReactJSX,module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
     const tempDir=fs.mkdtempSync(path.join(process.cwd(),'.amaana-source-audit-'));
     const tempFile=path.join(tempDir,'module.mjs');
