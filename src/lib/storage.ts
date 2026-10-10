@@ -1,3 +1,4 @@
+import "server-only";
 import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { createHash, randomUUID } from "node:crypto";
@@ -43,8 +44,8 @@ function getPrivateStorage(): StorageConfig {
 function getPublicMediaStorage(): StorageConfig {
   const region = process.env.PUBLIC_MEDIA_S3_REGION || process.env.S3_REGION;
   const bucket = process.env.PUBLIC_MEDIA_S3_BUCKET;
-  const accessKeyId = process.env.PUBLIC_MEDIA_S3_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY;
+  const accessKeyId = process.env.MEDIA_S3_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.MEDIA_S3_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY;
   if (!region || !bucket || !accessKeyId || !secretAccessKey) throw new Error("Public media storage is not configured");
   return {
     bucket,
@@ -228,8 +229,8 @@ export function getPublicMediaStorageReadiness(): PublicMediaStorageReadiness {
   const bucket = process.env.PUBLIC_MEDIA_S3_BUCKET?.trim();
   const privateBucket = process.env.S3_BUCKET?.trim();
   const region = process.env.PUBLIC_MEDIA_S3_REGION || process.env.S3_REGION;
-  const accessKeyId = process.env.PUBLIC_MEDIA_S3_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY;
+  const accessKeyId = process.env.MEDIA_S3_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.MEDIA_S3_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY;
   const baseUrl = process.env.PUBLIC_MEDIA_BASE_URL?.trim();
 
   let baseUrlSecure = false;
@@ -249,7 +250,7 @@ export function getPublicMediaStorageReadiness(): PublicMediaStorageReadiness {
     uploadReady,
     deliveryReady,
     separateBucketConfigured,
-    usingFallbackCredentials: !process.env.PUBLIC_MEDIA_S3_ACCESS_KEY_ID || !process.env.PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY,
+    usingFallbackCredentials: !process.env.MEDIA_S3_ACCESS_KEY_ID || !process.env.MEDIA_S3_SECRET_ACCESS_KEY,
     baseUrlConfigured: Boolean(baseUrl),
     baseUrlSecure,
   };
