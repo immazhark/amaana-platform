@@ -12,11 +12,35 @@ test.beforeAll(async () => {
   const require = createRequire(path.join(process.env.AMAANA_APP_WORKSPACE ?? process.cwd(), 'package.json'));
   const { PrismaClient } = require('@prisma/client');
   prisma = new PrismaClient();
-  for (const slug of ['auto-rickshaw-livelihood-support', 'winter-relief', 'eid-gift-kits-2026']) {
-    const record = await prisma.initiative.findUnique({ where: { slug }, select: { id:true, mediaAssets:{ where:{isPublic:true,privacyApprovedAt:{not:null}},select:{id:true} } } });
-    if (!record || record.mediaAssets.length) continue;
-    await prisma.mediaAsset.create({data:{id:fixturePrefix+slug,initiativeId:record.id,kind:'IMAGE',title:'Banner geometry fixture image',publicUrl:'/brand/amaana-mark.svg',altText:'Isolated banner geometry fixture image',width:800,height:600,isPublic:true,privacyApprovedAt:new Date(),sortOrder:0}});
-  }
+  const slugs = ['auto-rickshaw-livelihood-support', 'winter-relief', 'eid-gift-kits-2026'];
+  const records = await prisma.initiative.findMany({
+    where: { slug: { in: slugs } },
+    select: {
+      id: true,
+      slug: true,
+      mediaAssets: {
+        where: { isPublic: true, privacyApprovedAt: { not: null } },
+        select: { id: true },
+      },
+    },
+  });
+  const createdAt = new Date();
+  const fixtures = records
+    .filter(record => record.mediaAssets.length === 0)
+    .map(record => ({
+      id: fixturePrefix + record.slug,
+      initiativeId: record.id,
+      kind: 'IMAGE',
+      title: 'Banner geometry fixture image',
+      publicUrl: '/brand/amaana-mark.svg',
+      altText: 'Isolated banner geometry fixture image',
+      width: 800,
+      height: 600,
+      isPublic: true,
+      privacyApprovedAt: createdAt,
+      sortOrder: 0,
+    }));
+  if (fixtures.length) await prisma.mediaAsset.createMany({ data: fixtures });
 });
 test.afterAll(async () => {
   if (!prisma) return;
