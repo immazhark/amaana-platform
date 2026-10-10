@@ -89,6 +89,22 @@ async function openAssistance(page) {
   await expect(page.getByRole('heading', { name: 'Tell us about the request.' })).toBeVisible();
 }
 
+test('assistance errors are linked before keyboard focus reaches invalid input', async ({ page }) => {
+  await openAssistance(page);
+  await page.evaluate(() => {
+    window.__amaanaInvalidFocusLinked = null;
+    document.addEventListener('focusin', (event) => {
+      if (event.target instanceof HTMLInputElement && event.target.name === 'applicantName' && event.target.getAttribute('aria-invalid') === 'true') {
+        const describedBy = event.target.getAttribute('aria-describedby');
+        window.__amaanaInvalidFocusLinked = Boolean(describedBy && document.getElementById(describedBy));
+      }
+    });
+  });
+  await page.getByRole('button', { name: 'Continue to need →' }).click();
+  await expect(page.getByLabel('Applicant name')).toBeFocused();
+  await expect.poll(() => page.evaluate(() => window.__amaanaInvalidFocusLinked)).toBe(true);
+});
+
 test('assistance step validation announces required fields and moves focus', async ({ page }) => {
   await openAssistance(page);
   await page.getByRole('button', { name: 'Continue to need →' }).click();
