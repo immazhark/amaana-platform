@@ -22,11 +22,8 @@ function replaceLockedText(value, replacements = []) {
   );
 }
 
-async function applyInitiativeFactualLock(tx, locksVersion, lock, slug) {
-  const existing = await tx.initiative.findUnique({ where: { slug } });
-  if (!existing) return;
-
-  const data = {
+function factualLockData(locksVersion, lock, existing) {
+  return {
     primaryMetric: lock.primaryMetric ?? existing.primaryMetric,
     primaryMetricLabel: lock.primaryMetricLabel ?? existing.primaryMetricLabel,
     summary: lock.summary ?? replaceLockedText(existing.summary, lock.textReplacements),
@@ -40,17 +37,28 @@ async function applyInitiativeFactualLock(tx, locksVersion, lock, slug) {
         : {}),
     },
   };
-
-  await tx.initiative.update({ where: { id: existing.id }, data });
 }
 
 async function applyCanonicalFactualLocks(tx, locks) {
-  for (const lock of locks.initiatives) {
-    await applyInitiativeFactualLock(tx, locks.version, lock, lock.slug);
-    for (const legacySlug of lock.legacySlugs || []) {
-      await applyInitiativeFactualLock(tx, locks.version, lock, legacySlug);
-    }
-  }
+  const targets = locks.initiatives.flatMap((lock) => [
+    { lock, slug: lock.slug },
+    ...(lock.legacySlugs || []).map((slug) => ({ lock, slug })),
+  ]);
+  const existingRecords = await tx.initiative.findMany({
+    where: { slug: { in: targets.map((target) => target.slug) } },
+  });
+  const existingBySlug = new Map(existingRecords.map((record) => [record.slug, record]));
+
+  await Promise.all(
+    targets.flatMap(({ lock, slug }) => {
+      const existing = existingBySlug.get(slug);
+      if (!existing) return [];
+      return [tx.initiative.update({
+        where: { id: existing.id },
+        data: factualLockData(locks.version, lock, existing),
+      })];
+    }),
+  );
 }
 
 async function reconcileLegacyCategories(tx) {
