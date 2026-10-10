@@ -174,9 +174,11 @@ jobs:
 
   production:
     needs: [plan, fast]
-    if: needs.plan.outputs.app == 'true' && github.event_name != 'pull_request'
+    if: needs.plan.outputs.app == 'true' && github.event.action != 'ready_for_review'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    permissions:
+      contents: read
     services:
       postgres:
         image: postgres:16-alpine
@@ -207,18 +209,14 @@ jobs:
 
       - run: npm run prisma:generate
       - name: Prepare isolated production-build database
-        if: github.event_name != 'pull_request'
         run: npx prisma migrate deploy
       - name: Build production application
-        if: github.event_name != 'pull_request'
         run: npm run build
 
       - name: Enforce client bundle secret boundary
-        if: github.event_name != 'pull_request'
         run: node scripts/check-client-secret-boundary.mjs
 
       - name: Enforce production bundle budgets
-        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
@@ -235,7 +233,6 @@ jobs:
           test "$CSS_BYTES" -le "$CSS_BUDGET"
 
       - name: Run post-build server smoke checks
-        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
