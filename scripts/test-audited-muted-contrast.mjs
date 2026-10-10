@@ -60,7 +60,7 @@ test("Impact, Contact and initiative copy avoid low-contrast literal", () => {
   ]) {
     const css = readFileSync(new URL("../src/app/" + file, import.meta.url), "utf8");
     assert.ok(css.includes(selector), "Missing audited selector " + selector);
-    assert.ok(css.slice(css.indexOf(selector)).match(/^.{0,1000}color:\\s*var\\(--af-color-meta\\)/s), "Expected semantic ink near " + selector);
-    assert.doesNotMatch(css, /color:\\s*#68717a/i);
+    assert.ok(css.slice(css.indexOf(selector)).match(/^.{0,1000}color:\s*var\(--af-color-meta\)/s), "Expected semantic ink near " + selector);
+    assert.doesNotMatch(css, /color:\s*#68717a/i);
   }
 });
