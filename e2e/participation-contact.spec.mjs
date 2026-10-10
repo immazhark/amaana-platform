@@ -39,7 +39,7 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
           await expect(social.locator('svg')).toHaveCount(1);
           await expect(social).toHaveAttribute('target', '_blank');
           await expect(social).toHaveAttribute('rel', /noreferrer/);
-          const visibleLabel = (await social.locator('span').last().innerText()).trim();
+          const visibleLabel = (await social.locator('span').last().innerText()).trim().replace(/\s+/g, ' ');
           const accessibleName = await social.getAttribute('aria-label');
           expect(accessibleName?.startsWith(visibleLabel)).toBe(true);
         }
