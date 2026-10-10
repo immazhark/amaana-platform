@@ -205,7 +205,7 @@
 }
 
 .v2-initiative-faith-grid p {
-  color: #68717a;
+  color:var(--af-color-meta);
   line-height: 1.65;
 }
 
