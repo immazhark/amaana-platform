@@ -86,7 +86,7 @@ export function SiteHeader() {
     <>
       <header className={`site-header ${styles.header}`}>
       <nav className="container nav" aria-label="Primary navigation">
-        <Link className="brand brand-official" href="/" aria-label="Amaana Foundation home" onClick={closeMenu}>
+        <Link className="brand brand-official" href="/" aria-label="Amaana Foundation — home" onClick={closeMenu}>
           <Image className="brand-lockup" src="/brand/amaana-mark.svg" width={108} height={108} alt="Amaana Foundation — Upholding Trust" priority />
         </Link>
 
