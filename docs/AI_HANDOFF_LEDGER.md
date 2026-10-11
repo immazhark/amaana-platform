@@ -1,3 +1,13 @@
+# 2026-10-11 — Payment confirmation identity hardening
+
+Ownership `REVIEW_PENDING`; scoped implementation completed by Codex under the owner's continuation directive. Task branch: `fix/payment-confirmation-identity-20261011`; base security integration `f5578c31829aeb76ac4e30060cc658342942d762`. Deliberately supersede the previous implementation wait only for this separate bounded task; independent-review gates for #247, #248 and #249 remain mandatory, with no integration or production action authorized.
+
+PR #249 head `b82628ec87eec8f15cfe44c5c958225c05bbe868` is Ready and unmerged. CI 38158989382 passed fast/database/production/browser/verify: 1,094 Chromium and 24 Firefox/WebKit checks. Client-secret scan passed; JS 807132/819200 and CSS 345877/348160 bytes. Readiness follow-up 38161133261 passed applicable plan/verify jobs. Local compact-menu repetitions passed 10/10 on baseline and fix; historical intermittency remains unreproduced. #215 retains its unresolved radio-focus thread pending #248 integration.
+
+Current finding: donation confirmation validates returned order/currency/amount but not returned payment identity against the signed callback payment ID. Refund reconciliation already enforces identity. Confirmed both authorized/captured mismatches were accepted before the fix (two failing regressions). Added one pre-mutation payment-ID guard and a matching captured-payment control. Reset mock implementations between tests so unused one-shot responses cannot leak across cases. Focused payment/webhook suite: 48 passed. Full base-scoped unit suite: 456 passed, 6 database tests skipped (PR #249's eight scroll tests are intentionally absent from this separate integration-base branch). Lint passed. Initial TypeScript check encountered stale generated acceptance-route types; regenerating route types resolved it and TypeScript passed. Diff whitespace check passed. Next: publish Draft PR and inspect hosted isolated DB/build/browser CI; independent review is mandatory before integration. No real provider transaction, production secret, public indexing, media, compliance or factual changes.
+
+---
+
 # 2026-10-07 — Final release-hardening handoff
 
 State: `CHATGPT_ACTIVE`. Current integration SHA `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. Production remains main `29c7627ed3bffd0b581935c5b934ad903aeca2cd`. PR #104 remains Draft. Exact Railway preview `c2b5327d-94ee-49f6-b10c-d7f70673a1fa` is SUCCESS on final integration candidate.
