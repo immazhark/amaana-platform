@@ -64,3 +64,27 @@ test("framework identity header is disabled", async ({ request }) => {
   const response = await request.get("/");
   expect(response.headers()["x-powered-by"]).toBeUndefined();
 });
+
+test("AM-07 CSP constrains execution and preserves Razorpay transport", async ({ request }) => {
+  const response = await request.get("/donate");
+  expect(response.ok()).toBeTruthy();
+  const csp = response.headers()["content-security-policy"] ?? "";
+  const directives = new Map(
+    csp.split(";").map(part => part.trim()).filter(Boolean).map(part => {
+      const [name, ...sources] = part.split(/\s+/);
+      return [name, sources];
+    }),
+  );
+
+  expect(directives.get("default-src")).toEqual(["'self'"]);
+  expect(directives.get("object-src")).toEqual(["'none'"]);
+  expect(directives.get("frame-ancestors")).toEqual(["'none'"]);
+  expect(directives.get("base-uri")).toEqual(["'self'"]);
+  expect(directives.get("form-action")).toEqual(["'self'"]);
+  expect(directives.get("script-src")).toContain("https://checkout.razorpay.com");
+  expect(directives.get("connect-src")).toContain("https://api.razorpay.com");
+  expect(directives.get("frame-src")).toEqual(["https://api.razorpay.com", "https://checkout.razorpay.com"]);
+  expect(directives.get("script-src")).not.toContain("'unsafe-eval'");
+  expect(directives.get("script-src")).not.toContain("*");
+  expect(directives.get("connect-src")).not.toContain("*");
+});
