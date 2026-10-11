@@ -219,7 +219,7 @@ export async function POST(request: Request) {
       errorName: error instanceof Error ? error.name : "unknown",
     });
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Curated gallery publication failed safely." },
+      { error: "Curated gallery publication failed safely." },
       { status: 500, headers: privateHeaders },
     );
   }
