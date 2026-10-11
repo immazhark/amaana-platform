@@ -3,8 +3,10 @@ import path from "node:path";
 
 const root = path.resolve(".next/static");
 const forbiddenMarkers = [
+  "S3_ACCESS_KEY_ID",
   "S3_SECRET_ACCESS_KEY",
   "MEDIA_S3_SECRET_ACCESS_KEY",
+  "PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY",
   "RAZORPAY_KEY_SECRET",
   "RAZORPAY_WEBHOOK_SECRET",
   "RESEND_API_KEY",

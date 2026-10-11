@@ -1,5 +1,7 @@
 # Amaana Foundation Release Status
 
+> **Historical release-status snapshot (8 October 2026).** This file is not an up-to-date operational approval or deploy instruction. The current remediation integration branch is `fix/p0-security-remediation-20261010`; use the latest GitHub commits, PR checks and actual Railway state for release decisions. References below to `phase-public-site-rebuild`, PR #104, historical SHAs and deployments describe the checkpoint when recorded and must not be treated as verified current state. No merge to `main` or production deployment is authorized by this document.
+
 Updated: 8 October 2026
 
 This is the single living release-status document for the public platform. Do not store credentials, tokens, private beneficiary information or full database URLs here.

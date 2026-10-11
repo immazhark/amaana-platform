@@ -1,3 +1,13 @@
+# 2026-10-11 — Resume integration CI PR #241
+
+Ownership `REVIEW_PENDING`; bounded implementation completed by Codex under the owner's continuation directive. Continue existing task branch `fix/ci-integration-branch-coverage-20261011` and PR #241 from verified head `bae466973fd8111674ff5ba96835a86d9445fe59`; merge current security integration `f5578c31829aeb76ac4e30060cc658342942d762` without rewriting history. Deliberately supersede the previous implementation wait only for this bounded CI task; all independent review and production gates remain intact.
+
+Current integration already enables pull-request checks, but its push branch filter omits the security integration branch. The retained implementation adds only that push filter. Preserve current pull-request event types, job permissions, readiness gates, budgets and fail-closed planner behavior. No application changes or deployment authorization. PR #251 head `1437d1add8de128bc12547b0d7a201df533669ef` has successful fast/database/production checks; hosted browser acceptance is still running at this checkpoint. #247–#250 remain unmerged and require independent review.
+
+Validation: all 33 existing CI planner tests pass. Workflow parses with the existing js-yaml dependency and deep comparison confirms the sole workflow semantic change is the push branch entry. Both unverified and validated security integration pushes retain full browser/database/cross-browser acceptance. Diff whitespace check passes. Hosted checks on the updated PR head and independent review remain pending. The merge reconciled cleanly; no manual conflict resolution or history rewriting was needed.
+
+---
+
 # ChatGPT release-hardening checkpoint — 2026-10-07
 
 Ownership `CHATGPT_ACTIVE`. Frozen integration candidate: `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. PR #197 patched source-map-js CVE-2026-93749; PR #198 patched current brace-expansion/Sharp production advisories and added fail-closed `npm audit --omit=dev --audit-level=high`; PR #199 moved GitHub first-party actions to Node-24 releases, promoted Prisma CLI to the legitimate runtime dependency set and pruned dev tooling from the Docker runtime. Exact PR #199 CI #2382 passed fast/database/browser/verify; final merge push CI #2383 passed fast/database/production/verify with JavaScript 806040/819200 bytes and CSS 346301/348160 bytes. The PR #199 tested head and final integration merge have an identical Git tree.
