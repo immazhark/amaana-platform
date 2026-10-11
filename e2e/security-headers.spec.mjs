@@ -64,3 +64,25 @@ test("framework identity header is disabled", async ({ request }) => {
   const response = await request.get("/");
   expect(response.headers()["x-powered-by"]).toBeUndefined();
 });
+
+test("CSP permits required Razorpay origins without broad third-party wildcards", async ({ request }) => {
+  const response = await request.get("/donate");
+  expect(response.ok()).toBeTruthy();
+  const csp = response.headers()["content-security-policy"] ?? "";
+  const directives = new Map(csp.split(";").map(part => part.trim()).filter(Boolean).map(part => {
+    const [name, ...sources] = part.split(/\s+/);
+    return [name, sources];
+  }));
+
+  expect(directives.get("script-src")).toContain("https://checkout.razorpay.com");
+  expect(directives.get("connect-src")).toContain("https://api.razorpay.com");
+  expect(directives.get("frame-src")).toEqual(expect.arrayContaining([
+    "https://api.razorpay.com",
+    "https://checkout.razorpay.com",
+  ]));
+  expect(directives.get("object-src")).toEqual(["'none'"]);
+  expect(directives.get("frame-ancestors")).toEqual(["'none'"]);
+  for (const name of ["script-src", "connect-src", "frame-src"]) {
+    expect(directives.get(name), name + " must not contain wildcard origins").not.toContain("*");
+  }
+});
