@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
-import { copyFile, mkdtemp, rm, symlink, writeFile } from 'node:fs/promises';
+import { copyFile, mkdtemp, readFile, rm, symlink, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
@@ -8,7 +8,7 @@ import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const projectRoot = fileURLToPath(new URL('../', import.meta.url));
 
-async function fixture() {
+async function fixture({ stripTimestamps = false } = {}) {
   const directory = await mkdtemp(path.join(tmpdir(), 'amaana-import-assets-'));
   const suffix = randomUUID().replaceAll('-', '');
   const slugs = ['synthetic-a-' + suffix, 'synthetic-b-' + suffix];
@@ -20,12 +20,22 @@ async function fixture() {
   };
   try {
     await symlink(path.join(projectRoot, 'node_modules'), path.join(directory, 'node_modules'), 'dir');
-    await copyFile(path.join(projectRoot, 'prisma/apply-master-content.mjs'), path.join(directory, 'apply-master-content.mjs'));
+    const sourceFile = path.join(projectRoot, 'prisma/apply-master-content.mjs');
+    const importerFile = path.join(directory, 'apply-master-content.mjs');
+    if (stripTimestamps) {
+      // Controlled counterexample in a temporary copy, never the repo/runtime.
+      const source = await readFile(sourceFile, 'utf8');
+      const assignment = ', "updatedAt" = (clock_timestamp() AT TIME ZONE \'UTC\')';
+      assert.equal(source.split(assignment).length - 1, 4);
+      await writeFile(importerFile, source.replaceAll(assignment, ''));
+    } else {
+      await copyFile(sourceFile, importerFile);
+    }
     await writeFile(path.join(directory, 'master-programmes.json'), JSON.stringify(master));
     await writeFile(path.join(directory, 'canonical-factual-locks.json'), JSON.stringify({ version: 1, initiatives: [] }));
     const { applyMasterContent } = await import(pathToFileURL(path.join(directory, 'apply-master-content.mjs')).href);
     return {
-      slugs, categorySlug, applyMasterContent,
+      slugs, categorySlug, version: suffix, applyMasterContent,
       asset: (slug = slugs[0], alt = 'First entry') => ({ slug, url: '/synthetic-import.jpg', alt, caption: alt, source: 'synthetic', year: 2026 }),
       writeAssets: assets => writeFile(path.join(directory, 'integration-media.json'), JSON.stringify(assets)),
       dispose: () => rm(directory, { recursive: true, force: true }),
@@ -123,5 +133,84 @@ for (const scoped of [false, true]) {
       await prisma.$disconnect();
       await f.dispose();
     }
+  });
+}
+
+for (const fastPath of [false, true]) {
+  test('PostgreSQL legacy timestamp parity: ' + (fastPath ? 'version-marker fast path' : 'full import'), {
+    skip: process.env.AMAANA_DATABASE_TESTS !== 'true',
+  }, async () => {
+    const database = new URL(process.env.DATABASE_URL ?? '');
+    assert.ok(['localhost', '127.0.0.1', '[::1]'].includes(database.hostname) && database.pathname === '/amaana',
+      'Importer DB tests require the isolated loopback amaana database');
+    const { PrismaClient } = await import('@prisma/client');
+    const prisma = new PrismaClient();
+    const categorySlugs = ['education-support', 'amaana-taleem'];
+    const markerSlug = 'auto-rickshaw-livelihood-support';
+    const categorySnapshot = () => prisma.cause.findMany({ where: { slug: { in: categorySlugs } }, orderBy: { slug: 'asc' } });
+    const markerSnapshot = () => prisma.initiative.findUnique({ where: { slug: markerSlug } });
+    const oldDate = new Date('2000-01-01T00:00:00Z');
+    try {
+      const categoriesBefore = await categorySnapshot();
+      const markerBefore = await markerSnapshot();
+      for (const stripTimestamps of [true, false]) {
+        const f = await fixture({ stripTimestamps });
+        const rollback = new Error('synthetic timestamp test rollback');
+        const suffix = f.version;
+        const legacySlug = 'legacy-' + suffix;
+        const unaffectedSlug = 'unaffected-' + suffix;
+        try {
+          await f.writeAssets([]);
+          await assert.rejects(f.applyMasterContent({
+            $transaction: (operation, options) => prisma.$transaction(async tx => {
+              await tx.$executeRaw`SET LOCAL TIME ZONE 'Asia/Kolkata'`;
+              const categoryData = { title: 'Synthetic', summary: 'Synthetic', description: 'Synthetic', status: 'PUBLISHED', updatedAt: oldDate };
+              const legacy = await tx.cause.upsert({ where: { slug: categorySlugs[0] }, create: { slug: categorySlugs[0], ...categoryData }, update: categoryData });
+              const target = await tx.cause.upsert({ where: { slug: categorySlugs[1] }, create: { slug: categorySlugs[1], ...categoryData }, update: categoryData });
+              const user = await tx.user.create({ data: { name: 'Synthetic', email: suffix + '@example.test' } });
+              const initiative = await tx.initiative.create({ data: { slug: legacySlug, title: 'Synthetic', summary: 'Synthetic', story: 'Synthetic', causeId: legacy.id, updatedAt: oldDate } });
+              const story = await tx.story.create({ data: { slug: legacySlug, title: 'Synthetic', summary: 'Synthetic', body: 'Synthetic', causeId: legacy.id, initiativeId: initiative.id, updatedAt: oldDate } });
+              const appeal = await tx.appeal.create({ data: { slug: legacySlug, title: 'Synthetic', summary: 'Synthetic', story: 'Synthetic', category: 'MEDICAL', beneficiaryName: 'Synthetic', goalAmount: 1000, createdById: user.id, causeId: legacy.id, initiativeId: initiative.id, updatedAt: oldDate } });
+              const unaffected = await tx.initiative.create({ data: { slug: unaffectedSlug, title: 'Synthetic', summary: 'Synthetic', story: 'Synthetic', causeId: target.id, updatedAt: oldDate } });
+              if (fastPath) await tx.initiative.upsert({
+                where: { slug: markerSlug },
+                create: { slug: markerSlug, title: 'Synthetic', summary: 'Synthetic', story: 'Synthetic', causeId: target.id, financialSummary: { contentVersion: f.version } },
+                update: { financialSummary: { contentVersion: f.version } },
+              });
+              const [{ time: before }] = await tx.$queryRaw`SELECT clock_timestamp() AS time`;
+              assert.equal(await operation(tx), fastPath ? 0 : 2);
+              const [{ time: after }] = await tx.$queryRaw`SELECT clock_timestamp() AS time`;
+              const records = [
+                await tx.cause.findUniqueOrThrow({ where: { id: legacy.id } }),
+                await tx.initiative.findUniqueOrThrow({ where: { id: initiative.id } }),
+                await tx.story.findUniqueOrThrow({ where: { id: story.id } }),
+                await tx.appeal.findUniqueOrThrow({ where: { id: appeal.id } }),
+              ];
+              assert.equal(records[0].status, 'ARCHIVED');
+              for (const record of records.slice(1)) assert.equal(record.causeId, target.id);
+              for (const record of records) {
+                if (stripTimestamps) assert.equal(record.updatedAt.getTime(), oldDate.getTime());
+                else {
+                  assert.ok(record.updatedAt.getTime() > oldDate.getTime());
+                  // TIMESTAMP(3) rounds sub-millisecond database clock values.
+                  assert.ok(record.updatedAt.getTime() >= before.getTime() - 1 && record.updatedAt.getTime() <= after.getTime() + 1);
+                }
+              }
+              const control = await tx.initiative.findUniqueOrThrow({ where: { id: unaffected.id } });
+              assert.equal(control.causeId, target.id);
+              assert.equal(control.updatedAt.getTime(), oldDate.getTime());
+              throw rollback;
+            }, options),
+          }), error => error === rollback);
+          assert.deepEqual(await categorySnapshot(), categoriesBefore);
+          assert.deepEqual(await markerSnapshot(), markerBefore);
+          assert.equal(await prisma.initiative.count({ where: { slug: { in: [...f.slugs, legacySlug, unaffectedSlug] } } }), 0);
+          assert.equal(await prisma.story.count({ where: { slug: legacySlug } }), 0);
+          assert.equal(await prisma.appeal.count({ where: { slug: legacySlug } }), 0);
+          assert.equal(await prisma.user.count({ where: { email: suffix + '@example.test' } }), 0);
+          assert.equal(await prisma.cause.count({ where: { slug: f.categorySlug } }), 0);
+        } finally { await f.dispose(); }
+      }
+    } finally { await prisma.$disconnect(); }
   });
 }

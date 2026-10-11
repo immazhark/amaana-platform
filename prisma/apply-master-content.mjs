@@ -62,6 +62,8 @@ async function applyCanonicalFactualLocks(tx, locks) {
 }
 
 async function reconcileLegacyCategories(tx) {
+  // Raw SQL bypasses Prisma's @updatedAt handling. Store actual write-time UTC
+  // timestamps, including when this transaction waited for the import lock.
   const mappingValues = Prisma.join(
     Object.entries(LEGACY_CATEGORY_TARGETS).map(([oldSlug, targetSlug]) =>
       Prisma.sql`(${oldSlug}, ${targetSlug})`,
@@ -71,7 +73,7 @@ async function reconcileLegacyCategories(tx) {
   await tx.$executeRaw(Prisma.sql`
     WITH mapping("oldSlug", "targetSlug") AS (VALUES ${mappingValues})
     UPDATE "Initiative" AS record
-    SET "causeId" = target.id
+    SET "causeId" = target.id, "updatedAt" = (clock_timestamp() AT TIME ZONE 'UTC')
     FROM mapping
     JOIN "Cause" AS legacy ON legacy.slug = mapping."oldSlug"
     JOIN "Cause" AS target ON target.slug = mapping."targetSlug"
@@ -82,7 +84,7 @@ async function reconcileLegacyCategories(tx) {
   await tx.$executeRaw(Prisma.sql`
     WITH mapping("oldSlug", "targetSlug") AS (VALUES ${mappingValues})
     UPDATE "Appeal" AS record
-    SET "causeId" = target.id
+    SET "causeId" = target.id, "updatedAt" = (clock_timestamp() AT TIME ZONE 'UTC')
     FROM mapping
     JOIN "Cause" AS legacy ON legacy.slug = mapping."oldSlug"
     JOIN "Cause" AS target ON target.slug = mapping."targetSlug"
@@ -93,7 +95,7 @@ async function reconcileLegacyCategories(tx) {
   await tx.$executeRaw(Prisma.sql`
     WITH mapping("oldSlug", "targetSlug") AS (VALUES ${mappingValues})
     UPDATE "Story" AS record
-    SET "causeId" = target.id
+    SET "causeId" = target.id, "updatedAt" = (clock_timestamp() AT TIME ZONE 'UTC')
     FROM mapping
     JOIN "Cause" AS legacy ON legacy.slug = mapping."oldSlug"
     JOIN "Cause" AS target ON target.slug = mapping."targetSlug"
@@ -104,7 +106,7 @@ async function reconcileLegacyCategories(tx) {
   await tx.$executeRaw(Prisma.sql`
     WITH mapping("oldSlug", "targetSlug") AS (VALUES ${mappingValues})
     UPDATE "Cause" AS legacy
-    SET status = 'ARCHIVED'
+    SET status = 'ARCHIVED', "updatedAt" = (clock_timestamp() AT TIME ZONE 'UTC')
     FROM mapping
     JOIN "Cause" AS target ON target.slug = mapping."targetSlug"
     WHERE legacy.slug = mapping."oldSlug"
