@@ -44,10 +44,12 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
     // Editing a field may change fieldErrors while the alert remains displayed.
     // Do not steal focus from the donor after the initial error announcement.
     if (focusedErrorRef.current === error) return;
-    focusedErrorRef.current = error;
     const firstRejectedField = (["amount", "donorName", "donorEmail", "donorPhone", "givingIntent", "domesticConfirmed"] as DonationField[])
       .find(field => fieldErrors[field]?.length);
     const frame = window.requestAnimationFrame(() => {
+      // Commit the focus marker only when the callback actually executes.
+      // A field-error state update may cancel this frame before focus occurs.
+      focusedErrorRef.current = error;
       if (!firstRejectedField) {
         errorRef.current?.focus();
         return;
