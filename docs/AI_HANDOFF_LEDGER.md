@@ -1,3 +1,15 @@
+# 2026-10-12 — Donation order identity boundary
+
+Ownership `REVIEW_PENDING`; scoped implementation completed by Codex under the owner's continuation directive. Task branch `fix/donation-order-identity-boundary-20261012` from verified integration `f5578c31829aeb76ac4e30060cc658342942d762`. Deliberately supersede implementation wait only for this bounded task; preserve review gates for #241/#247–#251 and all main/production restrictions.
+
+Investigate whether an absent, empty or incorrectly typed provider order ID reaches donation persistence despite existing amount/currency checks. Reproduce through the actual order route with synthetic provider and persistence mocks, then apply only a necessary identity guard. Preserve amount handling, recipient/appeal rules, Razorpay requests, UI, content, secrets and dependency set. This is provider-response hardening; no observed production incident or public exploit is asserted. #241 and #251 hosted acceptance still runs; no independent approvals recorded.
+
+Verified defect: existing checks allow missing, null, empty, whitespace-only and non-string provider IDs to reach `prisma.donation.create`; the schema permits nullable provider order IDs. Eight route rejection regressions failed before the guard (mock persistence returned HTTP 201), while valid checkout and amount/currency controls passed. Add only a nonempty-string order identity check before persistence; preserve the returned ID without rewriting it. No malformed response or affected donation was observed in production.
+
+Validation: 11 new actual-route tests pass with real donation schema/receipt helpers/origin validation and mocked rate limit, provider and persistence. Focused payment/order/confirmation/webhook suite: 58 passed. Full integration-base unit suite: 464 passed, 6 database-dependent tests skipped locally. Full lint, TypeScript and whitespace checks pass. Hosted isolated database, production build, browser acceptance and independent review remain required before integration. Existing response-validation PR #251 is separate; this task changes the order route and does not duplicate its payment parser.
+
+---
+
 # 2026-10-07 — Final release-hardening handoff
 
 State: `CHATGPT_ACTIVE`. Current integration SHA `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. Production remains main `29c7627ed3bffd0b581935c5b934ad903aeca2cd`. PR #104 remains Draft. Exact Railway preview `c2b5327d-94ee-49f6-b10c-d7f70673a1fa` is SUCCESS on final integration candidate.

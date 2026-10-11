@@ -1,3 +1,15 @@
+# 2026-10-12 — Donation order identity boundary
+
+Ownership `REVIEW_PENDING`; scoped implementation completed by Codex under the owner's continuation directive. Task branch `fix/donation-order-identity-boundary-20261012` from verified integration `f5578c31829aeb76ac4e30060cc658342942d762`. Deliberately supersede implementation wait only for this bounded task; preserve review gates for #241/#247–#251 and all main/production restrictions.
+
+Investigate whether an absent, empty or incorrectly typed provider order ID reaches donation persistence despite existing amount/currency checks. Reproduce through the actual order route with synthetic provider and persistence mocks, then apply only a necessary identity guard. Preserve amount handling, recipient/appeal rules, Razorpay requests, UI, content, secrets and dependency set. This is provider-response hardening; no observed production incident or public exploit is asserted. #241 and #251 hosted acceptance still runs; no independent approvals recorded.
+
+Verified defect: existing checks allow missing, null, empty, whitespace-only and non-string provider IDs to reach `prisma.donation.create`; the schema permits nullable provider order IDs. Eight route rejection regressions failed before the guard (mock persistence returned HTTP 201), while valid checkout and amount/currency controls passed. Add only a nonempty-string order identity check before persistence; preserve the returned ID without rewriting it. No malformed response or affected donation was observed in production.
+
+Validation: 11 new actual-route tests pass with real donation schema/receipt helpers/origin validation and mocked rate limit, provider and persistence. Focused payment/order/confirmation/webhook suite: 58 passed. Full integration-base unit suite: 464 passed, 6 database-dependent tests skipped locally. Full lint, TypeScript and whitespace checks pass. Hosted isolated database, production build, browser acceptance and independent review remain required before integration. Existing response-validation PR #251 is separate; this task changes the order route and does not duplicate its payment parser.
+
+---
+
 # ChatGPT release-hardening checkpoint — 2026-10-07
 
 Ownership `CHATGPT_ACTIVE`. Frozen integration candidate: `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. PR #197 patched source-map-js CVE-2026-93749; PR #198 patched current brace-expansion/Sharp production advisories and added fail-closed `npm audit --omit=dev --audit-level=high`; PR #199 moved GitHub first-party actions to Node-24 releases, promoted Prisma CLI to the legitimate runtime dependency set and pruned dev tooling from the Docker runtime. Exact PR #199 CI #2382 passed fast/database/browser/verify; final merge push CI #2383 passed fast/database/production/verify with JavaScript 806040/819200 bytes and CSS 346301/348160 bytes. The PR #199 tested head and final integration merge have an identical Git tree.
