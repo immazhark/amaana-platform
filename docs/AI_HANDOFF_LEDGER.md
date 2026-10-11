@@ -1,3 +1,17 @@
+# 2026-10-12 — Password work-factor regression integrity
+
+Ownership `REVIEW_PENDING`; bounded test correction completed by Codex under the owner's continuation directive. Task branch `test/password-work-factor-ceilings-20261012` from security integration `f5578c31829aeb76ac4e30060cc658342942d762`. Deliberately supersede prior implementation wait only for this bounded security-test correction; all independent review/integration/main/production gates remain intact.
+
+Verified test defect: three intended over-ceiling modern-scrypt fixtures in password.test.ts concatenate salt/hash without delimiters. They split into four fields, so execute malformed-hash rejection instead of exercising the six-field work-factor ceiling path. Correct fixtures and observe real Node scrypt calls to verify excess N/r/p never reach crypto. Preserve all runtime authentication/session/password behavior; no hash migration, user mutation, dependencies or secrets change. Inspect source/test robustness with a bounded local mutation probe, never publish unsafe implementation changes.
+
+PR #253 d42795ca043e7a218f7f68be9ce0f6007a70fab0 has successful fast/database/production checks in CI38172576206; browser acceptance is still running. Other completed fixes remain Ready and unmerged without independent approval. PR215 radio review thread remains unresolved until integration. Local prior composition: 520 tests passed, six database skips; lint/typecheck passed. Stream-close CI cause still unconfirmed.
+
+Implemented: correct three modern-hash fixtures with six delimiter-separated fields; add three observer regressions that delegate to actual Node scrypt while asserting over-ceiling N/r/p never reach crypto. Initial observer setup incorrectly required an exact options object despite an additional keyLength property, and returned the cleared mock from beforeEach (interpreted as teardown); corrected the test harness and reverified. Seven focused password tests pass. Full integration-base unit suite: 456 passed, six database-dependent skips. Full lint, TypeScript and whitespace checks pass.
+
+Final mutation proof: in a detached scratch checkout, remove only the input work-factor ceiling selection while retaining result guards and maxmem. All three final observer regressions fail (including excessive p, whose false return alone would not reveal excess CPU work). Restore scratch implementation byte-for-byte in finally. Primary runtime password.ts never changed. This fixes false assurance in tests, not a confirmed runtime authentication vulnerability. Hosted CI and independent review remain pending before integration.
+
+---
+
 # 2026-10-07 — Final release-hardening handoff
 
 State: `CHATGPT_ACTIVE`. Current integration SHA `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. Production remains main `29c7627ed3bffd0b581935c5b934ad903aeca2cd`. PR #104 remains Draft. Exact Railway preview `c2b5327d-94ee-49f6-b10c-d7f70673a1fa` is SUCCESS on final integration candidate.
