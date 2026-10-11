@@ -134,4 +134,56 @@ describe("Razorpay signatures", () => {
       expect.objectContaining({ cache: "no-store" }),
     );
   });
+
+  it.each([
+    null,
+    [],
+    { id: "" },
+    { id: 123 },
+    { order_id: 123 },
+    { amount: "50000" },
+    { amount: -1 },
+    { amount: 1.5 },
+    { amount: Number.MAX_SAFE_INTEGER + 1 },
+    { currency: null },
+    { status: "" },
+    { captured: "false" },
+    { captured: 1 },
+    { captured: null },
+    { contact: 123 },
+  ].map(invalid => ({ invalid })))("rejects malformed provider payment fields: %j", async ({ invalid }) => {
+    const payment = {
+      id: "pay_1", order_id: "order_1", amount: 50000,
+      currency: "INR", status: "authorized", captured: false,
+    };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => invalid === null || Array.isArray(invalid)
+        ? invalid : { ...payment, ...invalid },
+    }));
+
+    await expect(fetchRazorpayPayment("pay_1"))
+      .rejects.toThrow("Invalid Razorpay payment response");
+  });
+
+  it.each(["created", "authorized", "captured", "refunded", "failed"])(
+    "preserves valid %s responses and nullable provider fields",
+    async status => {
+      const payment = {
+        id: "pay_1", order_id: null, amount: 50000, currency: "INR",
+        status, captured: status === "captured", email: null, contact: null,
+      };
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => payment }));
+      await expect(fetchRazorpayPayment("pay_1")).resolves.toEqual(payment);
+    },
+  );
+
+  it("does not disclose malformed provider data in validation errors", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ captured: "private-provider-data" }),
+    }));
+    await expect(fetchRazorpayPayment("pay_1"))
+      .rejects.toThrow(/^Invalid Razorpay payment response$/);
+  });
 });

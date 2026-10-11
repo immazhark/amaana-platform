@@ -1,6 +1,17 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { z } from "zod";
 
 const apiBase = "https://api.razorpay.com/v1";
+const paymentResponseSchema = z.object({
+  id: z.string().min(1),
+  order_id: z.string().min(1).nullable(),
+  amount: z.number().int().nonnegative(),
+  currency: z.string().min(1),
+  status: z.string().min(1),
+  captured: z.boolean(),
+  email: z.string().nullish(),
+  contact: z.string().nullish(),
+});
 
 function credentials() {
   const keyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
@@ -59,16 +70,10 @@ export async function createRazorpayOrder(input: {
 }
 
 export async function fetchRazorpayPayment(paymentId: string) {
-  return requestRazorpay(`/payments/${encodeURIComponent(paymentId)}`) as Promise<{
-    id: string;
-    order_id: string;
-    amount: number;
-    currency: string;
-    status: string;
-    captured: boolean;
-    email?: string;
-    contact?: string;
-  }>;
+  const payload: unknown = await requestRazorpay(`/payments/${encodeURIComponent(paymentId)}`);
+  const parsed = paymentResponseSchema.safeParse(payload);
+  if (!parsed.success) throw new Error("Invalid Razorpay payment response");
+  return parsed.data;
 }
 
 export function verifyCheckoutSignature(

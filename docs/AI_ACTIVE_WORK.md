@@ -1,3 +1,13 @@
+# 2026-10-12 — Razorpay payment response validation
+
+Ownership `REVIEW_PENDING`; scoped implementation completed by Codex under the owner's continuation directive. Task: `fix/razorpay-payment-response-validation-20261012`, based on security integration `f5578c31829aeb76ac4e30060cc658342942d762`. Deliberately supersede the prior implementation wait for this separate bounded response-boundary task only; independent review gates and main/production restrictions remain intact.
+
+PR #250 head `ebe7d51673b5ab6e8b835988dcc12ac848c657c1` is Ready, open, unmerged, and without independent approval. CI 38163180811 passed all required jobs: 1,094 Chromium tests and 24 Firefox/WebKit checks; production JS 807109/819200 and CSS 345877/348160 bytes; secret scan passed. Existing #247/#248/#249 remain unmerged. No review thread is resolved by an unintegrated fix.
+
+Current finding: `fetchRazorpayPayment` casts unvalidated provider JSON into a typed payment. Implemented validation of consumed payment fields using existing Zod, replacing the payment-response type assertion. The final regression suite rerun against the original provider helper yields 16 failed rejection checks; the fixed helper passes all 28 Razorpay tests. Focused payment/webhook suite: 66 passed. Full integration-base unit suite: 474 passed, 6 database tests skipped. Full lint, TypeScript and diff checks pass. Generic validation errors contain no provider payload. Hosted isolated DB/build/browser checks and independent review remain required before integration. Preserve nullable provider order/contact fields, legitimate statuses and URL encoding. This is malformed-provider-response hardening, not a confirmed public exploit. Do not alter order creation, donation amounts, public content, UI, secrets or production configuration.
+
+---
+
 # ChatGPT release-hardening checkpoint — 2026-10-07
 
 Ownership `CHATGPT_ACTIVE`. Frozen integration candidate: `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. PR #197 patched source-map-js CVE-2026-93749; PR #198 patched current brace-expansion/Sharp production advisories and added fail-closed `npm audit --omit=dev --audit-level=high`; PR #199 moved GitHub first-party actions to Node-24 releases, promoted Prisma CLI to the legitimate runtime dependency set and pruned dev tooling from the Docker runtime. Exact PR #199 CI #2382 passed fast/database/browser/verify; final merge push CI #2383 passed fast/database/production/verify with JavaScript 806040/819200 bytes and CSS 346301/348160 bytes. The PR #199 tested head and final integration merge have an identical Git tree.
