@@ -1,3 +1,19 @@
+# 2026-10-12 — Failed payment webhook identity validation
+
+Ownership `REVIEW_PENDING`; scoped implementation completed by Codex under the owner's continuation directive. Task `fix/failed-payment-identity-validation-20261012` from verified security integration `f5578c31829aeb76ac4e30060cc658342942d762`. Deliberately supersede prior implementation wait only for this bounded webhook task. Preserve pending independent review gates for #241/#247–#252 and main/production restrictions.
+
+Inspect/reproduce whether signed payment.failed entities with missing, blank or non-string payment identities reach donation status updates. Capture reconciliation already requires nonempty identities; the failed-payment branch lacks the equivalent guard. Use actual webhook HMAC/audit helper and synthetic provider entities, with isolated persistence mocks. Do not change financial totals, signature verification, retry/idempotency rules, orderless/foreign-event handling or public UI/content. No real transactions or secret mutations.
+
+Latest completed acceptance: #248 ee74cdb485a761118d8401706b42e66d1c98f89e passed CI38167941665 (1098 Chromium including four radio focus cases, 24 Firefox/WebKit); #241 d5893b31e057c7f0830f1924e1e6246c3b56f8ca passed CI38166425754 (1094+24); #252 306878199337082db82465394561135d7cdb9f1e passed CI38166786943 (1094+24). All required jobs and Ready-event followups passed; all three Ready, open, unmerged, no independent approval. Stream-close messages also occur on workflow-only #241, so are not unique to payment parsing. Their CI cause remains unconfirmed; no suppression applied.
+
+Reproduction: eight identity rejection cases failed against the original route, which returned HTTP200 with mock persistence. Missing/null/blank/non-string IDs were accepted by the failure branch. Add only a nonempty-string payment ID guard before starting that branch's transaction. Reject with generic HTTP400 and leave event/donation state untouched. Valid signed failures, existing duplicate acknowledgements and invalid signature rejection remain covered. No observed production incident or public exploit is asserted; signed malformed provider payload hardening only.
+
+Validation: 11 new route tests use actual webhook HMAC, body reader, audit sanitizer, and serializable retry helper, with persistence and capture/refund helpers mocked. Focused webhook/payment suite: 51 passed. Full integration-base suite: 464 passed, six local database skips. Full lint, TypeScript and whitespace checks pass. Hosted database/build/browser gates and independent review remain required before integration.
+
+Stream-close investigation: a controlled pending React Server Component stream whose destination is destroyed reproduces exactly `The destination stream closed early.` with no application components or network calls. This establishes a cancellation mechanism, not the cause of CI navigation messages. No log suppression, framework patch or test weakening. Transport-level CI correlation remains pending.
+
+---
+
 # 2026-10-07 — Final release-hardening handoff
 
 State: `CHATGPT_ACTIVE`. Current integration SHA `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. Production remains main `29c7627ed3bffd0b581935c5b934ad903aeca2cd`. PR #104 remains Draft. Exact Railway preview `c2b5327d-94ee-49f6-b10c-d7f70673a1fa` is SUCCESS on final integration candidate.
