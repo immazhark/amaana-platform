@@ -112,6 +112,8 @@ jobs:
         run: node --test scripts/test-impact-link-label.mjs
       - name: Enforce participation card accessible action names
         run: node --test scripts/test-participation-link-label.mjs
+      - name: Enforce story archive link action names
+        run: node --test scripts/test-story-link-label.mjs
       - name: Verify archive filters
         run: node --experimental-strip-types --test scripts/test-work-filters.mjs
       - name: Verify daily readings, reminder windows and local calendar boundaries
