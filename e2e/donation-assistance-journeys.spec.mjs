@@ -105,6 +105,21 @@ test('assistance errors are linked before keyboard focus reaches invalid input',
   await expect.poll(() => page.evaluate(() => window.__amaanaInvalidFocusLinked)).toBe(true);
 });
 
+test('rapid assistance step changes leave focus on the currently visible step', async ({ page }) => {
+  await openAssistance(page);
+  await page.getByLabel('Applicant name').fill('Acceptance Applicant');
+  await page.getByLabel('Phone number').fill('9000000000');
+  await page.getByLabel('City').fill('Hyderabad');
+
+  await page.getByRole('button', { name: 'Continue to need →' }).click();
+  await page.getByRole('button', { name: /Contact/ }).click();
+
+  await expect(page.locator('#assistance-step-1')).toBeVisible();
+  await expect(page.locator('#assistance-step-2')).toBeHidden();
+  await expect(page.locator('#assistance-step-1')).toBeFocused();
+  await expect(page.getByRole('navigation', { name: 'Assistance request progress' }).locator('[aria-live="polite"]')).toContainText('Step 1 of 4');
+});
+
 test('assistance step validation announces required fields and moves focus', async ({ page }) => {
   await openAssistance(page);
   await page.getByRole('button', { name: 'Continue to need →' }).click();
