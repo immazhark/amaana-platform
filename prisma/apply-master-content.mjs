@@ -221,7 +221,10 @@ export async function applyMasterContent(prisma) {
       const privacyApprovedAt = new Date();
       const missingAssets = assets.flatMap((asset, sortIndex) => {
         const initiativeId = assetInitiativeBySlug.get(asset.slug);
-        if (!initiativeId || existingAssetKeys.has(`${initiativeId}\u0000${asset.url}`)) return [];
+        if (!initiativeId) return [];
+        const assetKey = `${initiativeId}\u0000${asset.url}`;
+        if (existingAssetKeys.has(assetKey)) return [];
+        existingAssetKeys.add(assetKey);
         return [{
           initiativeId,
           kind: 'IMAGE',

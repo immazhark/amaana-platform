@@ -55,8 +55,13 @@ export function AssistanceForm() {
     const controls = Array.from(fieldset.querySelectorAll<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>("input, select, textarea"));
     const invalid = controls.find(control => !control.checkValidity());
     if (!invalid) return true;
-    invalid.reportValidity();
-    invalid.focus();
+    const field = invalid.name as AssistanceField;
+    if (assistanceFieldOrder.includes(field)) {
+      setFieldErrors(current => ({ ...current, [field]: [invalid.validationMessage || "Please check this field."] }));
+    }
+    // Let React render aria-invalid and the linked error before moving focus.
+    // A native validity popup would compete with the persistent inline message.
+    requestAnimationFrame(() => requestAnimationFrame(() => invalid.focus()));
     return false;
   }
 
@@ -81,10 +86,13 @@ export function AssistanceForm() {
       const targetStep = fieldStep[invalidControl.field];
       setStep(targetStep);
       setMaxVisitedStep(current => Math.max(current, targetStep) as AssistanceStep);
+      const controlForError = invalidControl.control;
+      if (controlForError instanceof HTMLInputElement || controlForError instanceof HTMLSelectElement || controlForError instanceof HTMLTextAreaElement) {
+        setFieldErrors({ [invalidControl.field]: [controlForError.validationMessage || "Please check this field."] });
+      }
       requestAnimationFrame(() => requestAnimationFrame(() => {
         const control = form.elements.namedItem(invalidControl.field);
         if (control instanceof HTMLInputElement || control instanceof HTMLSelectElement || control instanceof HTMLTextAreaElement) {
-          control.reportValidity();
           control.focus();
         }
       }));

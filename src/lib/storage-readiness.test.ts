@@ -65,6 +65,23 @@ describe("getPublicMediaStorageReadiness", () => {
     });
   });
 
+  it("fails closed if dedicated media credentials are only partially configured", () => {
+    process.env.S3_REGION = "ap-south-1";
+    process.env.S3_BUCKET = "private-assistance";
+    process.env.S3_ACCESS_KEY_ID = "private-key";
+    process.env.S3_SECRET_ACCESS_KEY = "private-secret";
+    process.env.PUBLIC_MEDIA_S3_BUCKET = "public-media";
+    process.env.PUBLIC_MEDIA_BASE_URL = "https://media.example.org";
+
+    process.env.MEDIA_S3_ACCESS_KEY_ID = "media-key";
+    delete process.env.MEDIA_S3_SECRET_ACCESS_KEY;
+    expect(() => getPublicMediaStorageReadiness()).toThrow(/complete pair/);
+
+    delete process.env.MEDIA_S3_ACCESS_KEY_ID;
+    process.env.MEDIA_S3_SECRET_ACCESS_KEY = "media-secret";
+    expect(() => getPublicMediaStorageReadiness()).toThrow(/complete pair/);
+  });
+
   it("rejects using the private assistance bucket as public media storage", () => {
     process.env.S3_REGION = "ap-south-1";
     process.env.S3_BUCKET = "same-bucket";
