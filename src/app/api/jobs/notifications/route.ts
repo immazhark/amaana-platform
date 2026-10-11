@@ -17,8 +17,11 @@ const privateHeaders = {
 function isAuthorized(request: Request) {
   const secret = process.env.CRON_SECRET;
   const supplied = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") || "";
-  if (!secret || !supplied || secret.length !== supplied.length) return false;
-  return timingSafeEqual(Buffer.from(secret), Buffer.from(supplied));
+  if (!secret || !supplied) return false;
+  const expectedBytes = Buffer.from(secret);
+  const suppliedBytes = Buffer.from(supplied);
+  if (expectedBytes.length !== suppliedBytes.length) return false;
+  return timingSafeEqual(expectedBytes, suppliedBytes);
 }
 
 async function runRetentionMaintenance() {

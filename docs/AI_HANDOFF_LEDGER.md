@@ -1,3 +1,13 @@
+# 2026-10-12 — Notification job credential byte-length guard
+
+Ownership `REVIEW_PENDING`; bounded correction completed by Codex under owner continuation deliberately supersedes prior implementation wait only for this bounded notification-job authentication correction. Branch `fix/notification-auth-byte-length-20261012` from security integration `f5578c31829aeb76ac4e30060cc658342942d762`. Main remains `2a8c35ad5e553ac0cc78b8027a35b592d1876826`. Preserve independent review, integration validation and explicit production authorization.
+
+Verified defect: notification job authorization compares JavaScript character lengths before calling Node timingSafeEqual on UTF-8 buffers. Synthetic equal-character credentials containing Latin-1 multibyte characters produce unequal byte lengths and ERR_CRYPTO_TIMING_SAFE_EQUAL_LENGTH; authorization is outside the handler's error boundary. Intended behavior is private HTTP401 without maintenance or email work. Compare the actual buffers' lengths before constant-time equality; preserve valid credentials and existing delivery/retention behavior. No demonstrated authentication bypass, production incident, real email, credential change or deployment.
+
+Implementation: encode configured and supplied credentials once, reject unequal byte lengths, then retain timingSafeEqual for equal-size buffers. Three actual route regressions failed against the original with RangeError; all nine notification route cases pass after the correction, including an exact matching synthetic multibyte credential and existing retention/delivery paths. Full unit suite:457 passed, six database-dependent skips locally. Full lint, TypeScript and whitespace checks passed. Hosted isolated database/production/browser CI and independent approval remain required. No real maintenance, email, credentials, main or production changes.
+
+PR253 exact-head CI38172576206 passed 1094 Chromium and24 Firefox/WebKit checks plus fast/database/production/final verify; marked Ready, still unmerged without independent approval. PR254 exact-head CI38173157008 fast/database/production passed; browser running at initial inspection. Existing #241/#247–#254 gates remain intact; PR215's radio thread remains unresolved until actual integration.
+
 # 2026-10-07 — Final release-hardening handoff
 
 State: `CHATGPT_ACTIVE`. Current integration SHA `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. Production remains main `29c7627ed3bffd0b581935c5b934ad903aeca2cd`. PR #104 remains Draft. Exact Railway preview `c2b5327d-94ee-49f6-b10c-d7f70673a1fa` is SUCCESS on final integration candidate.
