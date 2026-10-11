@@ -131,5 +131,48 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("refund entity Pos
     await prisma.refundLedger.create({ data });
     await expect(prisma.refundLedger.create({ data })).rejects.toMatchObject({ code: "P2002" });
   });
+
+  function failedPaymentRequest(f: Awaited<ReturnType<typeof fixture>>, paymentId: string, eventId: string) {
+    return new Request("https://amaana.example/api/webhooks/razorpay", {
+      method: "POST",
+      headers: { "x-razorpay-signature": "mocked", "x-razorpay-event-id": prefix + eventId },
+      body: JSON.stringify({ event: "payment.failed", payload: { payment: {
+        entity: { id: paymentId, order_id: f.orderId, amount: 10000, currency: "INR", status: "failed" },
+      } } }),
+    });
+  }
+
+  it("records and replays an older failed attempt without overwriting a newer authorization", async () => {
+    const f = await fixture(false);
+    await prisma.donation.update({ where: { id: f.donation.id }, data: {
+      status: "AUTHORIZED", providerPaymentId: f.paymentId,
+    } });
+    const eventId = "olderAttempt";
+    expect((await POST(failedPaymentRequest(f, f.paymentId + "old", eventId))).status).toBe(200);
+    expect((await POST(failedPaymentRequest(f, f.paymentId + "old", eventId))).status).toBe(200);
+    const donation = await prisma.donation.findUniqueOrThrow({ where: { id: f.donation.id } });
+    expect(donation.status).toBe("AUTHORIZED");
+    expect(donation.providerPaymentId).toBe(f.paymentId);
+    expect(donation.failedAt).toBeNull();
+    expect(await prisma.paymentEvent.count({ where: { donationId: donation.id } })).toBe(1);
+    expect((await prisma.appeal.findUniqueOrThrow({ where: { id: f.appeal.id } })).amountRaised.toNumber()).toBe(0);
+    expect(await prisma.notification.count({ where: { donationId: donation.id } })).toBe(0);
+  });
+
+  it.each(["CREATED", "AUTHORIZED"] as const)("still fails a matching %s attempt without changing accounting", async status => {
+    const f = await fixture(false);
+    if (status === "AUTHORIZED") await prisma.donation.update({ where: { id: f.donation.id }, data: {
+      status, providerPaymentId: f.paymentId,
+    } });
+    expect((await POST(failedPaymentRequest(f, f.paymentId, "matching" + status))).status).toBe(200);
+    const donation = await prisma.donation.findUniqueOrThrow({ where: { id: f.donation.id } });
+    expect(donation.status).toBe("FAILED");
+    expect(donation.providerPaymentId).toBe(f.paymentId);
+    expect(donation.failedAt).toBeInstanceOf(Date);
+    expect(await prisma.paymentEvent.count({ where: { donationId: donation.id } })).toBe(1);
+    expect((await prisma.appeal.findUniqueOrThrow({ where: { id: f.appeal.id } })).amountRaised.toNumber()).toBe(0);
+    expect(await prisma.notification.count({ where: { donationId: donation.id } })).toBe(0);
+  });
+
 });
 

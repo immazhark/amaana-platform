@@ -140,7 +140,12 @@ export async function POST(request: Request) {
           await tx.donation.updateMany({
             where: {
               id: donation.id,
-              status: { in: ["CREATED", "AUTHORIZED"] },
+              // A delayed failure for an older retry must not replace a newer
+              // authorization. Keep the identity check in the atomic update.
+              OR: [
+                { status: "CREATED" },
+                { status: "AUTHORIZED", providerPaymentId: payment.id },
+              ],
             },
             data: {
               status: "FAILED",
