@@ -26,7 +26,9 @@ for (const path of ["/", "/about", "/donate", "/request-assistance", "/admin/log
     expect(csp).toContain("frame-ancestors 'none'");
     expect(csp).toContain("base-uri 'self'");
     expect(csp).toContain("form-action 'self'");
-    expect(csp).toContain("script-src 'self' 'unsafe-inline'");
+    const scriptDirective = csp.split(";").map(part => part.trim()).find(part => part.startsWith("script-src "));
+    expect(scriptDirective, `${path} missing script-src`).toBeDefined();
+    expect(scriptDirective.split(/\s+/)).toContain("'self'");
     expect(csp).toContain("https://checkout.razorpay.com");
     expect(csp).toContain("frame-src https://api.razorpay.com https://checkout.razorpay.com");
   });
