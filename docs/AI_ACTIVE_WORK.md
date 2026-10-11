@@ -1,3 +1,15 @@
+# 2026-10-12 — Radio focus browser regression coverage
+
+Ownership `REVIEW_PENDING`; scoped regression coverage completed by Codex under the owner's continuation directive. Resume existing PR #248 on `fix/donation-radio-error-focus-20261011` from verified head `c250a1fa46dedb460bce1ed77b3283f69761e968`. Deliberately supersede prior implementation wait only for bounded regression coverage. Preserve the radio focus implementation and all independent review, integration and main/production gates.
+
+Add real-browser checks for rejected givingIntent groups: checked GENERAL/SADAQAH/ZAKAT focus and first-radio fallback when unchecked. The unchecked setup intentionally bypasses native required validation only in the test to exercise server-rejection fallback. Provider and order endpoints remain mocked; no real donation or payment. Local Chromium cannot launch because socket() is denied by the execution environment, so no local browser pass is claimed. Require hosted CI on the updated head.
+
+PR #251 at `1437d1add8de128bc12547b0d7a201df533669ef` completed CI38165784377 successfully: 1094 Chromium/24 Firefox-WebKit tests, secret scan across 68 static files, JS807109/819200 and CSS345877/348160 bytes; marked Ready, independent review pending. Its successful navigation tests logged seven React destination-stream-close errors; origin traced to React stream-close handling, cause not established. A prior #250 browser run had none. No suppression or speculative fix. Local exact-source composition of #241/#247–#252 passes 509 tests, six database-dependent skips, lint and TypeScript; 11 source/test/workflow files composed, excluding coordination records. This is not a reviewed integration merge or complete hosted combined acceptance.
+
+Validation: JavaScript syntax and full lint checks pass; Playwright discovers all four new browser tests. Local browser execution remains blocked before page creation by the environment socket restriction; no assertions were run. PR #248 returned to Draft before updating its head, pending hosted browser checks and independent review. Runtime donation-form source is unchanged from the previously tested fix. Diff whitespace check passes.
+
+---
+
 # ChatGPT release-hardening checkpoint — 2026-10-07
 
 Ownership `CHATGPT_ACTIVE`. Frozen integration candidate: `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. PR #197 patched source-map-js CVE-2026-93749; PR #198 patched current brace-expansion/Sharp production advisories and added fail-closed `npm audit --omit=dev --audit-level=high`; PR #199 moved GitHub first-party actions to Node-24 releases, promoted Prisma CLI to the legitimate runtime dependency set and pruned dev tooling from the Docker runtime. Exact PR #199 CI #2382 passed fast/database/browser/verify; final merge push CI #2383 passed fast/database/production/verify with JavaScript 806040/819200 bytes and CSS 346301/348160 bytes. The PR #199 tested head and final integration merge have an identical Git tree.
