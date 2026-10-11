@@ -116,6 +116,8 @@ jobs:
         run: node --test scripts/test-story-link-label.mjs
       - name: Enforce donation error focus scheduling
         run: node --test scripts/test-donation-error-focus-race.mjs
+      - name: Enforce admin eyebrow contrast by surface
+        run: node --test scripts/test-admin-eyebrow-contrast.mjs
       - name: Verify archive filters
         run: node --experimental-strip-types --test scripts/test-work-filters.mjs
       - name: Verify daily readings, reminder windows and local calendar boundaries
