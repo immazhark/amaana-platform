@@ -1,3 +1,15 @@
+# 2026-10-11 — Codex security continuation
+
+Ownership `REVIEW_PENDING`; scoped implementation completed by Codex under the owner's explicit 11 October handover. Integration: `fix/p0-security-remediation-20261010` at `f5578c31829aeb76ac4e30060cc658342942d762`; main: `2a8c35ad5e553ac0cc78b8027a35b592d1876826`. Task: `fix/scroll-keyboard-import-race-20261011`.
+
+PRs #215, #247 and #248 are open, ready, mergeable, and have successful current-head CI. #247 and #248 have no independent reviews; #215 retains the unresolved radio-focus thread addressed by #248. Do not merge or resolve that thread prematurely. No eligible independent maintainer has been identified.
+
+Read-only execution of the actual scroll hook reproduced a deferred-import race: wheel begins lazy Lenis loading, Home hands control to native scrolling, then the completed import still constructs Lenis. This confirms a lifecycle defect, not the cause of the historical CI Home failure. Implemented generation invalidation for pending initialization on native keyboard/destruction. Eight deferred-import lifecycle tests fail before the correction and pass afterward; a later wheel still initializes and subsequent keys destroy the instance. Local lint and TypeScript pass; unit suite: 461 passed, 6 database tests skipped. The initial unit attempt overlapped Prisma generation and failed imports; the sequential rerun passed. Build compilation and build TypeScript pass, but prerender fails at /donate because this scratch environment has no PostgreSQL service. Hosted isolated DB/build/browser gates and independent review remain required. Next: publish the isolated Draft PR, inspect CI, and investigate the historical browser intermittency without weakening assertions. The original browser intermittency remains separately unclassified until browser evidence exists.
+
+The older 7 October checkpoint below is historical. No main merge, production deployment, real payment/refund or secret mutation is authorized. Preserve all factual, media, compliance, design and performance locks. Integration push CI is absent from the current workflow; integration validation needs an explicit workflow run unless that separate issue is reviewed and corrected.
+
+---
+
 # ChatGPT release-hardening checkpoint — 2026-10-07
 
 Ownership `CHATGPT_ACTIVE`. Frozen integration candidate: `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. PR #197 patched source-map-js CVE-2026-93749; PR #198 patched current brace-expansion/Sharp production advisories and added fail-closed `npm audit --omit=dev --audit-level=high`; PR #199 moved GitHub first-party actions to Node-24 releases, promoted Prisma CLI to the legitimate runtime dependency set and pruned dev tooling from the Docker runtime. Exact PR #199 CI #2382 passed fast/database/browser/verify; final merge push CI #2383 passed fast/database/production/verify with JavaScript 806040/819200 bytes and CSS 346301/348160 bytes. The PR #199 tested head and final integration merge have an identical Git tree.

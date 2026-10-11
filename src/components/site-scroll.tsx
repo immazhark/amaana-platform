@@ -15,6 +15,7 @@ export function useSiteScroll(pathname: string) {
     let instance: Lenis | undefined;
     let loading = false;
     let disposed = false;
+    let generation = 0;
     let frame: number | undefined;
     const tick = (time: number) => {
       frame = undefined;
@@ -22,6 +23,8 @@ export function useSiteScroll(pathname: string) {
       if (frame === undefined && instance?.isScrolling === "smooth" && !document.hidden) frame = requestAnimationFrame(tick);
     };
     const destroy = () => {
+      // Also invalidate an import still in flight when native scrolling takes over.
+      generation += 1;
       if (frame !== undefined) cancelAnimationFrame(frame);
       frame = undefined;
       instance?.destroy(); instance = undefined;
@@ -32,9 +35,10 @@ export function useSiteScroll(pathname: string) {
       if (!eligible() || event.ctrlKey || event.defaultPrevented || loading || instance) return;
       if (event.target instanceof Element && event.target.closest(nested)) return;
       loading = true;
+      const initializationGeneration = generation;
       try {
         const { default: SmoothScroll } = await import("lenis");
-        if (!eligible()) return;
+        if (!eligible() || initializationGeneration !== generation) return;
         instance = new SmoothScroll({
           lerp: 0.16, smoothWheel: true, syncTouch: false,
           prevent: node => node.matches(nested),

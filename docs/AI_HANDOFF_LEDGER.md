@@ -1,3 +1,15 @@
+# 2026-10-11 — Codex security continuation
+
+Ownership `REVIEW_PENDING`; scoped implementation completed by Codex under the owner's explicit 11 October handover. Integration: `fix/p0-security-remediation-20261010` at `f5578c31829aeb76ac4e30060cc658342942d762`; main: `2a8c35ad5e553ac0cc78b8027a35b592d1876826`. Task: `fix/scroll-keyboard-import-race-20261011`.
+
+PRs #215, #247 and #248 are open, ready, mergeable, and have successful current-head CI. #247 and #248 have no independent reviews; #215 retains the unresolved radio-focus thread addressed by #248. Do not merge or resolve that thread prematurely. No eligible independent maintainer has been identified.
+
+Read-only execution of the actual scroll hook reproduced a deferred-import race: wheel begins lazy Lenis loading, Home hands control to native scrolling, then the completed import still constructs Lenis. This confirms a lifecycle defect, not the cause of the historical CI Home failure. Implemented generation invalidation for pending initialization on native keyboard/destruction. Eight deferred-import lifecycle tests fail before the correction and pass afterward; a later wheel still initializes and subsequent keys destroy the instance. Local lint and TypeScript pass; unit suite: 461 passed, 6 database tests skipped. The initial unit attempt overlapped Prisma generation and failed imports; the sequential rerun passed. Build compilation and build TypeScript pass, but prerender fails at /donate because this scratch environment has no PostgreSQL service. Hosted isolated DB/build/browser gates and independent review remain required. Next: publish the isolated Draft PR, inspect CI, and investigate the historical browser intermittency without weakening assertions. The original browser intermittency remains separately unclassified until browser evidence exists.
+
+The older 7 October checkpoint below is historical. No main merge, production deployment, real payment/refund or secret mutation is authorized. Preserve all factual, media, compliance, design and performance locks. Integration push CI is absent from the current workflow; integration validation needs an explicit workflow run unless that separate issue is reviewed and corrected.
+
+---
+
 # 2026-10-07 — Final release-hardening handoff
 
 State: `CHATGPT_ACTIVE`. Current integration SHA `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. Production remains main `29c7627ed3bffd0b581935c5b934ad903aeca2cd`. PR #104 remains Draft. Exact Railway preview `c2b5327d-94ee-49f6-b10c-d7f70673a1fa` is SUCCESS on final integration candidate.
