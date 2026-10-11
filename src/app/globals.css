@@ -256,4 +256,4 @@ dd { margin: .25rem 0 0; white-space: pre-wrap; }
 
 @media (min-width: 1600px) { :root { --af-public-shell: 88rem; } }
 
-.admin-sidebar .text-button{color:#fffaf1}.admin-content .text-button{color:var(--af-color-gold-ink)}.admin-shell .eyebrow{color:var(--af-color-navy-700)}.admin-table-wrap:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
+.admin-sidebar .text-button{color:#fffaf1}.admin-content .text-button{color:var(--af-color-gold-ink)}.admin-content .eyebrow{color:var(--af-color-navy-700)}.admin-sidebar .eyebrow{color:var(--af-color-gold-soft)}.admin-table-wrap:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
