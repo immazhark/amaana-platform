@@ -1,5 +1,7 @@
 # Amaana Foundation — Final Operator Prelaunch Actions
 
+> **Historical operator checklist (last updated 7 October 2026).** The exact commits, deployments, open PR numbers, DNS/Resend and Railway environment states below are point-in-time evidence, not current verified instructions. As of 11 October the remediation integration work is under `fix/p0-security-remediation-20261010`. Independently revalidate current GitHub, Railway, domain, indexing and payment state before executing any operator action. Do not promote `main` or deploy production on the authority of this checklist alone.
+
 Updated: 7 October 2026
 
 This document contains only the operator/external work that cannot be completed safely by repository automation. It does not authorize a production merge, a real payment, beneficiary submission, media publication or email delivery by itself.
