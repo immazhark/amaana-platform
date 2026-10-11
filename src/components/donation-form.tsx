@@ -55,8 +55,16 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         return;
       }
       const control = formRef.current?.elements.namedItem(firstRejectedField);
-      if (control instanceof HTMLElement) control.focus();
-      else errorRef.current?.focus();
+      if (control instanceof HTMLElement) {
+        control.focus();
+      } else if (control instanceof RadioNodeList) {
+        const radios = Array.from(control).filter((item): item is HTMLInputElement => item instanceof HTMLInputElement);
+        const focusTarget = radios.find(radio => radio.checked) ?? radios[0];
+        if (focusTarget) focusTarget.focus();
+        else errorRef.current?.focus();
+      } else {
+        errorRef.current?.focus();
+      }
     });
     return () => window.cancelAnimationFrame(frame);
   }, [error, fieldErrors]);
