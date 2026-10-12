@@ -273,3 +273,9 @@ R-012 gains 37 start/upload/publish/status cases retaining real session resoluti
 Local actual-helper matrix: 37/37 pass. Restoring an always-allow permission mutation in a detached scratch copy causes 12 failures; production auth helpers are unchanged. Hosted Vitest validation remains pending; no full authenticated/live/external-edge certification claimed. R-012 stays partial.
 
 Baseline `0d193c3e` passed full CI 38300163971: units 704 passed / 9 skipped; Chromium 1,151 passed without reported flakes; Firefox/WebKit 24 passed; fast/database/production/final verify successful. JS 818,586/819,200 B; CSS 346,461/348,160 B. The new candidate integrates parked N-20 plus this coverage; fresh combined checks must pass before release.
+
+### N-20 cleanup warning follow-up — 13 October 2026 IST
+
+d246e366 CI 38303371341 fast passed with three lint warnings: one unused test parameter and two effect cleanup ref reads. Hosted units 755 passed / 9 skipped; database passed; production totals JS 818,773/819,200 B and CSS 346,461/348,160 B. Browser still pending at the checkpoint.
+
+Park a follow-up that uses a typed direct status-handler table, captures the dialog/ref array inside the effect, and recognizes removal via captured DOM connection state before focus restoration. No lint suppression or rule changes. Local test syntax parsed; fresh hosted lint/type/rendered-lifecycle and budget verification required. No extra defect count or production closure claimed.

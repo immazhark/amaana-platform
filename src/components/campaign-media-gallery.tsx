@@ -56,7 +56,9 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
 
   useEffect(() => {
     if (!active) return;
-    const trigger = triggerRefs.current[activeIndex];
+    const dialog = dialogRef.current;
+    const triggers = triggerRefs.current;
+    const trigger = triggers[activeIndex];
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeRef.current?.focus();
@@ -99,8 +101,8 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     return () => {
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", onKeyDown);
-      if (!dialogRef.current) requestAnimationFrame(() => {
-        const target = trigger?.isConnected ? trigger : triggerRefs.current.find(node => node?.isConnected);
+      if (!dialog?.isConnected) requestAnimationFrame(() => {
+        const target = trigger?.isConnected ? trigger : triggers.find(node => node?.isConnected);
         target?.focus();
       });
     };

@@ -1,3 +1,17 @@
+# 2026-10-13 IST — Gallery cleanup lint follow-up parked
+
+Ownership: `CODEX_ACTIVE` under owner continuation; one implementation writer. Parked task `fix/gallery-cleanup-lint-20261013` from consolidated PR #282 `d246e366c89455c4fb444c5b493392f046077103`.
+
+CI 38303371341 at d246e366 passed fast and database; production budget measurements: JS 818,773/819,200 B; CSS 346,461/348,160 B. Hosted units 755 passed / 9 skipped, including 37 actual-helper API boundary and 14 gallery-selection cases. Browser remains in progress; completion is not inferred.
+
+Fast lint was exit-zero but reported THREE warnings: unused _request in the status test adapter; effect-cleanup reads of dialogRef.current and triggerRefs.current. Fix the test table with an explicit Response handler contract and direct status handler. Capture the dialog node and mutable thumbnail-ref array inside the effect; use captured node isConnected to recognize modal removal before focus restoration. Preserve current thumbnail lookup and skip restoration during active modal navigation. No rule disable, threshold weakening or new dependency.
+
+Local TypeScript test syntax parsed. This follow-up still requires hosted lint/type/browser/budget validation; no warning-free CI is claimed yet. N-20 and R-012 broader acceptance remain pending; no new runtime vulnerability count is added for lint warnings.
+
+Next: allow current browser run to finish, inspect new gallery lifecycle results, reconcile this parked follow-up and validate. No security/main merge, Railway deployment or live verification.
+
+---
+
 # 2026-10-13 IST — Gallery lifecycle and actual-helper admin authorization integration
 
 Ownership: `CODEX_ACTIVE` under owner continuation; one implementation writer. Consolidated PR #282 on `fix/consolidated-a11y-regression-20261012`, target `fix/p0-security-remediation-20261010`.

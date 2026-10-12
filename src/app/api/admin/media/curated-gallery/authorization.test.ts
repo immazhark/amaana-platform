@@ -32,12 +32,17 @@ import { GET as status } from "./status/route";
 
 const token = "synthetic-session-token-for-boundary-tests";
 const tokenHash = createHash("sha256").update(token).digest("hex");
-const routes = [
+type AuthorizedRoute = {
+  name: string;
+  run: (request: Request) => Promise<Response>;
+  method: "POST" | "GET";
+};
+const routes: readonly AuthorizedRoute[] = [
   { name: "start", run: start, method: "POST" },
   { name: "upload", run: upload, method: "POST" },
   { name: "publish", run: publish, method: "POST" },
-  { name: "status", run: (_request: Request) => status(), method: "GET" },
-] as const;
+  { name: "status", run: status, method: "GET" },
+];
 
 function user(roles: readonly (readonly string[])[]) {
   return { id: "synthetic-user", status: "ACTIVE", roles: roles.map(keys => ({
