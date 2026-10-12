@@ -95,6 +95,7 @@ export async function POST(request: Request) {
       typeof payment.id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(payment.id) ||
       typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
       payment.currency !== "INR" ||
+      (payment.status !== undefined && payment.status !== "captured") ||
       !Number.isSafeInteger(payment.amount) || payment.amount <= 0
     )) {
       return new NextResponse("Invalid captured payment entity", { status: 400 });
@@ -126,7 +127,11 @@ export async function POST(request: Request) {
       Number.isSafeInteger(payment.amount) &&
       payment.amount > 0
     ) {
-      if (typeof payment.id !== "string" || !payment.id.trim()) {
+      if (
+        typeof payment.id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(payment.id) ||
+        typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
+        (payment.status !== undefined && payment.status !== "failed")
+      ) {
         return new NextResponse("Invalid payment entity", { status: 400 });
       }
       await withSerializableTransactionRetry(async tx => {
