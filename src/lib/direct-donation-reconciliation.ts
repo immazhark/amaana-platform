@@ -47,6 +47,13 @@ export async function reconcileDirectDonation(input: {
 
     const appealBefore = await tx.appeal.findUnique({ where: { id: donation.appealId }, select: { goalAmount: true, amountRaised: true, status: true } });
     if (!appealBefore) throw new Error("Appeal not found");
+    const donationPaise = donation.amount.mul(100).toNumber();
+    const goalPaise = appealBefore.goalAmount.mul(100).toNumber();
+    const raisedPaise = appealBefore.amountRaised.mul(100).toNumber();
+    if (![donationPaise, goalPaise, raisedPaise].every(Number.isSafeInteger) ||
+        donationPaise <= 0 || goalPaise <= 0 || raisedPaise < 0) {
+      throw new Error("Invalid financial amounts for transfer reconciliation");
+    }
     const remaining = getRemainingAppealAmount(appealBefore.amountRaised, appealBefore.goalAmount);
     if (donation.amount.toNumber() > remaining) throw new Error("This transfer exceeds the appeal's remaining verified need and requires operator review");
 
