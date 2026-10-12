@@ -12,6 +12,7 @@ on:
     branches:
       - main
       - phase-public-site-rebuild
+      - fix/p0-security-remediation-20261010
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
