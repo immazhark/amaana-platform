@@ -618,7 +618,7 @@ body{font-weight:var(--af-weight-body)}
     .footer-nav-group:not([open])>.footer-links{display:grid}
 }
 .footer-intro p,.site-footer .footer-note a{color:rgb(255 253 248 / 74%)}
-:is(.v2-section-label,.v3-label,.v3-kicker,.page-hero__eyebrow){font-size:max(.75rem,12px);font-weight:700;line-height:1.4;letter-spacing:.09em}
+:is(.v2-section-label,.v3-label,.v3-kicker,.page-hero__eyebrow){font-size:.75rem;font-weight:700;line-height:1.4;letter-spacing:.09em}
 :is(.v2-section.dark,.v3-section.dark,.v3-trust,.v2-impact-witness,.v2-impact-trust) :is(.v2-section-label,.v3-label,.v3-kicker){color:var(--af-color-gold-soft)}
 @media(max-width:520px){
   .site-footer{padding-block:1.75rem 1rem}

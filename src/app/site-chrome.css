@@ -191,9 +191,15 @@
     overflow:visible;text-overflow:clip;white-space:normal;text-wrap:pretty
   }
   .amaana-reminder-source{grid-column:2;align-self:center}
-  .amaana-live-content{grid-template-columns:minmax(0,1fr) auto;gap:.35rem}
+  .amaana-live-content{grid-template-columns:minmax(0,1fr) auto;gap:.25rem}
   .amaana-live-content .amaana-reminder-eyebrow{display:none}
   .amaana-live-actions{grid-column:2;grid-row:1}
+  /* Preserve a 44px touch target while freeing width for a fully visible,
+     wrapping update headline on narrow screens. */
+  .amaana-live-lane{gap:.25rem}
+  .amaana-live-content strong{font-size:.75rem;line-height:1.2;letter-spacing:-.01em}
+  .amaana-live-actions{gap:.2rem}
+  .amaana-live-cta{padding-inline:.48rem}
   .amaana-live-link,.amaana-live-cta{min-height:2.75rem}
   .site-footer{--af-footer-edge-space:max(6rem,calc(6rem + env(safe-area-inset-bottom)))}
   .site-footer .footer-lead{padding-block:var(--af-footer-edge-space) 1.75rem;gap:1rem}

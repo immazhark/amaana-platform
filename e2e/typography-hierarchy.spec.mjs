@@ -431,6 +431,9 @@ for (const width of [390, 1280]) {
       expect(normal.length, `${path} must expose visible metadata`).toBeGreaterThan(0);
       for (const label of normal) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(12);
       await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      // Distinguish a root font-size race from a fixed-pixel label defect.
+      expect(await page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize)))
+        .toBeGreaterThanOrEqual(32);
       const enlarged = await read();
       expect(enlarged.length).toBeGreaterThan(0);
       for (const label of enlarged) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(24);

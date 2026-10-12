@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { summarizeAppRouteBundles } from "./report-route-bundles.mjs";
+import { summarizeAppRouteBundles, summarizeUnattributedAppAssets } from "./report-route-bundles.mjs";
 
 test("counts inherited layouts, unique assets and App Router pages", () => {
   const sizes = {
@@ -38,4 +38,25 @@ test("ignores unsafe paths and rejects malformed or empty manifests", () => {
     return 42;
   });
   assert.equal(data[0].totalBytes, 42);
+});
+
+test("Next 16 without an app build manifest reports aggregate-only figures", () => {
+  const report = summarizeUnattributedAppAssets({
+    "/page": "/", "/about/page": "/about", "/about/layout": "/about",
+    "/_not-found/page": "/_not-found", "/about/(nested)/page": "/about",
+  }, [
+    { path: "chunks/shared.js", bytes: 100 },
+    { path: "css/site.css", bytes: 35 },
+    { path: "media/icon.svg", bytes: 20 },
+  ]);
+  assert.equal(report.routeAttributionAvailable, false);
+  assert.equal(report.routeCount, 3);
+  assert.deepEqual(report.routes, ["/", "/_not-found", "/about"]);
+  assert.deepEqual(report.aggregate, { jsBytes: 100, cssBytes: 35, totalBytes: 135, assetCount: 3 });
+  assert.equal(typeof report.routes[0], "string");
+});
+
+test("Next 16 fallback rejects missing or empty route inventories", () => {
+  assert.throws(() => summarizeUnattributedAppAssets(null, []), /path manifest/);
+  assert.throws(() => summarizeUnattributedAppAssets({ "/layout": "/" }, []), /No App Router pages/);
 });
