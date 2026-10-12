@@ -264,7 +264,10 @@ describe("Razorpay webhook route", () => {
     expect(mocks.txDonationUpdateMany).toHaveBeenCalledWith({
       where: {
         id: "donation_failed_1",
-        status: { in: ["CREATED", "AUTHORIZED"] },
+        OR: [
+          { status: "CREATED" },
+          { status: "AUTHORIZED", providerPaymentId: "pay_failed_001" },
+        ],
       },
       data: {
         status: "FAILED",
