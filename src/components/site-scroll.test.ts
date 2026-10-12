@@ -104,7 +104,7 @@ test.each(["click", "popstate", "hashchange"])(
       const navigation = new Event(eventName);
       if (eventName === "click") {
         Object.defineProperty(navigation, "target", {
-          value: { closest: () => "a[href]" },
+          value: new Element(),
         });
       }
       windowTarget.dispatchEvent(navigation);
