@@ -11,6 +11,8 @@ on:
       - "e2e/security-headers.spec.mjs"
       - "scripts/test-admin-route-inventory.mjs"
       - "src/app/api/admin/media/curated-gallery/publish/**"
+      - "src/lib/bounded-request-body.ts"
+      - "src/lib/bounded-request-body.test.ts"
       - "src/lib/env.ts"
       - "src/lib/env.test.ts"
       - "src/lib/public-media.ts"
@@ -44,5 +46,5 @@ jobs:
           node --test scripts/test-admin-route-inventory.mjs
       - name: Test media, configuration and privileged publication boundaries
         run: |
-          npx vitest run src/lib/env.test.ts src/lib/public-media.test.ts src/app/api/admin/media/curated-gallery/publish/error-boundary.test.ts
+          npx vitest run src/lib/bounded-request-body.test.ts src/lib/env.test.ts src/lib/public-media.test.ts src/app/api/admin/media/curated-gallery/publish/error-boundary.test.ts
           node --check e2e/security-headers.spec.mjs
