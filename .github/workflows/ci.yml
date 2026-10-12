@@ -12,6 +12,7 @@ on:
     branches:
       - main
       - phase-public-site-rebuild
+      - fix/p0-security-remediation-20261010
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
@@ -83,11 +84,22 @@ jobs:
           node scripts/check-public-media.mjs
           node --test scripts/test-public-media-review-register.mjs
           node scripts/check-public-media-review-register.mjs
+      - name: Inventory public asset references without deleting files
+        run: |
+          node scripts/audit-public-assets.mjs --json > "$RUNNER_TEMP/amaana-public-assets.json"
+          node --input-type=module -e '
+            import { readFileSync } from "node:fs";
+            const data = JSON.parse(readFileSync(process.env.RUNNER_TEMP + "/amaana-public-assets.json", "utf8"));
+            console.log("Public asset inventory counts:", JSON.stringify(data.counts));
+            const unresolved = data.rows.filter(row => row.status === "unresolved");
+            for (const row of unresolved.slice(0, 25)) console.log("REVIEW ONLY:", row.asset);
+            console.log("Unresolved assets are NOT safe to delete without dynamic-reference validation.");
+          '
       - name: Validate launch readiness register
         run: |
           node --test scripts/test-launch-readiness.mjs
           node --test scripts/test-production-environment.mjs
-          node --test scripts/test-railway-predeploy.mjs
+          node --test scripts/test-railway-predeploy.mjs scripts/test-notification-cron.mjs
           node scripts/check-launch-readiness.mjs
       - name: Verify non-destructive campaign import
         run: node --test scripts/test-reviewed-campaigns.mjs scripts/test-reviewed-campaign-revisions.mjs scripts/test-reviewed-campaign-feature-normalization.mjs scripts/test-reviewed-campaign-video-normalization.mjs

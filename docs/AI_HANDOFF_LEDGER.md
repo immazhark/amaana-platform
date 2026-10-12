@@ -1,3 +1,65 @@
+# 2026-10-12 — Refresh PR #216 against security integration
+
+Reconciled candidate with security integration e8ae4785a0b219a3f270dae1b3cb72bad562dda5. Preserved current security/runtime/worker changes and both historical work records. Added importer checks to current CI; retained PR #216 importer, timestamp, asset deduplication and scoped CSS changes. Previous candidate checks are historical; fresh combined CI and review required. No production deployment or live database mutation performed.
+
+# 2026-10-12 — Payment integration and keyboard-scroll candidate
+
+Ownership: `CODEX_ACTIVE` under owner continuation; security integration `fix/p0-security-remediation-20261010` at `dcecb8461d374b0c5914b2e050ab9a7cd5339847`. This current checkpoint supersedes historical state below. No parallel repository implementation writer.
+
+Additional integrations:
+- N-04, PR #269, validated head 61723e719019b83d2f26aa5c865a51ab0a343206; full CI 38241032771 passed fast/database/production/browser/verify; merge 4d11ca8408b993d9d7f68b1ef56f9f4b83de4473. Runtime validation of consumed Razorpay response fields now composes with #268 callback identity matching. Combined candidate acceptance remains required.
+- N-05, PR #270, validated head e88a3761f2e2cff25dc6b6ab7f641ca9275f6414; full CI 38241192347 passed fast/database/production/browser/verify; merge dcecb8461d374b0c5914b2e050ab9a7cd5339847. Reject unusable order identity before persistence.
+
+Independent candidate:
+- R-050, draft PR #274, branch fix/keyboard-scroll-handoff-20261012, head f53ebea3cd5b8e90d012b8736e89e14d888485dd. Clean current-base source/test port from #249, with generation invalidation for pending Lenis import and eight keyboard cancellation/restart cases. Hosted CI 38244316271 running. No success or deployment is claimed. Original #249 is not merged and remains a superseded candidate once this replacement is integrated.
+
+Still pending: PR #271 at 8a3ffec148f3b8757a0b7b45909c17c9de00afc8 (nine isolated PostgreSQL tests passed; browser running); PR #272 at cbf45c2f25951d0850b0eaf57cadbc189543c855 (fast/database/production passed; browser running). Do not infer pass from elapsed time, skipped ready-for-review workflows, or historical runs.
+
+R-012 source audit at dcecb846: four admin API handlers enforce session and content permissions before privileged work; three mutations also reject foreign origins. Protected layout requires authentication; private document route requires assistance.view before lookup/signing; all nineteen exported operational server actions in seven protected action modules require their scoped permission at entry. Login/logout are separate credential/session paths. Existing anonymous-browser spec covers twelve protected surfaces and four APIs. This is source/coverage inspection only, not live acceptance or complete independent authenticated-role testing; R-012 remains partial pending current browser/live verification. No auth bypass was established.
+
+Production remains main 2a8c35ad5e553ac0cc78b8027a35b592d1876826. No production promotion, Railway mutation, real donation/refund, email or beneficiary submission performed. Worker rollout remains pending, temporary annual cron containment intact. Preserve all release, factual, privacy, media and payment gates.
+
+Next atomic actions: validate/integrate #271/#272/#274; complete combined integration CI; check PR #215 release gates and production authorization; recover worker only after its source is on main; perform safe live acceptance and update the master finding register. Documentation checkpoint remains separate to avoid cancelling active source-candidate validation.
+
+---
+
+# 2026-10-12 — ChatGPT Work remediation continuation
+
+Ownership: `CODEX_ACTIVE` under the owner's explicit master handoff and cx continuation. This current entry supersedes historical ownership entries below. One repository writer; no parallel implementation agent.
+
+Integration: `fix/p0-security-remediation-20261010` at `2a20844ee540deaa774817e4b0f919f99dc89d58`. Production release PR #215 remains open against main. Documentation task: `docs/remediation-work-checkpoint-20261012`.
+
+Completed this session:
+- R-033, PR #265: rejected giving-intent radio focus. Merge dd7bdcfe8040ce28b2f7f03f368dee2d495cc12b. Full CI 38238484810 passed fast/database/production/browser/verify; the separate ready-for-review run skipped validation and was not used as evidence. PR #215's corresponding review thread is now resolved by the reviewer.
+- N-03, PR #268: bind provider payment identity to signed callback. Merge 8c71ce25004b1ff6972ed15550f02ff544f6ecdc. CI 38240338711 passed fast/database/production/browser/verify.
+- N-09, PR #266: generic curated-gallery HTTP500 response with safe diagnostics. Merge bc9271dbe491eb87030f51e3d3bc4b04cb53de1d. CI 38239767561 passed fast/database/production/browser/verify.
+- N-08, PR #267: compare UTF-8 byte lengths before timingSafeEqual. Merge 2a20844ee540deaa774817e4b0f919f99dc89d58. CI 38240152946 passed fast/database/production/browser/verify.
+
+In progress:
+- PRs #269, #270, #272: patches reviewed; no open review threads observed. Fast/database/production passed; browser completion still pending at this checkpoint.
+- PR #271: found that reconstructed patch omitted real PostgreSQL regression coverage from #258. Restored all three existing cases (older failure/replay preserves newer authorization; matching CREATED and AUTHORIZED failures) in commit 8a3ffec148f3b8757a0b7b45909c17c9de00afc8. Fresh CI 38243416320 pending; previous-head validation cannot certify this commit. Tests use isolated loopback PostgreSQL only. No runtime source changes in this follow-up.
+- Combined integration CI must pass for the final selected commit before production promotion. Individual PR passes do not establish combined acceptance.
+
+Production verified from Railway deployment metadata: main 2a8c35ad5e553ac0cc78b8027a35b592d1876826, deployment bb65fc78-088e-4df2-b7b6-80c59fd62da8 SUCCESS. None of this session's fixes is live. Website service has both renamed MEDIA_S3 credential keys and legacy keys; only names inspected, values not exposed. Do not remove legacy keys until deployed-code compatibility and rollback are addressed.
+
+Notification worker: latest deployment 473c17d9-ca74-45b6-908c-c9c0fb3507b6 FAILED; temporary cron 0 0 1 1 * remains active; only CRON_SECRET and NOTIFICATION_JOB_URL defined. Dedicated /ops/notification-cron rollout and successful authenticated invocation are still pending; restore five-minute scheduling only after recovery. No Railway mutation this session.
+
+Next actions: finish remaining PR validation and integration; validate combined candidate; preserve main review/promotion gates; deploy only with required authorization and successful gates; recover worker; verify production; reconcile the recovered 95-row master register plus N findings. No real donations/refunds or user notifications initiated. Preserve factual locks, provisional tax-registration language, domestic-only fundraising, private records, approved imagery and bottom-right Islamic Companion.
+
+---
+
+# 2026-10-12 — Private record access regression coverage
+
+Ownership `REVIEW_PENDING`; bounded test work completed by Codex under owner continuation deliberately supersedes prior implementation wait only for bounded private acknowledgement/assistance tracking regression coverage. Branch `test/private-record-access-boundaries-20261012` from security integration `f5578c31829aeb76ac4e30060cc658342942d762`. Preserve all independent review/integration/main/production gates.
+
+Verified coverage gap: existing acknowledgement and assistance-status route tests replace origin checks, token hashing and bounded body handling with mocks; they do not establish that the actual privacy boundaries compose correctly. Add tests using real origin/token/body helpers, with only persistence mocked. Cover valid minimal responses, rejected origins, wrong or absent record credentials, corrupt persisted hashes, malformed JSON and actual streamed body limits. No runtime vulnerability claim or application change is implied.
+
+Implemented:18 actual-helper privacy cases across acknowledgement and assistance tracking. Only database lookups are mocked; real origin validation, token hashing, constant-time comparison, schema parsing and streamed byte limits execute. Valid replies expose the expected minimal fields; wrong tokens/missing records/corrupt persisted hashes reveal no private data; foreign/null/missing origins, malformed JSON and actual oversized bodies retain private headers and reject before lookup where required.
+
+Controlled mutation proof in a detached scratch checkout: disabling only origin rejection caused six test failures; bypassing only token equality caused four failures. Each runtime route was restored byte-for-byte in finally; primary runtime routes never changed. All18 focused checks and471 full unit tests pass, six database-dependent skips locally; full lint, TypeScript and whitespace checks pass. No user data, payment, email, real persistence, dependencies, runtime application code or secret configuration changes. Draft pending hosted validation and independent review.
+
+PR254 exact-head CI38173157008 passed1094 Chromium and24 Firefox/WebKit plus fast/database/production/final verify; Ready and unmerged without independent approval. PR255 8b8d9841a49f4269133d78a32cf4487c163fbe8d has successful fast/database/production; browser remains running in CI38174787641. Local composition of #241/#247–#255:527 unit tests passed, six database skips; lint/typecheck passed. PR215 review map records the unresolved development-only braces advisory (no patched release), runtime-prune proof and no confirmed public-input path. No independent reviewer identity established; never invent one or self-approve.
+
 # 2026-10-12 — Preserve bulk reconciliation timestamps
 
 Ownership `REVIEW_PENDING`; bounded implementation completed under owner continuation deliberately supersedes the performance REVIEW_PENDING wait only for the verified ORM/raw-SQL timestamp gap. Continue existing PR #216 / `fix/architecture-nplus1-css-governance-20261010` from head696f6f3538b698cc00e3f20962fc164d6501a9c7; no competing branch, force push or main/integration merge. Its previous CI38183926437 fast/database/production passed, browser/final still running; a source correction requires a new exact-head run rather than treating the older green jobs as candidate evidence.
