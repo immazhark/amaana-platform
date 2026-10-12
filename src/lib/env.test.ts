@@ -99,6 +99,20 @@ describe("production environment safety", () => {
     expect(() => validateProductionEnvironment()).toThrow(/Razorpay test key/);
   });
 
+  it("does not send live emails from staging even when the notification cron bypasses schema validation", () => {
+    process.env.APP_ENVIRONMENT = "staging";
+    process.env.EMAIL_DELIVERY_MODE = "live";
+
+    expect(isEmailDeliveryEnabled()).toBe(false);
+  });
+
+  it("does not enable live emails for an unexpected environment value", () => {
+    process.env.APP_ENVIRONMENT = "unknown";
+    process.env.EMAIL_DELIVERY_MODE = "live";
+
+    expect(isEmailDeliveryEnabled()).toBe(false);
+  });
+
   it("rejects enabled email delivery in staging", () => {
     process.env.APP_ENVIRONMENT = "staging";
     process.env.EMAIL_DELIVERY_MODE = "live";
