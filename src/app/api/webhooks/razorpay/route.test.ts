@@ -360,14 +360,11 @@ describe("Razorpay webhook route", () => {
       },
     }, { "x-razorpay-event-id": `evt_failed_unsafe_${String(amount).replace(/[^0-9]/g, "_")}` }));
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe("Invalid payment entity");
     expect(mocks.txDonationFindUnique).not.toHaveBeenCalled();
     expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
-    expect(mocks.rootPaymentEventCreate).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        eventType: "payment.failed",
-      }),
-    });
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
   });
 
   it("does not mutate a donation for a non-INR payment.failed event", async () => {
@@ -386,15 +383,11 @@ describe("Razorpay webhook route", () => {
       },
     }, { "x-razorpay-event-id": "evt_failed_usd" }));
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe("Invalid payment entity");
     expect(mocks.txDonationFindUnique).not.toHaveBeenCalled();
     expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
-    expect(mocks.rootPaymentEventCreate).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        providerEventId: "evt_failed_usd",
-        eventType: "payment.failed",
-      }),
-    });
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
   });
 
   it("records an unmatched payment.failed event without mutating a donation", async () => {
