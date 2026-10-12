@@ -58,9 +58,11 @@ export function useSiteScroll(pathname: string) {
       void initialize(event);
     };
     const native = () => {
-      if (frame !== undefined) cancelAnimationFrame(frame);
-      frame = undefined;
-      instance?.scrollTo(window.scrollY, { immediate: true });
+      // Anchor navigation, focus actions and history are browser-owned.
+      // A Lenis scrollTo(immediate) call can leave the instance active and
+      // race the browser's subsequent native scroll/focus adjustment.
+      // Invalidating in-flight imports also prevents a late Lenis mount.
+      destroy();
     };
     const key = (event: KeyboardEvent) => {
       if (!nativeKeyboardNavigation.includes(event.key)) return;
