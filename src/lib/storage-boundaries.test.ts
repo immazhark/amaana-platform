@@ -122,3 +122,59 @@ describe("delivery configuration is validated before public persistence", () => 
     expect(sdk.send).toHaveBeenCalledTimes(1);
   });
 });
+
+describe("public object reads enforce upload-size and completeness boundaries", () => {
+  it("closes an oversized object before reading its body", async () => {
+    const consumed = vi.fn();
+    const closed = vi.fn();
+    const body = {
+      destroy: closed,
+      async *[Symbol.asyncIterator]() { consumed(); yield new Uint8Array([1]); },
+    };
+    sdk.send.mockResolvedValue({ Body: body, ContentLength: 5 * 1024 * 1024 + 1 });
+    await expect(getPublicMediaObject(key)).rejects.toThrow(/size boundary/);
+    expect(consumed).not.toHaveBeenCalled();
+    expect(closed).toHaveBeenCalledTimes(1);
+  });
+
+  it("bounds unknown-length bodies and closes the iterator on overflow", async () => {
+    const consumed = vi.fn();
+    const closed = vi.fn();
+    const body = {
+      async *[Symbol.asyncIterator]() {
+        try {
+          for (let index = 0; index < 10; index++) {
+            consumed();
+            yield new Uint8Array(1024 * 1024);
+          }
+        } finally { closed(); }
+      },
+    };
+    sdk.send.mockResolvedValue({ Body: body });
+    await expect(getPublicMediaObject(key)).rejects.toThrow(/size boundary/);
+    expect(consumed).toHaveBeenCalledTimes(6);
+    expect(closed).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects truncated bodies instead of caching incomplete media", async () => {
+    sdk.send.mockResolvedValue({
+      ContentLength: 3,
+      Body: { async *[Symbol.asyncIterator]() { yield new Uint8Array([1, 2]); } },
+    });
+    await expect(getPublicMediaObject(key)).rejects.toThrow(/incomplete/);
+  });
+
+  it("preserves valid streamed bytes and delivery metadata", async () => {
+    const lastModified = new Date("2026-10-12T00:00:00Z");
+    sdk.send.mockResolvedValue({
+      ContentLength: 3,
+      ContentType: "application/pdf",
+      ETag: "synthetic-etag",
+      LastModified: lastModified,
+      Body: { async *[Symbol.asyncIterator]() { yield new Uint8Array([1, 2]); yield new Uint8Array([3]); } },
+    });
+    const object = await getPublicMediaObject(key);
+    expect([...object.bytes]).toEqual([1, 2, 3]);
+    expect(object).toMatchObject({ contentType: "application/pdf", etag: "synthetic-etag", lastModified });
+  });
+});

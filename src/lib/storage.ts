@@ -288,7 +288,28 @@ export async function getPublicMediaObject(objectKey: string) {
   const { bucket, client } = getPublicMediaStorage();
   const object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: objectKey }));
   if (!object.Body) throw new Error("Public media object has no body");
-  const bytes = await object.Body.transformToByteArray();
+  const body = object.Body;
+  if (object.ContentLength !== undefined &&
+      (!Number.isSafeInteger(object.ContentLength) || object.ContentLength <= 0 || object.ContentLength > MAX_FILE_BYTES)) {
+    if ("destroy" in body && typeof body.destroy === "function") body.destroy();
+    else if ("cancel" in body && typeof body.cancel === "function") await body.cancel();
+    throw new Error("Public media object exceeds the verified size boundary");
+  }
+  if (!(Symbol.asyncIterator in body)) throw new Error("Public media object body is not a readable stream");
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const chunk of body as AsyncIterable<unknown>) {
+    if (!(chunk instanceof Uint8Array)) throw new Error("Public media object contains invalid byte data");
+    if (chunk.byteLength > MAX_FILE_BYTES - size) {
+      throw new Error("Public media object exceeds the verified size boundary");
+    }
+    size += chunk.byteLength;
+    chunks.push(Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength));
+  }
+  if (size === 0 || (object.ContentLength !== undefined && size !== object.ContentLength)) {
+    throw new Error("Public media object body is incomplete");
+  }
+  const bytes = Buffer.concat(chunks, size);
   return {
     bytes,
     contentType: object.ContentType ?? "application/octet-stream",
