@@ -103,4 +103,15 @@ describe("gallery publication error disclosure boundary", () => {
     expect(mocks.transaction).not.toHaveBeenCalled();
     expect(mocks.revalidate).not.toHaveBeenCalled();
   });
+
+
+  it("rejects oversized publication bodies before database work", async () => {
+    const response = await POST(request("x".repeat(5 * 1024)));
+    expect(response.status).toBe(413);
+    expectPrivate(response);
+    await expect(response.json()).resolves.toEqual({ error: "Curated gallery publication request is too large." });
+    expect(mocks.session).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.revalidate).not.toHaveBeenCalled();
+  });
 });
