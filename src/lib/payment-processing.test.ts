@@ -263,6 +263,8 @@ describe("ensureCapturedDonationForRefund", () => {
     ["authorized", false],
     ["failed", false],
     ["created", false],
+    ["authorized", true],
+    ["failed", true],
   ])("does not reconstruct local capture from provider status %s", async (status, captured) => {
     mocks.rootFindUnique.mockResolvedValueOnce(null);
     mocks.fetchRazorpayPayment.mockResolvedValue({
