@@ -272,3 +272,72 @@ test('policy routes preserve long-form reading hierarchy', async ({ page }) => {
     expect(lineHeight).toBeGreaterThanOrEqual(1.65);
   }
 });
+
+const readablePublicSurfaces = [
+  [
+    "/",
+    ".v3-proof-label, .v3-work-card-body small"
+  ],
+  [
+    "/our-work",
+    ".page-hero__eyebrow, .v2-initiative-copy small, [class*=\"filterLabel\"]"
+  ],
+  [
+    "/impact",
+    ".page-hero__eyebrow, .v2-impact-tile-copy small, .v2-impact-tile-action"
+  ],
+  [
+    "/appeals",
+    ".page-hero__eyebrow, .v2-appeal-card-head, .v2-appeal-progress-foot"
+  ],
+  [
+    "/stories",
+    ".page-hero__eyebrow, .v2-stories-card-copy > span, .v2-stories-card-copy small"
+  ],
+  [
+    "/faith-and-reflections",
+    ".page-hero__eyebrow, .v2-faith-library-item > span, .v2-faith-library-item > small"
+  ],
+  [
+    "/recognition",
+    ".page-hero__eyebrow, [class*=\"meta\"] > span, [class*=\"meta\"] dt"
+  ],
+  [
+    "/privacy",
+    ".page-hero__eyebrow, [class*=\"matrixGrid\"] span"
+  ],
+  [
+    "/transparency",
+    ".page-hero__eyebrow, .v2-transparency-folio-head, .v2-transparency-folio-foot"
+  ],
+  [
+    "/request-assistance",
+    ".page-hero__eyebrow, .v2-assistance-form .v2-form-heading > span"
+  ],
+  [
+    "/our-work/eid-gift-kits",
+    ".page-hero__eyebrow, .campaign-impact-strip span, .campaign-history-note span"
+  ]
+];
+for (const width of [390, 1280]) {
+  for (const [path, selector] of readablePublicSurfaces) {
+    test(`public metadata readability ${path} at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+      expect((await page.goto(path, { waitUntil: 'domcontentloaded' }))?.ok()).toBeTruthy();
+      const labels = page.locator(selector);
+      expect(await labels.count(), `${path} must expose real metadata`).toBeGreaterThan(0);
+      const read = () => labels.evaluateAll(nodes => nodes.filter(node =>
+        node.getClientRects().length && getComputedStyle(node).visibility !== 'hidden'
+      ).map(node => ({ text: node.textContent?.trim(), size: parseFloat(getComputedStyle(node).fontSize) })));
+      const normal = await read();
+      expect(normal.length, `${path} must expose visible metadata`).toBeGreaterThan(0);
+      for (const label of normal) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(12);
+      await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      const enlarged = await read();
+      expect(enlarged.length).toBeGreaterThan(0);
+      for (const label of enlarged) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(24);
+    });
+  }
+}

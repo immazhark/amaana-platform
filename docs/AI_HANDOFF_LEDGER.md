@@ -1,3 +1,13 @@
+# 2026-10-12 — Batched public readability remediation
+
+Ownership `CODEX_ACTIVE` under owner cx and efficiency directive; one repository writer. Branch `fix/public-readability-batch-20261012` from e8ae478. Batch R-024: 61 sub-.75rem text-size declarations in 21 public stylesheets, reviewed as metadata, labels, actions and captions. Existing #216/#277/#278/#279 candidates remain independent; preserve their implementation and records. Header/Companion/footer and shared admin badge are outside this batch. Add representative rendered mobile/desktop readability checks; no full closure before current browser evidence. No live submissions, payments, emails or deployment. Current technical source/PR truth supersedes older historical status below.
+
+---
+
+Implemented 61 reviewed rem font-size declarations across 21 public CSS files. No selectors, colors, copy, routing, payment/auth/data behavior changed. Added 22 representative rendered cases (11 routes x 390/1280px) requiring actual visible metadata >=12px and >=24px after 200% root enlargement. Local Node syntax check passed; hosted rendered/layout/axe acceptance pending. This is one R-024 batch, not 61 distinct closed defects. Header/Companion/footer, admin badge, independent candidates and any non-rem sizing remain pending for final inventory. Existing PR278's scoped form rule is compatible with the raised shared label. Full R-024 closure remains unclaimed.
+
+---
+
 # 2026-10-12 — Payment integration and keyboard-scroll candidate
 
 Ownership: `CODEX_ACTIVE` under owner continuation; security integration `fix/p0-security-remediation-20261010` at `dcecb8461d374b0c5914b2e050ab9a7cd5339847`. This current checkpoint supersedes historical state below. No parallel repository implementation writer.
