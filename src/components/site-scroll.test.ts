@@ -116,3 +116,38 @@ test.each(["click", "popstate", "hashchange"])(
     }
   },
 );
+
+test("failed optional Lenis import preserves native scrolling and permits retry", async () => {
+  let cleanup: (() => void) | undefined;
+  let attempts = 0;
+  vi.doMock("react", () => ({
+    useEffect: (effect: () => () => void) => { cleanup = effect(); },
+  }));
+  vi.doMock("lenis", () => {
+    attempts += 1;
+    throw new Error("optional chunk unavailable");
+  });
+  const windowTarget = Object.assign(new EventTarget(), {
+    matchMedia: (query: string) => Object.assign(new EventTarget(), {
+      matches: query === "(pointer: fine)",
+    }),
+  });
+  vi.stubGlobal("window", windowTarget);
+  vi.stubGlobal("document", Object.assign(new EventTarget(), {
+    hidden: false,
+    body: { matches: () => false },
+  }));
+  vi.stubGlobal("Element", class {});
+  vi.stubGlobal("requestAnimationFrame", vi.fn(() => 1));
+  vi.stubGlobal("cancelAnimationFrame", vi.fn());
+  const { useSiteScroll } = await import("./site-scroll");
+  useSiteScroll("/about");
+  try {
+    windowTarget.dispatchEvent(new Event("wheel"));
+    await vi.waitFor(() => expect(attempts).toBe(1));
+    windowTarget.dispatchEvent(new Event("wheel"));
+    await vi.waitFor(() => expect(attempts).toBe(2));
+  } finally {
+    cleanup?.();
+  }
+});
