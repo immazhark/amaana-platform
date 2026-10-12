@@ -15,9 +15,13 @@ ARG DATABASE_URL
 ARG APP_ENVIRONMENT=staging
 ARG NEXT_PUBLIC_APP_URL=https://amaanafoundation.org
 ARG NEXT_PUBLIC_ALLOW_INDEXING=false
+# Opt-in Core Web Vitals is disabled unless Railway explicitly forwards this
+# build argument. Public Next.js flags must be available during next build.
+ARG NEXT_PUBLIC_ENABLE_WEB_VITALS=false
 ENV APP_ENVIRONMENT=$APP_ENVIRONMENT
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_PUBLIC_ALLOW_INDEXING=$NEXT_PUBLIC_ALLOW_INDEXING
+ENV NEXT_PUBLIC_ENABLE_WEB_VITALS=$NEXT_PUBLIC_ENABLE_WEB_VITALS
 COPY . .
 RUN npx prisma generate
 RUN npm run build

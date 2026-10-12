@@ -78,6 +78,8 @@ jobs:
         run: node scripts/audit-global-css.mjs
       - name: Validate App Router bundle reporting
         run: node --test scripts/test-route-bundle-report.mjs
+      - name: Guard telemetry build and runtime opt-in
+        run: node --test scripts/test-web-vitals-build-boundary.mjs
       - name: Prevent anonymous admin route coverage drift
         run: node --test scripts/test-admin-route-inventory.mjs
       - name: Verify branded application icons

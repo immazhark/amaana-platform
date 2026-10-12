@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   isSameOrigin: vi.fn(),
@@ -24,14 +24,31 @@ function post(payload: unknown, origin = "https://amaanafoundation.org") {
   });
 }
 
+const originalVitalsFlag = process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS;
 beforeEach(() => {
+  process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS = "true";
   vi.clearAllMocks();
   mocks.isSameOrigin.mockReturnValue(true);
   mocks.enforceAnalyticsRateLimit.mockResolvedValue(true);
   mocks.upsert.mockResolvedValue({ id: "aggregate-1" });
 });
 
+afterEach(() => {
+  if (originalVitalsFlag === undefined) delete process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS;
+  else process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS = originalVitalsFlag;
+});
+
 describe("first-party Web Vitals reporting boundary", () => {
+  it("never creates a metric row when monitoring is disabled", async () => {
+    process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS = "false";
+    const response = await POST(post({ path: "/about", name: "LCP", value: 1100 }));
+    expect(response.status).toBe(204);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/);
+    expect(mocks.isSameOrigin).not.toHaveBeenCalled();
+    expect(mocks.enforceAnalyticsRateLimit).not.toHaveBeenCalled();
+    expect(mocks.upsert).not.toHaveBeenCalled();
+  });
+
   it("increments anonymous daily buckets without storing individual event identifiers", async () => {
     const response = await POST(post({ path: "/about", name: "INP", value: 40 }));
     expect(response.status).toBe(204);

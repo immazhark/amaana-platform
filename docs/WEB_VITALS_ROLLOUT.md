@@ -9,6 +9,7 @@
   browser fingerprint, unique metric ID, raw timing entry or personal information is retained
   in the aggregates.
 - A page load is sampled at 10%; repeated updates of one metric ID are collapsed in the browser.
+- Both the browser reporter **and the ingest endpoint** reject collection unless the opt-in build flag is enabled.
 - Browser reports send only `{path, name, value}`; the server validates every field,
   classifies the metric into coarse performance buckets, and retains only daily counters.
 - Same-origin requirement and the existing anonymous analytics hourly abuse limit apply.
@@ -34,7 +35,9 @@ avoid treating small samples as definitive.
    succeeded before enabling collection.
 2. Keep `NEXT_PUBLIC_ENABLE_WEB_VITALS=false` in preview and automated browser acceptance.
 3. Enable `NEXT_PUBLIC_ENABLE_WEB_VITALS=true` **only in production** after privacy and
-   hosting-cost review; redeploy so Next.js injects the public build-time flag.
+   hosting-cost review. Railway must pass the variable through the Docker build ARG
+   **and** supply it to the running service. Redeploy to compile the client flag;
+   the endpoint independently rejects requests if the runtime flag is not enabled.
 4. Verify three daily aggregate metrics on known public paths using real browser visits;
    do not synthesize production metric traffic as a passing performance result.
 5. Monitor daily aggregate row growth, database write rate, error budget, LCP/INP/CLS

@@ -194,6 +194,19 @@ test.each(["Home", "End"])(
         top: key === "Home" ? 0 : 1500,
         behavior: "instant",
       });
+      // The same key inside a rich-text editing surface must never scroll the
+      // document, even while Lenis is being handed back to native scrolling.
+      target.dispatchEvent(new Event("wheel"));
+      await vi.dynamicImportSettled();
+      class EditableElement {
+        isContentEditable = true;
+        closest() { return null; }
+      }
+      vi.stubGlobal("Element", EditableElement);
+      const editingKey = Object.assign(new Event("keydown"), { key });
+      Object.defineProperty(editingKey, "target", { value: new EditableElement() });
+      target.dispatchEvent(editingKey);
+      expect(scrollTo).toHaveBeenCalledTimes(1);
     } finally {
       cleanup?.();
     }

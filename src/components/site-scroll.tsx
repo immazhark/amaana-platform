@@ -83,7 +83,9 @@ export function useSiteScroll(pathname: string) {
       // carousels, dialogs or other separately scrollable controls.
       if (!smoothingWasActive || event.defaultPrevented ||
           (event.key !== "Home" && event.key !== "End") ||
-          (event.target instanceof Element && event.target.closest(nested))) return;
+          event.altKey || event.ctrlKey || event.metaKey || event.shiftKey ||
+          (event.target instanceof Element &&
+            ((event.target as HTMLElement).isContentEditable || event.target.closest(nested)))) return;
       const top = event.key === "Home" ? 0 : (document.documentElement?.scrollHeight ?? document.body.scrollHeight ?? 0);
       window.scrollTo?.({ top, behavior: "instant" });
     };
