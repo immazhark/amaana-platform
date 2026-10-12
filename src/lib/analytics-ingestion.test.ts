@@ -15,6 +15,19 @@ describe("parseAnalyticsPayload", () => {
     await expect(parseAnalyticsPayload(analyticsRequest(JSON.stringify({ path: "/about" })))).resolves.toEqual({ path: "/about" });
   });
 
+  it("removes beneficiary and story identifiers from ingested daily counters", async () => {
+    for (const [raw, normalized] of [
+      ["/appeals/person-name-medical-case", "/appeals/:slug"],
+      ["/stories/someone-recovery", "/stories/:slug"],
+      ["/our-work/eid-gift-kits-2026", "/our-work/:slug"],
+      ["/appeals/:slug", "/appeals/:slug"],
+    ]) {
+      const result = await parseAnalyticsPayload(analyticsRequest(JSON.stringify({ path: raw })));
+      expect(result).toEqual({ path: normalized });
+      expect(JSON.stringify(result)).not.toContain("person-name");
+    }
+  });
+
   it("rejects sensitive and malformed public paths", async () => {
     await expect(parseAnalyticsPayload(analyticsRequest(JSON.stringify({ path: "/request-assistance" })))).resolves.toBeNull();
     await expect(parseAnalyticsPayload(analyticsRequest(JSON.stringify({ path: "/our-work/not valid" })))).resolves.toBeNull();

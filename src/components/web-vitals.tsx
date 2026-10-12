@@ -2,6 +2,7 @@
 
 import { useReportWebVitals } from "next/web-vitals";
 import { canRecordWebVitalOnCurrentRoute, normalizePublicWebVitalPath } from "@/lib/web-vitals-path";
+import { sendBestEffortTelemetry } from "@/lib/client-telemetry";
 
 type Metric = Parameters<Parameters<typeof useReportWebVitals>[0]>[0];
 type PublicVitalName = "LCP" | "INP" | "CLS";
@@ -26,28 +27,15 @@ function shouldSample() {
 }
 
 function sendReport(path: string, name: PublicVitalName, value: number) {
-  const body = JSON.stringify({ path, name, value });
-  try {
-    if (navigator.sendBeacon && navigator.sendBeacon(ENDPOINT, new Blob([body], { type: "application/json" }))) {
-      return;
-    }
-  } catch {
-    // Blocked Beacon transport is nonfatal; use the bounded fetch fallback.
-  }
-  void fetch(ENDPOINT, {
-    method: "POST",
-    body,
-    headers: { "Content-Type": "application/json" },
-    keepalive: true,
-    credentials: "same-origin",
-  }).catch(() => {
-    // Best-effort telemetry must never surface a UI error or break navigation.
+  sendBestEffortTelemetry(ENDPOINT, { path, name, value }, {
+    beacon: (endpoint, body) => navigator.sendBeacon(endpoint, body),
+    post: fetch,
   });
 }
 
 function flushLatest() {
   if (latest.size === 0) return;
-  if (!canRecordWebVitalOnCurrentRoute(pageLoadPath, window.location.pathname)) {
+  if (!canRecordWebVitalOnCurrentRoute(pageLoadPath, window.location.pathname, navigator.webdriver === true)) {
     latest.clear();
     return;
   }
@@ -67,7 +55,7 @@ function handleWebVital(metric: Metric) {
   if (metric.name !== "LCP" && metric.name !== "INP" && metric.name !== "CLS") return;
   if (!Number.isFinite(metric.value) || metric.value < 0) return;
 
-  if (!canRecordWebVitalOnCurrentRoute(pageLoadPath, window.location.pathname)) return;
+  if (!canRecordWebVitalOnCurrentRoute(pageLoadPath, window.location.pathname, navigator.webdriver === true)) return;
 
   // Next/Web Vitals may report multiple deltas for one id; keep the latest
   // score in memory and send one final sample when the page is backgrounded.
