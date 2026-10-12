@@ -1,3 +1,11 @@
+# 2026-10-12 — Notification cron isolation and deployment policy
+
+Ownership `REVIEW_PENDING`; bounded worker repair prepared under owner continuation. Task branch `fix/notification-cron-isolation-20261012`, base security integration `f5578c31829aeb76ac4e30060cc658342942d762`. User requires Railway deployments only after main merges; no task-branch production deployment. Current platform follows main and is SUCCESS at Railway bb65fc78-088e-4df2-b7b6-80c59fd62da8 on main 2a8c35ad5e553ac0cc78b8027a35b592d1876826. Previous production-pending entries below are historical.
+
+Confirmed repeated five-minute failures belong to amaana-notification-cron, compiling the root website Dockerfile and failing /donate prerender for missing DATABASE_URL. Removed that service's cronSchedule without requesting redeploy, and set NOTIFICATION_JOB_URL to the official production endpoint with skipDeploys=true. Notification scheduling is temporarily suspended; queued notifications require worker recovery. No secrets or website runtime changed. Prepare an isolated dependency-free worker image/config and tests; do not deploy before approved main merge. Existing independent-review gates for all other remediation PRs remain intact.
+
+Isolated worker files, request-boundary tests and fast-CI invocation prepared. Seventeen worker/predeploy tests passed; focused ESLint and syntax/whitespace checks passed. All 33 CI planner tests passed. Actual Docker build and hosted CI remain required; no local container-build claim. No real HTTP/email/payment request or application database write. Deployment source remains main; root/config activation and schedule restoration require this candidate to reach main first.
+
 # 2026-10-07 — Final release-hardening handoff
 
 State: `CHATGPT_ACTIVE`. Current integration SHA `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. Production remains main `29c7627ed3bffd0b581935c5b934ad903aeca2cd`. PR #104 remains Draft. Exact Railway preview `c2b5327d-94ee-49f6-b10c-d7f70673a1fa` is SUCCESS on final integration candidate.
