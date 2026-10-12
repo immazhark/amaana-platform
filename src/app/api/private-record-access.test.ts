@@ -118,6 +118,14 @@ for (const endpoint of endpoints) {
       await expect(response.json()).resolves.toEqual({ found: false });
     });
 
+    it("rejects schema-invalid JSON before lookup", async () => {
+      const response = await endpoint.post(request(JSON.stringify({ reference, token: "short" })));
+      expect(response.status).toBe(endpoint.denialStatus);
+      expectPrivate(response);
+      await expect(response.json()).resolves.toEqual({ found: false });
+      expect(endpoint.lookup).not.toHaveBeenCalled();
+    });
+
     it("rejects malformed JSON before lookup", async () => {
       const response = await endpoint.post(request("{"));
       expect(response.status).toBe(endpoint.denialStatus);
