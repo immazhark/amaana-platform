@@ -298,3 +298,173 @@ for (const width of [390, 1280]) {
     });
   }
 }
+
+for (const width of [390, 1280]) {
+  test(`private assistance eyebrow remains readable at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+    const response = await page.goto('/request-assistance', { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBeTruthy();
+    const label = page.locator('.v2-assistance-form .v2-form-heading > span');
+    await expect(label).toHaveCount(1);
+    await expect(label).toHaveText('Private submission');
+    expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
+    await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
+    const contained = await label.evaluate(node => {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const host = node.closest('.v2-form-heading').getBoundingClientRect();
+      return [...range.getClientRects()].every(rect => rect.left >= host.left - 1 && rect.right <= host.right + 1);
+    });
+    expect(contained).toBe(true);
+  });
+}
+
+for (const width of [390, 1280]) {
+  for (const state of ['received', 'tracking', 'acknowledgement']) {
+    test(`private ${state} metadata remains readable at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+      const reference = 'SYNTHETIC-READABILITY-ONLY';
+      const token = 'synthetic-readability-token-no-real-record';
+      await page.route('**/api/assistance/status', route => route.fulfill({
+        status: 200, json: { found: true, status: 'SUBMITTED', createdAt: '2026-10-01T00:00:00Z', updatedAt: '2026-10-02T00:00:00Z' },
+      }));
+      await page.route('**/api/donations/acknowledgement', route => route.fulfill({
+        status: 200, json: {
+          found: true,
+          presentation: { tone: 'captured', heading: 'Synthetic acknowledgement', summary: 'Browser-only typography fixture.', statusLabel: 'Captured' },
+          donation: { referenceNumber: reference, receiptNumber: 'SYNTHETIC-RECEIPT', donorName: 'Synthetic donor', givingIntent: 'GENERAL', amount: 100,
+            refundedAmount: 0, recordDate: '2026-10-01T00:00:00Z', providerPaymentId: null, appeal: { title: 'Synthetic appeal', slug: 'synthetic-appeal' } },
+        },
+      }));
+      const fragment = new URLSearchParams({ reference, token }).toString();
+      const path = state === 'acknowledgement'
+        ? `/donations/${reference}/acknowledgement#token=${token}`
+        : `/request-assistance/${state === 'tracking' ? 'status' : 'received'}#${fragment}`;
+      expect((await page.goto(path, { waitUntil: 'domcontentloaded' }))?.ok()).toBeTruthy();
+      const selectors = state === 'acknowledgement'
+        ? ['.v2-receipt-status > span', '.v2-receipt-sheet-head span']
+        : ['.v2-reference-block > span', '.v2-state-steps > span'];
+      for (const selector of selectors) {
+        const label = page.locator(selector);
+        await expect(label).toHaveCount(1);
+        await expect(label).toBeVisible();
+        expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
+      }
+      await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      for (const selector of selectors) {
+        const label = page.locator(selector);
+        expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
+        const contained = await label.evaluate(node => {
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          const host = node.parentElement.getBoundingClientRect();
+          return [...range.getClientRects()].every(rect => rect.left >= host.left - 1 && rect.right <= host.right + 1);
+        });
+        expect(contained, selector).toBe(true);
+      }
+    });
+  }
+}
+
+const readablePublicSurfaces = [
+  [
+    "/",
+    ".v3-proof-label, .v3-work-card-body small"
+  ],
+  [
+    "/our-work",
+    ".page-hero__eyebrow, .v2-initiative-copy small, [class*=\"filterLabel\"]"
+  ],
+  [
+    "/impact",
+    ".page-hero__eyebrow, .v2-impact-tile-copy small, .v2-impact-tile-action"
+  ],
+  [
+    "/appeals",
+    ".page-hero__eyebrow, .v2-appeal-card-head, .v2-appeal-progress-foot"
+  ],
+  [
+    "/stories",
+    ".page-hero__eyebrow, .v2-stories-card-copy > span, .v2-stories-card-copy small"
+  ],
+  [
+    "/faith-and-reflections",
+    ".page-hero__eyebrow, .v2-faith-library-item > span, .v2-faith-library-item > small"
+  ],
+  [
+    "/recognition",
+    ".page-hero__eyebrow, [class*=\"meta\"] > span, [class*=\"meta\"] dt"
+  ],
+  [
+    "/privacy",
+    ".page-hero__eyebrow, [class*=\"matrixGrid\"] span"
+  ],
+  [
+    "/transparency",
+    ".page-hero__eyebrow, .v2-transparency-folio-head, .v2-transparency-folio-foot"
+  ],
+  [
+    "/request-assistance",
+    ".page-hero__eyebrow, .v2-assistance-form .v2-form-heading > span"
+  ],
+  [
+    "/our-work/eid-gift-kits",
+    ".page-hero__eyebrow, .campaign-impact-strip span, .campaign-history-note span"
+  ]
+];
+for (const width of [390, 1280]) {
+  for (const [path, selector] of readablePublicSurfaces) {
+    test(`public metadata readability ${path} at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+      expect((await page.goto(path, { waitUntil: 'domcontentloaded' }))?.ok()).toBeTruthy();
+      const labels = page.locator(selector);
+      expect(await labels.count(), `${path} must expose real metadata`).toBeGreaterThan(0);
+      const read = () => labels.evaluateAll(nodes => nodes.filter(node =>
+        node.getClientRects().length && getComputedStyle(node).visibility !== 'hidden'
+      ).map(node => ({ text: node.textContent?.trim(), size: parseFloat(getComputedStyle(node).fontSize) })));
+      const normal = await read();
+      expect(normal.length, `${path} must expose visible metadata`).toBeGreaterThan(0);
+      for (const label of normal) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(12);
+      await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      const enlarged = await read();
+      expect(enlarged.length).toBeGreaterThan(0);
+      for (const label of enlarged) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(24);
+    });
+  }
+}
+
+for (const width of [390, 1280]) {
+  test(`shared rail, footer and Companion labels stay readable at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    expect((await page.goto('/about')).ok()).toBe(true);
+    const selectors = [
+      '.amaana-rail-label',
+      '.amaana-live-badge',
+      '.site-footer .footer-kicker',
+      '.footer-brand-copy small',
+      ...(width > 640 ? ['.amaana-companion-dock small'] : []),
+    ];
+    for (const rootSize of ['100%', '200%']) {
+      await page.evaluate(size => { document.documentElement.style.fontSize = size; }, rootSize);
+      for (const selector of selectors) {
+        const label = page.locator(selector);
+        await expect(label).toHaveCount(1);
+        await expect(label).toBeVisible();
+        expect(await label.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(rootSize === '200%' ? 24 : 12);
+      }
+    }
+    await page.evaluate(() => { document.documentElement.style.fontSize = '100%'; });
+    await page.locator('.amaana-companion-dock button').click();
+    const kicker = page.locator('.amaana-companion-kicker');
+    await expect(kicker).toBeVisible();
+    expect(await kicker.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
+    await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    expect(await kicker.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
+  });
+}
