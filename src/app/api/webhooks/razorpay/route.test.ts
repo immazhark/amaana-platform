@@ -278,8 +278,8 @@ describe("Razorpay webhook route", () => {
       payload: {
         payment: {
           entity: {
-            id: "pay_failed_001",
-            order_id: "order_failed_001",
+            id: "pay_failed001",
+            order_id: "order_failed001",
             amount: 2500,
             currency: "INR",
             status: "failed",
@@ -303,13 +303,13 @@ describe("Razorpay webhook route", () => {
         id: "donation_failed_1",
         OR: [
           { status: "CREATED" },
-          { status: "AUTHORIZED", providerPaymentId: "pay_failed_001" },
+          { status: "AUTHORIZED", providerPaymentId: "pay_failed001" },
         ],
       },
       data: {
         status: "FAILED",
         failedAt: expect.any(Date),
-        providerPaymentId: "pay_failed_001",
+        providerPaymentId: "pay_failed001",
       },
     });
     expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
@@ -324,8 +324,8 @@ describe("Razorpay webhook route", () => {
       payload: {
         payment: {
           entity: {
-            id: "pay_failed_wrong_amount",
-            order_id: "order_failed_001",
+            id: "pay_failedwrongamount",
+            order_id: "order_failed001",
             amount: 2500,
             currency: "INR",
             status: "failed",
@@ -350,8 +350,8 @@ describe("Razorpay webhook route", () => {
       payload: {
         payment: {
           entity: {
-            id: "pay_failed_unsafe",
-            order_id: "order_failed_unsafe",
+            id: "pay_failedunsafe",
+            order_id: "order_failedunsafe",
             amount,
             currency: "INR",
             status: "failed",
@@ -376,8 +376,8 @@ describe("Razorpay webhook route", () => {
       payload: {
         payment: {
           entity: {
-            id: "pay_failed_usd",
-            order_id: "order_failed_usd",
+            id: "pay_failedusd",
+            order_id: "order_failedusd",
             amount: 2500,
             currency: "USD",
             status: "failed",
@@ -405,7 +405,7 @@ describe("Razorpay webhook route", () => {
       payload: {
         payment: {
           entity: {
-            id: "pay_failed_unknown",
+            id: "pay_failedunknown",
             order_id: "order_unknown",
             amount: 2500,
             currency: "INR",
