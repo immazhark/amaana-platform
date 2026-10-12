@@ -272,3 +272,25 @@ test('policy routes preserve long-form reading hierarchy', async ({ page }) => {
     expect(lineHeight).toBeGreaterThanOrEqual(1.65);
   }
 });
+
+for (const width of [390, 1280]) {
+  test(`private assistance eyebrow remains readable at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+    const response = await page.goto('/request-assistance', { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBeTruthy();
+    const label = page.locator('.v2-assistance-form .v2-form-heading > span');
+    await expect(label).toHaveCount(1);
+    await expect(label).toHaveText('Private submission');
+    expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
+    await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
+    const contained = await label.evaluate(node => {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const host = node.closest('.v2-form-heading').getBoundingClientRect();
+      return [...range.getClientRects()].every(rect => rect.left >= host.left - 1 && rect.right <= host.right + 1);
+    });
+    expect(contained).toBe(true);
+  });
+}
