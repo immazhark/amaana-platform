@@ -263,6 +263,7 @@ describe("ensureCapturedDonationForRefund", () => {
     ["authorized", false],
     ["failed", false],
     ["created", false],
+    ["captured", false],
     ["authorized", true],
     ["failed", true],
   ])("does not reconstruct local capture from provider status %s", async (status, captured) => {
