@@ -1,3 +1,11 @@
+## 2026-10-13 — R-075 public source index (parked integration follow-up)
+
+- Scope: add `public/llms.txt` with 15 canonical links to existing public information and policy routes. No beneficiary, donor, receipt or administrative detail links; no invented impact figures, social URLs or tax promises.
+- Compliance: domestic Indian sources only; no FCRA registration; provisional Section 12A/80G approvals; normal acknowledgements are not tax-deduction certificates. Wording checked against the current compliance page.
+- Evidence: original `AMAANA_MASTER_REMEDIATION_PLAN(2).md` identifies AM-27; file absence verified at PR HEAD d246e366. Local link/origin/format check passed. This is a small text convention, not a security critical or a guarantee of model indexing.
+- Validation baseline: d246e366 fast/database/production gates passed; browser run 38303371341 still active. 77 actual-module local boundary/navigation probes pass. Parked cleanup b5ff59ed still awaits hosted lint/browser verification.
+- Publication: keep PR HEAD unchanged until its active browser suite completes; combine this source index with the parked cleanup for the next integration batch. No security/main merge or production deployment performed.
+
 # Current remediation checkpoint — 12 October 2026
 
 This repository copy preserves the recovered reconstructed register below. Its original classification counts are historical, not current closure counts. Source: Amaana_Reconstructed_95_Finding_Status_2026-10-12.md (190 lines; recovered in full from the owner's project files).
@@ -162,7 +170,7 @@ These are tracking-row counts, not a certified defect-free percentage. The 40 ad
 | R-072 | Homepage description exceeds target length | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-21; #221 | Trim implemented on remediation branch. |
 | R-073 | Missing NGO/WebSite/alternateName/social/appeal action schema | Already addressed in deployed baseline | Main deployed | Yes—deployed source / prior baseline evidence | AM-20/AM-32 | These existing schema fields are in deployed source; absent-schema claim is stale. |
 | R-074 | Missing verified registry link/entity enrichment | Open | No completed rollout | No verified new fix | AM-20/AM-32 | Further registry-based disambiguation not completed. |
-| R-075 | Missing llms.txt | Open | No completed rollout | No verified new fix | AM-27 | Not implemented; optional convention, not a proven critical defect. |
+| R-075 | Missing llms.txt | Implemented; integration pending | Parked follow-up based on b5ff59ed | Not deployed | AM-27 | Static source index: 15 canonical public links, conservative compliance wording; local checks pass, hosted/live serving pending. |
 | R-076 | Cloudflare email-protection broken link | Unverified | Not established | Unconfirmed | AM-22 | No verified current correction. |
 | R-077 | Missing real-user Web Vitals attribution | Open | No completed rollout | No verified new fix | AM-28 | Page-view analytics exists; LCP/INP/CLS attribution does not. |
 | R-078 | Dated audit documents not archived | Open | No completed rollout | No verified new fix | AM-19 | No complete archive cleanup. |

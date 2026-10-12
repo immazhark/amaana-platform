@@ -1,3 +1,11 @@
+## 2026-10-13 — R-075 public source index (parked integration follow-up)
+
+- Scope: add `public/llms.txt` with 15 canonical links to existing public information and policy routes. No beneficiary, donor, receipt or administrative detail links; no invented impact figures, social URLs or tax promises.
+- Compliance: domestic Indian sources only; no FCRA registration; provisional Section 12A/80G approvals; normal acknowledgements are not tax-deduction certificates. Wording checked against the current compliance page.
+- Evidence: original `AMAANA_MASTER_REMEDIATION_PLAN(2).md` identifies AM-27; file absence verified at PR HEAD d246e366. Local link/origin/format check passed. This is a small text convention, not a security critical or a guarantee of model indexing.
+- Validation baseline: d246e366 fast/database/production gates passed; browser run 38303371341 still active. 77 actual-module local boundary/navigation probes pass. Parked cleanup b5ff59ed still awaits hosted lint/browser verification.
+- Publication: keep PR HEAD unchanged until its active browser suite completes; combine this source index with the parked cleanup for the next integration batch. No security/main merge or production deployment performed.
+
 # 2026-10-13 IST — Gallery cleanup lint follow-up parked
 
 Ownership: `CODEX_ACTIVE` under owner continuation; one implementation writer. Parked task `fix/gallery-cleanup-lint-20261013` from consolidated PR #282 `d246e366c89455c4fb444c5b493392f046077103`.
