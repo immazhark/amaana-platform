@@ -13,6 +13,7 @@ export async function reconcileDirectDonation(input: {
 }) {
   const notes = input.notes.trim();
   if (!input.donationId || !input.actorId) throw new Error("Donation and reviewer are required");
+  if (!["VERIFY", "REJECT"].includes(input.decision)) throw new Error("Invalid reconciliation decision");
   if (notes.length < 3 || notes.length > 1000) throw new Error("Reconciliation notes must be between 3 and 1000 characters");
 
   return withSerializableTransactionRetry(async tx => {
