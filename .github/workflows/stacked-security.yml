@@ -12,6 +12,7 @@ on:
       - "scripts/test-admin-route-inventory.mjs"
       - "src/app/api/admin/media/curated-gallery/publish/**"
       - "src/app/api/donations/confirm/**"
+      - "src/app/api/donations/order/**"
       - "src/app/api/webhooks/razorpay/**"
       - "src/lib/payment-processing.ts"
       - "src/lib/payment-processing.test.ts"
@@ -50,5 +51,5 @@ jobs:
           node --test scripts/test-admin-route-inventory.mjs
       - name: Test media, configuration and privileged publication boundaries
         run: |
-          npx vitest run src/app/api/webhooks/razorpay/route.test.ts src/lib/payment-processing.test.ts src/app/api/donations/confirm/route.test.ts src/lib/bounded-request-body.test.ts src/lib/env.test.ts src/lib/public-media.test.ts src/app/api/admin/media/curated-gallery/publish/error-boundary.test.ts
+          npx vitest run src/app/api/donations/order/provider-order.test.ts src/app/api/webhooks/razorpay/payment-failed.test.ts src/app/api/webhooks/razorpay/route.test.ts src/lib/payment-processing.test.ts src/app/api/donations/confirm/route.test.ts src/lib/bounded-request-body.test.ts src/lib/env.test.ts src/lib/public-media.test.ts src/app/api/admin/media/curated-gallery/publish/error-boundary.test.ts
           node --check e2e/security-headers.spec.mjs
