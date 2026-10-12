@@ -28,6 +28,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { IslamicCompanion } from "@/components/islamic-companion";
 import { Analytics } from "@/components/analytics";
+import { WebVitals } from "@/components/web-vitals";
 import { StructuredData } from "@/components/structured-data";
 import { BackToTop } from "@/components/back-to-top";
 import { NavigationProgress } from "@/components/navigation-progress";
@@ -84,6 +85,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a className="v2-skip-link" href="#main">Skip to content</a>
         <StructuredData />
         <Analytics />
+        <WebVitals />
         <SiteMotion />
         <NavigationProgress />
         <SiteHeader />

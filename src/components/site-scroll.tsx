@@ -75,7 +75,17 @@ export function useSiteScroll(pathname: string) {
       // before native keyboard navigation so Home/End/Page/Arrow/Space and focus
       // movement retain the browser's exact scrolling semantics. A later wheel
       // gesture can initialize a fresh instance at the browser's current offset.
+      const smoothingWasActive = Boolean(instance);
       destroy();
+      // The default Home/End action can be swallowed on the same keydown
+      // when Lenis releases a mid-flight animated wheel gesture. Preserve the
+      // browser's standard document destinations without hijacking inputs,
+      // carousels, dialogs or other separately scrollable controls.
+      if (!smoothingWasActive || event.defaultPrevented ||
+          (event.key !== "Home" && event.key !== "End") ||
+          (event.target instanceof Element && event.target.closest(nested))) return;
+      const top = event.key === "Home" ? 0 : (document.documentElement?.scrollHeight ?? document.body.scrollHeight ?? 0);
+      window.scrollTo?.({ top, behavior: "instant" });
     };
     const click = (event: MouseEvent) => {
       if (event.target instanceof Element && event.target.closest("a[href], button, summary")) native();

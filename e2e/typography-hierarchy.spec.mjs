@@ -421,7 +421,9 @@ for (const width of [390, 1280]) {
       await page.setViewportSize({ width, height: 900 });
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
-      expect((await page.goto(path, { waitUntil: 'domcontentloaded' }))?.ok()).toBeTruthy();
+      // A DOMContentLoaded-only wait can race a late document navigation
+      // after the test sets an inline root font-size; wait for the full load.
+      expect((await page.goto(path, { waitUntil: 'load' }))?.ok()).toBeTruthy();
       const labels = page.locator(selector);
       expect(await labels.count(), `${path} must expose real metadata`).toBeGreaterThan(0);
       const read = () => labels.evaluateAll(nodes => nodes.filter(node =>
@@ -430,11 +432,18 @@ for (const width of [390, 1280]) {
       const normal = await read();
       expect(normal.length, `${path} must expose visible metadata`).toBeGreaterThan(0);
       for (const label of normal) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(12);
-      await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
-      // Distinguish a root font-size race from a fixed-pixel label defect.
+      const appliedRootFontSize = await page.evaluate(() => {
+        // Atomic apply+measure distinguishes a CSS override from a later
+        // document replacement; two separate evaluations can target different
+        // documents while late hydration/navigation is completing.
+        const root = document.documentElement;
+        root.style.fontSize = '200%';
+        return parseFloat(getComputedStyle(root).fontSize);
+      });
+      expect(appliedRootFontSize).toBeGreaterThanOrEqual(32);
+      const enlarged = await read();
       expect(await page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize)))
         .toBeGreaterThanOrEqual(32);
-      const enlarged = await read();
       expect(enlarged.length).toBeGreaterThan(0);
       for (const label of enlarged) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(24);
     });

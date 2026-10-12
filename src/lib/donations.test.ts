@@ -4,6 +4,15 @@ import { createDonationReference, createReceiptNumber, createReceiptToken, donat
 const valid = { appealId: "cmf1234567890123456789012", donorName: "Test Donor", donorEmail: "donor@example.com", donorPhone: "9876543210", amount: 500, givingIntent: "GENERAL", domesticConfirmed: true };
 describe("donation validation", () => {
   it("accepts a domestic INR donation", () => expect(donationSchema.safeParse(valid).success).toBe(true));
+  it("accepts digit-only form strings without coercing arbitrary input", () => {
+    expect(donationSchema.safeParse({ ...valid, amount: "500" }).success).toBe(true);
+    expect(donationSchema.safeParse({ ...valid, amount: "000500" }).success).toBe(true);
+  });
+  it.each(["1e3", "0x20", "500.0", "500 ", " 500", "+500", "-500", "", true, null, 500.5])(
+    "rejects unsupported public amount input %s", amount => {
+      expect(donationSchema.safeParse({ ...valid, amount }).success).toBe(false);
+    },
+  );
   it("requires domestic-source confirmation", () => expect(donationSchema.safeParse({ ...valid, domesticConfirmed: false }).success).toBe(false));
   it("enforces absolute donation limits before appeal context", () => { expect(donationSchema.safeParse({ ...valid, amount: 0 }).success).toBe(false); expect(donationSchema.safeParse({ ...valid, amount: 1000001 }).success).toBe(false); });
   it("keeps the ₹10 minimum for normal donations", () => { expect(isDonationAmountAllowedForRemaining(9, 1_000)).toBe(false); expect(isDonationAmountAllowedForRemaining(10, 1_000)).toBe(true); });

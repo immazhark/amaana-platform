@@ -90,3 +90,15 @@ test("AM-07 CSP constrains execution and preserves Razorpay transport", async ({
   expect(directives.get("script-src")).not.toContain("*");
   expect(directives.get("connect-src")).not.toContain("*");
 });
+
+
+test("anonymous performance reporting is private and rejects foreign origins without writing", async ({ request }) => {
+  const response = await request.post("/api/analytics/web-vitals", {
+    headers: { Origin: "https://not-amaana.invalid" },
+    data: { path: "/about", name: "LCP", value: 1000 },
+  });
+  expect(response.status()).toBe(204);
+  expect(response.headers()["cache-control"] ?? "").toMatch(/no-store.*private/i);
+  expect(response.headers()["x-robots-tag"] ?? "").toMatch(/noindex.*nofollow/i);
+  expect(await response.text()).toBe("");
+});

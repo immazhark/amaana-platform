@@ -26,8 +26,9 @@ export function parsePositiveRupeeAmount(
     throw new Error(`${field} must be a positive rupee amount with no more than two decimal places`);
   }
   const amount = Number(raw);
-  if (!Number.isFinite(amount) || amount <= 0 || amount > 10_000_000_000) {
-    throw new Error(`${field} must be a positive amount no greater than ₹10,000,000,000`);
+  // Backing Prisma Decimal(12,2) accepts at most 10 digits before the point.
+  if (!Number.isFinite(amount) || amount <= 0 || amount > 9_999_999_999.99) {
+    throw new Error(`${field} must be a positive amount no greater than ₹9,999,999,999.99`);
   }
   return amount;
 }

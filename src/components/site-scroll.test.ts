@@ -151,3 +151,51 @@ test("failed optional Lenis import preserves native scrolling and permits retry"
     cleanup?.();
   }
 });
+
+test.each(["Home", "End"])(
+  "%s guarantees the document destination after handing off active wheel smoothing",
+  async key => {
+    let cleanup: (() => void) | undefined;
+    const destroyed = vi.fn();
+    const scrollTo = vi.fn();
+    vi.doMock("react", () => ({
+      useEffect: (effect: () => () => void) => { cleanup = effect(); },
+    }));
+    vi.doMock("lenis", () => ({
+      default: class {
+        on() {}
+        destroy() { destroyed(); }
+      },
+    }));
+    const target = Object.assign(new EventTarget(), {
+      matchMedia: (query: string) => Object.assign(new EventTarget(), {
+        matches: query === "(pointer: fine)",
+      }),
+      scrollTo,
+    });
+    vi.stubGlobal("window", target);
+    vi.stubGlobal("document", Object.assign(new EventTarget(), {
+      hidden: false,
+      body: { matches: () => false },
+      documentElement: { scrollHeight: 1500 },
+    }));
+    vi.stubGlobal("Element", class {});
+    vi.stubGlobal("requestAnimationFrame", vi.fn(() => 1));
+    vi.stubGlobal("cancelAnimationFrame", vi.fn());
+    const { useSiteScroll } = await import("./site-scroll");
+    useSiteScroll("/about");
+    try {
+      target.dispatchEvent(new Event("wheel"));
+      await vi.dynamicImportSettled();
+      target.dispatchEvent(Object.assign(new Event("keydown"), { key }));
+      expect(destroyed).toHaveBeenCalledOnce();
+      expect(scrollTo).toHaveBeenCalledOnce();
+      expect(scrollTo).toHaveBeenCalledWith({
+        top: key === "Home" ? 0 : 1500,
+        behavior: "instant",
+      });
+    } finally {
+      cleanup?.();
+    }
+  },
+);
