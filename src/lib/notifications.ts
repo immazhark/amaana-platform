@@ -4,6 +4,7 @@ import { renderNotificationEmail } from "@/lib/notification-templates";
 
 const MAX_BATCH_SIZE = 20;
 const MAX_ATTEMPTS = 5;
+const EMAIL_PROVIDER_TIMEOUT_MS = 15_000;
 const PROCESSING_STALE_AFTER_MS = 15 * 60 * 1000;
 const RETRY_DELAYS_MS = [5, 15, 45, 135].map(minutes => minutes * 60 * 1000);
 
@@ -48,6 +49,7 @@ async function sendWithResend(
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
+    signal: AbortSignal.timeout(EMAIL_PROVIDER_TIMEOUT_MS),
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
@@ -136,6 +138,9 @@ export async function processPendingEmailNotifications() {
         id: notification.id,
         status: { in: [NotificationStatus.PENDING, NotificationStatus.FAILED] },
         attempts: { lt: MAX_ATTEMPTS },
+        // Recheck eligibility atomically: another worker may have deferred this row
+        // after our findMany snapshot, but before we can claim it.
+        scheduledFor: { lte: new Date() },
       },
       data: {
         status: NotificationStatus.PROCESSING,
