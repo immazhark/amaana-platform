@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { isTrackablePublicPath } from "@/lib/public-analytics";
+import { shouldRecordPublicPageView } from "@/lib/public-analytics";
 
 type IdleWindow = Window & typeof globalThis & {
   requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
@@ -28,7 +28,7 @@ export function Analytics() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!pathname || !isTrackablePublicPath(pathname)) return;
+    if (!pathname || !shouldRecordPublicPageView(pathname, navigator.webdriver === true)) return;
 
     const idleWindow = window as IdleWindow;
     if (idleWindow.requestIdleCallback) {

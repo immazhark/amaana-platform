@@ -8,11 +8,19 @@
 - No query string, assistance tracking path, donation receipt path, admin page, client IP,
   browser fingerprint, unique metric ID, raw timing entry or personal information is retained
   in the aggregates.
+- Automated browser visits are excluded from ordinary page-view counters when `navigator.webdriver` is available, reducing noise and avoiding unnecessary CI/AI-audit database writes (not a comprehensive bot filter).
 - A page load is sampled at 10%; repeated updates of one metric ID are collapsed in the browser.
+- Both the browser reporter **and the ingest endpoint** reject collection unless the opt-in build flag is enabled.
+- The root layout also omits the reporter subtree entirely for disabled builds to avoid unnecessary browser observers.
+- Individual published appeal/story/initiative slugs are reduced to a page-family key **before transmission**, e.g. `/appeals/:slug`, lowering privacy and database-cardinality risk.
 - Browser reports send only `{path, name, value}`; the server validates every field,
   classifies the metric into coarse performance buckets, and retains only daily counters.
 - Same-origin requirement and the existing anonymous analytics hourly abuse limit apply.
-- A 90-day aggregate retention window is enforced during the authenticated notification job.
+- A 90-day aggregate retention window is **implemented** in the authenticated
+  maintenance job; enforcement depends on that job actually running.
+  If notification maintenance is suspended, these records will **not**
+  be automatically pruned. Keep collection disabled until an active,
+  reliable maintenance schedule is verified.
 - An empty 204 response is deliberately returned for malformed, rejected or unavailable telemetry.
   Reporting failures never block donations or public navigation.
 
@@ -33,13 +41,15 @@ avoid treating small samples as definitive.
 1. Deploy the database migration and application together. Confirm `prisma migrate deploy`
    succeeded before enabling collection.
 2. Keep `NEXT_PUBLIC_ENABLE_WEB_VITALS=false` in preview and automated browser acceptance.
-3. Enable `NEXT_PUBLIC_ENABLE_WEB_VITALS=true` **only in production** after privacy and
+3. Confirm the authenticated notification/retention maintenance job is actually
+   scheduled and succeeds; **do not enable** Web Vitals while this job is suspended.
+4. Enable `NEXT_PUBLIC_ENABLE_WEB_VITALS=true` **only in production** after privacy and
    hosting-cost review; redeploy so Next.js injects the public build-time flag.
-4. Verify three daily aggregate metrics on known public paths using real browser visits;
+5. Verify three daily aggregate metrics on known public paths using real browser visits;
    do not synthesize production metric traffic as a passing performance result.
-5. Monitor daily aggregate row growth, database write rate, error budget, LCP/INP/CLS
+6. Monitor daily aggregate row growth, database write rate, error budget, LCP/INP/CLS
    bucket distribution, and Railway usage.
-6. To disable, set `NEXT_PUBLIC_ENABLE_WEB_VITALS=false` and redeploy. Already collected
+7. To disable, set `NEXT_PUBLIC_ENABLE_WEB_VITALS=false` and redeploy. Already collected
    aggregate rows expire through 90-day maintenance.
 
 ## Privacy and reliability

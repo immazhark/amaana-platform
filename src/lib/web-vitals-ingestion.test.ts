@@ -21,6 +21,10 @@ describe("anonymous Core Web Vitals ingestion", () => {
       .resolves.toEqual({ path: "/our-work", name: "LCP", bucket: "excellent" });
     await expect(parseWebVitalPayload(request({ path: "/appeals", name: "CLS", value: 0.2 })))
       .resolves.toEqual({ path: "/appeals", name: "CLS", bucket: "needsImprovement" });
+    await expect(parseWebVitalPayload(request({ path: "/appeals/private-person-name", name: "LCP", value: 1200 })))
+      .resolves.toEqual({ path: "/appeals/:slug", name: "LCP", bucket: "excellent" });
+    await expect(parseWebVitalPayload(request({ path: "/appeals/:slug", name: "LCP", value: 1200 })))
+      .resolves.toEqual({ path: "/appeals/:slug", name: "LCP", bucket: "excellent" });
   });
 
   it.each([

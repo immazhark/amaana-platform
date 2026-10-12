@@ -85,7 +85,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a className="v2-skip-link" href="#main">Skip to content</a>
         <StructuredData />
         <Analytics />
-        <WebVitals />
+        {process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS === "true" ? <WebVitals /> : null}
         <SiteMotion />
         <NavigationProgress />
         <SiteHeader />

@@ -98,7 +98,11 @@ test("anonymous performance reporting is private and rejects foreign origins wit
     data: { path: "/about", name: "LCP", value: 1000 },
   });
   expect(response.status()).toBe(204);
-  expect(response.headers()["cache-control"] ?? "").toMatch(/no-store.*private/i);
+  // Cache-Control directives have no semantic order. Next's route headers
+  // may normalize "no-store, private" to "private, no-store, max-age=0".
+  const cache = response.headers()["cache-control"] ?? "";
+  expect(cache).toMatch(/\bprivate\b/i);
+  expect(cache).toMatch(/\bno-store\b/i);
   expect(response.headers()["x-robots-tag"] ?? "").toMatch(/noindex.*nofollow/i);
   expect(await response.text()).toBe("");
 });

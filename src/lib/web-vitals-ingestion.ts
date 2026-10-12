@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { readTextBodyWithLimit } from "@/lib/bounded-request-body";
-import { isTrackablePublicPath } from "@/lib/public-analytics";
+import { normalizePublicWebVitalPath } from "@/lib/web-vitals-path";
 
 export const MAX_WEB_VITAL_JSON_BYTES = 512;
 export const CORE_WEB_VITALS = ["LCP", "INP", "CLS"] as const;
@@ -21,7 +21,7 @@ export const webVitalThresholds: Record<CoreWebVital, {
 };
 
 const payloadSchema = z.object({
-  path: z.string().max(200).refine(isTrackablePublicPath),
+  path: z.string().max(200),
   name: z.enum(CORE_WEB_VITALS),
   value: z.number().finite().nonnegative(),
 }).strict();
@@ -39,7 +39,8 @@ export async function parseWebVitalPayload(request: Request) {
   const raw = JSON.parse(await readTextBodyWithLimit(request, MAX_WEB_VITAL_JSON_BYTES));
   const parsed = payloadSchema.safeParse(raw);
   if (!parsed.success) return null;
+  const path = normalizePublicWebVitalPath(parsed.data.path);
   const bucket = classifyWebVital(parsed.data.name, parsed.data.value);
-  if (!bucket) return null;
-  return { path: parsed.data.path, name: parsed.data.name, bucket };
+  if (!path || !bucket) return null;
+  return { path, name: parsed.data.name, bucket };
 }

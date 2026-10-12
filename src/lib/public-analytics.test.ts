@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyticsDateForHyderabad, isTrackablePublicPath } from "./public-analytics";
+import { analyticsDateForHyderabad, isTrackablePublicPath, shouldRecordPublicPageView } from "./public-analytics";
 
 describe("isTrackablePublicPath", () => {
   it("tracks public discovery and detail routes", () => {
@@ -17,6 +17,16 @@ describe("isTrackablePublicPath", () => {
     expect(isTrackablePublicPath("/donations/ABC123")).toBe(false);
     expect(isTrackablePublicPath("/admin")).toBe(false);
     expect(isTrackablePublicPath("/our-work/not valid")).toBe(false);
+  });
+});
+
+describe("public page-view integrity and infrastructure usage", () => {
+  it("excludes automated acceptance/audit visits before issuing analytics requests", () => {
+    expect(shouldRecordPublicPageView("/about", true)).toBe(false);
+    expect(shouldRecordPublicPageView("/appeals/appeal-name", true)).toBe(false);
+    expect(shouldRecordPublicPageView("/about", false)).toBe(true);
+    expect(shouldRecordPublicPageView("/admin", false)).toBe(false);
+    expect(shouldRecordPublicPageView("/request-assistance", false)).toBe(false);
   });
 });
 

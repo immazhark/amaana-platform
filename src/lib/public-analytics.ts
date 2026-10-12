@@ -11,6 +11,15 @@ export function isTrackablePublicPath(pathname: string) {
   return pathname.length <= 200 && trackablePublicPath.test(pathname);
 }
 
+/**
+ * Automated browser probes are not public visits. Besides biasing the
+ * reported numbers, recording them incurs avoidable rate-limit and counter
+ * writes on every acceptance/audit navigation.
+ */
+export function shouldRecordPublicPageView(pathname: string, automatedBrowser: boolean) {
+  return !automatedBrowser && isTrackablePublicPath(pathname);
+}
+
 export function analyticsDateForHyderabad(now: Date) {
   const parts = Object.fromEntries(
     hyderabadDateFormatter

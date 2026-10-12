@@ -22,5 +22,9 @@ describe("ephemeral security ledger retention", () => {
     expect(cutoffs.rateLimitBefore.toISOString()).toBe("2026-09-17T04:00:00.000Z");
     expect(cutoffs.loginBefore.toISOString()).toBe("2026-09-11T04:00:00.000Z");
     expect(cutoffs.webVitalsBefore.toISOString()).toBe("2026-06-20T00:00:00.000Z");
+    const beforeMidnight = ephemeralSecurityLedgerCutoffs(new Date("2026-09-18T18:29:59Z"));
+    const afterMidnight = ephemeralSecurityLedgerCutoffs(new Date("2026-09-18T18:30:00Z"));
+    expect(beforeMidnight.webVitalsBefore.toISOString()).toBe("2026-06-20T00:00:00.000Z");
+    expect(afterMidnight.webVitalsBefore.toISOString()).toBe("2026-06-21T00:00:00.000Z");
   });
 });

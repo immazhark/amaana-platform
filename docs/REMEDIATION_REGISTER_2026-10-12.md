@@ -11,6 +11,30 @@ This repository copy preserves the recovered reconstructed register below. Its o
 - Production has not been promoted during this batch. Last confirmed deployed main: 2a8c35ad5e553ac0cc78b8027a35b592d1876826. Do not mark any new correction Production Verified without deployment and live evidence.
 - Terminal execution was unavailable after automatic approval review hit an account usage limit. Repository connector operations and hosted CI remain available. Modified JavaScript test syntax was parsed in the tool runtime; this does not replace browser execution.
 
+## Live remediation delta — PR #282 (12 October 2026)
+
+This section supersedes historical status labels in the reconstructed 95-row
+inventory **only for the rows listed below**. Do not treat a commit, a passed
+unit test or an integrated PR as evidence of a Railway deployment.
+
+| Finding | Current branch evidence | Engineering disposition | Live deployment |
+|---|---|---|---|
+| R-012 Anonymous administrative boundaries | Protected routes require authentication/permissions; admin route inventory and anonymous-access coverage added to CI | Partially audited; complete independent review outstanding | No verified deployment |
+| R-024 Metadata at 200% font scaling | Earlier browser runs isolated a document-root style race; root-scaling browser assertion hardened | Implemented candidate; fresh browser verification required | No verified deployment |
+| R-041 Donation and admin money controls | Razorpay + direct transfer + 3 admin rupee inputs use numeric/decimal keyboard text controls, schema validation, and Prisma Decimal(12,2) max-value guard | Code implemented; client/server regression tests passed on earlier candidate; broader human acceptance pending | No verified deployment |
+| R-047 Per-route bundle analysis | Next 16 app-build-manifest absence handled; reports route count and honest aggregate bytes instead of invented per-route transfer figures | **Partial:** no reliable route-specific JS/CSS attribution until a suitable build artifact is available | No verified deployment |
+| R-050 Wheel-only Lenis keyboard handoff | Keyboard teardown and explicit Home/End fallback with tests | Code implemented; full-browser rerun needed to certify the former flaky case | No verified deployment |
+| R-077 Real-user Core Web Vitals | Database migration, daily aggregate buckets, 90-day pruning, sampled client collector and server ingestion/tests | **Opt-in only and disabled by default.** No real-user field measurements collected or certified | No verified deployment |
+
+**Current release boundary:** PR #282 is draft, targeting the P0 security
+integration branch rather than `main`. Production promotion, live payment
+confirmation, screen-reader review and actual Core Web Vitals measurements are
+separate release gates.
+
+**Evidence discipline:** The source register is reconstructed, not a recovered
+original 95-defect ledger. Defects not listed above retain their previous
+classification pending issue-by-issue review.
+
 ## Retained source register (historical snapshot)
 
 # Amaana — Reconstructed Finding Register and Deployment Status

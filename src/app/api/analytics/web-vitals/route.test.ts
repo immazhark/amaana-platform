@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   isSameOrigin: vi.fn(),
@@ -24,14 +24,31 @@ function post(payload: unknown, origin = "https://amaanafoundation.org") {
   });
 }
 
+const originalVitalsFlag = process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS;
 beforeEach(() => {
+  process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS = "true";
   vi.clearAllMocks();
   mocks.isSameOrigin.mockReturnValue(true);
   mocks.enforceAnalyticsRateLimit.mockResolvedValue(true);
   mocks.upsert.mockResolvedValue({ id: "aggregate-1" });
 });
 
+afterEach(() => {
+  if (originalVitalsFlag === undefined) delete process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS;
+  else process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS = originalVitalsFlag;
+});
+
 describe("first-party Web Vitals reporting boundary", () => {
+  it("never creates a metric row when monitoring is disabled", async () => {
+    process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS = "false";
+    const response = await POST(post({ path: "/about", name: "LCP", value: 1100 }));
+    expect(response.status).toBe(204);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/);
+    expect(mocks.isSameOrigin).not.toHaveBeenCalled();
+    expect(mocks.enforceAnalyticsRateLimit).not.toHaveBeenCalled();
+    expect(mocks.upsert).not.toHaveBeenCalled();
+  });
+
   it("increments anonymous daily buckets without storing individual event identifiers", async () => {
     const response = await POST(post({ path: "/about", name: "INP", value: 40 }));
     expect(response.status).toBe(204);
@@ -44,6 +61,14 @@ describe("first-party Web Vitals reporting boundary", () => {
     expect(query.create).not.toHaveProperty("clientHash");
     expect(query.create).not.toHaveProperty("metricId");
     expect(query.update.excellent).toEqual({ increment: 1 });
+  });
+
+  it("never persists a beneficiary- or story-specific public slug", async () => {
+    await POST(post({ path: "/appeals/beneficiary-name-treatment", name: "LCP", value: 980 }));
+    const query = mocks.upsert.mock.calls[0]?.[0];
+    expect(query?.where.path_date_metric.path).toBe("/appeals/:slug");
+    expect(query?.create.path).toBe("/appeals/:slug");
+    expect(JSON.stringify(query)).not.toContain("beneficiary-name");
   });
 
   it("rejects private paths, invalid names and query-string identifiers", async () => {

@@ -12,6 +12,13 @@ const privateHeaders = {
 };
 
 export async function POST(request: Request) {
+  // The server must honor the same explicit opt-in as the client. Without
+  // this guard a forged same-origin request could create database writes even
+  // while the browser reporter is disabled, increasing Railway costs.
+  if (process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS !== "true") {
+    return new NextResponse(null, { status: 204, headers: privateHeaders });
+  }
+
   // Best-effort, low-volume analytics must never expose database state.
   try {
     if (!isSameOrigin(request)) return new NextResponse(null, { status: 204, headers: privateHeaders });

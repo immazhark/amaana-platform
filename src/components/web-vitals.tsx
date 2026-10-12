@@ -1,7 +1,7 @@
 "use client";
 
 import { useReportWebVitals } from "next/web-vitals";
-import { isTrackablePublicPath } from "@/lib/public-analytics";
+import { normalizePublicWebVitalPath } from "@/lib/web-vitals-path";
 
 type Metric = Parameters<Parameters<typeof useReportWebVitals>[0]>[0];
 type PublicVitalName = "LCP" | "INP" | "CLS";
@@ -12,8 +12,13 @@ const ENDPOINT = "/api/analytics/web-vitals";
 
 let sampled: boolean | null = null;
 let listenersInstalled = false;
-let pageLoadPath: string | null = null;
+// Bind performance measurements to the initial document route, not a later
+// SPA navigation that might enter or leave an assistance/private page.
+const pageLoadPath: string | null = typeof window === "undefined"
+  ? null
+  : normalizePublicWebVitalPath(window.location.pathname);
 const latest = new Map<string, { name: PublicVitalName; value: number }>();
+const reportedMetricIds = new Set<string>();
 
 function shouldSample() {
   if (sampled === null) sampled = Math.random() < SAMPLE_RATE;
@@ -37,8 +42,14 @@ function sendReport(path: string, name: PublicVitalName, value: number) {
 }
 
 function flushLatest() {
-  if (latest.size === 0 || !pageLoadPath || !isTrackablePublicPath(pageLoadPath)) return;
-  for (const { name, value } of latest.values()) sendReport(pageLoadPath, name, value);
+  if (latest.size === 0 || !pageLoadPath) return;
+  for (const [id, { name, value }] of latest) {
+    // Visibility can alternate repeatedly in a session. Each metric ID
+    // contributes at most one bucket; never double-count a resumed tab.
+    if (reportedMetricIds.has(id)) continue;
+    reportedMetricIds.add(id);
+    sendReport(pageLoadPath, name, value);
+  }
   latest.clear();
 }
 
@@ -47,8 +58,7 @@ function handleWebVital(metric: Metric) {
   if (metric.name !== "LCP" && metric.name !== "INP" && metric.name !== "CLS") return;
   if (!Number.isFinite(metric.value) || metric.value < 0) return;
 
-  if (pageLoadPath === null) pageLoadPath = window.location.pathname;
-  if (!isTrackablePublicPath(pageLoadPath)) return;
+  if (!pageLoadPath) return;
 
   // Next/Web Vitals may report multiple deltas for one id; keep the latest
   // score in memory and send one final sample when the page is backgrounded.

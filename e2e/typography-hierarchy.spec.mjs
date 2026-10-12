@@ -432,18 +432,13 @@ for (const width of [390, 1280]) {
       const normal = await read();
       expect(normal.length, `${path} must expose visible metadata`).toBeGreaterThan(0);
       for (const label of normal) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(12);
-      const appliedRootFontSize = await page.evaluate(() => {
-        // Atomic apply+measure distinguishes a CSS override from a later
-        // document replacement; two separate evaluations can target different
-        // documents while late hydration/navigation is completing.
-        const root = document.documentElement;
-        root.style.fontSize = '200%';
-        return parseFloat(getComputedStyle(root).fontSize);
-      });
-      expect(appliedRootFontSize).toBeGreaterThanOrEqual(32);
-      const enlarged = await read();
-      expect(await page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize)))
+      // A persistent stylesheet emulates the browser's increased default
+      // text size without racing inline root-style reconciliation at hydration.
+      // The assertion still verifies the *computed* root size and every label.
+      await page.addStyleTag({ content: 'html:root { font-size: 200% !important; }' });
+      await expect.poll(() => page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize)))
         .toBeGreaterThanOrEqual(32);
+      const enlarged = await read();
       expect(enlarged.length).toBeGreaterThan(0);
       for (const label of enlarged) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(24);
     });
