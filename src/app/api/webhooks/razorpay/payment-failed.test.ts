@@ -78,7 +78,10 @@ describe("failed payment identity before persistence", () => {
     expect(await response.json()).toEqual({ received: true });
     expect(mocks.transaction).toHaveBeenCalledOnce();
     expect(mocks.donationUpdateMany).toHaveBeenCalledWith({
-      where: { id: "donation_123", status: { in: ["CREATED", "AUTHORIZED"] } },
+      where: { id: "donation_123", OR: [
+        { status: "CREATED" },
+        { status: "AUTHORIZED", providerPaymentId: "pay_123" },
+      ] },
       data: { status: "FAILED", failedAt: expect.any(Date), providerPaymentId: "pay_123" },
     });
     expect(mocks.eventCreate).toHaveBeenCalledWith({ data: {
