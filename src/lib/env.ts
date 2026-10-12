@@ -76,5 +76,8 @@ export function validateProductionEnvironment() {
 }
 
 export function isEmailDeliveryEnabled() {
-  return process.env.EMAIL_DELIVERY_MODE === "live";
+  // The notification cron does not invoke the full deployment schema.
+  // Refuse live delivery from staging even when its mode is misconfigured.
+  const environment = process.env.APP_ENVIRONMENT ?? "production";
+  return environment === "production" && process.env.EMAIL_DELIVERY_MODE === "live";
 }
