@@ -3,7 +3,11 @@ import { sendBestEffortTelemetry } from "./client-telemetry";
 
 describe("nonblocking, same-origin telemetry transport", () => {
   it("uses a successful Beacon exactly once without invoking fetch", async () => {
-    const beacon = vi.fn((_endpoint: string, _body: Blob) => true);
+    const beacon = vi.fn((endpoint: string, body: Blob) => {
+      expect(endpoint).toBe("/api/analytics/page-view");
+      expect(body.type).toBe("application/json");
+      return true;
+    });
     const post = vi.fn();
     sendBestEffortTelemetry("/api/analytics/page-view", { path: "/about" }, { beacon, post });
     expect(post).not.toHaveBeenCalled();

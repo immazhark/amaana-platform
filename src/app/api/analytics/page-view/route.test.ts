@@ -37,7 +37,7 @@ describe("anonymous page-view persistence boundary", () => {
       ["/appeals/beneficiary-name-treatment", "/appeals/:slug"],
       ["/stories/patient-recovery", "/stories/:slug"],
       ["/our-work/eid-gift-kits-2026", "/our-work/:slug"],
-    ]) {
+    ] as const) {
       mocks.upsert.mockClear();
       const response = await POST(pageViewRequest(raw));
       expect(response.status).toBe(204);
