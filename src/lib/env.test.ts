@@ -55,6 +55,12 @@ describe("production environment safety", () => {
     expect(() => validateProductionEnvironment()).toThrow(/Public media URL must use HTTPS/);
   });
 
+
+  it("rejects a configured donation QR URL that is not HTTPS", () => {
+    process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL = "http://payments.example.com/amaana-qr.png";
+    expect(() => validateProductionEnvironment()).toThrow(/Donation QR URL must use HTTPS/);
+  });
+
   it("keeps delivery disabled when the mode is omitted", () => {
     delete process.env.EMAIL_DELIVERY_MODE;
     expect(isEmailDeliveryEnabled()).toBe(false);
