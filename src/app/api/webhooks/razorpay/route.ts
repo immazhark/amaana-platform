@@ -114,6 +114,9 @@ export async function POST(request: Request) {
       Number.isSafeInteger(payment.amount) &&
       payment.amount > 0
     ) {
+      if (typeof payment.id !== "string" || !payment.id.trim()) {
+        return new NextResponse("Invalid payment entity", { status: 400 });
+      }
       await withSerializableTransactionRetry(async tx => {
         const donation = await tx.donation.findUnique({
           where: { providerOrderId: payment.order_id },
