@@ -25,8 +25,10 @@ function assertCapturedPaymentIdentity(
 }
 
 function providerPaymentIsCaptured(payment: { status?: string; captured?: boolean }) {
-  // A boolean flag alone is insufficient evidence of capture or a completed refund.
-  return ["captured", "refunded"].includes(payment.status ?? "");
+  // A captured status must agree with the explicit capture flag. A completed
+  // refund is separate evidence of prior capture (Razorpay may clear that flag).
+  if (payment.status === "captured") return payment.captured === true;
+  return payment.status === "refunded";
 }
 
 export async function captureDonation(providerOrderId: string, providerPaymentId: string, amountPaise: number) {
