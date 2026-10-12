@@ -1,5 +1,7 @@
 "use client";
 
+import { updateDonationAmountValidity } from "@/lib/donation-amount-input";
+
 import Image from "next/image";
 import { type FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -47,7 +49,7 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
       <div className="field"><label htmlFor={`direct-name-${method}`}>Full name</label><input id={`direct-name-${method}`} name="donorName" autoComplete="name" minLength={2} required disabled={busy || bankUnavailable}/></div>
       <div className="field"><label htmlFor={`direct-email-${method}`}>Email</label><input id={`direct-email-${method}`} name="donorEmail" type="email" autoComplete="email" required disabled={busy || bankUnavailable}/></div>
       <div className="field"><label htmlFor={`direct-phone-${method}`}>Phone <span className="muted">optional</span></label><input id={`direct-phone-${method}`} name="donorPhone" type="tel" autoComplete="tel" disabled={busy || bankUnavailable}/></div>
-      <div className="field"><label htmlFor={`direct-amount-${method}`}>Amount (INR)</label><input id={`direct-amount-${method}`} name="amount" type="number" min={transactionMin} max={transactionMax} step="1" inputMode="numeric" required disabled={busy || bankUnavailable}/></div>
+      <div className="field"><label htmlFor={`direct-amount-${method}`}>Amount (INR)</label><input id={`direct-amount-${method}`} name="amount" type="text" inputMode="numeric" pattern="[0-9]+" maxLength={12} onInput={event => updateDonationAmountValidity(event.currentTarget, transactionMin, transactionMax)} required aria-describedby={`direct-amount-hint-${method}`} disabled={busy || bankUnavailable}/><small id={`direct-amount-hint-${method}`}>Whole rupees only. {transactionMax < 10 ? `Enter exactly ₹${transactionMax.toLocaleString("en-IN")}.` : `₹${transactionMin.toLocaleString("en-IN")} to ₹${transactionMax.toLocaleString("en-IN")}.`}</small></div>
       <div className="field"><label htmlFor={`direct-reference-${method}`}>UTR / transaction reference</label><input id={`direct-reference-${method}`} name="transferReference" minLength={6} maxLength={100} required disabled={busy || bankUnavailable}/></div>
       <div className="field"><label htmlFor={`direct-date-${method}`}>Transfer date and time</label><input id={`direct-date-${method}`} name="transferredAt" type="datetime-local" required disabled={busy || bankUnavailable}/></div>
       <div className="field full"><label htmlFor={`direct-evidence-${method}`}>Screenshot / receipt <span className="muted">optional, max 5 MB</span></label><input id={`direct-evidence-${method}`} name="evidence" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" disabled={busy || bankUnavailable}/><small>Supporting evidence only. It does not prove receipt until an Amaana administrator verifies the transfer.</small></div>
