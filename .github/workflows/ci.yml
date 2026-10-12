@@ -76,6 +76,10 @@ jobs:
 
       - name: Audit global CSS architecture
         run: node scripts/audit-global-css.mjs
+      - name: Validate App Router bundle reporting
+        run: node --test scripts/test-route-bundle-report.mjs
+      - name: Prevent anonymous admin route coverage drift
+        run: node --test scripts/test-admin-route-inventory.mjs
       - name: Verify branded application icons
         run: npm run icons:verify
       - name: Decode and validate public campaign media
@@ -244,6 +248,9 @@ jobs:
 
       - name: Enforce client bundle secret boundary
         run: node scripts/check-client-secret-boundary.mjs
+
+      - name: Report App Router route-level JavaScript and CSS
+        run: npm run audit:route-bundles
 
       - name: Enforce production bundle budgets
         shell: bash

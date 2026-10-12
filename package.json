@@ -43,6 +43,7 @@
     "icons:verify": "npm run icons:generate && node scripts/verify-brand-icons.mjs",
     "browser-fixtures:materialize": "node scripts/materialize-browser-acceptance.mjs",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
+    "audit:route-bundles": "node scripts/report-route-bundles.mjs",
     "security:client-bundle": "node scripts/check-client-secret-boundary.mjs"
   },
   "dependencies": {
