@@ -1,3 +1,19 @@
+# 2026-10-13 IST — Gallery lifecycle and actual-helper admin authorization integration
+
+Ownership: `CODEX_ACTIVE` under owner continuation; one implementation writer. Consolidated PR #282 on `fix/consolidated-a11y-regression-20261012`, target `fix/p0-security-remediation-20261010`.
+
+Baseline `0d193c3e0b4aedcb3135944b614055bba34fa628` completed CI 38300163971 successfully: lint/type/unit, database, production, browser and final verify. Hosted units 704 passed / 9 skipped; Chromium 1,151 passed with no failure/flake summary; Firefox/WebKit 24 passed. JS 818,586/819,200 B; CSS 346,461/348,160 B. This certifies the baseline only.
+
+Integrate N-20 from parked `62a721f3`: stable image-ID selection; release stale modal ownership; restore connected thumbnail focus; 14 unit and three dynamic actual-component browser regressions. Local helper 14/14, syntax and production-fixture removal checks pass. Rendered lifecycle/client-byte acceptance still pending.
+
+R-012 coverage: add 37 cases across start/upload/publish/status APIs using real getCurrentUser, hasPermission and isSameOrigin. Verify active/unexpired hashed-token query predicates; anonymous/unresolved sessions; zero/partial permissions; permissions combined across roles; foreign/missing/opaque mutation origins; private error headers; no privileged storage/publication activity before authorization. Stop authorized cases at an explicit inert runtime checkpoint rather than upload/publish.
+
+Local actual API/session/permission/origin execution: 37/37 pass with inert external/persistence adapters. Detached permission-checker mutation (always true) causes 12 failures, with 25 unrelated cases still passing. Added hosted Vitest cases; local TS syntax passes. This is coverage improvement, not a newly discovered production bypass or complete R-012 certification.
+
+Next: fresh combined CI; fix demonstrated failures, inspect gallery bytes and rendering, then integration/release gates. No security/main merge, Railway deployment, real storage mutation, payment or live verification. All compliance/factual/media locks and asset budgets remain unchanged.
+
+---
+
 # 2026-10-13 IST — Gallery lifecycle candidate
 
 Ownership: `CODEX_ACTIVE` under owner continuation; one implementation writer. Parked task `fix/gallery-selection-lifecycle-20261013` from consolidated PR #282 `0d193c3e0b4aedcb3135944b614055bba34fa628`.

@@ -265,3 +265,11 @@ New consolidated candidate integrates N-15–N-18 from parked `0c695485`, adds N
 N-20 source finding: array-index selection substitutes photos after reorder and can retain hidden body overflow/key ownership after selected item removal or an empty collection. Candidate preserves image identity and cleans up the modal, restoring connected thumbnail focus.
 
 14 actual navigation-helper cases pass locally; 14 Vitest and three actual-component browser mutation cases added. The client wrapper is a disposable acceptance fixture excluded from production. Script/spec/unit syntax passed; rendered lifecycle, lint/type/build and client-byte verification pending. No defect closure/deployment/AAA certification claimed. Baseline 38300163971: fast/database/production passed; hosted units 704 passed / 9 skipped; browser running at last read.
+
+### Actual-helper privileged media API matrix — 13 October 2026 IST
+
+R-012 gains 37 start/upload/publish/status cases retaining real session resolution, permission checks and origin validation. Persistence and external work are inert. Missing/unresolved sessions and each missing scoped permission reject before domain/storage activity. Valid scopes across one or multiple roles reach an explicit authorized checkpoint, without publishing. Mutation origins reject before cookie/DB lookup. Query checks verify ACTIVE status, hashed session token and future expiry predicate; errors retain private/noindex headers.
+
+Local actual-helper matrix: 37/37 pass. Restoring an always-allow permission mutation in a detached scratch copy causes 12 failures; production auth helpers are unchanged. Hosted Vitest validation remains pending; no full authenticated/live/external-edge certification claimed. R-012 stays partial.
+
+Baseline `0d193c3e` passed full CI 38300163971: units 704 passed / 9 skipped; Chromium 1,151 passed without reported flakes; Firefox/WebKit 24 passed; fast/database/production/final verify successful. JS 818,586/819,200 B; CSS 346,461/348,160 B. The new candidate integrates parked N-20 plus this coverage; fresh combined checks must pass before release.
