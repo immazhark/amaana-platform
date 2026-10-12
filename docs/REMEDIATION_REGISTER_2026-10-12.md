@@ -1,3 +1,11 @@
+## 2026-10-13 — R-025 error-heading line spacing
+
+- Current root `not-found.tsx` and `error.tsx` use `.v2-not-found` / `.v2-error-page`; both active headings receive line-height .8 from the globally imported `error-experience.css`. Error heading includes an explicit line break. This is confirmed source evidence; no live overlap measurement claimed.
+- Raise the shared heading rule to 1.05 in root error styling and its duplicated policy-route rule, avoiding a later route stylesheet restoring .8. No changes to heading words, route boundaries, redirects, fonts or theme.
+- Add four real-404 browser cases (390/1440px × 100/200% root font), checking HTTP404, the actual accessible heading, correct root scaling, and line height at least font size. Syntax check passed; browser execution pending. Existing thresholds unchanged.
+- R-025 remains partial: other legacy display rules and broader human typography acceptance are not certified by this narrow correction.
+- Parked batch now includes gallery cleanup, R-075 public source index, two R-024 label minimums, and this R-025 correction. Current PR d246e366/browser run 38303371341 still pending; no source update interrupting that run and no deployment.
+
 ## 2026-10-13 — R-024 remaining shared-label minimum
 
 - Raise `.status-badge` (globals) and `.canonical-pathway span` (canonical-content) from .72rem to .75rem. At a 16px root, both now reach 12px; at a 32px root, both scale to 24px. Color, spacing, layout and content remain unchanged; replacement length is identical.
@@ -112,7 +120,7 @@ These are tracking-row counts, not a certified defect-free percentage. The 40 ad
 | R-022 | Impact/Contact/initiative supporting-text contrast | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-05; #230 | Three affected surfaces switched to accessible meta ink. |
 | R-023 | Dark admin-sidebar eyebrow contrast | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-05; #239 | Separate foreground tokens for light content and dark sidebar. |
 | R-024 | Sub-12px text declarations | Open | 19 Companion fixed-pixel font declarations converted to equivalent rem values; enlarged-text browser and source-guard tests added | New fix candidate; cross-browser acceptance pending | AM-05 | Remaining public styles and production verification not closed. |
-| R-025 | Overly tight multiline heading line heights | Partial; not closed | Existing baseline; further work pending | Partial / baseline only | AM-25 | Earlier typography improvements exist; all flagged declarations not closed. |
+| R-025 | Overly tight multiline heading line heights | Partial; correction candidate | Parked R-025 error/404 heading correction | Not deployed | AM-25 | Active error/404 line height raised .8→1.05 in root and duplicate policy styles; four browser cases added, execution pending. Other legacy rules not certified. |
 | R-026 | Remaining gold-on-light text contrast | Partial; not closed | Existing baseline; further work pending | Partial / baseline only | AM-05 | Needs selector/background-specific verification; not blanket certification. |
 | R-027 | Assistance step errors lack linked inline messages | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-11; #224 | Persistent aria-invalid/aria-describedby errors implemented. |
 | R-028 | Assistance focus precedes error DOM commit | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-11; #225 | Focus scheduled after rendered inline errors. |

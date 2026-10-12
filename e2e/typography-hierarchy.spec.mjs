@@ -562,3 +562,36 @@ for (const width of [390, 1280]) {
     }
   });
 }
+
+for (const width of [390, 1440]) {
+  for (const scale of [100, 200]) {
+    test(`not-found heading keeps readable line spacing at ${width}px and ${scale}% text`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+      await page.addInitScript(percent => {
+        const apply = () => {
+          const style = document.createElement('style');
+          style.textContent = `html:root { font-size: ${percent}% !important; }`;
+          document.head.appendChild(style);
+        };
+        if (document.head) apply();
+        else document.addEventListener('DOMContentLoaded', apply, { once: true });
+      }, scale);
+      const response = await page.goto('/typography-acceptance-missing-page', { waitUntil: 'domcontentloaded' });
+      expect(response?.status()).toBe(404);
+      const heading = page.getByRole('heading', { level: 1, name: "We Couldn't Find That Page" });
+      await expect(heading).toBeVisible();
+      await expect.poll(() => heading.evaluate(node => {
+        const root = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+        const style = getComputedStyle(node);
+        return { root, ratio: Number.parseFloat(style.lineHeight) / Number.parseFloat(style.fontSize) };
+      })).toMatchObject({ root: 16 * scale / 100 });
+      const metrics = await heading.evaluate(node => {
+        const style = getComputedStyle(node);
+        return { font: Number.parseFloat(style.fontSize), line: Number.parseFloat(style.lineHeight) };
+      });
+      expect(metrics.line).toBeGreaterThanOrEqual(metrics.font);
+    });
+  }
+}
