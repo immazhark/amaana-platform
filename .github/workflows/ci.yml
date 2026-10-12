@@ -81,6 +81,7 @@ jobs:
       - name: Guard responsive hero/artwork image weight
         run: |
           node --test scripts/test-public-image-weight.mjs
+          node --test scripts/test-artwork-encoding.mjs
           node scripts/check-public-image-weight.mjs
       - name: Prevent anonymous admin route coverage drift
         run: node --test scripts/test-admin-route-inventory.mjs
