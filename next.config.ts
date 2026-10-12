@@ -19,6 +19,8 @@ function getConfiguredHttpsOrigin(value: string | undefined) {
 }
 
 const configuredImageOrigins = [
+  // Keep the response policy aligned with src/lib/public-media.ts.
+  getConfiguredHttpsOrigin(process.env.NEXT_PUBLIC_APP_URL),
   getConfiguredHttpsOrigin(process.env.PUBLIC_MEDIA_BASE_URL),
   getConfiguredHttpsOrigin(process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL),
 ].filter((origin): origin is string => Boolean(origin));
