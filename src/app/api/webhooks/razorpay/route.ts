@@ -103,6 +103,19 @@ export async function POST(request: Request) {
       return new NextResponse("Invalid captured payment entity", { status: 400 });
     }
 
+    // Financial failure events must never fall through to the generic 200
+    // acknowledgement when the provider identity or amount is malformed.
+    if (payload.event === "payment.failed" && (
+      !payment ||
+      typeof payment.id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(payment.id) ||
+      typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
+      payment.currency !== "INR" ||
+      (payment.status !== undefined && payment.status !== "failed") ||
+      !Number.isSafeInteger(payment.amount) || payment.amount <= 0
+    )) {
+      return new NextResponse("Invalid payment entity", { status: 400 });
+    }
+
     if (payload.event === "payment.captured" && payment?.order_id && payment.currency === "INR") {
       const result = await captureDonation(payment.order_id, payment.id, payment.amount);
       try {
@@ -129,13 +142,6 @@ export async function POST(request: Request) {
       Number.isSafeInteger(payment.amount) &&
       payment.amount > 0
     ) {
-      if (
-        typeof payment.id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(payment.id) ||
-        typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
-        (payment.status !== undefined && payment.status !== "failed")
-      ) {
-        return new NextResponse("Invalid payment entity", { status: 400 });
-      }
       await withSerializableTransactionRetry(async tx => {
         const donation = await tx.donation.findUnique({
           where: { providerOrderId: payment.order_id },
