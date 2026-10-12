@@ -64,6 +64,7 @@ describe("notification worker flow", () => {
   });
 
   afterEach(() => {
+    vi.restoreAllMocks();
     vi.unstubAllGlobals();
     if (originalApiKey === undefined) delete process.env.RESEND_API_KEY;
     else process.env.RESEND_API_KEY = originalApiKey;
@@ -88,6 +89,7 @@ describe("notification worker flow", () => {
         id: "notification_1",
         status: { in: [NotificationStatus.PENDING, NotificationStatus.FAILED] },
         attempts: { lt: 5 },
+        scheduledFor: { lte: expect.any(Date) },
       },
       data: {
         status: NotificationStatus.PROCESSING,
