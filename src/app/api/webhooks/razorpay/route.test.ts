@@ -444,6 +444,23 @@ describe("Razorpay webhook route", () => {
     expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
   });
 
+  it.each(["failed", "pending", "created"])(
+    "rejects refund.processed with contradictory provider status %s before accounting",
+    async status => {
+      const payload = refundPayload();
+      const response = await POST(webhookRequest({
+        ...payload,
+        payload: { refund: { entity: { ...payload.payload.refund.entity, status } } },
+      }));
+
+      expect(response.status).toBe(400);
+      expect(await response.text()).toBe("Invalid refund entity");
+      expect(mocks.ensureCapturedDonationForRefund).not.toHaveBeenCalled();
+      expect(mocks.transactionRetry).not.toHaveBeenCalled();
+      expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
+    },
+  );
+
   it.each(["", "invalid", null])("rejects a missing or malformed refund id %s", async id => {
     const payload = refundPayload();
     const response = await POST(webhookRequest({
