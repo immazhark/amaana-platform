@@ -61,3 +61,5 @@ No identifiers are stored by `DailyWebVital`. Aggregate counts are not a way to
 identify donors, beneficiaries, administrators or other individuals. This is an
 observability instrument, not a legal/compliance or performance certification.
 Keep the feature opt-in until the live deployment checks are complete.
+
+Historical anonymous pageviews: migration `20261013000000_anonymize_historical_public_pageviews` transactionally groups known legacy detail-page slugs into family/date totals. The isolated PostgreSQL probe asserts exact totals, idempotence and rollback on overflow. Nonconforming old paths are not automatically deleted and must be inventoried separately before declaring retrospective privacy remediation complete. Do not enable Web Vitals until retention maintenance reliably runs.

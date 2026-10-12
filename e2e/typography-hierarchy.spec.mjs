@@ -432,15 +432,32 @@ for (const width of [390, 1280]) {
       const normal = await read();
       expect(normal.length, `${path} must expose visible metadata`).toBeGreaterThan(0);
       for (const label of normal) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(12);
-      // A persistent stylesheet emulates the browser's increased default
-      // text size without racing inline root-style reconciliation at hydration.
-      // The assertion still verifies the *computed* root size and every label.
-      await page.addStyleTag({ content: 'html:root { font-size: 200% !important; }' });
-      await expect.poll(() => page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize)))
-        .toBeGreaterThanOrEqual(32);
-      const enlarged = await read();
-      expect(enlarged.length).toBeGreaterThan(0);
-      for (const label of enlarged) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(24);
+      // Install root enlargement on the *next document*, not the previous
+      // document that can be replaced by a late redirect or navigation.
+      // Root and labels are measured atomically after the new page loads.
+      await page.addInitScript(() => {
+        const applyScale = () => {
+          const style = document.createElement('style');
+          style.dataset.amaanaTestRootScale = '200';
+          style.textContent = 'html:root { font-size: 200% !important; }';
+          document.head.append(style);
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', applyScale, { once: true });
+        } else {
+          applyScale();
+        }
+      });
+      expect((await page.reload({ waitUntil: 'load' }))?.ok()).toBeTruthy();
+      const scaled = await page.evaluate(selector => ({
+        root: parseFloat(getComputedStyle(document.documentElement).fontSize),
+        labels: [...document.querySelectorAll(selector)]
+          .filter(node => node.getClientRects().length && getComputedStyle(node).visibility !== 'hidden')
+          .map(node => ({ text: node.textContent?.trim(), size: parseFloat(getComputedStyle(node).fontSize) })),
+      }), selector);
+      expect(scaled.root, `${path}: computed root after enlarged document load`).toBeGreaterThanOrEqual(32);
+      expect(scaled.labels.length, `${path}: visible labels after enlarged load`).toBeGreaterThan(0);
+      for (const label of scaled.labels) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(24);
     });
   }
 }

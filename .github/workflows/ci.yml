@@ -206,6 +206,7 @@ jobs:
           npx prisma migrate deploy
           node scripts/test-refund-ledger-migration.mjs
           node scripts/test-home-carousel-migration.mjs
+          node scripts/test-historical-pageview-migration.mjs
           npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts
 
 
