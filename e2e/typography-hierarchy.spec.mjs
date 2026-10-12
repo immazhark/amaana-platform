@@ -490,5 +490,24 @@ for (const width of [390, 1280]) {
     expect(await kicker.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
     expect(await kicker.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
+    // The reading detail was previously hard-coded to 12px while the kicker
+    // scaled. Both must enlarge with the user's root font preference.
+    const note = page.locator('.amaana-companion-view .amaana-companion-note').first();
+    await expect(note).toBeVisible();
+    expect(await note.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
+    const reading = page.locator('.amaana-daily-ayah blockquote');
+    await expect(reading).toBeVisible();
+    expect(await reading.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(40);
+    // Verify the other tab, including its previously fixed-size location and
+    // Hijri explanations, without depending on a network prayer-times fetch.
+    await page.getByRole('tab', { name: 'Salah & Hijri' }).click();
+    const location = page.locator('.amaana-companion-location span');
+    const hijriNote = page.locator('.amaana-hijri small');
+    await expect(location).toBeVisible();
+    await expect(hijriNote).toBeVisible();
+    for (const label of [location, hijriNote]) {
+      expect(await label.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize)))
+        .toBeGreaterThanOrEqual(24);
+    }
   });
 }
