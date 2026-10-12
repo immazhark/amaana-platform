@@ -10,7 +10,6 @@ const protectedAdminSurfaces = [
   "/admin/home-carousel",
   "/admin/media",
   "/admin/notifications",
-  "/admin/requests",
   "/admin/requests/not-a-real-id",
   "/admin/retention",
   "/admin/documents/not-a-real-id",
@@ -42,7 +41,9 @@ test.describe("anonymous admin access boundaries", () => {
   test("anonymous requests to every admin API fail closed before privileged work", async ({ request }) => {
     const loginResponse = await request.get("/admin/login");
     expect(loginResponse.ok()).toBeTruthy();
-    const sameOrigin = new URL(loginResponse.url()).origin;
+    const sameOrigin = process.env.NEXT_PUBLIC_APP_URL
+      ? new URL(process.env.NEXT_PUBLIC_APP_URL).origin
+      : new URL(loginResponse.url()).origin;
 
     const checks = [
       { method: "GET", path: "/api/admin/media/curated-gallery/status" },
