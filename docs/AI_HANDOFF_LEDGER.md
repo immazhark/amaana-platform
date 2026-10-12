@@ -1,3 +1,9 @@
+# 2026-10-12 — Assistance eyebrow R-024 partial correction
+
+CODEX_ACTIVE under owner cx continuation, single repository writer. Branch `fix/assistance-label-readability-20261012` from security integration e8ae478. Scoped assistance-form module rule raises Private submission label from .7rem (11.2px) to .75rem (12px). Two real-route typography tests at 390/1280px require one exact label, minimum rendered 12px, minimum 24px after 200% root enlargement and text-range containment. Test syntax passed locally with node --check; browser execution and full hosted validation pending. Existing PR277 untouched. No live deployment or actual assistance submission. R-024 remains partial sitewide. Next: review hosted rendered tests, integrate only with required gates; continue remaining verified findings independently.
+
+---
+
 # 2026-10-12 — Payment integration and keyboard-scroll candidate
 
 Ownership: `CODEX_ACTIVE` under owner continuation; security integration `fix/p0-security-remediation-20261010` at `dcecb8461d374b0c5914b2e050ab9a7cd5339847`. This current checkpoint supersedes historical state below. No parallel repository implementation writer.
