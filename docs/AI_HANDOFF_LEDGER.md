@@ -6,6 +6,19 @@ Confirmed repeated five-minute failures belong to amaana-notification-cron, comp
 
 Isolated worker files, request-boundary tests and fast-CI invocation prepared. Seventeen worker/predeploy tests passed; focused ESLint and syntax/whitespace checks passed. All 33 CI planner tests passed. Added a dedicated hosted worker-image workflow: build the dependency-free Docker context, exercise success/failure/credential/non-root behavior with networking disabled, and assert safe entrypoint failure. Actual hosted Docker build and renewed exact-head CI remain required; no local container-build claim. No real HTTP/email/payment request or application database write. Deployment source remains main; root/config activation and schedule restoration require this candidate to reach main first.
 
+
+# 2026-10-12 — Private record access regression coverage
+
+Ownership `REVIEW_PENDING`; bounded test work completed by Codex under owner continuation deliberately supersedes prior implementation wait only for bounded private acknowledgement/assistance tracking regression coverage. Branch `test/private-record-access-boundaries-20261012` from security integration `f5578c31829aeb76ac4e30060cc658342942d762`. Preserve all independent review/integration/main/production gates.
+
+Verified coverage gap: existing acknowledgement and assistance-status route tests replace origin checks, token hashing and bounded body handling with mocks; they do not establish that the actual privacy boundaries compose correctly. Add tests using real origin/token/body helpers, with only persistence mocked. Cover valid minimal responses, rejected origins, wrong or absent record credentials, corrupt persisted hashes, malformed JSON and actual streamed body limits. No runtime vulnerability claim or application change is implied.
+
+Implemented:18 actual-helper privacy cases across acknowledgement and assistance tracking. Only database lookups are mocked; real origin validation, token hashing, constant-time comparison, schema parsing and streamed byte limits execute. Valid replies expose the expected minimal fields; wrong tokens/missing records/corrupt persisted hashes reveal no private data; foreign/null/missing origins, malformed JSON and actual oversized bodies retain private headers and reject before lookup where required.
+
+Controlled mutation proof in a detached scratch checkout: disabling only origin rejection caused six test failures; bypassing only token equality caused four failures. Each runtime route was restored byte-for-byte in finally; primary runtime routes never changed. All18 focused checks and471 full unit tests pass, six database-dependent skips locally; full lint, TypeScript and whitespace checks pass. No user data, payment, email, real persistence, dependencies, runtime application code or secret configuration changes. Draft pending hosted validation and independent review.
+
+PR254 exact-head CI38173157008 passed1094 Chromium and24 Firefox/WebKit plus fast/database/production/final verify; Ready and unmerged without independent approval. PR255 8b8d9841a49f4269133d78a32cf4487c163fbe8d has successful fast/database/production; browser remains running in CI38174787641. Local composition of #241/#247–#255:527 unit tests passed, six database skips; lint/typecheck passed. PR215 review map records the unresolved development-only braces advisory (no patched release), runtime-prune proof and no confirmed public-input path. No independent reviewer identity established; never invent one or self-approve.
+
 # 2026-10-07 — Final release-hardening handoff
 
 State: `CHATGPT_ACTIVE`. Current integration SHA `9bd04887cb57c28a73f201f8a5c7002657f2b427`, tree `7c42f5b8b452b16f2aea698a8068baf57a969009`. Production remains main `29c7627ed3bffd0b581935c5b934ad903aeca2cd`. PR #104 remains Draft. Exact Railway preview `c2b5327d-94ee-49f6-b10c-d7f70673a1fa` is SUCCESS on final integration candidate.
