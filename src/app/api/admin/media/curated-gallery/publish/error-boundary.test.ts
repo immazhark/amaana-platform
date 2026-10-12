@@ -105,6 +105,32 @@ describe("gallery publication error disclosure boundary", () => {
   });
 
 
+  it("rejects malformed publication JSON without accessing the database", async () => {
+    const response = await POST(new Request("https://amaanafoundation.org/api/admin/media/curated-gallery/publish", {
+      method: "POST",
+      headers: { Origin: "https://amaanafoundation.org", "Content-Type": "application/json" },
+      body: "{not-json",
+    }));
+    expect(response.status).toBe(400);
+    expectPrivate(response);
+    await expect(response.json()).resolves.toEqual({ error: "Exact curated gallery publication confirmation is required." });
+    expect(mocks.session).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("rejects foreign origins before authentication or publication work", async () => {
+    const response = await POST(new Request("https://amaanafoundation.org/api/admin/media/curated-gallery/publish", {
+      method: "POST",
+      headers: { Origin: "https://untrusted.example", "Content-Type": "application/json" },
+      body: JSON.stringify({ confirmation: "PUBLISH_EXACT_OWNER_CURATED_154" }),
+    }));
+    expect(response.status).toBe(403);
+    expectPrivate(response);
+    expect(mocks.user).not.toHaveBeenCalled();
+    expect(mocks.session).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
   it("rejects oversized publication bodies before database work", async () => {
     const response = await POST(request("x".repeat(5 * 1024)));
     expect(response.status).toBe(413);
