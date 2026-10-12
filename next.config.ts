@@ -34,11 +34,16 @@ const nextConfig: NextConfig = {
     formats: ["image/avif", "image/webp"],
     deviceSizes: [360, 412, 640, 768, 1024, 1280, 1536, 1920],
     imageSizes: [32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 31_536_000,
+    // Managed media can lose publication/consent approval; honor its short upstream policy.
+    // Static brand/artwork sources below retain their existing long-lived cache policy.
+    minimumCacheTTL: 60,
+    maximumResponseBody: 5 * 1024 * 1024,
   },
   async headers() {
     return [
-      { source: "/media/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
+      // The managed-media handler owns its success, missing-record and failure cache headers.
+      { source: "/hero/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
+      { source: "/programme-artwork/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
       { source: "/brand/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
       { source: "/(.*)", headers: securityHeaders },
       { source: "/api/:path*", headers: noStoreHeaders },

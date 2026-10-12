@@ -26,6 +26,7 @@ const routes = [
   "home-hero",
   "mobile-support",
   "portfolio",
+  "impact-typography",
   "section-layout",
 ];
 
@@ -48,4 +49,11 @@ await copyFile(
   galleryTarget,
 );
 
-console.log(`Materialized ${routes.length} isolated browser-acceptance routes.`);
+const imageCacheTarget = path.join(appTarget, "image-cache-source");
+await mkdir(imageCacheTarget, { recursive: true });
+await copyFile(
+  path.join(sourceRoot, "browser-acceptance", "image-cache-source", "route.ts.fixture"),
+  path.join(imageCacheTarget, "route.ts"),
+);
+
+console.log(`Materialized ${routes.length} isolated browser-acceptance pages and the image-cache test source.`);

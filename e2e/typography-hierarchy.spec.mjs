@@ -635,24 +635,9 @@ for (const scale of [100, 200]) {
       if (document.head) apply();
       else document.addEventListener('DOMContentLoaded', apply, { once: true });
     }, scale);
-    const response = await page.goto('/impact', { waitUntil: 'domcontentloaded' });
+    const response = await page.goto('/browser-acceptance/impact-typography', { waitUntil: 'domcontentloaded' });
     expect(response?.ok()).toBeTruthy();
-    // Exercise both stylesheet variants without depending on published media availability.
-    await page.evaluate(() => {
-      const fixture = document.createElement('div');
-      fixture.setAttribute('data-typography-impact-fixture', '');
-      fixture.setAttribute('aria-hidden', 'true');
-      for (const className of ['v2-impact-tile', 'v2-impact-tile has-media']) {
-        const tile = document.createElement('div');
-        tile.className = className;
-        const badge = document.createElement('span');
-        badge.className = 'v2-impact-tile-index';
-        badge.textContent = '01';
-        tile.appendChild(badge);
-        fixture.appendChild(tile);
-      }
-      document.querySelector('main').appendChild(fixture);
-    });
+    await expect(page.getByRole('heading', { name: 'Impact typography acceptance' })).toBeVisible();
     const badges = page.locator('[data-typography-impact-fixture] .v2-impact-tile-index');
     await expect(badges).toHaveCount(2);
     await expect.poll(() => badges.evaluateAll(nodes => nodes.map(node => {
