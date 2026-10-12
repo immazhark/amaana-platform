@@ -490,5 +490,13 @@ for (const width of [390, 1280]) {
     expect(await kicker.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
     await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
     expect(await kicker.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
+    // The reading detail was previously hard-coded to 12px while the kicker
+    // scaled. Both must enlarge with the user's root font preference.
+    const note = page.locator('.amaana-companion-view .amaana-companion-note').first();
+    await expect(note).toBeVisible();
+    expect(await note.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
+    const paragraph = page.locator('.amaana-companion-view > p').first();
+    await expect(paragraph).toBeVisible();
+    expect(await paragraph.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
   });
 }
