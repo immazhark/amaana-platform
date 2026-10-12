@@ -1,3 +1,9 @@
+# 2026-10-12 — Bulk remediation checkpoint
+
+Ownership `CODEX_ACTIVE`; continue shared-chrome PR #281. PR #277 passed full CI and merged into security integration c7a4d557. Reconcile the four append-only typography candidates with that integration while preserving both test blocks and existing branch histories. Source blobs remain unchanged. Recovered all 95 R rows plus 14 N rows in docs/REMEDIATION_REGISTER_2026-10-12.md, retaining original provenance and historical-status caveats. #216 donation zoom repair and #274 keyboard handoff reconciliation are published; fresh current-head hosted checks remain required. No production promotion. Terminal unavailable after automatic approval review hit usage limit; connector and hosted CI remain available.
+
+---
+
 # 2026-10-12 — Shared chrome readability batch
 
 Ownership `CODEX_ACTIVE`; one writer. Branch `fix/shared-chrome-label-readability-20261012` from security integration e8ae478. Continue R-024 with reminder/live rail, footer and Companion metadata across their existing CSS authorities, including mobile overrides. Preserve layout, factual copy and bottom-right dock. Extend actual rendered typography and existing Companion viewport/keyboard/axe coverage. No local execution is available after terminal approval review hit an account usage limit; fresh hosted CI is mandatory. R-024 remains partial, and no production promotion is claimed.
