@@ -6,7 +6,9 @@ N-15: public storage readiness rejected a shared public/private bucket, but comm
 
 N-16: public delivery URL validation happened after persistence and accepted credentials/query/fragments. Validate before storage creation; share the validator with readiness; preserve valid HTTPS prefixes and unpublished null-URL uploads.
 
-Evidence: actual storage module executed with only AWS SDK/signing replaced by inert transports. Baseline: 9/10 initial probes failed (four absent shared-bucket rejections; three absent unsafe-URL rejections; two uploads before invalid-URL rejection). Corrected: 13/13 probes pass. Added 13 Vitest cases for hosted lint/typecheck/unit execution; syntax parsed locally. Local Vitest dependencies are unavailable; these are not claimed as locally executed Vitest results. No real S3 operations or credentials used.
+N-17: public media publication lookup sat outside the controlled error handler. Move it inside the guard so database failures return an empty no-store 503 with Retry-After and noindex headers before S3 access. A real-handler local probe failed on baseline and passes after correction; add the corresponding route Vitest case.
+
+Evidence: actual storage module executed with only AWS SDK/signing replaced by inert transports. Baseline: 9/10 initial probes failed (four absent shared-bucket rejections; three absent unsafe-URL rejections; two uploads before invalid-URL rejection). Corrected: 14/14 combined probes pass (13 storage plus one real media handler). Added 14 Vitest cases for hosted lint/typecheck/unit execution; syntax parsed locally. Local Vitest dependencies are unavailable; these are not claimed as locally executed Vitest results. No real S3 operations or credentials used.
 
 PR #282 CI 38297387285: fast/database/production passed; browser in progress at initial check. Production totals JS 818,586/819,200 B, CSS 346,461/348,160 B. Park the security batch without cancelling or replacing that suite. New storage changes still require hosted candidate CI and eventual combined integration.
 

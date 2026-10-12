@@ -28,23 +28,22 @@ export async function GET(
   const objectKey = `${year}/${filename}`;
   if (!isManagedPublicMediaKey(objectKey)) return notFound();
 
-  const asset = await prisma.mediaAsset.findFirst({
-    where: {
-      storageKey: objectKey,
-      isPublic: true,
-      privacyApprovedAt: { not: null },
-    },
-    select: {
-      kind: true,
-      publicUrl: true,
-      externalUrl: true,
-      altText: true,
-    },
-  });
-
-  if (!asset || !canRenderPublicMedia(asset)) return notFound();
-
   try {
+    const asset = await prisma.mediaAsset.findFirst({
+      where: {
+        storageKey: objectKey,
+        isPublic: true,
+        privacyApprovedAt: { not: null },
+      },
+      select: {
+        kind: true,
+        publicUrl: true,
+        externalUrl: true,
+        altText: true,
+      },
+    });
+
+    if (!asset || !canRenderPublicMedia(asset)) return notFound();
     const object = await getPublicMediaObject(objectKey);
     const expectedContentType = contentTypeForKey(objectKey);
     if (object.contentType.toLowerCase() !== expectedContentType) {

@@ -241,11 +241,12 @@ Integrate parked `58c10229` with recovery `a4e9fa78` / `fdab2ad9`: root-relative
 
 CI retains its per-ref concurrency group and disables cancellation of running checks. Required release checks and asset limits remain unchanged.
 
-### Public storage boundary corrections — 13 October 2026 IST
+### Public media operational boundary corrections — 13 October 2026 IST
 
 | ID | Confirmed source defect | Correction | Validation | Deployment |
 |---|---|---|---|---|
-| N-15 | Public upload/curated upload/read/delete bypassed the readiness-only public/private bucket separation check | Enforce bucket separation in the common storage helper before S3 client creation, with trimmed bucket comparison | Four baseline operations reproduced missing rejection; corrected probes pass. Hosted Vitest/build acceptance pending | Parked candidate only; no production verification |
-| N-16 | Public delivery base accepted credentials/query/fragments; invalid URL rejection could occur after an S3 write | Validate delivery URL before persistence and reuse the same policy in readiness; preserve HTTPS path prefixes and unpublished uploads | Five unsafe configuration cases reproduced; all corrected probes pass. Hosted acceptance pending | Parked candidate only; no production verification |
+| N-15 | Public helpers bypassed readiness-only public/private bucket separation | Enforce separation before S3 client creation across upload, curated upload, read and delete | Baseline rejects missing in all four operations; corrected probes pass | Parked candidate; not deployed |
+| N-16 | Invalid public delivery URL could be rejected after an S3 upload; credentials/query/fragments accepted | Validate before persistence and share safe-base policy with readiness | Five unsafe configurations reproduced; corrected probes pass | Parked candidate; not deployed |
+| N-17 | Public media publication database lookup escaped the route error handler | Guard lookup and return empty no-store 503, Retry-After and noindex headers on failure | Real-handler probe failed on baseline; corrected probe passes before S3 access | Parked candidate; not deployed |
 
-Combined actual-module local probes: 13/13 pass with inert AWS transports. Added 13 Vitest cases; local syntax parsed but Vitest is unavailable. No live S3 access, deletion, upload or production configuration inspection was performed. These findings establish source configuration-boundary gaps, not evidence that production was misconfigured or private records were exposed.
+Combined local actual-module/handler probes: 14/14 pass with only inert external transports and persistence adapters. Add 14 hosted Vitest cases (13 storage, one route); local TypeScript syntax parsed, but Vitest dependencies unavailable. Hosted candidate lint/typecheck/unit/build/browser checks remain required. No live storage, deletion, upload or production configuration inspection occurred; no claim that production private records were exposed.
