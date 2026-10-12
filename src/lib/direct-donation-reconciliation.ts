@@ -1,5 +1,5 @@
 import { DonationPaymentMethod, DonationStatus, NotificationChannel } from "@prisma/client";
-import { getRemainingAppealAmount, shouldMarkAppealFunded } from "@/lib/appeals";
+import { shouldMarkAppealFunded } from "@/lib/appeals";
 import { createReceiptNumber } from "@/lib/donations";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
@@ -54,8 +54,7 @@ export async function reconcileDirectDonation(input: {
         donationPaise <= 0 || goalPaise <= 0 || raisedPaise < 0) {
       throw new Error("Invalid financial amounts for transfer reconciliation");
     }
-    const remaining = getRemainingAppealAmount(appealBefore.amountRaised, appealBefore.goalAmount);
-    if (donation.amount.toNumber() > remaining) throw new Error("This transfer exceeds the appeal's remaining verified need and requires operator review");
+    if (donationPaise > Math.max(0, goalPaise - raisedPaise)) throw new Error("This transfer exceeds the appeal's remaining verified need and requires operator review");
 
     const changed = await tx.donation.updateMany({
       where: { id: donation.id, status: DonationStatus.PENDING_VERIFICATION },
