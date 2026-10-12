@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   verifyWebhookSignature: vi.fn(),
   ensureCapturedDonationForRefund: vi.fn(),
+  captureDonation: vi.fn(),
   paymentEventFindUnique: vi.fn(),
   rootPaymentEventCreate: vi.fn(),
   uniqueConstraintError: vi.fn(),
@@ -36,7 +37,7 @@ vi.mock("@/lib/payment-event-audit", () => ({
 }));
 
 vi.mock("@/lib/payment-processing", () => ({
-  captureDonation: vi.fn(),
+  captureDonation: mocks.captureDonation,
   ensureCapturedDonationForRefund: mocks.ensureCapturedDonationForRefund,
 }));
 
@@ -164,6 +165,40 @@ describe("Razorpay webhook route", () => {
       amount: decimal(25),
       currency: "INR",
     });
+  });
+
+  it.each([
+    { id: "" },
+    { id: "invalid" },
+    { order_id: "" },
+    { order_id: "invalid" },
+    { currency: "USD" },
+    { amount: 0 },
+    { amount: -10 },
+    { amount: 125.5 },
+    { amount: Number.MAX_SAFE_INTEGER + 1 },
+  ])("rejects malformed payment.captured entities before persistence: %j", async fields => {
+    const response = await POST(webhookRequest({
+      event: "payment.captured",
+      payload: {
+        payment: {
+          entity: {
+            id: "pay_123",
+            order_id: "order_123",
+            currency: "INR",
+            amount: 50_000,
+            status: "captured",
+            ...fields,
+          },
+        },
+      },
+    }, { "x-razorpay-event-id": "evt_bad_capture" }));
+
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe("Invalid captured payment entity");
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
+    expect(mocks.transactionRetry).not.toHaveBeenCalled();
   });
 
   it("rejects an invalid signature before any event lookup or accounting", async () => {
