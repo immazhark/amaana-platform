@@ -1,3 +1,11 @@
+# 2026-10-12 — R-050 keyboard scroll handoff
+
+Ownership `CODEX_ACTIVE` under owner continuation. Task branch `fix/keyboard-scroll-handoff-20261012`, base security integration `4d11ca8408b993d9d7f68b1ef56f9f4b83de4473`. Reconstruct only the still-unmerged #249 source correction and eight regression cases on the clean current base. Cancel pending Lenis initialization when native keyboard navigation takes over; permit a later wheel to initialize again. Preserve reduced-motion and existing architecture. No production change. Hosted validation and combined integration acceptance required.
+
+PR #269 merged at 4d11ca8408b993d9d7f68b1ef56f9f4b83de4473 after all required CI jobs passed. PRs #270–#272 remain validation pending; #271 includes restored real PostgreSQL cases (nine passed). Current production remains main 2a8c35a.
+
+---
+
 # 2026-10-12 — ChatGPT Work remediation continuation
 
 Ownership: `CODEX_ACTIVE` under the owner's explicit master handoff and cx continuation. This current entry supersedes historical ownership entries below. One repository writer; no parallel implementation agent.
