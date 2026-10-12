@@ -22,7 +22,7 @@
 
 .route span {
   color: var(--af-color-gold-ink);
-  font-size: .68rem;
+  font-size: .75rem;
   font-weight: 700;
   letter-spacing: .1em;
   text-transform: uppercase;
