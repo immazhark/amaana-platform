@@ -1,7 +1,7 @@
 "use client";
 
 import { useReportWebVitals } from "next/web-vitals";
-import { normalizePublicWebVitalPath } from "@/lib/web-vitals-path";
+import { canRecordWebVitalOnCurrentRoute, normalizePublicWebVitalPath } from "@/lib/web-vitals-path";
 
 type Metric = Parameters<Parameters<typeof useReportWebVitals>[0]>[0];
 type PublicVitalName = "LCP" | "INP" | "CLS";
@@ -27,8 +27,12 @@ function shouldSample() {
 
 function sendReport(path: string, name: PublicVitalName, value: number) {
   const body = JSON.stringify({ path, name, value });
-  if (navigator.sendBeacon && navigator.sendBeacon(ENDPOINT, new Blob([body], { type: "application/json" }))) {
-    return;
+  try {
+    if (navigator.sendBeacon && navigator.sendBeacon(ENDPOINT, new Blob([body], { type: "application/json" }))) {
+      return;
+    }
+  } catch {
+    // Blocked Beacon transport is nonfatal; use the bounded fetch fallback.
   }
   void fetch(ENDPOINT, {
     method: "POST",
@@ -42,7 +46,12 @@ function sendReport(path: string, name: PublicVitalName, value: number) {
 }
 
 function flushLatest() {
-  if (latest.size === 0 || !pageLoadPath) return;
+  if (latest.size === 0) return;
+  if (!canRecordWebVitalOnCurrentRoute(pageLoadPath, window.location.pathname)) {
+    latest.clear();
+    return;
+  }
+  if (!pageLoadPath) return;
   for (const [id, { name, value }] of latest) {
     // Visibility can alternate repeatedly in a session. Each metric ID
     // contributes at most one bucket; never double-count a resumed tab.
@@ -58,7 +67,7 @@ function handleWebVital(metric: Metric) {
   if (metric.name !== "LCP" && metric.name !== "INP" && metric.name !== "CLS") return;
   if (!Number.isFinite(metric.value) || metric.value < 0) return;
 
-  if (!pageLoadPath) return;
+  if (!canRecordWebVitalOnCurrentRoute(pageLoadPath, window.location.pathname)) return;
 
   // Next/Web Vitals may report multiple deltas for one id; keep the latest
   // score in memory and send one final sample when the page is backgrounded.

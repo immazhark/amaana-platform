@@ -16,3 +16,12 @@ export function normalizePublicWebVitalPath(pathname: string): string | null {
   const dynamic = /^\/(appeals|stories|our-work|faith-and-reflections|programmes)\/[a-z0-9-]+$/.exec(pathname);
   return dynamic ? `/${dynamic[1]}/:slug` : pathname;
 }
+
+/** Never upload or attribute document metrics from a later private SPA route. */
+export function canRecordWebVitalOnCurrentRoute(
+  initialNormalizedPath: string | null,
+  currentPathname: string,
+): boolean {
+  return initialNormalizedPath !== null
+    && normalizePublicWebVitalPath(currentPathname) === initialNormalizedPath;
+}

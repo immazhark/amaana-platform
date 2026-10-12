@@ -82,8 +82,10 @@ export function useSiteScroll(pathname: string) {
       // browser's standard document destinations without hijacking inputs,
       // carousels, dialogs or other separately scrollable controls.
       if (!smoothingWasActive || event.defaultPrevented ||
+          event.altKey || event.ctrlKey || event.metaKey || event.shiftKey ||
           (event.key !== "Home" && event.key !== "End") ||
-          (event.target instanceof Element && event.target.closest(nested))) return;
+          (event.target instanceof Element &&
+            event.target.closest(`${nested}, [contenteditable], [role='textbox']`))) return;
       const top = event.key === "Home" ? 0 : (document.documentElement?.scrollHeight ?? document.body.scrollHeight ?? 0);
       window.scrollTo?.({ top, behavior: "instant" });
     };

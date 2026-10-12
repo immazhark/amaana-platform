@@ -1,0 +1,107 @@
+/* Public route streaming geometry: the approved navy/emerald/ochre system,
+   no stock imagery, fake impact numbers or fabricated beneficiary portraits. */
+.shell {
+  --skeleton-ink: var(--af-color-navy-950, #122239);
+  --skeleton-highlight: rgb(255 253 248 / 22%);
+  width: 100%;
+  min-height: 36rem;
+  overflow: clip;
+}
+.hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, .84fr);
+  align-items: center;
+  gap: clamp(1.25rem, 3vw, 3.5rem);
+  min-height: clamp(22rem, 47vw, 36rem);
+  padding: clamp(2rem, 5vw, 5.5rem) max(1rem, calc((100% - 74rem) / 2));
+  overflow: hidden;
+  background: linear-gradient(118deg, #122239, #1d3150 61%, #23463f);
+}
+.hero::before {
+  position: absolute;
+  inset: 0;
+  content: "";
+  opacity: .3;
+  pointer-events: none;
+  background: repeating-linear-gradient(45deg, transparent 0 68px, rgb(240 213 107 / 12%) 69px 70px);
+}
+.heroInner { position: relative; z-index: 1; display: grid; justify-items: start; gap: 1.05rem; }
+.line {
+  display: block;
+  max-width: 100%;
+  border-radius: .4rem;
+  background: linear-gradient(100deg, rgb(255 253 248 / 18%) 20%, var(--skeleton-highlight) 42%, rgb(255 253 248 / 18%) 70%);
+  background-size: 210% 100%;
+  animation: public-route-pulse 2.1s ease-in-out infinite;
+}
+.eyebrow { width: 8.5rem; height: .85rem; background-color: rgb(240 213 107 / 34%); }
+.headline { width: min(100%, 32rem); height: clamp(2.35rem, 5vw, 4.35rem); border-radius: .5rem; }
+.headlineShort { width: min(75%, 22rem); height: clamp(2rem, 4vw, 3.6rem); border-radius: .5rem; }
+.heroSummary { width: min(85%, 29rem); height: 1.1rem; margin-top: .8rem; }
+.action { width: 10rem; height: 3rem; margin-top: .9rem; border-radius: 100px; }
+.heroArtwork {
+  position: relative;
+  z-index: 1;
+  min-height: clamp(15rem, 30vw, 24rem);
+  aspect-ratio: 4 / 3;
+  border: 1px solid rgb(240 213 107 / 30%);
+  border-radius: 1rem;
+  background:
+    radial-gradient(circle at 67% 35%, rgb(240 213 107 / 32%), transparent 34%),
+    linear-gradient(145deg, rgb(20 93 69 / 50%), rgb(255 253 248 / 8%) 65%),
+    repeating-linear-gradient(45deg, transparent 0 38px, rgb(240 213 107 / 14%) 39px 40px);
+}
+.body {
+  width: min(calc(100% - 2rem), 74rem);
+  margin: 0 auto;
+  padding: clamp(3rem, 7vw, 5rem) 0;
+}
+.sectionHeading { display: flex; gap: 2rem; align-items: end; justify-content: space-between; margin-bottom: 1.9rem; }
+.sectionCopy { display: grid; gap: .7rem; flex: 1; }
+.sectionHeading .line { background-image: linear-gradient(100deg, #eae2d0 20%, #f4eee3 45%, #eae2d0 70%); }
+.sectionKicker { width: 8rem; height: .85rem; }
+.sectionTitle { width: min(20rem, 75%); height: 2.75rem; }
+.sectionSubtitle { width: min(21rem, 35%); height: 1.3rem; }
+.grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(1rem, 2vw, 1.35rem); }
+.gridFour { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.card { min-width: 0; overflow: hidden; border: 1px solid var(--af-color-border, #e6dcc3); border-radius: 1rem; background: var(--af-color-surface, #fffdf8); }
+.image {
+  width: 100%;
+  aspect-ratio: 16 / 10;
+  background: linear-gradient(135deg, #dce9df, #efe4c9, #d8dfe9);
+}
+.cardContent { display: grid; gap: .75rem; padding: 1.25rem; }
+.cardContent .line { background-image: linear-gradient(100deg, #e3dfd4 20%, #f7f3e9 45%, #e3dfd4 70%); }
+.cardKicker { width: 38%; height: .8rem; }
+.cardTitle { width: 89%; height: 1.4rem; }
+.cardSummary { width: 72%; height: .95rem; }
+.screenReaderOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+@keyframes public-route-pulse { 0%, 100% { background-position: 100% 50%; } 50% { background-position: 0 50%; } }
+@media (max-width: 760px) {
+  .hero { grid-template-columns: minmax(0, 1fr); min-height: 24rem; }
+  .heroArtwork { display: none; }
+  .heroInner { gap: .85rem; }
+  .grid, .gridFour { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .sectionSubtitle { display: none; }
+}
+@media (max-width: 460px) {
+  .grid, .gridFour { grid-template-columns: minmax(0, 1fr); }
+  .body { padding-block: 2.5rem; }
+  .hero { padding-block: 3rem; min-height: 22rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .line { animation: none; background-position: center; }
+}
+@media (forced-colors: active) {
+  .hero,.card,.image,.heroArtwork,.line { border: 1px solid CanvasText; background: Canvas; }
+}

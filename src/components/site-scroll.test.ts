@@ -194,6 +194,15 @@ test.each(["Home", "End"])(
         top: key === "Home" ? 0 : 1500,
         behavior: "instant",
       });
+      // Modified Home/End combinations are browser/assistive-tech shortcuts;
+      // releasing Lenis must not forcibly redirect their destination.
+      for (const modifier of ["ctrlKey", "shiftKey", "altKey", "metaKey"] as const) {
+        target.dispatchEvent(new Event("wheel"));
+        await vi.dynamicImportSettled();
+        scrollTo.mockClear();
+        target.dispatchEvent(Object.assign(new Event("keydown"), { key, [modifier]: true }));
+        expect(scrollTo).not.toHaveBeenCalled();
+      }
     } finally {
       cleanup?.();
     }

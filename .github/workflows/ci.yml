@@ -78,6 +78,10 @@ jobs:
         run: node scripts/audit-global-css.mjs
       - name: Validate App Router bundle reporting
         run: node --test scripts/test-route-bundle-report.mjs
+      - name: Guard responsive hero/artwork image weight
+        run: |
+          node --test scripts/test-public-image-weight.mjs
+          node scripts/check-public-image-weight.mjs
       - name: Prevent anonymous admin route coverage drift
         run: node --test scripts/test-admin-route-inventory.mjs
       - name: Verify branded application icons
