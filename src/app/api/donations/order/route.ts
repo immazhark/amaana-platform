@@ -107,6 +107,7 @@ export async function POST(request: Request) {
       !/^order_[A-Za-z0-9]+$/.test(order.id) ||
       order.amount !== amountPaise ||
       order.currency !== "INR" ||
+      order.receipt !== referenceNumber ||
       order.status !== "created"
     ) {
       throw new Error("Unexpected order response");
