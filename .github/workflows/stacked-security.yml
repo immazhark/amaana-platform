@@ -1,0 +1,48 @@
+name: Stacked security verification
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - fix/consolidated-a11y-regression-20261012
+    paths:
+      - ".github/workflows/stacked-security.yml"
+      - "next.config.ts"
+      - "e2e/security-headers.spec.mjs"
+      - "scripts/test-admin-route-inventory.mjs"
+      - "src/app/api/admin/media/curated-gallery/publish/**"
+      - "src/lib/env.ts"
+      - "src/lib/env.test.ts"
+      - "src/lib/public-media.ts"
+      - "src/lib/public-media.test.ts"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stacked-security-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/amaana?schema=public
+      NEXT_PUBLIC_APP_URL: https://amaanafoundation.org
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run prisma:generate
+      - name: Check types and protected route inventory
+        run: |
+          npm run typecheck
+          node --test scripts/test-admin-route-inventory.mjs
+      - name: Test media, configuration and privileged publication boundaries
+        run: |
+          npx vitest run src/lib/env.test.ts src/lib/public-media.test.ts src/app/api/admin/media/curated-gallery/publish/error-boundary.test.ts
+          node --check e2e/security-headers.spec.mjs
