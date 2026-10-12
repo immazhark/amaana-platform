@@ -77,12 +77,19 @@ async function sendWithResend(
     );
   }
 
+  let providerMessageId: unknown;
   try {
     const payload = await response.json() as { id?: unknown };
-    return typeof payload.id === "string" && payload.id.trim() ? payload.id.trim() : null;
+    providerMessageId = payload?.id;
   } catch {
-    return null;
+    // A 2xx response without a parseable provider receipt is not evidence
+    // of completed delivery. Keep the stable idempotency key for retry.
+    throw new EmailProviderError("Email provider returned an unreadable receipt", true);
   }
+  if (typeof providerMessageId !== "string" || !providerMessageId.trim()) {
+    throw new EmailProviderError("Email provider returned an invalid receipt", true);
+  }
+  return providerMessageId.trim();
 }
 
 async function recoverStaleProcessingNotifications() {
