@@ -1,3 +1,11 @@
+## 2026-10-13 — parked validation and remaining boundaries
+
+- N-21 sensitivity: detached byte-cap bypass mutation makes3 of11 focused tests fail (oversize fallback, nonmonotonic fallback, bounded rejection); actual candidate remains unchanged. Baseline actual-generation guard fails on422226-byte Taleem; bounded candidate397472 passes. This verifies enforcement rather than merely expected happy-path values.
+- N-13 rechecked against actual PR215 advisory: GHSA-vfj7-8cjw-p6xm / CVE-2026-93687 affects braces<=3.0.3; GitHub Advisory Database still lists no patched version (https://github.com/advisories/GHSA-vfj7-8cjw-p6xm). Current lock chain eslint-config-next16.3.8→@next/eslint-plugin-next16.3.8→fast-glob3.3.1→micromatch4.0.8→braces3.0.3 is development-only. Docker still asserts braces is absent after prune --omit=dev. No downgrade, suppression, unaudited fork or claim of a new full audit/patch.
+- Analytics review: page views and Web Vitals reuse normalizePublicAnalyticsPath; dynamic public slugs group as :slug, private routes are excluded, bodies are bounded and schema-strict. This source review does not close historical nonconforming paths, production migration, retention, live privacy or cost gates.
+- Impact contrast review correction: base impact.css contains older light-surface inks, but later impact-wow.css resolves principle labels/paragraphs to canonical gold-ink/muted through brand aliases. No additional confirmed rendered defect established; no extra stylesheet change committed for those two selectors.
+- d59f5e66 CI38306526542 browser remains active; other gates passed. Keep artwork code parked and preserve the running suite. No production release actions.
+
 ## 2026-10-13 — N-21 generated artwork bypassed image budget (parked)
 
 - Root cause: the fast hero/artwork weight guard runs before `npm run build`; prebuild refinement creates ignored derivatives afterward. d59f5e66 production log contains Taleem422226 bytes against the existing MAX_ARTWORK_BYTES409600 cap. The same baseline pipeline reproduced all seven production byte counts locally; a weight check after baseline generation correctly fails on Taleem.
@@ -253,7 +261,7 @@ These are tracking-row counts, not a certified defect-free percentage. The 40 ad
 | N-10 | Cron repeatedly builds website without DATABASE_URL | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | #259 | Isolated worker built/tested; full application CI now passed. Schedule removed and URL corrected live; repaired worker not deployed. |
 | N-11 | Scrypt work-factor tests exercise malformed fixtures | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | #254 | Correct fixtures plus observation of actual crypto factor calls. Tests only. |
 | N-12 | Private-record tests mock critical security helpers | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | #256 | Actual-helper origin/token/body-boundary coverage. Tests only; no new runtime defect claimed. |
-| N-13 | Development-tool braces advisory | Open | No completed rollout | No verified new fix | PR #215 review record | Unresolved dev dependency advisory; production-only/pruned-runtime audits clean. |
+| N-13 | Development-tool braces stack-exhaustion advisory | Open; no patched release listed | Current development-only lock chain verified | No new fix or live exposure claim | GHSA-vfj7-8cjw-p6xm / CVE-2026-93687 | braces3.0.3 remains affected; GitHub lists no patched version. Runtime prune asserts absence. Do not confuse with the older CVE-2024-4068 fixed by3.0.3 or suppress/downgrade lint. |
 | N-14 | Destination stream closed early errors | Unverified | Not established | Unconfirmed | Successful browser CI logs | Cancellation can reproduce one mechanism; actual CI cause remains unconfirmed. |
 
 N-10 exception: containment is active in Railway (schedule removed; production URL corrected with skipDeploys), but the repaired worker has not been deployed. Scheduled notifications remain suspended. N-11 and N-12 are coverage corrections, not claimed new runtime vulnerabilities.
