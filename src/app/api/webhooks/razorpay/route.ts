@@ -83,7 +83,9 @@ export async function POST(request: Request) {
     if (payload.event === "refund.processed" && (
       !refund || typeof refund.id !== "string" || !/^rfnd_[A-Za-z0-9]+$/.test(refund.id) ||
       typeof refund.payment_id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(refund.payment_id) ||
-      refund.currency !== "INR" || !Number.isSafeInteger(refund.amount) || refund.amount <= 0
+      refund.currency !== "INR" ||
+      (refund.status !== undefined && refund.status !== "processed") ||
+      !Number.isSafeInteger(refund.amount) || refund.amount <= 0
     )) {
       return new NextResponse("Invalid refund entity", { status: 400 });
     }
