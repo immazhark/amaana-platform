@@ -1,3 +1,19 @@
+# 2026-10-13 IST — Storage/origin integration and Companion scaling correction
+
+Ownership: `CODEX_ACTIVE` under owner cx continuation; one implementation writer. Active consolidated PR #282: `fix/consolidated-a11y-regression-20261012` targeting `fix/p0-security-remediation-20261010`.
+
+Validated baseline `2697dec3661ece25231d2dc5d0eb333d0a8e4ff8`: CI 38297387285 succeeded across fast/database/production/browser/final verify. Actual Chromium summary: 1,149 passed and TWO flaky shared rail/footer/Companion typography tests (390/1280px), both succeeding on retry; Firefox/WebKit 24 passed. JS 818,586/819,200 B; CSS 346,461/348,160 B. This is not zero-flake acceptance.
+
+Integrate parked N-15–N-18 storage/media corrections from `0c695485`, preserving all source/test work. Add N-19: isSameOrigin rejects missing production URL, malformed configured URLs, non-HTTPS production origins, credentialed configuration and opaque Origin. Development HTTP fallback remains available. Five baseline cases reproduced unsafe acceptance/exception behavior; eight corrected actual-helper probes pass.
+
+R-024: hosted flakes read 12px kicker at the 24px assertion after a separate in-place root style mutation. Rework shared checks to reload with a persistent enlarged stylesheet, measure root/text atomically, and verify 100% and 200% reading/prayer typography plus loaded prayer wrapping. No thresholds or budgets weakened. This harness correction still requires hosted browser proof.
+
+Local actual-module/handler probes: 26/26 pass (18 storage/media, eight origin). Added corresponding hosted Vitest cases; local syntax parsed, but local Vitest/Chromium dependencies unavailable. Server-only S3 boundaries remain intact; no database migration, live payment, real S3 mutation or production configuration change.
+
+Next: fresh combined CI on consolidated candidate; resolve demonstrated failures/flakes; integrate to security branch only after required gates and review. No main merge, Railway deploy or live verification claimed.
+
+---
+
 # 2026-10-13 IST — Public storage boundary remediation candidate
 
 Ownership: `CODEX_ACTIVE` under owner continuation. One implementation writer. Parked task: `fix/public-storage-boundaries-20261013` from consolidated PR #282 head `2697dec3661ece25231d2dc5d0eb333d0a8e4ff8`. Security integration remains `c7a4d557`.

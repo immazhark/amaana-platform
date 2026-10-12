@@ -490,54 +490,75 @@ for (const width of [390, 1280]) {
       '.footer-brand-copy small',
       ...(width > 640 ? ['.amaana-companion-dock small'] : []),
     ];
-    for (const rootSize of ['100%', '200%']) {
-      await page.evaluate(size => { document.documentElement.style.fontSize = size; }, rootSize);
+    for (const scale of [1, 2]) {
+      if (scale === 2) {
+        // Measure a freshly loaded enlarged document. Separate in-place root
+        // mutations and text reads previously observed inconsistent hydration.
+        await page.addInitScript(() => {
+          const applyScale = () => {
+            const style = document.createElement('style');
+            style.dataset.amaanaTestRootScale = '200';
+            style.textContent = 'html:root { font-size: 200% !important; }';
+            document.head.append(style);
+          };
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', applyScale, { once: true });
+          } else {
+            applyScale();
+          }
+        });
+        expect((await page.reload({ waitUntil: 'load' }))?.ok()).toBeTruthy();
+      }
       for (const selector of selectors) {
         const label = page.locator(selector);
         await expect(label).toHaveCount(1);
         await expect(label).toBeVisible();
-        expect(await label.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(rootSize === '200%' ? 24 : 12);
+        const metrics = await label.evaluate(node => ({
+          root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+          text: Number.parseFloat(getComputedStyle(node).fontSize),
+        }));
+        expect(metrics.root, selector + ': root size').toBeGreaterThanOrEqual(16 * scale);
+        expect(metrics.text, selector + ': text size').toBeGreaterThanOrEqual(12 * scale);
       }
-    }
-    await page.evaluate(() => { document.documentElement.style.fontSize = '100%'; });
-    await page.locator('.amaana-companion-dock button').click();
-    const kicker = page.locator('.amaana-companion-kicker');
-    await expect(kicker).toBeVisible();
-    expect(await kicker.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
-    await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
-    expect(await kicker.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
-    // The reading detail was previously hard-coded to 12px while the kicker
-    // scaled. Both must enlarge with the user's root font preference.
-    const note = page.locator('.amaana-companion-view .amaana-companion-note').first();
-    await expect(note).toBeVisible();
-    expect(await note.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
-    const reading = page.locator('.amaana-daily-ayah blockquote');
-    await expect(reading).toBeVisible();
-    expect(await reading.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(40);
-    // Verify the other tab, including its previously fixed-size location and
-    // Hijri explanations, without depending on a network prayer-times fetch.
-    await page.getByRole('tab', { name: 'Salah & Hijri' }).click();
-    const location = page.locator('.amaana-companion-location span');
-    const hijriNote = page.locator('.amaana-hijri small');
-    await expect(location).toBeVisible();
-    await expect(hijriNote).toBeVisible();
-    for (const label of [location, hijriNote]) {
-      expect(await label.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize)))
-        .toBeGreaterThanOrEqual(24);
-    }
-    const prayerRows = page.locator('.amaana-salah-times>div');
-    await expect(prayerRows).toHaveCount(6);
-    await expect(page.locator('.amaana-next-salah strong')).toBeVisible();
-    const wrapping = await page.locator('.amaana-next-salah strong, .amaana-salah-times>div').evaluateAll(nodes =>
-      nodes.map(node => ({
-        wrap: getComputedStyle(node).flexWrap,
-        overflow: node.scrollWidth > node.clientWidth + 1,
-      })),
-    );
-    expect(wrapping).toHaveLength(7);
-    for (const row of wrapping) {
-      expect(row.wrap).toBe('wrap');
-      expect(row.overflow).toBe(false);
+      await page.locator('.amaana-companion-dock button').click();
+      const kicker = page.locator('.amaana-companion-kicker');
+      const note = page.locator('.amaana-companion-view .amaana-companion-note').first();
+      const reading = page.locator('.amaana-daily-ayah blockquote');
+      for (const [label, minimum] of [[kicker, 12], [note, 12], [reading, 20]]) {
+        await expect(label).toBeVisible();
+        const metrics = await label.evaluate(node => ({
+          root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+          text: Number.parseFloat(getComputedStyle(node).fontSize),
+        }));
+        expect(metrics.root).toBeGreaterThanOrEqual(16 * scale);
+        expect(metrics.text).toBeGreaterThanOrEqual(minimum * scale);
+      }
+      await page.getByRole('tab', { name: 'Salah & Hijri' }).click();
+      const location = page.locator('.amaana-companion-location span');
+      const hijriNote = page.locator('.amaana-hijri small');
+      for (const label of [location, hijriNote]) {
+        await expect(label).toBeVisible();
+        const metrics = await label.evaluate(node => ({
+          root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+          text: Number.parseFloat(getComputedStyle(node).fontSize),
+        }));
+        expect(metrics.root).toBeGreaterThanOrEqual(16 * scale);
+        expect(metrics.text).toBeGreaterThanOrEqual(12 * scale);
+      }
+      await expect(page.locator('.amaana-salah-times>div')).toHaveCount(6);
+      await expect(page.locator('.amaana-next-salah strong')).toBeVisible();
+      const wrapping = await page.locator('.amaana-next-salah strong, .amaana-salah-times>div').evaluateAll(nodes =>
+        nodes.map(node => ({
+          wrap: getComputedStyle(node).flexWrap,
+          overflow: node.scrollWidth > node.clientWidth + 1,
+        })),
+      );
+      expect(wrapping).toHaveLength(7);
+      for (const row of wrapping) {
+        expect(row.wrap).toBe('wrap');
+        expect(row.overflow).toBe(false);
+      }
+      await page.getByRole('button', { name: 'Close companion', exact: true }).click();
     }
   });
 }

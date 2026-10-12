@@ -251,3 +251,11 @@ CI retains its per-ref concurrency group and disables cancellation of running ch
 | N-18 | Public object reads were unbounded and did not reject truncated bodies | Reject oversized metadata before reading, bound streamed bytes to existing 5 MiB upload limit, close on overflow, verify completeness | Restoring only old reader fails three guards; corrected reader preserves valid streamed bytes/metadata | Parked candidate; not deployed |
 
 Combined local actual-module/handler probes: 18/18 pass with inert external transports and persistence adapters. Add 18 hosted Vitest cases (17 storage, one route); local TypeScript syntax parsed, but Vitest dependencies unavailable. Hosted lint/typecheck/unit/build/browser checks remain required. No live storage, deletion, upload or production configuration inspection occurred; no claim that production private records were exposed.
+
+### Origin guard and R-024 flaky acceptance correction — 13 October 2026 IST
+
+N-19: production origin validation fell back to untrusted Host when NEXT_PUBLIC_APP_URL was missing, threw for malformed configuration, and accepted HTTP/credentialed/opaque-origin configurations. Require configured HTTPS origin in production; reject bad configuration without throwing; preserve development HTTP fallback. Five baseline cases failed; eight actual-helper probes now pass. No production misconfiguration/exploitation is claimed.
+
+CI 38297387285 at `2697dec3` passed required jobs, but Chromium reported 1,149 passed / 2 flaky (shared Companion scaling at 390px/1280px). Firefox/WebKit 24 passed. Source/build budgets passed: JS 818,586/819,200 B; CSS 346,461/348,160 B. Two tests read 12px at the 24px kicker assertion after a separate root style mutation.
+
+New consolidated candidate integrates N-15–N-18 from parked `0c695485`, adds N-19 source/tests, and reloads shared 200% typography checks with persistent enlarged styles and atomic root/text measurement. Normal and enlarged reading/prayer checks and wrapping assertions remain. Local actual-module probes 26/26 pass; browser spec syntax and new TypeScript test syntax parse. Fresh hosted combined lint/type/unit/build/browser validation remains required. R-024 and R-012 are not fully closed; nothing new is deployed.
