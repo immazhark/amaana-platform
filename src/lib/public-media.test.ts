@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   IDENTITY_MEDIA_SORT_ORDER,
   canRenderPublicMedia,
+  isCspCompatiblePublicImageUrl,
   normalizeSafePublicMediaUrl,
   resolvePublicMediaUrl,
   selectGalleryPublicImage,
@@ -9,6 +10,7 @@ import {
 } from "./public-media";
 
 describe("public media safety", () => {
+  afterEach(() => vi.unstubAllEnvs());
   it("never promotes supporting gallery images into an unassigned identity slot", () => {
     expect(selectIdentityPublicImage([
       { kind: "IMAGE", publicUrl: "/media/gallery.jpg", altText: "Eid kits", sortOrder: 0 },
@@ -40,6 +42,28 @@ describe("public media safety", () => {
   it("requires meaningful alt text before an image can render", () => {
     expect(canRenderPublicMedia({ kind: "IMAGE", publicUrl: "/media/photo.jpg", altText: "" })).toBe(false);
     expect(canRenderPublicMedia({ kind: "IMAGE", publicUrl: "/media/photo.jpg", altText: "Eid Kit packing" })).toBe(true);
+  });
+
+
+  it("renders absolute images only from CSP-compatible configured origins", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://media.amaana.example/public");
+
+    expect(isCspCompatiblePublicImageUrl("/media/photo.jpg")).toBe(true);
+    expect(isCspCompatiblePublicImageUrl("https://amaanafoundation.org/media/photo.jpg")).toBe(true);
+    expect(isCspCompatiblePublicImageUrl("https://media.amaana.example/2026/photo.jpg")).toBe(true);
+    expect(isCspCompatiblePublicImageUrl("https://unconfigured.example/photo.jpg")).toBe(false);
+
+    expect(canRenderPublicMedia({
+      kind: "IMAGE",
+      publicUrl: "https://media.amaana.example/2026/photo.jpg",
+      altText: "Approved field photograph",
+    })).toBe(true);
+    expect(canRenderPublicMedia({
+      kind: "IMAGE",
+      publicUrl: "https://unconfigured.example/photo.jpg",
+      altText: "Externally hosted photograph",
+    })).toBe(false);
   });
 
   it("fails closed for hosted video even when descriptive text exists", () => {
