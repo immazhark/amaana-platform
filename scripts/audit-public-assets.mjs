@@ -12,7 +12,7 @@ import path from "node:path";
 const root = process.cwd();
 const publicRoot = path.join(root, "public");
 const indexRoots = ["src", "prisma", "scripts", "e2e", "public"];
-const indexExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".css", ".scss", ".json", ".md", ".mdx", ".html", ".svg", ".xml", ".txt", ".yml", ".yaml"]);
+const indexExtensions = new Set([".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".css", ".scss", ".json", ".md", ".mdx", ".html", ".svg", ".xml", ".txt", ".yml", ".yaml", ".webmanifest"]);
 const assetExtensions = new Set([".png", ".jpg", ".jpeg", ".webp", ".avif", ".gif", ".svg", ".ico", ".mp4", ".webm", ".mov", ".pdf", ".woff", ".woff2", ".ttf", ".otf"]);
 const protectedPrefixes = ["backgrounds/", "programme-artwork/", "hero/", "brand/"];
 const protectedNames = new Set(["favicon.ico", "apple-icon.png", "icon-192.png", "icon-512.png", "icon-maskable-512.png", "robots.txt", "sitemap.xml", "manifest.webmanifest"]);
@@ -40,22 +40,17 @@ const sourceFiles = (await Promise.all(indexRoots.map(dir => walk(path.join(root
   .flat().filter(file => indexExtensions.has(path.extname(file).toLowerCase()));
 const contents = [];
 for (const file of sourceFiles) {
-  // Image/SVG internals aren't a consumer reference; JSON provenance *is*.
-  if (assetExtensions.has(path.extname(file).toLowerCase()) && path.extname(file).toLowerCase() !== ".svg") continue;
+  // Binary assets cannot be consumers. SVG/text metadata may legitimately
+  // reference other public assets, so keep those files in the source corpus.
+  const extension = path.extname(file).toLowerCase();
+  if (assetExtensions.has(extension) && extension !== ".svg") continue;
   if (file === path.join(root, "scripts", "audit-public-assets.mjs")) continue;
   const size = (await stat(file)).size;
   if (size > 5_000_000) continue;
   contents.push({ file, text: await readFile(file, "utf8") });
 }
 
-const pathCharacter = /[A-Za-z0-9._~!  contents.push(await readFile(file, "utf8"));
-}
-const corpus = contents.join("\n");
-const rows = assetFiles.map(file => {
-  const relative = path.relative(publicRoot, file).split(path.sep).join("/");
-  const candidates = ["/" + relative, "public/" + relative, encodeURI("/" + relative), encodeURIComponent(relative)];
-  const literal = candidates.some(value => corpus.includes(value));
-'()*+,;=:@%/-]/;
+const pathCharacter = /[A-Za-z0-9._~!$&'()*+,;=:@%\/-]/;
 function hasCompleteReference(text, candidate) {
   let offset = 0;
   while (offset <= text.length - candidate.length) {
@@ -89,7 +84,7 @@ const rows = assetFiles.map(file => {
   const protectedAsset = protectedPrefixes.some(prefix => relative.startsWith(prefix))
     || protectedNames.has(relative);
   return { asset: relative, status: literal ? "referenced" : protectedAsset ? "protected" : "unresolved" };
-}).sort((a,b) => a.asset.localeCompare(b.asset));
+}).sort((a, b) => a.asset.localeCompare(b.asset));
 const counts = Object.fromEntries(["referenced", "protected", "unresolved"].map(status => [status, rows.filter(row => row.status === status).length]));
 if (process.argv.includes("--json")) console.log(JSON.stringify({ counts, rows }, null, 2));
 else {
