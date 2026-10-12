@@ -272,3 +272,34 @@ test('policy routes preserve long-form reading hierarchy', async ({ page }) => {
     expect(lineHeight).toBeGreaterThanOrEqual(1.65);
   }
 });
+
+for (const width of [390, 1280]) {
+  test(`shared rail, footer and Companion labels stay readable at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    expect((await page.goto('/about')).ok()).toBe(true);
+    const selectors = [
+      '.amaana-rail-label',
+      '.amaana-live-badge',
+      '.site-footer .footer-kicker',
+      '.footer-brand-copy small',
+      ...(width > 640 ? ['.amaana-companion-dock small'] : []),
+    ];
+    for (const rootSize of ['100%', '200%']) {
+      await page.evaluate(size => { document.documentElement.style.fontSize = size; }, rootSize);
+      for (const selector of selectors) {
+        const label = page.locator(selector);
+        await expect(label).toHaveCount(1);
+        await expect(label).toBeVisible();
+        expect(await label.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(rootSize === '200%' ? 24 : 12);
+      }
+    }
+    await page.evaluate(() => { document.documentElement.style.fontSize = '100%'; });
+    await page.locator('.amaana-companion-dock button').click();
+    const kicker = page.locator('.amaana-companion-kicker');
+    await expect(kicker).toBeVisible();
+    expect(await kicker.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
+    await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    expect(await kicker.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
+  });
+}

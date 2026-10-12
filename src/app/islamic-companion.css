@@ -26,7 +26,7 @@
   gap:.5rem;
   align-self:center;
   color:#173e47;
-  font-size:.66rem;
+  font-size:.75rem;
   font-weight:900;
   letter-spacing:.13em;
   white-space:nowrap
@@ -40,13 +40,13 @@
 }
 .amaana-reminder-eyebrow{
   color:#8a6715;
-  font-size:.63rem;
+  font-size:.75rem;
   font-weight:900;
   letter-spacing:.1em;
   text-transform:uppercase;
   white-space:nowrap
 }
-.amaana-reminder-source{font-size:.68rem;white-space:nowrap}
+.amaana-reminder-source{font-size:.75rem;white-space:nowrap}
 .amaana-live-cta{
   display:inline-flex;
   align-items:center;
@@ -56,7 +56,7 @@
   border-radius:999px;
   background:#173e47;
   color:#fffaf0!important;
-  font-size:.72rem;
+  font-size:.75rem;
   font-weight:850;
   text-decoration:none!important;
   white-space:nowrap;
@@ -129,7 +129,7 @@
 .amaana-companion-dock>button small{
   margin-top:.2rem;
   color:rgb(255 250 240 / 72%);
-  font-size:.56rem;
+  font-size:.75rem;
   font-weight:500;
   letter-spacing:.025em
 }
@@ -185,7 +185,7 @@
   display:block;
   margin-bottom:.28rem;
   color:#a57a08;
-  font-size:.58rem;
+  font-size:.75rem;
   font-weight:900;
   letter-spacing:.16em
 }
@@ -230,7 +230,7 @@
   border-radius:.62rem;
   background:transparent;
   color:#536477;
-  font-size:.72rem;
+  font-size:.75rem;
   font-weight:800
 }
 .amaana-companion-tabs button[aria-selected=true]{
@@ -331,7 +331,7 @@
 .amaana-hijri small{
   display:block;
   color:#50605c;
-  font-size:11px;
+  font-size:.75rem;
   line-height:1.6
 }
 .amaana-asr-choice{display:block;margin:22px 0;font-size:13px}
@@ -380,15 +380,15 @@
 }
 .amaana-reminders ::selection,.amaana-companion ::selection{background:#d9c18b;color:#173e47}
 @media(max-width:640px){
-  .amaana-live-badge{font-size:.58rem;gap:.35rem}
+  .amaana-live-badge{font-size:.75rem;gap:.35rem}
   .amaana-live-badge::after{content:none}
-  .amaana-reminder-eyebrow{grid-column:1;font-size:.55rem}
+  .amaana-reminder-eyebrow{grid-column:1;font-size:.75rem}
   .amaana-live-cta{
     grid-column:2;
     grid-row:1 / span 2;
     min-height:44px;
     padding:.35rem .58rem;
-    font-size:.62rem
+    font-size:.75rem
   }
 
   .amaana-companion-dock{max-width:none}

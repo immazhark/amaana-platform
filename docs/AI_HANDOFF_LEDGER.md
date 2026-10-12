@@ -1,3 +1,9 @@
+# 2026-10-12 — Shared chrome readability batch
+
+Ownership `CODEX_ACTIVE`; one writer. Branch `fix/shared-chrome-label-readability-20261012` from security integration e8ae478. Continue R-024 with reminder/live rail, footer and Companion metadata across their existing CSS authorities, including mobile overrides. Preserve layout, factual copy and bottom-right dock. Extend actual rendered typography and existing Companion viewport/keyboard/axe coverage. No local execution is available after terminal approval review hit an account usage limit; fresh hosted CI is mandatory. R-024 remains partial, and no production promotion is claimed.
+
+---
+
 # 2026-10-12 — Payment integration and keyboard-scroll candidate
 
 Ownership: `CODEX_ACTIVE` under owner continuation; security integration `fix/p0-security-remediation-20261010` at `dcecb8461d374b0c5914b2e050ab9a7cd5339847`. This current checkpoint supersedes historical state below. No parallel repository implementation writer.
