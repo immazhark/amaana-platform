@@ -1,3 +1,9 @@
+# 2026-10-12 — Batched public readability remediation
+
+Ownership `CODEX_ACTIVE` under owner cx and efficiency directive; one repository writer. Branch `fix/public-readability-batch-20261012` from e8ae478. Batch R-024: 61 sub-.75rem text-size declarations in 21 public stylesheets, reviewed as metadata, labels, actions and captions. Existing #216/#277/#278/#279 candidates remain independent; preserve their implementation and records. Header/Companion/footer and shared admin badge are outside this batch. Add representative rendered mobile/desktop readability checks; no full closure before current browser evidence. No live submissions, payments, emails or deployment. Current technical source/PR truth supersedes older historical status below.
+
+---
+
 # 2026-10-12 — Payment integration and keyboard-scroll candidate
 
 Ownership: `CODEX_ACTIVE` under owner continuation; security integration `fix/p0-security-remediation-20261010` at `dcecb8461d374b0c5914b2e050ab9a7cd5339847`. This current checkpoint supersedes historical state below. No parallel repository implementation writer.
