@@ -1,3 +1,9 @@
+# 2026-10-12 — Keyboard-scroll conflict reconciliation
+
+Ownership `CODEX_ACTIVE`; continue PR #274 on its existing branch. Reconcile current security integration e8ae478 while preserving the generation-cancellation fix and all eight tests byte-for-byte. Preserve current integration documentation and both parent histories. Previous-head CI 38244803756 passed; the refreshed combined head requires fresh CI. No production promotion or live transaction.
+
+---
+
 # 2026-10-12 — Payment integration and keyboard-scroll candidate
 
 Ownership: `CODEX_ACTIVE` under owner continuation; security integration `fix/p0-security-remediation-20261010` at `dcecb8461d374b0c5914b2e050ab9a7cd5339847`. This current checkpoint supersedes historical state below. No parallel repository implementation writer.
