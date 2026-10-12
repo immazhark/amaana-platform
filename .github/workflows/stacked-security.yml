@@ -18,6 +18,10 @@ on:
       - "src/lib/payment-processing.test.ts"
       - "src/lib/razorpay.ts"
       - "src/lib/razorpay.test.ts"
+      - "src/lib/notifications.ts"
+      - "src/lib/notifications-worker.test.ts"
+      - "src/lib/notifications-claim.test.ts"
+      - "src/lib/notifications-provider-timeout.test.ts"
       - "src/lib/bounded-request-body.ts"
       - "src/lib/bounded-request-body.test.ts"
       - "src/lib/env.ts"
@@ -53,5 +57,5 @@ jobs:
           node --test scripts/test-admin-route-inventory.mjs
       - name: Test media, configuration and privileged publication boundaries
         run: |
-          npx vitest run src/lib/razorpay.test.ts src/app/api/donations/order/provider-order.test.ts src/app/api/webhooks/razorpay/payment-failed.test.ts src/app/api/webhooks/razorpay/route.test.ts src/lib/payment-processing.test.ts src/app/api/donations/confirm/route.test.ts src/lib/bounded-request-body.test.ts src/lib/env.test.ts src/lib/public-media.test.ts src/app/api/admin/media/curated-gallery/publish/error-boundary.test.ts
+          npx vitest run src/lib/notifications-worker.test.ts src/lib/notifications-claim.test.ts src/lib/notifications-provider-timeout.test.ts src/lib/razorpay.test.ts src/app/api/donations/order/provider-order.test.ts src/app/api/webhooks/razorpay/payment-failed.test.ts src/app/api/webhooks/razorpay/route.test.ts src/lib/payment-processing.test.ts src/app/api/donations/confirm/route.test.ts src/lib/bounded-request-body.test.ts src/lib/env.test.ts src/lib/public-media.test.ts src/app/api/admin/media/curated-gallery/publish/error-boundary.test.ts
           node --check e2e/security-headers.spec.mjs
