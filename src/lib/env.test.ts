@@ -45,6 +45,11 @@ describe("production environment safety", () => {
     expect(() => validateProductionEnvironment()).toThrow(/Production canonical origin/);
   });
 
+  it("rejects a canonical production URL with embedded credentials", () => {
+    process.env.NEXT_PUBLIC_APP_URL = "https://user:password@amaanafoundation.org";
+    expect(() => validateProductionEnvironment()).toThrow(/without embedded credentials/);
+  });
+
   it("rejects public media stored in the private assistance bucket", () => {
     process.env.PUBLIC_MEDIA_S3_BUCKET = process.env.S3_BUCKET;
     expect(() => validateProductionEnvironment()).toThrow(/separate bucket/);
