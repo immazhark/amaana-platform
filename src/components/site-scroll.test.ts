@@ -64,3 +64,55 @@ test.each(["Tab", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", "
     }
   },
 );
+
+test.each(["click", "popstate", "hashchange"])(
+  "%s releases active smooth scrolling before native navigation",
+  async eventName => {
+    let cleanup: (() => void) | undefined;
+    const created = vi.fn();
+    const destroyed = vi.fn();
+    vi.doMock("react", () => ({
+      useEffect: (effect: () => () => void) => { cleanup = effect(); },
+    }));
+    vi.doMock("lenis", () => ({
+      default: class {
+        constructor() { created(); }
+        on() {}
+        destroy() { destroyed(); }
+      },
+    }));
+    const windowTarget = Object.assign(new EventTarget(), {
+      matchMedia: (query: string) => Object.assign(new EventTarget(), {
+        matches: query === "(pointer: fine)",
+      }),
+    });
+    vi.stubGlobal("window", windowTarget);
+    vi.stubGlobal("document", Object.assign(new EventTarget(), {
+      hidden: false,
+      body: { matches: () => false },
+    }));
+    vi.stubGlobal("Element", class {
+      closest() { return "a[href]"; }
+    });
+    vi.stubGlobal("requestAnimationFrame", vi.fn(() => 1));
+    vi.stubGlobal("cancelAnimationFrame", vi.fn());
+    const { useSiteScroll } = await import("./site-scroll");
+    useSiteScroll("/about");
+    try {
+      windowTarget.dispatchEvent(new Event("wheel"));
+      await vi.waitFor(() => expect(created).toHaveBeenCalledOnce());
+      const navigation = new Event(eventName);
+      if (eventName === "click") {
+        Object.defineProperty(navigation, "target", {
+          value: { closest: () => "a[href]" },
+        });
+      }
+      windowTarget.dispatchEvent(navigation);
+      expect(destroyed).toHaveBeenCalledOnce();
+      windowTarget.dispatchEvent(new Event("wheel"));
+      await vi.waitFor(() => expect(created).toHaveBeenCalledTimes(2));
+    } finally {
+      cleanup?.();
+    }
+  },
+);
