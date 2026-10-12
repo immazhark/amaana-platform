@@ -59,6 +59,9 @@ describe("failed payment identity before persistence", () => {
   it.each([
     { id: undefined }, { id: null }, { id: "" }, { id: " \t\n" },
     { id: 123 }, { id: false }, { id: {} }, { id: [] },
+    { id: "invalid" }, { id: "pay_" }, { id: "pay_a b" },
+    { order_id: "invalid" }, { order_id: "order_" }, { order_id: "order_a b" },
+    { status: "captured" }, { status: "authorized" },
   ])("rejects a signed failure with unusable payment identity: %j", async invalid => {
     const response = await POST(signedRequest({ ...entity, ...invalid }));
 
