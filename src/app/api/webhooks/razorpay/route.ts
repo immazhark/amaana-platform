@@ -140,7 +140,10 @@ export async function POST(request: Request) {
           await tx.donation.updateMany({
             where: {
               id: donation.id,
-              status: { in: ["CREATED", "AUTHORIZED"] },
+              OR: [
+                { status: "CREATED" },
+                { status: "AUTHORIZED", providerPaymentId: payment.id },
+              ],
             },
             data: {
               status: "FAILED",
