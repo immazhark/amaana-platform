@@ -96,7 +96,7 @@ These are tracking-row counts, not a certified defect-free percentage. The 40 ad
 | R-021 | Captions and appeal text contrast | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-05; #222 | Targeted accessible ink replacements implemented. |
 | R-022 | Impact/Contact/initiative supporting-text contrast | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-05; #230 | Three affected surfaces switched to accessible meta ink. |
 | R-023 | Dark admin-sidebar eyebrow contrast | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-05; #239 | Separate foreground tokens for light content and dark sidebar. |
-| R-024 | Sub-12px text declarations | Open | No completed rollout | No verified new fix | AM-05 | Complete minimum-size cleanup not evidenced. |
+| R-024 | Sub-12px text declarations | Open | 19 Companion fixed-pixel font declarations converted to equivalent rem values; enlarged-text browser and source-guard tests added | New fix candidate; cross-browser acceptance pending | AM-05 | Remaining public styles and production verification not closed. |
 | R-025 | Overly tight multiline heading line heights | Partial; not closed | Existing baseline; further work pending | Partial / baseline only | AM-25 | Earlier typography improvements exist; all flagged declarations not closed. |
 | R-026 | Remaining gold-on-light text contrast | Partial; not closed | Existing baseline; further work pending | Partial / baseline only | AM-05 | Needs selector/background-specific verification; not blanket certification. |
 | R-027 | Assistance step errors lack linked inline messages | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-11; #224 | Persistent aria-invalid/aria-describedby errors implemented. |
@@ -232,3 +232,11 @@ No unsupported Shariah-compliant badge, invented Qurbani sponsorship prices, don
 ### Browser regression root-cause correction — 12 October 2026
 
 CI 38285272953: 1,088 passed, 56 failed, 7 flaky. Newly added parent-route `loading.tsx` boundaries made public route checks inspect the streaming fallback before required page content and produced HTTP 200 for a legacy redirect that requires 307/308. Remove these five boundaries and unused skeleton code, preserving server-rendered response semantics. CSS also exceeded the 340 KiB cap by 3,484 bytes; removing the new CSS asset is safer than raising the budget. R-071 remains deferred. The full browser and production CI must pass on a fresh commit before integration; no production verification is claimed.
+
+### R-024 parked-batch integration — 13 October 2026 IST
+
+Baseline `87aa9c61` passed CI 38294121822: 1,151 Chromium and 24 Firefox/WebKit tests, fast/database/production/final verify green; JS 818,586/819,200 B and CSS 346,363/348,160 B. This evidence does not validate the newer candidate.
+
+Integrate parked `58c10229` with recovery `a4e9fa78` / `fdab2ad9`: root-relative Companion typography; repair two literal backslash-n sequences preventing flex wrapping; add source regression guard and deterministic loaded-prayer browser checks at 200% text size. Source guard 2/2 and CI planner 33/33 pass locally; browser spec syntax passes. Local Chromium is unavailable. Hosted candidate browser/build validation remains pending; R-024 is not fully closed or deployed.
+
+CI retains its per-ref concurrency group and disables cancellation of running checks. Required release checks and asset limits remain unchanged.

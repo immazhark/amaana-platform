@@ -16,7 +16,7 @@ on:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -125,6 +125,8 @@ jobs:
         run: node --test scripts/test-client-secret-boundary.mjs
       - name: Enforce audited muted text contrast
         run: node --test scripts/test-audited-muted-contrast.mjs
+      - name: Guard Companion text scaling under 200% root font size
+        run: node --test scripts/test-companion-text-scaling.mjs
       - name: Enforce accessible public-media link names
         run: node --test scripts/test-public-media-link-name.mjs
       - name: Enforce appeal and faith link action names
