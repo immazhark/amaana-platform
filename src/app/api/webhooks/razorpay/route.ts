@@ -55,7 +55,7 @@ export async function POST(request: Request) {
     const payload = JSON.parse(rawBody) as RazorpayWebhook;
     receivedEventType = payload.event;
     providerEventId =
-      request.headers.get("x-razorpay-event-id") ??
+      request.headers.get("x-razorpay-event-id")?.trim() ||
       createHash("sha256").update(rawBody).digest("hex");
 
     const alreadyProcessed = await prisma.paymentEvent.findUnique({
