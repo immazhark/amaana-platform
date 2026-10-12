@@ -37,7 +37,8 @@ describe("first-party Web Vitals reporting boundary", () => {
     expect(response.status).toBe(204);
     expect(response.headers.get("cache-control")).toMatch(/no-store.*private/);
     expect(mocks.upsert).toHaveBeenCalledTimes(1);
-    const query = mocks.upsert.mock.calls[0][0];
+    const query = mocks.upsert.mock.calls[0]?.[0];
+    if (!query) throw new Error("Expected a persisted aggregate update");
     expect(query.where.path_date_metric).toMatchObject({ path: "/about", metric: "INP" });
     expect(query.create).toMatchObject({ path: "/about", metric: "INP", excellent: 1, good: 0, needsImprovement: 0, poor: 0 });
     expect(query.create).not.toHaveProperty("clientHash");
