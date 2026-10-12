@@ -466,6 +466,22 @@ for (const width of [390, 1280]) {
   test(`shared rail, footer and Companion labels stay readable at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
+    // Fix the client clock and API response so the loaded prayer layout is
+    // exercised without external timing services or local-date rollover.
+    await page.clock.setFixedTime(new Date('2026-10-12T05:00:00Z'));
+    await page.route('**/api/public/islamic-companion?*', route => route.fulfill({
+      status: 200,
+      json: {
+        school: new URL(route.request().url()).searchParams.get('school'),
+        today: { date: '2026-10-12', timings: { Fajr: '05:00', Sunrise: '06:00', Dhuhr: '12:30', Asr: '16:00', Maghrib: '18:00', Isha: '19:30' } },
+        tomorrow: null,
+        method: 'Browser regression fixture',
+        asr: 'Hanafi',
+        moon: null,
+        eveningMoon: null,
+        note: 'Synthetic timings for layout verification only.',
+      },
+    }));
     expect((await page.goto('/about')).ok()).toBe(true);
     const selectors = [
       '.amaana-rail-label',
@@ -508,6 +524,20 @@ for (const width of [390, 1280]) {
     for (const label of [location, hijriNote]) {
       expect(await label.evaluate(node => Number.parseFloat(getComputedStyle(node).fontSize)))
         .toBeGreaterThanOrEqual(24);
+    }
+    const prayerRows = page.locator('.amaana-salah-times>div');
+    await expect(prayerRows).toHaveCount(6);
+    await expect(page.locator('.amaana-next-salah strong')).toBeVisible();
+    const wrapping = await page.locator('.amaana-next-salah strong, .amaana-salah-times>div').evaluateAll(nodes =>
+      nodes.map(node => ({
+        wrap: getComputedStyle(node).flexWrap,
+        overflow: node.scrollWidth > node.clientWidth + 1,
+      })),
+    );
+    expect(wrapping).toHaveLength(7);
+    for (const row of wrapping) {
+      expect(row.wrap).toBe('wrap');
+      expect(row.overflow).toBe(false);
     }
   });
 }
