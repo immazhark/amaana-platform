@@ -160,6 +160,45 @@ async function finishAssistanceConfirmation(page) {
 
 // Release-candidate browser gate: keep this suite active whenever checkout or runtime hardening changes.
 test.describe('donation journey without real payment', () => {
+  for (const selectedIntent of ['GENERAL', 'SADAQAH', 'ZAKAT', null]) {
+    test(`rejected giving intention focuses ${selectedIntent ?? 'first radio when unchecked'}`, async ({ page }) => {
+      let orderCalls = 0;
+      await page.route('**/api/donations/order', route => {
+        orderCalls += 1;
+        return route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            error: 'Please review the giving intention.',
+            fields: { givingIntent: ['Choose a supported intention.'] },
+          }),
+        });
+      });
+      const submit = await openDonationFixture(page, 'dismiss');
+      await fillDonationForm(page);
+      if (selectedIntent) {
+        await page.locator(`input[name="givingIntent"][value="${selectedIntent}"]`).check();
+      } else {
+        await page.locator('form').evaluate(form => {
+          // Synthetic setup reaches the server-rejection fallback with no checked radio.
+          form.noValidate = true;
+          for (const radio of form.querySelectorAll('input[name="givingIntent"]')) radio.checked = false;
+        });
+      }
+      await submit.click();
+
+      const target = page.locator(`input[name="givingIntent"][value="${selectedIntent ?? 'GENERAL'}"]`);
+      await expect(target).toBeFocused();
+      const group = page.getByRole('group', { name: 'Giving intention', exact: true });
+      await expect(group).toHaveAttribute('aria-invalid', 'true');
+      await expect(group).toHaveAttribute('aria-describedby', 'giving-intent-error');
+      await expect(page.locator('#giving-intent-error')).toHaveText('Choose a supported intention.');
+      if (selectedIntent) await expect(target).toBeChecked();
+      else await expect(target).not.toBeChecked();
+      expect(orderCalls).toBe(1);
+    });
+  }
+
   test('donation order validation focuses the rejected field, not only the summary', async ({ page }) => {
     let orderCalls = 0;
     await page.route('**/api/donations/order', async route => {
