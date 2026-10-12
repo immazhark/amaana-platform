@@ -82,6 +82,7 @@ test("AM-07 CSP constrains execution and preserves Razorpay transport", async ({
   expect(directives.get("base-uri")).toEqual(["'self'"]);
   expect(directives.get("form-action")).toEqual(["'self'"]);
   expect(directives.get("script-src")).toContain("https://checkout.razorpay.com");
+  expect(directives.get("script-src-attr")).toEqual(["'none'"]);
   expect(directives.get("connect-src")).toContain("https://api.razorpay.com");
   expect(directives.get("frame-src")).toEqual(["https://api.razorpay.com", "https://checkout.razorpay.com"]);
   expect(directives.get("script-src")).not.toContain("'unsafe-eval'");
