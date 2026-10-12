@@ -172,6 +172,8 @@ describe("Razorpay webhook route", () => {
     { id: "invalid" },
     { order_id: "" },
     { order_id: "invalid" },
+    { status: "authorized" },
+    { status: "failed" },
     { currency: "USD" },
     { amount: 0 },
     { amount: -10 },
