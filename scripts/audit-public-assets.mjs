@@ -32,7 +32,10 @@ async function walk(directory) {
   return files;
 }
 
-const assetFiles = (await walk(publicRoot)).filter(file => assetExtensions.has(path.extname(file).toLowerCase()));
+const assetFiles = (await walk(publicRoot)).filter(file => {
+  const relative = path.relative(publicRoot, file).split(path.sep).join("/");
+  return assetExtensions.has(path.extname(file).toLowerCase()) || protectedNames.has(relative);
+});
 const sourceFiles = (await Promise.all(indexRoots.map(dir => walk(path.join(root, dir)))))
   .flat().filter(file => indexExtensions.has(path.extname(file).toLowerCase()));
 const contents = [];
@@ -42,13 +45,44 @@ for (const file of sourceFiles) {
   if (file === path.join(root, "scripts", "audit-public-assets.mjs")) continue;
   const size = (await stat(file)).size;
   if (size > 5_000_000) continue;
-  contents.push(await readFile(file, "utf8"));
+  contents.push({ file, text: await readFile(file, "utf8") });
+}
+
+const pathCharacter = /[A-Za-z0-9._~!  contents.push(await readFile(file, "utf8"));
 }
 const corpus = contents.join("\n");
 const rows = assetFiles.map(file => {
   const relative = path.relative(publicRoot, file).split(path.sep).join("/");
   const candidates = ["/" + relative, "public/" + relative, encodeURI("/" + relative), encodeURIComponent(relative)];
   const literal = candidates.some(value => corpus.includes(value));
+'()*+,;=:@%/-]/;
+function hasCompleteReference(text, candidate) {
+  let offset = 0;
+  while (offset <= text.length - candidate.length) {
+    const index = text.indexOf(candidate, offset);
+    if (index < 0) return false;
+    const before = index > 0 ? text[index - 1] : "";
+    const after = text[index + candidate.length] ?? "";
+    const leadingBoundary = candidate.startsWith("/") || !before || !pathCharacter.test(before);
+    const trailingBoundary = !after || !pathCharacter.test(after);
+    if (leadingBoundary && trailingBoundary) return true;
+    offset = index + 1;
+  }
+  return false;
+}
+
+const rows = assetFiles.map(file => {
+  const relative = path.relative(publicRoot, file).split(path.sep).join("/");
+  const publicPath = "/" + relative;
+  const candidates = [...new Set([
+    publicPath,
+    "public/" + relative,
+    encodeURI(publicPath),
+    encodeURIComponent(publicPath),
+  ])];
+  const literal = contents.some(source =>
+    source.file !== file && candidates.some(value => hasCompleteReference(source.text, value))
+  );
   const protectedAsset = protectedPrefixes.some(prefix => relative.startsWith(prefix))
     || protectedNames.has(relative);
   return { asset: relative, status: literal ? "referenced" : protectedAsset ? "protected" : "unresolved" };
