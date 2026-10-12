@@ -272,3 +272,51 @@ test('policy routes preserve long-form reading hierarchy', async ({ page }) => {
     expect(lineHeight).toBeGreaterThanOrEqual(1.65);
   }
 });
+
+for (const width of [390, 1280]) {
+  for (const state of ['received', 'tracking', 'acknowledgement']) {
+    test(`private ${state} metadata remains readable at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+      const reference = 'SYNTHETIC-READABILITY-ONLY';
+      const token = 'synthetic-readability-token-no-real-record';
+      await page.route('**/api/assistance/status', route => route.fulfill({
+        status: 200, json: { found: true, status: 'SUBMITTED', createdAt: '2026-10-01T00:00:00Z', updatedAt: '2026-10-02T00:00:00Z' },
+      }));
+      await page.route('**/api/donations/acknowledgement', route => route.fulfill({
+        status: 200, json: {
+          found: true,
+          presentation: { tone: 'captured', heading: 'Synthetic acknowledgement', summary: 'Browser-only typography fixture.', statusLabel: 'Captured' },
+          donation: { referenceNumber: reference, receiptNumber: 'SYNTHETIC-RECEIPT', donorName: 'Synthetic donor', givingIntent: 'GENERAL', amount: 100,
+            refundedAmount: 0, recordDate: '2026-10-01T00:00:00Z', providerPaymentId: null, appeal: { title: 'Synthetic appeal', slug: 'synthetic-appeal' } },
+        },
+      }));
+      const fragment = new URLSearchParams({ reference, token }).toString();
+      const path = state === 'acknowledgement'
+        ? `/donations/${reference}/acknowledgement#token=${token}`
+        : `/request-assistance/${state === 'tracking' ? 'status' : 'received'}#${fragment}`;
+      expect((await page.goto(path, { waitUntil: 'domcontentloaded' }))?.ok()).toBeTruthy();
+      const selectors = state === 'acknowledgement'
+        ? ['.v2-receipt-status > span', '.v2-receipt-sheet-head span']
+        : ['.v2-reference-block > span', '.v2-state-steps > span'];
+      for (const selector of selectors) {
+        const label = page.locator(selector);
+        await expect(label).toHaveCount(1);
+        await expect(label).toBeVisible();
+        expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
+      }
+      await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      for (const selector of selectors) {
+        const label = page.locator(selector);
+        expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
+        const contained = await label.evaluate(node => {
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          const host = node.parentElement.getBoundingClientRect();
+          return [...range.getClientRects()].every(rect => rect.left >= host.left - 1 && rect.right <= host.right + 1);
+        });
+        expect(contained, selector).toBe(true);
+      }
+    });
+  }
+}
