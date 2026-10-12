@@ -16,8 +16,12 @@ export function isTrackablePublicPath(pathname: string) {
  * reported numbers, recording them incurs avoidable rate-limit and counter
  * writes on every acceptance/audit navigation.
  */
-export function shouldRecordPublicPageView(pathname: string, automatedBrowser: boolean) {
-  return !automatedBrowser && isTrackablePublicPath(pathname);
+export function shouldRecordPublicPageView(
+  pathname: string,
+  automatedBrowser: boolean,
+  currentPathname = pathname,
+) {
+  return !automatedBrowser && pathname === currentPathname && isTrackablePublicPath(pathname);
 }
 
 export function analyticsDateForHyderabad(now: Date) {

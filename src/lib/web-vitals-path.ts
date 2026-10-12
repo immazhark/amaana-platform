@@ -21,7 +21,8 @@ export function normalizePublicWebVitalPath(pathname: string): string | null {
 export function canRecordWebVitalOnCurrentRoute(
   initialNormalizedPath: string | null,
   currentPathname: string,
+  automatedBrowser = false,
 ): boolean {
-  return initialNormalizedPath !== null
+  return !automatedBrowser && initialNormalizedPath !== null
     && normalizePublicWebVitalPath(currentPathname) === initialNormalizedPath;
 }

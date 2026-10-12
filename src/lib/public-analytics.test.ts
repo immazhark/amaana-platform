@@ -25,6 +25,9 @@ describe("public page-view integrity and infrastructure usage", () => {
     expect(shouldRecordPublicPageView("/about", true)).toBe(false);
     expect(shouldRecordPublicPageView("/appeals/appeal-name", true)).toBe(false);
     expect(shouldRecordPublicPageView("/about", false)).toBe(true);
+    expect(shouldRecordPublicPageView("/about", false, "/donate")).toBe(false);
+    expect(shouldRecordPublicPageView("/appeals/a-name", false, "/request-assistance")).toBe(false);
+    expect(shouldRecordPublicPageView("/about", false, "/about")).toBe(true);
     expect(shouldRecordPublicPageView("/admin", false)).toBe(false);
     expect(shouldRecordPublicPageView("/request-assistance", false)).toBe(false);
   });
