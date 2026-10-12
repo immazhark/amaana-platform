@@ -9,7 +9,7 @@ const productionSchema = z.object({
   EMAIL_DELIVERY_MODE: z.enum(["live", "disabled"]).default("disabled"),
   DATABASE_URL: z.string().url(),
   NEXT_PUBLIC_APP_URL: z.string().url().refine(value => value.startsWith("https://"), "Production URL must use HTTPS"),
-  NEXT_PUBLIC_DONATION_UPI_QR_URL: z.string().url().refine(value => value.startsWith("https://"), "Donation QR URL must use HTTPS").optional(),
+  NEXT_PUBLIC_DONATION_UPI_QR_URL: z.string().url().refine(value => { const url = new URL(value); return url.protocol === "https:" && !url.username && !url.password; }, "Donation QR URL must use HTTPS without embedded credentials").optional(),
   EMAIL_FROM: z.string().min(3),
   RESEND_API_KEY: z.string().startsWith("re_"),
   CRON_SECRET: z.string().min(32),
