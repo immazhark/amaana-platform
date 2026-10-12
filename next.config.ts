@@ -31,6 +31,9 @@ const nextConfig: NextConfig = {
     },
   },
   images: {
+    // Next 16 rejects local image URLs containing a query unless they match localPatterns.
+    // This synthetic source exists only in the isolated browser acceptance build.
+    ...(browserAcceptance ? { localPatterns: [{ pathname: "/browser-acceptance/image-cache-source" }] } : {}),
     formats: ["image/avif", "image/webp"],
     deviceSizes: [360, 412, 640, 768, 1024, 1280, 1536, 1920],
     imageSizes: [32, 48, 64, 96, 128, 256, 384],
