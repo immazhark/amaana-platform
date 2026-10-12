@@ -88,6 +88,18 @@ export async function POST(request: Request) {
       return new NextResponse("Invalid refund entity", { status: 400 });
     }
 
+    // A signed webhook can still carry malformed provider data. Never acknowledge
+    // a capture event without a valid identity, currency and positive paise amount.
+    if (payload.event === "payment.captured" && (
+      !payment ||
+      typeof payment.id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(payment.id) ||
+      typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
+      payment.currency !== "INR" ||
+      !Number.isSafeInteger(payment.amount) || payment.amount <= 0
+    )) {
+      return new NextResponse("Invalid captured payment entity", { status: 400 });
+    }
+
     if (payload.event === "payment.captured" && payment?.order_id && payment.currency === "INR") {
       const result = await captureDonation(payment.order_id, payment.id, payment.amount);
       try {
