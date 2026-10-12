@@ -620,3 +620,49 @@ for (const scale of [100, 200]) {
     }))).toEqual({ root: 16 * scale / 100, minimum: 12 * scale / 100 });
   });
 }
+
+for (const scale of [100, 200]) {
+  test(`impact index badges remain readable on light and media tiles at ${scale}% text`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 1000 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+    await page.addInitScript(percent => {
+      const apply = () => {
+        const style = document.createElement('style');
+        style.textContent = `html:root { font-size: ${percent}% !important; }`;
+        document.head.appendChild(style);
+      };
+      if (document.head) apply();
+      else document.addEventListener('DOMContentLoaded', apply, { once: true });
+    }, scale);
+    const response = await page.goto('/impact', { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBeTruthy();
+    // Exercise both stylesheet variants without depending on published media availability.
+    await page.evaluate(() => {
+      const fixture = document.createElement('div');
+      fixture.setAttribute('data-typography-impact-fixture', '');
+      fixture.setAttribute('aria-hidden', 'true');
+      for (const className of ['v2-impact-tile', 'v2-impact-tile has-media']) {
+        const tile = document.createElement('div');
+        tile.className = className;
+        const badge = document.createElement('span');
+        badge.className = 'v2-impact-tile-index';
+        badge.textContent = '01';
+        tile.appendChild(badge);
+        fixture.appendChild(tile);
+      }
+      document.querySelector('main').appendChild(fixture);
+    });
+    const badges = page.locator('[data-typography-impact-fixture] .v2-impact-tile-index');
+    await expect(badges).toHaveCount(2);
+    await expect.poll(() => badges.evaluateAll(nodes => nodes.map(node => {
+      const style = getComputedStyle(node);
+      return { root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+        font: Number.parseFloat(style.fontSize), opacity: style.opacity,
+        color: style.color, background: style.backgroundColor };
+    }))).toEqual(Array.from({ length: 2 }, () => ({
+      root: 16 * scale / 100, font: 12 * scale / 100, opacity: '1',
+      color: 'rgb(18, 34, 57)', background: 'rgb(255, 253, 248)',
+    })));
+  });
+}
