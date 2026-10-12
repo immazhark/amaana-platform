@@ -1,0 +1,59 @@
+name: Notification worker image
+
+on:
+  pull_request:
+    paths:
+      - "ops/notification-cron/**"
+      - "scripts/test-notification-cron.mjs"
+      - ".github/workflows/notification-worker.yml"
+  push:
+    branches: [main]
+    paths:
+      - "ops/notification-cron/**"
+      - "scripts/test-notification-cron.mjs"
+      - ".github/workflows/notification-worker.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: "22"
+      - name: Test isolated worker
+        run: node --test scripts/test-notification-cron.mjs
+      - name: Build worker without website or database variables
+        run: docker build --tag amaana-notification-worker:ci ops/notification-cron
+      - name: Exercise the built image with networking disabled
+        run: |
+          docker run --rm --network none amaana-notification-worker:ci node --input-type=module -e '
+            import assert from "node:assert/strict";
+            import { runNotificationJob } from "./run.mjs";
+            const env = { CRON_SECRET: "synthetic-worker-image-credential" };
+            let calls = 0;
+            assert.equal(await runNotificationJob(env, async (url, options) => {
+              calls++;
+              assert.equal(url, "https://amaanafoundation.org/api/jobs/notifications");
+              assert.equal(options.headers.authorization, "Bearer " + env.CRON_SECRET);
+              assert.equal(options.redirect, "error");
+              return new Response("synthetic-private-body", { status: 200 });
+            }), 200);
+            assert.equal(calls, 1);
+            await assert.rejects(runNotificationJob(env, async () => new Response("private-body", { status: 401 })), { message: "Notification job HTTP 401" });
+            await assert.rejects(runNotificationJob({}, () => assert.fail("unexpected HTTP")), /Missing notification job credential/);
+            assert.equal(process.getuid(), 1000);
+            console.log("Built worker success, failure, credential and non-root checks passed.");
+          '
+      - name: Verify container entrypoint fails safely without credentials
+        run: |
+          set +e
+          OUTPUT=$(docker run --rm --network none amaana-notification-worker:ci 2>&1)
+          STATUS=$?
+          set -e
+          test "$STATUS" -eq 1
+          test "$OUTPUT" = "Notification job failed; inspect the application's notification operations."
