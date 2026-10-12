@@ -59,7 +59,8 @@ describe("provider order boundary before donation persistence", () => {
   it.each([
     { id: undefined }, { id: null }, { id: "" }, { id: " \t\n" },
     { id: 123 }, { id: false }, { id: {} }, { id: [] },
-    { amount: 49900 }, { currency: "USD" },
+    { id: "not-an-order" }, { id: "order_" }, { id: "order_123 extra" },
+    { amount: 49900 }, { currency: "USD" }, { status: "paid" }, { status: "attempted" }, { status: null },
   ])("rejects unusable provider identity or mismatched money before persistence: %j", async invalid => {
     mocks.createRazorpayOrder.mockResolvedValue({ ...providerOrder, ...invalid });
 
