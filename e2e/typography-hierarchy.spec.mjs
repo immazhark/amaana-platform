@@ -595,3 +595,28 @@ for (const width of [390, 1440]) {
     });
   }
 }
+
+for (const scale of [100, 200]) {
+  test(`donation route labels meet the readable minimum at ${scale}% text`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 1000 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+    await page.addInitScript(percent => {
+      const apply = () => {
+        const style = document.createElement('style');
+        style.textContent = `html:root { font-size: ${percent}% !important; }`;
+        document.head.appendChild(style);
+      };
+      if (document.head) apply();
+      else document.addEventListener('DOMContentLoaded', apply, { once: true });
+    }, scale);
+    const response = await page.goto('/donate', { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBeTruthy();
+    const labels = page.getByRole('group', { name: 'Donation routes' }).locator('article > span');
+    await expect(labels).toHaveCount(2);
+    await expect.poll(() => labels.evaluateAll(nodes => ({
+      root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+      minimum: Math.min(...nodes.map(node => Number.parseFloat(getComputedStyle(node).fontSize))),
+    }))).toEqual({ root: 16 * scale / 100, minimum: 12 * scale / 100 });
+  });
+}

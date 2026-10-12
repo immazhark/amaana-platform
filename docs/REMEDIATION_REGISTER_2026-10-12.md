@@ -1,3 +1,11 @@
+## 2026-10-13 — R-024 public stylesheet minimum review
+
+- Read all 79 CSS files from the original repository tree at PR d246e366; root/public/component CSS inventory has no missing fetches. Review targeted explicit px/rem declarations and bounded clamp values, not inherited/em/calculated font sizes or live computed styles.
+- Two further sub-12px declarations found: donation-route metadata .68rem and decorative placeholder label clamp(.62rem,1.2vw,.72rem). Raise both to .75rem; earlier parked status/pathway corrections bring this batch to four minimum-size declarations. Placeholder remains decorative/aria-hidden; no semantic or beneficiary-data change.
+- Add two actual donation-page browser cases at 390px, verifying both labels equal 12px at 100% and 24px at 200% root size. Together with four R-025 real-404 cases, this batch adds six browser regressions. Node syntax check passes; hosted browser results pending.
+- R-024 remains partial until browser, inherited/computed typography, and human acceptance are verified. No claim of universal readable sizing or AAA compliance.
+- Parked batch is based on 469a6813; PR d246e366/browser run 38303371341 continues. No security/main merge or deployment.
+
 ## 2026-10-13 — R-025 error-heading line spacing
 
 - Current root `not-found.tsx` and `error.tsx` use `.v2-not-found` / `.v2-error-page`; both active headings receive line-height .8 from the globally imported `error-experience.css`. Error heading includes an explicit line break. This is confirmed source evidence; no live overlap measurement claimed.
@@ -119,7 +127,7 @@ These are tracking-row counts, not a certified defect-free percentage. The 40 ad
 | R-021 | Captions and appeal text contrast | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-05; #222 | Targeted accessible ink replacements implemented. |
 | R-022 | Impact/Contact/initiative supporting-text contrast | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-05; #230 | Three affected surfaces switched to accessible meta ink. |
 | R-023 | Dark admin-sidebar eyebrow contrast | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-05; #239 | Separate foreground tokens for light content and dark sidebar. |
-| R-024 | Sub-12px text declarations | Open | 19 Companion fixed-pixel font declarations converted to equivalent rem values; enlarged-text browser and source-guard tests added | New fix candidate; cross-browser acceptance pending | AM-05 | Remaining public styles and production verification not closed. |
+| R-024 | Sub-12px text declarations | Partial; correction candidate | Companion scalable typography plus four parked label minima | Not deployed | AM-05 | Status/pathway/donation/placeholder labels reach .75rem; two real donation-label and existing Companion scale cases await candidate browser validation. 79 stylesheets reviewed for explicit px/rem/clamp minima; inherited/em/calculated sizing and human acceptance remain open. |
 | R-025 | Overly tight multiline heading line heights | Partial; correction candidate | Parked R-025 error/404 heading correction | Not deployed | AM-25 | Active error/404 line height raised .8→1.05 in root and duplicate policy styles; four browser cases added, execution pending. Other legacy rules not certified. |
 | R-026 | Remaining gold-on-light text contrast | Partial; not closed | Existing baseline; further work pending | Partial / baseline only | AM-05 | Needs selector/background-specific verification; not blanket certification. |
 | R-027 | Assistance step errors lack linked inline messages | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-11; #224 | Persistent aria-invalid/aria-describedby errors implemented. |
