@@ -47,6 +47,11 @@ export function useSiteScroll(pathname: string) {
             && !document.querySelector("[role='dialog'][aria-modal='true'],dialog[open]"),
         });
         instance.on("scroll", wake);
+      } catch {
+        // Optional progressive enhancement must never surface an unhandled
+        // rejection or break native scrolling when the chunk fails to load.
+        // Resetting loading allows a later wheel gesture to retry.
+        destroy();
       } finally { loading = false; }
     };
     const wheel = (event: WheelEvent) => {
