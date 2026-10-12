@@ -63,7 +63,10 @@ function hasCompleteReference(text, candidate) {
     if (index < 0) return false;
     const before = index > 0 ? text[index - 1] : "";
     const after = text[index + candidate.length] ?? "";
-    const leadingBoundary = candidate.startsWith("/") || !before || !pathCharacter.test(before);
+    const prefix = text.slice(Math.max(0, index - 512), index);
+    const followsUrlAuthority = candidate.startsWith("/")
+      && /(?:https?:)?\/\/[^\s"'()<>/]+$/i.test(prefix);
+    const leadingBoundary = !before || !pathCharacter.test(before) || followsUrlAuthority;
     const trailingBoundary = !after || !pathCharacter.test(after);
     if (leadingBoundary && trailingBoundary) return true;
     offset = index + 1;
