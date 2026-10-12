@@ -56,6 +56,11 @@ describe("production environment safety", () => {
   });
 
 
+  it("rejects public media URLs with embedded credentials", () => {
+    process.env.PUBLIC_MEDIA_BASE_URL = "https://user:password@media.example.com/gallery";
+    expect(() => validateProductionEnvironment()).toThrow(/without embedded credentials/);
+  });
+
   it("rejects a configured donation QR URL that is not HTTPS", () => {
     process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL = "http://payments.example.com/amaana-qr.png";
     expect(() => validateProductionEnvironment()).toThrow(/Donation QR URL must use HTTPS/);
