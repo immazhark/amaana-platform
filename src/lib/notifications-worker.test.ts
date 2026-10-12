@@ -72,6 +72,34 @@ describe("notification worker flow", () => {
     else process.env.EMAIL_FROM = originalFrom;
   });
 
+  it.each([
+    ["missing ID", async () => ({ status: "ok" })],
+    ["empty ID", async () => ({ id: "  " })],
+    ["unreadable JSON", async () => { throw new SyntaxError("invalid JSON"); }],
+  ])("retries a 2xx Resend response with %s instead of marking it SENT", async (_case, json) => {
+    const sender = vi.fn().mockResolvedValue({ ok: true, status: 200, json });
+    vi.stubGlobal("fetch", sender);
+
+    expect(await processPendingEmailNotifications()).toEqual({
+      selected: 1,
+      sent: 0,
+      failed: 1,
+    });
+    expect(mocks.updateMany).toHaveBeenLastCalledWith({
+      where: { id: "notification_1", status: NotificationStatus.PROCESSING, attempts: 1 },
+      data: {
+        status: NotificationStatus.FAILED,
+        failureReason: expect.stringMatching(/provider returned an (invalid|unreadable) receipt/),
+        scheduledFor: expect.any(Date),
+      },
+    });
+    expect(sender).toHaveBeenCalledWith("https://api.resend.com/emails", expect.objectContaining({
+      headers: expect.objectContaining({
+        "Idempotency-Key": "amaana-notification/notification_1",
+      }),
+    }));
+  });
+
   it("atomically claims, sends idempotently and marks a queued email SENT", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
