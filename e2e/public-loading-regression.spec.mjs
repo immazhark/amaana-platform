@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
  * This complements unit checks on announcement semantics and avoids relying
  * on fragile artificial delays in the production data access layer.
  */
-for (const path of ["/our-work", "/impact", "/stories", "/appeals"]) {
+for (const path of ["/our-work", "/impact", "/stories", "/appeals", "/faith-and-reflections"]) {
   test(`public route fallback resolves to one real heading: ${path}`, async ({ page }) => {
     await page.setViewportSize({ width: 390, height: 844 });
     await page.route("**/api/analytics/page-view", route => route.fulfill({ status: 204, body: "" }));
