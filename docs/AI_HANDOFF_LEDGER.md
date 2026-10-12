@@ -1,3 +1,13 @@
+# 2026-10-12 — Donation enlarged-text containment repair
+
+Ownership CODEX_ACTIVE, single implementation writer, owner continuation. Existing PR216 at 9629e4d failed only two new donation-route label tests: content exceeds article bounds at 200% root text, both 390/1280px; 1112 browser checks passed. Repair implicit grid min-content sizing and long link wrapping; retain containment and page-overflow assertions. Fast/database/build passed on prior head; fresh validation required for changed candidate. Local terminal validation is unavailable because automatic approval review reports usage limit; no local run is claimed. No production deployment or real transaction.
+
+---
+
+Implemented explicit minmax(0,1fr) card track, min-width:0 and overflow-wrap:anywhere; route links permit normal whitespace wrapping. Regression retains original label/page bounds and adds article scroll-width plus link bounds at 200% text. Hosted execution pending. Existing importer fixes and tests preserved.
+
+---
+
 # 2026-10-12 — Refresh PR #216 against security integration
 
 Reconciled candidate with security integration e8ae4785a0b219a3f270dae1b3cb72bad562dda5. Preserved current security/runtime/worker changes and both historical work records. Added importer checks to current CI; retained PR #216 importer, timestamp, asset deduplication and scoped CSS changes. Previous candidate checks are historical; fresh combined CI and review required. No production deployment or live database mutation performed.

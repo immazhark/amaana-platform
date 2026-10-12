@@ -3,6 +3,7 @@ import { expect, test } from '@playwright/test';
 for (const width of [390, 1280]) {
   test(`donation route labels remain readable at ${width}px and enlarged text`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
     const response = await page.goto('/donate', { waitUntil: 'domcontentloaded' });
     expect(response?.ok()).toBeTruthy();
@@ -22,6 +23,17 @@ for (const width of [390, 1280]) {
         return bounds.left >= card.left - 1 && bounds.right <= card.right + 1;
       });
       expect(fits).toBe(true);
+    }
+    for (const article of await routes.locator('article').all()) {
+      expect(await article.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
+      for (const link of await article.locator('a').all()) {
+        const inside = await link.evaluate(node => {
+          const bounds = node.getBoundingClientRect();
+          const card = node.closest('article').getBoundingClientRect();
+          return bounds.left >= card.left - 1 && bounds.right <= card.right + 1;
+        });
+        expect(inside).toBe(true);
+      }
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   });
