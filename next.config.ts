@@ -5,12 +5,12 @@ const browserAcceptance = process.env.AMAANA_BROWSER_ACCEPTANCE === "true";
 const allowPublicIndexing = process.env.NEXT_PUBLIC_ALLOW_INDEXING === "true";
 const upgradeInsecureRequests = browserAcceptance ? "" : "; upgrade-insecure-requests";
 
-function getPublicMediaCspOrigin() {
-  const value = process.env.PUBLIC_MEDIA_BASE_URL?.trim();
-  if (!value) return null;
+function getConfiguredHttpsOrigin(value: string | undefined) {
+  const raw = value?.trim();
+  if (!raw) return null;
 
   try {
-    const url = new URL(value);
+    const url = new URL(raw);
     if (url.protocol !== "https:" || url.username || url.password) return null;
     return url.origin;
   } catch {
@@ -18,8 +18,17 @@ function getPublicMediaCspOrigin() {
   }
 }
 
-const publicMediaCspOrigin = getPublicMediaCspOrigin();
-const imageSources = ["'self'", "blob:", "data:", ...(publicMediaCspOrigin ? [publicMediaCspOrigin] : [])].join(" ");
+const configuredImageOrigins = [
+  getConfiguredHttpsOrigin(process.env.PUBLIC_MEDIA_BASE_URL),
+  getConfiguredHttpsOrigin(process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL),
+].filter((origin): origin is string => Boolean(origin));
+
+const imageSources = [
+  "'self'",
+  "blob:",
+  "data:",
+  ...new Set(configuredImageOrigins),
+].join(" ");
 
 const securityHeaders = [
   { key: "Content-Security-Policy", value: `default-src 'self'; script-src 'self' 'unsafe-inline'${devEval} https://checkout.razorpay.com; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src ${imageSources}; font-src 'self' data:; connect-src 'self' https://api.razorpay.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'${upgradeInsecureRequests}` },
