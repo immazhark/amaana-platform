@@ -61,6 +61,11 @@ describe("production environment safety", () => {
     expect(() => validateProductionEnvironment()).toThrow(/Donation QR URL must use HTTPS/);
   });
 
+  it("rejects donation QR URLs carrying embedded credentials", () => {
+    process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL = "https://user:password@payments.example.com/qr.png";
+    expect(() => validateProductionEnvironment()).toThrow(/without embedded credentials/);
+  });
+
   it("keeps delivery disabled when the mode is omitted", () => {
     delete process.env.EMAIL_DELIVERY_MODE;
     expect(isEmailDeliveryEnabled()).toBe(false);
