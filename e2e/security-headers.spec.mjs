@@ -96,10 +96,12 @@ test("AM-07 CSP constrains execution and preserves Razorpay transport", async ({
   expect(imageSources).not.toContain("*");
   expect(imageSources).not.toContain("https:");
 
-  const configuredMediaUrl = process.env.PUBLIC_MEDIA_BASE_URL?.trim();
-  if (configuredMediaUrl) {
-    const mediaOrigin = new URL(configuredMediaUrl).origin;
-    expect(imageSources).toContain(mediaOrigin);
+  for (const configuredImageUrl of [
+    process.env.PUBLIC_MEDIA_BASE_URL,
+    process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL,
+  ]) {
+    if (!configuredImageUrl?.trim()) continue;
+    expect(imageSources).toContain(new URL(configuredImageUrl).origin);
   }
 });
 
