@@ -12,3 +12,14 @@ test("Companion content typography follows root text enlargement", () => {
   assert.match(companion, /\.amaana-next-salah span\s*\{[^}]*font-size:\s*\.75rem/s);
   assert.match(companion, /\.amaana-daily-ayah blockquote\s*\{[^}]*font:\s*1\.25rem/s);
 });
+
+test("Enlarged prayer labels retain valid wrapping declarations", () => {
+  assert.doesNotMatch(companion, /\\n/);
+  for (const selector of [".amaana-next-salah strong", ".amaana-salah-times>div"]) {
+    const start = companion.indexOf(selector + "{");
+    assert.notEqual(start, -1, selector);
+    const rule = companion.slice(start, companion.indexOf("}", start) + 1);
+    assert.match(rule, /\{\s*flex-wrap:\s*wrap;/);
+    assert.match(rule, /display:\s*flex;/);
+  }
+});

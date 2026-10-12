@@ -1,3 +1,15 @@
+# 2026-10-13 IST — R-024 handover recovery
+
+Ownership: `CODEX_ACTIVE` under the owner's explicit master execution handover. One implementation writer. Task branch: `fix/r024-companion-text-scaling-20261013`; consolidated PR #282: `fix/consolidated-a11y-regression-20261012` targeting `fix/p0-security-remediation-20261010`.
+
+Verified PR head: `87aa9c613f635dc75b960a801c722f3f2f0f8ed6`. Parked R-024 parent: `58c10229c8c7085d0483455cccaa5c4caf3a2e9d`, one commit ahead without divergence. CI 38294121822: fast/database/production passed; browser still running at recovery. Preserve that running suite; do not update its branch until complete.
+
+R-024 recovery corrects two literal backslash-n sequences before flex-wrap declarations in parked Companion CSS. New guard fails on the parked source and passes after correction (2/2 local Node tests). Scalable typography remains a candidate, not full R-024 closure. Full browser/build validation and integration remain required. No main merge, Railway deployment, live payment or production privacy certification.
+
+Next: reconcile actual remote heads, publish recovery to the parked branch, then integrate only after the existing browser run completes. Preserve budget ceilings, canonical response semantics, compliance/factual locks and bottom-right Companion.
+
+---
+
 # 2026-10-12 — Payment integration and keyboard-scroll candidate
 
 Ownership: `CODEX_ACTIVE` under owner continuation; security integration `fix/p0-security-remediation-20261010` at `dcecb8461d374b0c5914b2e050ab9a7cd5339847`. This current checkpoint supersedes historical state below. No parallel repository implementation writer.
