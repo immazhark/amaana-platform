@@ -1,3 +1,11 @@
+# 2026-10-12 — Assistance label readability continuation
+
+Ownership: `CODEX_ACTIVE` under owner cx continuation. One implementation writer. Task branch `fix/assistance-label-readability-20261012`, based on security integration `e8ae4785a0b219a3f270dae1b3cb72bad562dda5`. Existing PR #277 remains separate; no changes to its branch or running checks.
+
+Confirmed R-024 partial finding: assistance form Private submission eyebrow inherits .7rem from forms-experience.css (11.2px at 16px root). Add a scoped .75rem rule in assistance-form.module.css. Existing field labels/progress controls are already larger. No private form submission, payment, email, production promotion or Railway mutation. Hosted rendered acceptance remains required.
+
+---
+
 # 2026-10-12 — Payment integration and keyboard-scroll candidate
 
 Ownership: `CODEX_ACTIVE` under owner continuation; security integration `fix/p0-security-remediation-20261010` at `dcecb8461d374b0c5914b2e050ab9a7cd5339847`. This current checkpoint supersedes historical state below. No parallel repository implementation writer.
