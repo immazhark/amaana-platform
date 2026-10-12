@@ -21,6 +21,7 @@ type RazorpayEntity = {
   amount: number;
   currency?: string;
   status?: string;
+  captured?: boolean;
 };
 
 type RazorpayWebhook = {
@@ -98,6 +99,7 @@ export async function POST(request: Request) {
       typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
       payment.currency !== "INR" ||
       (payment.status !== undefined && payment.status !== "captured") ||
+      payment.captured === false ||
       !Number.isSafeInteger(payment.amount) || payment.amount <= 0
     )) {
       return new NextResponse("Invalid captured payment entity", { status: 400 });
@@ -111,6 +113,7 @@ export async function POST(request: Request) {
       typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
       payment.currency !== "INR" ||
       (payment.status !== undefined && payment.status !== "failed") ||
+      payment.captured === true ||
       !Number.isSafeInteger(payment.amount) || payment.amount <= 0
     )) {
       return new NextResponse("Invalid payment entity", { status: 400 });
