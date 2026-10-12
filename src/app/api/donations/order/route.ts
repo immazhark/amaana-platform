@@ -101,7 +101,7 @@ export async function POST(request: Request) {
     const referenceNumber = createDonationReference(); const receiptToken = createReceiptToken(); const amountPaise = parsed.data.amount * 100;
     if (!Number.isSafeInteger(amountPaise) || amountPaise <= 0) throw new Error("Donation amount cannot be represented safely in paise");
     const order = await createRazorpayOrder({ amountPaise, receipt: referenceNumber, appealId: appeal.id, givingIntent: parsed.data.givingIntent });
-    if (order.amount !== amountPaise || order.currency !== "INR") throw new Error("Unexpected order response");
+    if (typeof order.id !== "string" || !order.id.trim() || order.amount !== amountPaise || order.currency !== "INR") throw new Error("Unexpected order response");
     const donation = await prisma.donation.create({
       data: { referenceNumber, appealId: appeal.id, donorName: parsed.data.donorName, donorEmail: parsed.data.donorEmail.toLowerCase(), donorPhone: parsed.data.donorPhone || null, isAnonymous: parsed.data.isAnonymous, givingIntent: parsed.data.givingIntent, domesticConfirmedAt: new Date(), amount: parsed.data.amount, paymentMethod: "RAZORPAY", provider: "RAZORPAY", providerOrderId: order.id, receiptTokenHash: hashReceiptToken(receiptToken) },
       select: { id: true, donorName: true, donorEmail: true, donorPhone: true },
