@@ -61,8 +61,9 @@ describe("provider order boundary before donation persistence", () => {
     { id: 123 }, { id: false }, { id: {} }, { id: [] },
     { id: "not-an-order" }, { id: "order_" }, { id: "order_123 extra" },
     { amount: 49900 }, { currency: "USD" }, { status: "paid" }, { status: "attempted" }, { status: null },
+    { receipt: "AFD-FOREIGN" }, { receipt: "" }, { receipt: null },
   ])("rejects unusable provider identity or mismatched money before persistence: %j", async invalid => {
-    mocks.createRazorpayOrder.mockResolvedValue({ ...providerOrder, ...invalid });
+    mocks.createRazorpayOrder.mockImplementation(async ({ receipt }: { receipt: string }) => ({ ...providerOrder, receipt, ...invalid }));
 
     const response = await POST(checkoutRequest());
 
@@ -74,7 +75,7 @@ describe("provider order boundary before donation persistence", () => {
   });
 
   it("persists and returns a matching provider order without changing its identity or amount", async () => {
-    mocks.createRazorpayOrder.mockResolvedValue(providerOrder);
+    mocks.createRazorpayOrder.mockImplementation(async ({ receipt }: { receipt: string }) => ({ ...providerOrder, receipt }));
 
     const response = await POST(checkoutRequest());
     const body = await response.json();
