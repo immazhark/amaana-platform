@@ -25,7 +25,8 @@ function assertCapturedPaymentIdentity(
 }
 
 function providerPaymentIsCaptured(payment: { status?: string; captured?: boolean }) {
-  return payment.captured === true || ["captured", "refunded"].includes(payment.status ?? "");
+  // A boolean flag alone is insufficient evidence of capture or a completed refund.
+  return ["captured", "refunded"].includes(payment.status ?? "");
 }
 
 export async function captureDonation(providerOrderId: string, providerPaymentId: string, amountPaise: number) {
