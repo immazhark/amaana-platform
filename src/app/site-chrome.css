@@ -179,12 +179,11 @@
   .amaana-reminder-lane,.amaana-live-lane{grid-template-columns:auto minmax(0,1fr);align-items:center;gap:.55rem;padding-block:.28rem}
   .amaana-reminder-content{grid-template-columns:minmax(0,1fr) auto;gap:.35rem .5rem}
   .amaana-reminder-content p{display:none}
-  /* Keep the two mobile lanes within the 110px chrome budget without
-     shrinking text below 12px or compromising the 44px action targets. */
+  /* Preserve full text on mobile; the compact rail must not truncate notices. */
   .amaana-reminders{min-height:0}
   .amaana-reminder-lane,.amaana-live-lane{min-height:3.25rem}
   .amaana-reminder-content strong,.amaana-live-content strong{
-    overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-wrap:nowrap
+    overflow:visible;text-overflow:clip;white-space:normal;text-wrap:pretty
   }
   .amaana-reminder-source{grid-column:2;align-self:center}
   .amaana-live-content{grid-template-columns:minmax(0,1fr) auto;gap:.35rem}
