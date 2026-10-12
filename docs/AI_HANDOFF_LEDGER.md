@@ -1,3 +1,15 @@
+# 2026-10-13 IST — Gallery lifecycle candidate
+
+Ownership: `CODEX_ACTIVE` under owner continuation; one implementation writer. Parked task `fix/gallery-selection-lifecycle-20261013` from consolidated PR #282 `0d193c3e0b4aedcb3135944b614055bba34fa628`.
+
+N-20: positional selection can change the displayed image after reorder and retain scroll/key ownership after the selected item disappears. Preserve selected ID; derive index; clear removed selections; restore connected thumbnail focus through modal cleanup. Retain layout, media and keyboard controls.
+
+Validation: 14 actual-helper Node cases pass. Add 14 Vitest and three browser cases through the existing disposable synthetic fixture. Script/spec and unit TypeScript syntax pass. React checklist reviewed. Local browser/React execution unavailable; hosted lifecycle and client-byte acceptance pending. No new production dependency or CSS change; budgets remain JS 819,200 B / CSS 348,160 B.
+
+Consolidated CI 38300163971: fast/database/production passed, hosted units 704 passed / 9 skipped; browser running at last check. Do not interrupt it. Next: reconcile/publish this parked batch and validate after that suite completes. No security/main merge, Railway deployment or live verification.
+
+---
+
 # 2026-10-13 IST — Storage/origin integration and Companion scaling correction
 
 Ownership: `CODEX_ACTIVE` under owner cx continuation; one implementation writer. Active consolidated PR #282: `fix/consolidated-a11y-regression-20261012` targeting `fix/p0-security-remediation-20261010`.

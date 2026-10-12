@@ -259,3 +259,9 @@ N-19: production origin validation fell back to untrusted Host when NEXT_PUBLIC_
 CI 38297387285 at `2697dec3` passed required jobs, but Chromium reported 1,149 passed / 2 flaky (shared Companion scaling at 390px/1280px). Firefox/WebKit 24 passed. Source/build budgets passed: JS 818,586/819,200 B; CSS 346,461/348,160 B. Two tests read 12px at the 24px kicker assertion after a separate root style mutation.
 
 New consolidated candidate integrates N-15–N-18 from parked `0c695485`, adds N-19 source/tests, and reloads shared 200% typography checks with persistent enlarged styles and atomic root/text measurement. Normal and enlarged reading/prayer checks and wrapping assertions remain. Local actual-module probes 26/26 pass; browser spec syntax and new TypeScript test syntax parse. Fresh hosted combined lint/type/unit/build/browser validation remains required. R-024 and R-012 are not fully closed; nothing new is deployed.
+
+### Stable gallery lifecycle — 13 October 2026 IST
+
+N-20 source finding: array-index selection substitutes photos after reorder and can retain hidden body overflow/key ownership after selected item removal or an empty collection. Candidate preserves image identity and cleans up the modal, restoring connected thumbnail focus.
+
+14 actual navigation-helper cases pass locally; 14 Vitest and three actual-component browser mutation cases added. The client wrapper is a disposable acceptance fixture excluded from production. Script/spec/unit syntax passed; rendered lifecycle, lint/type/build and client-byte verification pending. No defect closure/deployment/AAA certification claimed. Baseline 38300163971: fast/database/production passed; hosted units 704 passed / 9 skipped; browser running at last read.

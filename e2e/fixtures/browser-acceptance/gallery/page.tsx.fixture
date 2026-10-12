@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { CampaignMediaGallery, type CampaignGalleryItem } from "@/components/campaign-media-gallery";
+import type { CampaignGalleryItem } from "@/components/campaign-media-gallery";
+import { GalleryUpdateFixture } from "@/components/gallery-update-fixture";
 import "@/app/our-work/[slug]/campaign.css";
 
 export const dynamic = "force-dynamic";
@@ -45,7 +46,7 @@ export default function CampaignGalleryBrowserAcceptanceFixture() {
             <h1>Initiative gallery interaction</h1>
             <p>Synthetic local artwork validates gallery geometry and interaction without accessing beneficiary media.</p>
           </div>
-          <CampaignMediaGallery items={items} />
+          <GalleryUpdateFixture items={items} />
         </div>
       </section>
     </div>
