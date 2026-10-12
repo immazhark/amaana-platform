@@ -17,4 +17,27 @@ describe('carousel admin boundary',()=>{
  it('saves with revision comparison and records the actor',async()=>{await expect(saveHomeCarousel(form())).rejects.toThrow('/admin/home-carousel?saved=1');expect(m.update).toHaveBeenCalledWith(expect.objectContaining({where:{id:'homepage',revision:1},data:expect.objectContaining({revision:{increment:1}})}));expect(m.audit).toHaveBeenCalledWith(expect.objectContaining({data:expect.objectContaining({actorId:'editor',action:'home_carousel.save'})}));});
  it('cannot remove the permanent general fallback',async()=>{m.find.mockResolvedValue({revision:1,config:{slides:[defaultHomeConfig.slides[0],{...defaultHomeConfig.slides[1],status:'DRAFT'}],appealPosition:1}});await expect(saveHomeCarousel(form({operation:'remove'}))).rejects.toThrow(/fallback/);expect(m.update).not.toHaveBeenCalled();});
  it('blocks a racing write with a failed revision comparison',async()=>{m.update.mockResolvedValue({count:0});await expect(saveHomeCarousel(form())).rejects.toThrow(/changed/);expect(m.audit).not.toHaveBeenCalled();});
+ it.each(['find','media','update','audit'] as const)('does not put unexpected %s diagnostics into the redirect',async boundary=>{
+   const diagnostic='synthetic-private-database-diagnostic';
+   m[boundary].mockRejectedValueOnce(new Error(diagnostic));
+   const submitted=boundary==='media'?form({image:'asset:reviewed-image'}):form();
+   let target='';
+   try { await saveHomeCarousel(submitted); } catch(error) { target=error instanceof Error?error.message:''; }
+   expect(target).toBe('/admin/home-carousel?error=Unable%20to%20save%20the%20carousel.');
+   expect(target).not.toContain(diagnostic);
+ });
+ it('preserves safe field validation feedback',async()=>{
+   await expect(saveHomeCarousel(form({title:''}))).rejects.toThrow(/title/);
+   expect(m.update).not.toHaveBeenCalled();
+ });
+ it('does not trust an unexpected error merely named like a validation error',async()=>{
+   const error=new Error('synthetic-private-diagnostic');
+   error.name='HomeCarouselValidationError';
+   m.find.mockRejectedValueOnce(error);
+   await expect(saveHomeCarousel(form())).rejects.toThrow('/admin/home-carousel?error=Unable%20to%20save%20the%20carousel.');
+ });
+ it('returns a generic notice for a non-Error persistence failure',async()=>{
+   m.find.mockRejectedValueOnce('synthetic-private-diagnostic');
+   await expect(saveHomeCarousel(form())).rejects.toThrow('/admin/home-carousel?error=Unable%20to%20save%20the%20carousel.');
+ });
 });
