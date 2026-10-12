@@ -8,11 +8,12 @@
 - No query string, assistance tracking path, donation receipt path, admin page, client IP,
   browser fingerprint, unique metric ID, raw timing entry or personal information is retained
   in the aggregates.
-- Automated browser visits are excluded from ordinary page-view counters when `navigator.webdriver` is available, reducing noise and avoiding unnecessary CI/AI-audit database writes (not a comprehensive bot filter).
+- Automated browser visits are excluded from page-view and Web Vitals reporting when `navigator.webdriver` is set, reducing CI/AI-audit database writes (not comprehensive bot detection).
 - A page load is sampled at 10%; repeated updates of one metric ID are collapsed in the browser.
 - Both the browser reporter **and the ingest endpoint** reject collection unless the opt-in build flag is enabled.
 - The root layout also omits the reporter subtree entirely for disabled builds to avoid unnecessary browser observers.
-- Individual published appeal/story/initiative slugs are reduced to a page-family key **before transmission**, e.g. `/appeals/:slug`, lowering privacy and database-cardinality risk.
+- Individual published appeal/story/initiative slugs are reduced to a page-family key **before transmission and again on server ingestion** for Web Vitals and page views, e.g. `/appeals/:slug`, lowering privacy and database-cardinality risk.
+- Historical `DailyPageView` records from previous deployments may still contain individual slugs. Inventory and privacy-review these existing rows before calling retention/privacy remediation complete; this code change does not rewrite old data.
 - Browser reports send only `{path, name, value}`; the server validates every field,
   classifies the metric into coarse performance buckets, and retains only daily counters.
 - Same-origin requirement and the existing anonymous analytics hourly abuse limit apply.
@@ -21,6 +22,8 @@
   If notification maintenance is suspended, these records will **not**
   be automatically pruned. Keep collection disabled until an active,
   reliable maintenance schedule is verified.
+- Client reporting uses Beacon when accepted, falling back to a same-origin, keepalive fetch if Beacon declines or throws. Failed transport never interrupts a public or donation journey.
+- Page-view idle callbacks recheck the current route to avoid counting a superseded navigation.
 - An empty 204 response is deliberately returned for malformed, rejected or unavailable telemetry.
   Reporting failures never block donations or public navigation.
 

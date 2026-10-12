@@ -2,7 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { shouldRecordPublicPageView } from "@/lib/public-analytics";
+import { normalizePublicAnalyticsPath, shouldRecordPublicPageView } from "@/lib/public-analytics";
+import { sendBestEffortTelemetry } from "@/lib/client-telemetry";
 
 type IdleWindow = Window & typeof globalThis & {
   requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
@@ -10,17 +11,12 @@ type IdleWindow = Window & typeof globalThis & {
 };
 
 function sendPageView(path: string) {
-  const body = JSON.stringify({ path });
-  if (navigator.sendBeacon) {
-    navigator.sendBeacon("/api/analytics/page-view", new Blob([body], { type: "application/json" }));
-    return;
-  }
-
-  void fetch("/api/analytics/page-view", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body,
-    keepalive: true,
+  // Do not expose beneficiary-specific URLs in transmitted analytics payloads.
+  const safePath = normalizePublicAnalyticsPath(path);
+  if (!safePath) return;
+  sendBestEffortTelemetry("/api/analytics/page-view", { path: safePath }, {
+    beacon: (endpoint, body) => navigator.sendBeacon(endpoint, body),
+    post: fetch,
   });
 }
 
@@ -28,16 +24,31 @@ export function Analytics() {
   const pathname = usePathname();
 
   useEffect(() => {
-    if (!pathname || !shouldRecordPublicPageView(pathname, navigator.webdriver === true)) return;
+    if (!pathname) return;
+    // An idle callback may run after a route transition, even if its
+    // cancellation API is unavailable. Avoid stale writes in either case.
+    let disposed = false;
+    const isCurrentPublicVisit = () =>
+      !disposed && shouldRecordPublicPageView(pathname, navigator.webdriver === true, window.location.pathname);
+    if (!isCurrentPublicVisit()) return;
+    const deliver = () => {
+      if (isCurrentPublicVisit()) sendPageView(pathname);
+    };
 
     const idleWindow = window as IdleWindow;
     if (idleWindow.requestIdleCallback) {
-      const handle = idleWindow.requestIdleCallback(() => sendPageView(pathname), { timeout: 1800 });
-      return () => idleWindow.cancelIdleCallback?.(handle);
+      const handle = idleWindow.requestIdleCallback(deliver, { timeout: 1800 });
+      return () => {
+        disposed = true;
+        idleWindow.cancelIdleCallback?.(handle);
+      };
     }
 
-    const handle = window.setTimeout(() => sendPageView(pathname), 500);
-    return () => window.clearTimeout(handle);
+    const handle = window.setTimeout(deliver, 500);
+    return () => {
+      disposed = true;
+      window.clearTimeout(handle);
+    };
   }, [pathname]);
 
   return null;

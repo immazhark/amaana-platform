@@ -43,5 +43,7 @@ describe("Web Vitals cross-route privacy boundary", () => {
     expect(canRecordWebVitalOnCurrentRoute("/appeals/:slug", "/admin")).toBe(false);
     expect(canRecordWebVitalOnCurrentRoute("/appeals/:slug", "/stories/a-story")).toBe(false);
     expect(canRecordWebVitalOnCurrentRoute(null, "/about")).toBe(false);
+    expect(canRecordWebVitalOnCurrentRoute("/about", "/about", true)).toBe(false);
+    expect(canRecordWebVitalOnCurrentRoute("/about", "/about", false)).toBe(true);
   });
 });

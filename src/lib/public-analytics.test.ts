@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { analyticsDateForHyderabad, isTrackablePublicPath, shouldRecordPublicPageView } from "./public-analytics";
+import { analyticsDateForHyderabad, isTrackablePublicPath, normalizePublicAnalyticsPath, shouldRecordPublicPageView } from "./public-analytics";
 
 describe("isTrackablePublicPath", () => {
   it("tracks public discovery and detail routes", () => {
@@ -20,11 +20,34 @@ describe("isTrackablePublicPath", () => {
   });
 });
 
+describe("privacy-safe public analytics grouping", () => {
+  it.each([
+    ["/appeals/identifiable-medical-case", "/appeals/:slug"],
+    ["/stories/recovery-story", "/stories/:slug"],
+    ["/our-work/eid-gift-kits-2026", "/our-work/:slug"],
+    ["/programmes/ramadan", "/programmes/:slug"],
+    ["/faith-and-reflections/daily-reminder", "/faith-and-reflections/:slug"],
+    ["/appeals/:slug", "/appeals/:slug"],
+    ["/about", "/about"],
+  ])("collapses %s to %s idempotently", (input, expected) => {
+    expect(normalizePublicAnalyticsPath(input)).toBe(expected);
+    expect(normalizePublicAnalyticsPath(expected)).toBe(expected);
+  });
+  it.each(["/donate", "/request-assistance/status", "/admin", "/appeals/x?token=private", "/stories/x/y"])(
+    "rejects sensitive or malformed path %s", path => {
+      expect(normalizePublicAnalyticsPath(path)).toBeNull();
+    },
+  );
+});
+
 describe("public page-view integrity and infrastructure usage", () => {
   it("excludes automated acceptance/audit visits before issuing analytics requests", () => {
     expect(shouldRecordPublicPageView("/about", true)).toBe(false);
     expect(shouldRecordPublicPageView("/appeals/appeal-name", true)).toBe(false);
     expect(shouldRecordPublicPageView("/about", false)).toBe(true);
+    expect(shouldRecordPublicPageView("/about", false, "/donate")).toBe(false);
+    expect(shouldRecordPublicPageView("/appeals/a-name", false, "/request-assistance")).toBe(false);
+    expect(shouldRecordPublicPageView("/about", false, "/about")).toBe(true);
     expect(shouldRecordPublicPageView("/admin", false)).toBe(false);
     expect(shouldRecordPublicPageView("/request-assistance", false)).toBe(false);
   });
