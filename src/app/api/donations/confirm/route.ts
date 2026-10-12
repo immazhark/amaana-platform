@@ -62,6 +62,7 @@ export async function POST(request: Request) {
     const payment = await fetchRazorpayPayment(input.razorpay_payment_id);
     const expectedAmountPaise = donation.amount.mul(100).toNumber();
     if (
+      payment.id !== input.razorpay_payment_id ||
       payment.order_id !== input.razorpay_order_id ||
       payment.currency !== "INR" ||
       !Number.isSafeInteger(expectedAmountPaise) ||
