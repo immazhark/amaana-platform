@@ -1,3 +1,19 @@
+# 2026-10-13 IST — Public storage boundary remediation candidate
+
+Ownership: `CODEX_ACTIVE` under owner continuation. One implementation writer. Parked task: `fix/public-storage-boundaries-20261013` from consolidated PR #282 head `2697dec3661ece25231d2dc5d0eb333d0a8e4ff8`. Security integration remains `c7a4d557`.
+
+N-15: public storage readiness rejected a shared public/private bucket, but common upload/read/delete helpers did not. Enforce separation inside getPublicMediaStorage before creating a client, including trimmed bucket names. Covers ordinary upload, curated upload, read and delete. Private evidence operations remain independent.
+
+N-16: public delivery URL validation happened after persistence and accepted credentials/query/fragments. Validate before storage creation; share the validator with readiness; preserve valid HTTPS prefixes and unpublished null-URL uploads.
+
+Evidence: actual storage module executed with only AWS SDK/signing replaced by inert transports. Baseline: 9/10 initial probes failed (four absent shared-bucket rejections; three absent unsafe-URL rejections; two uploads before invalid-URL rejection). Corrected: 13/13 probes pass. Added 13 Vitest cases for hosted lint/typecheck/unit execution; syntax parsed locally. Local Vitest dependencies are unavailable; these are not claimed as locally executed Vitest results. No real S3 operations or credentials used.
+
+PR #282 CI 38297387285: fast/database/production passed; browser in progress at initial check. Production totals JS 818,586/819,200 B, CSS 346,461/348,160 B. Park the security batch without cancelling or replacing that suite. New storage changes still require hosted candidate CI and eventual combined integration.
+
+No security-branch/main merge, Railway deployment, migration or production privacy/security certification. Next: inspect completion of #282's current browser suite, reconcile this parked candidate with actual HEAD, integrate one atomic batch and validate.
+
+---
+
 # 2026-10-13 IST — R-024 consolidated integration candidate
 
 Ownership: `CODEX_ACTIVE` under the owner's explicit execution handover. Single implementation writer; active PR #282 on `fix/consolidated-a11y-regression-20261012`, target `fix/p0-security-remediation-20261010`.

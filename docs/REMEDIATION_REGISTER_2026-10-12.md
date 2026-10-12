@@ -240,3 +240,12 @@ Baseline `87aa9c61` passed CI 38294121822: 1,151 Chromium and 24 Firefox/WebKit 
 Integrate parked `58c10229` with recovery `a4e9fa78` / `fdab2ad9`: root-relative Companion typography; repair two literal backslash-n sequences preventing flex wrapping; add source regression guard and deterministic loaded-prayer browser checks at 200% text size. Source guard 2/2 and CI planner 33/33 pass locally; browser spec syntax passes. Local Chromium is unavailable. Hosted candidate browser/build validation remains pending; R-024 is not fully closed or deployed.
 
 CI retains its per-ref concurrency group and disables cancellation of running checks. Required release checks and asset limits remain unchanged.
+
+### Public storage boundary corrections — 13 October 2026 IST
+
+| ID | Confirmed source defect | Correction | Validation | Deployment |
+|---|---|---|---|---|
+| N-15 | Public upload/curated upload/read/delete bypassed the readiness-only public/private bucket separation check | Enforce bucket separation in the common storage helper before S3 client creation, with trimmed bucket comparison | Four baseline operations reproduced missing rejection; corrected probes pass. Hosted Vitest/build acceptance pending | Parked candidate only; no production verification |
+| N-16 | Public delivery base accepted credentials/query/fragments; invalid URL rejection could occur after an S3 write | Validate delivery URL before persistence and reuse the same policy in readiness; preserve HTTPS path prefixes and unpublished uploads | Five unsafe configuration cases reproduced; all corrected probes pass. Hosted acceptance pending | Parked candidate only; no production verification |
+
+Combined actual-module local probes: 13/13 pass with inert AWS transports. Added 13 Vitest cases; local syntax parsed but Vitest is unavailable. No live S3 access, deletion, upload or production configuration inspection was performed. These findings establish source configuration-boundary gaps, not evidence that production was misconfigured or private records were exposed.

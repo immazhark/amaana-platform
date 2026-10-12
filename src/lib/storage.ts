@@ -56,7 +56,11 @@ function getMediaCredentialPair() {
 
 function getPublicMediaStorage(): StorageConfig {
   const region = process.env.PUBLIC_MEDIA_S3_REGION || process.env.S3_REGION;
-  const bucket = process.env.PUBLIC_MEDIA_S3_BUCKET;
+  const bucket = process.env.PUBLIC_MEDIA_S3_BUCKET?.trim();
+  const privateBucket = process.env.S3_BUCKET?.trim();
+  if (bucket && privateBucket && bucket === privateBucket) {
+    throw new Error("Public media storage must use a separate bucket from private evidence");
+  }
   const { accessKeyId, secretAccessKey } = getMediaCredentialPair();
   if (!region || !bucket || !accessKeyId || !secretAccessKey) throw new Error("Public media storage is not configured");
   return {
@@ -234,7 +238,10 @@ function normalizePublicBaseUrl() {
   if (!value) return null;
   const url = new URL(value);
   if (url.protocol !== "https:") throw new Error("PUBLIC_MEDIA_BASE_URL must use HTTPS");
-  return url.toString().replace(/\/$/, "");
+  if (url.username || url.password || url.search || url.hash) {
+    throw new Error("PUBLIC_MEDIA_BASE_URL must not contain credentials, query parameters or fragments");
+  }
+  return `${url.origin}${url.pathname.replace(/\/$/, "")}`;
 }
 
 export function getPublicMediaStorageReadiness(): PublicMediaStorageReadiness {
@@ -247,7 +254,7 @@ export function getPublicMediaStorageReadiness(): PublicMediaStorageReadiness {
   let baseUrlSecure = false;
   if (baseUrl) {
     try {
-      baseUrlSecure = new URL(baseUrl).protocol === "https:";
+      baseUrlSecure = normalizePublicBaseUrl() !== null;
     } catch {
       baseUrlSecure = false;
     }
@@ -357,6 +364,8 @@ export async function uploadCuratedPublicMediaFile(
 
 export async function uploadPublicMediaFile(file: File) {
   validatePublicMediaFile(file);
+  // Validate delivery configuration before creating an orphaned storage object.
+  const baseUrl = normalizePublicBaseUrl();
   const bytes = Buffer.from(await file.arrayBuffer());
   if (!hasValidSignature(bytes, file.type)) throw new Error("The uploaded media does not match its declared file type");
 
@@ -375,7 +384,6 @@ export async function uploadPublicMediaFile(file: File) {
     Metadata: { originalName: file.name.slice(0, 255) },
   }));
 
-  const baseUrl = normalizePublicBaseUrl();
   return {
     objectKey,
     publicUrl: baseUrl ? `${baseUrl}/${objectKey.split("/").map(encodeURIComponent).join("/")}` : null,
@@ -386,3 +394,4 @@ export async function uploadPublicMediaFile(file: File) {
     height: dimensions?.height ?? null,
   };
 }
+
