@@ -410,7 +410,6 @@ test.describe('donation journey without real payment', () => {
 
   for (const failure of [
     { name: 'rate limiting', status: 429, message: 'Please wait before starting another donation.' },
-    { name: 'server failure', status: 500, message: 'Could not start checkout safely.' },
   ]) {
     test(`order API ${failure.name} restores an editable form without opening Razorpay`, async ({ page }) => {
       let checkoutOpens = 0;
@@ -446,6 +445,32 @@ test.describe('donation journey without real payment', () => {
       await expect(page.getByLabel('Email')).toBeEnabled();
       checkoutOpens = await page.evaluate(() => window.__AMAANA_ACCEPTANCE_CHECKOUT_OPENS);
       expect(checkoutOpens).toBe(0);
+    });
+  }
+
+  for (const outcome of ['server-error', 'gateway-error', 'lost-response']) {
+    test(`uncertain checkout ${outcome} locks the form and prevents another order`, async ({ page }) => {
+      let attempts = 0;
+      await page.route('**/api/donations/order', route => {
+        attempts++;
+        if (outcome === 'lost-response') return route.abort('failed');
+        return route.fulfill({
+          status: outcome === 'gateway-error' ? 502 : 500,
+          contentType: outcome === 'gateway-error' ? 'text/html' : 'application/json',
+          body: outcome === 'gateway-error'
+            ? '<html><body>Gateway unavailable</body></html>'
+            : JSON.stringify({ error: 'Unexpected server failure' }),
+        });
+      });
+      const submit = await openDonationFixture(page, 'count-only');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('An order may have been created');
+      await expect(page.getByLabel('Full name')).toHaveValue('Acceptance Donor');
+      await expect(page.getByLabel(/Donation amount/)).toHaveValue('250');
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(attempts).toBe(1);
     });
   }
 
