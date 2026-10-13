@@ -74,9 +74,9 @@ export default async function AdminMediaPage({ searchParams }: Props) {
       <div className="admin-media-readiness">
         <div><strong>{storage.separateBucketConfigured ? "✓" : "—"} Separate public bucket</strong><small>{storage.separateBucketConfigured ? "Public campaign media is isolated from assistance documents." : "Configure PUBLIC_MEDIA_S3_BUCKET and do not reuse the private assistance bucket."}</small></div>
         <div><strong>{storage.uploadReady ? "✓" : "—"} Upload credentials</strong><small>{storage.uploadReady ? `Storage uploads are configured${storage.usingFallbackCredentials ? " using the shared provider credentials." : " with dedicated public-media credentials."}` : "Region, bucket and storage credentials are not yet complete."}</small></div>
-        <div><strong>{storage.deliveryReady ? "✓" : "—"} HTTPS public delivery</strong><small>{storage.deliveryReady ? "Approved uploads can receive a renderable public URL." : storage.baseUrlConfigured && !storage.baseUrlSecure ? "PUBLIC_MEDIA_BASE_URL is set but must use HTTPS." : "Set PUBLIC_MEDIA_BASE_URL to the HTTPS CDN or public bucket origin before publication."}</small></div>
+        <div><strong>{storage.deliveryReady ? "✓" : "—"} Consent-gated public delivery</strong><small>{storage.deliveryReady ? "Approved managed uploads are served through Amaana's /media/ route; no external CDN is required." : storage.baseUrlConfigured && !storage.baseUrlSecure ? "The configured PUBLIC_MEDIA_BASE_URL is invalid. Correct or remove it before uploading." : "Configure separate media storage and access credentials. Approved uploads use Amaana's /media/ route."}</small></div>
       </div>
-      {!storage.deliveryReady && <p className="muted" style={{ marginTop: "1rem" }}>You may continue documenting existing reviewed public URLs. Direct file uploads should not be treated as publication-ready until the preflight is fully green.</p>}
+      {!storage.deliveryReady && <p className="muted" style={{ marginTop: "1rem" }}>Managed uploads are not publication-ready until the storage and delivery checks are green. Reviewed external URLs may still be documented independently.</p>}
     </section>
 
     {canEdit && canApprove && storage.uploadReady && <CuratedGalleryImporter />}
