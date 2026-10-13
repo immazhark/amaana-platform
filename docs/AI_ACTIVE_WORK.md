@@ -1,3 +1,15 @@
+## 2026-10-13 — uncertain checkout and bounded public-media reads
+
+Ownership: REVIEW_PENDING after user-authorized cx continuation on existing PR #292 / fix/direct-transfer-feedback-20261013. Verified previous head dc3b78f before writing; independent prior CI pending and superseded by new commits. No second writer or unexpected branch head observed.
+
+N-34 follow-up: online order fetch, network loss and HTTP 5xx/gateway errors previously restored editable checkout despite uncertain provider-order creation. ee3cc7a restricts safe retry to confirmed pre-write HTTP 400/403/409/413/429; uncertain outcomes retain the donor's form and enter non-repeat reconciliation. 6930d14 corrects the safe pre-write path to reset only known-correctable rejections. 248ba1d updates the 500 expectation and adds three actual-component Playwright regressions for 500, 502/HTML and aborted order response.
+
+N-31 follow-up: untrusted whitespace-prefixed verification or order error could be truncated to a blank alert. 693fe51 trims before bounding at 500 characters, and e5c91da adds two browser regressions covering payment verification lock and editable pre-write error.
+
+N-28/N-18 public-media occurrence: getPublicMediaObject had unbounded S3 send and unbounded async iteration. dea63c6 adds actual-module stalled-send and stalled-stream regressions. 568f64c gives a 15-second overall read deadline with AbortSignal transport cancellation, best-effort stream teardown, and promise-race rejection even if abort does not settle. Preserve existing size/consent/readiness/bucket and content-completeness checks.
+
+Latest source/test head 568f64cccd17e2312794c2c967b379ece02b8a4c. Its hosted CI 38431227117 was pending when checked. Tests were authored and published but not locally executed: git clone cannot resolve github.com from the execution environment. Prior CI on superseded heads is not evidence for this head; TypeScript, full production build, fixed JavaScript/CSS budgets, and hosted browser acceptance remain required. No original historical 95-row audit closure is inferred. No main merge, deployment, payment, mail, applicant data or production storage write. No implementation writer remains active after this atomic batch.
+
 ## 2026-10-13 — Razorpay response and stale lifecycle follow-up
 
 Ownership: REVIEW_PENDING, existing PR #292 / fix/direct-transfer-feedback-20261013. After prior CI run 38421782865 passed, authorized cx continuation published additional source and focused browser regressions. The latest source-and-test head is cc879889bae53caf4d73f37b9df89d5b7ffd4d37; its hosted CI 38429321925 was pending when checked. Do not substitute prior green CI for this source.
