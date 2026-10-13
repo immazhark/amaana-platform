@@ -97,6 +97,49 @@ describe("assistance submission request bounds", () => {
     expect(mocks.assistanceCreate).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["text masquerading as a document", "text" as const],
+    ["named empty upload", "empty" as const],
+  ])("rejects %s instead of accepting an unverified attachment", async (_name, kind) => {
+    const data = new FormData();
+    data.set("applicantName", "Acceptance Applicant");
+    data.set("phone", "9000000000");
+    data.set("email", "applicant@example.test");
+    data.set("city", "Hyderabad");
+    data.set("category", "MEDICAL");
+    data.set("description", "Synthetic assistance request data used only for route acceptance coverage.");
+    data.set("consent", "on");
+    if (kind === "text") {
+      data.append("documents", "synthetic medical report was attached");
+    } else {
+      data.append("documents", new File([], "medical-report.pdf", { type: "application/pdf" }));
+    }
+
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: data }));
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/document/i);
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.staffFindMany).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
+  it("still accepts a request with no optional attachments", async () => {
+    const data = new FormData();
+    data.set("applicantName", "Acceptance Applicant");
+    data.set("phone", "9000000000");
+    data.set("email", "applicant@example.test");
+    data.set("city", "Hyderabad");
+    data.set("category", "MEDICAL");
+    data.set("description", "Synthetic assistance request data used only for route acceptance coverage.");
+    data.set("consent", "on");
+
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: data }));
+    expect(response.status).toBe(201);
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).toHaveBeenCalledOnce();
+  });
+
   it("persists validated private evidence metadata with the assistance request", async () => {
     const data = new FormData();
     data.set("applicantName", "Acceptance Applicant");
