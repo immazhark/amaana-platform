@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-025 canonical fact and governance heading leading
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent 0a255bc0fb269b15de6b17ae295bcb70d4632f9a. Two remaining source-level tight heading declarations in src/app/canonical-content.css: canonical fact display strong line-height 1.10 and governance summary strong shorthand 1.05. Adjust both to 1.12 without altering font-size, weight, colors, element semantics, layout, or cascade order. Exact-string preconditions and resulting declarations verified against remote parent; no new specificity, selectors or assets. R-025 remains PARTIAL until actual mobile/zoom/browser acceptance and broader selector coverage. No local browser or production build run in this tool environment. No merge, deploy or provider/data operations. Next: independently verify rendered multiline headings and continue original register.
+
 ## 2026-10-14 IST — R-061/R-066 shared component stylesheet governance
 
 Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parentfe32bd4cf35a8a0ead239201fcc0d98576f91576. Owner cx authorized continuation; no concurrent writer.
