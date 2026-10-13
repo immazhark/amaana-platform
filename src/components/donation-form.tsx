@@ -5,7 +5,6 @@ import { updateDonationAmountValidity } from "@/lib/donation-amount-input";
 import Script from "next/script";
 import { DonationInputField } from "./donation-input-field";
 import { type FormEvent, type InputHTMLAttributes, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
 import { DONATION_INTENT_DESCRIPTIONS, DONATION_INTENT_LABELS, type DonationIntentValue } from "@/lib/donation-intent";
 import styles from "./donation-form.module.css";
@@ -19,7 +18,6 @@ type DonationOrderError = { error?: string; remainingAmount?: number; fields?: D
 declare global { interface Window { Razorpay: new (options: RazorpayOptions) => { open(): void } } }
 
 export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible = false, onSubmissionLockChange }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean; onSubmissionLockChange?: (locked: boolean) => void }) {
-  const router = useRouter();
   const errorRef = useRef<HTMLDivElement>(null);
   const focusedErrorRef = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -262,7 +260,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
               return;
             }
             if (typeof result?.referenceNumber !== "string" || !/^[A-Za-z0-9-]{1,80}$/.test(result.referenceNumber)) throw new Error("Invalid confirmation reference");
-            if (formRef.current?.isConnected) router.push(privateDonationAcknowledgementPath(result.referenceNumber, order.receiptToken));
+            if (formRef.current?.isConnected) window.location.assign(privateDonationAcknowledgementPath(result.referenceNumber, order.receiptToken));
           } catch {
             showError("We could not complete payment verification in this browser. Please retain your Razorpay payment confirmation and do not submit another payment. Amaana can reconcile the payment without asking for your OTP, UPI PIN or card credentials.");
             changePhase("reconciliation");
