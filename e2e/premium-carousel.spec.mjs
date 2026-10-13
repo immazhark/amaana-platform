@@ -86,6 +86,22 @@ for (const width of [1440, 1920]) {
   });
 }
 
+for (const width of [390, 1440]) {
+  test(`R-054 above-fold category artwork preloads, below-fold artwork stays lazy at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/programmes/seasonal-relief', { waitUntil: 'domcontentloaded' });
+    const hero = page.locator('.page-hero [data-programme-artwork="seasonal-relief"]');
+    await expect(hero).toBeVisible();
+    await expect(hero).toHaveAttribute('fetchpriority', 'high');
+    await expect(hero).not.toHaveAttribute('loading', 'lazy');
+    const cardArtwork = page.locator('#programme-list [data-programme-artwork]');
+    if (await cardArtwork.count()) {
+      await expect(cardArtwork.first()).not.toHaveAttribute('fetchpriority', 'high');
+      await expect(cardArtwork.first()).toHaveAttribute('loading', 'lazy');
+    }
+  });
+}
+
 test('homepage canonical fallbacks load and functional controls contain SVG rather than glyphs', async ({ page, request }) => {
   for (const name of ['origin', 'eid', 'medical', 'taleem', 'qurbani']) {
     const response = await request.get(`/hero/${name}.webp`);
