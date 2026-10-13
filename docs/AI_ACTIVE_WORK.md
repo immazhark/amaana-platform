@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-066 Stories card-copy selector consolidation
+
+Ownership: REVIEW_PENDING. Same PR #292; parent a274a7082e84db1b902d0e722a7f359db72fd300. Consolidate two duplicate unscoped Stories CSS selector pairs by moving the final card-copy padding and H3 font-size declarations into their earlier matching selectors. Remove now-empty late duplicates. All winning values and responsive rule order remain. Source preconditions checked; hosted cascade, lint, browser and build acceptance still pending. R-066 PARTIAL, no merge/deploy/payment/data changes.
+
 ## 2026-10-14 IST — R-066 Stories ethics list overridden base padding
 
 Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013; parent 0d0c14be1ad4d0f32c602ba6b3166e37ac9d5879. Removed early unscoped .v2-stories-ethic-list article padding:1.6rem 0, overridden by later same-specificity unscoped padding:1.25rem 0. Preserve all other properties, responsive grid rules and source ordering. Exact winner/precondition checks performed. No full cascade/browser, lint or build execution; R-066 remains PARTIAL and scoped Stylelint duplicate-selector exception remains. No merge/deploy/payment/production data action.
