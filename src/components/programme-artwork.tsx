@@ -19,7 +19,7 @@ const categoryArtwork: Record<string, string> = {
 export function ProgrammeArtwork({ slug, sizes = "(max-width: 700px) 86vw, 30rem", priority = false }: { slug: string; sizes?: string; priority?: boolean }) {
   const artwork = artworks[categoryArtwork[slug] ?? slug];
   if (!artwork) return null;
-  return <Image src={artwork.src} width={1536} height={1024} alt={artwork.alt} sizes={sizes} preload={priority} fetchPriority={priority ? "high" : undefined} data-programme-artwork={slug} />;
+  return <Image src={artwork.src} width={1536} height={1024} alt={artwork.alt} sizes={sizes} preload={priority} data-programme-artwork={slug} />;
 }
 
 export function hasProgrammeArtwork(slug: string) {
