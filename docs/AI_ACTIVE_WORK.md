@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-066 Stories card dead declarations
+
+Ownership: REVIEW_PENDING. PR #292 / fix/direct-transfer-feedback-20261013; parent 8b0bd2db4ec4bea589bb79a6fb708a9f88c4e02e. Removed six superseded source declarations: card-copy padding, card H3 font-size, card min-height, border-top, border-bottom and transition. Existing later same-specificity rules supply the winning properties; selectors, responsive overrides and source order remain intact. Exact source checks performed; no actual lint/build/browser or complete cascade proof. Cumulative Stories overwritten-property removals in recent batches: thirteen including prior H2 (1) and feature/grid (6). R-066 PARTIAL; Stylelint duplicate-selector exception retained. No merge/deploy/payment or live data operations.
+
 ## 2026-10-14 IST — R-066 Stories dead base declarations
 
 Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent 30ded17573cf876c344cd5701d12848b744f1e28. Removed six earlier unscoped declarations entirely superseded by later identical-specificity unscoped rules: feature grid grid-template-columns and gap; feature paragraph margin and line-height; story grid gap and margin-top. Preserved later winners and every selector and order, plus unaffected base properties. Exact before/after source preconditions verified. This is source-level cascade reasoning, not rendered browser equivalence or actual lint success. Duplicate selector exemption remains; R-066 PARTIAL. No main merge, deployment, payment or live data.
