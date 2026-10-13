@@ -31,6 +31,17 @@ if (cssImports.indexOf('site-chrome.css') !== cssImports.indexOf('experience-fin
   failures.push('site-chrome.css must immediately follow experience-finish.css.');
 }
 
+// Boundary-only styles must never re-enter the global bundle.
+if (cssImports.includes('error-experience.css')) {
+  failures.push('error-experience.css must not be imported in the root layout.');
+}
+for (const boundary of ['error.tsx', 'not-found.tsx']) {
+  const source = await readFile(path.join(root, 'src/app', boundary), 'utf8');
+  if (!/import\s+["']\.\/error-experience\.css["'];/.test(source)) {
+    failures.push(boundary + ' must import its route-owned error-experience.css.');
+  }
+}
+
 for (const routeOnly of ['home-documentary.css', 'home-media-polish.css']) {
   if (cssImports.includes(routeOnly)) {
     failures.push(`${routeOnly} is homepage-only and must not be imported by the root layout.`);
