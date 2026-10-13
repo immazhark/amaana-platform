@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-061 Stories canonical exact-value tokens
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent 0d1948b712aeb6ccb396b067369cd3e64daef5c2. Replace four #fffdf8 occurrences with canonical --af-color-surface and one #1d3150 with --af-color-navy-800 in src/app/stories.css. Source checked both tokens map to exactly the former RGB hex values in globals.css. No new token, alpha change, CSS selector movement, specificity/layout change or runtime code. R-061 remains PARTIAL: other route/global and alpha literals, browser/cascade and hosted acceptance remain. No local lint/browser/full build executed. No main merge/deploy or live provider operations.
+
 ## 2026-10-14 IST — R-025 Stories heading regression false-positive guard
 
 Ownership: REVIEW_PENDING. PR #292 on fix/direct-transfer-feedback-20261013; parent 0c34fc67e6ea955aab308a4cbbef906f7df70eca. Harden new Stories browser regression: a missing stylesheet could satisfy a lower-only 1.11 heading line-height threshold via browser default normal. Require computed ratio in 1.11–1.13 for five audited selectors, and reject Times New Roman fallback. Existing 390/1440 x 100/200% matrices and contrast checks preserved. This proves expected source-driven 1.12 leading rather than merely loose default. Tests authored but browser still not executed in tool context. No production app source, deployment, main merge, payments or live data changed.
