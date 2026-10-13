@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-061 repeated Stories paper and media-stage tokens
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent d4cabf00a33cc7c244f4ade84311effab5a035be. Introduce two exact-value canonical roles in globals.css: --af-color-story-paper (#f3ecdf), --af-color-story-media-stage (#14243a). Replace all four and three matching hex occurrences respectively in Stories route CSS. Old/new declarations resolve to the same RGB; no selector, media, design, alpha, content or functional changes. Source preconditions verified. R-061 remains PARTIAL and no actual CSS cascade/browser/lint/build verification performed; deployment and production unchanged. Next: source-backed remaining route/governance gaps, with actual browser/CI acceptance required.
+
 ## 2026-10-14 IST — R-061 Stories canonical exact-value tokens
 
 Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent 0d1948b712aeb6ccb396b067369cd3e64daef5c2. Replace four #fffdf8 occurrences with canonical --af-color-surface and one #1d3150 with --af-color-navy-800 in src/app/stories.css. Source checked both tokens map to exactly the former RGB hex values in globals.css. No new token, alpha change, CSS selector movement, specificity/layout change or runtime code. R-061 remains PARTIAL: other route/global and alpha literals, browser/cascade and hosted acceptance remain. No local lint/browser/full build executed. No main merge/deploy or live provider operations.
