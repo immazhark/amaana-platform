@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-066 two more Stories selector consolidations
+
+Ownership: REVIEW_PENDING. PR #292, parent 919982f3ec246979b582fe39195d3672a64e0b9a. Combined final feature H2 font-size and ethics-article padding into their respective early selector blocks, eliminating two later duplicate selector blocks. Same winning declarations, no media or DOM changes. Source checks only; browser, build and actual Stylelint execution outstanding. Scoped duplicate-selector exception retained until full route reconciliation. No merge/deployment/payment or live data action.
+
 ## 2026-10-14 IST — R-066 Three Stories selector-pair consolidations
 
 Ownership: REVIEW_PENDING. PR #292 on fix/direct-transfer-feedback-20261013; parent fdd2b950e5c75628d0a954e5079e5a47e9e24359. Fold final feature-grid columns/gap, stories-grid gap/top margin, and feature-paragraph margin/line-height into their base CSS selectors, removing three later duplicate blocks. Exact source preconditions and original CSS winner values preserved; responsive declarations untouched. Browser/stylelint/build execution pending, R-066 partial, scoped temporary duplicate-selector exception remains. No merge/deploy/live operations.
