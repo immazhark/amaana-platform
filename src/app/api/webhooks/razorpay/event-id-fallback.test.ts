@@ -27,7 +27,7 @@ describe("signed webhook event identity fallback", () => {
     expect(response.status).toBe(200);
     expect(db.findUnique).toHaveBeenCalledWith({
       where: { providerEventId: expected },
-      select: { id: true, eventType: true },
+      select: { id: true, eventType: true, payload: true },
     });
     expect(db.create).toHaveBeenCalledWith({ data: {
       providerEventId: expected,
