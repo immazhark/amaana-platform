@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { canRenderPublicMedia, resolvePublicMediaUrl } from "@/lib/public-media";
+import { canRenderPublicMedia, getPublicImageOptimizationUrl, resolvePublicMediaUrl } from "@/lib/public-media";
 
 type PublicMediaAsset = {
   id: string;
@@ -22,10 +22,6 @@ type PublicMediaProps = {
 
 const defaultResponsiveSizes = "(max-width: 700px) 100vw, (max-width: 1200px) 70vw, 900px";
 
-function canOptimizeLocally(url: string) {
-  return url.startsWith("/media/") || url.startsWith("/brand/");
-}
-
 export function PublicMedia({ asset, priority = false, sizes = defaultResponsiveSizes }: PublicMediaProps) {
   if (!canRenderPublicMedia(asset)) return null;
   const url = resolvePublicMediaUrl(asset);
@@ -34,9 +30,10 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
   if (asset.kind === "IMAGE") {
     const width = asset.width && asset.width > 0 ? asset.width : 1600;
     const height = asset.height && asset.height > 0 ? asset.height : 1200;
-    const image = canOptimizeLocally(url) ? (
+    const optimizedUrl = getPublicImageOptimizationUrl(url);
+    const image = optimizedUrl ? (
       <Image
-        src={url}
+        src={optimizedUrl}
         alt={asset.altText ?? ""}
         width={width}
         height={height}
@@ -61,7 +58,7 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
 
     return (
       <figure className="v2-media-item">
-        {/* Local approved campaign media uses Next's responsive optimizer. External approved HTTPS media stays direct until hosts are explicitly allowlisted. */}
+        {/* Same-origin managed campaign media uses Next's responsive optimizer. Approved external-host media retains direct delivery. */}
         {image}
         {(asset.caption || asset.sourceYear) && (
           <figcaption>{asset.caption}{asset.caption && asset.sourceYear ? " · " : ""}{asset.sourceYear ?? ""}</figcaption>

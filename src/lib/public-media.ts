@@ -49,6 +49,19 @@ function configuredHttpsOrigin(value: string | undefined) {
   }
 }
 
+/** Optimize only managed public paths on this application, never arbitrary remote/private URLs. */
+export function getPublicImageOptimizationUrl(value: string, configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL) {
+  const normalized = normalizeSafePublicMediaUrl(value);
+  if (!normalized) return null;
+  const managed = (path: string) => path.startsWith("/media/") || path.startsWith("/brand/");
+  if (normalized.startsWith("/")) return managed(normalized) ? normalized : null;
+  const appOrigin = configuredHttpsOrigin(configuredAppUrl);
+  if (!appOrigin) return null;
+  const url = new URL(normalized);
+  if (url.origin !== appOrigin || !managed(url.pathname)) return null;
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
 export function isCspCompatiblePublicImageUrl(value: string | null | undefined) {
   const normalized = normalizeSafePublicMediaUrl(value);
   if (!normalized) return false;

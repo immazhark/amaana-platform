@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   IDENTITY_MEDIA_SORT_ORDER,
+  getPublicImageOptimizationUrl,
   canRenderPublicMedia,
   isCspCompatiblePublicImageUrl,
   normalizeSafePublicMediaUrl,
@@ -94,5 +95,30 @@ describe("public media safety", () => {
     const identity = media[0];
     if (!identity) throw new Error("Expected identity-media fixture.");
     expect(selectGalleryPublicImage([identity])?.publicUrl).toBe("/media/identity.webp");
+  });
+});
+
+
+describe("same-origin public-image optimizer boundary", () => {
+  it.each([
+    ["/media/2026/photo.webp", "/media/2026/photo.webp"],
+    ["/brand/amaana-mark.svg", "/brand/amaana-mark.svg"],
+    ["https://amaanafoundation.org/media/2026/photo.webp?version=2", "/media/2026/photo.webp?version=2"],
+    ["https://amaanafoundation.org/brand/amaana-mark.svg", "/brand/amaana-mark.svg"],
+    ["https://unapproved.example.org/media/photo.webp", null],
+    ["https://amaanafoundation.org/admin/documents/private", null],
+    ["/api/assistance/private", null],
+    ["https://amaanafoundation.org/media/../admin/private", null],
+    ["https://user:secret@amaanafoundation.org/media/photo.webp", null],
+    ["http://amaanafoundation.org/media/photo.webp", null],
+    ["//amaanafoundation.org/media/photo.webp", null],
+    ["data:image/svg+xml,synthetic", null],
+  ])("normalizes only eligible public image sources: %s", (input, expected) => {
+    expect(getPublicImageOptimizationUrl(input, "https://amaanafoundation.org")).toBe(expected);
+  });
+  it("does not infer an app origin from malformed or missing configuration", () => {
+    expect(getPublicImageOptimizationUrl("https://amaanafoundation.org/media/photo.webp", "invalid")).toBeNull();
+    expect(getPublicImageOptimizationUrl("https://amaanafoundation.org/media/photo.webp", "")).toBeNull();
+    expect(getPublicImageOptimizationUrl("/media/photo.webp", "")).toBe("/media/photo.webp");
   });
 });

@@ -1,3 +1,4 @@
+import { PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
 import Link from "next/link";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { PublicMedia } from "@/components/public-media";
@@ -31,7 +32,7 @@ export default async function AboutPage() {
       eyebrow="Amaana Foundation · Hyderabad"
       heroVariant="level1"
       heroClassName="page-hero--long-title page-hero--about"
-      heroVisual={originMedia ? <PublicMedia asset={originMedia} priority /> : undefined}
+      heroVisual={originMedia ? <PublicMedia asset={originMedia} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : undefined}
       heroVisualTitle="Our Story"
       heroVisualNote="From community-led Ramadan support to a charitable trust serving verified needs with dignity and accountability."
       bodyClassName="canonical-body--about"

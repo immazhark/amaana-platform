@@ -8,7 +8,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { BreadcrumbStructuredData } from '@/components/breadcrumb-structured-data';
 import { PublicContentStructuredData } from '@/components/public-content-structured-data';
-import { PageHero } from '@/components/page-hero';
+import { PageHero, PAGE_HERO_IMAGE_SIZES } from '@/components/page-hero';
 import { WorkVisualPlaceholder } from '@/components/work-visual-placeholder';
 import { getPublishedInitiativeBySlug } from '@/lib/public-content';
 import { getProgrammeChildMedia } from '@/lib/public-page-data';
@@ -78,7 +78,7 @@ export async function ProgrammeDetail({slug}:{slug:string}) {
       {label: publishedChildren.length>0?(slug==='taleem'?'Explore Taleem Programmes':'View Year-by-Year Impact'):'Read about this work',href:publishedChildren.length>0?'#programme-pathways':'#programme-story'},
       ...(media.length>0?[{label:'View photographs',href:'#campaign-gallery',secondary:true} as const]:[]),
     ]}
-    visual={collage?<ProgrammeArtwork slug={slug} sizes="(max-width: 900px) 90vw, 45vw" priority />:lead?<PublicMedia asset={lead} priority sizes="(max-width: 900px) 90vw, 45vw" />:<WorkVisualPlaceholder label={title} className="campaign-lead-placeholder" />}
+    visual={collage?<ProgrammeArtwork slug={slug} sizes={PAGE_HERO_IMAGE_SIZES} priority />:lead?<PublicMedia asset={lead} priority sizes={PAGE_HERO_IMAGE_SIZES} />:<WorkVisualPlaceholder label={title} className="campaign-lead-placeholder" />}
   />
   {(primaryMetric||primaryMetricLabel)&&<section className="campaign-impact-strip" aria-label="Programme impact summary"><div className="v2-shell"><div><span>Documented impact</span><strong>{primaryMetric??"Published record"}</strong><p>{primaryMetricLabel??statusLabel}</p></div><div><span>Status</span><strong>{statusLabel}</strong></div></div></section>}
   <section className="campaign-story" id="programme-story"><div className="v2-shell campaign-story-layout"><div><p className="v2-section-label">The work</p><h2>How the programme took shape</h2></div><div className="campaign-story-copy">{storyParagraphs.length>0?storyParagraphs.map((paragraph,index)=><p key={index}>{paragraph}</p>):<p>{fallbackStory}</p>}</div></div></section>

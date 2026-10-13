@@ -2,7 +2,7 @@ import evidenceStyles from "@/components/evidence-pathway.module.css";
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PageHero } from "@/components/page-hero";
+import { PageHero, PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { WorkPortfolio } from "@/components/work-portfolio";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
@@ -52,7 +52,7 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
         title="Different Needs. One Standard of Care."
         description={<p>Some needs return every year. Others arrive without warning. Explore Amaana’s medical and financial relief, emergency response, Ramadan and Eid initiatives, Taleem education support and seasonal relief.</p>}
         actions={[{ label: "Explore the portfolio", href: "#work-results" }, { label: "See documented impact", href: "/impact", secondary: true }]}
-        visual={heroMedia ? <PublicMedia asset={heroMedia} priority sizes="(max-width: 900px) calc(100vw - 2rem), 42vw" /> : <div className="page-hero__visual-fallback page-hero__visual-fallback--stats"><span>Documented public portfolio</span><strong>{initiativeCount} published programmes</strong><div className="page-hero__stat-row"><b>{causeCount}</b><small>programme areas</small></div><i /></div>}
+        visual={heroMedia ? <PublicMedia asset={heroMedia} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : <div className="page-hero__visual-fallback page-hero__visual-fallback--stats"><span>Documented public portfolio</span><strong>{initiativeCount} published programmes</strong><div className="page-hero__stat-row"><b>{causeCount}</b><small>programme areas</small></div><i /></div>}
       />
 
       <section className="v2-section paper" id="work-results"><div className="v2-shell"><SectionHeading eyebrow={<>Explore by need</>} title={<>A living portfolio of service.</>} subtitle={<>Start with a programme area, then use the year filter to explore a specific annual edition.</>} />

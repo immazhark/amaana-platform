@@ -1,6 +1,9 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
 
+// Hero media spans the viewport on compact layouts and the right column on desktop.
+export const PAGE_HERO_IMAGE_SIZES = "(max-width: 900px) 100vw, 50vw";
+
 export type PageHeroVariant = "level1" | "level2" | "trust" | "action" | "information" | "recognition";
 
 type HeroAction = {

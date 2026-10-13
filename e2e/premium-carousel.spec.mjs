@@ -86,13 +86,14 @@ for (const width of [1440, 1920]) {
   });
 }
 
-for (const width of [390, 1440]) {
+for (const width of [390, 768, 1440]) {
   test(`R-054 above-fold category artwork preloads, below-fold artwork stays lazy at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/programmes/seasonal-relief', { waitUntil: 'domcontentloaded' });
     const hero = page.locator('.page-hero [data-programme-artwork="seasonal-relief"]');
     await expect(hero).toBeVisible();
     await expect(hero).not.toHaveAttribute('loading', 'lazy');
+    await expect(hero).toHaveAttribute('sizes', '(max-width: 900px) 100vw, 50vw');
     const preloaded = await hero.evaluate(img => [...document.querySelectorAll('link[rel="preload"][as="image"]')].some(link =>
       (img.getAttribute('srcset') && link.getAttribute('imagesrcset') === img.getAttribute('srcset'))
       || link.getAttribute('href') === img.getAttribute('src')

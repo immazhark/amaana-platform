@@ -1,3 +1,13 @@
+## 2026-10-14 IST — R-052/R-054 public image delivery batch completed
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent5c6f6a7c17a322df54f0624a5c569368d7375020. Owner cx authorized continuation; no concurrent writer.
+
+R-054: PageHero canonical owner exports one full-mobile/half-desktop image-sizing hint. Apply to priority photographs/artwork in eight public hero surfaces: About, appeals, Get Involved, education sponsorship, Our Work index, initiative detail, programme categories and umbrella programme detail. Previously some inherited a body70vw hint at tablet widths, while others advertised90vw despite full-mobile photo layouts. Body/gallery/portfolio sizes and lazy behavior stay scoped. Category browser acceptance now includes768px and explicit hero sizes alongside existing preload/lazy checks.
+
+R-052: PublicMedia and CampaignMediaGallery optimized only root-relative paths, so an approved absolute Amaana/media URL bypassed responsive optimization. Shared getPublicImageOptimizationUrl converts only same configured HTTPS app-origin /media/ and /brand/ paths. Never grant optimizer access to external hosts, private/API paths, credentialed URLs, HTTP or malformed origins. Existing direct external/data-image delivery and public consent/cache/size guards retained. Actual-component baseline reproduces absolute-URL bypass; corrected native Image output/preload checks pass. Gallery thumbnails/lightbox share this policy.
+
+Validation:32 focused image-render/policy tests pass; full suite991passed/9database-dependent skipped,105suites passed/one skipped. TypeScript and focused zero-warning ESLint across all affected TSX/helpers/tests pass; React review retains server components, direct imports, no new hooks/request waterfalls, existing alt/intrinsic dimensions and priority scopes. Clean compile-mode build passes:JS811676/819200bytes,CSS346266/348160bytes; client-secret/static-image guards, browser syntax and diff checks pass. No production transfer/CWV, browser/current-head hosted prerender or live rollout proof claimed. R-052/R-054 remain partial until broader responsive/network and deployment acceptance. No main merge/deploy or live money/mail/storage/data/config operations. Batch complete; no active writer. Next: inspect exact-new-head acceptance and correct real failures before release.
+
 ## 2026-10-14 IST — standalone global-error typography corrected
 
 Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013, parent c4e0ccc8ae46db36be9d879a15073beb2685b0ee. Owner cx authorized continuation; no concurrent writer.

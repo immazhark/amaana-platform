@@ -1,7 +1,7 @@
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PageHero } from "@/components/page-hero";
+import { PageHero, PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { getGetInvolvedHeroMedia } from "@/lib/get-involved-media";
 import { ParticipationCards } from "@/components/participation-card";
@@ -85,7 +85,7 @@ export default async function GetInvolvedPage() {
           { label: "Sponsor education", href: "/get-involved/sponsor-education" },
           { label: "Connect with Amaana", href: "/contact", secondary: true },
         ]}
-        visual={heroMedia ? <PublicMedia asset={heroMedia} priority /> : undefined}
+        visual={heroMedia ? <PublicMedia asset={heroMedia} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : undefined}
         visualKicker="Five ways to take part"
         visualTitle="Time. Skills. Support. Care."
         visualNote="Choose a path that matches what you can offer and what the work needs now."
