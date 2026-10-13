@@ -1,3 +1,12 @@
+## 2026-10-13 — exact CI failures and repairs on PR #292
+
+At source head b812193, hosted CI run 38438939175 completed failure. This is not generic CI noise: lint, TypeScript, fast unit tests, database checks, and production Next build passed. Two blockers are separately verified from job logs:
+- Browser fixture build: e2e/fixtures/components/gallery-update-fixture.tsx.fixture generated TypeScript TS2345 and TS2532 because current[0]/current[1] are undefined under strict indexed access. Fixed via first/second guards in 3820489.
+- Production JavaScript cap: built 820,562 bytes versus hard limit 819,200, an overage of 1,362 bytes; CSS 346,208 is under 348,160 budget. Do not relax either limit. Requires reduction in emitted client JS before integration.
+- Checkout order-identity acceptance: six previous mocked orders use order_acceptance_001 with underscores. Source regex was alphanumeric-only and rejected fixture. e30cbbc accepts bounded order_[A-Za-z0-9_]{1,120}; retains namespace, allowed characters and length constraints.
+
+New source/test head e30cbbc544791242878992471a59ba04a7bb02d0. CI run 38439982783 was pending when checked; only budget remains independently confirmed outstanding until measured again. Existing PR #292 targets main. No deployed/verified closure claimed, no live money or media operations, and no merge. No CodeRabbit review work. Ownership REVIEW_PENDING.
+
 ## 2026-10-13 — R-054 artwork LCP priority and gallery identity correction
 
 Owner: REVIEW_PENDING on existing PR #292, user-authorized cx. Prior head 352bf40 unchanged at initial read. Continued actual fixes; CodeRabbit review intentionally excluded.
