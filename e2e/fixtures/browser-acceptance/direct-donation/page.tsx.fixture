@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { DonationMethods } from "@/components/donation-methods";
+import { DonationOptions } from "@/components/donation-options";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,7 @@ export default function DirectDonationAcceptanceFixture() {
             </p>
           </aside>
           <div>
-            <DonationMethods
+            <DonationOptions
               appealId="browser-acceptance-appeal"
               appealTitle="Browser Acceptance Appeal"
               maxAmount={5000}

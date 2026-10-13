@@ -731,6 +731,34 @@ test.describe('donation submission state survives method and provider callbacks'
     expect(confirmations).toBe(1);
   });
 
+  test('a delayed dismissal from an earlier checkout cannot unlock a newer order request', async ({ page }) => {
+    let orders = 0;
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    await page.route('**/api/donations/order', async route => {
+      orders++;
+      if (orders === 2) await gate;
+      await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(orderPayload()) });
+    });
+    await openMethodFixture(page, 'Secure online payment');
+    await fillDonationForm(page);
+    await page.getByRole('button', { name: 'Continue securely →' }).click();
+    await expect.poll(() => page.evaluate(() => Boolean(window.__checkoutOptions))).toBe(true);
+    await page.evaluate(() => {
+      window.__previousCheckout = window.__checkoutOptions;
+      window.__previousCheckout.modal.ondismiss();
+    });
+    await expect(page.getByRole('button', { name: 'Continue securely →' })).toBeEnabled();
+    await page.getByRole('button', { name: 'Continue securely →' }).click();
+    await expect.poll(() => orders).toBe(2);
+    await page.evaluate(() => window.__previousCheckout.modal.ondismiss());
+    await expectMethodsLocked(page);
+    await expect(page.getByRole('button', { name: 'Opening secure checkout…' })).toBeDisabled();
+    release();
+    await expect.poll(() => page.evaluate(() => window.__checkoutOptions !== window.__previousCheckout)).toBe(true);
+    await expectMethodsLocked(page);
+  });
+
   test('Razorpay dismissal before a payment unlocks safe method selection', async ({ page }) => {
     await page.route('**/api/donations/order', route => route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(orderPayload()) }));
     await openMethodFixture(page, 'Secure online payment');

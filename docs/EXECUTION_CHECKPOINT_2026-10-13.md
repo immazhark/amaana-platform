@@ -1,23 +1,11 @@
 # Amaana engineering checkpoint — 13 October 2026
 
-State: REVIEW_PENDING; completed candidate on `fix/direct-transfer-feedback-20261013`.
-Main/base: `aedae00171d2cbf585f65f93b783f66c7f003a43`; open worker PR291 is separate.
+## 2026-10-13 — PR292 correction completed
 
-## Completed candidate
+Ownership: REVIEW_PENDING. Existing PR292; previous published head `d2c665225e5465c9a2e5cb549f876d0fc1dd02ae`; base/main `aedae00171d2cbf585f65f93b783f66c7f003a43`. Previous exact-head CI38395402522 passed fast/database/readiness and 1,414 Chromium plus 24 Firefox/WebKit cases. Production compiled successfully but failed the unchanged JavaScript budget (823,043 vs 819,200 bytes); no merge was performed.
 
-Recovered all seven unfinished files from the interrupted chat; completed the transfer feedback and submission-lock batch. R-029–R-033: direct-transfer native/server field errors, linked messages, repeat error focus and focus preservation while editing. N-24 follow-up: no retry/payment advice after an uncertain submission; duplicate references, malformed receipts, 5xx or network errors require follow-up. Clipboard failures provide manual-copy guidance. N-29: synchronous method locking, same-event duplicate checkout prevention, duplicate provider callback prevention, and payment-reported dismissal cannot reopen verification/reconciliation. Unpaid dismissal remains recoverable.
+Correction: share donor/transfer input markup; server-render verified payment instructions through DonationOptions, with a small client clipboard action. Preserve validation, linked errors, focus, fields, verified account/UPI values and submission locks. Direct-method headings now resolve the donation section's existing aria-labelledby. Checkout attempts also isolate dismissal: an earlier unpaid checkout callback cannot reopen a newer pending request. Added one rendered regression for that race (12 new cases in this PR, 42 total journey cases). Minor review spacing issues corrected.
 
-## Validation
+Revised local compiled assets: JavaScript 818,755 bytes; CSS 346,217 bytes, both within unchanged limits (819,200 / 348,160). JavaScript reduction 4,288 bytes. Compilation and build TypeScript succeeded; final local prerender failed because no local PostgreSQL server exists at localhost:5432. This is not a successful complete local production build. Focused payment/API tests: 127 passed across 8 suites. Explicit TypeScript/focused ESLint, client secret boundary, static image guard, whitespace and journey collection passed. Prior candidate's full unit suite had 910 passes / 9 database-dependent skips. Revised hosted build/database/browser checks must pass before guarded integration; prior browser green does not certify the refactored candidate.
 
-- 90 focused tests passed.
-- Full unit/API suite:910 passed;9 database-dependent skipped.
-- TypeScript and focused ESLint passed; whitespace check passed.
-- CI planner:34 cases passed.
-- 11 new rendered regressions added to the existing journey suite; syntax and collection passed.
-- Chromium binary absent locally; browser execution, hosted production build and isolated database checks still required before integration.
-
-## Exact next action
-
-Run required checks on the published candidate; fix any task-introduced failure before guarded integration. Continue independent defects while hosted checks run; avoid repeated polling. Do not alter PR291 notification containment or invoke live delivery as part of this batch.
-
-No main merge, deployment, real payment, transfer, email or production-data write performed by this batch. Prior chat reported main aedae001 deployed; deployment was not reverified during this continuation. Historical95-entry closure count remains unreconciled; tests and source follow-ups are not original-audit closures.
+No new PR, main merge, deployment, live payment/transfer/email or production-data write performed by this correction. PR291 worker containment remains independent. Historical 95-entry closure totals remain unreconciled; this continues N-29/R-029–R-033/N-24 rather than inventing original-audit closures. Next: correct any revised-head failure before integration; continue independent confirmed defects while hosted validation runs.

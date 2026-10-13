@@ -1,13 +1,12 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { type ReactNode, useCallback, useRef, useState } from "react";
 import { DonationForm } from "@/components/donation-form";
 import { DirectTransferForm } from "@/components/direct-transfer-form";
-import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import styles from "./donation-methods.module.css";
 
 type Method = "RAZORPAY" | "DIRECT_UPI" | "BANK_TRANSFER";
-export function DonationMethods(props: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible: boolean; paymentDetails: DonationPaymentDetails }) {
+export function DonationMethods(props: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible: boolean; bankAvailable: boolean; paymentInstructions: Record<Exclude<Method, "RAZORPAY">, ReactNode> }) {
   const [method,setMethod]=useState<Method>("RAZORPAY");
   const [methodLocked, setMethodLocked] = useState(false);
   const submissionLock = useRef(false);
@@ -25,7 +24,7 @@ export function DonationMethods(props: { appealId: string; appealTitle: string; 
       <button type="button" disabled={methodLocked} aria-pressed={method==="BANK_TRANSFER"} onClick={()=>chooseMethod("BANK_TRANSFER")}>Bank transfer</button>
     </div>
     <div>
-      {method==="RAZORPAY" ? <DonationForm appealId={props.appealId} appealTitle={props.appealTitle} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} onSubmissionLockChange={updateSubmissionLock}/> : <DirectTransferForm appealId={props.appealId} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} method={method} paymentDetails={props.paymentDetails} onSubmissionLockChange={updateSubmissionLock}/>}
+      {method==="RAZORPAY" ? <DonationForm appealId={props.appealId} appealTitle={props.appealTitle} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} onSubmissionLockChange={updateSubmissionLock}/> : <DirectTransferForm appealId={props.appealId} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} method={method} instructions={props.paymentInstructions[method]} bankAvailable={props.bankAvailable} onSubmissionLockChange={updateSubmissionLock}/>}
     </div>
   </div>;
 }

@@ -3,7 +3,8 @@
 import { updateDonationAmountValidity } from "@/lib/donation-amount-input";
 
 import Script from "next/script";
-import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
+import { DonationInputField } from "./donation-input-field";
+import { type FormEvent, type InputHTMLAttributes, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
 import { DONATION_INTENT_DESCRIPTIONS, DONATION_INTENT_LABELS, type DonationIntentValue } from "@/lib/donation-intent";
@@ -27,6 +28,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
   const [remainingHint, setRemainingHint] = useState<number | null>(null);
   const [phase, setPhase] = useState<CheckoutPhase>("loading");
   const phaseRef = useRef<CheckoutPhase>("loading");
+  const checkoutAttempt = useRef(0);
   const changePhase = useCallback((next: CheckoutPhase) => {
     // Update the guard before React commits so duplicate submit events and
     // method changes in the same event cannot discard an in-flight payment.
@@ -97,8 +99,8 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
     setError(message);
   }
 
-  function resetUnpaidCheckout() {
-    if (phaseRef.current === "opening") changePhase("ready");
+  function resetUnpaidCheckout(attempt: number) {
+    if (checkoutAttempt.current === attempt && phaseRef.current === "opening") changePhase("ready");
   }
 
   function fieldError(field: DonationField) {
@@ -107,6 +109,18 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
 
   function clearFieldError(field: DonationField) {
     setFieldErrors(current => current[field] ? { ...current, [field]: undefined } : current);
+  }
+
+  function renderInput(field: DonationField, label: ReactNode, attributes: InputHTMLAttributes<HTMLInputElement>, full = false, hint?: ReactNode) {
+    const amount = field === "amount";
+    const errorId = `${field.replace(/[A-Z]/g, letter => `-${letter.toLowerCase()}`)}-error`;
+    const description = [amount ? "amount-hint" : undefined, fieldError(field) ? errorId : undefined, field !== "donorPhone" ? "donation-checkout-status" : undefined].filter(Boolean).join(" ") || undefined;
+    return <DonationInputField label={label} labelClassName={styles.checkoutLabel}
+      className={`field ${full ? "full" : ""} ${amount ? "v2-amount-field" : ""} ${styles.checkoutShell}`}
+      controlClassName={`${styles.checkoutControl} ${amount ? styles.amountControl : ""}`}
+      prefix={amount ? <b aria-hidden="true">₹</b> : undefined} hint={hint}
+      input={{ ...attributes, id: field, name: field, disabled: submissionLocked, "aria-invalid": Boolean(fieldError(field)) || undefined, "aria-describedby": description, onChange: () => clearFieldError(field) }}
+      error={fieldError(field)} errorId={errorId}/>;
   }
 
   function handleInvalid(event: FormEvent<HTMLFormElement>) {
@@ -142,6 +156,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
       return;
     }
 
+    const attempt = ++checkoutAttempt.current;
     changePhase("opening");
     const values = new FormData(event.currentTarget);
 
@@ -185,7 +200,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         prefill: order.donor,
         theme: { color: "#466FAA" },
         modal: { ondismiss: () => {
-          if (!paymentReported) resetUnpaidCheckout();
+          if (!paymentReported) resetUnpaidCheckout(attempt);
         } },
         handler: async payment => {
           if (paymentReported) return;
@@ -213,7 +228,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
       checkout.open();
     } catch (caught) {
       showError(caught instanceof Error ? caught.message : "Could not start checkout");
-      resetUnpaidCheckout();
+      resetUnpaidCheckout(attempt);
     }
   }
 
@@ -233,10 +248,10 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
       <p id="donation-checkout-status" className={styles.status} role="status" aria-live="polite">{statusText}</p>
       {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{remainingHint !== null ? <p><button type="button" className="v2-text-link" onClick={() => { const input = formRef.current?.elements.namedItem("amount"); if (input instanceof HTMLInputElement) { input.value = String(remainingHint); updateDonationAmountValidity(input, transactionMin, transactionMax); clearFieldError("amount"); input.focus(); } }}>Use the current remaining amount: ₹{remainingHint.toLocaleString("en-IN")}</button></p> : null}</div>}
       <div className="form-grid">
-        <div className={`field full v2-amount-field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="amount">Donation amount <span>INR</span></label><div className={`${styles.checkoutControl} ${styles.amountControl}`}><b aria-hidden="true">₹</b><input id="amount" name="amount" type="text" inputMode="numeric" pattern="[0-9]+" maxLength={12} onInput={event => updateDonationAmountValidity(event.currentTarget, transactionMin, transactionMax)} placeholder="Enter amount" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("amount")) || undefined} aria-describedby={fieldError("amount") ? "amount-hint amount-error donation-checkout-status" : "amount-hint donation-checkout-status"} onChange={() => clearFieldError("amount")}/></div><small id="amount-hint" className={styles.hint}>{transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small>{fieldError("amount") && <small id="amount-error" className="v2-field-error">{fieldError("amount")}</small>}</div>
-        <div className={`field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorName">Full name</label><div className={styles.checkoutControl}><input id="donorName" name="donorName" autoComplete="name" minLength={2} maxLength={120} required disabled={submissionLocked} aria-invalid={Boolean(fieldError("donorName")) || undefined} aria-describedby={fieldError("donorName") ? "donor-name-error donation-checkout-status" : "donation-checkout-status"} onChange={() => clearFieldError("donorName")}/></div>{fieldError("donorName") && <small id="donor-name-error" className="v2-field-error">{fieldError("donorName")}</small>}</div>
-        <div className={`field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorEmail">Email</label><div className={styles.checkoutControl}><input id="donorEmail" name="donorEmail" type="email" autoComplete="email" maxLength={254} required disabled={submissionLocked} aria-invalid={Boolean(fieldError("donorEmail")) || undefined} aria-describedby={fieldError("donorEmail") ? "donor-email-error donation-checkout-status" : "donation-checkout-status"} onChange={() => clearFieldError("donorEmail")}/></div>{fieldError("donorEmail") && <small id="donor-email-error" className="v2-field-error">{fieldError("donorEmail")}</small>}</div>
-        <div className={`field full ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorPhone">Phone <span className="muted">optional</span></label><div className={styles.checkoutControl}><input id="donorPhone" name="donorPhone" type="tel" autoComplete="tel" disabled={submissionLocked} aria-invalid={Boolean(fieldError("donorPhone")) || undefined} aria-describedby={fieldError("donorPhone") ? "donor-phone-error" : undefined} onChange={() => clearFieldError("donorPhone")}/></div>{fieldError("donorPhone") && <small id="donor-phone-error" className="v2-field-error">{fieldError("donorPhone")}</small>}</div>
+        {renderInput("amount", <>Donation amount <span>INR</span></>, { type: "text", inputMode: "numeric", pattern: "[0-9]+", maxLength: 12, onInput: event => updateDonationAmountValidity(event.currentTarget, transactionMin, transactionMax), placeholder: "Enter amount", required: true }, true, <small id="amount-hint" className={styles.hint}>{transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small>)}
+        {renderInput("donorName", "Full name", { autoComplete: "name", minLength: 2, maxLength: 120, required: true })}
+        {renderInput("donorEmail", "Email", { type: "email", autoComplete: "email", maxLength: 254, required: true })}
+        {renderInput("donorPhone", <>Phone <span className="muted">optional</span></>, { type: "tel", autoComplete: "tel" }, true)}
         <fieldset className={`field full ${styles.intentGroup}`} disabled={submissionLocked} aria-invalid={Boolean(fieldError("givingIntent")) || undefined} aria-describedby={fieldError("givingIntent") ? "giving-intent-error" : undefined}>
           <legend>Giving intention</legend>
           <p className={styles.intentIntro}>Choose how you want this contribution recorded. The selected appeal remains the designated destination in every case.</p>
