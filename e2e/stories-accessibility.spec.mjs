@@ -80,3 +80,27 @@ for (const width of [390, 1440]) {
     });
   }
 }
+
+
+test('Stories motion respects reduced-motion preference even after late polish styles', async ({ page }) => {
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  const response = await page.goto('/stories', { waitUntil: 'load' });
+  expect(response?.ok()).toBe(true);
+  await page.evaluate(() => {
+    const fixture = document.createElement('div');
+    fixture.className = 'v2-home';
+    fixture.dataset.storiesMotionFixture = 'true';
+    fixture.innerHTML = '<div class="v2-stories-card">Card</div><div class="v2-stories-feature-media"><figure class="v2-media-item"><img alt="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="></figure></div>';
+    document.body.append(fixture);
+  });
+  const read = () => page.evaluate(() => {
+    const fixture = document.querySelector('[data-stories-motion-fixture]');
+    return [...fixture.querySelectorAll('.v2-stories-card, .v2-stories-feature-media img')]
+      .map(element => getComputedStyle(element).transitionDuration);
+  });
+  await page.emulateMedia({ reducedMotion: 'reduce' });
+  await expect.poll(read).toEqual(['0s', '0s']);
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  const durations = await read();
+  for (const duration of durations) expect(duration).not.toBe('0s');
+});
