@@ -30,6 +30,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
   const phaseRef = useRef<CheckoutPhase>("loading");
   const checkoutAttempt = useRef(0);
   const changePhase = useCallback((next: CheckoutPhase) => {
+    if (!formRef.current?.isConnected) return;
     // Update the guard before React commits so duplicate submit events and
     // method changes in the same event cannot discard an in-flight payment.
     phaseRef.current = next;
@@ -96,11 +97,11 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
           : "Secure checkout is ready.";
 
   function showError(message: string) {
-    setError(message);
+    if (formRef.current?.isConnected) setError(message);
   }
 
   function isOpeningAttempt(attempt: number) {
-    return checkoutAttempt.current === attempt && phaseRef.current === "opening";
+    return Boolean(formRef.current?.isConnected) && checkoutAttempt.current === attempt && phaseRef.current === "opening";
   }
 
   function resetUnpaidCheckout(attempt: number) {
@@ -242,7 +243,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
               return;
             }
             if (typeof result?.referenceNumber !== "string" || !/^[A-Za-z0-9-]{1,80}$/.test(result.referenceNumber)) throw new Error("Invalid confirmation reference");
-            router.push(privateDonationAcknowledgementPath(result.referenceNumber, order.receiptToken));
+            if (formRef.current?.isConnected) router.push(privateDonationAcknowledgementPath(result.referenceNumber, order.receiptToken));
           } catch {
             showError("We could not complete payment verification in this browser. Please retain your Razorpay payment confirmation and do not submit another payment. Amaana can reconcile the payment without asking for your OTP, UPI PIN or card credentials.");
             changePhase("reconciliation");
