@@ -2,15 +2,14 @@
 
 import { usePathname } from "next/navigation";
 import { useEffect } from "react";
-import { animate } from "framer-motion/dom/mini";
 import { useSiteScroll } from "./site-scroll";
 
-type Playback = ReturnType<typeof animate>;
+type Playback = Animation;
 const actions = "a[href], button, summary";
 const hoverEvents = ["pointerover", "pointerout", "focusin", "focusout"];
 const pressEvents = ["pointerdown", "pointerup", "pointercancel", "keydown", "keyup"];
 const introductions = "[data-section-heading], .v2-section-head, .v3-section-head";
-const easing = [0.2, 0.8, 0.2, 1] as const;
+const easing = "cubic-bezier(0.2, 0.8, 0.2, 1)";
 
 /** One delegated enhancement; server content stays readable before hydration. */
 export function SiteMotion() {
@@ -33,13 +32,22 @@ export function SiteMotion() {
       running.get(element)?.cancel();
       const raised = element.matches(":hover, :focus-visible");
       owned.add(element);
-      const animation = animate(element, { translate: raised && !pressed ? "0 -1px" : "0 0px", scale: pressed ? "0.98" : "1" }, { duration: pressed ? 0.1 : 0.22, ease: easing });
+      const endTranslate = raised && !pressed ? "0 -1px" : "0 0px";
+      const endScale = pressed ? "0.98" : "1";
+      const animation = element.animate({
+        translate: [getComputedStyle(element).translate, endTranslate],
+        scale: [getComputedStyle(element).scale, endScale],
+      }, { duration: pressed ? 100 : 220, easing, fill: "forwards" });
       running.set(element, animation);
-      void animation.then(() => {
+      void animation.finished.then(() => {
         if (running.get(element) !== animation) return;
+        element.style.translate = endTranslate;
+        element.style.scale = endScale;
+        animation.cancel();
         running.delete(element);
         if (!raised && !pressed) clear(element);
-      });
+      }).catch(() => {});
+
     };
     const target = (event: Event) => {
       const element = event.target instanceof Element ? event.target.closest<HTMLElement>(actions) : null;
@@ -66,11 +74,12 @@ export function SiteMotion() {
         observer.unobserve(element);
         if (preference.matches || entry.boundingClientRect.top < 80 || disposed || !element.isConnected) continue;
         owned.add(element);
-        const animation = animate(element, { opacity: [0.86, 1], translate: ["0 8px", "0 0px"] }, { duration: 0.38, ease: easing });
+        const animation = element.animate({ opacity: [0.86, 1], translate: ["0 8px", "0 0px"] }, { duration: 380, easing, fill: "forwards" });
         running.set(element, animation);
-        void animation.then(() => {
+        void animation.finished.then(() => {
           if (running.get(element) === animation) clear(element);
-        });
+        }).catch(() => {});
+
       }
     }, { threshold: 0.12 });
     if (!pathname.startsWith("/admin")) {
