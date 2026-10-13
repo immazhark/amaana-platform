@@ -1,0 +1,11 @@
+import "../../impact/impact-refinement.module.css";
+
+export default function ImpactTypographyFixture() {
+  return <section>
+    <h1>Impact typography acceptance</h1>
+    <div data-typography-impact-fixture="" aria-hidden="true">
+      <div className="v2-impact-tile"><span className="v2-impact-tile-index">01</span></div>
+      <div className="v2-impact-tile has-media"><span className="v2-impact-tile-index">02</span></div>
+    </div>
+  </section>;
+}

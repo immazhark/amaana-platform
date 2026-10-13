@@ -26,6 +26,10 @@ for (const width of [320, 390, 768, 900, 1024, 1440, 1920]) {
       expect(bounds.bottom).toBeLessThanOrEqual(bounds.dockTop);
       expect(bounds.left).toBeGreaterThanOrEqual(0);
       expect(bounds.right).toBeLessThanOrEqual(width + 1);
+      const metadata = panel.locator('.amaana-companion-kicker, [role="tab"]');
+      expect(await metadata.count()).toBe(3);
+      const metadataSizes = await metadata.evaluateAll(nodes => nodes.map(node => Number.parseFloat(getComputedStyle(node).fontSize)));
+      expect(metadataSizes.every(size => size >= 12)).toBe(true);
       const tabSizes = await page.getByRole('tab').evaluateAll(nodes => nodes.map(n => n.getBoundingClientRect().height));
       expect(tabSizes.every(h => h >= 44)).toBe(true);
       await readings.focus();

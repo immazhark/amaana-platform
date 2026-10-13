@@ -15,6 +15,7 @@ export function useSiteScroll(pathname: string) {
     let instance: Lenis | undefined;
     let loading = false;
     let disposed = false;
+    let generation = 0;
     let frame: number | undefined;
     const tick = (time: number) => {
       frame = undefined;
@@ -22,6 +23,8 @@ export function useSiteScroll(pathname: string) {
       if (frame === undefined && instance?.isScrolling === "smooth" && !document.hidden) frame = requestAnimationFrame(tick);
     };
     const destroy = () => {
+      // Also invalidate an import still in flight when native scrolling takes over.
+      generation += 1;
       if (frame !== undefined) cancelAnimationFrame(frame);
       frame = undefined;
       instance?.destroy(); instance = undefined;
@@ -32,9 +35,10 @@ export function useSiteScroll(pathname: string) {
       if (!eligible() || event.ctrlKey || event.defaultPrevented || loading || instance) return;
       if (event.target instanceof Element && event.target.closest(nested)) return;
       loading = true;
+      const initializationGeneration = generation;
       try {
         const { default: SmoothScroll } = await import("lenis");
-        if (!eligible()) return;
+        if (!eligible() || initializationGeneration !== generation) return;
         instance = new SmoothScroll({
           lerp: 0.16, smoothWheel: true, syncTouch: false,
           prevent: node => node.matches(nested),
@@ -43,6 +47,11 @@ export function useSiteScroll(pathname: string) {
             && !document.querySelector("[role='dialog'][aria-modal='true'],dialog[open]"),
         });
         instance.on("scroll", wake);
+      } catch {
+        // Optional progressive enhancement must never surface an unhandled
+        // rejection or break native scrolling when the chunk fails to load.
+        // Resetting loading allows a later wheel gesture to retry.
+        destroy();
       } finally { loading = false; }
     };
     const wheel = (event: WheelEvent) => {
@@ -54,9 +63,11 @@ export function useSiteScroll(pathname: string) {
       void initialize(event);
     };
     const native = () => {
-      if (frame !== undefined) cancelAnimationFrame(frame);
-      frame = undefined;
-      instance?.scrollTo(window.scrollY, { immediate: true });
+      // Anchor navigation, focus actions and history are browser-owned.
+      // A Lenis scrollTo(immediate) call can leave the instance active and
+      // race the browser's subsequent native scroll/focus adjustment.
+      // Invalidating in-flight imports also prevents a late Lenis mount.
+      destroy();
     };
     const key = (event: KeyboardEvent) => {
       if (!nativeKeyboardNavigation.includes(event.key)) return;
@@ -64,7 +75,19 @@ export function useSiteScroll(pathname: string) {
       // before native keyboard navigation so Home/End/Page/Arrow/Space and focus
       // movement retain the browser's exact scrolling semantics. A later wheel
       // gesture can initialize a fresh instance at the browser's current offset.
+      const smoothingWasActive = Boolean(instance);
       destroy();
+      // The default Home/End action can be swallowed on the same keydown
+      // when Lenis releases a mid-flight animated wheel gesture. Preserve the
+      // browser's standard document destinations without hijacking inputs,
+      // carousels, dialogs or other separately scrollable controls.
+      if (!smoothingWasActive || event.defaultPrevented ||
+          event.altKey || event.ctrlKey || event.metaKey || event.shiftKey ||
+          (event.key !== "Home" && event.key !== "End") ||
+          (event.target instanceof Element &&
+            event.target.closest(`${nested}, [contenteditable], [role='textbox']`))) return;
+      const top = event.key === "Home" ? 0 : (document.documentElement?.scrollHeight ?? document.body.scrollHeight ?? 0);
+      window.scrollTo?.({ top, behavior: "instant" });
     };
     const click = (event: MouseEvent) => {
       if (event.target instanceof Element && event.target.closest("a[href], button, summary")) native();

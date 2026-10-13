@@ -92,11 +92,11 @@ export default async function RequestDetailPage({ params }: Props) {
             <label className="checkbox"><input type="checkbox" name="otherFundingChecked" defaultChecked={verification?.otherFundingChecked ?? false} disabled={verificationLocked}/><span><strong>Other funding checked</strong><small>Duplicate fundraising, concessions, insurance, government help or other major support has been considered.</small></span></label>
 
             <label htmlFor="verifiedNeedAmount">Verified need amount (₹)</label>
-            <input id="verifiedNeedAmount" name="verifiedNeedAmount" type="number" min="1" step="0.01" defaultValue={verification?.verifiedNeedAmount?.toString() ?? ""} disabled={verificationLocked}/>
+            <input id="verifiedNeedAmount" name="verifiedNeedAmount" type="text" inputMode="decimal" pattern="(?:0\.(?:0[1-9]|[1-9][0-9]?)|[1-9][0-9]*(?:\.[0-9]{1,2})?)" maxLength={16} defaultValue={verification?.verifiedNeedAmount?.toString() ?? ""} disabled={verificationLocked}/>
 
             <label htmlFor="approvedPublicTarget">Approved public fundraising target (₹)</label>
-            <input id="approvedPublicTarget" name="approvedPublicTarget" type="number" min="1" step="0.01" defaultValue={verification?.approvedPublicTarget?.toString() ?? ""} disabled={verificationLocked}/>
-            <small className="muted">Use only when the decision is Approved Public. It cannot exceed the verified need.</small>
+            <input id="approvedPublicTarget" name="approvedPublicTarget" type="text" inputMode="decimal" pattern="(?:0\.(?:0[1-9]|[1-9][0-9]?)|[1-9][0-9]*(?:\.[0-9]{1,2})?)" maxLength={16} defaultValue={verification?.approvedPublicTarget?.toString() ?? ""} disabled={verificationLocked}/>
+            <small className="muted">Positive rupees only; up to two decimal places. Use only when the decision is Approved Public. It cannot exceed the verified need.</small>
 
             <label htmlFor="paymentDestination">Payment destination</label>
             <input id="paymentDestination" name="paymentDestination" maxLength={500} defaultValue={verification?.paymentDestination ?? ""} placeholder="Hospital, vendor, beneficiary transfer, asset purchase, verified settlement…" disabled={verificationLocked}/>

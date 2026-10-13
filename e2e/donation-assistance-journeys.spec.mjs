@@ -265,10 +265,16 @@ test.describe('donation journey without real payment', () => {
     await page.getByLabel('Full name').fill('Acceptance Donor');
     await page.getByLabel('Email').fill('acceptance@example.test');
 
-    expect(await amount.evaluate(input => ({ valid: input.validity.valid, rangeOverflow: input.validity.rangeOverflow }))).toEqual({
+    await expect(amount).toHaveAttribute('type', 'text');
+    await expect(amount).toHaveAttribute('inputmode', 'numeric');
+    expect(await amount.evaluate(input => ({ valid: input.validity.valid, message: input.validationMessage }))).toEqual({
       valid: false,
-      rangeOverflow: true,
+      message: 'Enter no more than ₹5,000.',
     });
+    for (const invalidValue of ['0', '1.5', '1e3', '-10']) {
+      await amount.fill(invalidValue);
+      expect(await amount.evaluate(input => input.checkValidity()), invalidValue).toBe(false);
+    }
 
     await amount.fill('250');
     expect(await domestic.evaluate(input => input.validity.valueMissing)).toBe(true);
@@ -525,7 +531,15 @@ test.describe('direct donation browser journey without real transfer', () => {
 
     await page.getByLabel('Full name').fill('Acceptance Donor');
     await page.getByLabel('Email').fill('acceptance@example.test');
-    await page.getByLabel('Amount (INR)').fill('250');
+    const transferAmount = page.getByLabel('Amount (INR)');
+    await expect(transferAmount).toHaveAttribute('type', 'text');
+    await expect(transferAmount).toHaveAttribute('inputmode', 'numeric');
+    for (const invalidValue of ['1e3', '1.5', '5001', '9']) {
+      await transferAmount.fill(invalidValue);
+      expect(await transferAmount.evaluate(input => input.checkValidity()), invalidValue).toBe(false);
+    }
+    await transferAmount.fill('250');
+    expect(await transferAmount.evaluate(input => input.checkValidity())).toBe(true);
     await page.getByLabel('UTR / transaction reference').fill('UTRACCEPT12345');
     await page.getByLabel('Transfer date and time').fill('2026-09-30T10:30');
     await page.locator('input[name="domesticConfirmed"]').check();

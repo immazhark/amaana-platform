@@ -503,6 +503,21 @@ model DailyPageView {
   @@index([date])
 }
 
+// Coarse, anonymous Core Web Vitals histogram. No metric IDs, client IPs,
+// browser fingerprints, query-string URLs or raw individual events.
+model DailyWebVital {
+  id               String   @id @default(cuid())
+  path             String   @db.VarChar(200)
+  date             DateTime @db.Date
+  metric           String   @db.VarChar(3)
+  excellent        Int      @default(0)
+  good             Int      @default(0)
+  needsImprovement Int      @default(0)
+  poor             Int      @default(0)
+  @@unique([path, date, metric])
+  @@index([date])
+}
+
 model LoginAttempt {
   id          String   @id @default(cuid())
   subjectHash String

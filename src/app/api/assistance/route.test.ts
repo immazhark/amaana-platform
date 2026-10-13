@@ -8,6 +8,7 @@ const mocks = vi.hoisted(() => ({
   deletePrivateDocumentObject: vi.fn(),
   staffFindMany: vi.fn(),
   assistanceCreate: vi.fn(),
+  assistanceFindUnique: vi.fn(),
 }));
 
 vi.mock("@/lib/assistance", () => ({
@@ -28,7 +29,7 @@ vi.mock("@/lib/bounded-request-body", () => {
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     user: { findMany: mocks.staffFindMany },
-    assistanceRequest: { create: mocks.assistanceCreate },
+    assistanceRequest: { create: mocks.assistanceCreate, findUnique: mocks.assistanceFindUnique },
   },
 }));
 
@@ -65,6 +66,7 @@ beforeEach(() => {
   mocks.readBodyBytesWithLimit.mockImplementation(async request => new Uint8Array(await request.arrayBuffer()));
   mocks.staffFindMany.mockResolvedValue([]);
   mocks.assistanceCreate.mockResolvedValue({ id: "request_1" });
+  mocks.assistanceFindUnique.mockResolvedValue(null);
   mocks.uploadPrivateDocument.mockResolvedValue({
     objectKey: "assistance/request-test/11111111-1111-4111-8111-111111111111.pdf",
     originalName: "synthetic-evidence.pdf",
@@ -97,6 +99,49 @@ describe("assistance submission request bounds", () => {
     expect(mocks.assistanceCreate).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["text masquerading as a document", "text" as const],
+    ["named empty upload", "empty" as const],
+  ])("rejects %s instead of accepting an unverified attachment", async (_name, kind) => {
+    const data = new FormData();
+    data.set("applicantName", "Acceptance Applicant");
+    data.set("phone", "9000000000");
+    data.set("email", "applicant@example.test");
+    data.set("city", "Hyderabad");
+    data.set("category", "MEDICAL");
+    data.set("description", "Synthetic assistance request data used only for route acceptance coverage.");
+    data.set("consent", "on");
+    if (kind === "text") {
+      data.append("documents", "synthetic medical report was attached");
+    } else {
+      data.append("documents", new File([], "medical-report.pdf", { type: "application/pdf" }));
+    }
+
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: data }));
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/document/i);
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.staffFindMany).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
+  it("still accepts a request with no optional attachments", async () => {
+    const data = new FormData();
+    data.set("applicantName", "Acceptance Applicant");
+    data.set("phone", "9000000000");
+    data.set("email", "applicant@example.test");
+    data.set("city", "Hyderabad");
+    data.set("category", "MEDICAL");
+    data.set("description", "Synthetic assistance request data used only for route acceptance coverage.");
+    data.set("consent", "on");
+
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: data }));
+    expect(response.status).toBe(201);
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).toHaveBeenCalledOnce();
+  });
+
   it("persists validated private evidence metadata with the assistance request", async () => {
     const data = new FormData();
     data.set("applicantName", "Acceptance Applicant");
@@ -127,6 +172,54 @@ describe("assistance submission request bounds", () => {
         },
       }),
     });
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+  });
+
+  it("returns the saved tracking credentials when a committed case loses its create acknowledgement", async () => {
+    mocks.assistanceCreate.mockRejectedValueOnce(new Error("connection dropped after commit"));
+    mocks.assistanceFindUnique.mockResolvedValueOnce({ id: "saved_request" });
+    const form = new FormData();
+    for (const [key, value] of Object.entries({
+      applicantName: "Acceptance Applicant",
+      phone: "9000000000",
+      email: "applicant@example.test",
+      city: "Hyderabad",
+      category: "MEDICAL",
+      description: "Synthetic assistance request data used only for route acceptance coverage.",
+      consent: "on",
+    })) form.set(key, value);
+    form.append("documents", new File(["synthetic evidence"], "synthetic-evidence.pdf", { type: "application/pdf" }));
+
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
+
+    expect(response.status).toBe(201);
+    expect(await response.json()).toEqual({ referenceNumber: "AST-123", trackingToken: "tracking-token" });
+    expect(mocks.assistanceFindUnique).toHaveBeenCalledWith({
+      where: { id: expect.any(String) },
+      select: { id: true },
+    });
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+  });
+
+  it("preserves documents when database failure prevents checking whether the case persisted", async () => {
+    mocks.assistanceCreate.mockRejectedValueOnce(new Error("commit acknowledgement lost"));
+    mocks.assistanceFindUnique.mockRejectedValueOnce(new Error("database unavailable"));
+    const form = new FormData();
+    for (const [key, value] of Object.entries({
+      applicantName: "Acceptance Applicant",
+      phone: "9000000000",
+      email: "applicant@example.test",
+      city: "Hyderabad",
+      category: "MEDICAL",
+      description: "Synthetic assistance request data used only for route acceptance coverage.",
+      consent: "on",
+    })) form.set(key, value);
+    form.append("documents", new File(["synthetic evidence"], "synthetic-evidence.pdf", { type: "application/pdf" }));
+
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
+
+    expect(response.status).toBe(500);
+    expect(mocks.assistanceFindUnique).toHaveBeenCalledOnce();
     expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
   });
 

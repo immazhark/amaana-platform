@@ -39,6 +39,15 @@ function optionalText(value: FormDataEntryValue | null, max: number) {
   return text ? text.slice(0, max) : null;
 }
 
+function usesApprovedManagedDelivery(asset: { storageKey?: string | null; publicUrl?: string | null }) {
+  if (!asset.storageKey) return true;
+  const expectedPath = `/media/${asset.storageKey}`;
+  if (asset.publicUrl === expectedPath) return true;
+  // Older managed assets can retain a canonical absolute URL to the same
+  // permission-checking route. Never accept an external bucket/CDN URL.
+  return asset.publicUrl === `https://amaanafoundation.org${expectedPath}`;
+}
+
 export async function createMediaAsset(formData: FormData) {
   const user = await requirePermission("content.update");
   const target = targetFields(String(formData.get("target") ?? ""));
@@ -46,6 +55,7 @@ export async function createMediaAsset(formData: FormData) {
   const file = fileValue instanceof File && fileValue.size > 0 ? fileValue : null;
   const manualUrl = safePublicUrl(formData.get("publicUrl"));
   if (!file && !manualUrl) throw new Error("Upload a file or provide an approved public URL");
+  if (file && manualUrl) throw new Error("Choose either a managed upload or a reviewed external URL, not both.");
 
   const requestedKind = String(formData.get("kind") ?? "IMAGE");
   const inferredKind: MediaKind = file?.type === "application/pdf" ? "DOCUMENT" : requestedKind === "DOCUMENT" ? "DOCUMENT" : "IMAGE";
@@ -207,6 +217,9 @@ export async function setMediaPublication(formData: FormData) {
   const publish = formData.get("publish") === "true";
   const asset = await prisma.mediaAsset.findUniqueOrThrow({ where: { id } });
 
+  if (publish && !usesApprovedManagedDelivery(asset)) {
+    throw new Error("Managed media must use Amaana's consent-gated /media/ route before publication.");
+  }
   if (publish && !canRenderPublicMedia(asset)) {
     throw new Error(asset.kind === "VIDEO"
       ? "Hosted video publication is disabled until synchronized caption tracks are supported and verified."
@@ -224,6 +237,9 @@ export async function setMediaPublication(formData: FormData) {
     await withSerializableTransactionRetry(async tx => {
       const freshAsset = await tx.mediaAsset.findUniqueOrThrow({ where: { id } });
       if (freshAsset.isPublic) throw new Error("This media is already published. Refresh before changing publication state.");
+      if (!usesApprovedManagedDelivery(freshAsset)) {
+        throw new Error("Managed media delivery changed while being reviewed. Use the consent-gated /media/ route.");
+      }
       if (!canRenderPublicMedia(freshAsset)) {
         throw new Error(freshAsset.kind === "VIDEO"
           ? "Hosted video publication is disabled until synchronized caption tracks are supported and verified."

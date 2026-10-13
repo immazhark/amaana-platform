@@ -8,12 +8,21 @@ const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 
 export function isSameOrigin(request: Request) {
   const origin = request.headers.get("origin");
-  if (!origin) return false;
-  const configured = process.env.NEXT_PUBLIC_APP_URL;
-  const expected = configured
-    ? new URL(configured).origin
-    : `${process.env.NODE_ENV === "production" ? "https" : "http"}://${request.headers.get("host")}`;
-  return origin === expected;
+  if (!origin || origin === "null") return false;
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.trim();
+  const production = process.env.NODE_ENV === "production";
+  if (!configured && production) return false;
+  const host = request.headers.get("host");
+  if (!configured && !host) return false;
+  try {
+    const expected = new URL(configured || `http://${host}`);
+    if (!["http:", "https:"].includes(expected.protocol) ||
+        expected.username || expected.password ||
+        (production && expected.protocol !== "https:")) return false;
+    return origin === expected.origin;
+  } catch {
+    return false;
+  }
 }
 
 function getRateLimitPepper(purpose: RateLimitPurpose) {
@@ -93,3 +102,4 @@ export async function enforceAssistanceRateLimit(request: Request) {
 export async function enforceAnalyticsRateLimit(request: Request) {
   return claimRateLimitSlot(getRateLimitClientHash(request, "analytics"), 300);
 }
+

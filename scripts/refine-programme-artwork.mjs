@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
+import { encodeArtworkWithinBudget } from "./artwork-encoding.mjs";
 
 const sources = [
   { directory: path.resolve("public/programme-artwork"), provenance: "provenance.json", include: () => true },
@@ -85,13 +86,13 @@ async function refine({ directory, inputName, outputName, expectedSha256 }) {
     }
   }
 
-  const encoded = await sharp(output, {
+  const { encoded, quality } = await encodeArtworkWithinBudget(quality => sharp(output, {
     raw: { width: info.width, height: info.height, channels: info.channels },
-  }).webp({ quality: 88, smartSubsample: true, effort: 6 }).toBuffer();
+  }).webp({ quality, smartSubsample: true, effort: 6 }).toBuffer());
 
   await mkdir(directory, { recursive: true });
   await writeFile(outputPath, encoded);
-  process.stdout.write(`${path.relative(process.cwd(), outputPath)}: ${encoded.length} bytes (source ${bytes.length})\n`);
+  process.stdout.write(`${path.relative(process.cwd(), outputPath)}: ${encoded.length} bytes (source ${bytes.length}, quality ${quality})\n`);
 }
 
 for (const record of records) await refine(record);

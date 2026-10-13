@@ -53,6 +53,23 @@ describe("bounded request bodies", () => {
     await expect(readBodyBytesWithLimit(request, 7)).rejects.toBeInstanceOf(RequestBodyTooLargeError);
   });
 
+  it("preserves the size-limit error when the request stream refuses cancellation", async () => {
+    const request = new Request("https://amaanafoundation.org/api/webhooks/razorpay", {
+      method: "POST",
+      body: new ReadableStream<Uint8Array>({
+        start(controller) {
+          controller.enqueue(new TextEncoder().encode("12345678"));
+        },
+        cancel() {
+          throw new Error("stream cancellation failed");
+        },
+      }),
+      duplex: "half",
+    } as RequestInit & { duplex: "half" });
+
+    await expect(readBodyBytesWithLimit(request, 7)).rejects.toBeInstanceOf(RequestBodyTooLargeError);
+  });
+
   it("counts UTF-8 bytes rather than JavaScript characters", async () => {
     const body = "₹₹";
     const request = new Request("https://amaanafoundation.org/", { method: "POST", body });

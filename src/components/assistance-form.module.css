@@ -51,3 +51,6 @@
 .form :global(.v2-file-field){border-radius:.75rem!important}
 .backButton{font-weight:700}
 .progress>p strong{font-weight:700}
+
+/* R-024: readable private-intake eyebrow at default and enlarged root sizes. */
+.form :global(.v2-form-heading>span){font-size:.75rem}
