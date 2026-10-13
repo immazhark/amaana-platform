@@ -1,5 +1,19 @@
 # Amaana engineering checkpoint — 13 October 2026
 
+## 2026-10-13 — cleanup and payment follow-up correction completed
+
+Ownership: REVIEW_PENDING for completed source on existing PR #292 / `fix/direct-transfer-feedback-20261013`, parent `0fd383865c72fa09404081e95d2a98fc5b3d0a09`. Owner `cx` authorized continuation. Parent CI 38413754175 passed fast/unit/type/lint, isolated database and full production build/budgets; browser remains pending at the checkpoint. That result does not certify this newer source.
+
+N-30 review correction: a failed deletion after a later document validation failure previously returned correctable 400, allowing repeated submissions despite retained private objects. Rejected cleanup now follows uncertain 500 while preserving bounded logs, private headers and the successful-cleanup 400 behavior. The new actual-route regression fails on parent source (400 instead of 500); corrected combined assistance/storage/feedback suites pass 54 tests.
+
+N-29 follow-up: after an earlier checkout reports payment, a newer pending order response could still open another checkout or overwrite verification feedback. Recheck attempt identity and opening phase before processing that response and in its error path. Continue reconciling the reported payment with its original order and receipt token. Add three rendered cases for accepted, server-error and malformed newer responses, waiting for actual JSON completion before asserting no new checkout.
+
+N-31 source finding: malformed successful confirmation responses previously navigated to a private acknowledgement with an absent/invalid reference, including `/donations/undefined/acknowledgement`. Validate the reference before navigation; malformed responses retain reconciliation and the existing payment-confirmation guidance. Add six rendered cases for absent/null/numeric/empty/path-like/oversized references. No original-audit closure count inferred.
+
+Final local full unit/API suite: 937 passed, 9 database-dependent skipped, 100 suites passed / 1 skipped. TypeScript, focused ESLint, journey syntax and whitespace pass. Clean compile-mode build: JavaScript 819,016 / 819,200 bytes; CSS 346,217 / 348,160 bytes; client secret and static image guards pass. Nine new payment browser regressions await hosted execution. Compile mode does not certify full prerender/database/browser acceptance. React checklist review preserves synchronous ref ownership, scoped render helpers, focus cleanup and existing privacy/payment boundaries.
+
+No new PR, main merge, deployment, real payment, assistance record, email, storage deletion or production-data write. Existing historical 95-row totals remain unreconciled. Publish the combined correction to this same PR; fresh final-head acceptance is mandatory before integration. This atomic source batch is complete and no implementation writer remains active.
+
 ## 2026-10-13 — assistance outcome and evidence feedback continuation
 
 Ownership: REVIEW_PENDING for the completed continuation of existing PR #292 / `fix/direct-transfer-feedback-20261013`. Recovered remote head `0036228c7ea465518bb5db9c71d80c22e089b755` passed CI 38401689042; main remains `aedae00171d2cbf585f65f93b783f66c7f003a43`. This deliberately extends the current form-integrity batch; PR #291 remains independent. The user explicitly resumed interrupted implementation.

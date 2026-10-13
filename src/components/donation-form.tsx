@@ -99,8 +99,12 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
     setError(message);
   }
 
+  function isOpeningAttempt(attempt: number) {
+    return checkoutAttempt.current === attempt && phaseRef.current === "opening";
+  }
+
   function resetUnpaidCheckout(attempt: number) {
-    if (checkoutAttempt.current === attempt && phaseRef.current === "opening") changePhase("ready");
+    if (isOpeningAttempt(attempt)) changePhase("ready");
   }
 
   function fieldError(field: DonationField) {
@@ -183,6 +187,9 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         donor: { name: string; email: string; contact?: string };
         receiptToken: string;
       };
+      // A delayed payment callback can supersede this pending order request.
+      // Reconcile that reported payment without opening another checkout.
+      if (!isOpeningAttempt(attempt)) return;
       if (!orderResponse.ok) {
         if (typeof order.remainingAmount === "number") setRemainingHint(order.remainingAmount);
         if (order.fields) setFieldErrors(order.fields);
@@ -218,6 +225,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
               changePhase("reconciliation");
               return;
             }
+            if (typeof result?.referenceNumber !== "string" || !/^[A-Za-z0-9-]{1,80}$/.test(result.referenceNumber)) throw new Error("Invalid confirmation reference");
             router.push(privateDonationAcknowledgementPath(result.referenceNumber, order.receiptToken));
           } catch {
             showError("We could not complete payment verification in this browser. Please retain your Razorpay payment confirmation and do not submit another payment. Amaana can reconcile the payment without asking for your OTP, UPI PIN or card credentials.");
@@ -227,6 +235,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
       });
       checkout.open();
     } catch (caught) {
+      if (!isOpeningAttempt(attempt)) return;
       showError(caught instanceof Error ? caught.message : "Could not start checkout");
       resetUnpaidCheckout(attempt);
     }

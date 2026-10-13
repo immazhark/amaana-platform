@@ -186,6 +186,7 @@ export async function POST(request: Request) {
           logServerError("assistance.private_document_cleanup_failed", { documentIndex: index });
         }
       });
+      if (cleanupResults.some(result => result.status === "rejected")) throw submissionError;
       if (!persistenceAttempted && submissionError instanceof PrivateDocumentValidationError) {
         return NextResponse.json(
           { error: "Please check the supporting documents.", fields: { documents: [submissionError.message] } },

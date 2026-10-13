@@ -457,6 +457,31 @@ test.describe('donation journey without real payment', () => {
     }));
   });
 
+  for (const reference of [undefined, null, 123, '', '../admin', 'a'.repeat(81)]) {
+    test(`malformed confirmation reference ${JSON.stringify(reference)} retains payment follow-up without invalid navigation`, async ({ page }) => {
+      let orders = 0;
+      let confirmations = 0;
+      await page.route('**/api/donations/order', route => {
+        orders++;
+        return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(orderPayload()) });
+      });
+      await page.route('**/api/donations/confirm', route => {
+        confirmations++;
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ referenceNumber: reference }) });
+      });
+      const submit = await openDonationFixture(page, 'success');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('retain your Razorpay payment confirmation');
+      await expect(page.getByLabel(/Donation amount/)).toBeDisabled();
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(new URL(page.url()).pathname).toBe('/browser-acceptance/donation');
+      expect(orders).toBe(1);
+      expect(confirmations).toBe(1);
+    });
+  }
+
   test('mocked verification failure locks the form against duplicate payment attempts', async ({ page }) => {
     const order = { value: null };
     await mockDonationOrder(page, order);
@@ -758,6 +783,77 @@ test.describe('donation submission state survives method and provider callbacks'
     await expect.poll(() => page.evaluate(() => window.__checkoutOptions !== window.__previousCheckout)).toBe(true);
     await expectMethodsLocked(page);
   });
+
+  for (const newerOutcome of ['accepted', 'server-error', 'malformed']) {
+    test(`an earlier payment callback supersedes a pending newer ${newerOutcome} order without opening another checkout`, async ({ page }) => {
+      let orders = 0;
+      let confirmations = 0;
+      let confirmationBody;
+      let releaseOrder;
+      let releaseConfirmation;
+      const orderGate = new Promise(resolve => { releaseOrder = resolve; });
+      const confirmationGate = new Promise(resolve => { releaseConfirmation = resolve; });
+      await page.route('**/api/donations/order', async route => {
+        orders++;
+        const second = orders === 2;
+        if (second) await orderGate;
+        await route.fulfill({ status: second && newerOutcome === 'server-error' ? 500 : 201, contentType: 'application/json',
+          body: second && newerOutcome === 'malformed' ? '{broken' : JSON.stringify(second && newerOutcome === 'server-error' ? { error: 'Newer order failed' } : second ? { ...orderPayload(), orderId: 'order_acceptance_002', receiptToken: 'receipt-token-newer-unpaid-order-abcdefghijklmnopqrstuvwxyz' } : orderPayload()) });
+      });
+      await page.route('**/api/donations/confirm', async route => {
+        confirmations++;
+        confirmationBody = route.request().postDataJSON();
+        await confirmationGate;
+        await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Keep the earlier payment confirmation.' }) });
+      });
+      await page.addInitScript(() => {
+        window.__orderJsonCompleted = 0;
+        const nativeFetch = window.fetch;
+        window.fetch = async (...args) => {
+          const response = await nativeFetch(...args);
+          if (String(args[0]) === '/api/donations/order') {
+            const nativeJson = response.json.bind(response);
+            response.json = async () => {
+              try { return await nativeJson(); }
+              finally { window.__orderJsonCompleted++; }
+            };
+          }
+          return response;
+        };
+      });
+      await openMethodFixture(page, 'Secure online payment');
+      await fillDonationForm(page);
+      await page.getByRole('button', { name: 'Continue securely →' }).click();
+      await expect.poll(() => page.evaluate(() => Boolean(window.__checkoutOptions))).toBe(true);
+      await page.evaluate(() => {
+        window.__previousCheckout = window.__checkoutOptions;
+        window.__previousCheckout.modal.ondismiss();
+      });
+      await expect(page.getByRole('button', { name: 'Continue securely →' })).toBeEnabled();
+      await page.getByRole('button', { name: 'Continue securely →' }).click();
+      await expect.poll(() => orders).toBe(2);
+      await page.evaluate(() => {
+        void window.__previousCheckout.handler({ razorpay_order_id: 'order_acceptance_001', razorpay_payment_id: 'pay_acceptance_001', razorpay_signature: 'signature_acceptance_001' });
+      });
+      await expect.poll(() => confirmations).toBe(1);
+      await expect(page.getByRole('button', { name: 'Verifying donation…' })).toBeDisabled();
+      releaseOrder();
+      // The pending order response must finish while the paid attempt still owns
+      // verification, rather than being hidden by navigation or an unmount.
+      await expect.poll(() => page.evaluate(() => window.__orderJsonCompleted)).toBe(2);
+      expect(await page.evaluate(() => window.__checkoutOptions === window.__previousCheckout)).toBe(true);
+      await expect(page.getByRole('button', { name: 'Verifying donation…' })).toBeDisabled();
+      await expect(page.locator('.form-error')).toHaveCount(0);
+      releaseConfirmation();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      await expect(page.locator('.form-error')).toHaveText('Keep the earlier payment confirmation.');
+      await expectMethodsLocked(page);
+      expect(orders).toBe(2);
+      expect(confirmations).toBe(1);
+      expect(confirmationBody).toEqual(expect.objectContaining({ razorpay_order_id: 'order_acceptance_001', razorpay_payment_id: 'pay_acceptance_001', receiptToken }));
+      expect(await page.evaluate(() => window.__checkoutOptions === window.__previousCheckout)).toBe(true);
+    });
+  }
 
   test('Razorpay dismissal before a payment unlocks safe method selection', async ({ page }) => {
     await page.route('**/api/donations/order', route => route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(orderPayload()) }));

@@ -193,6 +193,28 @@ describe("assistance submission request bounds", () => {
     expect(mocks.staffFindMany).not.toHaveBeenCalled();
   });
 
+  it("keeps failed private-upload cleanup uncertain instead of allowing another submission", async () => {
+    mocks.uploadPrivateDocument.mockResolvedValueOnce({
+      objectKey: "assistance/request-test/11111111-1111-4111-8111-111111111111.pdf",
+      originalName: "valid.pdf", mimeType: "application/pdf", sizeBytes: 20,
+    }).mockRejectedValueOnce(new PrivateDocumentValidationError("The uploaded document does not match its declared file type"));
+    mocks.deletePrivateDocumentObject.mockRejectedValueOnce(new Error("synthetic private cleanup failure"));
+    const form = new FormData();
+    form.append("documents", new File(["synthetic valid file"], "valid.pdf", { type: "application/pdf" }));
+    form.append("documents", new File(["invalid signature"], "invalid.pdf", { type: "application/pdf" }));
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({
+      error: "We could not confirm whether your request was recorded. Contact Amaana before submitting again.", submissionUncertain: true,
+    });
+    expect(response.headers.get("cache-control")).toMatch(/no-store/i);
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex/i);
+    expect(mocks.deletePrivateDocumentObject).toHaveBeenCalledOnce();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+    expect(mocks.assistanceFindUnique).not.toHaveBeenCalled();
+    expect(mocks.staffFindMany).not.toHaveBeenCalled();
+  });
+
   it("persists validated private evidence metadata with the assistance request", async () => {
     const data = new FormData();
     data.set("applicantName", "Acceptance Applicant");
