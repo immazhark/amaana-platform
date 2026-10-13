@@ -1,3 +1,13 @@
+## 2026-10-14 IST — R-069 native lint protections implemented
+
+Ownership: REVIEW_PENDING. PR #292 / fix/direct-transfer-feedback-20261013, parentaec129da47c3d37d123a09d918a3943716eedf78. Owner cx authorized continuation; no concurrent writer.
+
+Enable existing Next-supplied import/no-cycle for src TS/TSX with external packages excluded and runtime dynamic cycles still rejected. Next already supplies eslint-plugin-import2.32.0 and TypeScript resolver3.10.1; no dependency added. A360-file diagnostic passed. Disposable real two-file runtime cycle triggers both participants; the same files changed to type-only references pass.
+
+Add supplemental jsx-a11y/control-has-associated-label for button/summary/ARIA-role names with nested text depth5. Native input/select/textarea associations retain existing label checks: this supplemental rule cannot resolve external/wrapping native labels and initially produced false positives. Do not manufacture duplicate aria-labels. Actual unnamed-button probe fails and named-button probe passes. All probes removed before commit.
+
+Validation: full npm run lint passes (repository ESLint zero warnings plus existing governed Stylelint). Final post-cleanup repository ESLint and diff checks pass; tracked scope is lint configuration and existing coordination/register docs only. App unit/build suites were not rerun because runtime/source assets are unchanged from prior validated image batch. No full WCAG/strict-profile/production acceptance claim; R-069 remains partial pending broader policy acceptance and hosted execution. No main merge/deploy or live provider/data operations. Atomic lint task complete; no active writer. Next: inspect exact-head acceptance and continue remaining original requirements.
+
 ## 2026-10-14 IST — R-052/R-054 public image delivery batch completed
 
 Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent5c6f6a7c17a322df54f0624a5c569368d7375020. Owner cx authorized continuation; no concurrent writer.
@@ -431,7 +441,7 @@ These are tracking-row counts, not a certified defect-free percentage. The 40 ad
 | R-066 | Incomplete Stylelint design-token/duplicate-selector governance | Partial; not closed | Existing baseline; further work pending | Partial / baseline only | AM-18; #216 | Scoped zero-warning Stylelint introduced; whole-site governance incomplete. |
 | R-067 | Global CSS <=60KB target not achieved | Open | No completed rollout | No verified new fix | AM-12 | Existing budget passes do not establish this smaller global-CSS target. |
 | R-068 | Unused CSS <10% on key routes unverified | Unverified | Not established | Unconfirmed | AM-12 | Current route-specific coverage measurements missing. |
-| R-069 | Strict accessibility/import-cycle lint coverage gaps | Open | No completed rollout | No verified new fix | AM-18 | Requested strict/cycle rule rollout not completed. |
+| R-069 | Strict accessibility/import-cycle lint coverage gaps | Partial; native cycle and supplemental control-name gates implemented | Current PR; hosted rollout pending | Not certified live | AM-18; eslint.config.mjs; #292 | Existing native plugin/resolver detects runtime cycles and preserves type-only references. Supplemental button/summary/ARIA naming gate avoids false positives on native form-label associations. Full lint passes; broader strict-profile and accessibility acceptance remain open. |
 
 ### SEO/release
 

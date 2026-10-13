@@ -14,6 +14,20 @@ const eslintConfig = defineConfig([
       "no-console": "error",
     },
   },
+  {
+    files: ["src/**/*.{ts,tsx}"],
+    rules: {
+      // Next supplies the import plugin and TS resolver; inspect our graph,
+      // including dynamic imports, without traversing third-party packages.
+      "import/no-cycle": ["error", { ignoreExternal: true }],
+      // Supplement button/summary/role naming without misclassifying native
+      // form controls associated with separate or wrapping labels.
+      "jsx-a11y/control-has-associated-label": ["error", {
+        ignoreElements: ["input", "select", "textarea"],
+        depth: 5,
+      }],
+    },
+  },
   globalIgnores([".next/**", "node_modules/**", "next-env.d.ts"]),
 ]);
 

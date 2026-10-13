@@ -1,3 +1,13 @@
+## 2026-10-14 IST — R-069 native lint protections implemented
+
+Ownership: REVIEW_PENDING. PR #292 / fix/direct-transfer-feedback-20261013, parentaec129da47c3d37d123a09d918a3943716eedf78. Owner cx authorized continuation; no concurrent writer.
+
+Enable existing Next-supplied import/no-cycle for src TS/TSX with external packages excluded and runtime dynamic cycles still rejected. Next already supplies eslint-plugin-import2.32.0 and TypeScript resolver3.10.1; no dependency added. A360-file diagnostic passed. Disposable real two-file runtime cycle triggers both participants; the same files changed to type-only references pass.
+
+Add supplemental jsx-a11y/control-has-associated-label for button/summary/ARIA-role names with nested text depth5. Native input/select/textarea associations retain existing label checks: this supplemental rule cannot resolve external/wrapping native labels and initially produced false positives. Do not manufacture duplicate aria-labels. Actual unnamed-button probe fails and named-button probe passes. All probes removed before commit.
+
+Validation: full npm run lint passes (repository ESLint zero warnings plus existing governed Stylelint). Final post-cleanup repository ESLint and diff checks pass; tracked scope is lint configuration and existing coordination/register docs only. App unit/build suites were not rerun because runtime/source assets are unchanged from prior validated image batch. No full WCAG/strict-profile/production acceptance claim; R-069 remains partial pending broader policy acceptance and hosted execution. No main merge/deploy or live provider/data operations. Atomic lint task complete; no active writer. Next: inspect exact-head acceptance and continue remaining original requirements.
+
 ## 2026-10-14 IST — R-052/R-054 public image delivery batch completed
 
 Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent5c6f6a7c17a322df54f0624a5c569368d7375020. Owner cx authorized continuation; no concurrent writer.
