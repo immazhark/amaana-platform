@@ -92,8 +92,12 @@ for (const width of [390, 1440]) {
     await page.goto('/programmes/seasonal-relief', { waitUntil: 'domcontentloaded' });
     const hero = page.locator('.page-hero [data-programme-artwork="seasonal-relief"]');
     await expect(hero).toBeVisible();
-    await expect(hero).toHaveAttribute('fetchpriority', 'high');
     await expect(hero).not.toHaveAttribute('loading', 'lazy');
+    const preloaded = await hero.evaluate(img => [...document.querySelectorAll('link[rel="preload"][as="image"]')].some(link =>
+      (img.getAttribute('srcset') && link.getAttribute('imagesrcset') === img.getAttribute('srcset'))
+      || link.getAttribute('href') === img.getAttribute('src')
+    ));
+    expect(preloaded).toBe(true);
     const cardArtwork = page.locator('#programme-list [data-programme-artwork]');
     if (await cardArtwork.count()) {
       await expect(cardArtwork.first()).not.toHaveAttribute('fetchpriority', 'high');
