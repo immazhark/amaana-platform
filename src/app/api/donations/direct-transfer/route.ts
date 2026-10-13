@@ -10,6 +10,7 @@ import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
 import { deleteDonationEvidenceObject, MAX_FILE_BYTES, uploadDonationEvidence } from "@/lib/storage";
 import { validateProductionEnvironment } from "@/lib/env";
 import { logServerError } from "@/lib/server-log";
+import { directTransferFieldErrors, UNCERTAIN_TRANSFER_MESSAGE } from "@/lib/direct-transfer-feedback";
 
 const privateHeaders = { "Cache-Control": "no-store, private", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow, noarchive" };
 const MAX_MULTIPART_BYTES = MAX_FILE_BYTES + 256 * 1024;
@@ -46,31 +47,34 @@ export async function POST(request: Request) {
     }
     const evidenceEntry = form.get("evidence");
     if (evidenceEntry !== null && evidenceEntry !== "" && !(evidenceEntry instanceof File)) {
-      return NextResponse.json({ error: "Please attach a valid transfer screenshot or PDF." }, { status: 400, headers: privateHeaders });
+      return NextResponse.json({ error: "Please attach a valid transfer screenshot or PDF.", fieldErrors: { evidence: ["Please attach a valid transfer screenshot or PDF."] } }, { status: 400, headers: privateHeaders });
     }
     // An untouched optional file input can be an empty unnamed File; a named
     // zero-byte receipt is invalid evidence and must not be silently discarded.
     if (evidenceEntry instanceof File && evidenceEntry.size === 0 && evidenceEntry.name) {
-      return NextResponse.json({ error: "Transfer evidence is empty. Please choose a valid file." }, { status: 400, headers: privateHeaders });
+      return NextResponse.json({ error: "Transfer evidence is empty. Please choose a valid file.", fieldErrors: { evidence: ["Please choose a non-empty file."] } }, { status: 400, headers: privateHeaders });
     }
     const evidence = evidenceEntry instanceof File && evidenceEntry.size > 0 ? evidenceEntry : null;
-    if (evidence && evidence.size > MAX_FILE_BYTES) return NextResponse.json({ error: "Transfer evidence must be 5 MB or smaller." }, { status: 413, headers: privateHeaders });
+    if (evidence && evidence.size > MAX_FILE_BYTES) return NextResponse.json({ error: "Transfer evidence must be 5 MB or smaller.", fieldErrors: { evidence: ["Transfer evidence must be 5 MB or smaller."] } }, { status: 413, headers: privateHeaders });
 
     const parsed = directTransferSchema.safeParse({
       appealId: form.get("appealId"), donorName: form.get("donorName"), donorEmail: form.get("donorEmail"), donorPhone: form.get("donorPhone") ?? "",
       amount: form.get("amount"), givingIntent: form.get("givingIntent"), isAnonymous: form.get("isAnonymous") === "true", domesticConfirmed: form.get("domesticConfirmed") === "true",
       paymentMethod: form.get("paymentMethod"), transferReference: form.get("transferReference"), transferredAt: form.get("transferredAt"),
     });
-    if (!parsed.success) return NextResponse.json({ error: "Please check the transfer information and reference." }, { status: 400, headers: privateHeaders });
+    if (!parsed.success) return NextResponse.json({ error: "Please check the transfer information and reference.", fieldErrors: directTransferFieldErrors(parsed.error.flatten().fieldErrors) }, { status: 400, headers: privateHeaders });
 
     const appeal = await prisma.appeal.findFirst({
       where: { id: parsed.data.appealId, status: "PUBLISHED" },
       select: { id: true, slug: true, title: true, status: true, goalAmount: true, amountRaised: true, closesAt: true, assistanceRequest: { select: { verification: { select: { zakatStatus: true } } } } },
     });
     if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
-    if (parsed.data.givingIntent === "ZAKAT" && appeal.assistanceRequest?.verification?.zakatStatus !== "ELIGIBLE") return NextResponse.json({ error: "This appeal is not currently marked as Zakat-eligible." }, { status: 409, headers: privateHeaders });
+    if (parsed.data.givingIntent === "ZAKAT" && appeal.assistanceRequest?.verification?.zakatStatus !== "ELIGIBLE") return NextResponse.json({ error: "This appeal is not currently marked as Zakat-eligible.", fieldErrors: { givingIntent: ["Please choose General Charity or Sadaqah."] } }, { status: 409, headers: privateHeaders });
     const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
-    if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) return NextResponse.json({ error: parsed.data.amount > remainingAmount ? `This appeal currently needs up to ₹${remainingAmount.toLocaleString("en-IN")} more.` : `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}, unless a smaller exact amount is all that remains.`, remainingAmount }, { status: parsed.data.amount > remainingAmount ? 409 : 400, headers: privateHeaders });
+    if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) {
+      const error = parsed.data.amount > remainingAmount ? `This appeal currently needs up to ₹${remainingAmount.toLocaleString("en-IN")} more.` : `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}, unless a smaller exact amount is all that remains.`;
+      return NextResponse.json({ error, remainingAmount, fieldErrors: { amount: [error] } }, { status: parsed.data.amount > remainingAmount ? 409 : 400, headers: privateHeaders });
+    }
 
     const donationId = randomUUID();
     const referenceNumber = createDonationReference();
@@ -89,7 +93,7 @@ export async function POST(request: Request) {
       if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
         const target = Array.isArray(error.meta?.target) ? error.meta.target.join(",") : String(error.meta?.target ?? "");
         if (target.includes("transferReference")) {
-          return NextResponse.json({ error: "This transfer reference has already been submitted. Please do not submit it again." }, { status: 409, headers: privateHeaders });
+          return NextResponse.json({ error: "This transfer reference has already been submitted. Please do not submit it again.", submissionUncertain: true }, { status: 409, headers: privateHeaders });
         }
         throw error;
       }
@@ -141,6 +145,6 @@ export async function POST(request: Request) {
     return NextResponse.json({ referenceNumber: donation.referenceNumber, receiptToken, status: "PENDING_VERIFICATION" }, { status: 202, headers: privateHeaders });
   } catch {
     logServerError("donation.direct_transfer_submission_failed");
-    return NextResponse.json({ error: "We could not submit this transfer for verification. Please try again." }, { status: 500, headers: privateHeaders });
+    return NextResponse.json({ error: UNCERTAIN_TRANSFER_MESSAGE, submissionUncertain: true }, { status: 500, headers: privateHeaders });
   }
 }

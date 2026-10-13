@@ -61,6 +61,45 @@ vi.mock("@/lib/public-environment", () => ({ canExposePublicAppeal: () => true }
 
 import { POST } from "./route";
 
+describe("transfer feedback preserves financial and privacy boundaries", () => {
+  it("returns actual schema field errors without hidden identifiers or persistence", async () => {
+    const actual = await vi.importActual<typeof import("@/lib/donations")>("@/lib/donations");
+    mocks.safeParse.mockImplementation(actual.directTransferSchema.safeParse.bind(actual.directTransferSchema));
+    const form = new FormData();
+    form.set("appealId", "invalid-hidden-id");
+    form.set("donorName", "A");
+    form.set("donorEmail", "invalid-email");
+    form.set("amount", "1e3");
+    form.set("givingIntent", "GENERAL");
+    form.set("paymentMethod", "DIRECT_UPI");
+    form.set("transferReference", "bad reference");
+    form.set("transferredAt", "2026-09-30T10:30");
+    form.set("domesticConfirmed", "false");
+    const response = await POST(new Request("https://amaana.example/api/donations/direct-transfer", { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(Object.keys(body.fieldErrors).sort()).toEqual(["amount", "domesticConfirmed", "donorEmail", "donorName", "transferReference", "transferredAt"].sort());
+    expect(JSON.stringify(body)).not.toContain("invalid-hidden-id");
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    expect(response.headers.get("cache-control")).toContain("no-store");
+  });
+
+  it("marks an unrecovered database outcome as uncertain without retry advice or credentials", async () => {
+    mocks.donationCreate.mockRejectedValue(new Error("private database diagnostic"));
+    mocks.donationFindUnique.mockResolvedValue(null);
+    const response = await POST(requestWith());
+    expect(response.status).toBe(500);
+    const body = await response.json();
+    expect(body.submissionUncertain).toBe(true);
+    expect(body.error).toMatch(/contact Amaana before submitting again/);
+    expect(body.error).not.toMatch(/Please try again|private database diagnostic/);
+    expect(body.receiptToken).toBeUndefined();
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+  });
+});
+
 const validData = {
   appealId: "clx1234567890abcdef123456",
   donorName: "Test Donor",

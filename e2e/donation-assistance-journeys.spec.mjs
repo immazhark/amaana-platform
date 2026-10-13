@@ -555,6 +555,196 @@ test.describe('direct donation browser journey without real transfer', () => {
   });
 });
 
+async function openMethodFixture(page, method = 'Direct UPI / QR') {
+  await mockAnalytics(page);
+  await page.route('https://checkout.razorpay.com/v1/checkout.js', route => route.fulfill({
+    status: 200, contentType: 'application/javascript',
+    body: `window.Razorpay = class {
+      constructor(options) { this.options = options; }
+      open() { window.__checkoutOptions = this.options; }
+    };`,
+  }));
+  const response = await page.goto('/browser-acceptance/direct-donation', { waitUntil: 'domcontentloaded' });
+  expect(response?.ok()).toBeTruthy();
+  if (method === 'Secure online payment') {
+    await expect(page.getByRole('button', { name: 'Continue securely →' })).toBeEnabled();
+  } else {
+    await page.getByRole('button', { name: method, exact: true }).click();
+  }
+}
+
+async function fillTransferForm(page) {
+  await page.getByLabel('Full name').fill('Acceptance Donor');
+  await page.getByLabel('Email').fill('acceptance@example.test');
+  await page.getByLabel('Amount (INR)').fill('250');
+  await page.getByLabel('UTR / transaction reference').fill('UTRACCEPT12345');
+  await page.getByLabel('Transfer date and time').fill('2026-09-30T10:30');
+  await page.locator('input[name="domesticConfirmed"]').check();
+}
+
+async function expectMethodsLocked(page) {
+  const methods = page.getByRole('group', { name: 'Choose donation method' }).getByRole('button');
+  await expect(methods).toHaveCount(3);
+  for (const method of await methods.all()) await expect(method).toBeDisabled();
+}
+
+test.describe('donation submission state survives method and provider callbacks', () => {
+  for (const scenario of ['server-error', 'lost-response', 'html-response', 'missing-token', 'already-submitted']) {
+    test(`direct transfer ${scenario} keeps follow-up state and prevents another submission`, async ({ page }) => {
+      let requests = 0;
+      await page.route('**/api/donations/direct-transfer', async route => {
+        requests++;
+        if (scenario === 'lost-response') return route.abort('failed');
+        if (scenario === 'html-response') return route.fulfill({ status: 502, contentType: 'text/html', body: '<h1>Gateway error</h1>' });
+        const status = scenario === 'missing-token' ? 202 : scenario === 'already-submitted' ? 409 : 500;
+        const body = scenario === 'missing-token'
+          ? { referenceNumber: donationReference, status: 'PENDING_VERIFICATION' }
+          : { error: 'Upstream response', submissionUncertain: true };
+        await route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
+      });
+      await openMethodFixture(page);
+      await fillTransferForm(page);
+      await page.getByRole('button', { name: 'Submit transfer for verification' }).click();
+      const alert = page.locator('.form-error[role="alert"]');
+      await expect(alert).toContainText('contact Amaana before submitting again');
+      await expect(alert).toBeFocused();
+      await expect(alert.getByRole('link', { name: 'Contact Amaana about this transfer' })).toHaveAttribute('href', '/contact');
+      await expectMethodsLocked(page);
+      await expect(page.getByLabel('UTR / transaction reference')).toHaveValue('UTRACCEPT12345');
+      await expect(page.getByRole('button', { name: 'Transfer follow-up required' })).toBeDisabled();
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(requests).toBe(1);
+    });
+  }
+
+  test('same-event duplicate transfer submission and method change cannot discard an in-flight request', async ({ page }) => {
+    let requests = 0;
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    await page.route('**/api/donations/direct-transfer', async route => {
+      requests++;
+      await gate;
+      await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Outcome unavailable', submissionUncertain: true }) });
+    });
+    await openMethodFixture(page);
+    await fillTransferForm(page);
+    await page.locator('form').evaluate(form => {
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      document.querySelector('[aria-label="Choose donation method"] button:last-child').click();
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+    await expect.poll(() => requests).toBe(1);
+    await expectMethodsLocked(page);
+    await expect(page.getByRole('button', { name: 'Direct UPI / QR', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    release();
+    await expect(page.getByRole('button', { name: 'Transfer follow-up required' })).toBeDisabled();
+    expect(requests).toBe(1);
+  });
+
+  test('explicit field rejection preserves donor data, links errors and returns focus on a repeated rejection', async ({ page }) => {
+    let requests = 0;
+    await page.route('**/api/donations/direct-transfer', async route => {
+      requests++;
+      await route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({
+        error: 'Check the bank reference', fieldErrors: { transferReference: ['Enter the bank transaction reference.'] },
+      }) });
+    });
+    await openMethodFixture(page, 'Bank transfer');
+    await fillTransferForm(page);
+    const reference = page.getByLabel('UTR / transaction reference');
+    for (let attempt = 0; attempt < 2; attempt++) {
+      await page.getByRole('button', { name: 'Submit transfer for verification' }).click();
+      await expect(reference).toBeFocused();
+      await expect(reference).toHaveAttribute('aria-invalid', 'true');
+      const errorId = await reference.getAttribute('aria-describedby');
+      await expect(page.locator(`[id="${errorId}"]`)).toHaveText('Enter the bank transaction reference.');
+      await expect(page.getByLabel('Full name')).toHaveValue('Acceptance Donor');
+      await reference.fill(`UTRCORRECT${attempt}12345`);
+      await expect(reference).not.toHaveAttribute('aria-invalid', 'true');
+      await expect(reference).toBeFocused();
+    }
+    expect(requests).toBe(2);
+    await expect(page.getByRole('button', { name: 'Direct UPI / QR', exact: true })).toBeEnabled();
+    await page.getByRole('button', { name: 'Direct UPI / QR', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Pay Amaana directly by UPI.' })).toBeVisible();
+  });
+
+  test('native invalid transfer input has persistent linked feedback and sends no request', async ({ page }) => {
+    let requests = 0;
+    await page.route('**/api/donations/direct-transfer', route => { requests++; return route.abort(); });
+    await openMethodFixture(page);
+    await page.getByRole('button', { name: 'Submit transfer for verification' }).click();
+    const name = page.getByLabel('Full name');
+    await expect(name).toBeFocused();
+    await expect(name).toHaveAttribute('aria-invalid', 'true');
+    const errorId = await name.getAttribute('aria-describedby');
+    await expect(page.locator(`[id="${errorId}"]`)).toBeVisible();
+    expect(requests).toBe(0);
+  });
+
+  test('clipboard denial provides manual-copy guidance without changing transfer state', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async () => { throw new Error('Denied'); } } });
+    });
+    await openMethodFixture(page);
+    await page.getByRole('button', { name: 'Copy UPI ID' }).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Could not copy upi id' })).toContainText('copy it manually');
+    await expect(page.getByRole('button', { name: 'Submit transfer for verification' })).toBeEnabled();
+  });
+
+  test('Razorpay dismissal after payment callback cannot unlock verification or create duplicate confirmation', async ({ page }) => {
+    let orders = 0;
+    let confirmations = 0;
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    await page.route('**/api/donations/order', async route => {
+      orders++;
+      await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(orderPayload()) });
+    });
+    await page.route('**/api/donations/confirm', async route => {
+      confirmations++;
+      await gate;
+      await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Keep your payment confirmation.' }) });
+    });
+    await openMethodFixture(page, 'Secure online payment');
+    await fillDonationForm(page);
+    await page.locator('form').evaluate(form => {
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      document.querySelector('[aria-label="Choose donation method"] button:last-child').click();
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+    await expect.poll(() => page.evaluate(() => Boolean(window.__checkoutOptions))).toBe(true);
+    await page.evaluate(() => {
+      const payment = { razorpay_order_id: 'order_acceptance_001', razorpay_payment_id: 'pay_acceptance_001', razorpay_signature: 'signature_acceptance_001' };
+      void window.__checkoutOptions.handler(payment);
+      window.__checkoutOptions.modal.ondismiss();
+      void window.__checkoutOptions.handler(payment);
+    });
+    await expect.poll(() => confirmations).toBe(1);
+    await expect(page.getByRole('button', { name: 'Verifying donation…' })).toBeDisabled();
+    await expectMethodsLocked(page);
+    release();
+    await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+    await page.evaluate(() => window.__checkoutOptions.modal.ondismiss());
+    await expectMethodsLocked(page);
+    expect(orders).toBe(1);
+    expect(confirmations).toBe(1);
+  });
+
+  test('Razorpay dismissal before a payment unlocks safe method selection', async ({ page }) => {
+    await page.route('**/api/donations/order', route => route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(orderPayload()) }));
+    await openMethodFixture(page, 'Secure online payment');
+    await fillDonationForm(page);
+    await page.getByRole('button', { name: 'Continue securely →' }).click();
+    await expect.poll(() => page.evaluate(() => Boolean(window.__checkoutOptions))).toBe(true);
+    await expectMethodsLocked(page);
+    await page.evaluate(() => window.__checkoutOptions.modal.ondismiss());
+    await expect(page.getByRole('button', { name: 'Continue securely →' })).toBeEnabled();
+    await page.getByRole('button', { name: 'Bank transfer', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Transfer directly to Amaana Foundation.' })).toBeVisible();
+  });
+});
+
 test.describe('private assistance journey', () => {
   test('guided form blocks step progression until required contact fields are complete', async ({ page }) => {
     await openAssistance(page);

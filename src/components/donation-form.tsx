@@ -3,7 +3,7 @@
 import { updateDonationAmountValidity } from "@/lib/donation-amount-input";
 
 import Script from "next/script";
-import { type FormEvent, useEffect, useRef, useState } from "react";
+import { type FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
 import { DONATION_INTENT_DESCRIPTIONS, DONATION_INTENT_LABELS, type DonationIntentValue } from "@/lib/donation-intent";
@@ -17,7 +17,7 @@ type DonationFieldErrors = Partial<Record<DonationField, string[]>>;
 type DonationOrderError = { error?: string; remainingAmount?: number; fields?: DonationFieldErrors };
 declare global { interface Window { Razorpay: new (options: RazorpayOptions) => { open(): void } } }
 
-export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible = false }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean }) {
+export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible = false, onSubmissionLockChange }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean; onSubmissionLockChange?: (locked: boolean) => void }) {
   const router = useRouter();
   const errorRef = useRef<HTMLDivElement>(null);
   const focusedErrorRef = useRef<string | null>(null);
@@ -26,17 +26,25 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
   const [fieldErrors, setFieldErrors] = useState<DonationFieldErrors>({});
   const [remainingHint, setRemainingHint] = useState<number | null>(null);
   const [phase, setPhase] = useState<CheckoutPhase>("loading");
+  const phaseRef = useRef<CheckoutPhase>("loading");
+  const changePhase = useCallback((next: CheckoutPhase) => {
+    // Update the guard before React commits so duplicate submit events and
+    // method changes in the same event cannot discard an in-flight payment.
+    phaseRef.current = next;
+    onSubmissionLockChange?.(next === "opening" || next === "verifying" || next === "reconciliation");
+    setPhase(next);
+  }, [onSubmissionLockChange]);
   const transactionMax = Math.min(maxAmount, 1_000_000);
   const transactionMin = transactionMax < 10 ? transactionMax : 10;
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
-      if (window.Razorpay) {
-        setPhase(current => current === "reconciliation" ? current : "ready");
+      if (window.Razorpay && phaseRef.current === "loading") {
+        changePhase("ready");
       }
     });
     return () => window.cancelAnimationFrame(frame);
-  }, []);
+  }, [changePhase]);
 
   useEffect(() => {
     if (!error) {
@@ -89,6 +97,10 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
     setError(message);
   }
 
+  function resetUnpaidCheckout() {
+    if (phaseRef.current === "opening") changePhase("ready");
+  }
+
   function fieldError(field: DonationField) {
     return fieldErrors[field]?.[0];
   }
@@ -117,6 +129,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (phaseRef.current === "opening" || phaseRef.current === "verifying" || phaseRef.current === "reconciliation") return;
     setError("");
     setFieldErrors({});
     setRemainingHint(null);
@@ -129,7 +142,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
       return;
     }
 
-    setPhase("opening");
+    changePhase("opening");
     const values = new FormData(event.currentTarget);
 
     try {
@@ -161,6 +174,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         throw new Error(order.error ?? "Could not start checkout");
       }
 
+      let paymentReported = false;
       const checkout = new window.Razorpay({
         key: order.keyId,
         amount: order.amount,
@@ -170,9 +184,13 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         order_id: order.orderId,
         prefill: order.donor,
         theme: { color: "#466FAA" },
-        modal: { ondismiss: () => setPhase("ready") },
+        modal: { ondismiss: () => {
+          if (!paymentReported) resetUnpaidCheckout();
+        } },
         handler: async payment => {
-          setPhase("verifying");
+          if (paymentReported) return;
+          paymentReported = true;
+          changePhase("verifying");
           try {
             const confirmation = await fetch("/api/donations/confirm", {
               method: "POST",
@@ -182,20 +200,20 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
             const result = await confirmation.json();
             if (!confirmation.ok) {
               showError(result.error ?? "Payment verification is pending. Please retain your Razorpay payment confirmation and do not submit another payment.");
-              setPhase("reconciliation");
+              changePhase("reconciliation");
               return;
             }
             router.push(privateDonationAcknowledgementPath(result.referenceNumber, order.receiptToken));
           } catch {
             showError("We could not complete payment verification in this browser. Please retain your Razorpay payment confirmation and do not submit another payment. Amaana can reconcile the payment without asking for your OTP, UPI PIN or card credentials.");
-            setPhase("reconciliation");
+            changePhase("reconciliation");
           }
         },
       });
       checkout.open();
     } catch (caught) {
       showError(caught instanceof Error ? caught.message : "Could not start checkout");
-      setPhase("ready");
+      resetUnpaidCheckout();
     }
   }
 
@@ -203,9 +221,10 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
     <Script
       src="https://checkout.razorpay.com/v1/checkout.js"
       strategy="lazyOnload"
-      onReady={() => setPhase(current => current === "reconciliation" ? current : "ready")}
+      onReady={() => { if (phaseRef.current === "loading") changePhase("ready"); }}
       onError={() => {
-        setPhase(current => current === "reconciliation" ? current : "loading");
+        if (phaseRef.current !== "loading" && phaseRef.current !== "ready") return;
+        changePhase("loading");
         showError("Secure checkout could not load. Please refresh and try again.");
       }}
     />

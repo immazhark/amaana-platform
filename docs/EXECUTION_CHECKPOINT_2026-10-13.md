@@ -1,9 +1,23 @@
-# 13 October 2026 execution checkpoint
+# Amaana engineering checkpoint — 13 October 2026
 
-Owner handed implementation to Codex in the master execution prompt. CODEX_ACTIVE for this corrective batch.
+State: REVIEW_PENDING; completed candidate on `fix/direct-transfer-feedback-20261013`.
+Main/base: `aedae00171d2cbf585f65f93b783f66c7f003a43`; open worker PR291 is separate.
 
-Main: 2a8c35ad5e553ac0cc78b8027a35b592d1876826. Consolidated head 9dfd0df8 passed full CI 38356018038. PR286 exact head fe136767 passed targeted CI38357703887 and guarded-merged at e5875b3c6ac4f1ff06390ab2d02bfc515353989e. Integrated, not deployed.
+## Completed candidate
 
-N-23: PR285 merge resolution baeb8f8 reverted parent validation in six source/test files: assistance forged/empty attachments, direct-transfer empty evidence, and strict qualified timestamps. Restore exactly the six blobs from 9dfd0df8, preserving media changes. Original root causes are not counted again. Four suites / 68 tests pass on corrected candidate; prisma generate and TypeScript check pass. Fresh hosted targeted CI required before merge.
+Recovered all seven unfinished files from the interrupted chat; completed the transfer feedback and submission-lock batch. R-029–R-033: direct-transfer native/server field errors, linked messages, repeat error focus and focus preservation while editing. N-24 follow-up: no retry/payment advice after an uncertain submission; duplicate references, malformed receipts, 5xx or network errors require follow-up. Clipboard failures provide manual-copy guidance. N-29: synchronous method locking, same-event duplicate checkout prevention, duplicate provider callback prevention, and payment-reported dismissal cannot reopen verification/reconciliation. Unpaid dismissal remains recoverable.
 
-Historical register:95 entries. Current open/unintegrated/integrated/live-closed/reopened totals unreconciled. No production closure or deployment asserted. No real financial transactions performed.
+## Validation
+
+- 90 focused tests passed.
+- Full unit/API suite:910 passed;9 database-dependent skipped.
+- TypeScript and focused ESLint passed; whitespace check passed.
+- CI planner:34 cases passed.
+- 11 new rendered regressions added to the existing journey suite; syntax and collection passed.
+- Chromium binary absent locally; browser execution, hosted production build and isolated database checks still required before integration.
+
+## Exact next action
+
+Run required checks on the published candidate; fix any task-introduced failure before guarded integration. Continue independent defects while hosted checks run; avoid repeated polling. Do not alter PR291 notification containment or invoke live delivery as part of this batch.
+
+No main merge, deployment, real payment, transfer, email or production-data write performed by this batch. Prior chat reported main aedae001 deployed; deployment was not reverified during this continuation. Historical95-entry closure count remains unreconciled; tests and source follow-ups are not original-audit closures.
