@@ -1,3 +1,13 @@
+## 2026-10-13 — R-026 contrast boundary and R-016 source reconciliation
+
+Ownership: REVIEW_PENDING. User-authorized cx continuation on existing PR #292 / fix/direct-transfer-feedback-20261013. Verified previous head 97dd2a1 unchanged before implementation. Focus remains original R-001–R-095 defects, with CodeRabbit out of scope.
+
+R-026: src/app/globals.css unscoped text-button fallback used pale gold #f2c76f and a later blanket src/app/refinement.css override used #e0b318; both are unsuitable for light-background small text. 16330b9 switches the fallback to var(--af-color-gold-ink), and 01a5341 removes the contradictory broad override. Existing explicit admin sidebar (light text/dark background) and admin content (dark gold/light background) selectors remain unchanged. Computed-style regression e2e/ui-consistency.spec.mjs added at ae8a663, regex-parser corrected in 3a0515d. Synthetic role contrast calculations: fallback #604407 on #fffdf8 8.88:1; admin content on #f4f6f9 8.33:1; white sidebar text on #122239 15.37:1. Browser validation remains pending, no full R-026 contrast certification.
+
+R-016: Already implemented in current Next config before this batch. CSP img-src is self/blob/data plus explicit HTTPS origins, not https: wildcard; existing e2e/security-headers.spec.mjs rejects both wildcard and scheme-wide https. Register updated in 885f622 to implemented/release verification pending. Do not alter R-014 script-src unsafe-inline without nonce-compatible checkout acceptance.
+
+Last source/test commit 3a0515df7c92e5cad4a9cf51667d799bbb975d77; register commit 885f6227527c1478ebdbc298329a38d369590321. Original R-024 small font declarations still require broader UI/route verification. No merge/deploy, live payment or production data writes. Exact-head CI and approved JavaScript/CSS budgets must pass before integration. No implementation writer currently active.
+
 ## 2026-10-13 — uncertain checkout and bounded public-media reads
 
 Ownership: REVIEW_PENDING after user-authorized cx continuation on existing PR #292 / fix/direct-transfer-feedback-20261013. Verified previous head dc3b78f before writing; independent prior CI pending and superseded by new commits. No second writer or unexpected branch head observed.
