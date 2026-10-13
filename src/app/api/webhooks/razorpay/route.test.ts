@@ -229,6 +229,42 @@ describe("Razorpay webhook route", () => {
     expect(mocks.transactionRetry).not.toHaveBeenCalled();
   });
 
+  it("rejects a reused refund event ID with a different financial amount", async () => {
+    mocks.paymentEventFindUnique.mockResolvedValue({
+      id: "existing_event",
+      eventType: "refund.processed",
+      payload: refundPayload(2500),
+    });
+
+    const response = await POST(webhookRequest(refundPayload(3000)));
+
+    expect(response.status).toBe(409);
+    expect(await response.text()).toBe("Webhook event id conflict");
+    expect(mocks.ensureCapturedDonationForRefund).not.toHaveBeenCalled();
+    expect(mocks.transactionRetry).not.toHaveBeenCalled();
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects a raced refund-event insert when the winning row has different financial details", async () => {
+    mocks.paymentEventFindUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        id: "racing_event",
+        eventType: "refund.processed",
+        payload: refundPayload(2500),
+      });
+    mocks.uniqueConstraintError.mockReturnValue(true);
+    mocks.transactionRetry.mockRejectedValueOnce({ code: "P2002" });
+
+    const response = await POST(webhookRequest(refundPayload(3000)));
+
+    expect(response.status).toBe(409);
+    expect(await response.text()).toBe("Webhook event id conflict");
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
   it("rejects reuse of a provider event id for a different event type", async () => {
     mocks.paymentEventFindUnique.mockResolvedValue({
       id: "existing_event",
