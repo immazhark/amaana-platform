@@ -1,3 +1,7 @@
+## 2026-10-13 — independent body rejection correction
+
+Ownership: CODEX_ACTIVE on fix/request-body-cancellation-20261013, based on security3414858b. Consolidated14269ad full CI38365252911 passed all selected gates;282 guarded-merged3414858b;215 final CI38379820058 running. Production unchanged. Canonical media URL and disabled fixture/Web-Vitals flags set with skipDeploys. N-28 implemented: oversized stream rejection previously awaited cancellation indefinitely if underlying cancel never settled. New fake-timer regression fails on the original with rejection stalled; non-awaited best-effort cancel preserves immediate RequestBodyTooLargeError.107 tests across7 body/payment/assistance/webhook suites passed, with typecheck and focused ESLint. Keep this independent commit unintegrated until current release gate finishes; do not mutate the validated release head. Keep current release head unchanged while implementing independently.
+
 ## 2026-10-13 — PR backlog reconciled to two release PRs
 
 Ownership: HANDOFF_PENDING. Closed11 verified superseded PRs278,279,280,281,274,249,253,258,240,247,241 with per-PR retained-scope evidence; no branches deleted. Recovered missing real-scrypt tests via existing254: refreshed02ef12c0 passed targeted CI38364040345, guarded mergec3e05f5a. Reconciled original216 without reverting newer work: refreshed025a8247 passed targeted CI38364789878, guarded merge3633cb172edcd671f13227740d76da95c9a5a3d1. Only282 consolidated release and215 main-promotion PR remain open. No new PR created in this cleanup batch.

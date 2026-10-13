@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { readBodyBytesWithLimit, readTextBodyWithLimit, RequestBodyTooLargeError } from "./bounded-request-body";
 
 function streamedRequest(chunks: Uint8Array[], headers?: HeadersInit) {
@@ -68,6 +68,28 @@ describe("bounded request bodies", () => {
     } as RequestInit & { duplex: "half" });
 
     await expect(readBodyBytesWithLimit(request, 7)).rejects.toBeInstanceOf(RequestBodyTooLargeError);
+  });
+
+  it("rejects an oversized body even when stream cancellation never settles", async () => {
+    vi.useFakeTimers();
+    try {
+      const request = new Request("https://amaanafoundation.org/api/donations/order", {
+        method: "POST",
+        body: new ReadableStream<Uint8Array>({
+          start(controller) { controller.enqueue(new Uint8Array(8)); },
+          cancel() { return new Promise<void>(() => {}); },
+        }),
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      const outcome = Promise.race([
+        readBodyBytesWithLimit(request, 7).then(() => "accepted", error => error),
+        new Promise<string>(resolve => setTimeout(() => resolve("rejection stalled"), 100)),
+      ]);
+      await vi.advanceTimersByTimeAsync(100);
+      expect(await outcome).toBeInstanceOf(RequestBodyTooLargeError);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("counts UTF-8 bytes rather than JavaScript characters", async () => {
