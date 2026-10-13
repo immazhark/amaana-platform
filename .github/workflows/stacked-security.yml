@@ -34,6 +34,8 @@ on:
       - "src/lib/public-media.test.ts"
       - "src/lib/storage.ts"
       - "src/lib/storage-boundaries.test.ts"
+      - "src/lib/storage-readiness.test.ts"
+      - "src/app/admin/(protected)/media/page.tsx"
       - "src/app/admin/(protected)/media/actions.ts"
       - "src/app/admin/(protected)/media/actions.test.ts"
 
@@ -65,5 +67,5 @@ jobs:
           node --test scripts/test-admin-route-inventory.mjs
       - name: Test media, configuration and privileged publication boundaries
         run: |
-          npx vitest run src/lib/webhook-idempotency.test.ts src/lib/storage-boundaries.test.ts "src/app/admin/(protected)/media/actions.test.ts" src/lib/direct-donation-reconciliation.test.ts src/lib/notifications-worker.test.ts src/lib/notifications-claim.test.ts src/lib/notifications-provider-timeout.test.ts src/lib/razorpay.test.ts src/app/api/donations/order/provider-order.test.ts src/app/api/webhooks/razorpay/event-id-fallback.test.ts src/app/api/webhooks/razorpay/payment-failed.test.ts src/app/api/webhooks/razorpay/route.test.ts src/lib/payment-processing.test.ts src/app/api/donations/confirm/route.test.ts src/lib/bounded-request-body.test.ts src/lib/env.test.ts src/lib/public-media.test.ts src/app/api/admin/media/curated-gallery/publish/error-boundary.test.ts
+          npx vitest run src/lib/webhook-idempotency.test.ts src/lib/storage-readiness.test.ts src/lib/storage-boundaries.test.ts "src/app/admin/(protected)/media/actions.test.ts" src/lib/direct-donation-reconciliation.test.ts src/lib/notifications-worker.test.ts src/lib/notifications-claim.test.ts src/lib/notifications-provider-timeout.test.ts src/lib/razorpay.test.ts src/app/api/donations/order/provider-order.test.ts src/app/api/webhooks/razorpay/event-id-fallback.test.ts src/app/api/webhooks/razorpay/payment-failed.test.ts src/app/api/webhooks/razorpay/route.test.ts src/lib/payment-processing.test.ts src/app/api/donations/confirm/route.test.ts src/lib/bounded-request-body.test.ts src/lib/env.test.ts src/lib/public-media.test.ts src/app/api/admin/media/curated-gallery/publish/error-boundary.test.ts
           node --check e2e/security-headers.spec.mjs
