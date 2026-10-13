@@ -52,7 +52,7 @@ for (const width of [390, 1440]) {
         ];
         const headings = headingSelectors.map(selector => {
           const style = getComputedStyle(container.querySelector(selector));
-          return { selector, ratio: parseFloat(style.lineHeight) / parseFloat(style.fontSize) };
+          return { selector, ratio: parseFloat(style.lineHeight) / parseFloat(style.fontSize), fontFamily: style.fontFamily };
         });
         const checks = [
           ['.v2-stories-feature-copy small', '#f3ecdf'],
@@ -71,6 +71,8 @@ for (const width of [390, 1440]) {
       }, scale);
       for (const heading of actual.headings) {
         expect(heading.ratio, heading.selector).toBeGreaterThanOrEqual(1.11);
+        expect(heading.ratio, heading.selector).toBeLessThanOrEqual(1.13);
+        expect(heading.fontFamily, heading.selector).not.toBe('"Times New Roman"');
       }
       for (const item of actual.checks) {
         expect(contrast(item.foreground, item.background), item.selector).toBeGreaterThanOrEqual(4.5);
