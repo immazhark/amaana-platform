@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-026 Stories feature paragraph contrast
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent b64166f9084ed86994306c07e21468e49d12948a. Exact source check: .v2-stories-feature-copy p used #68717a against declared feature background #f3ecdf, estimated WCAG contrast 4.22:1 (below 4.5:1 normal text). Reuse existing Stories ink #5f6974 for this paragraph only: estimated 4.75:1 against that declared background. No typography, spacing, layout, animations, other paragraphs or backgrounds changed. R-026 remains PARTIAL until actual rendered/composited and browser acceptance, including text zoom. Source checked; no local lint/build/browser execution. No main merge/deploy or provider operations.
+
 ## 2026-10-14 IST — R-026 Stories hero metadata contrast
 
 Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent dc26de50a9fae01618749d6392e5e5e23ba9aa49. Confirmed .v2-story-detail-context small used white at 45% opacity over variable dark hero gradient. At representative background #1d3150 source-composited contrast was ~3.94:1, below the 4.5:1 normal-text threshold. Increase only this label's white opacity to 72%; preserve font/layout/content/gradient and adjacent decorative elements. Exact source declaration precondition checked. Browser/computed contrast across gradient and responsive routes unverified; R-026 PARTIAL. No build/browser suite completed for this source-only change; no merge/deploy/provider operations.
