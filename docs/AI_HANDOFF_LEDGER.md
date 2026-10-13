@@ -1,3 +1,13 @@
+## 2026-10-13 — R-054 artwork LCP priority and gallery identity correction
+
+Owner: REVIEW_PENDING on existing PR #292, user-authorized cx. Prior head 352bf40 unchanged at initial read. Continued actual fixes; CodeRabbit review intentionally excluded.
+
+R-054: ProgrammeArtwork was lazy even as above-the-fold category or umbrella hero while photographic PublicMedia heroes were prioritized. cb2f4c0 adds optional preload and fetchPriority='high' to the server-rendered artwork component. 68cdb76 and 27a8f83 pass priority only in programme-detail and category PageHero usage; body-card artwork remains default lazy. a5757d2 adds mobile/desktop real-route browser assertions and 313b595 adds the documented Eid umbrella hero assertion. Source register now partial/targeted fix pending hosted browser, complete hero audit, and deployment verification.
+
+Supplementary N-20 gallery identity collision: safeItems deduplicated by URL only, permitting distinct URLs with duplicate media IDs, duplicate React keys and misleading lightbox selection. 833f5da now deduplicates both URL and media ID. 71dcd7a injects distinct-URL duplicate-ID fixture and 3dc6c10 tests retained 13 thumbnails, correct open/navigation and focus restoration. No real beneficiary content or data writes involved.
+
+Current source/test and register commit e79728ec90187b117a9162bdaa9bbdd24787aac8. No exact-head CI success claimed; unchanged tight JS/CSS caps require hosted verification. No main merge or Railway deploy. Original 95-row audit closures unchanged until release evidence. No active implementation writer at this checkpoint.
+
 ## 2026-10-13 — PR292 payment/storage implementation handoff
 
 Incoming cx continued from dc3b78f after confirming no head drift. Published ee3cc7a+6930d14 to lock repeat online orders on 5xx/network/malformed outcomes while preserving explicit pre-write correction; 248ba1d adds three rendered browser regressions and updates stale HTTP500 expectation. Published 693fe51 to trim payment error text before 500-character truncation, with e5c91da two browser regressions. Published dea63c6+568f64c for a 15s overall timeout on S3 public-media request and stream reads, including meaningful stalled-sdk/stalled-iterator tests and best-effort abort/destroy; existing size, consent and storage restrictions remain.
