@@ -1,3 +1,11 @@
+## 2026-10-13 — superseded PR cleanup and missing coverage recovery
+
+Ownership: CODEX_ACTIVE for existing PR254 refresh onto consolidated03b95b1a. Closed11 superseded PRs:278,279,280,281,274,249,253,258,240,247,241, after comparing actual source/test deltas and fresh heads. Each closure body explains retained coverage; no branch deletion, stale merge or production closure.
+
+Four PRs remain:215 production release;282 consolidation;216 unique importer/CSS work;254 unique real-scrypt coverage. Unlike the superseded candidates,254's password-work-factors.test.ts is absent and password.test.ts still has malformed four-field over-ceiling fixtures in consolidated. Restore exactly its two test blobs without changing authentication runtime. Seven actual-password tests pass with real Node scrypt calls; typecheck/ESLint pass. Add these paths and tests to existing stacked verification so the refreshed existing PR gets exact-head validation. Preserve both histories when refreshing; no force push.
+
+PR216 exact-head CI38252706957 passed39b671a1. Its importer batching, timestamp and test changes are not fully preserved in282; keep open pending scoped reconciliation, rather than merge stale CSS/workflow snapshots. Historical95 totals remain unreconciled. Newer remediation is not deployed; main remains2a8c35ad.
+
 ## 2026-10-13 — notification and release-preflight batch complete
 
 Ownership: HANDOFF_PENDING; source integration70e213e70eed102b29dfa67e09cbdc95cf81ffd0. PR288 merged433fccec after exact-head CI38361087739 passed. PR289 merged70e213e after exact-head CI38361613600 passed.
