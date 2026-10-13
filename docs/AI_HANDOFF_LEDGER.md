@@ -1,3 +1,11 @@
+## 2026-10-13 — PR backlog reconciled to two release PRs
+
+Ownership: HANDOFF_PENDING. Closed11 verified superseded PRs278,279,280,281,274,249,253,258,240,247,241 with per-PR retained-scope evidence; no branches deleted. Recovered missing real-scrypt tests via existing254: refreshed02ef12c0 passed targeted CI38364040345, guarded mergec3e05f5a. Reconciled original216 without reverting newer work: refreshed025a8247 passed targeted CI38364789878, guarded merge3633cb172edcd671f13227740d76da95c9a5a3d1. Only282 consolidated release and215 main-promotion PR remain open. No new PR created in this cleanup batch.
+
+Preserved unique importer batching/deduplication/UTC timestamps, donation card containment, isolated PostgreSQL cases, scoped Stylelint and readable-label browser regressions. Current safeguards remain:12px status badge, postbuild image weight, privacy migration checks, real-scrypt observer tests and payment/media boundaries. Local891 unit tests passed/9 skipped;41 importer/planner passed/4 PostgreSQL skipped; full ESLint/Stylelint/typecheck passed. Prior original216 full CI38252706957 passed exact retained importer/CSS source; refreshed targeted verification does not certify final integrated browser/database acceptance.
+
+Earlier consolidated03b95b1a full CI38362023764 passed plan/fast/database/production/browser/final verify. It does not certify newer3633cb17. Final combined release gates required before promoting282→215→main. No live deployment or current-production closure asserted. Historical95 closure totals remain unreconciled. Production remains2a8c35ad; Railway migration preflight is configured for next deployment, with OAuth variable-value compatibility still unverified.
+
 ## 2026-10-13 — remaining importer/CSS reconciliation
 
 Ownership: CODEX_ACTIVE refreshing existing PR216 onto consolidatedc3e05f5a. PR254 exact refreshed head02ef12c0 passed stacked CI38364040345 and mergedc3e05f5a. Open backlog now215,216,282;11 superseded PRs closed with evidence.
