@@ -28,10 +28,10 @@ export function NavigationProgress() {
     };
     const reset = () => setPendingFrom(null);
 
-    document.addEventListener("click", begin, true);
+    document.addEventListener("click", begin);
     window.addEventListener("popstate", reset);
     return () => {
-      document.removeEventListener("click", begin, true);
+      document.removeEventListener("click", begin);
       window.removeEventListener("popstate", reset);
     };
   }, []);
