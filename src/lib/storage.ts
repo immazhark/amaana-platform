@@ -10,6 +10,13 @@ export const MAX_FILES = 5;
 export const MAX_PUBLIC_IMAGE_PIXELS = 40_000_000;
 export const PRIVATE_OBJECT_CACHE_CONTROL = "private, no-store, max-age=0";
 
+export class PrivateDocumentValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PrivateDocumentValidationError";
+  }
+}
+
 type StorageConfig = {
   bucket: string;
   client: S3Client;
@@ -198,10 +205,10 @@ export async function deleteDonationEvidenceObject(objectKey: string, donationId
   await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: objectKey }));
 }
 export async function uploadPrivateDocument(file: File, requestId: string) {
-  if (!allowedTypes.has(file.type)) throw new Error("Only PDF, JPEG, PNG and WebP documents are accepted");
-  if (file.size > MAX_FILE_BYTES) throw new Error("Each document must be 5 MB or smaller");
+  if (!allowedTypes.has(file.type)) throw new PrivateDocumentValidationError("Only PDF, JPEG, PNG and WebP documents are accepted");
+  if (file.size > MAX_FILE_BYTES) throw new PrivateDocumentValidationError("Each document must be 5 MB or smaller");
   const bytes = Buffer.from(await file.arrayBuffer());
-  if (!hasValidSignature(bytes, file.type)) throw new Error("The uploaded document does not match its declared file type");
+  if (!hasValidSignature(bytes, file.type)) throw new PrivateDocumentValidationError("The uploaded document does not match its declared file type");
   const safeExtension = extensionForMimeType(file.type);
   const objectKey = `assistance/${requestId}/${randomUUID()}.${safeExtension}`;
   const { bucket, client } = getPrivateStorage();

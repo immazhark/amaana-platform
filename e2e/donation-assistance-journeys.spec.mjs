@@ -774,6 +774,87 @@ test.describe('donation submission state survives method and provider callbacks'
 });
 
 test.describe('private assistance journey', () => {
+  for (const outcome of ['network', 'server', 'malformed', 'missing-token', 'invalid-token', 'wrong-status']) {
+    test(`assistance ${outcome} outcome retains a follow-up lock without duplicating the request`, async ({ page }) => {
+      let submissions = 0;
+      await page.route('**/api/assistance', route => {
+        submissions += 1;
+        if (outcome === 'network') return route.abort('failed');
+        return route.fulfill({
+          status: outcome === 'server' ? 503 : outcome === 'wrong-status' ? 200 : 201,
+          contentType: 'application/json',
+          body: outcome === 'malformed' ? '{broken' : JSON.stringify(outcome === 'server'
+            ? { error: 'Please try again later.' }
+            : { referenceNumber: assistanceReference, trackingToken: outcome === 'missing-token' ? undefined : outcome === 'invalid-token' ? 123 : trackingToken }),
+        });
+      });
+      await openAssistance(page);
+      await fillAssistanceForm(page);
+      await page.getByRole('button', { name: 'Submit private request →' }).click();
+      const summary = page.locator('.form-error[role="alert"]');
+      await expect(summary).toBeFocused();
+      await expect(summary).toContainText('Contact Amaana before submitting again');
+      await expect(summary).not.toContainText('Please try again later');
+      await expect(page.getByRole('link', { name: 'Contact Amaana about this request' })).toHaveAttribute('href', '/contact');
+      await expect(page.getByRole('button', { name: 'Request follow-up required' })).toBeDisabled();
+      await expect(page.locator('input[name="consent"]')).toBeDisabled();
+      await expect(page.locator('input[name="applicantName"]')).toHaveValue('Acceptance Applicant');
+      await page.locator('form.v2-assistance-form').evaluate(form => {
+        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      });
+      expect(submissions).toBe(1);
+      expect(new URL(page.url()).pathname).toBe('/request-assistance');
+    });
+  }
+
+  test('assistance same-event duplicate submissions use one multipart request and lock editing', async ({ page }) => {
+    let submissions = 0;
+    let release;
+    await page.route('**/api/assistance', async route => {
+      submissions += 1;
+      await new Promise(resolve => { release = resolve; });
+      await route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'Please check your phone.', fields: { phone: ['Enter a valid phone number.'] } }) });
+    });
+    await openAssistance(page);
+    await fillAssistanceForm(page);
+    await page.locator('form.v2-assistance-form').evaluate(form => {
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      form.querySelector('input[name="consent"]').click();
+    });
+    await expect(page.getByRole('button', { name: 'Submitting securely…' })).toBeDisabled();
+    await expect(page.locator('input[name="consent"]')).toBeDisabled();
+    await expect(page.locator('input[name="applicantName"]')).toBeDisabled();
+    await expect(page.getByRole('button', { name: /Contact/ })).toBeDisabled();
+    await expect.poll(() => submissions).toBe(1);
+    release();
+    await expect(page.getByLabel('Phone number')).toBeFocused();
+    await expect(page.getByLabel('Phone number')).toBeEnabled();
+    expect(submissions).toBe(1);
+  });
+
+  for (const status of [400, 413]) {
+    test(`assistance document rejection HTTP ${status} returns to linked evidence feedback and preserves files`, async ({ page }) => {
+      await page.route('**/api/assistance', route => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify({ error: 'Please review the supporting files.', fields: { documents: ['Choose a valid supporting document.'] } }) }));
+      await openAssistance(page);
+      await fillAssistanceForm(page, { stopAtEvidence: true });
+      const files = page.getByLabel(/Add private supporting files/);
+      await files.setInputFiles({ name: 'synthetic-evidence.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 synthetic evidence') });
+      await finishAssistanceConfirmation(page);
+      await page.getByRole('button', { name: 'Submit private request →' }).click();
+      await expect(files).toBeFocused();
+      await expect(files).toHaveAttribute('aria-invalid', 'true');
+      await expect(files).toHaveAttribute('aria-describedby', 'documents-help documents-error');
+      await expect(page.locator('#documents-error')).toHaveText('Choose a valid supporting document.');
+      expect(await files.evaluate(input => input.files[0].name)).toBe('synthetic-evidence.pdf');
+      await files.setInputFiles([]);
+      await expect(page.locator('#documents-error')).toHaveCount(0);
+      await expect(files).not.toHaveAttribute('aria-invalid', 'true');
+      await expect(files).toBeFocused();
+    });
+  }
+
   test('guided form blocks step progression until required contact fields are complete', async ({ page }) => {
     await openAssistance(page);
 

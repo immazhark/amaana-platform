@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 import { assistanceSchema, createReferenceNumber, createTrackingToken, hashTrackingToken } from "@/lib/assistance";
 import { RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { prisma } from "@/lib/prisma";
-import { deletePrivateDocumentObject, MAX_FILE_BYTES, MAX_FILES, uploadPrivateDocument } from "@/lib/storage";
+import { deletePrivateDocumentObject, MAX_FILE_BYTES, MAX_FILES, PrivateDocumentValidationError, uploadPrivateDocument } from "@/lib/storage";
 import { validateProductionEnvironment } from "@/lib/env";
 import { enforceAssistanceRateLimit, isSameOrigin } from "@/lib/request-security";
 import { logServerError } from "@/lib/server-log";
@@ -45,7 +45,7 @@ export async function POST(request: Request) {
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json(
-          { error: "The assistance submission is too large. Upload no more than five documents of up to 5 MB each." },
+          { error: "The assistance submission is too large. Upload no more than five documents of up to 5 MB each.", fields: { documents: ["Upload no more than five documents of up to 5 MB each."] } },
           { status: 413, headers: privateHeaders },
         );
       }
@@ -66,17 +66,17 @@ export async function POST(request: Request) {
         // Allow the browser's empty optional file placeholder, not a forged
         // textual document field that would silently lose applicant evidence.
         if (entry === "") continue;
-        return NextResponse.json({ error: "Each supporting document must be a file." }, { status: 400, headers: privateHeaders });
+        return NextResponse.json({ error: "Each supporting document must be a file.", fields: { documents: ["Each supporting document must be a file."] } }, { status: 400, headers: privateHeaders });
       }
       if (entry.size === 0) {
         // An untouched optional file input can produce an empty unnamed File.
         if (!entry.name) continue;
-        return NextResponse.json({ error: "A supporting document is empty. Please choose a valid file." }, { status: 400, headers: privateHeaders });
+        return NextResponse.json({ error: "A supporting document is empty. Please choose a valid file.", fields: { documents: ["Choose a non-empty supporting file."] } }, { status: 400, headers: privateHeaders });
       }
       files.push(entry);
     }
     if (files.length > MAX_FILES) {
-      return NextResponse.json({ error: `You can upload up to ${MAX_FILES} documents.` }, { status: 400, headers: privateHeaders });
+      return NextResponse.json({ error: `You can upload up to ${MAX_FILES} documents.`, fields: { documents: [`You can upload up to ${MAX_FILES} documents.`] } }, { status: 400, headers: privateHeaders });
     }
 
     const id = randomUUID();
@@ -186,12 +186,18 @@ export async function POST(request: Request) {
           logServerError("assistance.private_document_cleanup_failed", { documentIndex: index });
         }
       });
+      if (!persistenceAttempted && submissionError instanceof PrivateDocumentValidationError) {
+        return NextResponse.json(
+          { error: "Please check the supporting documents.", fields: { documents: [submissionError.message] } },
+          { status: 400, headers: privateHeaders },
+        );
+      }
       throw submissionError;
     }
   } catch {
     logServerError("assistance.submission_failed");
     return NextResponse.json(
-      { error: "We could not securely submit your request. Please try again later." },
+      { error: "We could not confirm whether your request was recorded. Contact Amaana before submitting again.", submissionUncertain: true },
       { status: 500, headers: privateHeaders },
     );
   }

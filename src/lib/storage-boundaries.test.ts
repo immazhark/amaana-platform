@@ -8,6 +8,7 @@ import {
   uploadCuratedPublicMediaFile,
   uploadPrivateDocument,
   uploadPublicMediaFile,
+  PrivateDocumentValidationError,
 } from "./storage";
 
 const sdk = vi.hoisted(() => ({ create: vi.fn(), send: vi.fn(), sign: vi.fn() }));
@@ -49,6 +50,26 @@ beforeEach(() => {
   vi.stubEnv("MEDIA_S3_SECRET_ACCESS_KEY", "");
 });
 afterEach(() => { vi.unstubAllEnvs(); });
+
+describe("private document rejection classification", () => {
+  it.each([
+    ["unsupported type", () => new File([bytes], "synthetic.txt", { type: "text/plain" })],
+    ["oversized file", () => new File([new Uint8Array(5 * 1024 * 1024 + 1)], "synthetic.pdf", { type: "application/pdf" })],
+    ["forged PDF signature", () => new File(["not a PDF"], "synthetic.pdf", { type: "application/pdf" })],
+  ] as const)("classifies %s as a correctable rejection before storage access", async (_name, createFile) => {
+    await expect(uploadPrivateDocument(createFile(), "request-123")).rejects.toBeInstanceOf(PrivateDocumentValidationError);
+    expect(sdk.create).not.toHaveBeenCalled();
+    expect(sdk.send).not.toHaveBeenCalled();
+  });
+
+  it("does not mistake a storage outage for an invalid applicant file", async () => {
+    const outage = new Error("storage acknowledgement lost");
+    sdk.send.mockRejectedValueOnce(outage);
+    await expect(uploadPrivateDocument(file(), "request-123")).rejects.toBe(outage);
+    expect(outage).not.toBeInstanceOf(PrivateDocumentValidationError);
+    expect(sdk.send).toHaveBeenCalledOnce();
+  });
+});
 
 describe("public/private storage configuration boundary", () => {
   const operations = [
