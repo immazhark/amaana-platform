@@ -190,6 +190,27 @@ test.describe('checkout rejects malformed successful order responses', () => {
   }
 });
 
+test('R-041 both donation methods use whole-rupee text controls instead of number spinners', async ({ page }) => {
+  await openMethodFixture(page, 'Secure online payment');
+  const online = page.getByLabel(/Donation amount/);
+  await expect(online).toHaveAttribute('type', 'text');
+  await expect(online).toHaveAttribute('inputmode', 'numeric');
+  await expect(online).toHaveAttribute('pattern', '[0-9]+');
+  await online.fill('12.50');
+  expect(await online.evaluate(input => input.checkValidity())).toBe(false);
+  await online.fill('250');
+  expect(await online.evaluate(input => input.checkValidity())).toBe(true);
+  await page.getByRole('button', { name: 'Direct UPI / QR', exact: true }).click();
+  const transfer = page.getByLabel('Amount (INR)');
+  await expect(transfer).toHaveAttribute('type', 'text');
+  await expect(transfer).toHaveAttribute('inputmode', 'numeric');
+  await expect(transfer).toHaveAttribute('pattern', '[0-9]+');
+  await transfer.fill('12.50');
+  expect(await transfer.evaluate(input => input.checkValidity())).toBe(false);
+  await transfer.fill('250');
+  expect(await transfer.evaluate(input => input.checkValidity())).toBe(true);
+});
+
 test('assistance errors are linked before keyboard focus reaches invalid input', async ({ page }) => {
   await openAssistance(page);
   await page.evaluate(() => {
