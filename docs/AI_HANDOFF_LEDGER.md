@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-066 Stories dead base declarations
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent 30ded17573cf876c344cd5701d12848b744f1e28. Removed six earlier unscoped declarations entirely superseded by later identical-specificity unscoped rules: feature grid grid-template-columns and gap; feature paragraph margin and line-height; story grid gap and margin-top. Preserved later winners and every selector and order, plus unaffected base properties. Exact before/after source preconditions verified. This is source-level cascade reasoning, not rendered browser equivalence or actual lint success. Duplicate selector exemption remains; R-066 PARTIAL. No main merge, deployment, payment or live data.
+
 ## 2026-10-14 IST — R-066 Stories overwritten H2 declaration
 
 Ownership: REVIEW_PENDING. PR #292 / fix/direct-transfer-feedback-20261013; parent 80b4d7d0f5facc3eeeef88127f36477790c7303b. Source inspection found the early .v2-stories-feature-copy h2 font-size clamp(3rem,5.5vw,3.5rem) fully superseded by a later same-specificity unscoped rule clamp(2.5rem,4.3vw,3.5rem). Remove only the earlier overwritten font-size declaration; preserve the later winning declaration and all other values, selectors and relative order. Does not resolve duplicate selectors or remove the scoped Stylelint exception. Source preconditions pass; rendered browser, lint and cascade matrices have not been executed. R-066 remains partial. No merge/deploy/provider operations.
