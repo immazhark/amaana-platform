@@ -45,7 +45,16 @@ const securityHeaders = [
   ...(!allowPublicIndexing ? [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }] : []),
 ];
 
-const noStoreHeaders = [{ key: "Cache-Control", value: "private, no-store, max-age=0" }];
+// Private documents must protect legacy query credentials before metadata/hydration.
+// Keep this policy independent of the public site's indexing switch.
+const noStoreHeaders = [
+  { key: "Cache-Control", value: "private, no-store, max-age=0" },
+  { key: "Referrer-Policy", value: "no-referrer" },
+];
+const privateRecordHeaders = [
+  ...noStoreHeaders,
+  { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+];
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -75,11 +84,13 @@ const nextConfig: NextConfig = {
       { source: "/programme-artwork/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
       { source: "/brand/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
       { source: "/(.*)", headers: securityHeaders },
-      { source: "/api/:path*", headers: noStoreHeaders },
-      { source: "/admin/:path*", headers: noStoreHeaders },
+      { source: "/api/:path*", headers: privateRecordHeaders },
+      { source: "/admin/:path*", headers: privateRecordHeaders },
       { source: "/donate/:path*", headers: noStoreHeaders },
-      { source: "/donations/:path*", headers: noStoreHeaders },
+      { source: "/donations/:path*", headers: privateRecordHeaders },
       { source: "/request-assistance/:path*", headers: noStoreHeaders },
+      { source: "/request-assistance/received", headers: privateRecordHeaders },
+      { source: "/request-assistance/status", headers: privateRecordHeaders },
     ];
   },
 };

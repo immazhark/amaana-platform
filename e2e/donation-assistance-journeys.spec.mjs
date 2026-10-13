@@ -1462,3 +1462,42 @@ test('legacy query donation acknowledgement token is scrubbed from the visible U
   expect(page.url()).toBe(`http://127.0.0.1:3000/donations/${reference}/acknowledgement`);
   expect(page.url()).not.toContain(token);
 });
+
+for (const [label, payload] of [['null', null], ['incomplete found record', { found: true }], ['object-valued status', { found: true, status: {} }]]) {
+  for (const kind of ['donation', 'assistance']) {
+    test(`private ${kind} record keeps malformed ${label} response in read-only recovery`, async ({ page }) => {
+      await mockAnalytics(page);
+      const reference = 'AFD-2026-READ-RECOVERY';
+      const token = 'synthetic-read-token-1234567890';
+      const errors = [];
+      const writes = [];
+      let reads = 0;
+      page.on('pageerror', error => errors.push(error.message));
+      page.on('request', request => {
+        if (request.method() === 'POST' && /\/api\/(donations\/(order|confirm|direct-transfer)|assistance)$/.test(new URL(request.url()).pathname)) {
+          writes.push(request.url());
+        }
+      });
+      const endpoint = kind === 'donation' ? '/api/donations/acknowledgement' : '/api/assistance/status';
+      await page.route(`**${endpoint}`, async route => {
+        reads += 1;
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(payload) });
+      });
+      const path = kind === 'donation' ? `/donations/${reference}/acknowledgement` : '/request-assistance/status';
+      const fragment = kind === 'donation' ? `token=${token}` : `reference=${reference}&token=${token}`;
+      const response = await page.goto(`${path}#${fragment}`);
+      expect(response?.headers()['referrer-policy']).toBe('no-referrer');
+      expect(response?.headers()['x-robots-tag']).toBe('noindex, nofollow, noarchive');
+      expect(response?.headers()['cache-control']).toContain('no-store');
+      const heading = kind === 'donation' ? 'Unable to open your acknowledgement.' : 'Unable to check your request';
+      await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+      expect(new URL(page.url()).hash).toBe('');
+      expect(new URL(page.url()).search).toBe('');
+      await page.getByRole('button', { name: kind === 'donation' ? 'Try again' : 'Try tracking again', exact: true }).click();
+      await expect.poll(() => reads).toBe(2);
+      await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+      expect(writes).toEqual([]);
+      expect(errors).toEqual([]);
+    });
+  }
+}

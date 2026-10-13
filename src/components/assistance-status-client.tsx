@@ -4,15 +4,7 @@ import Link from "@/components/navigation-link";
 import { useEffect, useState } from "react";
 import type { PrivateTrackingCredentials } from "@/lib/private-tracking";
 import { usePrivateTrackingCredentials } from "@/lib/use-private-tracking-credentials";
-
-type TrackingRecord = {
-  found: true;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type TrackingResponse = TrackingRecord | { found: false };
+import { isTrackingResponse, type TrackingRecord } from "@/lib/private-record-response";
 
 const statusLabels: Record<string, string> = {
   SUBMITTED: "Submitted",
@@ -58,7 +50,9 @@ export function AssistanceStatusClient() {
     })
       .then(async response => {
         if (!response.ok) throw new Error("Tracking service unavailable");
-        return await response.json() as TrackingResponse;
+        const result: unknown = await response.json();
+        if (!isTrackingResponse(result)) throw new Error("Invalid tracking response");
+        return result;
       })
       .then(response => { if (!controller.signal.aborted) setResult({ credentials, record: response.found ? response : null, failed: false }); })
       .catch(error => {
@@ -74,8 +68,11 @@ export function AssistanceStatusClient() {
     : result?.failed
       ? "Unable to check your request"
       : record
-      ? statusLabels[record.status] ?? record.status
+      ? (Object.hasOwn(statusLabels, record.status) ? statusLabels[record.status] : record.status)
       : "Tracking link unavailable";
 
-  return <div className="v2-home v2-state-page"><section className="v2-state-hero"><div className="v2-shell v2-state-grid" aria-busy={loading}><div><p className="v2-section-label">Private request tracking</p><h1 aria-live="polite" aria-atomic="true">{title}</h1>{loading ? <p>Confirming the private tracking details in this browser.</p> : result?.failed ? <p>We could not reach the tracking service. Your link has been kept privately in this tab. Try again without submitting a new request.</p> : record ? <><p>{statusCopy[record.status] ?? "Your request status has been updated."}</p><div className="v2-reference-block"><span>Reference</span><strong>{credentials?.reference}</strong><small>Submitted {new Date(record.createdAt).toLocaleDateString("en-IN", { dateStyle: "long" })} · Last updated {new Date(record.updatedAt).toLocaleDateString("en-IN", { dateStyle: "long" })}</small></div></> : <p>This tracking link is incomplete, invalid or no longer available. For privacy, no request details are shown without a valid reference and token.</p>}<div className="v2-hero-actions">{loading ? null : result?.failed ? <button className="v2-button" type="button" onClick={() => { setResult(undefined); setRetry(value => value + 1); }}>Try tracking again</button> : record ? <Link className="v2-button" href="/contact">Contact Amaana</Link> : <Link className="v2-button" href="/request-assistance">Start a new request</Link>}<Link className="v2-text-link" href="/how-we-verify">Understand the review process →</Link></div></div><aside className="v2-state-steps"><span>Review path</span><ol><li><b>01</b><div><strong>Submitted</strong><p>Request and consent recorded.</p></div></li><li><b>02</b><div><strong>Verification</strong><p>Details and relevant supporting information reviewed.</p></div></li><li><b>03</b><div><strong>Decision</strong><p>Outcome communicated without exposing private material.</p></div></li></ol></aside></div></section></div>;
+  const summary = record && Object.hasOwn(statusCopy, record.status)
+    ? statusCopy[record.status] : "Your request status has been updated.";
+
+  return <div className="v2-home v2-state-page"><section className="v2-state-hero"><div className="v2-shell v2-state-grid" aria-busy={loading}><div><p className="v2-section-label">Private request tracking</p><h1 aria-live="polite" aria-atomic="true">{title}</h1>{loading ? <p>Confirming the private tracking details in this browser.</p> : result?.failed ? <p>We could not reach the tracking service. Your link has been kept privately in this tab. Try again without submitting a new request.</p> : record ? <><p>{summary}</p><div className="v2-reference-block"><span>Reference</span><strong>{credentials?.reference}</strong><small>Submitted {new Date(record.createdAt).toLocaleDateString("en-IN", { dateStyle: "long" })} · Last updated {new Date(record.updatedAt).toLocaleDateString("en-IN", { dateStyle: "long" })}</small></div></> : <p>This tracking link is incomplete, invalid or no longer available. For privacy, no request details are shown without a valid reference and token.</p>}<div className="v2-hero-actions">{loading ? null : result?.failed ? <button className="v2-button" type="button" onClick={() => { setResult(undefined); setRetry(value => value + 1); }}>Try tracking again</button> : record ? <Link className="v2-button" href="/contact">Contact Amaana</Link> : <Link className="v2-button" href="/request-assistance">Start a new request</Link>}<Link className="v2-text-link" href="/how-we-verify">Understand the review process →</Link></div></div><aside className="v2-state-steps"><span>Review path</span><ol><li><b>01</b><div><strong>Submitted</strong><p>Request and consent recorded.</p></div></li><li><b>02</b><div><strong>Verification</strong><p>Details and relevant supporting information reviewed.</p></div></li><li><b>03</b><div><strong>Decision</strong><p>Outcome communicated without exposing private material.</p></div></li></ol></aside></div></section></div>;
 }

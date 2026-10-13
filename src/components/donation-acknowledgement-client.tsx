@@ -5,29 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { PrintButton } from "@/components/print-button";
 import { donationIntentLabel } from "@/lib/donation-intent";
 import { parsePrivateDonationAcknowledgementLocation } from "@/lib/private-donation-ack";
+import { isAcknowledgementResponse, type AcknowledgementRecord } from "@/lib/private-record-response";
 
-type AcknowledgementRecord = {
-  found: true;
-  presentation: {
-    tone: "captured" | "pending" | "failed" | "refunded";
-    heading: string;
-    summary: string;
-    statusLabel: string;
-  };
-  donation: {
-    referenceNumber: string;
-    receiptNumber: string | null;
-    donorName: string;
-    givingIntent: string;
-    amount: number;
-    refundedAmount: number;
-    recordDate: string;
-    providerPaymentId: string | null;
-    appeal: { title: string; slug: string };
-  };
-};
-
-type AcknowledgementResponse = AcknowledgementRecord | { found: false };
 const formatINR = (amount: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 
 export function DonationAcknowledgementClient({ reference }: { reference: string }) {
@@ -36,6 +15,7 @@ export function DonationAcknowledgementClient({ reference }: { reference: string
   const credential = useRef<[string, string | null]>([reference, null]);
 
   useEffect(() => {
+    let active = true;
     let controller: AbortController | undefined;
     const frame = window.requestAnimationFrame(() => {
       setRecord(undefined);
@@ -61,15 +41,18 @@ export function DonationAcknowledgementClient({ reference }: { reference: string
       })
         .then(async response => {
           if (response.status >= 500 || response.status === 429) throw new Error();
-          return response.ok ? await response.json() as AcknowledgementResponse : { found: false } as AcknowledgementResponse;
+          const result: unknown = response.ok ? await response.json() : { found: false };
+          if (!isAcknowledgementResponse(result, reference)) throw new Error("Invalid acknowledgement response");
+          return result;
         })
-        .then(result => setRecord(result.found ? result : null))
+        .then(result => { if (active) setRecord(result.found ? result : null); })
         .catch(error => {
-          if (error?.name !== "AbortError") setRecord("error");
+          if (active && error?.name !== "AbortError") setRecord("error");
         });
     });
 
     return () => {
+      active = false;
       window.cancelAnimationFrame(frame);
       controller?.abort();
     };
