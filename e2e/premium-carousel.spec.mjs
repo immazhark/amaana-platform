@@ -71,6 +71,21 @@ for (const width of [390, 1440]) {
   });
 }
 
+for (const width of [1440, 1920]) {
+  test(`R-025 wide canonical article heading uses readable leading at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
+    const headings = page.locator('.canonical-article .canonical-block h2');
+    await expect(headings.first()).toBeVisible();
+    const ratios = await headings.evaluateAll(nodes => nodes.map(node => {
+      const style = getComputedStyle(node);
+      return parseFloat(style.lineHeight) / parseFloat(style.fontSize);
+    }));
+    expect(ratios.length).toBeGreaterThan(0);
+    for (const ratio of ratios) expect(ratio).toBeGreaterThanOrEqual(1.1);
+  });
+}
+
 test('homepage canonical fallbacks load and functional controls contain SVG rather than glyphs', async ({ page, request }) => {
   for (const name of ['origin', 'eid', 'medical', 'taleem', 'qurbani']) {
     const response = await request.get(`/hero/${name}.webp`);
