@@ -1,3 +1,13 @@
+## 2026-10-14 IST — R-009 remaining JSON-LD surfaces completed
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent fee578a0c644549b6a2102946fc7079f508a6597. Owner cx authorized source continuation; no concurrent writer.
+
+R-009 source gap: Organization, Breadcrumb and Appeal JSON-LD still independently escaped only less-than, while PublicContent used the existing complete serializer. Replace all three with serializeStructuredData from src/lib/structured-data.ts. All four JSON-LD rendering components now escape less-than, greater-than, ampersand and U+2028/U+2029 consistently. Existing less-than escaping already prevented HTML script termination; this is completion of the audited broader escaping requirement, not a newly demonstrated XSS exploit.
+
+Five actual-component render regressions retain real React/server output and actual serializer. Three sensitive-character cases fail against original components; corrected output passes JSON round-trip, graph identity, canonical breadcrumb/donation targets, sensitive-appeal redaction and closed-appeal action omission. No canonical content, figures or payment execution changes.
+
+Validation: nine focused JSON-LD tests pass; full unit/API suite 949 passed, nine database-dependent skipped (102 suites passed, one skipped). TypeScript, focused zero-warning ESLint and diff checks pass. Clean compile-mode build passes; JS 810840/819200 bytes and CSS 346256/348160 bytes. Client-secret/static-image guards and actual emitted route report pass. This does not certify full prerender, hosted database/browser or production rollout. Parent CI38449403934 plan/fast/readiness passed, production/browser/database running at last check. No main merge, deployment or real money/mail/data/storage operations. R-009 source occurrences are covered, deployment closure pending. Next: inspect exact-new-head acceptance and continue remaining original register items. Atomic batch complete; no active implementation writer.
+
 ## 2026-10-14 IST — R-054 Our Work thumbnail slot correction
 
 Ownership: REVIEW_PENDING. Completed atomic continuation on PR #292 / fix/direct-transfer-feedback-20261013, parent 8bb927bb86834018924abbd1371c19899deecb08. Owner cx authorized same-branch implementation. No concurrent writer.

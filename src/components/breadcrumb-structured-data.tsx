@@ -1,3 +1,5 @@
+import { serializeStructuredData } from "@/lib/structured-data";
+
 type BreadcrumbItem = {
   name: string;
   path: string;
@@ -16,5 +18,5 @@ export function BreadcrumbStructuredData({ items }: { items: BreadcrumbItem[] })
     })),
   };
 
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />;
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeStructuredData(data) }} />;
 }

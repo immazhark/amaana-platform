@@ -1,3 +1,5 @@
+import { serializeStructuredData } from "@/lib/structured-data";
+
 export function StructuredData() {
   const siteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org").replace(/\/$/, "");
   const data = {
@@ -43,5 +45,5 @@ export function StructuredData() {
     ],
   };
 
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />;
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeStructuredData(data) }} />;
 }
