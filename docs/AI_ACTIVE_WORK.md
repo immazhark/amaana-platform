@@ -1,3 +1,13 @@
+## 2026-10-13 — Razorpay response and stale lifecycle follow-up
+
+Ownership: REVIEW_PENDING, existing PR #292 / fix/direct-transfer-feedback-20261013. After prior CI run 38421782865 passed, authorized cx continuation published additional source and focused browser regressions. The latest source-and-test head is cc879889bae53caf4d73f37b9df89d5b7ffd4d37; its hosted CI 38429321925 was pending when checked. Do not substitute prior green CI for this source.
+
+N-32 follow-up: 7d573db protects checkout UI after unmount using the existing form DOM connection check in phase changes, feedback and order-attempt ownership. It prevents a late order response from opening Razorpay after leaving, and prevents a late valid payment confirmation from navigating an unmounted component. Importantly, the Razorpay handler still POSTs payment verification after unmount. e6c270b adds an actual-component regression that triggers a paid callback after switching methods and verifies confirmation without stale navigation.
+
+N-33 follow-up: d1e6861 bounds and filters untrusted online-order field-error arrays to renderable strings, validates the suggested remaining amount and avoids empty error feedback. Previously an object-valued field error could reach React rendering. cc879889 adds three malformed error response and one linked legitimate field-feedback Playwright cases.
+
+Combined new browser regressions this continuation: 11 (six malformed successful orders from previous batch, one lifecycle, four failure-response validation). No local repository checkout was available to run the browser/build/type suite; hosted final-head CI, JavaScript budget, and responsive browser checks remain required. No original historical 95-row audit closures inferred. No production payments, emails or data writes; no merge/deployment. No active writer at this checkpoint.
+
 ## 2026-10-13 — Razorpay order response runtime boundary
 
 Ownership: REVIEW_PENDING after user-authorized cx continuation of PR #292. Parent abe0876 passed hosted CI run 38421782865. Source commit 44aeeef guards successful order responses before Razorpay construction: HTTP 201, valid order identity, exact submitted paise amount, INR currency, recognized key shape, bounded receipt credential and usable donor details. Malformed successful responses preserve form values, enter reconciliation and disable another order attempt. Existing payment-reported attempt guards remain. Six rendered browser regressions added in 836dbb4 for invalid success payloads. Hosted browser/build/JS budget acceptance on this newer head is pending, so no original 95-audit closure is claimed. No merge/deployment/live payment or production data write. No implementation writer remains active after this batch.
