@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-066 Stories narrow wide-card overridden min-height
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013; parent f416fa4feab12ebec2e3d18f60f2e317a0969799. Within max-width:620px, retain the shared 1fr grid-template-columns declaration for ordinary and wide cards but scope min-height:auto to ordinary .v2-stories-card only. Wide cards previously inherited min-height:auto in the media rule, but a later same-specificity unscoped .v2-stories-card.wide min-height:25rem takes precedence; removing the overwritten media declaration preserves the winner. No color, artwork, layout order or intentional responsive value changed. Browser/cascade and lint validation remain pending. R-066 partial and duplicate-selector exception retained. No merge/deploy/payment/data changes.
+
 ## 2026-10-14 IST — R-066 Stories 900px redundant wide-card selector
 
 Ownership: REVIEW_PENDING. PR #292 / fix/direct-transfer-feedback-20261013; parent e11c7c0d3a9d6edc8ae14a0060ec7655a7b949d1. Removed .v2-stories-card.wide from the max-width:900px grid-column:span 12 override selector list, retaining the .v2-stories-card match there. The base .v2-stories-card.wide rule already establishes grid-column:span 12; thus at <=900px the winning wide-card column remains unchanged while ordinary cards still expand to twelve columns. Narrower 620px layout untouched. Source checks only, not actual browser/cascade equivalence. R-066 partial; Stylelint Stories duplicate-selector exemption remains. No merge, deploy, payments or live production data.
