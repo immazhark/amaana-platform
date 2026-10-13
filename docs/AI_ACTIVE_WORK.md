@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-066 Stories ethics list overridden base padding
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013; parent 0d0c14be1ad4d0f32c602ba6b3166e37ac9d5879. Removed early unscoped .v2-stories-ethic-list article padding:1.6rem 0, overridden by later same-specificity unscoped padding:1.25rem 0. Preserve all other properties, responsive grid rules and source ordering. Exact winner/precondition checks performed. No full cascade/browser, lint or build execution; R-066 remains PARTIAL and scoped Stylelint duplicate-selector exception remains. No merge/deploy/payment/production data action.
+
 ## 2026-10-14 IST — R-066 Stories narrow wide-card overridden min-height
 
 Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013; parent f416fa4feab12ebec2e3d18f60f2e317a0969799. Within max-width:620px, retain the shared 1fr grid-template-columns declaration for ordinary and wide cards but scope min-height:auto to ordinary .v2-stories-card only. Wide cards previously inherited min-height:auto in the media rule, but a later same-specificity unscoped .v2-stories-card.wide min-height:25rem takes precedence; removing the overwritten media declaration preserves the winner. No color, artwork, layout order or intentional responsive value changed. Browser/cascade and lint validation remain pending. R-066 partial and duplicate-selector exception retained. No merge/deploy/payment/data changes.
