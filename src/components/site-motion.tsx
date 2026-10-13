@@ -29,14 +29,19 @@ export function SiteMotion() {
     const feedback = (element: HTMLElement, pressed = false) => {
       if (preference.matches) { clear(element); return; }
       if (disposed || !element.isConnected) return;
+      // Snapshot the displayed frame before cancelling a running animation.
+      // Otherwise rapid hover/press transitions jump back to the base style.
+      const rendered = getComputedStyle(element);
+      const fromTranslate = rendered.translate;
+      const fromScale = rendered.scale;
       running.get(element)?.cancel();
       const raised = element.matches(":hover, :focus-visible");
       owned.add(element);
       const endTranslate = raised && !pressed ? "0 -1px" : "0 0px";
       const endScale = pressed ? "0.98" : "1";
       const animation = element.animate({
-        translate: [getComputedStyle(element).translate, endTranslate],
-        scale: [getComputedStyle(element).scale, endScale],
+        translate: [fromTranslate, endTranslate],
+        scale: [fromScale, endScale],
       }, { duration: pressed ? 100 : 220, easing, fill: "forwards" });
       running.set(element, animation);
       void animation.finished.then(() => {
