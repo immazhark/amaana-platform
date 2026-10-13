@@ -126,6 +126,19 @@ async function updateGallery(page, update) {
   }, update);
 }
 
+test('duplicate media IDs never alias thumbnails or open the wrong photograph', async ({ page }) => {
+  await openGallery(page, 390);
+  await updateGallery(page, { action: 'duplicate-id' });
+  await expect(page.getByRole('button', { name: /Enlarge image/ })).toHaveCount(13);
+  const first = page.getByRole('button', { name: /^Enlarge image 1 of 13:/ });
+  await first.click();
+  await expect(page.getByRole('dialog')).toHaveAccessibleName(/^Image 1 of 13: Synthetic acceptance photograph 1$/);
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('dialog')).toHaveAccessibleName(/^Image 2 of 13: Synthetic acceptance photograph 2$/);
+  await page.keyboard.press('Escape');
+  await expect(first).toBeFocused();
+});
+
 test('gallery reorder preserves selected identity and restores its new thumbnail position', async ({ page }) => {
   await openGallery(page, 390);
   await page.getByRole('button', { name: /^Enlarge image 2 of 13:/ }).click();
