@@ -54,6 +54,53 @@ describe("captureDonation", () => {
     }));
   });
 
+  it.each([
+    ["DIRECT_UPI", null],
+    ["BANK_TRANSFER", "RAZORPAY"],
+    ["RAZORPAY", "CASHFREE"],
+  ])("rejects payment capture bound to method %s and provider %s", async (paymentMethod, provider) => {
+    mocks.txDonationFindUnique.mockResolvedValueOnce({
+      id: "donation_provider_mismatch",
+      currency: "INR",
+      paymentMethod,
+      provider,
+      amount: decimal(500),
+      status: "CREATED",
+      providerPaymentId: null,
+    });
+
+    await expect(captureDonation("order_123", "pay_123", 50_000))
+      .rejects.toThrow("Payment does not match donation order");
+    expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("keeps legacy Razorpay rows with an unset provider label eligible for idempotent replay", async () => {
+    mocks.txDonationFindUnique
+      .mockResolvedValueOnce({
+        id: "donation_legacy",
+        currency: "INR",
+        paymentMethod: "RAZORPAY",
+        provider: null,
+        amount: decimal(500),
+        status: "CAPTURED",
+        providerPaymentId: "pay_legacy",
+        receiptTokenHash: "hash",
+      })
+      .mockResolvedValueOnce({ status: "CAPTURED", providerPaymentId: "pay_legacy" });
+    mocks.txDonationUpdateMany.mockResolvedValueOnce({ count: 0 });
+
+    await expect(captureDonation("order_legacy", "pay_legacy", 50_000))
+      .resolves.toMatchObject({
+        donationId: "donation_legacy",
+        status: "CAPTURED",
+        providerPaymentId: "pay_legacy",
+      });
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
   it("fails closed before mutation when a captured amount is not a safe positive integer", async () => {
     mocks.txDonationFindUnique.mockResolvedValue({
       id: "donation_unsafe",
