@@ -45,6 +45,11 @@ describe("production environment safety", () => {
     expect(() => validateProductionEnvironment()).toThrow(/Production canonical origin/);
   });
 
+  it("rejects a canonical production URL with embedded credentials", () => {
+    process.env.NEXT_PUBLIC_APP_URL = "https://user:password@amaanafoundation.org";
+    expect(() => validateProductionEnvironment()).toThrow(/without embedded credentials/);
+  });
+
   it("rejects public media stored in the private assistance bucket", () => {
     process.env.PUBLIC_MEDIA_S3_BUCKET = process.env.S3_BUCKET;
     expect(() => validateProductionEnvironment()).toThrow(/separate bucket/);
@@ -53,6 +58,22 @@ describe("production environment safety", () => {
   it("rejects a non-HTTPS public media origin", () => {
     process.env.PUBLIC_MEDIA_BASE_URL = "http://media.example.com";
     expect(() => validateProductionEnvironment()).toThrow(/Public media URL must use HTTPS/);
+  });
+
+
+  it("rejects public media URLs with embedded credentials", () => {
+    process.env.PUBLIC_MEDIA_BASE_URL = "https://user:password@media.example.com/gallery";
+    expect(() => validateProductionEnvironment()).toThrow(/without embedded credentials/);
+  });
+
+  it("rejects a configured donation QR URL that is not HTTPS", () => {
+    process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL = "http://payments.example.com/amaana-qr.png";
+    expect(() => validateProductionEnvironment()).toThrow(/Donation QR URL must use HTTPS/);
+  });
+
+  it("rejects donation QR URLs carrying embedded credentials", () => {
+    process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL = "https://user:password@payments.example.com/qr.png";
+    expect(() => validateProductionEnvironment()).toThrow(/without embedded credentials/);
   });
 
   it("keeps delivery disabled when the mode is omitted", () => {
@@ -76,6 +97,20 @@ describe("production environment safety", () => {
     process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID = "rzp_live_example";
 
     expect(() => validateProductionEnvironment()).toThrow(/Razorpay test key/);
+  });
+
+  it("does not send live emails from staging even when the notification cron bypasses schema validation", () => {
+    process.env.APP_ENVIRONMENT = "staging";
+    process.env.EMAIL_DELIVERY_MODE = "live";
+
+    expect(isEmailDeliveryEnabled()).toBe(false);
+  });
+
+  it("does not enable live emails for an unexpected environment value", () => {
+    process.env.APP_ENVIRONMENT = "unknown";
+    process.env.EMAIL_DELIVERY_MODE = "live";
+
+    expect(isEmailDeliveryEnabled()).toBe(false);
   });
 
   it("rejects enabled email delivery in staging", () => {

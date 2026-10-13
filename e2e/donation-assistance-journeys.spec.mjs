@@ -89,6 +89,55 @@ async function openAssistance(page) {
   await expect(page.getByRole('heading', { name: 'Tell us about the request.' })).toBeVisible();
 }
 
+test('assistance errors are linked before keyboard focus reaches invalid input', async ({ page }) => {
+  await openAssistance(page);
+  await page.evaluate(() => {
+    window.__amaanaInvalidFocusLinked = null;
+    document.addEventListener('focusin', (event) => {
+      if (event.target instanceof HTMLInputElement && event.target.name === 'applicantName' && event.target.getAttribute('aria-invalid') === 'true') {
+        const describedBy = event.target.getAttribute('aria-describedby');
+        window.__amaanaInvalidFocusLinked = Boolean(describedBy && document.getElementById(describedBy));
+      }
+    });
+  });
+  await page.getByRole('button', { name: 'Continue to need →' }).click();
+  await expect(page.getByLabel('Applicant name')).toBeFocused();
+  await expect.poll(() => page.evaluate(() => window.__amaanaInvalidFocusLinked)).toBe(true);
+});
+
+test('rapid assistance step changes leave focus on the currently visible step', async ({ page }) => {
+  await openAssistance(page);
+  await page.getByLabel('Applicant name').fill('Acceptance Applicant');
+  await page.getByLabel('Phone number').fill('9000000000');
+  await page.getByLabel('City').fill('Hyderabad');
+
+  await page.getByRole('button', { name: 'Continue to need →' }).click();
+  await page.getByRole('button', { name: /Contact/ }).click();
+
+  await expect(page.locator('#assistance-step-1')).toBeVisible();
+  await expect(page.locator('#assistance-step-2')).toBeHidden();
+  await expect(page.locator('#assistance-step-1')).toBeFocused();
+  await expect(page.getByRole('navigation', { name: 'Assistance request progress' }).locator('[aria-live="polite"]')).toContainText('Step 1 of 4');
+});
+
+test('assistance step validation announces required fields and moves focus', async ({ page }) => {
+  await openAssistance(page);
+  await page.getByRole('button', { name: 'Continue to need →' }).click();
+  const name = page.getByLabel('Applicant name');
+  await expect(name).toBeFocused();
+  await expect(name).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#name-error')).toBeVisible();
+  await expect(name).toHaveAttribute('aria-describedby', 'name-error');
+
+  await name.fill('Acceptance Applicant');
+  await expect(page.locator('#name-error')).toHaveCount(0);
+  await page.getByRole('button', { name: 'Continue to need →' }).click();
+  const phone = page.getByLabel('Phone number');
+  await expect(phone).toBeFocused();
+  await expect(phone).toHaveAttribute('aria-invalid', 'true');
+  await expect(page.locator('#phone-error')).toBeVisible();
+});
+
 async function fillAssistanceForm(page, { stopAtEvidence = false } = {}) {
   await page.getByLabel('Applicant name').fill('Acceptance Applicant');
   await page.getByLabel('Phone number').fill('9000000000');
@@ -111,6 +160,95 @@ async function finishAssistanceConfirmation(page) {
 
 // Release-candidate browser gate: keep this suite active whenever checkout or runtime hardening changes.
 test.describe('donation journey without real payment', () => {
+  for (const selectedIntent of ['GENERAL', 'SADAQAH', 'ZAKAT', null]) {
+    test(`rejected giving intention focuses ${selectedIntent ?? 'first radio when unchecked'}`, async ({ page }) => {
+      let orderCalls = 0;
+      await page.route('**/api/donations/order', route => {
+        orderCalls += 1;
+        return route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            error: 'Please review the giving intention.',
+            fields: { givingIntent: ['Choose a supported intention.'] },
+          }),
+        });
+      });
+      const submit = await openDonationFixture(page, 'dismiss');
+      await fillDonationForm(page);
+      if (selectedIntent) {
+        await page.locator(`input[name="givingIntent"][value="${selectedIntent}"]`).check();
+      } else {
+        await page.locator('form').evaluate(form => {
+          // Synthetic setup reaches the server-rejection fallback with no checked radio.
+          form.noValidate = true;
+          for (const radio of form.querySelectorAll('input[name="givingIntent"]')) radio.checked = false;
+        });
+      }
+      await submit.click();
+
+      const target = page.locator(`input[name="givingIntent"][value="${selectedIntent ?? 'GENERAL'}"]`);
+      await expect(target).toBeFocused();
+      const group = page.getByRole('group', { name: 'Giving intention', exact: true });
+      await expect(group).toHaveAttribute('aria-invalid', 'true');
+      await expect(group).toHaveAttribute('aria-describedby', 'giving-intent-error');
+      await expect(page.locator('#giving-intent-error')).toHaveText('Choose a supported intention.');
+      if (selectedIntent) await expect(target).toBeChecked();
+      else await expect(target).not.toBeChecked();
+      expect(orderCalls).toBe(1);
+    });
+  }
+
+  test('donation order validation focuses the rejected field, not only the summary', async ({ page }) => {
+    let orderCalls = 0;
+    await page.route('**/api/donations/order', async route => {
+      orderCalls += 1;
+      await route.fulfill({
+        status: 400,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          error: 'Please correct the highlighted donation details.',
+          fields: { donorEmail: ['Check the email address.'] },
+        }),
+      });
+    });
+    const submit = await openDonationFixture(page, 'dismiss');
+    await fillDonationForm(page);
+    await submit.click();
+
+    const email = page.getByLabel('Email');
+    await expect(email).toBeFocused();
+    await expect(email).toHaveAttribute('aria-invalid', 'true');
+    await expect(email).toHaveAttribute('aria-describedby', /donor-email-error/);
+    await expect(page.locator('#donor-email-error')).toHaveText('Check the email address.');
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('Please correct the highlighted donation details.');
+    expect(orderCalls).toBe(1);
+
+    await email.fill('corrected@example.test');
+    await expect(email).toBeFocused();
+    await expect(page.locator('#donor-email-error')).toHaveCount(0);
+    await expect(email).not.toHaveAttribute('aria-invalid', 'true');
+  });
+
+  test('invalid donation fields expose inline linked errors before checkout', async ({ page }) => {
+    let orderCalls = 0;
+    await page.route('**/api/donations/order', route => {
+      orderCalls += 1;
+      return route.fulfill({ status: 500, body: 'unexpected order request' });
+    });
+    const submit = await openDonationFixture(page, 'dismiss');
+    await submit.click();
+    const amount = page.getByLabel(/Donation amount/);
+    await expect(amount).toBeFocused();
+    await expect(amount).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#amount-error')).toBeVisible();
+    await expect(amount).toHaveAttribute('aria-describedby', /amount-error/);
+
+    await amount.fill('250');
+    await expect(page.locator('#amount-error')).toHaveCount(0);
+    expect(orderCalls).toBe(0);
+  });
+
   test('browser constraints require an allowed amount and domestic confirmation before checkout', async ({ page }) => {
     let orderCalls = 0;
     await page.route('**/api/donations/order', route => {
@@ -127,10 +265,16 @@ test.describe('donation journey without real payment', () => {
     await page.getByLabel('Full name').fill('Acceptance Donor');
     await page.getByLabel('Email').fill('acceptance@example.test');
 
-    expect(await amount.evaluate(input => ({ valid: input.validity.valid, rangeOverflow: input.validity.rangeOverflow }))).toEqual({
+    await expect(amount).toHaveAttribute('type', 'text');
+    await expect(amount).toHaveAttribute('inputmode', 'numeric');
+    expect(await amount.evaluate(input => ({ valid: input.validity.valid, message: input.validationMessage }))).toEqual({
       valid: false,
-      rangeOverflow: true,
+      message: 'Enter no more than ₹5,000.',
     });
+    for (const invalidValue of ['0', '1.5', '1e3', '-10']) {
+      await amount.fill(invalidValue);
+      expect(await amount.evaluate(input => input.checkValidity()), invalidValue).toBe(false);
+    }
 
     await amount.fill('250');
     expect(await domestic.evaluate(input => input.validity.valueMissing)).toBe(true);
@@ -387,7 +531,15 @@ test.describe('direct donation browser journey without real transfer', () => {
 
     await page.getByLabel('Full name').fill('Acceptance Donor');
     await page.getByLabel('Email').fill('acceptance@example.test');
-    await page.getByLabel('Amount (INR)').fill('250');
+    const transferAmount = page.getByLabel('Amount (INR)');
+    await expect(transferAmount).toHaveAttribute('type', 'text');
+    await expect(transferAmount).toHaveAttribute('inputmode', 'numeric');
+    for (const invalidValue of ['1e3', '1.5', '5001', '9']) {
+      await transferAmount.fill(invalidValue);
+      expect(await transferAmount.evaluate(input => input.checkValidity()), invalidValue).toBe(false);
+    }
+    await transferAmount.fill('250');
+    expect(await transferAmount.evaluate(input => input.checkValidity())).toBe(true);
     await page.getByLabel('UTR / transaction reference').fill('UTRACCEPT12345');
     await page.getByLabel('Transfer date and time').fill('2026-09-30T10:30');
     await page.locator('input[name="domesticConfirmed"]').check();

@@ -47,7 +47,7 @@ if (!apply) {
   const client = new S3Client({
     region: required('PUBLIC_MEDIA_S3_REGION'), endpoint: required('PUBLIC_MEDIA_S3_ENDPOINT'),
     forcePathStyle: process.env.PUBLIC_MEDIA_S3_FORCE_PATH_STYLE === 'true',
-    credentials: { accessKeyId: required('PUBLIC_MEDIA_S3_ACCESS_KEY_ID'), secretAccessKey: required('PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY') },
+    credentials: { accessKeyId: required('MEDIA_S3_ACCESS_KEY_ID'), secretAccessKey: required('MEDIA_S3_SECRET_ACCESS_KEY') },
   });
   const prisma = new PrismaClient();
   try {

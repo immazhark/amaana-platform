@@ -25,6 +25,7 @@ import {
   isManualAssistanceStatusAllowed,
 } from "@/lib/assistance";
 import { hasPermission, requirePermission } from "@/lib/auth";
+import { parsePositiveRupeeAmount } from "@/lib/amount-entry";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
@@ -35,11 +36,7 @@ const zakatStatuses = new Set<string>(ASSISTANCE_ZAKAT_STATUSES);
 const confidentialityLevels = new Set<string>(ASSISTANCE_CONFIDENTIALITY_LEVELS);
 
 function optionalPositiveAmount(value: FormDataEntryValue | null, field: string) {
-  const raw = String(value ?? "").trim();
-  if (!raw) return null;
-  const amount = Number(raw);
-  if (!Number.isFinite(amount) || amount <= 0 || amount > 10_000_000_000) throw new Error(`${field} must be a positive amount`);
-  return amount;
+  return parsePositiveRupeeAmount(String(value ?? ""), field, { optional: true });
 }
 
 function requiredEnum<T extends string>(value: FormDataEntryValue | null, allowed: Set<string>, field: string) {

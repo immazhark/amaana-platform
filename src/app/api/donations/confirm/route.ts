@@ -62,6 +62,7 @@ export async function POST(request: Request) {
     const payment = await fetchRazorpayPayment(input.razorpay_payment_id);
     const expectedAmountPaise = donation.amount.mul(100).toNumber();
     if (
+      payment.id !== input.razorpay_payment_id ||
       payment.order_id !== input.razorpay_order_id ||
       payment.currency !== "INR" ||
       !Number.isSafeInteger(expectedAmountPaise) ||
@@ -70,8 +71,12 @@ export async function POST(request: Request) {
       throw new Error("Payment verification mismatch");
     }
 
-    const isCaptured = payment.status === "captured" || payment.captured;
-    if (isCaptured) {
+    // Provider status and the captured flag must agree before changing money state.
+    if ((payment.status === "captured") !== (payment.captured === true)) {
+      throw new Error("Inconsistent payment capture state");
+    }
+
+    if (payment.status === "captured") {
       await captureDonation(payment.order_id, payment.id, payment.amount);
     } else if (payment.status === "authorized") {
       // A Razorpay order can be retried. A later authorized attempt may follow a

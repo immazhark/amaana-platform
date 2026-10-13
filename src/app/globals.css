@@ -10,6 +10,7 @@
   --af-color-navy-700: #2f4c7a;
   --af-color-blue-600: #466faa;
   --af-color-blue-soft: #e9eff8;
+  --af-color-blue-note: #eef3fa;
   --af-color-gold-500: #e0b318;
   --af-color-gold-soft: #f0d56b;
   --af-color-gold-ink: #604407;
@@ -199,7 +200,7 @@ textarea { min-height: 9rem; resize: vertical; }
 table { width: 100%; border-collapse: collapse; font-size: .9rem; }
 th, td { padding: .9rem 1rem; border-bottom: 1px solid var(--color-border); text-align: left; vertical-align: top; }
 th { background: #eaf2ee; font-size: .75rem; letter-spacing: .04em; text-transform: uppercase; }
-.status-badge { display: inline-block; padding: .3rem .55rem; border-radius: 999px; background: var(--color-accent-soft); color: #654714; font-size: .72rem; font-weight: 800; text-transform: capitalize; }
+.status-badge { display: inline-block; padding: .3rem .55rem; border-radius: 999px; background: var(--color-accent-soft); color: #654714; font-size: .75rem; font-weight: 800; text-transform: capitalize; }
 .empty-state { padding: 2rem; text-align: center; }
 .admin-detail-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(18rem, 25rem); gap: 1.25rem; align-items: start; }
 .details { display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; margin: 0; }
@@ -256,4 +257,4 @@ dd { margin: .25rem 0 0; white-space: pre-wrap; }
 
 @media (min-width: 1600px) { :root { --af-public-shell: 88rem; } }
 
-.admin-sidebar .text-button{color:#fffaf1}.admin-content .text-button{color:var(--af-color-gold-ink)}.admin-shell .eyebrow{color:var(--af-color-navy-700)}.admin-table-wrap:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
+.admin-sidebar .text-button{color:#fffaf1}.admin-content .text-button{color:var(--af-color-gold-ink)}.admin-content .eyebrow{color:var(--af-color-navy-700)}.admin-sidebar .eyebrow{color:var(--af-color-gold-soft)}.admin-table-wrap:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}

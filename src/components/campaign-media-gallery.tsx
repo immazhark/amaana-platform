@@ -4,6 +4,7 @@ import { UIIcon } from "./ui-icon";
 /* eslint-disable @next/next/no-img-element */
 
 import Image from "next/image";
+import { adjacentGalleryId } from "@/lib/gallery-selection";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
 
@@ -30,30 +31,34 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
       return true;
     });
   }, [items]);
-  const [activeIndex, setActiveIndex] = useState<number | null>(null);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const dialogTitleId = `gallery-dialog-${useId().replaceAll(":", "")}`;
   const triggerRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
-  const active = activeIndex === null ? null : safeItems[activeIndex];
+  const activeIndex = safeItems.findIndex(item => item.id === activeId);
+  const active = activeIndex < 0 ? null : safeItems[activeIndex] ?? null;
+  // Clear a removed selection during render so it cannot reopen if reinserted.
+  if (activeId !== null && !active) setActiveId(null);
 
   const close = useCallback(() => {
-    const previousIndex = activeIndex;
-    setActiveIndex(null);
-    if (previousIndex !== null) requestAnimationFrame(() => triggerRefs.current[previousIndex]?.focus());
-  }, [activeIndex]);
+    setActiveId(null);
+  }, []);
 
   const previous = useCallback(() => {
-    setActiveIndex(index => index === null ? 0 : (index - 1 + safeItems.length) % safeItems.length);
-  }, [safeItems.length]);
+    setActiveId(id => adjacentGalleryId(safeItems, id, -1));
+  }, [safeItems]);
 
   const next = useCallback(() => {
-    setActiveIndex(index => index === null ? 0 : (index + 1) % safeItems.length);
-  }, [safeItems.length]);
+    setActiveId(id => adjacentGalleryId(safeItems, id, 1));
+  }, [safeItems]);
 
   useEffect(() => {
-    if (activeIndex === null) return;
+    if (!active) return;
+    const dialog = dialogRef.current;
+    const triggers = triggerRefs.current;
+    const trigger = triggers[activeIndex];
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeRef.current?.focus();
@@ -96,8 +101,12 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     return () => {
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", onKeyDown);
+      if (!dialog?.isConnected) requestAnimationFrame(() => {
+        const target = trigger?.isConnected ? trigger : triggers.find(node => node?.isConnected);
+        target?.focus();
+      });
     };
-  }, [activeIndex, close, next, previous]);
+  }, [active, activeIndex, close, next, previous]);
 
   if (!safeItems.length) return null;
 
@@ -116,8 +125,8 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               ref={node => { triggerRefs.current[index] = node; }}
               type="button"
               className={styles.trigger}
-              onClick={() => setActiveIndex(index)}
-              aria-label={`Open image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
+              onClick={() => setActiveId(item.id)}
+              aria-label={`Enlarge image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
             >
               {canOptimizeLocally(item.url) ? <Image src={item.url} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
               {privacyProtected ? <span className={styles.privacyLabel}>Privacy protected</span> : null}
@@ -145,7 +154,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
             tabIndex={-1}
           >
             <div className={styles.dialogTop}>
-              <span id={dialogTitleId}>Image {activeIndex! + 1} of {safeItems.length}: {active.alt ?? "programme photograph"}</span>
+              <span id={dialogTitleId}>Image {activeIndex + 1} of {safeItems.length}: {active.alt ?? "programme photograph"}</span>
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
             {canOptimizeLocally(active.url) ? <Image className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}

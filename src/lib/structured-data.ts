@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 export type PublicStructuredDataType = "Article" | "WebPage";
 
 export type PublicStructuredDataInput = {
@@ -11,6 +13,18 @@ export type PublicStructuredDataInput = {
   section?: string | null;
   keywords?: string[];
 };
+
+const publicStructuredDataInputSchema = z.object({
+  type: z.enum(["Article", "WebPage"]),
+  title: z.string().min(1).max(300),
+  description: z.string().min(1).max(5_000),
+  path: z.string().min(1).max(2_048),
+  publishedAt: z.union([z.date(), z.string().max(64)]).nullable().optional(),
+  modifiedAt: z.union([z.date(), z.string().max(64)]).nullable().optional(),
+  imageUrl: z.string().max(2_048).nullable().optional(),
+  section: z.string().max(200).nullable().optional(),
+  keywords: z.array(z.string().max(120)).max(50).optional(),
+}).strict();
 
 const DEFAULT_SITE_URL = "https://amaanafoundation.org";
 
@@ -68,22 +82,26 @@ function cleanText(value: string) {
 }
 
 export function buildPublicStructuredData(input: PublicStructuredDataInput, configuredSiteUrl = process.env.NEXT_PUBLIC_APP_URL) {
-  const path = normalizeStructuredDataPath(input.path);
-  const title = cleanText(input.title);
-  const description = cleanText(input.description);
+  const parsed = publicStructuredDataInputSchema.safeParse(input);
+  if (!parsed.success) return null;
+
+  const safeInput = parsed.data;
+  const path = normalizeStructuredDataPath(safeInput.path);
+  const title = cleanText(safeInput.title);
+  const description = cleanText(safeInput.description);
   if (!path || !title || !description) return null;
 
   const siteUrl = normalizeSiteUrl(configuredSiteUrl);
   const url = new URL(path, siteUrl).toString();
-  const image = normalizeStructuredDataImage(input.imageUrl, siteUrl);
-  const published = isoDate(input.publishedAt);
-  const modified = isoDate(input.modifiedAt);
-  const section = input.section ? cleanText(input.section) : "";
-  const keywords = input.keywords?.map(cleanText).filter(Boolean).filter((value, index, list) => list.indexOf(value) === index);
+  const image = normalizeStructuredDataImage(safeInput.imageUrl, siteUrl);
+  const published = isoDate(safeInput.publishedAt);
+  const modified = isoDate(safeInput.modifiedAt);
+  const section = safeInput.section ? cleanText(safeInput.section) : "";
+  const keywords = safeInput.keywords?.map(cleanText).filter(Boolean).filter((value, index, list) => list.indexOf(value) === index);
 
-  const common = {
+  return {
     "@context": "https://schema.org",
-    "@type": input.type,
+    "@type": safeInput.type,
     "@id": `${url}#content`,
     url,
     name: title,
@@ -99,10 +117,13 @@ export function buildPublicStructuredData(input: PublicStructuredDataInput, conf
     ...(section ? { articleSection: section } : {}),
     ...(keywords?.length ? { keywords } : {}),
   };
-
-  return common;
 }
 
 export function serializeStructuredData(value: unknown) {
-  return JSON.stringify(value).replace(/</g, "\\u003c").replace(/>/g, "\\u003e").replace(/&/g, "\\u0026");
+  return JSON.stringify(value)
+    .replace(/</g, "\\u003c")
+    .replace(/>/g, "\\u003e")
+    .replace(/&/g, "\\u0026")
+    .replace(/\u2028/g, "\\u2028")
+    .replace(/\u2029/g, "\\u2029");
 }

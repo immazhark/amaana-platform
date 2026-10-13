@@ -10,7 +10,12 @@ export const donationSchema = z.object({
   donorName: z.string().trim().min(2).max(120),
   donorEmail: z.string().trim().email().max(254),
   donorPhone: z.union([z.literal(""), z.string().trim().regex(/^\+?[0-9][0-9\s-]{7,16}$/)]).optional(),
-  amount: z.coerce.number().int().min(1).max(MAX_DONATION_AMOUNT),
+  // Accept integer JSON values or digit-only form strings without
+  // coercing exponent notation, booleans or floating-point representations.
+  amount: z.union([
+    z.number().int(),
+    z.string().regex(/^[0-9]+$/).transform(Number),
+  ]).pipe(z.number().int().min(1).max(MAX_DONATION_AMOUNT)),
   givingIntent: z.enum(DONATION_INTENTS),
   isAnonymous: z.boolean().optional().default(false),
   domesticConfirmed: z.literal(true),
@@ -19,7 +24,12 @@ export const donationSchema = z.object({
 export const directTransferSchema = donationSchema.extend({
   paymentMethod: z.enum(["DIRECT_UPI", "BANK_TRANSFER"]),
   transferReference: z.string().trim().min(6).max(100).regex(/^[A-Za-z0-9._\/-]+$/),
-  transferredAt: z.coerce.date().refine(value => value.getTime() <= Date.now() + 5 * 60_000, "Transfer date cannot be in the future"),
+  // Do not coerce null, empty values, booleans or timezone-less strings.
+  // Browsers submit a UTC ISO timestamp; internal callers may pass a Date.
+  transferredAt: z.union([
+    z.date(),
+    z.string().datetime({ offset: true }).pipe(z.coerce.date()),
+  ]).refine(value => value.getTime() <= Date.now() + 5 * 60_000, "Transfer date cannot be in the future"),
 });
 
 export function isDonationAmountAllowedForRemaining(amount: number, remainingAmount: number) {

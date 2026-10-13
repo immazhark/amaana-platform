@@ -50,10 +50,31 @@ describe("public structured data", () => {
     }, "https://amaanafoundation.org")).toBeNull();
   });
 
+  it("fails closed when runtime JSON-LD input violates the schema", () => {
+    expect(buildPublicStructuredData({
+      type: "Article",
+      title: 42,
+      description: "Invalid runtime input",
+      path: "/stories/invalid",
+    } as unknown as Parameters<typeof buildPublicStructuredData>[0], "https://amaanafoundation.org")).toBeNull();
+
+    expect(buildPublicStructuredData({
+      type: "Article",
+      title: "Valid title",
+      description: "Invalid runtime input",
+      path: "/stories/invalid",
+      keywords: new Array(51).fill("keyword"),
+    } as unknown as Parameters<typeof buildPublicStructuredData>[0], "https://amaanafoundation.org")).toBeNull();
+  });
+
   it("escapes script-sensitive characters in serialized JSON-LD", () => {
-    const serialized = serializeStructuredData({ value: "</script><script>alert('x')</script>&" });
+    const serialized = serializeStructuredData({ value: "</script><script>alert('x')</script>&\u2028\u2029" });
     expect(serialized).not.toContain("</script>");
+    expect(serialized).not.toContain("\u2028");
+    expect(serialized).not.toContain("\u2029");
     expect(serialized).toContain("\\u003c");
     expect(serialized).toContain("\\u0026");
+    expect(serialized).toContain("\\u2028");
+    expect(serialized).toContain("\\u2029");
   });
 });

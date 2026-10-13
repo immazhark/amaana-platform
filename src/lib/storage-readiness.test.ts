@@ -3,7 +3,6 @@ import {
   getPublicMediaStorageReadiness,
   isManagedPrivateDocumentKey,
   PRIVATE_OBJECT_CACHE_CONTROL,
-  PUBLIC_MEDIA_CACHE_CONTROL,
   readImageDimensions,
 } from "./storage";
 
@@ -14,8 +13,8 @@ const keys = [
   "S3_SECRET_ACCESS_KEY",
   "PUBLIC_MEDIA_S3_REGION",
   "PUBLIC_MEDIA_S3_BUCKET",
-  "PUBLIC_MEDIA_S3_ACCESS_KEY_ID",
-  "PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY",
+  "MEDIA_S3_ACCESS_KEY_ID",
+  "MEDIA_S3_SECRET_ACCESS_KEY",
   "PUBLIC_MEDIA_BASE_URL",
 ] as const;
 
@@ -46,6 +45,79 @@ describe("getPublicMediaStorageReadiness", () => {
       baseUrlConfigured: true,
       baseUrlSecure: true,
     });
+  });
+
+  it("requires the configured same-origin /media base despite local proxy delivery", () => {
+    process.env.S3_REGION = "ap-south-1";
+    process.env.S3_BUCKET = "private-assistance";
+    process.env.S3_ACCESS_KEY_ID = "private-key";
+    process.env.S3_SECRET_ACCESS_KEY = "private-secret";
+    process.env.PUBLIC_MEDIA_S3_BUCKET = "public-media";
+    delete process.env.PUBLIC_MEDIA_BASE_URL;
+
+    expect(getPublicMediaStorageReadiness()).toEqual({
+      uploadReady: true,
+      deliveryReady: false,
+      separateBucketConfigured: true,
+      usingFallbackCredentials: true,
+      baseUrlConfigured: false,
+      baseUrlSecure: false,
+    });
+
+    process.env.PUBLIC_MEDIA_BASE_URL = "https://amaanafoundation.org/media";
+    expect(getPublicMediaStorageReadiness()).toMatchObject({
+      uploadReady: true,
+      deliveryReady: true,
+      baseUrlConfigured: true,
+      baseUrlSecure: true,
+    });
+  });
+
+  it("still requires media storage and separate-bucket configuration", () => {
+    process.env.S3_REGION = "ap-south-1";
+    process.env.S3_BUCKET = "private-assistance";
+    process.env.S3_ACCESS_KEY_ID = "private-key";
+    process.env.S3_SECRET_ACCESS_KEY = "private-secret";
+    delete process.env.PUBLIC_MEDIA_S3_BUCKET;
+    delete process.env.PUBLIC_MEDIA_BASE_URL;
+
+    const readiness = getPublicMediaStorageReadiness();
+    expect(readiness.uploadReady).toBe(false);
+    expect(readiness.deliveryReady).toBe(false);
+  });
+
+  it("uses dedicated server-only media credentials when configured", () => {
+    process.env.S3_REGION = "ap-south-1";
+    process.env.S3_BUCKET = "private-assistance";
+    process.env.S3_ACCESS_KEY_ID = "private-key";
+    process.env.S3_SECRET_ACCESS_KEY = "private-secret";
+    process.env.PUBLIC_MEDIA_S3_BUCKET = "public-media";
+    process.env.MEDIA_S3_ACCESS_KEY_ID = "media-key";
+    process.env.MEDIA_S3_SECRET_ACCESS_KEY = "media-secret";
+    process.env.PUBLIC_MEDIA_BASE_URL = "https://media.example.org";
+
+    expect(getPublicMediaStorageReadiness()).toMatchObject({
+      uploadReady: true,
+      deliveryReady: true,
+      usingFallbackCredentials: false,
+    });
+  });
+
+  it("fails closed if dedicated media credentials are only partially configured", () => {
+    process.env.S3_REGION = "ap-south-1";
+    process.env.S3_BUCKET = "private-assistance";
+    process.env.S3_ACCESS_KEY_ID = "private-key";
+    process.env.S3_SECRET_ACCESS_KEY = "private-secret";
+    process.env.PUBLIC_MEDIA_S3_BUCKET = "public-media";
+    process.env.PUBLIC_MEDIA_BASE_URL = "https://media.example.org";
+
+    process.env.MEDIA_S3_ACCESS_KEY_ID = "media-key";
+    delete process.env.MEDIA_S3_SECRET_ACCESS_KEY;
+    expect(() => getPublicMediaStorageReadiness()).toThrow(/complete pair/);
+
+    delete process.env.MEDIA_S3_ACCESS_KEY_ID;
+    process.env.MEDIA_S3_SECRET_ACCESS_KEY = "media-secret";
+    expect(() => getPublicMediaStorageReadiness()).toThrow(/complete pair/);
   });
 
   it("rejects using the private assistance bucket as public media storage", () => {
@@ -96,9 +168,8 @@ describe("managed private document keys", () => {
 });
 
 describe("storage cache boundary", () => {
-  it("keeps private evidence non-cacheable while immutable public media is cacheable", () => {
+  it("keeps private evidence and newly managed public uploads non-cacheable at the storage layer", () => {
     expect(PRIVATE_OBJECT_CACHE_CONTROL).toBe("private, no-store, max-age=0");
-    expect(PUBLIC_MEDIA_CACHE_CONTROL).toBe("public, max-age=31536000, immutable");
   });
 });
 

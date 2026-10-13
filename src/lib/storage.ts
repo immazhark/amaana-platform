@@ -1,3 +1,4 @@
+import "server-only";
 import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { createHash, randomUUID } from "node:crypto";
@@ -8,7 +9,6 @@ export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 export const MAX_FILES = 5;
 export const MAX_PUBLIC_IMAGE_PIXELS = 40_000_000;
 export const PRIVATE_OBJECT_CACHE_CONTROL = "private, no-store, max-age=0";
-export const PUBLIC_MEDIA_CACHE_CONTROL = "public, max-age=31536000, immutable";
 
 type StorageConfig = {
   bucket: string;
@@ -40,11 +40,27 @@ function getPrivateStorage(): StorageConfig {
   };
 }
 
+function getMediaCredentialPair() {
+  const mediaAccessKey = process.env.MEDIA_S3_ACCESS_KEY_ID?.trim();
+  const mediaSecretKey = process.env.MEDIA_S3_SECRET_ACCESS_KEY?.trim();
+  if (Boolean(mediaAccessKey) !== Boolean(mediaSecretKey)) {
+    throw new Error("Dedicated media storage credentials must be configured as a complete pair");
+  }
+  return {
+    accessKeyId: mediaAccessKey || process.env.S3_ACCESS_KEY_ID,
+    secretAccessKey: mediaSecretKey || process.env.S3_SECRET_ACCESS_KEY,
+    usingFallbackCredentials: !mediaAccessKey,
+  };
+}
+
 function getPublicMediaStorage(): StorageConfig {
   const region = process.env.PUBLIC_MEDIA_S3_REGION || process.env.S3_REGION;
-  const bucket = process.env.PUBLIC_MEDIA_S3_BUCKET;
-  const accessKeyId = process.env.PUBLIC_MEDIA_S3_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY;
+  const bucket = process.env.PUBLIC_MEDIA_S3_BUCKET?.trim();
+  const privateBucket = process.env.S3_BUCKET?.trim();
+  if (bucket && privateBucket && bucket === privateBucket) {
+    throw new Error("Public media storage must use a separate bucket from private evidence");
+  }
+  const { accessKeyId, secretAccessKey } = getMediaCredentialPair();
   if (!region || !bucket || !accessKeyId || !secretAccessKey) throw new Error("Public media storage is not configured");
   return {
     bucket,
@@ -221,21 +237,23 @@ function normalizePublicBaseUrl() {
   if (!value) return null;
   const url = new URL(value);
   if (url.protocol !== "https:") throw new Error("PUBLIC_MEDIA_BASE_URL must use HTTPS");
-  return url.toString().replace(/\/$/, "");
+  if (url.username || url.password || url.search || url.hash) {
+    throw new Error("PUBLIC_MEDIA_BASE_URL must not contain credentials, query parameters or fragments");
+  }
+  return `${url.origin}${url.pathname.replace(/\/$/, "")}`;
 }
 
 export function getPublicMediaStorageReadiness(): PublicMediaStorageReadiness {
   const bucket = process.env.PUBLIC_MEDIA_S3_BUCKET?.trim();
   const privateBucket = process.env.S3_BUCKET?.trim();
   const region = process.env.PUBLIC_MEDIA_S3_REGION || process.env.S3_REGION;
-  const accessKeyId = process.env.PUBLIC_MEDIA_S3_ACCESS_KEY_ID || process.env.S3_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY || process.env.S3_SECRET_ACCESS_KEY;
+  const { accessKeyId, secretAccessKey, usingFallbackCredentials } = getMediaCredentialPair();
   const baseUrl = process.env.PUBLIC_MEDIA_BASE_URL?.trim();
 
   let baseUrlSecure = false;
   if (baseUrl) {
     try {
-      baseUrlSecure = new URL(baseUrl).protocol === "https:";
+      baseUrlSecure = normalizePublicBaseUrl() !== null;
     } catch {
       baseUrlSecure = false;
     }
@@ -243,13 +261,15 @@ export function getPublicMediaStorageReadiness(): PublicMediaStorageReadiness {
 
   const separateBucketConfigured = Boolean(bucket && (!privateBucket || bucket !== privateBucket));
   const uploadReady = Boolean(region && bucket && accessKeyId && secretAccessKey && separateBucketConfigured);
+  // The production environment contract requires the official /media base
+  // URL, even though managed uploads are delivered by our own proxy route.
   const deliveryReady = Boolean(uploadReady && baseUrl && baseUrlSecure);
 
   return {
     uploadReady,
     deliveryReady,
     separateBucketConfigured,
-    usingFallbackCredentials: !process.env.PUBLIC_MEDIA_S3_ACCESS_KEY_ID || !process.env.PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY,
+    usingFallbackCredentials,
     baseUrlConfigured: Boolean(baseUrl),
     baseUrlSecure,
   };
@@ -269,7 +289,28 @@ export async function getPublicMediaObject(objectKey: string) {
   const { bucket, client } = getPublicMediaStorage();
   const object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: objectKey }));
   if (!object.Body) throw new Error("Public media object has no body");
-  const bytes = await object.Body.transformToByteArray();
+  const body = object.Body;
+  if (object.ContentLength !== undefined &&
+      (!Number.isSafeInteger(object.ContentLength) || object.ContentLength <= 0 || object.ContentLength > MAX_FILE_BYTES)) {
+    if ("destroy" in body && typeof body.destroy === "function") body.destroy();
+    else if ("cancel" in body && typeof body.cancel === "function") await body.cancel();
+    throw new Error("Public media object exceeds the verified size boundary");
+  }
+  if (!(Symbol.asyncIterator in body)) throw new Error("Public media object body is not a readable stream");
+  const chunks: Buffer[] = [];
+  let size = 0;
+  for await (const chunk of body as AsyncIterable<unknown>) {
+    if (!(chunk instanceof Uint8Array)) throw new Error("Public media object contains invalid byte data");
+    if (chunk.byteLength > MAX_FILE_BYTES - size) {
+      throw new Error("Public media object exceeds the verified size boundary");
+    }
+    size += chunk.byteLength;
+    chunks.push(Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength));
+  }
+  if (size === 0 || (object.ContentLength !== undefined && size !== object.ContentLength)) {
+    throw new Error("Public media object body is incomplete");
+  }
+  const bytes = Buffer.concat(chunks, size);
   return {
     bytes,
     contentType: object.ContentType ?? "application/octet-stream",
@@ -345,6 +386,10 @@ export async function uploadCuratedPublicMediaFile(
 
 export async function uploadPublicMediaFile(file: File) {
   validatePublicMediaFile(file);
+  // Validate delivery configuration before creating an orphaned storage object.
+  // Validate configured delivery settings before storage, but never expose raw
+  // bucket or CDN URLs as managed media publication paths.
+  normalizePublicBaseUrl();
   const bytes = Buffer.from(await file.arrayBuffer());
   if (!hasValidSignature(bytes, file.type)) throw new Error("The uploaded media does not match its declared file type");
 
@@ -359,14 +404,14 @@ export async function uploadPublicMediaFile(file: File) {
     Key: objectKey,
     Body: bytes,
     ContentType: file.type,
-    CacheControl: PUBLIC_MEDIA_CACHE_CONTROL,
+    CacheControl: PRIVATE_OBJECT_CACHE_CONTROL,
     Metadata: { originalName: file.name.slice(0, 255) },
   }));
 
-  const baseUrl = normalizePublicBaseUrl();
   return {
     objectKey,
-    publicUrl: baseUrl ? `${baseUrl}/${objectKey.split("/").map(encodeURIComponent).join("/")}` : null,
+    // The same-origin route enforces public/consent status on each response.
+    publicUrl: `/media/${objectKey}`,
     originalName: file.name.slice(0, 255),
     mimeType: file.type,
     sizeBytes: file.size,
@@ -374,3 +419,4 @@ export async function uploadPublicMediaFile(file: File) {
     height: dimensions?.height ?? null,
   };
 }
+

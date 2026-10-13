@@ -28,6 +28,7 @@ import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
 import { IslamicCompanion } from "@/components/islamic-companion";
 import { Analytics } from "@/components/analytics";
+import { WebVitals } from "@/components/web-vitals";
 import { StructuredData } from "@/components/structured-data";
 import { BackToTop } from "@/components/back-to-top";
 import { NavigationProgress } from "@/components/navigation-progress";
@@ -35,7 +36,7 @@ import { shouldAllowIndexing } from "@/lib/site-indexing";
 
 const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
 const allowIndexing = shouldAllowIndexing(appUrl, process.env.NEXT_PUBLIC_ALLOW_INDEXING);
-const organizationDescription = "Amaana Foundation is a Hyderabad-based registered charitable trust supporting verified community needs through relief, education, seasonal programmes and case-led assistance with dignity, transparency and accountability.";
+const organizationDescription = "Amaana Foundation is a Hyderabad charitable trust supporting verified needs through education, seasonal relief and community assistance with dignity.";
 const socialAlt = "Amaana Foundation — Upholding Trust. Serving With Compassion, Dignity and Accountability.";
 
 export const viewport: Viewport = {
@@ -84,6 +85,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <a className="v2-skip-link" href="#main">Skip to content</a>
         <StructuredData />
         <Analytics />
+        {process.env.NEXT_PUBLIC_ENABLE_WEB_VITALS === "true" ? <WebVitals /> : null}
         <SiteMotion />
         <NavigationProgress />
         <SiteHeader />

@@ -9,7 +9,10 @@ describe("Razorpay signatures", () => {
     process.env.RAZORPAY_WEBHOOK_SECRET = "webhook-secret-value";
   });
 
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
 
   it("verifies checkout signatures", () => {
     const signature = createHmac("sha256", "checkout-secret-value")
@@ -87,6 +90,27 @@ describe("Razorpay signatures", () => {
     );
   });
 
+  it("aborts an unresponsive provider request at the configured deadline", async () => {
+    const abortController = new AbortController();
+    const deadlineSpy = vi.spyOn(AbortSignal, "timeout").mockReturnValue(abortController.signal);
+    const fetchMock = vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+      return new Promise<Response>((_resolve, reject) => {
+        init.signal?.addEventListener("abort", () => reject(new Error("provider request aborted")), { once: true });
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = fetchRazorpayPayment("pay_timeout");
+    expect(deadlineSpy).toHaveBeenCalledWith(15_000);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.razorpay.com/v1/payments/pay_timeout",
+      expect.objectContaining({ signal: abortController.signal, cache: "no-store" }),
+    );
+
+    abortController.abort();
+    await expect(result).rejects.toThrow("provider request aborted");
+  });
+
   it("fails closed when Razorpay returns a gateway error", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: false,
@@ -133,5 +157,57 @@ describe("Razorpay signatures", () => {
       "https://api.razorpay.com/v1/payments/pay%2Fspecial",
       expect.objectContaining({ cache: "no-store" }),
     );
+  });
+
+  it.each([
+    null,
+    [],
+    { id: "" },
+    { id: 123 },
+    { order_id: 123 },
+    { amount: "50000" },
+    { amount: -1 },
+    { amount: 1.5 },
+    { amount: Number.MAX_SAFE_INTEGER + 1 },
+    { currency: null },
+    { status: "" },
+    { captured: "false" },
+    { captured: 1 },
+    { captured: null },
+    { contact: 123 },
+  ].map(invalid => ({ invalid })))("rejects malformed provider payment fields: %j", async ({ invalid }) => {
+    const payment = {
+      id: "pay_1", order_id: "order_1", amount: 50000,
+      currency: "INR", status: "authorized", captured: false,
+    };
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => invalid === null || Array.isArray(invalid)
+        ? invalid : { ...payment, ...invalid },
+    }));
+
+    await expect(fetchRazorpayPayment("pay_1"))
+      .rejects.toThrow("Invalid Razorpay payment response");
+  });
+
+  it.each(["created", "authorized", "captured", "refunded", "failed"])(
+    "preserves valid %s responses and nullable provider fields",
+    async status => {
+      const payment = {
+        id: "pay_1", order_id: null, amount: 50000, currency: "INR",
+        status, captured: status === "captured", email: null, contact: null,
+      };
+      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => payment }));
+      await expect(fetchRazorpayPayment("pay_1")).resolves.toEqual(payment);
+    },
+  );
+
+  it("does not disclose malformed provider data in validation errors", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ captured: "private-provider-data" }),
+    }));
+    await expect(fetchRazorpayPayment("pay_1"))
+      .rejects.toThrow(/^Invalid Razorpay payment response$/);
   });
 });

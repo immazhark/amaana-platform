@@ -7,14 +7,16 @@ on:
     branches:
       - main
       - phase-public-site-rebuild
+      - fix/p0-security-remediation-20261010
   push:
     branches:
       - main
       - phase-public-site-rebuild
+      - fix/p0-security-remediation-20261010
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -74,6 +76,15 @@ jobs:
 
       - name: Audit global CSS architecture
         run: node scripts/audit-global-css.mjs
+      - name: Validate App Router bundle reporting
+        run: node --test scripts/test-route-bundle-report.mjs
+      - name: Guard responsive hero/artwork image weight
+        run: |
+          node --test scripts/test-public-image-weight.mjs
+          node --test scripts/test-artwork-encoding.mjs
+          node scripts/check-public-image-weight.mjs
+      - name: Prevent anonymous admin route coverage drift
+        run: node --test scripts/test-admin-route-inventory.mjs
       - name: Verify branded application icons
         run: npm run icons:verify
       - name: Decode and validate public campaign media
@@ -82,14 +93,27 @@ jobs:
           node scripts/check-public-media.mjs
           node --test scripts/test-public-media-review-register.mjs
           node scripts/check-public-media-review-register.mjs
+      - name: Inventory public asset references without deleting files
+        run: |
+          node scripts/audit-public-assets.mjs --json > "$RUNNER_TEMP/amaana-public-assets.json"
+          node --input-type=module -e '
+            import { readFileSync } from "node:fs";
+            const data = JSON.parse(readFileSync(process.env.RUNNER_TEMP + "/amaana-public-assets.json", "utf8"));
+            console.log("Public asset inventory counts:", JSON.stringify(data.counts));
+            const unresolved = data.rows.filter(row => row.status === "unresolved");
+            for (const row of unresolved.slice(0, 25)) console.log("REVIEW ONLY:", row.asset);
+            console.log("Unresolved assets are NOT safe to delete without dynamic-reference validation.");
+          '
       - name: Validate launch readiness register
         run: |
           node --test scripts/test-launch-readiness.mjs
           node --test scripts/test-production-environment.mjs
-          node --test scripts/test-railway-predeploy.mjs
+          node --test scripts/test-railway-predeploy.mjs scripts/test-notification-cron.mjs
           node scripts/check-launch-readiness.mjs
       - name: Verify non-destructive campaign import
         run: node --test scripts/test-reviewed-campaigns.mjs scripts/test-reviewed-campaign-revisions.mjs scripts/test-reviewed-campaign-feature-normalization.mjs scripts/test-reviewed-campaign-video-normalization.mjs
+      - name: Verify master content asset deduplication
+        run: node --test scripts/test-master-content-assets.mjs
       - name: Verify canonical factual locks
         run: |
           npm run master:check
@@ -100,6 +124,26 @@ jobs:
           node scripts/check-public-editorial-consistency.mjs
       - name: Guard public/private data boundaries
         run: node --test scripts/test-public-data-boundaries.mjs
+      - name: Guard client-bundle secret scanner behavior
+        run: node --test scripts/test-client-secret-boundary.mjs
+      - name: Enforce audited muted text contrast
+        run: node --test scripts/test-audited-muted-contrast.mjs
+      - name: Guard Companion text scaling under 200% root font size
+        run: node --test scripts/test-companion-text-scaling.mjs
+      - name: Enforce accessible public-media link names
+        run: node --test scripts/test-public-media-link-name.mjs
+      - name: Enforce appeal and faith link action names
+        run: node --test scripts/test-appeal-faith-link-labels.mjs
+      - name: Enforce impact tile accessible action names
+        run: node --test scripts/test-impact-link-label.mjs
+      - name: Enforce participation card accessible action names
+        run: node --test scripts/test-participation-link-label.mjs
+      - name: Enforce story archive link action names
+        run: node --test scripts/test-story-link-label.mjs
+      - name: Enforce donation error focus scheduling
+        run: node --test scripts/test-donation-error-focus-race.mjs
+      - name: Enforce admin eyebrow contrast by surface
+        run: node --test scripts/test-admin-eyebrow-contrast.mjs
       - name: Verify archive filters
         run: node --experimental-strip-types --test scripts/test-work-filters.mjs
       - name: Verify daily readings, reminder windows and local calendar boundaries
@@ -167,14 +211,18 @@ jobs:
           npx prisma migrate deploy
           node scripts/test-refund-ledger-migration.mjs
           node scripts/test-home-carousel-migration.mjs
+          node scripts/test-historical-pageview-migration.mjs
+          node --test scripts/test-master-content-assets.mjs
           npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts
 
 
   production:
     needs: [plan, fast]
-    if: needs.plan.outputs.app == 'true' && github.event_name != 'pull_request'
+    if: needs.plan.outputs.app == 'true' && github.event.action != 'ready_for_review'
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
+    permissions:
+      contents: read
     services:
       postgres:
         image: postgres:16-alpine
@@ -205,14 +253,17 @@ jobs:
 
       - run: npm run prisma:generate
       - name: Prepare isolated production-build database
-        if: github.event_name != 'pull_request'
         run: npx prisma migrate deploy
       - name: Build production application
-        if: github.event_name != 'pull_request'
         run: npm run build
 
+      - name: Enforce client bundle secret boundary
+        run: node scripts/check-client-secret-boundary.mjs
+
+      - name: Report App Router route-level JavaScript and CSS
+        run: npm run audit:route-bundles
+
       - name: Enforce production bundle budgets
-        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail
@@ -229,7 +280,6 @@ jobs:
           test "$CSS_BYTES" -le "$CSS_BUDGET"
 
       - name: Run post-build server smoke checks
-        if: github.event_name != 'pull_request'
         shell: bash
         run: |
           set -euo pipefail

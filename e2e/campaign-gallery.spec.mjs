@@ -6,7 +6,8 @@ async function openGallery(page, width) {
   const response = await page.goto('/browser-acceptance/gallery', { waitUntil: 'domcontentloaded' });
   expect(response?.ok()).toBeTruthy();
   await expect(page.getByRole('heading', { name: 'Initiative gallery interaction' })).toBeVisible();
-  await expect(page.getByRole('button', { name: /Open image/ })).toHaveCount(13);
+  await expect(page.getByRole('button', { name: /Enlarge image/ })).toHaveCount(13);
+  await expect(page.getByRole('button', { name: /^Enlarge image 1 of 13:/ })).toBeVisible();
 }
 
 test('initiative gallery keeps three desktop columns and two compact mobile columns without overflow', async ({ page }) => {
@@ -35,7 +36,7 @@ test('initiative gallery keeps three desktop columns and two compact mobile colu
 test('initiative gallery lightbox owns the modal layer, traps focus and restores the triggering thumbnail', async ({ page }) => {
   await openGallery(page, 390);
 
-  const first = page.getByRole('button', { name: /Open image 1 of 13/ });
+  const first = page.getByRole('button', { name: /Enlarge image 1 of 13/ });
   await first.click();
 
   const dialog = page.getByRole('dialog');
@@ -75,7 +76,7 @@ test('initiative gallery lightbox owns the modal layer, traps focus and restores
 
 test('initiative gallery lightbox remains contained at 320px and preserves usable controls', async ({ page }) => {
   await openGallery(page, 320);
-  await page.getByRole('button', { name: /Open image 2 of 13/ }).click();
+  await page.getByRole('button', { name: /Enlarge image 2 of 13/ }).click();
 
   const dialog = page.getByRole('dialog');
   const geometry = await dialog.evaluate(element => {
@@ -117,4 +118,51 @@ test('initiative gallery lightbox remains contained at 320px and preserves usabl
 
   await page.mouse.click(2, 2);
   await expect(dialog).toHaveCount(0);
+});
+
+async function updateGallery(page, update) {
+  await page.evaluate(detail => {
+    window.dispatchEvent(new CustomEvent('amaana-gallery-fixture-update', { detail }));
+  }, update);
+}
+
+test('gallery reorder preserves selected identity and restores its new thumbnail position', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 2 of 13:/ }).click();
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toHaveAccessibleName(/Synthetic acceptance photograph 2$/);
+  await updateGallery(page, { action: 'reverse' });
+  await expect(dialog).toHaveAccessibleName(/^Image 12 of 13: Synthetic acceptance photograph 2$/);
+  await expect(dialog.locator('img')).toHaveAttribute('alt', 'Synthetic acceptance photograph 2');
+  await page.keyboard.press('ArrowRight');
+  await expect(dialog).toHaveAccessibleName(/^Image 13 of 13: Synthetic acceptance photograph 1$/);
+  await page.keyboard.press('ArrowLeft');
+  await expect(dialog).toHaveAccessibleName(/^Image 12 of 13: Synthetic acceptance photograph 2$/);
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Enlarge image 12 of 13:/ })).toBeFocused();
+  await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('');
+});
+
+test('removing the final selected photograph closes the dialog and releases keyboard and scroll ownership', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 13 of 13:/ }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await updateGallery(page, { action: 'remove', id: 'fixture-13' });
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Enlarge image/ })).toHaveCount(12);
+  await expect(page.getByRole('button', { name: /^Enlarge image 1 of 12:/ })).toBeFocused();
+  await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('');
+  expect(await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', cancelable: true })))).toBe(true);
+});
+
+test('emptying an open gallery releases the modal without a dangling focus trap', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 1 of 13:/ }).click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await updateGallery(page, { action: 'empty' });
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /Enlarge image/ })).toHaveCount(0);
+  await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('');
+  expect(await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', cancelable: true })))).toBe(true);
 });

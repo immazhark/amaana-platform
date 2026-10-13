@@ -66,8 +66,8 @@ async function run() {
 
   const region = required("PUBLIC_MEDIA_S3_REGION");
   const endpoint = required("PUBLIC_MEDIA_S3_ENDPOINT");
-  const accessKeyId = required("PUBLIC_MEDIA_S3_ACCESS_KEY_ID");
-  const secretAccessKey = required("PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY");
+  const accessKeyId = required("MEDIA_S3_ACCESS_KEY_ID");
+  const secretAccessKey = required("MEDIA_S3_SECRET_ACCESS_KEY");
   const forcePathStyle = process.env.PUBLIC_MEDIA_S3_FORCE_PATH_STYLE === "true";
 
   s3 = new S3Client({

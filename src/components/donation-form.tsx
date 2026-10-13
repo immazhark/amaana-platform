@@ -1,5 +1,7 @@
 "use client";
 
+import { updateDonationAmountValidity } from "@/lib/donation-amount-input";
+
 import Script from "next/script";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -18,6 +20,7 @@ declare global { interface Window { Razorpay: new (options: RazorpayOptions) => 
 export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible = false }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean }) {
   const router = useRouter();
   const errorRef = useRef<HTMLDivElement>(null);
+  const focusedErrorRef = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<DonationFieldErrors>({});
@@ -36,10 +39,37 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
   }, []);
 
   useEffect(() => {
-    if (!error) return;
-    const frame = window.requestAnimationFrame(() => errorRef.current?.focus());
+    if (!error) {
+      focusedErrorRef.current = null;
+      return;
+    }
+    // Editing a field may change fieldErrors while the alert remains displayed.
+    // Do not steal focus from the donor after the initial error announcement.
+    if (focusedErrorRef.current === error) return;
+    const firstRejectedField = (["amount", "donorName", "donorEmail", "donorPhone", "givingIntent", "domesticConfirmed"] as DonationField[])
+      .find(field => fieldErrors[field]?.length);
+    const frame = window.requestAnimationFrame(() => {
+      // Commit the focus marker only when the callback actually executes.
+      // A field-error state update may cancel this frame before focus occurs.
+      focusedErrorRef.current = error;
+      if (!firstRejectedField) {
+        errorRef.current?.focus();
+        return;
+      }
+      const control = formRef.current?.elements.namedItem(firstRejectedField);
+      if (control instanceof HTMLElement) {
+        control.focus();
+      } else if (control instanceof RadioNodeList) {
+        const radios = Array.from(control).filter((item): item is HTMLInputElement => item instanceof HTMLInputElement);
+        const focusTarget = radios.find(radio => radio.checked) ?? radios[0];
+        if (focusTarget) focusTarget.focus();
+        else errorRef.current?.focus();
+      } else {
+        errorRef.current?.focus();
+      }
+    });
     return () => window.cancelAnimationFrame(frame);
-  }, [error]);
+  }, [error, fieldErrors]);
 
   const busy = phase === "opening" || phase === "verifying";
   const submissionLocked = busy || phase === "reconciliation";
@@ -65,6 +95,24 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
 
   function clearFieldError(field: DonationField) {
     setFieldErrors(current => current[field] ? { ...current, [field]: undefined } : current);
+  }
+
+  function handleInvalid(event: FormEvent<HTMLFormElement>) {
+    // React bubbles invalid events; replace transient browser popups with a
+    // persistent field-specific explanation linked through aria-describedby.
+    event.preventDefault();
+    const control = event.target;
+    if (!(control instanceof HTMLInputElement || control instanceof HTMLSelectElement)) return;
+    const field = control.name as DonationField;
+    if (!(["donorName", "donorEmail", "donorPhone", "amount", "givingIntent", "domesticConfirmed"] as string[]).includes(field)) return;
+    setFieldErrors(current => ({
+      ...current,
+      [field]: [control.validationMessage || "Please check this field."],
+    }));
+    // Only focus the first invalid control after React commits its error.
+    if (formRef.current?.querySelector(":invalid") === control) {
+      requestAnimationFrame(() => requestAnimationFrame(() => control.focus()));
+    }
   }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -161,12 +209,12 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         showError("Secure checkout could not load. Please refresh and try again.");
       }}
     />
-    <form ref={formRef} className="v2-premium-form v2-donation-form" onSubmit={submit} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
+    <form ref={formRef} className="v2-premium-form v2-donation-form" onSubmit={submit} onInvalid={handleInvalid} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
       <div className="v2-form-heading"><span>Secure contribution</span><h2 id="donation-form-heading">Choose how you would like to support.</h2><p id="donation-form-description">Only the information needed to process and acknowledge your contribution is requested.</p></div>
       <p id="donation-checkout-status" className={styles.status} role="status" aria-live="polite">{statusText}</p>
-      {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{remainingHint !== null ? <p><button type="button" className="v2-text-link" onClick={() => { const input = formRef.current?.elements.namedItem("amount"); if (input instanceof HTMLInputElement) { input.value = String(remainingHint); input.focus(); } }}>Use the current remaining amount: ₹{remainingHint.toLocaleString("en-IN")}</button></p> : null}</div>}
+      {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{remainingHint !== null ? <p><button type="button" className="v2-text-link" onClick={() => { const input = formRef.current?.elements.namedItem("amount"); if (input instanceof HTMLInputElement) { input.value = String(remainingHint); updateDonationAmountValidity(input, transactionMin, transactionMax); clearFieldError("amount"); input.focus(); } }}>Use the current remaining amount: ₹{remainingHint.toLocaleString("en-IN")}</button></p> : null}</div>}
       <div className="form-grid">
-        <div className={`field full v2-amount-field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="amount">Donation amount <span>INR</span></label><div className={`${styles.checkoutControl} ${styles.amountControl}`}><b aria-hidden="true">₹</b><input id="amount" name="amount" type="number" min={transactionMin} max={transactionMax} step="1" inputMode="numeric" placeholder="Enter amount" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("amount")) || undefined} aria-describedby={fieldError("amount") ? "amount-hint amount-error donation-checkout-status" : "amount-hint donation-checkout-status"} onChange={() => clearFieldError("amount")}/></div><small id="amount-hint" className={styles.hint}>{transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small>{fieldError("amount") && <small id="amount-error" className="v2-field-error">{fieldError("amount")}</small>}</div>
+        <div className={`field full v2-amount-field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="amount">Donation amount <span>INR</span></label><div className={`${styles.checkoutControl} ${styles.amountControl}`}><b aria-hidden="true">₹</b><input id="amount" name="amount" type="text" inputMode="numeric" pattern="[0-9]+" maxLength={12} onInput={event => updateDonationAmountValidity(event.currentTarget, transactionMin, transactionMax)} placeholder="Enter amount" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("amount")) || undefined} aria-describedby={fieldError("amount") ? "amount-hint amount-error donation-checkout-status" : "amount-hint donation-checkout-status"} onChange={() => clearFieldError("amount")}/></div><small id="amount-hint" className={styles.hint}>{transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small>{fieldError("amount") && <small id="amount-error" className="v2-field-error">{fieldError("amount")}</small>}</div>
         <div className={`field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorName">Full name</label><div className={styles.checkoutControl}><input id="donorName" name="donorName" autoComplete="name" minLength={2} maxLength={120} required disabled={submissionLocked} aria-invalid={Boolean(fieldError("donorName")) || undefined} aria-describedby={fieldError("donorName") ? "donor-name-error donation-checkout-status" : "donation-checkout-status"} onChange={() => clearFieldError("donorName")}/></div>{fieldError("donorName") && <small id="donor-name-error" className="v2-field-error">{fieldError("donorName")}</small>}</div>
         <div className={`field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorEmail">Email</label><div className={styles.checkoutControl}><input id="donorEmail" name="donorEmail" type="email" autoComplete="email" maxLength={254} required disabled={submissionLocked} aria-invalid={Boolean(fieldError("donorEmail")) || undefined} aria-describedby={fieldError("donorEmail") ? "donor-email-error donation-checkout-status" : "donation-checkout-status"} onChange={() => clearFieldError("donorEmail")}/></div>{fieldError("donorEmail") && <small id="donor-email-error" className="v2-field-error">{fieldError("donorEmail")}</small>}</div>
         <div className={`field full ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorPhone">Phone <span className="muted">optional</span></label><div className={styles.checkoutControl}><input id="donorPhone" name="donorPhone" type="tel" autoComplete="tel" disabled={submissionLocked} aria-invalid={Boolean(fieldError("donorPhone")) || undefined} aria-describedby={fieldError("donorPhone") ? "donor-phone-error" : undefined} onChange={() => clearFieldError("donorPhone")}/></div>{fieldError("donorPhone") && <small id="donor-phone-error" className="v2-field-error">{fieldError("donorPhone")}</small>}</div>

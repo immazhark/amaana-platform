@@ -77,7 +77,7 @@ function storedDonation() {
 
 describe("donation confirmation persisted status", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mocks.verifyCheckoutSignature.mockReturnValue(true);
     mocks.updateMany.mockResolvedValue({ count: 0 });
     mocks.fetchRazorpayPayment.mockResolvedValue({
@@ -148,5 +148,78 @@ describe("donation confirmation persisted status", () => {
     expect(body).toEqual({ error: "Payment is being verified. Please retain your payment confirmation." });
     expect(mocks.updateMany).not.toHaveBeenCalled();
     expect(mocks.captureDonation).not.toHaveBeenCalled();
+  });
+  it.each(["authorized", "captured"])(
+    "rejects a different returned payment identity before a %s transition",
+    async status => {
+      mocks.findUnique
+        .mockResolvedValueOnce(storedDonation())
+        .mockResolvedValueOnce({ status: "CREATED" });
+      mocks.fetchRazorpayPayment.mockResolvedValueOnce({
+        id: "pay_different",
+        order_id: "order_123",
+        amount: 50000,
+        currency: "INR",
+        status,
+        captured: status === "captured",
+      });
+
+      const response = await POST(confirmationRequest());
+
+      expect(mocks.fetchRazorpayPayment).toHaveBeenCalledWith("pay_123");
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({
+        error: "Payment is being verified. Please retain your payment confirmation.",
+      });
+      expect(mocks.updateMany).not.toHaveBeenCalled();
+      expect(mocks.captureDonation).not.toHaveBeenCalled();
+      expect(mocks.findUnique).toHaveBeenCalledTimes(1);
+      expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    },
+  );
+
+  it.each([
+    { status: "authorized", captured: true },
+    { status: "captured", captured: false },
+  ])("rejects a contradictory provider capture state ($status, captured=$captured)", async paymentState => {
+    mocks.findUnique.mockResolvedValueOnce(storedDonation());
+    mocks.fetchRazorpayPayment.mockResolvedValueOnce({
+      id: "pay_123",
+      order_id: "order_123",
+      amount: 50000,
+      currency: "INR",
+      ...paymentState,
+    });
+
+    const response = await POST(confirmationRequest());
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({
+      error: "Payment is being verified. Please retain your payment confirmation.",
+    });
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.findUnique).toHaveBeenCalledTimes(1);
+  });
+
+  it("captures a matching provider payment using the signed callback identity", async () => {
+    mocks.findUnique
+      .mockResolvedValueOnce(storedDonation())
+      .mockResolvedValueOnce({ status: "CAPTURED" });
+    mocks.fetchRazorpayPayment.mockResolvedValueOnce({
+      id: "pay_123",
+      order_id: "order_123",
+      amount: 50000,
+      currency: "INR",
+      status: "captured",
+      captured: true,
+    });
+
+    const response = await POST(confirmationRequest());
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ referenceNumber: "AMN-123", status: "CAPTURED" });
+    expect(mocks.captureDonation).toHaveBeenCalledWith("order_123", "pay_123", 50000);
+    expect(mocks.updateMany).not.toHaveBeenCalled();
   });
 });

@@ -22,10 +22,10 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
 }
 
 const cases = [
-  { route: '/stories', selector: '.v2-stories-feature-copy h2', fixture: '<div class="v2-stories-feature-copy"><h2>Featured field note</h2></div>' },
-  { route: '/faith-and-reflections', selector: '.v2-faith-standard h2', fixture: '<section class="v2-faith-standard"><h2>Editorial trust</h2></section>' },
-  { route: '/faith-and-reflections', selector: '.v2-faith-feature-copy h2', fixture: '<div class="v2-faith-feature-copy"><h2>Featured reflection</h2></div>' },
-  { route: '/our-work', selector: '.v2-cause-summary-title', fixture: '<details class="v2-cause-disclosure"><summary class="v2-cause-summary"><h2 class="v2-cause-summary-heading"><span class="v2-cause-summary-copy"><span class="v2-cause-summary-title">Medical & Financial Relief</span></span></h2></summary></details>' },
+  { route: '/stories', selector: '.v2-stories-feature-copy h2', fixtureKind: 'stories-feature' },
+  { route: '/faith-and-reflections', selector: '.v2-faith-standard h2', fixtureKind: 'faith-standard' },
+  { route: '/faith-and-reflections', selector: '.v2-faith-feature-copy h2', fixtureKind: 'faith-feature' },
+  { route: '/our-work', selector: '.v2-cause-summary-title', fixtureKind: 'cause-summary' },
 ];
 
 for (const width of [1440, 390]) {
@@ -37,24 +37,42 @@ for (const width of [1440, 390]) {
       const response = await page.goto(sample.route, { waitUntil: 'domcontentloaded' });
       expect(response?.ok(), `${sample.route} should render`).toBeTruthy();
 
-      const metrics = await page.evaluate(({ selector, fixture }) => {
+      const metrics = await page.evaluate(({ selector, fixtureKind }) => {
+        const add = (parent, tag, className, text) => {
+          const node = document.createElement(tag);
+          if (className) node.className = className;
+          if (text) node.textContent = text;
+          parent.appendChild(node);
+          return node;
+        };
+
         let hero = document.querySelector('.page-hero__title');
         if (!hero) {
-          const host = document.createElement('section');
-          host.className = 'page-hero page-hero--level1';
+          const host = add(document.body, 'section', 'page-hero page-hero--level1');
           host.setAttribute('data-visual-test-fixture', 'page-hero');
-          host.innerHTML = '<div class="page-hero__shell"><div class="page-hero__grid"><div class="page-hero__copy"><h1 class="page-hero__title">Amaana Foundation</h1></div></div></div>';
-          document.body.appendChild(host);
-          hero = host.querySelector('.page-hero__title');
+          const shell = add(host, 'div', 'page-hero__shell');
+          const grid = add(shell, 'div', 'page-hero__grid');
+          const copy = add(grid, 'div', 'page-hero__copy');
+          hero = add(copy, 'h1', 'page-hero__title', 'Amaana Foundation');
         }
 
         let heading = document.querySelector(selector);
         if (!heading) {
-          const host = document.createElement('div');
+          const host = add(document.body, 'div');
           host.setAttribute('data-visual-test-fixture', 'route-heading');
-          host.innerHTML = fixture;
-          document.body.appendChild(host);
-          heading = document.querySelector(selector);
+
+          if (fixtureKind === 'stories-feature') {
+            heading = add(add(host, 'div', 'v2-stories-feature-copy'), 'h2', '', 'Featured field note');
+          } else if (fixtureKind === 'faith-standard') {
+            heading = add(add(host, 'section', 'v2-faith-standard'), 'h2', '', 'Editorial trust');
+          } else if (fixtureKind === 'faith-feature') {
+            heading = add(add(host, 'div', 'v2-faith-feature-copy'), 'h2', '', 'Featured reflection');
+          } else if (fixtureKind === 'cause-summary') {
+            const details = add(host, 'details', 'v2-cause-disclosure');
+            const summary = add(details, 'summary', 'v2-cause-summary');
+            const title = add(add(add(summary, 'h2', 'v2-cause-summary-heading'), 'span', 'v2-cause-summary-copy'), 'span', 'v2-cause-summary-title', 'Medical & Financial Relief');
+            heading = title;
+          }
         }
 
         return hero && heading ? {
@@ -254,3 +272,382 @@ test('policy routes preserve long-form reading hierarchy', async ({ page }) => {
     expect(lineHeight).toBeGreaterThanOrEqual(1.65);
   }
 });
+
+
+for (const width of [390, 1280]) {
+  for (const surface of [
+    { path: '/governance', selector: '.governance-summary span', count: 3 },
+    { path: '/privacy', selector: '.v2-policy-principles span', count: 3 },
+    { path: '/privacy', selector: '.v2-policy-layout > aside > p', count: 1 },
+  ]) {
+    test(`readable labels ${surface.selector} at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+      const response = await page.goto(surface.path, { waitUntil: 'domcontentloaded' });
+      expect(response?.ok()).toBeTruthy();
+      const labels = page.locator(surface.selector);
+      await expect(labels).toHaveCount(surface.count);
+      for (const label of await labels.all()) {
+        expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
+      }
+      await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      for (const label of await labels.all()) {
+        expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
+        expect(await label.evaluate(node => node.scrollWidth <= node.clientWidth + 1)).toBe(true);
+      }
+    });
+  }
+}
+
+for (const width of [390, 1280]) {
+  test(`private assistance eyebrow remains readable at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+    const response = await page.goto('/request-assistance', { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBeTruthy();
+    const label = page.locator('.v2-assistance-form .v2-form-heading > span');
+    await expect(label).toHaveCount(1);
+    await expect(label).toHaveText('Private submission');
+    expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
+    await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
+    const contained = await label.evaluate(node => {
+      const range = document.createRange();
+      range.selectNodeContents(node);
+      const host = node.closest('.v2-form-heading').getBoundingClientRect();
+      return [...range.getClientRects()].every(rect => rect.left >= host.left - 1 && rect.right <= host.right + 1);
+    });
+    expect(contained).toBe(true);
+  });
+}
+
+for (const width of [390, 1280]) {
+  for (const state of ['received', 'tracking', 'acknowledgement']) {
+    test(`private ${state} metadata remains readable at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+      const reference = 'SYNTHETIC-READABILITY-ONLY';
+      const token = 'synthetic-readability-token-no-real-record';
+      await page.route('**/api/assistance/status', route => route.fulfill({
+        status: 200, json: { found: true, status: 'SUBMITTED', createdAt: '2026-10-01T00:00:00Z', updatedAt: '2026-10-02T00:00:00Z' },
+      }));
+      await page.route('**/api/donations/acknowledgement', route => route.fulfill({
+        status: 200, json: {
+          found: true,
+          presentation: { tone: 'captured', heading: 'Synthetic acknowledgement', summary: 'Browser-only typography fixture.', statusLabel: 'Captured' },
+          donation: { referenceNumber: reference, receiptNumber: 'SYNTHETIC-RECEIPT', donorName: 'Synthetic donor', givingIntent: 'GENERAL', amount: 100,
+            refundedAmount: 0, recordDate: '2026-10-01T00:00:00Z', providerPaymentId: null, appeal: { title: 'Synthetic appeal', slug: 'synthetic-appeal' } },
+        },
+      }));
+      const fragment = new URLSearchParams({ reference, token }).toString();
+      const path = state === 'acknowledgement'
+        ? `/donations/${reference}/acknowledgement#token=${token}`
+        : `/request-assistance/${state === 'tracking' ? 'status' : 'received'}#${fragment}`;
+      expect((await page.goto(path, { waitUntil: 'domcontentloaded' }))?.ok()).toBeTruthy();
+      const selectors = state === 'acknowledgement'
+        ? ['.v2-receipt-status > span', '.v2-receipt-sheet-head span']
+        : ['.v2-reference-block > span', '.v2-state-steps > span'];
+      for (const selector of selectors) {
+        const label = page.locator(selector);
+        await expect(label).toHaveCount(1);
+        await expect(label).toBeVisible();
+        expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
+      }
+      await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      for (const selector of selectors) {
+        const label = page.locator(selector);
+        expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
+        const contained = await label.evaluate(node => {
+          const range = document.createRange();
+          range.selectNodeContents(node);
+          const host = node.parentElement.getBoundingClientRect();
+          return [...range.getClientRects()].every(rect => rect.left >= host.left - 1 && rect.right <= host.right + 1);
+        });
+        expect(contained, selector).toBe(true);
+      }
+    });
+  }
+}
+
+const readablePublicSurfaces = [
+  [
+    "/",
+    ".v3-proof-label, .v3-work-card-body small"
+  ],
+  [
+    "/our-work",
+    ".page-hero__eyebrow, .v2-initiative-copy small, [class*=\"filterLabel\"]"
+  ],
+  [
+    "/impact",
+    ".page-hero__eyebrow, .v2-impact-tile-copy small, .v2-impact-tile-action"
+  ],
+  [
+    "/appeals",
+    ".page-hero__eyebrow, .v2-appeal-card-head, .v2-appeal-progress-foot"
+  ],
+  [
+    "/stories",
+    ".page-hero__eyebrow, .v2-stories-card-copy > span, .v2-stories-card-copy small"
+  ],
+  [
+    "/faith-and-reflections",
+    ".page-hero__eyebrow, .v2-faith-library-item > span, .v2-faith-library-item > small"
+  ],
+  [
+    "/recognition",
+    ".page-hero__eyebrow, [class*=\"meta\"] > span, [class*=\"meta\"] dt"
+  ],
+  [
+    "/privacy",
+    ".page-hero__eyebrow, [class*=\"matrixGrid\"] span"
+  ],
+  [
+    "/transparency",
+    ".page-hero__eyebrow, .v2-transparency-folio-head, .v2-transparency-folio-foot"
+  ],
+  [
+    "/request-assistance",
+    ".page-hero__eyebrow, .v2-assistance-form .v2-form-heading > span"
+  ],
+  [
+    "/our-work/eid-gift-kits",
+    ".page-hero__eyebrow, .campaign-impact-strip span, .campaign-history-note span"
+  ]
+];
+for (const width of [390, 1280]) {
+  for (const [path, selector] of readablePublicSurfaces) {
+    test(`public metadata readability ${path} at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+      // A DOMContentLoaded-only wait can race a late document navigation
+      // after the test sets an inline root font-size; wait for the full load.
+      expect((await page.goto(path, { waitUntil: 'load' }))?.ok()).toBeTruthy();
+      const labels = page.locator(selector);
+      expect(await labels.count(), `${path} must expose real metadata`).toBeGreaterThan(0);
+      const read = () => labels.evaluateAll(nodes => nodes.filter(node =>
+        node.getClientRects().length && getComputedStyle(node).visibility !== 'hidden'
+      ).map(node => ({ text: node.textContent?.trim(), size: parseFloat(getComputedStyle(node).fontSize) })));
+      const normal = await read();
+      expect(normal.length, `${path} must expose visible metadata`).toBeGreaterThan(0);
+      for (const label of normal) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(12);
+      // Install root enlargement on the *next document*, not the previous
+      // document that can be replaced by a late redirect or navigation.
+      // Root and labels are measured atomically after the new page loads.
+      await page.addInitScript(() => {
+        const applyScale = () => {
+          const style = document.createElement('style');
+          style.dataset.amaanaTestRootScale = '200';
+          style.textContent = 'html:root { font-size: 200% !important; }';
+          document.head.append(style);
+        };
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', applyScale, { once: true });
+        } else {
+          applyScale();
+        }
+      });
+      expect((await page.reload({ waitUntil: 'load' }))?.ok()).toBeTruthy();
+      const scaled = await page.evaluate(selector => ({
+        root: parseFloat(getComputedStyle(document.documentElement).fontSize),
+        labels: [...document.querySelectorAll(selector)]
+          .filter(node => node.getClientRects().length && getComputedStyle(node).visibility !== 'hidden')
+          .map(node => ({ text: node.textContent?.trim(), size: parseFloat(getComputedStyle(node).fontSize) })),
+      }), selector);
+      expect(scaled.root, `${path}: computed root after enlarged document load`).toBeGreaterThanOrEqual(32);
+      expect(scaled.labels.length, `${path}: visible labels after enlarged load`).toBeGreaterThan(0);
+      for (const label of scaled.labels) expect(label.size, `${path}: ${label.text}`).toBeGreaterThanOrEqual(24);
+    });
+  }
+}
+
+for (const width of [390, 1280]) {
+  test(`shared rail, footer and Companion labels stay readable at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    // Fix the client clock and API response so the loaded prayer layout is
+    // exercised without external timing services or local-date rollover.
+    await page.clock.setFixedTime(new Date('2026-10-12T05:00:00Z'));
+    await page.route('**/api/public/islamic-companion?*', route => route.fulfill({
+      status: 200,
+      json: {
+        school: new URL(route.request().url()).searchParams.get('school'),
+        today: { date: '2026-10-12', timings: { Fajr: '05:00', Sunrise: '06:00', Dhuhr: '12:30', Asr: '16:00', Maghrib: '18:00', Isha: '19:30' } },
+        tomorrow: null,
+        method: 'Browser regression fixture',
+        asr: 'Hanafi',
+        moon: null,
+        eveningMoon: null,
+        note: 'Synthetic timings for layout verification only.',
+      },
+    }));
+    expect((await page.goto('/about')).ok()).toBe(true);
+    const selectors = [
+      '.amaana-rail-label',
+      '.amaana-live-badge',
+      '.site-footer .footer-kicker',
+      '.footer-brand-copy small',
+      ...(width > 640 ? ['.amaana-companion-dock small'] : []),
+    ];
+    for (const scale of [1, 2]) {
+      if (scale === 2) {
+        // Measure a freshly loaded enlarged document. Separate in-place root
+        // mutations and text reads previously observed inconsistent hydration.
+        await page.addInitScript(() => {
+          const applyScale = () => {
+            const style = document.createElement('style');
+            style.dataset.amaanaTestRootScale = '200';
+            style.textContent = 'html:root { font-size: 200% !important; }';
+            document.head.append(style);
+          };
+          if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', applyScale, { once: true });
+          } else {
+            applyScale();
+          }
+        });
+        expect((await page.reload({ waitUntil: 'load' }))?.ok()).toBeTruthy();
+      }
+      for (const selector of selectors) {
+        const label = page.locator(selector);
+        await expect(label).toHaveCount(1);
+        await expect(label).toBeVisible();
+        const metrics = await label.evaluate(node => ({
+          root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+          text: Number.parseFloat(getComputedStyle(node).fontSize),
+        }));
+        expect(metrics.root, selector + ': root size').toBeGreaterThanOrEqual(16 * scale);
+        expect(metrics.text, selector + ': text size').toBeGreaterThanOrEqual(12 * scale);
+      }
+      await page.locator('.amaana-companion-dock button').click();
+      const kicker = page.locator('.amaana-companion-kicker');
+      const note = page.locator('.amaana-companion-view .amaana-companion-note').first();
+      const reading = page.locator('.amaana-daily-ayah blockquote');
+      for (const [label, minimum] of [[kicker, 12], [note, 12], [reading, 20]]) {
+        await expect(label).toBeVisible();
+        const metrics = await label.evaluate(node => ({
+          root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+          text: Number.parseFloat(getComputedStyle(node).fontSize),
+        }));
+        expect(metrics.root).toBeGreaterThanOrEqual(16 * scale);
+        expect(metrics.text).toBeGreaterThanOrEqual(minimum * scale);
+      }
+      await page.getByRole('tab', { name: 'Salah & Hijri' }).click();
+      const location = page.locator('.amaana-companion-location span');
+      const hijriNote = page.locator('.amaana-hijri small');
+      for (const label of [location, hijriNote]) {
+        await expect(label).toBeVisible();
+        const metrics = await label.evaluate(node => ({
+          root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+          text: Number.parseFloat(getComputedStyle(node).fontSize),
+        }));
+        expect(metrics.root).toBeGreaterThanOrEqual(16 * scale);
+        expect(metrics.text).toBeGreaterThanOrEqual(12 * scale);
+      }
+      await expect(page.locator('.amaana-salah-times>div')).toHaveCount(6);
+      await expect(page.locator('.amaana-next-salah strong')).toBeVisible();
+      const wrapping = await page.locator('.amaana-next-salah strong, .amaana-salah-times>div').evaluateAll(nodes =>
+        nodes.map(node => ({
+          wrap: getComputedStyle(node).flexWrap,
+          overflow: node.scrollWidth > node.clientWidth + 1,
+        })),
+      );
+      expect(wrapping).toHaveLength(7);
+      for (const row of wrapping) {
+        expect(row.wrap).toBe('wrap');
+        expect(row.overflow).toBe(false);
+      }
+      await page.getByRole('button', { name: 'Close companion', exact: true }).click();
+    }
+  });
+}
+
+for (const width of [390, 1440]) {
+  for (const scale of [100, 200]) {
+    test(`not-found heading keeps readable line spacing at ${width}px and ${scale}% text`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+      await page.addInitScript(percent => {
+        const apply = () => {
+          const style = document.createElement('style');
+          style.textContent = `html:root { font-size: ${percent}% !important; }`;
+          document.head.appendChild(style);
+        };
+        if (document.head) apply();
+        else document.addEventListener('DOMContentLoaded', apply, { once: true });
+      }, scale);
+      const response = await page.goto('/typography-acceptance-missing-page', { waitUntil: 'domcontentloaded' });
+      expect(response?.status()).toBe(404);
+      const heading = page.getByRole('heading', { level: 1, name: "We Couldn't Find That Page" });
+      await expect(heading).toBeVisible();
+      await expect.poll(() => heading.evaluate(node => {
+        const root = Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+        const style = getComputedStyle(node);
+        return { root, ratio: Number.parseFloat(style.lineHeight) / Number.parseFloat(style.fontSize) };
+      })).toMatchObject({ root: 16 * scale / 100 });
+      const metrics = await heading.evaluate(node => {
+        const style = getComputedStyle(node);
+        return { font: Number.parseFloat(style.fontSize), line: Number.parseFloat(style.lineHeight) };
+      });
+      expect(metrics.line).toBeGreaterThanOrEqual(metrics.font);
+    });
+  }
+}
+
+for (const scale of [100, 200]) {
+  test(`donation route labels meet the readable minimum at ${scale}% text`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 1000 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+    await page.addInitScript(percent => {
+      const apply = () => {
+        const style = document.createElement('style');
+        style.textContent = `html:root { font-size: ${percent}% !important; }`;
+        document.head.appendChild(style);
+      };
+      if (document.head) apply();
+      else document.addEventListener('DOMContentLoaded', apply, { once: true });
+    }, scale);
+    const response = await page.goto('/donate', { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBeTruthy();
+    const labels = page.getByRole('group', { name: 'Donation routes' }).locator('article > span');
+    await expect(labels).toHaveCount(2);
+    await expect.poll(() => labels.evaluateAll(nodes => ({
+      root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+      minimum: Math.min(...nodes.map(node => Number.parseFloat(getComputedStyle(node).fontSize))),
+    }))).toEqual({ root: 16 * scale / 100, minimum: 12 * scale / 100 });
+  });
+}
+
+for (const scale of [100, 200]) {
+  test(`impact index badges remain readable on light and media tiles at ${scale}% text`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 1000 });
+    await page.emulateMedia({ reducedMotion: 'reduce' });
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+    await page.addInitScript(percent => {
+      const apply = () => {
+        const style = document.createElement('style');
+        style.textContent = `html:root { font-size: ${percent}% !important; }`;
+        document.head.appendChild(style);
+      };
+      if (document.head) apply();
+      else document.addEventListener('DOMContentLoaded', apply, { once: true });
+    }, scale);
+    const response = await page.goto('/browser-acceptance/impact-typography', { waitUntil: 'domcontentloaded' });
+    expect(response?.ok()).toBeTruthy();
+    await expect(page.getByRole('heading', { name: 'Impact typography acceptance' })).toBeVisible();
+    const badges = page.locator('[data-typography-impact-fixture] .v2-impact-tile-index');
+    await expect(badges).toHaveCount(2);
+    await expect.poll(() => badges.evaluateAll(nodes => nodes.map(node => {
+      const style = getComputedStyle(node);
+      return { root: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
+        font: Number.parseFloat(style.fontSize), opacity: style.opacity,
+        color: style.color, background: style.backgroundColor };
+    }))).toEqual(Array.from({ length: 2 }, () => ({
+      root: 16 * scale / 100, font: 12 * scale / 100, opacity: '1',
+      color: 'rgb(18, 34, 57)', background: 'rgb(255, 253, 248)',
+    })));
+  });
+}

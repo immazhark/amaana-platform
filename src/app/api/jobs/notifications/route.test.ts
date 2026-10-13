@@ -54,6 +54,34 @@ describe("notification maintenance job", () => {
     expect(mocks.processPendingEmailNotifications).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["entirely multibyte", "é".repeat(32)],
+    ["one multibyte character", "s".repeat(31) + "é"],
+    ["another multibyte character", "£".repeat(32)],
+  ])("rejects %s credentials with equal character length safely", async (_label, supplied) => {
+    const response = await POST(request(supplied));
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({ error: "Unauthorized" });
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex.*nofollow.*noarchive/i);
+    expect(mocks.isEmailDeliveryEnabled).not.toHaveBeenCalled();
+    expect(mocks.pruneEphemeralSecurityLedgers).not.toHaveBeenCalled();
+    expect(mocks.processPendingEmailNotifications).not.toHaveBeenCalled();
+  });
+
+  it("preserves an exact matching multibyte configured credential", async () => {
+    const syntheticCredential = "é".repeat(32);
+    process.env.CRON_SECRET = syntheticCredential;
+    mocks.isEmailDeliveryEnabled.mockReturnValue(false);
+
+    const response = await POST(request(syntheticCredential));
+
+    expect(response.status).toBe(200);
+    expect(mocks.pruneEphemeralSecurityLedgers).toHaveBeenCalledTimes(1);
+    expect(mocks.processPendingEmailNotifications).not.toHaveBeenCalled();
+  });
+
   it("keeps unauthorized job responses private and non-indexable", async () => {
     const response = await POST(request("x".repeat(32)));
 

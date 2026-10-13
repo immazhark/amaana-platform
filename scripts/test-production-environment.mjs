@@ -119,10 +119,10 @@ test("validates optional public-media storage overrides without requiring them",
   assert.deepEqual(validateProductionEnvironmentContract(fallback), []);
 
   const partialCredentials = validEnv();
-  partialCredentials.PUBLIC_MEDIA_S3_ACCESS_KEY_ID = "public-access";
+  partialCredentials.MEDIA_S3_ACCESS_KEY_ID = "public-access";
   assert.match(
     validateProductionEnvironmentContract(partialCredentials).join("\n"),
-    /PUBLIC_MEDIA_S3_ACCESS_KEY_ID and PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY must be configured together/,
+    /MEDIA_S3_ACCESS_KEY_ID and MEDIA_S3_SECRET_ACCESS_KEY must be configured together/,
   );
 
   const insecureEndpoint = validEnv();
@@ -138,8 +138,8 @@ test("validates optional public-media storage overrides without requiring them",
   assert.match(validateProductionEnvironmentContract(malformedPathStyle).join("\n"), /PUBLIC_MEDIA_S3_FORCE_PATH_STYLE must be true or false/);
 
   const explicitOverrides = validEnv();
-  explicitOverrides.PUBLIC_MEDIA_S3_ACCESS_KEY_ID = "public-access";
-  explicitOverrides.PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY = "public-secret";
+  explicitOverrides.MEDIA_S3_ACCESS_KEY_ID = "public-access";
+  explicitOverrides.MEDIA_S3_SECRET_ACCESS_KEY = "public-secret";
   explicitOverrides.PUBLIC_MEDIA_S3_ENDPOINT = "https://public-s3.example.com";
   explicitOverrides.PUBLIC_MEDIA_S3_FORCE_PATH_STYLE = "true";
   assert.deepEqual(validateProductionEnvironmentContract(explicitOverrides), []);
