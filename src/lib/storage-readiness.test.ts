@@ -47,7 +47,7 @@ describe("getPublicMediaStorageReadiness", () => {
     });
   });
 
-  it("reports managed media delivery ready without a redundant external CDN URL", () => {
+  it("requires the configured same-origin /media base despite local proxy delivery", () => {
     process.env.S3_REGION = "ap-south-1";
     process.env.S3_BUCKET = "private-assistance";
     process.env.S3_ACCESS_KEY_ID = "private-key";
@@ -57,11 +57,19 @@ describe("getPublicMediaStorageReadiness", () => {
 
     expect(getPublicMediaStorageReadiness()).toEqual({
       uploadReady: true,
-      deliveryReady: true,
+      deliveryReady: false,
       separateBucketConfigured: true,
       usingFallbackCredentials: true,
       baseUrlConfigured: false,
       baseUrlSecure: false,
+    });
+
+    process.env.PUBLIC_MEDIA_BASE_URL = "https://amaanafoundation.org/media";
+    expect(getPublicMediaStorageReadiness()).toMatchObject({
+      uploadReady: true,
+      deliveryReady: true,
+      baseUrlConfigured: true,
+      baseUrlSecure: true,
     });
   });
 
