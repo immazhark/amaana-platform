@@ -231,6 +231,43 @@ describe("ensureCapturedDonationForRefund", () => {
     mocks.txNotificationCreate.mockResolvedValue({ id: "notification_1" });
   });
 
+  it.each([
+    ["DIRECT_UPI", null],
+    ["BANK_TRANSFER", "RAZORPAY"],
+    ["RAZORPAY", "OTHER_GATEWAY"],
+  ])("rejects a locally captured %s donation with provider %s as a Razorpay refund", async (paymentMethod, provider) => {
+    mocks.rootFindUnique.mockResolvedValueOnce({
+      id: "donation_cross_provider",
+      status: "CAPTURED",
+      paymentMethod,
+      provider,
+    });
+    await expect(ensureCapturedDonationForRefund("pay_1"))
+      .rejects.toThrow("Refund payment identity belongs to another donation method");
+    expect(mocks.fetchRazorpayPayment).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("rejects refund-first reconciliation when a provider order belongs to a direct transfer", async () => {
+    mocks.rootFindUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        id: "donation_direct",
+        amount: decimal(500),
+        paymentMethod: "DIRECT_UPI",
+        provider: null,
+      });
+    mocks.fetchRazorpayPayment.mockResolvedValue({
+      id: "pay_1", order_id: "order_1", amount: 50_000,
+      currency: "INR", status: "captured", captured: true,
+    });
+
+    await expect(ensureCapturedDonationForRefund("pay_1"))
+      .rejects.toThrow("Refund payment order belongs to another donation method");
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
+  });
+
   it("does not call Razorpay again when the payment is already captured locally", async () => {
     mocks.rootFindUnique.mockResolvedValueOnce({ id: "donation_1", status: "CAPTURED", paymentMethod: "RAZORPAY", provider: "RAZORPAY" });
 
