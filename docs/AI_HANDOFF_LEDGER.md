@@ -1,3 +1,15 @@
+## 2026-10-14 IST — R-054 lazy thumbnail sizing and acceptance corrections
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parent8990d6d687135ddb1391d566870e1cb610549d09. Owner cx authorized continuation; no concurrent writer.
+
+Older hosted browser run38449403934 failed thumbnail acceptance at390px/200% (64w candidate versus128px rendered width) and at tablet/desktop image readiness. HTML source-size rem units resolve like Media Queries against initial font size, not author CSS enlargement. WorkPortfolio now uses auto first on its existing lazy optimized images, with prior mobile/tablet/desktop rem hints as legacy fallback. Explicit CSS slot and intrinsic dimensions remain. Primary references: https://html.spec.whatwg.org/multipage/images.html#sizes-attributes and https://drafts.csswg.org/mediaqueries-4/#units. No new client hook or optimizer host allowance.
+
+Correct the synthetic fixture: prior one-pixel PNG fails strict sharp decoding; its pixel size also violates larger width descriptors and can yield zero density-corrected naturalWidth. Generate flat-color PNG at each requested candidate width and matching4:3 aspect using existing app sharp dependency, resolved with the existing browser-workspace createRequire pattern. No real media request or new dependency. Seven32–384w synthetic candidate rasters strictly decode at declared widths. Keep currentSrc candidate bounds, CSS slot dimensions, lazy loading and enlarged-text checks.
+
+R-025 acceptance-only correction: iterating nth locators over shrinking details:not([open]) skipped disclosures and waited forever; hosted log confirms nth(3) timeout twice. Iterate stable disclosure locators and click only those still closed. Actual user clicks and all heading line-height/containment assertions remain. No typography source closure added.
+
+Validation:25focused portfolio/public-media tests pass; restoring previous thumbnail hint fails the updated actual-render regression. Full suite999passed/9database-dependent skipped; TypeScript, focused zero-warning ESLint, browser syntax and diff checks pass. Clean compile-mode build passes:JS812195/819200bytes,CSS346266/348160bytes; secret/static-image guards pass. Actual browser execution and deployed transfer/CWV remain unverified; R-054 stays partial. No main merge/deploy or live provider/data changes. Next: navigation feedback failures and remaining original-register work.
+
 ## 2026-10-14 IST — delegated motion press ownership corrected
 
 Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parent c48e1030737f26b35a7b3392e84a89d3d28183b6. Owner cx authorized continuation; no concurrent writer.

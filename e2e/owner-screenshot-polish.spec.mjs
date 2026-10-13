@@ -1,5 +1,10 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+
+const requireApp = createRequire(path.join(process.env.AMAANA_APP_WORKSPACE ?? process.cwd(), 'package.json'));
+const sharp = requireApp('sharp');
 
 async function fixture(page, route, width = 1440) {
   await page.setViewportSize({ width, height: 1000 });
@@ -134,11 +139,18 @@ for (const width of [390, 768, 1440]) {
       await page.emulateMedia({ reducedMotion: 'reduce' });
       await page.route('**/api/public/live-rail', route => route.fulfill({ json: { items: [] } }));
       await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
-      // Synthetic raster only: no managed storage or beneficiary photograph request.
+      // Match descriptor width: a one-pixel raster can report zero naturalWidth
+      // after density correction. No storage or beneficiary photograph request.
       await page.route('**/_next/image?*', async route => {
         const source = new URL(route.request().url()).searchParams.get('url');
         if (source !== '/media/2026/thumbnail-sizing-fixture.webp') return route.continue();
-        await route.fulfill({ contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64') });
+        const candidate = Number(new URL(route.request().url()).searchParams.get('w'));
+        expect(Number.isInteger(candidate) && candidate > 0 && candidate <= 3840).toBe(true);
+        const body = await sharp({ create: {
+          width: candidate, height: Math.max(1, Math.round(candidate * 3 / 4)),
+          channels: 3, background: '#1e465a',
+        } }).png().toBuffer();
+        await route.fulfill({ contentType: 'image/png', body });
       });
       await page.addInitScript(percent => {
         const apply = () => {
@@ -156,7 +168,7 @@ for (const width of [390, 768, 1440]) {
       const image = page.locator('.v2-initiative-thumb img[alt="Synthetic thumbnail sizing fixture"]').first();
       await image.scrollIntoViewIfNeeded();
       await expect(image).toBeVisible();
-      await expect(image).toHaveAttribute('sizes', '(max-width: 600px) 4rem, (max-width: 1000px) 5.5rem, 6.5rem');
+      await expect(image).toHaveAttribute('sizes', 'auto, (max-width: 600px) 4rem, (max-width: 1000px) 5.5rem, 6.5rem');
       await expect(image).toHaveAttribute('loading', 'lazy');
       await expect.poll(() => image.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
       const metrics = await image.evaluate(node => ({

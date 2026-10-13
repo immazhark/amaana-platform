@@ -677,8 +677,10 @@ for (const width of [390, 1440]) {
         const response = await page.goto(surface.route, { waitUntil: 'load' });
         expect(response?.ok()).toBe(true);
         await page.evaluate(() => document.fonts.ready);
-        for (const summary of await page.locator('details.v2-cause-disclosure:not([open]) > summary').all()) {
-          await summary.click();
+        // Stable collection: opening one detail shrinks a :not([open]) locator
+        // and makes its later nth() locators skip entries or wait forever.
+        for (const detail of await page.locator('details.v2-cause-disclosure').all()) {
+          if (!await detail.evaluate(node => node.open)) await detail.locator(':scope > summary').click();
         }
         const headings = page.locator(surface.selector);
         expect(await headings.count(), surface.selector).toBeGreaterThan(0);

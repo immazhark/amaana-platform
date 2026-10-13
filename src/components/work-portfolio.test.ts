@@ -20,9 +20,9 @@ const causes: Causes = [{
 }];
 
 describe("Our Work thumbnail delivery", () => {
-  it("renders the actual optimized image with CSS-matching rem slots and lazy loading", () => {
+  it("uses rendered lazy-image width with explicit rem fallbacks", () => {
     const html = renderToStaticMarkup(createElement(WorkPortfolio, { causes, expanded: true }));
-    expect(html).toContain('sizes="(max-width: 600px) 4rem, (max-width: 1000px) 5.5rem, 6.5rem"');
+    expect(html).toContain('sizes="auto, (max-width: 600px) 4rem, (max-width: 1000px) 5.5rem, 6.5rem"');
     expect(html).toContain('loading="lazy"');
     expect(html).toContain('alt="Synthetic thumbnail sizing fixture"');
     expect(html).toMatch(/srcSet="[^\"]+ 96w/);
