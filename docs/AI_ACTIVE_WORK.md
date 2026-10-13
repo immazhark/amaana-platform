@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-066 Stories feature dead base padding
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent a33cb5f999097039cfe938fae23047b84471c93f. Removed early .v2-stories-feature padding-block clamp(5rem,9vw,8rem), which is superseded by a later unscoped same-specificity clamp(3.75rem,6vw,5.75rem) and retains narrower responsive overrides. Base background retained. Exact source preconditions verified. No full cascade/browser or lint execution, so R-066 remains PARTIAL and duplicate-selector exception stays. No merge/deploy/payment or production data actions.
+
 ## 2026-10-14 IST — R-066 Stories card dead declarations
 
 Ownership: REVIEW_PENDING. PR #292 / fix/direct-transfer-feedback-20261013; parent 8b0bd2db4ec4bea589bb79a6fb708a9f88c4e02e. Removed six superseded source declarations: card-copy padding, card H3 font-size, card min-height, border-top, border-bottom and transition. Existing later same-specificity rules supply the winning properties; selectors, responsive overrides and source order remain intact. Exact source checks performed; no actual lint/build/browser or complete cascade proof. Cumulative Stories overwritten-property removals in recent batches: thirteen including prior H2 (1) and feature/grid (6). R-066 PARTIAL; Stylelint duplicate-selector exception retained. No merge/deploy/payment or live data operations.
