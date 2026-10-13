@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-026 Stories feature kicker contrast
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent bd72fd762848aeb88d2abd05ab68e7b77e99054d. Corrected source-level Stories feature-copy small kicker foreground #8f7450 on #f3ecdf (calculated contrast 3.74:1) to existing canonical --af-color-gold-ink, preserving typography, layout and gold accents. Exact source replacement checked; no browser/build acceptance. R-026 remains PARTIAL pending actual rendered and additional route contrast verification. No merge/deploy or live data/provider actions.
+
 ## 2026-10-14 IST — R-026 Stories light-surface micro-label contrast
 
 Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent 85ce02a3c6fd3165c2b6619dbbdc6fd44e5d6fda. Four actual Stories labels used #aa8a5b, #8c7659 or #9b7d51 against white-paper #fffdf8 surfaces (calculated contrast ~3.18:1, 4.26:1 and 3.79:1). Switched only their foreground color to existing --af-color-gold-ink (#604407; source-evaluated ~8.88:1 on #fffdf8). Targets: card metadata span, card category small, detail rule label and detail source-note label. Existing font sizes, layout, hierarchy, other gold decorations and backgrounds remain. Exact source preconditions verified. R-026 PARTIAL pending rendered/cascade and mobile browser acceptance; no full build or browser validation completed in this tool environment. No merge/deploy or production/provider operations.
