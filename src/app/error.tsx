@@ -1,5 +1,6 @@
 "use client";
 
+import "./error-experience.css";
 import Link from "@/components/navigation-link";
 import { useEffect } from "react";
 

@@ -151,7 +151,7 @@ jobs:
 
       - run: npm run prisma:generate
       - run: npm run prisma:validate
-      - run: node --experimental-strip-types --test scripts/test-security-headers.mjs
+      - run: node --test scripts/test-security-headers.mjs
       - run: npm run lint
       - run: npm run format:check:governed
       - run: npm run typecheck
