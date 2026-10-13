@@ -97,7 +97,7 @@ describe("failed payment identity before persistence", () => {
   });
 
   it("acknowledges a persisted duplicate without replaying its failure update", async () => {
-    mocks.eventFindUnique.mockResolvedValue({ id: "event_123", eventType: "payment.failed" });
+    mocks.eventFindUnique.mockResolvedValue({ id: "event_123", eventType: "payment.failed", payload: { event: "payment.failed", payment: entity } });
 
     expect((await POST(signedRequest(entity))).status).toBe(200);
     expect(mocks.transaction).not.toHaveBeenCalled();
