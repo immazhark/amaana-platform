@@ -635,6 +635,22 @@ test('canceled same-origin link clicks do not trap visitors behind the loading o
   await expect(page.locator('main#main')).toBeVisible();
 });
 
+test('aria-disabled links do not trigger the route loading overlay', async ({ page }) => {
+  await openPublicPage(page, '/');
+  await page.evaluate(() => {
+    const link = document.createElement('a');
+    link.href = '/about';
+    link.setAttribute('aria-disabled', 'true');
+    link.textContent = 'Disabled navigation fixture';
+    link.addEventListener('click', event => event.preventDefault());
+    document.body.append(link);
+    link.click();
+    link.remove();
+  });
+  await expect(page.locator('.amaana-navigation-loading')).toHaveCount(0);
+  await expect(page.locator('main#main')).toBeVisible();
+});
+
 test('mobile navigation traps keyboard focus while open and does not expose the page behind it', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await openPublicPage(page, '/about');
