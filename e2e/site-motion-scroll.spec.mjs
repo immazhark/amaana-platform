@@ -73,6 +73,7 @@ test('Motion feedback restores styles and responds to live preference changes', 
 
 test('native hover and press animations release ownership without stale effects', async ({ page }) => {
   await open(page);
+  await page.locator('.nav-donate').evaluate(node => node.addEventListener('click', event => event.preventDefault()));
   const action = page.locator('.nav-donate');
   await action.hover();
   await expect.poll(() => action.evaluate(node => node.style.translate)).toBe('0px -1px');
