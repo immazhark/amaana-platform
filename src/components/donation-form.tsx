@@ -221,7 +221,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
             });
             const result = await confirmation.json();
             if (!confirmation.ok) {
-              showError(result.error ?? "Payment verification is pending. Please retain your Razorpay payment confirmation and do not submit another payment.");
+              showError(typeof result?.error === "string" && result.error.trim() ? result.error.slice(0, 500) : "Payment verification is pending. Please retain your Razorpay payment confirmation and do not submit another payment.");
               changePhase("reconciliation");
               return;
             }

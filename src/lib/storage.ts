@@ -299,8 +299,12 @@ export async function getPublicMediaObject(objectKey: string) {
   const body = object.Body;
   if (object.ContentLength !== undefined &&
       (!Number.isSafeInteger(object.ContentLength) || object.ContentLength <= 0 || object.ContentLength > MAX_FILE_BYTES)) {
-    if ("destroy" in body && typeof body.destroy === "function") body.destroy();
-    else if ("cancel" in body && typeof body.cancel === "function") await body.cancel();
+    try {
+      if ("destroy" in body && typeof body.destroy === "function") body.destroy();
+      else if ("cancel" in body && typeof body.cancel === "function") void Promise.resolve(body.cancel()).catch(() => undefined);
+    } catch {
+      // Best-effort cleanup must not replace the known size-limit rejection.
+    }
     throw new Error("Public media object exceeds the verified size boundary");
   }
   if (!(Symbol.asyncIterator in body)) throw new Error("Public media object body is not a readable stream");

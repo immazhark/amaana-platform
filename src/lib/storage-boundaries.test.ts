@@ -145,6 +145,21 @@ describe("delivery configuration is validated before public persistence", () => 
 });
 
 describe("public object reads enforce upload-size and completeness boundaries", () => {
+  it.each(["stalled", "rejected", "throwing"] as const)("preserves an oversized-object rejection when stream cancellation is %s", async outcome => {
+    vi.useFakeTimers();
+    try {
+      const cancel = vi.fn(() => {
+        if (outcome === "throwing") throw new Error("synthetic synchronous cancellation failure");
+        return outcome === "stalled" ? new Promise<void>(() => {}) : Promise.reject(new Error("synthetic cancellation failure"));
+      });
+      sdk.send.mockResolvedValue({ Body: { cancel }, ContentLength: 5 * 1024 * 1024 + 1 });
+      const result = getPublicMediaObject(key).then(() => "unexpected success", error => (error as Error).message);
+      await vi.advanceTimersByTimeAsync(50);
+      expect(await Promise.race([result, Promise.resolve("rejection still pending")])).toMatch(/verified size boundary/);
+      expect(cancel).toHaveBeenCalledOnce();
+    } finally { vi.useRealTimers(); }
+  });
+
   it("closes an oversized object before reading its body", async () => {
     const consumed = vi.fn();
     const closed = vi.fn();

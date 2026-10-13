@@ -1,5 +1,17 @@
 # Amaana engineering checkpoint — 13 October 2026
 
+## 2026-10-13 — malformed payment feedback and media cancellation completed
+
+Ownership: REVIEW_PENDING for completed continuation of existing PR #292 / `fix/direct-transfer-feedback-20261013`, parent `c0ea335d2015f4b97a26928fc508847e38d7ea3a`. Owner `cx` authorized execution. Prior 0fd3838 full browser acceptance passed 1,424 Chromium and 24 Firefox/WebKit cases; final-parent CI 38417911131 passed fast, database and production, with browser still running. Those results do not certify this newer source.
+
+N-31 follow-up: non-string confirmation errors previously reached React rendering, where object-valued feedback could crash the payment form and discard its local follow-up state. Accept only non-empty string error feedback and bound it to 500 characters; otherwise use the existing verification-pending guidance. Preserve entered donor values, payment reconciliation and the duplicate-submission lock. Add five real-component browser cases for object/array/numeric/null/empty error payloads; hosted execution remains pending.
+
+N-28/N-18 supported media-reader occurrence: an oversized object with asynchronous stream cancellation previously stalled its known size-limit rejection or substituted a cancellation exception. Initiate best-effort cancellation without awaiting it, handle rejected cancellation, and preserve the known size error when cleanup throws. The original helper fails both stalled/rejected regression probes. Three actual-module cases now pass for stalled, rejected and synchronous-throw cancellation. Existing byte, completeness, key, private/public bucket, consent and readiness guards remain unchanged.
+
+Validation: 88 focused tests across seven relevant suites passed; final full unit/API suite 940 passed / 9 database-dependent skipped, 100 suites passed / 1 skipped. TypeScript, focused ESLint, journey syntax and whitespace passed. Clean compile-mode assets: JavaScript 819,070 / 819,200 bytes; CSS 346,217 / 348,160 bytes. Client secret-boundary and static image guards passed. Compile mode does not certify full prerender/database/browser acceptance. Fresh final-head hosted verification remains required.
+
+Same PR and branch. No main merge, deployment, real payment/email/applicant record, live storage operation or production-data write. No original-audit closure count or exhaustive security/AAA/performance claim. Publish this completed atomic batch; inspect fresh final-head acceptance before integration. No implementation writer remains active.
+
 ## 2026-10-13 — cleanup and payment follow-up correction completed
 
 Ownership: REVIEW_PENDING for completed source on existing PR #292 / `fix/direct-transfer-feedback-20261013`, parent `0fd383865c72fa09404081e95d2a98fc5b3d0a09`. Owner `cx` authorized continuation. Parent CI 38413754175 passed fast/unit/type/lint, isolated database and full production build/budgets; browser remains pending at the checkpoint. That result does not certify this newer source.

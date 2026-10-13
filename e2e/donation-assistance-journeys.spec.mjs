@@ -482,6 +482,29 @@ test.describe('donation journey without real payment', () => {
     });
   }
 
+  for (const [label, error] of [['object', { detail: 'invalid error object' }], ['array', [{ detail: 'invalid error object' }]], ['number', 123], ['null', null], ['empty', '']]) {
+    test(`malformed ${label} verification error retains the form and follow-up guidance`, async ({ page }) => {
+      let confirmations = 0;
+      await mockDonationOrder(page, { value: null });
+      await page.route('**/api/donations/confirm', route => {
+        confirmations++;
+        return route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error }) });
+      });
+      const submit = await openDonationFixture(page, 'success');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      const alert = page.locator('.form-error[role="alert"]');
+      await expect(alert).toContainText('Payment verification is pending');
+      await expect(alert).toBeFocused();
+      await expect(page.getByLabel('Full name')).toHaveValue('Acceptance Donor');
+      await expect(page.getByLabel(/Donation amount/)).toBeDisabled();
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(confirmations).toBe(1);
+      expect(new URL(page.url()).pathname).toBe('/browser-acceptance/donation');
+    });
+  }
+
   test('mocked verification failure locks the form against duplicate payment attempts', async ({ page }) => {
     const order = { value: null };
     await mockDonationOrder(page, order);
