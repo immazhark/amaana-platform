@@ -34,6 +34,26 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
   });
 }
 
+for (const width of [390, 1440]) {
+  test(`R-025 single-programme heading keeps readable line spacing at ${width}px and 200% text`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/programmes/seasonal-relief', { waitUntil: 'domcontentloaded' });
+    const heading = page.locator('.canonical-pathways--single article h2');
+    await expect(heading).toHaveCount(1);
+    for (const scale of ['100%', '200%']) {
+      await page.evaluate(value => { document.documentElement.style.fontSize = value; }, scale);
+      const metrics = await heading.evaluate(node => {
+        const style = getComputedStyle(node);
+        const fontSize = parseFloat(style.fontSize);
+        const lineHeight = parseFloat(style.lineHeight);
+        return { fontSize, lineHeight, width: node.getBoundingClientRect().width };
+      });
+      expect(metrics.lineHeight / metrics.fontSize).toBeGreaterThanOrEqual(1.1);
+      expect(metrics.width).toBeGreaterThan(0);
+    }
+  });
+}
+
 test('homepage canonical fallbacks load and functional controls contain SVG rather than glyphs', async ({ page, request }) => {
   for (const name of ['origin', 'eid', 'medical', 'taleem', 'qurbani']) {
     const response = await request.get(`/hero/${name}.webp`);
