@@ -48,6 +48,37 @@ describe("getPublicMediaStorageReadiness", () => {
     });
   });
 
+  it("reports managed media delivery ready without a redundant external CDN URL", () => {
+    process.env.S3_REGION = "ap-south-1";
+    process.env.S3_BUCKET = "private-assistance";
+    process.env.S3_ACCESS_KEY_ID = "private-key";
+    process.env.S3_SECRET_ACCESS_KEY = "private-secret";
+    process.env.PUBLIC_MEDIA_S3_BUCKET = "public-media";
+    delete process.env.PUBLIC_MEDIA_BASE_URL;
+
+    expect(getPublicMediaStorageReadiness()).toEqual({
+      uploadReady: true,
+      deliveryReady: true,
+      separateBucketConfigured: true,
+      usingFallbackCredentials: true,
+      baseUrlConfigured: false,
+      baseUrlSecure: false,
+    });
+  });
+
+  it("still requires media storage and separate-bucket configuration", () => {
+    process.env.S3_REGION = "ap-south-1";
+    process.env.S3_BUCKET = "private-assistance";
+    process.env.S3_ACCESS_KEY_ID = "private-key";
+    process.env.S3_SECRET_ACCESS_KEY = "private-secret";
+    delete process.env.PUBLIC_MEDIA_S3_BUCKET;
+    delete process.env.PUBLIC_MEDIA_BASE_URL;
+
+    const readiness = getPublicMediaStorageReadiness();
+    expect(readiness.uploadReady).toBe(false);
+    expect(readiness.deliveryReady).toBe(false);
+  });
+
   it("uses dedicated server-only media credentials when configured", () => {
     process.env.S3_REGION = "ap-south-1";
     process.env.S3_BUCKET = "private-assistance";
