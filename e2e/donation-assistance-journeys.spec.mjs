@@ -89,6 +89,38 @@ async function openAssistance(page) {
   await expect(page.getByRole('heading', { name: 'Tell us about the request.' })).toBeVisible();
 }
 
+test.describe('checkout rejects malformed successful order responses', () => {
+  for (const [label, patch] of [
+    ['order identity', { orderId: null }],
+    ['payment amount', { amount: 100 }],
+    ['currency', { currency: 'USD' }],
+    ['provider key', { keyId: {} }],
+    ['receipt token', { receiptToken: null }],
+    ['donor details', { donor: null }],
+  ]) {
+    test(`invalid ${label} locks checkout without duplicate requests`, async ({ page }) => {
+      let orders = 0;
+      await page.route('**/api/donations/order', route => {
+        orders++;
+        return route.fulfill({
+          status: 201,
+          contentType: 'application/json',
+          body: JSON.stringify({ ...orderPayload(), ...patch }),
+        });
+      });
+      const submit = await openDonationFixture(page, 'success');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('An order may have been recorded');
+      await expect(page.getByLabel('Full name')).toHaveValue('Acceptance Donor');
+      await expect(page.getByLabel(/Donation amount/)).toHaveValue('250');
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(orders).toBe(1);
+    });
+  }
+});
+
 test('assistance errors are linked before keyboard focus reaches invalid input', async ({ page }) => {
   await openAssistance(page);
   await page.evaluate(() => {
