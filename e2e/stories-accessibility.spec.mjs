@@ -4,7 +4,9 @@ import { expect, test } from '@playwright/test';
 // checks do not depend on beneficiary stories being published in the database.
 function contrast(foreground, background) {
   const luminance = color => {
-    const channels = color.match(/[0-9.]+/g).slice(0, 3).map(Number);
+    const channels = color.startsWith('#')
+      ? [1, 3, 5].map(index => Number.parseInt(color.slice(index, index + 2), 16))
+      : color.match(/[0-9.]+/g).slice(0, 3).map(Number);
     const linear = channels.map(value => {
       const normalized = value / 255;
       return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
