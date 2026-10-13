@@ -106,6 +106,10 @@ test('R-054 approved umbrella collage is preloaded as the hero image', async ({ 
   await page.goto('/our-work/eid-gift-kits', { waitUntil: 'domcontentloaded' });
   const hero = page.locator('.page-hero [data-programme-artwork="eid-gift-kits"]');
   await expect(hero).toBeVisible();
-  await expect(hero).toHaveAttribute('fetchpriority', 'high');
   await expect(hero).not.toHaveAttribute('loading', 'lazy');
+  const preloaded = await hero.evaluate(img => [...document.querySelectorAll('link[rel="preload"][as="image"]')].some(link =>
+    (img.getAttribute('srcset') && link.getAttribute('imagesrcset') === img.getAttribute('srcset'))
+    || link.getAttribute('href') === img.getAttribute('src')
+  ));
+  expect(preloaded).toBe(true);
 });
