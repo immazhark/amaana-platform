@@ -192,9 +192,19 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
       // Reconcile that reported payment without opening another checkout.
       if (!isOpeningAttempt(attempt)) return;
       if (!orderResponse.ok) {
-        if (typeof order?.remainingAmount === "number") setRemainingHint(order.remainingAmount);
-        if (order?.fields) setFieldErrors(order.fields);
-        throw new Error(typeof order?.error === "string" ? order.error.slice(0, 500) : "Could not start checkout");
+        if (typeof order?.remainingAmount === "number" && Number.isSafeInteger(order.remainingAmount) && order.remainingAmount > 0 && order.remainingAmount <= 1_000_000) setRemainingHint(order.remainingAmount);
+        if (order?.fields && typeof order.fields === "object") {
+          const safeFields: DonationFieldErrors = {};
+          for (const field of ["amount", "donorName", "donorEmail", "donorPhone", "givingIntent", "domesticConfirmed"] as DonationField[]) {
+            const messages = order.fields[field];
+            if (Array.isArray(messages)) {
+              const first = messages.find(value => typeof value === "string" && value.trim());
+              if (first) safeFields[field] = [first.slice(0, 300)];
+            }
+          }
+          setFieldErrors(safeFields);
+        }
+        throw new Error(typeof order?.error === "string" && order.error.trim() ? order.error.slice(0, 500) : "Could not start checkout");
       }
 
       // A successful HTTP response is not proof of a usable checkout order.
