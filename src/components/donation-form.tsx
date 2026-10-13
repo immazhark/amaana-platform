@@ -211,7 +211,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
           }
           setFieldErrors(safeFields);
         }
-        showError(typeof order?.error === "string" && order.error.trim() ? order.error.slice(0, 500) : "Could not start checkout");
+        showError(typeof order?.error === "string" && order.error.trim() ? order.error.trim().slice(0, 500) : "Could not start checkout");
         resetUnpaidCheckout(attempt);
         return;
       }
@@ -257,7 +257,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
             });
             const result = await confirmation.json();
             if (!confirmation.ok) {
-              showError(typeof result?.error === "string" && result.error.trim() ? result.error.slice(0, 500) : "Payment verification is pending. Please retain your Razorpay payment confirmation and do not submit another payment.");
+              showError(typeof result?.error === "string" && result.error.trim() ? result.error.trim().slice(0, 500) : "Payment verification is pending. Please retain your Razorpay payment confirmation and do not submit another payment.");
               changePhase("reconciliation");
               return;
             }
