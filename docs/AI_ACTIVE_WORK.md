@@ -1,3 +1,13 @@
+## 2026-10-13 — original-audit closure follow-up and safe R-071 withdrawal
+
+Ownership: REVIEW_PENDING. User-authorized cx continuation of existing PR #292; only one implementation writer. R-026 light-background action fallback corrected in 16330b9 / 01a5341 and two viewport rendered regressions committed ae8a663 / 3a0515d. R-016 image-source CSP has already been constrained to known HTTPS origins with an existing header regression, so its register row was reclassified to implemented/release verification pending in 885f622. R-014 unsafe-inline script remains open; do not apply nonce-unaware changes to Razorpay/Next rendering.
+
+R-071 was considered and root, donation, assistance streamed loading boundaries, styles and four SSR test cases were initially authored. Historical register review exposed exact blocker: earlier loading.tsx rollout caused 56 browser failures and 7 flaky cases, including canonical redirects answering HTTP200 instead of 307/308 and missing initial HTML metadata/headings (CI 38285272953). To avoid repeating a documented regression, deleted all four newly added loading files and removed all 1566 bytes of appended skeleton CSS; final corrective commits 484a4bc, b82897b, ca6db96, 43c2bbe, 86211b1. R-071 remains open with a technical blocker, and existing navigation progress is preserved. No root or sensitive-route loading.tsx file remains on this branch.
+
+R-024 focused source scan covered additional public style modules (impact, campaign, policy, donation, appeals, stories, assistance, Companion, galleries, recognition and sponsorship). No static font-size declarations below 12px surfaced in these scanned files, but this is not exhaustive shorthand, computed-style, or screen-reader certification; R-024 stays partial.
+
+Final source/register head before this note a34c9af8a6d629173f713ccfbcda41aafc0d329d, hosted CI 38436913349 pending. No final-head type/build/browser success, deployment, merge, provider transaction or production data write claimed. Continue highest-impact open original-audit findings using source-confirmed corrections only, not CodeRabbit activity.
+
 ## 2026-10-13 — R-026 contrast boundary and R-016 source reconciliation
 
 Ownership: REVIEW_PENDING. User-authorized cx continuation on existing PR #292 / fix/direct-transfer-feedback-20261013. Verified previous head 97dd2a1 unchanged before implementation. Focus remains original R-001–R-095 defects, with CodeRabbit out of scope.
