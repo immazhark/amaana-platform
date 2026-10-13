@@ -46,6 +46,7 @@ export async function createMediaAsset(formData: FormData) {
   const file = fileValue instanceof File && fileValue.size > 0 ? fileValue : null;
   const manualUrl = safePublicUrl(formData.get("publicUrl"));
   if (!file && !manualUrl) throw new Error("Upload a file or provide an approved public URL");
+  if (file && manualUrl) throw new Error("Choose either a managed upload or a reviewed external URL, not both.");
 
   const requestedKind = String(formData.get("kind") ?? "IMAGE");
   const inferredKind: MediaKind = file?.type === "application/pdf" ? "DOCUMENT" : requestedKind === "DOCUMENT" ? "DOCUMENT" : "IMAGE";
