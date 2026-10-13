@@ -54,6 +54,23 @@ for (const width of [390, 1440]) {
   });
 }
 
+for (const width of [390, 1440]) {
+  test(`R-025 trust-evidence heading retains readable multiline leading at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/transparency', { waitUntil: 'domcontentloaded' });
+    const heading = page.locator('.canonical-body [data-trust-evidence-boundary] .v2-section-title');
+    await expect(heading).toHaveCount(1);
+    for (const scale of ['100%', '200%']) {
+      await page.evaluate(value => { document.documentElement.style.fontSize = value; }, scale);
+      const ratio = await heading.evaluate(node => {
+        const style = getComputedStyle(node);
+        return parseFloat(style.lineHeight) / parseFloat(style.fontSize);
+      });
+      expect(ratio).toBeGreaterThanOrEqual(1.1);
+    }
+  });
+}
+
 test('homepage canonical fallbacks load and functional controls contain SVG rather than glyphs', async ({ page, request }) => {
   for (const name of ['origin', 'eid', 'medical', 'taleem', 'qurbani']) {
     const response = await request.get(`/hero/${name}.webp`);
