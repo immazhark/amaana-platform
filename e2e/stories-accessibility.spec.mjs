@@ -104,3 +104,37 @@ test('Stories motion respects reduced-motion preference even after late polish s
   const durations = await read();
   for (const duration of durations) expect(duration).not.toBe('0s');
 });
+
+test('Stories card geometry keeps late cascade winners at desktop and mobile widths', async ({ page }) => {
+  await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+  const response = await page.goto('/stories', { waitUntil: 'load' });
+  expect(response?.ok()).toBe(true);
+  await page.evaluate(() => {
+    const fixture = document.createElement('div');
+    fixture.className = 'v2-home';
+    fixture.dataset.storiesGeometryFixture = 'true';
+    fixture.innerHTML = '<div class="v2-stories-grid"><article class="v2-stories-card"><div class="v2-stories-card-media"></div></article><article class="v2-stories-card wide"><div class="v2-stories-card-media"></div></article></div>';
+    document.body.append(fixture);
+  });
+  for (const width of [390, 620, 900, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    const measured = await page.evaluate(() => {
+      const fixture = document.querySelector('[data-stories-geometry-fixture]');
+      const rem = parseFloat(getComputedStyle(document.documentElement).fontSize);
+      const card = fixture.querySelector('.v2-stories-card');
+      const wide = fixture.querySelector('.v2-stories-card.wide');
+      const media = fixture.querySelector('.v2-stories-card-media');
+      return {
+        rem,
+        cardMin: parseFloat(getComputedStyle(card).minHeight),
+        wideMin: parseFloat(getComputedStyle(wide).minHeight),
+        mediaMin: getComputedStyle(media).minHeight,
+      };
+    });
+    expect(measured.cardMin / measured.rem, `ordinary card at ${width}px`).toBeCloseTo(20, 2);
+    expect(measured.wideMin / measured.rem, `wide card at ${width}px`).toBeCloseTo(25, 2);
+    if (width <= 620) {
+      expect(parseFloat(measured.mediaMin) / measured.rem, `media at ${width}px`).toBeCloseTo(15, 2);
+    }
+  }
+});
