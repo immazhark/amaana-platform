@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
@@ -73,13 +74,14 @@ export async function POST(request: Request) {
     const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
     if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) return NextResponse.json({ error: parsed.data.amount > remainingAmount ? `This appeal currently needs up to ₹${remainingAmount.toLocaleString("en-IN")} more.` : `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}, unless a smaller exact amount is all that remains.`, remainingAmount }, { status: parsed.data.amount > remainingAmount ? 409 : 400, headers: privateHeaders });
 
+    const donationId = randomUUID();
     const referenceNumber = createDonationReference();
     const receiptToken = createReceiptToken();
     let donation;
     try {
       donation = await prisma.donation.create({
         data: {
-          referenceNumber, appealId: appeal.id, donorName: parsed.data.donorName, donorEmail: parsed.data.donorEmail.toLowerCase(), donorPhone: parsed.data.donorPhone || null,
+          id: donationId, referenceNumber, appealId: appeal.id, donorName: parsed.data.donorName, donorEmail: parsed.data.donorEmail.toLowerCase(), donorPhone: parsed.data.donorPhone || null,
           isAnonymous: parsed.data.isAnonymous, givingIntent: parsed.data.givingIntent, domesticConfirmedAt: new Date(), amount: parsed.data.amount,
           status: "PENDING_VERIFICATION", paymentMethod: parsed.data.paymentMethod, provider: null, providerOrderId: null,
           transferReference: parsed.data.transferReference.toUpperCase(), transferredAt: parsed.data.transferredAt, receiptTokenHash: hashReceiptToken(receiptToken),
@@ -91,8 +93,17 @@ export async function POST(request: Request) {
         if (target.includes("transferReference")) {
           return NextResponse.json({ error: "This transfer reference has already been submitted. Please do not submit it again." }, { status: 409, headers: privateHeaders });
         }
+        throw error;
       }
-      throw error;
+      // Recover only this request's server-generated ID. A committed write may
+      // lose its acknowledgement; looking up the transfer reference instead
+      // could disclose a different donor's record or issue the wrong token.
+      const recovered = await prisma.donation.findUnique({
+        where: { id: donationId },
+        select: { id: true, referenceNumber: true, receiptTokenHash: true },
+      });
+      if (!recovered || recovered.receiptTokenHash !== hashReceiptToken(receiptToken)) throw error;
+      donation = recovered;
     }
 
     let uploadedKey: string | null = null;
