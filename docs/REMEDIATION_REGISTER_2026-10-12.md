@@ -1,3 +1,7 @@
+## 2026-10-13 — current execution checkpoint
+
+Ownership: HANDOFF_PENDING; this execution batch completed. See docs/EXECUTION_CHECKPOINT_2026-10-13.md for current evidence. PR286 integrated at e5875b3c. PR285 corrective d95ef0ae restored six parent validation files reverted by its merge resolution (N-23), passed CI38359261238 and guarded-merged at1c44ee9c. Combined candidate:332 tests across22 suites, typecheck and focused ESLint passed. Final integration release gates pending. Main remains2a8c35ad; no new production deployment or closure. Historical95 entries; current totals unreconciled.
+
 ## 2026-10-13 — combined corrective integration candidate
 
 - Actual d59f5e66 CI38306526542 result: fast/database/production passed; browser and final verify FAILED. Browser summary1156passed,5failed,1flaky. Four404 cases consistently measured .98 line-height/font ratio despite earlier fallback edits; one impact fixture failed and the second was flaky after injected main DOM disappeared. No full/cross-browser success for this head is claimed.
