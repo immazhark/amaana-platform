@@ -1,3 +1,9 @@
+## 2026-10-13 — actual HTTP cancellation regressions
+
+Ownership: CODEX_ACTIVE on the preserved N-28 follow-up branch; validated release3414858b remains unchanged. Added actual assistance and direct-transfer route cases using the real body reader/error class: an oversized stream whose cancel promise never settles returns private413 and does not create a case/donation or upload evidence. Both route cases fail with rejection stalled when only awaited cancellation is restored. Fixed source:34 tests across3 suites passed; TypeScript and focused ESLint passed. Assistance test mock now retains the actual error class to verify the real classifier. No live requests, provider calls or production database writes.
+
+Exact release CI38379820058 still reported running at checkpoint; no main merge based on the old tree's green CI. Worker image and other release checks passed. Preserve independent tests until current release is complete.
+
 ## 2026-10-13 — production promotion and independent upload batch checkpoint
 
 Ownership: HANDOFF_PENDING. Consolidated14269ad passed full CI38365252911 across fast/database/production/browser/final verify. PR282 guarded-merged into security3414858b3f325ee120b702e66109b6f67cfac87a, whose tree matches the validated candidate. PR215 remains the sole open release PR. Exact release CI38379820058: promotion readiness, fast, PostgreSQL and production build/budgets passed; browser/final still pending at checkpoint. Worker image CI38379820284 passed. No main merge or new deployment yet.

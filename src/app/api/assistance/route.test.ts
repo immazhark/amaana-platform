@@ -18,12 +18,9 @@ vi.mock("@/lib/assistance", () => ({
   hashTrackingToken: () => "hashed-tracking-token",
 }));
 
-vi.mock("@/lib/bounded-request-body", () => {
-  class RequestBodyTooLargeError extends Error {}
-  return {
-    RequestBodyTooLargeError,
-    readBodyBytesWithLimit: mocks.readBodyBytesWithLimit,
-  };
+vi.mock("@/lib/bounded-request-body", async importOriginal => {
+  const actual = await importOriginal<typeof import("@/lib/bounded-request-body")>();
+  return { ...actual, readBodyBytesWithLimit: mocks.readBodyBytesWithLimit };
 });
 
 vi.mock("@/lib/prisma", () => ({
@@ -77,6 +74,37 @@ beforeEach(() => {
 });
 
 describe("assistance submission request bounds", () => {
+  it("returns a private 413 without persistence when oversized stream cancellation stalls", async () => {
+    const actual = await vi.importActual<typeof import("@/lib/bounded-request-body")>("@/lib/bounded-request-body");
+    mocks.readBodyBytesWithLimit.mockImplementation(actual.readBodyBytesWithLimit);
+    const cancel = vi.fn(() => new Promise<void>(() => {}));
+    vi.useFakeTimers();
+    try {
+      const request = new Request("https://amaana.example/api/assistance", {
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data; boundary=test" },
+        body: new ReadableStream<Uint8Array>({
+          start(controller) { controller.enqueue(new Uint8Array(26 * 1024 * 1024)); },
+          cancel,
+        }),
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      const outcome = Promise.race([
+        POST(request),
+        new Promise<string>(resolve => setTimeout(() => resolve("rejection stalled"), 100)),
+      ]);
+      await vi.advanceTimersByTimeAsync(100);
+      const response = await outcome;
+      if (typeof response === "string") throw new Error(response);
+      expect(response.status).toBe(413);
+      expect(response.headers.get("cache-control")).toMatch(/no-store/i);
+      expect(cancel).toHaveBeenCalledOnce();
+      expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+      expect(mocks.staffFindMany).not.toHaveBeenCalled();
+      expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+    } finally { vi.useRealTimers(); }
+  });
+
   it("rejects an oversized multipart body before parsing, storage or database work", async () => {
     mocks.enforceAssistanceRateLimit.mockResolvedValue(true);
     const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");

@@ -113,6 +113,35 @@ beforeEach(() => {
 });
 
 describe("direct donation transfer submission", () => {
+  it("returns a private 413 without creating a claim when oversized stream cancellation stalls", async () => {
+    const cancel = vi.fn(() => new Promise<void>(() => {}));
+    vi.useFakeTimers();
+    try {
+      const request = new Request("https://amaana.example/api/donations/direct-transfer", {
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data; boundary=test" },
+        body: new ReadableStream<Uint8Array>({
+          start(controller) { controller.enqueue(new Uint8Array(6 * 1024 * 1024)); },
+          cancel,
+        }),
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      const outcome = Promise.race([
+        POST(request),
+        new Promise<string>(resolve => setTimeout(() => resolve("rejection stalled"), 100)),
+      ]);
+      await vi.advanceTimersByTimeAsync(100);
+      const response = await outcome;
+      if (typeof response === "string") throw new Error(response);
+      expect(response.status).toBe(413);
+      expect(response.headers.get("cache-control")).toMatch(/no-store/i);
+      expect(cancel).toHaveBeenCalledOnce();
+      expect(mocks.findFirst).not.toHaveBeenCalled();
+      expect(mocks.donationCreate).not.toHaveBeenCalled();
+      expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    } finally { vi.useRealTimers(); }
+  });
+
   it("rejects oversized multipart submissions before form parsing or database work", async () => {
     const response = await POST(new Request("https://amaana.example/api/donations/direct-transfer", {
       method: "POST",
