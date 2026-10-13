@@ -53,7 +53,8 @@ vi.mock("@/lib/env", () => ({
   validateProductionEnvironment: () => undefined,
 }));
 
-vi.mock("@/lib/webhook-idempotency", () => ({
+vi.mock("@/lib/webhook-idempotency", async importOriginal => ({
+  ...(await importOriginal<typeof import("@/lib/webhook-idempotency")>()),
   isPrismaUniqueConstraintError: mocks.uniqueConstraintError,
 }));
 
@@ -217,7 +218,7 @@ describe("Razorpay webhook route", () => {
   });
 
   it("acknowledges a duplicate provider event without replaying refund accounting", async () => {
-    mocks.paymentEventFindUnique.mockResolvedValue({ id: "existing_event", eventType: "refund.processed" });
+    mocks.paymentEventFindUnique.mockResolvedValue({ id: "existing_event", eventType: "refund.processed", payload: refundPayload() });
 
     const response = await POST(webhookRequest(refundPayload()));
     const body = await response.json();
@@ -232,6 +233,7 @@ describe("Razorpay webhook route", () => {
     mocks.paymentEventFindUnique.mockResolvedValue({
       id: "existing_event",
       eventType: "payment.failed",
+      payload: refundPayload(),
     });
 
     const response = await POST(webhookRequest(refundPayload()));
@@ -249,7 +251,7 @@ describe("Razorpay webhook route", () => {
   ])("handles a concurrent event insert with stored type %s", async (eventType, status) => {
     mocks.paymentEventFindUnique
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ id: "racing_event", eventType });
+      .mockResolvedValueOnce({ id: "racing_event", eventType, payload: refundPayload() });
     mocks.uniqueConstraintError.mockReturnValue(true);
     mocks.transactionRetry.mockRejectedValueOnce({ code: "P2002" });
 
