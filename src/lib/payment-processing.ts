@@ -42,6 +42,8 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
       select: {
         id: true,
         currency: true,
+        paymentMethod: true,
+        provider: true,
         amount: true,
         referenceNumber: true,
         appealId: true,
@@ -56,6 +58,8 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
     if (
       !donation ||
       donation.currency !== "INR" ||
+      donation.paymentMethod !== "RAZORPAY" ||
+      (donation.provider !== null && donation.provider !== "RAZORPAY") ||
       expectedAmountPaise === null ||
       !Number.isSafeInteger(expectedAmountPaise) ||
       expectedAmountPaise <= 0 ||
