@@ -78,10 +78,26 @@ test('native hover and press animations release ownership without stale effects'
   await action.hover();
   await expect.poll(() => action.evaluate(node => node.style.translate)).toBe('0px -1px');
   await page.mouse.down();
+  await action.focus();
   await expect.poll(() => action.evaluate(node => node.style.scale)).toBe('0.98');
   await page.mouse.up();
   await expect.poll(() => action.evaluate(node => node.style.scale)).toBe('1');
   await page.mouse.move(500, 400);
+  await expect.poll(() => action.evaluate(node => ({
+    translate: node.style.translate,
+    scale: node.style.scale,
+    active: node.getAnimations().length,
+  }))).toEqual({ translate: '', scale: '', active: 0 });
+});
+
+test('releasing a press outside the action clears its motion ownership', async ({ page }) => {
+  await open(page);
+  const action = page.locator('.nav-donate');
+  await action.hover();
+  await page.mouse.down();
+  await expect.poll(() => action.evaluate(node => node.style.scale)).toBe('0.98');
+  await page.mouse.move(500, 400);
+  await page.mouse.up();
   await expect.poll(() => action.evaluate(node => ({
     translate: node.style.translate,
     scale: node.style.scale,

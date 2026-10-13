@@ -1,3 +1,11 @@
+## 2026-10-14 IST — delegated motion press ownership corrected
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parent c48e1030737f26b35a7b3392e84a89d3d28183b6. Owner cx authorized continuation; no concurrent writer.
+
+Older hosted browser run38449403934 recorded the native press regression twice: pointer-down was followed by focus feedback which replaced pressed scale0.98 with1. Track the primary pointer owner and keyboard owners separately. Hover/focus preserve held state; pointer-up/cancel and key-up release the original control even if event target changed. Window blur releases held controls; reduced-motion reset clears ownership and inline effects. Native delegated WAAPI, existing selectors and route teardown remain. No hydration/CWV bottleneck closure inferred.
+
+Validation: five actual-effect tests pass with stub event/DOM/animation boundaries. Restoring the prior module fails three of the initial four cases. Full suite999passed/9database-dependent skipped; TypeScript, focused zero-warning ESLint, browser syntax and diff checks pass. Clean compile-mode build passes:JS812195/819200bytes,CSS346266/348160bytes; client-secret/static-image guards pass. Existing browser press case now explicitly focuses while held; an additional case releases outside the action. Browser execution remains unverified locally. This is a task-introduced motion correction, not an additional original95 closure. No main merge/deploy or live provider/data changes. Next: responsive thumbnail and remaining navigation/typography acceptance failures.
+
 ## 2026-10-14 IST — N-20 gallery opener focus correction
 
 Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parent fb08de7b21bd0926e1063ddadf2661dec81e56e9. Owner cx authorized continuation; no concurrent writer.

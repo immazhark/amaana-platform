@@ -19,6 +19,9 @@ export function SiteMotion() {
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const running = new Map<HTMLElement, Playback>();
     const owned = new Set<HTMLElement>();
+    let pointerOwner: HTMLElement | null = null;
+    const keyOwners = new Map<string, HTMLElement>();
+    const isPressed = (element: HTMLElement) => pointerOwner === element || [...keyOwners.values()].includes(element);
     let disposed = false;
     const clear = (element: HTMLElement) => {
       running.get(element)?.cancel();
@@ -64,13 +67,33 @@ export function SiteMotion() {
       if (!element) return;
       const related = (event as PointerEvent | FocusEvent).relatedTarget;
       if (related instanceof Node && element.contains(related)) return;
-      feedback(element);
+      feedback(element, isPressed(element));
     };
     const press = (event: Event) => {
-      if (event instanceof PointerEvent && event.button !== 0) return;
-      if (event instanceof KeyboardEvent && (event.repeat || !["Enter", " "].includes(event.key))) return;
-      const element = target(event);
-      if (element) feedback(element, event.type === "pointerdown" || event.type === "keydown");
+      if (event instanceof PointerEvent) {
+        if (event.type === "pointerdown") {
+          if (event.button !== 0 || !event.isPrimary) return;
+          const previous = pointerOwner;
+          pointerOwner = target(event);
+          if (previous && previous !== pointerOwner) feedback(previous, isPressed(previous));
+          if (pointerOwner) feedback(pointerOwner, true);
+        } else {
+          if (!event.isPrimary) return;
+          const element = pointerOwner;
+          pointerOwner = null;
+          if (element) feedback(element, isPressed(element));
+        }
+      } else if (event instanceof KeyboardEvent) {
+        if (event.repeat || !["Enter", " "].includes(event.key)) return;
+        if (event.type === "keydown") {
+          const element = target(event);
+          if (element) { keyOwners.set(event.key, element); feedback(element, true); }
+        } else {
+          const element = keyOwners.get(event.key);
+          keyOwners.delete(event.key);
+          if (element) feedback(element, isPressed(element));
+        }
+      }
     };
     const observer = new IntersectionObserver(entries => {
       for (const entry of entries) {
@@ -93,14 +116,28 @@ export function SiteMotion() {
         observer.observe(element);
       }
     }
-    const reset = () => { if (preference.matches) for (const element of owned) clear(element); };
+    const reset = () => {
+      if (!preference.matches) return;
+      pointerOwner = null;
+      keyOwners.clear();
+      for (const element of owned) clear(element);
+    };
+    const release = () => {
+      const elements = new Set(keyOwners.values());
+      if (pointerOwner) elements.add(pointerOwner);
+      pointerOwner = null;
+      keyOwners.clear();
+      for (const element of elements) feedback(element);
+    };
     for (const event of hoverEvents) document.addEventListener(event, hover);
     for (const event of pressEvents) document.addEventListener(event, press);
     preference.addEventListener("change", reset);
+    window.addEventListener("blur", release);
     return () => {
       disposed = true;
       observer.disconnect();
       preference.removeEventListener("change", reset);
+      window.removeEventListener("blur", release);
       for (const event of hoverEvents) document.removeEventListener(event, hover);
       for (const event of pressEvents) document.removeEventListener(event, press);
       for (const element of owned) clear(element);
