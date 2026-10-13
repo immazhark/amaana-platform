@@ -29,3 +29,27 @@ test("donation, admin, and assistance responses retain no-store headers", () => 
     assert.ok(config.includes(`{ source: "${route}", headers: noStoreHeaders }`), `Unprotected route: ${route}`);
   }
 });
+
+test("effective Next.js header mapping preserves sensitive route cache isolation", async () => {
+  const { default: nextConfig } = await import("../next.config.ts");
+  const rules = await nextConfig.headers();
+  const resolveHeader = (pathname, key) => {
+    const matched = rules.filter(rule => {
+      if (rule.source === "/(.*)") return true;
+      if (rule.source.endsWith("/:path*")) {
+        const prefix = rule.source.slice(0, -"/:path*".length);
+        return pathname === prefix || pathname.startsWith(prefix + "/");
+      }
+      return pathname === rule.source;
+    });
+    return matched.flatMap(rule => rule.headers).filter(header => header.key === key).at(-1)?.value;
+  };
+  for (const pathname of ["/api/donations", "/admin", "/donate", "/donations/receipt", "/request-assistance"]) {
+    assert.equal(resolveHeader(pathname, "Cache-Control"), "private, no-store, max-age=0", pathname);
+  }
+  const csp = resolveHeader("/donate", "Content-Security-Policy");
+  assert.ok(csp);
+  for (const directive of ["object-src 'none'", "frame-ancestors 'none'", "base-uri 'self'"]) {
+    assert.ok(csp.includes(directive), directive);
+  }
+});
