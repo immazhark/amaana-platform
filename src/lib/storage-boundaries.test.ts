@@ -144,6 +144,43 @@ describe("delivery configuration is validated before public persistence", () => 
   });
 });
 
+describe("public media transport deadline", () => {
+  it("rejects a stalled SDK response even when the transport does not settle on abort", async () => {
+    vi.useFakeTimers();
+    try {
+      let signaled: AbortSignal | undefined;
+      sdk.send.mockImplementation((_command, options) => {
+        signaled = options?.abortSignal;
+        return new Promise(() => {});
+      });
+      const result = getPublicMediaObject(key).then(() => "unexpected success", error => (error as Error).message);
+      await vi.advanceTimersByTimeAsync(15_100);
+      expect(await result).toMatch(/media retrieval timed out/i);
+      expect(signaled?.aborted).toBe(true);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("rejects a stalled body iterator and destroys its stream", async () => {
+    vi.useFakeTimers();
+    try {
+      const destroy = vi.fn();
+      sdk.send.mockResolvedValue({
+        Body: {
+          destroy,
+          async *[Symbol.asyncIterator]() {
+            yield new Uint8Array([1]);
+            await new Promise<void>(() => {});
+          },
+        },
+      });
+      const result = getPublicMediaObject(key).then(() => "unexpected success", error => (error as Error).message);
+      await vi.advanceTimersByTimeAsync(15_100);
+      expect(await result).toMatch(/media retrieval timed out/i);
+      expect(destroy).toHaveBeenCalledOnce();
+    } finally { vi.useRealTimers(); }
+  });
+});
+
 describe("public object reads enforce upload-size and completeness boundaries", () => {
   it.each(["stalled", "rejected", "throwing"] as const)("preserves an oversized-object rejection when stream cancellation is %s", async outcome => {
     vi.useFakeTimers();
