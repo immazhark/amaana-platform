@@ -89,6 +89,47 @@ async function openAssistance(page) {
   await expect(page.getByRole('heading', { name: 'Tell us about the request.' })).toBeVisible();
 }
 
+test.describe('order error feedback handles untrusted field data', () => {
+  for (const [label, fieldValue] of [
+    ['nested object', [{ message: 'not a string' }]],
+    ['text instead of string list', 'invalid field'],
+    ['null instead of string list', null],
+  ]) {
+    test(`malformed ${label} does not crash donation form`, async ({ page }) => {
+      let requests = 0;
+      await page.route('**/api/donations/order', route => {
+        requests++;
+        return route.fulfill({
+          status: 400, contentType: 'application/json',
+          body: JSON.stringify({
+            error: 'Please check the highlighted donation information.',
+            fields: { donorName: fieldValue },
+          }),
+        });
+      });
+      const submit = await openDonationFixture(page, 'count-only');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('Please check');
+      await expect(page.getByLabel('Full name')).toHaveValue('Acceptance Donor');
+      await expect(submit).toBeEnabled();
+      expect(requests).toBe(1);
+    });
+  }
+  test('valid field feedback stays linked to the rejected input', async ({ page }) => {
+    await page.route('**/api/donations/order', route => route.fulfill({
+      status: 400, contentType: 'application/json',
+      body: JSON.stringify({ error: 'Check donor name', fields: { donorName: ['Name requires review'] } }),
+    }));
+    const submit = await openDonationFixture(page, 'count-only');
+    await fillDonationForm(page);
+    await submit.click();
+    await expect(page.getByLabel('Full name')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#donor-name-error')).toHaveText('Name requires review');
+    await expect(page.getByLabel('Full name')).toBeFocused();
+  });
+});
+
 test.describe('checkout rejects malformed successful order responses', () => {
   for (const [label, patch] of [
     ['order identity', { orderId: null }],
