@@ -112,6 +112,8 @@ jobs:
           node scripts/check-launch-readiness.mjs
       - name: Verify non-destructive campaign import
         run: node --test scripts/test-reviewed-campaigns.mjs scripts/test-reviewed-campaign-revisions.mjs scripts/test-reviewed-campaign-feature-normalization.mjs scripts/test-reviewed-campaign-video-normalization.mjs
+      - name: Verify master content asset deduplication
+        run: node --test scripts/test-master-content-assets.mjs
       - name: Verify canonical factual locks
         run: |
           npm run master:check
@@ -210,6 +212,7 @@ jobs:
           node scripts/test-refund-ledger-migration.mjs
           node scripts/test-home-carousel-migration.mjs
           node scripts/test-historical-pageview-migration.mjs
+          node --test scripts/test-master-content-assets.mjs
           npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts
 
 

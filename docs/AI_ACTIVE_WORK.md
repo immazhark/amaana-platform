@@ -1,3 +1,9 @@
+## 2026-10-13 — remaining importer/CSS reconciliation
+
+Ownership: CODEX_ACTIVE refreshing existing PR216 onto consolidatedc3e05f5a. PR254 exact refreshed head02ef12c0 passed stacked CI38364040345 and mergedc3e05f5a. Open backlog now215,216,282;11 superseded PRs closed with evidence.
+
+PR216 unique work retained from39b671a1: bulk master/factual-lock reads, scoped media deduplication preserving first metadata and repeat idempotency, UTC updatedAt parity for four bulk legacy category writes; donation CSS folded into one authority with shrinkable grid and link wrapping; importer/browser/CI coverage and scoped Stylelint. Keep newer status badge.75rem, postbuild weight guard, historical-pageview migration checks, route reporting and current stacked security work. Never copy its stale package/workflow/globals snapshots wholesale. 41 importer/planner cases passed locally, including7 importer model cases;4 actual PostgreSQL cases skipped locally. Combined unit891 passed/9 skipped, full ESLint/Stylelint/typecheck passed. Both new browser specs parse. Exact refreshed-head hosted gates and final integration database/browser acceptance remain required. Previous exact-head CI38252706957 passed but does not certify this refreshed candidate. No production data writes or deployment.
+
 ## 2026-10-13 — superseded PR cleanup and missing coverage recovery
 
 Ownership: CODEX_ACTIVE for existing PR254 refresh onto consolidated03b95b1a. Closed11 superseded PRs:278,279,280,281,274,249,253,258,240,247,241, after comparing actual source/test deltas and fresh heads. Each closure body explains retained coverage; no branch deletion, stale merge or production closure.
