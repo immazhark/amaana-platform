@@ -83,3 +83,42 @@ for (const width of [390, 1440]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth + 1)).toBe(false);
   });
 }
+
+for (const width of [390, 1440]) {
+  test(`R-026 text actions preserve AA contrast on light and dark contexts at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
+    const samples = await page.evaluate(() => {
+      const cases = [
+        { context: 'unscoped', selector: '', background: '#fffdf8' },
+        { context: 'admin-content', selector: 'admin-content', background: '#f4f6f9' },
+        { context: 'admin-sidebar', selector: 'admin-sidebar', background: '#122239' },
+      ];
+      const channels = color => (color.match(/[\\d.]+/g) ?? []).slice(0, 3).map(Number);
+      const luminance = color => {
+        const [r, g, b] = channels(color).map(value => {
+          const channel = value / 255;
+          return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      };
+      return cases.map(({ context, selector, background }) => {
+        const host = document.createElement('div');
+        host.className = selector;
+        host.style.backgroundColor = background;
+        const button = document.createElement('button');
+        button.className = 'text-button';
+        button.textContent = 'Test text action';
+        host.append(button);
+        document.body.append(host);
+        const foreground = getComputedStyle(button).color;
+        const backdrop = getComputedStyle(host).backgroundColor;
+        host.remove();
+        const a = luminance(foreground);
+        const b = luminance(backdrop);
+        return { context, contrast: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) };
+      });
+    });
+    for (const sample of samples) expect(sample.contrast, sample.context).toBeGreaterThanOrEqual(4.5);
+  });
+}
