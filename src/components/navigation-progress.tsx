@@ -22,7 +22,8 @@ export function NavigationProgress() {
       if (!anchor || (anchor.target && anchor.target.toLowerCase() !== "_self") || anchor.hasAttribute("download") || anchor.getAttribute("aria-disabled") === "true") return;
 
       const next = new URL(anchor.href);
-      if (next.origin !== location.origin || (next.pathname === location.pathname && next.search === location.search)) return;
+      // Pathname drives overlay completion; query-only transitions cannot safely hold the global lock.
+      if (next.origin !== location.origin || next.pathname === location.pathname) return;
       if (anchor.getClientRects().length === 0) return;
 
       setPending({ from: location.pathname, id: "native" });
