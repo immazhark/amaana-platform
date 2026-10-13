@@ -1,3 +1,11 @@
+## 2026-10-14 IST — N-20 gallery opener focus correction
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parent fb08de7b21bd0926e1063ddadf2661dec81e56e9. Owner cx authorized continuation; no concurrent writer.
+
+Actionable hosted evidence: older fee578a0 workflow38449403934 browser job115477111117 was cancelled after recording failures. Final verify failed because BROWSER=cancelled; fast/database/production jobs succeeded. The duplicate-ID gallery case failed twice after ArrowRight then Escape: focus returned to the last viewed photograph rather than the opening thumbnail. Preserve opener identity in a ref and resolve its current position for cleanup. Existing connected-thumbnail fallback handles removal; image selection, modal keyboard trap and overflow cleanup remain intact. Reorder browser regression now navigates away before closing and still expects the opening identity.
+
+Validation: actual-component effect regressions cover navigation, reorder and opener removal; restoring the old active-index target fails two of three. Five focused gallery tests pass. Full suite994passed/9database-dependent skipped; TypeScript, focused zero-warning ESLint, browser syntax and diff checks pass. Clean compile-mode build passes:JS811745/819200bytes,CSS346266/348160bytes; client-secret/static-image guards pass. Local effect tests use stub DOM/hook boundaries; actual browser correction is not yet certified. N-20 remains a source candidate, not deployed; no original95 closure inferred. Other old-run failures include responsive thumbnail acceptance, navigation feedback, motion press ownership and typography fixture interaction; these still require diagnosis. No main merge/deploy or live provider/data changes. Atomic gallery task complete; next: correct remaining actionable browser failures.
+
 ## 2026-10-14 IST — R-069 native lint protections implemented
 
 Ownership: REVIEW_PENDING. PR #292 / fix/direct-transfer-feedback-20261013, parentaec129da47c3d37d123a09d918a3943716eedf78. Owner cx authorized continuation; no concurrent writer.

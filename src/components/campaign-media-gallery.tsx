@@ -35,6 +35,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
   const closeRef = useRef<HTMLButtonElement>(null);
   const dialogTitleId = `gallery-dialog-${useId().replaceAll(":", "")}`;
   const triggerRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const openingId = useRef<string | null>(null);
 
   const activeIndex = safeItems.findIndex(item => item.id === activeId);
   const active = activeIndex < 0 ? null : safeItems[activeIndex] ?? null;
@@ -58,7 +59,9 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     if (!active) return;
     const dialog = dialogRef.current;
     const triggers = triggerRefs.current;
-    const trigger = triggers[activeIndex];
+    // Navigation changes the displayed photograph, not the modal's opener.
+    // Resolve its current position so reordering keeps the same return target.
+    const trigger = triggers[safeItems.findIndex(item => item.id === openingId.current)];
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeRef.current?.focus();
@@ -106,7 +109,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
         target?.focus();
       });
     };
-  }, [active, activeIndex, close, next, previous]);
+  }, [active, safeItems, close, next, previous]);
 
   if (!safeItems.length) return null;
 
@@ -126,7 +129,10 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               ref={node => { triggerRefs.current[index] = node; }}
               type="button"
               className={styles.trigger}
-              onClick={() => setActiveId(item.id)}
+              onClick={() => {
+                openingId.current = item.id;
+                setActiveId(item.id);
+              }}
               aria-label={`Enlarge image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
             >
               {imageUrl ? <Image src={imageUrl} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}

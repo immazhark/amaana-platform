@@ -151,6 +151,8 @@ test('gallery reorder preserves selected identity and restores its new thumbnail
   await expect(dialog).toHaveAccessibleName(/^Image 13 of 13: Synthetic acceptance photograph 1$/);
   await page.keyboard.press('ArrowLeft');
   await expect(dialog).toHaveAccessibleName(/^Image 12 of 13: Synthetic acceptance photograph 2$/);
+  await page.keyboard.press('ArrowLeft');
+  await expect(dialog).toHaveAccessibleName(/^Image 11 of 13: Synthetic acceptance photograph 3$/);
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^Enlarge image 12 of 13:/ })).toBeFocused();
