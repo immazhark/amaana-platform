@@ -234,6 +234,47 @@ describe("media publication concurrency", () => {
     }));
   });
 
+  it("refuses publication of a managed file pointing to an unreviewed CDN", async () => {
+    mocks.findUniqueOrThrow.mockResolvedValueOnce({
+      id: "media_123",
+      kind: "IMAGE",
+      isPublic: false,
+      storageKey: "2026/123e4567-e89b-12d3-a456-426614174000.webp",
+      publicUrl: "https://cdn.example.org/123e4567-e89b-12d3-a456-426614174000.webp",
+      altText: "Synthetic documentary photo",
+      sortOrder: 0,
+    });
+    const form = new FormData();
+    form.set("id", "media_123");
+    form.set("publish", "true");
+
+    await expect(setMediaPublication(form)).rejects.toThrow(/consent-gated \/media\/ route/i);
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects a CDN delivery swap detected during the publication transaction", async () => {
+    const key = "2026/123e4567-e89b-12d3-a456-426614174000.webp";
+    mocks.findUniqueOrThrow
+      .mockResolvedValueOnce({
+        id: "media_123", kind: "IMAGE", isPublic: false,
+        storageKey: key, publicUrl: "/media/" + key,
+        altText: "Synthetic documentary photo", sortOrder: 0,
+      })
+      .mockResolvedValueOnce({
+        id: "media_123", kind: "IMAGE", isPublic: false,
+        storageKey: key, publicUrl: "https://cdn.example.org/photo.webp",
+        altText: "Synthetic documentary photo", sortOrder: 0,
+      });
+    const form = new FormData();
+    form.set("id", "media_123");
+    form.set("publish", "true");
+
+    await expect(setMediaPublication(form)).rejects.toThrow(/delivery changed.*consent-gated/i);
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+  });
+
   it("revalidates the asset inside the serialized privacy-publication boundary", async () => {
     mocks.findUniqueOrThrow
       .mockResolvedValueOnce({ id: "media_123", kind: "IMAGE", isPublic: false, publicUrl: "https://cdn.example/media.jpg", altText: "Documentary image", sortOrder: 0 })
