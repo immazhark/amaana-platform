@@ -101,3 +101,11 @@ test('umbrella collage and no-media fallback stay distinct', async ({ page }) =>
   await expect(page.locator('.page-hero__visual .work-visual-placeholder')).toHaveCount(1);
   await expect(page.locator('.page-hero__visual img[src*="/media/"]')).toHaveCount(0);
 });
+
+test('R-054 approved umbrella collage is preloaded as the hero image', async ({ page }) => {
+  await page.goto('/our-work/eid-gift-kits', { waitUntil: 'domcontentloaded' });
+  const hero = page.locator('.page-hero [data-programme-artwork="eid-gift-kits"]');
+  await expect(hero).toBeVisible();
+  await expect(hero).toHaveAttribute('fetchpriority', 'high');
+  await expect(hero).not.toHaveAttribute('loading', 'lazy');
+});
