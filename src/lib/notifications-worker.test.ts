@@ -116,7 +116,7 @@ describe("notification worker flow", () => {
       where: {
         id: "notification_1",
         status: { in: [NotificationStatus.PENDING, NotificationStatus.FAILED] },
-        attempts: { lt: 5 },
+        attempts: { equals: 0, lt: 5 },
         scheduledFor: { lte: expect.any(Date) },
       },
       data: {

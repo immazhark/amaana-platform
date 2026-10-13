@@ -144,7 +144,9 @@ export async function processPendingEmailNotifications() {
       where: {
         id: notification.id,
         status: { in: [NotificationStatus.PENDING, NotificationStatus.FAILED] },
-        attempts: { lt: MAX_ATTEMPTS },
+        // Bind completion ownership to the version selected by this worker.
+        // Another attempt may have finished while this snapshot was waiting.
+        attempts: { equals: notification.attempts, lt: MAX_ATTEMPTS },
         // Recheck eligibility atomically: another worker may have deferred this row
         // after our findMany snapshot, but before we can claim it.
         scheduledFor: { lte: new Date() },
