@@ -1,3 +1,13 @@
+## 2026-10-13 — R-054 artwork LCP priority and gallery identity correction
+
+Owner: REVIEW_PENDING on existing PR #292, user-authorized cx. Prior head 352bf40 unchanged at initial read. Continued actual fixes; CodeRabbit review intentionally excluded.
+
+R-054: ProgrammeArtwork was lazy even as above-the-fold category or umbrella hero while photographic PublicMedia heroes were prioritized. cb2f4c0 adds optional preload and fetchPriority='high' to the server-rendered artwork component. 68cdb76 and 27a8f83 pass priority only in programme-detail and category PageHero usage; body-card artwork remains default lazy. a5757d2 adds mobile/desktop real-route browser assertions and 313b595 adds the documented Eid umbrella hero assertion. Source register now partial/targeted fix pending hosted browser, complete hero audit, and deployment verification.
+
+Supplementary N-20 gallery identity collision: safeItems deduplicated by URL only, permitting distinct URLs with duplicate media IDs, duplicate React keys and misleading lightbox selection. 833f5da now deduplicates both URL and media ID. 71dcd7a injects distinct-URL duplicate-ID fixture and 3dc6c10 tests retained 13 thumbnails, correct open/navigation and focus restoration. No real beneficiary content or data writes involved.
+
+Current source/test and register commit e79728ec90187b117a9162bdaa9bbdd24787aac8. No exact-head CI success claimed; unchanged tight JS/CSS caps require hosted verification. No main merge or Railway deploy. Original 95-row audit closures unchanged until release evidence. No active implementation writer at this checkpoint.
+
 ## 2026-10-13 — original-audit closure follow-up and safe R-071 withdrawal
 
 Ownership: REVIEW_PENDING. User-authorized cx continuation of existing PR #292; only one implementation writer. R-026 light-background action fallback corrected in 16330b9 / 01a5341 and two viewport rendered regressions committed ae8a663 / 3a0515d. R-016 image-source CSP has already been constrained to known HTTPS origins with an existing header regression, so its register row was reclassified to implemented/release verification pending in 885f622. R-014 unsafe-inline script remains open; do not apply nonce-unaware changes to Razorpay/Next rendering.
