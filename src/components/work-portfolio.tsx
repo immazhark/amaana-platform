@@ -45,7 +45,7 @@ export function WorkPortfolio({ causes, expanded = false, yearFiltered = false }
                         >
                           <span className="v2-initiative-index">{String(index + 1).padStart(2, "0")}</span>
                           <div className={`v2-initiative-thumb${thumbnail ? "" : " v2-initiative-thumb-fallback"}`}>
-                            {thumbnail ? <PublicMedia asset={thumbnail} /> : <WorkVisualPlaceholder label={initiative.title} />}
+                            {thumbnail ? <PublicMedia asset={thumbnail} sizes="(max-width: 600px) 4rem, (max-width: 1000px) 5.5rem, 6.5rem" /> : <WorkVisualPlaceholder label={initiative.title} />}
                           </div>
                           <div className="v2-initiative-copy">
                             <small>{initiative.year ?? (initiative.startYear && initiative.endYear ? `${initiative.startYear}–${initiative.endYear}` : "Documented initiative")}</small>

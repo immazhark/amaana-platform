@@ -1,3 +1,13 @@
+## 2026-10-14 IST — R-054 Our Work thumbnail slot correction
+
+Ownership: REVIEW_PENDING. Completed atomic continuation on PR #292 / fix/direct-transfer-feedback-20261013, parent 8bb927bb86834018924abbd1371c19899deecb08. Owner cx authorized same-branch implementation. No concurrent writer.
+
+Confirmed R-054 source occurrence: WorkPortfolio identity thumbnails use CSS widths 4rem/5.5rem/6.5rem at <=600px/<=1000px/desktop, but inherited PublicMedia sizes of 100vw/70vw/900px. Original actual-component regression fails on that oversized hint; fixed markup passes and offers small responsive candidates while preserving lazy loading, alt text, intrinsic dimensions, identity selection and approved fallback. Rem-based sizes also match 200% root text.
+
+Coverage: two actual React/Next component-render tests; six Playwright cases at 390/768/1440px and 100/200% text check slot width and selected candidate, using opt-in disposable synthetic media and intercepted 1px PNG responses. No beneficiary or storage requests. The unchanged default portfolio fixture remains photo-free. Browser cases are authored, not executed locally: Chromium remains unavailable.
+
+Validation: 12 focused actual-component/media-policy tests and 34 CI-planner tests pass. Application and materialized-fixture TypeScript checks, focused ESLint, browser syntax and diff checks pass. Clean compile-mode build passes: JS 811235/819200 bytes, CSS 346256/348160 bytes. Secret-boundary and checked-in image-weight guards pass. Fixtures excluded from production route build and removed from tracked workspace. Full hosted production/database/browser acceptance remains required; parent CI was pending at the initial read. R-054 remains partial until broader hero sizing and deployed acceptance; no new original-audit closure. No production merge/deploy or live data/provider operations. Next: review exact-new-head acceptance and continue independent original defects. No active writer.
+
 ## 2026-10-14 IST — R-025 shared heading and R-047 route attribution batch
 
 Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013, parent 20f126bd75d0cd9bbd4de34b860805585d0e9080. User handover authorizes continuation; no concurrent implementation writer. Local checkout and dependencies restored.

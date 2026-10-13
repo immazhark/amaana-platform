@@ -125,3 +125,48 @@ test('corrected dark Home surfaces and expanded portfolio have no serious access
   const portfolio = await new AxeBuilder({ page }).include('.v2-cause-stack').analyze();
   expect(portfolio.violations.filter(issue => ['serious', 'critical'].includes(issue.impact))).toEqual([]);
 });
+
+
+for (const width of [390, 768, 1440]) {
+  for (const scale of [100, 200]) {
+    test(`R-054 portfolio image slots match CSS at ${width}px and ${scale}% text`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.route('**/api/public/live-rail', route => route.fulfill({ json: { items: [] } }));
+      await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+      // Synthetic raster only: no managed storage or beneficiary photograph request.
+      await page.route('**/_next/image?*', async route => {
+        const source = new URL(route.request().url()).searchParams.get('url');
+        if (source !== '/media/2026/thumbnail-sizing-fixture.webp') return route.continue();
+        await route.fulfill({ contentType: 'image/png', body: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII=', 'base64') });
+      });
+      await page.addInitScript(percent => {
+        const apply = () => {
+          const style = document.createElement('style');
+          style.textContent = `html:root { font-size: ${percent}% !important; }`;
+          document.head.appendChild(style);
+        };
+        if (document.head) apply();
+        else document.addEventListener('DOMContentLoaded', apply, { once: true });
+      }, scale);
+      const response = await page.goto('/browser-acceptance/portfolio?photos=true', { waitUntil: 'load' });
+      expect(response?.ok()).toBe(true);
+      await expect.poll(() => page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize))).toBe(16 * scale / 100);
+      await page.locator('.v2-cause-summary').first().click();
+      const image = page.locator('.v2-initiative-thumb img[alt="Synthetic thumbnail sizing fixture"]').first();
+      await image.scrollIntoViewIfNeeded();
+      await expect(image).toBeVisible();
+      await expect(image).toHaveAttribute('sizes', '(max-width: 600px) 4rem, (max-width: 1000px) 5.5rem, 6.5rem');
+      await expect(image).toHaveAttribute('loading', 'lazy');
+      await expect.poll(() => image.evaluate(node => node.complete && node.naturalWidth > 0)).toBe(true);
+      const metrics = await image.evaluate(node => ({
+        width: node.getBoundingClientRect().width,
+        candidate: Number(new URL(node.currentSrc).searchParams.get('w')),
+      }));
+      const slotRem = width <= 600 ? 4 : width <= 1000 ? 5.5 : 6.5;
+      expect(metrics.width).toBeCloseTo(slotRem * 16 * scale / 100, 0);
+      expect(metrics.candidate).toBeGreaterThanOrEqual(metrics.width);
+      expect(metrics.candidate).toBeLessThanOrEqual(metrics.width * 2);
+    });
+  }
+}
