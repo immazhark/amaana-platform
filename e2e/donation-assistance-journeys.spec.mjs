@@ -668,6 +668,38 @@ async function expectMethodsLocked(page) {
   for (const method of await methods.all()) await expect(method).toBeDisabled();
 }
 
+test('a payment callback after its checkout form unmounts confirms without stale navigation', async ({ page }) => {
+  let confirmations = 0;
+  await page.route('**/api/donations/order', route => route.fulfill({
+    status: 201, contentType: 'application/json', body: JSON.stringify(orderPayload()),
+  }));
+  await page.route('**/api/donations/confirm', route => {
+    confirmations++;
+    return route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ referenceNumber: donationReference }),
+    });
+  });
+  await openMethodFixture(page, 'Secure online payment');
+  await fillDonationForm(page);
+  await page.getByRole('button', { name: 'Continue securely →' }).click();
+  await expect.poll(() => page.evaluate(() => Boolean(window.__checkoutOptions))).toBe(true);
+  await page.evaluate(() => window.__checkoutOptions.modal.ondismiss());
+  await expect(page.getByRole('button', { name: 'Direct UPI / QR', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: 'Direct UPI / QR', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Pay Amaana directly by UPI.' })).toBeVisible();
+  await page.evaluate(async () => {
+    await window.__checkoutOptions.handler({
+      razorpay_order_id: 'order_acceptance_001',
+      razorpay_payment_id: 'pay_acceptance_001',
+      razorpay_signature: 'signature_acceptance_001',
+    });
+  });
+  expect(confirmations).toBe(1);
+  await expect(page.getByRole('heading', { name: 'Pay Amaana directly by UPI.' })).toBeVisible();
+  await expect(page).toHaveURL('/browser-acceptance/direct-donation');
+});
+
 test.describe('donation submission state survives method and provider callbacks', () => {
   for (const scenario of ['server-error', 'lost-response', 'html-response', 'missing-token', 'already-submitted']) {
     test(`direct transfer ${scenario} keeps follow-up state and prevents another submission`, async ({ page }) => {
