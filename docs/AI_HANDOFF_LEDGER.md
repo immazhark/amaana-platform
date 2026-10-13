@@ -1,3 +1,9 @@
+## 2026-10-13 — online order runtime and unmount continuation
+
+Incoming owner cx resumed from 72b0d9dd, prior verified CI 38421782865 green on abe0876 only. On PR #292 (fix/direct-transfer-feedback-20261013), new commits 7d573db (suppress post-unmount checkout UI and navigation while retaining genuine payment POST), e6c270b (browser regression for paid callback after unmount), d1e6861 (sanitize malformed error field arrays and remaining-amount hint), cc879889 (three malformed field feedback regressions and one valid linked field error), and bc1ba69f (active-work record). Earlier 44aeeef and 836dbb4 added success response contract and six malformed order browser variants.
+
+Latest implementation tree at cc879889 remains unverified by hosted acceptance; after documentation, recheck new PR head CI, unchanged JS/CSS budgets and browser failures before any merge. GitHub connector publication confirmed for source and tests, local clone unavailable because github.com DNS failed in this execution environment. Do not assert a fully passing local build or original 95-item audit closure. No merge/deploy or production data write. Ownership REVIEW_PENDING, no implementation writer active.
+
 ## 2026-10-13 — malformed payment feedback and media cancellation completed
 
 Ownership: REVIEW_PENDING for completed continuation of existing PR #292 / `fix/direct-transfer-feedback-20261013`, parent `c0ea335d2015f4b97a26928fc508847e38d7ea3a`. Owner `cx` authorized execution. Prior 0fd3838 full browser acceptance passed 1,424 Chromium and 24 Firefox/WebKit cases; final-parent CI 38417911131 passed fast, database and production, with browser still running. Those results do not certify this newer source.
