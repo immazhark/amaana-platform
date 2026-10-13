@@ -5,18 +5,45 @@ for (const width of [390, 1280]) {
     await page.setViewportSize({ width, height: 900 });
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
-    const response = await page.goto('/donate', { waitUntil: 'domcontentloaded' });
+    const response = await page.goto('/donate', { waitUntil: 'load' });
     expect(response?.ok()).toBeTruthy();
     const routes = page.getByRole('group', { name: 'Donation routes', exact: true });
     const labels = routes.locator('article > span');
     await expect(labels).toHaveCount(2);
     for (const label of await labels.all()) {
       await expect(label).toBeVisible();
-      expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(12);
+      const metrics = await label.evaluate(node => ({
+        root: parseFloat(getComputedStyle(document.documentElement).fontSize),
+        text: parseFloat(getComputedStyle(node).fontSize),
+      }));
+      expect(metrics.root).toBeGreaterThanOrEqual(16);
+      expect(metrics.text).toBeGreaterThanOrEqual(12);
     }
-    await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+    // Load an enlarged document, as in the shared typography regressions.
+    // Measuring an in-place mutation during hydration produced inconsistent
+    // computed sizes; assert the root and label sizes from the same document.
+    await page.addInitScript(() => {
+      const applyScale = () => {
+        const style = document.createElement('style');
+        style.textContent = 'html:root { font-size: 200% !important; }';
+        document.head.append(style);
+      };
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', applyScale, { once: true });
+      } else {
+        applyScale();
+      }
+    });
+    expect((await page.reload({ waitUntil: 'load' }))?.ok()).toBeTruthy();
+    await expect(labels).toHaveCount(2);
     for (const label of await labels.all()) {
-      expect(await label.evaluate(node => parseFloat(getComputedStyle(node).fontSize))).toBeGreaterThanOrEqual(24);
+      await expect(label).toBeVisible();
+      const metrics = await label.evaluate(node => ({
+        root: parseFloat(getComputedStyle(document.documentElement).fontSize),
+        text: parseFloat(getComputedStyle(node).fontSize),
+      }));
+      expect(metrics.root).toBeGreaterThanOrEqual(32);
+      expect(metrics.text).toBeGreaterThanOrEqual(24);
       const fits = await label.evaluate(node => {
         const bounds = node.getBoundingClientRect();
         const card = node.closest('article').getBoundingClientRect();
