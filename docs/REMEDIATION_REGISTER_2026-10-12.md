@@ -1,6 +1,10 @@
+## 2026-10-13 — N-24 direct-transfer create acknowledgement recovery
+
+Ownership: CODEX_ACTIVE for fix/transfer-outcome-recovery-20261013. Confirmed root cause: a committed donation.create with lost acknowledgement returns500 and strands the donor's receipt credentials; reference uniqueness then prevents resubmission. Assign a server UUID before create and recover only that ID with matching receipt-token hash. Preserve duplicate-reference409; fail closed if absent/unavailable/mismatched. Recovery continues normal private evidence upload.64 tests across3 suites, TypeScript and focused ESLint passed. No schema change, real payments or deployed closure. Integrated prior285/286; historical95 counts remain unreconciled.
+
 ## 2026-10-13 — current execution checkpoint
 
-Ownership: HANDOFF_PENDING; this execution batch completed. See docs/EXECUTION_CHECKPOINT_2026-10-13.md for current evidence. PR286 integrated at e5875b3c. PR285 corrective d95ef0ae restored six parent validation files reverted by its merge resolution (N-23), passed CI38359261238 and guarded-merged at1c44ee9c. Combined candidate:332 tests across22 suites, typecheck and focused ESLint passed. Final integration release gates pending. Main remains2a8c35ad; no new production deployment or closure. Historical95 entries; current totals unreconciled.
+Ownership: CODEX_ACTIVE by explicit owner handoff. See docs/EXECUTION_CHECKPOINT_2026-10-13.md for current evidence. PR286 integrated at e5875b3c. PR285 corrective d95ef0ae restores six parent validation files reverted by its merge resolution (N-23); fresh hosted CI required. Combined candidate:99 focused tests and typecheck passed. Main remains2a8c35ad; no new production deployment or closure. Historical95 entries; current totals unreconciled.
 
 ## 2026-10-13 — combined corrective integration candidate
 

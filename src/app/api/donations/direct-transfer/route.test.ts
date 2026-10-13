@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -5,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   safeParse: vi.fn(),
   findFirst: vi.fn(),
   donationCreate: vi.fn(),
+  donationFindUnique: vi.fn(),
   donationUpdate: vi.fn(),
   donationDeleteMany: vi.fn(),
   uploadDonationEvidence: vi.fn(),
@@ -36,6 +38,7 @@ vi.mock("@/lib/prisma", () => ({
     appeal: { findFirst: mocks.findFirst },
     donation: {
       create: mocks.donationCreate,
+      findUnique: mocks.donationFindUnique,
       update: mocks.donationUpdate,
       deleteMany: mocks.donationDeleteMany,
     },
@@ -103,6 +106,7 @@ beforeEach(() => {
   });
   mocks.isDonationAmountAllowedForRemaining.mockReturnValue(true);
   mocks.donationCreate.mockResolvedValue({ id: "donation-1", referenceNumber: "AFD-2026-12345678" });
+  mocks.donationFindUnique.mockResolvedValue(null);
   mocks.donationUpdate.mockResolvedValue({});
   mocks.donationDeleteMany.mockResolvedValue({ count: 1 });
   mocks.deleteDonationEvidenceObject.mockResolvedValue(undefined);
@@ -202,6 +206,64 @@ describe("direct donation transfer submission", () => {
     });
     expect(mocks.donationUpdate).not.toHaveBeenCalled();
     expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+  });
+
+  it("recovers the original receipt credentials when claim creation committed without acknowledgement", async () => {
+    mocks.donationCreate.mockRejectedValueOnce(new Error("commit acknowledgement lost"));
+    mocks.donationFindUnique.mockImplementationOnce(async ({ where }) => ({ id: where.id, referenceNumber: "AFD-2026-12345678", receiptTokenHash: "hashed-token" }));
+    const file = new File(["synthetic evidence"], "transfer.png", { type: "image/png" });
+    mocks.uploadDonationEvidence.mockResolvedValueOnce({ objectKey: "private-key", originalName: "transfer.png", mimeType: "image/png", sizeBytes: file.size });
+
+    const response = await POST(requestWith(file));
+
+    expect(response.status).toBe(202);
+    expect(await response.json()).toEqual({ referenceNumber: "AFD-2026-12345678", receiptToken: "receipt-token", status: "PENDING_VERIFICATION" });
+    const createCall = mocks.donationCreate.mock.calls[0];
+    const uploadCall = mocks.uploadDonationEvidence.mock.calls[0];
+    if (!createCall || !uploadCall) throw new Error("Expected recovered claim and evidence upload");
+    const id = createCall[0].data.id;
+    expect(id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(mocks.donationFindUnique).toHaveBeenCalledWith({ where: { id }, select: { id: true, referenceNumber: true, receiptTokenHash: true } });
+    expect(mocks.uploadDonationEvidence).toHaveBeenCalledWith(expect.objectContaining({ name: file.name, size: file.size, type: file.type }), id);
+    expect(await uploadCall[0].text()).toBe("synthetic evidence");
+    expect(mocks.donationUpdate).toHaveBeenCalledWith(expect.objectContaining({ where: { id } }));
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+  });
+
+  it.each(["missing", "unavailable"])("fails safely when the create outcome is %s", async outcome => {
+    mocks.donationCreate.mockRejectedValueOnce(new Error("connection dropped"));
+    if (outcome === "unavailable") mocks.donationFindUnique.mockRejectedValueOnce(new Error("database unavailable"));
+
+    const response = await POST(requestWith());
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).not.toHaveProperty("receiptToken");
+    expect(mocks.donationFindUnique).toHaveBeenCalledOnce();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+  });
+
+  it("does not recover credentials from a record with a different receipt token hash", async () => {
+    mocks.donationCreate.mockRejectedValueOnce(new Error("commit acknowledgement lost"));
+    mocks.donationFindUnique.mockResolvedValueOnce({ id: "other-record", referenceNumber: "other-reference", receiptTokenHash: "other-token" });
+
+    const response = await POST(requestWith());
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).not.toHaveProperty("receiptToken");
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects another claim's duplicate transfer reference without credential recovery", async () => {
+    mocks.donationCreate.mockRejectedValueOnce(new Prisma.PrismaClientKnownRequestError("duplicate", { code: "P2002", clientVersion: "test", meta: { target: ["transferReference"] } }));
+
+    const response = await POST(requestWith());
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).not.toHaveProperty("receiptToken");
+    expect(mocks.donationFindUnique).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
   });
 
   it("rejects Zakat intent unless the appeal has explicit eligibility", async () => {
