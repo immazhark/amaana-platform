@@ -3,7 +3,6 @@ import {
   getPublicMediaStorageReadiness,
   isManagedPrivateDocumentKey,
   PRIVATE_OBJECT_CACHE_CONTROL,
-  PUBLIC_MEDIA_CACHE_CONTROL,
   readImageDimensions,
 } from "./storage";
 
@@ -161,9 +160,8 @@ describe("managed private document keys", () => {
 });
 
 describe("storage cache boundary", () => {
-  it("keeps private evidence non-cacheable while immutable public media is cacheable", () => {
+  it("keeps private evidence and newly managed public uploads non-cacheable at the storage layer", () => {
     expect(PRIVATE_OBJECT_CACHE_CONTROL).toBe("private, no-store, max-age=0");
-    expect(PUBLIC_MEDIA_CACHE_CONTROL).toBe("public, max-age=31536000, immutable");
   });
 });
 
