@@ -49,6 +49,11 @@ export async function POST(request: Request) {
     if (evidenceEntry !== null && evidenceEntry !== "" && !(evidenceEntry instanceof File)) {
       return NextResponse.json({ error: "Please attach a valid transfer screenshot or PDF." }, { status: 400, headers: privateHeaders });
     }
+    // An untouched optional file input can be an empty unnamed File; a named
+    // zero-byte receipt is invalid evidence and must not be silently discarded.
+    if (evidenceEntry instanceof File && evidenceEntry.size === 0 && evidenceEntry.name) {
+      return NextResponse.json({ error: "Transfer evidence is empty. Please choose a valid file." }, { status: 400, headers: privateHeaders });
+    }
     const evidence = evidenceEntry instanceof File && evidenceEntry.size > 0 ? evidenceEntry : null;
     if (evidence && evidence.size > MAX_FILE_BYTES) return NextResponse.json({ error: "Transfer evidence must be 5 MB or smaller." }, { status: 413, headers: privateHeaders });
 
