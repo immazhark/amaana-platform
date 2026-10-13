@@ -1,3 +1,13 @@
+## 2026-10-14 IST — R-025 shared heading and R-047 route attribution batch
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013, parent 20f126bd75d0cd9bbd4de34b860805585d0e9080. User handover authorizes continuation; no concurrent implementation writer. Local checkout and dependencies restored.
+
+R-025: fix five shared/component/Home leading occurrences (1.00/1.04/1.08 -> 1.12) in experience-finish.css, section-heading.module.css and home-documentary.css. Add 12 rendered cases covering Contact shared/component headings, Home section headings and expanded programme-card titles at 390/1440px with 100/200% root text. Cases require present/visible headings, actual computed leading and text containment. Browser execution pending: local Chromium download returned invalid/truncated ZIP; no rendered pass claimed.
+
+R-047: Next 16 omits app-build-manifest but emits per-page client-reference JSON with entryJSFiles/entryCSSFiles. Parse JSON without evaluating the JS wrapper; deduplicate page, ancestor layout and shared runtime/polyfill files; exclude clientModules on-demand inventories and unrelated metadata/error entries. Report unsupported routes explicitly and retain aggregate-only fallback. Actual clean local build attributes 46 pages; seven special/server-only/redirect routes remain unattributed. Figures are uncompressed manifest-assigned entry bytes, not observed network transfers or field CWV.
+
+Validation: 942 unit/API tests passed, nine database-dependent tests skipped; TypeScript and focused ESLint passed. Eight analyzer tests plus 34 CI-planner tests pass (42 combined). Clean compile-mode Next build passes: JavaScript 810840/819200 bytes, CSS 346256/348160 bytes. Client-secret and static-image guards pass. The earlier dirty incremental build retained obsolete CSS and is not budget evidence. Full hosted prerender/database/browser verification remains required. Prior-head CI 38446049892 remained pending at the last read and does not certify this batch. No main merge/deployment, live payment/email/storage/database writes or original-audit closure claim. Next: review exact-new-head acceptance, fix confirmed failures, then continue remaining original audit items. Atomic batch complete; no active writer.
+
 ## 2026-10-13 — R-054 artwork LCP priority and gallery identity correction
 
 Owner: REVIEW_PENDING on existing PR #292, user-authorized cx. Prior head 352bf40 unchanged at initial read. Continued actual fixes; CodeRabbit review intentionally excluded.

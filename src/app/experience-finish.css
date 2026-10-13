@@ -162,7 +162,7 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
   font-family:var(--af-font-display);
   font-size:clamp(2.4rem,4.6vw,3.5rem);
   font-weight:500;
-  line-height:1.04;
+  line-height:1.12;
   letter-spacing:-.04em;
   text-wrap:balance;
 }
@@ -636,7 +636,7 @@ body{font-weight:var(--af-weight-body)}
 :is(.v2-initiative-row,.v3-work-card,.canonical-pathways,.v2-stories-card,.v2-appeal-card) h3{
   font-family:var(--af-font-display);
   font-weight:500;
-  line-height:1.08;
+  line-height:1.12;
   letter-spacing:-.02em
 }
 
