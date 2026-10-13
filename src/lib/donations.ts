@@ -24,7 +24,12 @@ export const donationSchema = z.object({
 export const directTransferSchema = donationSchema.extend({
   paymentMethod: z.enum(["DIRECT_UPI", "BANK_TRANSFER"]),
   transferReference: z.string().trim().min(6).max(100).regex(/^[A-Za-z0-9._\/-]+$/),
-  transferredAt: z.coerce.date().refine(value => value.getTime() <= Date.now() + 5 * 60_000, "Transfer date cannot be in the future"),
+  // Do not coerce null, empty values, booleans or timezone-less strings.
+  // Browsers submit a UTC ISO timestamp; internal callers may pass a Date.
+  transferredAt: z.union([
+    z.date(),
+    z.string().datetime({ offset: true }).pipe(z.coerce.date()),
+  ]).refine(value => value.getTime() <= Date.now() + 5 * 60_000, "Transfer date cannot be in the future"),
 });
 
 export function isDonationAmountAllowedForRemaining(amount: number, remainingAmount: number) {

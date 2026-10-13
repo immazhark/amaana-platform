@@ -81,7 +81,7 @@ function requestWith(file?: File) {
   form.set("givingIntent", validData.givingIntent);
   form.set("paymentMethod", validData.paymentMethod);
   form.set("transferReference", validData.transferReference);
-  form.set("transferredAt", "2026-09-30T10:30");
+  form.set("transferredAt", "2026-09-30T05:00:00.000Z");
   form.set("domesticConfirmed", "true");
   if (file) form.set("evidence", file);
   return new Request("https://amaana.example/api/donations/direct-transfer", { method: "POST", body: form });
@@ -136,6 +136,28 @@ describe("direct donation transfer submission", () => {
     expect(response.status).toBe(400);
     expect(mocks.findFirst).not.toHaveBeenCalled();
     expect(mocks.donationCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects an explicitly named zero-byte transfer receipt before creating a claim", async () => {
+    const form = new FormData();
+    form.set("appealId", validData.appealId);
+    form.set("donorName", validData.donorName);
+    form.set("donorEmail", validData.donorEmail);
+    form.set("amount", String(validData.amount));
+    form.set("givingIntent", validData.givingIntent);
+    form.set("paymentMethod", validData.paymentMethod);
+    form.set("transferReference", validData.transferReference);
+    form.set("transferredAt", "2026-09-30T05:00:00.000Z");
+    form.set("domesticConfirmed", "true");
+    form.set("evidence", new File([], "transfer-receipt.pdf", { type: "application/pdf" }));
+
+    const response = await POST(new Request("https://amaana.example/api/donations/direct-transfer", { method: "POST", body: form }));
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/evidence is empty/i);
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
   });
 
   it("treats an empty optional evidence file as no evidence", async () => {
