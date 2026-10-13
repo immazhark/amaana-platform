@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-066 Three Stories selector-pair consolidations
+
+Ownership: REVIEW_PENDING. PR #292 on fix/direct-transfer-feedback-20261013; parent fdd2b950e5c75628d0a954e5079e5a47e9e24359. Fold final feature-grid columns/gap, stories-grid gap/top margin, and feature-paragraph margin/line-height into their base CSS selectors, removing three later duplicate blocks. Exact source preconditions and original CSS winner values preserved; responsive declarations untouched. Browser/stylelint/build execution pending, R-066 partial, scoped temporary duplicate-selector exception remains. No merge/deploy/live operations.
+
 ## 2026-10-14 IST — R-066 Stories card-copy selector consolidation
 
 Ownership: REVIEW_PENDING. Same PR #292; parent a274a7082e84db1b902d0e722a7f359db72fd300. Consolidate two duplicate unscoped Stories CSS selector pairs by moving the final card-copy padding and H3 font-size declarations into their earlier matching selectors. Remove now-empty late duplicates. All winning values and responsive rule order remain. Source preconditions checked; hosted cascade, lint, browser and build acceptance still pending. R-066 PARTIAL, no merge/deploy/payment/data changes.
