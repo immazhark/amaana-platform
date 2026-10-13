@@ -59,6 +59,12 @@ describe("failed payment identity before persistence", () => {
   it.each([
     { id: undefined }, { id: null }, { id: "" }, { id: " \t\n" },
     { id: 123 }, { id: false }, { id: {} }, { id: [] },
+    { id: "invalid" }, { id: "pay_" }, { id: "pay_a b" },
+    { order_id: undefined }, { order_id: null }, { order_id: "" },
+    { order_id: "invalid" }, { order_id: "order_" }, { order_id: "order_a b" },
+    { amount: undefined }, { amount: null }, { amount: 0 }, { amount: -1 }, { amount: 1.5 },
+    { currency: undefined }, { currency: null }, { currency: "USD" },
+    { status: "captured" }, { status: "authorized" }, { captured: true },
   ])("rejects a signed failure with unusable payment identity: %j", async invalid => {
     const response = await POST(signedRequest({ ...entity, ...invalid }));
 
@@ -91,7 +97,7 @@ describe("failed payment identity before persistence", () => {
   });
 
   it("acknowledges a persisted duplicate without replaying its failure update", async () => {
-    mocks.eventFindUnique.mockResolvedValue({ id: "event_123", eventType: "payment.failed" });
+    mocks.eventFindUnique.mockResolvedValue({ id: "event_123", eventType: "payment.failed", payload: { event: "payment.failed", payment: entity } });
 
     expect((await POST(signedRequest(entity))).status).toBe(200);
     expect(mocks.transaction).not.toHaveBeenCalled();

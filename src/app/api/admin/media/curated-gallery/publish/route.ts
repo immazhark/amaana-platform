@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getCurrentUser, hasPermission } from "@/lib/auth";
+import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { CURATED_GALLERY_BATCH, CURATED_GALLERY_RECORD_COUNT } from "@/lib/curated-gallery-contract";
 import {
   CURATED_GALLERY_ENTITY_TYPE,
@@ -26,6 +27,8 @@ const privateHeaders = {
 const inputSchema = z.object({
   confirmation: z.literal("PUBLISH_EXACT_OWNER_CURATED_154"),
 }).strict();
+
+const MAX_PUBLISH_BODY_BYTES = 4 * 1024;
 
 const ownerApprovedBatchReview: MediaPublicationReview = {
   privacyClass: "GREEN_PUBLIC",
@@ -53,7 +56,23 @@ export async function POST(request: Request) {
     }
     assertCuratedGalleryRuntime();
 
-    const parsed = inputSchema.safeParse(await request.json().catch(() => null));
+    let body: unknown;
+    try {
+      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PUBLISH_BODY_BYTES));
+    } catch (error) {
+      if (error instanceof RequestBodyTooLargeError) {
+        return NextResponse.json(
+          { error: "Curated gallery publication request is too large." },
+          { status: 413, headers: privateHeaders },
+        );
+      }
+      return NextResponse.json(
+        { error: "Exact curated gallery publication confirmation is required." },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+
+    const parsed = inputSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: "Exact curated gallery publication confirmation is required." }, { status: 400, headers: privateHeaders });
     }

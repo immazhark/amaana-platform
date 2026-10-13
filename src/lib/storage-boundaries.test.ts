@@ -105,20 +105,20 @@ describe("delivery configuration is validated before public persistence", () => 
     expect(getPublicMediaStorageReadiness().deliveryReady).toBe(false);
   });
 
-  it("preserves HTTPS delivery prefixes and immutable cache policy", async () => {
+  it("returns the consent-gated local route and avoids immutable storage caching", async () => {
     const uploaded = await uploadPublicMediaFile(file());
     expect(uploaded.publicUrl).toMatch(
-      new RegExp("^https://media\\.example\\.org/prefix/" + new Date().getUTCFullYear() + "/[a-f0-9-]+\\.pdf$"),
+      new RegExp("^/media/" + new Date().getUTCFullYear() + "/[a-f0-9-]+\\.pdf$"),
     );
     expect(sdk.send).toHaveBeenCalledTimes(1);
     expect(sdk.send).toHaveBeenCalledWith(expect.objectContaining({
-      input: expect.objectContaining({ Bucket: "public-gallery", CacheControl: "public, max-age=31536000, immutable" }),
+      input: expect.objectContaining({ Bucket: "public-gallery", CacheControl: "private, no-store, max-age=0" }),
     }));
   });
 
-  it("allows an unpublished upload without a configured delivery base", async () => {
+  it("still returns the protected local route when no external delivery base is configured", async () => {
     vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "");
-    await expect(uploadPublicMediaFile(file())).resolves.toMatchObject({ publicUrl: null });
+    await expect(uploadPublicMediaFile(file())).resolves.toMatchObject({ publicUrl: expect.stringMatching(/^\/media\/\d{4}\//) });
     expect(sdk.send).toHaveBeenCalledTimes(1);
   });
 });

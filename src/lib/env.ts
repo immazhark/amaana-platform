@@ -8,7 +8,8 @@ const productionSchema = z.object({
   APP_ENVIRONMENT: z.enum(["production", "staging"]).default("production"),
   EMAIL_DELIVERY_MODE: z.enum(["live", "disabled"]).default("disabled"),
   DATABASE_URL: z.string().url(),
-  NEXT_PUBLIC_APP_URL: z.string().url().refine(value => value.startsWith("https://"), "Production URL must use HTTPS"),
+  NEXT_PUBLIC_APP_URL: z.string().url().refine(value => { const url = new URL(value); return url.protocol === "https:" && !url.username && !url.password; }, "Production URL must use HTTPS without embedded credentials"),
+  NEXT_PUBLIC_DONATION_UPI_QR_URL: z.string().url().refine(value => { const url = new URL(value); return url.protocol === "https:" && !url.username && !url.password; }, "Donation QR URL must use HTTPS without embedded credentials").optional(),
   EMAIL_FROM: z.string().min(3),
   RESEND_API_KEY: z.string().startsWith("re_"),
   CRON_SECRET: z.string().min(32),
@@ -18,7 +19,7 @@ const productionSchema = z.object({
   S3_ACCESS_KEY_ID: z.string().min(8),
   S3_SECRET_ACCESS_KEY: z.string().min(16),
   PUBLIC_MEDIA_S3_BUCKET: z.string().min(3),
-  PUBLIC_MEDIA_BASE_URL: z.string().url().refine(value => value.startsWith("https://"), "Public media URL must use HTTPS"),
+  PUBLIC_MEDIA_BASE_URL: z.string().url().refine(value => { const url = new URL(value); return url.protocol === "https:" && !url.username && !url.password; }, "Public media URL must use HTTPS without embedded credentials"),
   ASSISTANCE_TOKEN_PEPPER: z.string().min(32),
   NEXT_PUBLIC_RAZORPAY_KEY_ID: z.string().startsWith("rzp_"),
   RAZORPAY_KEY_SECRET: z.string().min(16),
@@ -75,5 +76,8 @@ export function validateProductionEnvironment() {
 }
 
 export function isEmailDeliveryEnabled() {
-  return process.env.EMAIL_DELIVERY_MODE === "live";
+  // The notification cron does not invoke the full deployment schema.
+  // Refuse live delivery from staging even when its mode is misconfigured.
+  const environment = process.env.APP_ENVIRONMENT ?? "production";
+  return environment === "production" && process.env.EMAIL_DELIVERY_MODE === "live";
 }

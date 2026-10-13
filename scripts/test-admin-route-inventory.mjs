@@ -2,6 +2,7 @@ import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join, relative, sep } from "node:path";
 import { test } from "node:test";
+import ts from "typescript";
 
 const root = process.cwd();
 const browserContract = readFileSync(join(root, "e2e/admin-anonymous-boundaries.spec.mjs"), "utf8");
@@ -43,6 +44,50 @@ test("every admin API has fail-closed guards and anonymous request coverage", ()
       assert.match(source, /\bisSameOrigin\s*\(/, `${route}: cross-origin mutations must be rejected`);
     }
   }
+});
+
+
+test("every protected admin server action independently requires permission", () => {
+  const actionFiles = walk("src/app/admin/(protected)")
+    .filter(path => path.endsWith("/actions.ts"));
+  assert.ok(actionFiles.length >= 7, "unexpectedly small protected admin action inventory");
+
+  let exportedActionCount = 0;
+  for (const path of actionFiles) {
+    const source = readFileSync(join(root, path), "utf8");
+    const sourceFile = ts.createSourceFile(path, source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
+
+    for (const statement of sourceFile.statements) {
+      if (!ts.isFunctionDeclaration(statement) || !statement.name || !statement.body) continue;
+      const modifiers = statement.modifiers ?? [];
+      const isExported = modifiers.some(modifier => modifier.kind === ts.SyntaxKind.ExportKeyword);
+      const isAsync = modifiers.some(modifier => modifier.kind === ts.SyntaxKind.AsyncKeyword);
+      if (!isExported || !isAsync) continue;
+
+      exportedActionCount += 1;
+      let permissionGuardFound = false;
+      const visit = node => {
+        if (permissionGuardFound) return;
+        if (
+          ts.isCallExpression(node)
+          && ts.isIdentifier(node.expression)
+          && node.expression.text === "requirePermission"
+        ) {
+          permissionGuardFound = true;
+          return;
+        }
+        ts.forEachChild(node, visit);
+      };
+      visit(statement.body);
+
+      assert.ok(
+        permissionGuardFound,
+        `${path}:${statement.name.text} must independently call requirePermission()`,
+      );
+    }
+  }
+
+  assert.ok(exportedActionCount >= 19, "unexpectedly small protected admin server-action inventory");
 });
 
 test("protected financial amount controls retain accessible numeric entry without spinners", () => {

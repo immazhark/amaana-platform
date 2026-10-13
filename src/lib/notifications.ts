@@ -4,6 +4,7 @@ import { renderNotificationEmail } from "@/lib/notification-templates";
 
 const MAX_BATCH_SIZE = 20;
 const MAX_ATTEMPTS = 5;
+const EMAIL_PROVIDER_TIMEOUT_MS = 15_000;
 const PROCESSING_STALE_AFTER_MS = 15 * 60 * 1000;
 const RETRY_DELAYS_MS = [5, 15, 45, 135].map(minutes => minutes * 60 * 1000);
 
@@ -48,6 +49,7 @@ async function sendWithResend(
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
+    signal: AbortSignal.timeout(EMAIL_PROVIDER_TIMEOUT_MS),
     headers: {
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
@@ -75,12 +77,19 @@ async function sendWithResend(
     );
   }
 
+  let providerMessageId: unknown;
   try {
     const payload = await response.json() as { id?: unknown };
-    return typeof payload.id === "string" && payload.id.trim() ? payload.id.trim() : null;
+    providerMessageId = payload?.id;
   } catch {
-    return null;
+    // A 2xx response without a parseable provider receipt is not evidence
+    // of completed delivery. Keep the stable idempotency key for retry.
+    throw new EmailProviderError("Email provider returned an unreadable receipt", true);
   }
+  if (typeof providerMessageId !== "string" || !providerMessageId.trim()) {
+    throw new EmailProviderError("Email provider returned an invalid receipt", true);
+  }
+  return providerMessageId.trim();
 }
 
 async function recoverStaleProcessingNotifications() {
@@ -136,6 +145,9 @@ export async function processPendingEmailNotifications() {
         id: notification.id,
         status: { in: [NotificationStatus.PENDING, NotificationStatus.FAILED] },
         attempts: { lt: MAX_ATTEMPTS },
+        // Recheck eligibility atomically: another worker may have deferred this row
+        // after our findMany snapshot, but before we can claim it.
+        scheduledFor: { lte: new Date() },
       },
       data: {
         status: NotificationStatus.PROCESSING,

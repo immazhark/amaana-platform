@@ -9,7 +9,7 @@ import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { verifyWebhookSignature } from "@/lib/razorpay";
 import { calculateRefundAccounting } from "@/lib/refund-accounting";
 import { validateProductionEnvironment } from "@/lib/env";
-import { isPrismaUniqueConstraintError } from "@/lib/webhook-idempotency";
+import { isMatchingPaymentEventReplay, isPrismaUniqueConstraintError } from "@/lib/webhook-idempotency";
 import { logServerError } from "@/lib/server-log";
 
 const MAX_RAZORPAY_WEBHOOK_BYTES = 256 * 1024;
@@ -21,6 +21,7 @@ type RazorpayEntity = {
   amount: number;
   currency?: string;
   status?: string;
+  captured?: boolean;
 };
 
 type RazorpayWebhook = {
@@ -43,6 +44,7 @@ export async function POST(request: Request) {
   const signature = request.headers.get("x-razorpay-signature") ?? "";
   let providerEventId: string | null = null;
   let receivedEventType: string | null = null;
+  let receivedAuditPayload: ReturnType<typeof paymentEventAuditPayload> | null = null;
 
   try {
     validateProductionEnvironment();
@@ -54,16 +56,18 @@ export async function POST(request: Request) {
 
     const payload = JSON.parse(rawBody) as RazorpayWebhook;
     receivedEventType = payload.event;
+    const auditPayload = paymentEventAuditPayload(payload);
+    receivedAuditPayload = auditPayload;
     providerEventId =
-      request.headers.get("x-razorpay-event-id") ??
+      request.headers.get("x-razorpay-event-id")?.trim() ||
       createHash("sha256").update(rawBody).digest("hex");
 
     const alreadyProcessed = await prisma.paymentEvent.findUnique({
       where: { providerEventId },
-      select: { id: true, eventType: true },
+      select: { id: true, eventType: true, payload: true },
     });
     if (alreadyProcessed) {
-      if (alreadyProcessed.eventType !== payload.event) {
+      if (!isMatchingPaymentEventReplay(alreadyProcessed, payload.event, auditPayload)) {
         logServerError("razorpay.webhook_event_id_collision", {
           hasProviderEventId: true,
           storedEventType: alreadyProcessed.eventType,
@@ -76,16 +80,45 @@ export async function POST(request: Request) {
 
     const payment = payload.payload?.payment?.entity;
     const refund = payload.payload?.refund?.entity;
-    const auditPayload = paymentEventAuditPayload(payload);
 
     // A financial refund must have a stable provider identity. Never acknowledge
     // malformed refunds as processed, since doing so would hide reconciliation.
     if (payload.event === "refund.processed" && (
       !refund || typeof refund.id !== "string" || !/^rfnd_[A-Za-z0-9]+$/.test(refund.id) ||
       typeof refund.payment_id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(refund.payment_id) ||
-      refund.currency !== "INR" || !Number.isSafeInteger(refund.amount) || refund.amount <= 0
+      refund.currency !== "INR" ||
+      (refund.status !== undefined && refund.status !== "processed") ||
+      !Number.isSafeInteger(refund.amount) || refund.amount <= 0
     )) {
       return new NextResponse("Invalid refund entity", { status: 400 });
+    }
+
+    // A signed webhook can still carry malformed provider data. Never acknowledge
+    // a capture event without a valid identity, currency and positive paise amount.
+    if (payload.event === "payment.captured" && (
+      !payment ||
+      typeof payment.id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(payment.id) ||
+      typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
+      payment.currency !== "INR" ||
+      (payment.status !== undefined && payment.status !== "captured") ||
+      payment.captured === false ||
+      !Number.isSafeInteger(payment.amount) || payment.amount <= 0
+    )) {
+      return new NextResponse("Invalid captured payment entity", { status: 400 });
+    }
+
+    // Financial failure events must never fall through to the generic 200
+    // acknowledgement when the provider identity or amount is malformed.
+    if (payload.event === "payment.failed" && (
+      !payment ||
+      typeof payment.id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(payment.id) ||
+      typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
+      payment.currency !== "INR" ||
+      (payment.status !== undefined && payment.status !== "failed") ||
+      payment.captured === true ||
+      !Number.isSafeInteger(payment.amount) || payment.amount <= 0
+    )) {
+      return new NextResponse("Invalid payment entity", { status: 400 });
     }
 
     if (payload.event === "payment.captured" && payment?.order_id && payment.currency === "INR") {
@@ -103,9 +136,9 @@ export async function POST(request: Request) {
         if (!isPrismaUniqueConstraintError(eventError)) throw eventError;
         const existing = await prisma.paymentEvent.findUnique({
           where: { providerEventId },
-          select: { id: true, eventType: true },
+          select: { id: true, eventType: true, payload: true },
         });
-        if (!existing || existing.eventType !== payload.event) throw eventError;
+        if (!isMatchingPaymentEventReplay(existing, payload.event, auditPayload)) throw eventError;
       }
     } else if (
       payload.event === "payment.failed" &&
@@ -114,9 +147,6 @@ export async function POST(request: Request) {
       Number.isSafeInteger(payment.amount) &&
       payment.amount > 0
     ) {
-      if (typeof payment.id !== "string" || !payment.id.trim()) {
-        return new NextResponse("Invalid payment entity", { status: 400 });
-      }
       await withSerializableTransactionRetry(async tx => {
         const donation = await tx.donation.findUnique({
           where: { providerOrderId: payment.order_id },
@@ -295,9 +325,10 @@ export async function POST(request: Request) {
     if (providerEventId && isPrismaUniqueConstraintError(error)) {
       const existing = await prisma.paymentEvent.findUnique({
         where: { providerEventId },
-        select: { id: true, eventType: true },
+        select: { id: true, eventType: true, payload: true },
       });
-      if (existing && existing.eventType === receivedEventType) {
+      if (existing && receivedEventType && receivedAuditPayload &&
+        isMatchingPaymentEventReplay(existing, receivedEventType, receivedAuditPayload)) {
         return NextResponse.json({ received: true });
       }
       if (existing) {
