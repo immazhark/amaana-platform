@@ -291,43 +291,69 @@ export function isManagedPublicMediaKey(objectKey: string) {
   return /^\d{4}\/[0-9a-f-]{36}\.(?:pdf|jpg|png|webp)$/i.test(objectKey);
 }
 
+const PUBLIC_MEDIA_READ_TIMEOUT_MS = 15_000;
+
+async function withPublicMediaReadDeadline<T>(work: Promise<T>, onTimeout: () => void): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      work,
+      new Promise<T>((_resolve, reject) => {
+        timer = setTimeout(() => {
+          reject(new Error("Public media retrieval timed out"));
+          try { onTimeout(); } catch { /* Best-effort transport cleanup. */ }
+        }, PUBLIC_MEDIA_READ_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
 export async function getPublicMediaObject(objectKey: string) {
   if (!isManagedPublicMediaKey(objectKey)) throw new Error("Invalid managed public media key");
   const { bucket, client } = getPublicMediaStorage();
-  const object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: objectKey }));
-  if (!object.Body) throw new Error("Public media object has no body");
-  const body = object.Body;
-  if (object.ContentLength !== undefined &&
-      (!Number.isSafeInteger(object.ContentLength) || object.ContentLength <= 0 || object.ContentLength > MAX_FILE_BYTES)) {
-    try {
-      if ("destroy" in body && typeof body.destroy === "function") body.destroy();
-      else if ("cancel" in body && typeof body.cancel === "function") void Promise.resolve(body.cancel()).catch(() => undefined);
-    } catch {
-      // Best-effort cleanup must not replace the known size-limit rejection.
-    }
-    throw new Error("Public media object exceeds the verified size boundary");
-  }
-  if (!(Symbol.asyncIterator in body)) throw new Error("Public media object body is not a readable stream");
-  const chunks: Buffer[] = [];
-  let size = 0;
-  for await (const chunk of body as AsyncIterable<unknown>) {
-    if (!(chunk instanceof Uint8Array)) throw new Error("Public media object contains invalid byte data");
-    if (chunk.byteLength > MAX_FILE_BYTES - size) {
+  const abort = new AbortController();
+  let stopBody = () => {};
+  const read = (async () => {
+    const object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: objectKey }), { abortSignal: abort.signal });
+    if (!object.Body) throw new Error("Public media object has no body");
+    const body = object.Body;
+    stopBody = () => {
+      try {
+        if ("destroy" in body && typeof body.destroy === "function") body.destroy();
+        else if ("cancel" in body && typeof body.cancel === "function") void Promise.resolve(body.cancel()).catch(() => undefined);
+      } catch {
+        // Cleanup errors must not replace an established rejection.
+      }
+    };
+    if (object.ContentLength !== undefined &&
+        (!Number.isSafeInteger(object.ContentLength) || object.ContentLength <= 0 || object.ContentLength > MAX_FILE_BYTES)) {
+      stopBody();
       throw new Error("Public media object exceeds the verified size boundary");
     }
-    size += chunk.byteLength;
-    chunks.push(Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength));
-  }
-  if (size === 0 || (object.ContentLength !== undefined && size !== object.ContentLength)) {
-    throw new Error("Public media object body is incomplete");
-  }
-  const bytes = Buffer.concat(chunks, size);
-  return {
-    bytes,
-    contentType: object.ContentType ?? "application/octet-stream",
-    etag: object.ETag ?? null,
-    lastModified: object.LastModified ?? null,
-  };
+    if (!(Symbol.asyncIterator in body)) throw new Error("Public media object body is not a readable stream");
+    const chunks: Buffer[] = [];
+    let size = 0;
+    for await (const chunk of body as AsyncIterable<unknown>) {
+      if (!(chunk instanceof Uint8Array)) throw new Error("Public media object contains invalid byte data");
+      if (chunk.byteLength > MAX_FILE_BYTES - size) {
+        throw new Error("Public media object exceeds the verified size boundary");
+      }
+      size += chunk.byteLength;
+      chunks.push(Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength));
+    }
+    if (size === 0 || (object.ContentLength !== undefined && size !== object.ContentLength)) {
+      throw new Error("Public media object body is incomplete");
+    }
+    return {
+      bytes: Buffer.concat(chunks, size),
+      contentType: object.ContentType ?? "application/octet-stream",
+      etag: object.ETag ?? null,
+      lastModified: object.LastModified ?? null,
+    };
+  })();
+  return withPublicMediaReadDeadline(read, () => { abort.abort(); stopBody(); });
 }
 
 export async function deletePublicMediaObject(objectKey: string) {
