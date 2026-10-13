@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
@@ -112,10 +113,39 @@ export async function POST(request: Request) {
     ) {
       throw new Error("Unexpected order response");
     }
-    const donation = await prisma.donation.create({
-      data: { referenceNumber, appealId: appeal.id, donorName: parsed.data.donorName, donorEmail: parsed.data.donorEmail.toLowerCase(), donorPhone: parsed.data.donorPhone || null, isAnonymous: parsed.data.isAnonymous, givingIntent: parsed.data.givingIntent, domesticConfirmedAt: new Date(), amount: parsed.data.amount, paymentMethod: "RAZORPAY", provider: "RAZORPAY", providerOrderId: order.id, receiptTokenHash: hashReceiptToken(receiptToken) },
-      select: { id: true, donorName: true, donorEmail: true, donorPhone: true },
-    });
+    const donationId = randomUUID();
+    let donation;
+    try {
+      donation = await prisma.donation.create({
+        data: {
+          id: donationId,
+          referenceNumber,
+          appealId: appeal.id,
+          donorName: parsed.data.donorName,
+          donorEmail: parsed.data.donorEmail.toLowerCase(),
+          donorPhone: parsed.data.donorPhone || null,
+          isAnonymous: parsed.data.isAnonymous,
+          givingIntent: parsed.data.givingIntent,
+          domesticConfirmedAt: new Date(),
+          amount: parsed.data.amount,
+          paymentMethod: "RAZORPAY",
+          provider: "RAZORPAY",
+          providerOrderId: order.id,
+          receiptTokenHash: hashReceiptToken(receiptToken),
+        },
+        select: { id: true, donorName: true, donorEmail: true, donorPhone: true },
+      });
+    } catch (error) {
+      // The provider order has already been created. Recover this request's
+      // committed record without issuing another external order or exposing
+      // credentials for a different donation.
+      const recovered = await prisma.donation.findUnique({
+        where: { id: donationId },
+        select: { id: true, donorName: true, donorEmail: true, donorPhone: true, providerOrderId: true, receiptTokenHash: true },
+      });
+      if (!recovered || recovered.providerOrderId !== order.id || recovered.receiptTokenHash !== hashReceiptToken(receiptToken)) throw error;
+      donation = recovered;
+    }
     return NextResponse.json({ donationId: donation.id, orderId: order.id, amount: amountPaise, currency: "INR", keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, appealTitle: appeal.title, donor: { name: donation.donorName, email: donation.donorEmail, contact: donation.donorPhone }, receiptToken }, { status: 201, headers: privateHeaders });
   } catch {
     logServerError("donation.order_creation_failed");
