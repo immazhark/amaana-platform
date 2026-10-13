@@ -57,3 +57,25 @@ describe("actual JSON-LD rendering boundaries", () => {
     expect(payload).not.toContain("DonateAction");
   });
 });
+
+
+describe("R-008 runtime JSON-LD input boundaries", () => {
+  it.each([
+    null, {}, [], [{ name: 42, path: "/" }], [{ name: "Home", path: null }],
+    [{ name: "   ", path: "/" }], [{ name: "Home", path: "//untrusted.example/path" }],
+    [{ name: "Home", path: "https://untrusted.example/path" }],
+    [{ name: "Home", path: "/unsafe\\path" }],
+    Array.from({ length: 21 }, () => ({ name: "Home", path: "/" })),
+  ])("omits malformed Breadcrumb input without throwing: %j", items => {
+    const props = { items } as unknown as Parameters<typeof BreadcrumbStructuredData>[0];
+    expect(renderToStaticMarkup(createElement(BreadcrumbStructuredData, props))).toBe("");
+  });
+  it.each([
+    { title: { nested: "invalid" } }, { summary: null }, { isOpen: "false" },
+    { highlySensitive: "false" }, { slug: "../other-page" }, { slug: "" },
+    { title: " " }, { summary: "" }, { title: "x".repeat(301) },
+  ])("omits malformed Appeal input instead of publishing invalid schema: %j", invalid => {
+    const props = { slug: "synthetic-appeal", title: "Synthetic title", summary: "Synthetic summary", isOpen: false, ...invalid } as unknown as Parameters<typeof AppealStructuredData>[0];
+    expect(renderToStaticMarkup(createElement(AppealStructuredData, props))).toBe("");
+  });
+});

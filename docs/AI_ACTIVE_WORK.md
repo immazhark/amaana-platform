@@ -1,3 +1,13 @@
+## 2026-10-14 IST — R-008 Breadcrumb and Appeal runtime guards completed
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013; parent a291c65fbf93ec80e0d0240e562b48767ab9c69d. Owner cx authorized continuation; no concurrent writer.
+
+R-008 uncovered source occurrences: Breadcrumb mapped unchecked items/paths and could throw for malformed runtime records; Appeal trusted TypeScript-only fields and could emit object-valued text or treat string isOpen=false as truthy. Add bounded strict Zod validation to shared structured-data library and use it in both components. Invalid optional schema returns null without preventing the main page from rendering. Breadcrumb destinations require safe root-relative paths; Appeal slugs require the existing lowercase hyphenated shape. Preserve valid text exactly, hardened escaping, sensitive-appeal redaction and real boolean donation-action gates.
+
+Nineteen new actual-component cases (ten breadcrumb/nine appeal) all fail against original source; corrected source passes all. Five prior output/privacy/escaping cases remain passing. Focused JSON-LD suites:28 passed. Full unit/API suite:968 passed, nine database-dependent skipped,102 suites passed/one skipped. TypeScript, focused zero-warning ESLint and diff checks pass. Clean compile-mode Next build passes, JS810840/819200 and CSS346256/348160 bytes; client-secret and static-image guards pass. No browser/full hosted prerender or live deployment certification inferred.
+
+Prior fee578a0 CI38449403934 fast/production/database/readiness passed; browser running at the last read. Current parent a291c65f CI38450017088 pending. This new source requires exact-head acceptance. R-008 now covers Article/WebPage, Breadcrumb and Appeal dynamic inputs; production closure remains pending. No real payment/mail/storage/data writes or main merge/deploy. Atomic batch complete; no active writer. Next: inspect new-head failures and continue original register work.
+
 ## 2026-10-14 IST — R-009 remaining JSON-LD surfaces completed
 
 Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent fee578a0c644549b6a2102946fc7079f508a6597. Owner cx authorized source continuation; no concurrent writer.

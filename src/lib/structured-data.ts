@@ -26,6 +26,37 @@ const publicStructuredDataInputSchema = z.object({
   keywords: z.array(z.string().max(120)).max(50).optional(),
 }).strict();
 
+const breadcrumbInputSchema = z.array(z.object({
+  name: z.string().min(1).max(300).refine(value => Boolean(value.trim())),
+  path: z.string().min(1).max(2_048),
+}).strict()).min(1).max(20);
+
+const appealInputSchema = z.object({
+  slug: z.string().min(1).max(200).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  title: z.string().min(1).max(300).refine(value => Boolean(value.trim())),
+  summary: z.string().min(1).max(5_000).refine(value => Boolean(value.trim())),
+  isOpen: z.boolean(),
+  highlySensitive: z.boolean().optional(),
+}).strict();
+
+/** Optional schema output must fail closed rather than crash the public page. */
+export function validateBreadcrumbStructuredDataInput(input: unknown) {
+  const parsed = breadcrumbInputSchema.safeParse(input);
+  if (!parsed.success) return null;
+  const items: { name: string; path: string }[] = [];
+  for (const item of parsed.data) {
+    const path = normalizeStructuredDataPath(item.path);
+    if (!path) return null;
+    items.push({ name: item.name, path });
+  }
+  return items;
+}
+
+export function validateAppealStructuredDataInput(input: unknown) {
+  const parsed = appealInputSchema.safeParse(input);
+  return parsed.success ? parsed.data : null;
+}
+
 const DEFAULT_SITE_URL = "https://amaanafoundation.org";
 
 function normalizeSiteUrl(value: string | undefined) {
