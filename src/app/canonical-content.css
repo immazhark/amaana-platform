@@ -127,7 +127,7 @@
 @media(min-width:1400px){
   .canonical-article .canonical-block p,
   .canonical-article .canonical-block li{font-size:1.035rem;line-height:1.76}
-  .canonical-article .canonical-block h2{font-size:clamp(1.9rem,2.25vw,2.65rem);line-height:1.08}
+  .canonical-article .canonical-block h2{font-size:clamp(1.9rem,2.25vw,2.65rem);line-height:1.12}
 }
 @media(min-width:1600px){
   .canonical-article .canonical-body{padding-inline:0}
