@@ -152,6 +152,7 @@ jobs:
       - run: npm run prisma:generate
       - run: npm run prisma:validate
       - run: npm run lint
+      - run: npm run format:check:governed
       - run: npm run typecheck
 
       - name: Run fast test suite for pull requests
