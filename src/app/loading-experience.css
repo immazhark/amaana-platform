@@ -12,17 +12,3 @@
 @keyframes amaana-dot-pulse{0%,60%,100%{transform:translateY(0) scale(.8);opacity:.38}30%{transform:translateY(-.22rem) scale(1);opacity:1}}
 @media(max-width:600px){.amaana-loading-indicator{min-width:7rem;min-height:7rem;padding:1rem;border-radius:1.25rem}.amaana-loading-logo{width:4.75rem;height:4.75rem}}
 @media(prefers-reduced-motion:reduce){.amaana-loading-overlay,.amaana-loading-logo,.amaana-loading-dots i{animation:none}.amaana-loading-logo{transform:none;opacity:1}.amaana-loading-dots i{transform:none;opacity:.72}}
-
-/* Server-rendered route skeletons, independent of client-side navigation progress. */
-.amaana-route-skeleton{min-height:65dvh;padding:clamp(2.75rem,7vw,5rem) 0;background:var(--af-color-canvas)}
-.amaana-route-skeleton__layout{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(15rem,.9fr);gap:clamp(1.5rem,5vw,5rem);align-items:center}
-.amaana-route-skeleton h1{max-width:18ch;margin:.5rem 0 1rem;font:500 clamp(2.3rem,5vw,4.2rem)/1.14 var(--af-font-display);color:var(--af-color-navy-950)}
-.amaana-route-skeleton p[role=status]{max-width:42ch;color:var(--af-color-navy-800);line-height:1.6}
-.amaana-route-skeleton__eyebrow{color:var(--af-color-gold-ink);font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase}
-.amaana-route-skeleton__bars{display:grid;gap:.7rem;max-width:23rem;margin-top:1.75rem}
-.amaana-route-skeleton__bars span{height:.7rem;border-radius:99px;background:rgb(29 49 80 / 10%)}
-.amaana-route-skeleton__bars span:nth-child(2){width:75%}
-.amaana-route-skeleton__bars span:nth-child(3){width:50%}
-.amaana-route-skeleton__visual{display:grid;place-items:center;min-height:clamp(14rem,30vw,24rem);border-radius:var(--af-radius-lg);background:linear-gradient(125deg,#e9eff8,#eee5d2 62%,#dee6e1);border:1px solid var(--af-color-border)}
-.amaana-route-skeleton__mark{display:block;width:clamp(4rem,10vw,7rem);aspect-ratio:1;background:url("/brand/amaana-mark.svg") center/contain no-repeat}
-@media(max-width:760px){.amaana-route-skeleton__layout{grid-template-columns:1fr}.amaana-route-skeleton__visual{min-height:12rem}}
