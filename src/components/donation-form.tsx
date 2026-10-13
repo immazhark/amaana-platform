@@ -179,21 +179,37 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
           domesticConfirmed: values.get("domesticConfirmed") === "on",
         }),
       });
-      const order = await orderResponse.json() as DonationOrderError & {
+      const order = await orderResponse.json().catch(() => null) as (DonationOrderError & {
         keyId: string;
         amount: number;
         currency: string;
         orderId: string;
         donor: { name: string; email: string; contact?: string };
         receiptToken: string;
-      };
+      }) | null;
       // A delayed payment callback can supersede this pending order request.
       // Reconcile that reported payment without opening another checkout.
       if (!isOpeningAttempt(attempt)) return;
       if (!orderResponse.ok) {
-        if (typeof order.remainingAmount === "number") setRemainingHint(order.remainingAmount);
-        if (order.fields) setFieldErrors(order.fields);
-        throw new Error(order.error ?? "Could not start checkout");
+        if (typeof order?.remainingAmount === "number") setRemainingHint(order.remainingAmount);
+        if (order?.fields) setFieldErrors(order.fields);
+        throw new Error(typeof order?.error === "string" ? order.error.slice(0, 500) : "Could not start checkout");
+      }
+
+      // A successful HTTP response is not proof of a usable checkout order.
+      // An order may already exist, so an invalid payload locks out retries.
+      if (orderResponse.status !== 201 || !order ||
+        typeof order.orderId !== "string" || !/^order_[A-Za-z0-9]+$/.test(order.orderId) ||
+        !Number.isSafeInteger(order.amount) || order.amount !== Number(values.get("amount")) * 100 ||
+        order.currency !== "INR" ||
+        typeof order.keyId !== "string" || !/^rzp_(test|live)_[A-Za-z0-9]+$/.test(order.keyId) ||
+        typeof order.receiptToken !== "string" || !order.receiptToken.trim() || order.receiptToken.length > 512 ||
+        !order.donor || typeof order.donor.name !== "string" || !order.donor.name.trim() ||
+        typeof order.donor.email !== "string" || !order.donor.email.trim() ||
+        (order.donor.contact != null && typeof order.donor.contact !== "string")) {
+        showError("The secure checkout response could not be verified. An order may have been recorded; contact Amaana before another attempt.");
+        changePhase("reconciliation");
+        return;
       }
 
       let paymentReported = false;
