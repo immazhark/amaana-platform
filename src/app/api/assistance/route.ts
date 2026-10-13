@@ -60,7 +60,21 @@ export async function POST(request: Request) {
       );
     }
 
-    const files = formData.getAll("documents").filter((entry): entry is File => entry instanceof File && entry.size > 0);
+    const files: File[] = [];
+    for (const entry of formData.getAll("documents")) {
+      if (typeof entry === "string") {
+        // Allow the browser's empty optional file placeholder, not a forged
+        // textual document field that would silently lose applicant evidence.
+        if (entry === "") continue;
+        return NextResponse.json({ error: "Each supporting document must be a file." }, { status: 400, headers: privateHeaders });
+      }
+      if (entry.size === 0) {
+        // An untouched optional file input can produce an empty unnamed File.
+        if (!entry.name) continue;
+        return NextResponse.json({ error: "A supporting document is empty. Please choose a valid file." }, { status: 400, headers: privateHeaders });
+      }
+      files.push(entry);
+    }
     if (files.length > MAX_FILES) {
       return NextResponse.json({ error: `You can upload up to ${MAX_FILES} documents.` }, { status: 400, headers: privateHeaders });
     }
