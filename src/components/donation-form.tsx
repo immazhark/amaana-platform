@@ -220,7 +220,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         typeof order.orderId !== "string" || !/^order_[A-Za-z0-9_]{1,120}$/.test(order.orderId) ||
         !Number.isSafeInteger(order.amount) || order.amount !== Number(values.get("amount")) * 100 ||
         order.currency !== "INR" ||
-        typeof order.keyId !== "string" || !/^rzp_(test|live)_[A-Za-z0-9]+$/.test(order.keyId) ||
+        typeof order.keyId !== "string" || !/^rzp_(test|live)_[A-Za-z0-9_]{1,120}$/.test(order.keyId) ||
         typeof order.receiptToken !== "string" || !order.receiptToken.trim() || order.receiptToken.length > 512 ||
         !order.donor || typeof order.donor.name !== "string" || !order.donor.name.trim() ||
         typeof order.donor.email !== "string" || !order.donor.email.trim() ||
