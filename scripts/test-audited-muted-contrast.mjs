@@ -64,3 +64,13 @@ test("Impact, Contact and initiative copy avoid low-contrast literal", () => {
     assert.doesNotMatch(css, /color:\s*#68717a/i);
   }
 });
+
+
+test("single-story archive label uses accessible gold ink on light paper", () => {
+  const css = readFileSync(new URL("../src/app/stories.css", import.meta.url), "utf8");
+  assert.match(css, /\.v2-stories-single-note span\s*\{[^}]*color:\s*var\(--af-color-gold-ink\)/);
+  const tokens = readFileSync(new URL("../src/app/globals.css", import.meta.url), "utf8");
+  const ink = tokens.match(/--af-color-gold-ink:\s*(#[0-9a-f]{6})\s*;/i)?.[1];
+  assert.ok(ink);
+  for (const background of ["#fffdf8", "#faf6ec", "#f3eddd"]) assert.ok(contrast(ink, background) >= 4.5);
+});

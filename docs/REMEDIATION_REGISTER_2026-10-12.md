@@ -1,3 +1,13 @@
+## 2026-10-14 IST — R-026 single-story archive label corrected
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parent cbae8ef48d6ebf52f0dbe4b8255398e7b89a9935. Owner cx authorized implementation; no concurrent writer.
+
+Confirmed R-026 occurrence: stories.css .v2-stories-single-note span displayed the small Archive beginning label in bright --v2-gold on light archive paper, used when exactly one story is published. Replace only that foreground with existing --af-color-gold-ink. Source-token contrast on canvas #faf6ec improves1.83:1 to8.36:1; brand fills/borders unchanged. Source guard fails on old rule and passes after correction.
+
+Six source/token contrast checks and34planner tests pass. Add four loaded-/stories stylesheet regressions at390/1440px and100/200%text, creating the exact one-story note markup without depending on archive record count; assert computed composite contrast>=4.5 and scaled readable font. Browser cases not locally executed (Chromium unavailable). Browser syntax, focused zero-warning ESLint and diff checks pass. Clean compile-mode build passes: JS810840/819200bytes and CSS346266/348160bytes; client-secret/static-image guards pass. Previous968unit/API test result belongs to the prior TS-source head, not a newly rerun full unit suite for this CSS-only change.
+
+Current parent CI38450646534 pending at initial read; earlier fee578a0 fast/production/database/readiness successful with browser running. Exact-new-head acceptance remains required. R-026 stays partial until broader contrast and deployment review; no original-audit full closure inferred. No main merge/deploy or live payment/mail/storage/data operations. Atomic batch complete; no active writer. Next: inspect new-head acceptance and continue remaining register items.
+
 ## 2026-10-14 IST — R-008 Breadcrumb and Appeal runtime guards completed
 
 Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013; parent a291c65fbf93ec80e0d0240e562b48767ab9c69d. Owner cx authorized continuation; no concurrent writer.

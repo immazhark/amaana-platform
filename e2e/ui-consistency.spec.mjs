@@ -122,3 +122,59 @@ for (const width of [390, 1440]) {
     for (const sample of samples) expect(sample.contrast, sample.context).toBeGreaterThanOrEqual(4.5);
   });
 }
+
+
+for (const width of [390, 1440]) {
+  for (const scale of [100, 200]) {
+    test(`R-026 single-story archive label meets AA at ${width}px and ${scale}% text`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 1000 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+      await page.addInitScript(percent => {
+        const apply = () => {
+          const style = document.createElement('style');
+          style.textContent = `html:root { font-size: ${percent}% !important; }`;
+          document.head.appendChild(style);
+        };
+        if (document.head) apply();
+        else document.addEventListener('DOMContentLoaded', apply, { once: true });
+      }, scale);
+      expect((await page.goto('/stories', { waitUntil: 'load' }))?.ok()).toBe(true);
+      // Exercise the real stylesheet's one-story state even when the seeded archive has zero or multiple stories.
+      await page.evaluate(() => {
+        const host = document.createElement('section');
+        host.dataset.contrastFixture = 'single-story';
+        host.style.backgroundColor = 'var(--af-color-canvas)';
+        const note = document.createElement('div');
+        note.className = 'v2-stories-single-note';
+        const label = document.createElement('span');
+        label.textContent = 'Archive beginning';
+        note.appendChild(label);
+        host.appendChild(note);
+        document.querySelector('main').appendChild(host);
+      });
+      await expect.poll(() => page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize))).toBe(16 * scale / 100);
+      const label = page.locator('[data-contrast-fixture="single-story"] span');
+      await expect(label).toBeVisible();
+      const metrics = await label.evaluate(node => {
+        const rgb = value => value.match(/[\d.]+/g).map(Number);
+        const composite = (foreground, background) => {
+          const alpha = foreground[3] ?? 1;
+          return foreground.slice(0, 3).map((channel, index) => channel * alpha + background[index] * (1 - alpha));
+        };
+        const luminance = color => color.map(channel => {
+          const value = channel / 255;
+          return value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4;
+        }).reduce((sum, channel, index) => sum + channel * [.2126, .7152, .0722][index], 0);
+        const style = getComputedStyle(node);
+        const host = node.closest('[data-contrast-fixture]');
+        const background = composite(rgb(getComputedStyle(node.parentElement).backgroundColor), rgb(getComputedStyle(host).backgroundColor));
+        const ink = luminance(composite(rgb(style.color), background));
+        const paper = luminance(background);
+        return { ratio: (Math.max(ink, paper) + .05) / (Math.min(ink, paper) + .05), size: parseFloat(style.fontSize) };
+      });
+      expect(metrics.ratio).toBeGreaterThanOrEqual(4.5);
+      expect(metrics.size).toBeGreaterThanOrEqual(12 * scale / 100);
+    });
+  }
+}
