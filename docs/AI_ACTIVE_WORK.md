@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-061 repeated Stories body and warm-white text tokens
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent 323c557d3e8627883979cb02ee1984f7ca48415c. Centralize eight more exact-value route colors: four #68717a text declarations now --af-color-story-body-ink and four #fffaf1 foreground declarations now --af-color-story-warm-white. Tokens have identical RGB values, defined once in globals.css. Preserve all selectors, alpha colors, text sizing, backgrounds, and layout. Source-count checks passed. Not a rendered/cascade, lint, build or browser certification. R-061 remains PARTIAL, other route/global and RGB/alpha declarations open. No merge/deploy or provider operations.
+
 ## 2026-10-14 IST — R-061 repeated Stories paper and media-stage tokens
 
 Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent d4cabf00a33cc7c244f4ade84311effab5a035be. Introduce two exact-value canonical roles in globals.css: --af-color-story-paper (#f3ecdf), --af-color-story-media-stage (#14243a). Replace all four and three matching hex occurrences respectively in Stories route CSS. Old/new declarations resolve to the same RGB; no selector, media, design, alpha, content or functional changes. Source preconditions verified. R-061 remains PARTIAL and no actual CSS cascade/browser/lint/build verification performed; deployment and production unchanged. Next: source-backed remaining route/governance gaps, with actual browser/CI acceptance required.
