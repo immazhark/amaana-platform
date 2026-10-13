@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   transaction: vi.fn(),
   serializableTransaction: vi.fn(),
   deletePublicMediaObject: vi.fn(),
+  uploadPublicMediaFile: vi.fn(),
   revalidatePath: vi.fn(),
 }));
 
@@ -32,7 +33,7 @@ vi.mock("@/lib/public-media", () => ({
 }));
 vi.mock("@/lib/storage", () => ({
   deletePublicMediaObject: mocks.deletePublicMediaObject,
-  uploadPublicMediaFile: vi.fn(),
+  uploadPublicMediaFile: mocks.uploadPublicMediaFile,
   validatePublicMediaFile: vi.fn(),
 }));
 vi.mock("@/lib/prisma", () => ({
@@ -84,6 +85,44 @@ describe("identity media creation concurrency", () => {
         create: mocks.createRecord,
       },
       auditEvent: { create: mocks.createAudit },
+    }));
+  });
+
+  it("rejects a manual URL that could override an uploaded managed file", async () => {
+    const form = new FormData();
+    form.set("target", "initiative:initiative_1");
+    form.set("file", new File(["synthetic"], "image.png", { type: "image/png" }));
+    form.set("publicUrl", "https://cdn.example.org/unapproved-photo.png");
+    form.set("altText", "Synthetic evidence");
+
+    await expect(createMediaAsset(form)).rejects.toThrow(/either a managed upload or a reviewed external URL/i);
+    expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+  });
+
+  it("persists managed media through the consent-gated local proxy and starts unpublished", async () => {
+    const storageKey = "2026/123e4567-e89b-12d3-a456-426614174000.png";
+    mocks.uploadPublicMediaFile.mockResolvedValueOnce({
+      objectKey: storageKey,
+      publicUrl: "/media/" + storageKey,
+      originalName: "image.png",
+      width: 1,
+      height: 1,
+    });
+    const form = new FormData();
+    form.set("target", "initiative:initiative_1");
+    form.set("file", new File(["synthetic"], "image.png", { type: "image/png" }));
+    form.set("altText", "Synthetic document image");
+    await createMediaAsset(form);
+
+    expect(mocks.createRecord).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        publicUrl: "/media/" + storageKey,
+        storageKey,
+        isPublic: false,
+        initiativeId: "initiative_1",
+      }),
     }));
   });
 
