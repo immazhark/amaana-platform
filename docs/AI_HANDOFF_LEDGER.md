@@ -1,3 +1,7 @@
+## 2026-10-14 IST — R-066 Stories wide-card overridden minimum height
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013; parent 342743d028397296ff6362ea5b8ec69d1676584d. Remove only early unscoped .v2-stories-card.wide min-height:31rem, superseded by later unscoped same-specificity min-height:25rem. Preserve wide grid column and grid-template-columns plus responsive media overrides, all in original order. Source preconditions and later winning rule confirmed. R-066 remains PARTIAL, temporary Stylelint exemption retained, lint/build/browser cascade matrix not executed. No merge, deployment or production/payment actions.
+
 ## 2026-10-14 IST — R-066 Stories feature dead base padding
 
 Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent a33cb5f999097039cfe938fae23047b84471c93f. Removed early .v2-stories-feature padding-block clamp(5rem,9vw,8rem), which is superseded by a later unscoped same-specificity clamp(3.75rem,6vw,5.75rem) and retains narrower responsive overrides. Base background retained. Exact source preconditions verified. No full cascade/browser or lint execution, so R-066 remains PARTIAL and duplicate-selector exception stays. No merge/deploy/payment or production data actions.
