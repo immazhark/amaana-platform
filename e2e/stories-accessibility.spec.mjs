@@ -90,12 +90,12 @@ test('Stories motion respects reduced-motion preference even after late polish s
     const fixture = document.createElement('div');
     fixture.className = 'v2-home';
     fixture.dataset.storiesMotionFixture = 'true';
-    fixture.innerHTML = '<div class="v2-stories-card">Card</div><div class="v2-stories-feature-media"><figure class="v2-media-item"><img alt="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="></figure></div>';
+    fixture.innerHTML = '<div class="v2-stories-card">Card</div><div class="v2-stories-feature-media"><figure class="v2-media-item"><img alt="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="><video muted></video></figure></div><div class="v2-stories-card-media"><figure class="v2-media-item"><img alt="" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw=="><video muted></video></figure></div>';
     document.body.append(fixture);
   });
   const read = () => page.evaluate(() => {
     const fixture = document.querySelector('[data-stories-motion-fixture]');
-    return [...fixture.querySelectorAll('.v2-stories-card, .v2-stories-feature-media img')]
+    return [...fixture.querySelectorAll('.v2-stories-card, .v2-stories-feature-media img, .v2-stories-feature-media video, .v2-stories-card-media img, .v2-stories-card-media video')]
       .map(element => getComputedStyle(element).transitionDuration);
   });
   await page.emulateMedia({ reducedMotion: 'reduce' });
