@@ -1,3 +1,13 @@
+## 2026-10-13 — checkout uncertainty and public-media timeout continuation (not original audit closures)
+
+N-34: HTTP500/502/network-loss order responses could restore editable form after possible provider-order creation. Source ee3cc7a locks reconciliation on uncertain outcomes; 6930d14 preserves correctable pre-write HTTP400/403/409/413/429. Regression 248ba1d changes stale 500 expectation and adds three real-component ambiguous-outcome cases.
+
+N-31: 693fe51 trims bounded verification/order error strings before display; e5c91da tests whitespace-prefix rendered feedback in the locked and correctable paths.
+
+N-28/N-18 public media: 568f64c bounds stalled S3 GetObject transport and async iteration within 15 seconds using SDK AbortSignal and best-effort stream destruction; dea63c6 adds two real-module stalled transport/stream cases. Prior size, verified-length, consent, privacy and bucket restrictions retained.
+
+Final source/test head 568f64cccd17e2312794c2c967b379ece02b8a4c. No local test execution because GitHub DNS/network access was unavailable for cloning. Hosted acceptance and unchanged asset budgets required before any merge; historical 95-row totals remain unreconciled. No deployment, live transaction or production data write.
+
 ## 2026-10-13 — malformed payment feedback and media cancellation completed
 
 Ownership: REVIEW_PENDING for completed continuation of existing PR #292 / `fix/direct-transfer-feedback-20261013`, parent `c0ea335d2015f4b97a26928fc508847e38d7ea3a`. Owner `cx` authorized execution. Prior 0fd3838 full browser acceptance passed 1,424 Chromium and 24 Firefox/WebKit cases; final-parent CI 38417911131 passed fast, database and production, with browser still running. Those results do not certify this newer source.
