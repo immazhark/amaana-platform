@@ -211,7 +211,9 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
           }
           setFieldErrors(safeFields);
         }
-        throw new Error(typeof order?.error === "string" && order.error.trim() ? order.error.slice(0, 500) : "Could not start checkout");
+        showError(typeof order?.error === "string" && order.error.trim() ? order.error.slice(0, 500) : "Could not start checkout");
+        resetUnpaidCheckout(attempt);
+        return;
       }
 
       // A successful HTTP response is not proof of a usable checkout order.
