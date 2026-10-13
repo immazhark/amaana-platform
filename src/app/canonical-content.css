@@ -158,7 +158,7 @@
 .canonical-body>[data-trust-evidence-boundary] .v2-section-title{
   max-width:18ch;
   font-size:clamp(2rem,3.2vw,3.25rem);
-  line-height:1.02
+  line-height:1.12
 }
 
 @media(max-width:900px){
