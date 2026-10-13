@@ -58,6 +58,8 @@ describe("captureDonation", () => {
     mocks.txDonationFindUnique.mockResolvedValue({
       id: "donation_unsafe",
       currency: "INR",
+      paymentMethod: "RAZORPAY",
+      provider: "RAZORPAY",
       amount: decimal(500),
       referenceNumber: "AFD-2026-UNSAFE",
       appealId: "appeal_1",
@@ -81,6 +83,8 @@ describe("captureDonation", () => {
     mocks.txDonationFindUnique.mockResolvedValueOnce({
       id: "donation_1",
       currency: "INR",
+      paymentMethod: "RAZORPAY",
+      provider: "RAZORPAY",
       amount: decimal(500),
       referenceNumber: "AFD-2026-BOUND",
       appealId: "appeal_1",
@@ -104,6 +108,8 @@ describe("captureDonation", () => {
       .mockResolvedValueOnce({
         id: "donation_1",
         currency: "INR",
+        paymentMethod: "RAZORPAY",
+        provider: "RAZORPAY",
         amount: decimal(500),
         referenceNumber: "AFD-2026-BOUND",
         appealId: "appeal_1",
@@ -132,6 +138,8 @@ describe("captureDonation", () => {
     mocks.txDonationFindUnique.mockResolvedValue({
       id: "donation_unsafe",
       currency: "INR",
+      paymentMethod: "RAZORPAY",
+      provider: "RAZORPAY",
       amount: decimal(Number.MAX_SAFE_INTEGER),
       referenceNumber: "AFD-2026-UNSAFE",
       appealId: "appeal_1",
@@ -226,6 +234,8 @@ describe("ensureCapturedDonationForRefund", () => {
     mocks.txDonationFindUnique.mockResolvedValueOnce({
       id: "donation_1",
       currency: "INR",
+      paymentMethod: "RAZORPAY",
+      provider: "RAZORPAY",
       amount: decimal(500),
       referenceNumber: "AFD-2026-12345678",
       appealId: "appeal_1",
@@ -298,6 +308,8 @@ describe("ensureCapturedDonationForRefund", () => {
     mocks.txDonationFindUnique.mockResolvedValueOnce({
       id: "donation_1",
       currency: "INR",
+      paymentMethod: "RAZORPAY",
+      provider: "RAZORPAY",
       amount: decimal(500),
       referenceNumber: "AFD-2026-REFUNDED",
       appealId: "appeal_1",
