@@ -3,7 +3,7 @@
 @media(prefers-reduced-motion:no-preference){.v2-story-detail-heading,.v2-story-detail-context{animation:v2-rise-in .75s both cubic-bezier(.22,1,.36,1)}.v2-story-detail-context{animation-delay:.1s}}
 @media(max-width:900px){.v2-stories-feature-grid,.v2-stories-ethic-grid,.v2-story-detail-hero-grid,.v2-story-detail-body-grid,.v2-story-detail-ethic-grid{grid-template-columns:1fr}.v2-stories-card{grid-column:span 12}.v2-story-detail-context{max-width:35rem}.v2-story-detail-body-grid>aside{position:static}.v2-story-detail-no-media{grid-template-columns:1fr}.v2-story-detail-no-media span{grid-column:auto}}
 @media(max-width:620px){.v2-stories-feature-media,.v2-stories-feature-placeholder{min-height:26rem}.v2-stories-card,.v2-stories-card.wide{grid-template-columns:1fr}.v2-stories-card{min-height:auto}.v2-stories-card-media{min-height:18rem}.v2-stories-single-note{grid-template-columns:1fr}.v2-stories-ethic-list article{grid-template-columns:2.5rem 1fr}.v2-stories-ethic-list p{grid-column:2}.v2-story-detail-hero-grid{min-height:auto;padding-block:4rem}.v2-story-detail-heading h1{font-size:clamp(3.8rem,18vw,6rem)}.v2-story-detail-back{margin-bottom:2.5rem}.v2-story-detail-lead-media{height:26rem}.v2-story-detail-no-media{min-height:24rem;padding:2rem}.v2-story-detail-rule{grid-template-columns:4rem 1fr}.v2-story-detail-prose{padding-left:0}.v2-story-detail-dropcap{left:-.5rem;top:-1.5rem}.v2-story-detail-media-grid .v2-media-item,.v2-story-detail-media-grid .v2-media-item:nth-child(3n+1),.v2-story-detail-media-grid .v2-media-item:nth-child(3n+2){grid-column:span 12}}
-@media(prefers-reduced-motion:reduce){.v2-stories-feature-media .v2-media-item img,.v2-stories-feature-media .v2-media-item video,.v2-stories-card,.v2-stories-card-media .v2-media-item img,.v2-stories-card-media .v2-media-item video{transition:none;transform:none}}
+
 
 
 /* 2026-09-28 journal refinement — editorial storytelling without oversized magazine panels. */
@@ -30,3 +30,5 @@
 .v2-stories-card{transition:transform var(--af-motion-medium) cubic-bezier(.16,1,.3,1),box-shadow var(--af-motion-medium) ease,border-color var(--af-motion-medium) ease}
 .v2-stories-feature-media .v2-media-item img,.v2-stories-feature-media .v2-media-item video,.v2-stories-card-media .v2-media-item img,.v2-stories-card-media .v2-media-item video{transition:transform var(--af-motion-medium) cubic-bezier(.16,1,.3,1)}
 .v2-stories-card:focus-visible{transform:translateY(-.25rem);box-shadow:0 24px 50px rgb(18 34 57 / 9%)}
+@media(prefers-reduced-motion:reduce){.v2-stories-feature-media .v2-media-item img,.v2-stories-feature-media .v2-media-item video,.v2-stories-card,.v2-stories-card-media .v2-media-item img,.v2-stories-card-media .v2-media-item video{transition:none;transform:none}}
+
