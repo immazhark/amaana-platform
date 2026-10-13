@@ -130,6 +130,34 @@ test.describe('order error feedback handles untrusted field data', () => {
   });
 });
 
+test.describe('bounded payment feedback stays readable', () => {
+  test('whitespace-prefixed verification rejection preserves actionable feedback and lock', async ({ page }) => {
+    await mockDonationOrder(page, { value: null });
+    await page.route('**/api/donations/confirm', route => route.fulfill({
+      status: 503, contentType: 'application/json',
+      body: JSON.stringify({ error: ' '.repeat(550) + 'Payment needs reconciliation.' }),
+    }));
+    const submit = await openDonationFixture(page, 'success');
+    await fillDonationForm(page);
+    await submit.click();
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('Payment needs reconciliation.');
+    await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+  });
+
+  test('whitespace-prefixed pre-write rejection remains readable and correctable', async ({ page }) => {
+    await page.route('**/api/donations/order', route => route.fulfill({
+      status: 429, contentType: 'application/json',
+      body: JSON.stringify({ error: ' '.repeat(550) + 'Please wait before trying again.' }),
+    }));
+    const submit = await openDonationFixture(page, 'count-only');
+    await fillDonationForm(page);
+    await submit.click();
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('Please wait before trying again.');
+    await expect(submit).toBeEnabled();
+    await expect(page.getByLabel('Full name')).toHaveValue('Acceptance Donor');
+  });
+});
+
 test.describe('checkout rejects malformed successful order responses', () => {
   for (const [label, patch] of [
     ['order identity', { orderId: null }],
