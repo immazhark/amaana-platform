@@ -1,5 +1,12 @@
 # Amaana engineering checkpoint — 13 October 2026
 
+## 2026-10-13 — checkout ambiguity and public-media deadline
+
+Implementation on existing PR #292 / fix/direct-transfer-feedback-20261013; source/tests at 568f64cccd17e2312794c2c967b379ece02b8a4c. Server-error, lost and malformed online-order responses now lock against duplicate checkout attempts while explicit pre-write rejections remain editable. Leading-whitespace error text is trimmed before bounding. Public S3 media request and body iteration now have a 15s total deadline and abort/best-effort stream cleanup. Added three payment-uncertainty browser cases, two bounded-feedback browser cases and two storage stalled-operation tests. Relevant commits ee3cc7a, 248ba1d, 6930d14, 693fe51, e5c91da, dea63c6 and 568f64c.
+
+No local clone was available because github.com DNS failed; tests were added but not executed locally. Verify fresh hosted TypeScript, production build, unchanged JS/CSS budgets, database and browser acceptance before main integration. Historical 95 audit-row accounting unreconciled. No real payment, storage access, deployment or merge. Ownership REVIEW_PENDING, no current writer.
+
+
 ## 2026-10-13 — malformed payment feedback and media cancellation completed
 
 Ownership: REVIEW_PENDING for completed continuation of existing PR #292 / `fix/direct-transfer-feedback-20261013`, parent `c0ea335d2015f4b97a26928fc508847e38d7ea3a`. Owner `cx` authorized execution. Prior 0fd3838 full browser acceptance passed 1,424 Chromium and 24 Firefox/WebKit cases; final-parent CI 38417911131 passed fast, database and production, with browser still running. Those results do not certify this newer source.
