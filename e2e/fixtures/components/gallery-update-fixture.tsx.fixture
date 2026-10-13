@@ -12,9 +12,12 @@ export function GalleryUpdateFixture({ items }: { items: CampaignGalleryItem[] }
       const detail = (event as CustomEvent<GalleryFixtureUpdate>).detail;
       if (detail.action === "reverse") setVisible(current => [...current].reverse());
       if (detail.action === "remove") setVisible(current => current.filter(item => item.id !== detail.id));
-      if (detail.action === "duplicate-id") setVisible(current => current.length > 1
-        ? [...current, { ...current[1], id: current[0].id, url: current[1].url + "#duplicate-id" }]
-        : current);
+      if (detail.action === "duplicate-id") setVisible(current => {
+        const [first, second] = current;
+        return first && second
+          ? [...current, { ...second, id: first.id, url: second.url + "#duplicate-id" }]
+          : current;
+      });
       if (detail.action === "empty") setVisible([]);
     }
     window.addEventListener("amaana-gallery-fixture-update", update);
