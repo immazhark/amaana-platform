@@ -232,7 +232,7 @@ describe("ensureCapturedDonationForRefund", () => {
   });
 
   it("does not call Razorpay again when the payment is already captured locally", async () => {
-    mocks.rootFindUnique.mockResolvedValueOnce({ id: "donation_1", status: "CAPTURED" });
+    mocks.rootFindUnique.mockResolvedValueOnce({ id: "donation_1", status: "CAPTURED", paymentMethod: "RAZORPAY", provider: "RAZORPAY" });
 
     await expect(ensureCapturedDonationForRefund("pay_1")).resolves.toEqual({
       donationId: "donation_1",
@@ -269,7 +269,7 @@ describe("ensureCapturedDonationForRefund", () => {
   it("captures a valid Amaana order before refund accounting when the refund arrives first", async () => {
     mocks.rootFindUnique
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ id: "donation_1", amount: decimal(500) });
+      .mockResolvedValueOnce({ id: "donation_1", amount: decimal(500), paymentMethod: "RAZORPAY", provider: "RAZORPAY" });
     mocks.fetchRazorpayPayment.mockResolvedValue({
       id: "pay_1",
       order_id: "order_1",
@@ -343,7 +343,7 @@ describe("ensureCapturedDonationForRefund", () => {
   it("accepts provider refunded state as evidence of a previously captured payment", async () => {
     mocks.rootFindUnique
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ id: "donation_1", amount: decimal(500) });
+      .mockResolvedValueOnce({ id: "donation_1", amount: decimal(500), paymentMethod: "RAZORPAY", provider: "RAZORPAY" });
     mocks.fetchRazorpayPayment.mockResolvedValue({
       id: "pay_1",
       order_id: "order_1",
@@ -377,7 +377,7 @@ describe("ensureCapturedDonationForRefund", () => {
   it("fails closed when Razorpay returns an amount different from the Amaana order", async () => {
     mocks.rootFindUnique
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ id: "donation_1", amount: decimal(500) });
+      .mockResolvedValueOnce({ id: "donation_1", amount: decimal(500), paymentMethod: "RAZORPAY", provider: "RAZORPAY" });
     mocks.fetchRazorpayPayment.mockResolvedValue({
       id: "pay_1",
       order_id: "order_1",
