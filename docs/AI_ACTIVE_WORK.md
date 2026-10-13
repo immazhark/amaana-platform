@@ -1,6 +1,12 @@
-## 2026-10-13 — N-24 direct-transfer create acknowledgement recovery
+## 2026-10-13 — completed integration batch and release handoff
 
-Ownership: CODEX_ACTIVE for fix/transfer-outcome-recovery-20261013. Confirmed root cause: a committed donation.create with lost acknowledgement returns500 and strands the donor's receipt credentials; reference uniqueness then prevents resubmission. Assign a server UUID before create and recover only that ID with matching receipt-token hash. Preserve duplicate-reference409; fail closed if absent/unavailable/mismatched. Recovery continues normal private evidence upload.64 tests across3 suites, TypeScript and focused ESLint passed. No schema change, real payments or deployed closure. Integrated prior285/286; historical95 counts remain unreconciled.
+Ownership: HANDOFF_PENDING; current batch safely completed. Integration head197ca9078da6a2c885843b10150f9ede576af8d1 contains guarded merges: PR286 e5875b3c (CI38357703887), corrected PR2851c44ee9c (d95ef0ae / CI38359261238), PR287197ca907 (a1adbe80 / CI38360005569). All targeted hosted gates passed on exact task heads. Earlier full CI38356018038 passed9dfd0df8 only; latest full release gates remain pending.
+
+N-23: media stack merge resolution reverted strict qualified transfer timestamps and forged/named-empty attachment checks with six source/test blobs. Restore parent validation before merge; retain media readiness scope. Combined validation332 tests across22 suites plus types/ESLint passed. Do not double-count original defects.
+
+N-24: direct-transfer create may commit without acknowledgement, stranding receipt credentials and blocking retry. Preassign server UUID; recover by own ID and matching receipt-token hash; preserve duplicate-reference409 and fail closed on absent/unavailable/mismatched outcomes. Five new regressions;64 related tests passed. Full local unit suite882 passed/9 skipped;97 suites passed/1 skipped; full lint and typecheck passed. No schema change.
+
+Production main remains2a8c35ad5e553ac0cc78b8027a35b592d1876826; no new deploy/live closure asserted. Historical register95; current open/unintegrated/integrated/production-closed/reopened totals unreconciled. Next: exact final-head release gates, environment/migration compatibility and privacy preflight before security/main promotion. No live charges/refunds or beneficiary tests performed.
 
 ## 2026-10-13 — current execution checkpoint
 
