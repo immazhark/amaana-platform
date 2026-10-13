@@ -9,7 +9,6 @@ export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 export const MAX_FILES = 5;
 export const MAX_PUBLIC_IMAGE_PIXELS = 40_000_000;
 export const PRIVATE_OBJECT_CACHE_CONTROL = "private, no-store, max-age=0";
-export const PUBLIC_MEDIA_CACHE_CONTROL = "public, max-age=31536000, immutable";
 
 type StorageConfig = {
   bucket: string;
