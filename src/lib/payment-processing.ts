@@ -24,6 +24,13 @@ function assertCapturedPaymentIdentity(
   }
 }
 
+function isRazorpayDonation(donation: { paymentMethod: string; provider: string | null }) {
+  // Legacy Razorpay rows may not have the optional provider label populated.
+  // Never reconcile a payment against direct transfer or another gateway.
+  return donation.paymentMethod === "RAZORPAY" &&
+    (donation.provider === null || donation.provider === "RAZORPAY");
+}
+
 function providerPaymentIsCaptured(payment: { status?: string; captured?: boolean }) {
   // A captured status must agree with the explicit capture flag. A completed
   // refund is separate evidence of prior capture (Razorpay may clear that flag).
@@ -58,8 +65,7 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
     if (
       !donation ||
       donation.currency !== "INR" ||
-      donation.paymentMethod !== "RAZORPAY" ||
-      (donation.provider !== null && donation.provider !== "RAZORPAY") ||
+      !isRazorpayDonation(donation) ||
       expectedAmountPaise === null ||
       !Number.isSafeInteger(expectedAmountPaise) ||
       expectedAmountPaise <= 0 ||
@@ -138,8 +144,12 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
 export async function ensureCapturedDonationForRefund(paymentId: string) {
   const localPayment = await prisma.donation.findUnique({
     where: { providerPaymentId: paymentId },
-    select: { id: true, status: true },
+    select: { id: true, status: true, paymentMethod: true, provider: true },
   });
+
+  if (localPayment && !isRazorpayDonation(localPayment)) {
+    throw new Error("Refund payment identity belongs to another donation method");
+  }
 
   if (localPayment && ["CAPTURED", "REFUNDED"].includes(localPayment.status)) {
     return { donationId: localPayment.id, matched: true, alreadyCaptured: true };
@@ -159,11 +169,15 @@ export async function ensureCapturedDonationForRefund(paymentId: string) {
 
   const donationByOrder = await prisma.donation.findUnique({
     where: { providerOrderId: providerPayment.order_id },
-    select: { id: true, amount: true },
+    select: { id: true, amount: true, paymentMethod: true, provider: true },
   });
 
   if (!donationByOrder) {
     return { donationId: null, matched: false, alreadyCaptured: false };
+  }
+
+  if (!isRazorpayDonation(donationByOrder)) {
+    throw new Error("Refund payment order belongs to another donation method");
   }
 
   const expectedAmountPaise = donationByOrder.amount.mul(100).toNumber();
