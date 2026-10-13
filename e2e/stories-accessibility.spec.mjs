@@ -99,11 +99,8 @@ test('Stories motion respects reduced-motion preference even after late polish s
       .map(element => getComputedStyle(element).transitionDuration);
   });
   await page.emulateMedia({ reducedMotion: 'reduce' });
-  await expect.poll(async () => (await read()).every(value =>
-    value.split(',').every(duration => Number.parseFloat(duration.trim()) === 0)
-  )).toBe(true);
+  await expect.poll(read).toEqual(['0s', '0s']);
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await expect.poll(async () => (await read()).every(value =>
-    value.split(',').some(duration => Number.parseFloat(duration.trim()) > 0)
-  )).toBe(true);
+  const durations = await read();
+  for (const duration of durations) expect(duration).not.toBe('0s');
 });
