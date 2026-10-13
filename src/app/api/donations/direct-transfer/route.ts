@@ -103,8 +103,29 @@ export async function POST(request: Request) {
         await prisma.donation.update({ where: { id: donation.id }, data: { transferEvidenceKey: uploaded.objectKey, transferEvidenceName: uploaded.originalName, transferEvidenceMimeType: uploaded.mimeType, transferEvidenceSize: uploaded.sizeBytes } });
       }
     } catch (error) {
-      if (uploadedKey) await deleteDonationEvidenceObject(uploadedKey, donation.id).catch(() => undefined);
-      await prisma.donation.delete({ where: { id: donation.id } }).catch(() => undefined);
+      // A storage-metadata write can commit even when its acknowledgement is lost,
+      // or an administrator may have verified the transfer concurrently.
+      // Never remove an already-updated or verified financial record.
+      let removed = false;
+      try {
+        const cleanup = await prisma.donation.deleteMany({
+          where: {
+            id: donation.id,
+            status: "PENDING_VERIFICATION",
+            transferEvidenceKey: null,
+          },
+        });
+        removed = cleanup.count === 1;
+      } catch {
+        logServerError("donation.direct_transfer_cleanup_failed");
+      }
+
+      // Delete the private object only if the unused draft was actually removed.
+      // On uncertain database outcomes, preserve both for manual reconciliation.
+      if (removed && uploadedKey) {
+        await deleteDonationEvidenceObject(uploadedKey, donation.id)
+          .catch(() => logServerError("donation.direct_transfer_evidence_cleanup_failed"));
+      }
       throw error;
     }
 

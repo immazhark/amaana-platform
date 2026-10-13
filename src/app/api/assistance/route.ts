@@ -81,6 +81,9 @@ export async function POST(request: Request) {
 
     const id = randomUUID();
     const documents: Awaited<ReturnType<typeof uploadPrivateDocument>>[] = [];
+    const referenceNumber = createReferenceNumber();
+    const trackingToken = createTrackingToken();
+    let persistenceAttempted = false;
 
     try {
       // Upload sequentially so every successfully stored object is known and can be
@@ -89,8 +92,6 @@ export async function POST(request: Request) {
         documents.push(await uploadPrivateDocument(file, id));
       }
 
-      const referenceNumber = createReferenceNumber();
-      const trackingToken = createTrackingToken();
       const email = parsed.data.email || null;
 
       const staffRecipients = await prisma.user.findMany({
@@ -130,6 +131,7 @@ export async function POST(request: Request) {
         userId: staff.id,
       }));
 
+      persistenceAttempted = true;
       await prisma.assistanceRequest.create({
         data: {
           id,
@@ -154,6 +156,28 @@ export async function POST(request: Request) {
         { status: 201, headers: privateHeaders },
       );
     } catch (submissionError) {
+      if (persistenceAttempted) {
+        // A write can commit even if the network connection drops before its
+        // acknowledgement. An existing case must retain its private evidence.
+        try {
+          const persisted = await prisma.assistanceRequest.findUnique({
+            where: { id },
+            select: { id: true },
+          });
+          if (persisted) {
+            return NextResponse.json(
+              { referenceNumber, trackingToken },
+              { status: 201, headers: privateHeaders },
+            );
+          }
+        } catch {
+          // An unavailable database cannot prove the write failed. Retain the
+          // documents for reconciliation instead of risking irreversible loss.
+          logServerError("assistance.persistence_outcome_unknown");
+          throw submissionError;
+        }
+      }
+
       const cleanupResults = await Promise.allSettled(
         documents.map(document => deletePrivateDocumentObject(document.objectKey, id)),
       );

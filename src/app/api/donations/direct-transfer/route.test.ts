@@ -6,7 +6,7 @@ const mocks = vi.hoisted(() => ({
   findFirst: vi.fn(),
   donationCreate: vi.fn(),
   donationUpdate: vi.fn(),
-  donationDelete: vi.fn(),
+  donationDeleteMany: vi.fn(),
   uploadDonationEvidence: vi.fn(),
   deleteDonationEvidenceObject: vi.fn(),
   isDonationAmountAllowedForRemaining: vi.fn(),
@@ -37,7 +37,7 @@ vi.mock("@/lib/prisma", () => ({
     donation: {
       create: mocks.donationCreate,
       update: mocks.donationUpdate,
-      delete: mocks.donationDelete,
+      deleteMany: mocks.donationDeleteMany,
     },
   },
 }));
@@ -104,7 +104,7 @@ beforeEach(() => {
   mocks.isDonationAmountAllowedForRemaining.mockReturnValue(true);
   mocks.donationCreate.mockResolvedValue({ id: "donation-1", referenceNumber: "AFD-2026-12345678" });
   mocks.donationUpdate.mockResolvedValue({});
-  mocks.donationDelete.mockResolvedValue({});
+  mocks.donationDeleteMany.mockResolvedValue({ count: 1 });
   mocks.deleteDonationEvidenceObject.mockResolvedValue(undefined);
 });
 
@@ -215,6 +215,44 @@ describe("direct donation transfer submission", () => {
     expect(mocks.donationCreate).not.toHaveBeenCalled();
   });
 
+  it("preserves a transfer and its private evidence if another worker updated the donation before cleanup", async () => {
+    const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
+    mocks.uploadDonationEvidence.mockResolvedValue({
+      objectKey: "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
+      originalName: "transfer.png",
+      mimeType: "image/png",
+      sizeBytes: file.size,
+    });
+    mocks.donationUpdate.mockRejectedValueOnce(new Error("commit acknowledgement lost"));
+    // A zero-row conditional delete means the payment state or evidence key changed.
+    mocks.donationDeleteMany.mockResolvedValueOnce({ count: 0 });
+
+    const response = await POST(requestWith(file));
+
+    expect(response.status).toBe(500);
+    expect(mocks.donationDeleteMany).toHaveBeenCalledWith({
+      where: { id: "donation-1", status: "PENDING_VERIFICATION", transferEvidenceKey: null },
+    });
+    expect(mocks.deleteDonationEvidenceObject).not.toHaveBeenCalled();
+  });
+
+  it("preserves evidence on an uncertain cleanup database failure", async () => {
+    const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
+    mocks.uploadDonationEvidence.mockResolvedValue({
+      objectKey: "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
+      originalName: "transfer.png",
+      mimeType: "image/png",
+      sizeBytes: file.size,
+    });
+    mocks.donationUpdate.mockRejectedValueOnce(new Error("database unavailable"));
+    mocks.donationDeleteMany.mockRejectedValueOnce(new Error("database unavailable"));
+
+    const response = await POST(requestWith(file));
+
+    expect(response.status).toBe(500);
+    expect(mocks.deleteDonationEvidenceObject).not.toHaveBeenCalled();
+  });
+
   it("removes uploaded evidence and the draft claim if evidence metadata persistence fails", async () => {
     const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
     mocks.uploadDonationEvidence.mockResolvedValue({
@@ -233,6 +271,6 @@ describe("direct donation transfer submission", () => {
       "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
       "donation-1",
     );
-    expect(mocks.donationDelete).toHaveBeenCalledWith({ where: { id: "donation-1" } });
+    expect(mocks.donationDeleteMany).toHaveBeenCalledWith({ where: { id: "donation-1", status: "PENDING_VERIFICATION", transferEvidenceKey: null } });
   });
 });
