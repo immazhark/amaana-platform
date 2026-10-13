@@ -262,7 +262,11 @@ export function getPublicMediaStorageReadiness(): PublicMediaStorageReadiness {
 
   const separateBucketConfigured = Boolean(bucket && (!privateBucket || bucket !== privateBucket));
   const uploadReady = Boolean(region && bucket && accessKeyId && secretAccessKey && separateBucketConfigured);
-  const deliveryReady = Boolean(uploadReady && baseUrl && baseUrlSecure);
+  // Managed uploads are delivered through the consent-gated same-origin
+  // /media/[year]/[filename] route. An external CDN URL is no longer required.
+  // A configured but invalid external origin still fails closed because the
+  // upload path refuses its malformed configuration.
+  const deliveryReady = Boolean(uploadReady && (!baseUrl || baseUrlSecure));
 
   return {
     uploadReady,
