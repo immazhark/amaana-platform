@@ -219,7 +219,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
       // A successful HTTP response is not proof of a usable checkout order.
       // An order may already exist, so an invalid payload locks out retries.
       if (orderResponse.status !== 201 || !order ||
-        typeof order.orderId !== "string" || !/^order_[A-Za-z0-9]+$/.test(order.orderId) ||
+        typeof order.orderId !== "string" || !/^order_[A-Za-z0-9_]{1,120}$/.test(order.orderId) ||
         !Number.isSafeInteger(order.amount) || order.amount !== Number(values.get("amount")) * 100 ||
         order.currency !== "INR" ||
         typeof order.keyId !== "string" || !/^rzp_(test|live)_[A-Za-z0-9]+$/.test(order.keyId) ||
