@@ -24,7 +24,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Transfer submission must use multipart form data." }, { status: 400, headers: privateHeaders });
     }
 
-    let body: Uint8Array;
+    let body: Awaited<ReturnType<typeof readBodyBytesWithLimit>>;
     try {
       body = await readBodyBytesWithLimit(request, MAX_MULTIPART_BYTES);
     } catch (error) {
@@ -33,12 +33,10 @@ export async function POST(request: Request) {
       }
       throw error;
     }
-    const boundedBody = new ArrayBuffer(body.byteLength);
-    new Uint8Array(boundedBody).set(body);
     const boundedRequest = new Request(request.url, {
       method: "POST",
       headers: { "content-type": contentType },
-      body: boundedBody,
+      body,
     });
     let form: FormData;
     try {
