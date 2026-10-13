@@ -600,6 +600,7 @@ test('client navigation uses a full-screen branded blocking overlay without coll
   const overlay = page.locator('.amaana-navigation-loading');
   await expect(overlay).toBeVisible();
   await expect(overlay.locator('.amaana-loading-logo')).toBeVisible();
+  await expect(overlay.locator('.amaana-loading-logo')).toHaveCSS('background-image', /amaana-mark\.svg/);
   await expect(overlay.locator('.amaana-loading-dots i')).toHaveCount(3);
 
   const geometry = await overlay.boundingBox();
