@@ -13,7 +13,13 @@ export async function runNotificationJob(env = process.env, request = fetch) {
     signal: AbortSignal.timeout(30_000),
   });
   // Avoid logging response bodies or provider/database diagnostics.
-  await response.body?.cancel();
+  // Cancellation is cleanup, not part of the HTTP outcome. A stalled or failed
+  // stream cancellation must not hold the worker open or mask an HTTP error.
+  try {
+    void response.body?.cancel().catch(() => undefined);
+  } catch {
+    // A locked response body may reject cancellation synchronously.
+  }
   if (!response.ok) throw new Error(`Notification job HTTP ${response.status}`);
   return response.status;
 }

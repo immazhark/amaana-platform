@@ -18,6 +18,16 @@ website's database credentials to this service to make the root website build.
 
 ## Activate only after an approved main merge
 
+For build recovery while delivery remains contained, use source root
+`/ops/notification-cron` with config file
+`/ops/notification-cron/railway.contained.json`. This selects the isolated image
+and preserves the existing year-only schedule; it does not validate delivery or
+disable execution forever. Do not manually start this image merely to test the
+build: its entrypoint calls the authenticated endpoint and may send queued mail.
+The image workflow tests with networking disabled and synthetic responses.
+Confirm the selected config in Railway before deploying. Switch to the normal
+config only when scheduled production email processing is explicitly authorized.
+
 1. Independently review this change and merge through the approved release path
    into `main`. Task-branch pushes must not deploy to Railway.
 2. Keep the worker source repository `immazhark/amaana-platform`, branch `main`.
