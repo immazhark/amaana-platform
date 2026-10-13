@@ -323,7 +323,7 @@ These are tracking-row counts, not a certified defect-free percentage. The 40 ad
 | R-038 | Impact tile accessible action mismatch | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-15; #234 | Visible action included in accessible name. |
 | R-039 | Participation-card accessible action mismatch | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-15; #235 | Visible action announced first. |
 | R-040 | Story archive accessible action mismatch | Implemented; not deployed | Remediation/task branch only | No—new correction not deployed | AM-15; #236 | Accessible action includes visible label. |
-| R-041 | Amount fields use number controls instead of decimal input UX | Open | No completed rollout | No verified new fix | AM-11 | Complete conversion of flagged amount controls not evidenced. |
+| R-041 | Amount fields use number controls instead of decimal input UX | Implemented; integration pending | DonationForm and DirectTransferForm already use type=text, inputMode=numeric, pattern=[0-9]+ | Not certified live | Current branch; cfb62ec | Both donor amount controls use whole-rupee numeric-keyboard inputs and reject fractional strings. New real-component two-method regression added; hosted acceptance pending. Admin content-order/year number controls are separate from donation amounts. |
 | R-042 | Real screen-reader/keyboard/200%-zoom acceptance | Unverified | Not established | Unconfirmed | AM-05/AM-11 | Automated checks do not replace the outstanding human acceptance. |
 
 ### Performance
