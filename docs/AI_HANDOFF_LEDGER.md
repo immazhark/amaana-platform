@@ -1,3 +1,13 @@
+## 2026-10-14 IST — standalone global-error typography corrected
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013, parent c4e0ccc8ae46db36be9d879a15073beb2685b0ee. Owner cx authorized continuation; no concurrent writer.
+
+R-024/R-025 confirmed missed inline occurrences in global-error.tsx: label .72rem (11.52px at normal root) and heading .85 line-height. The standalone fallback replaces the normal root layout, so external accessibility CSS cannot be relied on. Set label .75rem and heading1.12 directly in the canonical fallback. Preserve approved background, text, private-error omission and reset action. No R-057 CSS relocation was performed: that investigation lacked rendered cascade/error-route proof.
+
+Two actual fallback-render typography tests fail on original source and pass after correction; a third verifies complete English document, single H1, recovery control/guidance and private-diagnostic omission. Three focused tests, TypeScript, zero-warning focused ESLint and diff checks pass. Clean compile-mode build passes: JS810842/819200bytes, CSS346266/348160bytes; secret-boundary/static-image guards pass. Full unit suite was not rerun for these two presentation values. Browser/device/global-error recovery acceptance remains unverified locally because Chromium is unavailable.
+
+Earlier fee578a0 CI38449403934 fast/production/database/readiness passed; browser remains running. Attempted running-job logs returned BlobNotFound404, not application failure evidence. Current/new-head hosted acceptance remains required. R-024/R-025 stay partial pending broader rendered and deployment acceptance. No main merge/deploy, live payment/mail/storage/data operation or original-audit closure. Atomic standalone-fallback task complete; no active writer. Next: obtain exact-head acceptance evidence, correct real failures and continue remaining authorized source work.
+
 ## 2026-10-14 IST — R-026 single-story archive label corrected
 
 Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parent cbae8ef48d6ebf52f0dbe4b8255398e7b89a9935. Owner cx authorized implementation; no concurrent writer.
