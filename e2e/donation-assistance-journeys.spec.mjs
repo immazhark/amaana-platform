@@ -160,6 +160,45 @@ async function finishAssistanceConfirmation(page) {
 
 // Release-candidate browser gate: keep this suite active whenever checkout or runtime hardening changes.
 test.describe('donation journey without real payment', () => {
+  for (const selectedIntent of ['GENERAL', 'SADAQAH', 'ZAKAT', null]) {
+    test(`rejected giving intention focuses ${selectedIntent ?? 'first radio when unchecked'}`, async ({ page }) => {
+      let orderCalls = 0;
+      await page.route('**/api/donations/order', route => {
+        orderCalls += 1;
+        return route.fulfill({
+          status: 400,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            error: 'Please review the giving intention.',
+            fields: { givingIntent: ['Choose a supported intention.'] },
+          }),
+        });
+      });
+      const submit = await openDonationFixture(page, 'dismiss');
+      await fillDonationForm(page);
+      if (selectedIntent) {
+        await page.locator(`input[name="givingIntent"][value="${selectedIntent}"]`).check();
+      } else {
+        await page.locator('form').evaluate(form => {
+          // Synthetic setup reaches the server-rejection fallback with no checked radio.
+          form.noValidate = true;
+          for (const radio of form.querySelectorAll('input[name="givingIntent"]')) radio.checked = false;
+        });
+      }
+      await submit.click();
+
+      const target = page.locator(`input[name="givingIntent"][value="${selectedIntent ?? 'GENERAL'}"]`);
+      await expect(target).toBeFocused();
+      const group = page.getByRole('group', { name: 'Giving intention', exact: true });
+      await expect(group).toHaveAttribute('aria-invalid', 'true');
+      await expect(group).toHaveAttribute('aria-describedby', 'giving-intent-error');
+      await expect(page.locator('#giving-intent-error')).toHaveText('Choose a supported intention.');
+      if (selectedIntent) await expect(target).toBeChecked();
+      else await expect(target).not.toBeChecked();
+      expect(orderCalls).toBe(1);
+    });
+  }
+
   test('donation order validation focuses the rejected field, not only the summary', async ({ page }) => {
     let orderCalls = 0;
     await page.route('**/api/donations/order', async route => {
@@ -226,10 +265,16 @@ test.describe('donation journey without real payment', () => {
     await page.getByLabel('Full name').fill('Acceptance Donor');
     await page.getByLabel('Email').fill('acceptance@example.test');
 
-    expect(await amount.evaluate(input => ({ valid: input.validity.valid, rangeOverflow: input.validity.rangeOverflow }))).toEqual({
+    await expect(amount).toHaveAttribute('type', 'text');
+    await expect(amount).toHaveAttribute('inputmode', 'numeric');
+    expect(await amount.evaluate(input => ({ valid: input.validity.valid, message: input.validationMessage }))).toEqual({
       valid: false,
-      rangeOverflow: true,
+      message: 'Enter no more than ₹5,000.',
     });
+    for (const invalidValue of ['0', '1.5', '1e3', '-10']) {
+      await amount.fill(invalidValue);
+      expect(await amount.evaluate(input => input.checkValidity()), invalidValue).toBe(false);
+    }
 
     await amount.fill('250');
     expect(await domestic.evaluate(input => input.validity.valueMissing)).toBe(true);
@@ -486,7 +531,15 @@ test.describe('direct donation browser journey without real transfer', () => {
 
     await page.getByLabel('Full name').fill('Acceptance Donor');
     await page.getByLabel('Email').fill('acceptance@example.test');
-    await page.getByLabel('Amount (INR)').fill('250');
+    const transferAmount = page.getByLabel('Amount (INR)');
+    await expect(transferAmount).toHaveAttribute('type', 'text');
+    await expect(transferAmount).toHaveAttribute('inputmode', 'numeric');
+    for (const invalidValue of ['1e3', '1.5', '5001', '9']) {
+      await transferAmount.fill(invalidValue);
+      expect(await transferAmount.evaluate(input => input.checkValidity()), invalidValue).toBe(false);
+    }
+    await transferAmount.fill('250');
+    expect(await transferAmount.evaluate(input => input.checkValidity())).toBe(true);
     await page.getByLabel('UTR / transaction reference').fill('UTRACCEPT12345');
     await page.getByLabel('Transfer date and time').fill('2026-09-30T10:30');
     await page.locator('input[name="domesticConfirmed"]').check();

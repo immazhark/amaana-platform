@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   verifyWebhookSignature: vi.fn(),
   ensureCapturedDonationForRefund: vi.fn(),
+  captureDonation: vi.fn(),
   paymentEventFindUnique: vi.fn(),
   rootPaymentEventCreate: vi.fn(),
   uniqueConstraintError: vi.fn(),
@@ -36,7 +37,7 @@ vi.mock("@/lib/payment-event-audit", () => ({
 }));
 
 vi.mock("@/lib/payment-processing", () => ({
-  captureDonation: vi.fn(),
+  captureDonation: mocks.captureDonation,
   ensureCapturedDonationForRefund: mocks.ensureCapturedDonationForRefund,
 }));
 
@@ -52,7 +53,8 @@ vi.mock("@/lib/env", () => ({
   validateProductionEnvironment: () => undefined,
 }));
 
-vi.mock("@/lib/webhook-idempotency", () => ({
+vi.mock("@/lib/webhook-idempotency", async importOriginal => ({
+  ...(await importOriginal<typeof import("@/lib/webhook-idempotency")>()),
   isPrismaUniqueConstraintError: mocks.uniqueConstraintError,
 }));
 
@@ -166,6 +168,43 @@ describe("Razorpay webhook route", () => {
     });
   });
 
+  it.each([
+    { id: "" },
+    { id: "invalid" },
+    { order_id: "" },
+    { order_id: "invalid" },
+    { status: "authorized" },
+    { status: "failed" },
+    { captured: false },
+    { currency: "USD" },
+    { amount: 0 },
+    { amount: -10 },
+    { amount: 125.5 },
+    { amount: Number.MAX_SAFE_INTEGER + 1 },
+  ])("rejects malformed payment.captured entities before persistence: %j", async fields => {
+    const response = await POST(webhookRequest({
+      event: "payment.captured",
+      payload: {
+        payment: {
+          entity: {
+            id: "pay_123",
+            order_id: "order_123",
+            currency: "INR",
+            amount: 50_000,
+            status: "captured",
+            ...fields,
+          },
+        },
+      },
+    }, { "x-razorpay-event-id": "evt_bad_capture" }));
+
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe("Invalid captured payment entity");
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
+    expect(mocks.transactionRetry).not.toHaveBeenCalled();
+  });
+
   it("rejects an invalid signature before any event lookup or accounting", async () => {
     mocks.verifyWebhookSignature.mockReturnValue(false);
 
@@ -179,7 +218,7 @@ describe("Razorpay webhook route", () => {
   });
 
   it("acknowledges a duplicate provider event without replaying refund accounting", async () => {
-    mocks.paymentEventFindUnique.mockResolvedValue({ id: "existing_event", eventType: "refund.processed" });
+    mocks.paymentEventFindUnique.mockResolvedValue({ id: "existing_event", eventType: "refund.processed", payload: refundPayload() });
 
     const response = await POST(webhookRequest(refundPayload()));
     const body = await response.json();
@@ -190,10 +229,47 @@ describe("Razorpay webhook route", () => {
     expect(mocks.transactionRetry).not.toHaveBeenCalled();
   });
 
+  it("rejects a reused refund event ID with a different financial amount", async () => {
+    mocks.paymentEventFindUnique.mockResolvedValue({
+      id: "existing_event",
+      eventType: "refund.processed",
+      payload: refundPayload(2500),
+    });
+
+    const response = await POST(webhookRequest(refundPayload(3000)));
+
+    expect(response.status).toBe(409);
+    expect(await response.text()).toBe("Webhook event id conflict");
+    expect(mocks.ensureCapturedDonationForRefund).not.toHaveBeenCalled();
+    expect(mocks.transactionRetry).not.toHaveBeenCalled();
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects a raced refund-event insert when the winning row has different financial details", async () => {
+    mocks.paymentEventFindUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        id: "racing_event",
+        eventType: "refund.processed",
+        payload: refundPayload(2500),
+      });
+    mocks.uniqueConstraintError.mockReturnValue(true);
+    mocks.transactionRetry.mockRejectedValueOnce({ code: "P2002" });
+
+    const response = await POST(webhookRequest(refundPayload(3000)));
+
+    expect(response.status).toBe(409);
+    expect(await response.text()).toBe("Webhook event id conflict");
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
   it("rejects reuse of a provider event id for a different event type", async () => {
     mocks.paymentEventFindUnique.mockResolvedValue({
       id: "existing_event",
       eventType: "payment.failed",
+      payload: refundPayload(),
     });
 
     const response = await POST(webhookRequest(refundPayload()));
@@ -211,7 +287,7 @@ describe("Razorpay webhook route", () => {
   ])("handles a concurrent event insert with stored type %s", async (eventType, status) => {
     mocks.paymentEventFindUnique
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ id: "racing_event", eventType });
+      .mockResolvedValueOnce({ id: "racing_event", eventType, payload: refundPayload() });
     mocks.uniqueConstraintError.mockReturnValue(true);
     mocks.transactionRetry.mockRejectedValueOnce({ code: "P2002" });
 
@@ -241,8 +317,8 @@ describe("Razorpay webhook route", () => {
       payload: {
         payment: {
           entity: {
-            id: "pay_failed_001",
-            order_id: "order_failed_001",
+            id: "pay_failed001",
+            order_id: "order_failed001",
             amount: 2500,
             currency: "INR",
             status: "failed",
@@ -264,12 +340,15 @@ describe("Razorpay webhook route", () => {
     expect(mocks.txDonationUpdateMany).toHaveBeenCalledWith({
       where: {
         id: "donation_failed_1",
-        status: { in: ["CREATED", "AUTHORIZED"] },
+        OR: [
+          { status: "CREATED" },
+          { status: "AUTHORIZED", providerPaymentId: "pay_failed001" },
+        ],
       },
       data: {
         status: "FAILED",
         failedAt: expect.any(Date),
-        providerPaymentId: "pay_failed_001",
+        providerPaymentId: "pay_failed001",
       },
     });
     expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
@@ -284,8 +363,8 @@ describe("Razorpay webhook route", () => {
       payload: {
         payment: {
           entity: {
-            id: "pay_failed_wrong_amount",
-            order_id: "order_failed_001",
+            id: "pay_failedwrongamount",
+            order_id: "order_failed001",
             amount: 2500,
             currency: "INR",
             status: "failed",
@@ -310,8 +389,8 @@ describe("Razorpay webhook route", () => {
       payload: {
         payment: {
           entity: {
-            id: "pay_failed_unsafe",
-            order_id: "order_failed_unsafe",
+            id: "pay_failedunsafe",
+            order_id: "order_failedunsafe",
             amount,
             currency: "INR",
             status: "failed",
@@ -320,14 +399,11 @@ describe("Razorpay webhook route", () => {
       },
     }, { "x-razorpay-event-id": `evt_failed_unsafe_${String(amount).replace(/[^0-9]/g, "_")}` }));
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe("Invalid payment entity");
     expect(mocks.txDonationFindUnique).not.toHaveBeenCalled();
     expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
-    expect(mocks.rootPaymentEventCreate).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        eventType: "payment.failed",
-      }),
-    });
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
   });
 
   it("does not mutate a donation for a non-INR payment.failed event", async () => {
@@ -336,8 +412,8 @@ describe("Razorpay webhook route", () => {
       payload: {
         payment: {
           entity: {
-            id: "pay_failed_usd",
-            order_id: "order_failed_usd",
+            id: "pay_failedusd",
+            order_id: "order_failedusd",
             amount: 2500,
             currency: "USD",
             status: "failed",
@@ -346,15 +422,11 @@ describe("Razorpay webhook route", () => {
       },
     }, { "x-razorpay-event-id": "evt_failed_usd" }));
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe("Invalid payment entity");
     expect(mocks.txDonationFindUnique).not.toHaveBeenCalled();
     expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
-    expect(mocks.rootPaymentEventCreate).toHaveBeenCalledWith({
-      data: expect.objectContaining({
-        providerEventId: "evt_failed_usd",
-        eventType: "payment.failed",
-      }),
-    });
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
   });
 
   it("records an unmatched payment.failed event without mutating a donation", async () => {
@@ -365,7 +437,7 @@ describe("Razorpay webhook route", () => {
       payload: {
         payment: {
           entity: {
-            id: "pay_failed_unknown",
+            id: "pay_failedunknown",
             order_id: "order_unknown",
             amount: 2500,
             currency: "INR",
@@ -403,6 +475,23 @@ describe("Razorpay webhook route", () => {
     expect(response.status).toBe(500);
     expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
   });
+
+  it.each(["failed", "pending", "created"])(
+    "rejects refund.processed with contradictory provider status %s before accounting",
+    async status => {
+      const payload = refundPayload();
+      const response = await POST(webhookRequest({
+        ...payload,
+        payload: { refund: { entity: { ...payload.payload.refund.entity, status } } },
+      }));
+
+      expect(response.status).toBe(400);
+      expect(await response.text()).toBe("Invalid refund entity");
+      expect(mocks.ensureCapturedDonationForRefund).not.toHaveBeenCalled();
+      expect(mocks.transactionRetry).not.toHaveBeenCalled();
+      expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
+    },
+  );
 
   it.each(["", "invalid", null])("rejects a missing or malformed refund id %s", async id => {
     const payload = refundPayload();

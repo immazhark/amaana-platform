@@ -1,0 +1,79 @@
+name: Stacked security verification
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+    branches:
+      - fix/consolidated-a11y-regression-20261012
+    paths:
+      - ".github/workflows/stacked-security.yml"
+      - "next.config.ts"
+      - "e2e/security-headers.spec.mjs"
+      - "scripts/test-admin-route-inventory.mjs"
+      - "src/app/api/admin/media/curated-gallery/publish/**"
+      - "src/lib/password.ts"
+      - "src/lib/password.test.ts"
+      - "src/lib/password-work-factors.test.ts"
+      - "src/lib/donations.ts"
+      - "src/lib/donations.test.ts"
+      - "src/app/api/assistance/route.ts"
+      - "src/app/api/assistance/route.test.ts"
+      - "src/app/api/donations/direct-transfer/**"
+      - "src/app/api/donations/confirm/**"
+      - "src/app/api/donations/order/**"
+      - "src/app/api/webhooks/razorpay/**"
+      - "src/lib/direct-donation-reconciliation.ts"
+      - "src/lib/direct-donation-reconciliation.test.ts"
+      - "src/lib/webhook-idempotency.ts"
+      - "src/lib/webhook-idempotency.test.ts"
+      - "src/lib/payment-processing.ts"
+      - "src/lib/payment-processing.test.ts"
+      - "src/lib/razorpay.ts"
+      - "src/lib/razorpay.test.ts"
+      - "src/lib/notifications.ts"
+      - "src/lib/notifications-worker.test.ts"
+      - "src/lib/notifications-claim.test.ts"
+      - "src/lib/notifications-provider-timeout.test.ts"
+      - "src/lib/bounded-request-body.ts"
+      - "src/lib/bounded-request-body.test.ts"
+      - "src/lib/env.ts"
+      - "src/lib/env.test.ts"
+      - "src/lib/public-media.ts"
+      - "src/lib/public-media.test.ts"
+      - "src/lib/storage.ts"
+      - "src/lib/storage-boundaries.test.ts"
+      - "src/lib/storage-readiness.test.ts"
+      - "src/app/admin/(protected)/media/page.tsx"
+      - "src/app/admin/(protected)/media/actions.ts"
+      - "src/app/admin/(protected)/media/actions.test.ts"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: stacked-security-${{ github.event.pull_request.number }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/amaana?schema=public
+      NEXT_PUBLIC_APP_URL: https://amaanafoundation.org
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/setup-node@v7.0.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run prisma:generate
+      - name: Check types and protected route inventory
+        run: |
+          npm run typecheck
+          node --test scripts/test-admin-route-inventory.mjs
+      - name: Test media, configuration and privileged publication boundaries
+        run: |
+          npx vitest run src/lib/password.test.ts src/lib/password-work-factors.test.ts src/lib/donations.test.ts src/app/api/assistance/route.test.ts src/app/api/donations/direct-transfer/route.test.ts src/lib/webhook-idempotency.test.ts src/lib/storage-boundaries.test.ts src/lib/storage-readiness.test.ts "src/app/admin/(protected)/media/actions.test.ts" src/lib/direct-donation-reconciliation.test.ts src/lib/notifications-worker.test.ts src/lib/notifications-claim.test.ts src/lib/notifications-provider-timeout.test.ts src/lib/razorpay.test.ts src/app/api/donations/order/provider-order.test.ts src/app/api/webhooks/razorpay/event-id-fallback.test.ts src/app/api/webhooks/razorpay/payment-failed.test.ts src/app/api/webhooks/razorpay/route.test.ts src/lib/payment-processing.test.ts src/app/api/donations/confirm/route.test.ts src/lib/bounded-request-body.test.ts src/lib/env.test.ts src/lib/public-media.test.ts src/app/api/admin/media/curated-gallery/publish/error-boundary.test.ts
+          node --check e2e/security-headers.spec.mjs

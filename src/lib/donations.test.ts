@@ -4,6 +4,15 @@ import { createDonationReference, createReceiptNumber, createReceiptToken, donat
 const valid = { appealId: "cmf1234567890123456789012", donorName: "Test Donor", donorEmail: "donor@example.com", donorPhone: "9876543210", amount: 500, givingIntent: "GENERAL", domesticConfirmed: true };
 describe("donation validation", () => {
   it("accepts a domestic INR donation", () => expect(donationSchema.safeParse(valid).success).toBe(true));
+  it("accepts digit-only form strings without coercing arbitrary input", () => {
+    expect(donationSchema.safeParse({ ...valid, amount: "500" }).success).toBe(true);
+    expect(donationSchema.safeParse({ ...valid, amount: "000500" }).success).toBe(true);
+  });
+  it.each(["1e3", "0x20", "500.0", "500 ", " 500", "+500", "-500", "", true, null, 500.5])(
+    "rejects unsupported public amount input %s", amount => {
+      expect(donationSchema.safeParse({ ...valid, amount }).success).toBe(false);
+    },
+  );
   it("requires domestic-source confirmation", () => expect(donationSchema.safeParse({ ...valid, domesticConfirmed: false }).success).toBe(false));
   it("enforces absolute donation limits before appeal context", () => { expect(donationSchema.safeParse({ ...valid, amount: 0 }).success).toBe(false); expect(donationSchema.safeParse({ ...valid, amount: 1000001 }).success).toBe(false); });
   it("keeps the ₹10 minimum for normal donations", () => { expect(isDonationAmountAllowedForRemaining(9, 1_000)).toBe(false); expect(isDonationAmountAllowedForRemaining(10, 1_000)).toBe(true); });
@@ -15,6 +24,31 @@ describe("donation validation", () => {
     expect(directTransferSchema.safeParse({ ...claim, transferReference: "bad ref!" }).success).toBe(false);
     expect(directTransferSchema.safeParse({ ...claim, transferredAt: new Date(Date.now() + 60 * 60_000) }).success).toBe(false);
   });
+  it("accepts a timezone-qualified direct-transfer timestamp without altering its instant", () => {
+    const claim = {
+      ...valid,
+      paymentMethod: "BANK_TRANSFER",
+      transferReference: "UTR123456789",
+      transferredAt: "2026-10-12T11:15:30+05:30",
+    };
+    const parsed = directTransferSchema.safeParse(claim);
+    expect(parsed.success).toBe(true);
+    if (parsed.success) expect(parsed.data.transferredAt.toISOString()).toBe("2026-10-12T05:45:30.000Z");
+  });
+
+  it.each([null, undefined, "", "   ", false, true, 0, 1, "2026-10-12", "2026-10-12T11:15:30", {}])(
+    "rejects invalid or timezone-less transfer date %j instead of silently storing 1970",
+    transferredAt => {
+      const claim = {
+        ...valid,
+        paymentMethod: "DIRECT_UPI",
+        transferReference: "UTR123456789",
+        transferredAt,
+      };
+      expect(directTransferSchema.safeParse(claim).success).toBe(false);
+    },
+  );
+
   it("hashes receipt access tokens", () => { process.env.DONATION_TOKEN_PEPPER = "d".repeat(32); expect(hashReceiptToken("token")).toBe(hashReceiptToken("token")); expect(hashReceiptToken("token")).not.toBe(hashReceiptToken("other")); });
   it("creates donation and acknowledgement identifiers", () => { const reference = createDonationReference(); expect(reference).toMatch(/^AFD-\d{4}-\d{8}$/); expect(createReceiptNumber(reference)).toBe(`ACK-${reference}`); expect(createReceiptToken().length).toBeGreaterThan(20); });
 });

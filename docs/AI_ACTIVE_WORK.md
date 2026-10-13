@@ -1,16 +1,260 @@
-# 2026-10-12 — Password work-factor regression integrity
+## 2026-10-13 — superseded PR cleanup and missing coverage recovery
 
-Ownership `REVIEW_PENDING`; bounded test correction completed by Codex under the owner's continuation directive. Task branch `test/password-work-factor-ceilings-20261012` from security integration `f5578c31829aeb76ac4e30060cc658342942d762`. Deliberately supersede prior implementation wait only for this bounded security-test correction; all independent review/integration/main/production gates remain intact.
+Ownership: CODEX_ACTIVE for existing PR254 refresh onto consolidated03b95b1a. Closed11 superseded PRs:278,279,280,281,274,249,253,258,240,247,241, after comparing actual source/test deltas and fresh heads. Each closure body explains retained coverage; no branch deletion, stale merge or production closure.
 
-Verified test defect: three intended over-ceiling modern-scrypt fixtures in password.test.ts concatenate salt/hash without delimiters. They split into four fields, so execute malformed-hash rejection instead of exercising the six-field work-factor ceiling path. Correct fixtures and observe real Node scrypt calls to verify excess N/r/p never reach crypto. Preserve all runtime authentication/session/password behavior; no hash migration, user mutation, dependencies or secrets change. Inspect source/test robustness with a bounded local mutation probe, never publish unsafe implementation changes.
+Four PRs remain:215 production release;282 consolidation;216 unique importer/CSS work;254 unique real-scrypt coverage. Unlike the superseded candidates,254's password-work-factors.test.ts is absent and password.test.ts still has malformed four-field over-ceiling fixtures in consolidated. Restore exactly its two test blobs without changing authentication runtime. Seven actual-password tests pass with real Node scrypt calls; typecheck/ESLint pass. Add these paths and tests to existing stacked verification so the refreshed existing PR gets exact-head validation. Preserve both histories when refreshing; no force push.
 
-PR #253 d42795ca043e7a218f7f68be9ce0f6007a70fab0 has successful fast/database/production checks in CI38172576206; browser acceptance is still running. Other completed fixes remain Ready and unmerged without independent approval. PR215 radio review thread remains unresolved until integration. Local prior composition: 520 tests passed, six database skips; lint/typecheck passed. Stream-close CI cause still unconfirmed.
+PR216 exact-head CI38252706957 passed39b671a1. Its importer batching, timestamp and test changes are not fully preserved in282; keep open pending scoped reconciliation, rather than merge stale CSS/workflow snapshots. Historical95 totals remain unreconciled. Newer remediation is not deployed; main remains2a8c35ad.
 
-Implemented: correct three modern-hash fixtures with six delimiter-separated fields; add three observer regressions that delegate to actual Node scrypt while asserting over-ceiling N/r/p never reach crypto. Initial observer setup incorrectly required an exact options object despite an additional keyLength property, and returned the cleared mock from beforeEach (interpreted as teardown); corrected the test harness and reverified. Seven focused password tests pass. Full integration-base unit suite: 456 passed, six database-dependent skips. Full lint, TypeScript and whitespace checks pass.
+## 2026-10-13 — notification and release-preflight batch complete
 
-Final mutation proof: in a detached scratch checkout, remove only the input work-factor ceiling selection while retaining result guards and maxmem. All three final observer regressions fail (including excessive p, whose false return alone would not reveal excess CPU work). Restore scratch implementation byte-for-byte in finally. Primary runtime password.ts never changed. This fixes false assurance in tests, not a confirmed runtime authentication vulnerability. Hosted CI and independent review remain pending before integration.
+Ownership: HANDOFF_PENDING; source integration70e213e70eed102b29dfa67e09cbdc95cf81ffd0. PR288 merged433fccec after exact-head CI38361087739 passed. PR289 merged70e213e after exact-head CI38361613600 passed.
+
+N-25 checkout credentials recovery: same server UUID, provider order and token hash;37 related tests passed. N-26 notification retry ownership: atomic claim requires snapshot attempts equality;15 notification tests passed. Removing equality reproduces an unwanted provider send in the new race regression; fixed source passes. Files: order/route.ts and provider-order.test.ts; notifications.ts, notifications-claim.test.ts and notifications-worker.test.ts. Combined local suite888 passed/9 skipped;97 suites passed/1 skipped; full lint and typecheck passed.
+
+N-27 deployment configuration blocker: Railway production predeploy was only an inline environment check and did not run migrations. Updated existing service b40482be-5e5d-48cc-b36b-39beabfd5d5c in environment38aede68-35aa-42de-adbc-49802e6d44e4 to node prisma/railway-predeploy.mjs with300s timeout. Six wrapper tests passed; describe-service readback verifies both fields. Wrapper runs bounded-retry migrations; production skips preview content import and staging seed. Configuration applies on the next deploy; no deployment or database write triggered by this change.
+
+Railway deployment bb65fc78-088e-4df2-b7b6-80c59fd62da8 is SUCCESS at main2a8c35ad5e553ac0cc78b8027a35b592d1876826; canRollback true. Latest release CI38361776442 for70e213e was queued at checkpoint. OAuth exposes variable names only, so canonical media URL, actual credential values and migration state are not remotely certified. Legacy PUBLIC_MEDIA_S3 credential names remain defined alongside MEDIA_S3 names; safe cleanup remains a release preflight item. No new production closure asserted.
+
+Historical register95; current open/unintegrated/integrated/live-closed/reopened totals remain unreconciled. Next: final-head release gates, env/migration/privacy compatibility, guarded parent/main promotion, then deployment/live verification. No live emails, payments, refunds or beneficiary-sensitive tests performed.
+
+## 2026-10-13 — notification retry continuation
+
+Ownership: CODEX_ACTIVE on fix/notification-attempt-claim-20261013 by owner cx. PR288 integrated433fccec after exact-head CI38361087739 passed. N-26: selected attempt count can become stale before a due retry claim, but completion/failure uses that old count. Atomic claim now requires selected attempts equality as well as max-attempt/due-time guards.15 tests across4 notification suites, typecheck and focused ESLint passed. Removing equality reproduces an unwanted provider send in the new race test; corrected candidate passes. Await exact-head hosted verification before guarded integration. Consolidated release gates remain queued; no production promotion.
+
+## 2026-10-13 — checkout persistence continuation
+
+Ownership: CODEX_ACTIVE on fix/checkout-outcome-recovery-20261013 by owner cx. N-25 confirmed: provider order exists and donation write may commit despite lost acknowledgement, but checkout returns500 and loses original receipt access. Own-ID/token/provider-order recovery implemented; five new regressions;37 related tests plus typecheck and focused ESLint passed. No schema change or real provider requests. Await exact-head hosted CI and guarded merge. Final consolidated release CI remains queued; no promotion.
+
+## 2026-10-13 — completed integration batch and release handoff
+
+Ownership: HANDOFF_PENDING; current batch safely completed. Integration head197ca9078da6a2c885843b10150f9ede576af8d1 contains guarded merges: PR286 e5875b3c (CI38357703887), corrected PR2851c44ee9c (d95ef0ae / CI38359261238), PR287197ca907 (a1adbe80 / CI38360005569). All targeted hosted gates passed on exact task heads. Earlier full CI38356018038 passed9dfd0df8 only; latest full release gates remain pending.
+
+N-23: media stack merge resolution reverted strict qualified transfer timestamps and forged/named-empty attachment checks with six source/test blobs. Restore parent validation before merge; retain media readiness scope. Combined validation332 tests across22 suites plus types/ESLint passed. Do not double-count original defects.
+
+N-24: direct-transfer create may commit without acknowledgement, stranding receipt credentials and blocking retry. Preassign server UUID; recover by own ID and matching receipt-token hash; preserve duplicate-reference409 and fail closed on absent/unavailable/mismatched outcomes. Five new regressions;64 related tests passed. Full local unit suite882 passed/9 skipped;97 suites passed/1 skipped; full lint and typecheck passed. No schema change.
+
+Production main remains2a8c35ad5e553ac0cc78b8027a35b592d1876826; no new deploy/live closure asserted. Historical register95; current open/unintegrated/integrated/production-closed/reopened totals unreconciled. Next: exact final-head release gates, environment/migration compatibility and privacy preflight before security/main promotion. No live charges/refunds or beneficiary tests performed.
+
+## 2026-10-13 — current execution checkpoint
+
+Ownership: CODEX_ACTIVE by explicit owner handoff. See docs/EXECUTION_CHECKPOINT_2026-10-13.md for current evidence. PR286 integrated at e5875b3c. PR285 corrective d95ef0ae restores six parent validation files reverted by its merge resolution (N-23); fresh hosted CI required. Combined candidate:99 focused tests and typecheck passed. Main remains2a8c35ad; no new production deployment or closure. Historical95 entries; current totals unreconciled.
+
+## 2026-10-13 — combined corrective integration candidate
+
+- Actual d59f5e66 CI38306526542 result: fast/database/production passed; browser and final verify FAILED. Browser summary1156passed,5failed,1flaky. Four404 cases consistently measured .98 line-height/font ratio despite earlier fallback edits; one impact fixture failed and the second was flaky after injected main DOM disappeared. No full/cross-browser success for this head is claimed.
+- R-025 root cause: later experience-finish.css shared state/error `font` shorthand resets line-height to .98. Change that authoritative shorthand to1.05 for the shared state/receipt/404/error/loading heading family, preserving sizes/fonts and all existing test thresholds. Keep the four real404 assertions.
+- Impact harness correction: replace mutation of React-owned main DOM with a server-rendered disposable impact-typography page importing the real impact CSS module. Retain both100/200% cases, exact font, opacity and color assertions; no weakened thresholds or retries. Production fixture preparation removes the entire fixture subtree; actual disabled-build removal probe passes.
+- N-21 parked artwork cap fix included: bounded shared-cap encoder,11focused tests, postbuild image guard, actual7derivative evidence and3failing cap-bypass mutation cases. Local source/geometry/alpha unchanged; hosted sharp0.35.5 and full18-image checks pending.
+- N-22 source-confirmed optimizer freshness mismatch: managed-media handler returns max-age60/s-maxage300, but global minimumCacheTTL31536000 overrides shorter upstream policies. Official Next image docs and exact v16.3.8 image-optimizer.ts confirm max(minimum,upstream). Lower floor to60; remove conflicting generic /media immutable config header so the handler owns success/error policies; explicitly retain year-long immutable source headers on /brand,/hero,/programme-artwork. Cap optimizer source bodies to existing5MiB managed-upload limit. Add three real optimizer/source-header browser cases with a disposable read-only source using an existing approved WebP; syntax and actual-config parsing pass locally.
+- N-22 remains PARTIAL: nominal freshness policy is corrected, but existing caches, stale/error revalidation behavior, CDN purge and real consent-withdrawal acceptance are not certified. Do not describe this as immediate revocation or complete media privacy. Reference https://nextjs.org/docs/app/api-reference/components/image#minimumcachettl and vercel/next.js v16.3.8 packages/next/src/server/image-optimizer.ts; no private-header forwarding/auth-bypass claim.
+- Ready for one guarded fast-forward from PR d59f5e66 after its run completed, including parked f3ab3447 ancestry. Fresh candidate lint/types/build/budgets/browser required. No security/main merge, deployment, live transaction or zero-defect/AAA certification.
+
+## 2026-10-13 — parked validation and remaining boundaries
+
+- N-21 sensitivity: detached byte-cap bypass mutation makes3 of11 focused tests fail (oversize fallback, nonmonotonic fallback, bounded rejection); actual candidate remains unchanged. Baseline actual-generation guard fails on422226-byte Taleem; bounded candidate397472 passes. This verifies enforcement rather than merely expected happy-path values.
+- N-13 rechecked against actual PR215 advisory: GHSA-vfj7-8cjw-p6xm / CVE-2026-93687 affects braces<=3.0.3; GitHub Advisory Database still lists no patched version (https://github.com/advisories/GHSA-vfj7-8cjw-p6xm). Current lock chain eslint-config-next16.3.8→@next/eslint-plugin-next16.3.8→fast-glob3.3.1→micromatch4.0.8→braces3.0.3 is development-only. Docker still asserts braces is absent after prune --omit=dev. No downgrade, suppression, unaudited fork or claim of a new full audit/patch.
+- Analytics review: page views and Web Vitals reuse normalizePublicAnalyticsPath; dynamic public slugs group as :slug, private routes are excluded, bodies are bounded and schema-strict. This source review does not close historical nonconforming paths, production migration, retention, live privacy or cost gates.
+- Impact contrast review correction: base impact.css contains older light-surface inks, but later impact-wow.css resolves principle labels/paragraphs to canonical gold-ink/muted through brand aliases. No additional confirmed rendered defect established; no extra stylesheet change committed for those two selectors.
+- d59f5e66 CI38306526542 browser remains active; other gates passed. Keep artwork code parked and preserve the running suite. No production release actions.
+
+## 2026-10-13 — N-21 generated artwork bypassed image budget (parked)
+
+- Root cause: the fast hero/artwork weight guard runs before `npm run build`; prebuild refinement creates ignored derivatives afterward. d59f5e66 production log contains Taleem422226 bytes against the existing MAX_ARTWORK_BYTES409600 cap. The same baseline pipeline reproduced all seven production byte counts locally; a weight check after baseline generation correctly fails on Taleem.
+- Correction: shared-cap encoding helper keeps preferred quality88 when fitting, tries bounded qualities86/84/82/80/78/76, and throws before the oversized output write when none fits. Add the existing weight checker to npm postbuild after the secret-boundary gate, so production/browser builds cannot report success with oversized generated artwork. Add 11 focused encoder boundary/error tests to the existing fast image step. No budget increase or new dependency.
+- Actual-file validation: candidate Taleem397472 bytes at quality82 (24754 bytes/5.86% smaller); other six derivatives remain byte-identical at quality88. All seven retain1536×1024 geometry and alpha channels; every downloaded approved source SHA-256 unchanged. Local 14-image subset (7sources+7derivatives) passes weight guard. Preferred/limit/oversize/nonmonotonic/floor/invalid/error cases11/11 pass; syntax passes. Visual comparison preserves the established composition; measured Taleem PSNR36.93dB relative to the prior encoding, not an assertion of lossless output.
+- Local encoder is runtime sharp0.35.4; repository pins0.35.5. Exact old output bytes match hosted baseline, but fresh hosted generator/quality/budget validation remains required. Outputs and approved source image files are not committed or regenerated through AI.
+- R-053 remains partial: mobile transfer <=150KB and external consent-cleared media delivery are not certified. Track new N-21 as implemented candidate, not deployed.
+- Based on PR HEAD d59f5e66; CI38306526542 fast/database/production passed (755unit/9skipped; JS818786/819200,CSS346526/348160), browser still active. Park this follow-up until that browser run completes, then use one guarded integration update. No security/main merge, Railway deployment or live/payment check.
+
+## 2026-10-13 — integrated follow-up candidate after gallery CI passed
+
+- Verified baseline d246e366: run 38303371341 completed successfully across plan, fast, database, production, browser and final verify. Browser log: 1,154 Chromium passed (23.6m), 24 Firefox/WebKit smoke passed (35.3s), no reported flakes. Three new gallery reorder/removal/empty-state regressions included. Fast: 755 unit passed, 9 skipped; production JS818773/819200, CSS346461/348160. Three lint warnings were present on this baseline; parked cleanup addresses them without suppressions and needs fresh hosted verification.
+- Candidate batch: gallery cleanup captures current DOM/trigger array safely; typed authorization route table removes unused adapter argument; R-075 static source index; R-024 five explicit sub-12px font declarations (status/pathway/donation/placeholder/impact index); R-025 active error/404 heading .8→1.05 in root and duplicated policy styles; R-019 impact index opacity/background and light-tile caption ink.
+- Impact evidence: old index at 62% opacity calculates 4.40:1 over #f7f0de. Opaque #122239 on #fffdf8 calculates 15.73:1 regardless of underlying imagery. Light-tile caption moves #80620d→canonical #604407: 7.94–8.88:1 across #f7f0de/#fffdf8. Palette preserved. This is a scoped numerical/source check, not live image-wide contrast certification.
+- Validation: all 79 CSS inventory files inspected for explicit px/rem/clamp and font-shorthand minima; 507 font declarations reviewed. Added eight browser cases: real404×four, actual donation labels×two, disposable impact-style fixtures×two. Node syntax checks pass; new candidate lint/build/unit/browser and budgets pending. No tests or limits weakened.
+- Publish only after fresh PR HEAD/ancestry guard; expected old PR head d246e366. R-012, R-019, R-024 and R-025 remain partial; R-075 implemented pending hosted/live serving. No security/main merge, Railway deployment, payment or live verification performed.
+
+## 2026-10-13 — R-024 public stylesheet minimum review
+
+- Read all 79 CSS files from the original repository tree at PR d246e366; root/public/component CSS inventory has no missing fetches. Review targeted explicit px/rem declarations and bounded clamp values, not inherited/em/calculated font sizes or live computed styles.
+- Two further sub-12px declarations found: donation-route metadata .68rem and decorative placeholder label clamp(.62rem,1.2vw,.72rem). Raise both to .75rem; earlier parked status/pathway corrections bring this batch to four minimum-size declarations. Placeholder remains decorative/aria-hidden; no semantic or beneficiary-data change.
+- Add two actual donation-page browser cases at 390px, verifying both labels equal 12px at 100% and 24px at 200% root size. Together with four R-025 real-404 cases, this batch adds six browser regressions. Node syntax check passes; hosted browser results pending.
+- R-024 remains partial until browser, inherited/computed typography, and human acceptance are verified. No claim of universal readable sizing or AAA compliance.
+- Parked batch is based on 469a6813; PR d246e366/browser run 38303371341 continues. No security/main merge or deployment.
+
+## 2026-10-13 — R-025 error-heading line spacing
+
+- Current root `not-found.tsx` and `error.tsx` use `.v2-not-found` / `.v2-error-page`; both active headings receive line-height .8 from the globally imported `error-experience.css`. Error heading includes an explicit line break. This is confirmed source evidence; no live overlap measurement claimed.
+- Raise the shared heading rule to 1.05 in root error styling and its duplicated policy-route rule, avoiding a later route stylesheet restoring .8. No changes to heading words, route boundaries, redirects, fonts or theme.
+- Add four real-404 browser cases (390/1440px × 100/200% root font), checking HTTP404, the actual accessible heading, correct root scaling, and line height at least font size. Syntax check passed; browser execution pending. Existing thresholds unchanged.
+- R-025 remains partial: other legacy display rules and broader human typography acceptance are not certified by this narrow correction.
+- Parked batch now includes gallery cleanup, R-075 public source index, two R-024 label minimums, and this R-025 correction. Current PR d246e366/browser run 38303371341 still pending; no source update interrupting that run and no deployment.
+
+## 2026-10-13 — R-024 remaining shared-label minimum
+
+- Raise `.status-badge` (globals) and `.canonical-pathway span` (canonical-content) from .72rem to .75rem. At a 16px root, both now reach 12px; at a 32px root, both scale to 24px. Color, spacing, layout and content remain unchanged; replacement length is identical.
+- Reviewed the original AM-05/AM-25 findings against current root/public CSS. Legacy tight-heading selectors remain in route styles, but were absent from their current page components; no current rendering failure inferred and no broad deletion performed.
+- R-024 stays partial: this is two additional label declarations, not site-wide AAA certification or a completed human acceptance check.
+- Based on parked R-075 commit 893dac77, which includes cleanup b5ff59ed. PR HEAD d246e366 and browser run 38303371341 remain active and unchanged. These updates are parked for one guarded integration batch after the running suite completes.
+
+## 2026-10-13 — R-075 public source index (parked integration follow-up)
+
+- Scope: add `public/llms.txt` with 15 canonical links to existing public information and policy routes. No beneficiary, donor, receipt or administrative detail links; no invented impact figures, social URLs or tax promises.
+- Compliance: domestic Indian sources only; no FCRA registration; provisional Section 12A/80G approvals; normal acknowledgements are not tax-deduction certificates. Wording checked against the current compliance page.
+- Evidence: original `AMAANA_MASTER_REMEDIATION_PLAN(2).md` identifies AM-27; file absence verified at PR HEAD d246e366. Local link/origin/format check passed. This is a small text convention, not a security critical or a guarantee of model indexing.
+- Validation baseline: d246e366 fast/database/production gates passed; browser run 38303371341 still active. 77 actual-module local boundary/navigation probes pass. Parked cleanup b5ff59ed still awaits hosted lint/browser verification.
+- Publication: keep PR HEAD unchanged until its active browser suite completes; combine this source index with the parked cleanup for the next integration batch. No security/main merge or production deployment performed.
+
+# 2026-10-13 IST — Gallery cleanup lint follow-up parked
+
+Ownership: `CODEX_ACTIVE` under owner continuation; one implementation writer. Parked task `fix/gallery-cleanup-lint-20261013` from consolidated PR #282 `d246e366c89455c4fb444c5b493392f046077103`.
+
+CI 38303371341 at d246e366 passed fast and database; production budget measurements: JS 818,773/819,200 B; CSS 346,461/348,160 B. Hosted units 755 passed / 9 skipped, including 37 actual-helper API boundary and 14 gallery-selection cases. Browser remains in progress; completion is not inferred.
+
+Fast lint was exit-zero but reported THREE warnings: unused _request in the status test adapter; effect-cleanup reads of dialogRef.current and triggerRefs.current. Fix the test table with an explicit Response handler contract and direct status handler. Capture the dialog node and mutable thumbnail-ref array inside the effect; use captured node isConnected to recognize modal removal before focus restoration. Preserve current thumbnail lookup and skip restoration during active modal navigation. No rule disable, threshold weakening or new dependency.
+
+Local TypeScript test syntax parsed. This follow-up still requires hosted lint/type/browser/budget validation; no warning-free CI is claimed yet. N-20 and R-012 broader acceptance remain pending; no new runtime vulnerability count is added for lint warnings.
+
+Next: allow current browser run to finish, inspect new gallery lifecycle results, reconcile this parked follow-up and validate. No security/main merge, Railway deployment or live verification.
 
 ---
+
+# 2026-10-13 IST — Gallery lifecycle and actual-helper admin authorization integration
+
+Ownership: `CODEX_ACTIVE` under owner continuation; one implementation writer. Consolidated PR #282 on `fix/consolidated-a11y-regression-20261012`, target `fix/p0-security-remediation-20261010`.
+
+Baseline `0d193c3e0b4aedcb3135944b614055bba34fa628` completed CI 38300163971 successfully: lint/type/unit, database, production, browser and final verify. Hosted units 704 passed / 9 skipped; Chromium 1,151 passed with no failure/flake summary; Firefox/WebKit 24 passed. JS 818,586/819,200 B; CSS 346,461/348,160 B. This certifies the baseline only.
+
+Integrate N-20 from parked `62a721f3`: stable image-ID selection; release stale modal ownership; restore connected thumbnail focus; 14 unit and three dynamic actual-component browser regressions. Local helper 14/14, syntax and production-fixture removal checks pass. Rendered lifecycle/client-byte acceptance still pending.
+
+R-012 coverage: add 37 cases across start/upload/publish/status APIs using real getCurrentUser, hasPermission and isSameOrigin. Verify active/unexpired hashed-token query predicates; anonymous/unresolved sessions; zero/partial permissions; permissions combined across roles; foreign/missing/opaque mutation origins; private error headers; no privileged storage/publication activity before authorization. Stop authorized cases at an explicit inert runtime checkpoint rather than upload/publish.
+
+Local actual API/session/permission/origin execution: 37/37 pass with inert external/persistence adapters. Detached permission-checker mutation (always true) causes 12 failures, with 25 unrelated cases still passing. Added hosted Vitest cases; local TS syntax passes. This is coverage improvement, not a newly discovered production bypass or complete R-012 certification.
+
+Next: fresh combined CI; fix demonstrated failures, inspect gallery bytes and rendering, then integration/release gates. No security/main merge, Railway deployment, real storage mutation, payment or live verification. All compliance/factual/media locks and asset budgets remain unchanged.
+
+---
+
+# 2026-10-13 IST — Gallery lifecycle candidate
+
+Ownership: `CODEX_ACTIVE` under owner continuation; one implementation writer. Parked task `fix/gallery-selection-lifecycle-20261013` from consolidated PR #282 `0d193c3e0b4aedcb3135944b614055bba34fa628`.
+
+N-20: positional selection can change the displayed image after reorder and retain scroll/key ownership after the selected item disappears. Preserve selected ID; derive index; clear removed selections; restore connected thumbnail focus through modal cleanup. Retain layout, media and keyboard controls.
+
+Validation: 14 actual-helper Node cases pass. Add 14 Vitest and three browser cases through the existing disposable synthetic fixture. Script/spec and unit TypeScript syntax pass. React checklist reviewed. Local browser/React execution unavailable; hosted lifecycle and client-byte acceptance pending. No new production dependency or CSS change; budgets remain JS 819,200 B / CSS 348,160 B.
+
+Consolidated CI 38300163971: fast/database/production passed, hosted units 704 passed / 9 skipped; browser running at last check. Do not interrupt it. Next: reconcile/publish this parked batch and validate after that suite completes. No security/main merge, Railway deployment or live verification.
+
+---
+
+# 2026-10-13 IST — Storage/origin integration and Companion scaling correction
+
+Ownership: `CODEX_ACTIVE` under owner cx continuation; one implementation writer. Active consolidated PR #282: `fix/consolidated-a11y-regression-20261012` targeting `fix/p0-security-remediation-20261010`.
+
+Validated baseline `2697dec3661ece25231d2dc5d0eb333d0a8e4ff8`: CI 38297387285 succeeded across fast/database/production/browser/final verify. Actual Chromium summary: 1,149 passed and TWO flaky shared rail/footer/Companion typography tests (390/1280px), both succeeding on retry; Firefox/WebKit 24 passed. JS 818,586/819,200 B; CSS 346,461/348,160 B. This is not zero-flake acceptance.
+
+Integrate parked N-15–N-18 storage/media corrections from `0c695485`, preserving all source/test work. Add N-19: isSameOrigin rejects missing production URL, malformed configured URLs, non-HTTPS production origins, credentialed configuration and opaque Origin. Development HTTP fallback remains available. Five baseline cases reproduced unsafe acceptance/exception behavior; eight corrected actual-helper probes pass.
+
+R-024: hosted flakes read 12px kicker at the 24px assertion after a separate in-place root style mutation. Rework shared checks to reload with a persistent enlarged stylesheet, measure root/text atomically, and verify 100% and 200% reading/prayer typography plus loaded prayer wrapping. No thresholds or budgets weakened. This harness correction still requires hosted browser proof.
+
+Local actual-module/handler probes: 26/26 pass (18 storage/media, eight origin). Added corresponding hosted Vitest cases; local syntax parsed, but local Vitest/Chromium dependencies unavailable. Server-only S3 boundaries remain intact; no database migration, live payment, real S3 mutation or production configuration change.
+
+Next: fresh combined CI on consolidated candidate; resolve demonstrated failures/flakes; integrate to security branch only after required gates and review. No main merge, Railway deploy or live verification claimed.
+
+---
+
+# 2026-10-13 IST — Public storage boundary remediation candidate
+
+Ownership: `CODEX_ACTIVE` under owner continuation. One implementation writer. Parked task: `fix/public-storage-boundaries-20261013` from consolidated PR #282 head `2697dec3661ece25231d2dc5d0eb333d0a8e4ff8`. Security integration remains `c7a4d557`.
+
+N-15: public storage readiness rejected a shared public/private bucket, but common upload/read/delete helpers did not. Enforce separation inside getPublicMediaStorage before creating a client, including trimmed bucket names. Covers ordinary upload, curated upload, read and delete. Private evidence operations remain independent.
+
+N-16: public delivery URL validation happened after persistence and accepted credentials/query/fragments. Validate before storage creation; share the validator with readiness; preserve valid HTTPS prefixes and unpublished null-URL uploads.
+
+N-17: public media publication lookup sat outside the controlled error handler. Move it inside the guard so database failures return an empty no-store 503 with Retry-After and noindex headers before S3 access. A real-handler local probe failed on baseline and passes after correction; add the corresponding route Vitest case.
+
+N-18: public S3 reads buffered entire objects without enforcing the upload-size contract or verifying completeness. Reject oversized ContentLength before reading and close the stream; cap streamed accumulation at 5 MiB; reject truncated bodies. A detached mutation restoring only the old read function failed three guards while 14 unrelated cases still passed. Valid streamed bytes and metadata remain unchanged.
+
+Evidence: actual storage module executed with only AWS SDK/signing replaced by inert transports. Baseline: 9/10 initial probes failed (four absent shared-bucket rejections; three absent unsafe-URL rejections; two uploads before invalid-URL rejection). Corrected: 18/18 combined probes pass (17 storage plus one real media handler). Added 18 Vitest cases for hosted lint/typecheck/unit execution; syntax parsed locally. Local Vitest dependencies are unavailable; these are not claimed as locally executed Vitest results. No real S3 operations or credentials used.
+
+PR #282 CI 38297387285: fast/database/production passed; browser in progress at initial check. Production totals JS 818,586/819,200 B, CSS 346,461/348,160 B. Park the security batch without cancelling or replacing that suite. New storage changes still require hosted candidate CI and eventual combined integration.
+
+No security-branch/main merge, Railway deployment, migration or production privacy/security certification. Next: inspect completion of #282's current browser suite, reconcile this parked candidate with actual HEAD, integrate one atomic batch and validate.
+
+---
+
+# 2026-10-13 IST — R-024 consolidated integration candidate
+
+Ownership: `CODEX_ACTIVE` under the owner's explicit execution handover. Single implementation writer; active PR #282 on `fix/consolidated-a11y-regression-20261012`, target `fix/p0-security-remediation-20261010`.
+
+Verified baseline: `87aa9c613f635dc75b960a801c722f3f2f0f8ed6`. CI 38294121822 completed successfully: fast, database, production, browser and verify; Chromium 1,151 passed with no failure/flake summary; Firefox/WebKit 24 passed. Aggregate JS 818,586/819,200 B; CSS 346,363/348,160 B. These results certify the baseline only.
+
+Parked R-024 work `58c10229` was recovered through `a4e9fa78` and `fdab2ad9`. Correct two literal backslash-n sequences that invalidated intended prayer-label wrapping. Regression guard fails on original parked CSS and passes after correction (2/2 Node tests). Pin browser client date and stub synthetic prayer timings; verify 200% reading/note sizes and seven loaded prayer row wrapping/containment cases at mobile and desktop widths. Spec syntax passes; local Chromium unavailable, so hosted browser results remain required.
+
+CI policy: retain the per-ref concurrency group but set cancel-in-progress false to preserve active expensive browser runs. No tests or budgets weakened. CI planner tests: 33/33 pass locally.
+
+Next: run fresh candidate CI; inspect any new failures and actual JS/CSS totals; integrate into security branch only after gates pass. No merge to main, Railway deployment, real payment/refund, privacy certification or full AAA claim. R-024 remains open for remaining public styles and production acceptance. Preserve canonical response semantics and all factual/compliance/media locks.
+
+---
+
+# 2026-10-12 — Payment integration and keyboard-scroll candidate
+
+Ownership: `CODEX_ACTIVE` under owner continuation; security integration `fix/p0-security-remediation-20261010` at `dcecb8461d374b0c5914b2e050ab9a7cd5339847`. This current checkpoint supersedes historical state below. No parallel repository implementation writer.
+
+Additional integrations:
+- N-04, PR #269, validated head 61723e719019b83d2f26aa5c865a51ab0a343206; full CI 38241032771 passed fast/database/production/browser/verify; merge 4d11ca8408b993d9d7f68b1ef56f9f4b83de4473. Runtime validation of consumed Razorpay response fields now composes with #268 callback identity matching. Combined candidate acceptance remains required.
+- N-05, PR #270, validated head e88a3761f2e2cff25dc6b6ab7f641ca9275f6414; full CI 38241192347 passed fast/database/production/browser/verify; merge dcecb8461d374b0c5914b2e050ab9a7cd5339847. Reject unusable order identity before persistence.
+
+Independent candidate:
+- R-050, draft PR #274, branch fix/keyboard-scroll-handoff-20261012, head f53ebea3cd5b8e90d012b8736e89e14d888485dd. Clean current-base source/test port from #249, with generation invalidation for pending Lenis import and eight keyboard cancellation/restart cases. Hosted CI 38244316271 running. No success or deployment is claimed. Original #249 is not merged and remains a superseded candidate once this replacement is integrated.
+
+Still pending: PR #271 at 8a3ffec148f3b8757a0b7b45909c17c9de00afc8 (nine isolated PostgreSQL tests passed; browser running); PR #272 at cbf45c2f25951d0850b0eaf57cadbc189543c855 (fast/database/production passed; browser running). Do not infer pass from elapsed time, skipped ready-for-review workflows, or historical runs.
+
+R-012 source audit at dcecb846: four admin API handlers enforce session and content permissions before privileged work; three mutations also reject foreign origins. Protected layout requires authentication; private document route requires assistance.view before lookup/signing; all nineteen exported operational server actions in seven protected action modules require their scoped permission at entry. Login/logout are separate credential/session paths. Existing anonymous-browser spec covers twelve protected surfaces and four APIs. This is source/coverage inspection only, not live acceptance or complete independent authenticated-role testing; R-012 remains partial pending current browser/live verification. No auth bypass was established.
+
+Production remains main 2a8c35ad5e553ac0cc78b8027a35b592d1876826. No production promotion, Railway mutation, real donation/refund, email or beneficiary submission performed. Worker rollout remains pending, temporary annual cron containment intact. Preserve all release, factual, privacy, media and payment gates.
+
+Next atomic actions: validate/integrate #271/#272/#274; complete combined integration CI; check PR #215 release gates and production authorization; recover worker only after its source is on main; perform safe live acceptance and update the master finding register. Documentation checkpoint remains separate to avoid cancelling active source-candidate validation.
+
+---
+
+# 2026-10-12 — ChatGPT Work remediation continuation
+
+Ownership: `CODEX_ACTIVE` under the owner's explicit master handoff and cx continuation. This current entry supersedes historical ownership entries below. One repository writer; no parallel implementation agent.
+
+Integration: `fix/p0-security-remediation-20261010` at `2a20844ee540deaa774817e4b0f919f99dc89d58`. Production release PR #215 remains open against main. Documentation task: `docs/remediation-work-checkpoint-20261012`.
+
+Completed this session:
+- R-033, PR #265: rejected giving-intent radio focus. Merge dd7bdcfe8040ce28b2f7f03f368dee2d495cc12b. Full CI 38238484810 passed fast/database/production/browser/verify; the separate ready-for-review run skipped validation and was not used as evidence. PR #215's corresponding review thread is now resolved by the reviewer.
+- N-03, PR #268: bind provider payment identity to signed callback. Merge 8c71ce25004b1ff6972ed15550f02ff544f6ecdc. CI 38240338711 passed fast/database/production/browser/verify.
+- N-09, PR #266: generic curated-gallery HTTP500 response with safe diagnostics. Merge bc9271dbe491eb87030f51e3d3bc4b04cb53de1d. CI 38239767561 passed fast/database/production/browser/verify.
+- N-08, PR #267: compare UTF-8 byte lengths before timingSafeEqual. Merge 2a20844ee540deaa774817e4b0f919f99dc89d58. CI 38240152946 passed fast/database/production/browser/verify.
+
+In progress:
+- PRs #269, #270, #272: patches reviewed; no open review threads observed. Fast/database/production passed; browser completion still pending at this checkpoint.
+- PR #271: found that reconstructed patch omitted real PostgreSQL regression coverage from #258. Restored all three existing cases (older failure/replay preserves newer authorization; matching CREATED and AUTHORIZED failures) in commit 8a3ffec148f3b8757a0b7b45909c17c9de00afc8. Fresh CI 38243416320 pending; previous-head validation cannot certify this commit. Tests use isolated loopback PostgreSQL only. No runtime source changes in this follow-up.
+- Combined integration CI must pass for the final selected commit before production promotion. Individual PR passes do not establish combined acceptance.
+
+Production verified from Railway deployment metadata: main 2a8c35ad5e553ac0cc78b8027a35b592d1876826, deployment bb65fc78-088e-4df2-b7b6-80c59fd62da8 SUCCESS. None of this session's fixes is live. Website service has both renamed MEDIA_S3 credential keys and legacy keys; only names inspected, values not exposed. Do not remove legacy keys until deployed-code compatibility and rollback are addressed.
+
+Notification worker: latest deployment 473c17d9-ca74-45b6-908c-c9c0fb3507b6 FAILED; temporary cron 0 0 1 1 * remains active; only CRON_SECRET and NOTIFICATION_JOB_URL defined. Dedicated /ops/notification-cron rollout and successful authenticated invocation are still pending; restore five-minute scheduling only after recovery. No Railway mutation this session.
+
+Next actions: finish remaining PR validation and integration; validate combined candidate; preserve main review/promotion gates; deploy only with required authorization and successful gates; recover worker; verify production; reconcile the recovered 95-row master register plus N findings. No real donations/refunds or user notifications initiated. Preserve factual locks, provisional tax-registration language, domestic-only fundraising, private records, approved imagery and bottom-right Islamic Companion.
+
+---
+
+# 2026-10-12 — Private record access regression coverage
+
+Ownership `REVIEW_PENDING`; bounded test work completed by Codex under owner continuation deliberately supersedes prior implementation wait only for bounded private acknowledgement/assistance tracking regression coverage. Branch `test/private-record-access-boundaries-20261012` from security integration `f5578c31829aeb76ac4e30060cc658342942d762`. Preserve all independent review/integration/main/production gates.
+
+Verified coverage gap: existing acknowledgement and assistance-status route tests replace origin checks, token hashing and bounded body handling with mocks; they do not establish that the actual privacy boundaries compose correctly. Add tests using real origin/token/body helpers, with only persistence mocked. Cover valid minimal responses, rejected origins, wrong or absent record credentials, corrupt persisted hashes, malformed JSON and actual streamed body limits. No runtime vulnerability claim or application change is implied.
+
+Implemented:18 actual-helper privacy cases across acknowledgement and assistance tracking. Only database lookups are mocked; real origin validation, token hashing, constant-time comparison, schema parsing and streamed byte limits execute. Valid replies expose the expected minimal fields; wrong tokens/missing records/corrupt persisted hashes reveal no private data; foreign/null/missing origins, malformed JSON and actual oversized bodies retain private headers and reject before lookup where required.
+
+Controlled mutation proof in a detached scratch checkout: disabling only origin rejection caused six test failures; bypassing only token equality caused four failures. Each runtime route was restored byte-for-byte in finally; primary runtime routes never changed. All18 focused checks and471 full unit tests pass, six database-dependent skips locally; full lint, TypeScript and whitespace checks pass. No user data, payment, email, real persistence, dependencies, runtime application code or secret configuration changes. Draft pending hosted validation and independent review.
+
+PR254 exact-head CI38173157008 passed1094 Chromium and24 Firefox/WebKit plus fast/database/production/final verify; Ready and unmerged without independent approval. PR255 8b8d9841a49f4269133d78a32cf4487c163fbe8d has successful fast/database/production; browser remains running in CI38174787641. Local composition of #241/#247–#255:527 unit tests passed, six database skips; lint/typecheck passed. PR215 review map records the unresolved development-only braces advisory (no patched release), runtime-prune proof and no confirmed public-input path. No independent reviewer identity established; never invent one or self-approve.
 
 # ChatGPT release-hardening checkpoint — 2026-10-07
 

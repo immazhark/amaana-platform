@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
@@ -49,6 +50,11 @@ export async function POST(request: Request) {
     if (evidenceEntry !== null && evidenceEntry !== "" && !(evidenceEntry instanceof File)) {
       return NextResponse.json({ error: "Please attach a valid transfer screenshot or PDF." }, { status: 400, headers: privateHeaders });
     }
+    // An untouched optional file input can be an empty unnamed File; a named
+    // zero-byte receipt is invalid evidence and must not be silently discarded.
+    if (evidenceEntry instanceof File && evidenceEntry.size === 0 && evidenceEntry.name) {
+      return NextResponse.json({ error: "Transfer evidence is empty. Please choose a valid file." }, { status: 400, headers: privateHeaders });
+    }
     const evidence = evidenceEntry instanceof File && evidenceEntry.size > 0 ? evidenceEntry : null;
     if (evidence && evidence.size > MAX_FILE_BYTES) return NextResponse.json({ error: "Transfer evidence must be 5 MB or smaller." }, { status: 413, headers: privateHeaders });
 
@@ -68,13 +74,14 @@ export async function POST(request: Request) {
     const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
     if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) return NextResponse.json({ error: parsed.data.amount > remainingAmount ? `This appeal currently needs up to ₹${remainingAmount.toLocaleString("en-IN")} more.` : `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}, unless a smaller exact amount is all that remains.`, remainingAmount }, { status: parsed.data.amount > remainingAmount ? 409 : 400, headers: privateHeaders });
 
+    const donationId = randomUUID();
     const referenceNumber = createDonationReference();
     const receiptToken = createReceiptToken();
     let donation;
     try {
       donation = await prisma.donation.create({
         data: {
-          referenceNumber, appealId: appeal.id, donorName: parsed.data.donorName, donorEmail: parsed.data.donorEmail.toLowerCase(), donorPhone: parsed.data.donorPhone || null,
+          id: donationId, referenceNumber, appealId: appeal.id, donorName: parsed.data.donorName, donorEmail: parsed.data.donorEmail.toLowerCase(), donorPhone: parsed.data.donorPhone || null,
           isAnonymous: parsed.data.isAnonymous, givingIntent: parsed.data.givingIntent, domesticConfirmedAt: new Date(), amount: parsed.data.amount,
           status: "PENDING_VERIFICATION", paymentMethod: parsed.data.paymentMethod, provider: null, providerOrderId: null,
           transferReference: parsed.data.transferReference.toUpperCase(), transferredAt: parsed.data.transferredAt, receiptTokenHash: hashReceiptToken(receiptToken),
@@ -86,8 +93,17 @@ export async function POST(request: Request) {
         if (target.includes("transferReference")) {
           return NextResponse.json({ error: "This transfer reference has already been submitted. Please do not submit it again." }, { status: 409, headers: privateHeaders });
         }
+        throw error;
       }
-      throw error;
+      // Recover only this request's server-generated ID. A committed write may
+      // lose its acknowledgement; looking up the transfer reference instead
+      // could disclose a different donor's record or issue the wrong token.
+      const recovered = await prisma.donation.findUnique({
+        where: { id: donationId },
+        select: { id: true, referenceNumber: true, receiptTokenHash: true },
+      });
+      if (!recovered || recovered.receiptTokenHash !== hashReceiptToken(receiptToken)) throw error;
+      donation = recovered;
     }
 
     let uploadedKey: string | null = null;
@@ -98,8 +114,29 @@ export async function POST(request: Request) {
         await prisma.donation.update({ where: { id: donation.id }, data: { transferEvidenceKey: uploaded.objectKey, transferEvidenceName: uploaded.originalName, transferEvidenceMimeType: uploaded.mimeType, transferEvidenceSize: uploaded.sizeBytes } });
       }
     } catch (error) {
-      if (uploadedKey) await deleteDonationEvidenceObject(uploadedKey, donation.id).catch(() => undefined);
-      await prisma.donation.delete({ where: { id: donation.id } }).catch(() => undefined);
+      // A storage-metadata write can commit even when its acknowledgement is lost,
+      // or an administrator may have verified the transfer concurrently.
+      // Never remove an already-updated or verified financial record.
+      let removed = false;
+      try {
+        const cleanup = await prisma.donation.deleteMany({
+          where: {
+            id: donation.id,
+            status: "PENDING_VERIFICATION",
+            transferEvidenceKey: null,
+          },
+        });
+        removed = cleanup.count === 1;
+      } catch {
+        logServerError("donation.direct_transfer_cleanup_failed");
+      }
+
+      // Delete the private object only if the unused draft was actually removed.
+      // On uncertain database outcomes, preserve both for manual reconciliation.
+      if (removed && uploadedKey) {
+        await deleteDonationEvidenceObject(uploadedKey, donation.id)
+          .catch(() => logServerError("donation.direct_transfer_evidence_cleanup_failed"));
+      }
       throw error;
     }
 

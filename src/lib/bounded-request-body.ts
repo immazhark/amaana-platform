@@ -36,7 +36,12 @@ export async function readBodyBytesWithLimit(request: Request, maxBytes: number)
 
       totalBytes += value.byteLength;
       if (totalBytes > maxBytes) {
-        await reader.cancel();
+        // Cancellation is best-effort: a hostile/broken stream must not mask the 413 signal.
+        try {
+          await reader.cancel();
+        } catch {
+          // Preserve RequestBodyTooLargeError for the calling HTTP boundary.
+        }
         throw new RequestBodyTooLargeError(maxBytes);
       }
       chunks.push(value);

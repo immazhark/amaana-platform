@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "postbuild": "npm run security:client-bundle",
+    "postbuild": "npm run security:client-bundle && node scripts/check-public-image-weight.mjs",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
@@ -43,6 +43,7 @@
     "icons:verify": "npm run icons:generate && node scripts/verify-brand-icons.mjs",
     "browser-fixtures:materialize": "node scripts/materialize-browser-acceptance.mjs",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
+    "audit:route-bundles": "node scripts/report-route-bundles.mjs",
     "security:client-bundle": "node scripts/check-client-secret-boundary.mjs"
   },
   "dependencies": {

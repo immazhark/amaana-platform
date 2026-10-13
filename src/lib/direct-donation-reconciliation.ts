@@ -1,5 +1,5 @@
 import { DonationPaymentMethod, DonationStatus, NotificationChannel } from "@prisma/client";
-import { getRemainingAppealAmount, shouldMarkAppealFunded } from "@/lib/appeals";
+import { shouldMarkAppealFunded } from "@/lib/appeals";
 import { createReceiptNumber } from "@/lib/donations";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
@@ -13,6 +13,7 @@ export async function reconcileDirectDonation(input: {
 }) {
   const notes = input.notes.trim();
   if (!input.donationId || !input.actorId) throw new Error("Donation and reviewer are required");
+  if (!["VERIFY", "REJECT"].includes(input.decision)) throw new Error("Invalid reconciliation decision");
   if (notes.length < 3 || notes.length > 1000) throw new Error("Reconciliation notes must be between 3 and 1000 characters");
 
   return withSerializableTransactionRetry(async tx => {
@@ -46,8 +47,14 @@ export async function reconcileDirectDonation(input: {
 
     const appealBefore = await tx.appeal.findUnique({ where: { id: donation.appealId }, select: { goalAmount: true, amountRaised: true, status: true } });
     if (!appealBefore) throw new Error("Appeal not found");
-    const remaining = getRemainingAppealAmount(appealBefore.amountRaised, appealBefore.goalAmount);
-    if (donation.amount.toNumber() > remaining) throw new Error("This transfer exceeds the appeal's remaining verified need and requires operator review");
+    const donationPaise = donation.amount.mul(100).toNumber();
+    const goalPaise = appealBefore.goalAmount.mul(100).toNumber();
+    const raisedPaise = appealBefore.amountRaised.mul(100).toNumber();
+    if (![donationPaise, goalPaise, raisedPaise].every(Number.isSafeInteger) ||
+        donationPaise <= 0 || goalPaise <= 0 || raisedPaise < 0) {
+      throw new Error("Invalid financial amounts for transfer reconciliation");
+    }
+    if (donationPaise > Math.max(0, goalPaise - raisedPaise)) throw new Error("This transfer exceeds the appeal's remaining verified need and requires operator review");
 
     const changed = await tx.donation.updateMany({
       where: { id: donation.id, status: DonationStatus.PENDING_VERIFICATION },

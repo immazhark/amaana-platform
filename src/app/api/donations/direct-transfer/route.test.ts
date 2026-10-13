@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -5,8 +6,9 @@ const mocks = vi.hoisted(() => ({
   safeParse: vi.fn(),
   findFirst: vi.fn(),
   donationCreate: vi.fn(),
+  donationFindUnique: vi.fn(),
   donationUpdate: vi.fn(),
-  donationDelete: vi.fn(),
+  donationDeleteMany: vi.fn(),
   uploadDonationEvidence: vi.fn(),
   deleteDonationEvidenceObject: vi.fn(),
   isDonationAmountAllowedForRemaining: vi.fn(),
@@ -36,8 +38,9 @@ vi.mock("@/lib/prisma", () => ({
     appeal: { findFirst: mocks.findFirst },
     donation: {
       create: mocks.donationCreate,
+      findUnique: mocks.donationFindUnique,
       update: mocks.donationUpdate,
-      delete: mocks.donationDelete,
+      deleteMany: mocks.donationDeleteMany,
     },
   },
 }));
@@ -81,7 +84,7 @@ function requestWith(file?: File) {
   form.set("givingIntent", validData.givingIntent);
   form.set("paymentMethod", validData.paymentMethod);
   form.set("transferReference", validData.transferReference);
-  form.set("transferredAt", "2026-09-30T10:30");
+  form.set("transferredAt", "2026-09-30T05:00:00.000Z");
   form.set("domesticConfirmed", "true");
   if (file) form.set("evidence", file);
   return new Request("https://amaana.example/api/donations/direct-transfer", { method: "POST", body: form });
@@ -103,8 +106,9 @@ beforeEach(() => {
   });
   mocks.isDonationAmountAllowedForRemaining.mockReturnValue(true);
   mocks.donationCreate.mockResolvedValue({ id: "donation-1", referenceNumber: "AFD-2026-12345678" });
+  mocks.donationFindUnique.mockResolvedValue(null);
   mocks.donationUpdate.mockResolvedValue({});
-  mocks.donationDelete.mockResolvedValue({});
+  mocks.donationDeleteMany.mockResolvedValue({ count: 1 });
   mocks.deleteDonationEvidenceObject.mockResolvedValue(undefined);
 });
 
@@ -136,6 +140,28 @@ describe("direct donation transfer submission", () => {
     expect(response.status).toBe(400);
     expect(mocks.findFirst).not.toHaveBeenCalled();
     expect(mocks.donationCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects an explicitly named zero-byte transfer receipt before creating a claim", async () => {
+    const form = new FormData();
+    form.set("appealId", validData.appealId);
+    form.set("donorName", validData.donorName);
+    form.set("donorEmail", validData.donorEmail);
+    form.set("amount", String(validData.amount));
+    form.set("givingIntent", validData.givingIntent);
+    form.set("paymentMethod", validData.paymentMethod);
+    form.set("transferReference", validData.transferReference);
+    form.set("transferredAt", "2026-09-30T05:00:00.000Z");
+    form.set("domesticConfirmed", "true");
+    form.set("evidence", new File([], "transfer-receipt.pdf", { type: "application/pdf" }));
+
+    const response = await POST(new Request("https://amaana.example/api/donations/direct-transfer", { method: "POST", body: form }));
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/evidence is empty/i);
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
   });
 
   it("treats an empty optional evidence file as no evidence", async () => {
@@ -182,6 +208,64 @@ describe("direct donation transfer submission", () => {
     expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
   });
 
+  it("recovers the original receipt credentials when claim creation committed without acknowledgement", async () => {
+    mocks.donationCreate.mockRejectedValueOnce(new Error("commit acknowledgement lost"));
+    mocks.donationFindUnique.mockImplementationOnce(async ({ where }) => ({ id: where.id, referenceNumber: "AFD-2026-12345678", receiptTokenHash: "hashed-token" }));
+    const file = new File(["synthetic evidence"], "transfer.png", { type: "image/png" });
+    mocks.uploadDonationEvidence.mockResolvedValueOnce({ objectKey: "private-key", originalName: "transfer.png", mimeType: "image/png", sizeBytes: file.size });
+
+    const response = await POST(requestWith(file));
+
+    expect(response.status).toBe(202);
+    expect(await response.json()).toEqual({ referenceNumber: "AFD-2026-12345678", receiptToken: "receipt-token", status: "PENDING_VERIFICATION" });
+    const createCall = mocks.donationCreate.mock.calls[0];
+    const uploadCall = mocks.uploadDonationEvidence.mock.calls[0];
+    if (!createCall || !uploadCall) throw new Error("Expected recovered claim and evidence upload");
+    const id = createCall[0].data.id;
+    expect(id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(mocks.donationFindUnique).toHaveBeenCalledWith({ where: { id }, select: { id: true, referenceNumber: true, receiptTokenHash: true } });
+    expect(mocks.uploadDonationEvidence).toHaveBeenCalledWith(expect.objectContaining({ name: file.name, size: file.size, type: file.type }), id);
+    expect(await uploadCall[0].text()).toBe("synthetic evidence");
+    expect(mocks.donationUpdate).toHaveBeenCalledWith(expect.objectContaining({ where: { id } }));
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+  });
+
+  it.each(["missing", "unavailable"])("fails safely when the create outcome is %s", async outcome => {
+    mocks.donationCreate.mockRejectedValueOnce(new Error("connection dropped"));
+    if (outcome === "unavailable") mocks.donationFindUnique.mockRejectedValueOnce(new Error("database unavailable"));
+
+    const response = await POST(requestWith());
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).not.toHaveProperty("receiptToken");
+    expect(mocks.donationFindUnique).toHaveBeenCalledOnce();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+  });
+
+  it("does not recover credentials from a record with a different receipt token hash", async () => {
+    mocks.donationCreate.mockRejectedValueOnce(new Error("commit acknowledgement lost"));
+    mocks.donationFindUnique.mockResolvedValueOnce({ id: "other-record", referenceNumber: "other-reference", receiptTokenHash: "other-token" });
+
+    const response = await POST(requestWith());
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).not.toHaveProperty("receiptToken");
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+  });
+
+  it("rejects another claim's duplicate transfer reference without credential recovery", async () => {
+    mocks.donationCreate.mockRejectedValueOnce(new Prisma.PrismaClientKnownRequestError("duplicate", { code: "P2002", clientVersion: "test", meta: { target: ["transferReference"] } }));
+
+    const response = await POST(requestWith());
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).not.toHaveProperty("receiptToken");
+    expect(mocks.donationFindUnique).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+  });
+
   it("rejects Zakat intent unless the appeal has explicit eligibility", async () => {
     mocks.safeParse.mockReturnValue({ success: true, data: { ...validData, givingIntent: "ZAKAT" } });
 
@@ -191,6 +275,44 @@ describe("direct donation transfer submission", () => {
     expect(response.status).toBe(409);
     expect(body.error).toMatch(/not currently marked as Zakat-eligible/i);
     expect(mocks.donationCreate).not.toHaveBeenCalled();
+  });
+
+  it("preserves a transfer and its private evidence if another worker updated the donation before cleanup", async () => {
+    const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
+    mocks.uploadDonationEvidence.mockResolvedValue({
+      objectKey: "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
+      originalName: "transfer.png",
+      mimeType: "image/png",
+      sizeBytes: file.size,
+    });
+    mocks.donationUpdate.mockRejectedValueOnce(new Error("commit acknowledgement lost"));
+    // A zero-row conditional delete means the payment state or evidence key changed.
+    mocks.donationDeleteMany.mockResolvedValueOnce({ count: 0 });
+
+    const response = await POST(requestWith(file));
+
+    expect(response.status).toBe(500);
+    expect(mocks.donationDeleteMany).toHaveBeenCalledWith({
+      where: { id: "donation-1", status: "PENDING_VERIFICATION", transferEvidenceKey: null },
+    });
+    expect(mocks.deleteDonationEvidenceObject).not.toHaveBeenCalled();
+  });
+
+  it("preserves evidence on an uncertain cleanup database failure", async () => {
+    const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
+    mocks.uploadDonationEvidence.mockResolvedValue({
+      objectKey: "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
+      originalName: "transfer.png",
+      mimeType: "image/png",
+      sizeBytes: file.size,
+    });
+    mocks.donationUpdate.mockRejectedValueOnce(new Error("database unavailable"));
+    mocks.donationDeleteMany.mockRejectedValueOnce(new Error("database unavailable"));
+
+    const response = await POST(requestWith(file));
+
+    expect(response.status).toBe(500);
+    expect(mocks.deleteDonationEvidenceObject).not.toHaveBeenCalled();
   });
 
   it("removes uploaded evidence and the draft claim if evidence metadata persistence fails", async () => {
@@ -211,6 +333,6 @@ describe("direct donation transfer submission", () => {
       "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
       "donation-1",
     );
-    expect(mocks.donationDelete).toHaveBeenCalledWith({ where: { id: "donation-1" } });
+    expect(mocks.donationDeleteMany).toHaveBeenCalledWith({ where: { id: "donation-1", status: "PENDING_VERIFICATION", transferEvidenceKey: null } });
   });
 });
