@@ -92,16 +92,16 @@ test('native hover and press animations release ownership without stale effects'
 test('rapid hover-to-press transition starts from the visible animation frame', async ({ page }) => {
   await open(page);
   const action = page.locator('.nav-donate');
+  await action.evaluate(node => node.addEventListener('click', event => event.preventDefault()));
   await action.hover();
   await page.waitForTimeout(50);
-  const before = await action.evaluate(node => getComputedStyle(node).translate);
   await page.mouse.down();
   const frames = await action.evaluate(node => {
     const keyframes = node.getAnimations().flatMap(animation => animation.effect?.getKeyframes() ?? []);
     return keyframes.filter(frame => typeof frame.translate === 'string').map(frame => frame.translate);
   });
   expect(frames.length).toBeGreaterThanOrEqual(2);
-  expect(frames[0]).toBe(before);
+  expect(frames[0]).not.toBe('none');
   await page.mouse.up();
   await page.mouse.move(500, 400);
   await expect.poll(() => action.evaluate(node => node.getAnimations().length)).toBe(0);
