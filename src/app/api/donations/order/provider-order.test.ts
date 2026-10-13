@@ -3,13 +3,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   findFirst: vi.fn(),
   create: vi.fn(),
+  findUnique: vi.fn(),
   createRazorpayOrder: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     appeal: { findFirst: mocks.findFirst },
-    donation: { create: mocks.create },
+    donation: { create: mocks.create, findUnique: mocks.findUnique },
   },
 }));
 vi.mock("@/lib/razorpay", () => ({ createRazorpayOrder: mocks.createRazorpayOrder }));
@@ -21,6 +22,7 @@ vi.mock("@/lib/env", () => ({ validateProductionEnvironment: () => undefined }))
 vi.mock("@/lib/public-environment", () => ({ canExposePublicAppeal: () => true }));
 
 import { POST } from "./route";
+import { hashReceiptToken } from "@/lib/donations";
 
 const providerOrder = { id: "order_123", amount: 50000, currency: "INR", status: "created" };
 
@@ -49,6 +51,7 @@ describe("provider order boundary before donation persistence", () => {
       status: "PUBLISHED", goalAmount: 1000, amountRaised: 0, closesAt: null,
       assistanceRequest: null,
     });
+    mocks.findUnique.mockResolvedValue(null);
     mocks.create.mockResolvedValue({
       id: "donation_123", donorName: "Synthetic Donor", donorEmail: "donor@example.com", donorPhone: null,
     });
@@ -59,9 +62,11 @@ describe("provider order boundary before donation persistence", () => {
   it.each([
     { id: undefined }, { id: null }, { id: "" }, { id: " \t\n" },
     { id: 123 }, { id: false }, { id: {} }, { id: [] },
-    { amount: 49900 }, { currency: "USD" },
+    { id: "not-an-order" }, { id: "order_" }, { id: "order_123 extra" },
+    { amount: 49900 }, { currency: "USD" }, { status: "paid" }, { status: "attempted" }, { status: null },
+    { receipt: "AFD-FOREIGN" }, { receipt: "" }, { receipt: null },
   ])("rejects unusable provider identity or mismatched money before persistence: %j", async invalid => {
-    mocks.createRazorpayOrder.mockResolvedValue({ ...providerOrder, ...invalid });
+    mocks.createRazorpayOrder.mockImplementation(async ({ receipt }: { receipt: string }) => ({ ...providerOrder, receipt, ...invalid }));
 
     const response = await POST(checkoutRequest());
 
@@ -73,7 +78,7 @@ describe("provider order boundary before donation persistence", () => {
   });
 
   it("persists and returns a matching provider order without changing its identity or amount", async () => {
-    mocks.createRazorpayOrder.mockResolvedValue(providerOrder);
+    mocks.createRazorpayOrder.mockImplementation(async ({ receipt }: { receipt: string }) => ({ ...providerOrder, receipt }));
 
     const response = await POST(checkoutRequest());
     const body = await response.json();
@@ -90,4 +95,46 @@ describe("provider order boundary before donation persistence", () => {
     }));
     expect(body.receiptToken).toEqual(expect.any(String));
   });
+  it("recovers a committed checkout using the same provider order and receipt credentials", async () => {
+    mocks.createRazorpayOrder.mockImplementation(async ({ receipt }: { receipt: string }) => ({ ...providerOrder, receipt }));
+    mocks.create.mockRejectedValueOnce(new Error("commit acknowledgement lost"));
+    mocks.findUnique.mockImplementationOnce(async ({ where }) => {
+      const call = mocks.create.mock.calls[0];
+      if (!call) throw new Error("Expected donation persistence");
+      return { id: where.id, donorName: "Synthetic Donor", donorEmail: "donor@example.com", donorPhone: null, providerOrderId: "order_123", receiptTokenHash: call[0].data.receiptTokenHash };
+    });
+
+    const response = await POST(checkoutRequest());
+    const body = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(body.orderId).toBe("order_123");
+    const call = mocks.create.mock.calls[0];
+    if (!call) throw new Error("Expected donation persistence");
+    expect(body.donationId).toBe(call[0].data.id);
+    expect(hashReceiptToken(body.receiptToken)).toBe(call[0].data.receiptTokenHash);
+    expect(mocks.findUnique).toHaveBeenCalledWith({ where: { id: body.donationId }, select: { id: true, donorName: true, donorEmail: true, donorPhone: true, providerOrderId: true, receiptTokenHash: true } });
+    expect(mocks.createRazorpayOrder).toHaveBeenCalledOnce();
+    expect(mocks.create).toHaveBeenCalledOnce();
+  });
+
+  it.each(["absent", "unavailable", "foreign-order", "foreign-token"])("does not start checkout with a %s recovery outcome", async outcome => {
+    mocks.createRazorpayOrder.mockImplementation(async ({ receipt }: { receipt: string }) => ({ ...providerOrder, receipt }));
+    mocks.create.mockRejectedValueOnce(new Error("commit acknowledgement lost"));
+    if (outcome === "unavailable") mocks.findUnique.mockRejectedValueOnce(new Error("database unavailable"));
+    if (outcome.startsWith("foreign")) mocks.findUnique.mockImplementationOnce(async () => {
+      const call = mocks.create.mock.calls[0];
+      if (!call) throw new Error("Expected donation persistence");
+      return { id: call[0].data.id, donorName: "Private Donor", donorEmail: "private@example.test", donorPhone: null, providerOrderId: outcome === "foreign-order" ? "order_other" : "order_123", receiptTokenHash: outcome === "foreign-token" ? "other-token" : call[0].data.receiptTokenHash };
+    });
+
+    const response = await POST(checkoutRequest());
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: "We could not start the secure payment. Please try again." });
+    expect(mocks.createRazorpayOrder).toHaveBeenCalledOnce();
+    expect(mocks.create).toHaveBeenCalledOnce();
+    expect(mocks.findUnique).toHaveBeenCalledOnce();
+  });
+
 });

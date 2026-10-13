@@ -2,6 +2,7 @@ import { createHmac, timingSafeEqual } from "node:crypto";
 import { z } from "zod";
 
 const apiBase = "https://api.razorpay.com/v1";
+const RAZORPAY_REQUEST_TIMEOUT_MS = 15_000;
 const paymentResponseSchema = z.object({
   id: z.string().min(1),
   order_id: z.string().min(1).nullable(),
@@ -28,6 +29,7 @@ async function requestRazorpay(path: string, init?: RequestInit) {
   const { keyId, secret } = credentials();
   const response = await fetch(`${apiBase}${path}`, {
     ...init,
+    signal: init?.signal ?? AbortSignal.timeout(RAZORPAY_REQUEST_TIMEOUT_MS),
     headers: {
       Authorization: `Basic ${Buffer.from(`${keyId}:${secret}`).toString("base64")}`,
       "Content-Type": "application/json",

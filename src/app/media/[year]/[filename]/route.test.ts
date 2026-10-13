@@ -151,4 +151,16 @@ describe("approved public media delivery", () => {
     expect(response.headers.get("cache-control")).toBe("no-store");
     expect(response.headers.get("retry-after")).toBe("60");
   });
+
+  it("returns a retryable non-cacheable response when the publication lookup fails", async () => {
+    mocks.findFirst.mockRejectedValue(new Error("synthetic private database diagnostic"));
+    const response = await GET(request(), context());
+    expect(response.status).toBe(503);
+    expect(response.headers.get("cache-control")).toBe("no-store");
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("x-robots-tag")).toBe("noindex, nofollow, noarchive");
+    expect(await response.text()).toBe("");
+    expect(mocks.getPublicMediaObject).not.toHaveBeenCalled();
+  });
+
 });

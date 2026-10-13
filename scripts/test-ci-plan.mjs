@@ -264,3 +264,14 @@ test('read-only DNS workflow does not run the application browser matrix', () =>
   assert.equal(planChanges([workflow], { target: 'main' }).mode, 'full');
   assert.equal(planChanges([workflow], { release: true }).mode, 'full');
 });
+
+test('donation presentation changes retain route label readability coverage', () => {
+  for (const file of ['src/app/donate/page.tsx', 'src/app/donate/donate-audit.module.css']) {
+    const plan = planChanges([file]);
+    assert.equal(plan.mode, 'focused');
+    assert.ok(plan.tests.includes('donation-route-labels.spec.mjs'));
+    assert.ok(plan.tests.includes('donation-assistance-journeys.spec.mjs'));
+    assert.equal(planChanges([file], { target: 'main' }).mode, 'full');
+    assert.equal(planChanges([file, 'src/app/api/donations/order/route.ts']).mode, 'full');
+  }
+});

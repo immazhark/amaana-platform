@@ -6,6 +6,7 @@ import { getAppealConsentContentIssues, getFirstPublicationIssues, goalMatchesAp
 import { getAppealUpdatePublicationIssues } from "@/lib/appeal-update-publication";
 import { getAppealCoverMediaIssues } from "@/lib/appeal-cover-media";
 import { hasPermission, requirePermission } from "@/lib/auth";
+import { parsePositiveRupeeAmount } from "@/lib/amount-entry";
 import { prisma } from "@/lib/prisma";
 import { normalizeSafePublicMediaUrl } from "@/lib/public-media";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
@@ -56,7 +57,7 @@ export async function updateAppeal(formData: FormData) {
   const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "").trim();
   const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
   if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Appeal edit version is missing or invalid. Refresh before editing.");
-  const title = String(formData.get("title") ?? "").trim(); const slug = String(formData.get("slug") ?? "").trim().toLowerCase(); const summary = String(formData.get("summary") ?? "").trim(); const story = String(formData.get("story") ?? "").trim(); const goalAmount = Number(formData.get("goalAmount"));
+  const title = String(formData.get("title") ?? "").trim(); const slug = String(formData.get("slug") ?? "").trim().toLowerCase(); const summary = String(formData.get("summary") ?? "").trim(); const story = String(formData.get("story") ?? "").trim(); const goalAmount = parsePositiveRupeeAmount(String(formData.get("goalAmount") ?? ""), "Appeal goal");
   const category = String(formData.get("category")); const coverImageRaw = String(formData.get("coverImageUrl") || "").trim(); const beneficiaryDisplayName = String(formData.get("beneficiaryDisplayName") || "").trim();
   if (title.length < 8 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || summary.length < 20 || story.length < 40 || !Number.isFinite(goalAmount) || goalAmount <= 0 || !Object.values(AppealCategory).includes(category as AppealCategory)) throw new Error("Complete all required appeal fields");
   const coverImageValue = coverImageRaw ? normalizeSafePublicMediaUrl(coverImageRaw) : null;

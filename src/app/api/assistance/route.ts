@@ -60,13 +60,30 @@ export async function POST(request: Request) {
       );
     }
 
-    const files = formData.getAll("documents").filter((entry): entry is File => entry instanceof File && entry.size > 0);
+    const files: File[] = [];
+    for (const entry of formData.getAll("documents")) {
+      if (typeof entry === "string") {
+        // Allow the browser's empty optional file placeholder, not a forged
+        // textual document field that would silently lose applicant evidence.
+        if (entry === "") continue;
+        return NextResponse.json({ error: "Each supporting document must be a file." }, { status: 400, headers: privateHeaders });
+      }
+      if (entry.size === 0) {
+        // An untouched optional file input can produce an empty unnamed File.
+        if (!entry.name) continue;
+        return NextResponse.json({ error: "A supporting document is empty. Please choose a valid file." }, { status: 400, headers: privateHeaders });
+      }
+      files.push(entry);
+    }
     if (files.length > MAX_FILES) {
       return NextResponse.json({ error: `You can upload up to ${MAX_FILES} documents.` }, { status: 400, headers: privateHeaders });
     }
 
     const id = randomUUID();
     const documents: Awaited<ReturnType<typeof uploadPrivateDocument>>[] = [];
+    const referenceNumber = createReferenceNumber();
+    const trackingToken = createTrackingToken();
+    let persistenceAttempted = false;
 
     try {
       // Upload sequentially so every successfully stored object is known and can be
@@ -75,8 +92,6 @@ export async function POST(request: Request) {
         documents.push(await uploadPrivateDocument(file, id));
       }
 
-      const referenceNumber = createReferenceNumber();
-      const trackingToken = createTrackingToken();
       const email = parsed.data.email || null;
 
       const staffRecipients = await prisma.user.findMany({
@@ -116,6 +131,7 @@ export async function POST(request: Request) {
         userId: staff.id,
       }));
 
+      persistenceAttempted = true;
       await prisma.assistanceRequest.create({
         data: {
           id,
@@ -140,6 +156,28 @@ export async function POST(request: Request) {
         { status: 201, headers: privateHeaders },
       );
     } catch (submissionError) {
+      if (persistenceAttempted) {
+        // A write can commit even if the network connection drops before its
+        // acknowledgement. An existing case must retain its private evidence.
+        try {
+          const persisted = await prisma.assistanceRequest.findUnique({
+            where: { id },
+            select: { id: true },
+          });
+          if (persisted) {
+            return NextResponse.json(
+              { referenceNumber, trackingToken },
+              { status: 201, headers: privateHeaders },
+            );
+          }
+        } catch {
+          // An unavailable database cannot prove the write failed. Retain the
+          // documents for reconciliation instead of risking irreversible loss.
+          logServerError("assistance.persistence_outcome_unknown");
+          throw submissionError;
+        }
+      }
+
       const cleanupResults = await Promise.allSettled(
         documents.map(document => deletePrivateDocumentObject(document.objectKey, id)),
       );

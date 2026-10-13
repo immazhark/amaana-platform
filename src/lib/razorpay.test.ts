@@ -9,7 +9,10 @@ describe("Razorpay signatures", () => {
     process.env.RAZORPAY_WEBHOOK_SECRET = "webhook-secret-value";
   });
 
-  afterEach(() => vi.unstubAllGlobals());
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
 
   it("verifies checkout signatures", () => {
     const signature = createHmac("sha256", "checkout-secret-value")
@@ -85,6 +88,27 @@ describe("Razorpay signatures", () => {
       "https://api.razorpay.com/v1/payments/pay_1",
       expect.objectContaining({ cache: "no-store" }),
     );
+  });
+
+  it("aborts an unresponsive provider request at the configured deadline", async () => {
+    const abortController = new AbortController();
+    const deadlineSpy = vi.spyOn(AbortSignal, "timeout").mockReturnValue(abortController.signal);
+    const fetchMock = vi.fn().mockImplementation((_url: string, init: RequestInit) => {
+      return new Promise<Response>((_resolve, reject) => {
+        init.signal?.addEventListener("abort", () => reject(new Error("provider request aborted")), { once: true });
+      });
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    const result = fetchRazorpayPayment("pay_timeout");
+    expect(deadlineSpy).toHaveBeenCalledWith(15_000);
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.razorpay.com/v1/payments/pay_timeout",
+      expect.objectContaining({ signal: abortController.signal, cache: "no-store" }),
+    );
+
+    abortController.abort();
+    await expect(result).rejects.toThrow("provider request aborted");
   });
 
   it("fails closed when Razorpay returns a gateway error", async () => {

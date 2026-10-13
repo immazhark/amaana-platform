@@ -54,10 +54,59 @@ describe("captureDonation", () => {
     }));
   });
 
+  it.each([
+    ["DIRECT_UPI", null],
+    ["BANK_TRANSFER", "RAZORPAY"],
+    ["RAZORPAY", "CASHFREE"],
+  ])("rejects payment capture bound to method %s and provider %s", async (paymentMethod, provider) => {
+    mocks.txDonationFindUnique.mockResolvedValueOnce({
+      id: "donation_provider_mismatch",
+      currency: "INR",
+      paymentMethod,
+      provider,
+      amount: decimal(500),
+      status: "CREATED",
+      providerPaymentId: null,
+    });
+
+    await expect(captureDonation("order_123", "pay_123", 50_000))
+      .rejects.toThrow("Payment does not match donation order");
+    expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("keeps legacy Razorpay rows with an unset provider label eligible for idempotent replay", async () => {
+    mocks.txDonationFindUnique
+      .mockResolvedValueOnce({
+        id: "donation_legacy",
+        currency: "INR",
+        paymentMethod: "RAZORPAY",
+        provider: null,
+        amount: decimal(500),
+        status: "CAPTURED",
+        providerPaymentId: "pay_legacy",
+        receiptTokenHash: "hash",
+      })
+      .mockResolvedValueOnce({ status: "CAPTURED", providerPaymentId: "pay_legacy" });
+    mocks.txDonationUpdateMany.mockResolvedValueOnce({ count: 0 });
+
+    await expect(captureDonation("order_legacy", "pay_legacy", 50_000))
+      .resolves.toMatchObject({
+        donationId: "donation_legacy",
+        status: "CAPTURED",
+        providerPaymentId: "pay_legacy",
+      });
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
   it("fails closed before mutation when a captured amount is not a safe positive integer", async () => {
     mocks.txDonationFindUnique.mockResolvedValue({
       id: "donation_unsafe",
       currency: "INR",
+      paymentMethod: "RAZORPAY",
+      provider: "RAZORPAY",
       amount: decimal(500),
       referenceNumber: "AFD-2026-UNSAFE",
       appealId: "appeal_1",
@@ -81,6 +130,8 @@ describe("captureDonation", () => {
     mocks.txDonationFindUnique.mockResolvedValueOnce({
       id: "donation_1",
       currency: "INR",
+      paymentMethod: "RAZORPAY",
+      provider: "RAZORPAY",
       amount: decimal(500),
       referenceNumber: "AFD-2026-BOUND",
       appealId: "appeal_1",
@@ -104,6 +155,8 @@ describe("captureDonation", () => {
       .mockResolvedValueOnce({
         id: "donation_1",
         currency: "INR",
+        paymentMethod: "RAZORPAY",
+        provider: "RAZORPAY",
         amount: decimal(500),
         referenceNumber: "AFD-2026-BOUND",
         appealId: "appeal_1",
@@ -132,6 +185,8 @@ describe("captureDonation", () => {
     mocks.txDonationFindUnique.mockResolvedValue({
       id: "donation_unsafe",
       currency: "INR",
+      paymentMethod: "RAZORPAY",
+      provider: "RAZORPAY",
       amount: decimal(Number.MAX_SAFE_INTEGER),
       referenceNumber: "AFD-2026-UNSAFE",
       appealId: "appeal_1",
@@ -176,8 +231,45 @@ describe("ensureCapturedDonationForRefund", () => {
     mocks.txNotificationCreate.mockResolvedValue({ id: "notification_1" });
   });
 
+  it.each([
+    ["DIRECT_UPI", null],
+    ["BANK_TRANSFER", "RAZORPAY"],
+    ["RAZORPAY", "OTHER_GATEWAY"],
+  ])("rejects a locally captured %s donation with provider %s as a Razorpay refund", async (paymentMethod, provider) => {
+    mocks.rootFindUnique.mockResolvedValueOnce({
+      id: "donation_cross_provider",
+      status: "CAPTURED",
+      paymentMethod,
+      provider,
+    });
+    await expect(ensureCapturedDonationForRefund("pay_1"))
+      .rejects.toThrow("Refund payment identity belongs to another donation method");
+    expect(mocks.fetchRazorpayPayment).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("rejects refund-first reconciliation when a provider order belongs to a direct transfer", async () => {
+    mocks.rootFindUnique
+      .mockResolvedValueOnce(null)
+      .mockResolvedValueOnce({
+        id: "donation_direct",
+        amount: decimal(500),
+        paymentMethod: "DIRECT_UPI",
+        provider: null,
+      });
+    mocks.fetchRazorpayPayment.mockResolvedValue({
+      id: "pay_1", order_id: "order_1", amount: 50_000,
+      currency: "INR", status: "captured", captured: true,
+    });
+
+    await expect(ensureCapturedDonationForRefund("pay_1"))
+      .rejects.toThrow("Refund payment order belongs to another donation method");
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
+  });
+
   it("does not call Razorpay again when the payment is already captured locally", async () => {
-    mocks.rootFindUnique.mockResolvedValueOnce({ id: "donation_1", status: "CAPTURED" });
+    mocks.rootFindUnique.mockResolvedValueOnce({ id: "donation_1", status: "CAPTURED", paymentMethod: "RAZORPAY", provider: "RAZORPAY" });
 
     await expect(ensureCapturedDonationForRefund("pay_1")).resolves.toEqual({
       donationId: "donation_1",
@@ -214,7 +306,7 @@ describe("ensureCapturedDonationForRefund", () => {
   it("captures a valid Amaana order before refund accounting when the refund arrives first", async () => {
     mocks.rootFindUnique
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ id: "donation_1", amount: decimal(500) });
+      .mockResolvedValueOnce({ id: "donation_1", amount: decimal(500), paymentMethod: "RAZORPAY", provider: "RAZORPAY" });
     mocks.fetchRazorpayPayment.mockResolvedValue({
       id: "pay_1",
       order_id: "order_1",
@@ -226,6 +318,8 @@ describe("ensureCapturedDonationForRefund", () => {
     mocks.txDonationFindUnique.mockResolvedValueOnce({
       id: "donation_1",
       currency: "INR",
+      paymentMethod: "RAZORPAY",
+      provider: "RAZORPAY",
       amount: decimal(500),
       referenceNumber: "AFD-2026-12345678",
       appealId: "appeal_1",
@@ -263,6 +357,9 @@ describe("ensureCapturedDonationForRefund", () => {
     ["authorized", false],
     ["failed", false],
     ["created", false],
+    ["captured", false],
+    ["authorized", true],
+    ["failed", true],
   ])("does not reconstruct local capture from provider status %s", async (status, captured) => {
     mocks.rootFindUnique.mockResolvedValueOnce(null);
     mocks.fetchRazorpayPayment.mockResolvedValue({
@@ -283,7 +380,7 @@ describe("ensureCapturedDonationForRefund", () => {
   it("accepts provider refunded state as evidence of a previously captured payment", async () => {
     mocks.rootFindUnique
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ id: "donation_1", amount: decimal(500) });
+      .mockResolvedValueOnce({ id: "donation_1", amount: decimal(500), paymentMethod: "RAZORPAY", provider: "RAZORPAY" });
     mocks.fetchRazorpayPayment.mockResolvedValue({
       id: "pay_1",
       order_id: "order_1",
@@ -295,6 +392,8 @@ describe("ensureCapturedDonationForRefund", () => {
     mocks.txDonationFindUnique.mockResolvedValueOnce({
       id: "donation_1",
       currency: "INR",
+      paymentMethod: "RAZORPAY",
+      provider: "RAZORPAY",
       amount: decimal(500),
       referenceNumber: "AFD-2026-REFUNDED",
       appealId: "appeal_1",
@@ -315,7 +414,7 @@ describe("ensureCapturedDonationForRefund", () => {
   it("fails closed when Razorpay returns an amount different from the Amaana order", async () => {
     mocks.rootFindUnique
       .mockResolvedValueOnce(null)
-      .mockResolvedValueOnce({ id: "donation_1", amount: decimal(500) });
+      .mockResolvedValueOnce({ id: "donation_1", amount: decimal(500), paymentMethod: "RAZORPAY", provider: "RAZORPAY" });
     mocks.fetchRazorpayPayment.mockResolvedValue({
       id: "pay_1",
       order_id: "order_1",

@@ -38,6 +38,33 @@ export function resolvePublicMediaUrl(asset: PublicMediaCandidate) {
   );
 }
 
+function configuredHttpsOrigin(value: string | undefined) {
+  const raw = value?.trim();
+  if (!raw) return null;
+  try {
+    const url = new URL(raw);
+    return url.protocol === "https:" && !url.username && !url.password ? url.origin : null;
+  } catch {
+    return null;
+  }
+}
+
+export function isCspCompatiblePublicImageUrl(value: string | null | undefined) {
+  const normalized = normalizeSafePublicMediaUrl(value);
+  if (!normalized) return false;
+  if (normalized.startsWith("/")) return true;
+
+  const imageOrigin = configuredHttpsOrigin(normalized);
+  if (!imageOrigin) return false;
+
+  const allowedOrigins = new Set([
+    configuredHttpsOrigin(process.env.NEXT_PUBLIC_APP_URL),
+    configuredHttpsOrigin(process.env.PUBLIC_MEDIA_BASE_URL),
+  ].filter((origin): origin is string => Boolean(origin)));
+
+  return allowedOrigins.has(imageOrigin);
+}
+
 export function canRenderPublicMedia(asset: PublicMediaCandidate) {
   const url = resolvePublicMediaUrl(asset);
   if (!url) return false;
@@ -47,7 +74,7 @@ export function canRenderPublicMedia(asset: PublicMediaCandidate) {
   if (asset.kind === "VIDEO") return false;
 
   if (asset.kind === "IMAGE") {
-    return Boolean(asset.altText?.trim());
+    return Boolean(asset.altText?.trim()) && isCspCompatiblePublicImageUrl(url);
   }
 
   return true;

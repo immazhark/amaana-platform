@@ -1,6 +1,6 @@
 import { Prisma } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { getRateLimitClientAddress, getRateLimitClientHash, isRetryableRateLimitConflict } from "./request-security";
+import { getRateLimitClientAddress, getRateLimitClientHash, isRetryableRateLimitConflict, isSameOrigin } from "./request-security";
 
 const originalEnv = { ...process.env };
 
@@ -142,5 +142,48 @@ describe("rate-limit transaction retries", () => {
   it("does not retry unrelated database errors", () => {
     expect(isRetryableRateLimitConflict(prismaError("P2002"))).toBe(false);
     expect(isRetryableRateLimitConflict(new Error("network failure"))).toBe(false);
+  });
+});
+
+describe("fail-closed mutation origin configuration", () => {
+  const originRequest = (origin: string, host = "amaanafoundation.org") =>
+    new Request("https://amaanafoundation.org/api/synthetic", { headers: { origin, host } });
+
+  beforeEach(() => {
+    process.env = { ...process.env, NODE_ENV: "production", NEXT_PUBLIC_APP_URL: "https://amaanafoundation.org" };
+  });
+
+  it("accepts the configured HTTPS origin independently of the request Host", () => {
+    expect(isSameOrigin(originRequest("https://amaanafoundation.org", "untrusted.example"))).toBe(true);
+  });
+
+  it("rejects foreign and opaque origins", () => {
+    expect(isSameOrigin(originRequest("https://untrusted.example"))).toBe(false);
+    expect(isSameOrigin(originRequest("null"))).toBe(false);
+  });
+
+  it("does not reflect the request Host when production configuration is absent", () => {
+    delete process.env.NEXT_PUBLIC_APP_URL;
+    expect(isSameOrigin(originRequest("https://untrusted.example", "untrusted.example"))).toBe(false);
+  });
+
+  it("rejects malformed configuration without throwing", () => {
+    process.env.NEXT_PUBLIC_APP_URL = "not-a-url";
+    expect(isSameOrigin(originRequest("https://amaanafoundation.org"))).toBe(false);
+  });
+
+  it.each([
+    "http://amaanafoundation.org",
+    "file:///tmp/synthetic",
+    "https://user:synthetic@amaanafoundation.org",
+  ])("rejects unsafe production configuration %s", configured => {
+    process.env.NEXT_PUBLIC_APP_URL = configured;
+    expect(isSameOrigin(originRequest(new URL(configured).origin))).toBe(false);
+  });
+
+  it("preserves the development HTTP fallback", () => {
+    process.env = { ...process.env, NODE_ENV: "development" };
+    delete process.env.NEXT_PUBLIC_APP_URL;
+    expect(isSameOrigin(originRequest("http://localhost:3000", "localhost:3000"))).toBe(true);
   });
 });

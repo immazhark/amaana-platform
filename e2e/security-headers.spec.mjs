@@ -82,6 +82,7 @@ test("AM-07 CSP constrains execution and preserves Razorpay transport", async ({
   expect(directives.get("base-uri")).toEqual(["'self'"]);
   expect(directives.get("form-action")).toEqual(["'self'"]);
   expect(directives.get("script-src")).toContain("https://checkout.razorpay.com");
+  expect(directives.get("script-src-attr")).toEqual(["'none'"]);
   expect(directives.get("connect-src")).toContain("https://api.razorpay.com");
   expect(directives.get("frame-src")).toEqual(["https://api.razorpay.com", "https://checkout.razorpay.com"]);
   expect(directives.get("script-src")).not.toContain("'unsafe-eval'");
@@ -89,4 +90,34 @@ test("AM-07 CSP constrains execution and preserves Razorpay transport", async ({
   expect(directives.get("script-src")).not.toContain("blob:");
   expect(directives.get("script-src")).not.toContain("*");
   expect(directives.get("connect-src")).not.toContain("*");
+
+  const imageSources = directives.get("img-src") ?? [];
+  expect(imageSources).toEqual(expect.arrayContaining(["'self'", "blob:", "data:"]));
+  expect(imageSources).not.toContain("*");
+  expect(imageSources).not.toContain("https:");
+
+  for (const configuredImageUrl of [
+    process.env.NEXT_PUBLIC_APP_URL,
+    process.env.PUBLIC_MEDIA_BASE_URL,
+    process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL,
+  ]) {
+    if (!configuredImageUrl?.trim()) continue;
+    expect(imageSources).toContain(new URL(configuredImageUrl).origin);
+  }
+});
+
+
+test("anonymous performance reporting is private and rejects foreign origins without writing", async ({ request }) => {
+  const response = await request.post("/api/analytics/web-vitals", {
+    headers: { Origin: "https://not-amaana.invalid" },
+    data: { path: "/about", name: "LCP", value: 1000 },
+  });
+  expect(response.status()).toBe(204);
+  // Cache-Control directives have no semantic order. Next's route headers
+  // may normalize "no-store, private" to "private, no-store, max-age=0".
+  const cache = response.headers()["cache-control"] ?? "";
+  expect(cache).toMatch(/\bprivate\b/i);
+  expect(cache).toMatch(/\bno-store\b/i);
+  expect(response.headers()["x-robots-tag"] ?? "").toMatch(/noindex.*nofollow/i);
+  expect(await response.text()).toBe("");
 });
