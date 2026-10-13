@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 
 // Hero media spans the viewport on compact layouts and the right column on desktop.
 export const PAGE_HERO_IMAGE_SIZES = "(max-width: 900px) 100vw, 50vw";

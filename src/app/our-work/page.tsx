@@ -1,7 +1,7 @@
 import evidenceStyles from "@/components/evidence-pathway.module.css";
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { PageHero, PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { WorkPortfolio } from "@/components/work-portfolio";

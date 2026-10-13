@@ -1,5 +1,5 @@
 import { PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { PublicMedia } from "@/components/public-media";
 import { getAboutOriginMedia } from "@/lib/about-media";

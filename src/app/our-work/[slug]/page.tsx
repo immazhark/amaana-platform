@@ -9,7 +9,7 @@ import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { programmeBySlug, programmeCategories } from "@/lib/master-copy";
 import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { PublicMedia } from "@/components/public-media";
 import { getInitiativePageData } from "@/lib/public-page-data";

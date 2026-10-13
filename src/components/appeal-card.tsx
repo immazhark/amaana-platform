@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { amountToNumber, formatINR, type PublicAppeal } from "@/lib/appeals";
 

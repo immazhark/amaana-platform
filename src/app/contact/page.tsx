@@ -1,7 +1,7 @@
 import { ActionIcon } from "@/components/action-icon";
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { PageHero } from "@/components/page-hero";
 import { ParticipationCards } from "@/components/participation-card";
 import { SocialIcon } from "@/components/social-icon";

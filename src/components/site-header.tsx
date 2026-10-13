@@ -2,7 +2,7 @@
 import { UIIcon } from "./ui-icon";
 
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import styles from "./site-header.module.css";

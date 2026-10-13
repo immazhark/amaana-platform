@@ -1,6 +1,6 @@
 import { SocialIcon, type SocialNetwork } from "@/components/social-icon";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { FooterNavGroup } from "@/components/footer-nav-group";
 
 const socialLinks: ReadonlyArray<{ network: SocialNetwork; label: string; href: string | null }> = [

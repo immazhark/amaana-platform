@@ -584,40 +584,52 @@ test('mobile floating companion and Back to top controls do not overlap', async 
 
 test('client navigation uses a full-screen branded blocking overlay without collapsing the page shell', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
-  await openPublicPage(page, '/');
+  let release;
+  const navigation = new Promise(resolve => { release = resolve; });
+  // Block before the initial page so a cached/prefetched route cannot skip pending.
+  await page.route('**/about?*', async route => { await navigation; await route.continue(); });
+  try {
+    await openPublicPage(page, '/');
 
-  await page.route('**/about?*', async route => {
-    await new Promise(resolve => setTimeout(resolve, 700));
-    await route.continue();
-  });
+    const before = await page.locator('main#main').boundingBox();
+    expect(before).not.toBeNull();
 
-  const before = await page.locator('main#main').boundingBox();
-  expect(before).not.toBeNull();
+    await page.getByRole('button', { name: 'Open navigation menu' }).click();
+    await page.getByRole('navigation', { name: 'Mobile navigation' }).getByRole('link', { name: 'About' }).click({ noWaitAfter: true });
 
-  await page.getByRole('button', { name: 'Open navigation menu' }).click();
-  await page.getByRole('navigation', { name: 'Mobile navigation' }).getByRole('link', { name: 'About' }).click({ noWaitAfter: true });
+    const overlay = page.locator('.amaana-navigation-loading');
+    await expect(overlay).toBeVisible();
+    await expect(overlay.locator('.amaana-loading-logo')).toBeVisible();
+    await expect(overlay.locator('.amaana-loading-logo')).toHaveCSS('background-image', /amaana-mark\.svg/);
+    await expect(overlay.locator('.amaana-loading-dots i')).toHaveCount(3);
 
-  const overlay = page.locator('.amaana-navigation-loading');
-  await expect(overlay).toBeVisible();
-  await expect(overlay.locator('.amaana-loading-logo')).toBeVisible();
-  await expect(overlay.locator('.amaana-loading-logo')).toHaveCSS('background-image', /amaana-mark\.svg/);
-  await expect(overlay.locator('.amaana-loading-dots i')).toHaveCount(3);
+    const geometry = await overlay.boundingBox();
+    expect(geometry).not.toBeNull();
+    expect(geometry.x).toBeLessThanOrEqual(1);
+    expect(geometry.width).toBeGreaterThanOrEqual(389);
+    expect(await page.evaluate(() => getComputedStyle(document.body).overflowY)).toBe('hidden');
 
-  const geometry = await overlay.boundingBox();
-  expect(geometry).not.toBeNull();
-  expect(geometry.x).toBeLessThanOrEqual(1);
-  expect(geometry.width).toBeGreaterThanOrEqual(389);
-  expect(await page.evaluate(() => getComputedStyle(document.body).overflowY)).toBe('hidden');
+    const during = await page.locator('main#main').boundingBox();
+    expect(during).not.toBeNull();
+    expect(during.height).toBeGreaterThan(0);
 
-  const during = await page.locator('main#main').boundingBox();
-  expect(during).not.toBeNull();
-  expect(during.height).toBeGreaterThan(0);
-
-  await page.waitForURL('**/about');
-  await expect(overlay).toHaveCount(0);
-  expect(await page.evaluate(() => document.body.style.overflow)).not.toBe('hidden');
+    release();
+    await page.waitForURL('**/about');
+    await expect(overlay).toHaveCount(0);
+    expect(await page.evaluate(() => document.body.style.overflow)).not.toBe('hidden');
+  } finally { release(); }
 });
 
+
+test('canceled framework link clicks leave the page and loading state unchanged', async ({ page }) => {
+  await openPublicPage(page, '/');
+  const link = page.locator('.nav-donate');
+  await link.evaluate(node => node.addEventListener('click', event => event.preventDefault()));
+  await link.click();
+  await expect(page.locator('.amaana-navigation-loading')).toHaveCount(0);
+  await expect(page).toHaveURL(/\/$/);
+  await expect(page.locator('main#main')).toBeVisible();
+});
 
 test('canceled same-origin link clicks do not trap visitors behind the loading overlay', async ({ page }) => {
   await openPublicPage(page, '/');

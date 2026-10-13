@@ -4,7 +4,7 @@ import { SectionHeading } from "@/components/section-heading";
 import { ProgrammeArtwork, hasProgrammeArtwork } from "@/components/programme-artwork";
 import styles from "./programme-list.module.css";
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from '@/components/navigation-link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { BreadcrumbStructuredData } from '@/components/breadcrumb-structured-data';
 import { PublicContentStructuredData } from '@/components/public-content-structured-data';

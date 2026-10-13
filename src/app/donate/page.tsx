@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { complianceCopy } from "@/lib/master-copy";
 import { getAppealsIndexData } from "@/lib/public-page-data";

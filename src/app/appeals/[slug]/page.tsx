@@ -1,6 +1,6 @@
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { notFound } from "next/navigation";
 import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
 import { AppealStructuredData } from "@/components/appeal-structured-data";

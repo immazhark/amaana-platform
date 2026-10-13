@@ -1,5 +1,5 @@
 import { SectionHeading } from "@/components/section-heading";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { eidGrowth } from "@/content/amaana";
 import { ActionIcon } from "@/components/action-icon";
 

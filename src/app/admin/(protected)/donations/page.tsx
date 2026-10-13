@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { DonationIntent, DonationStatus, Prisma } from "@prisma/client";
 import { requirePermission } from "@/lib/auth";
 import { formatINR } from "@/lib/appeals";

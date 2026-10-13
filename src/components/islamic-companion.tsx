@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { hyderabadClock, remindersFor } from "@/lib/daily-companion";
 import type { CompanionPanelKind } from "@/components/islamic-companion-panel";

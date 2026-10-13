@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import type { ReactNode } from "react";
 import { HOME_ARTWORK_SRC, type HomeSlide } from "@/lib/home-carousel";
 import { PublicMedia } from "@/components/public-media";

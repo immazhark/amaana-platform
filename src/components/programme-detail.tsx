@@ -4,7 +4,7 @@ import { ProgrammeArtwork, hasProgrammeArtwork } from "@/components/programme-ar
 import { selectInitiativeBannerImage } from "@/lib/initiative-banner-media";
 import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel } from "@/components/body-carousel";
-import Link from 'next/link';
+import Link from '@/components/navigation-link';
 import { notFound } from 'next/navigation';
 import { BreadcrumbStructuredData } from '@/components/breadcrumb-structured-data';
 import { PublicContentStructuredData } from '@/components/public-content-structured-data';

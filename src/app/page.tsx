@@ -5,7 +5,7 @@ import { BodyCarousel } from "@/components/body-carousel";
 import "./home-showcase.css";
 import "./home-documentary.css";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { AppealCard } from "@/components/appeal-card";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getHomepageAppeals } from "@/lib/public-content";

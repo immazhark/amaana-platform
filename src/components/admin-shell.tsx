@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { adminHomePathForPermissions, adminNavigationForPermissions } from "@/lib/admin-navigation";
 import { AdminNavigation } from "@/components/admin-navigation";
 

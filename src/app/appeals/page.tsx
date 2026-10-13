@@ -1,7 +1,7 @@
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
 import "@/app/canonical-content.css";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { programmes } from "@/lib/master-copy";
 import { AppealCard } from "@/components/appeal-card";
 import { PageHero } from "@/components/page-hero";

@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { useEffect, useState } from "react";
 import type { PrivateTrackingCredentials } from "@/lib/private-tracking";
 import { usePrivateTrackingCredentials } from "@/lib/use-private-tracking-credentials";

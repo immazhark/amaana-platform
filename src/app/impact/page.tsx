@@ -2,7 +2,7 @@ import evidenceStyles from "@/components/evidence-pathway.module.css";
 import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel } from "@/components/body-carousel";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { TrustEvidenceBoundary } from "@/components/trust-evidence-boundary";

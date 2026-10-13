@@ -1,7 +1,7 @@
 import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel, BodyCard } from "@/components/body-carousel";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { notFound } from "next/navigation";
 import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
 import { PageHero } from "@/components/page-hero";
