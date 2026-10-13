@@ -1,3 +1,13 @@
+## 2026-10-14 IST — R-061/R-066 shared component stylesheet governance
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parentfe32bd4cf35a8a0ead239201fcc0d98576f91576. Owner cx authorized continuation; no concurrent writer.
+
+Original R-061/R-066 gap: native Stylelint checked only donate-audit.module.css, leaving all17 shared component modules outside its two existing rules. Diagnostic recorded49 hex-color occurrences and9 exact duplicate selectors. Extend the existing pinned stylelint:governed command to the component-module glob plus donation audit, with zero-warning enforcement through the existing npm run lint/CI entrypoint. No dependency or new workflow/status infrastructure.
+
+Replace46 component hex occurrences with exact-value canonical palette roles; remove three redundant literal fallbacks where the canonical token is defined. Reuse existing surface/canvas/blue roles and add16 exact legacy component colors to the canonical root. Preserve approved RGB values, including image masks, photography stages, donor/intake feedback and placeholder gradients. Consolidate9 exact repeated selectors within their own rule containers, including amount emphasis, intake step navigation and carousel witness cards; discard overwritten same-property declarations while retaining important flags. Other grouped reconciliation/route/global rules are outside this bounded batch.
+
+Validation: all17 component modules plus donation audit pass both native rules. A disposable new component module with a hex color and duplicate selector fails the expanded actual command with both diagnostics; removed before commit. Temporary PostCSS comparison across340 stylesheet/width/motion matrices preserves normalized winning property values and important flags per exact selector, with replacement tokens resolving to prior RGB. This does not prove every cross-selector/rendered cascade. Full npm run lint passes; full unit suite1005passed/9database-dependent skipped; diff and secret/static-image guards pass. Clean compile-mode build passes:JS813132/819200bytes,CSS347008/348160bytes. No runtime TS change or new permanent tests. R-061/R-066 remain partial: RGB/alpha literal governance and route/global CSS coverage remain open; hosted browser/deployment acceptance is unverified. No main merge/deploy or live provider/data changes. Next: remaining original CSS/tooling and runtime gaps.
+
 ## 2026-10-14 IST — framework navigation feedback corrected
 
 Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parent402b83b43937c622674f64260ef34dc335bcd54b. Owner cx authorized continuation; no concurrent writer.

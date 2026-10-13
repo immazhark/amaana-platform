@@ -7,7 +7,7 @@
 .grid :global(.v2-section-intro){margin:0 0 1.75rem;color:rgb(255 253 248 / 85%);line-height:1.75}
 .grid :global(.v2-reminder){padding:clamp(1.5rem,3vw,2.5rem);border:1px solid rgb(255 253 248 / 22%);border-radius:1rem;background:rgb(18 34 57 / 65%)}
 .grid :global(.v2-reminder-label){display:block;color:var(--af-color-gold-soft);font-size:.75rem;font-weight:700;line-height:1.5;letter-spacing:.09em;text-transform:uppercase}
-.grid blockquote{margin:1rem 0;font-family:var(--af-font-display);font-size:clamp(1.75rem,3vw,2.75rem);line-height:1.2;color:#fffdf8;text-wrap:balance}
+.grid blockquote{margin:1rem 0;font-family:var(--af-font-display);font-size:clamp(1.75rem,3vw,2.75rem);line-height:1.2;color:var(--af-color-surface);text-wrap:balance}
 .grid :global(.v2-reminder)>p{margin:1rem 0 0;color:rgb(255 253 248 / 85%);line-height:1.65}
 .grid :global(.v2-hero-actions){margin-top:1.5rem}
 .boundary{margin-block-end:clamp(3rem,6vw,5rem)}

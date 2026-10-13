@@ -25,6 +25,24 @@
   --af-color-meta: #5f6b75;
   --af-color-accent-text: #6b4d00;
 
+  /* Exact component palette roles retained during stylesheet consolidation. */
+  --af-color-white: #ffffff;
+  --af-color-black: #000000;
+  --af-color-input-placeholder: #697482;
+  --af-color-input-highlight: #fffaf0;
+  --af-color-choice-surface: #f7f3eb;
+  --af-color-status-ink: #445263;
+  --af-color-private-note: #4e5b69;
+  --af-color-field-error: #a72727;
+  --af-color-photo-stage: #eef1f4;
+  --af-color-photo-dialog: #0f2137;
+  --af-color-photo-backdrop: #07111f;
+  --af-color-graphic-stage: #f5f0e6;
+  --af-color-evidence-muted: #5b6472;
+  --af-color-placeholder-night: #0f172a;
+  --af-color-placeholder-forest: #064e3b;
+  --af-color-placeholder-amber: #b45309;
+
   /* Spacing */
   --af-space-1: .25rem;
   --af-space-2: .5rem;
@@ -79,6 +97,7 @@
   --af-motion-fast: 160ms;
   --af-motion-medium: 250ms;
   --af-ease-standard: cubic-bezier(.2, .8, .2, 1);
+
 }
 
 :root {
