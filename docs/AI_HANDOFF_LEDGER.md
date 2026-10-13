@@ -1,3 +1,9 @@
+## 2026-10-13 — PR292 payment/storage implementation handoff
+
+Incoming cx continued from dc3b78f after confirming no head drift. Published ee3cc7a+6930d14 to lock repeat online orders on 5xx/network/malformed outcomes while preserving explicit pre-write correction; 248ba1d adds three rendered browser regressions and updates stale HTTP500 expectation. Published 693fe51 to trim payment error text before 500-character truncation, with e5c91da two browser regressions. Published dea63c6+568f64c for a 15s overall timeout on S3 public-media request and stream reads, including meaningful stalled-sdk/stalled-iterator tests and best-effort abort/destroy; existing size, consent and storage restrictions remain.
+
+Latest source/test head 568f64cccd17e2312794c2c967b379ece02b8a4c. CI 38431227117 pending at last source-head query, newer handoff commits initiate new CI. Local git clone failed due github.com DNS resolution, so source changes and regressions have not been locally validated. New-head hosted build, typecheck, JS/CSS budgets and browser remain mandatory. No merge/deploy/real payments/private storage writes; historical 95-item closure unreconciled. Ownership REVIEW_PENDING; next owner should correct CI-introduced failures before integration.
+
 ## 2026-10-13 — online order runtime and unmount continuation
 
 Incoming owner cx resumed from 72b0d9dd, prior verified CI 38421782865 green on abe0876 only. On PR #292 (fix/direct-transfer-feedback-20261013), new commits 7d573db (suppress post-unmount checkout UI and navigation while retaining genuine payment POST), e6c270b (browser regression for paid callback after unmount), d1e6861 (sanitize malformed error field arrays and remaining-amount hint), cc879889 (three malformed field feedback regressions and one valid linked field error), and bc1ba69f (active-work record). Earlier 44aeeef and 836dbb4 added success response contract and six malformed order browser variants.
