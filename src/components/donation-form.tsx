@@ -192,6 +192,13 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
       // Reconcile that reported payment without opening another checkout.
       if (!isOpeningAttempt(attempt)) return;
       if (!orderResponse.ok) {
+        // Only known pre-write API rejections are safe to correct and retry.
+        // A 5xx or gateway response can follow an already-created order.
+        if (![400, 403, 409, 413, 429].includes(orderResponse.status)) {
+          showError("Checkout status is uncertain. An order may have been created. Contact Amaana before starting another payment.");
+          changePhase("reconciliation");
+          return;
+        }
         if (typeof order?.remainingAmount === "number" && Number.isSafeInteger(order.remainingAmount) && order.remainingAmount > 0 && order.remainingAmount <= 1_000_000) setRemainingHint(order.remainingAmount);
         if (order?.fields && typeof order.fields === "object") {
           const safeFields: DonationFieldErrors = {};
@@ -261,10 +268,10 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         },
       });
       checkout.open();
-    } catch (caught) {
+    } catch {
       if (!isOpeningAttempt(attempt)) return;
-      showError(caught instanceof Error ? caught.message : "Could not start checkout");
-      resetUnpaidCheckout(attempt);
+      showError("Checkout status is uncertain. An order may have been created. Contact Amaana before starting another payment.");
+      changePhase("reconciliation");
     }
   }
 
