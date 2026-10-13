@@ -386,7 +386,9 @@ export async function uploadCuratedPublicMediaFile(
 export async function uploadPublicMediaFile(file: File) {
   validatePublicMediaFile(file);
   // Validate delivery configuration before creating an orphaned storage object.
-  const baseUrl = normalizePublicBaseUrl();
+  // Validate configured delivery settings before storage, but never expose raw
+  // bucket or CDN URLs as managed media publication paths.
+  normalizePublicBaseUrl();
   const bytes = Buffer.from(await file.arrayBuffer());
   if (!hasValidSignature(bytes, file.type)) throw new Error("The uploaded media does not match its declared file type");
 
@@ -401,13 +403,14 @@ export async function uploadPublicMediaFile(file: File) {
     Key: objectKey,
     Body: bytes,
     ContentType: file.type,
-    CacheControl: PUBLIC_MEDIA_CACHE_CONTROL,
+    CacheControl: PRIVATE_OBJECT_CACHE_CONTROL,
     Metadata: { originalName: file.name.slice(0, 255) },
   }));
 
   return {
     objectKey,
-    publicUrl: baseUrl ? `${baseUrl}/${objectKey.split("/").map(encodeURIComponent).join("/")}` : null,
+    // The same-origin route enforces public/consent status on each response.
+    publicUrl: `/media/${objectKey}`,
     originalName: file.name.slice(0, 255),
     mimeType: file.type,
     sizeBytes: file.size,
