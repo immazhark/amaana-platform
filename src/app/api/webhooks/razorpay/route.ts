@@ -9,7 +9,7 @@ import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { verifyWebhookSignature } from "@/lib/razorpay";
 import { calculateRefundAccounting } from "@/lib/refund-accounting";
 import { validateProductionEnvironment } from "@/lib/env";
-import { isPrismaUniqueConstraintError } from "@/lib/webhook-idempotency";
+import { isMatchingPaymentEventReplay, isPrismaUniqueConstraintError } from "@/lib/webhook-idempotency";
 import { logServerError } from "@/lib/server-log";
 
 const MAX_RAZORPAY_WEBHOOK_BYTES = 256 * 1024;
@@ -44,6 +44,7 @@ export async function POST(request: Request) {
   const signature = request.headers.get("x-razorpay-signature") ?? "";
   let providerEventId: string | null = null;
   let receivedEventType: string | null = null;
+  let receivedAuditPayload: ReturnType<typeof paymentEventAuditPayload> | null = null;
 
   try {
     validateProductionEnvironment();
@@ -55,16 +56,18 @@ export async function POST(request: Request) {
 
     const payload = JSON.parse(rawBody) as RazorpayWebhook;
     receivedEventType = payload.event;
+    const auditPayload = paymentEventAuditPayload(payload);
+    receivedAuditPayload = auditPayload;
     providerEventId =
       request.headers.get("x-razorpay-event-id")?.trim() ||
       createHash("sha256").update(rawBody).digest("hex");
 
     const alreadyProcessed = await prisma.paymentEvent.findUnique({
       where: { providerEventId },
-      select: { id: true, eventType: true },
+      select: { id: true, eventType: true, payload: true },
     });
     if (alreadyProcessed) {
-      if (alreadyProcessed.eventType !== payload.event) {
+      if (!isMatchingPaymentEventReplay(alreadyProcessed, payload.event, auditPayload)) {
         logServerError("razorpay.webhook_event_id_collision", {
           hasProviderEventId: true,
           storedEventType: alreadyProcessed.eventType,
@@ -77,7 +80,6 @@ export async function POST(request: Request) {
 
     const payment = payload.payload?.payment?.entity;
     const refund = payload.payload?.refund?.entity;
-    const auditPayload = paymentEventAuditPayload(payload);
 
     // A financial refund must have a stable provider identity. Never acknowledge
     // malformed refunds as processed, since doing so would hide reconciliation.
@@ -134,9 +136,9 @@ export async function POST(request: Request) {
         if (!isPrismaUniqueConstraintError(eventError)) throw eventError;
         const existing = await prisma.paymentEvent.findUnique({
           where: { providerEventId },
-          select: { id: true, eventType: true },
+          select: { id: true, eventType: true, payload: true },
         });
-        if (!existing || existing.eventType !== payload.event) throw eventError;
+        if (!isMatchingPaymentEventReplay(existing, payload.event, auditPayload)) throw eventError;
       }
     } else if (
       payload.event === "payment.failed" &&
@@ -323,9 +325,10 @@ export async function POST(request: Request) {
     if (providerEventId && isPrismaUniqueConstraintError(error)) {
       const existing = await prisma.paymentEvent.findUnique({
         where: { providerEventId },
-        select: { id: true, eventType: true },
+        select: { id: true, eventType: true, payload: true },
       });
-      if (existing && existing.eventType === receivedEventType) {
+      if (existing && receivedEventType && receivedAuditPayload &&
+        isMatchingPaymentEventReplay(existing, receivedEventType, receivedAuditPayload)) {
         return NextResponse.json({ received: true });
       }
       if (existing) {
