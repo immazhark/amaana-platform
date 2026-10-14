@@ -221,6 +221,7 @@ describe("donation order request bounds", () => {
     expect(mocks.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
         givingIntent: "ZAKAT",
+        designationSnapshot: { version: 1, kind: "APPEAL", appealId: "appeal_1", label: "Appeal 1", givingIntent: "ZAKAT" },
         donorEmail: "donor@example.com",
         providerOrderId: "order_Valid123",
         paymentMethod: "RAZORPAY",
