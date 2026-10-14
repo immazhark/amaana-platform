@@ -62,6 +62,23 @@ for (const [file, selectors] of [
   }
 }
 
+// Tiny appeal-card captions must not regress to the former 3.54–3.78:1
+// light-surface gray values. The shared semantic metadata ink meets AA on
+// the approved ivory and muted-paper surfaces.
+for (const file of ['appeal-card.css', 'appeals.css']) {
+  const css = await readFile(path.join(root, 'src/app', file), 'utf8');
+  for (const selector of [
+    '.v2-appeal-card-head small',
+    '.v2-appeal-progress-meta span',
+    '.v2-appeal-progress-foot',
+  ]) {
+    const declarations = css.split(`${selector}{`)[1]?.split('}')[0];
+    if (!declarations || !declarations.includes('color:var(--af-color-meta)')) {
+      failures.push(`${file}: ${selector} must retain AA metadata ink.`);
+    }
+  }
+}
+
 // Transaction routes share control styles, while their layout/upload rules stay owned.
 const sharedForms = await readFile(path.join(root, 'src/app/forms-experience.css'), 'utf8');
 if (/\.v2-(?:donate-|assistance-|file-|amount-|consent-fieldset)/.test(sharedForms)) {
