@@ -1,5 +1,7 @@
 "use client";
 
+// Error states require the shared boundary layout even without a root error render.
+import "../error-experience.css";
 import Link from "@/components/navigation-link";
 import { useEffect } from "react";
 
