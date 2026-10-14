@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { formatINR } from "@/lib/appeals";
 import { donationIntentLabel } from "@/lib/donation-intent";
-import { resolveAppealDonationDesignation } from "@/lib/donations";
+import { resolvePrivateDonationPurpose } from "@/lib/donation-destination";
 import { prisma } from "@/lib/prisma";
 import { getDonationEvidenceUrl } from "@/lib/storage";
 import { reconcileDonationAction } from "../actions";
@@ -14,7 +14,7 @@ const methodLabel = (value: string) => value === "DIRECT_UPI" ? "Direct UPI" : v
 export default async function DonationDetailPage({ params }: Props) {
   const user = await requirePermission("donation.view");
   const { id } = await params;
-  const donation = await prisma.donation.findUnique({ where: { id }, include: { appeal: true, events: { orderBy: [{ processedAt: "desc" }, { id: "desc" }] }, reconciledBy: { select: { name: true } } } });
+  const donation = await prisma.donation.findUnique({ where: { id }, include: { appeal: true, fund: true, events: { orderBy: [{ processedAt: "desc" }, { id: "desc" }] }, reconciledBy: { select: { name: true } } } });
   if (!donation) notFound();
   const canReconcile = hasPermission(user, "donation.reconcile");
   const evidenceUrl = donation.transferEvidenceKey ? await getDonationEvidenceUrl(donation.transferEvidenceKey, donation.id) : null;
@@ -22,11 +22,7 @@ export default async function DonationDetailPage({ params }: Props) {
   const amount = donation.amount.toNumber();
   const netRetained = Math.max(0, amount - refundedAmount);
   const direct = donation.paymentMethod !== "RAZORPAY";
-  const designation = resolveAppealDonationDesignation(donation.designationSnapshot, {
-    appealId: donation.appealId,
-    givingIntent: donation.givingIntent,
-    currentTitle: donation.appeal.title,
-  });
+  const designation = resolvePrivateDonationPurpose(donation);
 
   return <>
     <div className="admin-heading"><div><p className="eyebrow">{donation.referenceNumber}</p><h1>{formatINR(amount)}</h1><p className="muted">{designation.label}</p></div><span className="status-badge">{donation.status}</span></div>
