@@ -1,3 +1,6 @@
+import { resolveAppealDonationDesignation } from "@/lib/donations";
+import { resolveFundDonationDesignation } from "@/lib/giving-funds";
+
 /**
  * Validate the persisted money destination before any capture, reconciliation
  * or refund writes. The database also enforces this exact-one invariant.
@@ -12,9 +15,6 @@ export function requireDonationDestination(
   return appeal ? { kind: "APPEAL", id: record.appealId! }
     : { kind: "FUND", id: record.fundId! };
 }
-
-import { resolveAppealDonationDesignation } from "@/lib/donations";
-import { resolveFundDonationDesignation } from "@/lib/giving-funds";
 
 /** Private staff presentation only; never infer a donor's original purpose
  * from a currently edited GivingFund definition.
