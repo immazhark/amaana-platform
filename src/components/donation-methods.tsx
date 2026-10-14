@@ -6,14 +6,16 @@ import { DirectTransferForm } from "@/components/direct-transfer-form";
 import styles from "./donation-methods.module.css";
 
 type Method = "RAZORPAY" | "DIRECT_UPI" | "BANK_TRANSFER";
-export function DonationMethods(props: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible: boolean; bankAvailable: boolean; paymentInstructions: Record<Exclude<Method, "RAZORPAY">, ReactNode> }) {
+export function DonationMethods(props: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible: boolean; bankAvailable: boolean; paymentInstructions: Record<Exclude<Method, "RAZORPAY">, ReactNode>;
+  onSubmissionLockChange?: (locked: boolean) => void }) {
   const [method,setMethod]=useState<Method>("RAZORPAY");
   const [methodLocked, setMethodLocked] = useState(false);
   const submissionLock = useRef(false);
   const updateSubmissionLock = useCallback((locked: boolean) => {
     submissionLock.current = locked;
     setMethodLocked(locked);
-  }, []);
+    props.onSubmissionLockChange?.(locked);
+  }, [props.onSubmissionLockChange]);
   function chooseMethod(next: Method) {
     if (!submissionLock.current) setMethod(next);
   }

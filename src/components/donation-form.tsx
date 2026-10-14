@@ -47,7 +47,11 @@ export function DonationForm({ appealId, appealTitle, fund, maxAmount, zakatElig
   }, [onSubmissionLockChange]);
   const transactionMax = Math.min(maxAmount, 1_000_000);
   const transactionMin = transactionMax < 10 ? transactionMax : 10;
-  const suggestedAmounts = fund ? [500, 1000, 2500, 5000].filter(amount => amount <= transactionMax) : [];
+  // The same validated preset control serves approved appeal and fund checkouts.
+  // The existing server remains authoritative for the current remaining need.
+  const suggestedAmounts = [100, 500, 1000, 2500, 5000].filter(amount =>
+    amount >= transactionMin && amount <= transactionMax,
+  );
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
