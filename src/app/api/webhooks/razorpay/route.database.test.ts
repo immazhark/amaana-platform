@@ -191,7 +191,7 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("refund entity Pos
       slug: label, name: "Independently approved giving fund",
       purpose: "A reviewed domestic charitable programme restricted to documented support.",
       disclosure: "Donations support independently reviewed beneficiaries and documented charitable work.",
-      accountCode: "TEST-" + prefix.slice(0, 20), currency: "INR",
+      accountCode: "TEST-" + prefix.slice(0, 20).toUpperCase(), currency: "INR",
       acceptedIntents: ["GENERAL", "SADAQAH"], status: "APPROVED", revision: 4,
       createdById: creator.id, lastEditedById: editor.id,
       approvedById: approver.id, approvedAt: new Date(),
