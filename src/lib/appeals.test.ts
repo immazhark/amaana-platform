@@ -172,6 +172,26 @@ describe("appealStatusAfterRefund", () => {
     expect(appealStatusAfterRefund("FUNDED", 75_000, 75_000, null, now)).toBe("FUNDED");
   });
 
+  it.each([
+    { retained: -10, goal: 75_000, closesAt: null },
+    { retained: "invalid", goal: 75_000, closesAt: null },
+    { retained: Number.NaN, goal: 75_000, closesAt: null },
+    { retained: 1, goal: 0, closesAt: null },
+    { retained: 1, goal: Number.POSITIVE_INFINITY, closesAt: null },
+    { retained: 10_000, goal: 75_000, closesAt: "not-a-date" },
+    { retained: 10_000, goal: 75_000, closesAt: new Date(Number.NaN) },
+  ])("does not reopen fundraising on corrupt refund state: %#", ({ retained, goal, closesAt }) => {
+    expect(appealStatusAfterRefund("FUNDED", retained, goal, closesAt, now)).toBe("CLOSED");
+  });
+
+  it("does not reopen when the current reference clock is invalid", () => {
+    expect(appealStatusAfterRefund("FUNDED", 10_000, 75_000, null, new Date(Number.NaN))).toBe("CLOSED");
+  });
+
+  it("preserves a fully funded appeal even if the reference clock is invalid", () => {
+    expect(appealStatusAfterRefund("FUNDED", 75_000, 75_000, null, new Date(Number.NaN))).toBe("FUNDED");
+  });
+
   it.each(["PAUSED", "CLOSED", "REJECTED", "DRAFT", "PUBLISHED"])("never overrides manually controlled %s state", status => {
     expect(appealStatusAfterRefund(status, 1, 75_000, null, now)).toBe(status);
   });
