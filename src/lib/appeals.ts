@@ -44,7 +44,11 @@ export function shouldMarkAppealFunded(
   amountRaised: AmountLike,
   goalAmount: AmountLike,
 ) {
-  return status === "PUBLISHED" && amountToNumber(amountRaised) >= amountToNumber(goalAmount);
+  if (status !== "PUBLISHED") return false;
+  const raised = amountToNumber(amountRaised);
+  const goal = amountToNumber(goalAmount);
+  return Number.isFinite(raised) && raised >= 0
+    && Number.isFinite(goal) && goal > 0 && raised >= goal;
 }
 
 export function isAppealOpenForDonations(
