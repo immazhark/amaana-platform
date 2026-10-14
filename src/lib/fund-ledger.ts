@@ -19,7 +19,7 @@ export type FundLedgerTotals = {
   refundedPaise: number;
   netRetainedPaise: number;
   settledDonations: number;
-  pendingDonations: number;
+  unsettledDonations: number;
 };
 
 function checkedPaise(amount: MoneyDecimal, name: string) {
@@ -41,7 +41,7 @@ export function summarizeFundLedger(fundId: string, donations: readonly FundLedg
   let grossCapturedPaise = 0;
   let refundedPaise = 0;
   let settledDonations = 0;
-  let pendingDonations = 0;
+  let unsettledDonations = 0;
   const seen = new Set<string>();
 
   for (const donation of donations) {
@@ -63,7 +63,7 @@ export function summarizeFundLedger(fundId: string, donations: readonly FundLedg
       settledDonations++;
     } else if (["CREATED", "AUTHORIZED", "PENDING_VERIFICATION", "FAILED", "REJECTED"].includes(donation.status)) {
       if (refunded !== 0) throw new Error("Unsettled donation cannot contain a refund");
-      pendingDonations++;
+      unsettledDonations++;
     } else {
       throw new Error("Unknown donation status in fund ledger");
     }
@@ -74,6 +74,6 @@ export function summarizeFundLedger(fundId: string, donations: readonly FundLedg
     refundedPaise,
     netRetainedPaise: grossCapturedPaise - refundedPaise,
     settledDonations,
-    pendingDonations,
+    unsettledDonations,
   };
 }
