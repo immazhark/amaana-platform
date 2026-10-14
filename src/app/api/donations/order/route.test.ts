@@ -66,6 +66,20 @@ describe("donation order request bounds", () => {
     mocks.enforceDonationRateLimit.mockResolvedValue(true);
   });
 
+  it.each(["cmf1234567890123456789013", "", null, { id: "private-fund" }])("rejects mixed destination %j with the real schema before lookup or provider order", async fundId => {
+    const actual = await vi.importActual<typeof import("@/lib/donations")>("@/lib/donations");
+    mocks.safeParse.mockImplementation(actual.donationSchema.safeParse.bind(actual.donationSchema));
+    const response = await POST(new Request("https://amaana.example/api/donations/order", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ appealId: "cmf1234567890123456789012", fundId, donorName: "Synthetic donor", donorEmail: "synthetic@example.invalid", amount: 500, givingIntent: "GENERAL", domesticConfirmed: true }),
+    }));
+    expect(response.status).toBe(400);
+    expect(response.headers.get("cache-control")).toContain("no-store");
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.createRazorpayOrder).not.toHaveBeenCalled();
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
   it("keeps checkout order responses private even when validation fails", async () => {
     mocks.safeParse.mockReturnValue({ success: false, error: { flatten: () => ({ fieldErrors: {} }) } });
 

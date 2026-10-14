@@ -152,6 +152,19 @@ beforeEach(() => {
 });
 
 describe("direct donation transfer submission", () => {
+  it.each(["cmf1234567890123456789013", ""])("rejects a submitted fund destination %j with the real schema before persistence or storage", async fundId => {
+    const actual = await vi.importActual<typeof import("@/lib/donations")>("@/lib/donations");
+    mocks.safeParse.mockImplementation(actual.directTransferSchema.safeParse.bind(actual.directTransferSchema));
+    const original = requestWith();
+    const form = await original.formData();
+    form.set("fundId", fundId);
+    const response = await POST(new Request(original.url, { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect(response.headers.get("cache-control")).toContain("no-store");
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+  });
   it("returns a private 413 without creating a claim when oversized stream cancellation stalls", async () => {
     const cancel = vi.fn(() => new Promise<void>(() => {}));
     vi.useFakeTimers();

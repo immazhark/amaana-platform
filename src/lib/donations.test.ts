@@ -4,6 +4,17 @@ import { createDonationReference, createReceiptNumber, createReceiptToken, donat
 const valid = { appealId: "cmf1234567890123456789012", donorName: "Test Donor", donorEmail: "donor@example.com", donorPhone: "9876543210", amount: 500, givingIntent: "GENERAL", domesticConfirmed: true };
 describe("donation validation", () => {
   it("accepts a domestic INR donation", () => expect(donationSchema.safeParse(valid).success).toBe(true));
+  it.each(["cmf1234567890123456789013", "", null, 123, true, { id: "unreviewed-fund" }])("rejects an unsupported second destination %j instead of dropping it", fundId => {
+    expect(donationSchema.safeParse({ ...valid, fundId }).success).toBe(false);
+    expect(directTransferSchema.safeParse({ ...valid, fundId, paymentMethod: "DIRECT_UPI", transferReference: "UTR123456789", transferredAt: new Date(Date.now() - 60_000) }).success).toBe(false);
+  });
+  it("rejects a fund-only or missing designation while preserving legacy appeal-only input", () => {
+    const { appealId, ...noAppeal } = valid;
+    expect(appealId).toBeTruthy();
+    expect(donationSchema.safeParse(noAppeal).success).toBe(false);
+    expect(donationSchema.safeParse({ ...noAppeal, fundId: "cmf1234567890123456789013" }).success).toBe(false);
+    expect(donationSchema.safeParse(valid).success).toBe(true);
+  });
   it("accepts digit-only form strings without coercing arbitrary input", () => {
     expect(donationSchema.safeParse({ ...valid, amount: "500" }).success).toBe(true);
     expect(donationSchema.safeParse({ ...valid, amount: "000500" }).success).toBe(true);

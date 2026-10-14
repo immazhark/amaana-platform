@@ -58,7 +58,7 @@ export async function POST(request: Request) {
     if (evidence && evidence.size > MAX_FILE_BYTES) return NextResponse.json({ error: "Transfer evidence must be 5 MB or smaller.", fieldErrors: { evidence: ["Transfer evidence must be 5 MB or smaller."] } }, { status: 413, headers: privateHeaders });
 
     const parsed = directTransferSchema.safeParse({
-      appealId: form.get("appealId"), donorName: form.get("donorName"), donorEmail: form.get("donorEmail"), donorPhone: form.get("donorPhone") ?? "",
+      appealId: form.get("appealId"), fundId: form.get("fundId") ?? undefined, donorName: form.get("donorName"), donorEmail: form.get("donorEmail"), donorPhone: form.get("donorPhone") ?? "",
       amount: form.get("amount"), givingIntent: form.get("givingIntent"), isAnonymous: form.get("isAnonymous") === "true", domesticConfirmed: form.get("domesticConfirmed") === "true",
       paymentMethod: form.get("paymentMethod"), transferReference: form.get("transferReference"), transferredAt: form.get("transferredAt"),
     });
