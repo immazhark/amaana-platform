@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { getPublicImageDimensions } from "@/lib/public-image-dimensions";
 import { canRenderPublicMedia, getPublicImageOptimizationUrl, getPublicImagePlaceholder, resolvePublicMediaUrl } from "@/lib/public-media";
 
 type PublicMediaAsset = {
@@ -29,8 +30,7 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
   if (!url) return null;
 
   if (asset.kind === "IMAGE") {
-    const width = asset.width && asset.width > 0 ? asset.width : 1600;
-    const height = asset.height && asset.height > 0 ? asset.height : 1200;
+    const { width, height } = getPublicImageDimensions(asset);
     const optimizedUrl = getPublicImageOptimizationUrl(url);
     const blurDataURL = getPublicImagePlaceholder(asset.blurDataURL);
     const image = optimizedUrl ? (

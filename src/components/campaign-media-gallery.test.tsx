@@ -28,6 +28,14 @@ describe("actual public gallery rendering contract", () => {
     expect(html).toBe("");
   });
 
+  it("does not create a distorted aspect ratio for incomplete image metadata", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[
+      { ...photo, width: 800, height: null },
+    ]}/>);
+    expect(html).toContain('width="1600"');
+    expect(html).toContain('height="1200"');
+  });
+
   it("does not trust impossible or negative image dimensions", () => {
     const html = renderToStaticMarkup(<CampaignMediaGallery items={[
       { ...photo, width: -200, height: Number.POSITIVE_INFINITY },
