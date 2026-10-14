@@ -3,11 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import styles from "./islamic-companion-panel.module.css";
 import {
-  AYAHS,
-  HADITHS,
   HYDERABAD_ZONE,
   PRAYERS,
-  dailyReading,
   estimatedHijri,
   hyderabadClock,
   nextSalah,
@@ -15,6 +12,7 @@ import {
   timeMinutes,
   type PrayerDay,
 } from "@/lib/daily-companion";
+import { AYAHS, HADITHS, dailyReading } from "@/lib/daily-companion-readings";
 
 type Moon = {
   day: number;
@@ -144,7 +142,7 @@ export function IslamicCompanionPanel({
   const maghrib = timeMinutes(currentData?.today.timings.Maghrib);
   const afterSunset = clock !== null && maghrib !== null && clock.minutes >= maghrib;
   const moon = currentData ? (afterSunset ? currentData.eveningMoon : currentData.moon) : null;
-  const reading = now ? dailyReading(now) : null;
+  const reading = now ? dailyReading(hyderabadClock(now)) : null;
   const upcoming = now && currentData ? nextSalah(currentData.today, currentData.tomorrow, now) : null;
 
   async function copyReading() {

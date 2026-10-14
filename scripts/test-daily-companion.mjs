@@ -1,6 +1,9 @@
 import test from "node:test";
 import assert from "node:assert/strict";
-import { AYAHS, HADITHS, hyderabadClock, dailyReading, remindersFor, nextSalah, observedHijri, shiftDate, timeMinutes } from "../src/lib/daily-companion.ts";
+import { hyderabadClock, remindersFor, nextSalah, observedHijri, shiftDate, timeMinutes } from "../src/lib/daily-companion.ts";
+
+import { AYAHS, HADITHS, dailyReading as readingForClock } from "../src/lib/daily-companion-readings.ts";
+const dailyReading = now => readingForClock(hyderabadClock(now));
 
 const at = (date, time) => new Date(`${date}T${time}:00+05:30`);
 test("daily readings roll over at Hyderabad midnight, not UTC midnight", () => {

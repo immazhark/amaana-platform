@@ -1,3 +1,11 @@
+## 2026-10-14 — client bundle and Companion load boundary
+
+Source continuation from d9e74c6898fea8ffb41ce711fe49a6406f6bee3a on existing PR292. Split checksum identity/path helpers from server manifest schemas. Browser authenticates a private byte snapshot against the pinned approved SHA-256 before UTF-8/JSON decoding; full schema and staging/auth/storage gates remain server-side. Archive/package/image checks and reviewed media publication rules remain unchanged. No import or publication executed.
+
+Moved unchanged reviewed Ayah/Hadith content into the lazy Companion panel dependency, retaining Hyderabad calendar behavior. Clean compile verifies reading-containing chunk excluded from home page/layout entries and no Zod runtime in emitted client chunks. Overall JS776483/819200 (42697 bytes saved;42717 headroom), CSS343292/348160 unchanged. Home entry JS619646 vs622879; about613184 vs616417 (3233 deferred bytes each). These are uncompressed generated assets, not measured network or Web Vitals.
+
+104 focused Vitest and15 Node calendar/API tests pass. TypeScript, changed-file zero-warning ESLint, diff, clean compile-only build, client-secret and static-image checks pass. Actual browser/AT/live CWV not rerun or certified. Master149 counts unchanged:57 implemented/48 partial/42 not started/1 superseded/1 not applicable. B03–B07 performance advanced; B08 public activation and acceptance remain partial. No deployment, provider/DB mutation, gateway activity or worker enablement. Next: integrate dormant reviewed donor flow into the public donation landing behind existing exact flag/allowlist, with disabled default preserved.
+
 ## 2026-10-14 — B05 carousel expiry and B08 private fund governance
 
 Existing PR292, `fix/direct-transfer-feedback-20261013`, starting remote b62993963b81636daaf32b7813effec60662be4a. Root sole writer under explicit Bismillah/autonomous-development directive; no CI polling or release operation. Code published through guarded GitHub fast-forward refs; every remote tree matched local git. Commits: `4bdd683e3c0fbaa436f12402a54d665bd1088fcb` (carousel), `b779aeef80c377325fc180ad820b89b61bd099de` (private registry), `f7cb8b1d0e59400d6623d0b368b3ac4e9f9f0913` (definition audits).

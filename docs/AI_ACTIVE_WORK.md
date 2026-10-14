@@ -1,3 +1,7 @@
+## 2026-10-14 — client bundle and Companion load boundary
+
+Ownership: HANDOFF_PENDING after coherent performance batch. Existing PR292;104 focused/15 Node tests and final type/lint/clean compile pass. JS776483/819200, CSS343292/348160;42717 JS headroom. Master149 counts unchanged; B08 remains partial. No release/public activation.
+
 ## 2026-10-14 — dormant fund donor flow batch
 
 Ownership: HANDOFF_PENDING after dormant donor-flow batch.208 focused tests/29 isolatedSQL and clean compile/type/lint passed. JS819180/819200; only20bytes headroom. Publish to PR292; no release/public activation.

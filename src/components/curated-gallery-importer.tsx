@@ -4,14 +4,12 @@ import { useEffect, useState } from "react";
 import {
   CURATED_GALLERY_ARCHIVE_ENTRY_COUNT,
   CURATED_GALLERY_BATCH,
-  CURATED_GALLERY_MANIFEST_SHA256,
   CURATED_GALLERY_PACKAGE_BYTES,
   CURATED_GALLERY_PACKAGE_SHA256,
   CURATED_GALLERY_RECORD_COUNT,
   archivePathForCuratedRecord,
-  curatedGalleryManifestSchema,
-  type CuratedGalleryManifest,
-} from "@/lib/curated-gallery-contract";
+} from "@/lib/curated-gallery-identity";
+import { readApprovedCuratedManifest } from "@/lib/curated-gallery-browser";
 
 type ZipEntry = {
   name: string;
@@ -198,11 +196,7 @@ export function CuratedGalleryImporter() {
       const manifestEntry = entries.get(".curated-media/manifest.json");
       const reportEntry = entries.get(".curated-media/report.json");
       if (!manifestEntry || !reportEntry) throw new Error("ZIP is missing its manifest or verification report.");
-      if (await sha256(manifestEntry.bytes) !== CURATED_GALLERY_MANIFEST_SHA256) {
-        throw new Error("Manifest SHA-256 does not match the approved package.");
-      }
-      const manifestText = new TextDecoder().decode(manifestEntry.bytes);
-      const manifest: CuratedGalleryManifest = curatedGalleryManifestSchema.parse(JSON.parse(manifestText));
+      const { manifest, manifestText } = await readApprovedCuratedManifest(manifestEntry.bytes);
       const expectedPaths = new Set([
         ".curated-media/manifest.json",
         ".curated-media/report.json",

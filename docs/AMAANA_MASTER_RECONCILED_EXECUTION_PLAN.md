@@ -4,7 +4,7 @@ Canonical programme register · 14 October 2026 · owner: Codex under explicit e
 
 ## Current implementation override — 14 October continuation
 
-Latest published source before this donor-flow batch: `ec32b9b89687e65c11e977d7c89e68bda93c8e6a`, PR292 open/unmerged. The dated sections below retain their historical evidence; this section and current register fields supersede stale claims that exactly-one designation/capture/refund support is unimplemented.
+Latest published source before this performance batch: `d9e74c6898fea8ffb41ce711fe49a6406f6bee3a`, PR292 open/unmerged. The dated sections below retain their historical evidence; this section and current register fields supersede stale claims that exactly-one designation/capture/refund support is unimplemented.
 
 The149-row implementation register currently labels57 Implemented,48 Partial,42 Not started,1 Superseded and1 Not applicable. These are source dimensions, not149 fresh production closures. No new original95 closure count is asserted.
 
@@ -13,8 +13,10 @@ The149-row implementation register currently labels57 Implemented,48 Partial,42 
 | B01 | Portfolio fixture repair; donation/intake uncertain-response safeguards | Combined rendered/release acceptance |
 | B02 | Existing entity graph logo/Threads enrichment | Public crawl/render evidence |
 | B03–B07 | Multiple typography, CSS, privacy/cache, responsive media and SEO subunits | Broader batch criteria and release evidence remain partial |
-| B08 | Private independently reviewed registry; immutable original designation; exactly-one appeal/fund relation; fund capture/manual reconciliation/refunds; dormant gated order endpoint; private acknowledgement/admin/email integration; integer-paise reporting and post-commit cache expiry | Dormant donor-flow source/protected staff preview now implemented; public page integration, bundle headroom, native multi-connection lifecycle tests, reviewed public purposes and controlled schema/application activation remain |
+| B08 | Private independently reviewed registry; immutable original designation; exactly-one appeal/fund relation; fund capture/manual reconciliation/refunds; dormant gated order endpoint; private acknowledgement/admin/email integration; integer-paise reporting and post-commit cache expiry | Dormant donor-flow source/protected staff preview now implemented; public page integration, native multi-connection lifecycle tests, reviewed public purposes and controlled schema/application activation remain |
 | B09–B13 | Existing baseline receipt/settlement/enquiry capabilities | Allocation/disbursement, PDF recovery, recurring/sponsorship, reviewed local/innovation capabilities largely outstanding or gated |
+
+Performance continuation: client manifest schema runtime removed while pinned-byte authentication and independent server validation remain; reviewed Companion readings are deferred until panel load.104 focused/15 Node tests and clean compile pass. JS776483/819200, CSS343292/348160; home/about entry JS each3233 bytes lower.42717 bytes of aggregate JS headroom now available. Browser/Core Web Vitals acceptance remains open; no canonical row count or production closure changes.
 
 Correction: the20260917090000 migration already enforces INR on every Donation. Earlier isolated designation fixtures omitted those custom CHECKs, so an accepted USD fixture did not demonstrate a fully migrated database gap. The unapplied20261014203000 migration is now a compatibility no-op; existing INR enforcement remains authoritative. Runtime currency identity checks remain useful. Current synthetic SQL harnesses explicitly apply those pre-existing financial CHECKs.
 
