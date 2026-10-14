@@ -180,7 +180,11 @@ const getHomepageAppealsCached = unstable_cache(async (limit: number) => {
 }, ["homepage-appeals"], { revalidate: 300, tags: ["appeals"] });
 
 export async function getHomepageAppeals(limit = 3) {
-  return getHomepageAppealsCached(limit);
+  // The cached projection may outlive a campaign's exact closing minute.
+  // Recheck time-sensitive donation eligibility on every render without
+  // fetching the database again or exposing an already closed appeal.
+  const cached = await getHomepageAppealsCached(limit);
+  return cached.filter(appeal => isAppealOpenForDonations(appeal));
 }
 
 export async function getHomepagePublicContent() {
