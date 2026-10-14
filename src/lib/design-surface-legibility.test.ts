@@ -6,6 +6,9 @@ const css = {
   governance: readFileSync(new URL("../app/governance.css", import.meta.url), "utf8"),
   policy: readFileSync(new URL("../app/policy-experience.css", import.meta.url), "utf8"),
   canonical: readFileSync(new URL("../app/canonical-content.css", import.meta.url), "utf8"),
+  impact: readFileSync(new URL("../app/impact/impact-refinement.module.css", import.meta.url), "utf8"),
+  initiative: readFileSync(new URL("../app/initiative-experience.css", import.meta.url), "utf8"),
+  programme: readFileSync(new URL("../app/our-work/[slug]/campaign.css", import.meta.url), "utf8"),
   tokens: readFileSync(new URL("../app/globals.css", import.meta.url), "utf8"),
 };
 function relativeLuminance(hex: string) {
@@ -37,6 +40,11 @@ describe("existing public typography and supporting-text contrast", () => {
     expect(css.policy).not.toMatch(/color:\s*#8b7556\b/i);
     expect(css.governance).toContain("color:var(--af-color-label)");
     expect(css.policy).toContain("color:var(--af-color-label)");
+    expect(css.initiative).not.toContain("color: #717a84");
+    expect(css.initiative).not.toContain("color: #5f6974");
+    expect(css.initiative).toContain("color: var(--af-color-muted)");
+    expect(css.programme).toContain("color:var(--af-color-gold-ink)");
+
   });
   it("gives multiline headings room on Stories, Governance, Policy and canonical pages", () => {
     expect(css.stories).not.toContain("line-height:1.12");
@@ -45,5 +53,11 @@ describe("existing public typography and supporting-text contrast", () => {
     expect(css.governance).not.toContain("line-height:.94");
     expect(css.policy).not.toContain("line-height:1.04");
     expect(css.policy).toContain("line-height:1.22");
+    expect(css.impact).not.toContain("line-height:1.08");
+    expect(css.impact).toContain("line-height:1.22!important");
+    expect(css.initiative).not.toContain("line-height: 1.05");
+    expect(css.programme).not.toContain("line-height: 1.08");
+    expect(css.programme).toContain("line-height: 1.2");
+
   });
 });

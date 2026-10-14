@@ -92,7 +92,7 @@
   margin: 1.5rem 0 .8rem;
   font-family: var(--af-font-display);
   font-size: clamp(1.5rem, 2.5vw, 2.4rem);
-  line-height: 1.05;
+  line-height: 1.23;
 }
 
 .v2-initiative-evidence-panel small {
@@ -128,7 +128,7 @@
   font-family: var(--af-font-display);
   font-size: clamp(1.45rem, 2.5vw, 2.35rem);
   font-weight: 500;
-  line-height: 1.05;
+  line-height: 1.23;
 }
 
 .v2-initiative-facts small {
@@ -146,7 +146,7 @@
 
 .v2-initiative-story-copy > p {
   margin-top: 0;
-  color: #5f6974;
+  color: var(--af-color-muted);
   font-size: clamp(1.05rem, 1.5vw, 1.2rem);
   line-height: 1.85;
 }
@@ -167,7 +167,7 @@
 
 .v2-initiative-trust-note p {
   max-width: 44rem;
-  color: #717a84;
+  color: var(--af-color-muted);
   line-height: 1.7;
 }
 
@@ -201,7 +201,7 @@
   font-family: var(--af-font-display);
   font-size: clamp(1.7rem, 2.5vw, 2.7rem);
   font-weight: 500;
-  line-height: 1;
+  line-height: 1.2;
 }
 
 .v2-initiative-faith-grid p {

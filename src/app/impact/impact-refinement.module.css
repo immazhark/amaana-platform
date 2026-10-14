@@ -30,7 +30,7 @@
   padding:clamp(1.05rem,1.4vw,1.35rem);
   border:1px solid rgb(184 137 14 / 18%);
   border-radius:1.1rem;
-  color:#122239;
+  color:var(--af-color-navy-950);
   background:linear-gradient(145deg,rgb(255 253 248 / 98%),rgb(247 240 222 / 94%));
   box-shadow:0 12px 34px rgb(18 34 57 / 6%);
   transform:translateZ(0);
@@ -49,7 +49,7 @@
   opacity:0;
   transition:opacity var(--af-motion-medium) ease
 }
-:global(.v2-impact-tile.has-media){color:#fffdf8;border-color:rgb(255 255 255 / 15%)}
+:global(.v2-impact-tile.has-media){color:var(--af-color-surface);border-color:rgb(255 255 255 / 15%)}
 :global(.v2-impact-tile.has-media .v2-impact-tile-shade){opacity:1}
 :global(.v2-impact-tile-index){
   align-self:flex-end;
@@ -107,7 +107,7 @@
   font-family:var(--af-font-display);
   font-size:clamp(1.08rem,1.35vw,1.38rem);
   font-weight:500;
-  line-height:1.08
+  line-height:1.24
 }
 :global(.v2-impact-tile-action){
   display:inline-flex;
@@ -150,7 +150,7 @@
   background:linear-gradient(#1d3150,#1d3150) padding-box,linear-gradient(135deg,#e0b318,#466faa) border-box!important
 }
 :global(.v2-impact-witness-carousel .v2-impact-witness-item img){width:100%!important;height:100%!important;object-fit:cover!important}
-:global(.v2-impact-witness-carousel .v2-impact-witness-item h3){font-size:clamp(1.65rem,2.4vw,2.55rem)!important;line-height:1!important}
+:global(.v2-impact-witness-carousel .v2-impact-witness-item h3){font-size:clamp(1.65rem,2.4vw,2.55rem)!important;line-height:1.22!important}
 :global(.v2-impact-witness){padding-block:clamp(3.75rem,6vw,5.75rem)}
 :global(.v2-impact-philosophy){padding-block:clamp(3.75rem,6vw,5.75rem)}
 :global(.v2-impact-philosophy-grid){gap:clamp(2.5rem,6vw,6rem)}
