@@ -1,5 +1,16 @@
 # Amaana Foundation engineering continuation — 14 October 2026
 
+## 12:49 IST continuation — R-025 remaining appeal and Stories leading
+
+Ownership: existing PR #292 / branch `fix/direct-transfer-feedback-20261013`. Verified latest source/tests head before checkpoint: `7f241f72aa0215fa854a52535733fe5bb6989c78`.
+
+The appeals route stylesheet (`src/app/appeals.css`) still declared `line-height:.95` for the shared AppealCard title, empty-state H3 and story detail H2, conflicting with the component and global corrections. Correct all three to `1.12`. Extend the existing synthetic appeals acceptance fixture with an empty state and story detail heading, then assert all three heading ratios at320/390/1440. Commits `b7456ea`, `f7fbc11`, `605db8e`.
+
+The Stories route had three remaining tightly leading multiline display texts: feature-image fallback (`.95`), detail context (`1.05`) and detail no-media fallback (`.98`). Preserve fonts/layout and change only leading to `1.12`. Extend the pre-existing Stories accessibility fixture to check those values at390/1440 and100%/200% text scaling. Commits `d492dc2`, `a914292`.
+
+The current global CSS architecture audit now guards these six route-level heading rules, preventing future route CSS from defeating a component-only accessibility fix; an initially over-escaped audit regex was caught and corrected in `7f241f7`. Independent source-level evaluation confirms six of six heading rule checks and correct regex literal. Audit commits `300cb5a`, `7f241f7`. E2E, TypeScript, lint and the production build have **not been executed** on this head in this continuation. R-025 remains partial; no 95-entry closure count changed. No payment/intake/data/provider operation, main merge, budget increase, deployment or migration.
+
+
 ## Completed source remediation in PR #292
 
 Repository: `immazhark/amaana-platform`. Existing PR: https://github.com/immazhark/amaana-platform/pull/292. Working branch: `fix/direct-transfer-feedback-20261013`. Exact implementation/test head before this checkpoint: `814f23a5a607a46f4b537791c3ae38b00779144d`.
