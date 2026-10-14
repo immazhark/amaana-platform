@@ -82,6 +82,10 @@ for (const file of ['appeal-card.css', 'appeals.css']) {
 // The appeal-detail funding strip renders its summary inside a first-child div.
 // Direct child selectors on the aside are dead and silently drop the visual
 // amount hierarchy. Mobile totals must fit a single owned grid column.
+const appealDetailSource = await readFile(path.join(root, 'src/app/appeals/[slug]/page.tsx'), 'utf8');
+if (!appealDetailSource.includes('<div><small>Appeal progress</small><strong>')) {
+  failures.push('Appeal detail funding markup changed; update nested selector contract and rendered fixture.');
+}
 const appealRouteCss = await readFile(path.join(root, 'src/app/appeals.css'), 'utf8');
 for (const expected of [
   '.v2-appeal-donation-panel>div:first-child>small{display:block;color:var(--af-color-gold-ink)',
