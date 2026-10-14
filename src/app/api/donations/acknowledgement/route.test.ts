@@ -145,6 +145,38 @@ describe("private donation acknowledgement request bounds", () => {
     }));
   });
 
+  it("keeps legacy private acknowledgement readable but denies native PDF proof without original purpose", async () => {
+    const { readVerifiedDonationAcknowledgement } = await import("@/lib/private-donation-receipt");
+    mocks.findUnique.mockResolvedValue({ ...original, designationSnapshot: null });
+    const old = await readVerifiedDonationAcknowledgement({
+      reference: "AFD-STAGING-REFUNDED", token: "receipt-token-at-least-twenty-characters",
+    });
+    expect(old?.donation.appeal.title).toBe("Rewritten public campaign name");
+    const strict = await readVerifiedDonationAcknowledgement({
+      reference: "AFD-STAGING-REFUNDED", token: "receipt-token-at-least-twenty-characters",
+    }, { requireOriginalPurpose: true });
+    expect(strict).toBeNull();
+  });
+
+  it("blocks native PDF issuance for a mismatched historic designation", async () => {
+    const { readVerifiedDonationAcknowledgement } = await import("@/lib/private-donation-receipt");
+    mocks.findUnique.mockResolvedValue({ ...original,
+      designationSnapshot: { ...original.designationSnapshot, appealId: "wrong-appeal" },
+    });
+    expect(await readVerifiedDonationAcknowledgement({
+      reference: "AFD-STAGING-REFUNDED", token: "receipt-token-at-least-twenty-characters",
+    }, { requireOriginalPurpose: true })).toBeNull();
+  });
+
+  it("permits native PDF receipt projection only with the verified original purpose", async () => {
+    const { readVerifiedDonationAcknowledgement } = await import("@/lib/private-donation-receipt");
+    mocks.findUnique.mockResolvedValue(original);
+    const result = await readVerifiedDonationAcknowledgement({
+      reference: "AFD-STAGING-REFUNDED", token: "receipt-token-at-least-twenty-characters",
+    }, { requireOriginalPurpose: true });
+    expect(result?.donation.appeal.title).toBe("Original donor designation");
+  });
+
   it("retains legacy title lookup when a historical donation has no snapshot", async () => {
     mocks.findUnique.mockResolvedValue({ ...original, designationSnapshot: null });
     const response = await POST(acknowledgementRequest());

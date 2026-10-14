@@ -31,7 +31,7 @@ describe("private receipt download authorization", () => {
   it("mints only after proving possession of the existing receipt token", async () => {
     const grant = await issueVerifiedReceiptDownloadGrant({ reference, token });
     expect(grant).toMatch(/^rd1\./);
-    expect(mocks.read).toHaveBeenCalledExactlyOnceWith({ reference, token });
+    expect(mocks.read).toHaveBeenCalledExactlyOnceWith({ reference, token }, { requireOriginalPurpose: true });
     const latest = await redeemVerifiedReceiptDownloadGrant(grant);
     expect(latest).toEqual(record);
     expect(mocks.read).toHaveBeenCalledTimes(2);

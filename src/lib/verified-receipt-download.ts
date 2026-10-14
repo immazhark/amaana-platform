@@ -11,7 +11,7 @@ export async function issueVerifiedReceiptDownloadGrant(input: {
   reference: string;
   token: string;
 }) {
-  const record = await readVerifiedDonationAcknowledgement(input);
+  const record = await readVerifiedDonationAcknowledgement(input, { requireOriginalPurpose: true });
   if (!record || !record.donation.receiptNumber ||
       !["captured", "refunded"].includes(record.presentation.tone)) return null;
   return createReceiptDownloadGrant(input);
@@ -26,7 +26,7 @@ export async function issueVerifiedReceiptDownloadGrant(input: {
 export async function redeemVerifiedReceiptDownloadGrant(grant: unknown) {
   const opened = openReceiptDownloadGrant(grant);
   if (!opened) return null;
-  const record = await readVerifiedDonationAcknowledgement(opened);
+  const record = await readVerifiedDonationAcknowledgement(opened, { requireOriginalPurpose: true });
   if (!record || !record.donation.receiptNumber ||
       !["captured", "refunded"].includes(record.presentation.tone)) return null;
   return record;

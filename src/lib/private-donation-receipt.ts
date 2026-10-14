@@ -14,7 +14,7 @@ import type { AcknowledgementRecord } from "@/lib/private-record-response";
 export async function readVerifiedDonationAcknowledgement(input: {
   reference: string;
   token: string;
-}): Promise<AcknowledgementRecord | null> {
+}, options: { requireOriginalPurpose?: boolean } = {}): Promise<AcknowledgementRecord | null> {
     const donation = await prisma.donation.findUnique({
       where: { referenceNumber: input.reference },
       select: {
@@ -64,6 +64,7 @@ export async function readVerifiedDonationAcknowledgement(input: {
         fundId: destination.id,
         givingIntent: donation.givingIntent,
       });
+      if (options.requireOriginalPurpose && purpose.provenance !== "original") return null;
       appeal = { title: purpose.label, slug: null };
     } else {
       if (!donation.appeal) throw new Error("Appeal donation has no linked designation");
@@ -72,6 +73,7 @@ export async function readVerifiedDonationAcknowledgement(input: {
         givingIntent: donation.givingIntent,
         currentTitle: donation.appeal.title,
       });
+      if (options.requireOriginalPurpose && purpose.provenance !== "original") return null;
       // A confidentiality escalation must never reveal historic beneficiary
       // names or a name-bearing slug through an old donor receipt link.
       const highlySensitive = donation.appeal.assistanceRequest?.verification?.confidentialityLevel === "HIGHLY_SENSITIVE";
