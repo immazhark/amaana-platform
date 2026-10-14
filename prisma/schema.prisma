@@ -430,7 +430,8 @@ model Appeal {
 model Donation {
   id                       String                @id @default(cuid())
   referenceNumber          String                @unique
-  appealId                 String
+  appealId                 String?
+  fundId                   String?
   donorName                String
   donorEmail               String
   donorPhone               String?
@@ -460,7 +461,8 @@ model Donation {
   capturedAt               DateTime?
   failedAt                 DateTime?
   refundedAt               DateTime?
-  appeal                   Appeal                @relation(fields: [appealId], references: [id])
+  appeal                   Appeal?               @relation(fields: [appealId], references: [id])
+  fund                     GivingFund?           @relation(fields: [fundId], references: [id], onDelete: Restrict)
   reconciledBy             User?                 @relation("DonationReconciler", fields: [reconciledById], references: [id], onDelete: SetNull)
   events                   PaymentEvent[]
   refunds                  RefundLedger[]
@@ -468,6 +470,7 @@ model Donation {
   createdAt                DateTime              @default(now())
   updatedAt                DateTime              @updatedAt
   @@index([appealId, status, createdAt])
+  @@index([fundId, status, createdAt])
   @@index([donorEmail, createdAt])
   @@index([status, createdAt])
   @@index([paymentMethod, status, createdAt])
@@ -671,6 +674,7 @@ model GivingFund {
   accountCode     String           @unique
   currency        String           @default("INR")
   acceptedIntents DonationIntent[]
+  donations       Donation[]
   status          GivingFundStatus @default(DRAFT)
   revision        Int              @default(0)
   createdById     String
