@@ -1,5 +1,6 @@
 import { CanonicalArticle } from '@/components/canonical-article';
 import { verificationCopy } from '@/lib/organization-copy';
+import { VerificationFaq } from '@/components/verification-faq';
 
 export const metadata = {
   title: verificationCopy.title,
@@ -12,4 +13,4 @@ export default function Page(){return <CanonicalArticle eyebrow="How Amaana Work
     { label: "Transparency & reporting", href: "/transparency", description: "See how public evidence and private beneficiary information are deliberately separated." },
     { label: "Governance", href: "/governance", description: "Understand who carries formal responsibility for Amaana’s work." },
     { label: "Request assistance", href: "/request-assistance", description: "Use the private intake route when a person or family needs support." },
-  ]} {...verificationCopy}></CanonicalArticle>;}
+  ]} {...verificationCopy}><VerificationFaq /></CanonicalArticle>;}
