@@ -1,8 +1,14 @@
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import sharp from "sharp";
+import { PublicMedia } from "@/components/public-media";
+import { generatePublicImagePlaceholder } from "./public-image-placeholder";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   initiativeFindMany: vi.fn(),
   appealFindMany: vi.fn(),
+  mediaFindFirst: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -11,10 +17,12 @@ vi.mock("@/lib/prisma", () => ({
       findMany: mocks.initiativeFindMany,
     },
     appeal: { findMany: mocks.appealFindMany },
+    mediaAsset: { findFirst: mocks.mediaFindFirst },
   },
 }));
 
 import {
+  getHomepageHeroMedia,
   getCompletedAidShowcaseData,
   getProgrammeChildMedia,
   getAppealsIndexData,
@@ -43,6 +51,7 @@ describe("public page gallery media query contracts", () => {
       childArgs.select.mediaAssets,
     ]) {
       expect(mediaQuery.take).toBe(12);
+      expect(mediaQuery.select.blurDataURL).toBe(true);
       expect(mediaQuery.where).toMatchObject({
         kind: "IMAGE",
         isPublic: true,
@@ -95,5 +104,27 @@ describe("public appeal index promotion privacy", () => {
     expect(query?.select?.assistanceRequest?.select?.verification?.select).toEqual({
       confidentialityLevel: true,
     });
+  });
+});
+
+
+describe("stored public preview query-to-render integration", () => {
+  it.each([
+    ["hero", "stored"], ["hero", "legacy"],
+    ["completed", "stored"], ["completed", "legacy"],
+  ])("carries %s / %s preview metadata from the lean query into PublicMedia", async (surface, mode) => {
+    const bytes = await sharp({ create: { width: 12, height: 6, channels: 3, background: "#446FAA" } }).png().toBuffer();
+    const blurDataURL = mode === "stored" ? await generatePublicImagePlaceholder(bytes, 40_000_000) : null;
+    const asset = { id: "synthetic", kind: "IMAGE" as const, title: null, publicUrl: "/media/2026/synthetic.png", externalUrl: null, altText: "Synthetic test image", caption: null, sourceYear: null, width: 240, height: 120, blurDataURL };
+    mocks.mediaFindFirst.mockImplementation(async ({ select }) => Object.fromEntries(Object.entries(asset).filter(([key]) => select[key] === true)));
+    mocks.initiativeFindMany.mockImplementation(async ({ select }) => [{ slug: "synthetic", mediaAssets: [Object.fromEntries(Object.entries(asset).filter(([key]) => select.mediaAssets.select[key] === true))] }]);
+    const media = surface === "hero" ? await getHomepageHeroMedia() : (await getCompletedAidShowcaseData())[0]!.mediaAssets[0]!;
+    expect(media?.blurDataURL).toBe(blurDataURL);
+    const query = surface === "hero" ? mocks.mediaFindFirst.mock.lastCall?.[0] : mocks.initiativeFindMany.mock.lastCall?.[0].select.mediaAssets;
+    expect(query.where).toMatchObject({ isPublic: true, privacyApprovedAt: { not: null } });
+    const html = renderToStaticMarkup(createElement(PublicMedia, { asset: media! }));
+    expect(html).toContain('data-nimg="1"');
+    if (mode === "stored") expect(html).toContain("background-image:url(");
+    else expect(html).not.toContain("background-image:url(");
   });
 });

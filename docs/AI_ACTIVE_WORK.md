@@ -1,3 +1,15 @@
+## 2026-10-14 — R-056 stored preview projection corrected
+
+Owner cx authorized continuation on existing PR #292 / fix/direct-transfer-feedback-20261013, parent eaeee2e1145bc09dacdfd6a535ba9796ae79adf0. Found an integration gap: the shared PUBLIC_IMAGE_SELECT used by lean discovery, Our Work, Impact, appeal cover and programme-child/completed-aid projections omitted the newly stored blurDataURL. Add the nullable field to that projection and the separate homepage hero projection. Existing publication/privacy filters, result limits and image validation remain unchanged. The typed WorkPortfolio synthetic media fixture now supplies null for legacy metadata.
+
+Four integration cases run the real getters against selection-respecting Prisma mocks, generate a tiny synthetic JPEG preview using the actual bounded helper, and render the returned media through actual PublicMedia. Hero and shared completed-aid projections both preserve stored previews; null legacy data retains ordinary image rendering. The gallery contract checks preview selection while retaining approved-only filters and 12-image limit. Removing both selections causes five actual regressions to fail; restored source passes 17/17 focused query/render/thumbnail tests. TypeScript, focused zero-warning ESLint and diff checks pass. No full-suite/build/browser rerun claimed for this batch; preceding batch evidence remains separately scoped.
+
+R-056 remains partial: query-to-render integration is now locally verified, but existing nullable migration is unapplied and hosted/deployed acceptance remains pending. Selecting this field requires the already-authored migration before application rollout. Original 95 classification totals unchanged. No database migration/write, media re-ingestion, private-record access, real payment/email, main merge or deployment occurred. Next: remaining actionable register defects and controlled schema/application acceptance.
+
+## 2026-10-14 — R-056 projection continuation
+
+Ownership: REVIEW_PENDING after scoped continuation; no concurrent writer. Existing PR #292, recovered remote eaeee2e1145bc09dacdfd6a535ba9796ae79adf0. Correct missing stored preview selection in lean public-media queries; no migration or production writes.
+
 ## 2026-10-14 — immediate promotion expiry and executed handover tests
 
 Recovered PR #292 at 0584c96911eb916dee4147c0630c339f565eb5b8 on fix/direct-transfer-feedback-20261013. Confirmed saveVerification rejects requests already converted to appeals, both before and within the transaction: confidentiality changes for existing appeals are not supported through that action. Do not invent an unlocked classification-change workflow.

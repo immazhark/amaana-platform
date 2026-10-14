@@ -37,6 +37,7 @@ export const PUBLIC_IMAGE_SELECT = {
   sourceYear: true,
   width: true,
   height: true,
+  blurDataURL: true,
   sortOrder: true,
 } as const;
 
@@ -134,6 +135,7 @@ export const getHomepageHeroMedia = cache(async () => {
       sourceYear: true,
       width: true,
       height: true,
+      blurDataURL: true,
       initiative: { select: { slug: true, title: true } },
       story: { select: { slug: true, title: true } },
     },

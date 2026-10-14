@@ -8,7 +8,7 @@ const asset = {
   id: "synthetic-thumbnail", kind: "IMAGE" as const, title: "Synthetic test image",
   publicUrl: "/media/2026/thumbnail-sizing-fixture.webp", externalUrl: null,
   altText: "Synthetic thumbnail sizing fixture", caption: null, sourceYear: 2026,
-  width: 1600, height: 1200, sortOrder: -1000,
+  width: 1600, height: 1200, blurDataURL: null, sortOrder: -1000,
 };
 const causes: Causes = [{
   id: "synthetic-category", slug: "synthetic-category", title: "Synthetic category", summary: "Test only",
