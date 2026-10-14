@@ -45,6 +45,19 @@ export function resolveAppealDonationDesignation(
   return { label: result.data.label, provenance: "original" };
 }
 
+// Shared future designation boundary; public routes remain appeal-only until
+// capture, refund, and reconciliation all support approved funds.
+const exclusiveDonationDestinationSchema = z.union([
+  z.object({ appealId: z.string().cuid() }).strict(),
+  z.object({ fundId: z.string().cuid() }).strict(),
+]);
+
+export function parseExclusiveDonationDestination(value: unknown) {
+  const parsed = exclusiveDonationDestinationSchema.safeParse(value);
+  if (!parsed.success) throw new Error("Select exactly one valid appeal or giving fund.");
+  return parsed.data;
+}
+
 export const donationSchema = z.object({
   appealId: z.string().cuid(),
   // Public checkout is still appeal-only. Reject an explicitly supplied fund
