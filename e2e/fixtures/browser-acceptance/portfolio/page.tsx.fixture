@@ -18,7 +18,7 @@ export default async function PortfolioFixture({ searchParams }: { searchParams:
       id: `synthetic-${item.slug}`, kind: "IMAGE" as const, title: "Synthetic thumbnail fixture",
       publicUrl: "/media/2026/thumbnail-sizing-fixture.webp", externalUrl: null,
       altText: "Synthetic thumbnail sizing fixture", caption: null, sourceYear: 2026,
-      width: 1600, height: 1200, sortOrder: -1000,
+      width: 1600, height: 1200, blurDataURL: null, sortOrder: -1000,
     }] : [],
   })) }));
   return <div className="v2-home v2-work-index"><h1 className="v2-shell">Portfolio browser acceptance</h1><section className="v2-section paper"><div className="v2-shell">

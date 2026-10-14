@@ -1,3 +1,5 @@
+> Historical evidence ledger. Current canonical programme status: [AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md](AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md). Older integration/deployment classifications may be stale; preserve them as dated provenance.
+
 ## 2026-10-14 — R-064 retired transaction overrides removed
 
 Ownership: REVIEW_PENDING; no concurrent writer. Same PR #292 / fix/direct-transfer-feedback-20261013, parent6eb2f86ea6e0d86c9df101c2fd3f8068e1840530. User cx authorized source continuation.

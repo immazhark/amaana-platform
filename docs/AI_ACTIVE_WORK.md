@@ -1,3 +1,11 @@
+## 2026-10-14 — master programme checkpoint
+
+Ownership: REVIEW_PENDING after published atomic batches; no concurrent writer. Canonical continuation: [AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md](AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md), sectionF. Existing PR292/branchfix/direct-transfer-feedback-20261013. Four documents reconciled;149 canonical items,95 original aliases retained. B01 portfolio compile fix, B02 logo/Threads, B04 RGB-token governance locally validated.1187unit/APIpassed/9DBskipped; full lint/type,15sourceguards, clean compilebudgets passed. Browser/live/migration/provider verification remains pending. No production operation.
+
+## 2026-10-14 — master reconciliation execution
+
+Ownership: CODEX_ACTIVE by explicit owner directive. PR #292 branch fix/direct-transfer-feedback-20261013 recovered head 874a79ad58da95d9fea2f6585625a7e202f0a675. Read-only specialists support reconciliation; only parent writes repository. All four supplied documents read. Authoritative master plan being established before feature implementation.
+
 ## 2026-10-14 — R-056 stored preview projection corrected
 
 Owner cx authorized continuation on existing PR #292 / fix/direct-transfer-feedback-20261013, parent eaeee2e1145bc09dacdfd6a535ba9796ae79adf0. Found an integration gap: the shared PUBLIC_IMAGE_SELECT used by lean discovery, Our Work, Impact, appeal cover and programme-child/completed-aid projections omitted the newly stored blurDataURL. Add the nullable field to that projection and the separate homepage hero projection. Existing publication/privacy filters, result limits and image validation remain unchanged. The typed WorkPortfolio synthetic media fixture now supplies null for legacy metadata.
