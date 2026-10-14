@@ -41,7 +41,7 @@ export async function getPublishedInitiatives() {
 }
 
 export async function getPublishedInitiativeBySlug(slug: string) {
-  return prisma.initiative.findFirst({
+  const initiative = await prisma.initiative.findFirst({
     where: { slug, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     include: {
       cause: true,
@@ -56,6 +56,11 @@ export async function getPublishedInitiativeBySlug(slug: string) {
       appeals: {
         where: { status: { in: ["PUBLISHED", "FUNDED"] } },
         orderBy: { publishedAt: "desc" },
+        include: {
+          assistanceRequest: {
+            select: { verification: { select: { confidentialityLevel: true } } },
+          },
+        },
       },
       faithContent: {
         where: publicFaithWhere,
@@ -63,6 +68,13 @@ export async function getPublishedInitiativeBySlug(slug: string) {
       },
     },
   });
+  if (!initiative) return null;
+  return {
+    ...initiative,
+    appeals: initiative.appeals
+      .filter(canPromoteAppeal)
+      .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => publicAppeal),
+  };
 }
 
 export async function getPublishedStories() {
