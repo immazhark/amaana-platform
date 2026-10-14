@@ -39,6 +39,12 @@ describe("public-safe gallery presentation boundary", () => {
     expect(selectSafeGalleryImages([{ ...approved, id: " " }])).toEqual([]);
   });
 
+  it("rejects an encoded private image even when the manifest marks it as published", () => {
+    for (const url of ["/%61dmin/private.webp", "/%2561dmin/private.webp", "/media/%252e%252e/admin/private.webp"]) {
+      expect(selectSafeGalleryImages([{ ...approved, url }])).toEqual([]);
+    }
+  });
+
   it("rejects absolute same-origin links to private application routes", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     const privateSameOrigin = "https://amaanafoundation.org/api/admin/private-evidence";

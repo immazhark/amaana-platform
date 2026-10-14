@@ -57,6 +57,42 @@ function configuredHttpsOrigin(value: string | undefined) {
   }
 }
 
+/** Recheck repeatedly decoded paths: routing/proxy layers can decode %61dmin
+ * or %252e%252e where the browser URL parser alone sees an ordinary segment.
+ * Treat ambiguous/double-encoded paths as private rather than risking a
+ * private-origin request. Allow harmless encoding within ordinary filenames. */
+function isPrivateAppPath(pathname: string): boolean {
+  let candidate = pathname;
+  for (let depth = 0; depth < 4; depth++) {
+    let path: string;
+    try {
+      const parsed = new URL(candidate, PUBLIC_MEDIA_RELATIVE_ORIGIN);
+      if (parsed.origin !== PUBLIC_MEDIA_RELATIVE_ORIGIN) return true;
+      path = parsed.pathname;
+    } catch {
+      return true;
+    }
+    if (isPrivateRoute(path) || path === "/_next" || path.startsWith("/_next/")) return true;
+    let decoded: string;
+    try { decoded = decodeURIComponent(path); }
+    catch { return true; }
+    if (decoded === path) return false;
+    if (decoded.includes("\\") || decoded.includes("//") ||
+        decoded.includes("?") || decoded.includes("#") ||
+        /[\u0000-\u001F\u007F]/.test(decoded)) return true;
+    try {
+      const next = new URL(decoded, PUBLIC_MEDIA_RELATIVE_ORIGIN);
+      if (next.origin !== PUBLIC_MEDIA_RELATIVE_ORIGIN) return true;
+      // %20 in approved filenames is harmless; it normalizes to the same path.
+      if (next.pathname === path) return false;
+      candidate = next.pathname;
+    } catch {
+      return true;
+    }
+  }
+  return true;
+}
+
 /** Fail closed if a purported public asset resolves into protected app routing.
  * External approved media hosts are not interpreted as this application's
  * private routes. Server-side publication and consent gates remain mandatory. */
@@ -69,10 +105,12 @@ export function isPrivateAppMediaUrl(value: string): boolean {
   } else {
     const origin = configuredHttpsOrigin(process.env.NEXT_PUBLIC_APP_URL);
     const parsed = new URL(normalized);
-    if (!origin || parsed.origin !== origin) return false;
+    // The public domain remains an application origin even when a staging
+    // environment has no NEXT_PUBLIC_APP_URL configured.
+    if (parsed.origin !== origin && parsed.origin !== "https://amaanafoundation.org") return false;
     path = parsed.pathname;
   }
-  return isPrivateRoute(path) || path.startsWith("/_next/");
+  return isPrivateAppPath(path);
 }
 
 /** Optimize only managed public paths on this application, never arbitrary remote/private URLs. */
@@ -80,11 +118,11 @@ export function getPublicImageOptimizationUrl(value: string, configuredAppUrl = 
   const normalized = normalizeSafePublicMediaUrl(value);
   if (!normalized) return null;
   const managed = (path: string) => path.startsWith("/media/") || path.startsWith("/brand/");
-  if (normalized.startsWith("/")) return managed(normalized) ? normalized : null;
+  if (normalized.startsWith("/")) return managed(normalized) && !isPrivateAppMediaUrl(normalized) ? normalized : null;
   const appOrigin = configuredHttpsOrigin(configuredAppUrl);
   if (!appOrigin) return null;
   const url = new URL(normalized);
-  if (url.origin !== appOrigin || !managed(url.pathname)) return null;
+  if (url.origin !== appOrigin || !managed(url.pathname) || isPrivateAppPath(url.pathname)) return null;
   return `${url.pathname}${url.search}${url.hash}`;
 }
 

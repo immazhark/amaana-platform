@@ -91,6 +91,37 @@ describe("public media safety", () => {
     })).toBe(true);
   });
 
+  it("rejects encoded or double-encoded paths to private resources", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const paths = [
+      "/%61dmin/records/private.pdf",
+      "/%2561dmin/records/private.pdf",
+      "/%252561dmin/records/private.pdf",
+      "/%61pi/admin/private",
+      "/%64onations/receipt/private",
+      "/%5Fnext/image?url=%2Fadmin%2Fsecret",
+      "/media/%252e%252e/admin/private.webp",
+      "/media/%2fadmin/private.webp",
+      "https://amaanafoundation.org/%61dmin/records/private.webp",
+    ];
+    for (const url of paths) {
+      expect(isPrivateAppMediaUrl(url), url).toBe(true);
+      expect(canRenderPublicMedia({ kind: "IMAGE", publicUrl: url, altText: "Reviewed source" }), url).toBe(false);
+      expect(canRenderPublicMedia({ kind: "DOCUMENT", publicUrl: url, title: "Private record" }), url).toBe(false);
+      expect(getPublicImageOptimizationUrl(url), url).toBeNull();
+    }
+  });
+
+  it("keeps legitimate percent-encoded reviewed filenames visible", () => {
+    expect(isPrivateAppMediaUrl("/media/2026/Eid%20Gift%20Kits.webp")).toBe(false);
+    expect(isPrivateAppMediaUrl("/media/2026/photo%23draft.webp")).toBe(true);
+    expect(getPublicImageOptimizationUrl("/media/2026/Eid%20Gift%20Kits.webp"))
+      .toBe("/media/2026/Eid%20Gift%20Kits.webp");
+    expect(canRenderPublicMedia({
+      kind: "IMAGE", publicUrl: "/media/2026/Eid%20Gift%20Kits.webp", altText: "Approved volunteer packing photo",
+    })).toBe(true);
+  });
+
   it("does not mistake a separately approved HTTPS media host for an app route", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://media.amaana.example");
