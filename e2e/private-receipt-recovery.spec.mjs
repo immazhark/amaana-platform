@@ -50,6 +50,8 @@ for (const width of [390, 1440]) {
     await expect(sheet).toContainText("₹100.30");
     await expect(sheet).toContainText("₹0.10");
     await expect(sheet).toContainText("not certify Section 80G deduction eligibility");
+    // No unreviewed runtime or encryption-key flag may surface a PDF action.
+    await expect(page.getByRole("button", { name: "Download acknowledgement (PDF)" })).toHaveCount(0);
 
     await page.emulateMedia({ media: "print" });
     await expect(sheet).toBeVisible();
