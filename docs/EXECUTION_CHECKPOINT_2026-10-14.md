@@ -1,5 +1,12 @@
 # Amaana Foundation engineering continuation — 14 October 2026
 
+## 14 October midday — appeal small-text contrast correction
+
+Ownership: same PR #292 and `fix/direct-transfer-feedback-20261013`; source/test head `8ee172ee9bc4d5568be5a331848291643357a76a`. Reviewed exact-color light-surface contrast for homepage and appeals card metadata. Former `#7a838e` resolved to3.78:1 on `#fffdf8`, `#7f8891` to3.54:1; both fail4.5:1 for small text. Existing semantic `--af-color-meta` (`#5f6b75`) resolves to5.37:1 on `#fffdf8` and4.67:1 even on `#f3eddd`. Replace only head-location small, progress amount-caption and progress foot ink in `appeal-card.css` and overlapping `appeals.css`, preserving layout/amounts/links and the darker route polish. Commits `afcc5db`, `be0b8ca`.
+
+Add nine AA contrast comparisons in the pre-existing homepage synthetic AppealCard Playwright suite at320/390/1440 using the more conservative approved muted-paper background. Add six style ownership/semantic-ink assertions to the global CSS architecture audit; commit `185f02f`, `8ee172e`. Independently re-fetch source and evaluate six audited leading rules and six semantic metadata ink rules:12/12 source checks pass. New Playwright and full runtime/build gates remain **unexecuted on this head**. R-019/R-025/R-026/R-061 remain partial; no full original-95 closure claims or changed totals. No release, deployment, migration, provider configuration, real payments, private data or image writes.
+
+
 ## 12:49 IST continuation — R-025 remaining appeal and Stories leading
 
 Ownership: existing PR #292 / branch `fix/direct-transfer-feedback-20261013`. Verified latest source/tests head before checkpoint: `7f241f72aa0215fa854a52535733fe5bb6989c78`.
