@@ -97,3 +97,20 @@ test("highly sensitive appeal shares and breadcrumb JSON-LD use privacy-safe cop
   assert.doesNotMatch(detail, /<AppealShare title=\{appeal\.title\} summary=\{appeal\.summary\}/);
   assert.doesNotMatch(detail, /name: appeal\.title, path:/);
 });
+
+test("sensitive appeals cannot be promoted through homepage, directory or initiative projections", async () => {
+  const home = await readFile("src/lib/public-content.ts", "utf8");
+  const index = await readFile("src/lib/public-page-data.ts", "utf8");
+  const restriction = await readFile("src/lib/appeal-promotion.ts", "utf8");
+
+  assert.match(restriction, /confidentialityLevel !== "HIGHLY_SENSITIVE"/);
+  assert.match(home, /canPromoteAppeal\(appeal\)/);
+  assert.match(home, /appeals:\s*initiative\.appeals\s*\.filter\(canPromoteAppeal\)/);
+  assert.match(index, /return appeals\s*\.filter\(canPromoteAppeal\)/);
+
+  // Do not serialize verification status or internal assistance linkage.
+  for (const source of [home, index]) {
+    assert.match(source, /map\(\(\{ assistanceRequest: _privateReview, \.\.\.publicAppeal \}\) => publicAppeal\)/);
+    assert.match(source, /verification: \{ select: \{ confidentialityLevel: true \} \}/);
+  }
+});
