@@ -3,7 +3,7 @@ import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
 import { RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
-import { createDonationReference, createReceiptToken, directTransferSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
+import { appealDonationDesignationSnapshot, createDonationReference, createReceiptToken, directTransferSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
@@ -99,7 +99,7 @@ export async function POST(request: Request) {
       donation = await prisma.donation.create({
         data: {
           id: donationId, referenceNumber, appealId: appeal.id, donorName: parsed.data.donorName, donorEmail: parsed.data.donorEmail.toLowerCase(), donorPhone: parsed.data.donorPhone || null,
-          isAnonymous: parsed.data.isAnonymous, givingIntent: parsed.data.givingIntent, domesticConfirmedAt: new Date(), amount: parsed.data.amount,
+          isAnonymous: parsed.data.isAnonymous, givingIntent: parsed.data.givingIntent, designationSnapshot: appealDonationDesignationSnapshot(appeal, parsed.data.givingIntent), domesticConfirmedAt: new Date(), amount: parsed.data.amount,
           status: "PENDING_VERIFICATION", paymentMethod: parsed.data.paymentMethod, provider: null, providerOrderId: null,
           transferReference: parsed.data.transferReference.toUpperCase(), transferredAt: parsed.data.transferredAt, receiptTokenHash: hashReceiptToken(receiptToken),
         }, select: { id: true, referenceNumber: true },
