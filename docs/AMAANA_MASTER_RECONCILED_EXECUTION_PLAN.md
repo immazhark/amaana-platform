@@ -1,5 +1,21 @@
 # Amaana Master Reconciled Execution Plan
 
+## 2026-10-15 — CI-driven corrective batch + B09 manual transfer custody (source-only)
+
+**Current PR #292 source checkpoint:** `f4308cc1dccdcd500172db059baa0fe9be80feb0` on `fix/direct-transfer-feedback-20261013`. Existing PR remains open/unmerged. This checkpoint is not proof of deployment or a green run at current HEAD.
+
+1. A real Actions fast-lane failure on earlier `942ab218` (workflow 38626419463) identified a protected giving-fund preview route absent from the anonymous admin browser inventory. Added `/admin/giving-funds/not-a-real-id/preview` to the protected-path test in commit `9cb90060e56789fc79373420b103eb5b84e1d713`.
+2. Follow-up Actions 38632465690 progressed beyond route inventory and reported three actual TypeScript errors: nullable MIME header first element in the PDF button, typed `HTMLAnchorElement.click` test mock, and child-process `NODE_ENV` requirement. Fixed together in `835257ae79689d10c3bab04a50f11f1d73416452`; re-validation of current HEAD is not yet established.
+3. **Manual bank-transfer custody:** prior direct UPI/bank reconciliation accepted staff notes alone for a CAPTURED mutation. Source now requires an explicit **staff attestation** and typed bank-statement transaction reference equal to the claimed transfer, with a matching exact, safe INR-paise amount. The checks run inside the existing serializable transaction **before** changing captured status, raising appeal totals, queuing acknowledgement or recording a verification event. Successful reconciliation additionally records `bankStatementMatched`, normalized entry reference and matched amount in the audit event. Admin input fields have required client validation (Chromium `v`-mode-safe patterns), with a server-validated rejection workflow that does not falsely attest to a credit. Focused Vitest cases were authored for missing attestation, mismatch, invalid precision, scientific notation, positive exact amounts, normalized case, audit evidence and safe rejection. Source commits `6df46939df31913650fc54d2b2506520d196385b`, `a80900c134eca9a91cb061d7b10e4a1464b3f301`, `f4308cc1dccdcd500172db059baa0fe9be80feb0`.
+
+**Scope caveat:** this is *staff-entered review*, not an authenticated bank API, automatically imported statement, independent bank evidence, second reviewer or automated matching. A dishonest reviewer can still falsely attest. Genuine bank entries that differ from the donor's reference require separate exception review and must never be silently captured. Bank-export format, full deduplication, PII-retention controls and separation of duties remain AF-SETTLEMENT scope.
+
+**Evidence/operation:** GitHub Actions identified two concrete earlier failures with source fixes committed. Current-head TypeScript, Vitest, lint, build, browser, native DB and Railway runtime are **not claimed green**. No production transfer, Razorpay call, refund, email, migration, secret/flag, deployment or main merge was performed. PDF/UA remains disabled in the actual Railway runtime.
+
+**149 canonical register unchanged:** 57 Implemented, 48 Partial, 42 Not started, 1 Superseded, 1 Not applicable. Original 95 aliases remain mapped; AF-SETTLEMENT/AF-RECEIPTS B09 stay Partial.
+
+Next: inspect exact-head CI and fix real failures; pursue a reviewed read-only statement import/duplicate exception matcher only after approved bank-export format and evidence rules are known. Complete Railway Unicode PDF runtime verification and donor-owned token reissue separately.
+
 ## 2026-10-15 — B09 source-complete encrypted PDF journey, release still blocked
 
 Current PR #292 HEAD at this checkpoint: `dce4ced655d889169455f6f0f93e4a45e810f64d`, on `fix/direct-transfer-feedback-20261013` (open/unmerged). The earlier code batches remain scoped to B09; no original 95-defect closure is inferred.
