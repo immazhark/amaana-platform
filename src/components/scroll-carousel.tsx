@@ -2,6 +2,7 @@
 
 import {
   Children,
+  isValidElement,
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
   useCallback,
@@ -39,6 +40,8 @@ export function ScrollCarousel({
   const slides = Children.toArray(children);
   const slideCount = slides.length;
   const viewportRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLElement>(null);
+  const isVisibleRef = useRef(true);
   const slideRefs = useRef<Array<HTMLDivElement | null>>([]);
   const frameRef = useRef<number | null>(null);
   const navigation = useRef<number | null>(null);
@@ -51,6 +54,30 @@ export function ScrollCarousel({
   const prefersReducedMotion = useRef(false);
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
+
+  // Do not spend network/animation work advancing a carousel outside the viewport.
+  // Unsupported IntersectionObserver environments retain the existing behaviour.
+  useEffect(() => {
+    const node = rootRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(entries => {
+      isVisibleRef.current = Boolean(entries[0]?.isIntersecting);
+    }, { threshold: 0.05 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  // If content is unpublished or removed while the user is on the last card,
+  // keep labels, focus and scrolling inside the remaining slide range.
+  useEffect(() => {
+    const lastIndex = Math.max(slideCount - 1, 0);
+    if (activeIndexRef.current <= lastIndex) return;
+    activeIndexRef.current = lastIndex;
+    navigation.current = null;
+    setActiveIndex(lastIndex);
+    const slide = slideRefs.current[lastIndex];
+    if (slide && viewportRef.current) viewportRef.current.scrollTo({ left: slide.offsetLeft, behavior: "auto" });
+  }, [slideCount]);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -120,7 +147,7 @@ export function ScrollCarousel({
   useEffect(() => {
     if (!autoAdvanceMs || slideCount < 2 || paused || reducedMotion) return;
     const timer = window.setInterval(() => {
-      if (!document.hidden && !drag.current && !viewportRef.current?.closest("section")?.matches(":hover, :focus-within")) goTo(activeIndexRef.current + 1);
+      if (isVisibleRef.current && !document.hidden && !drag.current && !viewportRef.current?.closest("section")?.matches(":hover, :focus-within")) goTo(activeIndexRef.current + 1);
     }, autoAdvanceMs);
     return () => window.clearInterval(timer);
   }, [autoAdvanceMs, activeIndex, goTo, paused, reducedMotion, slideCount]);
@@ -152,6 +179,7 @@ export function ScrollCarousel({
 
   return (
     <section
+      ref={rootRef}
       className={rootClasses}
       aria-label={label}
       aria-roledescription="carousel"
@@ -198,9 +226,11 @@ export function ScrollCarousel({
         tabIndex={slideCount > 1 ? 0 : -1}
         onPointerDown={event => {
           navigation.current = null;
+          // Clear stale drag suppression before testing interactive descendants.
+          // If a drag ends without dispatching a click, the next real click works.
+          suppressClick.current = false;
           if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 || (event.target instanceof Element && event.target.closest("button,video,input"))) return;
           drag.current = {x:event.clientX, scroll:event.currentTarget.scrollLeft, moved:false};
-          suppressClick.current = false;
         }}
         onPointerMove={event => {
           const state = drag.current;
@@ -217,7 +247,7 @@ export function ScrollCarousel({
           drag.current = null;
           event.currentTarget.style.removeProperty("scroll-snap-type");
         }}
-        onPointerCancel={event => { drag.current = null; event.currentTarget.style.removeProperty("scroll-snap-type"); }}
+        onPointerCancel={event => { drag.current = null; suppressClick.current = false; event.currentTarget.style.removeProperty("scroll-snap-type"); }}
         onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}
         onDragStart={event => { if (mode !== "hero") event.preventDefault(); }}
         onWheel={() => { navigation.current = null; }}
@@ -231,7 +261,7 @@ export function ScrollCarousel({
               className={`${styles.slide} ${mode === "focus" && index === activeIndex ? styles.activeSlide : ""}`}
               data-body-card={mode !== "hero" ? "" : undefined}
               data-active={index === activeIndex ? "true" : undefined}
-              key={index}
+              key={isValidElement(slide) ? slide.key : index}
               ref={node => { slideRefs.current[index] = node; }}
               role="group"
               aria-roledescription="slide"

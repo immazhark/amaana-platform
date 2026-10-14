@@ -37,6 +37,29 @@ test('manual pause survives pointer exit and reduced motion disables autoplay',a
  await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow','2');
 });
 
+test('offscreen autoplay pauses without advancing content the visitor cannot see', async ({page}) => {
+ await page.goto('/browser-acceptance/body-carousel');
+ const root=page.getByRole('region',{name:'Body carousel acceptance'});
+ const progress=root.getByRole('progressbar');
+ await expect(progress).toHaveAttribute('aria-valuenow','1');
+ await root.evaluate(node=>{node.style.position='fixed';node.style.top='-4000px'});
+ await page.waitForTimeout(3500);
+ await expect(progress).toHaveAttribute('aria-valuenow','1');
+ await root.evaluate(node=>{node.style.removeProperty('position');node.style.removeProperty('top')});
+ await expect(progress).toHaveAttribute('aria-valuenow','2',{timeout:6000});
+});
+
+test('small carousel arrow buttons maintain 48px pointer targets',async({page})=>{
+ await page.goto('/browser-acceptance/body-carousel');
+ const root=page.getByRole('region',{name:'Body carousel acceptance'});
+ for(const name of ['Previous slide','Next slide']){
+   const button=root.getByRole('button',{name});
+   const rect=await button.boundingBox();
+   expect(rect.width).toBeGreaterThanOrEqual(48);
+   expect(rect.height).toBeGreaterThanOrEqual(48);
+ }
+});
+
 test('mouse drag scrolls cards and a normal card-link click opens directly',async({page})=>{
  await page.setViewportSize({width:1440,height:1000});
  await page.goto('/browser-acceptance/body-carousel');
