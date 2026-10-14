@@ -31,6 +31,7 @@ export const PUBLIC_STATIC_ROUTES = [
   { path: "/governance", changeFrequency: "monthly", priority: 0.7 },
   { path: "/compliance", changeFrequency: "monthly", priority: 0.7 },
   { path: "/contact", changeFrequency: "monthly", priority: 0.6 },
+  { path: "/contact/feedback", changeFrequency: "monthly", priority: 0.55 },
   { path: "/privacy", changeFrequency: "yearly", priority: 0.3 },
   { path: "/terms", changeFrequency: "yearly", priority: 0.3 },
   { path: "/donation-policy", changeFrequency: "yearly", priority: 0.35 },

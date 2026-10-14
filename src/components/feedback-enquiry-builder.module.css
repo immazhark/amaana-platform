@@ -1,0 +1,23 @@
+.panel{display:grid;gap:1.3rem;max-width:70rem;margin-block:2rem;padding:clamp(1.25rem,3vw,2.5rem);border:1px solid var(--af-color-border);border-radius:1.25rem;background:var(--af-color-surface);box-shadow:var(--af-shadow-card)}
+.intro h3{margin:0;color:var(--af-color-navy-950);font:500 clamp(1.6rem,3vw,2.3rem)/1.2 var(--af-font-display)}
+.intro p,.action p{max-width:70ch;margin:.5rem 0 0;color:var(--af-color-muted);line-height:1.65}
+.fieldset{min-width:0;margin:0;padding:0;border:0}
+.fieldset legend,.topic,.message{color:var(--af-color-navy-950);font-size:1rem;font-weight:750}
+.kindGrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.7rem;margin-top:.8rem}
+.kind{display:flex;align-items:flex-start;gap:.75rem;min-height:8.6rem;padding:1rem;border:1px solid var(--af-color-border);border-radius:.85rem;background:var(--af-color-canvas);cursor:pointer}
+.kind:has(input:checked){border-color:var(--af-color-blue-600);box-shadow:inset 0 0 0 1px var(--af-color-blue-600)}
+.kind input{flex:0 0 auto;accent-color:var(--af-color-blue-600);width:1.15rem;height:1.15rem;margin-top:.2rem}
+.kind span{display:grid;gap:.4rem}
+.kind strong{color:var(--af-color-navy-950);font-weight:800;line-height:1.35}
+.kind small{color:var(--af-color-muted);font-size:.875rem;line-height:1.5}
+.topic,.message{display:grid;gap:.6rem}
+.topic select,.message textarea{width:100%;min-height:3rem;padding:.75rem .9rem;border:1px solid var(--af-color-border);border-radius:.7rem;background:var(--af-color-canvas);color:var(--af-color-navy-950);font:inherit;font-weight:400}
+.topic select{max-width:32rem}
+.message span{font-weight:450;color:var(--af-color-muted)}
+.message textarea{min-height:7rem;resize:vertical;line-height:1.6}
+.count{margin:-.7rem 0 0;color:var(--af-color-muted);font-size:.875rem}
+.action{display:grid;justify-items:start;gap:.65rem}
+.action p{margin:0;font-size:.9rem}
+.safety{margin:0;padding:1rem;border-left:3px solid var(--af-color-gold-ink);background:var(--af-color-surface-muted);color:var(--af-color-navy-950);line-height:1.65;font-size:.9rem}
+.panel :is(input,select,textarea,a):focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
+@media(max-width:780px){.kindGrid{grid-template-columns:1fr}.kind{min-height:0}.panel{padding:1.2rem}}
