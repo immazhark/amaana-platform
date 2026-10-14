@@ -43,13 +43,25 @@ describe('private donation designation migration on isolated PostgreSQL-WASM', {
     const sql = execFileSync('node_modules/.bin/prisma', ['migrate', 'diff', '--from-empty', '--to-schema-datamodel', baseline, '--script'], { encoding: 'utf8' });
     await db.exec(sql);
     await db.exec(`INSERT INTO "User" ("id", "name", "email", "updatedAt")
-      VALUES ('creator', 'Synthetic creator', 'creator@example.invalid', NOW());
+      VALUES ('creator', 'Synthetic creator', 'creator@example.invalid', NOW()),
+             ('editor', 'Synthetic editor', 'editor@example.invalid', NOW()),
+             ('approver', 'Synthetic approver', 'approver@example.invalid', NOW());
       INSERT INTO "Appeal" ("id", "slug", "title", "summary", "story", "category", "beneficiaryName", "goalAmount", "amountRaised", "createdById", "updatedAt")
       VALUES ('synthetic-appeal', 'synthetic-appeal', 'Synthetic appeal', 'Synthetic summary', 'Synthetic story', 'OTHER', 'Synthetic beneficiary', 1000, 0, 'creator', NOW());
       INSERT INTO "Donation" ("id", "referenceNumber", "appealId", "donorName", "donorEmail", "domesticConfirmedAt", "amount", "receiptTokenHash", "updatedAt")
       VALUES ('legacy', 'SYNTHETIC-LEGACY', 'synthetic-appeal', 'Synthetic donor', 'donor@example.invalid', NOW(), 250, 'legacy-hash', NOW());`);
     await db.exec(readFileSync('prisma/migrations/20261014103000_private_giving_fund_registry/migration.sql', 'utf8'));
     await db.exec(readFileSync('prisma/migrations/20261014160000_donation_designation_snapshot/migration.sql', 'utf8'));
+    await db.exec(`INSERT INTO "GivingFund"
+      ("id", "slug", "name", "purpose", "disclosure", "accountCode",
+       "acceptedIntents", "status", "revision", "createdById", "lastEditedById",
+       "approvedById", "approvedAt", "updatedAt")
+      VALUES ('fund-reviewed', 'fund-reviewed', 'Synthetic approved fund',
+        'Reviewed synthetic emergency support programme.',
+        'Donations support the independently reviewed charitable programme.',
+        'TEST-FUND', ARRAY['GENERAL','SADAQAH']::"DonationIntent"[], 'APPROVED', 4,
+        'creator', 'editor', 'approver', NOW(), NOW());`);
+    await db.exec(readFileSync('prisma/migrations/20261014193000_exclusive_donation_destination/migration.sql', 'utf8'));
   });
   after(async () => {
     if (db) await db.close();
