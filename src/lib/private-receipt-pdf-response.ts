@@ -42,8 +42,9 @@ export function privateReceiptPdfResponse(input: {
       !/%%EOF\s*$/.test(tail)) throw new Error("Malformed private receipt PDF");
 
   // Make an owned immutable copy so a caller cannot mutate this response body.
-  const body = Uint8Array.from(bytes);
-  return new Response(body, {
+  const body = new Uint8Array(new ArrayBuffer(bytes.byteLength));
+  body.set(bytes);
+  return new Response(body.buffer, {
     status: 200,
     headers: {
       "Content-Type": "application/pdf",
