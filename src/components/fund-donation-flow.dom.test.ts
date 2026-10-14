@@ -1,6 +1,6 @@
 import { createRequire } from "node:module";
 import { act, createElement } from "react";
-import { createRoot, type Root } from "react-dom/client";
+import type { Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 vi.mock("next/script", () => ({ default: () => null }));
 import { FundDonationFlow } from "./fund-donation-flow";
@@ -15,7 +15,7 @@ describe.skipIf(!runtime)("actual fund donor component interactions", () => {
   let checkout: { modal: { ondismiss: () => void } } | undefined;
   const fetchOrder = vi.fn();
   const opened = vi.fn();
-  beforeEach(() => {
+  beforeEach(async () => {
     const { JSDOM } = createRequire(import.meta.url)(runtime!);
     window = new JSDOM("<!doctype html><html><body></body></html>", { url: "https://amaana.example", pretendToBeVisual: true }).window;
     for (const key of ["window", "document", "HTMLElement", "HTMLInputElement", "HTMLSelectElement", "RadioNodeList", "FormData"] as const) {
@@ -31,12 +31,18 @@ describe.skipIf(!runtime)("actual fund donor component interactions", () => {
       constructor(options: unknown) { checkout = options as typeof checkout; }
       open() { opened(); }
     } as typeof window.Razorpay;
+    const { createRoot } = await import("react-dom/client");
     container = window.document.createElement("div"); window.document.body.append(container); root = createRoot(container);
   });
   afterEach(async () => { await act(async () => root.unmount()); window.close(); vi.unstubAllGlobals(); });
   async function render() {
     await act(async () => root.render(createElement(FundDonationFlow, { funds: [fund, second] })));
     await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+    await vi.waitFor(async () => {
+      await act(async () => { await new Promise(resolve => window.requestAnimationFrame(resolve)); });
+      const submit = container.querySelector<HTMLButtonElement>('button[type="submit"]');
+      expect(submit).not.toBeNull(); expect(submit!.disabled).toBe(false);
+    });
     for (const [name, value] of [["amount", "500"], ["donorName", "Synthetic donor"], ["donorEmail", "donor@example.test"]]) {
       (container.querySelector(`[name="${name}"]`) as HTMLInputElement).value = value!;
     }
@@ -75,6 +81,51 @@ describe.skipIf(!runtime)("actual fund donor component interactions", () => {
     expect(opened).not.toHaveBeenCalled(); expect(checkout).toBeUndefined();
     expect(container.querySelector("select")!.disabled).toBe(true);
     expect(container.textContent).toContain("response could not be verified");
+  });
+
+  it("retains the reviewed purpose until explicit revision re-review clears consent", async () => {
+    await render();
+    const revised = { ...fund, revision: 5, purpose: "An updated independently reviewed purpose for future contributions." };
+    await act(async () => root.render(createElement(FundDonationFlow, { funds: [revised, second] })));
+    expect(container.textContent).toContain(fund.purpose);
+    expect(container.textContent).not.toContain(revised.purpose);
+    expect((container.querySelector('[name="fundPurposeConfirmed"]') as HTMLInputElement).checked).toBe(true);
+    const review = [...container.querySelectorAll("button")].find(button => button.textContent === "Review updated fund details")!;
+    await act(async () => review.click());
+    expect(container.textContent).toContain(revised.purpose);
+    expect((container.querySelector('[name="fundPurposeConfirmed"]') as HTMLInputElement).checked).toBe(false);
+    expect((container.querySelector('[name="donorName"]') as HTMLInputElement).value).toBe("");
+    expect(fetchOrder).not.toHaveBeenCalled();
+  });
+  it("cannot replace the original reviewed purpose during an uncertain checkout", async () => {
+    await render();
+    await act(async () => container.querySelector("form")!.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true })));
+    const revised = { ...fund, revision: 5, purpose: "A newly reviewed purpose that must not replace an in-flight order." };
+    await act(async () => root.render(createElement(FundDonationFlow, { funds: [revised, second] })));
+    const review = [...container.querySelectorAll("button")].find(button => button.textContent === "Review updated fund details")!;
+    expect(review.disabled).toBe(true);
+    await act(async () => { review.dispatchEvent(new window.Event("click", { bubbles: true })); resolveOrder(response({ fundRevision: 5 })); });
+    expect(container.textContent).toContain(fund.purpose);
+    expect(container.textContent).not.toContain(revised.purpose);
+    expect(opened).not.toHaveBeenCalled();
+    expect(container.querySelector("select")!.disabled).toBe(true);
+  });
+
+  it("sets a suggested amount, clears invalidity, and rejects a same-turn change after submit", async () => {
+    await render();
+    const amount = container.querySelector<HTMLInputElement>('[name="amount"]')!;
+    amount.value = "invalid"; amount.setCustomValidity("Enter a valid amount");
+    const presets = [...container.querySelectorAll<HTMLButtonElement>('[aria-label="Suggested donation amounts"] button')];
+    await act(async () => presets[1]!.click());
+    expect(amount.value).toBe("1000"); expect(amount.validity.valid).toBe(true);
+    expect(window.document.activeElement).toBe(amount);
+    await act(async () => {
+      container.querySelector("form")!.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true }));
+      presets[3]!.click();
+    });
+    expect(amount.value).toBe("1000");
+    expect(JSON.parse(fetchOrder.mock.calls[0]![1].body).amount).toBe("1000");
+    expect(presets.every(button => button.disabled)).toBe(true);
   });
 
 });

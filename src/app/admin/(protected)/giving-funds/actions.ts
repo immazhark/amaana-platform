@@ -36,6 +36,7 @@ async function finishMutation(operation: () => Promise<void>) {
     redirect(`/admin/giving-funds?error=${encodeURIComponent(notice)}`);
   }
   revalidatePath("/admin/giving-funds");
+  revalidatePath("/donate");
   redirect("/admin/giving-funds?saved=1");
 }
 

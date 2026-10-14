@@ -51,6 +51,7 @@ describe("fund registry server actions", () => {
     expect(m.update).toHaveBeenCalledWith({ where: { id: "fund-1", revision: 3, status: "UNDER_REVIEW" }, data: { status: "APPROVED", revision: { increment: 1 }, approvedById: "approver", approvedAt: expect.any(Date) } });
     expect(m.audit).toHaveBeenCalledWith({ data: expect.objectContaining({ action: "fund.status_changed", metadata: expect.objectContaining({ from: "UNDER_REVIEW", to: "APPROVED" }) }) });
     expect(m.revalidate.mock.invocationCallOrder[0]).toBeGreaterThan(m.audit.mock.invocationCallOrder[0]!);
+    expect(m.revalidate).toHaveBeenCalledWith("/donate");
   });
   it("rejects a stale review before the status write", async () => {
     m.find.mockResolvedValue({ ...current, revision: 4 });
@@ -71,6 +72,7 @@ describe("fund registry server actions", () => {
       after: expect.objectContaining({ purpose: "An independently reviewable revised programme purpose." }),
     }) }) });
     expect(m.revalidate.mock.invocationCallOrder[0]).toBeGreaterThan(m.audit.mock.invocationCallOrder[0]!);
+    expect(m.revalidate).toHaveBeenCalledWith("/donate");
   });
   it.each([{ status: "DRAFT", revision: 4 }, { status: "APPROVED", revision: 3 }])("does not edit a changed draft or approved definition", async state => {
     m.find.mockResolvedValue({ ...current, ...state });

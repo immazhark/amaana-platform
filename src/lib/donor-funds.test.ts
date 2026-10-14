@@ -17,6 +17,7 @@ describe("dormant donor fund read boundary", () => {
     const result = await getDonorFundChoices();
     expect(result).toEqual([{ id, revision: 4, name: approved.name, purpose: approved.purpose, disclosure: approved.disclosure, acceptedIntents: ["GENERAL"] }]);
     expect(JSON.stringify(result)).not.toMatch(/PRIVATE-ACCOUNT|DO NOT DISCLOSE|reviewer|creator/);
+    expect(m.find.mock.calls[0]![0].select).not.toHaveProperty("privateNotes");
     expect(m.find).toHaveBeenCalledWith(expect.objectContaining({ where: { id: { in: [id] }, status: "APPROVED" }, take: 100 }));
   });
   it.each([{ status: "PAUSED" }, { approvedById: "creator" }, { acceptedIntents: ["ZAKAT"] }, { disclosure: "" }])("omits unsafe definitions %o", async patch => {

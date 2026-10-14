@@ -73,3 +73,14 @@
     min-height: 0;
   }
 }
+
+.funds {
+  min-width: 0;
+  margin: 1.5rem 0;
+  overflow-wrap: anywhere;
+}
+
+.funds > section > h2 {
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  line-height: 1.2;
+}

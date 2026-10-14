@@ -11,6 +11,9 @@ export async function getDonorFundChoices(): Promise<DonorFund[]> {
   const records = await prisma.givingFund.findMany({
     where: { id: { in: ids }, status: "APPROVED" },
     orderBy: [{ name: "asc" }, { id: "asc" }], take: 100,
+    select: { id: true, slug: true, name: true, purpose: true, disclosure: true,
+      accountCode: true, acceptedIntents: true, currency: true, status: true, revision: true,
+      createdById: true, lastEditedById: true, approvedById: true, approvedAt: true },
   });
   return records.flatMap(fund => {
     try {

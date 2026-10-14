@@ -1,9 +1,10 @@
 "use client";
-import { useCallback, useRef, useState } from "react";
-import { DonationForm } from "@/components/donation-form";
+import { lazy, Suspense, useCallback, useRef, useState } from "react";
 import type { DonorFund } from "@/lib/fund-checkout-contract";
 
-/** Future public flow receives only separately activated, reviewed disclosures. */
+const DonationForm = lazy(() => import("@/components/donation-form").then(module => ({ default: module.DonationForm })));
+
+/** Only separately activated, independently reviewed disclosures reach here. */
 export function FundDonationFlow({ funds }: { funds: readonly DonorFund[] }) {
   const [fund, setFund] = useState<DonorFund | undefined>(funds[0]);
   const lockRef = useRef(false);
@@ -12,17 +13,25 @@ export function FundDonationFlow({ funds }: { funds: readonly DonorFund[] }) {
   if (!fund) {
     const available = funds[0];
     return available
-      ? <button type="button" onClick={() => setFund(available)}>Review {available.name}</button>
+      ? <button type="button" className="v2-button" onClick={() => setFund(available)}>Review {available.name}</button>
       : <p role="status">No approved giving fund is available for checkout.</p>;
   }
+  const current = funds.find(item => item.id === fund.id);
+  const changed = current?.revision !== fund.revision;
   return <section aria-labelledby="giving-fund-selection">
     <h2 id="giving-fund-selection">Choose the purpose of your contribution</h2>
-    <label htmlFor="giving-fund-choice">Approved giving fund</label>
+    <div className="v2-premium-form field"><label htmlFor="giving-fund-choice">Approved giving fund</label>
     <select id="giving-fund-choice" value={fund.id} disabled={locked} onChange={event => {
       if (lockRef.current) return;
       const next = funds.find(item => item.id === event.target.value);
       if (next) setFund(next);
-    }}>{!funds.some(item => item.id === fund.id) && <option value={fund.id}>{fund.name} — review availability</option>}{funds.map(item => <option value={item.id} key={item.id}>{item.name}</option>)}</select>
-    <DonationForm key={`${fund.id}:${fund.revision}`} fund={fund} maxAmount={1_000_000} onSubmissionLockChange={updateLock}/>
+    }}>{!funds.some(item => item.id === fund.id) && <option value={fund.id}>{fund.name} — review availability</option>}{funds.map(item => <option value={item.id} key={item.id}>{item.id === fund.id && changed ? `${fund.name} — review updated details` : item.name}</option>)}</select></div>
+    {changed && <div role="status">
+      <p>{current ? "This fund’s reviewed details have changed. Review the updated purpose before starting a new contribution." : "This fund is no longer available for a new contribution. Choose another approved fund or contact Amaana."}</p>
+      {current && <button type="button" className="v2-button v2-button--paper-secondary" disabled={locked} onClick={() => { if (!lockRef.current) setFund(current); }}>Review updated fund details</button>}
+    </div>}
+    <Suspense fallback={<p role="status">Preparing secure contribution form…</p>}>
+      <DonationForm key={`${fund.id}:${fund.revision}`} fund={fund} maxAmount={1_000_000} onSubmissionLockChange={updateLock}/>
+    </Suspense>
   </section>;
 }

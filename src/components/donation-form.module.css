@@ -40,3 +40,6 @@
 .checkoutLabel,.intentGroup legend{font-weight:700}
 .checkoutControl,.choice label,.intentOption{border-radius:.75rem;transition-duration:var(--af-motion-medium)}
 .status,.hint,.intentIntro,.intentNote,.choice small,.intentOption small{line-height:1.55}
+
+.amountPresets{display:flex;flex-wrap:wrap;gap:.5rem}
+.amountPresets button{min-height:2.75rem;min-width:0;max-width:100%;padding:.6rem .9rem;font-variant-numeric:tabular-nums}

@@ -47,6 +47,7 @@ export function DonationForm({ appealId, appealTitle, fund, maxAmount, zakatElig
   }, [onSubmissionLockChange]);
   const transactionMax = Math.min(maxAmount, 1_000_000);
   const transactionMin = transactionMax < 10 ? transactionMax : 10;
+  const suggestedAmounts = fund ? [500, 1000, 2500, 5000].filter(amount => amount <= transactionMax) : [];
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -122,6 +123,16 @@ export function DonationForm({ appealId, appealTitle, fund, maxAmount, zakatElig
 
   function clearFieldError(field: DonationField) {
     setFieldErrors(current => current[field] ? { ...current, [field]: undefined } : current);
+  }
+
+  function chooseSuggestedAmount(amount: number) {
+    if (phaseRef.current === "opening" || phaseRef.current === "verifying" || phaseRef.current === "reconciliation") return;
+    const input = formRef.current?.elements.namedItem("amount");
+    if (!(input instanceof HTMLInputElement)) return;
+    input.value = String(amount);
+    updateDonationAmountValidity(input, transactionMin, transactionMax);
+    clearFieldError("amount");
+    input.focus();
   }
 
   function renderInput(field: DonationField, label: ReactNode, attributes: InputHTMLAttributes<HTMLInputElement>, full = false, hint?: ReactNode) {
@@ -303,6 +314,9 @@ export function DonationForm({ appealId, appealTitle, fund, maxAmount, zakatElig
       {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{remainingHint !== null ? <p><button type="button" className="v2-text-link" onClick={() => { const input = formRef.current?.elements.namedItem("amount"); if (input instanceof HTMLInputElement) { input.value = String(remainingHint); updateDonationAmountValidity(input, transactionMin, transactionMax); clearFieldError("amount"); input.focus(); } }}>Use the current remaining amount: ₹{remainingHint.toLocaleString("en-IN")}</button></p> : null}</div>}
       <div className="form-grid">
         {renderInput("amount", <>Donation amount <span>INR</span></>, { type: "text", inputMode: "numeric", pattern: "[0-9]+", maxLength: 12, onInput: event => updateDonationAmountValidity(event.currentTarget, transactionMin, transactionMax), placeholder: "Enter amount", required: true }, true, <small id="amount-hint" className={styles.hint}>{transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small>)}
+        {suggestedAmounts.length > 0 && <div className={`field full ${styles.amountPresets}`} role="group" aria-label="Suggested donation amounts">
+          {suggestedAmounts.map(amount => <button key={amount} type="button" className="v2-button v2-button--paper-secondary" disabled={submissionLocked} onClick={() => chooseSuggestedAmount(amount)}>₹{amount.toLocaleString("en-IN")}</button>)}
+        </div>}
         {renderInput("donorName", "Full name", { autoComplete: "name", minLength: 2, maxLength: 120, required: true })}
         {renderInput("donorEmail", "Email", { type: "email", autoComplete: "email", maxLength: 254, required: true })}
         {renderInput("donorPhone", <>Phone <span className="muted">optional</span></>, { type: "tel", autoComplete: "tel" }, true)}
