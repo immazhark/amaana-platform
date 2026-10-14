@@ -1,3 +1,17 @@
+## 2026-10-15 — Grouped public integrity and programme enhancement (source-only)
+
+**PR #292** stays open and unmerged. Latest reviewed source before this note: `444b587125072427f60c06f158d3b8e020ab116e`.
+
+One shared B08/B04 implementation batch addressed:
+- Inconsistent rounded appeal-card prices vs checkout amount: `public-appeal-progress.ts` now requires valid exact-paise values and both donor selection and appeal cards reuse the same numeric projection; invalid balances are not eligible checkouts or displayed as persuasive progress.
+- Duplicate accessible progress widget logic: `PublicFundingMeter` provides the same ARIA percentage and exact amount text to public cards and checkout choices while keeping their existing CSS geometry.
+- Reviewed fund purpose drift: changes to name, restriction, intention list, revision or purpose suppress the stale checkout until current approved donor disclosure is reviewed; rejecting old fund orders remains server enforced.
+- Published impact strip: only valid distinct public initiative slugs, populated metrics, no cross-page heading ID collisions. The homepage now derives up to three published outcomes from existing discovery records without extra queries; Donate and Appeals retain publication-gated evidence.
+- Recurring campaign history: `PublishedEditionIndex` shows a bounded chronologically sorted, per-year approved edition index from the existing published-child projection, with no fabricated donation goals.
+- New and extended Vitest unit/SSR cases cover monetary precision, invalid balances, UI purpose changes, ARIA progress, impact link trust and year-by-year records. These were **authored, not run on the hydrated branch** in this session. Full browser accessibility, Visual/CWV, TypeScript, bundle budgets, deployment and financial sandbox remain unverified.
+
+**Canonical 149-source-item status:** 60 Implemented, 49 Partial, 38 Not started, 1 Superseded, 1 Not applicable. **Enhancements:** 4 Implemented, 28 Partial, 19 Not started. The only status movement was **AF-R063 Not started → Partial**, reflecting limited consolidation; AF-R083 remains source implemented and AF-R087/R092 remain partial. Original 95 defect aliases unchanged; no production closures claimed. No merge, live DB/payment/refund, secrets or deployment.
+
 ## 2026-10-15 donor UX source milestone (PR #292)
 
 Source commits since prior checkpoint: `d519ae6c` removed unsafe Next loading.tsx route boundaries after reconciling documented streaming/307/308 regression history; `cad9b434` fixed donor route deep links to select only approved appeal/fund checkout, without a second form; `bc2a2f5b` added reviewed verification FAQ with visible/Q&A-identical FAQPage JSON-LD. AF-R083 and AF-FAQ are now source Implemented, while AF-R071 remains Partial (unactivated scaffold). No full CI, sandbox payment, rendered/browser/AT or live validation is claimed. No production money/deploy/migration/merge. Canonical register: 60 Implemented / 48 Partial / 39 Not started / 1 Superseded / 1 Not applicable, of which enhancements: 4 Implemented / 27 Partial / 20 Not started. Original 95 defects remain separately mapped; do not equate the master count with a production fix count.
