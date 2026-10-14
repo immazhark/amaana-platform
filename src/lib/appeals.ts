@@ -29,7 +29,10 @@ export function getAppealProgressPercent(amountRaised: AmountLike, goalAmount: A
   const raised = amountToNumber(amountRaised);
   const goal = amountToNumber(goalAmount);
   if (!Number.isFinite(raised) || !Number.isFinite(goal) || goal <= 0) return 0;
-  return Math.max(0, Math.min(100, Math.round((raised / goal) * 100)));
+  // Rounding must never label a still-unfunded appeal as 100% supported.
+  // A fully met or overfunded goal is the only case that displays 100%.
+  if (raised >= goal) return 100;
+  return Math.max(0, Math.min(99, Math.round((raised / goal) * 100)));
 }
 
 export function getRemainingAppealAmount(
