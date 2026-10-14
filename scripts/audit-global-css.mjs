@@ -41,6 +41,12 @@ if (appealImports.join(',') !== 'appeal-card.css,appeals.css,appeals-wow.css') {
   failures.push('Appeals layout must preserve card, route and polish stylesheet ordering.');
 }
 
+// AppealCard is shared by the homepage and /appeals. Route-scoping styles to
+// /appeals alone silently breaks the homepage when a live appeal becomes visible.
+if (!/import\s+["']\.\/appeal-card\.css["'];/.test(home)) {
+  failures.push('Homepage must import appeal-card.css for live AppealCard rendering.');
+}
+
 // Transaction routes share control styles, while their layout/upload rules stay owned.
 const sharedForms = await readFile(path.join(root, 'src/app/forms-experience.css'), 'utf8');
 if (/\.v2-(?:donate-|assistance-|file-|amount-|consent-fieldset)/.test(sharedForms)) {
