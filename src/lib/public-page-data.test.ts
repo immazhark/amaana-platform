@@ -76,6 +76,12 @@ describe("public page gallery media query contracts", () => {
       status: "PUBLISHED",
       cause: { status: "PUBLISHED" },
     });
+    // The published annual index reuses this same privacy-scoped query:
+    // metadata may be exposed only after the full publication filters.
+    expect(childArgs.select).toMatchObject({
+      year: true, startYear: true, endYear: true,
+      title: true, primaryMetric: true, primaryMetricLabel: true,
+    });
   });
 });
 
