@@ -6,7 +6,7 @@ export type AcknowledgementRecord = {
   donation: {
     referenceNumber: string; receiptNumber: string | null; donorName: string;
     givingIntent: string; amount: number; refundedAmount: number; recordDate: string;
-    providerPaymentId: string | null; appeal: { title: string; slug: string };
+    providerPaymentId: string | null; appeal: { title: string; slug: string | null };
   };
 };
 
@@ -46,8 +46,8 @@ export function isAcknowledgementResponse(value: unknown, reference: string): va
     && DONATION_INTENTS.some(intent => intent === d.givingIntent)
     && amount(d.amount) && d.amount > 0 && amount(d.refundedAmount) && d.refundedAmount <= d.amount
     && date(d.recordDate) && nullableText(d.providerPaymentId)
-    && object(d.appeal) && text(d.appeal.title) && text(d.appeal.slug)
-    && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(d.appeal.slug);
+    && object(d.appeal) && text(d.appeal.title)
+    && (d.appeal.slug === null || (text(d.appeal.slug) && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(d.appeal.slug)));
 }
 
 export function isTrackingResponse(value: unknown): value is TrackingRecord | { found: false } {
