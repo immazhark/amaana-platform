@@ -46,7 +46,12 @@ export async function renderPrivateReceiptPdf(record: AcknowledgementRecord): Pr
     if (bytes.byteLength !== size) throw new Error("Private PDF output changed during read");
     return Uint8Array.from(bytes);
   } finally {
-    if (directory) await rm(directory, { recursive: true, force: true }).catch(() => undefined);
-    activeRenders--;
+    try {
+      // Privacy invariant: a failed cleanup must reject the download rather
+      // than silently leaving donor identity or payment data on local disk.
+      if (directory) await rm(directory, { recursive: true, force: true });
+    } finally {
+      activeRenders--;
+    }
   }
 }
