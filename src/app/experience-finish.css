@@ -384,7 +384,7 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 
 
 /* Assistance flow: align process geometry with the same card vocabulary used elsewhere. */
-.v2-assistance-before-grid,.v2-assistance-form-layout{gap:clamp(1.5rem,4vw,4rem)}
+.v2-assistance-form-layout{gap:clamp(1.5rem,4vw,4rem)}
 .v2-assistance-form-layout>aside{
   border:1px solid var(--af-card-border);
   border-radius:var(--af-card-radius);

@@ -57,6 +57,13 @@ for (const [route, kind] of [['donate', 'donate'], ['request-assistance', 'assis
   }
 }
 
+// Transaction heroes use PageHero; absent legacy surfaces must not return as dead CSS.
+const retiredTransaction = /\bv2-(?:donate-(?:hero(?:-grid)?|context(?:-float)?|back)|assistance-(?:hero(?:-grid)?|promise|before-grid))(?![\w-])/;
+for (const file of ['donate-structure.css', 'donate-wow.css', 'assistance-structure.css', 'assistance-wow.css', 'experience-finish.css', 'accessibility.css']) {
+  const source = await readFile(path.join(root, 'src/app', file), 'utf8');
+  if (retiredTransaction.test(source)) failures.push(`${file} contains retired transaction selectors or animation.`);
+}
+
 // Error and 404 styles must remain route-owned instead of burdening every page.
 if (cssImports.includes('error-experience.css')) {
   failures.push('error-experience.css must be imported by error and not-found boundaries, not the root layout.');
