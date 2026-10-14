@@ -3,6 +3,19 @@ export type DonorFund = {
   acceptedIntents: readonly ("GENERAL" | "SADAQAH")[];
 };
 
+/** Require the exact same donor-visible and approved intent snapshot before
+ * the checkout UI can be used. A revision-only comparison is insufficient for
+ * malformed/legacy rows or an independently modified policy field. */
+export function isSameReviewedFundSnapshot(previous: DonorFund, current: DonorFund): boolean {
+  return previous.id === current.id &&
+    previous.revision === current.revision &&
+    previous.name === current.name &&
+    previous.purpose === current.purpose &&
+    previous.disclosure === current.disclosure &&
+    previous.acceptedIntents.length === current.acceptedIntents.length &&
+    previous.acceptedIntents.every((intent, index) => current.acceptedIntents[index] === intent);
+}
+
 /** Bind the successful order to the same reviewed definition shown by the UI. */
 export function isMatchingFundOrder(value: unknown, fund: DonorFund, givingIntent: unknown) {
   if (!value || typeof value !== "object" || Array.isArray(value)) return false;

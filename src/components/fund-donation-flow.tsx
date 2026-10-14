@@ -1,6 +1,6 @@
 "use client";
 import { lazy, Suspense, useCallback, useRef, useState } from "react";
-import type { DonorFund } from "@/lib/fund-checkout-contract";
+import { isSameReviewedFundSnapshot, type DonorFund } from "@/lib/fund-checkout-contract";
 
 const DonationForm = lazy(() => import("@/components/donation-form").then(module => ({ default: module.DonationForm })));
 
@@ -17,7 +17,7 @@ export function FundDonationFlow({ funds, onSubmissionLockChange }: { funds: rea
       : <p role="status">No approved giving fund is available for checkout.</p>;
   }
   const current = funds.find(item => item.id === fund.id);
-  const changed = current?.revision !== fund.revision;
+  const changed = !current || !isSameReviewedFundSnapshot(fund, current);
   return <section aria-labelledby="giving-fund-selection">
     <h2 id="giving-fund-selection">Choose the purpose of your contribution</h2>
     <div className="v2-premium-form field"><label htmlFor="giving-fund-choice">Approved giving fund</label>
@@ -30,8 +30,8 @@ export function FundDonationFlow({ funds, onSubmissionLockChange }: { funds: rea
       <p>{current ? "This fund’s reviewed details have changed. Review the updated purpose before starting a new contribution." : "This fund is no longer available for a new contribution. Choose another approved fund or contact Amaana."}</p>
       {current && <button type="button" className="v2-button v2-button--paper-secondary" disabled={locked} onClick={() => { if (!lockRef.current) setFund(current); }}>Review updated fund details</button>}
     </div>}
-    <Suspense fallback={<p role="status">Preparing secure contribution form…</p>}>
+    {!changed && <Suspense fallback={<p role="status">Preparing secure contribution form…</p>}>
       <DonationForm key={`${fund.id}:${fund.revision}`} fund={fund} maxAmount={1_000_000} onSubmissionLockChange={updateLock}/>
-    </Suspense>
+    </Suspense>}
   </section>;
 }
