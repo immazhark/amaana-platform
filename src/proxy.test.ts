@@ -49,11 +49,11 @@ describe("controlled nonce CSP Next.js Proxy rollout", () => {
     expect(second).not.toBe(first);
   });
   it("excludes API, next/image and prefetch requests from the interception matcher", () => {
-    const source = config.matcher[0].source;
+    const source = config.matcher[0]?.source ?? "";
     expect(source).toContain("api/");
     expect(source).toContain("_next/static");
     expect(source).toContain("_next/image");
-    expect(config.matcher[0].missing).toContainEqual({
+    expect(config.matcher[0]?.missing ?? []).toContainEqual({
       type: "header", key: "next-router-prefetch",
     });
   });
