@@ -20,6 +20,7 @@ export type AppealDonationChoice = {
 type Props = {
   appeals: readonly AppealDonationChoice[];
   bankAvailable: boolean;
+  onSubmissionLockChange?: (locked: boolean) => void;
   paymentInstructions: {
     DIRECT_UPI: ReactNode;
     BANK_TRANSFER: ReactNode;
@@ -28,14 +29,15 @@ type Props = {
 
 /** A bounded, server-approved set of current appeals. Payment methods remain
  * the original reviewed components. Do not unmount a checkout mid-payment. */
-export function AppealDonationFlow({ appeals, paymentInstructions, bankAvailable }: Props) {
+export function AppealDonationFlow({ appeals, paymentInstructions, bankAvailable, onSubmissionLockChange }: Props) {
   const [selectedId, setSelectedId] = useState(appeals[0]?.id ?? "");
   const [locked, setLocked] = useState(false);
   const lockRef = useRef(false);
   const updateLock = useCallback((next: boolean) => {
     lockRef.current = next;
     setLocked(next);
-  }, []);
+    onSubmissionLockChange?.(next);
+  }, [onSubmissionLockChange]);
   const selected = appeals.find(appeal => appeal.id === selectedId) ?? appeals[0];
   if (!selected) return <p role="status">No verified appeal is available for checkout.</p>;
 

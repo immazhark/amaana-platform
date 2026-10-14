@@ -5,11 +5,11 @@ import type { DonorFund } from "@/lib/fund-checkout-contract";
 const DonationForm = lazy(() => import("@/components/donation-form").then(module => ({ default: module.DonationForm })));
 
 /** Only separately activated, independently reviewed disclosures reach here. */
-export function FundDonationFlow({ funds }: { funds: readonly DonorFund[] }) {
+export function FundDonationFlow({ funds, onSubmissionLockChange }: { funds: readonly DonorFund[]; onSubmissionLockChange?: (locked: boolean) => void }) {
   const [fund, setFund] = useState<DonorFund | undefined>(funds[0]);
   const lockRef = useRef(false);
   const [locked, setLocked] = useState(false);
-  const updateLock = useCallback((value: boolean) => { lockRef.current = value; setLocked(value); }, []);
+  const updateLock = useCallback((value: boolean) => { lockRef.current = value; setLocked(value); onSubmissionLockChange?.(value); }, [onSubmissionLockChange]);
   if (!fund) {
     const available = funds[0];
     return available
