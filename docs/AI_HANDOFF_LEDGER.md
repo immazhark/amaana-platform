@@ -1354,3 +1354,30 @@ R-056 remains partial: query-to-render integration is now locally verified, but 
 Owner directive authorizes autonomous reconciliation and source implementation; read-only specialists completed parallel reviews. Canonical149-row plan: docs/AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md. Parent874a79ad; existingPR292. B01 acceptance compilation regression fixed/reproduced, B02 existing graph logo/Threads enrichment, B04 exact RGB-channel parity and Stylelint gate.1187unit/APIpassed/9DBskipped;45focused,15sourceguards, full lint/type/formatter and cleancompile passes; JS816683/CSS343292 within existing ceilings. Production control-plane mainaedae001 identified, public journeys NOT VERIFIED. No merge/deploy/migration/live funds/mail. See sectionF for next action and exact gates.
 
 Published master+fixture bd912977, schema a80df913, RGB8942b93 in existingPR292. Followup actual localHTTP19guardspass; browser download blocked by truncated archives, no rendered result. See canonical mastersectionF and CI38552020358.
+
+## 2026-10-14 — B08 domestic fund currency enforced and focused tests executed
+
+Continued PR #292 from 324eaeaf7ce9b94a4cb28e9fc2d82af11218646c on fix/direct-transfer-feedback-20261013. Sole writer; no reset or new PR.
+
+- Reproduced a SQL boundary defect with real isolated PostgreSQL-WASM: an independently approved INR fund accepted a USD Donation. Added additive migration 20261014203000_fund_donation_currency with Donation_fund_currency_check. Fund-only inserts and updates must retain INR; existing appeal constraints are unchanged. Migration is unapplied outside the synthetic engine.
+- Added actual SQL insert/update regressions. Before the migration: 24 pass / 1 fail (foreign currency was accepted). After: 25 pass / 0 fail / 0 skipped, including legacy records, snapshots, exclusivity, stale revision, paused funds and immutable intent.
+- Executed repository Vitest: 133 cases across fund orders, Razorpay, approved definitions, fund ledger and payment capture; another 157 across direct reconciliation, refunds, private acknowledgements/access, confirmation, appeal order/transfer and private fund administration. Total 290 passed across 17 files. These are mocked unit/API tests, not real gateway or native multi-connection database evidence.
+- Prisma client generation, TypeScript, focused zero-warning ESLint and diff checks passed. No production build/browser/full-suite claim.
+
+B08 remains partial. Next: native isolated capture/partial-refund/full-refund/replay coverage and remaining lifecycle integration; reviewed public purpose/selection and controlled migration rollout remain release gates. Public fund checkout stays dormant; no hosted database, provider, mail, secret, merge or deployment operation. Original 95 / canonical 149 classification totals unchanged.
+
+## 2026-10-14 — B08 manual reconciliation INR capture boundary
+
+Local continuation after 5e550339. Reproduced two actual-module failures: appeal and fund USD claims were accepted as CAPTURED. Manual reconciliation now selects currency and requires INR alongside safe positive paise before any verification write, appeal lookup or notification. REJECT remains available for invalid claims, with existing audit history.
+
+66 focused cases pass across direct reconciliation, capture and direct-transfer API after the fix; TypeScript, focused zero-warning ESLint and diff checks pass. No native multi-connection DB, browser or production claim. Earlier 290-unit / 25 isolated SQL evidence remains scoped to the prior batch.
+
+Automatic approval review rejected remote publication again: it did not recognize cx as explicit approval to publish source/internal documentation to the GitHub destination. Both batches remain local, unmerged and undeployed. No workaround or indirect publication attempted. Next: explicit publication authorization, then remaining financial lifecycle integration. Public fund activation and hosted migration remain blocked separately.
+
+## 2026-10-14 — refund currency identity and authorized publication
+
+Owner explicitly authorized GitHub publication from ChatGPT Work. Shell Git lacks credentials, so the connected GitHub Git-data tools publish against the checked parent 324eaeaf7ce9b94a4cb28e9fc2d82af11218646c without force or release.
+
+Reproduced two actual webhook cases returning success for INR refunds against stored USD donations (appeal and fund). Refund reconciliation now selects currency and rejects a mismatch before the refund ledger claim and monetary writes. 87 focused webhook/accounting tests pass; TypeScript and focused zero-warning lint pass. Local predecessor commits 5e550339 and 94df5889 retain their respective 290-unit/25-SQL and 66-test scopes. No full build, native concurrency, deployed migration or live payment certification.
+
+All three fixes remain source development on PR292. No public fund activation, hosted migration, main merge, deployment, real provider or mail operation. B08 remains partial. Next: isolated native financial lifecycle integration and remaining master-plan source tasks.

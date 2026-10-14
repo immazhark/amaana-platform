@@ -36,7 +36,7 @@ describe("manual transfer money-state boundary", () => {
     mocks.donationFind.mockResolvedValue({
       id: "donation_test", referenceNumber: "AFD-TEST", appealId: "appeal_test",
       donorEmail: "donor@example.test", givingIntent: "GENERAL",
-      amount: money(500), status: DonationStatus.PENDING_VERIFICATION,
+      currency: "INR", amount: money(500), status: DonationStatus.PENDING_VERIFICATION,
       paymentMethod: DonationPaymentMethod.DIRECT_UPI,
     });
     mocks.appealFind.mockResolvedValue({
@@ -57,7 +57,7 @@ describe("manual transfer money-state boundary", () => {
   it.each([0, -1, 0.001, Number.MAX_SAFE_INTEGER])(
     "rejects unsafe stored donation amount %s without changing records", async amount => {
       mocks.donationFind.mockResolvedValueOnce({
-        id: "donation_test", amount: money(amount), status: DonationStatus.PENDING_VERIFICATION,
+        id: "donation_test", currency: "INR", amount: money(amount), status: DonationStatus.PENDING_VERIFICATION,
         paymentMethod: DonationPaymentMethod.DIRECT_UPI, appealId: "appeal_test",
       });
       await expect(reconcileDirectDonation(request)).rejects.toThrow("Invalid financial amounts");
@@ -80,6 +80,29 @@ describe("manual transfer money-state boundary", () => {
     expect(mocks.donationUpdate).not.toHaveBeenCalled();
   });
 
+  it.each([
+    { appealId: "appeal_test", fundId: null },
+    { appealId: null, fundId: "approved_fund" },
+  ])("does not verify foreign currency for destination %o", async destination => {
+    const original = await mocks.donationFind();
+    mocks.donationFind.mockResolvedValueOnce({ ...original, ...destination, currency: "USD" });
+    await expect(reconcileDirectDonation(request)).rejects.toThrow("Invalid financial amounts");
+    expect(mocks.donationUpdate).not.toHaveBeenCalled();
+    expect(mocks.appealFind).not.toHaveBeenCalled();
+    expect(mocks.appealUpdate).not.toHaveBeenCalled();
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
+  it("allows a reviewer to reject an invalid foreign-currency claim", async () => {
+    const original = await mocks.donationFind();
+    mocks.donationFind.mockResolvedValueOnce({ ...original, currency: "USD" });
+    await expect(reconcileDirectDonation({ ...request, decision: "REJECT" })).resolves.toMatchObject({ status: DonationStatus.REJECTED });
+    expect(mocks.appealUpdate).not.toHaveBeenCalled();
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).toHaveBeenCalledOnce();
+  });
+
   it("keeps an otherwise valid direct transfer eligible for reconciliation", async () => {
     await expect(reconcileDirectDonation(request)).resolves.toEqual({
       status: DonationStatus.CAPTURED, referenceNumber: "AFD-TEST",
@@ -93,7 +116,7 @@ describe("manual transfer money-state boundary", () => {
     mocks.donationFind.mockResolvedValueOnce({
       id: "donation_fund", referenceNumber: "AFD-FUND", appealId: null,
       fundId: "approved_fund", donorEmail: "donor@example.test",
-      givingIntent: "SADAQAH", amount: money(500),
+      givingIntent: "SADAQAH", currency: "INR", amount: money(500),
       status: DonationStatus.PENDING_VERIFICATION,
       paymentMethod: DonationPaymentMethod.BANK_TRANSFER,
     });

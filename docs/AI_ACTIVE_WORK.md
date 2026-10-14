@@ -1,3 +1,15 @@
+## 2026-10-14 — authorized publication and refund continuation
+
+Ownership: HANDOFF_PENDING after completed refund currency unit. Owner explicitly authorized GitHub publication. Shell transport lacks credentials; connected GitHub tools will publish with a guarded head check. Scope: refund currency identity before ledger writes.
+
+## 2026-10-14 — local continuation
+
+Ownership: HANDOFF_PENDING after manual reconciliation INR fix. Publication blocked by automatic approval review. 66 targeted tests, TypeScript and focused lint passed; no remote writes or release.
+
+## 2026-10-14 — B08 continuation ownership
+
+Ownership: HANDOFF_PENDING after the completed currency constraint batch; no concurrent writer. Recovered PR #292 at 324eaeaf7ce9b94a4cb28e9fc2d82af11218646c on fix/direct-transfer-feedback-20261013; sole implementation writer. Integration ref inspected at a6def674. Completed: fund currency constraint, 290 Vitest cases and 25 isolated SQL cases passed. Publication blocked by automatic approval review; local commit only. No release or public checkout activation.
+
 ## 2026-10-14 — carousel correction and private giving-fund registry published
 
 Ownership: HANDOFF_PENDING after completed atomic source batches; no concurrent repository writer. User's autonomous source-development directive remains in force; next agent may claim ownership after the normal incoming read/head checks. No generic approval to begin development is required.

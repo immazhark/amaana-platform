@@ -20,13 +20,13 @@ const approvedFund = {
   accountCode: 'TEST-FUND', givingIntent: 'GENERAL',
 };
 
-async function insertFundDonation(id, snapshot = approvedFund, destination = { appealId: null, fundId: 'fund-reviewed' }, intent = 'GENERAL') {
+async function insertFundDonation(id, snapshot = approvedFund, destination = { appealId: null, fundId: 'fund-reviewed' }, intent = 'GENERAL', currency = 'INR') {
   const sql = 'INSERT INTO "Donation" ("id", "referenceNumber", "appealId", "fundId", "donorName", "donorEmail",'
-    + ' "domesticConfirmedAt", "amount", "givingIntent", "receiptTokenHash", "updatedAt", "designationSnapshot")'
-    + ' VALUES ($1, $2, $3, $4, $5, $6, NOW(), 250, $7::"DonationIntent", $8, NOW(), $9::jsonb)';
+    + ' "domesticConfirmedAt", "amount", "givingIntent", "receiptTokenHash", "updatedAt", "designationSnapshot", "currency")'
+    + ' VALUES ($1, $2, $3, $4, $5, $6, NOW(), 250, $7::"DonationIntent", $8, NOW(), $9::jsonb, $10)';
   return db.query(sql, [id, 'SYNTHETIC-' + id, destination.appealId, destination.fundId,
     'Synthetic donor', 'donor@example.invalid', intent, 'fund-synthetic-hash',
-    snapshot === null ? null : JSON.stringify(snapshot)]);
+    snapshot === null ? null : JSON.stringify(snapshot), currency]);
 }
 
 
@@ -84,6 +84,7 @@ describe('private donation designation migration on isolated PostgreSQL-WASM', {
         'TEST-FUND', ARRAY['GENERAL','SADAQAH']::"DonationIntent"[], 'APPROVED', 4,
         'creator', 'editor', 'approver', NOW(), NOW());`);
     await db.exec(readFileSync('prisma/migrations/20261014193000_exclusive_donation_destination/migration.sql', 'utf8'));
+    await db.exec(readFileSync('prisma/migrations/20261014203000_fund_donation_currency/migration.sql', 'utf8'));
   });
   after(async () => {
     if (db) await db.close();
@@ -158,6 +159,14 @@ describe('private donation designation migration on isolated PostgreSQL-WASM', {
     ['missing fund snapshot', null, { appealId: null, fundId: 'fund-reviewed' }, 'GENERAL'],
   ]) it('rejects '+ description + ' for fund-only payments', async () => {
     await assert.rejects(insertFundDonation('invalid-' + description.replaceAll(' ', '-'), snapshot, destination, intent),
+      error => error.code === '23514');
+  });
+
+  it('rejects foreign currency on insertion and mutation of a domestic fund donation', async () => {
+    await assert.rejects(insertFundDonation('foreign-currency', approvedFund,
+      { appealId: null, fundId: 'fund-reviewed' }, 'GENERAL', 'USD'),
+      error => error.code === '23514');
+    await assert.rejects(db.query('UPDATE \"Donation\" SET \"currency\"=$1 WHERE \"id\"=$2', ['USD', 'valid-fund']),
       error => error.code === '23514');
   });
 

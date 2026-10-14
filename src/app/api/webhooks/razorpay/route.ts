@@ -202,6 +202,7 @@ export async function POST(request: Request) {
             fundId: true,
             amount: true,
             refundedAmount: true,
+            currency: true,
             donorEmail: true,
             referenceNumber: true,
           },
@@ -217,6 +218,9 @@ export async function POST(request: Request) {
         });
 
         if (!donation) throw new Error("Refund donation is not available for reconciliation");
+        if (donation.currency !== refund.currency) {
+          throw new Error("Refund currency does not match the captured donation");
+        }
         const destination = requireDonationDestination(donation);
 
         // The entity claim and ALL financial effects share the transaction.

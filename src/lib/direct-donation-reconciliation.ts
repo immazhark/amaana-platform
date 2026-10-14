@@ -28,6 +28,7 @@ export async function reconcileDirectDonation(input: {
         donorEmail: true,
         givingIntent: true,
         amount: true,
+        currency: true,
         status: true,
         paymentMethod: true,
       },
@@ -49,7 +50,7 @@ export async function reconcileDirectDonation(input: {
     }
 
     const donationPaise = donation.amount.mul(100).toNumber();
-    if (!Number.isSafeInteger(donationPaise) || donationPaise <= 0) {
+    if (donation.currency !== "INR" || !Number.isSafeInteger(donationPaise) || donationPaise <= 0) {
       throw new Error("Invalid financial amounts for transfer reconciliation");
     }
     if (destination.kind === "APPEAL") {
