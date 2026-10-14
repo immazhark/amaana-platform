@@ -17,7 +17,22 @@ function DraftFields({ prefix, values }: { prefix: string; values?: DraftValues 
 
 export default async function GivingFundsPage({ searchParams }: { searchParams: Promise<{ error?: string; saved?: string }> }) {
   const user = await requirePermission("fund.view");
-  const [funds, params] = await Promise.all([prisma.givingFund.findMany({ orderBy: [{ status: "asc" }, { updatedAt: "desc" }], take: 100, include: { createdBy: { select: { name: true } }, approvedBy: { select: { name: true } } } }), searchParams]);
+  const canViewDonations = hasPermission(user, "donation.view");
+  const [funds, params, financialRows] = await Promise.all([
+    prisma.givingFund.findMany({ orderBy: [{ status: "asc" }, { updatedAt: "desc" }], take: 100, include: { createdBy: { select: { name: true } }, approvedBy: { select: { name: true } } } }),
+    searchParams,
+    canViewDonations
+      ? prisma.donation.groupBy({
+          by: ["fundId"],
+          where: { fundId: { not: null }, status: { in: ["CAPTURED", "REFUNDED"] } },
+          _sum: { amount: true, refundedAmount: true },
+          _count: { _all: true },
+        })
+      : Promise.resolve([]),
+  ]);
+  const balances = new Map(financialRows.map(row => [row.fundId, row]));
+  const displayINR = (rupees: number) =>
+    new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(rupees);
   const canManage = hasPermission(user, "fund.manage");
   const canApprove = hasPermission(user, "fund.approve");
   return <>
@@ -33,6 +48,16 @@ export default async function GivingFundsPage({ searchParams }: { searchParams: 
           <div className="admin-heading"><h2>{fund.name}</h2><span className="status-badge">{fund.status.replaceAll("_", " ")}</span></div>
           <p>{fund.purpose}</p><p>{fund.disclosure}</p>
           <p className="muted">{fund.accountCode} · {fund.currency} · {fund.acceptedIntents.join(" / ")} · Created by {fund.createdBy.name}{fund.approvedBy ? ` · Approved by ${fund.approvedBy.name}` : ""}</p>
+          {canViewDonations && (() => {
+            const balance = balances.get(fund.id);
+            if (!balance) return <p className="muted">No captured contributions recorded for this fund.</p>;
+            const gross = balance._sum.amount?.toNumber() ?? 0;
+            const refunded = balance._sum.refundedAmount?.toNumber() ?? 0;
+            if (![gross, refunded].every(Number.isFinite) || gross < 0 || refunded < 0 || refunded > gross) {
+              return <p role="alert">Fund net receipts require financial reconciliation.</p>;
+            }
+            return <p className="muted">Gross captured: {displayINR(gross)} · Refunded: {displayINR(refunded)} · Net retained: {displayINR(gross - refunded)} · {balance._count._all} settled records</p>;
+          })()}
           {fund.status === "DRAFT" && canManage && <details><summary>Edit draft</summary><form action={updateGivingFund} className="form-grid"><input type="hidden" name="id" value={fund.id} /><input type="hidden" name="revision" value={fund.revision} /><DraftFields prefix={fund.id} values={fund} /><div className="field full"><button className="button secondary">Save draft</button></div></form></details>}
           {nextStatuses.length > 0 && <form action={transitionGivingFund} className="field"><input type="hidden" name="id" value={fund.id} /><input type="hidden" name="revision" value={fund.revision} /><label htmlFor={`${fund.id}-status`}>Move to</label><select id={`${fund.id}-status`} name="status">{nextStatuses.map(status => <option key={status} value={status}>{status.replaceAll("_", " ")}</option>)}</select><label htmlFor={`${fund.id}-reason`}>Review or status-change reason</label><textarea id={`${fund.id}-reason`} name="reason" minLength={12} maxLength={500} required /><button className="button secondary">Apply status</button></form>}
           {fund.status === "UNDER_REVIEW" && canApprove && (user.id === fund.createdById || user.id === fund.lastEditedById) && <p>A different approver must review this fund.</p>}
