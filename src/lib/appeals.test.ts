@@ -27,6 +27,18 @@ describe("getRemainingAppealAmount", () => {
     expect(getRemainingAppealAmount(decimalLike(74_900), "75000")).toBe(100);
   });
 
+  it.each([
+    { raised: -1, goal: 75_000 },
+    { raised: "invalid", goal: 75_000 },
+    { raised: 0, goal: "invalid" },
+    { raised: 0, goal: 0 },
+    { raised: 0, goal: -1 },
+    { raised: Infinity, goal: 75_000 },
+    { raised: 1, goal: Infinity },
+  ])("returns no donation-eligible remainder for malformed ledger inputs: %#", ({ raised, goal }) => {
+    expect(getRemainingAppealAmount(raised, goal)).toBe(0);
+  });
+
   it("never returns a negative remaining amount", () => {
     expect(getRemainingAppealAmount(80_000, 75_000)).toBe(0);
   });
