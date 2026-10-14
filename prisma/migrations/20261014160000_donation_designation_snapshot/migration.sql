@@ -22,7 +22,7 @@ ALTER TABLE "Donation"
 -- reconstructed by a later edit. Both old and new donations retain their
 -- original appeal identity and giving intention throughout payment/refund life.
 CREATE FUNCTION "prevent_donation_designation_snapshot_mutation"()
-RETURNS TRIGGER LANGUAGE plpgsql AS $
+RETURNS TRIGGER LANGUAGE plpgsql AS $donation_designation_guard$
 BEGIN
   IF NEW."designationSnapshot" IS DISTINCT FROM OLD."designationSnapshot"
     OR NEW."appealId" IS DISTINCT FROM OLD."appealId"
@@ -32,7 +32,7 @@ BEGIN
   END IF;
   RETURN NEW;
 END;
-$;
+$donation_designation_guard$;
 
 CREATE TRIGGER "Donation_designationSnapshot_immutable"
 BEFORE UPDATE OF "designationSnapshot", "appealId", "givingIntent" ON "Donation"
