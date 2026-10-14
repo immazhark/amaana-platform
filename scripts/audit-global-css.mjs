@@ -41,6 +41,22 @@ if (appealImports.join(',') !== 'appeal-card.css,appeals.css,appeals-wow.css') {
   failures.push('Appeals layout must preserve card, route and polish stylesheet ordering.');
 }
 
+// Transaction routes share control styles, while their layout/upload rules stay owned.
+const sharedForms = await readFile(path.join(root, 'src/app/forms-experience.css'), 'utf8');
+if (/\.v2-(?:donate-|assistance-|file-|amount-|consent-fieldset)/.test(sharedForms)) {
+  failures.push('forms-experience.css must contain shared form controls only.');
+}
+for (const [route, kind] of [['donate', 'donate'], ['request-assistance', 'assistance']]) {
+  const source = await readFile(path.join(root, 'src/app', route, 'layout.tsx'), 'utf8');
+  const imports = [...source.matchAll(/import\s+["']\.\.\/([^"']+\.css)["'];/g)].map(match => match[1]);
+  if (imports.join(',') !== `forms-experience.css,${kind}-structure.css,${kind}-wow.css`) {
+    failures.push(`${route} must retain shared controls, owned structure and polish ordering.`);
+  }
+  if (cssImports.includes(`${kind}-structure.css`)) {
+    failures.push(`${kind}-structure.css must remain transaction-route owned.`);
+  }
+}
+
 // Error and 404 styles must remain route-owned instead of burdening every page.
 if (cssImports.includes('error-experience.css')) {
   failures.push('error-experience.css must be imported by error and not-found boundaries, not the root layout.');
