@@ -82,3 +82,18 @@ test("cached homepage appeals are rechecked against the current fundraising wind
   assert.match(wrapper, /await getHomepageAppealsCached\(limit\)/);
   assert.match(wrapper, /cached\.filter\(appeal => isAppealOpenForDonations\(appeal\)\)/);
 });
+
+test("highly sensitive appeal shares and breadcrumb JSON-LD use privacy-safe copy", async () => {
+  const detail = await readFile("src/app/appeals/[slug]/page.tsx", "utf8");
+  const structured = await readFile("src/components/appeal-structured-data.tsx", "utf8");
+  const copy = await readFile("src/lib/appeal-public-copy.ts", "utf8");
+
+  assert.match(detail, /const safeShareCopy = getAppealPublicCopy\(appeal\.title, appeal\.summary, highlySensitive\)/);
+  assert.match(detail, /name: safeShareCopy\.title, path:/);
+  assert.match(detail, /<AppealShare title=\{safeShareCopy\.title\} summary=\{safeShareCopy\.description\}/);
+  assert.match(detail, /getAppealPublicCopy\(appeal\.title, appeal\.summary, highlySensitive\)/);
+  assert.match(structured, /getAppealPublicCopy\(title, summary, highlySensitive\)/);
+  assert.match(copy, /return highlySensitive/);
+  assert.doesNotMatch(detail, /<AppealShare title=\{appeal\.title\} summary=\{appeal\.summary\}/);
+  assert.doesNotMatch(detail, /name: appeal\.title, path:/);
+});
