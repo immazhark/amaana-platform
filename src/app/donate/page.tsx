@@ -119,6 +119,11 @@ export default async function Page({ searchParams }: PageProps = {}) {
         <Link href="/giving/learn">Explore the Islamic giving learning library</Link>.
         Educational content never determines whether an approved fund can accept your specific intention.
       </p>
+      <p className={styles.note}>
+        Prefer to review giving opportunities each month?{" "}
+        <Link href="/get-involved/monthly-giving">Prepare a private calendar reminder</Link>.
+        This is not a subscription or automatic payment; verify the approved destination every time.
+      </p>
       <VerifiedImpactStrip items={impactItems} headingId="donate-published-outcomes" />
       {hasCheckout && <DonationLandingCheckout key={initialRoute} initialRoute={initialRoute} appeals={appealChoices} funds={funds}
         bankAvailable={Boolean(paymentDetails?.bank)}

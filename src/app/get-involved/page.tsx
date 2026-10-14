@@ -69,6 +69,14 @@ const waysToHelp = [
     href: "/request-assistance",
     action: "Request assistance",
   },
+  {
+    number: "06",
+    icon: "support" as const,
+    title: "Review giving each month",
+    copy: "A private calendar reminder can help you revisit currently approved giving routes. No subscription, stored donor profile or automatic payment is created.",
+    href: "/get-involved/monthly-giving",
+    action: "Create a manual reminder",
+  },
 ] as const;
 
 export default async function GetInvolvedPage() {
@@ -86,7 +94,7 @@ export default async function GetInvolvedPage() {
           { label: "Explore volunteering", href: "/get-involved/volunteer", secondary: true },
         ]}
         visual={heroMedia ? <PublicMedia asset={heroMedia} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : undefined}
-        visualKicker="Five ways to take part"
+        visualKicker="Ways to take part"
         visualTitle="Time. Skills. Support. Care."
         visualNote="Choose a path that matches what you can offer and what the work needs now."
       />

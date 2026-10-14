@@ -50,6 +50,12 @@ describe("public route publication policy", () => {
     expect(PUBLIC_STATIC_ROUTES.some(route => route.path.startsWith("/api/feedback"))).toBe(false);
   });
 
+  it("lists manual giving planning without publicly exposing a payment mandate endpoint", () => {
+    expect(PUBLIC_STATIC_ROUTES.some(route => route.path === "/get-involved/monthly-giving")).toBe(true);
+    expect(isPrivateRoute("/get-involved/monthly-giving")).toBe(false);
+    expect(PUBLIC_STATIC_ROUTES.some(route => /subscription|mandate/.test(route.path))).toBe(false);
+  });
+
   it("does not allow duplicate publication rules", () => {
     const publicPaths = PUBLIC_STATIC_ROUTES.map(route => route.path);
     expect(new Set(publicPaths).size).toBe(publicPaths.length);
