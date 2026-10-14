@@ -1,3 +1,7 @@
+## 2026-10-15 donor UX source milestone (PR #292)
+
+Source commits since prior checkpoint: `d519ae6c` removed unsafe Next loading.tsx route boundaries after reconciling documented streaming/307/308 regression history; `cad9b434` fixed donor route deep links to select only approved appeal/fund checkout, without a second form; `bc2a2f5b` added reviewed verification FAQ with visible/Q&A-identical FAQPage JSON-LD. AF-R083 and AF-FAQ are now source Implemented, while AF-R071 remains Partial (unactivated scaffold). No full CI, sandbox payment, rendered/browser/AT or live validation is claimed. No production money/deploy/migration/merge. Canonical register: 60 Implemented / 48 Partial / 39 Not started / 1 Superseded / 1 Not applicable, of which enhancements: 4 Implemented / 27 Partial / 20 Not started. Original 95 defects remain separately mapped; do not equate the master count with a production fix count.
+
 ## 2026-10-15 — CI-driven corrective batch + B09 manual transfer custody (source-only)
 
 **Current PR #292 source checkpoint:** `f4308cc1dccdcd500172db059baa0fe9be80feb0` on `fix/direct-transfer-feedback-20261013`. Existing PR remains open/unmerged. This checkpoint is not proof of deployment or a green run at current HEAD.
