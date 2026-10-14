@@ -1,5 +1,12 @@
 # Amaana Master Reconciled Execution Plan
 
+### 2026-10-15 finance presentation precision — checkpoint `2cd6905fad93f61a102cc66323e0f94ec6902cd7`
+
+The finance-admin donation list, gross/refund/net ledger totals and per-donation detail now use the already-tested `formatPrivateReceiptINR` **two-decimal, safe-paise formatter**. Previously they used `formatINR` (integer rounding), hiding fractional received/refunded balances from staff. Invalid monetary values in tabular legacy rows now display `Requires reconciliation` instead of rendering a rounded number or taking the full admin list down. Public goal/appeal formatting is unchanged. Patch `2cd6905fad93f61a102cc66323e0f94ec6902cd7`.
+
+Latest GitHub CI was pending at the time of writing, so no claim is made that all Vitest, typecheck, lint, rendered browser, database or production runs passed. Authenticated money mutation and PDF activation remain unchanged. This precise display correction is source implemented on unmerged PR #292; the canonical 149 totals and historical 95 aliases remain unchanged.
+
+
 ## 2026-10-15 — CI-driven corrective batch + B09 manual transfer custody (source-only)
 
 **Current PR #292 source checkpoint:** `f4308cc1dccdcd500172db059baa0fe9be80feb0` on `fix/direct-transfer-feedback-20261013`. Existing PR remains open/unmerged. This checkpoint is not proof of deployment or a green run at current HEAD.

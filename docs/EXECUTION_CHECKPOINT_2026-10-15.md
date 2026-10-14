@@ -66,3 +66,10 @@ The canonical 149 register remains **57 Implemented / 48 Partial / 42 Not starte
 **149 canonical register unchanged:** 57 Implemented, 48 Partial, 42 Not started, 1 Superseded, 1 Not applicable. Original 95 aliases remain mapped; AF-SETTLEMENT/AF-RECEIPTS B09 stay Partial.
 
 Next: inspect exact-head CI and fix real failures; pursue a reviewed read-only statement import/duplicate exception matcher only after approved bank-export format and evidence rules are known. Complete Railway Unicode PDF runtime verification and donor-owned token reissue separately.
+
+### 2026-10-15 finance presentation precision — checkpoint `2cd6905fad93f61a102cc66323e0f94ec6902cd7`
+
+The finance-admin donation list, gross/refund/net ledger totals and per-donation detail now use the already-tested `formatPrivateReceiptINR` **two-decimal, safe-paise formatter**. Previously they used `formatINR` (integer rounding), hiding fractional received/refunded balances from staff. Invalid monetary values in tabular legacy rows now display `Requires reconciliation` instead of rendering a rounded number or taking the full admin list down. Public goal/appeal formatting is unchanged. Patch `2cd6905fad93f61a102cc66323e0f94ec6902cd7`.
+
+Latest GitHub CI was pending at the time of writing, so no claim is made that all Vitest, typecheck, lint, rendered browser, database or production runs passed. Authenticated money mutation and PDF activation remain unchanged. This precise display correction is source implemented on unmerged PR #292; the canonical 149 totals and historical 95 aliases remain unchanged.
+
