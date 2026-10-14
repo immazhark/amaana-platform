@@ -2,7 +2,7 @@ import evidenceStyles from "@/components/evidence-pathway.module.css";
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
 import Link from "@/components/navigation-link";
-import { PageHero } from "@/components/page-hero";
+import { PageHero, PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { getFaithDiscoveryData } from "@/lib/public-discovery-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
@@ -48,7 +48,7 @@ export default async function FaithAndReflectionsPage() {
           { label: "Explore the library", href: "#library" },
           { label: "See faith in action", href: "/our-work", secondary: true },
         ]}
-        visual={leadMedia ? <PublicMedia asset={leadMedia} priority /> : undefined}
+        visual={leadMedia ? <PublicMedia asset={leadMedia} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : undefined}
         visualKicker="Reflect · Serve"
         visualTitle="أمانة"
         visualNote="Reviewed religious content only. Sources, attribution and verification remain part of the public record."

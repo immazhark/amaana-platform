@@ -2,7 +2,7 @@ import evidenceStyles from "@/components/evidence-pathway.module.css";
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
 import Link from "@/components/navigation-link";
-import { PageHero } from "@/components/page-hero";
+import { PageHero, PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getStoriesDiscoveryData } from "@/lib/public-discovery-data";
@@ -41,7 +41,7 @@ export default async function StoriesPage() {
           { label: "Enter the journal", href: "#journal" },
           { label: "Explore the work", href: "/our-work", secondary: true },
         ]}
-        visual={leadStoryMedia ? <PublicMedia asset={leadStoryMedia} priority /> : undefined}
+        visual={leadStoryMedia ? <PublicMedia asset={leadStoryMedia} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : undefined}
         visualKicker="Field journal"
         visualTitle={leadStory?.title ?? "Stories of Amanah"}
         visualNote="Stories shared with dignity and care."
