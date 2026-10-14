@@ -152,6 +152,29 @@ beforeEach(() => {
 });
 
 describe("direct donation transfer submission", () => {
+  it.each(["appealId", "fundId", "givingIntent", "amount", "transferReference", "domesticConfirmed", "evidence"] as const)(
+    "rejects duplicate %s entries before selecting a donation destination or touching financial records",
+    async field => {
+      const original = requestWith();
+      const form = await original.formData();
+      if (field === "evidence") {
+        form.append(field, new File(["one"], "first.png", { type: "image/png" }));
+        form.append(field, new File(["two"], "second.png", { type: "image/png" }));
+      } else {
+        if (field === "fundId") form.append(field, "first-fund");
+        form.append(field, "second-value");
+      }
+      const response = await POST(new Request(original.url, { method: "POST", body: form }));
+      expect(response.status).toBe(400);
+      expect(response.headers.get("cache-control")).toContain("no-store");
+      expect((await response.json()).error).toMatch(/duplicate fields/i);
+      expect(mocks.safeParse).not.toHaveBeenCalled();
+      expect(mocks.findFirst).not.toHaveBeenCalled();
+      expect(mocks.donationCreate).not.toHaveBeenCalled();
+      expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    },
+  );
+
   it.each(["cmf1234567890123456789013", ""])("rejects a submitted fund destination %j with the real schema before persistence or storage", async fundId => {
     const actual = await vi.importActual<typeof import("@/lib/donations")>("@/lib/donations");
     mocks.safeParse.mockImplementation(actual.directTransferSchema.safeParse.bind(actual.directTransferSchema));
