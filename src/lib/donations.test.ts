@@ -1,8 +1,17 @@
 import { describe, expect, it } from "vitest";
-import { createDonationReference, createReceiptNumber, createReceiptToken, donationSchema, directTransferSchema, getDonationAcknowledgementPresentation, hashReceiptToken, isDonationAmountAllowedForRemaining } from "./donations";
+import { appealDonationDesignationSnapshot, createDonationReference, createReceiptNumber, createReceiptToken, donationSchema, directTransferSchema, getDonationAcknowledgementPresentation, hashReceiptToken, isDonationAmountAllowedForRemaining } from "./donations";
 
 const valid = { appealId: "cmf1234567890123456789012", donorName: "Test Donor", donorEmail: "donor@example.com", donorPhone: "9876543210", amount: 500, givingIntent: "GENERAL", domesticConfirmed: true };
 describe("donation validation", () => {
+  it("preserves the original appeal purpose and donor-selected intention in a private snapshot", () => {
+    const appeal = { id: "appeal-original", title: "Verified education support" };
+    const snapshot = appealDonationDesignationSnapshot(appeal, "SADAQAH");
+    appeal.title = "Later revised campaign title";
+    expect(snapshot).toEqual({
+      version: 1, kind: "APPEAL", appealId: "appeal-original",
+      label: "Verified education support", givingIntent: "SADAQAH",
+    });
+  });
   it("accepts a domestic INR donation", () => expect(donationSchema.safeParse(valid).success).toBe(true));
   it.each(["cmf1234567890123456789013", "", null, 123, true, { id: "unreviewed-fund" }])("rejects an unsupported second destination %j instead of dropping it", fundId => {
     expect(donationSchema.safeParse({ ...valid, fundId }).success).toBe(false);
