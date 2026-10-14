@@ -121,8 +121,8 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
           const descriptor = `${item.alt ?? ""} ${item.caption ?? ""}`;
           const privacyProtected = /(privacy|blurred|identit(?:y|ies) protected)/i.test(descriptor);
           const graphicAsset = /(graphic|announcement|campaign cover|results update|infographic|carousel)/i.test(descriptor);
-          const width = item.width && item.width > 0 ? item.width : 1600;
-          const height = item.height && item.height > 0 ? item.height : 1200;
+          const width = Number.isSafeInteger(item.width) && item.width! > 0 && item.width! <= 10000 ? item.width! : 1600;
+          const height = Number.isSafeInteger(item.height) && item.height! > 0 && item.height! <= 10000 ? item.height! : 1200;
           const imageUrl = getPublicImageOptimizationUrl(item.url);
           const blur = getPublicImagePlaceholder(item.blurDataURL);
           return (
@@ -148,8 +148,8 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
       </div>
 
       {active ? (() => {
-        const width = active.width && active.width > 0 ? active.width : 1600;
-        const height = active.height && active.height > 0 ? active.height : 1200;
+        const width = Number.isSafeInteger(active.width) && active.width! > 0 && active.width! <= 10000 ? active.width! : 1600;
+        const height = Number.isSafeInteger(active.height) && active.height! > 0 && active.height! <= 10000 ? active.height! : 1200;
         return (
         <div className={styles.backdrop} role="presentation" onPointerDown={event => {
           if (event.currentTarget === event.target) close();
