@@ -89,4 +89,32 @@ describe("manual transfer money-state boundary", () => {
     expect(mocks.notificationCreate).toHaveBeenCalledOnce();
     expect(mocks.auditCreate).toHaveBeenCalledOnce();
   });
+  it("verifies a fund transfer without reading or incrementing appeal totals", async () => {
+    mocks.donationFind.mockResolvedValueOnce({
+      id: "donation_fund", referenceNumber: "AFD-FUND", appealId: null,
+      fundId: "approved_fund", donorEmail: "donor@example.test",
+      givingIntent: "SADAQAH", amount: money(500),
+      status: DonationStatus.PENDING_VERIFICATION,
+      paymentMethod: DonationPaymentMethod.BANK_TRANSFER,
+    });
+    const result = await reconcileDirectDonation(request);
+    expect(result.status).toBe(DonationStatus.CAPTURED);
+    expect(mocks.appealFind).not.toHaveBeenCalled();
+    expect(mocks.appealUpdate).not.toHaveBeenCalled();
+    expect(mocks.donationUpdate).toHaveBeenCalledOnce();
+    expect(mocks.notificationCreate).toHaveBeenCalledOnce();
+  });
+
+  it("refuses a transfer with two monetary destinations", async () => {
+    mocks.donationFind.mockResolvedValueOnce({
+      id: "donation_mixed", referenceNumber: "AFD-MIXED",
+      appealId: "appeal_test", fundId: "fund_test",
+      status: DonationStatus.PENDING_VERIFICATION,
+      paymentMethod: DonationPaymentMethod.DIRECT_UPI,
+    });
+    await expect(reconcileDirectDonation(request)).rejects.toThrow(/exactly one/);
+    expect(mocks.donationUpdate).not.toHaveBeenCalled();
+    expect(mocks.appealUpdate).not.toHaveBeenCalled();
+  });
+
 });
