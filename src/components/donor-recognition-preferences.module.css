@@ -1,0 +1,11 @@
+.panel{display:grid;gap:.85rem;margin-top:1.5rem;padding:1.2rem;border:1px solid var(--af-color-border);border-radius:1rem;background:var(--af-color-surface)}
+.panel h3{margin:0;color:var(--af-color-navy-950);font:500 1.45rem/1.2 var(--af-font-display)}
+.panel p{margin:0;color:var(--af-color-muted);line-height:1.6;font-size:.925rem}
+.panel strong{color:var(--af-color-navy-950)}
+.panel form{display:grid;justify-items:start;gap:.7rem}
+.panel label{display:grid;gap:.45rem;color:var(--af-color-navy-950);font-weight:750;width:100%}
+.panel input{width:100%;min-height:3rem;padding:.65rem .8rem;border:1px solid var(--af-color-border);border-radius:.7rem;color:var(--af-color-navy-950);background:var(--af-color-canvas)}
+.withdraw{min-height:3rem;padding:.7rem .9rem;border:1px solid var(--af-color-border);border-radius:.7rem;color:var(--af-color-navy-950);background:var(--af-color-canvas);font-weight:700;cursor:pointer}
+.privacy{padding-top:.6rem;border-top:1px solid var(--af-color-border)}
+.panel :is(input,button):focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
+.panel button:disabled{cursor:wait;opacity:.65}
