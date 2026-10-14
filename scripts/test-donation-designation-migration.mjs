@@ -67,6 +67,9 @@ describe('private donation designation migration on isolated PostgreSQL-WASM', {
     ['foreign appeal', { ...good, appealId: 'another-appeal' }],
     ['changed intent', { ...good, givingIntent: 'ZAKAT' }],
     ['missing label', { ...good, label: undefined }],
+    ['empty label', { ...good, label: '' }],
+    ['blank label', { ...good, label: '   ' }],
+    ['oversized label', { ...good, label: 'x'.repeat(4097) }],
     ['scalar snapshot', 'invalid'],
     ['missing version', { ...good, version: undefined }],
   ]) it(`rejects ${reason} at the database boundary`, async () => {
