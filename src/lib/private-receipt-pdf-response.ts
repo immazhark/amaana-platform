@@ -26,7 +26,7 @@ export function privateReceiptPdfResponse(input: {
 
   // This is a lightweight output type guard, not full PDF conformance checking.
   // The trusted renderer remains responsible for complete, valid PDF structure.
-  const header = new TextDecoder("ascii").decode(bytes.subarray(0, 8));
+  const header = new TextDecoder("ascii").decode(bytes.subarray(0, 10));
   const tail = new TextDecoder("ascii").decode(bytes.subarray(Math.max(0, bytes.length - 1024)));
   if (!/^%PDF-(?:1\.[0-7]|2\.0)\r?\n/.test(header) ||
       !/%%EOF\s*$/.test(tail)) throw new Error("Malformed private receipt PDF");
