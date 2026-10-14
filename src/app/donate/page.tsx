@@ -113,6 +113,11 @@ export default async function Page({ searchParams }: PageProps = {}) {
         <Link href="/zakat-calculator">Use the educational estimate</Link> before reviewing the currently approved giving purposes.
         An estimate does not establish which fund is authorised to accept Zakat.
       </div>}
+      <p className={styles.note}>
+        Looking for source-reviewed reflections on charitable giving?{" "}
+        <Link href="/giving/learn">Explore the Islamic giving learning library</Link>.
+        Educational content never determines whether an approved fund can accept your specific intention.
+      </p>
       <VerifiedImpactStrip items={impactItems} headingId="donate-published-outcomes" />
       {hasCheckout && <DonationLandingCheckout key={initialRoute} initialRoute={initialRoute} appeals={appealChoices} funds={funds}
         bankAvailable={Boolean(paymentDetails?.bank)}
