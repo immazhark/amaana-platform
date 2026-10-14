@@ -1,5 +1,20 @@
 # Amaana Foundation engineering continuation — 14 October 2026
 
+## Continuation — prevent highly sensitive appeal promotion outside approved direct pages
+
+Active PR #292, branch `fix/direct-transfer-feedback-20261013`; exact integration/test head before checkpoint: `caab2dbd511fa1b7fdd49dda678e28343b6f832f`.
+
+**Confirmed privacy gap:** Previously `getAppealSearchPrivacy` and the appeal-detail metadata/share policy could treat a verified case as `HIGHLY_SENSITIVE`, while its unredacted title/summary still entered homepage cards, dynamically inserted home hero slides, public live rail JSON, /appeals directory, /donate discovery directory and initiative linked-appeal promotions. These surfaces offered no confidentiality check even though the model's policy said sensitive cases should not be promoted via metadata.
+
+**Source remediation:** Add a centralized server-only-use `canPromoteAppeal` predicate rejecting explicitly `HIGHLY_SENSITIVE` verification. Extend the existing Prisma homepage and public-index selections only with `assistanceRequest.verification.confidentialityLevel`, filter before limiting/promoting, and **strip `assistanceRequest`** from each returned public record. The homepage result feeds home cards, home hero auto slides and `/api/public/live-rail` without new queries. The public index feeds /appeals and /donate directory. Apply the same projection/filter/strip at `getPublishedInitiativeBySlug` to prevent initiative cross-promotion. Valid standard and legacy reviewed appeals retain existing behavior, and an individually approved direct appeal page remains available. No donor or beneficiary content was edited, no media was generated or transmitted. Source commits: `7134b44`, `595f54f`, `ef18168`, `18b82ef`.
+
+**Regression protection:** Add pure predicate tests (`05aa65e`), an index integration test (`d927050`), homepage/initiative mocked Prisma tests (`03191e4`), and a public-boundary source guard (`caab2db`). All **17/17 cross-file source invariants** re-fetched from GitHub matched the exact committed head; they verify the live rail/directory/initiative consumers use the guarded projections and no private verification relation escapes into the public payload. Exact `src/lib/appeal-promotion.ts` bytes were reconstituted in local Node 22 and checked against Git blob SHA `c9126b46a5cbbcc873086062e49cdcc955bc87a3`; **7/7 pure helper runtime assertions passed**. The authored Vitest integration cases, full Next build, browser regression, database/Prisma integration and live CDN cache behavior are **not yet executed**.
+
+**Release-sensitive cache flag:** Homepage HTML, the cached home projection and the public live rail have previously configured time-based caching. This source correction prevents new sensitive cases from entering freshly generated promotional payloads, but does **not** prove instantaneous purge of previously cached sensitive data after a confidentiality change. Verify invalidation and stale-response behavior in staging before full acceptance; do not claim the privacy finding closed on production.
+
+**Defect register accounting:** This is an additional specific privacy issue within existing public publication/privacy remediation scope. Do not invent a new original R-ID or change the historical 95-row totals (10 baseline addressed,33 implemented pending release verification,25 partial,16 open,11 unverified). PR remains unmerged. No payment, private record mutation, media write, provider change, deployment or CI-budget increase.
+
+
 ## Continuation — donor acknowledgement refund status correctness
 
 Current PR #292 on `fix/direct-transfer-feedback-20261013`, implementation head before checkpoint: `94f096efa6bc2d8fd7efa9c1cd911bbddd47046e`.
