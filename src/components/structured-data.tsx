@@ -1,7 +1,8 @@
-import { serializeStructuredData } from "@/lib/structured-data";
+import { normalizeStructuredDataImage, serializeStructuredData } from "@/lib/structured-data";
 
 export function StructuredData() {
   const siteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org").replace(/\/$/, "");
+  const logo = normalizeStructuredDataImage("/brand/amaana-mark.svg", siteUrl);
   const data = {
     "@context": "https://schema.org",
     "@graph": [
@@ -11,6 +12,7 @@ export function StructuredData() {
         name: "Amaana Foundation",
         alternateName: ["Amaana Foundation Hyderabad", "Amaana"],
         url: siteUrl,
+        ...(logo ? { logo } : {}),
         email: "amaanafoundation24@gmail.com",
         telephone: "+91-9908002694",
         description: "Amaana Foundation is a Hyderabad-based registered charitable trust supporting verified community needs through relief, education, seasonal programmes and case-led assistance with dignity, transparency and accountability.",
@@ -32,6 +34,7 @@ export function StructuredData() {
           "https://www.instagram.com/amaanafoundation/",
           "https://www.facebook.com/amaanafoundation24/",
           "https://www.youtube.com/@amaanafoundation",
+          "https://www.threads.net/@amaanafoundation",
         ],
       },
       {

@@ -1,3 +1,5 @@
+import { readFileSync } from "node:fs";
+import sharp from "sharp";
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -19,6 +21,27 @@ function expectHardened(payload: string) {
 
 afterEach(() => vi.unstubAllEnvs());
 describe("actual JSON-LD rendering boundaries", () => {
+  it.each(["https://amaanafoundation.org", "https://amaanafoundation.org/"])("enriches one existing organization with reviewed logo and Threads at %s", async siteUrl => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", siteUrl);
+    const data = JSON.parse(scriptPayload(renderToStaticMarkup(createElement(StructuredData))));
+    const organizations = data["@graph"].filter((item: { "@type": unknown }) => Array.isArray(item["@type"]) && item["@type"].includes("Organization"));
+    expect(organizations).toHaveLength(1);
+    const organization = organizations[0];
+    expect(organization["@id"]).toBe("https://amaanafoundation.org/#organization");
+    expect(organization.logo).toBe("https://amaanafoundation.org/brand/amaana-mark.svg");
+    expect(organization.sameAs).toContain("https://www.threads.net/@amaanafoundation");
+    expect(new Set(organization.sameAs).size).toBe(organization.sameAs.length);
+    expect(data["@graph"][1].publisher["@id"]).toBe(organization["@id"]);
+    expect(organization).not.toHaveProperty("taxID");
+    expect(organization).not.toHaveProperty("potentialAction");
+    const footer = readFileSync("src/components/site-footer.tsx", "utf8");
+    expect(footer).toContain(organization.sameAs.at(-1));
+    expect(footer).toContain("/brand/amaana-mark.svg");
+    const asset = await sharp("public/brand/amaana-mark.svg").metadata();
+    expect(asset.width).toBeGreaterThanOrEqual(112);
+    expect(asset.height).toBeGreaterThanOrEqual(112);
+  });
+
   it("uses hardened escaping for Organization configuration while preserving graph identity", () => {
     const siteUrl = `https://amaanafoundation.org/?fixture=${sensitiveText}`;
     vi.stubEnv("NEXT_PUBLIC_APP_URL", siteUrl);
