@@ -1,7 +1,7 @@
 "use client";
 
 import { lazy, Suspense, useCallback, useRef, useState, type ReactNode } from "react";
-import { getAppealProgressPercent } from "@/lib/appeals";
+import { getPublicAppealProgress } from "@/lib/public-appeal-progress";
 import styles from "./appeal-donation-flow.module.css";
 
 const DonationMethods = lazy(() => import("@/components/donation-methods")
@@ -38,35 +38,41 @@ export function AppealDonationFlow({ appeals, paymentInstructions, bankAvailable
     setLocked(next);
     onSubmissionLockChange?.(next);
   }, [onSubmissionLockChange]);
-  const selected = appeals.find(appeal => appeal.id === selectedId) ?? appeals[0];
+  const eligible = appeals.flatMap(appeal => {
+    const progress = getPublicAppealProgress(appeal.raised, appeal.goal);
+    return progress && progress.remaining > 0 &&
+      Math.abs(progress.remaining - appeal.remaining) < 0.000001
+      ? [{ appeal, progress }] : [];
+  });
+  const choice = eligible.find(item => item.appeal.id === selectedId) ?? eligible[0];
+  const selected = choice?.appeal;
   if (!selected) return <p role="status">No verified appeal is available for checkout.</p>;
 
   return <section className={styles.root} id="active-appeal-checkout" aria-labelledby="appeal-checkout-heading">
     <div className={styles.intro}>
-      <span className={styles.eyebrow}>Approved appeals · live verified goals</span>
+      <span className={styles.eyebrow}>Approved appeals · reviewed funding snapshots</span>
       <h2 id="appeal-checkout-heading">Choose an active appeal and give directly.</h2>
       <p>Each target belongs to its own currently reviewed appeal, not a pooled campaign total.
         A goal or donation may change before checkout; the server rechecks eligibility and remaining need.</p>
     </div>
     <div className={styles.choiceGrid} role="group" aria-label="Select a verified appeal">
-      {appeals.map(appeal => {
-        const percent = getAppealProgressPercent(appeal.raised, appeal.goal);
+      {eligible.map(({ appeal, progress }) => {
         return <button key={appeal.id} type="button" disabled={locked}
           className={styles.choice} aria-pressed={selected.id === appeal.id}
           onClick={() => { if (!lockRef.current) setSelectedId(appeal.id); }}>
           <strong>{appeal.title}</strong>
-          <span>₹{appeal.remaining.toLocaleString("en-IN", { maximumFractionDigits: 2 })} remaining</span>
-          <span className={styles.track} aria-hidden="true"><span style={{ width: `${percent}%` }}/></span>
-          <small>{percent}% of the reviewed ₹{appeal.goal.toLocaleString("en-IN", { maximumFractionDigits: 2 })} goal</small>
+          <span>{progress.remainingLabel} remaining</span>
+          <span className={styles.track} aria-hidden="true"><span style={{ width: `${progress.percentage}%` }}/></span>
+          <small>{progress.percentage}% of the reviewed {progress.goalLabel} goal</small>
         </button>;
       })}
     </div>
     <div className={styles.checkout}>
       <p className={styles.selected}>Selected: <strong>{selected.title}</strong> · verified remaining need
-        ₹{selected.remaining.toLocaleString("en-IN", { maximumFractionDigits: 2 })}</p>
+        {choice?.progress.remainingLabel}</p>
       <Suspense fallback={<p role="status">Preparing secure donation methods…</p>}>
         <DonationMethods key={selected.id} appealId={selected.id} appealTitle={selected.title}
-          maxAmount={selected.remaining} zakatEligible={selected.zakatEligible}
+          maxAmount={choice?.progress.remaining ?? 0} zakatEligible={selected.zakatEligible}
           bankAvailable={bankAvailable} paymentInstructions={paymentInstructions}
           onSubmissionLockChange={updateLock}/>
       </Suspense>

@@ -3,7 +3,7 @@ import Link from "@/components/navigation-link";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { complianceCopy } from "@/lib/master-copy";
 import { getAppealsIndexData, getDonationPageData, getDonationImpactHighlights } from "@/lib/public-page-data";
-import { getRemainingAppealAmount } from "@/lib/appeals";
+import { getPublicAppealProgress } from "@/lib/public-appeal-progress";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { DonationPaymentInstructions } from "@/components/donation-payment-instructions";
 import type { AppealDonationChoice } from "@/components/appeal-donation-flow";
@@ -67,11 +67,13 @@ export default async function Page({ searchParams }: PageProps = {}) {
   ));
   const appealChoices: AppealDonationChoice[] = approvedAppeals.flatMap(appeal => {
     if (!appeal) return [];
-    const raised = appeal.amountRaised.toNumber();
-    const goal = appeal.goalAmount.toNumber();
-    const remaining = getRemainingAppealAmount(raised, goal);
-    if (!Number.isSafeInteger(Math.round(remaining * 100)) || remaining <= 0) return [];
-    return [{ id: appeal.id, slug: appeal.slug, title: appeal.title, raised, goal, remaining, zakatEligible: appeal.zakatEligible }];
+    const progress = getPublicAppealProgress(appeal.amountRaised, appeal.goalAmount);
+    if (!progress || progress.remaining <= 0) return [];
+    return [{
+      id: appeal.id, slug: appeal.slug, title: appeal.title,
+      raised: progress.raised, goal: progress.goal, remaining: progress.remaining,
+      zakatEligible: appeal.zakatEligible,
+    }];
   });
   const impactItems: VerifiedImpactItem[] = publishedInitiatives.map(item => ({
       slug: item.slug, title: item.title,
