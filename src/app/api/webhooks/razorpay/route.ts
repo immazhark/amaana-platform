@@ -267,6 +267,13 @@ export async function POST(request: Request) {
           requestedRefundPaise: refund.amount,
         });
 
+        // Unlike an appeal's deliberately capped public raised counter, a
+        // fund's net receipts derive directly from Donation.refundedAmount.
+        // Never acknowledge a provider refund that cannot be booked in full.
+        if (destination.kind === "FUND" && accounting.donationRefundPaise !== refund.amount) {
+          throw new Error("Fund refund exceeds the remaining captured donation amount");
+        }
+
         if (accounting.donationRefundPaise > 0) {
           await tx.donation.update({
             where: { id: donation.id },
