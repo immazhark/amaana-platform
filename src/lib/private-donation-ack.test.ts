@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   parsePrivateDonationAcknowledgementLocation,
   privateDonationAcknowledgementPath,
+  formatPrivateReceiptINR,
 } from "./private-donation-ack";
 
 describe("private donation acknowledgement links", () => {
@@ -39,4 +40,15 @@ describe("private donation acknowledgement links", () => {
     expect(parsePrivateDonationAcknowledgementLocation("", "")).toBeNull();
     expect(parsePrivateDonationAcknowledgementLocation("?token=short", "")).toBeNull();
   });
+  it("preserves paise in printed and on-screen receipts", () => {
+    expect(formatPrivateReceiptINR(0.29)).toContain("0.29");
+    expect(formatPrivateReceiptINR(100.3)).toContain("100.30");
+    expect(formatPrivateReceiptINR(0)).toContain("0.00");
+    expect(formatPrivateReceiptINR(1234567.89)).toContain("12,34,567.89");
+  });
+
+  it.each([-1, Infinity, NaN, 1.001, Number.MAX_SAFE_INTEGER])(
+    "fails closed instead of printing an inaccurate INR amount: %s",
+    value => { expect(() => formatPrivateReceiptINR(value)).toThrow(RangeError); },
+  );
 });
