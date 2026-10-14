@@ -11,6 +11,13 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
+// Exercise the real origin/token/privacy boundaries without a real database
+// attempt ledger. Rate-limit denial itself is covered in the route unit tests.
+vi.mock("@/lib/request-security", async importOriginal => ({
+  ...await importOriginal<typeof import("@/lib/request-security")>(),
+  enforceAcknowledgementRateLimit: async () => true,
+}));
+
 import { POST as acknowledgement } from "./donations/acknowledgement/route";
 import { POST as tracking } from "./assistance/status/route";
 
