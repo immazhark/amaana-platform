@@ -247,6 +247,18 @@ Runtime state/cache after privacy revocation requires deployment/CDN verificatio
 
 ## F. Continuation checkpoint
 
+### 14 October — B08 financial integration and targeted repair (current)
+
+Engineering continuation on PR #292; reviewed the authoritative B08/B09 plan and active GitHub tree. Source/test head before this document change: `e2a8476c4460b1dda4b9404261af76a33cb1a3b0`.
+
+- Reconciled the actual failed fast-suite job 38572789534: the private donor acknowledgement source correctly rejected an obsolete synthetic test record missing `appealId`. Updated the test fixture with exclusive appeal destination and the explicit `designationKind` response field (`0ebf5ad`), without relaxing the runtime destination constraint.
+- The later fast-suite job at `0ebf5ad` passed. Its isolated CI PostgreSQL job also passed and applied all 21 migrations, including `20261014160000_donation_designation_snapshot` and `20261014193000_exclusive_donation_destination`, to a fresh loopback-only database. The previously existing refund database tests passed. This is not proof of live/staging schema promotion, production charge correctness or the newer tests.
+- Corrected captured/pending donor acknowledgement copy to refer to the approved giving fund for FUND destinations while preserving existing appeal wording. Added destination-specific unit coverage (`215af6a`, `7ba7de1`, `7d863fe`).
+- Extended the existing opt-in, loopback-only PostgreSQL refund integration suite with a real APPROVED GivingFund, distinct creator/editor/approver, immutable reviewed snapshot, CAPTURED fund-only donation, processed refund and event replay, immutable donor intent, and paused-fund rejection (`2ff74b0`). Corrected synthetic accounting-code casing to match reviewed definition validation (`e2a8476`). This latest database case has NOT yet been verified by an exact-head successful job.
+- Public order and direct-transfer schemas continue refusing `fundId`. No public fund activation, fund seed, hosted database operation, real provider charge/refund, deployed release, notification worker activation, secret/environment change or merge occurred.
+
+Release blockers: latest-head Prisma/typecheck/unit/PostgreSQL/response contract verification, confirmed migration rollout sequencing, reviewed factual disclosures and independent public-fund activation approval. The full B08 integration remains source-implemented but not production-verified. Maintain the B09 settlement/allocation and reviewer approval gates; do not reclassify the 149 canonical findings from these subtask commits.
+
 ### 14 October — B08 fund ledger groundwork and migration blocker repair
 
 This source-only continuation keeps PR #292 open on `fix/direct-transfer-feedback-20261013` and follows the B08/B09 gates in the canonical plan.
