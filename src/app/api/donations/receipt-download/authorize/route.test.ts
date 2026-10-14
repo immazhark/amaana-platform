@@ -61,6 +61,20 @@ describe("gated private receipt-download authorization route", () => {
     expect(mocks.limiter).not.toHaveBeenCalled();
     expect(mocks.issue).not.toHaveBeenCalled();
   });
+  it("rejects malformed JSON before a private lookup", async () => {
+    const result = await POST(new Request("https://amaana.example/api/donations/receipt-download/authorize", {
+      method: "POST", headers: { Origin: "https://amaana.example" }, body: "{",
+    }));
+    expect(result.status).toBe(404);
+    expect(mocks.issue).not.toHaveBeenCalled();
+  });
+  it("bounds actual streamed JSON bytes, not just Content-Length", async () => {
+    const response = await POST(request({ ...body, padding: "x".repeat(2000) }));
+    expect(response.status).toBe(413);
+    expect(response.headers.get("cache-control")).toContain("no-store");
+    expect(mocks.limiter).not.toHaveBeenCalled();
+    expect(mocks.issue).not.toHaveBeenCalled();
+  });
   it("enforces receipt-specific rate-limit before issuing any grant", async () => {
     mocks.limiter.mockResolvedValue(false);
     const result = await POST(request());

@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { enforceAcknowledgementRateLimit, isSameOrigin } from "@/lib/request-security";
 import { issueVerifiedReceiptDownloadGrant } from "@/lib/verified-receipt-download";
 import { RECEIPT_DOWNLOAD_GRANT_TTL_SECONDS } from "@/lib/receipt-download-grant";
@@ -38,9 +38,10 @@ export async function POST(request: Request) {
     }
     let parsedBody: unknown;
     try {
-      parsedBody = JSON.parse(await readTextBodyWithLimit(request, MAX_BYTES));
+      parsedBody = JSON.parse(await readTextBodyWithLimit(request, MAX_BYTES, { timeoutMs: 5000 }));
     } catch (error) {
-      const status = error instanceof RequestBodyTooLargeError ? 413 : 404;
+      const status = error instanceof RequestBodyTooLargeError ? 413
+        : error instanceof RequestBodyReadTimeoutError ? 408 : 404;
       return NextResponse.json({ available: false }, { status, headers: privateHeaders });
     }
     const parsed = requestSchema.safeParse(parsedBody);
