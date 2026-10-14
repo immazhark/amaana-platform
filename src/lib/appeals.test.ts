@@ -51,6 +51,44 @@ describe("isAppealOpenForDonations", () => {
     }, now)).toBe(true);
   });
 
+  it.each([
+    { raised: 0, goal: 0, closesAt: null },
+    { raised: 0, goal: -10, closesAt: null },
+    { raised: -1, goal: 75_000, closesAt: null },
+    { raised: "invalid", goal: 75_000, closesAt: null },
+    { raised: 0, goal: "invalid", closesAt: null },
+    { raised: Number.NaN, goal: 75_000, closesAt: null },
+    { raised: 0, goal: Number.POSITIVE_INFINITY, closesAt: null },
+    { raised: Number.POSITIVE_INFINITY, goal: 75_000, closesAt: null },
+    { raised: 1, goal: 75_000, closesAt: "not-a-date" },
+    { raised: 1, goal: 75_000, closesAt: "" },
+    { raised: 1, goal: 75_000, closesAt: new Date(Number.NaN) },
+  ])("does not expose donation links for malformed fundraising inputs: %#", ({ raised, goal, closesAt }) => {
+    expect(isAppealOpenForDonations({
+      status: "PUBLISHED",
+      amountRaised: raised,
+      goalAmount: goal,
+      closesAt,
+    }, now)).toBe(false);
+  });
+
+  it("rejects an invalid reference clock instead of leaving an appeal open", () => {
+    expect(isAppealOpenForDonations({
+      status: "PUBLISHED",
+      amountRaised: 10_000,
+      goalAmount: 75_000,
+    }, new Date(Number.NaN))).toBe(false);
+  });
+
+  it("accepts a valid amount encoded as a numeric string and a future Date deadline", () => {
+    expect(isAppealOpenForDonations({
+      status: "PUBLISHED",
+      amountRaised: "10000",
+      goalAmount: decimalLike(75_000),
+      closesAt: new Date("2026-09-16T12:00:00.000Z"),
+    }, now)).toBe(true);
+  });
+
   it("rejects an appeal exactly at target", () => {
     expect(isAppealOpenForDonations({
       status: "PUBLISHED",
