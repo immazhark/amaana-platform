@@ -79,6 +79,23 @@ for (const file of ['appeal-card.css', 'appeals.css']) {
   }
 }
 
+// The appeal-detail funding strip renders its summary inside a first-child div.
+// Direct child selectors on the aside are dead and silently drop the visual
+// amount hierarchy. Mobile totals must fit a single owned grid column.
+const appealRouteCss = await readFile(path.join(root, 'src/app/appeals.css'), 'utf8');
+for (const expected of [
+  '.v2-appeal-donation-panel>div:first-child>small{display:block;color:var(--af-color-gold-ink)',
+  '.v2-appeal-donation-panel>div:first-child>strong{display:block;',
+  'line-height:1.12;color:var(--af-color-navy-950)',
+  '.v2-appeal-donation-panel>div:first-child>p{margin:.3rem 0 0;color:var(--af-color-muted)',
+  '@media(max-width:620px){section.v2-appeal-funding-strip .v2-appeal-donation-panel{grid-template-columns:minmax(0,1fr)',
+]) {
+  if (!appealRouteCss.includes(expected)) failures.push(`Appeal funding styles missing: ${expected}`);
+}
+if (/\\.v2-appeal-donation-panel>(?:small|strong|p)\\s*\\{/.test(appealRouteCss)) {
+  failures.push('Appeals CSS contains obsolete direct-child funding summary selectors.');
+}
+
 // Transaction routes share control styles, while their layout/upload rules stay owned.
 const sharedForms = await readFile(path.join(root, 'src/app/forms-experience.css'), 'utf8');
 if (/\.v2-(?:donate-|assistance-|file-|amount-|consent-fieldset)/.test(sharedForms)) {
