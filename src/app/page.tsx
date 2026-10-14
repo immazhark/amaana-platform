@@ -4,6 +4,8 @@ import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel } from "@/components/body-carousel";
 import "./home-showcase.css";
 import "./home-documentary.css";
+// AppealCard also renders on the homepage whenever a reviewed appeal is active.
+import "./appeal-card.css";
 import type { Metadata } from "next";
 import Link from "@/components/navigation-link";
 import { AppealCard } from "@/components/appeal-card";
