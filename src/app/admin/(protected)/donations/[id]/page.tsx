@@ -3,7 +3,7 @@ import { hasPermission, requirePermission } from "@/lib/auth";
 import { summarizeDonationRecord } from "@/lib/fund-ledger";
 import { formatPrivateReceiptINR } from "@/lib/private-donation-ack";
 import { donationIntentLabel } from "@/lib/donation-intent";
-import { resolvePrivateDonationPurpose } from "@/lib/donation-destination";
+import { getAdminDonationPurpose } from "@/lib/admin-donation-purpose";
 import { prisma } from "@/lib/prisma";
 import { getDonationEvidenceUrl } from "@/lib/storage";
 import { reconcileDonationAction } from "../actions";
@@ -24,10 +24,12 @@ export default async function DonationDetailPage({ params }: Props) {
   catch { accounting = null; }
   const displayedAmount = accounting ? formatPrivateReceiptINR(accounting.amountPaise / 100) : "Requires reconciliation";
   const direct = donation.paymentMethod !== "RAZORPAY";
-  const designation = resolvePrivateDonationPurpose(donation);
+  const designation = getAdminDonationPurpose(donation);
 
   return <>
-    <div className="admin-heading"><div><p className="eyebrow">{donation.referenceNumber}</p><h1>{displayedAmount}</h1><p className="muted">{designation.label}</p></div><span className="status-badge">{donation.status}</span></div>
+    <div className="admin-heading"><div><p className="eyebrow">{donation.referenceNumber}</p><h1>{displayedAmount}</h1><p className="muted">{designation.label}</p>
+    {designation.requiresReview && <p role="alert">This donation destination requires financial reconciliation. Do not use a renamed programme as evidence of the donor&apos;s original purpose.</p>}
+    </div><span className="status-badge">{donation.status}</span></div>
     {!accounting && <p role="alert">Donation amounts require financial reconciliation.</p>}
     <div className="admin-detail-grid">
       <section className="card"><h2>Donation record</h2><dl className="details">

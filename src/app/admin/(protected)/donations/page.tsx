@@ -5,7 +5,7 @@ import { summarizeSettledDonationAggregate } from "@/lib/fund-ledger";
 import { formatPrivateReceiptINR } from "@/lib/private-donation-ack";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
-import { resolvePrivateDonationPurpose } from "@/lib/donation-destination";
+import { getAdminDonationPurpose } from "@/lib/admin-donation-purpose";
 import { prisma } from "@/lib/prisma";
 import { donationOperationalState } from "@/lib/operational-signals";
 
@@ -148,9 +148,9 @@ export default async function DonationsPage({ searchParams }: Props) {
         <div>
           <p className="eyebrow">Payment health</p>
           <h2 id="donation-health-heading">Operational signals</h2>
-          <p className="muted">These counters flag reconciliation and acknowledgement invariants that need review even when payment infrastructure itself is reachable.</p>
+          <p className="muted">These counters flag reconciliation and acknowledgement invariants that need review even when payment infrastructure itself is reachable. A clear result does not certify bank settlement, original donor-purpose records or payment provider reconciliation.</p>
         </div>
-        <span className="status-badge">{operational.status === "healthy" ? "HEALTHY" : `${operational.attention} NEED ATTENTION`}</span>
+        <span className="status-badge">{operational.status === "healthy" ? "NO FLAGGED SIGNALS" : `${operational.attention} NEED ATTENTION`}</span>
       </div>
       <div className="card-grid">
         <article className="card"><strong>{pendingDirectTransfers}</strong><p>Direct UPI/bank transfers awaiting statement verification</p></article>
@@ -189,17 +189,24 @@ export default async function DonationsPage({ searchParams }: Props) {
     <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Donation records">
       <table>
         <thead><tr><th>Reference</th><th>Donor</th><th>Designated purpose</th><th>Intent</th><th>Method</th><th>Amount</th><th>Refunded</th><th>Status</th><th>Date</th></tr></thead>
-        <tbody>{donations.map(donation => <tr key={donation.id}>
+        <tbody>{donations.map(donation => {
+          const purpose = getAdminDonationPurpose(donation);
+          return <tr key={donation.id}>
           <td><Link href={`/admin/donations/${donation.id}`}><strong>{donation.referenceNumber}</strong></Link></td>
           <td>{donation.donorName}<br/><small>{donation.donorEmail}</small></td>
-          <td>{resolvePrivateDonationPurpose(donation).label}</td>
+          <td>{purpose.label}{purpose.requiresReview
+            ? <div><small role="alert">Destination requires financial reconciliation</small></div>
+            : purpose.provenance === "legacy"
+              ? <div><small className="muted">Legacy purpose; original snapshot unavailable</small></div>
+              : null}</td>
           <td>{donationIntentLabel(donation.givingIntent)}</td>
           <td>{donation.paymentMethod === "DIRECT_UPI" ? "Direct UPI" : donation.paymentMethod === "BANK_TRANSFER" ? "Bank transfer" : "Razorpay"}</td>
           <td>{safeAdminFinancialAmount(donation.amount.toNumber())}</td>
           <td>{safeAdminFinancialAmount(donation.refundedAmount.toNumber())}</td>
           <td><span className="status-badge">{donation.status}</span></td>
           <td>{donation.createdAt.toLocaleDateString("en-IN")}</td>
-        </tr>)}</tbody>
+        </tr>;
+        })}</tbody>
       </table>
       {donations.length === 0 && <p className="empty-state">No donations match this view.</p>}
     </div>
