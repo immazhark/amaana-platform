@@ -10,7 +10,7 @@ const css = {
 };
 
 function token(name: string): string {
-  const found = css.palette.match(new RegExp(`--${name}:\\\\s*(#[a-fA-F0-9]{6})\\\\s*;`));
+  const found = css.palette.match(new RegExp(`--${name}:\\s*(#[a-fA-F0-9]{6})\\s*;`));
   if (!found?.[1]) throw new Error(`Missing token ${name}`);
   return found[1];
 }
