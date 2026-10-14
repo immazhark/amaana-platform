@@ -37,6 +37,13 @@ describe("public route publication policy", () => {
     expect(PUBLIC_STATIC_ROUTES.some(route => route.path === "/donate")).toBe(true);
   });
 
+  it("lists only the public volunteer enquiry rather than a private application endpoint", () => {
+    const path = "/get-involved/volunteer";
+    expect(PUBLIC_STATIC_ROUTES.some(route => route.path === path)).toBe(true);
+    expect(isPrivateRoute(path)).toBe(false);
+    expect(PUBLIC_STATIC_ROUTES.some(route => route.path.startsWith("/api/volunteer"))).toBe(false);
+  });
+
   it("does not allow duplicate publication rules", () => {
     const publicPaths = PUBLIC_STATIC_ROUTES.map(route => route.path);
     expect(new Set(publicPaths).size).toBe(publicPaths.length);

@@ -12,6 +12,7 @@ export const PUBLIC_STATIC_ROUTES = [
   { path: "/our-work", changeFrequency: "weekly", priority: 0.95 },
   { path: "/recognition", changeFrequency: "yearly", priority: 0.65 },
   { path: "/partner", changeFrequency: "monthly", priority: 0.65 },
+  { path: "/get-involved/volunteer", changeFrequency: "monthly", priority: 0.7 },
   { path: "/get-involved/sponsor-education", changeFrequency: "monthly", priority: 0.75 },
   { path: "/programmes/medical-financial-relief", changeFrequency: "monthly", priority: 0.8 },
   { path: "/programmes/emergency-relief", changeFrequency: "monthly", priority: 0.8 },
