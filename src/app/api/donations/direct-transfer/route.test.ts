@@ -305,6 +305,7 @@ describe("direct donation transfer submission", () => {
         provider: null,
         providerOrderId: null,
         transferReference: "UTR123456789",
+        designationSnapshot: { version: 1, kind: "APPEAL", appealId: "appeal-1", label: "Appeal 1", givingIntent: "GENERAL" },
       }),
       select: { id: true, referenceNumber: true },
     });
