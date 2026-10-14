@@ -48,9 +48,13 @@ async function requestRazorpay(path: string, init?: RequestInit) {
 export async function createRazorpayOrder(input: {
   amountPaise: number;
   receipt: string;
-  appealId: string;
+  appealId?: string;
+  fundId?: string;
   givingIntent: string;
 }) {
+  const appeal = typeof input.appealId === "string" && input.appealId.trim().length > 0;
+  const fund = typeof input.fundId === "string" && input.fundId.trim().length > 0;
+  if (appeal === fund) throw new Error("Razorpay order requires exactly one donation destination");
   return requestRazorpay("/orders", {
     method: "POST",
     body: JSON.stringify({
@@ -58,7 +62,7 @@ export async function createRazorpayOrder(input: {
       currency: "INR",
       receipt: input.receipt,
       notes: {
-        appealId: input.appealId,
+        ...(appeal ? { appealId: input.appealId } : { fundId: input.fundId }),
         givingIntent: input.givingIntent,
       },
     }),
