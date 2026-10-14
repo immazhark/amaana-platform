@@ -1,3 +1,4 @@
+vi.mock("@/lib/donation-cache", () => ({ expireDonationViews: vi.fn() }));
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -69,6 +70,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 import { POST } from "./route";
+import { expireDonationViews } from "@/lib/donation-cache";
 
 const decimal = (value: number) => ({
   mul: (factor: number) => ({ toNumber: () => value * factor }),
@@ -180,6 +182,31 @@ describe("Razorpay webhook route", () => {
     expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
     expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
     expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("expires views only after a refund transaction has completed", async () => {
+    const tx = mocks.transactionRetry.getMockImplementation()!;
+    mocks.transactionRetry.mockImplementationOnce(async callback => {
+      const result = await tx(callback);
+      expect(expireDonationViews).not.toHaveBeenCalled();
+      return result;
+    });
+    expect((await POST(webhookRequest(refundPayload()))).status).toBe(200);
+    expect(expireDonationViews).toHaveBeenCalledOnce();
+  });
+  it("does not expire balances after a rolled-back refund transaction", async () => {
+    mocks.transactionRetry.mockRejectedValueOnce(new Error("transaction rolled back"));
+    expect((await POST(webhookRequest(refundPayload()))).status).toBe(500);
+    expect(expireDonationViews).not.toHaveBeenCalled();
+  });
+  it("retries view expiry on verified replay after a post-commit cache failure", async () => {
+    vi.mocked(expireDonationViews).mockImplementationOnce(() => { throw new Error("cache unavailable"); });
+    expect((await POST(webhookRequest(refundPayload()))).status).toBe(500);
+    mocks.paymentEventFindUnique.mockResolvedValueOnce({ id: "committed", eventType: "refund.processed", payload: refundPayload() });
+    expect((await POST(webhookRequest(refundPayload()))).status).toBe(200);
+    expect(expireDonationViews).toHaveBeenCalledTimes(2);
+    expect(mocks.transactionRetry).toHaveBeenCalledOnce();
+    expect(mocks.txDonationUpdate).toHaveBeenCalledOnce();
   });
 
   it("refunds an independently designated fund donation without touching any appeal", async () => {

@@ -4,6 +4,7 @@ import { appealStatusAfterRefund } from "@/lib/appeals";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { paymentEventAuditPayload } from "@/lib/payment-event-audit";
 import { captureDonation, ensureCapturedDonationForRefund } from "@/lib/payment-processing";
+import { expireDonationViews } from "@/lib/donation-cache";
 import { requireDonationDestination } from "@/lib/donation-destination";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
@@ -76,6 +77,7 @@ export async function POST(request: Request) {
         });
         return new NextResponse("Webhook event id conflict", { status: 409 });
       }
+      if (["payment.captured", "refund.processed"].includes(payload.event)) expireDonationViews();
       return NextResponse.json({ received: true });
     }
 
@@ -124,6 +126,7 @@ export async function POST(request: Request) {
 
     if (payload.event === "payment.captured" && payment?.order_id && payment.currency === "INR") {
       const result = await captureDonation(payment.order_id, payment.id, payment.amount);
+      expireDonationViews();
       try {
         await prisma.paymentEvent.create({
           data: {
@@ -326,6 +329,7 @@ export async function POST(request: Request) {
           });
         }
       });
+      expireDonationViews();
     } else {
       await prisma.paymentEvent.create({
         data: {

@@ -1,3 +1,9 @@
+## 2026-10-14 — gateway capture/refund derived cache integration
+
+From83368f54: confirmation capture and signed capture/refund webhooks now expire the appeals tag with revalidateTag(appeals,{expire:0}) and mark homepage/appeals/private financial views for revalidation after committed writes. Exact matching financial webhook replays also retry expiry, repairing post-commit invalidation failures without repeating financial accounting. Rolled-back refund transactions do not invalidate. Route Handler expiry follows official Next guidance https://nextjs.org/docs/app/api-reference/functions/revalidateTag; open client views are not pushed refreshed.
+
+97 focused route/cache tests pass, including commit ordering and cache-failure/replay recovery. A new test assertion TypeScript error was corrected; final typecheck/changed-file zero-warning lint/diff pass and affected10 confirmation tests rerun pass. Native DB suite mocks cache boundary separately from real accounting; native DB tests not run here. No build/browser/deployed cache claim, production data/provider/email/migration/release operation. B08 remains partial.
+
 ## 2026-10-14 — manual reconciliation derived cache refresh
 
 From 5f33959a: successful manual capture previously refreshed donation pages only, leaving shared appeals data and private fund summary stale. Server Action now updateTag(appeals) and refreshes homepage/appeals after committed CAPTURED result; staff fund/donation views refresh after capture/rejection. Rejection does not expire public fundraising data; failed writes/unauthorized/invalid decisions do not invalidate. Prior source fails the new action regression.20 focused action/manual reconciliation cases, TypeScript, focused lint and diff pass. Scope is manual Server Action; gateway/webhook invalidation remains a separate source task. No build/browser/live cache certification or release operation.

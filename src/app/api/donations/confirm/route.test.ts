@@ -1,3 +1,4 @@
+vi.mock("@/lib/donation-cache", () => ({ expireDonationViews: vi.fn() }));
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -51,6 +52,7 @@ vi.mock("@/lib/env", () => ({
 }));
 
 import { POST } from "./route";
+import { expireDonationViews } from "@/lib/donation-cache";
 
 function confirmationRequest(headers?: HeadersInit) {
   return new Request("https://amaana.example/api/donations/confirm", {
@@ -220,6 +222,8 @@ describe("donation confirmation persisted status", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ referenceNumber: "AMN-123", status: "CAPTURED" });
     expect(mocks.captureDonation).toHaveBeenCalledWith("order_123", "pay_123", 50000);
+    expect(expireDonationViews).toHaveBeenCalledOnce();
+    expect(vi.mocked(expireDonationViews).mock.invocationCallOrder[0]).toBeGreaterThan(mocks.captureDonation.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY);
     expect(mocks.updateMany).not.toHaveBeenCalled();
   });
 });

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { expireDonationViews } from "@/lib/donation-cache";
 import { hashReceiptToken } from "@/lib/donations";
 import { captureDonation } from "@/lib/payment-processing";
 import { prisma } from "@/lib/prisma";
@@ -78,6 +79,7 @@ export async function POST(request: Request) {
 
     if (payment.status === "captured") {
       await captureDonation(payment.order_id, payment.id, payment.amount);
+      expireDonationViews();
     } else if (payment.status === "authorized") {
       // A Razorpay order can be retried. A later authorized attempt may follow a
       // failed attempt, but it must never regress an already captured/refunded donation.

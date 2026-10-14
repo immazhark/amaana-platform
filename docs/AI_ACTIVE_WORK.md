@@ -1,3 +1,7 @@
+## 2026-10-14 — gateway derived cache integration
+
+Ownership: HANDOFF_PENDING after gateway cache integration.97 focused tests and final type/lint pass. Publish to existingPR292. No release; B08 remains partial.
+
 ## 2026-10-14 — manual reconciliation cache integration
 
 Ownership: HANDOFF_PENDING after manual reconciliation cache unit.20 focused tests/type/lint pass. Publish to PR292; gateway/webhook cache invalidation remains next. No release.
