@@ -25,6 +25,53 @@ export function parseFundDraft(input: unknown) {
   return { ...result.data, acceptedIntents: FUND_INTENTS.filter(intent => result.data.acceptedIntents.includes(intent)) };
 }
 
+// Validates one specific approved definition at the server boundary.
+// Never let client-submitted names, intent eligibility or revision become
+// authoritative, and never treat an approval as a live payment destination.
+export function approvedFundDesignationSnapshot(
+  fund: {
+    id: string; slug: string; name: string; purpose: string; disclosure: string;
+    accountCode: string; currency: string; acceptedIntents: readonly DonationIntentValue[];
+    status: FundStatus; revision: number; createdById: string; lastEditedById: string;
+    approvedById: string | null; approvedAt: Date | null;
+  },
+  expectedRevision: number,
+  givingIntent: DonationIntentValue,
+) {
+  if (fund.status !== "APPROVED" || fund.currency !== "INR") {
+    throw new FundValidationError("This fund is not currently accepting donations.");
+  }
+  if (!Number.isSafeInteger(expectedRevision) || expectedRevision < 0 ||
+      !Number.isSafeInteger(fund.revision) || fund.revision !== expectedRevision) {
+    throw new FundValidationError("The fund details changed. Review the current purpose before donating.");
+  }
+  if (!fund.id || !fund.approvedById || !fund.approvedAt ||
+      !Number.isFinite(fund.approvedAt.getTime()) ||
+      fund.approvedById === fund.createdById || fund.approvedById === fund.lastEditedById) {
+    throw new FundValidationError("This fund does not have an independent approval.");
+  }
+  const definition = parseFundDraft({
+    slug: fund.slug, name: fund.name, purpose: fund.purpose,
+    disclosure: fund.disclosure, accountCode: fund.accountCode,
+    acceptedIntents: fund.acceptedIntents,
+  });
+  if (!FUND_INTENTS.some(intent => intent === givingIntent) ||
+      !definition.acceptedIntents.some(intent => intent === givingIntent)) {
+    throw new FundValidationError("This giving intention is not approved for this fund.");
+  }
+  return {
+    version: 1 as const,
+    kind: "FUND" as const,
+    fundId: fund.id,
+    fundRevision: fund.revision,
+    label: definition.name,
+    purpose: definition.purpose,
+    disclosure: definition.disclosure,
+    accountCode: definition.accountCode,
+    givingIntent,
+  };
+}
+
 export function parseFundRevision(value: unknown) {
   if (typeof value !== "string" || !/^(0|[1-9][0-9]*)$/.test(value)) throw new FundValidationError("Fund edit version is missing or invalid. Refresh before saving.");
   const revision = Number(value);
