@@ -17,7 +17,7 @@ export function selectSafeGalleryImages<T extends GalleryPublicationCandidate>(
   const seenUrls = new Set<string>();
   const result: Array<T & { url: string; alt: string }> = [];
   for (const item of items) {
-    if (!item || typeof item.id !== "string" || typeof item.alt !== "string") continue;
+    if (!item || typeof item.id !== "string" || typeof item.alt !== "string" || typeof item.url !== "string") continue;
     const id = item.id.trim();
     const alt = item.alt.trim();
     const url = normalizeSafePublicMediaUrl(item.url);

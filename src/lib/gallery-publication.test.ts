@@ -29,6 +29,10 @@ describe("public-safe gallery presentation boundary", () => {
     expect(selectSafeGalleryImages([{ ...approved, url }])).toEqual([]);
   });
 
+  it("fails closed when runtime data disagrees with the static gallery image type", () => {
+    const malformed = { ...approved, url: 21 } as unknown as typeof approved;
+    expect(selectSafeGalleryImages([malformed])).toEqual([]);
+  });
   it("rejects empty descriptions and identifiers rather than producing unnamed lightbox controls", () => {
     expect(selectSafeGalleryImages([{ ...approved, alt: null }])).toEqual([]);
     expect(selectSafeGalleryImages([{ ...approved, alt: " " }])).toEqual([]);
