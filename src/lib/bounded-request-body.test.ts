@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { readBodyBytesWithLimit, readTextBodyWithLimit, RequestBodyTooLargeError } from "./bounded-request-body";
+import { readBodyBytesWithLimit, readTextBodyWithLimit, RequestBodyTooLargeError, RequestBodyReadTimeoutError } from "./bounded-request-body";
 
 function streamedRequest(chunks: Uint8Array[], headers?: HeadersInit) {
   return new Request("https://amaanafoundation.org/api/webhooks/razorpay", {
@@ -14,6 +14,35 @@ function streamedRequest(chunks: Uint8Array[], headers?: HeadersInit) {
     duplex: "half",
   } as RequestInit & { duplex: "half" });
 }
+
+describe("optional bounded-body deadlines", () => {
+  it("settles a stalled read even when source cancellation never settles", async () => {
+    vi.useFakeTimers();
+    try {
+      const cancel = vi.fn(() => new Promise<void>(() => {}));
+      const request = new Request("https://amaanafoundation.org/api/security/csp-report", { method: "POST", body: new ReadableStream({ cancel }), duplex: "half" } as RequestInit & { duplex: "half" });
+      const result = readTextBodyWithLimit(request, 4096, { timeoutMs: 2000 }).then(() => null, error => error);
+      await vi.advanceTimersByTimeAsync(2001);
+      expect(await result).toBeInstanceOf(RequestBodyReadTimeoutError);
+      expect(cancel).toHaveBeenCalledOnce();
+      expect(request.body?.locked).toBe(false);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally { vi.useRealTimers(); }
+  });
+  it("clears deadlines after valid bodies and preserves byte-limit errors", async () => {
+    vi.useFakeTimers();
+    try {
+      expect(await readTextBodyWithLimit(streamedRequest([new TextEncoder().encode("abc")]), 4, { timeoutMs: 2000 })).toBe("abc");
+      await expect(readTextBodyWithLimit(streamedRequest([new Uint8Array(5)]), 4, { timeoutMs: 2000 })).rejects.toBeInstanceOf(RequestBodyTooLargeError);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally { vi.useRealTimers(); }
+  });
+  it.each([0, -1, 1.5, Infinity, NaN])("rejects invalid timeout %s before reading", async timeoutMs => {
+    const request = streamedRequest([new Uint8Array(1)]);
+    await expect(readTextBodyWithLimit(request, 4, { timeoutMs })).rejects.toBeInstanceOf(RangeError);
+    expect(request.bodyUsed).toBe(false);
+  });
+});
 
 describe("bounded request bodies", () => {
   it("returns raw bytes without changing their contents", async () => {

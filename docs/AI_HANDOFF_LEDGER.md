@@ -1,3 +1,19 @@
+## 2026-10-14 IST — R-017 opt-in CSP diagnostic stage implemented
+
+Ownership: REVIEW_PENDING; no concurrent writer. Same PR #292 / fix/direct-transfer-feedback-20261013, parent51ed9829b103d36e2772d3191746e9f4a65c3260. Owner cx authorized continued source work.
+
+AMAANA_CSP_REPORT_ONLY=true adds a script-only report policy without unsafe-inline/eval, a first-party report-uri and modern Reporting-Endpoints/report-to. Existing enforced CSP and Razorpay origins are unchanged; reporting defaults off. No report-sample keyword is used. Production uses both report mechanisms; acceptance explicitly selects legacy transport for deterministic native delivery. Header flag must be present at build time, and the collector also requires the runtime flag.
+
+New /api/security/csp-report accepts bounded legacy/modern envelopes and derives only allowlisted script directives plus inline/eval/same-origin/razorpay/other source categories. Raw document/resource URLs, query tokens, source samples, referrers, policy text, user agents and identifiers never enter emitted records. Configured origin validation rejects missing/insecure/credentialed origins, permitting loopback HTTP only in explicit local/development modes. Foreign Origin/cross-site/wrong MIME requests drop before parsing; native missing/null Origin forms require matching configured report-document origin. Reports are untrusted diagnostics, never authenticated proof of attack.
+
+Collector reads at most4096bytes with a two-second deadline, handles at most three entries per request, and allows20 diagnostic attempts/minute per instance (at most60 coarse log rows). No database counters/rows or client identifiers. Logging is private structured stderr, retained under production console removal. Failures return an empty private/no-store/noindex204. Optional read deadlines belong to the existing bounded-body helper: default caller behavior remains unchanged; timeout and oversize cancellation cannot hold the caller hostage, and timers/reader locks are released.
+
+Validation: six actual Next-config header tests pass, including exact equality of enforced CSP with reporting on/off.52 focused CSP/body/collector cases pass, including private-token/source redaction, modern envelopes, malformed/oversized/foreign/disabled/budget/log-failure cases and stalled cancellation. Full Vitest1095passed/9database-dependent skipped. TypeScript, focused/full zero-warning lint plus governed Stylelint, syntax and diff checks pass. Two actual local Chromium cases pass with report-only enabled: native legacy reports reach the real collector204 and private coarse logs while hydration/inline script execution still work; the existing mocked checkout-to-private-acknowledgement journey passes. No real Razorpay SDK transaction or payment was executed; modern production reporting transport and staged/provider acceptance remain unverified.
+
+Clean fixture-free default-off compile-mode build passes: JS816616/819200bytes and CSS347552/348160bytes; client-secret/static-image guards pass. Compile mode is not hosted database/prerender/release proof. R-017 becomes partial; approved activation, modern transport and payment acceptance remain open. R-014 enforced nonce/hash hardening remains open. Existing R-056 nullable migration is still unapplied. No production/main merge, deployment/configuration change or live money/mail/storage/data operation occurred. Next: remaining original-register remediation and exact-head hosted evidence when available.
+
+Primary protocol references: [CSP3](https://www.w3.org/TR/CSP3/) and [Reporting API](https://www.w3.org/TR/reporting-1/).
+
 ## 2026-10-14 IST — R-056 bounded ingestion previews implemented
 
 Ownership: REVIEW_PENDING; no concurrent writer. Same PR #292 / fix/direct-transfer-feedback-20261013; parent 51626ebba112ba99c7f5b9fa3020ff64c7359143. Owner cx authorized continued source implementation.

@@ -11,7 +11,7 @@ function headersFor(env = {}) {
     encoding: "utf8", timeout: 10_000,
     env: { ...process.env, NODE_ENV: "production", NEXT_PUBLIC_ALLOW_INDEXING: "true",
       AMAANA_BROWSER_ACCEPTANCE: "false", NEXT_PUBLIC_APP_URL: "https://amaanafoundation.org",
-      PUBLIC_MEDIA_BASE_URL: "", NEXT_PUBLIC_DONATION_UPI_QR_URL: "", ...env },
+      PUBLIC_MEDIA_BASE_URL: "", NEXT_PUBLIC_DONATION_UPI_QR_URL: "", AMAANA_CSP_REPORT_ONLY: "false", ...env },
   });
   assert.equal(result.status, 0, result.stderr);
   return JSON.parse(result.stdout);
@@ -75,4 +75,23 @@ test("CSP admits configured HTTPS image origins without credentials", () => {
     NEXT_PUBLIC_DONATION_UPI_QR_URL: "https://user:password@untrusted.example.test/qr.png" });
   const csp = directives(policy(rows, "/(.*)")["content-security-policy"]);
   assert.deepEqual(csp.get("img-src"), ["'self'", "blob:", "data:", "https://amaanafoundation.org", "https://photos.example.test"]);
+});
+
+
+test("strict-script diagnostics are opt-in and never change the enforced payment CSP", () => {
+  const disabled = policy(headersFor(), "/(.*)");
+  assert.equal(disabled["content-security-policy-report-only"], undefined);
+  assert.equal(disabled["reporting-endpoints"], undefined);
+  const enabled = policy(headersFor({ AMAANA_CSP_REPORT_ONLY: "true" }), "/(.*)");
+  assert.equal(enabled["content-security-policy"], disabled["content-security-policy"]);
+  const reportOnly = directives(enabled["content-security-policy-report-only"]);
+  assert.deepEqual(reportOnly.get("script-src"), ["'self'", "https://checkout.razorpay.com"]);
+  assert.deepEqual(reportOnly.get("script-src-attr"), ["'none'"]);
+  assert.deepEqual(reportOnly.get("report-uri"), ["/api/security/csp-report"]);
+  assert.deepEqual(reportOnly.get("report-to"), ["amaana-csp"]);
+  assert.equal(enabled["reporting-endpoints"], 'amaana-csp="/api/security/csp-report"');
+  assert.ok(!enabled["content-security-policy-report-only"].includes("report-sample"));
+  const local = directives(policy(headersFor({ AMAANA_CSP_REPORT_ONLY: "true", AMAANA_BROWSER_ACCEPTANCE: "true" }), "/(.*)")["content-security-policy-report-only"]);
+  assert.ok(!local.has("report-to"));
+  assert.deepEqual(local.get("script-src"), reportOnly.get("script-src"));
 });

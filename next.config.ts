@@ -4,6 +4,7 @@ const devEval = process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
 const browserAcceptance = process.env.AMAANA_BROWSER_ACCEPTANCE === "true";
 const allowPublicIndexing = process.env.NEXT_PUBLIC_ALLOW_INDEXING === "true";
 const upgradeInsecureRequests = browserAcceptance ? "" : "; upgrade-insecure-requests";
+const cspReportOnly = process.env.AMAANA_CSP_REPORT_ONLY === "true";
 
 function getConfiguredHttpsOrigin(value: string | undefined) {
   const raw = value?.trim();
@@ -34,6 +35,12 @@ const imageSources = [
 
 const securityHeaders = [
   { key: "Content-Security-Policy", value: `default-src 'self'; script-src 'self' 'unsafe-inline'${devEval} https://checkout.razorpay.com; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src ${imageSources}; font-src 'self' data:; connect-src 'self' https://api.razorpay.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'${upgradeInsecureRequests}` },
+  // Observe stricter script sources before deciding a nonce/hash rollout.
+  // No report-sample: browser diagnostics must not collect inline source text.
+  ...(cspReportOnly ? [
+    { key: "Content-Security-Policy-Report-Only", value: `script-src 'self' https://checkout.razorpay.com; script-src-attr 'none'; report-uri /api/security/csp-report${browserAcceptance ? "" : "; report-to amaana-csp"}` },
+    { key: "Reporting-Endpoints", value: 'amaana-csp="/api/security/csp-report"' },
+  ] : []),
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },

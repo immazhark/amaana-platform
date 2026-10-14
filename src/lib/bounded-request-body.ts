@@ -5,14 +5,24 @@ export class RequestBodyTooLargeError extends Error {
   }
 }
 
+export class RequestBodyReadTimeoutError extends Error {
+  constructor() {
+    super("Request body read timed out");
+    this.name = "RequestBodyReadTimeoutError";
+  }
+}
+
+type BodyReadOptions = { timeoutMs?: number };
+
 function validateMaxBytes(maxBytes: number) {
   if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0) {
     throw new RangeError("maxBytes must be a positive safe integer");
   }
 }
 
-export async function readBodyBytesWithLimit(request: Request, maxBytes: number) {
+export async function readBodyBytesWithLimit(request: Request, maxBytes: number, options: BodyReadOptions = {}) {
   validateMaxBytes(maxBytes);
+  if (options.timeoutMs !== undefined) validateMaxBytes(options.timeoutMs);
 
   const declaredLength = request.headers.get("content-length");
   if (declaredLength) {
@@ -28,7 +38,8 @@ export async function readBodyBytesWithLimit(request: Request, maxBytes: number)
   const chunks: Uint8Array[] = [];
   let totalBytes = 0;
 
-  try {
+  let timeout: ReturnType<typeof setTimeout> | undefined;
+  const read = async () => {
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
@@ -47,20 +58,32 @@ export async function readBodyBytesWithLimit(request: Request, maxBytes: number)
       }
       chunks.push(value);
     }
+    const body = new Uint8Array(totalBytes);
+    let offset = 0;
+    for (const chunk of chunks) {
+      body.set(chunk, offset);
+      offset += chunk.byteLength;
+    }
+    return body;
+  };
+  try {
+    if (options.timeoutMs === undefined) return await read();
+    return await Promise.race([
+      read(),
+      new Promise<never>((_resolve, reject) => {
+        timeout = setTimeout(() => {
+          // Cancellation may itself stall; the deadline must still settle.
+          try { void reader.cancel().catch(() => undefined); } catch { /* Best effort. */ }
+          reject(new RequestBodyReadTimeoutError());
+        }, options.timeoutMs);
+      }),
+    ]);
   } finally {
+    if (timeout !== undefined) clearTimeout(timeout);
     reader.releaseLock();
   }
-
-  const body = new Uint8Array(totalBytes);
-  let offset = 0;
-  for (const chunk of chunks) {
-    body.set(chunk, offset);
-    offset += chunk.byteLength;
-  }
-
-  return body;
 }
 
-export async function readTextBodyWithLimit(request: Request, maxBytes: number) {
-  return new TextDecoder().decode(await readBodyBytesWithLimit(request, maxBytes));
+export async function readTextBodyWithLimit(request: Request, maxBytes: number, options: BodyReadOptions = {}) {
+  return new TextDecoder().decode(await readBodyBytesWithLimit(request, maxBytes, options));
 }
