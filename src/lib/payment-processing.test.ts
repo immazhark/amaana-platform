@@ -80,6 +80,7 @@ describe("captureDonation", () => {
     mocks.txDonationFindUnique
       .mockResolvedValueOnce({
         id: "donation_legacy",
+        appealId: "legacy_appeal",
         currency: "INR",
         paymentMethod: "RAZORPAY",
         provider: null,
