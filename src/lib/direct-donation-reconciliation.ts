@@ -103,7 +103,7 @@ export async function reconcileDirectDonation(input: {
         subject: destination.kind === "FUND"
           ? "Thank you for supporting an Amaana Foundation programme"
           : "Thank you for supporting an Amaana Foundation appeal",
-        payload: { referenceNumber: donation.referenceNumber, givingIntent: donation.givingIntent },
+        payload: { referenceNumber: donation.referenceNumber, givingIntent: donation.givingIntent, designationKind: destination.kind },
         donationId: donation.id,
       },
     });

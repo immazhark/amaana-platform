@@ -1,3 +1,7 @@
+## 2026-10-14 — fund acknowledgement email integration
+
+Ownership: HANDOFF_PENDING after destination-aware acknowledgement unit. Parent 31487ebd. 50 focused tests/type/lint pass; publish to existing PR292. No delivery or worker activation.
+
 ## 2026-10-14 — fund summary precision
 
 Ownership: HANDOFF_PENDING after fund aggregate precision unit. Parent 58f24b60; sole writer. 26 focused tests, TypeScript and lint pass. Publish to existing PR292 with guarded head; no release.

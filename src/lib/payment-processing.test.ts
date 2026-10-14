@@ -220,7 +220,7 @@ describe("captureDonation", () => {
     expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
     expect(mocks.txAppealUpdateMany).not.toHaveBeenCalled();
     expect(mocks.txNotificationCreate).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ donationId: "donation_fund" }),
+      data: expect.objectContaining({ donationId: "donation_fund", payload: expect.objectContaining({ designationKind: "FUND" }) }),
     }));
   });
 

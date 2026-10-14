@@ -125,7 +125,9 @@ describe("manual transfer money-state boundary", () => {
     expect(mocks.appealFind).not.toHaveBeenCalled();
     expect(mocks.appealUpdate).not.toHaveBeenCalled();
     expect(mocks.donationUpdate).toHaveBeenCalledOnce();
-    expect(mocks.notificationCreate).toHaveBeenCalledOnce();
+    expect(mocks.notificationCreate).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ payload: expect.objectContaining({ designationKind: "FUND" }) }),
+    }));
   });
 
   it("refuses a transfer with two monetary destinations", async () => {

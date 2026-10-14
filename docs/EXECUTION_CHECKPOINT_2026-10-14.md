@@ -1,3 +1,7 @@
+## 2026-10-14 — destination-aware acknowledgement emails
+
+B08 continuation from 31487ebd. Razorpay capture and verified manual transfer notifications now carry designationKind from the validated persisted destination. Email template uses fund wording in subject/plain text/HTML only for exact FUND; legacy/malformed kinds preserve existing appeal defaults. Generic approved-fund copy exposes no fund definition or beneficiary details. Statutory certificate disclaimer unchanged. Reproduced prior template failure; 50 focused template/capture/manual-reconciliation cases pass, TypeScript/focused lint/diff checks pass. Existing queued messages are not rewritten; no worker activation/email delivery, release or live operation. B08 remains partial.
+
 ## 2026-10-14 — private fund aggregate precision
 
 Continuation from published 58f24b60. Private admin fund summaries previously checked finite rupees only, allowing unsafe totals and sub-paise values to appear valid. Added a bounded aggregate projection using decimal-to-safe-integer paise, positive settled count and complete sums. Invalid financial aggregates show the existing reconciliation alert; subtraction occurs in integer paise before INR formatting. Donation permission gate and settled-status query remain intact.
