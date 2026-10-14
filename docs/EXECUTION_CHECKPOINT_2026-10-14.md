@@ -1,5 +1,18 @@
 # Amaana Foundation engineering continuation — 14 October 2026
 
+## Continuation — donor acknowledgement refund status correctness
+
+Current PR #292 on `fix/direct-transfer-feedback-20261013`, implementation head before checkpoint: `94f096efa6bc2d8fd7efa9c1cd911bbddd47046e`.
+
+Found false-refund UI classification in `getDonationAcknowledgementPresentation`: the old branch used `status === "REFUNDED" || refundedAmount >= amount`, which falsely marked e.g. a freshly `CREATED` donation with amount=0/refundedAmount=0 as "Refund processed", and could misclassify pending/failed donations with inconsistent totals. Implement explicit authority: `REFUNDED` status remains sufficient, while inference from full refunded accounting now requires **CAPTURED**, a positive finite donation amount and finite nonnegative refund amount. Partial-refund labels also require valid accounting. This changes acknowledgement presentation only, not payment reconciliation, storage, financial values or provider state. Code `fb083f6`.
+
+New regression tests cover five non-captured statuses under zero and stale/full refund totals, captured bad/zero/NaN/Infinity accounting and legitimate full capture refund. Tests `94f096e`. All **14/14 source and regression-wiring invariants** passed after re-fetching the exact committed GitHub blobs of the order route tests and donation helper/tests. The actual Vitest suite, TS build, E2E and production validations have **not** been run on this head; no new defect classification or release claim.
+
+Work done earlier in this continuation: restored unreachable Zakat guard test in `src/app/api/donations/order/route.test.ts`, added four negative and one valid-positive case, and rejected NaN/Infinity in `isDonationAmountAllowedForRemaining`. Source commits `36bfc19`, `4cca310`, `b09a6db`, `9254e72`, `d34dadd`. Do not count full closure until gate verification.
+
+No live payments, provider calls, donor DB writes, deployment, migrations, main merge or new PR. Original 95-row working register remains at 10 baseline addressed, 33 implemented pending verification, 25 partial, 16 open, 11 unverified.
+
+
 ## Continuation — Zakat test reachability and invalid remaining-balance guard
 
 Active consolidated PR #292 (`fix/direct-transfer-feedback-20261013`), implementation head before checkpoint `b09a6dbcab8fabfcef6fb9f2dbffe6f106bee52d`.
