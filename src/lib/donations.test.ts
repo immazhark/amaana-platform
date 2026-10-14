@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { appealDonationDesignationSnapshot, createDonationReference, createReceiptNumber, createReceiptToken, donationSchema, directTransferSchema, getDonationAcknowledgementPresentation, hashReceiptToken, isDonationAmountAllowedForRemaining } from "./donations";
+import { appealDonationDesignationSnapshot, resolveAppealDonationDesignation, createDonationReference, createReceiptNumber, createReceiptToken, donationSchema, directTransferSchema, getDonationAcknowledgementPresentation, hashReceiptToken, isDonationAmountAllowedForRemaining } from "./donations";
 
 const valid = { appealId: "cmf1234567890123456789012", donorName: "Test Donor", donorEmail: "donor@example.com", donorPhone: "9876543210", amount: 500, givingIntent: "GENERAL", domesticConfirmed: true };
 describe("donation validation", () => {
@@ -12,6 +12,27 @@ describe("donation validation", () => {
       label: "Verified education support", givingIntent: "SADAQAH",
     });
   });
+  it("returns the original donor purpose even if the appeal title changes", () => {
+    const expected = { appealId: "appeal-1", givingIntent: "SADAQAH", currentTitle: "Changed public title" };
+    expect(resolveAppealDonationDesignation(appealDonationDesignationSnapshot(
+      { id: "appeal-1", title: "Original reviewed purpose" }, "SADAQAH",
+    ), expected)).toEqual({ label: "Original reviewed purpose", provenance: "original" });
+    expect(resolveAppealDonationDesignation(null, expected)).toEqual({ label: "Changed public title", provenance: "legacy" });
+  });
+
+  it.each([
+    { version: 1, kind: "FUND", appealId: "appeal-1", label: "Fake", givingIntent: "SADAQAH" },
+    { version: 1, kind: "APPEAL", appealId: "another", label: "Fake", givingIntent: "SADAQAH" },
+    { version: 1, kind: "APPEAL", appealId: "appeal-1", label: "Fake", givingIntent: "GENERAL" },
+    { version: 1, kind: "APPEAL", appealId: "appeal-1", label: "", givingIntent: "SADAQAH" },
+    { version: 1, kind: "APPEAL", appealId: "appeal-1", label: "Fake", givingIntent: "SADAQAH", privateInfo: "should not render" },
+    ["invalid"],
+  ])("does not substitute a malformed private snapshot into donor records: %#", snapshot => {
+    expect(resolveAppealDonationDesignation(snapshot, {
+      appealId: "appeal-1", givingIntent: "SADAQAH", currentTitle: "Changed title",
+    })).toEqual({ label: "Donation designation requires review", provenance: "review" });
+  });
+
   it("accepts a domestic INR donation", () => expect(donationSchema.safeParse(valid).success).toBe(true));
   it.each(["cmf1234567890123456789013", "", null, 123, true, { id: "unreviewed-fund" }])("rejects an unsupported second destination %j instead of dropping it", fundId => {
     expect(donationSchema.safeParse({ ...valid, fundId }).success).toBe(false);
