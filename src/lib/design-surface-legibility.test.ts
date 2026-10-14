@@ -10,6 +10,7 @@ const css = {
   initiative: readFileSync(new URL("../app/initiative-experience.css", import.meta.url), "utf8"),
   programme: readFileSync(new URL("../app/our-work/[slug]/campaign.css", import.meta.url), "utf8"),
   tokens: readFileSync(new URL("../app/globals.css", import.meta.url), "utf8"),
+  companion: readFileSync(new URL("../app/islamic-companion.css", import.meta.url), "utf8"),
 };
 function relativeLuminance(hex: string) {
   const channels = [1, 3, 5].map(offset => {
@@ -45,6 +46,14 @@ describe("existing public typography and supporting-text contrast", () => {
     expect(css.initiative).toContain("color: var(--af-color-muted)");
     expect(css.programme).toContain("color:var(--af-color-gold-ink)");
 
+  });
+  it("corrects low-contrast Companion captions and keeps 48px mobile dock targets", () => {
+    expect(contrastRatio(token("af-color-gold-ink"), "#fffdf7")).toBeGreaterThanOrEqual(4.5);
+    expect(contrastRatio(token("af-color-gold-ink"), "#fff9eb")).toBeGreaterThanOrEqual(4.5);
+    expect(css.companion).not.toContain("color:#a57a08");
+    expect(css.companion).not.toContain("color:#9a7207");
+    expect(css.companion).toContain("width:3rem;");
+    expect(css.companion).toContain("min-height:3rem;");
   });
   it("gives multiline headings room on Stories, Governance, Policy and canonical pages", () => {
     expect(css.stories).not.toContain("line-height:1.12");

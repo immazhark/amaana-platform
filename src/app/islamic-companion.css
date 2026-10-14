@@ -184,7 +184,7 @@
 .amaana-companion-kicker{
   display:block;
   margin-bottom:.28rem;
-  color:#a57a08;
+  color:var(--af-color-gold-ink);
   font-size:.75rem;
   font-weight:900;
   letter-spacing:.16em
@@ -374,7 +374,7 @@
   font-size:.875rem
 }
 .amaana-salah-times dd{margin:0;font-weight:650}
-.amaana-salah-times .is-next{color:#9a7207;font-weight:750}
+.amaana-salah-times .is-next{color:var(--af-color-gold-ink);font-weight:750}
 .amaana-companion-error p{color:#853b26}
 .amaana-reminders :focus-visible,.amaana-companion :focus-visible{
   outline:3px solid var(--companion-gold,#8f691e);
@@ -395,11 +395,11 @@
 
   .amaana-companion-dock{max-width:none}
   .amaana-companion-dock>button{
-    width:2.8rem;
-    min-width:2.8rem;
-    max-width:2.8rem;
-    height:2.8rem;
-    min-height:2.8rem;
+    width:3rem;
+    min-width:3rem;
+    max-width:3rem;
+    height:3rem;
+    min-height:3rem;
     padding:0;
     justify-content:center;
     overflow:hidden

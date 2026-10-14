@@ -1,5 +1,31 @@
 # Amaana Master Reconciled Execution Plan
 
+### 2026-10-15 — Volunteer enquiry, Hijri planner and Companion accessibility
+
+PR #292 source commits `af72040a` and `6a18be88` advance two real public journeys.
+**AF-R089:** the lazy Companion displays the next three calculated
+Ramadan/Eid/Dhul-Hijjah/Arafah milestones from Islamic-civil calendar day matches,
+including an approximate countdown and local moon-sighting caveat.
+No observed religious date, approved seasonal campaign, or donation target is
+inferred. Four isolated Node calendar checks passed; hydrated Vitest and browser
+acceptance remain unexecuted.
+**AF-VOLUNTEER:** `/get-involved/volunteer` provides responsive and accessible
+interest selection, whitelisted skills/availability, a privacy-first mailto
+handoff with no website-side PII storage, contact/discovery integration,
+metadata and negative privacy/unit/SSR regression tests. This is NOT a
+consented persisted volunteer/partner application or admin operations console.
+
+The adjacent Companion correction replaces two low-contrast small-label colours
+on light surfaces with existing --af-color-gold-ink, increases the mobile
+dock touch target to 48px, and avoids recreating Intl date formatters per item.
+AF-R019/AF-R061 plus both enhancements stay Partial pending further criteria.
+Source tests authored, not hydrated Vitest/TS/DOM/browser verified. Nothing
+merged, deployed, paid, submitted, emailed or migrated.
+
+149-item source scoreboard stays 60 Implemented, 52 Partial, 35 Not started,
+1 Superseded, 1 Not applicable; defects 54/14/1, enhancements 4/30/17.
+The historical 95 audit aliases remain separate.
+
 ### 2026-10-15 — Whole-rupee checkout integrity and P0 media-secret boundary (PR #292)
 
 Source commits `54185f1`, `f4c621b`, `76ef696` and the following

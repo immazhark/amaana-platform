@@ -34,6 +34,10 @@ type PrayerData = {
   note: string;
 };
 
+const forecastDateFormat = new Intl.DateTimeFormat("en-IN", {
+  day: "numeric", month: "short", year: "numeric", timeZone: "UTC",
+});
+
 export type CompanionPanelKind = "readings" | "prayers";
 const panelKinds = ["readings", "prayers"] as const;
 
@@ -233,7 +237,7 @@ export function IslamicCompanionPanel({
               {planningEvents.map(event => (
                 <li key={event.key}>
                   <strong>{event.label}</strong>
-                  <time dateTime={event.estimatedCivilDate}>Around {new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${event.estimatedCivilDate}T12:00:00Z`))}</time>
+                  <time dateTime={event.estimatedCivilDate}>Around {forecastDateFormat.format(new Date(`${event.estimatedCivilDate}T12:00:00Z`))}</time>
                   <small>{event.daysUntilEstimatedDate === 0 ? "Estimated for today" : `About ${event.daysUntilEstimatedDate} days until the calculated date`}</small>
                 </li>
               ))}
