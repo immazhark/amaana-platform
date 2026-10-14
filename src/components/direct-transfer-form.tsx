@@ -1,6 +1,6 @@
 "use client";
 
-import { updateDonationAmountValidity } from "@/lib/donation-amount-input";
+import { getWholeRupeeCheckoutRange, updateDonationAmountValidity } from "@/lib/donation-amount-input";
 
 import { DonationInputField } from "./donation-input-field";
 import { type FormEvent, type InputHTMLAttributes, type ReactNode, useEffect, useRef, useState } from "react";
@@ -23,8 +23,9 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
   const focusedRequest = useRef(0);
   const busy = phase === "submitting";
   const locked = phase !== "ready";
-  const transactionMax = Math.min(maxAmount, 1_000_000);
-  const transactionMin = transactionMax < 10 ? transactionMax : 10;
+  const checkoutRange = getWholeRupeeCheckoutRange(maxAmount);
+  const transactionMax = checkoutRange?.maximum ?? 0;
+  const transactionMin = checkoutRange?.minimum ?? 1;
   const bankUnavailable = method === "BANK_TRANSFER" && !bankAvailable;
 
   useEffect(() => {
@@ -69,7 +70,7 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
   function renderInput(field: DirectTransferField, label: ReactNode, attributes: InputHTMLAttributes<HTMLInputElement>, hint?: ReactNode, full = false) {
     const hintId = hint ? `direct-${field}-hint-${method}` : undefined;
     return <DonationInputField label={label} className={full ? "field full" : "field"}
-      input={{ ...attributes, id: `direct-${field}-${method}`, name: field, ...fieldProps(field, hintId), disabled: locked || bankUnavailable }}
+      input={{ ...attributes, id: `direct-${field}-${method}`, name: field, ...fieldProps(field, hintId), disabled: locked || bankUnavailable || !checkoutRange }}
       error={fieldErrors[field]?.[0]} errorId={`direct-${field}-error-${method}`}
       hint={hint ? <small id={hintId}>{hint}</small> : undefined}/>;
   }
@@ -86,7 +87,7 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (submissionLocked.current || bankUnavailable) return;
+    if (submissionLocked.current || bankUnavailable || !checkoutRange) return;
     if (!event.currentTarget.reportValidity()) return;
     submissionLocked.current = true;
     onSubmissionLockChange?.(true);
@@ -131,6 +132,7 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
 
   return <div className="v2-premium-form v2-donation-form">
     {instructions}
+    {!checkoutRange && <p role="status" className="form-error">The reviewed remaining balance cannot accept a whole-rupee contribution. Please check with Amaana before transferring an unsupported amount.</p>}
     <form ref={formRef} onSubmit={submit} onInvalid={handleInvalid} className="form-grid" aria-busy={busy}>
       {error && <div ref={errorRef} className="form-error field full" role="alert" tabIndex={-1}>{error}{phase === "reconciliation" && <p><a className="v2-text-link" href="/contact">Contact Amaana about this transfer</a></p>}</div>}
       {renderInput("donorName", "Full name", { autoComplete: "name", minLength: 2, required: true })}
@@ -143,7 +145,7 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
       <fieldset className="field full" disabled={locked || bankUnavailable} aria-invalid={Boolean(fieldErrors.givingIntent?.length) || undefined} aria-describedby={fieldErrors.givingIntent?.length ? `direct-givingIntent-error-${method}` : undefined}><legend>Giving intention</legend>{(["GENERAL","SADAQAH",...(zakatEligible?["ZAKAT"]:[])] as DonationIntentValue[]).map((intent,index)=><label className="checkbox" key={intent}><input type="radio" name="givingIntent" {...fieldProps("givingIntent")} value={intent} required defaultChecked={index===0}/><span><strong>{DONATION_INTENT_LABELS[intent]}</strong><small>{DONATION_INTENT_DESCRIPTIONS[intent]}</small></span></label>)}{fieldError("givingIntent")}</fieldset>
       <div className="field full"><label className="checkbox"><input name="isAnonymous" type="checkbox" disabled={locked || bankUnavailable}/><span><strong>Keep my public identity private</strong></span></label></div>
       <div className="field full"><label className="checkbox"><input name="domesticConfirmed" {...fieldProps("domesticConfirmed")} type="checkbox" required disabled={locked || bankUnavailable}/><span><strong>Domestic contribution confirmation</strong><small>I confirm this contribution is from an Indian source using a domestic account/payment method.</small></span></label>{fieldError("domesticConfirmed")}</div>
-      <div className="field full"><button className="v2-button" type="submit" disabled={locked || bankUnavailable}>{busy ? "Submitting for verification…" : phase === "reconciliation" ? "Transfer follow-up required" : phase === "submitted" ? "Transfer submitted" : "Submit transfer for verification"}</button><small>This submission remains Pending Verification until Amaana matches it to the Foundation&apos;s received funds.</small></div>
+      <div className="field full"><button className="v2-button" type="submit" disabled={locked || bankUnavailable || !checkoutRange}>{busy ? "Submitting for verification…" : phase === "reconciliation" ? "Transfer follow-up required" : phase === "submitted" ? "Transfer submitted" : "Submit transfer for verification"}</button><small>This submission remains Pending Verification until Amaana matches it to the Foundation&apos;s received funds.</small></div>
     </form>
   </div>;
 }

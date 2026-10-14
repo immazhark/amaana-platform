@@ -76,7 +76,7 @@ export function AppealDonationFlow({ appeals, paymentInstructions, bankAvailable
         {choice?.progress.remainingLabel}</p>
       <Suspense fallback={<p role="status">Preparing secure donation methods…</p>}>
         <DonationMethods key={selected.id} appealId={selected.id} appealTitle={selected.title}
-          maxAmount={choice.checkoutRange.maximum} zakatEligible={selected.zakatEligible}
+          maxAmount={choice?.checkoutRange.maximum ?? 0} zakatEligible={selected.zakatEligible}
           bankAvailable={bankAvailable} paymentInstructions={paymentInstructions}
           onSubmissionLockChange={updateLock}/>
       </Suspense>

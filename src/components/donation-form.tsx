@@ -1,6 +1,6 @@
 "use client";
 
-import { updateDonationAmountValidity } from "@/lib/donation-amount-input";
+import { getWholeRupeeCheckoutRange, updateDonationAmountValidity } from "@/lib/donation-amount-input";
 
 import { FundPurposeDisclosure } from "@/components/fund-purpose-disclosure";
 import { isMatchingFundOrder, type DonorFund } from "@/lib/fund-checkout-contract";
@@ -45,8 +45,9 @@ export function DonationForm({ appealId, appealTitle, fund, maxAmount, zakatElig
     onSubmissionLockChange?.(next === "opening" || next === "verifying" || next === "reconciliation");
     setPhase(next);
   }, [onSubmissionLockChange]);
-  const transactionMax = Math.min(maxAmount, 1_000_000);
-  const transactionMin = transactionMax < 10 ? transactionMax : 10;
+  const checkoutRange = getWholeRupeeCheckoutRange(maxAmount);
+  const transactionMax = checkoutRange?.maximum ?? 0;
+  const transactionMin = checkoutRange?.minimum ?? 1;
   // The same validated preset control serves approved appeal and fund checkouts.
   // The existing server remains authoritative for the current remaining need.
   const suggestedAmounts = [100, 500, 1000, 2500, 5000].filter(amount =>
@@ -99,7 +100,9 @@ export function DonationForm({ appealId, appealTitle, fund, maxAmount, zakatElig
   const submissionLocked = busy || phase === "reconciliation";
   const lockedForReconciliation = phase === "reconciliation";
   const scriptReady = phase !== "loading";
-  const statusText = phase === "loading"
+  const statusText = !checkoutRange
+    ? "The reviewed balance cannot accept a whole-rupee donation at present. Please review another approved giving route."
+    : phase === "loading"
     ? "Preparing secure checkout."
     : phase === "opening"
       ? "Opening Razorpay secure checkout."
@@ -147,7 +150,7 @@ export function DonationForm({ appealId, appealTitle, fund, maxAmount, zakatElig
       className={`field ${full ? "full" : ""} ${amount ? "v2-amount-field" : ""} ${styles.checkoutShell}`}
       controlClassName={`${styles.checkoutControl} ${amount ? styles.amountControl : ""}`}
       prefix={amount ? <b aria-hidden="true">₹</b> : undefined} hint={hint}
-      input={{ ...attributes, id: field, name: field, disabled: submissionLocked, "aria-invalid": Boolean(fieldError(field)) || undefined, "aria-describedby": description, onChange: () => clearFieldError(field) }}
+      input={{ ...attributes, id: field, name: field, disabled: submissionLocked || !checkoutRange, "aria-invalid": Boolean(fieldError(field)) || undefined, "aria-describedby": description, onChange: () => clearFieldError(field) }}
       error={fieldError(field)} errorId={errorId}/>;
   }
 
@@ -172,6 +175,10 @@ export function DonationForm({ appealId, appealTitle, fund, maxAmount, zakatElig
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (phaseRef.current === "opening" || phaseRef.current === "verifying" || phaseRef.current === "reconciliation") return;
+    if (!checkoutRange) {
+      showError("No whole-rupee amount is currently eligible for this reviewed destination. Do not attempt a separate transfer without checking with Amaana.");
+      return;
+    }
     setError("");
     setFieldErrors({});
     setRemainingHint(null);
@@ -317,7 +324,7 @@ export function DonationForm({ appealId, appealTitle, fund, maxAmount, zakatElig
       <p id="donation-checkout-status" className={styles.status} role="status" aria-live="polite">{statusText}</p>
       {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{remainingHint !== null ? <p><button type="button" className="v2-text-link" onClick={() => { const input = formRef.current?.elements.namedItem("amount"); if (input instanceof HTMLInputElement) { input.value = String(remainingHint); updateDonationAmountValidity(input, transactionMin, transactionMax); clearFieldError("amount"); input.focus(); } }}>Use the current remaining amount: ₹{remainingHint.toLocaleString("en-IN")}</button></p> : null}</div>}
       <div className="form-grid">
-        {renderInput("amount", <>Donation amount <span>INR</span></>, { type: "text", inputMode: "numeric", pattern: "[0-9]+", maxLength: 12, onInput: event => updateDonationAmountValidity(event.currentTarget, transactionMin, transactionMax), placeholder: "Enter amount", required: true }, true, <small id="amount-hint" className={styles.hint}>{transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small>)}
+        {renderInput("amount", <>Donation amount <span>INR</span></>, { type: "text", inputMode: "numeric", pattern: "[0-9]+", maxLength: 12, onInput: event => updateDonationAmountValidity(event.currentTarget, transactionMin, transactionMax), placeholder: "Enter amount", required: true }, true, <small id="amount-hint" className={styles.hint}>{!checkoutRange ? "No whole-rupee amount is eligible for checkout. Please review another approved route." : transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small>)}
         {suggestedAmounts.length > 0 && <div className={`field full ${styles.amountPresets}`} role="group" aria-label="Suggested donation amounts">
           {suggestedAmounts.map(amount => <button key={amount} type="button" className="v2-button v2-button--paper-secondary" disabled={submissionLocked} onClick={() => chooseSuggestedAmount(amount)}>₹{amount.toLocaleString("en-IN")}</button>)}
         </div>}
@@ -341,7 +348,7 @@ export function DonationForm({ appealId, appealTitle, fund, maxAmount, zakatElig
         {fund && <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="fundPurposeConfirmed" type="checkbox" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("fundPurposeConfirmed")) || undefined} aria-describedby={fieldError("fundPurposeConfirmed") ? "fund-purpose-error" : "fund-purpose"} onChange={() => clearFieldError("fundPurposeConfirmed")}/><span><strong>I accept the purpose and restrictions</strong><small>My donation follows the reviewed purpose above.</small></span></label>{fieldError("fundPurposeConfirmed") && <small id="fund-purpose-error" className="v2-field-error">{fieldError("fundPurposeConfirmed")}</small>}</div>}
         <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="isAnonymous" type="checkbox" disabled={submissionLocked}/><span><strong>Keep my public identity private</strong><small>Do not show my name in any public donor listing.</small></span></label></div>
         <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="domesticConfirmed" type="checkbox" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("domesticConfirmed")) || undefined} aria-describedby={fieldError("domesticConfirmed") ? "domestic-confirmation-error" : undefined} onChange={() => clearFieldError("domesticConfirmed")}/><span><strong>Domestic contribution confirmation</strong><small>I confirm this donation is from an Indian source using a domestic payment method.</small></span></label>{fieldError("domesticConfirmed") && <small id="domestic-confirmation-error" className="v2-field-error">{fieldError("domesticConfirmed")}</small>}</div>
-        <div className="field full v2-form-submit"><button className="v2-button" type="submit" disabled={busy || !scriptReady || lockedForReconciliation}>{phase === "opening" ? "Opening secure checkout…" : phase === "verifying" ? "Verifying donation…" : phase === "reconciliation" ? "Verification follow-up required" : scriptReady ? "Continue securely →" : "Preparing secure checkout…"}</button><small>{lockedForReconciliation ? "Do not submit another payment for this donation. Keep your Razorpay confirmation so the payment can be reconciled safely." : "Next: Razorpay secure checkout. Your Amaana acknowledgement follows successful payment verification and is not an 80G tax-deduction certificate."}</small></div>
+        <div className="field full v2-form-submit"><button className="v2-button" type="submit" disabled={busy || !scriptReady || lockedForReconciliation || !checkoutRange}>{phase === "opening" ? "Opening secure checkout…" : phase === "verifying" ? "Verifying donation…" : phase === "reconciliation" ? "Verification follow-up required" : scriptReady ? "Continue securely →" : "Preparing secure checkout…"}</button><small>{lockedForReconciliation ? "Do not submit another payment for this donation. Keep your Razorpay confirmation so the payment can be reconciled safely." : "Next: Razorpay secure checkout. Your Amaana acknowledgement follows successful payment verification and is not an 80G tax-deduction certificate."}</small></div>
       </div>
     </form>
   </>;
