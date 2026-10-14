@@ -4,6 +4,7 @@ import { appealStatusAfterRefund } from "@/lib/appeals";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { paymentEventAuditPayload } from "@/lib/payment-event-audit";
 import { captureDonation, ensureCapturedDonationForRefund } from "@/lib/payment-processing";
+import { requireDonationDestination } from "@/lib/donation-destination";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { verifyWebhookSignature } from "@/lib/razorpay";
@@ -198,6 +199,7 @@ export async function POST(request: Request) {
           select: {
             id: true,
             appealId: true,
+            fundId: true,
             amount: true,
             refundedAmount: true,
             donorEmail: true,
@@ -215,6 +217,7 @@ export async function POST(request: Request) {
         });
 
         if (!donation) throw new Error("Refund donation is not available for reconciliation");
+        const destination = requireDonationDestination(donation);
 
         // The entity claim and ALL financial effects share the transaction.
         // skipDuplicates avoids swallowing a different uniqueness failure.
@@ -243,18 +246,24 @@ export async function POST(request: Request) {
           return;
         }
 
-        const appeal = await tx.appeal.findUnique({
-          where: { id: donation.appealId },
-          select: { status: true, amountRaised: true, goalAmount: true, closesAt: true },
-        });
-        if (!appeal) {
+        const appeal = destination.kind === "APPEAL"
+          ? await tx.appeal.findUnique({
+              where: { id: destination.id },
+              select: { status: true, amountRaised: true, goalAmount: true, closesAt: true },
+            })
+          : null;
+        if (destination.kind === "APPEAL" && !appeal) {
           throw new Error("Refund donation is missing its appeal");
         }
 
         const accounting = calculateRefundAccounting({
           donationAmountPaise: decimalRupeesToPaise(donation.amount),
           refundedAmountPaise: decimalRupeesToPaise(donation.refundedAmount),
-          appealRaisedPaise: decimalRupeesToPaise(appeal.amountRaised),
+          // Fund balances are derived from each donation's settled net amount;
+          // no appeal counter exists to decrement for a fund-only refund.
+          appealRaisedPaise: appeal
+            ? decimalRupeesToPaise(appeal.amountRaised)
+            : decimalRupeesToPaise(donation.amount),
           requestedRefundPaise: refund.amount,
         });
 
@@ -270,7 +279,7 @@ export async function POST(request: Request) {
           });
         }
 
-        if (accounting.appealRefundPaise > 0) {
+        if (appeal && accounting.appealRefundPaise > 0) {
           const nextAmountRaised = accounting.nextAppealRaisedPaise / 100;
           const nextStatus = appealStatusAfterRefund(
             appeal.status,
@@ -280,7 +289,7 @@ export async function POST(request: Request) {
           );
 
           await tx.appeal.update({
-            where: { id: donation.appealId },
+            where: { id: destination.id },
             data: {
               amountRaised: { decrement: accounting.appealRefundPaise / 100 },
               ...(nextStatus !== appeal.status ? { status: nextStatus as "PUBLISHED" | "CLOSED" } : {}),
