@@ -1,3 +1,13 @@
+## 2026-10-14 — carousel correction and private giving-fund registry published
+
+Ownership: HANDOFF_PENDING after completed atomic source batches; no concurrent repository writer. User's autonomous source-development directive remains in force; next agent may claim ownership after the normal incoming read/head checks. No generic approval to begin development is required.
+
+Existing PR [#292](https://github.com/immazhark/amaana-platform/pull/292), branch `fix/direct-transfer-feedback-20261013`. Published: carousel immediate-expiry `4bdd683e3c0fbaa436f12402a54d665bd1088fcb`; private registry `b779aeef80c377325fc180ad820b89b61bd099de`; definition audit `f7cb8b1d0e59400d6623d0b368b3ac4e9f9f0913`. Latest validated code is f7cb8b1; this checkpoint follows it. Canonical register/continuation: [AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md](AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md), sectionF.
+
+93 focused cases, TypeScript and changed-file lint pass.14 isolated PostgreSQL-WASM migration cases pass using synthetic capture/refund fixtures; existing rows unchanged and no funds seeded. Actual compiled anonymous fund page redirects to login with private headers. Registry compile/guards passed before the later audit-only extension; no new full CI/browser/live claim. No CI polling/rerun, external migration, merge/deployment or financial/mail/provider action.
+
+Next source unit: backward-compatible exactly-one donation designation and purpose snapshot across every legacy payment/direct-transfer/receipt/reconciliation/capture/refund caller. Registry definitions support GENERAL/SADAQAH only; no public fund checkout or active fund seeds. Native Prisma/concurrency, rendered staff workflow, reviewed fund purposes and controlled schema rollout remain precise dependent gates. Keep the existing PR and sole-writer rule.
+
 ## 2026-10-14 — published programme evidence
 
 PR292 code head8942b93df1f72e3c48fe493a5572393e6821efe4; B01bd912977, B02a80df913, B04RGB8942b93.19 actual compiled-server anonymous admin/API HTTP guards passed. Chromium download truncated; no local rendered browser claim. CI38552020358 inspected once after publishing. Canonical continuation remains master sectionF; no live actions.
