@@ -436,6 +436,12 @@ model Donation {
   donorEmail               String
   donorPhone               String?
   isAnonymous              Boolean               @default(false)
+  // Recognition is separate from payment anonymity and is never automatic.
+  // Only donor request + staff moderation can authorize public display.
+  recognitionDisplayName   String?               @db.VarChar(60)
+  recognitionRequestedAt   DateTime?
+  recognitionApprovedAt    DateTime?
+  recognitionRevokedAt     DateTime?
   givingIntent             DonationIntent        @default(GENERAL)
   designationSnapshot      Json?
   fundDisclosureConfirmedAt DateTime?
