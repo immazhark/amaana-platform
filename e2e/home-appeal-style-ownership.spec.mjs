@@ -17,6 +17,13 @@ for (const width of [320, 390, 1440]) {
     await expect(card).toHaveCSS("overflow", "hidden");
     await expect(card.locator(".v2-appeal-card-body")).toHaveCSS("display", "flex");
 
+    const heading = card.getByRole("heading", { name: "Synthetic home appeal" });
+    const lineHeightRatio = await heading.evaluate(el => {
+      const style = getComputedStyle(el);
+      return Number.parseFloat(style.lineHeight) / Number.parseFloat(style.fontSize);
+    });
+    expect(lineHeightRatio).toBeGreaterThanOrEqual(1.1);
+
     const bar = card.getByRole("progressbar");
     await expect(bar).toHaveAttribute("aria-valuenow", "20");
     const dimensions = await bar.evaluate(el => ({
