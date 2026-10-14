@@ -1,5 +1,16 @@
 # Amaana Foundation engineering continuation — 14 October 2026
 
+## Continuation — Zakat test reachability and invalid remaining-balance guard
+
+Active consolidated PR #292 (`fix/direct-transfer-feedback-20261013`), implementation head before checkpoint `b09a6dbcab8fabfcef6fb9f2dbffe6f106bee52d`.
+
+**Defect: unreachable donation-order regression test.** The existing `src/app/api/donations/order/route.test.ts` accidentally defined the Zakat negative test *inside* the `vi.mock("@/lib/bounded-request-body", ...)` factory after its `return` statement. Therefore the test body never registered with Vitest and provided no coverage of the important Zakat-only-after-review gate. The test is relocated into the real `describe` suite, parametrized for `UNREVIEWED`, `NOT_ELIGIBLE`, `NOT_APPLICABLE`, and absent verification, and asserts 409 responses with **zero Razorpay/provider or donation-database creation calls**. An additional positive case verifies `ELIGIBLE` permits a valid order, confirms the provider receives INR paise/appeal intent/receipt, and confirms the persisted donor email normalization and provider identity. The mocks now use a plausible `₹900` remaining balance and bounded amount-authorization predicate instead of the prior zero balance / unconditional true. Commits `36bfc19`, `4cca310`, `b09a6db`. Do not count the previously unreachable test as pre-existing executed coverage.
+
+**Defect: non-finite remaining-amount acceptance.** `isDonationAmountAllowedForRemaining` in `src/lib/donations.ts` previously authorized normal amounts against `NaN` or `Infinity` remaining balances because the greater-than comparison is false for `NaN`. Add a finite, strictly-positive remaining-need guard, preserve minimum ₹10 rule, exact smaller final amount and fractional-remaining behavior. The public order and direct-transfer routes also apply appeal eligibility checks; this adjustment is defense-in-depth for the shared predicate. Six new parameterized/control cases in `src/lib/donations.test.ts`. Commits `9254e72` and `d34dadd`.
+
+**Readback evidence:** Re-fetched the three changed sources by GitHub blob SHA, checked **12/12 explicit source, test-placement, negative/positive Zakat and amount-validation invariants**; all matched the committed PR head. The local runtime lacks the repository clone and installed Vitest/Next dependencies, so the authored route/component tests, full TypeScript, build, browser suite, database/provider integration and bundle budgets remain **unexecuted on this exact head**. No live checkout, donor data access, DB/storage changes, deployment or main merge. This batch primarily improves payment safety and restores missing coverage; original 95 register classifications are not reduced without complete acceptance.
+
+
 ## Continuation — precise appeal progress, sensitive sharing, and stable WhatsApp links
 
 Active consolidated PR #292, branch `fix/direct-transfer-feedback-20261013`. Reviewed exact-source head before this checkpoint: `d6048e4c3cb5b34b0638531caa0c3633220fce77`. Previous baseline checkpoint remained `597ef1d3`.
