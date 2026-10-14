@@ -1,0 +1,123 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({
+  enabled: vi.fn(), origin: vi.fn(), allow: vi.fn(), lookup: vi.fn(),
+  state: vi.fn(), update: vi.fn(),
+}));
+vi.mock("@/lib/donor-recognition-repository", () => ({
+  donorRecognitionEnabled: mocks.enabled,
+  findDonorRecognitionByReceipt: mocks.lookup,
+  privateRecognitionState: mocks.state,
+}));
+vi.mock("@/lib/request-security", () => ({
+  isSameOrigin: mocks.origin, enforceAcknowledgementRateLimit: mocks.allow,
+}));
+vi.mock("@/lib/prisma", () => ({ prisma: { donation: { updateMany: mocks.update } } }));
+vi.mock("@/lib/bounded-request-body", () => {
+  class RequestBodyTooLargeError extends Error {}
+  return { RequestBodyTooLargeError, readTextBodyWithLimit: async (request: Request, max: number) => {
+    const text = await request.text();
+    if (new TextEncoder().encode(text).length > max) throw new RequestBodyTooLargeError();
+    return text;
+  }};
+});
+import { POST } from "./route";
+
+const reference = "AMN-RECEIPT-12345", token = "secret-private-receipt-token-long";
+const record = {
+  id: "donation-id", status: "CAPTURED", isAnonymous: false,
+  refundedAmount: { toNumber: () => 0 },
+  recognitionDisplayName: null, recognitionRequestedAt: null,
+  recognitionApprovedAt: null, recognitionRevokedAt: null,
+};
+function request(action = "status", extra: Record<string, unknown> = {}) {
+  return new Request("https://amaana.example/api/donations/recognition", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ reference, token, action, ...extra }),
+  });
+}
+
+describe("donor-recognition capability and consent boundary", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.enabled.mockReturnValue(true);
+    mocks.origin.mockReturnValue(true);
+    mocks.allow.mockResolvedValue(true);
+    mocks.lookup.mockResolvedValue(record);
+    mocks.state.mockReturnValue("inactive");
+    mocks.update.mockResolvedValue({ count: 1 });
+  });
+  it("is disabled by default until the database migration and review gate are enabled", async () => {
+    mocks.enabled.mockReturnValue(false);
+    const result = await POST(request("request", { name: "Ayesha Khan" }));
+    expect(result.status).toBe(503);
+    expect(mocks.lookup).not.toHaveBeenCalled();
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+  it("blocks cross-origin access before receipt reads", async () => {
+    mocks.origin.mockReturnValue(false);
+    const result = await POST(request("status"));
+    expect(result.status).toBe(403);
+    expect(mocks.lookup).not.toHaveBeenCalled();
+  });
+  it("blocks brute-force attempts before receipt reads", async () => {
+    mocks.allow.mockResolvedValue(false);
+    const result = await POST(request("status"));
+    expect(result.status).toBe(429);
+    expect(mocks.lookup).not.toHaveBeenCalled();
+  });
+  it("rejects malformed and oversized JSON without reaching private donations", async () => {
+    const malformed = new Request("https://amaana.example/api/donations/recognition", {
+      method: "POST", body: "{", headers: { "Content-Type": "application/json" },
+    });
+    expect((await POST(malformed)).status).toBe(400);
+    expect((await POST(request("status", { padding: "x".repeat(4500) }))).status).toBe(413);
+    expect(mocks.lookup).not.toHaveBeenCalled();
+  });
+  it("denies unknown receipt credentials without revealing donor details", async () => {
+    mocks.lookup.mockResolvedValue(null);
+    const result = await POST(request("status"));
+    expect(result.status).toBe(404);
+    expect(JSON.stringify(await result.json())).not.toContain("donorEmail");
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+  it.each([
+    { status: "PENDING_VERIFICATION" },
+    { status: "REFUNDED" },
+    { isAnonymous: true },
+    { refundedAmount: { toNumber: () => 1 } },
+  ])("never accepts a public name when the donation is not eligible %o", async patch => {
+    mocks.lookup.mockResolvedValue({ ...record, ...patch });
+    const result = await POST(request("request", { name: "Ayesha Khan" }));
+    expect(result.status).toBe(409);
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+  it("requires a separately supplied safe display name", async () => {
+    const result = await POST(request("request", { name: "contact@example.com" }));
+    expect(result.status).toBe(400);
+    expect(mocks.update).not.toHaveBeenCalled();
+  });
+  it("records new consent only as pending, never as immediate publication", async () => {
+    const result = await POST(request("request", { name: "Ayesha Khan" }));
+    expect(result.status).toBe(200);
+    expect(await result.json()).toEqual({ state: "pending", name: "Ayesha Khan" });
+    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ status: "CAPTURED", isAnonymous: false, refundedAmount: 0 }),
+      data: expect.objectContaining({ recognitionDisplayName: "Ayesha Khan", recognitionApprovedAt: null, recognitionRevokedAt: null }),
+    }));
+  });
+  it("withdraws previously approved names without requiring capture eligibility again", async () => {
+    mocks.lookup.mockResolvedValue({ ...record, status: "REFUNDED", recognitionDisplayName: "Ayesha Khan" });
+    const result = await POST(request("withdraw"));
+    expect(result.status).toBe(200);
+    expect(await result.json()).toEqual({ state: "inactive", name: "" });
+    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        recognitionApprovedAt: null, recognitionRequestedAt: null,
+        recognitionDisplayName: null, recognitionRevokedAt: expect.any(Date),
+      }),
+    }));
+    expect(result.headers.get("cache-control")).toContain("no-store");
+    expect(result.headers.get("referrer-policy")).toBe("no-referrer");
+  });
+});
