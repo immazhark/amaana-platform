@@ -30,5 +30,6 @@ describe("consent-governed Shukr donor publication", () => {
     }
     expect(canPublishDonorRecognition({ ...approved, refundedAmount: 0.01 })).toBe(false);
     expect(canPublishDonorRecognition({ ...approved, recognitionDisplayName: null })).toBe(false);
+    expect(canPublishDonorRecognition({ ...approved, recognitionDisplayName: "https://example.com" })).toBe(false);
   });
 });

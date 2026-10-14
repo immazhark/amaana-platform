@@ -33,5 +33,6 @@ export function canPublishDonorRecognition(value: DonorRecognitionEligibility): 
   if (!Number.isFinite(value.recognitionRequestedAt.getTime()) ||
       !Number.isFinite(value.recognitionApprovedAt.getTime()) ||
       value.recognitionApprovedAt < value.recognitionRequestedAt) return false;
-  return parseDonorRecognitionName(value.recognitionDisplayName) === value.recognitionDisplayName;
+  return typeof value.recognitionDisplayName === "string" &&
+    parseDonorRecognitionName(value.recognitionDisplayName) === value.recognitionDisplayName;
 }

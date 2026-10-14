@@ -1,6 +1,6 @@
 import Link from "@/components/navigation-link";
 import { DonationIntent, DonationStatus, Prisma } from "@prisma/client";
-import { requirePermission } from "@/lib/auth";
+import { hasPermission, requirePermission } from "@/lib/auth";
 import { summarizeSettledDonationAggregate } from "@/lib/fund-ledger";
 import { formatPrivateReceiptINR } from "@/lib/private-donation-ack";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
@@ -20,7 +20,7 @@ function safeAdminFinancialAmount(value: number): string {
 
 
 export default async function DonationsPage({ searchParams }: Props) {
-  await requirePermission("donation.view");
+  const viewer = await requirePermission("donation.view");
   const { status, intent, page: pageParam } = await searchParams;
   const selected = Object.values(DonationStatus).includes(status as DonationStatus)
     ? status as DonationStatus
@@ -137,7 +137,7 @@ export default async function DonationsPage({ searchParams }: Props) {
     <div className="admin-heading">
       <div>
         <p className="eyebrow">Reconciliation</p>
-        <h1>Donations</h1>
+        <h1>Donations</h1>{hasPermission(viewer, "donation.reconcile") && <p><Link href="/admin/donations/recognition">Review Shukr donor recognition requests →</Link></p>}
         {financialTotals ? <p className="lead">
           Gross captured: {formatPrivateReceiptINR(financialTotals.grossCapturedPaise / 100)} · Refunded: {formatPrivateReceiptINR(financialTotals.refundedPaise / 100)} · Net retained: {formatPrivateReceiptINR(financialTotals.netRetainedPaise / 100)}
         </p> : <p role="alert">Donation totals require financial reconciliation.</p>}
