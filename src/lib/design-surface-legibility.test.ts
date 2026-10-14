@@ -64,6 +64,9 @@ describe("existing public typography and supporting-text contrast", () => {
     expect(css.policy).toContain("line-height:1.22");
     expect(css.impact).not.toContain("line-height:1.08");
     expect(css.impact).toContain("line-height:1.22!important");
+    // Large impact figures must remain legible when they wrap at 200% text.
+    expect(css.impact).not.toContain("line-height:.88");
+    expect(css.impact).toContain("line-height:1.12");
     expect(css.initiative).not.toContain("line-height: 1.05");
     expect(css.programme).not.toContain("line-height: 1.08");
     expect(css.programme).toContain("line-height: 1.2");

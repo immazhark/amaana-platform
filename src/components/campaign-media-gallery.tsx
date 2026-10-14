@@ -6,6 +6,7 @@ import { UIIcon } from "./ui-icon";
 import Image from "next/image";
 import { getPublicImageOptimizationUrl, getPublicImagePlaceholder } from "@/lib/public-media";
 import { adjacentGalleryId } from "@/lib/gallery-selection";
+import { selectSafeGalleryImages } from "@/lib/gallery-publication";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
 
@@ -20,21 +21,12 @@ export type CampaignGalleryItem = {
 };
 
 export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }) {
-  const safeItems = useMemo(() => {
-    const seen = new Set<string>();
-    const ids = new Set<string>();
-    return items.filter(item => {
-      const url = item.url.trim();
-      if (!url || seen.has(url) || ids.has(item.id)) return false;
-      seen.add(url);
-      ids.add(item.id);
-      return true;
-    });
-  }, [items]);
+  const safeItems = useMemo(() => selectSafeGalleryImages(items), [items]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const dialogTitleId = `gallery-dialog-${useId().replaceAll(":", "")}`;
+  const dialogCaptionId = `${dialogTitleId}-caption`;
   const triggerRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const openingId = useRef<string | null>(null);
 
@@ -93,6 +85,13 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
       const first = focusable.item(0);
       const last = focusable.item(focusable.length - 1);
       if (!first || !last) return;
+      // If an unrelated script moves focus outside the dialog, Tab must
+      // recover containment instead of continuing into the obscured page.
+      if (!dialogRef.current?.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+        return;
+      }
       if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
@@ -161,6 +160,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
             role="dialog"
             aria-modal="true"
             aria-labelledby={dialogTitleId}
+            aria-describedby={active.caption ? dialogCaptionId : undefined}
             tabIndex={-1}
           >
             <div className={styles.dialogTop}>
@@ -168,7 +168,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
             {activeImageUrl ? <Image className={styles.fullImage} src={activeImageUrl} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" placeholder={activeBlur ? "blur" : "empty"} blurDataURL={activeBlur ?? undefined} /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}
-            {active.caption ? <p className={styles.caption}>{active.caption}</p> : null}
+            {active.caption ? <p id={dialogCaptionId} className={styles.caption}>{active.caption}</p> : null}
             {safeItems.length > 1 ? (
               <div className={styles.controls}>
                 <button type="button" onClick={previous}><UIIcon name="previous" />Previous</button>
