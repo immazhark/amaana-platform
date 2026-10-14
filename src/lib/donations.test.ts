@@ -128,6 +128,21 @@ describe("donation validation", () => {
 });
 
 describe("donation acknowledgement presentation", () => {
+  it("uses fund-specific copy for verified fund contributions and unverified claims", () => {
+    const captured = getDonationAcknowledgementPresentation("CAPTURED", 100, 0, "FUND");
+    expect(captured.summary).toContain("approved giving fund");
+    expect(captured.summary).not.toContain("this appeal");
+
+    const pending = getDonationAcknowledgementPresentation("PENDING_VERIFICATION", 100, 0, "FUND");
+    expect(pending.summary).toContain("approved giving fund");
+    expect(pending.summary).toContain("UTR/reference");
+    expect(pending.summary).not.toContain("toward the appeal");
+
+    const legacy = getDonationAcknowledgementPresentation("CAPTURED", 100, 0);
+    expect(legacy.summary).toContain("this appeal");
+  });
+
+
   it("shows a completed captured payment as verified", () => {
     const view = getDonationAcknowledgementPresentation("CAPTURED", 1_000, 0);
     expect(view.tone).toBe("captured");
