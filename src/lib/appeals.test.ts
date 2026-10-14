@@ -141,6 +141,22 @@ describe("shouldMarkAppealFunded", () => {
     expect(shouldMarkAppealFunded("PUBLISHED", 80_000, 75_000)).toBe(true);
   });
 
+  it.each([
+    { raised: 0, goal: 0 },
+    { raised: 1, goal: -1 },
+    { raised: -5, goal: -10 },
+    { raised: "invalid", goal: 100 },
+    { raised: 100, goal: "invalid" },
+    { raised: Number.POSITIVE_INFINITY, goal: 100 },
+    { raised: 100, goal: Number.NaN },
+  ])("does not mark a malformed fundraising ledger funded: %#", ({ raised, goal }) => {
+    expect(shouldMarkAppealFunded("PUBLISHED", raised, goal)).toBe(false);
+  });
+
+  it("accepts positive numeric-string goals without changing valid ledger semantics", () => {
+    expect(shouldMarkAppealFunded("PUBLISHED", "100", decimalLike(100))).toBe(true);
+  });
+
   it("does not rewrite an already non-published state", () => {
     expect(shouldMarkAppealFunded("CLOSED", 80_000, 75_000)).toBe(false);
   });
