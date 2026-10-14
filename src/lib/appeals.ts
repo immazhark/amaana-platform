@@ -36,7 +36,12 @@ export function getRemainingAppealAmount(
   amountRaised: AmountLike,
   goalAmount: AmountLike,
 ) {
-  return Math.max(0, amountToNumber(goalAmount) - amountToNumber(amountRaised));
+  const raised = amountToNumber(amountRaised);
+  const goal = amountToNumber(goalAmount);
+  // An invalid ledger is not an amount donors should be invited to cover.
+  // Return no eligible remainder instead of propagating NaN/Infinity to UI.
+  if (!Number.isFinite(raised) || raised < 0 || !Number.isFinite(goal) || goal <= 0) return 0;
+  return Math.max(0, goal - raised);
 }
 
 export function shouldMarkAppealFunded(
