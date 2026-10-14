@@ -15,6 +15,7 @@ import { PublicMedia } from "@/components/public-media";
 import { getInitiativePageData } from "@/lib/public-page-data";
 import { buildPublicRecordFallback, programmeStoryParagraphs, heroTeaser } from "@/lib/public-copy";
 import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
+import { toPublicGalleryItems } from "@/lib/public-gallery-projection";
 import { PublicContentStructuredData } from "@/components/public-content-structured-data";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
@@ -131,7 +132,7 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
 
       <section className="campaign-story" id="campaign-story"><div className="v2-shell campaign-story-layout"><div><p className="v2-section-label">The record</p><h2>How this work unfolded</h2>{initiative.primaryMetric && <div className="campaign-outcome"><strong>{initiative.primaryMetric}</strong><p>{initiative.primaryMetricLabel}</p></div>}</div><div className="campaign-story-copy">{paragraphs.length > 0 ? paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>{fallbackStory}</p>}</div></div></section>
 
-      {gallery.length > 0 && <section className="campaign-gallery" id="campaign-gallery"><div className="v2-shell"><SectionHeading className="campaign-section-heading" eyebrow="Programme photographs" title="From the drive" subtitle="Original photographs, privacy-protected videos and campaign updates from this edition." /><CampaignMediaGallery items={gallery.filter(asset => asset.kind === "IMAGE").map(asset => ({ id: asset.id, url: resolvePublicMediaUrl(asset) ?? "", alt: asset.altText, caption: asset.caption, width: asset.width, height: asset.height, blurDataURL: asset.blurDataURL })).filter(item => Boolean(item.url))} /><div className="campaign-gallery-grid">{gallery.filter(asset => asset.kind !== "IMAGE").map(asset => <PublicMedia asset={asset} key={asset.id} />)}</div></div></section>}
+      {gallery.length > 0 && <section className="campaign-gallery" id="campaign-gallery"><div className="v2-shell"><SectionHeading className="campaign-section-heading" eyebrow="Programme photographs" title="From the drive" subtitle="Original photographs, privacy-protected videos and campaign updates from this edition." /><CampaignMediaGallery items={toPublicGalleryItems(gallery)} /><div className="campaign-gallery-grid">{gallery.filter(asset => asset.kind !== "IMAGE").map(asset => <PublicMedia asset={asset} key={asset.id} />)}</div></div></section>}
 
       {initiative.stories.length > 0 && <section className="campaign-related v2-shell"><h2>Stories connected to this work</h2><div className="v2-field-grid">{initiative.stories.map(story => <Link className="v2-field-story" href={`/stories/${story.slug}`} key={story.id}><h3>{story.title}</h3><p>{story.summary}</p><span className="v2-text-link">Read the story</span></Link>)}</div></section>}
       {initiative.faithContent.length > 0 && <section className="campaign-related v2-shell"><h2>Faith and reflections</h2>{initiative.faithContent.map(item => <article key={item.id}><h3>{item.title}</h3><p>{item.excerpt}</p><Link href={`/faith-and-reflections/${item.slug}`}>Read reflection</Link></article>)}</section>}

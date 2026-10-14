@@ -32,6 +32,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
 
   const activeIndex = safeItems.findIndex(item => item.id === activeId);
   const active = activeIndex < 0 ? null : safeItems[activeIndex] ?? null;
+  const isOpen = active !== null;
   const activeImageUrl = active ? getPublicImageOptimizationUrl(active.url) : null;
   const activeBlur = active ? getPublicImagePlaceholder(active.blurDataURL) : null;
   // Clear a removed selection during render so it cannot reopen if reinserted.
@@ -50,7 +51,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
   }, [safeItems]);
 
   useEffect(() => {
-    if (!active) return;
+    if (!isOpen) return;
     const dialog = dialogRef.current;
     const triggers = triggerRefs.current;
     // Navigation changes the displayed photograph, not the modal's opener.
@@ -110,7 +111,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
         target?.focus();
       });
     };
-  }, [active, safeItems, close, next, previous]);
+  }, [isOpen, safeItems, close, next, previous]);
 
   if (!safeItems.length) return null;
 
