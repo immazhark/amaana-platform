@@ -186,6 +186,18 @@ describe("Razorpay webhook route", () => {
     expect(mocks.txNotificationCreate).toHaveBeenCalledOnce();
   });
 
+  it("does not acknowledge a fund refund larger than the remaining captured amount", async () => {
+    mocks.txDonationFindUnique.mockResolvedValueOnce({
+      id: "donation_fund", appealId: null, fundId: "approved_fund",
+      amount: decimal(100), refundedAmount: decimal(0),
+      donorEmail: "donor@example.test", referenceNumber: "AFD-FUND",
+    });
+    const response = await POST(webhookRequest(refundPayload(15_000)));
+    expect(response.status).toBeGreaterThanOrEqual(400);
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+  });
+
   it("rejects refund accounting with two destinations before ledger writes", async () => {
     mocks.txDonationFindUnique.mockResolvedValueOnce({
       id: "donation_mixed", appealId: "appeal_1", fundId: "approved_fund",
