@@ -1,0 +1,79 @@
+/** Internal accounting projection for approved giving-fund donations.
+ * Never count pending claims or unverified orders as money received.
+ * Pass only persisted donation rows; caller must filter by fund ID as well.
+ */
+type MoneyDecimal = { mul(multiplier: number): { toNumber(): number } };
+
+export type FundLedgerDonation = {
+  id: string;
+  appealId: string | null;
+  fundId: string | null;
+  currency: string;
+  status: string;
+  amount: MoneyDecimal;
+  refundedAmount: MoneyDecimal;
+};
+
+export type FundLedgerTotals = {
+  grossCapturedPaise: number;
+  refundedPaise: number;
+  netRetainedPaise: number;
+  settledDonations: number;
+  pendingDonations: number;
+};
+
+function checkedPaise(amount: MoneyDecimal, name: string) {
+  const value = amount.mul(100).toNumber();
+  if (!Number.isSafeInteger(value) || value < 0) {
+    throw new RangeError(`Invalid ${name} monetary value`);
+  }
+  return value;
+}
+
+function checkedAdd(left: number, right: number) {
+  const value = left + right;
+  if (!Number.isSafeInteger(value)) throw new RangeError("Giving fund ledger exceeds safe integer accounting limits");
+  return value;
+}
+
+export function summarizeFundLedger(fundId: string, donations: readonly FundLedgerDonation[]): FundLedgerTotals {
+  if (!fundId) throw new Error("Giving fund is required");
+  let grossCapturedPaise = 0;
+  let refundedPaise = 0;
+  let settledDonations = 0;
+  let pendingDonations = 0;
+  const seen = new Set<string>();
+
+  for (const donation of donations) {
+    if (!donation.id || seen.has(donation.id)) throw new Error("Duplicate or missing donation in fund ledger");
+    seen.add(donation.id);
+    if (donation.fundId !== fundId || donation.appealId !== null || donation.currency !== "INR") {
+      throw new Error("Donation is not exclusively designated to this domestic giving fund");
+    }
+    const amount = checkedPaise(donation.amount, "donation amount");
+    const refunded = checkedPaise(donation.refundedAmount, "refunded amount");
+    if (amount <= 0 || refunded > amount) throw new Error("Donation accounting is inconsistent");
+
+    if (donation.status === "CAPTURED" || donation.status === "REFUNDED") {
+      if (donation.status === "REFUNDED" && refunded !== amount) {
+        throw new Error("Fully refunded donation does not match refund accounting");
+      }
+      grossCapturedPaise = checkedAdd(grossCapturedPaise, amount);
+      refundedPaise = checkedAdd(refundedPaise, refunded);
+      settledDonations++;
+    } else if (["CREATED", "AUTHORIZED", "PENDING_VERIFICATION", "FAILED", "REJECTED"].includes(donation.status)) {
+      if (refunded !== 0) throw new Error("Unsettled donation cannot contain a refund");
+      pendingDonations++;
+    } else {
+      throw new Error("Unknown donation status in fund ledger");
+    }
+  }
+
+  return {
+    grossCapturedPaise,
+    refundedPaise,
+    netRetainedPaise: grossCapturedPaise - refundedPaise,
+    settledDonations,
+    pendingDonations,
+  };
+}
