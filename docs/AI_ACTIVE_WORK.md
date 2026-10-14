@@ -1,3 +1,9 @@
+### 2026-10-15 additional hardening — exact-head `17cb249a1f4766510b38415d9dce2ddac9cff7ec`
+
+A final grouped safety correction ensures the disabled PDF grant-authorize route bounds *actual streamed body bytes* and also aborts stalled requests after a five-second budget. Malformed JSON returns private 404, body oversize 413, slow body 408, and no limiter/private-record lookup occurs before successful body validation. Added focused negative cases in the actual route test. Existing five-minute grant decryption now returns a private null result when the independent key is missing or malformed; issuance still refuses to mint. The planned private PDF response additionally requires a verified settled acknowledgement object rather than accepting a caller-provided reference alone. Header-prefix inspection handles PDF LF/CRLF and output bytes are copied before response.
+
+Source and test additions published on the same PR; no full exact-head `npm test`, TypeScript, production Next build, or rendered-browser verification has been executed in this session. No production feature, endpoint redemption, PDF generator, environment, payments, email or database mutation was activated. B09 remains Partial; master register counts unchanged.
+
 ## 2026-10-15 — B09 dormant private PDF authorization and output-contract batch
 
 **Source head:** `491ed6eb9139a54e9d146dc9b20bccb2181643ed` on existing [PR #292](https://github.com/immazhark/amaana-platform/pull/292), `fix/direct-transfer-feedback-20261013`. No PR merge or release.

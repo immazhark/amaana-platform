@@ -22,3 +22,10 @@ Implemented in a grouped code batch:
 **Next executable:** reconcile a reviewed Unicode-capable PDF library/fonts (license, size, Railway runtime, language shaping, accessibility), implement a private **POST** redemption handler using `redeemVerifiedReceiptDownloadGrant` and `privateReceiptPdfResponse`, then run real generated-file render/inspect/AT/browser and financial privacy regressions. Only then consider flag activation. Do not expose capability in query strings or mark browser Print-to-PDF as server PDF generation.
 
 
+
+### 2026-10-15 additional hardening — exact-head `17cb249a1f4766510b38415d9dce2ddac9cff7ec`
+
+A final grouped safety correction ensures the disabled PDF grant-authorize route bounds *actual streamed body bytes* and also aborts stalled requests after a five-second budget. Malformed JSON returns private 404, body oversize 413, slow body 408, and no limiter/private-record lookup occurs before successful body validation. Added focused negative cases in the actual route test. Existing five-minute grant decryption now returns a private null result when the independent key is missing or malformed; issuance still refuses to mint. The planned private PDF response additionally requires a verified settled acknowledgement object rather than accepting a caller-provided reference alone. Header-prefix inspection handles PDF LF/CRLF and output bytes are copied before response.
+
+Source and test additions published on the same PR; no full exact-head `npm test`, TypeScript, production Next build, or rendered-browser verification has been executed in this session. No production feature, endpoint redemption, PDF generator, environment, payments, email or database mutation was activated. B09 remains Partial; master register counts unchanged.
+
