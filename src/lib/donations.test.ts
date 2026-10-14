@@ -19,7 +19,7 @@ describe("exclusive donation designation contract (not a public checkout)", () =
   it("keeps existing public checkout appeal-only until funding accounting is complete", () => {
     expect(donationSchema.safeParse({ ...valid, appealId }).success).toBe(true);
     expect(donationSchema.safeParse({ ...valid, appealId, fundId }).success).toBe(false);
-    const { appealId: _omitted, ...withoutAppeal } = valid;
+    const withoutAppeal = { ...valid, appealId: undefined };
     expect(donationSchema.safeParse({ ...withoutAppeal, fundId }).success).toBe(false);
   });
 });
