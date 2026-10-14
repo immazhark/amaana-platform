@@ -1,3 +1,7 @@
+## 2026-10-14 — individual donation accounting projection
+
+Ownership: HANDOFF_PENDING after detail retained-money correction.25 focused tests/type/lint pass; publish to PR292. No release; B08 remains partial.
+
 ## 2026-10-14 — gateway derived cache integration
 
 Ownership: HANDOFF_PENDING after gateway cache integration.97 focused tests and final type/lint pass. Publish to existingPR292. No release; B08 remains partial.

@@ -105,3 +105,19 @@ export function summarizeSettledDonationAggregate(input: {
     netRetainedPaise: grossCapturedPaise - refundedPaise,
     settledDonations: input.settledDonations };
 }
+
+/** Private record projection: a submitted claim is not money retained. */
+export function summarizeDonationRecord(input: {
+  currency: string; status: string; amount: MoneyDecimal; refundedAmount: MoneyDecimal;
+}) {
+  if (input.currency !== "INR") throw new Error("Unsupported donation currency");
+  const amountPaise = checkedPaise(input.amount, "donation amount");
+  const refundedPaise = checkedPaise(input.refundedAmount, "refunded amount");
+  if (amountPaise <= 0 || refundedPaise > amountPaise) throw new Error("Inconsistent donation accounting");
+  const settled = input.status === "CAPTURED" || input.status === "REFUNDED";
+  if (input.status === "REFUNDED" && refundedPaise !== amountPaise) throw new Error("Incomplete full refund accounting");
+  if (!settled && (!["CREATED", "AUTHORIZED", "PENDING_VERIFICATION", "FAILED", "REJECTED"].includes(input.status) || refundedPaise !== 0)) {
+    throw new Error("Invalid unsettled donation accounting");
+  }
+  return { amountPaise, refundedPaise, netRetainedPaise: settled ? amountPaise - refundedPaise : 0 };
+}

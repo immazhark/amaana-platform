@@ -1,3 +1,9 @@
+## 2026-10-14 — individual donation retained-money correctness
+
+From2a06e5ef: staff detail page counted unsettled/failed/rejected claims as retained funds and clamped over-refunds to zero. New safe-paise record projection requires INR, positive safe monetary amounts, bounded refunds, settled-state consistency and complete full refunds; unsettled claims retain zero. Detail page shows explicit reconciliation alert and avoids plausible totals for invalid accounting; original amount label no longer claims capture. Permission/evidence/reconciliation contracts unchanged.
+
+25 focused detail/ledger cases pass; nine actual rendered regressions fail prior page source. TypeScript, changed-file zero-warning lint and diff checks pass. No full build/browser/native DB/deployed acceptance claim. No financial mutation, hosted migration, email/provider/release or public fund activation. B08 remains partial; do not alter canonical historical counts from this subtask.
+
 ## 2026-10-14 — gateway capture/refund derived cache integration
 
 From83368f54: confirmation capture and signed capture/refund webhooks now expire the appeals tag with revalidateTag(appeals,{expire:0}) and mark homepage/appeals/private financial views for revalidation after committed writes. Exact matching financial webhook replays also retry expiry, repairing post-commit invalidation failures without repeating financial accounting. Rolled-back refund transactions do not invalidate. Route Handler expiry follows official Next guidance https://nextjs.org/docs/app/api-reference/functions/revalidateTag; open client views are not pushed refreshed.
