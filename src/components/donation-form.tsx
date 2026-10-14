@@ -2,6 +2,8 @@
 
 import { updateDonationAmountValidity } from "@/lib/donation-amount-input";
 
+import { FundPurposeDisclosure } from "@/components/fund-purpose-disclosure";
+import { isMatchingFundOrder, type DonorFund } from "@/lib/fund-checkout-contract";
 import Script from "next/script";
 import { DonationInputField } from "./donation-input-field";
 import { type FormEvent, type InputHTMLAttributes, type ReactNode, useCallback, useEffect, useRef, useState } from "react";
@@ -12,12 +14,20 @@ import styles from "./donation-form.module.css";
 type RazorpayResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
 type RazorpayOptions = { key: string; amount: number; currency: string; name: string; description: string; order_id: string; prefill: { name: string; email: string; contact?: string }; handler: (response: RazorpayResponse) => Promise<void>; modal: { ondismiss: () => void }; theme: { color: string } };
 type CheckoutPhase = "loading" | "ready" | "opening" | "verifying" | "reconciliation";
-type DonationField = "donorName" | "donorEmail" | "donorPhone" | "amount" | "givingIntent" | "domesticConfirmed";
+const DONATION_FIELDS = ["amount", "donorName", "donorEmail", "donorPhone", "givingIntent", "domesticConfirmed", "fundPurposeConfirmed"] as const;
+type DonationField = typeof DONATION_FIELDS[number];
 type DonationFieldErrors = Partial<Record<DonationField, string[]>>;
 type DonationOrderError = { error?: string; remainingAmount?: number; fields?: DonationFieldErrors };
 declare global { interface Window { Razorpay: new (options: RazorpayOptions) => { open(): void } } }
 
-export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible = false, onSubmissionLockChange }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean; onSubmissionLockChange?: (locked: boolean) => void }) {
+type DonationFormProps = {
+  maxAmount: number; onSubmissionLockChange?: (locked: boolean) => void;
+} & ({ appealId: string; appealTitle: string; zakatEligible?: boolean; fund?: never }
+  | { fund: DonorFund; appealId?: never; appealTitle?: never; zakatEligible?: never });
+
+export function DonationForm({ appealId, appealTitle, fund, maxAmount, zakatEligible = false, onSubmissionLockChange }: DonationFormProps) {
+  const destinationTitle = fund?.name ?? appealTitle ?? "";
+  const intentions: readonly DonationIntentValue[] = fund?.acceptedIntents ?? ["GENERAL", "SADAQAH", ...(zakatEligible ? ["ZAKAT" as const] : [])];
   const errorRef = useRef<HTMLDivElement>(null);
   const focusedErrorRef = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
@@ -55,7 +65,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
     // Editing a field may change fieldErrors while the alert remains displayed.
     // Do not steal focus from the donor after the initial error announcement.
     if (focusedErrorRef.current === error) return;
-    const firstRejectedField = (["amount", "donorName", "donorEmail", "donorPhone", "givingIntent", "domesticConfirmed"] as DonationField[])
+    const firstRejectedField = DONATION_FIELDS
       .find(field => fieldErrors[field]?.length);
     const frame = window.requestAnimationFrame(() => {
       // Commit the focus marker only when the callback actually executes.
@@ -133,7 +143,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
     const control = event.target;
     if (!(control instanceof HTMLInputElement || control instanceof HTMLSelectElement)) return;
     const field = control.name as DonationField;
-    if (!(["donorName", "donorEmail", "donorPhone", "amount", "givingIntent", "domesticConfirmed"] as string[]).includes(field)) return;
+    if (!(DONATION_FIELDS as readonly string[]).includes(field)) return;
     setFieldErrors(current => ({
       ...current,
       [field]: [control.validationMessage || "Please check this field."],
@@ -164,11 +174,11 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
     const values = new FormData(event.currentTarget);
 
     try {
-      const orderResponse = await fetch("/api/donations/order", {
+      const orderResponse = await fetch(fund ? "/api/donations/fund-order" : "/api/donations/order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          appealId,
+          ...(fund ? { fundId: fund.id, fundRevision: fund.revision, fundPurposeConfirmed: values.get("fundPurposeConfirmed") === "on" } : { appealId }),
           donorName: values.get("donorName"),
           donorEmail: values.get("donorEmail"),
           donorPhone: values.get("donorPhone"),
@@ -200,7 +210,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         if (typeof order?.remainingAmount === "number" && Number.isSafeInteger(order.remainingAmount) && order.remainingAmount > 0 && order.remainingAmount <= 1_000_000) setRemainingHint(order.remainingAmount);
         if (order?.fields && typeof order.fields === "object") {
           const safeFields: DonationFieldErrors = {};
-          for (const field of ["amount", "donorName", "donorEmail", "donorPhone", "givingIntent", "domesticConfirmed"] as DonationField[]) {
+          for (const field of DONATION_FIELDS) {
             const messages = order.fields[field];
             if (Array.isArray(messages)) {
               const first = messages.find(value => typeof value === "string" && value.trim());
@@ -216,7 +226,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
 
       // A successful HTTP response is not proof of a usable checkout order.
       // An order may already exist, so an invalid payload locks out retries.
-      if (orderResponse.status !== 201 || !order ||
+      if (orderResponse.status !== 201 || !order || (fund && !isMatchingFundOrder(order, fund, values.get("givingIntent"))) ||
         typeof order.orderId !== "string" || !/^order_[A-Za-z0-9_]{1,120}$/.test(order.orderId) ||
         !Number.isSafeInteger(order.amount) || order.amount !== Number(values.get("amount")) * 100 ||
         order.currency !== "INR" ||
@@ -236,7 +246,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         amount: order.amount,
         currency: order.currency,
         name: "Amaana Foundation",
-        description: appealTitle,
+        description: destinationTitle,
         order_id: order.orderId,
         prefill: order.donor,
         theme: { color: "#466FAA" },
@@ -286,6 +296,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         showError("Secure checkout could not load. Please refresh and try again.");
       }}
     />
+    {fund && <FundPurposeDisclosure fund={fund}/>}
     <form ref={formRef} className="v2-premium-form v2-donation-form" onSubmit={submit} onInvalid={handleInvalid} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
       <div className="v2-form-heading"><span>Secure contribution</span><h2 id="donation-form-heading">Choose how you would like to support.</h2><p id="donation-form-description">Only the information needed to process and acknowledge your contribution is requested.</p></div>
       <p id="donation-checkout-status" className={styles.status} role="status" aria-live="polite">{statusText}</p>
@@ -297,18 +308,19 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         {renderInput("donorPhone", <>Phone <span className="muted">optional</span></>, { type: "tel", autoComplete: "tel" }, true)}
         <fieldset className={`field full ${styles.intentGroup}`} disabled={submissionLocked} aria-invalid={Boolean(fieldError("givingIntent")) || undefined} aria-describedby={fieldError("givingIntent") ? "giving-intent-error" : undefined}>
           <legend>Giving intention</legend>
-          <p className={styles.intentIntro}>Choose how you want this contribution recorded. The selected appeal remains the designated destination in every case.</p>
+          <p className={styles.intentIntro}>Choose how you want this contribution recorded. The selected {fund ? "approved giving fund" : "appeal"} remains the designated destination in every case.</p>
           <div className={styles.intentGrid}>
-            {(["GENERAL", "SADAQAH", ...(zakatEligible ? ["ZAKAT"] : [])] as DonationIntentValue[]).map((intent, index) => (
+            {intentions.map((intent, index) => (
               <label className={styles.intentOption} key={intent}>
                 <input type="radio" name="givingIntent" value={intent} defaultChecked={index === 0} required />
-                <span><strong>{DONATION_INTENT_LABELS[intent]}</strong><small>{DONATION_INTENT_DESCRIPTIONS[intent]}</small></span>
+                <span><strong>{DONATION_INTENT_LABELS[intent]}</strong><small>{fund ? `Giving intention: ${DONATION_INTENT_LABELS[intent]}.` : DONATION_INTENT_DESCRIPTIONS[intent]}</small></span>
               </label>
             ))}
           </div>
           {fieldError("givingIntent") && <small id="giving-intent-error" className="v2-field-error">{fieldError("givingIntent")}</small>}
           <small className={styles.intentNote}>{zakatEligible ? "Amaana has explicitly reviewed this appeal as Zakat-eligible. Your selection records your giving intention; it does not alter the underlying verification record." : "Zakat is shown only on appeals that Amaana has explicitly reviewed as Zakat-eligible."}</small>
         </fieldset>
+        {fund && <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="fundPurposeConfirmed" type="checkbox" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("fundPurposeConfirmed")) || undefined} aria-describedby={fieldError("fundPurposeConfirmed") ? "fund-purpose-error" : "fund-purpose"} onChange={() => clearFieldError("fundPurposeConfirmed")}/><span><strong>I accept the purpose and restrictions</strong><small>My donation follows the reviewed purpose above.</small></span></label>{fieldError("fundPurposeConfirmed") && <small id="fund-purpose-error" className="v2-field-error">{fieldError("fundPurposeConfirmed")}</small>}</div>}
         <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="isAnonymous" type="checkbox" disabled={submissionLocked}/><span><strong>Keep my public identity private</strong><small>Do not show my name in any public donor listing.</small></span></label></div>
         <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="domesticConfirmed" type="checkbox" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("domesticConfirmed")) || undefined} aria-describedby={fieldError("domesticConfirmed") ? "domestic-confirmation-error" : undefined} onChange={() => clearFieldError("domesticConfirmed")}/><span><strong>Domestic contribution confirmation</strong><small>I confirm this donation is from an Indian source using a domestic payment method.</small></span></label>{fieldError("domesticConfirmed") && <small id="domestic-confirmation-error" className="v2-field-error">{fieldError("domesticConfirmed")}</small>}</div>
         <div className="field full v2-form-submit"><button className="v2-button" type="submit" disabled={busy || !scriptReady || lockedForReconciliation}>{phase === "opening" ? "Opening secure checkout…" : phase === "verifying" ? "Verifying donation…" : phase === "reconciliation" ? "Verification follow-up required" : scriptReady ? "Continue securely →" : "Preparing secure checkout…"}</button><small>{lockedForReconciliation ? "Do not submit another payment for this donation. Keep your Razorpay confirmation so the payment can be reconciled safely." : "Next: Razorpay secure checkout. Your Amaana acknowledgement follows successful payment verification and is not an 80G tax-deduction certificate."}</small></div>

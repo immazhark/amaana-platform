@@ -88,6 +88,7 @@ describe('private donation designation migration on isolated PostgreSQL-WASM', {
     await db.exec(readFileSync('prisma/migrations/20261014193000_exclusive_donation_destination/migration.sql', 'utf8'));
     await db.exec(readFileSync('prisma/migrations/20261014203000_fund_donation_currency/migration.sql', 'utf8'));
     await db.exec(readFileSync('prisma/migrations/20261014220000_fund_financial_state_guards/migration.sql', 'utf8'));
+    await db.exec(readFileSync('prisma/migrations/20261014230000_fund_disclosure_confirmation/migration.sql', 'utf8'));
   });
   after(async () => {
     if (db) await db.close();
@@ -203,6 +204,19 @@ describe('private donation designation migration on isolated PostgreSQL-WASM', {
     const row = (await db.query('SELECT "amount", "refundedAmount", "status", "designationSnapshot" FROM "Donation" WHERE "id"=$1', ['valid-fund'])).rows[0];
     assert.equal(Number(row.amount), 250); assert.equal(Number(row.refundedAmount), 250);
     assert.equal(row.status, 'REFUNDED'); assert.deepEqual(row.designationSnapshot, approvedFund);
+  });
+
+  it('does not fabricate disclosure acceptance on historical fund records', async () => {
+    const row = (await db.query('SELECT "fundDisclosureConfirmedAt" FROM "Donation" WHERE "id"=$1', ['valid-fund'])).rows[0];
+    assert.equal(row.fundDisclosureConfirmedAt, null);
+    await assert.rejects(db.query('UPDATE "Donation" SET "fundDisclosureConfirmedAt"=NOW() WHERE "id"=$1', ['valid-fund']), error => error.code === '23514');
+  });
+  it('records and preserves confirmation at creation of a reviewed fund donation', async () => {
+    await db.query('UPDATE "GivingFund" SET "status"=$1 WHERE "id"=$2', ['APPROVED', 'fund-reviewed']);
+    await db.query('INSERT INTO "Donation" ("id", "referenceNumber", "fundId", "donorName", "donorEmail", "domesticConfirmedAt", "amount", "receiptTokenHash", "updatedAt", "designationSnapshot", "fundDisclosureConfirmedAt") VALUES ($1,$2,$3,$4,$5,NOW(),100,$6,NOW(),$7::jsonb,NOW())', ['confirmed-fund', 'SYNTHETIC-CONFIRMED', 'fund-reviewed', 'Synthetic donor', 'donor@example.invalid', 'synthetic-hash', JSON.stringify(approvedFund)]);
+    await assert.rejects(db.query('UPDATE "Donation" SET "fundDisclosureConfirmedAt"=NULL WHERE "id"=$1', ['confirmed-fund']), error => error.code === '23514');
+    await db.query('UPDATE "Donation" SET "status"=$1 WHERE "id"=$2', ['CAPTURED', 'confirmed-fund']);
+    assert.notEqual((await db.query('SELECT "fundDisclosureConfirmedAt" FROM "Donation" WHERE "id"=$1', ['confirmed-fund'])).rows[0].fundDisclosureConfirmedAt, null);
   });
 
 });

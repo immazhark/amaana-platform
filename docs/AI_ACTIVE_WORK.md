@@ -1,3 +1,7 @@
+## 2026-10-14 — dormant fund donor flow batch
+
+Ownership: HANDOFF_PENDING after dormant donor-flow batch.208 focused tests/29 isolatedSQL and clean compile/type/lint passed. JS819180/819200; only20bytes headroom. Publish to PR292; no release/public activation.
+
 ## 2026-10-14 — consolidated accounting and master-state continuation
 
 Ownership: HANDOFF_PENDING after consolidated B08 batch; sole writer.449 focused tests/42 isolatedSQL passed;10nativeDB cases skipped. Publish to PR292; master149 counts preserved; no release.

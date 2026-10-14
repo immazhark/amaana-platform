@@ -60,6 +60,7 @@ const validFund = {
 const fields = {
   fundId: validFund.id,
   fundRevision: 4,
+  fundPurposeConfirmed: true,
   donorName: "Synthetic donor",
   donorEmail: "donor@example.com",
   donorPhone: "",
@@ -123,6 +124,8 @@ describe("reviewed giving-fund order: inactive by default", () => {
   it.each([
     { ...fields, appealId: "cmf1234567890123456789014" },
     { ...fields, fundId: undefined },
+    { ...fields, fundPurposeConfirmed: undefined },
+    { ...fields, fundPurposeConfirmed: false },
     { ...fields, fundRevision: "4" },
     { ...fields, fundRevision: 5.1 },
     { ...fields, fundRevision: -1 },
@@ -172,7 +175,8 @@ describe("reviewed giving-fund order: inactive by default", () => {
     const body = await response.json();
     expect(body).toMatchObject({
       orderId: "order_synthetic", amount: 50000, currency: "INR",
-      fundName: validFund.name,
+      designationKind: "FUND", fundId: validFund.id, fundRevision: 4, givingIntent: "GENERAL",
+      fundName: validFund.name, fundPurpose: validFund.purpose, fundDisclosure: validFund.disclosure,
       donor: { email: "donor@example.com" },
     });
     expect(response.headers.get("cache-control")).toMatch(/no-store.*private/);
@@ -183,6 +187,7 @@ describe("reviewed giving-fund order: inactive by default", () => {
     expect(mocks.createDonation).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
         appealId: null, fundId: validFund.id, givingIntent: "GENERAL",
+        fundDisclosureConfirmedAt: expect.any(Date),
         designationSnapshot: {
           version: 1, kind: "FUND",
           fundId: validFund.id, fundRevision: 4,

@@ -1,3 +1,4 @@
+import Link from "@/components/navigation-link";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { summarizeSettledDonationAggregate } from "@/lib/fund-ledger";
@@ -48,6 +49,7 @@ export default async function GivingFundsPage({ searchParams }: { searchParams: 
         return <article className="card" key={fund.id}>
           <div className="admin-heading"><h2>{fund.name}</h2><span className="status-badge">{fund.status.replaceAll("_", " ")}</span></div>
           <p>{fund.purpose}</p><p>{fund.disclosure}</p>
+          <Link href={`/admin/giving-funds/${fund.id}/preview`}>Review donor flow</Link>
           <p className="muted">{fund.accountCode} · {fund.currency} · {fund.acceptedIntents.join(" / ")} · Created by {fund.createdBy.name}{fund.approvedBy ? ` · Approved by ${fund.approvedBy.name}` : ""}</p>
           {canViewDonations && (() => {
             const balance = balances.get(fund.id);

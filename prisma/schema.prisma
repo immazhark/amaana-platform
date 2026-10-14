@@ -438,6 +438,7 @@ model Donation {
   isAnonymous              Boolean               @default(false)
   givingIntent             DonationIntent        @default(GENERAL)
   designationSnapshot      Json?
+  fundDisclosureConfirmedAt DateTime?
   domesticConfirmedAt      DateTime
   amount                   Decimal               @db.Decimal(12, 2)
   refundedAmount           Decimal               @default(0) @db.Decimal(12, 2)

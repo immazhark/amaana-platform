@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { createDonationReference, createReceiptToken, donationSchema, hashReceiptToken, MIN_DONATION_AMOUNT } from "@/lib/donations";
+import { isFundCheckoutEnabled } from "@/lib/fund-checkout-policy";
 import { approvedFundDesignationSnapshot, FundValidationError } from "@/lib/giving-funds";
 import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder } from "@/lib/razorpay";
@@ -20,6 +21,7 @@ const fundOrderSchema = donationSchema.omit({ appealId: true, fundId: true }).ex
   appealId: z.never().optional(),
   fundId: z.string().cuid(),
   fundRevision: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
+  fundPurposeConfirmed: z.literal(true),
 }).strict();
 const MAX_PAYMENT_JSON_BYTES = 32 * 1024;
 
@@ -68,11 +70,7 @@ export async function POST(request: Request) {
 
     // Governance: registry approval alone never activates a public donation
     // destination. Explicit release control must name each reviewed fund ID.
-    const publicFundIds = new Set(
-      (process.env.AMAANA_FUND_CHECKOUT_ALLOWLIST ?? "")
-        .split(",").map(id => id.trim()).filter(Boolean),
-    );
-    if (!publicFundIds.has(parsed.data.fundId)) {
+    if (!isFundCheckoutEnabled(parsed.data.fundId)) {
       return NextResponse.json(
         { error: "Fund donations are not available." },
         { status: 404, headers: privateHeaders },
@@ -122,6 +120,7 @@ export async function POST(request: Request) {
           isAnonymous: parsed.data.isAnonymous,
           givingIntent: parsed.data.givingIntent,
           designationSnapshot,
+          fundDisclosureConfirmedAt: new Date(),
           domesticConfirmedAt: new Date(),
           amount: parsed.data.amount,
           paymentMethod: "RAZORPAY",
@@ -147,7 +146,10 @@ export async function POST(request: Request) {
     return NextResponse.json({
       donationId: donation.id, orderId: order.id, amount: amountPaise,
       currency: "INR", keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-      fundName: designationSnapshot.label,
+      designationKind: "FUND", fundId: fund.id, fundRevision: designationSnapshot.fundRevision,
+      givingIntent: designationSnapshot.givingIntent,
+      fundName: designationSnapshot.label, fundPurpose: designationSnapshot.purpose,
+      fundDisclosure: designationSnapshot.disclosure,
       donor: { name: donation.donorName, email: donation.donorEmail, contact: donation.donorPhone },
       receiptToken,
     }, { status: 201, headers: privateHeaders });
