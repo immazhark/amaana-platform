@@ -1,11 +1,12 @@
 "use client";
 
 import Link from "@/components/navigation-link";
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { PrintButton } from "@/components/print-button";
 import { donationIntentLabel } from "@/lib/donation-intent";
 import { formatPrivateReceiptINR, parsePrivateDonationAcknowledgementLocation } from "@/lib/private-donation-ack";
 import { isAcknowledgementResponse, type AcknowledgementRecord } from "@/lib/private-record-response";
+const ReceiptPdfDownloadButton = lazy(() => import("@/components/receipt-pdf-download-button"));
 
 
 function PrivateTokenRecovery({ onRecover }: { onRecover: (token: string) => void }) {
@@ -34,7 +35,7 @@ function PrivateTokenRecovery({ onRecover }: { onRecover: (token: string) => voi
   </form>;
 }
 
-export function DonationAcknowledgementClient({ reference }: { reference: string }) {
+export function DonationAcknowledgementClient({ reference, pdfEnabled = false }: { reference: string; pdfEnabled?: boolean }) {
   const [record, setRecord] = useState<AcknowledgementRecord | null | "error" | undefined>(undefined);
   const [attempt, retry] = useState(0);
   const credential = useRef<[string, string | null]>([reference, null]);
@@ -98,5 +99,8 @@ export function DonationAcknowledgementClient({ reference }: { reference: string
   }
 
   const { donation, presentation } = record;
-  return <div className="v2-home v2-receipt-page"><section className="v2-receipt-hero"><div className="v2-shell"><p className="v2-section-label">Donation acknowledgement</p><h1>{presentation.heading}</h1><p>{presentation.summary}</p><div className={`v2-receipt-status ${presentation.tone}`}><span>{presentation.statusLabel}</span><strong>{formatPrivateReceiptINR(donation.amount)}</strong><small>{donation.appeal.title}</small></div></div></section><section className="v2-section paper"><div className="v2-shell v2-receipt-layout"><article className="v2-receipt-sheet"><div className="v2-receipt-sheet-head"><div><span>Amaana Foundation</span><h2>Private transaction record</h2></div><strong>{donation.receiptNumber ?? "Pending"}</strong></div><dl><div><dt>Donation reference</dt><dd>{donation.referenceNumber}</dd></div><div><dt>Donor</dt><dd>{donation.donorName}</dd></div><div><dt>{donation.designationKind === "FUND" ? "Giving fund" : "Appeal"}</dt><dd>{donation.appeal.title}</dd></div><div><dt>Giving intention</dt><dd>{donationIntentLabel(donation.givingIntent)}</dd></div><div><dt>Original amount</dt><dd>{formatPrivateReceiptINR(donation.amount)}</dd></div>{donation.refundedAmount > 0 && <div><dt>Refunded amount</dt><dd>{formatPrivateReceiptINR(donation.refundedAmount)}</dd></div>}<div><dt>Status</dt><dd>{presentation.statusLabel}</dd></div><div><dt>Record date</dt><dd>{new Date(donation.recordDate).toLocaleDateString("en-IN", { dateStyle: "long" })}</dd></div><div><dt>Payment ID</dt><dd>{donation.providerPaymentId ?? (presentation.tone === "pending" ? "Pending verification" : "Not applicable")}</dd></div></dl><div className="v2-receipt-disclaimer"><strong>Important</strong><p>Private transaction acknowledgement; this does not certify Section 80G deduction eligibility.</p></div><PrintButton /></article><aside className="v2-receipt-next"><p className="v2-section-label">Continue with context</p><h2>Keep this record private.</h2><p>Explore the work. For payment discrepancies, contact Amaana with your confirmation. Never share OTPs, UPI PINs or card credentials.</p><div className="v2-receipt-links">{donation.appeal.slug && <Link href={`/appeals/${donation.appeal.slug}`}>Return to this appeal <span>↗</span></Link>}<Link href="/impact">Explore documented impact <span>↗</span></Link><Link href="/transparency">See our transparency approach <span>↗</span></Link></div></aside></div></section></div>;
+  return <div className="v2-home v2-receipt-page"><section className="v2-receipt-hero"><div className="v2-shell"><p className="v2-section-label">Donation acknowledgement</p><h1>{presentation.heading}</h1><p>{presentation.summary}</p><div className={`v2-receipt-status ${presentation.tone}`}><span>{presentation.statusLabel}</span><strong>{formatPrivateReceiptINR(donation.amount)}</strong><small>{donation.appeal.title}</small></div></div></section><section className="v2-section paper"><div className="v2-shell v2-receipt-layout"><article className="v2-receipt-sheet"><div className="v2-receipt-sheet-head"><div><span>Amaana Foundation</span><h2>Private transaction record</h2></div><strong>{donation.receiptNumber ?? "Pending"}</strong></div><dl><div><dt>Donation reference</dt><dd>{donation.referenceNumber}</dd></div><div><dt>Donor</dt><dd>{donation.donorName}</dd></div><div><dt>{donation.designationKind === "FUND" ? "Giving fund" : "Appeal"}</dt><dd>{donation.appeal.title}</dd></div><div><dt>Giving intention</dt><dd>{donationIntentLabel(donation.givingIntent)}</dd></div><div><dt>Original amount</dt><dd>{formatPrivateReceiptINR(donation.amount)}</dd></div>{donation.refundedAmount > 0 && <div><dt>Refunded amount</dt><dd>{formatPrivateReceiptINR(donation.refundedAmount)}</dd></div>}<div><dt>Status</dt><dd>{presentation.statusLabel}</dd></div><div><dt>Record date</dt><dd>{new Date(donation.recordDate).toLocaleDateString("en-IN", { dateStyle: "long" })}</dd></div><div><dt>Payment ID</dt><dd>{donation.providerPaymentId ?? (presentation.tone === "pending" ? "Pending verification" : "Not applicable")}</dd></div></dl><div className="v2-receipt-disclaimer"><strong>Important</strong><p>Private transaction acknowledgement; this does not certify Section 80G deduction eligibility.</p></div><PrintButton />{pdfEnabled && donation.receiptNumber && ["captured", "refunded"].includes(presentation.tone) && <Suspense fallback={null}>
+  <ReceiptPdfDownloadButton reference={reference}
+    getToken={() => credential.current[0] === reference ? credential.current[1] : null} />
+</Suspense>}</article><aside className="v2-receipt-next"><p className="v2-section-label">Continue with context</p><h2>Keep this record private.</h2><p>Explore the work. For payment discrepancies, contact Amaana with your confirmation. Never share OTPs, UPI PINs or card credentials.</p><div className="v2-receipt-links">{donation.appeal.slug && <Link href={`/appeals/${donation.appeal.slug}`}>Return to this appeal <span>↗</span></Link>}<Link href="/impact">Explore documented impact <span>↗</span></Link><Link href="/transparency">See our transparency approach <span>↗</span></Link></div></aside></div></section></div>;
 }
