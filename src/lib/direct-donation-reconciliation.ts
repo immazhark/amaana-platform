@@ -11,6 +11,9 @@ export async function reconcileDirectDonation(input: {
   actorId: string;
   decision: "VERIFY" | "REJECT";
   notes: string;
+  statementReference?: string;
+  statementAmount?: string;
+  statementConfirmed?: boolean;
 }) {
   const notes = input.notes.trim();
   if (!input.donationId || !input.actorId) throw new Error("Donation and reviewer are required");
@@ -32,6 +35,7 @@ export async function reconcileDirectDonation(input: {
         currency: true,
         status: true,
         paymentMethod: true,
+        transferReference: true,
       },
     });
     if (!donation) throw new Error("Donation not found");
@@ -55,6 +59,29 @@ export async function reconcileDirectDonation(input: {
     if (donation.currency !== "INR" || !Number.isSafeInteger(donationPaise) || donationPaise <= 0) {
       throw new Error("Invalid financial amounts for transfer reconciliation");
     }
+    // A screenshot or donor-entered UTR alone is never proof that Amaana
+    // received money. The reviewer must cross-check the bank's own statement
+    // reference and exact INR amount before authorizing a CAPTURED mutation.
+    // These are staff-entered attestations, not an automated bank feed.
+    if (input.statementConfirmed !== true) {
+      throw new Error("A bank-statement match confirmation is required");
+    }
+    const statementReference = (input.statementReference ?? "").trim().toUpperCase();
+    const claimedReference = (donation.transferReference ?? "").trim().toUpperCase();
+    if (!/^[A-Z0-9._/-]{6,100}$/.test(statementReference) ||
+        statementReference !== claimedReference) {
+      throw new Error("Bank statement reference must match the claimed transfer");
+    }
+    const statedAmount = input.statementAmount ?? "";
+    const match = /^(0|[1-9][0-9]{0,11})(?:\.([0-9]{1,2}))?$/.exec(statedAmount);
+    const statementPaise = match
+      ? Number(match[1]) * 100 + Number((match[2] ?? "").padEnd(2, "0"))
+      : NaN;
+    if (!Number.isSafeInteger(statementPaise) || statementPaise <= 0 ||
+        statementPaise !== donationPaise) {
+      throw new Error("Bank statement amount does not match the claimed INR transfer");
+    }
+
     if (destination.kind === "APPEAL") {
       const appealBefore = await tx.appeal.findUnique({
         where: { id: destination.id }, select: { goalAmount: true, amountRaised: true, status: true },
@@ -109,7 +136,7 @@ export async function reconcileDirectDonation(input: {
         donationId: donation.id,
       },
     });
-    await tx.auditEvent.create({ data: { actorId: input.actorId, action: "donation.transfer.verify", entityType: "Donation", entityId: donation.id, metadata: { paymentMethod: donation.paymentMethod } } });
+    await tx.auditEvent.create({ data: { actorId: input.actorId, action: "donation.transfer.verify", entityType: "Donation", entityId: donation.id, metadata: { paymentMethod: donation.paymentMethod, bankStatementMatched: true, statementReference, statementAmountPaise: statementPaise } } });
     return { status: DonationStatus.CAPTURED, referenceNumber: donation.referenceNumber };
   });
 }

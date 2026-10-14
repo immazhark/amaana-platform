@@ -9,8 +9,11 @@ export async function reconcileDonationAction(formData: FormData) {
   const donationId = String(formData.get("donationId") ?? "").trim();
   const decision = String(formData.get("decision") ?? "");
   const notes = String(formData.get("notes") ?? "").trim();
+  const statementReference = String(formData.get("statementReference") ?? "").trim();
+  const statementAmount = String(formData.get("statementAmount") ?? "").trim();
+  const statementConfirmed = formData.get("statementConfirmed") === "true";
   if (!donationId || !["VERIFY", "REJECT"].includes(decision)) throw new Error("Invalid reconciliation request");
-  const result = await reconcileDirectDonation({ donationId, actorId: user.id, decision: decision as "VERIFY" | "REJECT", notes });
+  const result = await reconcileDirectDonation({ donationId, actorId: user.id, decision: decision as "VERIFY" | "REJECT", notes, statementReference, statementAmount, statementConfirmed });
   if (result.status === "CAPTURED") {
     updateTag("appeals");
     revalidatePath("/appeals");

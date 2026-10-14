@@ -23,7 +23,7 @@ const money = (rupees: number) => ({
   toNumber: () => rupees,
   mul: (scale: number) => ({ toNumber: () => rupees * scale }),
 });
-const request = { donationId: "donation_test", actorId: "reviewer_test", decision: "VERIFY" as const, notes: "Bank entry matched" };
+const request = { donationId: "donation_test", actorId: "reviewer_test", decision: "VERIFY" as const, notes: "Bank entry matched", statementReference: "UTR-TEST-12345", statementAmount: "500.00", statementConfirmed: true };
 
 describe("manual transfer money-state boundary", () => {
   beforeEach(() => {
@@ -39,6 +39,7 @@ describe("manual transfer money-state boundary", () => {
       donorEmail: "donor@example.test", givingIntent: "GENERAL",
       currency: "INR", amount: money(500), status: DonationStatus.PENDING_VERIFICATION,
       paymentMethod: DonationPaymentMethod.DIRECT_UPI,
+      transferReference: "UTR-TEST-12345",
     });
     mocks.appealFind.mockResolvedValue({
       goalAmount: money(1000), amountRaised: money(100), status: "PUBLISHED",
@@ -104,6 +105,45 @@ describe("manual transfer money-state boundary", () => {
     expect(mocks.auditCreate).toHaveBeenCalledOnce();
   });
 
+  it("requires an explicit bank-statement match before recording money received", async () => {
+    await expect(reconcileDirectDonation({ ...request, statementConfirmed: false }))
+      .rejects.toThrow(/bank-statement match confirmation/);
+    expect(mocks.donationUpdate).not.toHaveBeenCalled();
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+  });
+
+  it.each(["UTR-WRONG-12345", "<untrusted>", ""])(
+    "rejects an unmatched or malformed bank statement reference %s", async reference => {
+      await expect(reconcileDirectDonation({ ...request, statementReference: reference }))
+        .rejects.toThrow(/statement reference/);
+      expect(mocks.donationUpdate).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["499.99", "500.01", "500.001", "5e2", "-500", "", "900719925474099"])(
+    "rejects an inconsistent statement credit amount %s", async amount => {
+      await expect(reconcileDirectDonation({ ...request, statementAmount: amount }))
+        .rejects.toThrow(/statement amount/);
+      expect(mocks.donationUpdate).not.toHaveBeenCalled();
+      expect(mocks.auditCreate).not.toHaveBeenCalled();
+    },
+  );
+
+  it("does not demand bank credit evidence for a rejection, and cannot queue a receipt", async () => {
+    await expect(reconcileDirectDonation({ ...request, decision: "REJECT", statementConfirmed: false,
+      statementReference: undefined, statementAmount: undefined }))
+      .resolves.toMatchObject({ status: DonationStatus.REJECTED });
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("records the bank entry reference and exact verified paise in the immutable audit event", async () => {
+    await reconcileDirectDonation(request);
+    expect(mocks.auditCreate).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({
+      action: "donation.transfer.verify",
+      metadata: expect.objectContaining({ bankStatementMatched: true, statementReference: "UTR-TEST-12345", statementAmountPaise: 50000 }),
+    }) }));
+  });
+
   it("keeps an otherwise valid direct transfer eligible for reconciliation", async () => {
     await expect(reconcileDirectDonation(request)).resolves.toEqual({
       status: DonationStatus.CAPTURED, referenceNumber: "AFD-TEST",
@@ -120,6 +160,7 @@ describe("manual transfer money-state boundary", () => {
       givingIntent: "SADAQAH", currency: "INR", amount: money(500),
       status: DonationStatus.PENDING_VERIFICATION,
       paymentMethod: DonationPaymentMethod.BANK_TRANSFER,
+      transferReference: "UTR-TEST-12345",
     });
     const result = await reconcileDirectDonation(request);
     expect(result.status).toBe(DonationStatus.CAPTURED);
