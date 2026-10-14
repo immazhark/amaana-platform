@@ -52,8 +52,20 @@ export function isAppealOpenForDonations(
   now: Date = new Date(),
 ) {
   if (appeal.status !== "PUBLISHED") return false;
-  if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) return false;
-  if (appeal.closesAt && new Date(appeal.closesAt).getTime() <= now.getTime()) return false;
+  const raised = amountToNumber(appeal.amountRaised);
+  const goal = amountToNumber(appeal.goalAmount);
+  const currentTime = now.getTime();
+
+  // Never advertise a donation route when goal, receipts or clock data cannot
+  // establish an open, bounded fundraising window. Zero-goal campaigns are not
+  // eligible for case-linked donations.
+  if (!Number.isFinite(raised) || raised < 0 || !Number.isFinite(goal) || goal <= 0) return false;
+  if (!Number.isFinite(currentTime) || raised >= goal) return false;
+
+  if (appeal.closesAt !== null && appeal.closesAt !== undefined) {
+    const closeTime = new Date(appeal.closesAt).getTime();
+    if (!Number.isFinite(closeTime) || closeTime <= currentTime) return false;
+  }
   return true;
 }
 
