@@ -5,6 +5,7 @@ import Link from "@/components/navigation-link";
 import { PageHero, PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { WorkPortfolio } from "@/components/work-portfolio";
+import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import { filterWork, type WorkSearch } from "@/lib/work-filters";
@@ -26,6 +27,15 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
   const rawCauses = await getOurWorkIndexData();
   const search = await searchParams;
   const allInitiatives = rawCauses.flatMap(cause => cause.initiatives);
+  // Already publication-gated by getOurWorkIndexData. Reuse this projection:
+  // no additional DB request and no unsupported pooled impact totals.
+  const publishedImpact = allInitiatives
+    .filter(item => item.primaryMetric?.trim() && item.primaryMetricLabel?.trim())
+    .slice(0, 3)
+    .map(item => ({
+      slug: item.slug, title: item.title,
+      value: item.primaryMetric!, label: item.primaryMetricLabel!,
+    }));
   const canonicalInitiatives = allInitiatives.filter(item => { const canonical = programmeBySlug(item.slug); if (!canonical) return false; const isChild = 'parentSlug' in canonical && Boolean(canonical.parentSlug); return Boolean(search.year) || !isChild; });
   const visibleCauses = programmeCategories.map(category => ({ id: category.slug, slug: category.slug, title: category.title, summary: category.summary, initiatives: canonicalInitiatives.filter(item => programmeBySlug(item.slug)?.causeSlug === category.slug) })).filter(cause => cause.initiatives.length > 0);
   const filters = filterWork(visibleCauses, search);
@@ -54,6 +64,10 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
         actions={[{ label: "Explore the portfolio", href: "#work-results" }, { label: "See documented impact", href: "/impact", secondary: true }]}
         visual={heroMedia ? <PublicMedia asset={heroMedia} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : <div className="page-hero__visual-fallback page-hero__visual-fallback--stats"><span>Documented public portfolio</span><strong>{initiativeCount} published programmes</strong><div className="page-hero__stat-row"><b>{causeCount}</b><small>programme areas</small></div><i /></div>}
       />
+
+      {publishedImpact.length > 0 && <div className="v2-shell">
+        <VerifiedImpactStrip headingId="work-published-outcomes" items={publishedImpact}/>
+      </div>}
 
       <section className="v2-section paper" id="work-results"><div className="v2-shell"><SectionHeading eyebrow={<>Explore by need</>} title={<>A living portfolio of service.</>} subtitle={<>Start with a programme area, then use the year filter to explore a specific annual edition.</>} />
         <form className={`work-filters ${auditStyles.toolbar}`} action="/our-work#work-results" method="get" aria-label="Filter published initiatives"><label className={auditStyles.filterLabel} htmlFor="work-programme">Programme<select className={auditStyles.filterSelect} id="work-programme" name="programme" defaultValue={filters.programme}><option value="">All programmes</option>{filters.programme && !visibleCauses.some(cause => cause.slug === filters.programme) && <option value={filters.programme}>Unavailable programme</option>}{visibleCauses.map(cause => <option key={cause.slug} value={cause.slug}>{cause.title}</option>)}</select></label><label className={auditStyles.filterLabel} htmlFor="work-year">Year<select className={auditStyles.filterSelect} id="work-year" name="year" defaultValue={filters.year}><option value="">All years</option>{filters.year && !filters.years.some(year => String(year) === filters.year) && <option value={filters.year}>Unavailable year</option>}{filters.years.map(year => <option key={year} value={year}>{year}</option>)}</select></label><button className="v2-button" type="submit">Apply filters</button>{filters.active && <Link className={auditStyles.clear} href="/our-work#work-results">Clear filters</Link>}</form>
