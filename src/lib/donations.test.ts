@@ -18,6 +18,17 @@ describe("donation validation", () => {
   it("keeps the ₹10 minimum for normal donations", () => { expect(isDonationAmountAllowedForRemaining(9, 1_000)).toBe(false); expect(isDonationAmountAllowedForRemaining(10, 1_000)).toBe(true); });
   it("allows an exact smaller final contribution when less than ₹10 remains", () => { expect(isDonationAmountAllowedForRemaining(5, 5)).toBe(true); expect(isDonationAmountAllowedForRemaining(4, 5)).toBe(false); });
   it("rejects a donation above the remaining designated need", () => expect(isDonationAmountAllowedForRemaining(101, 100)).toBe(false));
+  it.each([Number.NaN, Infinity, -Infinity, 0, -1])(
+    "rejects an unsafe remaining fundraising amount of %s", remaining => {
+      expect(isDonationAmountAllowedForRemaining(100, remaining)).toBe(false);
+    },
+  );
+  it("still accepts a legitimate whole-rupee final remainder after rejecting bad amounts", () => {
+    expect(isDonationAmountAllowedForRemaining(1, 1)).toBe(true);
+    expect(isDonationAmountAllowedForRemaining(5, 5.5)).toBe(false);
+    expect(isDonationAmountAllowedForRemaining(10, 10.5)).toBe(true);
+  });
+
   it("validates direct transfer claims separately from Razorpay orders", () => {
     const claim = { ...valid, paymentMethod: "DIRECT_UPI", transferReference: "UTR123456789", transferredAt: new Date(Date.now() - 60_000) };
     expect(directTransferSchema.safeParse(claim).success).toBe(true);
