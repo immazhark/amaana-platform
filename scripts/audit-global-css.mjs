@@ -47,6 +47,21 @@ if (!/import\s+["']\.\/appeal-card\.css["'];/.test(home)) {
   failures.push('Homepage must import appeal-card.css for live AppealCard rendering.');
 }
 
+// Guard audited multiline display leading at the actual route-level override
+// owners. A component-only fix is insufficient if a later route sheet reverts it.
+for (const [file, selectors] of [
+  ['appeals.css', ['.v2-appeal-card h3', '.v2-appeals-empty h3', '.v2-appeal-story-grid h2']],
+  ['stories.css', ['.v2-stories-feature-placeholder strong', '.v2-story-detail-context>strong', '.v2-story-detail-no-media strong']],
+]) {
+  const source = await readFile(path.join(root, 'src/app', file), 'utf8');
+  for (const selector of selectors) {
+    const declarations = source.split(`${selector}{`)[1]?.split('}')[0];
+    if (!declarations || !/(?:^|;)\\s*line-height:\\s*1\\.12(?:\\s*;|$)/.test(declarations)) {
+      failures.push(`${file}: ${selector} must retain accessible 1.12 multiline leading.`);
+    }
+  }
+}
+
 // Transaction routes share control styles, while their layout/upload rules stay owned.
 const sharedForms = await readFile(path.join(root, 'src/app/forms-experience.css'), 'utf8');
 if (/\.v2-(?:donate-|assistance-|file-|amount-|consent-fieldset)/.test(sharedForms)) {
