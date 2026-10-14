@@ -15,4 +15,10 @@ describe("voluntary feedback surface", () => {
     expect(html).toContain("never permission to publish");
     expect(html).not.toContain('action="/api/');
   });
+  it("limits free-text input without splitting emoji or creating hidden uploads", () => {
+    const html = renderToStaticMarkup(<FeedbackEnquiryBuilder />);
+    expect(html).toContain('maxLength="480"');
+    expect(html).toContain("non-sensitive information only");
+    expect(html).not.toContain('type="file"');
+  });
 });

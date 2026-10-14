@@ -15,7 +15,7 @@ describe("non-charging monthly giving calendar", () => {
     expect(ics.endsWith("END:VCALENDAR\r\n")).toBe(true);
     expect(unfolded).toContain(`RRULE:FREQ=MONTHLY;BYMONTHDAY=${day}`);
     expect(unfolded).toContain("DTSTART;VALUE=DATE:");
-    expect(unfolded).toContain("No automatic debit or subscription".toLowerCase().slice(0, 0) || "no automatic debit or subscription");
+    expect(unfolded).toContain("no automatic debit or subscription");
     expect(unfolded).toContain("URL:https://amaanafoundation.org/donate");
     expect(unfolded).not.toContain("razorpay_subscription");
     for (const line of ics.split("\r\n")) expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75);

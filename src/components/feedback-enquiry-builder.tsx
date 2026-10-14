@@ -48,7 +48,7 @@ export function FeedbackEnquiryBuilder() {
     </label>
     <label className={styles.message}>
       Optional message <span>(non-sensitive information only)</span>
-      <textarea value={note} onChange={event => setNote(event.target.value.slice(0, MAX_FEEDBACK_NOTE_LENGTH))}
+      <textarea value={note} onChange={event => setNote([...event.target.value].slice(0, MAX_FEEDBACK_NOTE_LENGTH).join(""))}
         maxLength={MAX_FEEDBACK_NOTE_LENGTH} rows={4}
         aria-describedby="feedback-note-help"
         placeholder="Briefly describe the issue or improvement without names, case documents or account details."/>
