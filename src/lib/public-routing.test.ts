@@ -56,6 +56,13 @@ describe("public route publication policy", () => {
     expect(PUBLIC_STATIC_ROUTES.some(route => /subscription|mandate/.test(route.path))).toBe(false);
   });
 
+  it("makes the reviewed Shukr wall discoverable but keeps recognition changes private", () => {
+    expect(PUBLIC_STATIC_ROUTES.some(route => route.path === "/shukr")).toBe(true);
+    expect(isPrivateRoute("/shukr")).toBe(false);
+    expect(isPrivateRoute("/api/donations/recognition")).toBe(true);
+    expect(isPrivateRoute("/admin/donations/recognition")).toBe(true);
+  });
+
   it("does not allow duplicate publication rules", () => {
     const publicPaths = PUBLIC_STATIC_ROUTES.map(route => route.path);
     expect(new Set(publicPaths).size).toBe(publicPaths.length);
