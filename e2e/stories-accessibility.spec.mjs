@@ -35,11 +35,13 @@ for (const width of [390, 1440]) {
             <div class="v2-stories-feature-copy"><small>FIELD JOURNAL</small><h2>Stories shared with dignity</h2><p>Every account is reviewed before it is shared with the community.</p></div>
           </section>
           <div class="v2-stories-card-copy"><span>FIELD ACCOUNT</span><h3>Our community work</h3><small>READ THE STORY</small></div>
+          <div class="v2-stories-feature-placeholder"><strong>Community stories shared with care</strong></div>
           <div class="v2-stories-single-note"><span>ARCHIVE</span></div>
           <div class="v2-story-detail-heading"><h1>A story of continued care</h1></div>
           <div class="v2-story-detail-body-grid"><aside><h2>How support was provided</h2></aside></div>
           <div class="v2-story-detail-ethic"><h2>Privacy comes first</h2></div>
-          <div class="v2-story-detail-context"><small>DOCUMENTED IMPACT</small></div>
+          <div class="v2-story-detail-context"><small>DOCUMENTED IMPACT</small><strong>Documented community assistance</strong></div>
+          <div class="v2-story-detail-no-media"><strong>Support stories without revealing faces</strong></div>
           <div class="v2-story-source-note"><span>SOURCE NOTE</span></div>
         `;
         document.body.append(container);
@@ -49,6 +51,9 @@ for (const width of [390, 1440]) {
           '.v2-story-detail-heading h1',
           '.v2-story-detail-body-grid>aside h2',
           '.v2-story-detail-ethic h2',
+          '.v2-stories-feature-placeholder strong',
+          '.v2-story-detail-context>strong',
+          '.v2-story-detail-no-media strong',
         ];
         const headings = headingSelectors.map(selector => {
           const style = getComputedStyle(container.querySelector(selector));
