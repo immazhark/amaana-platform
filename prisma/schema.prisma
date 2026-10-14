@@ -483,7 +483,8 @@ model Donation {
   @@index([paymentMethod, status, createdAt])
   @@index([givingIntent, createdAt])
   @@index([reconciledById, reconciledAt])
-  @@index([createdAt])
+  @@index([createdAt])  @@index([recognitionApprovedAt])
+
 }
 
 // Durable provider-object identity; never prune with notification/security logs.

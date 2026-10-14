@@ -6,5 +6,4 @@ ALTER TABLE "Donation"
   ADD COLUMN "recognitionApprovedAt" TIMESTAMP(3),
   ADD COLUMN "recognitionRevokedAt" TIMESTAMP(3);
 CREATE INDEX "Donation_recognitionApprovedAt_idx"
-  ON "Donation"("recognitionApprovedAt")
-  WHERE "recognitionApprovedAt" IS NOT NULL;
+  ON "Donation"("recognitionApprovedAt");
