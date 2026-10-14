@@ -5,6 +5,9 @@ const root = path.resolve(".next/static");
 const forbiddenMarkers = [
   "S3_ACCESS_KEY_ID",
   "S3_SECRET_ACCESS_KEY",
+  "MEDIA_S3_ACCESS_KEY_ID",
+  "PUBLIC_MEDIA_S3_ACCESS_KEY_ID",
+  "PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY",
   "MEDIA_S3_SECRET_ACCESS_KEY",
   "PUBLIC_MEDIA_S3_SECRET_ACCESS_KEY",
   "RAZORPAY_KEY_SECRET",
@@ -15,6 +18,19 @@ const forbiddenMarkers = [
   "DONATION_TOKEN_PEPPER",
   "AUTH_RATE_LIMIT_PEPPER",
 ];
+
+// A NEXT_PUBLIC_ credential is compiled into browser artifacts when referenced.
+// Fail closed on the environment itself; finding a marker only after compilation
+// is too late, and the marker name can be erased by minification.
+// NEXT_PUBLIC_RAZORPAY_KEY_ID is intentionally publishable and not included.
+const publicCredentialNames = Object.keys(process.env).filter((name) =>
+  /^NEXT_PUBLIC_(?:(?:PUBLIC_)?MEDIA_S3|S3|AWS)_(?:ACCESS_KEY_ID|SECRET_ACCESS_KEY)$/.test(name)
+  && Boolean(process.env[name]?.trim()),
+);
+if (publicCredentialNames.length > 0) {
+  console.error("Unsafe public-prefixed storage credential configuration:", publicCredentialNames.join(", "));
+  process.exit(1);
+}
 
 async function filesUnder(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
