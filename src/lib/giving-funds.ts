@@ -1,4 +1,5 @@
 import { z } from "zod";
+import type { DonationIntentValue } from "@/lib/donation-intent";
 
 export class FundValidationError extends Error {}
 
