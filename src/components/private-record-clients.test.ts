@@ -86,6 +86,23 @@ describe("private record clients at the JSON/effect boundary", () => {
     });
   }
 
+  it("shows confidential donation purpose without constructing a case-specific link", () => {
+    hooks.states = [{
+      found: true,
+      presentation: { tone: "captured", heading: "Contribution recorded", summary: "Private record", statusLabel: "Verified" },
+      donation: {
+        referenceNumber: "AMAANA-RECORD-TEST", receiptNumber: "ACK-SYNTHETIC",
+        donorName: "Synthetic donor", givingIntent: "GENERAL", amount: 100,
+        refundedAmount: 0, recordDate: "2026-10-13T00:00:00.000Z", providerPaymentId: null,
+        appeal: { title: "Confidential assistance appeal", slug: null },
+      },
+    }, 0];
+    const html = renderToStaticMarkup(createElement(DonationAcknowledgementClient, { reference: "AMAANA-RECORD-TEST" }));
+    expect(html).toContain("Confidential assistance appeal");
+    expect(html).not.toContain("/appeals/null");
+    expect(html).not.toContain("Return to this appeal");
+  });
+
   it("tracking status names cannot render inherited object properties", () => {
     hooks.states = [{ credentials: hooks.credentials, record: {
       found: true, status: "toString", createdAt: "2026-10-13T00:00:00Z", updatedAt: "2026-10-14T00:00:00Z",
