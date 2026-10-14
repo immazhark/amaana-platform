@@ -45,6 +45,21 @@ export async function POST(request: Request) {
     } catch {
       return NextResponse.json({ error: "Transfer submission could not be parsed." }, { status: 400, headers: privateHeaders });
     }
+    // Each payment designation and receipt field is single-valued. FormData.get
+    // silently selects the first entry, which could disregard a second, different
+    // donor intention, reference or attachment supplied by a malformed request.
+    const singletonFields = [
+      "appealId", "fundId", "donorName", "donorEmail", "donorPhone",
+      "amount", "givingIntent", "isAnonymous", "domesticConfirmed",
+      "paymentMethod", "transferReference", "transferredAt", "evidence",
+    ] as const;
+    if (singletonFields.some(field => form.getAll(field).length > 1)) {
+      return NextResponse.json(
+        { error: "Transfer submission contains duplicate fields. Please review the form." },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+
     const evidenceEntry = form.get("evidence");
     if (evidenceEntry !== null && evidenceEntry !== "" && !(evidenceEntry instanceof File)) {
       return NextResponse.json({ error: "Please attach a valid transfer screenshot or PDF.", fieldErrors: { evidence: ["Please attach a valid transfer screenshot or PDF."] } }, { status: 400, headers: privateHeaders });
