@@ -25,7 +25,9 @@ const MAX_PAYMENT_JSON_BYTES = 32 * 1024;
 
 /**
  * Dormant until a separately reviewed activation decision sets the server-only
- * AMAANA_FUND_CHECKOUT_ENABLED variable. No public page links to this endpoint.
+ * AMAANA_FUND_CHECKOUT_ENABLED variable AND the fund's ID is explicitly
+ * included in AMAANA_FUND_CHECKOUT_ALLOWLIST. Registry approval is not public
+ * activation. No public page links to this endpoint.
  * The SQL INSERT trigger independently validates approval and frozen intent
  * against the locked GivingFund row after the provider order is created.
  */
@@ -61,6 +63,19 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { error: "Please review the giving fund and donation information." },
         { status: 400, headers: privateHeaders },
+      );
+    }
+
+    // Governance: registry approval alone never activates a public donation
+    // destination. Explicit release control must name each reviewed fund ID.
+    const publicFundIds = new Set(
+      (process.env.AMAANA_FUND_CHECKOUT_ALLOWLIST ?? "")
+        .split(",").map(id => id.trim()).filter(Boolean),
+    );
+    if (!publicFundIds.has(parsed.data.fundId)) {
+      return NextResponse.json(
+        { error: "Fund donations are not available." },
+        { status: 404, headers: privateHeaders },
       );
     }
 
