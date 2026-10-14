@@ -18,22 +18,23 @@ ALTER TABLE "Donation"
     )
   );
 
--- Once a snapshot has been recorded, subsequent status, refund, reconciliation
--- or notification updates cannot rewrite the donor's selected purpose.
--- Historical nulls are deliberately allowed for backwards compatibility.
+-- Historic NULL snapshots remain NULL: past donor intent cannot be
+-- reconstructed by a later edit. Both old and new donations retain their
+-- original appeal identity and giving intention throughout payment/refund life.
 CREATE FUNCTION "prevent_donation_designation_snapshot_mutation"()
-RETURNS TRIGGER LANGUAGE plpgsql AS $$
+RETURNS TRIGGER LANGUAGE plpgsql AS $
 BEGIN
-  IF OLD."designationSnapshot" IS NOT NULL
-    AND NEW."designationSnapshot" IS DISTINCT FROM OLD."designationSnapshot"
+  IF NEW."designationSnapshot" IS DISTINCT FROM OLD."designationSnapshot"
+    OR NEW."appealId" IS DISTINCT FROM OLD."appealId"
+    OR NEW."givingIntent" IS DISTINCT FROM OLD."givingIntent"
   THEN
-    RAISE EXCEPTION 'Donation designation snapshot is immutable' USING ERRCODE = '23514';
+    RAISE EXCEPTION 'Donation destination and intention are immutable' USING ERRCODE = '23514';
   END IF;
   RETURN NEW;
 END;
-$$;
+$;
 
 CREATE TRIGGER "Donation_designationSnapshot_immutable"
-BEFORE UPDATE OF "designationSnapshot" ON "Donation"
+BEFORE UPDATE OF "designationSnapshot", "appealId", "givingIntent" ON "Donation"
 FOR EACH ROW
 EXECUTE FUNCTION "prevent_donation_designation_snapshot_mutation"();
