@@ -65,6 +65,19 @@ for (const width of [320, 390, 1440]) {
     expect(fundingGeometry.panelWidth).toBeGreaterThan(0);
     expect(fundingGeometry.clipped).toBe(false);
 
+    const whatsapp = page.getByRole('link', { name: /WhatsApp/ });
+    await expect(whatsapp).toHaveAttribute('target', '_blank');
+    await expect(whatsapp).toHaveAttribute('rel', 'noopener noreferrer');
+    const shareHref = await whatsapp.getAttribute('href');
+    const outbound = new URL(shareHref);
+    expect(outbound.protocol).toBe('https:');
+    expect(outbound.hostname).toBe('wa.me');
+    const message = outbound.searchParams.get('text');
+    expect(message).toContain('Verified Support Appeal');
+    expect(message).toContain('Public sharing uses privacy-safe generic details.');
+    expect(message).toContain('/appeals/synthetic-style-check');
+    expect(message).not.toContain('Synthetic appeal for style acceptance');
+
     const link = cards.first().getByRole('link');
     await link.focus();
     await expect(link).toBeFocused();
