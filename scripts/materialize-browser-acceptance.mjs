@@ -6,11 +6,13 @@ const sourceRoot = path.join(root, "e2e", "fixtures");
 const appTarget = path.join(root, "src", "app", "browser-acceptance");
 const componentTarget = path.join(root, "src", "components", "donation-remount-fixture.tsx");
 const galleryTarget = path.join(root, "src", "components", "gallery-update-fixture.tsx");
+const transactionErrorTarget = path.join(root, "src", "components", "transaction-error-style-fixture.tsx");
 const enabled = process.env.AMAANA_BROWSER_ACCEPTANCE === "true";
 
 await rm(appTarget, { recursive: true, force: true });
 await rm(componentTarget, { force: true });
 await rm(galleryTarget, { force: true });
+await rm(transactionErrorTarget, { force: true });
 
 if (!enabled) {
   console.log("Browser-acceptance routes excluded from this build.");
@@ -30,6 +32,7 @@ const routes = [
   "portfolio",
   "impact-typography",
   "section-layout",
+  "transaction-errors",
 ];
 
 for (const route of routes) {
@@ -49,6 +52,11 @@ await copyFile(
 await copyFile(
   path.join(sourceRoot, "components", "gallery-update-fixture.tsx.fixture"),
   galleryTarget,
+);
+
+await copyFile(
+  path.join(sourceRoot, "components", "transaction-error-style-fixture.tsx.fixture"),
+  transactionErrorTarget,
 );
 
 const imageCacheTarget = path.join(appTarget, "image-cache-source");
