@@ -13,6 +13,12 @@ const acknowledgement = {
 };
 
 describe("private read response contracts", () => {
+  it("accepts a confidential receipt whose appeal has no public link", () => {
+    expect(isAcknowledgementResponse({
+      ...acknowledgement,
+      donation: { ...acknowledgement.donation, appeal: { title: "Confidential assistance appeal", slug: null } },
+    }, reference)).toBe(true);
+  });
   it("accepts existing verified, pending, failed and refunded records", () => {
     for (const tone of ["captured", "pending", "failed", "refunded"]) {
       expect(isAcknowledgementResponse({ ...acknowledgement, presentation: { ...acknowledgement.presentation, tone } }, reference)).toBe(true);
