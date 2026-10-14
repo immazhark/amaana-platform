@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { getDonationAcknowledgementPresentation, hashReceiptToken, resolveAppealDonationDesignation } from "@/lib/donations";
+import { requireDonationDestination } from "@/lib/donation-destination";
+import { resolveFundDonationDesignation } from "@/lib/giving-funds";
 import { prisma } from "@/lib/prisma";
 import { isSameOrigin } from "@/lib/request-security";
 
@@ -44,6 +46,7 @@ export async function POST(request: Request) {
       select: {
         receiptTokenHash: true,
         appealId: true,
+        fundId: true,
         designationSnapshot: true,
         status: true,
         amount: true,
@@ -56,6 +59,7 @@ export async function POST(request: Request) {
         refundedAt: true,
         createdAt: true,
         providerPaymentId: true,
+        fund: { select: { name: true } },
         appeal: {
           select: {
             title: true,
@@ -76,17 +80,29 @@ export async function POST(request: Request) {
     const refundedAmount = donation.refundedAmount.toNumber();
     const presentation = getDonationAcknowledgementPresentation(donation.status, amount, refundedAmount);
     const recordDate = donation.refundedAt ?? donation.capturedAt ?? donation.createdAt;
-    const purpose = resolveAppealDonationDesignation(donation.designationSnapshot, {
-      appealId: donation.appealId,
-      givingIntent: donation.givingIntent,
-      currentTitle: donation.appeal.title,
-    });
-    // A later confidentiality escalation must not re-expose the historical
-    // beneficiary title or a name-bearing slug through a donor token.
-    const highlySensitive = donation.appeal.assistanceRequest?.verification?.confidentialityLevel === "HIGHLY_SENSITIVE";
-    const appeal = highlySensitive
-      ? { title: "Confidential assistance appeal", slug: null }
-      : { title: purpose.label, slug: donation.appeal.slug };
+    const destination = requireDonationDestination(donation);
+    let appeal: { title: string; slug: string | null };
+    if (destination.kind === "FUND") {
+      if (!donation.fund) throw new Error("Fund donation has no linked designation");
+      const purpose = resolveFundDonationDesignation(donation.designationSnapshot, {
+        fundId: destination.id,
+        givingIntent: donation.givingIntent,
+      });
+      appeal = { title: purpose.label, slug: null };
+    } else {
+      if (!donation.appeal) throw new Error("Appeal donation has no linked designation");
+      const purpose = resolveAppealDonationDesignation(donation.designationSnapshot, {
+        appealId: destination.id,
+        givingIntent: donation.givingIntent,
+        currentTitle: donation.appeal.title,
+      });
+      // A confidentiality escalation must never reveal historic beneficiary
+      // names or a name-bearing slug through an old donor receipt link.
+      const highlySensitive = donation.appeal.assistanceRequest?.verification?.confidentialityLevel === "HIGHLY_SENSITIVE";
+      appeal = highlySensitive
+        ? { title: "Confidential assistance appeal", slug: null }
+        : { title: purpose.label, slug: donation.appeal.slug };
+    }
 
     return NextResponse.json(
       {
@@ -101,6 +117,7 @@ export async function POST(request: Request) {
           refundedAmount,
           recordDate: recordDate.toISOString(),
           providerPaymentId: donation.providerPaymentId,
+          designationKind: destination.kind,
           appeal,
         },
       },
