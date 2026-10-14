@@ -1,0 +1,18 @@
+"use client";
+
+import DonationError from "@/app/donate/error";
+import AssistanceError from "@/app/request-assistance/error";
+
+export function TransactionErrorStyleFixture() {
+  const error = new Error("Synthetic browser fixture, no transaction or intake attempted.");
+  return (
+    <>
+      <div data-error-boundary="donate">
+        <DonationError error={error} reset={() => {}} />
+      </div>
+      <div data-error-boundary="assistance">
+        <AssistanceError error={error} reset={() => {}} />
+      </div>
+    </>
+  );
+}
