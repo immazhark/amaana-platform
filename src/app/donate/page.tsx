@@ -108,6 +108,11 @@ export default async function Page({ searchParams }: PageProps = {}) {
           <Link className="v2-text-link" href="/appeals">{hasOpenAppeals ? "See all verified appeals →" : "View appeals and completed cases →"}</Link></article>
         <article className={styles.route}><span>Route 02</span><h3>{hasFunds ? "Support an approved giving fund" : "Support education or another approved programme"}</h3><p>{hasFunds ? "Review each fund’s approved purpose and restrictions below. Contributions remain designated to the purpose you confirm." : "Taleem sponsorship and programme giving begin with the currently available programme route or a conversation with Amaana about an approved destination."}</p>{hasFunds && <Link className="v2-button" href="/donate?giving=fund#donation-route-choice">Review approved giving funds</Link>}<Link className="v2-button v2-button--paper-secondary" href="/get-involved/sponsor-education">Explore Taleem sponsorship</Link><Link className="v2-text-link" href="/contact">Ask about programme giving →</Link></article>
       </div>
+      {process.env.AMAANA_ZAKAT_ESTIMATOR_REVIEWED === "true" && <div className={styles.note}>
+        Planning a Zakat contribution?{" "}
+        <Link href="/zakat-calculator">Use the educational estimate</Link> before reviewing the currently approved giving purposes.
+        An estimate does not establish which fund is authorised to accept Zakat.
+      </div>}
       <VerifiedImpactStrip items={impactItems} headingId="donate-published-outcomes" />
       {hasCheckout && <DonationLandingCheckout key={initialRoute} initialRoute={initialRoute} appeals={appealChoices} funds={funds}
         bankAvailable={Boolean(paymentDetails?.bank)}

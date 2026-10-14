@@ -17,7 +17,7 @@ export const metadata: Metadata = {
  * as an authorization to accept a Zakat-designated donation. */
 export default function ZakatCalculatorPage() {
   if (process.env.AMAANA_ZAKAT_ESTIMATOR_REVIEWED !== "true") notFound();
-  return <main className="v2-shell" aria-labelledby="zakat-page-heading">
+  return <div className="v2-shell" aria-labelledby="zakat-page-heading">
     <div style={{ paddingBlock: "clamp(2rem,5vw,4rem) 1rem" }}>
       <p className="v2-section-label">Zakat · Educational planning</p>
       <h1 id="zakat-page-heading">Understand your Zakat estimate</h1>
@@ -25,5 +25,5 @@ export default function ZakatCalculatorPage() {
       <Link href="/donate" className="v2-text-link">← Return to giving options</Link>
     </div>
     <ZakatEstimator/>
-  </main>;
+  </div>;
 }
