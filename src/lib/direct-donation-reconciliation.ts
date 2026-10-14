@@ -50,7 +50,7 @@ export async function reconcileDirectDonation(input: {
 
     const donationPaise = donation.amount.mul(100).toNumber();
     if (!Number.isSafeInteger(donationPaise) || donationPaise <= 0) {
-      throw new Error("Invalid financial amount for transfer reconciliation");
+      throw new Error("Invalid financial amounts for transfer reconciliation");
     }
     if (destination.kind === "APPEAL") {
       const appealBefore = await tx.appeal.findUnique({
