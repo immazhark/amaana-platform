@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   initiativeFindMany: vi.fn(),
+  appealFindMany: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -9,12 +10,14 @@ vi.mock("@/lib/prisma", () => ({
     initiative: {
       findMany: mocks.initiativeFindMany,
     },
+    appeal: { findMany: mocks.appealFindMany },
   },
 }));
 
 import {
   getCompletedAidShowcaseData,
   getProgrammeChildMedia,
+  getAppealsIndexData,
 } from "./public-page-data";
 
 describe("public page gallery media query contracts", () => {
@@ -63,6 +66,34 @@ describe("public page gallery media query contracts", () => {
       slug: { in: ["eid-gift-kits-2025"] },
       status: "PUBLISHED",
       cause: { status: "PUBLISHED" },
+    });
+  });
+});
+
+describe("public appeal index promotion privacy", () => {
+  it("excludes explicit HIGHLY_SENSITIVE case identities and strips verification context", async () => {
+    const standard = {
+      slug: "reviewed-standard", title: "Reviewed appeal", summary: "Public-safe summary",
+      category: "MEDICAL", beneficiaryLocation: null, status: "PUBLISHED",
+      goalAmount: 75000, amountRaised: 0, closesAt: null,
+      assistanceRequest: { verification: { confidentialityLevel: "STANDARD" } },
+    };
+    const sensitive = {
+      ...standard, slug: "restricted-private", title: "Identity must not appear",
+      summary: "Private sensitive narrative",
+      assistanceRequest: { verification: { confidentialityLevel: "HIGHLY_SENSITIVE" } },
+    };
+    mocks.appealFindMany.mockResolvedValue([sensitive, standard]);
+    const appeals = await getAppealsIndexData();
+    expect(appeals.map(appeal => appeal.slug)).toEqual(["reviewed-standard"]);
+    expect(appeals[0]?.title).toBe("Reviewed appeal");
+    expect(appeals[0]).not.toHaveProperty("assistanceRequest");
+    expect(JSON.stringify(appeals)).not.toContain("Identity must not appear");
+    expect(JSON.stringify(appeals)).not.toContain("confidentialityLevel");
+    expect(mocks.appealFindMany).toHaveBeenCalledTimes(1);
+    const query = mocks.appealFindMany.mock.calls[0]?.[0];
+    expect(query?.select?.assistanceRequest?.select?.verification?.select).toEqual({
+      confidentialityLevel: true,
     });
   });
 });
