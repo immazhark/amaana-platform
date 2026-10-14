@@ -1,4 +1,3 @@
-import { isAbsolute } from "node:path";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
@@ -6,6 +5,7 @@ import { enforceAcknowledgementRateLimit, isSameOrigin } from "@/lib/request-sec
 import { redeemVerifiedReceiptDownloadGrant } from "@/lib/verified-receipt-download";
 import { renderPrivateReceiptPdf } from "@/lib/private-receipt-pdf-renderer";
 import { privateReceiptPdfResponse } from "@/lib/private-receipt-pdf-response";
+import { isPrivateReceiptPdfEnabled } from "@/lib/receipt-pdf-feature";
 
 export const runtime = "nodejs";
 const MAX_BYTES = 1600;
@@ -24,10 +24,7 @@ const privateHeaders = {
  * in a URL, logs, analytics, or public cache. Activation requires a separate
  * audited Railway font/render-engine installation and explicit release gate. */
 export async function POST(request: Request) {
-  const binary = process.env.AMAANA_RECEIPT_PDF_RENDERER_BIN;
-  if (process.env.AMAANA_RECEIPT_PDF_ENABLED !== "true" ||
-      !/^[0-9a-fA-F]{64}$/.test(process.env.RECEIPT_DOWNLOAD_ENCRYPTION_KEY ?? "") ||
-      !binary || !isAbsolute(binary)) {
+  if (!isPrivateReceiptPdfEnabled()) {
     return NextResponse.json({ available: false }, { status: 404, headers: privateHeaders });
   }
   if (!isSameOrigin(request)) {

@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   origin: vi.fn(), limiter: vi.fn(), issue: vi.fn(),
 }));
@@ -24,10 +24,13 @@ beforeEach(() => {
   vi.resetAllMocks();
   vi.stubEnv("AMAANA_RECEIPT_PDF_ENABLED", "true");
   vi.stubEnv("RECEIPT_DOWNLOAD_ENCRYPTION_KEY", "a1".repeat(32));
+  vi.stubEnv("AMAANA_RECEIPT_PDF_RENDERER_BIN", "/verified/weasyprint");
   mocks.origin.mockReturnValue(true);
   mocks.limiter.mockResolvedValue(true);
   mocks.issue.mockResolvedValue("rd1.encrypted.synthetic.tag");
 });
+
+afterEach(() => vi.unstubAllEnvs());
 
 describe("gated private receipt-download authorization route", () => {
   it.each(["false", "TRUE", "", undefined])("never reads private data with feature switch %s", async flag => {
@@ -40,6 +43,12 @@ describe("gated private receipt-download authorization route", () => {
   });
   it.each(["", "bad", undefined])("does not activate without a valid independent key: %s", async key => {
     vi.stubEnv("RECEIPT_DOWNLOAD_ENCRYPTION_KEY", key);
+    const result = await POST(request());
+    expect(result.status).toBe(404);
+    expect(mocks.issue).not.toHaveBeenCalled();
+  });
+  it("refuses grant issuance when the PDF renderer is not configured", async () => {
+    vi.stubEnv("AMAANA_RECEIPT_PDF_RENDERER_BIN", "");
     const result = await POST(request());
     expect(result.status).toBe(404);
     expect(mocks.issue).not.toHaveBeenCalled();

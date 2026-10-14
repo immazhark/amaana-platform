@@ -4,6 +4,7 @@ import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWith
 import { enforceAcknowledgementRateLimit, isSameOrigin } from "@/lib/request-security";
 import { issueVerifiedReceiptDownloadGrant } from "@/lib/verified-receipt-download";
 import { RECEIPT_DOWNLOAD_GRANT_TTL_SECONDS } from "@/lib/receipt-download-grant";
+import { isPrivateReceiptPdfEnabled } from "@/lib/receipt-pdf-feature";
 
 export const runtime = "nodejs";
 const MAX_BYTES = 1024;
@@ -28,8 +29,7 @@ const privateHeaders = {
 export async function POST(request: Request) {
   // Read the private flag before touching a request body, database or limiter.
   // A missing key must fail closed instead of exposing a partly active service.
-  if (process.env.AMAANA_RECEIPT_PDF_ENABLED !== "true" ||
-      !/^[0-9a-fA-F]{64}$/.test(process.env.RECEIPT_DOWNLOAD_ENCRYPTION_KEY ?? "")) {
+  if (!isPrivateReceiptPdfEnabled()) {
     return NextResponse.json({ available: false }, { status: 404, headers: privateHeaders });
   }
   try {
