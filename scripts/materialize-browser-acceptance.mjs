@@ -24,6 +24,7 @@ const routes = [
   "direct-donation",
   "donation",
   "gallery",
+  "home-appeals",
   "home-hero",
   "mobile-support",
   "portfolio",
