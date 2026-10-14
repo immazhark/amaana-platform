@@ -2,7 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
-import { getDonationAcknowledgementPresentation, hashReceiptToken } from "@/lib/donations";
+import { getDonationAcknowledgementPresentation, hashReceiptToken, resolveAppealDonationDesignation } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { isSameOrigin } from "@/lib/request-security";
 
@@ -43,6 +43,8 @@ export async function POST(request: Request) {
       where: { referenceNumber: parsed.data.reference },
       select: {
         receiptTokenHash: true,
+        appealId: true,
+        designationSnapshot: true,
         status: true,
         amount: true,
         refundedAmount: true,
@@ -54,7 +56,13 @@ export async function POST(request: Request) {
         refundedAt: true,
         createdAt: true,
         providerPaymentId: true,
-        appeal: { select: { title: true, slug: true } },
+        appeal: {
+          select: {
+            title: true,
+            slug: true,
+            assistanceRequest: { select: { verification: { select: { confidentialityLevel: true } } } },
+          },
+        },
       },
     });
 
@@ -68,6 +76,17 @@ export async function POST(request: Request) {
     const refundedAmount = donation.refundedAmount.toNumber();
     const presentation = getDonationAcknowledgementPresentation(donation.status, amount, refundedAmount);
     const recordDate = donation.refundedAt ?? donation.capturedAt ?? donation.createdAt;
+    const purpose = resolveAppealDonationDesignation(donation.designationSnapshot, {
+      appealId: donation.appealId,
+      givingIntent: donation.givingIntent,
+      currentTitle: donation.appeal.title,
+    });
+    // A later confidentiality escalation must not re-expose the historical
+    // beneficiary title or a name-bearing slug through a donor token.
+    const highlySensitive = donation.appeal.assistanceRequest?.verification?.confidentialityLevel === "HIGHLY_SENSITIVE";
+    const appeal = highlySensitive
+      ? { title: "Confidential assistance appeal", slug: null }
+      : { title: purpose.label, slug: donation.appeal.slug };
 
     return NextResponse.json(
       {
@@ -82,7 +101,7 @@ export async function POST(request: Request) {
           refundedAmount,
           recordDate: recordDate.toISOString(),
           providerPaymentId: donation.providerPaymentId,
-          appeal: donation.appeal,
+          appeal,
         },
       },
       { headers: privateHeaders },
