@@ -13,7 +13,8 @@ ALTER TABLE "Donation"
       AND "designationSnapshot" ->> 'kind' = 'APPEAL'
       AND "designationSnapshot" ->> 'appealId' = "appealId"
       AND "designationSnapshot" ->> 'givingIntent' = "givingIntent"::text
-      AND jsonb_typeof("designationSnapshot" -> 'label') = 'string',
+      AND jsonb_typeof("designationSnapshot" -> 'label') = 'string'
+      AND length(btrim("designationSnapshot" ->> 'label')) BETWEEN 1 AND 4096,
       FALSE
     )
   );
