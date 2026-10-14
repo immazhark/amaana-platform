@@ -42,6 +42,7 @@ const endpoints = [
     denialStatus: 404,
     record: () => ({
       receiptTokenHash: hashReceiptToken(token),
+      appealId: "synthetic-appeal-id", fundId: null, designationSnapshot: null,
       status: "CAPTURED", amount: { toNumber: () => 100 },
       refundedAmount: { toNumber: () => 0 },
       receiptNumber: "ACK-PRIVATE-TEST", referenceNumber: reference,
@@ -86,10 +87,11 @@ for (const endpoint of endpoints) {
       } else {
         expect(Object.keys(body).sort()).toEqual(["donation", "found", "presentation"]);
         expect(Object.keys(body.donation).sort()).toEqual([
-          "amount", "appeal", "donorName", "givingIntent", "providerPaymentId",
+          "amount", "appeal", "designationKind", "donorName", "givingIntent", "providerPaymentId",
           "receiptNumber", "recordDate", "referenceNumber", "refundedAmount",
         ]);
         expect(body.donation.referenceNumber).toBe(reference);
+        expect(body.donation.designationKind).toBe("APPEAL");
       }
       expect(endpoint.lookup).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ where: { referenceNumber: reference } }));
       expect(mocks.donation.mock.calls.length + mocks.assistance.mock.calls.length).toBe(1);
