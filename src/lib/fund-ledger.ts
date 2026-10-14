@@ -107,6 +107,9 @@ export function summarizeDonationRecord(input: {
   if (amountPaise <= 0 || refundedPaise > amountPaise) throw new Error("Inconsistent donation accounting");
   const settled = input.status === "CAPTURED" || input.status === "REFUNDED";
   if (input.status === "REFUNDED" && refundedPaise !== amountPaise) throw new Error("Incomplete full refund accounting");
+  if (input.status === "CAPTURED" && refundedPaise === amountPaise) {
+    throw new Error("Fully refunded donation must have REFUNDED status");
+  }
   if (!settled && (!["CREATED", "AUTHORIZED", "PENDING_VERIFICATION", "FAILED", "REJECTED"].includes(input.status) || refundedPaise !== 0)) {
     throw new Error("Invalid unsettled donation accounting");
   }

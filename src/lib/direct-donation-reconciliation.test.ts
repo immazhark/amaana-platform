@@ -5,6 +5,7 @@ import { DonationPaymentMethod, DonationStatus } from "@prisma/client";
 const mocks = vi.hoisted(() => ({
   transaction: vi.fn(),
   donationFind: vi.fn(),
+  duplicateCreditFind: vi.fn(),
   donationUpdate: vi.fn(),
   appealFind: vi.fn(),
   appealUpdate: vi.fn(),
@@ -29,7 +30,7 @@ describe("manual transfer money-state boundary", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     mocks.transaction.mockImplementation(async callback => callback({
-      donation: { findUnique: mocks.donationFind, updateMany: mocks.donationUpdate },
+      donation: { findUnique: mocks.donationFind, findFirst: mocks.duplicateCreditFind, updateMany: mocks.donationUpdate },
       appeal: { findUnique: mocks.appealFind, update: mocks.appealUpdate, updateMany: mocks.appealUpdateMany },
       notification: { create: mocks.notificationCreate },
       auditEvent: { create: mocks.auditCreate },
@@ -44,6 +45,7 @@ describe("manual transfer money-state boundary", () => {
     mocks.appealFind.mockResolvedValue({
       goalAmount: money(1000), amountRaised: money(100), status: "PUBLISHED",
     });
+    mocks.duplicateCreditFind.mockResolvedValue(null);
     mocks.donationUpdate.mockResolvedValue({ count: 1 });
     mocks.appealUpdate.mockResolvedValue({
       id: "appeal_test", goalAmount: money(1000), amountRaised: money(600), status: "PUBLISHED",
@@ -161,6 +163,38 @@ describe("manual transfer money-state boundary", () => {
       metadata: expect.objectContaining({ bankStatementMatched: true, statementReference: "UTR-TEST-12345", statementAmountPaise: 50000 }),
     }) }));
   });
+
+  it("blocks double capture of a previously reconciled case-insensitive bank reference", async () => {
+    mocks.duplicateCreditFind.mockResolvedValue({ id: "other_captured_donation" });
+    await expect(reconcileDirectDonation(request)).rejects.toThrow(/already reconciled/);
+    expect(mocks.duplicateCreditFind).toHaveBeenCalledWith({
+      where: {
+        id: { not: "donation_test" },
+        paymentMethod: { in: [DonationPaymentMethod.DIRECT_UPI, DonationPaymentMethod.BANK_TRANSFER] },
+        status: { in: [DonationStatus.CAPTURED, DonationStatus.REFUNDED] },
+        transferReference: { equals: "UTR-TEST-12345", mode: "insensitive" },
+      },
+      select: { id: true },
+    });
+    expect(mocks.donationUpdate).not.toHaveBeenCalled();
+    expect(mocks.appealUpdate).not.toHaveBeenCalled();
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
+  it("never queries old bank credits when staff rejects an unreceived claim", async () => {
+    await reconcileDirectDonation({ ...request, decision: "REJECT", statementConfirmed: false });
+    expect(mocks.duplicateCreditFind).not.toHaveBeenCalled();
+  });
+
+  it.each([{ statementConfirmed: false }, { statementAmount: "499.99" },
+    { statementReference: "WRONG-UTR" }])(
+    "does not query bank duplicate credits before attestation and amount checks %o", async patch => {
+      await expect(reconcileDirectDonation({ ...request, ...patch })).rejects.toThrow();
+      expect(mocks.duplicateCreditFind).not.toHaveBeenCalled();
+      expect(mocks.donationUpdate).not.toHaveBeenCalled();
+    },
+  );
 
   it("keeps an otherwise valid direct transfer eligible for reconciliation", async () => {
     await expect(reconcileDirectDonation(request)).resolves.toEqual({

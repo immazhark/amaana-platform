@@ -82,6 +82,23 @@ export async function reconcileDirectDonation(input: {
       throw new Error("Bank statement amount does not match the claimed INR transfer");
     }
 
+    // Postgres SERIALIZABLE predicate reads protect against two different
+    // claims being credited for a case-variant of the same statement UTR.
+    // An existing exact-case DB unique constraint alone is insufficient.
+    // Ambiguous duplicates must go to exception review, never be captured.
+    const earlierCredit = await tx.donation.findFirst({
+      where: {
+        id: { not: donation.id },
+        paymentMethod: { in: DIRECT_METHODS },
+        status: { in: [DonationStatus.CAPTURED, DonationStatus.REFUNDED] },
+        transferReference: { equals: statementReference, mode: "insensitive" },
+      },
+      select: { id: true },
+    });
+    if (earlierCredit) {
+      throw new Error("This bank transaction reference was already reconciled; investigate duplicate credit");
+    }
+
     if (destination.kind === "APPEAL") {
       const appealBefore = await tx.appeal.findUnique({
         where: { id: destination.id }, select: { goalAmount: true, amountRaised: true, status: true },

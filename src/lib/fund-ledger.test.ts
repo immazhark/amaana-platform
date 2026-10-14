@@ -68,7 +68,7 @@ describe("shared donation accounting", () => {
   });
   it.each([
     { status: "REFUNDED", refund: 25 }, { status: "FAILED", refund: 1 },
-    { status: "CAPTURED", refund: 101 }, { status: "UNKNOWN", refund: 0 },
+    { status: "CAPTURED", refund: 101 }, { status: "CAPTURED", refund: 100 }, { status: "UNKNOWN", refund: 0 },
   ])("rejects incompatible monetary state %o", ({ status, refund }) => {
     expect(() => summarizeDonationRecord({ currency: "INR", status, amount: rupees(100), refundedAmount: rupees(refund) })).toThrow();
   });
