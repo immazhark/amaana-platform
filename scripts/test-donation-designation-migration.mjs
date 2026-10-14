@@ -12,6 +12,23 @@ const runtime = process.env.PGLITE_MODULE_PATH;
 let db;
 let temp;
 const good = { version: 1, kind: 'APPEAL', appealId: 'synthetic-appeal', label: 'Synthetic appeal', givingIntent: 'GENERAL' };
+const approvedFund = {
+  version: 1, kind: 'FUND', fundId: 'fund-reviewed', fundRevision: 4,
+  label: 'Synthetic approved fund',
+  purpose: 'Reviewed synthetic emergency support programme.',
+  disclosure: 'Donations support the independently reviewed charitable programme.',
+  accountCode: 'TEST-FUND', givingIntent: 'GENERAL',
+};
+
+async function insertFundDonation(id, snapshot = approvedFund, destination = { appealId: null, fundId: 'fund-reviewed' }, intent = 'GENERAL') {
+  const sql = 'INSERT INTO "Donation" ("id", "referenceNumber", "appealId", "fundId", "donorName", "donorEmail",'
+    + ' "domesticConfirmedAt", "amount", "givingIntent", "receiptTokenHash", "updatedAt", "designationSnapshot")'
+    + ' VALUES ($1, $2, $3, $4, $5, $6, NOW(), 250, $7::"DonationIntent", $8, NOW(), $9::jsonb)';
+  return db.query(sql, [id, 'SYNTHETIC-' + id, destination.appealId, destination.fundId,
+    'Synthetic donor', 'donor@example.invalid', intent, 'fund-synthetic-hash',
+    snapshot === null ? null : JSON.stringify(snapshot)]);
+}
+
 
 async function insertDonation(id, snapshot) {
   return db.query(`INSERT INTO "Donation"
@@ -30,6 +47,11 @@ describe('donation designation migration source guard', () => {
     assert.match(migration, /END;\s*\$donation_designation_guard\$;/);
     assert.match(migration, /BEFORE UPDATE OF "designationSnapshot", "appealId", "givingIntent" ON "Donation"/);
     assert.doesNotMatch(migration, /LANGUAGE plpgsql AS \$\s/);
+    const extension = readFileSync('prisma/migrations/20261014193000_exclusive_donation_destination/migration.sql', 'utf8');
+    assert.equal(extension.split('$fund_donation_insert_guard$').length - 1, 2);
+    assert.equal(extension.split('$donation_designation_guard$').length - 1, 2);
+    assert.match(extension, /Donation_exclusive_destination_check/);
+    assert.match(extension, /Donation_validate_fund_insert/);
   });
 });
 
@@ -115,4 +137,45 @@ describe('private donation designation migration on isolated PostgreSQL-WASM', {
     await db.query('UPDATE "Donation" SET "status"=\'CAPTURED\' WHERE "id"=\'snapshot\'');
     assert.deepEqual((await db.query('SELECT "designationSnapshot" FROM "Donation" WHERE "id"=\'snapshot\'')).rows[0].designationSnapshot, good);
   });
+  it('preserves legacy appeal and inserts a valid approved giving-fund donation', async () => {
+    const prior = (await db.query('SELECT "appealId", "designationSnapshot" FROM "Donation" WHERE "id"=$1', ['legacy'])).rows[0];
+    await insertFundDonation('valid-fund');
+    const row = (await db.query('SELECT "appealId", "fundId", "designationSnapshot" FROM "Donation" WHERE "id"=$1', ['valid-fund'])).rows[0];
+    assert.equal(prior.appealId, 'synthetic-appeal');
+    assert.equal(prior.designationSnapshot, null);
+    assert.equal(row.appealId, null);
+    assert.equal(row.fundId, 'fund-reviewed');
+    assert.deepEqual(row.designationSnapshot, approvedFund);
+  });
+
+  for (const [description, snapshot, destination, intent] of [
+    ['both destinations', approvedFund, { appealId: 'synthetic-appeal', fundId: 'fund-reviewed' }, 'GENERAL'],
+    ['neither destination', null, { appealId: null, fundId: null }, 'GENERAL'],
+    ['mismatched fund ID', { ...approvedFund, fundId: 'another-fund' }, { appealId: null, fundId: 'fund-reviewed' }, 'GENERAL'],
+    ['stale review revision', { ...approvedFund, fundRevision: 3 }, { appealId: null, fundId: 'fund-reviewed' }, 'GENERAL'],
+    ['unapproved Zakat intention', { ...approvedFund, givingIntent: 'ZAKAT' }, { appealId: null, fundId: 'fund-reviewed' }, 'ZAKAT'],
+    ['changed approved purpose', { ...approvedFund, purpose: 'Different purpose after independent approval.' }, { appealId: null, fundId: 'fund-reviewed' }, 'GENERAL'],
+    ['missing fund snapshot', null, { appealId: null, fundId: 'fund-reviewed' }, 'GENERAL'],
+  ]) it('rejects '+ description + ' for fund-only payments', async () => {
+    await assert.rejects(insertFundDonation('invalid-' + description.replaceAll(' ', '-'), snapshot, destination, intent),
+      error => error.code === '23514');
+  });
+
+  it('blocks new donations after the approved fund is paused', async () => {
+    await db.query('UPDATE "GivingFund" SET "status"=$1 WHERE "id"=$2', ['PAUSED', 'fund-reviewed']);
+    try {
+      await assert.rejects(insertFundDonation('paused-fund'), error => error.code === '23514');
+    } finally {
+      await db.query('UPDATE "GivingFund" SET "status"=$1 WHERE "id"=$2', ['APPROVED', 'fund-reviewed']);
+    }
+  });
+
+  it('rejects changing an original fund designation after a capture', async () => {
+    await assert.rejects(db.query('UPDATE "Donation" SET "fundId"=$1 WHERE "id"=$2', [null, 'valid-fund']),
+      error => error.code === '23514');
+    await db.query('UPDATE "Donation" SET "status"=$1 WHERE "id"=$2', ['CAPTURED', 'valid-fund']);
+    const row = (await db.query('SELECT "fundId" FROM "Donation" WHERE "id"=$1', ['valid-fund'])).rows[0];
+    assert.equal(row.fundId, 'fund-reviewed');
+  });
+
 });
