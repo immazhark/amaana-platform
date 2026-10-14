@@ -34,6 +34,9 @@ export const directTransferSchema = donationSchema.extend({
 
 export function isDonationAmountAllowedForRemaining(amount: number, remainingAmount: number) {
   if (!Number.isInteger(amount) || amount < 1 || amount > MAX_DONATION_AMOUNT) return false;
+  // Comparisons with NaN never succeed; without this guard an unbounded or
+  // malformed remaining need could incorrectly authorize a donation.
+  if (!Number.isFinite(remainingAmount) || remainingAmount <= 0) return false;
   if (amount > remainingAmount) return false;
   return amount >= MIN_DONATION_AMOUNT || amount === remainingAmount;
 }
