@@ -81,6 +81,15 @@ for (const boundary of ['error.tsx', 'not-found.tsx']) {
   }
 }
 
+// Transaction error.tsx files do not inherit the root error.tsx component's
+// imports. They reuse its classes and must explicitly load the boundary CSS.
+for (const route of ['donate', 'request-assistance']) {
+  const source = await readFile(path.join(root, 'src/app', route, 'error.tsx'), 'utf8');
+  if (!/import\s+["']\.\.\/error-experience\.css["'];/.test(source)) {
+    failures.push(`${route}/error.tsx must import shared error-experience.css.`);
+  }
+}
+
 for (const routeOnly of ['home-documentary.css', 'home-media-polish.css']) {
   if (cssImports.includes(routeOnly)) {
     failures.push(`${routeOnly} is homepage-only and must not be imported by the root layout.`);
