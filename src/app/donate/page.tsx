@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "@/components/navigation-link";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { complianceCopy } from "@/lib/master-copy";
-import { getAppealsIndexData, getDonationPageData, getTransparencyPageData } from "@/lib/public-page-data";
+import { getAppealsIndexData, getDonationPageData, getDonationImpactHighlights } from "@/lib/public-page-data";
 import { getRemainingAppealAmount } from "@/lib/appeals";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { DonationPaymentInstructions } from "@/components/donation-payment-instructions";
@@ -44,7 +44,7 @@ export default async function Page() {
   const [appealRecords, fundResult, publishedInitiatives] = await Promise.all([getAppealsIndexData(), getDonorFundChoices().then(funds => ({ funds, failed: false }), error => {
     logServerError("donation.fund_choices_unavailable", { errorName: error instanceof Error ? error.name : "unknown" });
     return { funds: [], failed: true };
-  }), getTransparencyPageData().catch(error => {
+  }), getDonationImpactHighlights().catch(error => {
     logServerError("donation.published_impact_unavailable", { errorName: error instanceof Error ? error.name : "unknown" });
     return [];
   })]);
@@ -67,10 +67,7 @@ export default async function Page() {
     if (!Number.isSafeInteger(Math.round(remaining * 100)) || remaining <= 0) return [];
     return [{ id: appeal.id, slug: appeal.slug, title: appeal.title, raised, goal, remaining, zakatEligible: appeal.zakatEligible }];
   });
-  const impactItems: VerifiedImpactItem[] = publishedInitiatives
-    .filter(item => item.primaryMetric?.trim() && item.primaryMetricLabel?.trim())
-    .slice(0, 3)
-    .map(item => ({
+  const impactItems: VerifiedImpactItem[] = publishedInitiatives.map(item => ({
       slug: item.slug, title: item.title,
       value: item.primaryMetric!, label: item.primaryMetricLabel!,
     }));

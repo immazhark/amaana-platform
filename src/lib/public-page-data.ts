@@ -394,6 +394,26 @@ export const getDonationPageData = cache(async (slug: string) => {
  * Transparency needs initiative identity, cause context and published metrics,
  * but not galleries, appeals, stories or financial-summary relations.
  */
+/**
+ * Donation trust strip uses at most eight publication-gated initiative records,
+ * rather than hydrating the full public impact archive on every donor visit.
+ * Never infer money raised from delivery outcomes or show unpublished figures.
+ */
+export const getDonationImpactHighlights = cache(async () => {
+  const rows = await prisma.initiative.findMany({
+    where: {
+      status: "PUBLISHED",
+      cause: { status: "PUBLISHED" },
+      primaryMetric: { not: null },
+      primaryMetricLabel: { not: null },
+    },
+    orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
+    take: 8,
+    select: { slug: true, title: true, primaryMetric: true, primaryMetricLabel: true },
+  });
+  return rows.filter(item => item.primaryMetric?.trim() && item.primaryMetricLabel?.trim()).slice(0, 3);
+});
+
 export const getTransparencyPageData = cache(async () => {
   return prisma.initiative.findMany({
     where: { status: "PUBLISHED", cause: { status: "PUBLISHED" } },
