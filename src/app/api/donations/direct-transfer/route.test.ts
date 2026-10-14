@@ -24,7 +24,8 @@ vi.mock("@/lib/appeals", () => ({
   isAppealOpenForDonations: () => true,
 }));
 
-vi.mock("@/lib/donations", () => ({
+vi.mock("@/lib/donations", async importOriginal => ({
+  ...await importOriginal<typeof import("@/lib/donations")>(),
   createDonationReference: () => "AFD-2026-12345678",
   createReceiptToken: () => "receipt-token",
   directTransferSchema: { safeParse: mocks.safeParse },
