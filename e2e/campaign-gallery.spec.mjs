@@ -213,6 +213,23 @@ test('gallery reorder preserves selected identity and restores its new thumbnail
   await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('');
 });
 
+test('reordering approved photos preserves next-button focus and current selection', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 2 of 13:/ }).click();
+  const dialog = page.getByRole('dialog');
+  const nextButton = dialog.getByRole('button', { name: 'Next', exact: true });
+  await nextButton.focus();
+  await updateGallery(page, { action: 'reverse' });
+  await expect(nextButton).toBeFocused();
+  await expect(dialog).toHaveAccessibleName(/^Image 12 of 13: Synthetic acceptance photograph 2$/);
+  await page.keyboard.press('Enter');
+  await expect(dialog).toHaveAccessibleName(/^Image 13 of 13: Synthetic acceptance photograph 1$/);
+  await expect(nextButton).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Enlarge image 12 of 13:/ })).toBeFocused();
+});
+
 test('removing the final selected photograph closes the dialog and releases keyboard and scroll ownership', async ({ page }) => {
   await openGallery(page, 390);
   await page.getByRole('button', { name: /^Enlarge image 13 of 13:/ }).click();

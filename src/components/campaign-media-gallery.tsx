@@ -51,13 +51,18 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     setActiveId(id => adjacentGalleryId(safeItems, id, 1));
   }, [safeItems]);
 
+  // Modal keyboard handlers must use the newest approved-gallery order without
+  // tearing down the modal effect or stealing focus after a content reorder.
+  const modalActions = useRef({ close, previous, next });
+  const latestItems = useRef(safeItems);
+  useEffect(() => {
+    modalActions.current = { close, previous, next };
+    latestItems.current = safeItems;
+  }, [close, previous, next, safeItems]);
+
   useEffect(() => {
     if (!isOpen) return;
     const dialog = dialogRef.current;
-    const triggers = triggerRefs.current;
-    // Navigation changes the displayed photograph, not the modal's opener.
-    // Resolve its current position so reordering keeps the same return target.
-    const trigger = triggers[safeItems.findIndex(item => item.id === openingId.current)];
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeRef.current?.focus();
@@ -65,17 +70,17 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
         event.preventDefault();
-        close();
+        modalActions.current.close();
         return;
       }
       if (event.key === "ArrowLeft") {
         event.preventDefault();
-        previous();
+        modalActions.current.previous();
         return;
       }
       if (event.key === "ArrowRight") {
         event.preventDefault();
-        next();
+        modalActions.current.next();
         return;
       }
       if (event.key !== "Tab") return;
@@ -108,11 +113,17 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", onKeyDown);
       if (!dialog?.isConnected) requestAnimationFrame(() => {
-        const target = trigger?.isConnected ? trigger : triggers.find(node => node?.isConnected);
+        // Reordering or removal changes the opener's array position. Resolve
+        // by stable media ID only after the final gallery DOM has committed.
+        if (dialogRef.current?.isConnected) return;
+        const items = latestItems.current;
+        const triggers = triggerRefs.current;
+        const opener = triggers[items.findIndex(item => item.id === openingId.current)];
+        const target = opener?.isConnected ? opener : triggers.find(node => node?.isConnected);
         target?.focus();
       });
     };
-  }, [isOpen, safeItems, close, next, previous]);
+  }, [isOpen]);
 
   if (!safeItems.length) return null;
 
