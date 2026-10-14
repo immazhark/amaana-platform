@@ -168,6 +168,35 @@ describe("Razorpay webhook route", () => {
     });
   });
 
+  it("refunds an independently designated fund donation without touching any appeal", async () => {
+    mocks.txDonationFindUnique.mockResolvedValueOnce({
+      id: "donation_fund", appealId: null, fundId: "approved_fund",
+      amount: decimal(100), refundedAmount: decimal(0),
+      donorEmail: "donor@example.test", referenceNumber: "AFD-FUND",
+    });
+    const response = await POST(webhookRequest(refundPayload(2500)));
+    expect(response.status).toBe(200);
+    expect(mocks.txRefundCreateMany).toHaveBeenCalledOnce();
+    expect(mocks.txDonationUpdate).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: "donation_fund" },
+      data: expect.objectContaining({ refundedAmount: { increment: 25 } }),
+    }));
+    expect(mocks.txAppealFindUnique).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).toHaveBeenCalledOnce();
+  });
+
+  it("rejects refund accounting with two destinations before ledger writes", async () => {
+    mocks.txDonationFindUnique.mockResolvedValueOnce({
+      id: "donation_mixed", appealId: "appeal_1", fundId: "approved_fund",
+      amount: decimal(100), refundedAmount: decimal(0),
+    });
+    const response = await POST(webhookRequest(refundPayload(2500)));
+    expect(response.status).toBeGreaterThanOrEqual(400);
+    expect(mocks.txRefundCreateMany).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+  });
+
   it.each([
     { id: "" },
     { id: "invalid" },
