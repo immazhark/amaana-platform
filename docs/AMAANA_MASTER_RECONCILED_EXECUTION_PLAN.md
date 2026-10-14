@@ -247,6 +247,18 @@ Runtime state/cache after privacy revocation requires deployment/CDN verificatio
 
 ## F. Continuation checkpoint
 
+### 14 October — B08 fund ledger groundwork and migration blocker repair
+
+This source-only continuation keeps PR #292 open on `fix/direct-transfer-feedback-20261013` and follows the B08/B09 gates in the canonical plan.
+
+- Fixed an actual **invalid PL/pgSQL dollar-quote delimiter** in the unapplied `20261014160000_donation_designation_snapshot` migration (`70b916d`). The migration now uses a paired named dollar delimiter, rather than malformed `AS $` and `$;`. Its CHECK also rejects blank, whitespace-only and oversized purpose labels (`1b632df`). No hosted migration applied.
+- Corrected a test-source corruption introduced by JavaScript replacement-string interpolation and restored the prior test script before inserting a callback-safe guard (`8b9b05b`). The new Node test checks the SQL dollar delimiter and immutable-column trigger **even when optional PGLite is absent**; SQL negative fixtures now include empty/blank/oversized labels (`e00abe7`). Readback confirmed paired delimiters and one intact migration test suite. Exact-head Node/PostgreSQL-WASM/Vitest execution is still **NOT VERIFIED**.
+- Added independent `src/lib/fund-ledger.ts` (`723f823`) and `fund-ledger.test.ts` (`ff99c38`) for future fund-only **net** accounting: settled CAPTURED/REFUNDED gross, partial/full refunds, excluded unsettled states, unique donation identity, strict INR/exclusive fund destination, nonnegative safe-integer paise, and bounded accumulation. Source is additive, not yet wired into Prisma/admin/checkout. It does **not** confer correctness on live funds.
+- GitHub source readback verified intended file presence and key invariants. Existing `Donation.appealId` is still required and fund checkout remains disabled. No production transfer, refund, migration, merge, deploy, mail or credential operation occurred.
+
+**Next:** Make the exact-one destination schema and fund net accounting transactionally coherent with capture, direct-transfer reconciliation, refund event replay, token-gated receipt and admin reporting before enabling fund-only records or changing public routing. Preserve all legacy appeals and existing provider payment identity semantics.
+
+
 ### 14 October — B08 exclusive designation and approved-fund policy groundwork
 
 Current code/test branch head before this checkpoint: `f37fb35a74271c28f91b0cee671ffbb641c020e9`. The canonical plan's B08 remains **partial**; no fund checkout or schema relation was activated.
