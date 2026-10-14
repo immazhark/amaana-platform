@@ -1,8 +1,26 @@
 import { describe, expect, it } from "vitest";
-import { appealStatusAfterRefund, getRemainingAppealAmount, isAppealOpenForDonations, shouldMarkAppealFunded } from "./appeals";
+import { appealStatusAfterRefund, getAppealProgressPercent, getRemainingAppealAmount, isAppealOpenForDonations, shouldMarkAppealFunded } from "./appeals";
 
 const decimalLike = (value: number) => ({ toNumber: () => value });
 const now = new Date("2026-09-15T12:00:00.000Z");
+
+describe("getAppealProgressPercent", () => {
+  it.each([
+    { raised: decimalLike(0), goal: 75_000, expected: 0 },
+    { raised: 10_000, goal: "75000", expected: 13 },
+    { raised: 75_000, goal: decimalLike(75_000), expected: 100 },
+    { raised: 90_000, goal: 75_000, expected: 100 },
+    { raised: -500, goal: 75_000, expected: 0 },
+    { raised: "invalid", goal: 75_000, expected: 0 },
+    { raised: Number.POSITIVE_INFINITY, goal: 75_000, expected: 0 },
+    { raised: 100, goal: 0, expected: 0 },
+    { raised: 100, goal: -1, expected: 0 },
+    { raised: 100, goal: Number.NaN, expected: 0 },
+    { raised: 1e308, goal: 1e-308, expected: 100 },
+  ])("renders a finite 0-100 funding meter for raised=$raised goal=$goal", ({ raised, goal, expected }) => {
+    expect(getAppealProgressPercent(raised, goal)).toBe(expected);
+  });
+});
 
 describe("getRemainingAppealAmount", () => {
   it("returns the exact remaining need across decimal-like and string values", () => {
