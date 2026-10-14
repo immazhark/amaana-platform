@@ -3,6 +3,7 @@ import Link from "@/components/navigation-link";
 import { PageHero } from "@/components/page-hero";
 import { SectionHeading } from "@/components/section-heading";
 import { listReviewedDonorRecognition } from "@/lib/donor-recognition-repository";
+import styles from "./shukr.module.css";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 0;
@@ -28,12 +29,12 @@ export default async function ShukrPage() {
         <SectionHeading eyebrow="Shukr, with permission"
           title="Only names voluntarily cleared for recognition."
           subtitle="An eligible donor may make a separate request from their private receipt. A staff review and continued consent are required before display."/>
-        {entries.length ? <ul className="v2-card-grid" aria-label="Donors who approved name recognition">
-          {entries.map((entry, index) => <li className="v2-card" key={index}>
-            <span className="v2-section-label">With gratitude</span>
-            <strong>{entry.name}</strong>
+        {entries.length ? <ul className={styles.wall} aria-label="Donors who approved name recognition">
+          {entries.map((entry, index) => <li className={styles.card} key={index}>
+            <span className={styles.kicker}>With gratitude</span>
+            <strong className={styles.name}>{entry.name}</strong>
           </li>)}
-        </ul> : <p>No donor names are publicly listed. This does not imply any absence of generous or anonymous support.</p>}
+        </ul> : <p className={styles.empty}>No donor names are publicly listed. This does not imply any absence of generous or anonymous support.</p>}
       </div>
     </section>
     <section className="v2-section amaana-bg-body"><div className="v2-shell">
