@@ -53,9 +53,14 @@ export function getDonationAcknowledgementPresentation(
   amount: number,
   refundedAmount: number,
 ): DonationAcknowledgementPresentation {
-  const hasPartialRefund = refundedAmount > 0 && refundedAmount < amount;
+  const validAccounting = Number.isFinite(amount) && amount > 0
+    && Number.isFinite(refundedAmount) && refundedAmount >= 0;
+  const hasPartialRefund = validAccounting && refundedAmount > 0 && refundedAmount < amount;
+  // A zero-value CREATED/PENDING record is not a completed refund. Only a
+  // captured payment may infer full refund from its financial totals.
+  const fullyRefundedCapture = status === "CAPTURED" && validAccounting && refundedAmount >= amount;
 
-  if (status === "REFUNDED" || refundedAmount >= amount) {
+  if (status === "REFUNDED" || fullyRefundedCapture) {
     return {
       tone: "refunded",
       heading: "This donation has been refunded.",
