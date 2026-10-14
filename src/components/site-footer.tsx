@@ -25,7 +25,7 @@ export function SiteFooter() {
           </div>
           <div className="footer-lead-actions">
             <Link href="/our-work">Explore our work <span aria-hidden="true">→</span></Link>
-            <Link href="/appeals">Support a verified need <span aria-hidden="true">→</span></Link>
+            <Link href="/donate">Review approved giving routes <span aria-hidden="true">→</span></Link>
           </div>
         </div>
 
