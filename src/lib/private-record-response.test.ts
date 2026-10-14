@@ -19,6 +19,34 @@ describe("private read response contracts", () => {
       donation: { ...acknowledgement.donation, appeal: { title: "Unredacted beneficiary name", slug: null } },
     }, reference)).toBe(false);
   });
+  it("accepts a fund receipt with original approved giving intention and no appeal link", () => {
+    expect(isAcknowledgementResponse({
+      ...acknowledgement,
+      donation: {
+        ...acknowledgement.donation,
+        designationKind: "FUND",
+        appeal: { title: "Approved giving programme", slug: null },
+      },
+    }, reference)).toBe(true);
+  });
+  it("rejects unsupported religious intent on fund receipts", () => {
+    expect(isAcknowledgementResponse({
+      ...acknowledgement,
+      donation: {
+        ...acknowledgement.donation, designationKind: "FUND", givingIntent: "ZAKAT",
+        appeal: { title: "Unreviewed programme", slug: null },
+      },
+    }, reference)).toBe(false);
+  });
+  it("rejects a misleading public appeal link on fund receipts", () => {
+    expect(isAcknowledgementResponse({
+      ...acknowledgement,
+      donation: {
+        ...acknowledgement.donation, designationKind: "FUND",
+        appeal: { title: "Approved programme", slug: "some-beneficiary" },
+      },
+    }, reference)).toBe(false);
+  });
   it("accepts a confidential receipt whose appeal has no public link", () => {
     expect(isAcknowledgementResponse({
       ...acknowledgement,
