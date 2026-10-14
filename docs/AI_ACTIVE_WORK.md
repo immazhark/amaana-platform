@@ -1,3 +1,17 @@
+### 2026-10-15 — Grouped B04/W7 source batch: legibility, trust evidence and truthful giving links
+
+**Source work on PR #292:** `a56c33df` (Stories, Governance and Policy typography/contrast);
+`df34a0af` (canonical heading, card tokens and focused WCAG ratio regressions);
+`6daac981` (publication-approved impact evidence reused in Our Work with no extra query);
+`69c7720c` (Homepage, Our Work, Appeals conversion CTA truthfulness when no active appeal exists);
+`12b2ac4c` (two HomeTrust donor-navigation SSR regressions).
+
+This is deliberate grouped source development targeting **AF-R019**, **AF-R025**, **AF-R061**, **AF-R087** and **AF-R083**. Existing CSS declarations were edited directly rather than appending a fourth cascade override. Contrast tokens `--af-color-label`, `--af-color-muted` and `--af-color-gold-ink` each exceed 4.5:1 on the canonical canvas/surface in focused arithmetic checks; the CSS tests are **authored, not executed in the repository**. Four high-value public pages now display eligible initiative evidence without an extra database read on the Homepage or Our Work.
+
+**Canonical totals intentionally unchanged:** 149 items = 60 source Implemented, 49 Partial, 38 Not started, 1 Superseded, 1 Not applicable. 69 Defects = 54 Implemented, 13 Partial, 2 Not started. 51 Enhancements = 4 Implemented, 28 Partial, 19 Not started. These fixes advance existing Partial entries but do **not** establish requirement-level live/browser proof, so no source or production closure count is inflated.
+
+**Next relevant work:** Continue existing contrast/font-size/hero surface corrections within B04; do exact representative browser zoom/AT cases before promoting AF-R019 or AF-R025 to fully verified. Preserve source-only branches; no production payment, secret, schema, deploy or merge changes were made in this batch.
+
 ## 2026-10-15 — Grouped public integrity and programme enhancement (source-only)
 
 **PR #292** stays open and unmerged. Latest reviewed source before this note: `444b587125072427f60c06f158d3b8e020ab116e`.
