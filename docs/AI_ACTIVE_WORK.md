@@ -1,3 +1,7 @@
+## 2026-10-14 — fund summary precision
+
+Ownership: HANDOFF_PENDING after fund aggregate precision unit. Parent 58f24b60; sole writer. 26 focused tests, TypeScript and lint pass. Publish to existing PR292 with guarded head; no release.
+
 ## 2026-10-14 — authorized publication and refund continuation
 
 Ownership: HANDOFF_PENDING after completed refund currency unit. Owner explicitly authorized GitHub publication. Shell transport lacks credentials; connected GitHub tools will publish with a guarded head check. Scope: refund currency identity before ledger writes.

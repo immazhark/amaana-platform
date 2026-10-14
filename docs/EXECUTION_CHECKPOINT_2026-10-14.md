@@ -1,3 +1,9 @@
+## 2026-10-14 — private fund aggregate precision
+
+Continuation from published 58f24b60. Private admin fund summaries previously checked finite rupees only, allowing unsafe totals and sub-paise values to appear valid. Added a bounded aggregate projection using decimal-to-safe-integer paise, positive settled count and complete sums. Invalid financial aggregates show the existing reconciliation alert; subtraction occurs in integer paise before INR formatting. Donation permission gate and settled-status query remain intact.
+
+26 focused ledger/admin rendering cases pass. The new rendered regressions fail the prior page source in three cases (unsafe total, fractional-paise gross, fractional-paise refund). Exact 100.30 minus 100.10 renders INR0.20. TypeScript, focused zero-warning lint and diff checks pass. No full build/browser, native database or deployment claim. No schema changes or live financial writes in this unit. B08 remains partial; public fund checkout disabled.
+
 ## 2026-10-14 — refund currency identity and authorized publication
 
 Owner explicitly authorized GitHub publication from ChatGPT Work. Shell Git lacks credentials, so the connected GitHub Git-data tools publish against the checked parent 324eaeaf7ce9b94a4cb28e9fc2d82af11218646c without force or release.

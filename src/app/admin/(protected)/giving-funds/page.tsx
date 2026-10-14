@@ -1,5 +1,6 @@
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { summarizeFundLedgerAggregate } from "@/lib/fund-ledger";
 import { FUND_INTENTS, fundNextStatuses } from "@/lib/giving-funds";
 import { createGivingFund, transitionGivingFund, updateGivingFund } from "./actions";
 
@@ -51,12 +52,17 @@ export default async function GivingFundsPage({ searchParams }: { searchParams: 
           {canViewDonations && (() => {
             const balance = balances.get(fund.id);
             if (!balance) return <p className="muted">No captured contributions recorded for this fund.</p>;
-            const gross = balance._sum.amount?.toNumber() ?? 0;
-            const refunded = balance._sum.refundedAmount?.toNumber() ?? 0;
-            if (![gross, refunded].every(Number.isFinite) || gross < 0 || refunded < 0 || refunded > gross) {
+            let totals;
+            try {
+              totals = summarizeFundLedgerAggregate({
+                amount: balance._sum.amount,
+                refundedAmount: balance._sum.refundedAmount,
+                settledDonations: balance._count._all,
+              });
+            } catch {
               return <p role="alert">Fund net receipts require financial reconciliation.</p>;
             }
-            return <p className="muted">Gross captured: {displayINR(gross)} · Refunded: {displayINR(refunded)} · Net retained: {displayINR(gross - refunded)} · {balance._count._all} settled records</p>;
+            return <p className="muted">Gross captured: {displayINR(totals.grossCapturedPaise / 100)} · Refunded: {displayINR(totals.refundedPaise / 100)} · Net retained: {displayINR(totals.netRetainedPaise / 100)} · {totals.settledDonations} settled records</p>;
           })()}
           {fund.status === "DRAFT" && canManage && <details><summary>Edit draft</summary><form action={updateGivingFund} className="form-grid"><input type="hidden" name="id" value={fund.id} /><input type="hidden" name="revision" value={fund.revision} /><DraftFields prefix={fund.id} values={fund} /><div className="field full"><button className="button secondary">Save draft</button></div></form></details>}
           {nextStatuses.length > 0 && <form action={transitionGivingFund} className="field"><input type="hidden" name="id" value={fund.id} /><input type="hidden" name="revision" value={fund.revision} /><label htmlFor={`${fund.id}-status`}>Move to</label><select id={`${fund.id}-status`} name="status">{nextStatuses.map(status => <option key={status} value={status}>{status.replaceAll("_", " ")}</option>)}</select><label htmlFor={`${fund.id}-reason`}>Review or status-change reason</label><textarea id={`${fund.id}-reason`} name="reason" minLength={12} maxLength={500} required /><button className="button secondary">Apply status</button></form>}

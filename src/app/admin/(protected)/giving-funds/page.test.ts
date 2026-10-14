@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ permission: vi.fn(), has: vi.fn(), find: vi.fn(), totals: vi.fn() }));
@@ -48,7 +49,7 @@ describe("private giving fund admin rendering", () => {
   it("shows net amounts only for verified captured or refunded fund records", async () => {
     m.totals.mockResolvedValueOnce([{
       fundId: "fund-1", _count: { _all: 2 },
-      _sum: { amount: { toNumber: () => 500 }, refundedAmount: { toNumber: () => 125 } },
+      _sum: { amount: new Prisma.Decimal(500), refundedAmount: new Prisma.Decimal(125) },
     }]);
     const html = await markup();
     expect(html).toContain("Gross captured:");
@@ -58,4 +59,26 @@ describe("private giving fund admin rendering", () => {
     }));
   });
 
+  it.each([
+    ["90071992547410", "0"],
+    ["100.001", "0"],
+    ["100", "0.001"],
+    ["100", "101"],
+  ])("flags invalid aggregate %s / %s without presenting a balance", async (gross, refunded) => {
+    m.totals.mockResolvedValueOnce([{
+      fundId: "fund-1", _count: { _all: 2 },
+      _sum: { amount: new Prisma.Decimal(gross), refundedAmount: new Prisma.Decimal(refunded) },
+    }]);
+    const html = await markup();
+    expect(html).toContain('role="alert"');
+    expect(html).toContain("Fund net receipts require financial reconciliation.");
+    expect(html).not.toContain("Net retained:");
+  });
+  it("subtracts exact decimal paise before rendering INR", async () => {
+    m.totals.mockResolvedValueOnce([{
+      fundId: "fund-1", _count: { _all: 2 },
+      _sum: { amount: new Prisma.Decimal("100.30"), refundedAmount: new Prisma.Decimal("100.10") },
+    }]);
+    expect(await markup()).toContain("Net retained: ₹0.20");
+  });
 });

@@ -77,3 +77,25 @@ export function summarizeFundLedger(fundId: string, donations: readonly FundLedg
     unsettledDonations,
   };
 }
+
+/** Aggregated settled rows must retain the same paise precision as individual
+ * donations. Never display rounded or unsafe monetary data as a valid balance.
+ */
+export function summarizeFundLedgerAggregate(input: {
+  amount: MoneyDecimal | null;
+  refundedAmount: MoneyDecimal | null;
+  settledDonations: number;
+}) {
+  if (!Number.isSafeInteger(input.settledDonations) || input.settledDonations <= 0 ||
+      input.amount === null || input.refundedAmount === null) {
+    throw new Error("Invalid settled fund aggregate");
+  }
+  const grossCapturedPaise = checkedPaise(input.amount, "captured aggregate");
+  const refundedPaise = checkedPaise(input.refundedAmount, "refund aggregate");
+  if (grossCapturedPaise <= 0 || refundedPaise > grossCapturedPaise) {
+    throw new Error("Fund aggregate accounting is inconsistent");
+  }
+  return { grossCapturedPaise, refundedPaise,
+    netRetainedPaise: grossCapturedPaise - refundedPaise,
+    settledDonations: input.settledDonations };
+}

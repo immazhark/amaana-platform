@@ -1381,3 +1381,9 @@ Owner explicitly authorized GitHub publication from ChatGPT Work. Shell Git lack
 Reproduced two actual webhook cases returning success for INR refunds against stored USD donations (appeal and fund). Refund reconciliation now selects currency and rejects a mismatch before the refund ledger claim and monetary writes. 87 focused webhook/accounting tests pass; TypeScript and focused zero-warning lint pass. Local predecessor commits 5e550339 and 94df5889 retain their respective 290-unit/25-SQL and 66-test scopes. No full build, native concurrency, deployed migration or live payment certification.
 
 All three fixes remain source development on PR292. No public fund activation, hosted migration, main merge, deployment, real provider or mail operation. B08 remains partial. Next: isolated native financial lifecycle integration and remaining master-plan source tasks.
+
+## 2026-10-14 — private fund aggregate precision
+
+Continuation from published 58f24b60. Private admin fund summaries previously checked finite rupees only, allowing unsafe totals and sub-paise values to appear valid. Added a bounded aggregate projection using decimal-to-safe-integer paise, positive settled count and complete sums. Invalid financial aggregates show the existing reconciliation alert; subtraction occurs in integer paise before INR formatting. Donation permission gate and settled-status query remain intact.
+
+26 focused ledger/admin rendering cases pass. The new rendered regressions fail the prior page source in three cases (unsafe total, fractional-paise gross, fractional-paise refund). Exact 100.30 minus 100.10 renders INR0.20. TypeScript, focused zero-warning lint and diff checks pass. No full build/browser, native database or deployment claim. No schema changes or live financial writes in this unit. B08 remains partial; public fund checkout disabled.
