@@ -1,6 +1,7 @@
 import { DonationPaymentMethod, DonationStatus, NotificationChannel } from "@prisma/client";
 import { shouldMarkAppealFunded } from "@/lib/appeals";
 import { createReceiptNumber } from "@/lib/donations";
+import { requireDonationDestination } from "@/lib/donation-destination";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
 const DIRECT_METHODS: DonationPaymentMethod[] = [DonationPaymentMethod.DIRECT_UPI, DonationPaymentMethod.BANK_TRANSFER];
@@ -23,6 +24,7 @@ export async function reconcileDirectDonation(input: {
         id: true,
         referenceNumber: true,
         appealId: true,
+        fundId: true,
         donorEmail: true,
         givingIntent: true,
         amount: true,
@@ -33,6 +35,7 @@ export async function reconcileDirectDonation(input: {
     if (!donation) throw new Error("Donation not found");
     if (!DIRECT_METHODS.includes(donation.paymentMethod)) throw new Error("Only direct transfers use manual reconciliation");
     if (donation.status !== DonationStatus.PENDING_VERIFICATION) throw new Error("Donation is no longer pending verification");
+    const destination = requireDonationDestination(donation);
 
     const now = new Date();
     if (input.decision === "REJECT") {
@@ -45,16 +48,25 @@ export async function reconcileDirectDonation(input: {
       return { status: DonationStatus.REJECTED, referenceNumber: donation.referenceNumber };
     }
 
-    const appealBefore = await tx.appeal.findUnique({ where: { id: donation.appealId }, select: { goalAmount: true, amountRaised: true, status: true } });
-    if (!appealBefore) throw new Error("Appeal not found");
     const donationPaise = donation.amount.mul(100).toNumber();
-    const goalPaise = appealBefore.goalAmount.mul(100).toNumber();
-    const raisedPaise = appealBefore.amountRaised.mul(100).toNumber();
-    if (![donationPaise, goalPaise, raisedPaise].every(Number.isSafeInteger) ||
-        donationPaise <= 0 || goalPaise <= 0 || raisedPaise < 0) {
-      throw new Error("Invalid financial amounts for transfer reconciliation");
+    if (!Number.isSafeInteger(donationPaise) || donationPaise <= 0) {
+      throw new Error("Invalid financial amount for transfer reconciliation");
     }
-    if (donationPaise > Math.max(0, goalPaise - raisedPaise)) throw new Error("This transfer exceeds the appeal's remaining verified need and requires operator review");
+    if (destination.kind === "APPEAL") {
+      const appealBefore = await tx.appeal.findUnique({
+        where: { id: destination.id }, select: { goalAmount: true, amountRaised: true, status: true },
+      });
+      if (!appealBefore) throw new Error("Appeal not found");
+      const goalPaise = appealBefore.goalAmount.mul(100).toNumber();
+      const raisedPaise = appealBefore.amountRaised.mul(100).toNumber();
+      if (![goalPaise, raisedPaise].every(Number.isSafeInteger) ||
+          goalPaise <= 0 || raisedPaise < 0) {
+        throw new Error("Invalid financial amounts for transfer reconciliation");
+      }
+      if (donationPaise > Math.max(0, goalPaise - raisedPaise)) {
+        throw new Error("This transfer exceeds the appeal's remaining verified need and requires operator review");
+      }
+    }
 
     const changed = await tx.donation.updateMany({
       where: { id: donation.id, status: DonationStatus.PENDING_VERIFICATION },
@@ -69,21 +81,27 @@ export async function reconcileDirectDonation(input: {
     });
     if (changed.count !== 1) throw new Error("Donation changed during reconciliation");
 
-    const appeal = await tx.appeal.update({
-      where: { id: donation.appealId },
-      data: { amountRaised: { increment: donation.amount } },
-      select: { id: true, status: true, goalAmount: true, amountRaised: true },
-    });
-    if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) {
-      await tx.appeal.updateMany({ where: { id: appeal.id, status: "PUBLISHED" }, data: { status: "FUNDED" } });
+    if (destination.kind === "APPEAL") {
+      const appeal = await tx.appeal.update({
+        where: { id: destination.id },
+        data: { amountRaised: { increment: donation.amount } },
+        select: { id: true, status: true, goalAmount: true, amountRaised: true },
+      });
+      if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) {
+        await tx.appeal.updateMany({ where: { id: appeal.id, status: "PUBLISHED" }, data: { status: "FUNDED" } });
+      }
     }
+    // A verified fund transfer is counted directly from CAPTURED donation rows;
+    // no appeal total is touched and no public fund checkout is activated.
 
     await tx.notification.create({
       data: {
         channel: NotificationChannel.EMAIL,
         recipient: donation.donorEmail,
         templateKey: "donation-acknowledgement",
-        subject: "Thank you for supporting an Amaana Foundation appeal",
+        subject: destination.kind === "FUND"
+          ? "Thank you for supporting an Amaana Foundation programme"
+          : "Thank you for supporting an Amaana Foundation appeal",
         payload: { referenceNumber: donation.referenceNumber, givingIntent: donation.givingIntent },
         donationId: donation.id,
       },
