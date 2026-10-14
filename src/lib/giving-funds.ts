@@ -45,7 +45,7 @@ export function approvedFundDesignationSnapshot(
       !Number.isSafeInteger(fund.revision) || fund.revision !== expectedRevision) {
     throw new FundValidationError("The fund details changed. Review the current purpose before donating.");
   }
-  if (!fund.id || !fund.approvedById || !fund.approvedAt ||
+  if (!fund.id || !fund.approvedById || !(fund.approvedAt instanceof Date) ||
       !Number.isFinite(fund.approvedAt.getTime()) ||
       fund.approvedById === fund.createdById || fund.approvedById === fund.lastEditedById) {
     throw new FundValidationError("This fund does not have an independent approval.");
