@@ -72,6 +72,31 @@ export function approvedFundDesignationSnapshot(
   };
 }
 
+const storedFundDesignationSchema = z.object({
+  version: z.literal(1),
+  kind: z.literal("FUND"),
+  fundId: z.string().min(1).max(200),
+  fundRevision: z.number().int().nonnegative(),
+  label: z.string().trim().min(1).max(120),
+  purpose: z.string().trim().min(20).max(1_000),
+  disclosure: z.string().trim().min(20).max(2_000),
+  accountCode: z.string().trim().min(2).max(32),
+  givingIntent: z.enum(FUND_INTENTS),
+}).strict();
+
+/** Read-only record of the approved meaning originally presented to a donor. */
+export function resolveFundDonationDesignation(
+  snapshot: unknown,
+  expected: { fundId: string; givingIntent: string },
+): { label: string; provenance: "original" | "review" } {
+  const parsed = storedFundDesignationSchema.safeParse(snapshot);
+  if (!parsed.success || parsed.data.fundId !== expected.fundId ||
+      parsed.data.givingIntent !== expected.givingIntent) {
+    return { label: "Fund designation requires review", provenance: "review" };
+  }
+  return { label: parsed.data.label, provenance: "original" };
+}
+
 export function parseFundRevision(value: unknown) {
   if (typeof value !== "string" || !/^(0|[1-9][0-9]*)$/.test(value)) throw new FundValidationError("Fund edit version is missing or invalid. Refresh before saving.");
   const revision = Number(value);
