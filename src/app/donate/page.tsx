@@ -4,6 +4,7 @@ import { CanonicalArticle } from "@/components/canonical-article";
 import { complianceCopy } from "@/lib/master-copy";
 import { getAppealsIndexData, getDonationPageData, getDonationImpactHighlights } from "@/lib/public-page-data";
 import { getPublicAppealProgress } from "@/lib/public-appeal-progress";
+import { getWholeRupeeCheckoutRange } from "@/lib/donation-amount-input";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { DonationPaymentInstructions } from "@/components/donation-payment-instructions";
 import type { AppealDonationChoice } from "@/components/appeal-donation-flow";
@@ -68,7 +69,7 @@ export default async function Page({ searchParams }: PageProps = {}) {
   const appealChoices: AppealDonationChoice[] = approvedAppeals.flatMap(appeal => {
     if (!appeal) return [];
     const progress = getPublicAppealProgress(appeal.amountRaised, appeal.goalAmount);
-    if (!progress || progress.remaining <= 0) return [];
+    if (!progress || !getWholeRupeeCheckoutRange(progress.remaining)) return [];
     return [{
       id: appeal.id, slug: appeal.slug, title: appeal.title,
       raised: progress.raised, goal: progress.goal, remaining: progress.remaining,
@@ -126,7 +127,7 @@ export default async function Page({ searchParams }: PageProps = {}) {
           BANK_TRANSFER: <DonationPaymentInstructions method="BANK_TRANSFER" paymentDetails={paymentDetails} />,
         } : { DIRECT_UPI: null, BANK_TRANSFER: null }}/>}
       {appealChoices.length === 0 && hasOpenAppeals && <p role="status" className={styles.note}>
-        An appeal may have changed since the index was published. Review current eligibility and available routes on the appeals page before contributing.
+        An appeal may have changed, or its exact remaining balance may no longer permit a whole-rupee checkout. Review the current case and contact Amaana before transferring any unsupported amount.
       </p>}
       {fundReadFailed && <p role="status" className={styles.note}>Giving fund availability could not be checked. Please refresh later or contact Amaana before contributing to a programme.</p>}
       <p className={styles.note}>Choose the route that matches your intention: an open appeal supports that specific published need, while programme support is available only when Amaana has confirmed an approved destination.</p>

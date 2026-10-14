@@ -2,6 +2,7 @@
 
 import { lazy, Suspense, useCallback, useRef, useState, type ReactNode } from "react";
 import { getPublicAppealProgress } from "@/lib/public-appeal-progress";
+import { getWholeRupeeCheckoutRange } from "@/lib/donation-amount-input";
 import { PublicFundingMeter } from "@/components/public-funding-meter";
 import styles from "./appeal-donation-flow.module.css";
 
@@ -41,9 +42,10 @@ export function AppealDonationFlow({ appeals, paymentInstructions, bankAvailable
   }, [onSubmissionLockChange]);
   const eligible = appeals.flatMap(appeal => {
     const progress = getPublicAppealProgress(appeal.raised, appeal.goal);
-    return progress && progress.remaining > 0 &&
+    const checkoutRange = progress && getWholeRupeeCheckoutRange(progress.remaining);
+    return progress && checkoutRange &&
       Math.abs(progress.remaining - appeal.remaining) < 0.000001
-      ? [{ appeal, progress }] : [];
+      ? [{ appeal, progress, checkoutRange }] : [];
   });
   const choice = eligible.find(item => item.appeal.id === selectedId) ?? eligible[0];
   const selected = choice?.appeal;
@@ -74,7 +76,7 @@ export function AppealDonationFlow({ appeals, paymentInstructions, bankAvailable
         {choice?.progress.remainingLabel}</p>
       <Suspense fallback={<p role="status">Preparing secure donation methods…</p>}>
         <DonationMethods key={selected.id} appealId={selected.id} appealTitle={selected.title}
-          maxAmount={choice?.progress.remaining ?? 0} zakatEligible={selected.zakatEligible}
+          maxAmount={choice.checkoutRange.maximum} zakatEligible={selected.zakatEligible}
           bankAvailable={bankAvailable} paymentInstructions={paymentInstructions}
           onSubmissionLockChange={updateLock}/>
       </Suspense>

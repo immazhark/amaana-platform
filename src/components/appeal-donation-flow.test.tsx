@@ -36,4 +36,18 @@ describe("reviewed in-page appeal selector", () => {
     expect(markup).toContain("40%");
     expect(markup).not.toContain("₹600");
   });
+  it("does not offer a payment method for sub-minimum fractional remainders", () => {
+    const fractional = { ...appeal, raised: 490.5, goal: 500, remaining: 9.5 };
+    const markup = renderToStaticMarkup(<AppealDonationFlow appeals={[fractional]}
+      bankAvailable={true} paymentInstructions={{ DIRECT_UPI: null, BANK_TRANSFER: null }}/>);
+    expect(markup).toContain("No verified appeal is available for checkout");
+    expect(markup).not.toContain('aria-pressed="true"');
+  });
+  it("keeps checkout available when a fractional balance permits at least ten whole rupees", () => {
+    const fractional = { ...appeal, raised: 489.75, goal: 500, remaining: 10.25 };
+    const markup = renderToStaticMarkup(<AppealDonationFlow appeals={[fractional]}
+      bankAvailable={true} paymentInstructions={{ DIRECT_UPI: null, BANK_TRANSFER: null }}/>);
+    expect(markup).toContain("₹10.25 remaining");
+    expect(markup).toContain('aria-pressed="true"');
+  });
 });
