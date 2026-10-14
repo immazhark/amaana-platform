@@ -318,6 +318,12 @@ export const getCompletedAidShowcaseData = cache(async () => {
     orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
     select: {
       slug: true,
+      title: true,
+      year: true,
+      startYear: true,
+      endYear: true,
+      primaryMetric: true,
+      primaryMetricLabel: true,
       mediaAssets: PUBLIC_GALLERY_MEDIA_PROJECTION,
     },
   });
