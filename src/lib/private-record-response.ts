@@ -47,7 +47,9 @@ export function isAcknowledgementResponse(value: unknown, reference: string): va
     && amount(d.amount) && d.amount > 0 && amount(d.refundedAmount) && d.refundedAmount <= d.amount
     && date(d.recordDate) && nullableText(d.providerPaymentId)
     && object(d.appeal) && text(d.appeal.title)
-    && (d.appeal.slug === null || (text(d.appeal.slug) && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(d.appeal.slug)));
+    && (d.appeal.slug === null
+      ? d.appeal.title === "Confidential assistance appeal"
+      : text(d.appeal.slug) && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(d.appeal.slug));
 }
 
 export function isTrackingResponse(value: unknown): value is TrackingRecord | { found: false } {
