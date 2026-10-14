@@ -74,3 +74,11 @@ test("public appeal detail uses consent-controlled display name", async () => {
   assert.match(source, /beneficiaryDisplayName/);
   assert.doesNotMatch(source, /\bbeneficiaryName\b/);
 });
+
+test("cached homepage appeals are rechecked against the current fundraising window", async () => {
+  const source = await readFile("src/lib/public-content.ts", "utf8");
+  const wrapper = source.match(/export async function getHomepageAppeals\(limit = 3\)\s*\{([\s\S]*?)\n\}/)?.[1];
+  assert.ok(wrapper, "Expected public homepage appeal wrapper");
+  assert.match(wrapper, /await getHomepageAppealsCached\(limit\)/);
+  assert.match(wrapper, /cached\.filter\(appeal => isAppealOpenForDonations\(appeal\)\)/);
+});
