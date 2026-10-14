@@ -8,7 +8,7 @@ describe("staff donation-purpose exception visibility", () => {
       appealId: null, fundId: "approved-fund", givingIntent: "GENERAL",
       designationSnapshot: syntheticFundDesignation("approved-fund"),
       fund: { name: "Renamed public fund" },
-    })).toEqual({ label: "Approved Giving Fund", provenance: "original", requiresReview: false });
+    })).toEqual({ label: "Synthetic independently approved fund", provenance: "original", requiresReview: false });
   });
 
   it("marks unverified fund history as requiring staff reconciliation", () => {
