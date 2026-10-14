@@ -80,6 +80,7 @@ describe("reviewed giving-fund order: inactive by default", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     vi.stubEnv("AMAANA_FUND_CHECKOUT_ENABLED", "true");
+    vi.stubEnv("AMAANA_FUND_CHECKOUT_ALLOWLIST", validFund.id);
     mocks.rateLimit.mockResolvedValue(true);
     mocks.findFund.mockResolvedValue(validFund);
     mocks.order.mockResolvedValue({
@@ -101,6 +102,22 @@ describe("reviewed giving-fund order: inactive by default", () => {
     expect(mocks.findFund).not.toHaveBeenCalled();
     expect(mocks.order).not.toHaveBeenCalled();
     expect(mocks.createDonation).not.toHaveBeenCalled();
+  });
+
+  it("keeps approved fund orders unavailable when the per-fund release list is unset", async () => {
+    vi.stubEnv("AMAANA_FUND_CHECKOUT_ALLOWLIST", "");
+    const response = await POST(request());
+    expect(response.status).toBe(404);
+    expect(mocks.findFund).not.toHaveBeenCalled();
+    expect(mocks.order).not.toHaveBeenCalled();
+  });
+
+  it("requires this exact fund ID to be explicitly listed", async () => {
+    vi.stubEnv("AMAANA_FUND_CHECKOUT_ALLOWLIST", "another-reviewed-fund");
+    const response = await POST(request());
+    expect(response.status).toBe(404);
+    expect(mocks.findFund).not.toHaveBeenCalled();
+    expect(mocks.order).not.toHaveBeenCalled();
   });
 
   it.each([
