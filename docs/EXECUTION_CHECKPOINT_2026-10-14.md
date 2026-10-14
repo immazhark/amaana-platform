@@ -1,3 +1,16 @@
+## 2026-10-14 — B08 private donor-purpose snapshots, without enabling fund checkout
+
+Used the canonical `docs/AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md` sections D/F, current PR #292 source and the installed Karpathy coding guidelines. Prisma PostgreSQL relation/migration guidance was checked with Context7. Work remains on the existing `fix/direct-transfer-feedback-20261013` branch; no duplicate PR.
+
+- Added `Donation.designationSnapshot Json?` and migration `20261014160000_donation_designation_snapshot`; existing rows and older binaries can keep NULL. Non-null snapshot requires APPEAL kind, matching appeal ID and giving intention, version 1 and a string label. PostgreSQL trigger rejects updates to any already populated snapshot.
+- Both provider order and direct transfer creation persist the original selected appeal ID/title/giving intention. Private acknowledgment, appeal total, capture, reconciliation, refund, and public checkout behavior are deliberately unchanged; existing `fundId` submissions still fail closed until a complete fund-only accounting contract exists.
+- Authored a pure helper unit test, actual order/transfer route persistence assertions and optional isolated PostgreSQL-WASM compatibility/negative/immutability tests in `scripts/test-donation-designation-migration.mjs`. Two route Vitest mocks were corrected to retain the actual shared helper. The migration test source was syntax-checked in a local Node 22 copy, and GitHub source readback confirmed committed files. Exact-head Vitest/Prisma generation/migration execution/Next build/browser acceptance remain **NOT RUN** in this chat environment; Chromium, package dependencies and PGLite are not available locally.
+- New implementation commits span `3a8804c` through `37b1ccf`; master-plan update `9a7059b`. The previous duplicate-multipart-field correction remains in the same PR and is not counted as an additional historical R-ID.
+
+**Still required for B08:** exactly-one appeal-versus-approved-fund schema/relation; validated APPROVED-state fund selection at payment and verification; immutable fund definition/revision snapshot; fund net accounting/settlement and refunds; private admin/acknowledgment projections; zero public checkout until explicit reviewed-purpose and domestic-only gates. SQL snapshot constraint is appeal-only for now and must be atomically extended before fund-only writes become possible.
+
+No migration on any hosted database, production/private data read or write, payment or refund, credential change, notification delivery, public fund activation, release merge or deployment.
+
 ## 2026-10-14 — duplicate multipart financial fields rejected before submission
 
 Ownership: ChatGPT engineering continuation, existing PR #292 / `fix/direct-transfer-feedback-20261013`. A direct-transfer multipart body could previously submit repeated payment/destination/evidence keys while `FormData.get` silently chose the first. The endpoint now rejects repeated values for all single-valued donor, destination, payment, transfer and evidence fields with a private HTTP 400, before schema parsing, appeal lookup, donation persistence or evidence storage.
