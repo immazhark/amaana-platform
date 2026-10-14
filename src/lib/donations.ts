@@ -20,6 +20,31 @@ export function appealDonationDesignationSnapshot(
   };
 }
 
+const storedAppealDesignationSchema = z.object({
+  version: z.literal(1),
+  kind: z.literal("APPEAL"),
+  appealId: z.string().min(1).max(200),
+  label: z.string().trim().min(1).max(4096),
+  givingIntent: z.enum(DONATION_INTENTS),
+}).strict();
+
+/** Resolve original donor intent for private finance surfaces only.
+ *  Legacy NULLs use the existing appeal title; malformed non-NULL history is
+ *  explicitly flagged instead of silently substituted with a new purpose.
+ */
+export function resolveAppealDonationDesignation(
+  snapshot: unknown,
+  expected: { appealId: string; givingIntent: string; currentTitle: string },
+): { label: string; provenance: "original" | "legacy" | "review" } {
+  if (snapshot == null) return { label: expected.currentTitle, provenance: "legacy" };
+  const result = storedAppealDesignationSchema.safeParse(snapshot);
+  if (!result.success || result.data.appealId !== expected.appealId ||
+      result.data.givingIntent !== expected.givingIntent) {
+    return { label: "Donation designation requires review", provenance: "review" };
+  }
+  return { label: result.data.label, provenance: "original" };
+}
+
 export const donationSchema = z.object({
   appealId: z.string().cuid(),
   // Public checkout is still appeal-only. Reject an explicitly supplied fund
