@@ -6,12 +6,14 @@
   --af-color-surface: #fffdf8;
   --af-color-surface-muted: #f3eddd;
   --af-color-navy-950: #122239;
+  --af-color-navy-950-rgb: 18 34 57;
   --af-color-navy-800: #1d3150;
   --af-color-navy-700: #2f4c7a;
   --af-color-blue-600: #466faa;
   --af-color-blue-soft: #e9eff8;
   --af-color-blue-note: #eef3fa;
   --af-color-gold-500: #e0b318;
+  --af-color-gold-500-rgb: 224 179 24;
   --af-color-gold-soft: #f0d56b;
   --af-color-gold-ink: #604407;
   --af-color-text: var(--af-color-navy-950);
@@ -27,6 +29,7 @@
 
   /* Exact component palette roles retained during stylesheet consolidation. */
   --af-color-white: #ffffff;
+  --af-color-white-rgb: 255 255 255;
   --af-color-black: #000000;
   --af-color-input-placeholder: #697482;
   --af-color-input-highlight: #fffaf0;
@@ -39,6 +42,7 @@
   --af-color-story-media-stage: #14243a;
   --af-color-story-body-ink: #68717a;
   --af-color-story-warm-white: #fffaf1;
+  --af-color-story-warm-white-rgb: 255 250 241;
   --af-color-story-blue-deep: #1e3555;
   --af-color-story-blue-dark: #0f2036;
   --af-color-story-caption-ink: #5f6974;
