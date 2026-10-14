@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
-import { createDonationReference, createReceiptToken, donationSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
+import { appealDonationDesignationSnapshot, createDonationReference, createReceiptToken, donationSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder } from "@/lib/razorpay";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
@@ -126,6 +126,7 @@ export async function POST(request: Request) {
           donorPhone: parsed.data.donorPhone || null,
           isAnonymous: parsed.data.isAnonymous,
           givingIntent: parsed.data.givingIntent,
+          designationSnapshot: appealDonationDesignationSnapshot(appeal, parsed.data.givingIntent),
           domesticConfirmedAt: new Date(),
           amount: parsed.data.amount,
           paymentMethod: "RAZORPAY",
