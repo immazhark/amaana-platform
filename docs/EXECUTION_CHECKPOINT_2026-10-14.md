@@ -1,5 +1,18 @@
 # Amaana Foundation engineering continuation — 14 October 2026
 
+## Continuation — additional ledger safeguards and executed helper validation
+
+Existing PR #292 / `fix/direct-transfer-feedback-20261013`. Work committed after `d743648` checkpoint through `32f90b17724d0c2668435d675c8c7ed76044bb06`.
+
+**Mark-funded transition:** `shouldMarkAppealFunded` is used in both Razorpay captured-payment and reconciled direct-transfer paths. A previously invalid `PUBLISHED` zero-goal appeal (0 raised / 0 goal) could satisfy the old `raised >= goal` comparison. The helper now requires finite nonnegative raised balance, finite strictly positive goal and the original met-target condition. Eight new funded-state Vitest cases cover zero/negative/NaN/infinite/string values, preserving legitimate positive-goal behavior. Commits `73b50fe` and `742c2f5`.
+
+**Remaining need calculation:** `getRemainingAppealAmount` previously returned NaN/infinite for invalid inputs, potentially leaking malformed financial amounts to donation UI and validation messages in future call paths. It now reports zero donation-eligible remainder when balances are nonfinite, negative or the goal is non-positive, while preserving correct normal and overfunded calculations. Seven unit regressions. Commits `dcbcd3b`, `32f90b1`.
+
+**Actually executed narrow runtime verification:** The current `src/lib/appeals.ts` was reconstructed in isolated Node 22 runtime and verified byte-for-byte using the exact Git blob hash **`990e34155ee88f65ff87592b98215270b8441b53`**. Node `--experimental-strip-types --test` ran **60 focused assertions, 60 passed, 0 failed** for eligible/invalid fundraising, refunds, funded transitions, percentage bars, and remaining need. This is not the repository's full Vitest run, Next compile, browser acceptance or hosted DB verification.
+
+The original95 row classifications remain10 addressed baseline,33 source-implemented awaiting release acceptance,25 partial,16 open,11 unverified. No production release/merge, migration, payment, mail, provider or private-record action. The next executor should verify exact-head tests, apply remaining source defects, and close classifications only after corresponding acceptance.
+
+
 ## Continuation — fail-closed fundraising states and exact-source runtime checks
 
 Same PR #292 / `fix/direct-transfer-feedback-20261013`; no concurrent writer found at head `cefa59570b1dde9c27dc291c308b541ca9db30d0`.
