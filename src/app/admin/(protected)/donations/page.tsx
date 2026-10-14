@@ -4,6 +4,7 @@ import { requirePermission } from "@/lib/auth";
 import { formatINR } from "@/lib/appeals";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
+import { resolveAppealDonationDesignation } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { donationOperationalState } from "@/lib/operational-signals";
 
@@ -174,7 +175,11 @@ export default async function DonationsPage({ searchParams }: Props) {
         <tbody>{donations.map(donation => <tr key={donation.id}>
           <td><Link href={`/admin/donations/${donation.id}`}><strong>{donation.referenceNumber}</strong></Link></td>
           <td>{donation.donorName}<br/><small>{donation.donorEmail}</small></td>
-          <td>{donation.appeal.title}</td>
+          <td>{resolveAppealDonationDesignation(donation.designationSnapshot, {
+            appealId: donation.appealId,
+            givingIntent: donation.givingIntent,
+            currentTitle: donation.appeal.title,
+          }).label}</td>
           <td>{donationIntentLabel(donation.givingIntent)}</td>
           <td>{donation.paymentMethod === "DIRECT_UPI" ? "Direct UPI" : donation.paymentMethod === "BANK_TRANSFER" ? "Bank transfer" : "Razorpay"}</td>
           <td>{formatINR(donation.amount.toNumber())}</td>
