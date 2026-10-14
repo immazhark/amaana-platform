@@ -66,7 +66,7 @@ describe.skipIf(!runtime)("actual private PDF download client interactions", () 
       if (url.endsWith("/authorize")) {
         return Promise.resolve(Response.json({ available: true, grant, expiresInSeconds: 300 }));
       }
-      return Promise.resolve(new Response(bytes, {
+      return Promise.resolve(new Response(bytes.buffer as ArrayBuffer, {
         status: 200,
         headers: {
           "Content-Type": "application/pdf", "Content-Disposition": "attachment; filename=synthetic.pdf",
