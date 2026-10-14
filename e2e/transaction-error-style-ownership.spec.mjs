@@ -24,6 +24,11 @@ for (const width of [390, 1440]) {
       });
       expect(layout.minHeight).toBeGreaterThanOrEqual(500);
       expect(layout.contentPaddingTop).toBeGreaterThan(0);
+      const lineHeightRatio = await boundary.getByRole("heading", { level: 1 }).evaluate(el => {
+        const style = getComputedStyle(el);
+        return Number.parseFloat(style.lineHeight) / Number.parseFloat(style.fontSize);
+      });
+      expect(lineHeightRatio).toBeGreaterThanOrEqual(1.1);
       await expect(boundary.getByRole("button", { name: "Try again" })).toBeEnabled();
     }
 
