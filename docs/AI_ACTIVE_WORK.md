@@ -1,3 +1,19 @@
+## 2026-10-14 — immediate promotion expiry and executed handover tests
+
+Recovered PR #292 at 0584c96911eb916dee4147c0630c339f565eb5b8 on fix/direct-transfer-feedback-20261013. Confirmed saveVerification rejects requests already converted to appeals, both before and within the transaction: confidentiality changes for existing appeals are not supported through that action. Do not invent an unlocked classification-change workflow.
+
+Confirmed cache defect: transitionAppeal and updateFeaturing used revalidateTag("appeals", "max"), permitting stale promotional reads after a committed withdrawal. Use Server Action updateTag("appeals") for immediate expiry after successful transaction completion, retaining homepage/listing path invalidation and the shared 300-second data cache. Set live-rail success and fail-closed responses to no-store so downstream caches do not outlive withdrawals. No additional database query is introduced. Existing responses cached before rollout are not retroactively purged by this source change; deployed CDN behavior and already-open client views are not certified.
+
+Four workflow regressions cover PAUSED/CLOSED/FUNDED success ordering after audit and failed-write non-invalidation; two actual route tests cover a withdrawn next response and uncached failure. Full runtime Vitest: 1181 passed, 9 database-dependent skipped. The prior privacy/payment helper and order-route tests were executed successfully, including restored Zakat coverage. Full lint initially found three unused private-relation destructuring bindings from the prior handover; consume the deliberately removed relation with void while preserving the public-only rest object and update the boundary guard. Post-correction affected suites: 21 passed; public-data boundary guards: 5 passed; TypeScript and full zero-warning ESLint/governed Stylelint passed.
+
+Compile-only Next build passed before the lint-only projection correction. Client-secret and static-image guards passed. Generated JS 816683/819200 bytes and CSS 342406/348160 bytes; budgets unchanged. This is compile-only evidence, not full database prerender, browser, hosted or production acceptance. Full suite result precedes the behavior-neutral void correction; affected suites were rerun afterward.
+
+Original 95 classifications remain 10 baseline addressed /33 source implemented /25 partial /16 open /11 unverified. No original-item closure inferred. No main merge, deployment, live payment, private-record mutation, email, migration or provider configuration. Continue remaining register work; staging/browser and hosted release verification remain outstanding.
+
+## 2026-10-14 — continuation ownership
+
+Ownership: REVIEW_PENDING after scoped continuation; no concurrent writer. PR #292 / fix/direct-transfer-feedback-20261013; recovered head 0584c96911eb916dee4147c0630c339f565eb5b8. Scope: execute pending tests and correct stale appeal promotion cache after committed workflow changes. No production operations.
+
 ## 2026-10-14 — R-064 retired transaction overrides removed
 
 Ownership: REVIEW_PENDING; no concurrent writer. Same PR #292 / fix/direct-transfer-feedback-20261013, parent6eb2f86ea6e0d86c9df101c2fd3f8068e1840530. User cx authorized source continuation.

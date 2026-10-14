@@ -348,7 +348,10 @@ export const getAppealsIndexData = cache(async () => {
   // promote the identity of explicitly HIGHLY_SENSITIVE beneficiaries.
   return appeals
     .filter(canPromoteAppeal)
-    .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => publicAppeal);
+    .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => {
+        void _privateReview;
+        return publicAppeal;
+      });
 });
 
 /**

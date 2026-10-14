@@ -110,7 +110,7 @@ test("sensitive appeals cannot be promoted through homepage, directory or initia
 
   // Do not serialize verification status or internal assistance linkage.
   for (const source of [home, index]) {
-    assert.match(source, /map\(\(\{ assistanceRequest: _privateReview, \.\.\.publicAppeal \}\) => publicAppeal\)/);
+    assert.match(source, /map\(\(\{ assistanceRequest: _privateReview, \.\.\.publicAppeal \}\) => \{\s*void _privateReview;\s*return publicAppeal;\s*\}\)/);
     assert.match(source, /verification: \{ select: \{ confidentialityLevel: true \} \}/);
   }
 });

@@ -73,7 +73,10 @@ export async function getPublishedInitiativeBySlug(slug: string) {
     ...initiative,
     appeals: initiative.appeals
       .filter(canPromoteAppeal)
-      .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => publicAppeal),
+      .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => {
+        void _privateReview;
+        return publicAppeal;
+      }),
   };
 }
 
@@ -193,7 +196,10 @@ const getHomepageAppealsCached = unstable_cache(async (limit: number) => {
   return appeals
     .filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && canPromoteAppeal(appeal) && isAppealOpenForDonations(appeal))
     .slice(0, Math.min(20, Math.max(1, limit)))
-    .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => publicAppeal);
+    .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => {
+        void _privateReview;
+        return publicAppeal;
+      });
 }, ["homepage-appeals"], { revalidate: 300, tags: ["appeals"] });
 
 export async function getHomepageAppeals(limit = 3) {

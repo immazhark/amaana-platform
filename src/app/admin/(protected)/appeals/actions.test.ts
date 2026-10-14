@@ -1,6 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
+  updateTag: vi.fn(),
+  revalidatePath: vi.fn(),
   requirePermission: vi.fn(),
   hasPermission: vi.fn(),
   appealFind: vi.fn(),
@@ -35,7 +37,7 @@ vi.mock("@/lib/prisma-transaction", () => ({ withSerializableTransactionRetry: (
 vi.mock("@/lib/appeal-update-publication", () => ({
   getAppealUpdatePublicationIssues: ({ appealStatus }: { appealStatus: string }) => appealStatus === "PUBLISHED" ? [] : ["Appeal must be actively published."],
 }));
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, updateTag: mocks.updateTag }));
 
 import { addAppealUpdate, publishAppealUpdate, transitionAppeal, unpublishAppealUpdate, updateAppeal, updateFeaturing } from "./actions";
 
@@ -53,6 +55,24 @@ describe("appeal concurrent mutation guards", () => {
     mocks.auditCreate.mockResolvedValue({ id: "audit" });
     mocks.updateManyAppeal.mockResolvedValue({ count: 1 });
     (globalThis as typeof globalThis & { __appealTx: unknown }).__appealTx = { appeal: { findUniqueOrThrow: mocks.appealFind, update: mocks.updateAppeal, updateMany: mocks.updateManyAppeal }, appealUpdate: { findUniqueOrThrow: mocks.updateFind, create: mocks.updateCreate, update: mocks.updateUpdate, updateMany: mocks.updateManyUpdate }, auditEvent: { create: mocks.auditCreate } };
+  });
+
+  it.each(["PAUSED", "CLOSED", "FUNDED"])("expires promotional data immediately after a committed %s transition", async status => {
+    const appeal = { status: "PUBLISHED", slug: "appeal-slug", updatedAt: new Date("2026-09-23T04:00:00.000Z"), goalAmount: 1000, reviewedById: null, publishedAt: new Date(), assistanceRequest: null };
+    mocks.appealFind.mockResolvedValue(appeal);
+    await transitionAppeal(form({ id: "appeal-1", status, expectedUpdatedAt: appeal.updatedAt.toISOString() }));
+    expect(mocks.updateTag).toHaveBeenCalledExactlyOnceWith("appeals");
+    expect(mocks.updateTag.mock.invocationCallOrder[0]).toBeGreaterThan(mocks.auditCreate.mock.invocationCallOrder[0]!);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/appeals");
+  });
+
+  it("does not invalidate promotional data when the workflow write fails", async () => {
+    const appeal = { status: "PUBLISHED", updatedAt: new Date("2026-09-23T04:00:00.000Z"), goalAmount: 1000, assistanceRequest: null };
+    mocks.appealFind.mockResolvedValue(appeal);
+    mocks.updateManyAppeal.mockResolvedValue({ count: 0 });
+    await expect(transitionAppeal(form({ id: "appeal-1", status: "PAUSED", expectedUpdatedAt: appeal.updatedAt.toISOString() }))).rejects.toThrow(/changed while you were reviewing/i);
+    expect(mocks.updateTag).not.toHaveBeenCalled();
   });
 
   it("rejects a stale same-status content edit using the rendered appeal version", async () => {

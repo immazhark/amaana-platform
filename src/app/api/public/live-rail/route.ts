@@ -18,11 +18,13 @@ export async function GET() {
       supportCta: "Donate",
     }));
 
+    // Keep the shared server projection cached, but do not let downstream
+    // caches outlive an administrator's appeal withdrawal.
     return NextResponse.json(
       { items },
-      { headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" } },
+      { headers: { "Cache-Control": "no-store" } },
     );
   } catch {
-    return NextResponse.json({ items: [] }, { status: 200 });
+    return NextResponse.json({ items: [] }, { status: 200, headers: { "Cache-Control": "no-store" } });
   }
 }

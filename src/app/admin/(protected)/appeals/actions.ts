@@ -1,7 +1,7 @@
 "use server";
 
 import { AppealCategory, AppealStatus } from "@prisma/client";
-import { revalidatePath, revalidateTag } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { getAppealConsentContentIssues, getFirstPublicationIssues, goalMatchesApprovedPublicTarget } from "@/lib/appeal-publication";
 import { getAppealUpdatePublicationIssues } from "@/lib/appeal-update-publication";
 import { getAppealCoverMediaIssues } from "@/lib/appeal-cover-media";
@@ -117,7 +117,8 @@ export async function transitionAppeal(formData: FormData) {
     if (updated.count !== 1) throw new Error("This appeal changed while you were reviewing it. Refresh before changing status.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.status_changed", entityType: "Appeal", entityId: id, metadata: { from: fresh.status, to: next } } });
   });
-  revalidateTag("appeals", "max"); revalidatePath(`/admin/appeals/${id}`); revalidatePath("/admin/appeals"); revalidatePath("/appeals"); revalidatePath("/");
+  // Expire immediately: stale-while-revalidate can advertise withdrawn appeals.
+  updateTag("appeals"); revalidatePath(`/admin/appeals/${id}`); revalidatePath("/admin/appeals"); revalidatePath("/appeals"); revalidatePath("/");
 }
 
 export async function updateFeaturing(formData: FormData) {
@@ -136,7 +137,8 @@ export async function updateFeaturing(formData: FormData) {
     if (claimed.count !== 1) throw new Error("This appeal changed while you were reviewing it. Refresh before saving featuring.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.featuring_updated", entityType: "Appeal", entityId: id, metadata: { previousIsFeatured: fresh.isFeatured, previousFeaturedOrder: fresh.featuredOrder, isFeatured, featuredOrder: isFeatured ? featuredOrderValue : null } } });
   });
-  revalidateTag("appeals", "max"); revalidatePath(`/admin/appeals/${id}`); revalidatePath("/appeals"); revalidatePath("/");
+  // Expire immediately: stale-while-revalidate can advertise withdrawn appeals.
+  updateTag("appeals"); revalidatePath(`/admin/appeals/${id}`); revalidatePath("/appeals"); revalidatePath("/");
 }
 
 export async function addAppealUpdate(formData: FormData) {
