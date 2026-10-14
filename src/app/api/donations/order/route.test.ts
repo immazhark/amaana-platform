@@ -9,7 +9,7 @@ const mocks = vi.hoisted(() => ({
 }));
 
 vi.mock("@/lib/appeals", () => ({
-  getRemainingAppealAmount: () => 0,
+  getRemainingAppealAmount: () => 900,
   isAppealOpenForDonations: () => true,
 }));
 
@@ -30,7 +30,7 @@ vi.mock("@/lib/donations", () => ({
   createReceiptToken: () => "receipt-token",
   donationSchema: { safeParse: mocks.safeParse },
   hashReceiptToken: () => "hashed-token",
-  isDonationAmountAllowedForRemaining: () => true,
+  isDonationAmountAllowedForRemaining: (amount: number, remaining: number) => amount >= 10 && amount <= remaining,
   MIN_DONATION_AMOUNT: 10,
 }));
 
@@ -144,6 +144,73 @@ describe("donation order request bounds", () => {
     expect(body.error).toMatch(/not currently marked as Zakat-eligible/i);
     expect(mocks.createRazorpayOrder).not.toHaveBeenCalled();
     expect(mocks.create).not.toHaveBeenCalled();
+  });
+
+
+  it("allows explicitly eligible Zakat while retaining provider identity and donor-record checks", async () => {
+    mocks.safeParse.mockReturnValue({
+      success: true,
+      data: {
+        appealId: "clx1234567890abcdef123456",
+        donorName: "Test Donor",
+        donorEmail: "Donor@Example.com",
+        donorPhone: "",
+        amount: 500,
+        givingIntent: "ZAKAT",
+        isAnonymous: false,
+        domesticConfirmed: true,
+      },
+    });
+    mocks.findFirst.mockResolvedValue({
+      id: "appeal_1",
+      slug: "appeal-1",
+      title: "Appeal 1",
+      status: "PUBLISHED",
+      goalAmount: 1000,
+      amountRaised: 100,
+      closesAt: null,
+      assistanceRequest: { verification: { zakatStatus: "ELIGIBLE" } },
+    });
+    mocks.createRazorpayOrder.mockResolvedValue({
+      id: "order_Valid123",
+      amount: 50_000,
+      currency: "INR",
+      receipt: "AMN-123",
+      status: "created",
+    });
+    mocks.create.mockImplementation(async ({ data }: { data: {
+      id: string; donorName: string; donorEmail: string; donorPhone: string | null;
+    } }) => ({
+      id: data.id,
+      donorName: data.donorName,
+      donorEmail: data.donorEmail,
+      donorPhone: data.donorPhone,
+    }));
+
+    const response = await POST(new Request("https://amaana.example/api/donations/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    }));
+    const payload = await response.json();
+
+    expect(response.status).toBe(201);
+    expect(payload.orderId).toBe("order_Valid123");
+    expect(payload.amount).toBe(50_000);
+    expect(mocks.createRazorpayOrder).toHaveBeenCalledExactlyOnceWith({
+      amountPaise: 50_000,
+      receipt: "AMN-123",
+      appealId: "appeal_1",
+      givingIntent: "ZAKAT",
+    });
+    expect(mocks.create).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        givingIntent: "ZAKAT",
+        donorEmail: "donor@example.com",
+        providerOrderId: "order_Valid123",
+        paymentMethod: "RAZORPAY",
+      }),
+    }));
   });
 
 });
