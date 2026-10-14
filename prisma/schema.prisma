@@ -109,6 +109,14 @@ enum DonationIntent {
   ZAKAT
 }
 
+enum GivingFundStatus {
+  DRAFT
+  UNDER_REVIEW
+  APPROVED
+  PAUSED
+  CLOSED
+}
+
 enum ContentStatus {
   DRAFT
   UNDER_REVIEW
@@ -143,6 +151,9 @@ model User {
   phone                   String?
   status                  UserStatus               @default(INVITED)
   roles                   UserRole[]
+  createdGivingFunds      GivingFund[]             @relation("GivingFundCreator")
+  editedGivingFunds       GivingFund[]             @relation("GivingFundEditor")
+  approvedGivingFunds     GivingFund[]             @relation("GivingFundApprover")
   createdAppeals          Appeal[]                 @relation("AppealCreator")
   reviewedAppeals         Appeal[]                 @relation("AppealReviewer")
   assistanceAssignments   AssistanceRequest[]      @relation("AssistanceAssignee")
@@ -645,4 +656,30 @@ model HomeCarousel {
   config    Json
   revision  Int      @default(1)
   updatedAt DateTime @updatedAt
+}
+
+
+// Private, reviewed fund definitions. Donation designation remains appeal-bound
+// until its separate migration and payment reconciliation work is complete.
+model GivingFund {
+  id              String           @id @default(cuid())
+  slug            String           @unique
+  name            String
+  purpose         String
+  disclosure      String
+  accountCode     String           @unique
+  currency        String           @default("INR")
+  acceptedIntents DonationIntent[]
+  status          GivingFundStatus @default(DRAFT)
+  revision        Int              @default(0)
+  createdById     String
+  lastEditedById  String
+  approvedById    String?
+  approvedAt      DateTime?
+  createdBy       User             @relation("GivingFundCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  lastEditedBy    User             @relation("GivingFundEditor", fields: [lastEditedById], references: [id], onDelete: Restrict)
+  approvedBy      User?            @relation("GivingFundApprover", fields: [approvedById], references: [id], onDelete: Restrict)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  @@index([status, updatedAt])
 }

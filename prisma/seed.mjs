@@ -31,6 +31,9 @@ const permissions = [
   ["content.view", "View public-content and media records"],
   ["content.update", "Create and edit public-content media metadata"],
   ["content.approve", "Approve media for public rendering"],
+  ["fund.view", "View private giving fund definitions"],
+  ["fund.manage", "Create and edit draft giving fund definitions"],
+  ["fund.approve", "Independently approve, pause or close giving fund definitions"],
   ["donation.view", "View donation and payment reconciliation records"],
   ["donation.reconcile", "Verify or reject direct UPI and bank-transfer donation claims"],
   ["notification.view", "View transactional email delivery status and failures"],
@@ -40,8 +43,8 @@ const permissions = [
 
 const roles = {
   PRIMARY_APPROVER: permissions.map(([key]) => key),
-  BACKUP_APPROVER: ["assistance.view", "assistance.assign", "assistance.update", "assistance.approve", "appeal.create", "appeal.view", "appeal.update", "appeal.approve", "content.view", "content.update", "content.approve", "donation.view", "donation.reconcile", "notification.view", "notification.manage"],
-  REVIEWER: ["assistance.view", "assistance.update", "appeal.view", "appeal.update", "content.view", "content.update"],
+  BACKUP_APPROVER: ["assistance.view", "assistance.assign", "assistance.update", "assistance.approve", "appeal.create", "appeal.view", "appeal.update", "appeal.approve", "content.view", "content.update", "content.approve", "fund.view", "fund.manage", "fund.approve", "donation.view", "donation.reconcile", "notification.view", "notification.manage"],
+  REVIEWER: ["fund.view", "fund.manage", "assistance.view", "assistance.update", "appeal.view", "appeal.update", "content.view", "content.update"],
 };
 
 for (const [key, description] of permissions) await prisma.permission.upsert({ where: { key }, update: { description }, create: { key, description } });

@@ -9,6 +9,7 @@ describe("admin landing routing", () => {
   it("routes specialized admins to the first area they are allowed to use", () => {
     expect(adminHomePathForPermissions(["assistance.approve"])).toBe("/admin/retention");
     expect(adminHomePathForPermissions(["donation.view"])).toBe("/admin/donations");
+    expect(adminHomePathForPermissions(["fund.view"])).toBe("/admin/giving-funds");
     expect(adminHomePathForPermissions(["notification.view"])).toBe("/admin/notifications");
     expect(adminHomePathForPermissions(["content.view"])).toBe("/admin/media");
     expect(adminHomePathForPermissions(["appeal.view"])).toBe("/admin/appeals");
