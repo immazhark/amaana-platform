@@ -10,17 +10,28 @@ export type VerifiedImpactItem = {
 
 /** Published initiative-year facts only: never infer a total raised or a
  * fundraising target from a delivered kit/student/beneficiary count. */
-export function VerifiedImpactStrip({ items }: { items: readonly VerifiedImpactItem[] }) {
-  if (items.length === 0) return null;
-  return <aside className={styles.root} aria-labelledby="published-outcomes-heading">
+export function VerifiedImpactStrip({ items, headingId = "published-outcomes-heading" }: {
+  items: readonly VerifiedImpactItem[];
+  headingId?: string;
+}) {
+  // Publication approval is checked by the database projection. Guard the
+  // public link boundary separately so malformed legacy slugs or blank values
+  // do not create navigable routes or misleading evidence cards.
+  const visible = items.filter(item =>
+    /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(item.slug) &&
+    item.title.trim().length > 0 && item.value.trim().length > 0 &&
+    item.label.trim().length > 0,
+  ).filter((item, index, list) => list.findIndex(candidate => candidate.slug === item.slug) === index).slice(0, 3);
+  if (visible.length === 0) return null;
+  return <aside className={styles.root} aria-labelledby={headingId}>
     <div className={styles.header}>
       <div><span className={styles.kicker}>Publicly documented outcomes</span>
-        <h2 id="published-outcomes-heading">The work behind every invitation to give.</h2>
+        <h2 id={headingId}>The work behind every invitation to give.</h2>
       </div>
       <Link className={styles.more} href="/impact">Explore evidence <span aria-hidden="true">↗</span></Link>
     </div>
     <div className={styles.grid}>
-      {items.slice(0, 3).map(item => <Link key={item.slug} className={styles.item}
+      {visible.map(item => <Link key={item.slug} className={styles.item}
         href={`/our-work/${item.slug}`} aria-label={`${item.value} ${item.label}, ${item.title}. View documented work`}>
         <strong>{item.value}</strong>
         <span>{item.label}</span>

@@ -33,6 +33,30 @@ describe("published-only donation trust evidence", () => {
     expect(markup).toContain("/impact");
   });
 
+  it("refuses unsafe or missing public initiative links and deduplicates publication rows", () => {
+    const markup = renderToStaticMarkup(<VerifiedImpactStrip headingId="safe-evidence" items={[
+      { slug: "../admin", title: "Unsafe", value: "999", label: "unsafe" },
+      { slug: "valid-edition", title: "Approved drive", value: "123", label: "kits" },
+      { slug: "valid-edition", title: "Stale duplicate", value: "456", label: "duplicated" },
+      { slug: "blank-metric", title: "Unverified", value: " ", label: "kits" },
+      { slug: "https-bad", title: "", value: "0", label: "nothing" },
+    ]} />);
+    expect(markup).toContain('id="safe-evidence"');
+    expect(markup).toContain("/our-work/valid-edition");
+    expect(markup).toContain("123");
+    expect(markup).not.toContain("999");
+    expect(markup).not.toContain("456");
+    expect(markup).not.toContain("/admin");
+    expect(markup).not.toContain("/our-work/blank-metric");
+  });
+
+  it("omits the entire strip when no trustworthy linkable metric survives validation", () => {
+    const markup = renderToStaticMarkup(<VerifiedImpactStrip items={[
+      { slug: "../../sensitive", title: "Unapproved", value: "2", label: "claims" },
+    ]}/>);
+    expect(markup).toBe("");
+  });
+
   it("escapes untrusted published strings instead of turning them into HTML", () => {
     const markup = renderToStaticMarkup(<VerifiedImpactStrip items={[
       { slug: "safe-slug", title: "<script>alert(1)</script>", value: "1",

@@ -61,7 +61,7 @@ export default async function AppealsPage() {
       <section className={`v2-appeals-trustline ${styles.lifecycle}`} aria-label="Appeal review journey"><div className={`v2-shell ${styles.lifecycleTrack}`}><span>Need received</span><b aria-hidden="true">→</b><span>Information reviewed</span><b aria-hidden="true">→</b><span>Decision made</span><b aria-hidden="true">→</b><span>Public-safe appeal</span><b aria-hidden="true">→</b><span>Known outcome recorded</span></div></section>
 
       {publishedImpact.length > 0 && <div className="v2-shell">
-        <VerifiedImpactStrip items={publishedImpact.map(item => ({
+        <VerifiedImpactStrip headingId="appeals-published-outcomes" items={publishedImpact.map(item => ({
           slug: item.slug, title: item.title,
           value: item.primaryMetric!, label: item.primaryMetricLabel!,
         }))}/>
