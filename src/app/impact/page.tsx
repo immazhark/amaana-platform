@@ -3,12 +3,13 @@ import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel } from "@/components/body-carousel";
 import type { Metadata } from "next";
 import Link from "@/components/navigation-link";
-import { PageHero } from "@/components/page-hero";
+import { PageHero, PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { TrustEvidenceBoundary } from "@/components/trust-evidence-boundary";
 import { programmeBySlug } from "@/lib/master-copy";
 import { getImpactPageData } from "@/lib/public-page-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
+import { selectImpactWitnesses } from "@/lib/impact-witnesses";
 import "./impact-refinement.module.css";
 
 export const dynamic = "force-dynamic";
@@ -36,9 +37,8 @@ export default async function ImpactPage() {
     const canonical = programmeBySlug(item.slug);
     return Boolean(canonical) && !(canonical && "parentSlug" in canonical && canonical.parentSlug);
   });
-  const initiativesWithMedia = initiatives.filter(item => item.mediaAssets.length > 0);
-  const heroSource = initiativesWithMedia.find(item => selectIdentityPublicImage(item.mediaAssets)) ?? initiativesWithMedia[0];
-  const heroMedia = heroSource ? selectIdentityPublicImage(heroSource.mediaAssets) ?? null : null;
+  const witnesses = selectImpactWitnesses(initiatives);
+  const heroMedia = witnesses[0]?.media ?? null;
 
   return (
     <div className="v2-home v2-impact-page">
@@ -51,7 +51,7 @@ export default async function ImpactPage() {
           { label: "Follow the evidence", href: "#evidence" },
           { label: "How we report", href: "/transparency", secondary: true },
         ]}
-        visual={heroMedia ? <PublicMedia asset={heroMedia} /> : (
+        visual={heroMedia ? <PublicMedia asset={heroMedia} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : (
           <div className="page-hero__visual-fallback page-hero__visual-fallback--impact">
             <span>Evidence chain</span>
             <strong>Need → Trust → Action → Outcome</strong>
@@ -68,7 +68,7 @@ export default async function ImpactPage() {
           {initiatives.length > 0 ? <div className="v2-impact-wall">{initiatives.map((item, index) => {
             const thumbnail = selectIdentityPublicImage(item.mediaAssets) ?? null;
             return <Link href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id} aria-label={`Explore impact: ${item.title}`}>
-              {thumbnail ? <div className="v2-impact-tile-media" aria-hidden="true"><PublicMedia asset={thumbnail} /></div> : null}
+              {thumbnail ? <div className="v2-impact-tile-media" aria-hidden="true"><PublicMedia asset={thumbnail} sizes="(max-width: 620px) 100vw, (max-width: 1050px) 50vw, 34vw" /></div> : null}
               <div className="v2-impact-tile-shade" aria-hidden="true" />
               <span className="v2-impact-tile-index">{String(index + 1).padStart(2, "0")}</span>
               <div className="v2-impact-tile-copy"><small>{item.cause.title}</small>{item.primaryMetric ? <strong>{item.primaryMetric}</strong> : null}<span>{item.primaryMetricLabel ?? item.title}</span><h3>{item.title}</h3></div>
@@ -78,7 +78,7 @@ export default async function ImpactPage() {
         </div>
       </section>
 
-      {initiativesWithMedia.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p></div><p className="v2-section-intro">Only photographs suitable for public sharing appear here. Personal documents and sensitive verification material remain private.</p></div><BodyCarousel heading={<h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2>} label="Documented impact photographs" className="v2-impact-witness-carousel">{initiativesWithMedia.slice(0, 6).map(item => { const media=selectIdentityPublicImage(item.mediaAssets); if(!media) return null; return <Link href={`/our-work/${item.slug}`} className="v2-impact-witness-item" key={item.id} aria-label={`Open ${item.title}`}><PublicMedia asset={media} /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Explore this work →</span></div></Link>; })}</BodyCarousel></div></section>}
+      {witnesses.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p></div><p className="v2-section-intro">Only photographs suitable for public sharing appear here. Personal documents and sensitive verification material remain private.</p></div><BodyCarousel heading={<h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2>} label="Documented impact photographs" className="v2-impact-witness-carousel">{witnesses.map(({ item, media }) => <Link href={`/our-work/${item.slug}`} className="v2-impact-witness-item" key={item.id} aria-label={`Open ${item.title}`}><PublicMedia asset={media} sizes="(max-width: 700px) 86vw, (max-width: 1200px) 46vw, 31vw" /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Explore this work →</span></div></Link>)}</BodyCarousel></div></section>}
 
       <section className="v2-section v2-impact-philosophy">
         <div className="v2-shell v2-impact-philosophy-grid">
