@@ -247,6 +247,19 @@ Runtime state/cache after privacy revocation requires deployment/CDN verificatio
 
 ## F. Continuation checkpoint
 
+### 14 October — B08 appeal designation snapshot foundation (newer than historical F checkpoint)
+
+Current PR #292 source/test head before this documentation update: `dd05ecd4a0a46467934203571474ef21448105a1`. GitHub readback confirms actual source/schema/migration/test files; this is **authored source**, not an exact-head Vitest, Prisma migration, production build or browser pass.
+
+- Reject repeated multipart transfer destination, amount, donor-intent, reference and evidence fields before financial/storage writes. Runtime `52055b8`, seven parameterized actual-route regression cases `0534d8d`.
+- Both existing appeal-only payment methods now persist `designationSnapshot` at creation: version, APPEAL kind, original appeal ID/title and original GENERAL/SADAQAH/ZAKAT intention. It is private financial history, not donor-visible medical detail or public promotion content. Legacy appeal accounting/capture/refund links are unchanged.
+- Add **nullable, additive** `Donation.designationSnapshot` Prisma JSON field and migration `20261014160000_donation_designation_snapshot`. PostgreSQL validates non-null APPEAL record shape, original appeal ID and intent consistency; a trigger prevents rewrites after first recording. Existing nullable legacy rows and older application binaries remain supported through migration-first rollout.
+- Actual order/direct-transfer regression assertions and a focused helper unit case were authored. Optional isolated PostgreSQL-WASM script `scripts/test-donation-designation-migration.mjs` contains legacy-compatibility, invalid/mismatched designation and mutation-denial cases, but PostgreSQL-WASM was not installed or executed in this continuation.
+- **B08 is still partial.** Exactly-one appeal-or-fund destination, nullable appeal relation, approved-fund gating at charge/verification time, financial allocation/accounting, fund-only acknowledgements and safe public fund activation remain unimplemented. Existing `fundId` rejection is intentionally preserved until that complete contract exists. The new SQL check applies to APPEAL only and must be revised atomically with the future fund capability.
+
+No migration or live database query, real payment/refund, provider operation, public fund activation, release merge, deployment or budget change occurred. Perform focused repository test/migration verification before PR merge, then controlled schema-before-application promotion.
+
+
 Current branch: `fix/direct-transfer-feedback-20261013`; PR [#292](https://github.com/immazhark/amaana-platform/pull/292), open/unmerged. Latest validated code commit: `f7cb8b1d0e59400d6623d0b368b3ac4e9f9f0913`; this evidence checkpoint follows it. Code trees were compared to local git before each guarded fast-forward publication. Parent is sole repository writer; read-only specialists completed their work.
 
 Published code batches:
