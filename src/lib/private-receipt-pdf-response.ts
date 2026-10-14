@@ -25,7 +25,9 @@ export function privateReceiptPdfResponse(input: {
       !["captured", "refunded"].includes(record.presentation.tone)) {
     throw new Error("Receipt PDF requires a completed verified acknowledgement");
   }
-  if (!REFERENCE.test(reference)) throw new Error("Invalid receipt PDF reference");
+  if (typeof reference !== "string" || !REFERENCE.test(reference)) {
+    throw new Error("Invalid receipt PDF reference");
+  }
   if (!(bytes instanceof Uint8Array) ||
       bytes.byteLength < MIN_PRIVATE_PDF_BYTES ||
       bytes.byteLength > MAX_PRIVATE_PDF_BYTES) {
