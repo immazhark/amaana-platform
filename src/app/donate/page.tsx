@@ -2,7 +2,12 @@ import type { Metadata } from "next";
 import Link from "@/components/navigation-link";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { complianceCopy } from "@/lib/master-copy";
-import { getAppealsIndexData } from "@/lib/public-page-data";
+import { getAppealsIndexData, getDonationPageData, getTransparencyPageData } from "@/lib/public-page-data";
+import { getRemainingAppealAmount } from "@/lib/appeals";
+import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
+import { DonationPaymentInstructions } from "@/components/donation-payment-instructions";
+import { AppealDonationFlow, type AppealDonationChoice } from "@/components/appeal-donation-flow";
+import { VerifiedImpactStrip, type VerifiedImpactItem } from "@/components/verified-impact-strip";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { canExposeSyntheticStagingContent, isSyntheticStagingAppeal } from "@/lib/public-environment";
 import { getDonorFundChoices } from "@/lib/donor-funds";
@@ -35,16 +40,41 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const [appealRecords, fundResult] = await Promise.all([getAppealsIndexData(), getDonorFundChoices().then(funds => ({ funds, failed: false }), error => {
+  const [appealRecords, fundResult, publishedInitiatives] = await Promise.all([getAppealsIndexData(), getDonorFundChoices().then(funds => ({ funds, failed: false }), error => {
     logServerError("donation.fund_choices_unavailable", { errorName: error instanceof Error ? error.name : "unknown" });
     return { funds: [], failed: true };
+  }), getTransparencyPageData().catch(error => {
+    logServerError("donation.published_impact_unavailable", { errorName: error instanceof Error ? error.name : "unknown" });
+    return [];
   })]);
   const { funds, failed: fundReadFailed } = fundResult;
   const isStaging = canExposeSyntheticStagingContent();
   const openAppeals = appealRecords.filter(appeal => isAppealOpenForDonations(appeal) && (isStaging || !isSyntheticStagingAppeal(appeal)));
   const hasOpenAppeals = openAppeals.length > 0;
   const hasFunds = funds.length > 0;
-  const hasCheckout = hasOpenAppeals || hasFunds;
+  // Checkout choices are independently re-read through the full appeal donation
+  // privacy/eligibility projection; index publication does not itself grant checkout.
+  // Bound the number of extra reads and avoid shipping private review details.
+  const approvedAppeals = await Promise.all(openAppeals.slice(0, 4).map(record =>
+    getDonationPageData(record.slug),
+  ));
+  const appealChoices: AppealDonationChoice[] = approvedAppeals.flatMap(appeal => {
+    if (!appeal) return [];
+    const raised = appeal.amountRaised.toNumber();
+    const goal = appeal.goalAmount.toNumber();
+    const remaining = getRemainingAppealAmount(raised, goal);
+    if (!Number.isSafeInteger(Math.round(remaining * 100)) || remaining <= 0) return [];
+    return [{ id: appeal.id, slug: appeal.slug, title: appeal.title, raised, goal, remaining, zakatEligible: appeal.zakatEligible }];
+  });
+  const impactItems: VerifiedImpactItem[] = publishedInitiatives
+    .filter(item => item.primaryMetric?.trim() && item.primaryMetricLabel?.trim())
+    .slice(0, 3)
+    .map(item => ({
+      slug: item.slug, title: item.title,
+      value: item.primaryMetric!, label: item.primaryMetricLabel!,
+    }));
+  const hasCheckout = appealChoices.length > 0 || hasFunds;
+  const paymentDetails = appealChoices.length ? getDonationPaymentDetails() : null;
   return (
     <CanonicalArticle
       eyebrow="Donate · Amaana Foundation"
@@ -68,9 +98,20 @@ export default async function Page() {
       ]}
     >
       <div className={styles.routes} role="group" aria-label="Donation routes">
-        <article className={styles.route}><span>Route 01</span><h3>{hasOpenAppeals ? "Support a verified public appeal" : "Public appeals"}</h3><p>{hasOpenAppeals ? `There ${openAppeals.length === 1 ? "is" : "are"} currently ${openAppeals.length} reviewed public ${openAppeals.length === 1 ? "appeal" : "appeals"} accepting support. Review the context and remaining verified target before continuing to secure domestic INR checkout.` : "No public appeal is accepting donations right now. Completed cases remain visible for accountability, and new urgent appeals appear only after review."}</p><Link className="v2-button" href="/appeals">{hasOpenAppeals ? "See verified appeals" : "View appeals and completed cases"}</Link></article>
+        <article className={styles.route}><span>Route 01</span><h3>{hasOpenAppeals ? "Support a verified public appeal" : "Public appeals"}</h3><p>{hasOpenAppeals ? `There ${openAppeals.length === 1 ? "is" : "are"} currently ${openAppeals.length} reviewed public ${openAppeals.length === 1 ? "appeal" : "appeals"} accepting support. Review the context and remaining verified target before continuing to secure domestic INR checkout.` : "No public appeal is accepting donations right now. Completed cases remain visible for accountability, and new urgent appeals appear only after review."}</p>{appealChoices.length > 0 && <Link className="v2-button" href="#active-appeal-checkout">Choose an appeal & give here</Link>}
+          <Link className="v2-text-link" href="/appeals">{hasOpenAppeals ? "See all verified appeals →" : "View appeals and completed cases →"}</Link></article>
         <article className={styles.route}><span>Route 02</span><h3>{hasFunds ? "Support an approved giving fund" : "Support education or another approved programme"}</h3><p>{hasFunds ? "Review each fund’s approved purpose and restrictions below. Contributions remain designated to the purpose you confirm." : "Taleem sponsorship and programme giving begin with the currently available programme route or a conversation with Amaana about an approved destination."}</p>{hasFunds && <Link className="v2-button" href="#giving-fund-selection">Review approved giving funds</Link>}<Link className="v2-button v2-button--paper-secondary" href="/get-involved/sponsor-education">Explore Taleem sponsorship</Link><Link className="v2-text-link" href="/contact">Ask about programme giving →</Link></article>
       </div>
+      <VerifiedImpactStrip items={impactItems} />
+      {appealChoices.length > 0 && paymentDetails && <AppealDonationFlow appeals={appealChoices}
+        bankAvailable={Boolean(paymentDetails.bank)}
+        paymentInstructions={{
+          DIRECT_UPI: <DonationPaymentInstructions method="DIRECT_UPI" paymentDetails={paymentDetails} />,
+          BANK_TRANSFER: <DonationPaymentInstructions method="BANK_TRANSFER" paymentDetails={paymentDetails} />,
+        }}/>}
+      {appealChoices.length === 0 && hasOpenAppeals && <p role="status" className={styles.note}>
+        An appeal may have changed since the index was published. Review current eligibility and available routes on the appeals page before contributing.
+      </p>}
       {hasFunds && <div className={styles.funds}><FundDonationFlow funds={funds}/></div>}
       {fundReadFailed && <p role="status" className={styles.note}>Giving fund availability could not be checked. Please refresh later or contact Amaana before contributing to a programme.</p>}
       <p className={styles.note}>Choose the route that matches your intention: an open appeal supports that specific published need, while programme support is available only when Amaana has confirmed an approved destination.</p>
