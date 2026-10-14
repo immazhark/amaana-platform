@@ -131,4 +131,35 @@ describe("private donation acknowledgement request bounds", () => {
     expect(JSON.stringify(body)).not.toMatch(/Highly personal original title|private-person-full-name|Current private title/);
   });
 
+  it("returns the original approved giving fund purpose without a fake appeal link", async () => {
+    const snapshot = {
+      version: 1, kind: "FUND", fundId: "approved-fund", fundRevision: 4,
+      label: "Original approved programme",
+      purpose: "Independently approved programme purpose for testing.",
+      disclosure: "Donor-facing restrictions independently approved for this giving fund.",
+      accountCode: "FUND-TEST", givingIntent: "GENERAL",
+    };
+    mocks.findUnique.mockResolvedValue({
+      ...original, appealId: null, fundId: "approved-fund", appeal: null,
+      fund: { name: "Renamed current programme" },
+      designationSnapshot: snapshot,
+    });
+    const response = await POST(acknowledgementRequest());
+    const body = await response.json();
+    expect(response.status).toBe(200);
+    expect(body.donation.designationKind).toBe("FUND");
+    expect(body.donation.appeal).toEqual({ title: "Original approved programme", slug: null });
+    expect(JSON.stringify(body)).not.toContain("Renamed current programme");
+  });
+
+  it("does not re-label a malformed fund snapshot as an approved purpose", async () => {
+    mocks.findUnique.mockResolvedValue({
+      ...original, appealId: null, fundId: "approved-fund", appeal: null,
+      fund: { name: "Renamed fund" }, designationSnapshot: null,
+    });
+    const response = await POST(acknowledgementRequest());
+    expect(response.status).toBe(200);
+    expect((await response.json()).donation.appeal.title).toBe("Fund designation requires review");
+  });
+
 });
