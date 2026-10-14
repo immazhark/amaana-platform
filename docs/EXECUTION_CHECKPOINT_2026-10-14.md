@@ -1,3 +1,11 @@
+## 2026-10-14 — duplicate multipart financial fields rejected before submission
+
+Ownership: ChatGPT engineering continuation, existing PR #292 / `fix/direct-transfer-feedback-20261013`. A direct-transfer multipart body could previously submit repeated payment/destination/evidence keys while `FormData.get` silently chose the first. The endpoint now rejects repeated values for all single-valued donor, destination, payment, transfer and evidence fields with a private HTTP 400, before schema parsing, appeal lookup, donation persistence or evidence storage.
+
+Runtime commit `52055b8903c92b197b24cee0c66a462aff386153`; seven parameterized actual-route regression cases in test commit `0534d8d1fd479589938d319295b0341cc29ec0f9`. GitHub source readback confirmed both exact changed blobs at PR #292 head. These cases are AUTHORED, NOT EXECUTED in repository Vitest; source readback is not proof of an exact-head build/browser/hosted test. Existing nonduplicated forms and donation limits remain unchanged. No original R-ID or extra defect counted; this contributes to B08 exactly-one designation safety but does not implement fund checkout.
+
+No `main` merge, controlled migration, Railway mutation, payment, refund, bank transfer, private evidence write, email delivery or production deployment. Next: inspect and implement the full backward-compatible appeal-or-approved-fund destination contract, immutable donor-purpose snapshot, accounting and private acknowledgements before activating any public fund donations.
+
 > Historical evidence ledger. Current canonical programme status: [AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md](AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md). Older integration/deployment classifications may be stale; preserve them as dated provenance.
 
 ## 2026-10-14 — R-056 stored preview projection corrected
