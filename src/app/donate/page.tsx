@@ -6,12 +6,13 @@ import { getAppealsIndexData, getDonationPageData, getTransparencyPageData } fro
 import { getRemainingAppealAmount } from "@/lib/appeals";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { DonationPaymentInstructions } from "@/components/donation-payment-instructions";
-import { AppealDonationFlow, type AppealDonationChoice } from "@/components/appeal-donation-flow";
+import type { AppealDonationChoice } from "@/components/appeal-donation-flow";
+import { DonationLandingCheckout } from "@/components/donation-landing-checkout";
 import { VerifiedImpactStrip, type VerifiedImpactItem } from "@/components/verified-impact-strip";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { canExposeSyntheticStagingContent, isSyntheticStagingAppeal } from "@/lib/public-environment";
 import { getDonorFundChoices } from "@/lib/donor-funds";
-import { FundDonationFlow } from "@/components/fund-donation-flow";
+
 import { logServerError } from "@/lib/server-log";
 import styles from "./donate-audit.module.css";
 
@@ -98,21 +99,20 @@ export default async function Page() {
       ]}
     >
       <div className={styles.routes} role="group" aria-label="Donation routes">
-        <article className={styles.route}><span>Route 01</span><h3>{hasOpenAppeals ? "Support a verified public appeal" : "Public appeals"}</h3><p>{hasOpenAppeals ? `There ${openAppeals.length === 1 ? "is" : "are"} currently ${openAppeals.length} reviewed public ${openAppeals.length === 1 ? "appeal" : "appeals"} accepting support. Review the context and remaining verified target before continuing to secure domestic INR checkout.` : "No public appeal is accepting donations right now. Completed cases remain visible for accountability, and new urgent appeals appear only after review."}</p>{appealChoices.length > 0 && <Link className="v2-button" href="#active-appeal-checkout">Choose an appeal & give here</Link>}
+        <article className={styles.route}><span>Route 01</span><h3>{hasOpenAppeals ? "Support a verified public appeal" : "Public appeals"}</h3><p>{hasOpenAppeals ? `There ${openAppeals.length === 1 ? "is" : "are"} currently ${openAppeals.length} reviewed public ${openAppeals.length === 1 ? "appeal" : "appeals"} accepting support. Review the context and remaining verified target before continuing to secure domestic INR checkout.` : "No public appeal is accepting donations right now. Completed cases remain visible for accountability, and new urgent appeals appear only after review."}</p>{appealChoices.length > 0 && <Link className="v2-button" href="#donation-route-choice">Choose an appeal & give here</Link>}
           <Link className="v2-text-link" href="/appeals">{hasOpenAppeals ? "See all verified appeals →" : "View appeals and completed cases →"}</Link></article>
-        <article className={styles.route}><span>Route 02</span><h3>{hasFunds ? "Support an approved giving fund" : "Support education or another approved programme"}</h3><p>{hasFunds ? "Review each fund’s approved purpose and restrictions below. Contributions remain designated to the purpose you confirm." : "Taleem sponsorship and programme giving begin with the currently available programme route or a conversation with Amaana about an approved destination."}</p>{hasFunds && <Link className="v2-button" href="#giving-fund-selection">Review approved giving funds</Link>}<Link className="v2-button v2-button--paper-secondary" href="/get-involved/sponsor-education">Explore Taleem sponsorship</Link><Link className="v2-text-link" href="/contact">Ask about programme giving →</Link></article>
+        <article className={styles.route}><span>Route 02</span><h3>{hasFunds ? "Support an approved giving fund" : "Support education or another approved programme"}</h3><p>{hasFunds ? "Review each fund’s approved purpose and restrictions below. Contributions remain designated to the purpose you confirm." : "Taleem sponsorship and programme giving begin with the currently available programme route or a conversation with Amaana about an approved destination."}</p>{hasFunds && <Link className="v2-button" href="#donation-route-choice">Review approved giving funds</Link>}<Link className="v2-button v2-button--paper-secondary" href="/get-involved/sponsor-education">Explore Taleem sponsorship</Link><Link className="v2-text-link" href="/contact">Ask about programme giving →</Link></article>
       </div>
       <VerifiedImpactStrip items={impactItems} />
-      {appealChoices.length > 0 && paymentDetails && <AppealDonationFlow appeals={appealChoices}
-        bankAvailable={Boolean(paymentDetails.bank)}
-        paymentInstructions={{
+      {hasCheckout && <DonationLandingCheckout appeals={appealChoices} funds={funds}
+        bankAvailable={Boolean(paymentDetails?.bank)}
+        paymentInstructions={paymentDetails ? {
           DIRECT_UPI: <DonationPaymentInstructions method="DIRECT_UPI" paymentDetails={paymentDetails} />,
           BANK_TRANSFER: <DonationPaymentInstructions method="BANK_TRANSFER" paymentDetails={paymentDetails} />,
-        }}/>}
+        } : { DIRECT_UPI: null, BANK_TRANSFER: null }}/>}
       {appealChoices.length === 0 && hasOpenAppeals && <p role="status" className={styles.note}>
         An appeal may have changed since the index was published. Review current eligibility and available routes on the appeals page before contributing.
       </p>}
-      {hasFunds && <div className={styles.funds}><FundDonationFlow funds={funds}/></div>}
       {fundReadFailed && <p role="status" className={styles.note}>Giving fund availability could not be checked. Please refresh later or contact Amaana before contributing to a programme.</p>}
       <p className={styles.note}>Choose the route that matches your intention: an open appeal supports that specific published need, while programme support is available only when Amaana has confirmed an approved destination.</p>
     </CanonicalArticle>
