@@ -20,7 +20,14 @@ export async function POST(request: Request) {
   if (!isSameOrigin(request)) return NextResponse.json({ error: "Forbidden" }, { status: 403, headers: privateHeaders });
   try {
     if (!(await enforceAcknowledgementRateLimit(request))) return NextResponse.json({ error: "Try again later" }, { status: 429, headers: privateHeaders });
-    const parsed = schema.safeParse(JSON.parse(await readTextBodyWithLimit(request, 4 * 1024)));
+    let body: unknown;
+    try {
+      body = JSON.parse(await readTextBodyWithLimit(request, 4 * 1024));
+    } catch (error) {
+      if (error instanceof RequestBodyTooLargeError) return NextResponse.json({ error: "Request too large" }, { status: 413, headers: privateHeaders });
+      return NextResponse.json({ error: "Invalid request body" }, { status: 400, headers: privateHeaders });
+    }
+    const parsed = schema.safeParse(body);
     if (!parsed.success) return NextResponse.json({ error: "Invalid request" }, { status: 400, headers: privateHeaders });
     const { reference, token, action } = parsed.data;
     const donation = await findDonorRecognitionByReceipt(reference, token);
