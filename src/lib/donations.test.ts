@@ -71,6 +71,22 @@ describe("donation acknowledgement presentation", () => {
     expect(view.statusLabel).toBe("Payment verified");
   });
 
+  it.each(["CREATED", "PENDING_VERIFICATION", "AUTHORIZED", "FAILED", "REJECTED"])(
+    "never mislabels a %s donation as refunded from inconsistent totals", status => {
+      const zero = getDonationAcknowledgementPresentation(status, 0, 0);
+      const stale = getDonationAcknowledgementPresentation(status, 500, 500);
+      expect(zero.tone).not.toBe("refunded");
+      expect(stale.tone).not.toBe("refunded");
+    },
+  );
+
+  it("requires positive finite captured accounting before inferring a refund", () => {
+    expect(getDonationAcknowledgementPresentation("CAPTURED", 0, 0).tone).toBe("captured");
+    expect(getDonationAcknowledgementPresentation("CAPTURED", 500, Number.NaN).tone).toBe("captured");
+    expect(getDonationAcknowledgementPresentation("CAPTURED", 500, Number.POSITIVE_INFINITY).tone).toBe("captured");
+    expect(getDonationAcknowledgementPresentation("CAPTURED", 500, 500).tone).toBe("refunded");
+  });
+
   it("shows partial refunds without misclassifying the original payment", () => {
     const view = getDonationAcknowledgementPresentation("CAPTURED", 1_000, 250);
     expect(view.tone).toBe("captured");
