@@ -85,7 +85,18 @@ export function appealStatusAfterRefund(
   now: Date = new Date(),
 ) {
   if (status !== "FUNDED") return status;
-  if (amountToNumber(nextAmountRaised) >= amountToNumber(goalAmount)) return "FUNDED";
-  if (closesAt && new Date(closesAt).getTime() <= now.getTime()) return "CLOSED";
+
+  const retained = amountToNumber(nextAmountRaised);
+  const goal = amountToNumber(goalAmount);
+  const currentTime = now.getTime();
+  // A refund must not reopen fundraising when its financial state or clock
+  // cannot be trusted. Require review rather than accepting another donation.
+  if (!Number.isFinite(retained) || retained < 0 || !Number.isFinite(goal) || goal <= 0) return "CLOSED";
+  if (!Number.isFinite(currentTime)) return "CLOSED";
+  if (retained >= goal) return "FUNDED";
+  if (closesAt !== null && closesAt !== undefined) {
+    const closeTime = new Date(closesAt).getTime();
+    if (!Number.isFinite(closeTime) || closeTime <= currentTime) return "CLOSED";
+  }
   return "PUBLISHED";
 }
