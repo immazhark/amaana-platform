@@ -1,5 +1,14 @@
 # Amaana Master Reconciled Execution Plan
 
+## 2026-10-14 — B09 authenticated acknowledgement recovery and paise-accurate printing (chat handover)
+
+Source commit `a9f866939faf19dd2d06be29bd321043380fd8bd` on existing PR #292; no release or live activation. The verified private acknowledgement now displays exact INR paise, including partial refunds, rather than silently rounding; the formatter rejects unsafe/sub-paise inputs. A masked, optional token-entry form allows a donor holding an existing acknowledgement credential to reopen the same reference after the fragment has been removed. It does not log, persist or place the entered token into a URL, and the existing same-origin server-side hashed-token check, status/accounting contract and no-store response remain authoritative. Print-specific CSS isolates the verified text receipt (including tax disclaimer) for native browser Print / Save as PDF; no new PDF generator, native download link or font dependency has been added.
+
+Focused financial formatter cases were authored (exact paise, comma grouping, invalid/unsafe totals) and published. Readback of four changed source files plus structural checks passed; **repository Vitest, TypeScript/lint, rendered print/browser checks and bundle budgets were not executed in this chat session** because a full GitHub checkout is unavailable to the local runtime. B09 and AF-RECEIPTS remain **Partial**: server-issued downloadable PDF, securely expiring/reissued access, actual browser/AT acceptance and production integration remain to be developed/verified. Canonical 149 classifications and original 95 aliases are unchanged. No merge, deployment, migration, payment/refund, email, provider configuration or private-data write.
+
+Next source step: design token-expiring authenticated PDF retrieval and audited reissue/recovery against the existing donation receipt ledger without using public URLs or issuing tax certificates. Preserve the current historical acknowledgement-link contract until a staged migration/recovery path is validated.
+
+
 Canonical programme register · 14 October 2026 · owner: Codex under explicit execution directive.
 
 ## Current implementation override — 14 October continuation
