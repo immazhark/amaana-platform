@@ -1,11 +1,11 @@
 import Link from "@/components/navigation-link";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
-import { amountToNumber, formatINR, type PublicAppeal } from "@/lib/appeals";
+import { amountToNumber, formatINR, getAppealProgressPercent, type PublicAppeal } from "@/lib/appeals";
 
 export function AppealCard({ appeal }: { appeal: PublicAppeal }) {
   const raised = amountToNumber(appeal.amountRaised);
   const goal = amountToNumber(appeal.goalAmount);
-  const progress = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
+  const progress = getAppealProgressPercent(raised, goal);
 
   return (
     <article className="v2-appeal-card">
