@@ -1,7 +1,29 @@
 import { describe, expect, it } from "vitest";
-import { appealDonationDesignationSnapshot, resolveAppealDonationDesignation, createDonationReference, createReceiptNumber, createReceiptToken, donationSchema, directTransferSchema, getDonationAcknowledgementPresentation, hashReceiptToken, isDonationAmountAllowedForRemaining } from "./donations";
+import { appealDonationDesignationSnapshot, parseExclusiveDonationDestination, resolveAppealDonationDesignation, createDonationReference, createReceiptNumber, createReceiptToken, donationSchema, directTransferSchema, getDonationAcknowledgementPresentation, hashReceiptToken, isDonationAmountAllowedForRemaining } from "./donations";
 
 const valid = { appealId: "cmf1234567890123456789012", donorName: "Test Donor", donorEmail: "donor@example.com", donorPhone: "9876543210", amount: 500, givingIntent: "GENERAL", domesticConfirmed: true };
+describe("exclusive donation designation contract (not a public checkout)", () => {
+  const appealId = "cmf1234567890123456789012";
+  const fundId = "cmf1234567890123456789013";
+  it("accepts exactly one valid destination of either type", () => {
+    expect(parseExclusiveDonationDestination({ appealId })).toEqual({ appealId });
+    expect(parseExclusiveDonationDestination({ fundId })).toEqual({ fundId });
+  });
+  it.each([
+    {}, { appealId, fundId }, { appealId: null }, { fundId: "" },
+    { fundId: false }, { appealId: true }, { appealId, extra: "ignore-me" },
+    { fundId, extra: "ignore-me" }, null,
+  ])("rejects missing, mixed, malformed or silently stripped destinations: %#", value => {
+    expect(() => parseExclusiveDonationDestination(value)).toThrow(/exactly one/);
+  });
+  it("keeps existing public checkout appeal-only until funding accounting is complete", () => {
+    expect(donationSchema.safeParse({ ...valid, appealId }).success).toBe(true);
+    expect(donationSchema.safeParse({ ...valid, appealId, fundId }).success).toBe(false);
+    const { appealId: _omitted, ...withoutAppeal } = valid;
+    expect(donationSchema.safeParse({ ...withoutAppeal, fundId }).success).toBe(false);
+  });
+});
+
 describe("donation validation", () => {
   it("preserves the original appeal purpose and donor-selected intention in a private snapshot", () => {
     const appeal = { id: "appeal-original", title: "Verified education support" };
