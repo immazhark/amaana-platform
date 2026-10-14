@@ -375,13 +375,15 @@ an increased count. Code committed and tests authored do not mean deployed or in
 
 **149 canonical findings** from the supplied documents, original95 and separately scoped continuation findings. The95 map to82 roots after13 duplicate symptom/surface rows are merged. AdditionalN identities retain register-specific descriptions; conflicting historic reuse of N23/N24 elsewhere is not silently treated as the same issue. Later PR292 findings use named canonical IDs. Counts below derive from these rows. Targeted verification can cover an implemented sub-scope of a partial finding; it does not close the unimplemented remainder.
 
-| Category | Total unique | Implemented | Verified at requirement scope | Production closed | Remaining |
-|---|---:|---:|---:|---:|---:|
-| Defect | 69 | 54 | 8 | 0 | 69 |
-| Observation | 15 | 2 | 1 | 0 | 15 |
-| Enhancement | 51 | 4 | 3 | 0 | 48 |
-| Innovation | 8 | 0 | 0 | 0 | 2 |
-| Operation | 6 | 0 | 0 | 0 | 5 |
+| Category | Total | Source implemented | Source partial | Not started | Other* | Requirement verified | Production closed |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| Defect | 69 | 54 | 13 | 2 | 0 | 7 | 0 |
+| Observation | 15 | 2 | 5 | 8 | 0 | 1 | 0 |
+| Enhancement | 51 | 4 | 27 | 20 | 0 | 3 | 0 |
+| Innovation | 8 | 0 | 1 | 5 | 2 | 0 | 0 |
+| Operation | 6 | 0 | 2 | 4 | 0 | 0 | 0 |
+
+*Other = superseded or not applicable. These entries are neither incomplete implementations nor production-closed features.*
 
 Dispositions: Open=115, Blocked=24, Deferred=10.
 Partial implementations: 48. Superseded/not applicable proposals: 2. Newly production-closed:0. Historical95 ledger counts10/33/25/16/11 are preserved as historical classifications, not this multidimensional register or a remaining95-defect estimate.
