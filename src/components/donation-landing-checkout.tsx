@@ -10,16 +10,17 @@ type Props = {
   appeals: readonly AppealDonationChoice[];
   funds: readonly DonorFund[];
   bankAvailable: boolean;
+  initialRoute?: "appeal" | "fund";
   paymentInstructions: { DIRECT_UPI: ReactNode; BANK_TRANSFER: ReactNode };
 };
 
 /** Exactly one checkout form in the DOM avoids duplicated field IDs, amount
  * controls and ARIA relations. Lock both route and appeal/fund selection while
  * payment confirmation or direct transfer reconciliation is in flight. */
-export function DonationLandingCheckout({ appeals, funds, bankAvailable, paymentInstructions }: Props) {
+export function DonationLandingCheckout({ appeals, funds, bankAvailable, paymentInstructions, initialRoute = "appeal" }: Props) {
   const hasAppeals = appeals.length > 0;
   const hasFunds = funds.length > 0;
-  const [route, setRoute] = useState<"appeal" | "fund">(hasAppeals ? "appeal" : "fund");
+  const [route, setRoute] = useState<"appeal" | "fund">(initialRoute);
   const [locked, setLocked] = useState(false);
   const lockRef = useRef(false);
   const changeLock = useCallback((value: boolean) => {

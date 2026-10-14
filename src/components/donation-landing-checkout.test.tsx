@@ -50,6 +50,23 @@ describe("single donor checkout route selection", () => {
     expect(html).toContain("Synthetic approved fund");
   });
 
+  it("opens the approved fund checkout when the visitor follows the fund route", () => {
+    const html = renderToStaticMarkup(
+      <DonationLandingCheckout initialRoute="fund" appeals={[appeal]} funds={[fund]} {...common}/>,
+    );
+    expect(html).toContain('id="giving-fund-selection"');
+    expect(html).not.toContain('id="active-appeal-checkout"');
+    expect(html).toContain("Synthetic approved fund");
+  });
+
+  it("cannot open an unapproved fund based solely on a deep-link parameter", () => {
+    const html = renderToStaticMarkup(
+      <DonationLandingCheckout initialRoute="fund" appeals={[appeal]} funds={[]} {...common}/>,
+    );
+    expect(html).toContain('id="active-appeal-checkout"');
+    expect(html).not.toContain('id="giving-fund-selection"');
+  });
+
   it("does not render fund checkout when only an appeal is available", () => {
     const html = renderToStaticMarkup(
       <DonationLandingCheckout appeals={[appeal]} funds={[]} {...common}/>,
