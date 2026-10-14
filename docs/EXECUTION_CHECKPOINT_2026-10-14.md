@@ -1,5 +1,20 @@
 # Amaana Foundation engineering continuation — 14 October 2026
 
+## Continuation — precise appeal progress, sensitive sharing, and stable WhatsApp links
+
+Active consolidated PR #292, branch `fix/direct-transfer-feedback-20261013`. Reviewed exact-source head before this checkpoint: `d6048e4c3cb5b34b0638531caa0c3633220fce77`. Previous baseline checkpoint remained `597ef1d3`.
+
+**Public fundraising meter accuracy:** `getAppealProgressPercent` previously rounded amounts just below the goal to 100% even though `isAppealOpenForDonations` correctly treated the appeal as open. Reserve 100% exclusively for `raised >= goal`, cap still-open rounded displays at 99%, preserve zero/invalid/overfunded safeguards. Four near-goal unit cases committed: `c445174`, `b6926dc`. This does not alter accounting, ledger values or Razorpay capture.
+
+**Highly sensitive appeal outbound disclosure:** `generateMetadata` and primary appeal JSON-LD already used generic data for `HIGHLY_SENSITIVE`, but breadcrumb JSON-LD and outbound native/WhatsApp share still received raw appeal title/summary. Centralize safe copy in `src/lib/appeal-public-copy.ts`, and feed metadata, JSON-LD, breadcrumb label and `AppealShare` consistently. Existing on-page disclosure continues to respect the prior public-page behavior, not a re-publication decision. Add three pure unit cases and guard public data wiring. Commits `b97bf83`, `163d157`, `107c079`, `48b84bf`, `133063a`.
+
+**WhatsApp sharing flow:** Previously `window.open` could be blocked while the UI unconditionally reported success. Replace it with a real HTTPS link (`target="_blank" rel="noopener noreferrer"`) containing encoded generic share content. Render a deterministic canonical URL for server/client and fall back to the foundation origin when the configured preview URL is invalid; no popup success is invented. Extend opt-in synthetic appeal route and three responsive Playwright acceptance cases to assert URL/target/rel and absence of raw fixture titles. Two React SSR/UTF-8 component tests also authored. Commits `1c4a03b`, `86d9f55`, `c56e180`, `3c75c37`, `d6048e4`.
+
+**Validation evidence:** GitHub source re-fetch confirms **11/11 expected cross-file ownership/behavior invariants** on head `d6048e4c3cb5b34b0638531caa0c3633220fce77`. For pure helpers, exact copies of committed `src/lib/appeals.ts` and `src/lib/appeal-public-copy.ts` were validated by `git hash-object` against GitHub blobs `9bf9e6c7f822c647bfc092760ea9319d9cb305d5` and `852d8b9f09d72e9f286868d6d417df0b021f41a5`; native Node22 TypeScript stripping then executed 80 targeted helper test cases, **80 passed, 0 failed**. This independently executed focused harness is not repository Vitest. The new component SSR tests, Playwright, full ESLint/TypeScript, full Next compile and performance/security budgets are **not yet executed on this head**. Local container has no React/Vitest/Playwright dependency installation and cannot resolve github.com to clone.
+
+Original 95-item classifications remain unchanged (10 addressed baseline; 33 implemented pending release verification; 25 partial; 16 open; 11 unverified). Do not claim these incremental fixes close whole original findings. No main merge, deployment, live payment, DB/storage, mail, migration or provider-configuration action. CSP rollout remains off; preview migration remains unapplied.
+
+
 ## Continuation — additional ledger safeguards and executed helper validation
 
 Existing PR #292 / `fix/direct-transfer-feedback-20261013`. Work committed after `d743648` checkpoint through `32f90b17724d0c2668435d675c8c7ed76044bb06`.
