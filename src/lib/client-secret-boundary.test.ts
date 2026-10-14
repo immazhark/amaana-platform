@@ -7,13 +7,15 @@ import { spawnSync } from "node:child_process";
 const checkScript = resolve(process.cwd(), "scripts/check-client-secret-boundary.mjs");
 
 /** Synthetic build artifacts; never load private production credentials. */
-function scanClientBuild(bundle: string, variables: Record<string, string> = {}) {
+function scanClientBuild(bundle: string, variables: Record<string, string> = {}, prebuild = false) {
   const fixture = mkdtempSync(join(tmpdir(), "amaana-client-secret-boundary-"));
   try {
     const staticRoot = join(fixture, ".next", "static");
-    mkdirSync(staticRoot, { recursive: true });
-    writeFileSync(join(staticRoot, "browser.js"), bundle, "utf8");
-    return spawnSync(process.execPath, [checkScript], {
+    if (!prebuild) {
+      mkdirSync(staticRoot, { recursive: true });
+      writeFileSync(join(staticRoot, "browser.js"), bundle, "utf8");
+    }
+    return spawnSync(process.execPath, [checkScript, ...(prebuild ? ["--public-env-only"] : [])], {
       cwd: fixture, encoding: "utf8",
       env: { PATH: process.env.PATH ?? "", ...variables },
     });
@@ -41,6 +43,15 @@ describe("built client credential boundary", () => {
     expect(result.status).toBe(1);
     expect(result.stderr).toContain("Unsafe public-prefixed storage credential");
     expect(result.stderr).not.toContain("synthetic-credential");
+  });
+
+  it("blocks unsafe public credentials at prebuild without a .next output", () => {
+    const rejected = scanClientBuild("", { NEXT_PUBLIC_S3_SECRET_ACCESS_KEY: "synthetic-value" }, true);
+    expect(rejected.status).toBe(1);
+    expect(rejected.stderr).not.toContain("synthetic-value");
+    const safe = scanClientBuild("", { NEXT_PUBLIC_RAZORPAY_KEY_ID: "rzp_test_public" }, true);
+    expect(safe.status).toBe(0);
+    expect(safe.stdout).toContain("Public credential environment check passed");
   });
 
   it("detects inlined server values without printing secret material", () => {

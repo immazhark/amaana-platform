@@ -32,6 +32,13 @@ if (publicCredentialNames.length > 0) {
   process.exit(1);
 }
 
+// This mode is also called by npm prebuild and predev, before Next can inline
+// a misnamed environment variable into a client bundle.
+if (process.argv.includes("--public-env-only")) {
+  console.log("Public credential environment check passed.");
+  process.exit(0);
+}
+
 async function filesUnder(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
   const files = [];

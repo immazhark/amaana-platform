@@ -131,7 +131,7 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
   }
 
   return <div className="v2-premium-form v2-donation-form">
-    {instructions}
+    {checkoutRange ? instructions : null}
     {!checkoutRange && <p role="status" className="form-error">The reviewed remaining balance cannot accept a whole-rupee contribution. Please check with Amaana before transferring an unsupported amount.</p>}
     <form ref={formRef} onSubmit={submit} onInvalid={handleInvalid} className="form-grid" aria-busy={busy}>
       {error && <div ref={errorRef} className="form-error field full" role="alert" tabIndex={-1}>{error}{phase === "reconciliation" && <p><a className="v2-text-link" href="/contact">Contact Amaana about this transfer</a></p>}</div>}

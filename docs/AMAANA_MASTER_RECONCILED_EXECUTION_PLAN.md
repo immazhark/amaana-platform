@@ -1,5 +1,29 @@
 # Amaana Master Reconciled Execution Plan
 
+### 2026-10-15 — Whole-rupee checkout integrity and P0 media-secret boundary (PR #292)
+
+Source commits `54185f1`, `f4c621b`, `76ef696` and the following
+prebuild-guard reconciliation close a donor-facing disconnect between exact-paise
+fundraising progress and the existing strictly whole-rupee payment schemas.
+The Donate server projection, appeal selection and both payment methods now
+share the same eligible whole-rupee interval. A ₹9.50/₹0.50 outstanding
+remainder cannot be falsely offered for checkout; a ₹10.25 remainder can still
+accept an exact ₹10 donation with the unchanged server-side eligibility check.
+Unsuitable balances do not disclose direct-transfer payment instructions.
+
+The media-secret scanner now checks additional access-key identifiers, rejects
+NEXT_PUBLIC-prefixed S3/media/AWS credential configuration before dev/build,
+and continues postbuild client-asset scanning including redacted actual secret
+values. A publishable Razorpay key ID remains allowed. Focused synthetic leak
+and amount-boundary tests were **authored, not executed** against the hydrated
+branch. AF-R005 stays Partial pending actual Railway environment variable
+cleanup and deployed/compiled-bundle proof; donor flow AF-R083 remains
+Implemented-in-source with additional correctness fixes, not newly closed.
+The canonical count is deliberately unchanged: 149 items (60 Implemented,
+52 Partial, 35 Not started, 1 Superseded, 1 Not applicable); defects 54/14/1,
+enhancements 4/30/17. Original 95 historical aliases are unchanged.
+No payment, secret rotation, schema mutation, merge or deploy occurred.
+
 ### 2026-10-15 — Grouped P0 CSP, published learning and donor choice fixes
 
 Development commits in PR #292: dd55524d (accessible donation selector / shared meter);
