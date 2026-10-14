@@ -1,3 +1,5 @@
+import { isPrivateRoute } from "./public-routing";
+
 export type PublicMediaCandidate = {
   kind: "IMAGE" | "VIDEO" | "DOCUMENT" | "EXTERNAL_VIDEO";
   publicUrl?: string | null;
@@ -55,6 +57,24 @@ function configuredHttpsOrigin(value: string | undefined) {
   }
 }
 
+/** Fail closed if a purported public asset resolves into protected app routing.
+ * External approved media hosts are not interpreted as this application's
+ * private routes. Server-side publication and consent gates remain mandatory. */
+export function isPrivateAppMediaUrl(value: string): boolean {
+  const normalized = normalizeSafePublicMediaUrl(value);
+  if (!normalized) return true;
+  let path: string;
+  if (normalized.startsWith("/")) {
+    path = normalized.split(/[?#]/, 1)[0] ?? "";
+  } else {
+    const origin = configuredHttpsOrigin(process.env.NEXT_PUBLIC_APP_URL);
+    const parsed = new URL(normalized);
+    if (!origin || parsed.origin !== origin) return false;
+    path = parsed.pathname;
+  }
+  return isPrivateRoute(path) || path.startsWith("/_next/");
+}
+
 /** Optimize only managed public paths on this application, never arbitrary remote/private URLs. */
 export function getPublicImageOptimizationUrl(value: string, configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL) {
   const normalized = normalizeSafePublicMediaUrl(value);
@@ -71,6 +91,7 @@ export function getPublicImageOptimizationUrl(value: string, configuredAppUrl = 
 export function isCspCompatiblePublicImageUrl(value: string | null | undefined) {
   const normalized = normalizeSafePublicMediaUrl(value);
   if (!normalized) return false;
+  if (isPrivateAppMediaUrl(normalized)) return false;
   if (normalized.startsWith("/")) return true;
 
   const imageOrigin = configuredHttpsOrigin(normalized);
@@ -96,7 +117,7 @@ export function canRenderPublicMedia(asset: PublicMediaCandidate) {
     return Boolean(asset.altText?.trim()) && isCspCompatiblePublicImageUrl(url);
   }
 
-  return true;
+  return !isPrivateAppMediaUrl(url);
 }
 
 

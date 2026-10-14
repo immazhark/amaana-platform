@@ -4,6 +4,7 @@ import {
   getPublicImageOptimizationUrl,
   canRenderPublicMedia,
   isCspCompatiblePublicImageUrl,
+  isPrivateAppMediaUrl,
   normalizeSafePublicMediaUrl,
   resolvePublicMediaUrl,
   selectGalleryPublicImage,
@@ -65,6 +66,40 @@ describe("public media safety", () => {
       publicUrl: "https://unconfigured.example/photo.jpg",
       altText: "Externally hosted photograph",
     })).toBe(false);
+  });
+
+  it("never displays publicly published records pointing into private app paths", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const privateUrls = [
+      "/api/admin/financial-evidence",
+      "/admin/evidence",
+      "/donations/AF-PRIVATE/acknowledgement",
+      "/request-assistance/status",
+      "/request-assistance/received",
+      "/_next/image?url=%2Fadmin%2Fprivate",
+      "https://amaanafoundation.org/admin/private.jpg",
+      "https://amaanafoundation.org/api/private.pdf",
+    ];
+    for (const url of privateUrls) {
+      expect(isPrivateAppMediaUrl(url), url).toBe(true);
+      expect(canRenderPublicMedia({ kind: "IMAGE", publicUrl: url, altText: "Approved test photograph" })).toBe(false);
+      expect(canRenderPublicMedia({ kind: "DOCUMENT", publicUrl: url, title: "Private file" })).toBe(false);
+    }
+    expect(isPrivateAppMediaUrl("/media/2026/approved.webp")).toBe(false);
+    expect(canRenderPublicMedia({
+      kind: "DOCUMENT", publicUrl: "/reports/approved.pdf", title: "Published report",
+    })).toBe(true);
+  });
+
+  it("does not mistake a separately approved HTTPS media host for an app route", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://media.amaana.example");
+    expect(isPrivateAppMediaUrl("https://media.amaana.example/admin/cover.webp")).toBe(false);
+    expect(canRenderPublicMedia({
+      kind: "IMAGE",
+      publicUrl: "https://media.amaana.example/admin/cover.webp",
+      altText: "Externally approved source",
+    })).toBe(true);
   });
 
   it("fails closed for hosted video even when descriptive text exists", () => {

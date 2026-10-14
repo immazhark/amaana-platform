@@ -1,5 +1,31 @@
 # Amaana Master Reconciled Execution Plan
 
+### 2026-10-15 — Grouped public gallery and media-route boundary fixes
+
+PR #292 source commits `6abc76d`, `b842325` plus the shared-media
+private-route boundary commit update AF-R019/AF-R024/AF-R025/AF-R052 and
+related safety without claiming an entire defect class closed. Approved
+gallery presentation now normalizes HTTPS/root-relative image addresses,
+deduplicates canonical URLs and stable IDs, excludes images with no
+descriptive alt text, rejects application-private targets, and preserves
+the server-side publication/consent requirement. Lightbox Tab focus
+recovers if moved outside, caption is linked to the dialog, image dimensions
+reject negative/infinite/extreme metadata and controls retain 48px touch
+targets. Impact figure line-height expands from .88 to 1.12 for narrow
+and enlarged layouts.
+
+The shared PublicMedia gate additionally rejects published IMAGE/DOCUMENT
+references into /admin, /api, private receipts, assistance status and
+internal optimizer routes, including equivalent same-origin absolute URLs.
+Configured external HTTPS media hosts retain independent approved delivery;
+no new CDN origin is implicitly authorized. Isolated/SSR source tests
+were authored; no hydrated full typecheck/Chromium/live acceptance is claimed.
+No schema, payment, consent, production environment, merge or deploy changes.
+
+Canonical classifications remain 149 total (60 Implemented, 52 Partial,
+35 Not started, 1 Superseded, 1 Not applicable); 95 historical aliases
+retain traceability. No newly closed production defects are asserted.
+
 ### 2026-10-15 — Volunteer enquiry, Hijri planner and Companion accessibility
 
 PR #292 source commits `af72040a` and `6a18be88` advance two real public journeys.
