@@ -13,6 +13,12 @@ const acknowledgement = {
 };
 
 describe("private read response contracts", () => {
+  it("does not accept a missing appeal link with an unredacted beneficiary title", () => {
+    expect(isAcknowledgementResponse({
+      ...acknowledgement,
+      donation: { ...acknowledgement.donation, appeal: { title: "Unredacted beneficiary name", slug: null } },
+    }, reference)).toBe(false);
+  });
   it("accepts a confidential receipt whose appeal has no public link", () => {
     expect(isAcknowledgementResponse({
       ...acknowledgement,
