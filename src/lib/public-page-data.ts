@@ -3,6 +3,7 @@ import { cache } from "react";
 import { getAppealCoverMediaIssues } from "@/lib/appeal-cover-media";
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
+import { canPromoteAppeal } from "@/lib/appeal-promotion";
 import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 import { IDENTITY_MEDIA_SORT_ORDER } from "@/lib/public-media";
@@ -325,7 +326,7 @@ export const getCompletedAidShowcaseData = cache(async () => {
  * it should not serialize the private-facing story, internal notes or updates.
  */
 export const getAppealsIndexData = cache(async () => {
-  return prisma.appeal.findMany({
+  const appeals = await prisma.appeal.findMany({
     where: { status: "PUBLISHED" },
     orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
     select: {
@@ -338,8 +339,16 @@ export const getAppealsIndexData = cache(async () => {
       goalAmount: true,
       amountRaised: true,
       closesAt: true,
+      assistanceRequest: {
+        select: { verification: { select: { confidentialityLevel: true } } },
+      },
     },
   });
+  // Direct approved case URLs remain available; discoverable indexes do not
+  // promote the identity of explicitly HIGHLY_SENSITIVE beneficiaries.
+  return appeals
+    .filter(canPromoteAppeal)
+    .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => publicAppeal);
 });
 
 /**
