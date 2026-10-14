@@ -19,7 +19,7 @@ const privateHeaders = {
 const fundOrderSchema = donationSchema.omit({ appealId: true, fundId: true }).extend({
   appealId: z.never().optional(),
   fundId: z.string().cuid(),
-  fundRevision: z.number().int().nonnegative().safe(),
+  fundRevision: z.number().int().nonnegative().max(Number.MAX_SAFE_INTEGER),
 }).strict();
 const MAX_PAYMENT_JSON_BYTES = 32 * 1024;
 
