@@ -16,6 +16,17 @@ for (const width of [320, 390, 1440]) {
     const durations = await cards.first().evaluate(el => getComputedStyle(el).transitionDuration.split(',').map(value => Number.parseFloat(value)));
     expect(durations.every(value => value <= 0.00001)).toBe(true);
     await expect(cards.first().locator('.v2-appeal-card-body')).toHaveCSS('display', 'flex');
+    for (const heading of [
+      cards.first().getByRole('heading', { name: 'Synthetic appeal for style acceptance' }),
+      page.getByRole('heading', { name: 'No synthetic public appeal currently open' }),
+      page.getByRole('heading', { name: 'A synthetic verified need described across multiple lines' }),
+    ]) {
+      const leading = await heading.evaluate(el => {
+        const style = getComputedStyle(el);
+        return Number.parseFloat(style.lineHeight) / Number.parseFloat(style.fontSize);
+      });
+      expect(leading).toBeGreaterThanOrEqual(1.1);
+    }
     for (const bar of await page.locator('.v2-appeal-progress').all()) {
       await expect(bar).toHaveCSS('overflow', 'hidden');
       const dimensions = await bar.evaluate(el => ({ bar: el.getBoundingClientRect().width, fill: el.firstElementChild.getBoundingClientRect().width, height: el.getBoundingClientRect().height }));
