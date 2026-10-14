@@ -20,6 +20,7 @@ import { ConfiguredHomeSlide } from "@/components/home-story-slide";
 import { getHomeCarouselConfig, getHomeCarouselImages } from "@/lib/home-carousel-data";
 import { composeHomeSlides, defaultHomeSlides } from "@/lib/home-carousel";
 import { HomeHighlights } from "@/components/home-highlights";
+import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { programmeCategoryPath } from '@/lib/programme-category-routing';
 import { selectIdentityPublicImage } from '@/lib/public-media';
 import { openGraphShareImages, twitterShareImages } from '@/lib/social-share-media';
@@ -60,6 +61,15 @@ export default async function HomePage() {
   const appealSlides = liveAppeals.map((appeal, index) => ({ ...appealTemplate, id: `appeal-${appeal.slug}`, eyebrow: 'Current verified appeal', title: appeal.title, description: appeal.summary, primaryLabel: 'View this appeal', primaryHref: `/appeals/${appeal.slug}`, secondaryLabel: 'Support this need', secondaryHref: `/donate/${appeal.slug}`, appealSlug: appeal.slug, image: appealImages[index] ? `asset:${appealImages[index]!.id}` : 'logo', imageAlt: appealImages[index]?.altText || '', order: index }));
   appealImages.forEach(asset => { if (asset) images.set(asset.id, asset); });
   const heroSlides = composeHomeSlides(config, appealSlides);
+  // These outcomes are from the already-loaded publication-gated discovery
+  // projection, not an extra public query or a fabricated fundraising total.
+  const publishedImpact = discovery.initiatives
+    .filter(item => item.primaryMetric?.trim() && item.primaryMetricLabel?.trim())
+    .slice(0, 3)
+    .map(item => ({
+      slug: item.slug, title: item.title,
+      value: item.primaryMetric!, label: item.primaryMetricLabel!,
+    }));
   const hasOpenAppeals = liveAppeals.length > 0;
   const publicProgrammeSlugs = new Set(discovery.publishedProgrammeSlugs);
   const eidProgrammePublished = publicProgrammeSlugs.has("eid-gift-kits");
@@ -141,6 +151,10 @@ export default async function HomePage() {
 
       <HomeGrowth eidProgrammePublished={eidProgrammePublished} />
       <HomeTrust hasOpenAppeals={hasOpenAppeals} />
+
+      {publishedImpact.length > 0 && <div className="v3-shell">
+        <VerifiedImpactStrip headingId="home-published-outcomes" items={publishedImpact} />
+      </div>}
 
       <section className="v3-section v3-appeals" aria-labelledby="appeals-title">
         <div className="v3-shell">
