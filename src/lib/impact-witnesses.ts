@@ -6,7 +6,7 @@ import { selectIdentityPublicImage, type PublicMediaCandidate } from "./public-m
 export function selectImpactWitnesses<T extends {
   mediaAssets: readonly PublicMediaCandidate[];
 }>(initiatives: readonly T[], limit = 6) {
-  const matches: Array<{ item: T; media: PublicMediaCandidate }> = [];
+  const matches: Array<{ item: T; media: T["mediaAssets"][number] }> = [];
   for (const item of initiatives) {
     const media = selectIdentityPublicImage(item.mediaAssets);
     if (!media) continue;
