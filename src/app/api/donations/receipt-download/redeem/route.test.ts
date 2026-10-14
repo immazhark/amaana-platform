@@ -60,9 +60,9 @@ describe("private PDF grant redemption route", () => {
     expect((await POST(request())).status).toBe(403);
     expect(mocks.limiter).not.toHaveBeenCalled();
   });
-  it.each([{}, { grant: "short" }, { grant, extra: 1 }, { grant: "a".repeat(1500) }])(
+  it.each([{}, { grant: "short" }, { grant, extra: 1 }, { grant: "a".repeat(1700) }])(
     "rejects malformed or oversize credentials without private lookup: %j", async input => {
-      expect((await POST(request(input))).status).toBe(input.grant?.length > 1500 ? 413 : 404);
+      expect((await POST(request(input))).status).toBe(JSON.stringify(input).length > 1600 ? 413 : 404);
       expect(mocks.redeem).not.toHaveBeenCalled();
     },
   );
