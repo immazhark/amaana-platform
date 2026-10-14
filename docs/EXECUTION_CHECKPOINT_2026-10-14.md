@@ -1,5 +1,20 @@
 # Amaana Foundation engineering continuation — 14 October 2026
 
+## Continuation — fail-closed fundraising states and exact-source runtime checks
+
+Same PR #292 / `fix/direct-transfer-feedback-20261013`; no concurrent writer found at head `cefa59570b1dde9c27dc291c308b541ca9db30d0`.
+
+**Donation visibility:** `isAppealOpenForDonations` previously accepted malformed monetary data (zero, negative, non-finite or invalid numeric text) or an invalid `closesAt` because `NaN <= now` is false. Keep existing `PUBLISHED`, below-goal, no-close-date and valid future deadline behavior. Require finite nonnegative raised amount, positive finite goal and valid current/deadline times; reject malformed cases before offering a donation route. `getDonationPageData` and published-appeals surfaces already share this gate. Unit additions: 11 malformed cases, 1 invalid current-clock case, 1 valid numeric-string/future-Date control. Source/tests: `7b64973`, `660201e`.
+
+**Time-sensitive cached homepage visibility:** `getHomepageAppealsCached` caches filtered results for 300 seconds. Public `getHomepageAppeals` now reapplies `isAppealOpenForDonations` to each cached result on every render, so an appeal expiring within the cache TTL is not advertised as open. It does not add a database query or change publication/consent filters. The existing public-boundaries Node test file now asserts that post-cache verification remains present. Source/guard: `2382bfb`, `847273e`.
+
+**Refund status transition:** `appealStatusAfterRefund` previously reopened `FUNDED` appeals to `PUBLISHED` with invalid retained/goal values or malformed close times. Fail safely to `CLOSED` when a refund cannot establish valid financial/deadline state. Preserve manually controlled non-`FUNDED` states; valid below-goal refunds can reopen within their window; fully funded amounts remain `FUNDED` regardless of malformed reference clock. Source corrections: `a1e8773`, `2906f53`; nine refund unit regressions: `cefa595`.
+
+**Runtime validation actually executed:** Cloning the repository remains unavailable because local DNS cannot resolve github.com. The committed `src/lib/appeals.ts` was independently retrieved, copied into the local Node 22 environment and validated by exact Git blob SHA **`9f3b2bd1ff40304bc7e71877362fc56dfbc584db`**, confirming byte-for-byte source identity. Native Node TypeScript stripping loaded that exact source. **23 focused assertions passed** for funding progress, donation eligibility, deadline boundaries, refund reopen/close logic and manually controlled state preservation. The repository's Vitest, entire Next/TypeScript build, browser E2E, hosted DB and production checks were **not** executed on this new head. The 13 donation and nine refund authored Vitest cases remain to be run as part of exact-head release verification.
+
+The original 95-finding classification is unchanged: 10 baseline addressed, 33 source-implemented pending release verification, 25 partial, 16 open, 11 unverified. This work is incremental integrity remediation, not an audit-wide closure. No live payment, private data write, migration, deployment or main merge.
+
+
 ## Continuation — appeal detail DOM ownership and safe progress meters
 
 Existing PR #292 / `fix/direct-transfer-feedback-20261013`. Source/test head before checkpoint: `3be530aff3b77bee3449fe70a3afe57103692605`.
