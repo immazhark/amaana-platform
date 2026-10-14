@@ -461,7 +461,7 @@ model Donation {
   capturedAt               DateTime?
   failedAt                 DateTime?
   refundedAt               DateTime?
-  appeal                   Appeal?               @relation(fields: [appealId], references: [id])
+  appeal                   Appeal?               @relation(fields: [appealId], references: [id], onDelete: Restrict)
   fund                     GivingFund?           @relation(fields: [fundId], references: [id], onDelete: Restrict)
   reconciledBy             User?                 @relation("DonationReconciler", fields: [reconciledById], references: [id], onDelete: SetNull)
   events                   PaymentEvent[]
