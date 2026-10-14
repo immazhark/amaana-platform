@@ -34,6 +34,14 @@ describe("short-lived private receipt download grants", () => {
       expect(openReceiptDownloadGrant(altered.join("."), now)).toBeNull();
     }
   });
+  it("returns a private miss rather than throwing when the decryption key is removed or malformed", () => {
+    const grant = createReceiptDownloadGrant({ reference, token }, now);
+    for (const setting of [undefined, "malformed"]) {
+      vi.stubEnv("RECEIPT_DOWNLOAD_ENCRYPTION_KEY", setting);
+      expect(() => openReceiptDownloadGrant(grant, now)).not.toThrow();
+      expect(openReceiptDownloadGrant(grant, now)).toBeNull();
+    }
+  });
   it("invalidates active grants after encryption key rotation", () => {
     const grant = createReceiptDownloadGrant({ reference, token }, now);
     vi.stubEnv("RECEIPT_DOWNLOAD_ENCRYPTION_KEY", "b2".repeat(32));

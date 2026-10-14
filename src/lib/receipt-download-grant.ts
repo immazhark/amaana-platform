@@ -80,8 +80,8 @@ export function openReceiptDownloadGrant(grant: unknown, now = Date.now()): {
   if (!nonce || nonce.length !== 12 || !ciphertext || !tag || tag.length !== 16) return null;
 
   // Never substitute a development fallback key if production is unconfigured.
-  const key = keyFromEnvironment();
   try {
+    const key = keyFromEnvironment();
     const decipher = createDecipheriv("aes-256-gcm", key, nonce);
     decipher.setAAD(Buffer.from(PURPOSE, "utf8"));
     decipher.setAuthTag(tag);
