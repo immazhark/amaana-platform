@@ -25,7 +25,8 @@ vi.mock("@/lib/bounded-request-body", () => {
   };
 });
 
-vi.mock("@/lib/donations", () => ({
+vi.mock("@/lib/donations", async importOriginal => ({
+  ...await importOriginal<typeof import("@/lib/donations")>(),
   createDonationReference: () => "AMN-123",
   createReceiptToken: () => "receipt-token",
   donationSchema: { safeParse: mocks.safeParse },
