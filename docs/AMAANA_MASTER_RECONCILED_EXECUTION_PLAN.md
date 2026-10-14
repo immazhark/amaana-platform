@@ -247,6 +247,24 @@ Runtime state/cache after privacy revocation requires deployment/CDN verificatio
 
 ## F. Continuation checkpoint
 
+### 14 October — B08 original-purpose receipts and immutable designation hardening
+
+Continuation owner: ChatGPT engineering; existing PR #292 on `fix/direct-transfer-feedback-20261013`. Referenced `docs/AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md` sections D/F and current branch source before modifications.
+
+**Implemented, committed:**
+- Private donor acknowledgement now reads the write-once `Donation.designationSnapshot` to display the original appeal designation rather than a later-edited campaign title. Historical NULL snapshots use the prior current-title fallback; a malformed non-NULL snapshot is visibly flagged for reconciliation instead of silently substituted.
+- Admin donation index and detail surfaces use the same bounded, field-checked resolver; details identify original, legacy and review-needed provenance. No additional query, provider charge, mutation or public projection.
+- If a previously supported appeal's verification is now `HIGHLY_SENSITIVE`, the token-gated acknowledgement uses a generic assistance label and omits the potentially identifying appeal slug. Client JSON response validation accepts only this explicit redacted null-slug contract; the rendered receipt does not construct a dead/sensitive appeal link. Normal appeal links remain as before.
+- Hardened the **unapplied additive designation migration**: any subsequent update changing destination `appealId`, `givingIntent` or `designationSnapshot` now rejects with SQLSTATE 23514 for **legacy and snapshotted donations alike**. Existing historical NULL snapshots cannot be backfilled with fabricated donor history. Payment-state/refund updates that leave destination/intent unchanged remain valid.
+- Authored focused resolver cases (original vs legacy vs malformed), 4 route-level private acknowledgement cases (original, legacy, tamper, highly sensitive), client/JSON redaction cases and isolated PostgreSQL-WASM mutation/legacy cases. Files have been read back from GitHub; **the authored tests have not been executed in this chat environment**.
+
+Last source/test head before documentation: `f3df1f2c97f98e259243a645b49333523acc4a3a`; CI run [38565012598](https://github.com/immazhark/amaana-platform/actions/runs/38565012598) was pending on readback, so no exact-head green CI, production build, Prisma migration, browser or provider success is claimed.
+
+**Still open under B08:** exactly-one appeal-or-approved-fund database relation, fund-only capture/reconciliation/refund net ledger, reviewed-fund immutable purpose revision, fund-only acknowledgements and public activation gates. No unreviewed fund has been enabled. Do not rewrite historical 95 or 149 reconciliation totals from these subscopes.
+
+**No** production merge/deployment, hosted schema change, live donor/beneficiary access, real payment/refund, worker activation, secret or environment modification occurred. Preserve migration-before-app promotion.
+
+
 ### 14 October — B08 appeal designation snapshot foundation (newer than historical F checkpoint)
 
 Current PR #292 source/test head before this documentation update: `dd05ecd4a0a46467934203571474ef21448105a1`. GitHub readback confirms actual source/schema/migration/test files; this is **authored source**, not an exact-head Vitest, Prisma migration, production build or browser pass.
