@@ -1,6 +1,7 @@
 import Link from "@/components/navigation-link";
 import { DonationIntent, DonationStatus, Prisma } from "@prisma/client";
 import { requirePermission } from "@/lib/auth";
+import { summarizeSettledDonationAggregate } from "@/lib/fund-ledger";
 import { formatINR } from "@/lib/appeals";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
@@ -29,6 +30,7 @@ export default async function DonationsPage({ searchParams }: Props) {
     prisma.donation.aggregate({
       where: { status: { in: ["CAPTURED", "REFUNDED"] } },
       _sum: { amount: true, refundedAmount: true },
+      _count: { _all: true },
     }),
     prisma.donation.count({ where: { status: DonationStatus.PENDING_VERIFICATION, paymentMethod: { in: ["DIRECT_UPI", "BANK_TRANSFER"] } } }),
     prisma.paymentEvent.count({
@@ -85,9 +87,16 @@ export default async function DonationsPage({ searchParams }: Props) {
 
   const statusCounts = new Map(statusGroups.map(item => [item.status, item._count._all]));
   const intentCounts = new Map(intentGroups.map(item => [item.givingIntent, item._count._all]));
-  const grossCaptured = reconciliation._sum.amount?.toNumber() ?? 0;
-  const refunded = reconciliation._sum.refundedAmount?.toNumber() ?? 0;
-  const netRetained = Math.max(0, grossCaptured - refunded);
+  let financialTotals;
+  try {
+    financialTotals = summarizeSettledDonationAggregate({
+      amount: reconciliation._sum.amount,
+      refundedAmount: reconciliation._sum.refundedAmount,
+      settledDonations: reconciliation._count._all,
+    });
+  } catch {
+    financialTotals = null;
+  }
   const operational = donationOperationalState({
     unmatchedCriticalEvents: unmatchedCriticalEventCount,
     missingAcknowledgements,
@@ -121,9 +130,9 @@ export default async function DonationsPage({ searchParams }: Props) {
       <div>
         <p className="eyebrow">Reconciliation</p>
         <h1>Donations</h1>
-        <p className="lead">
-          Gross captured: {formatINR(grossCaptured)} · Refunded: {formatINR(refunded)} · Net retained: {formatINR(netRetained)}
-        </p>
+        {financialTotals ? <p className="lead">
+          Gross captured: {formatINR(financialTotals.grossCapturedPaise / 100)} · Refunded: {formatINR(financialTotals.refundedPaise / 100)} · Net retained: {formatINR(financialTotals.netRetainedPaise / 100)}
+        </p> : <p role="alert">Donation totals require financial reconciliation.</p>}
       </div>
     </div>
     <section className="admin-card" aria-labelledby="donation-health-heading" style={{ marginBottom: "1.25rem" }}>

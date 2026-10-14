@@ -1391,3 +1391,9 @@ Continuation from published 58f24b60. Private admin fund summaries previously ch
 ## 2026-10-14 — destination-aware acknowledgement emails
 
 B08 continuation from 31487ebd. Razorpay capture and verified manual transfer notifications now carry designationKind from the validated persisted destination. Email template uses fund wording in subject/plain text/HTML only for exact FUND; legacy/malformed kinds preserve existing appeal defaults. Generic approved-fund copy exposes no fund definition or beneficiary details. Statutory certificate disclaimer unchanged. Reproduced prior template failure; 50 focused template/capture/manual-reconciliation cases pass, TypeScript/focused lint/diff checks pass. Existing queued messages are not rewritten; no worker activation/email delivery, release or live operation. B08 remains partial.
+
+## 2026-10-14 — overall donation summary fail-closed accounting
+
+Continuation from 8d8ac5db. Overall donations dashboard previously clamped refunded>gross to zero and accepted unsafe/sub-paise aggregates or missing sums on nonempty records. Reuse the renamed summarizeSettledDonationAggregate for both fund and overall summaries. Query settled count with sums; only genuine empty aggregate renders zero. Invalid totals produce an explicit reconciliation alert instead of plausible balances. Permissions and settled status scope unchanged.
+
+32 focused ledger/fund/dashboard cases pass; four rendered regressions fail prior dashboard source. TypeScript, focused zero-warning lint and diff checks pass. No full build/browser/native concurrency/deployment claim. B08 remains partial. No migration, hosted data, email, provider operation or public fund activation.

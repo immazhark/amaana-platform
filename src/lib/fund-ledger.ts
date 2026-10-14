@@ -81,19 +81,25 @@ export function summarizeFundLedger(fundId: string, donations: readonly FundLedg
 /** Aggregated settled rows must retain the same paise precision as individual
  * donations. Never display rounded or unsafe monetary data as a valid balance.
  */
-export function summarizeFundLedgerAggregate(input: {
+export function summarizeSettledDonationAggregate(input: {
   amount: MoneyDecimal | null;
   refundedAmount: MoneyDecimal | null;
   settledDonations: number;
 }) {
-  if (!Number.isSafeInteger(input.settledDonations) || input.settledDonations <= 0 ||
+  if (!Number.isSafeInteger(input.settledDonations) || input.settledDonations < 0) {
+    throw new Error("Invalid settled donation count");
+  }
+  if (input.settledDonations === 0 && input.amount === null && input.refundedAmount === null) {
+    return { grossCapturedPaise: 0, refundedPaise: 0, netRetainedPaise: 0, settledDonations: 0 };
+  }
+  if (input.settledDonations === 0 ||
       input.amount === null || input.refundedAmount === null) {
-    throw new Error("Invalid settled fund aggregate");
+    throw new Error("Invalid settled donation aggregate");
   }
   const grossCapturedPaise = checkedPaise(input.amount, "captured aggregate");
   const refundedPaise = checkedPaise(input.refundedAmount, "refund aggregate");
   if (grossCapturedPaise <= 0 || refundedPaise > grossCapturedPaise) {
-    throw new Error("Fund aggregate accounting is inconsistent");
+    throw new Error("Donation aggregate accounting is inconsistent");
   }
   return { grossCapturedPaise, refundedPaise,
     netRetainedPaise: grossCapturedPaise - refundedPaise,

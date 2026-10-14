@@ -1,6 +1,6 @@
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { summarizeFundLedgerAggregate } from "@/lib/fund-ledger";
+import { summarizeSettledDonationAggregate } from "@/lib/fund-ledger";
 import { FUND_INTENTS, fundNextStatuses } from "@/lib/giving-funds";
 import { createGivingFund, transitionGivingFund, updateGivingFund } from "./actions";
 
@@ -54,7 +54,7 @@ export default async function GivingFundsPage({ searchParams }: { searchParams: 
             if (!balance) return <p className="muted">No captured contributions recorded for this fund.</p>;
             let totals;
             try {
-              totals = summarizeFundLedgerAggregate({
+              totals = summarizeSettledDonationAggregate({
                 amount: balance._sum.amount,
                 refundedAmount: balance._sum.refundedAmount,
                 settledDonations: balance._count._all,

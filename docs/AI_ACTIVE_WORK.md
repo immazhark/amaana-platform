@@ -1,3 +1,7 @@
+## 2026-10-14 — donation dashboard aggregate integrity
+
+Ownership: HANDOFF_PENDING after overall donation summary integrity. Parent 8d8ac5db. 32 focused tests/type/lint pass. Publish to PR292; no release.
+
 ## 2026-10-14 — fund acknowledgement email integration
 
 Ownership: HANDOFF_PENDING after destination-aware acknowledgement unit. Parent 31487ebd. 50 focused tests/type/lint pass; publish to existing PR292. No delivery or worker activation.
