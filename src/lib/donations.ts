@@ -1,9 +1,24 @@
 import { createHash, randomBytes, randomInt } from "node:crypto";
 import { z } from "zod";
-import { DONATION_INTENTS } from "@/lib/donation-intent";
+import { DONATION_INTENTS, type DonationIntentValue } from "@/lib/donation-intent";
 
 export const MIN_DONATION_AMOUNT = 10;
 export const MAX_DONATION_AMOUNT = 1_000_000;
+
+// Private, write-once record of the purpose selected when a donation was made.
+// Do not substitute today's edited appeal title for the original donor intent.
+export function appealDonationDesignationSnapshot(
+  appeal: { id: string; title: string },
+  givingIntent: DonationIntentValue,
+) {
+  return {
+    version: 1,
+    kind: "APPEAL" as const,
+    appealId: appeal.id,
+    label: appeal.title,
+    givingIntent,
+  };
+}
 
 export const donationSchema = z.object({
   appealId: z.string().cuid(),
