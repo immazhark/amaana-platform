@@ -34,6 +34,8 @@ describe("private fund additive migration on isolated PostgreSQL-WASM", { skip: 
     writeFileSync(priorSchema, execFileSync("git", ["show", "b62993963b81636daaf32b7813effec60662be4a:prisma/schema.prisma"]));
     const baseSql = execFileSync("node_modules/.bin/prisma", ["migrate", "diff", "--from-empty", "--to-schema-datamodel", priorSchema, "--script"], { encoding: "utf8" });
     await db.exec(baseSql);
+    // Prisma schema diff omits custom CHECKs: include the existing monetary SQL.
+    await db.exec(readFileSync("prisma/migrations/20260917090000_financial_integrity_checks/migration.sql", "utf8"));
     await db.exec(`
       INSERT INTO "User" ("id", "name", "email", "updatedAt") VALUES
         ('creator', 'Synthetic creator', 'creator@example.invalid', CURRENT_TIMESTAMP),
@@ -50,9 +52,11 @@ describe("private fund additive migration on isolated PostgreSQL-WASM", { skip: 
       INSERT INTO "RefundLedger" ("providerRefundId", "providerPaymentId", "donationId", "amount", "currency")
         VALUES ('rfnd_synthetic', 'pay_synthetic', 'synthetic-donation', 2.25, 'INR');
     `);
+    await db.exec('ALTER TABLE "Donation" ADD COLUMN "fundId" TEXT');
     oldDonation = (await db.query('SELECT * FROM "Donation"')).rows;
     oldRefunds = (await db.query('SELECT * FROM "RefundLedger"')).rows;
     await db.exec(readFileSync("prisma/migrations/20261014103000_private_giving_fund_registry/migration.sql", "utf8"));
+    await db.exec(readFileSync("prisma/migrations/20261014220000_fund_financial_state_guards/migration.sql", "utf8"));
   });
   after(async () => { if (db) await db.close(); if (temp) rmSync(temp, { recursive: true, force: true }); });
 
@@ -92,4 +96,18 @@ describe("private fund additive migration on isolated PostgreSQL-WASM", { skip: 
     assert.deepEqual(rows.filter(row => row.name === "REVIEWER").map(row => row.key), ["fund.manage", "fund.view"]);
     for (const role of ["PRIMARY_APPROVER", "BACKUP_APPROVER"]) assert.deepEqual(rows.filter(row => row.name === role).map(row => row.key), ["fund.approve", "fund.manage", "fund.view"]);
   });
+  it("protects approved purposes while allowing versioned draft editing", async () => {
+    const id = (await insertFund({ status: "APPROVED", approvedById: "approver", approvedAt: new Date() })).rows[0].id;
+    for (const field of ["name", "purpose", "disclosure", "accountCode", "slug"]) {
+      await assert.rejects(db.query(`UPDATE "GivingFund" SET "${field}"=$1, "revision"="revision"+1 WHERE "id"=$2`, ["Unreviewed replacement", id]), error => error.code === "23514");
+    }
+    await assert.rejects(db.query('UPDATE "GivingFund" SET "lastEditedById"=$1 WHERE "id"=$2', ['creator', id]), error => error.code === "23514");
+    await db.query('UPDATE "GivingFund" SET "status"=$1, "revision"="revision"+1 WHERE "id"=$2', ['PAUSED', id]);
+    await db.query('UPDATE "GivingFund" SET "status"=$1, "approvedById"=NULL, "approvedAt"=NULL, "revision"="revision"+1 WHERE "id"=$2', ['DRAFT', id]);
+    await assert.rejects(db.query('UPDATE "GivingFund" SET "purpose"=$1 WHERE "id"=$2', ['Unversioned changed purpose for testing.', id]), error => error.code === "23514");
+    await db.query('UPDATE "GivingFund" SET "purpose"=$1, "revision"="revision"+1 WHERE "id"=$2', ['Versioned draft purpose pending independent approval.', id]);
+    await assert.rejects(db.query('UPDATE "GivingFund" SET "createdById"=$1 WHERE "id"=$2', ['approver', id]), error => error.code === "23514");
+    assert.equal((await db.query('SELECT "approvedById" FROM "GivingFund" WHERE "id"=$1', [id])).rows[0].approvedById, null);
+  });
+
 });

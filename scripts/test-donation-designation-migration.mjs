@@ -64,6 +64,8 @@ describe('private donation designation migration on isolated PostgreSQL-WASM', {
     writeFileSync(baseline, execFileSync('git', ['show', 'b62993963b81636daaf32b7813effec60662be4a:prisma/schema.prisma']));
     const sql = execFileSync('node_modules/.bin/prisma', ['migrate', 'diff', '--from-empty', '--to-schema-datamodel', baseline, '--script'], { encoding: 'utf8' });
     await db.exec(sql);
+    // Prisma schema diff omits custom CHECKs: include the existing monetary SQL.
+    await db.exec(readFileSync("prisma/migrations/20260917090000_financial_integrity_checks/migration.sql", "utf8"));
     await db.exec(`INSERT INTO "User" ("id", "name", "email", "updatedAt")
       VALUES ('creator', 'Synthetic creator', 'creator@example.invalid', NOW()),
              ('editor', 'Synthetic editor', 'editor@example.invalid', NOW()),
@@ -85,6 +87,7 @@ describe('private donation designation migration on isolated PostgreSQL-WASM', {
         'creator', 'editor', 'approver', NOW(), NOW());`);
     await db.exec(readFileSync('prisma/migrations/20261014193000_exclusive_donation_destination/migration.sql', 'utf8'));
     await db.exec(readFileSync('prisma/migrations/20261014203000_fund_donation_currency/migration.sql', 'utf8'));
+    await db.exec(readFileSync('prisma/migrations/20261014220000_fund_financial_state_guards/migration.sql', 'utf8'));
   });
   after(async () => {
     if (db) await db.close();
@@ -185,6 +188,21 @@ describe('private donation designation migration on isolated PostgreSQL-WASM', {
     await db.query('UPDATE "Donation" SET "status"=$1 WHERE "id"=$2', ['CAPTURED', 'valid-fund']);
     const row = (await db.query('SELECT "fundId" FROM "Donation" WHERE "id"=$1', ['valid-fund'])).rows[0];
     assert.equal(row.fundId, 'fund-reviewed');
+  });
+
+  it('rejects invalid refund states and changes to original charge amount', async () => {
+    for (const [status, refunded] of [['REFUNDED', 25], ['CREATED', 25], ['FAILED', 25]]) {
+      await assert.rejects(db.query('UPDATE "Donation" SET "status"=$1, "refundedAmount"=$2 WHERE "id"=$3', [status, refunded, 'valid-fund']), error => error.code === '23514');
+    }
+    await assert.rejects(db.query('UPDATE "Donation" SET "amount"=300 WHERE "id"=$1', ['valid-fund']), error => error.code === '23514');
+  });
+  it('supports partial then full refund after fund closure without changing purpose', async () => {
+    await db.query('UPDATE "GivingFund" SET "status"=$1 WHERE "id"=$2', ['CLOSED', 'fund-reviewed']);
+    await db.query('UPDATE "Donation" SET "status"=$1, "refundedAmount"=$2 WHERE "id"=$3', ['CAPTURED', 25, 'valid-fund']);
+    await db.query('UPDATE "Donation" SET "status"=$1, "refundedAmount"=$2 WHERE "id"=$3', ['REFUNDED', 250, 'valid-fund']);
+    const row = (await db.query('SELECT "amount", "refundedAmount", "status", "designationSnapshot" FROM "Donation" WHERE "id"=$1', ['valid-fund'])).rows[0];
+    assert.equal(Number(row.amount), 250); assert.equal(Number(row.refundedAmount), 250);
+    assert.equal(row.status, 'REFUNDED'); assert.deepEqual(row.designationSnapshot, approvedFund);
   });
 
 });

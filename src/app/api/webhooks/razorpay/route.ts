@@ -5,7 +5,7 @@ import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-r
 import { paymentEventAuditPayload } from "@/lib/payment-event-audit";
 import { captureDonation, ensureCapturedDonationForRefund } from "@/lib/payment-processing";
 import { expireDonationViews } from "@/lib/donation-cache";
-import { requireDonationDestination } from "@/lib/donation-destination";
+import { requireDonationFinancialDestination } from "@/lib/donation-destination";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { verifyWebhookSignature } from "@/lib/razorpay";
@@ -203,6 +203,8 @@ export async function POST(request: Request) {
             id: true,
             appealId: true,
             fundId: true,
+            givingIntent: true,
+            designationSnapshot: true,
             amount: true,
             refundedAmount: true,
             currency: true,
@@ -224,7 +226,7 @@ export async function POST(request: Request) {
         if (donation.currency !== refund.currency) {
           throw new Error("Refund currency does not match the captured donation");
         }
-        const destination = requireDonationDestination(donation);
+        const destination = requireDonationFinancialDestination(donation);
 
         // The entity claim and ALL financial effects share the transaction.
         // skipDuplicates avoids swallowing a different uniqueness failure.

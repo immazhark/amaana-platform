@@ -1,3 +1,4 @@
+import { syntheticFundDesignation } from "@/test/fund-designation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { DonationPaymentMethod, DonationStatus } from "@prisma/client";
 
@@ -85,7 +86,7 @@ describe("manual transfer money-state boundary", () => {
     { appealId: null, fundId: "approved_fund" },
   ])("does not verify foreign currency for destination %o", async destination => {
     const original = await mocks.donationFind();
-    mocks.donationFind.mockResolvedValueOnce({ ...original, ...destination, currency: "USD" });
+    mocks.donationFind.mockResolvedValueOnce({ ...original, ...destination, designationSnapshot: destination.fundId ? syntheticFundDesignation(destination.fundId) : null, currency: "USD" });
     await expect(reconcileDirectDonation(request)).rejects.toThrow("Invalid financial amounts");
     expect(mocks.donationUpdate).not.toHaveBeenCalled();
     expect(mocks.appealFind).not.toHaveBeenCalled();
@@ -115,7 +116,7 @@ describe("manual transfer money-state boundary", () => {
   it("verifies a fund transfer without reading or incrementing appeal totals", async () => {
     mocks.donationFind.mockResolvedValueOnce({
       id: "donation_fund", referenceNumber: "AFD-FUND", appealId: null,
-      fundId: "approved_fund", donorEmail: "donor@example.test",
+      fundId: "approved_fund", designationSnapshot: syntheticFundDesignation("approved_fund", "SADAQAH"), donorEmail: "donor@example.test",
       givingIntent: "SADAQAH", currency: "INR", amount: money(500),
       status: DonationStatus.PENDING_VERIFICATION,
       paymentMethod: DonationPaymentMethod.BANK_TRANSFER,
@@ -128,6 +129,20 @@ describe("manual transfer money-state boundary", () => {
     expect(mocks.notificationCreate).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({ payload: expect.objectContaining({ designationKind: "FUND" }) }),
     }));
+  });
+
+  it("refuses verification of a fund claim without its approved original purpose", async () => {
+    const original = await mocks.donationFind();
+    mocks.donationFind.mockResolvedValueOnce({ ...original, appealId: null, fundId: "fund", designationSnapshot: null });
+    await expect(reconcileDirectDonation(request)).rejects.toThrow(/requires reconciliation/);
+    expect(mocks.donationUpdate).not.toHaveBeenCalled();
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+  });
+  it("still allows rejection of a fund claim whose purpose requires reconciliation", async () => {
+    const original = await mocks.donationFind();
+    mocks.donationFind.mockResolvedValueOnce({ ...original, appealId: null, fundId: "fund", designationSnapshot: null });
+    await expect(reconcileDirectDonation({ ...request, decision: "REJECT" })).resolves.toMatchObject({ status: DonationStatus.REJECTED });
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
   });
 
   it("refuses a transfer with two monetary destinations", async () => {

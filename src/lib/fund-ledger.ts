@@ -50,22 +50,13 @@ export function summarizeFundLedger(fundId: string, donations: readonly FundLedg
     if (donation.fundId !== fundId || donation.appealId !== null || donation.currency !== "INR") {
       throw new Error("Donation is not exclusively designated to this domestic giving fund");
     }
-    const amount = checkedPaise(donation.amount, "donation amount");
-    const refunded = checkedPaise(donation.refundedAmount, "refunded amount");
-    if (amount <= 0 || refunded > amount) throw new Error("Donation accounting is inconsistent");
-
+    const accounting = summarizeDonationRecord(donation);
     if (donation.status === "CAPTURED" || donation.status === "REFUNDED") {
-      if (donation.status === "REFUNDED" && refunded !== amount) {
-        throw new Error("Fully refunded donation does not match refund accounting");
-      }
-      grossCapturedPaise = checkedAdd(grossCapturedPaise, amount);
-      refundedPaise = checkedAdd(refundedPaise, refunded);
+      grossCapturedPaise = checkedAdd(grossCapturedPaise, accounting.amountPaise);
+      refundedPaise = checkedAdd(refundedPaise, accounting.refundedPaise);
       settledDonations++;
-    } else if (["CREATED", "AUTHORIZED", "PENDING_VERIFICATION", "FAILED", "REJECTED"].includes(donation.status)) {
-      if (refunded !== 0) throw new Error("Unsettled donation cannot contain a refund");
-      unsettledDonations++;
     } else {
-      throw new Error("Unknown donation status in fund ledger");
+      unsettledDonations++;
     }
   }
 

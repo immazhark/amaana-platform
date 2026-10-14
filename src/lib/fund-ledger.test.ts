@@ -1,8 +1,9 @@
+import { Prisma } from "@prisma/client";
 import { describe, expect, it } from "vitest";
-import { summarizeFundLedger, type FundLedgerDonation } from "./fund-ledger";
+import { summarizeDonationRecord, summarizeFundLedger, type FundLedgerDonation } from "./fund-ledger";
 
 function rupees(value: number) {
-  return { mul: (multiplier: number) => ({ toNumber: () => value * multiplier }) };
+  return new Prisma.Decimal(value);
 }
 
 function donation(patch: Partial<FundLedgerDonation> = {}): FundLedgerDonation {
@@ -55,5 +56,20 @@ describe("private fund-only net accounting", () => {
       grossCapturedPaise: 0, refundedPaise: 0, netRetainedPaise: 0,
       settledDonations: 0, unsettledDonations: 0,
     });
+  });
+});
+
+describe("shared donation accounting", () => {
+  it.each(["CREATED", "AUTHORIZED", "PENDING_VERIFICATION", "FAILED", "REJECTED"])("never retains %s claims", status => {
+    expect(summarizeDonationRecord({ currency: "INR", status, amount: rupees(100), refundedAmount: rupees(0) }).netRetainedPaise).toBe(0);
+  });
+  it("keeps exact fractional rupee precision with real Decimal values", () => {
+    expect(summarizeDonationRecord({ currency: "INR", status: "CAPTURED", amount: rupees(0.29), refundedAmount: rupees(0.1) }).netRetainedPaise).toBe(19);
+  });
+  it.each([
+    { status: "REFUNDED", refund: 25 }, { status: "FAILED", refund: 1 },
+    { status: "CAPTURED", refund: 101 }, { status: "UNKNOWN", refund: 0 },
+  ])("rejects incompatible monetary state %o", ({ status, refund }) => {
+    expect(() => summarizeDonationRecord({ currency: "INR", status, amount: rupees(100), refundedAmount: rupees(refund) })).toThrow();
   });
 });

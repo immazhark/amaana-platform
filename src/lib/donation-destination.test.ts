@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { requireDonationDestination, resolvePrivateDonationPurpose } from "./donation-destination";
+import { syntheticFundDesignation } from "@/test/fund-designation";
+import { requireDonationFinancialDestination, requireDonationDestination, resolvePrivateDonationPurpose } from "./donation-destination";
 
 describe("persisted donation financial destination", () => {
   it("preserves a historical appeal-only record", () => {
@@ -34,4 +35,16 @@ describe("persisted donation financial destination", () => {
       expect(() => requireDonationDestination(value)).toThrow(/exactly one/);
     },
   );
+});
+
+describe("fund financial mutation purpose boundary", () => {
+  it("preserves original reviewed intent without querying current fund status", () => {
+    expect(requireDonationFinancialDestination({ appealId: null, fundId: "fund", givingIntent: "GENERAL", designationSnapshot: syntheticFundDesignation("fund") })).toEqual({ kind: "FUND", id: "fund" });
+  });
+  it.each([null, {}, { ...syntheticFundDesignation("fund"), fundId: "other" },
+    { ...syntheticFundDesignation("fund"), givingIntent: "ZAKAT" },
+    { ...syntheticFundDesignation("fund"), purpose: "" },
+  ])("rejects missing or inconsistent original fund purpose %#", designationSnapshot => {
+    expect(() => requireDonationFinancialDestination({ appealId: null, fundId: "fund", givingIntent: "GENERAL", designationSnapshot })).toThrow(/requires reconciliation/);
+  });
 });

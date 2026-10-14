@@ -1,3 +1,4 @@
+import { syntheticFundDesignation } from "@/test/fund-designation";
 vi.mock("@/lib/donation-cache", () => ({ expireDonationViews: vi.fn() }));
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -175,7 +176,7 @@ describe("Razorpay webhook route", () => {
     { appealId: null, fundId: "approved_fund" },
   ])("refuses INR refund accounting for foreign donation %o", async destination => {
     const original = await mocks.txDonationFindUnique();
-    mocks.txDonationFindUnique.mockResolvedValueOnce({ ...original, ...destination, currency: "USD" });
+    mocks.txDonationFindUnique.mockResolvedValueOnce({ ...original, ...destination, givingIntent: "GENERAL", designationSnapshot: destination.fundId ? syntheticFundDesignation(destination.fundId) : null, currency: "USD" });
     const response = await POST(webhookRequest(refundPayload()));
     expect(response.status).toBe(500);
     expect(mocks.txRefundCreateMany).not.toHaveBeenCalled();
@@ -211,7 +212,7 @@ describe("Razorpay webhook route", () => {
 
   it("refunds an independently designated fund donation without touching any appeal", async () => {
     mocks.txDonationFindUnique.mockResolvedValueOnce({
-      id: "donation_fund", appealId: null, fundId: "approved_fund",
+      id: "donation_fund", appealId: null, fundId: "approved_fund", givingIntent: "GENERAL", designationSnapshot: syntheticFundDesignation("approved_fund"),
       currency: "INR", amount: decimal(100), refundedAmount: decimal(0),
       donorEmail: "donor@example.test", referenceNumber: "AFD-FUND",
     });
@@ -227,9 +228,18 @@ describe("Razorpay webhook route", () => {
     expect(mocks.txNotificationCreate).toHaveBeenCalledOnce();
   });
 
+  it("does not refund fund money with an unverifiable original purpose", async () => {
+    const original = await mocks.txDonationFindUnique();
+    mocks.txDonationFindUnique.mockResolvedValueOnce({ ...original, appealId: null, fundId: "fund", givingIntent: "GENERAL", designationSnapshot: null });
+    expect((await POST(webhookRequest(refundPayload()))).status).toBe(500);
+    expect(mocks.txRefundCreateMany).not.toHaveBeenCalled();
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
   it("does not acknowledge a fund refund larger than the remaining captured amount", async () => {
     mocks.txDonationFindUnique.mockResolvedValueOnce({
-      id: "donation_fund", appealId: null, fundId: "approved_fund",
+      id: "donation_fund", appealId: null, fundId: "approved_fund", givingIntent: "GENERAL", designationSnapshot: syntheticFundDesignation("approved_fund"),
       currency: "INR", amount: decimal(100), refundedAmount: decimal(0),
       donorEmail: "donor@example.test", referenceNumber: "AFD-FUND",
     });
@@ -241,7 +251,7 @@ describe("Razorpay webhook route", () => {
 
   it("rejects refund accounting with two destinations before ledger writes", async () => {
     mocks.txDonationFindUnique.mockResolvedValueOnce({
-      id: "donation_mixed", appealId: "appeal_1", fundId: "approved_fund",
+      id: "donation_mixed", appealId: "appeal_1", fundId: "approved_fund", givingIntent: "GENERAL", designationSnapshot: syntheticFundDesignation("approved_fund"),
       currency: "INR", amount: decimal(100), refundedAmount: decimal(0),
     });
     const response = await POST(webhookRequest(refundPayload(2500)));

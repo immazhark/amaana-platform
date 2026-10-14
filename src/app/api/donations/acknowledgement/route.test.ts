@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -66,9 +67,9 @@ describe("private donation acknowledgement request bounds", () => {
       version: 1, kind: "APPEAL", appealId: "appeal-1",
       label: "Original donor designation", givingIntent: "GENERAL",
     },
-    status: "CAPTURED",
-    amount: { toNumber: () => 500 },
-    refundedAmount: { toNumber: () => 0 },
+    status: "CAPTURED", currency: "INR",
+    amount: new Prisma.Decimal(500),
+    refundedAmount: new Prisma.Decimal(0),
     receiptNumber: "ACK-STAGING",
     referenceNumber: "AFD-STAGING-REFUNDED",
     donorName: "Synthetic donor",
@@ -83,6 +84,21 @@ describe("private donation acknowledgement request bounds", () => {
       assistanceRequest: null,
     },
   };
+
+  it.each([
+    { currency: "USD" },
+    { amount: new Prisma.Decimal("100.001") },
+    { amount: new Prisma.Decimal(0) },
+    { refundedAmount: new Prisma.Decimal(501) },
+    { status: "PENDING_VERIFICATION", refundedAmount: new Prisma.Decimal(1) },
+    { status: "REFUNDED", refundedAmount: new Prisma.Decimal(25) },
+  ])("does not issue a misleading receipt for inconsistent accounting %o", async patch => {
+    mocks.findUnique.mockResolvedValue({ ...original, ...patch });
+    const response = await POST(acknowledgementRequest());
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ found: false });
+    expect(response.headers.get("cache-control")).toContain("private");
+  });
 
   it("returns the original donor designation rather than a later edited campaign title", async () => {
     mocks.findUnique.mockResolvedValue(original);

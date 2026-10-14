@@ -1,7 +1,7 @@
 import { DonationPaymentMethod, DonationStatus, NotificationChannel } from "@prisma/client";
 import { shouldMarkAppealFunded } from "@/lib/appeals";
 import { createReceiptNumber } from "@/lib/donations";
-import { requireDonationDestination } from "@/lib/donation-destination";
+import { requireDonationDestination, requireDonationFinancialDestination } from "@/lib/donation-destination";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
 const DIRECT_METHODS: DonationPaymentMethod[] = [DonationPaymentMethod.DIRECT_UPI, DonationPaymentMethod.BANK_TRANSFER];
@@ -27,6 +27,7 @@ export async function reconcileDirectDonation(input: {
         fundId: true,
         donorEmail: true,
         givingIntent: true,
+        designationSnapshot: true,
         amount: true,
         currency: true,
         status: true,
@@ -49,6 +50,7 @@ export async function reconcileDirectDonation(input: {
       return { status: DonationStatus.REJECTED, referenceNumber: donation.referenceNumber };
     }
 
+    requireDonationFinancialDestination(donation);
     const donationPaise = donation.amount.mul(100).toNumber();
     if (donation.currency !== "INR" || !Number.isSafeInteger(donationPaise) || donationPaise <= 0) {
       throw new Error("Invalid financial amounts for transfer reconciliation");

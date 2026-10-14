@@ -29,7 +29,10 @@ function date(value: unknown) {
 }
 
 function amount(value: unknown): value is number {
-  return typeof value === "number" && Number.isFinite(value) && value >= 0;
+  if (typeof value !== "number" || !Number.isFinite(value) || value < 0) return false;
+  const paise = Math.round(value * 100);
+  return Number.isSafeInteger(paise)
+    && Math.abs(value - paise / 100) <= Number.EPSILON * Math.max(1, value) * 2;
 }
 
 // Casts at fetch boundaries cannot establish that JSON is safe to render.
@@ -47,6 +50,9 @@ export function isAcknowledgementResponse(value: unknown, reference: string): va
     && (d.designationKind === undefined || d.designationKind === "APPEAL" || d.designationKind === "FUND")
     && (d.designationKind !== "FUND" || d.givingIntent !== "ZAKAT")
     && amount(d.amount) && d.amount > 0 && amount(d.refundedAmount) && d.refundedAmount <= d.amount
+    && (p.tone === "refunded" ? d.refundedAmount === d.amount
+      : p.tone === "captured" ? d.refundedAmount < d.amount
+        : d.refundedAmount === 0)
     && date(d.recordDate) && nullableText(d.providerPaymentId)
     && object(d.appeal) && text(d.appeal.title)
     && (d.designationKind === "FUND"

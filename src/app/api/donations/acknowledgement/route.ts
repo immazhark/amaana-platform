@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { getDonationAcknowledgementPresentation, hashReceiptToken, resolveAppealDonationDesignation } from "@/lib/donations";
+import { summarizeDonationRecord } from "@/lib/fund-ledger";
 import { requireDonationDestination } from "@/lib/donation-destination";
 import { resolveFundDonationDesignation } from "@/lib/giving-funds";
 import { prisma } from "@/lib/prisma";
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
         fundId: true,
         designationSnapshot: true,
         status: true,
+        currency: true,
         amount: true,
         refundedAmount: true,
         receiptNumber: true,
@@ -76,8 +78,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
     }
 
-    const amount = donation.amount.toNumber();
-    const refundedAmount = donation.refundedAmount.toNumber();
+    const accounting = summarizeDonationRecord(donation);
+    const amount = accounting.amountPaise / 100;
+    const refundedAmount = accounting.refundedPaise / 100;
     const recordDate = donation.refundedAt ?? donation.capturedAt ?? donation.createdAt;
     const destination = requireDonationDestination(donation);
     const presentation = getDonationAcknowledgementPresentation(donation.status, amount, refundedAmount, destination.kind);

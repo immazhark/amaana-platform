@@ -1,3 +1,7 @@
+## 2026-10-14 — consolidated accounting and master-state continuation
+
+Ownership: HANDOFF_PENDING after consolidated B08 batch; sole writer.449 focused tests/42 isolatedSQL passed;10nativeDB cases skipped. Publish to PR292; master149 counts preserved; no release.
+
 ## 2026-10-14 — individual donation accounting projection
 
 Ownership: HANDOFF_PENDING after detail retained-money correction.25 focused tests/type/lint pass; publish to PR292. No release; B08 remains partial.

@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { hashTrackingToken } from "@/lib/assistance";
 import { hashReceiptToken } from "@/lib/donations";
@@ -43,8 +44,8 @@ const endpoints = [
     record: () => ({
       receiptTokenHash: hashReceiptToken(token),
       appealId: "synthetic-appeal-id", fundId: null, designationSnapshot: null,
-      status: "CAPTURED", amount: { toNumber: () => 100 },
-      refundedAmount: { toNumber: () => 0 },
+      status: "CAPTURED", currency: "INR", amount: new Prisma.Decimal(100),
+      refundedAmount: new Prisma.Decimal(0),
       receiptNumber: "ACK-PRIVATE-TEST", referenceNumber: reference,
       donorName: "Synthetic Donor", givingIntent: "GENERAL", capturedAt: date,
       refundedAt: null, createdAt: date, providerPaymentId: "pay_synthetic",

@@ -1,7 +1,7 @@
 import { NotificationChannel } from "@prisma/client";
 import { shouldMarkAppealFunded } from "@/lib/appeals";
 import { createReceiptNumber } from "@/lib/donations";
-import { requireDonationDestination } from "@/lib/donation-destination";
+import { requireDonationFinancialDestination } from "@/lib/donation-destination";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { fetchRazorpayPayment } from "@/lib/razorpay";
@@ -58,6 +58,7 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
         fundId: true,
         donorEmail: true,
         givingIntent: true,
+        designationSnapshot: true,
         receiptTokenHash: true,
         status: true,
         providerPaymentId: true,
@@ -78,7 +79,7 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
       throw new Error("Payment does not match donation order");
     }
 
-    const destination = requireDonationDestination(donation);
+    const destination = requireDonationFinancialDestination(donation);
     assertCapturedPaymentIdentity(donation.status, donation.providerPaymentId, providerPaymentId);
 
     const changed = await tx.donation.updateMany({

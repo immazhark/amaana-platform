@@ -55,7 +55,7 @@ describe("private read response contracts", () => {
   });
   it("accepts existing verified, pending, failed and refunded records", () => {
     for (const tone of ["captured", "pending", "failed", "refunded"]) {
-      expect(isAcknowledgementResponse({ ...acknowledgement, presentation: { ...acknowledgement.presentation, tone } }, reference)).toBe(true);
+      expect(isAcknowledgementResponse({ ...acknowledgement, presentation: { ...acknowledgement.presentation, tone }, donation: { ...acknowledgement.donation, refundedAmount: tone === "refunded" ? 100 : 0 } }, reference)).toBe(true);
     }
     expect(isAcknowledgementResponse({ found: false }, reference)).toBe(true);
     expect(isTrackingResponse({ found: false })).toBe(true);
@@ -76,9 +76,25 @@ describe("private read response contracts", () => {
       expect(isAcknowledgementResponse({ ...acknowledgement, donation: { ...acknowledgement.donation, [field]: value } }, reference)).toBe(false);
     });
   }
+  it.each([
+    { amount: 100.001 }, { amount: Number.MAX_SAFE_INTEGER },
+    { refundedAmount: 0.001 },
+  ])("rejects unrepresentable private monetary data %o", patch => {
+    expect(isAcknowledgementResponse({ ...acknowledgement, donation: { ...acknowledgement.donation, ...patch } }, reference)).toBe(false);
+  });
+  it("rejects a claimed full refund with only partial refund totals", () => {
+    expect(isAcknowledgementResponse({ ...acknowledgement,
+      presentation: { ...acknowledgement.presentation, tone: "refunded" },
+      donation: { ...acknowledgement.donation, refundedAmount: 25 },
+    }, reference)).toBe(false);
+  });
+  it("accepts exact paise such as 0.29 without floating-point rejection", () => {
+    expect(isAcknowledgementResponse({ ...acknowledgement, donation: { ...acknowledgement.donation, amount: 0.29 } }, reference)).toBe(true);
+  });
+
   it("does not coerce malformed presentation values", () => {
     for (const tone of [{ toString: {} }, [], "unknown", null]) {
-      expect(isAcknowledgementResponse({ ...acknowledgement, presentation: { ...acknowledgement.presentation, tone } }, reference)).toBe(false);
+      expect(isAcknowledgementResponse({ ...acknowledgement, presentation: { ...acknowledgement.presentation, tone }, donation: { ...acknowledgement.donation, refundedAmount: tone === "refunded" ? 100 : 0 } }, reference)).toBe(false);
     }
     expect(isAcknowledgementResponse({ ...acknowledgement, presentation: { ...acknowledgement.presentation, heading: {} } }, reference)).toBe(false);
   });
