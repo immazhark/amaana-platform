@@ -1,3 +1,7 @@
+## 2026-10-14 — manual reconciliation derived cache refresh
+
+From 5f33959a: successful manual capture previously refreshed donation pages only, leaving shared appeals data and private fund summary stale. Server Action now updateTag(appeals) and refreshes homepage/appeals after committed CAPTURED result; staff fund/donation views refresh after capture/rejection. Rejection does not expire public fundraising data; failed writes/unauthorized/invalid decisions do not invalidate. Prior source fails the new action regression.20 focused action/manual reconciliation cases, TypeScript, focused lint and diff pass. Scope is manual Server Action; gateway/webhook invalidation remains a separate source task. No build/browser/live cache certification or release operation.
+
 ## 2026-10-14 — overall donation summary fail-closed accounting
 
 Continuation from 8d8ac5db. Overall donations dashboard previously clamped refunded>gross to zero and accepted unsafe/sub-paise aggregates or missing sums on nonempty records. Reuse the renamed summarizeSettledDonationAggregate for both fund and overall summaries. Query settled count with sums; only genuine empty aggregate renders zero. Invalid totals produce an explicit reconciliation alert instead of plausible balances. Permissions and settled status scope unchanged.

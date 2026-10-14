@@ -1,3 +1,7 @@
+## 2026-10-14 — manual reconciliation cache integration
+
+Ownership: HANDOFF_PENDING after manual reconciliation cache unit.20 focused tests/type/lint pass. Publish to PR292; gateway/webhook cache invalidation remains next. No release.
+
 ## 2026-10-14 — donation dashboard aggregate integrity
 
 Ownership: HANDOFF_PENDING after overall donation summary integrity. Parent 8d8ac5db. 32 focused tests/type/lint pass. Publish to PR292; no release.
