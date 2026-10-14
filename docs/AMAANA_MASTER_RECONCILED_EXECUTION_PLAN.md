@@ -247,6 +247,20 @@ Runtime state/cache after privacy revocation requires deployment/CDN verificatio
 
 ## F. Continuation checkpoint
 
+### 14 October — B08 dormant reviewed-fund order creation boundary
+
+Branch: `fix/direct-transfer-feedback-20261013`, PR #292. Based on the reconciled B08 finance lifecycle and the original appeal-only order contract.
+
+- Added `/api/donations/fund-order` as an **off-by-default server-only** payment-order endpoint. It responds 404 before looking up records or calling the provider unless `AMAANA_FUND_CHECKOUT_ENABLED` is explicitly exactly `true`. No UI points to it, and no server environment value was changed.
+- When explicitly enabled in a future reviewed release, the endpoint validates origin, abuse rate, request byte limit, exact fund-only destination, CUID, safe current revision, INR amount, domestic confirmation and supported giving intention. It loads the actual fund definition and requires approved status, independent approver, matching revision, valid purpose, approved intention and INR currency via `approvedFundDesignationSnapshot`. The existing PostgreSQL insert trigger separately verifies all of this while locking the fund, so an edit/pause after initial lookup fails closed.
+- Extended `createRazorpayOrder` with a backward-compatible optional `fundId` and an explicit exactly-one appeal/fund guard. Existing appeal notes stay unchanged; fund orders send `{fundId, givingIntent}` notes rather than associating money with any unrelated appeal.
+- For validated orders only: uses original reviewed fund designation, provider amount/currency/receipt/created-status validation, server-generated donation id and receipt token, and recovery only by same-request donation id, provider order and receipt token hash. Never returns order credentials on an unconfirmed database record.
+- Authored a dedicated route suite testing disabled-by-default state, malformed and mixed destination fields, stale revisions, unapproved/paused/foreign funds, Zakat rejection, original snapshot, gateway response mismatch, lost-write recovery, and rejection of mismatched recovered donor records. Added Razorpay transport notes and destination exclusivity tests.
+- Read back seven critical Github files and confirmed the new endpoint, tests and existing original appeal/direct-transfer schemas. These are **source checks, not executed tests**. Exact-head workflow was pending at the time of readback; no passing build/finance simulation at latest head is asserted. Earlier isolated PostgreSQL success at `0ebf5ad` does not establish approval for this new endpoint.
+- **Public activation remains blocked:** the existing `/api/donations/order` and direct-transfer request schemas continue forbidding `fundId`; no public fund page, no seeded active fund, no deployment, no provider payment, no hosted migration, no email delivery, and no toggle was enabled.
+
+Next B08 release gate: resolve any exact-head test/typecheck error, require verified approved donor-facing disclosure, provide protected fund-selection UI with revision binding, and perform controlled live-mode rollout only after project-owner approval. Do not classify B08 as production complete from this source implementation.
+
 ### 14 October — B08 financial integration and targeted repair (current)
 
 Engineering continuation on PR #292; reviewed the authoritative B08/B09 plan and active GitHub tree. Source/test head before this document change: `e2a8476c4460b1dda4b9404261af76a33cb1a3b0`.
