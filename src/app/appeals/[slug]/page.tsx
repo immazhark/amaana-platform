@@ -12,7 +12,7 @@ import { AppealShare } from "@/components/appeal-share";
 import { getAppealSearchPrivacy } from "@/lib/appeal-search-privacy";
 import { normalizeSafePublicMediaUrl } from "@/lib/public-media";
 import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
-import { formatINR, isAppealOpenForDonations } from "@/lib/appeals";
+import { formatINR, getAppealProgressPercent, isAppealOpenForDonations } from "@/lib/appeals";
 import { getAppealCoverMedia, getAppealPageData } from "@/lib/public-page-data";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -40,7 +40,7 @@ export default async function AppealDetailPage({ params }: Props) {
   const coverMedia = await getAppealCoverMedia(coverUrl);
   const raised = appeal.amountRaised.toNumber();
   const goal = appeal.goalAmount.toNumber();
-  const progress = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
+  const progress = getAppealProgressPercent(raised, goal);
   const isOpen = isAppealOpenForDonations(appeal);
   const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE";
 
