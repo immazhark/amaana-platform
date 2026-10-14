@@ -10,8 +10,14 @@ type AppealShareProps = {
 
 export function AppealShare({ title, summary, path }: AppealShareProps) {
   const [status, setStatus] = useState("");
-  const siteUrl = (process.env.NEXT_PUBLIC_APP_URL || "https://amaanafoundation.org").replace(/\/$/, "");
-  const canonicalUrl = new URL(path, siteUrl).toString();
+  // The same absolute URL is rendered on the server and during hydration.
+  // Invalid preview configuration must not crash the sharing controls.
+  let canonicalUrl: string;
+  try {
+    canonicalUrl = new URL(path, process.env.NEXT_PUBLIC_APP_URL || "https://amaanafoundation.org").toString();
+  } catch {
+    canonicalUrl = new URL(path, "https://amaanafoundation.org").toString();
+  }
   const whatsappMessage = [title, summary, canonicalUrl].filter(Boolean).join("\n\n");
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
 
