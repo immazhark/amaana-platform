@@ -60,6 +60,24 @@ describe('private donation designation migration on isolated PostgreSQL-WASM', {
     await assert.rejects(insertDonation(`invalid-${reason.replaceAll(' ', '-')}`, snapshot), error => error.code === '23514');
   });
 
+  it('never allows retroactive donor-purpose backfills on legacy NULL records', async () => {
+    await assert.rejects(db.query(
+      'UPDATE "Donation" SET "designationSnapshot"=$1::jsonb WHERE "id"=\'legacy\'',
+      [JSON.stringify(good)],
+    ), error => error.code === '23514');
+  });
+
+  it('prevents changing appeal or giving intention on legacy and snapshotted donations', async () => {
+    for (const id of ['legacy', 'snapshot']) {
+      await assert.rejects(db.query(
+        'UPDATE "Donation" SET "givingIntent"=\'SADAQAH\' WHERE "id"=$1', [id],
+      ), error => error.code === '23514');
+      await assert.rejects(db.query(
+        'UPDATE "Donation" SET "appealId"=\'another-appeal\' WHERE "id"=$1', [id],
+      ), error => error.code === '23514');
+    }
+  });
+
   it('blocks edits to saved purpose while permitting ordinary financial state changes', async () => {
     await assert.rejects(
       db.query('UPDATE "Donation" SET "designationSnapshot"=$1::jsonb WHERE "id"=\'snapshot\'',
