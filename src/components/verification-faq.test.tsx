@@ -30,7 +30,7 @@ describe("visible Amaana verification questions and FAQ markup", () => {
   it("publishes only a safe same-site /how-we-verify JSON-LD FAQ identity", () => {
     const schema = buildVerificationFaqSchema("https://amaanafoundation.org");
     expect(schema.url).toBe("https://amaanafoundation.org/how-we-verify");
-    expect(schema.mainEntity.every(i => i["@type"] === "Question")).toBe(true);
+    expect(schema.mainEntity.every((i: { "@type": string }) => i["@type"] === "Question")).toBe(true);
     expect(serializeVerificationFaqSchema("https://amaanafoundation.org")).not.toContain("<script>");
   });
 });
