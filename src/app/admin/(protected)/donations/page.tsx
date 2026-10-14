@@ -2,7 +2,7 @@ import Link from "@/components/navigation-link";
 import { DonationIntent, DonationStatus, Prisma } from "@prisma/client";
 import { requirePermission } from "@/lib/auth";
 import { summarizeSettledDonationAggregate } from "@/lib/fund-ledger";
-import { formatINR } from "@/lib/appeals";
+import { formatPrivateReceiptINR } from "@/lib/private-donation-ack";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
 import { resolvePrivateDonationPurpose } from "@/lib/donation-destination";
@@ -10,6 +10,14 @@ import { prisma } from "@/lib/prisma";
 import { donationOperationalState } from "@/lib/operational-signals";
 
 type Props = { searchParams: Promise<{ status?: string; intent?: string; page?: string }> };
+
+// Inconsistent legacy rows require review rather than rounding or crashing
+// the complete staff reconciliation ledger.
+function safeAdminFinancialAmount(value: number): string {
+  try { return formatPrivateReceiptINR(value); }
+  catch { return "Requires reconciliation"; }
+}
+
 
 export default async function DonationsPage({ searchParams }: Props) {
   await requirePermission("donation.view");
@@ -131,7 +139,7 @@ export default async function DonationsPage({ searchParams }: Props) {
         <p className="eyebrow">Reconciliation</p>
         <h1>Donations</h1>
         {financialTotals ? <p className="lead">
-          Gross captured: {formatINR(financialTotals.grossCapturedPaise / 100)} · Refunded: {formatINR(financialTotals.refundedPaise / 100)} · Net retained: {formatINR(financialTotals.netRetainedPaise / 100)}
+          Gross captured: {formatPrivateReceiptINR(financialTotals.grossCapturedPaise / 100)} · Refunded: {formatPrivateReceiptINR(financialTotals.refundedPaise / 100)} · Net retained: {formatPrivateReceiptINR(financialTotals.netRetainedPaise / 100)}
         </p> : <p role="alert">Donation totals require financial reconciliation.</p>}
       </div>
     </div>
@@ -187,8 +195,8 @@ export default async function DonationsPage({ searchParams }: Props) {
           <td>{resolvePrivateDonationPurpose(donation).label}</td>
           <td>{donationIntentLabel(donation.givingIntent)}</td>
           <td>{donation.paymentMethod === "DIRECT_UPI" ? "Direct UPI" : donation.paymentMethod === "BANK_TRANSFER" ? "Bank transfer" : "Razorpay"}</td>
-          <td>{formatINR(donation.amount.toNumber())}</td>
-          <td>{formatINR(donation.refundedAmount.toNumber())}</td>
+          <td>{safeAdminFinancialAmount(donation.amount.toNumber())}</td>
+          <td>{safeAdminFinancialAmount(donation.refundedAmount.toNumber())}</td>
           <td><span className="status-badge">{donation.status}</span></td>
           <td>{donation.createdAt.toLocaleDateString("en-IN")}</td>
         </tr>)}</tbody>

@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { summarizeDonationRecord } from "@/lib/fund-ledger";
-import { formatINR } from "@/lib/appeals";
+import { formatPrivateReceiptINR } from "@/lib/private-donation-ack";
 import { donationIntentLabel } from "@/lib/donation-intent";
 import { resolvePrivateDonationPurpose } from "@/lib/donation-destination";
 import { prisma } from "@/lib/prisma";
@@ -22,7 +22,7 @@ export default async function DonationDetailPage({ params }: Props) {
   let accounting;
   try { accounting = summarizeDonationRecord(donation); }
   catch { accounting = null; }
-  const displayedAmount = accounting ? formatINR(accounting.amountPaise / 100) : "Requires reconciliation";
+  const displayedAmount = accounting ? formatPrivateReceiptINR(accounting.amountPaise / 100) : "Requires reconciliation";
   const direct = donation.paymentMethod !== "RAZORPAY";
   const designation = resolvePrivateDonationPurpose(donation);
 
@@ -36,7 +36,7 @@ export default async function DonationDetailPage({ params }: Props) {
         <div><dt>Giving intention</dt><dd>{donationIntentLabel(donation.givingIntent)}</dd></div><div><dt>Designated purpose</dt><dd>{designation.label} ({designation.provenance === "original" ? "Recorded at contribution" : designation.provenance === "legacy" ? "Legacy record — current appeal title" : "Requires manual review"})</dd></div><div><dt>Payment method</dt><dd>{methodLabel(donation.paymentMethod)}</dd></div>
         {direct ? <><div><dt>Transfer reference / UTR</dt><dd>{donation.transferReference}</dd></div><div><dt>Transfer date</dt><dd>{formatDateTime(donation.transferredAt)}</dd></div><div><dt>Evidence</dt><dd>{evidenceUrl ? <a href={evidenceUrl} target="_blank" rel="noreferrer">Open private evidence</a> : "Not supplied"}</dd></div><div><dt>Reconciled by</dt><dd>{donation.reconciledBy?.name ?? "Pending"}</dd></div><div><dt>Reconciliation notes</dt><dd>{donation.reconciliationNotes ?? "Pending"}</dd></div></> : <><div><dt>Razorpay order</dt><dd>{donation.providerOrderId}</dd></div><div><dt>Razorpay payment</dt><dd>{donation.providerPaymentId ?? "Pending"}</dd></div></>}
         {donation.fundId && <div><dt>Fund purpose confirmed</dt><dd>{formatDateTime(donation.fundDisclosureConfirmedAt)}</dd></div>}
-        <div><dt>Acknowledgement</dt><dd>{donation.receiptNumber ?? "Pending"}</dd></div><div><dt>Original amount</dt><dd>{displayedAmount}</dd></div><div><dt>Refunded</dt><dd>{accounting ? formatINR(accounting.refundedPaise / 100) : "Requires reconciliation"}</dd></div><div><dt>Net retained</dt><dd>{accounting ? formatINR(accounting.netRetainedPaise / 100) : "Requires reconciliation"}</dd></div>
+        <div><dt>Acknowledgement</dt><dd>{donation.receiptNumber ?? "Pending"}</dd></div><div><dt>Original amount</dt><dd>{displayedAmount}</dd></div><div><dt>Refunded</dt><dd>{accounting ? formatPrivateReceiptINR(accounting.refundedPaise / 100) : "Requires reconciliation"}</dd></div><div><dt>Net retained</dt><dd>{accounting ? formatPrivateReceiptINR(accounting.netRetainedPaise / 100) : "Requires reconciliation"}</dd></div>
         <div><dt>Created</dt><dd>{formatDateTime(donation.createdAt)}</dd></div><div><dt>Captured</dt><dd>{formatDateTime(donation.capturedAt)}</dd></div><div><dt>Failed</dt><dd>{formatDateTime(donation.failedAt)}</dd></div><div><dt>Fully refunded</dt><dd>{formatDateTime(donation.refundedAt)}</dd></div>
       </dl></section>
       <aside className="card">
