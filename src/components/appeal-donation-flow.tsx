@@ -60,16 +60,17 @@ export function AppealDonationFlow({ appeals, paymentInstructions, bankAvailable
       {eligible.map(({ appeal, progress }) => {
         return <button key={appeal.id} type="button" disabled={locked}
           className={styles.choice} aria-pressed={selected.id === appeal.id}
+          aria-label={`Select ${appeal.title}; ${progress.remainingLabel} remaining; ${progress.percentage}% of ${progress.goalLabel} supported`}
           onClick={() => { if (!lockRef.current) setSelectedId(appeal.id); }}>
           <strong>{appeal.title}</strong>
           <span>{progress.remainingLabel} remaining</span>
-          <PublicFundingMeter progress={progress} title={appeal.title} trackClassName={styles.track}/>
+          <PublicFundingMeter progress={progress} title={appeal.title} trackClassName={styles.track} decorative/>
           <small>{progress.percentage}% of the reviewed {progress.goalLabel} goal</small>
         </button>;
       })}
     </div>
     <div className={styles.checkout}>
-      <p className={styles.selected}>Selected: <strong>{selected.title}</strong> · verified remaining need
+      <p className={styles.selected} aria-live="polite">Selected: <strong>{selected.title}</strong> · verified remaining need{" "}
         {choice?.progress.remainingLabel}</p>
       <Suspense fallback={<p role="status">Preparing secure donation methods…</p>}>
         <DonationMethods key={selected.id} appealId={selected.id} appealTitle={selected.title}

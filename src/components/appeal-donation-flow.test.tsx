@@ -22,6 +22,9 @@ describe("reviewed in-page appeal selector", () => {
     expect(markup).toContain("₹500");
     expect(markup).toContain("20%");
     expect(markup).toContain('aria-pressed="true"');
+    expect(markup).toContain('aria-label="Select Synthetic approved need; ₹400.00 remaining; 20% of ₹500.00 supported"');
+    expect(markup).not.toContain('role="progressbar"');
+    expect(markup).toContain('aria-live="polite"');
     expect(markup).toContain("server rechecks eligibility");
   });
   it("does not merge independent appeal targets or preselect Zakat for any cause", () => {

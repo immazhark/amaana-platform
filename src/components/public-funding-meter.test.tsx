@@ -17,6 +17,16 @@ describe("shared accessible fundraising meter", () => {
     expect(html).toContain('width:20%');
     expect(html).toContain('aria-hidden="true"');
   });
+  it("renders the meter visually without nested progressbar semantics inside chooser buttons", () => {
+    const amount = getPublicAppealProgress(125.5, 500);
+    if (!amount) throw new Error("Missing synthetic reviewed amount");
+    const html = renderToStaticMarkup(<PublicFundingMeter decorative progress={amount}
+      title="Synthetic appeal" trackClassName="choice-track"/>);
+    expect(html).toContain('aria-hidden="true"');
+    expect(html).toContain('width:25%');
+    expect(html).not.toContain('role="progressbar"');
+    expect(html).not.toContain('aria-valuenow');
+  });
   it("never falsely announces 100 percent for a still-partial target", () => {
     const amount = getPublicAppealProgress(999.99, 1000);
     if (!amount) throw new Error("Missing partial fundraising state");
