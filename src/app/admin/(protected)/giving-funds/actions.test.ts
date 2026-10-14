@@ -36,6 +36,7 @@ describe("fund registry server actions", () => {
     expect(m.create).not.toHaveBeenCalled();
   });
   it("restricts updates to the exact rendered draft revision", async () => {
+    m.find.mockResolvedValue({ ...current, status: "DRAFT" });
     await expect(updateGivingFund(draftForm())).rejects.toThrow("saved=1");
     expect(m.update).toHaveBeenCalledWith({ where: { id: "fund-1", revision: 3, status: "DRAFT" }, data: expect.objectContaining({ revision: { increment: 1 }, lastEditedById: "approver" }) });
   });
@@ -57,9 +58,24 @@ describe("fund registry server actions", () => {
     expect(m.update).not.toHaveBeenCalled(); expect(m.audit).not.toHaveBeenCalled();
   });
   it.each([updateGivingFund, transitionGivingFund])("rejects a lost mutation claim without audit or success invalidation", async action => {
+    if (action === updateGivingFund) m.find.mockResolvedValue({ ...current, status: "DRAFT" });
     m.update.mockResolvedValue({ count: 0 });
     await expect(action(draftForm())).rejects.toThrow("error=");
     expect(m.audit).not.toHaveBeenCalled(); expect(m.revalidate).not.toHaveBeenCalled();
+  });
+  it("preserves the actual before/after fund definition in the private audit", async () => {
+    m.find.mockResolvedValue({ ...current, status: "DRAFT" });
+    await expect(updateGivingFund(draftForm({ purpose: "An independently reviewable revised programme purpose." }))).rejects.toThrow("saved=1");
+    expect(m.audit).toHaveBeenCalledWith({ data: expect.objectContaining({ metadata: expect.objectContaining({
+      before: { slug: current.slug, name: current.name, purpose: current.purpose, disclosure: current.disclosure, accountCode: current.accountCode, acceptedIntents: ["GENERAL"] },
+      after: expect.objectContaining({ purpose: "An independently reviewable revised programme purpose." }),
+    }) }) });
+    expect(m.revalidate.mock.invocationCallOrder[0]).toBeGreaterThan(m.audit.mock.invocationCallOrder[0]!);
+  });
+  it.each([{ status: "DRAFT", revision: 4 }, { status: "APPROVED", revision: 3 }])("does not edit a changed draft or approved definition", async state => {
+    m.find.mockResolvedValue({ ...current, ...state });
+    await expect(updateGivingFund(draftForm())).rejects.toThrow("error=");
+    expect(m.update).not.toHaveBeenCalled(); expect(m.audit).not.toHaveBeenCalled();
   });
   it("clears approval when a paused definition returns for editing", async () => {
     m.find.mockResolvedValue({ ...current, status: "PAUSED", approvedById: "other-approver", approvedAt: new Date() });

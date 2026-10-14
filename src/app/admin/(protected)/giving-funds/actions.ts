@@ -21,6 +21,11 @@ function fundId(form: FormData) {
   return id;
 }
 
+function definitionSnapshot(fund: { slug: string; name: string; purpose: string; disclosure: string; accountCode: string; acceptedIntents: readonly string[] }) {
+  const { slug, name, purpose, disclosure, accountCode, acceptedIntents } = fund;
+  return { slug, name, purpose, disclosure, accountCode, acceptedIntents: [...acceptedIntents] };
+}
+
 async function finishMutation(operation: () => Promise<void>) {
   try {
     await operation();
@@ -40,7 +45,7 @@ export async function createGivingFund(form: FormData) {
     const draft = draftFromForm(form);
     await withSerializableTransactionRetry(async tx => {
       const fund = await tx.givingFund.create({ data: { ...draft, createdById: user.id, lastEditedById: user.id }, select: { id: true } });
-      await tx.auditEvent.create({ data: { actorId: user.id, action: "fund.created", entityType: "GivingFund", entityId: fund.id, metadata: { status: "DRAFT", acceptedIntents: draft.acceptedIntents } } });
+      await tx.auditEvent.create({ data: { actorId: user.id, action: "fund.created", entityType: "GivingFund", entityId: fund.id, metadata: { status: "DRAFT", definition: definitionSnapshot(draft) } } });
     });
   });
 }
@@ -52,9 +57,11 @@ export async function updateGivingFund(form: FormData) {
     const revision = parseFundRevision(form.get("revision"));
     const draft = draftFromForm(form);
     await withSerializableTransactionRetry(async tx => {
+      const previous = await tx.givingFund.findUniqueOrThrow({ where: { id } });
+      if (previous.revision !== revision || previous.status !== "DRAFT") throw new FundValidationError("The fund changed or is no longer a draft. Refresh before editing.");
       const saved = await tx.givingFund.updateMany({ where: { id, revision, status: "DRAFT" }, data: { ...draft, lastEditedById: user.id, revision: { increment: 1 } } });
       if (saved.count !== 1) throw new FundValidationError("The fund changed or is no longer a draft. Refresh before editing.");
-      await tx.auditEvent.create({ data: { actorId: user.id, action: "fund.updated", entityType: "GivingFund", entityId: id, metadata: { previousRevision: revision, revision: revision + 1 } } });
+      await tx.auditEvent.create({ data: { actorId: user.id, action: "fund.updated", entityType: "GivingFund", entityId: id, metadata: { previousRevision: revision, revision: revision + 1, before: definitionSnapshot(previous), after: definitionSnapshot(draft) } } });
     });
   });
 }
@@ -77,7 +84,7 @@ export async function transitionGivingFund(form: FormData) {
         : next === "DRAFT" ? { approvedById: null, approvedAt: null } : {};
       const saved = await tx.givingFund.updateMany({ where: { id, revision, status: fund.status }, data: { status: next, revision: { increment: 1 }, ...approval } });
       if (saved.count !== 1) throw new FundValidationError("The fund changed while you were reviewing it. Refresh before changing status.");
-      await tx.auditEvent.create({ data: { actorId: user.id, action: "fund.status_changed", entityType: "GivingFund", entityId: id, metadata: { from: fund.status, to: next, reason, previousRevision: revision, revision: revision + 1 } } });
+      await tx.auditEvent.create({ data: { actorId: user.id, action: "fund.status_changed", entityType: "GivingFund", entityId: id, metadata: { from: fund.status, to: next, reason, previousRevision: revision, revision: revision + 1, definition: definitionSnapshot(fund) } } });
     });
   });
 }
