@@ -19,6 +19,7 @@ if (!enabled) {
 
 const routes = [
   "admin",
+  "appeals",
   "body-carousel",
   "direct-donation",
   "donation",

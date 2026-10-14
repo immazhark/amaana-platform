@@ -1,3 +1,4 @@
+import "../appeal-card.css";
 import "../appeals.css";
 import "../appeals-wow.css";
 

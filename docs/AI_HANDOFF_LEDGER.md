@@ -1,3 +1,17 @@
+## 2026-10-14 — Appeal stylesheet ownership validated; original95 reconciled
+
+Ownership: REVIEW_PENDING; no concurrent writer. Same PR #292 / fix/direct-transfer-feedback-20261013, parent3284822816d31ab4cc9c7bde8b7fd4a75cffeb54. User cx authorized continuation.
+
+Remove unchanged appeal-card.css from root imports; the existing appeals/layout.tsx now imports it before appeals.css and appeals-wow.css, covering listing and detail progress. Root local stylesheet imports16→15, source bytes130807→127682. Add audit guards against global reintroduction or changed subtree order; reintroduction fails the real audit. No CSS declaration, route content, architecture or accessibility authority changed.
+
+Validation:36 synthetic source-cascade comparisons in local Chromium (widths320/390/620/700/900/1440, normal/hover/focus, both motion preferences) report zero computed-style differences with transitions frozen for stable endpoint comparison. Three committed actual AppealCard/AppealsLayout compiled-browser cases pass at320/390/1440, covering layout, progress fill, focus, reduced-motion authority and containment. Initial new test incorrectly expected literal0s; corrected to existing accessibility rule0.01ms, then all3 pass. Synthetic fixture is acceptance-only, no live DB/payment/media access.
+
+TypeScript, full zero-warning ESLint and governed Stylelint, focused final lint, six existing contrast checks, syntax/diff checks and the existing two-file Prettier gate pass. Latest full runtime unit suite remains1095passed/9DBskipped on parent3284822; this stylesheet-import-only batch does not claim a new full unit run. Clean default-off fixture-free compile-mode build passes; JS816616/819200 and CSS347552/348160bytes unchanged. Client secret/static image guards pass. Generated root manifest CSS excludes canonical appeal-card-head. Uncompressed attributed CSS falls2887bytes: home196918→194031; about190168→187281; appeals204974 and appeal detail191638 unchanged. These are build bytes, not transferred bytes/CWV; existing7 unattributed routes remain. Compile mode is not hosted DB/prerender/release acceptance.
+
+Original95 rows now classify10 baseline addressed,33 implemented/source implemented,24 partial,17 open,11 unverified. R-057/R-058 reflect validated scoped progress while broad isolation remains incomplete; R-065 reflects the already-existing limited two-file formatter gate, not a new implementation. Correct stale R-066 local-lint wording and R-075 parked wording because public/llms.txt exists in current branch. No95-wide fresh production closure claim; later N findings are outside95. R-083–095 include requested feature enhancements, not13 proven regressions. Security nonce/hash hardening, CSS budgets/coverage, human/hosted acceptance, reviewed entity/content/financial facts and authorized operational work remain.
+
+R-056 nullable migration remains unapplied; R-017 reporting defaults off. No merge/main change/deployment, provider configuration or live money/mail/storage/data operation. Next: wider CSS ownership/cascade reduction and remaining actionable original-register work; exact-head hosted gates required before release.
+
 ## 2026-10-14 IST — R-017 opt-in CSP diagnostic stage implemented
 
 Ownership: REVIEW_PENDING; no concurrent writer. Same PR #292 / fix/direct-transfer-feedback-20261013, parent51ed9829b103d36e2772d3191746e9f4a65c3260. Owner cx authorized continued source work.

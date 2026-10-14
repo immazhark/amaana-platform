@@ -1,0 +1,12 @@
+import { notFound } from "next/navigation";
+import AppealsLayout from "@/app/appeals/layout";
+import { AppealCard } from "@/components/appeal-card";
+
+export const dynamic = "force-dynamic";
+export const metadata = { robots: { index: false, follow: false } };
+
+export default function AppealStyleFixture() {
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+  const appeal = { slug: "synthetic-style-check", title: "Synthetic appeal for style acceptance", summary: "Synthetic content used only to check card layout and progress without reading donor or beneficiary records.", category: "MEDICAL", beneficiaryLocation: "Synthetic location", goalAmount: 50000, amountRaised: 10000 };
+  return <AppealsLayout><main className="v2-shell"><h1>Appeal stylesheet acceptance</h1><section className="v2-appeals-grid"><AppealCard appeal={appeal} /><AppealCard appeal={appeal} /></section><aside className="v2-appeal-donation-panel"><div className="v2-appeal-progress" aria-label="Detail funding progress"><span style={{ width: "20%" }} /></div></aside></main></AppealsLayout>;
+}

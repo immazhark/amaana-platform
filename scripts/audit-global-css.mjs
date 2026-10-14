@@ -31,6 +31,16 @@ if (cssImports.indexOf('site-chrome.css') !== cssImports.indexOf('experience-fin
   failures.push('site-chrome.css must immediately follow experience-finish.css.');
 }
 
+// Appeal card/progress rules belong to both listing and detail routes, not every page.
+if (cssImports.includes('appeal-card.css')) {
+  failures.push('appeal-card.css must be owned by the appeals subtree layout.');
+}
+const appealsLayout = await readFile(path.join(root, 'src/app/appeals/layout.tsx'), 'utf8');
+const appealImports = [...appealsLayout.matchAll(/import\s+["']\.\.\/([^"']+\.css)["'];/g)].map(match => match[1]);
+if (appealImports.join(',') !== 'appeal-card.css,appeals.css,appeals-wow.css') {
+  failures.push('Appeals layout must preserve card, route and polish stylesheet ordering.');
+}
+
 // Error and 404 styles must remain route-owned instead of burdening every page.
 if (cssImports.includes('error-experience.css')) {
   failures.push('error-experience.css must be imported by error and not-found boundaries, not the root layout.');
