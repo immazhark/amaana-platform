@@ -197,7 +197,8 @@ describe("donation order request bounds", () => {
     expect(response.status).toBe(201);
     expect(payload.orderId).toBe("order_Valid123");
     expect(payload.amount).toBe(50_000);
-    expect(mocks.createRazorpayOrder).toHaveBeenCalledExactlyOnceWith({
+    expect(mocks.createRazorpayOrder).toHaveBeenCalledTimes(1);
+    expect(mocks.createRazorpayOrder).toHaveBeenCalledWith({
       amountPaise: 50_000,
       receipt: "AMN-123",
       appealId: "appeal_1",
