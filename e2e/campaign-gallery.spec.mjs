@@ -1,4 +1,38 @@
 import { expect, test } from '@playwright/test';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+
+const appRequire = createRequire(path.join(process.env.AMAANA_APP_WORKSPACE ?? process.cwd(), 'package.json'));
+
+for (const width of [390, 1440]) {
+  test(`ingested preview remains visible while gallery media loads at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+    let release = () => {};
+    const loading = new Promise(resolve => { release = resolve; });
+    const sharp = appRequire('sharp');
+    const image = await sharp({ create: { width: 640, height: 400, channels: 3, background: '#466faa' } }).png().toBuffer();
+    await page.route('**/_next/image?**', async route => {
+      if (new URL(route.request().url()).searchParams.get('url') !== '/media/2026/synthetic-preview.png') return route.continue();
+      await loading;
+      await route.fulfill({ status: 200, contentType: 'image/png', body: image });
+    });
+    await page.goto('/browser-acceptance/gallery?preview=true', { waitUntil: 'domcontentloaded' });
+    const first = page.getByRole('button', { name: /^Enlarge image 1 of 13:/ });
+    const thumbnail = first.locator('img');
+    await expect(thumbnail).toHaveCSS('background-image', /data:image\/svg\+xml/);
+    await first.click();
+    const full = page.getByRole('dialog').locator('img');
+    await expect(full).toHaveCSS('background-image', /data:image\/svg\+xml/);
+    release();
+    for (const target of [thumbnail, full]) {
+      await expect.poll(() => target.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+      await expect(target).toHaveCSS('background-image', 'none');
+    }
+    await page.keyboard.press('Escape');
+    await expect(first).toBeFocused();
+  });
+}
 
 async function openGallery(page, width) {
   await page.setViewportSize({ width, height: width <= 430 ? 844 : 900 });

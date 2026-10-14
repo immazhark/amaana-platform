@@ -10,6 +10,12 @@ export type PublicMediaCandidate = {
 
 export const IDENTITY_MEDIA_SORT_ORDER = -1000;
 
+/** Only the bounded JPEG format produced by ingestion may become inline image CSS. */
+export function getPublicImagePlaceholder(value: unknown): string | null {
+  return typeof value === "string" && value.length <= 1400
+    && /^data:image\/jpeg;base64,\/9j\/[A-Za-z0-9+/]*={0,2}$/.test(value) ? value : null;
+}
+
 const PUBLIC_MEDIA_RELATIVE_ORIGIN = "https://amaana.invalid";
 
 export function normalizeSafePublicMediaUrl(value: string | null | undefined) {

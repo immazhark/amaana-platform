@@ -4,7 +4,7 @@ import { UIIcon } from "./ui-icon";
 /* eslint-disable @next/next/no-img-element */
 
 import Image from "next/image";
-import { getPublicImageOptimizationUrl } from "@/lib/public-media";
+import { getPublicImageOptimizationUrl, getPublicImagePlaceholder } from "@/lib/public-media";
 import { adjacentGalleryId } from "@/lib/gallery-selection";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
@@ -16,6 +16,7 @@ export type CampaignGalleryItem = {
   caption?: string | null;
   width?: number | null;
   height?: number | null;
+  blurDataURL?: string | null;
 };
 
 export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }) {
@@ -40,6 +41,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
   const activeIndex = safeItems.findIndex(item => item.id === activeId);
   const active = activeIndex < 0 ? null : safeItems[activeIndex] ?? null;
   const activeImageUrl = active ? getPublicImageOptimizationUrl(active.url) : null;
+  const activeBlur = active ? getPublicImagePlaceholder(active.blurDataURL) : null;
   // Clear a removed selection during render so it cannot reopen if reinserted.
   if (activeId !== null && !active) setActiveId(null);
 
@@ -123,6 +125,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
           const width = item.width && item.width > 0 ? item.width : 1600;
           const height = item.height && item.height > 0 ? item.height : 1200;
           const imageUrl = getPublicImageOptimizationUrl(item.url);
+          const blur = getPublicImagePlaceholder(item.blurDataURL);
           return (
           <figure className={`${styles.card} ${graphicAsset ? styles.graphicCard : ""}`} key={item.id}>
             <button
@@ -135,7 +138,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               }}
               aria-label={`Enlarge image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
             >
-              {imageUrl ? <Image src={imageUrl} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
+              {imageUrl ? <Image src={imageUrl} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" placeholder={blur ? "blur" : "empty"} blurDataURL={blur ?? undefined} /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
               {privacyProtected ? <span className={styles.privacyLabel}>Privacy protected</span> : null}
               <span className={styles.openLabel}>Enlarge</span>
             </button>
@@ -164,7 +167,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               <span id={dialogTitleId}>Image {activeIndex + 1} of {safeItems.length}: {active.alt ?? "programme photograph"}</span>
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
-            {activeImageUrl ? <Image className={styles.fullImage} src={activeImageUrl} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}
+            {activeImageUrl ? <Image className={styles.fullImage} src={activeImageUrl} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" placeholder={activeBlur ? "blur" : "empty"} blurDataURL={activeBlur ?? undefined} /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}
             {active.caption ? <p className={styles.caption}>{active.caption}</p> : null}
             {safeItems.length > 1 ? (
               <div className={styles.controls}>

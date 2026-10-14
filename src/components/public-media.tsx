@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { canRenderPublicMedia, getPublicImageOptimizationUrl, resolvePublicMediaUrl } from "@/lib/public-media";
+import { canRenderPublicMedia, getPublicImageOptimizationUrl, getPublicImagePlaceholder, resolvePublicMediaUrl } from "@/lib/public-media";
 
 type PublicMediaAsset = {
   id: string;
@@ -12,6 +12,7 @@ type PublicMediaAsset = {
   sourceYear: number | null;
   width?: number | null;
   height?: number | null;
+  blurDataURL?: string | null;
 };
 
 type PublicMediaProps = {
@@ -31,6 +32,7 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
     const width = asset.width && asset.width > 0 ? asset.width : 1600;
     const height = asset.height && asset.height > 0 ? asset.height : 1200;
     const optimizedUrl = getPublicImageOptimizationUrl(url);
+    const blurDataURL = getPublicImagePlaceholder(asset.blurDataURL);
     const image = optimizedUrl ? (
       <Image
         src={optimizedUrl}
@@ -41,6 +43,8 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
         preload={priority}
         loading={priority ? undefined : "lazy"}
         decoding="async"
+        placeholder={blurDataURL ? "blur" : "empty"}
+        blurDataURL={blurDataURL ?? undefined}
       />
     ) : (
       // External approved assets may live on multiple S3-compatible/CDN hosts; keep this direct until hosts are explicitly allowlisted for Next's optimizer.

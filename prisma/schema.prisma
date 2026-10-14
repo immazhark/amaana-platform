@@ -356,6 +356,7 @@ model MediaAsset {
   sourceYear        Int?
   width             Int?
   height            Int?
+  blurDataURL       String?
   sortOrder         Int              @default(0)
   isPublic          Boolean          @default(false)
   privacyApprovedAt DateTime?

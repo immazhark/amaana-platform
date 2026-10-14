@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import sharp from "sharp";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   deletePublicMediaObject,
@@ -141,6 +142,34 @@ describe("delivery configuration is validated before public persistence", () => 
     vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "");
     await expect(uploadPublicMediaFile(file())).resolves.toMatchObject({ publicUrl: expect.stringMatching(/^\/media\/\d{4}\//) });
     expect(sdk.send).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("public preview metadata follows the validated upload boundary", () => {
+  for (const mode of ["standard", "curated"] as const) {
+    it(`returns a bounded preview for ${mode} upload without creating a derivative object`, async () => {
+      const image = await sharp({ create: { width: 120, height: 60, channels: 3, background: "#466faa" } }).png().toBuffer();
+      const input = new File([new Uint8Array(image)], "synthetic.png", { type: "image/png" });
+      const uploaded = mode === "standard" ? await uploadPublicMediaFile(input)
+        : await uploadCuratedPublicMediaFile(input, key.replace(/pdf$/, "png"), createHash("sha256").update(image).digest("hex"));
+      expect(uploaded.blurDataURL).toMatch(/^data:image\/jpeg;base64,\/9j\//);
+      expect(uploaded.blurDataURL!.length).toBeLessThanOrEqual(1400);
+      expect(sdk.send).toHaveBeenCalledOnce();
+      expect(sdk.send).toHaveBeenCalledWith(expect.objectContaining({ input: expect.objectContaining({
+        Body: image, CacheControl: "private, no-store, max-age=0", Bucket: "public-gallery",
+      }) }));
+    });
+  }
+  it("keeps document uploads outside preview generation", async () => {
+    expect(await uploadPublicMediaFile(file())).toMatchObject({ blurDataURL: null });
+    const privateFile = await uploadPrivateDocument(file(), "request-123");
+    expect(privateFile).not.toHaveProperty("blurDataURL");
+    const image = await sharp({ create: { width: 120, height: 60, channels: 3, background: "white" } }).png().toBuffer();
+    const privateImage = await uploadPrivateDocument(new File([new Uint8Array(image)], "private-synthetic.png", { type: "image/png" }), "request-123");
+    expect(privateImage).not.toHaveProperty("blurDataURL");
+    expect(sdk.send).toHaveBeenLastCalledWith(expect.objectContaining({ input: expect.objectContaining({
+      Body: image, Bucket: "private-evidence", CacheControl: "private, no-store, max-age=0",
+    }) }));
   });
 });
 

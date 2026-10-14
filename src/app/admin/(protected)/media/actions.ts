@@ -102,6 +102,7 @@ export async function createMediaAsset(formData: FormData) {
           sourceYear: Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null,
           width: uploaded?.width ?? null,
           height: uploaded?.height ?? null,
+          blurDataURL: uploaded?.blurDataURL ?? null,
           sortOrder: displayOrder,
           isPublic: false,
           ...target,

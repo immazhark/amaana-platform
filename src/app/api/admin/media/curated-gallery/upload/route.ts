@@ -112,6 +112,13 @@ export async function POST(request: Request) {
             existing.sortOrder !== record.sortOrder) {
           throw new Error("Existing curated media record conflicts with the approved package");
         }
+        if (!existing.blurDataURL && uploaded.blurDataURL) {
+          await tx.mediaAsset.update({ where: { id: record.id }, data: { blurDataURL: uploaded.blurDataURL } });
+          await tx.auditEvent.create({ data: {
+            actorId: user.id, action: "media.preview.generated", entityType: "MediaAsset", entityId: record.id,
+            metadata: { curatedBatch: CURATED_GALLERY_BATCH, sha256: record.sha256 },
+          } });
+        }
         return { created: false, isPublic: existing.isPublic };
       }
 
@@ -128,6 +135,7 @@ export async function POST(request: Request) {
           sourceYear: record.sourceYear,
           width: record.width,
           height: record.height,
+          blurDataURL: uploaded.blurDataURL,
           sortOrder: record.sortOrder,
           isPublic: false,
           privacyApprovedAt: null,

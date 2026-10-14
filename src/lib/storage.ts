@@ -2,6 +2,7 @@ import "server-only";
 import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { createHash, randomUUID } from "node:crypto";
+import { generatePublicImagePlaceholder } from "./public-image-placeholder";
 
 const allowedTypes = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
 const publicMediaTypes = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
@@ -418,6 +419,7 @@ export async function uploadCuratedPublicMediaFile(
     sizeBytes: file.size,
     width: dimensions?.width ?? null,
     height: dimensions?.height ?? null,
+    blurDataURL: dimensions ? await generatePublicImagePlaceholder(bytes, MAX_PUBLIC_IMAGE_PIXELS) : null,
   };
 }
 
@@ -454,6 +456,7 @@ export async function uploadPublicMediaFile(file: File) {
     sizeBytes: file.size,
     width: dimensions?.width ?? null,
     height: dimensions?.height ?? null,
+    blurDataURL: dimensions ? await generatePublicImagePlaceholder(bytes, MAX_PUBLIC_IMAGE_PIXELS) : null,
   };
 }
 

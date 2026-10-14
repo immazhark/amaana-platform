@@ -109,6 +109,7 @@ describe("identity media creation concurrency", () => {
       originalName: "image.png",
       width: 1,
       height: 1,
+      blurDataURL: "data:image/jpeg;base64,/9j/AAAA",
     });
     const form = new FormData();
     form.set("target", "initiative:initiative_1");
@@ -120,6 +121,7 @@ describe("identity media creation concurrency", () => {
       data: expect.objectContaining({
         publicUrl: "/media/" + storageKey,
         storageKey,
+        blurDataURL: "data:image/jpeg;base64,/9j/AAAA",
         isPublic: false,
         initiativeId: "initiative_1",
       }),
