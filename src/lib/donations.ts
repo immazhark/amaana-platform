@@ -108,6 +108,7 @@ export function getDonationAcknowledgementPresentation(
   status: string,
   amount: number,
   refundedAmount: number,
+  designationKind: "APPEAL" | "FUND" = "APPEAL",
 ): DonationAcknowledgementPresentation {
   const validAccounting = Number.isFinite(amount) && amount > 0
     && Number.isFinite(refundedAmount) && refundedAmount >= 0;
@@ -136,7 +137,9 @@ export function getDonationAcknowledgementPresentation(
       : {
           tone: "captured",
           heading: "JazakAllahu Khairan.",
-          summary: "Amaana Foundation gratefully acknowledges your contribution and the trust placed in this appeal.",
+          summary: designationKind === "FUND"
+            ? "Amaana Foundation gratefully acknowledges your contribution to the approved giving fund."
+            : "Amaana Foundation gratefully acknowledges your contribution and the trust placed in this appeal.",
           statusLabel: "Payment verified",
         };
   }
@@ -145,7 +148,7 @@ export function getDonationAcknowledgementPresentation(
     return {
       tone: "pending",
       heading: "Your transfer is awaiting verification.",
-      summary: "Amaana has recorded the transfer details you submitted. This contribution will count toward the appeal only after the UTR/reference is matched against funds received by Amaana Foundation. Keep your bank or UPI confirmation and do not submit the same transfer again.",
+      summary: `Amaana has recorded the transfer details you submitted. This contribution will count toward the ${designationKind === "FUND" ? "approved giving fund" : "appeal"} only after the UTR/reference is matched against funds received by Amaana Foundation. Keep your bank or UPI confirmation and do not submit the same transfer again.`,
       statusLabel: "Verification pending",
     };
   }
