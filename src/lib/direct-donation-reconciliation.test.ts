@@ -136,6 +136,24 @@ describe("manual transfer money-state boundary", () => {
     expect(mocks.notificationCreate).not.toHaveBeenCalled();
   });
 
+  it.each(["500", "500.0", "500.00"])(
+    "accepts canonical exact INR value %s without losing paise", async amount => {
+      await expect(reconcileDirectDonation({ ...request, statementAmount: amount }))
+        .resolves.toMatchObject({ status: DonationStatus.CAPTURED });
+      expect(mocks.auditCreate).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({
+        metadata: expect.objectContaining({ statementAmountPaise: 50000 }),
+      }) }));
+    },
+  );
+
+  it("normalizes case of verified UTR while preserving the exact reference check", async () => {
+    await expect(reconcileDirectDonation({ ...request, statementReference: "utr-test-12345" }))
+      .resolves.toMatchObject({ status: DonationStatus.CAPTURED });
+    expect(mocks.auditCreate).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({
+      metadata: expect.objectContaining({ statementReference: "UTR-TEST-12345" }),
+    }) }));
+  });
+
   it("records the bank entry reference and exact verified paise in the immutable audit event", async () => {
     await reconcileDirectDonation(request);
     expect(mocks.auditCreate).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({
