@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { donorRecognitionEnabled } from "@/lib/donor-recognition-repository";
 import { parseDonorRecognitionName } from "@/lib/donor-recognition";
 import { AdminRecognitionReview } from "@/components/admin-recognition-review";
+import { AdminRecognitionUnpublish } from "@/components/admin-recognition-unpublish";
 
 export const metadata: Metadata = { title: "Donor Recognition Review", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -23,6 +24,16 @@ export default async function RecognitionReviewPage() {
       recognitionRequestedAt: true,
     },
   }) : [];
+  const active = donorRecognitionEnabled() ? await prisma.donation.findMany({
+    where: {
+      recognitionApprovedAt: { not: null }, recognitionRequestedAt: { not: null },
+      recognitionRevokedAt: null, recognitionDisplayName: { not: null },
+    },
+    orderBy: [{ recognitionApprovedAt: "desc" }, { id: "desc" }],
+    take: 30,
+    select: { id: true, referenceNumber: true, recognitionDisplayName: true,
+      recognitionRequestedAt: true, recognitionApprovedAt: true },
+  }) : [];
   return <section className="admin-card">
     <div className="admin-heading"><div><p className="eyebrow">Private moderation</p>
       <h1>Donor Shukr recognition requests</h1>
@@ -36,6 +47,19 @@ export default async function RecognitionReviewPage() {
         return <li key={request.id}><strong>{name}</strong>
           <span>Private reference: {request.referenceNumber} · requested {request.recognitionRequestedAt.toLocaleDateString("en-IN")}</span>
           <AdminRecognitionReview donationId={request.id} requestedAt={request.recognitionRequestedAt.toISOString()} displayName={name}/>
+        </li>;
+      })}</ol>}
+    <h2>Approved names and emergency unpublication</h2>
+    <p className="muted">Staff may immediately unpublish a previously approved display name, including after a refund or privacy complaint. This does not change the donation's financial status.</p>
+    {active.length === 0 ? <p className="empty-state">No approved names are awaiting review or removal.</p>
+      : <ol className="history">{active.map(item => {
+        const name = parseDonorRecognitionName(item.recognitionDisplayName);
+        if (!name || !item.recognitionApprovedAt || !item.recognitionRequestedAt) return null;
+        return <li key={item.id}><strong>{name}</strong>
+          <span>Private reference: {item.referenceNumber} · reviewed {item.recognitionApprovedAt.toLocaleDateString("en-IN")}</span>
+          <AdminRecognitionUnpublish donationId={item.id} displayName={name}
+            requestedAt={item.recognitionRequestedAt.toISOString()}
+            approvedAt={item.recognitionApprovedAt.toISOString()}/>
         </li>;
       })}</ol>}
     <p><Link href="/admin/donations">Back to private donation records</Link></p>

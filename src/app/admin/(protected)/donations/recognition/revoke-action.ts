@@ -1,0 +1,55 @@
+"use server";
+
+import { revalidatePath } from "next/cache";
+import { requirePermission } from "@/lib/auth";
+import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
+import { donorRecognitionEnabled } from "@/lib/donor-recognition-repository";
+import { parseDonorRecognitionName } from "@/lib/donor-recognition";
+import type { RecognitionReviewState } from "./actions";
+
+/** Independent staff takedown: a mistaken publication can be removed even if
+ * the donor lost their private receipt token or has since been refunded. */
+export async function unpublishDonorRecognitionAction(
+  _previous: RecognitionReviewState, form: FormData,
+): Promise<RecognitionReviewState> {
+  const actor = await requirePermission("donation.reconcile");
+  if (!donorRecognitionEnabled()) return { status: "error", message: "Recognition workflow is disabled." };
+  const id = form.get("donationId");
+  const name = form.get("name");
+  const approved = form.get("approvedAt");
+  const requested = form.get("requestedAt");
+  if (typeof id !== "string" || id.length < 8 || id.length > 100 ||
+      typeof name !== "string" || parseDonorRecognitionName(name) !== name ||
+      typeof approved !== "string" || approved.length > 48 ||
+      typeof requested !== "string" || requested.length > 48) {
+    return { status: "error", message: "Invalid unpublication request." };
+  }
+  const approvedAt = new Date(approved);
+  const requestedAt = new Date(requested);
+  if (!Number.isFinite(approvedAt.getTime()) || !Number.isFinite(requestedAt.getTime())) {
+    return { status: "error", message: "Invalid approval details." };
+  }
+  try {
+    const removed = await withSerializableTransactionRetry(async tx => {
+      const updated = await tx.donation.updateMany({
+        where: { id, recognitionApprovedAt: approvedAt, recognitionRequestedAt: requestedAt,
+          recognitionDisplayName: name, recognitionRevokedAt: null },
+        data: { recognitionApprovedAt: null, recognitionRequestedAt: null,
+          recognitionDisplayName: null, recognitionRevokedAt: new Date() },
+      });
+      if (updated.count !== 1) return false;
+      await tx.auditEvent.create({
+        data: { actorId: actor.id, entityType: "Donation", entityId: id,
+          action: "DONOR_RECOGNITION_UNPUBLISHED",
+          metadata: { priorApprovalAt: approved, priorRequestAt: requested } },
+      });
+      return true;
+    });
+    if (!removed) return { status: "error", message: "The record changed or was already removed. Refresh to see the current state." };
+    revalidatePath("/shukr");
+    revalidatePath("/admin/donations/recognition");
+    return { status: "success", message: "The reviewed donor name has been unpublished." };
+  } catch {
+    return { status: "error", message: "Unable to unpublish safely. Retry or disable the recognition feature gate." };
+  }
+}
