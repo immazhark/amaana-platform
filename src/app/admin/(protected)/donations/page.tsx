@@ -4,7 +4,7 @@ import { requirePermission } from "@/lib/auth";
 import { formatINR } from "@/lib/appeals";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
-import { resolveAppealDonationDesignation } from "@/lib/donations";
+import { resolvePrivateDonationPurpose } from "@/lib/donation-destination";
 import { prisma } from "@/lib/prisma";
 import { donationOperationalState } from "@/lib/operational-signals";
 
@@ -77,7 +77,7 @@ export default async function DonationsPage({ searchParams }: Props) {
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const donations = await prisma.donation.findMany({
     where,
-    include: { appeal: { select: { title: true } } },
+    include: { appeal: { select: { title: true } }, fund: { select: { name: true } } },
     orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
     take: pagination.pageSize,
@@ -171,15 +171,11 @@ export default async function DonationsPage({ searchParams }: Props) {
     </div>
     <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Donation records">
       <table>
-        <thead><tr><th>Reference</th><th>Donor</th><th>Appeal</th><th>Intent</th><th>Method</th><th>Amount</th><th>Refunded</th><th>Status</th><th>Date</th></tr></thead>
+        <thead><tr><th>Reference</th><th>Donor</th><th>Designated purpose</th><th>Intent</th><th>Method</th><th>Amount</th><th>Refunded</th><th>Status</th><th>Date</th></tr></thead>
         <tbody>{donations.map(donation => <tr key={donation.id}>
           <td><Link href={`/admin/donations/${donation.id}`}><strong>{donation.referenceNumber}</strong></Link></td>
           <td>{donation.donorName}<br/><small>{donation.donorEmail}</small></td>
-          <td>{resolveAppealDonationDesignation(donation.designationSnapshot, {
-            appealId: donation.appealId,
-            givingIntent: donation.givingIntent,
-            currentTitle: donation.appeal.title,
-          }).label}</td>
+          <td>{resolvePrivateDonationPurpose(donation).label}</td>
           <td>{donationIntentLabel(donation.givingIntent)}</td>
           <td>{donation.paymentMethod === "DIRECT_UPI" ? "Direct UPI" : donation.paymentMethod === "BANK_TRANSFER" ? "Bank transfer" : "Razorpay"}</td>
           <td>{formatINR(donation.amount.toNumber())}</td>
