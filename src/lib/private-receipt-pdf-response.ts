@@ -1,4 +1,5 @@
 import "server-only";
+import type { AcknowledgementRecord } from "@/lib/private-record-response";
 
 const MAX_PRIVATE_PDF_BYTES = 2 * 1024 * 1024;
 const MIN_PRIVATE_PDF_BYTES = 16;
@@ -14,9 +15,16 @@ const REFERENCE = /^[A-Za-z0-9][A-Za-z0-9_-]{7,79}$/;
  */
 export function privateReceiptPdfResponse(input: {
   bytes: Uint8Array;
-  reference: string;
+  record: AcknowledgementRecord;
 }): Response {
-  const { bytes, reference } = input;
+  const { bytes, record } = input;
+  const reference = record?.donation?.referenceNumber;
+  // The renderer/response boundary must not downgrade an unverified or
+  // unsettled transaction into a normal donation acknowledgement.
+  if (record?.found !== true || !record.donation.receiptNumber ||
+      !["captured", "refunded"].includes(record.presentation.tone)) {
+    throw new Error("Receipt PDF requires a completed verified acknowledgement");
+  }
   if (!REFERENCE.test(reference)) throw new Error("Invalid receipt PDF reference");
   if (!(bytes instanceof Uint8Array) ||
       bytes.byteLength < MIN_PRIVATE_PDF_BYTES ||
