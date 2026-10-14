@@ -247,6 +247,19 @@ Runtime state/cache after privacy revocation requires deployment/CDN verificatio
 
 ## F. Continuation checkpoint
 
+### 14 October — B08 exclusive designation and approved-fund policy groundwork
+
+Current code/test branch head before this checkpoint: `f37fb35a74271c28f91b0cee671ffbb641c020e9`. The canonical plan's B08 remains **partial**; no fund checkout or schema relation was activated.
+
+- Added a separate strict, typed `parseExclusiveDonationDestination` contract accepting **exactly one** CUID `appealId` or `fundId`. Mixed, missing, null, extra or malformed destination fields are rejected rather than stripped. **Existing public** `donationSchema` and transfer schema continue rejecting any `fundId`; this is a future accounting integration boundary, not a public endpoint.
+- Added `approvedFundDesignationSnapshot`: server-trusted definition only; requires status `APPROVED`, INR, exactly matching safe revision, independently approved valid timestamp, valid purpose/disclosure, and a specifically approved GENERAL/SADAQAH intention. It produces a frozen v1 FUND purpose/disclosure/accounting-code/revision snapshot, with no database writes. ZAKAT, paused/closed/draft/under-review, revoked, self-approved, stale and foreign currency definitions fail closed.
+- Authored unit cases for exclusive destination positive/negative inputs and approved-fund valid/malformed cases. Source, tests, and resulting GitHub file blobs were reread and matched. **Tests have not been executed against actual dependencies in this session**; no Vitest green claim, native Prisma generation, Postgres mutation or exact-head build claim.
+- Existing `Donation.appealId` remains mandatory; capture, reconciliation and refund logic still depend on appeal totals. Do not make it nullable, apply a fund-only money migration, or enable public fund payment until all of those consumers and ledger views support fund designations, and the earlier appeal-only database snapshot CHECK is updated in the same coherent release.
+- No external provider, secrets, Railway, webhook, production schema or donation records were changed. The separate notification worker PR #291 remains untouched.
+
+Next implementation dependency: additive exactly-one foreign-key migration plus capture/refund/acknowledgement/admin code adjustments on a coherent controlled branch, preserving legacy appeal donations and verified economic event identity. Fund activation still requires reviewed fund purposes and isolated transactional testing.
+
+
 ### 14 October — B08 original-purpose receipts and immutable designation hardening
 
 Continuation owner: ChatGPT engineering; existing PR #292 on `fix/direct-transfer-feedback-20261013`. Referenced `docs/AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md` sections D/F and current branch source before modifications.
