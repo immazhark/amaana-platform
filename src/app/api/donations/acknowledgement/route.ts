@@ -78,9 +78,9 @@ export async function POST(request: Request) {
 
     const amount = donation.amount.toNumber();
     const refundedAmount = donation.refundedAmount.toNumber();
-    const presentation = getDonationAcknowledgementPresentation(donation.status, amount, refundedAmount);
     const recordDate = donation.refundedAt ?? donation.capturedAt ?? donation.createdAt;
     const destination = requireDonationDestination(donation);
+    const presentation = getDonationAcknowledgementPresentation(donation.status, amount, refundedAmount, destination.kind);
     let appeal: { title: string; slug: string | null };
     if (destination.kind === "FUND") {
       if (!donation.fund) throw new Error("Fund donation has no linked designation");
