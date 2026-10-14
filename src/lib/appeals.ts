@@ -92,8 +92,8 @@ export function appealStatusAfterRefund(
   // A refund must not reopen fundraising when its financial state or clock
   // cannot be trusted. Require review rather than accepting another donation.
   if (!Number.isFinite(retained) || retained < 0 || !Number.isFinite(goal) || goal <= 0) return "CLOSED";
-  if (!Number.isFinite(currentTime)) return "CLOSED";
   if (retained >= goal) return "FUNDED";
+  if (!Number.isFinite(currentTime)) return "CLOSED";
   if (closesAt !== null && closesAt !== undefined) {
     const closeTime = new Date(closesAt).getTime();
     if (!Number.isFinite(closeTime) || closeTime <= currentTime) return "CLOSED";
