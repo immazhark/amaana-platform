@@ -20,7 +20,7 @@ describe("private fund-only net accounting", () => {
     ]);
     expect(totals).toEqual({
       grossCapturedPaise: 50_000, refundedPaise: 0,
-      netRetainedPaise: 50_000, settledDonations: 1, pendingDonations: 2,
+      netRetainedPaise: 50_000, settledDonations: 1, unsettledDonations: 2,
     });
   });
   it("deducts partial and full refunds without double subtraction", () => {
@@ -47,13 +47,13 @@ describe("private fund-only net accounting", () => {
   });
   it("rejects totals that cannot be represented as safe integer paise", () => {
     expect(() => summarizeFundLedger("reviewed-fund", [
-      donation({ amount: rupees(Number.MAX_SAFE_INTEGER / 100) }),
+      donation({ amount: rupees((Number.MAX_SAFE_INTEGER + 1024) / 100) }),
     ])).toThrow();
   });
   it("returns zero balances for a fund with no donations", () => {
     expect(summarizeFundLedger("reviewed-fund", [])).toEqual({
       grossCapturedPaise: 0, refundedPaise: 0, netRetainedPaise: 0,
-      settledDonations: 0, pendingDonations: 0,
+      settledDonations: 0, unsettledDonations: 0,
     });
   });
 });
