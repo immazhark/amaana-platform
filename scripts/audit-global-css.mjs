@@ -92,7 +92,7 @@ for (const expected of [
 ]) {
   if (!appealRouteCss.includes(expected)) failures.push(`Appeal funding styles missing: ${expected}`);
 }
-if (/\\.v2-appeal-donation-panel>(?:small|strong|p)\\s*\\{/.test(appealRouteCss)) {
+if (/\.v2-appeal-donation-panel>(?:small|strong|p)\s*\{/.test(appealRouteCss)) {
   failures.push('Appeals CSS contains obsolete direct-child funding summary selectors.');
 }
 
