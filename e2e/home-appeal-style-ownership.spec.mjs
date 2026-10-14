@@ -24,6 +24,28 @@ for (const width of [320, 390, 1440]) {
     });
     expect(lineHeightRatio).toBeGreaterThanOrEqual(1.1);
 
+    // Use the dimmest approved ivory card stop as a conservative AA baseline.
+    const mutedContrast = await card.locator(
+      ".v2-appeal-card-head small, .v2-appeal-progress-meta span, .v2-appeal-progress-foot",
+    ).evaluateAll(elements => {
+      const luminance = channels => {
+        const [r, g, b] = channels.map(value => {
+          const unit = value / 255;
+          return unit <= 0.04045 ? unit / 12.92 : ((unit + 0.055) / 1.055) ** 2.4;
+        });
+        return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+      };
+      const background = luminance([243, 237, 221]);
+      return elements.map(element => {
+        const channels = getComputedStyle(element).color.match(/[0-9.]+/g)?.slice(0, 3).map(Number);
+        if (!channels || channels.length !== 3) return 0;
+        const foreground = luminance(channels);
+        return (Math.max(background, foreground) + 0.05) / (Math.min(background, foreground) + 0.05);
+      });
+    });
+    expect(mutedContrast).toHaveLength(3);
+    for (const ratio of mutedContrast) expect(ratio).toBeGreaterThanOrEqual(4.5);
+
     const bar = card.getByRole("progressbar");
     await expect(bar).toHaveAttribute("aria-valuenow", "20");
     const dimensions = await bar.evaluate(el => ({
