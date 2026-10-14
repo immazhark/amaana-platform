@@ -24,6 +24,14 @@ export const amountToNumber = (amount: AmountLike) => {
   return amount.toNumber();
 };
 
+/** Display-only percentage for accessible funding meters; never changes ledger amounts. */
+export function getAppealProgressPercent(amountRaised: AmountLike, goalAmount: AmountLike): number {
+  const raised = amountToNumber(amountRaised);
+  const goal = amountToNumber(goalAmount);
+  if (!Number.isFinite(raised) || !Number.isFinite(goal) || goal <= 0) return 0;
+  return Math.max(0, Math.min(100, Math.round((raised / goal) * 100)));
+}
+
 export function getRemainingAppealAmount(
   amountRaised: AmountLike,
   goalAmount: AmountLike,
