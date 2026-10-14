@@ -1,6 +1,7 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
+import { canPromoteAppeal } from "@/lib/appeal-promotion";
 import { publicFaithWhere } from "@/lib/faith-publication";
 import { canExposePublicAppeal, isSyntheticStagingAppeal } from "@/lib/public-environment";
 
@@ -171,12 +172,16 @@ const getHomepageAppealsCached = unstable_cache(async (limit: number) => {
       goalAmount: true,
       amountRaised: true,
       closesAt: true,
+      assistanceRequest: {
+        select: { verification: { select: { confidentialityLevel: true } } },
+      },
     },
   });
 
   return appeals
-    .filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && isAppealOpenForDonations(appeal))
-    .slice(0, Math.min(20, Math.max(1, limit)));
+    .filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && canPromoteAppeal(appeal) && isAppealOpenForDonations(appeal))
+    .slice(0, Math.min(20, Math.max(1, limit)))
+    .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => publicAppeal);
 }, ["homepage-appeals"], { revalidate: 300, tags: ["appeals"] });
 
 export async function getHomepageAppeals(limit = 3) {
