@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { getTrustedClientAddress } from "./client-address";
 import { isPrismaSerializableConflict, withSerializableTransactionRetry } from "./prisma-transaction";
 
-type RateLimitPurpose = "donation" | "assistance" | "analytics";
+type RateLimitPurpose = "donation" | "assistance" | "analytics" | "receipt";
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 
@@ -103,3 +103,13 @@ export async function enforceAnalyticsRateLimit(request: Request) {
   return claimRateLimitSlot(getRateLimitClientHash(request, "analytics"), 300);
 }
 
+
+/**
+ * Receipt credentials are private read capabilities. Bound online guessing and
+ * repeated record retrieval independently of the real donation checkout quota.
+ * Uses the existing transaction-safe hashed attempt ledger; raw IPs and tokens
+ * are never persisted.
+ */
+export async function enforceAcknowledgementRateLimit(request: Request) {
+  return claimRateLimitSlot(getRateLimitClientHash(request, "receipt"), 60);
+}

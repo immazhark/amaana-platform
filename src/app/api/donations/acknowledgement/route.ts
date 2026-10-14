@@ -1,13 +1,8 @@
-import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
-import { getDonationAcknowledgementPresentation, hashReceiptToken, resolveAppealDonationDesignation } from "@/lib/donations";
-import { summarizeDonationRecord } from "@/lib/fund-ledger";
-import { requireDonationDestination } from "@/lib/donation-destination";
-import { resolveFundDonationDesignation } from "@/lib/giving-funds";
-import { prisma } from "@/lib/prisma";
-import { isSameOrigin } from "@/lib/request-security";
+import { enforceAcknowledgementRateLimit, isSameOrigin } from "@/lib/request-security";
+import { readVerifiedDonationAcknowledgement } from "@/lib/private-donation-receipt";
 
 const schema = z.object({
   reference: z.string().trim().min(8).max(80),
@@ -42,90 +37,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
     }
 
-    const donation = await prisma.donation.findUnique({
-      where: { referenceNumber: parsed.data.reference },
-      select: {
-        receiptTokenHash: true,
-        appealId: true,
-        fundId: true,
-        designationSnapshot: true,
-        status: true,
-        currency: true,
-        amount: true,
-        refundedAmount: true,
-        receiptNumber: true,
-        referenceNumber: true,
-        donorName: true,
-        givingIntent: true,
-        capturedAt: true,
-        refundedAt: true,
-        createdAt: true,
-        providerPaymentId: true,
-        fund: { select: { name: true } },
-        appeal: {
-          select: {
-            title: true,
-            slug: true,
-            assistanceRequest: { select: { verification: { select: { confidentialityLevel: true } } } },
-          },
-        },
-      },
-    });
+    // A receipt read uses its own keyed abuse bucket, not the donation-order
+    // budget. Denial must occur before looking up any private donation.
+    if (!(await enforceAcknowledgementRateLimit(request))) {
+      return NextResponse.json({ found: false }, { status: 429, headers: privateHeaders });
+    }
 
-    const supplied = Buffer.from(hashReceiptToken(parsed.data.token));
-    const expected = Buffer.from(donation?.receiptTokenHash ?? "0".repeat(64));
-    if (!donation || supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
+    const receipt = await readVerifiedDonationAcknowledgement(parsed.data);
+    if (!receipt) {
       return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
     }
-
-    const accounting = summarizeDonationRecord(donation);
-    const amount = accounting.amountPaise / 100;
-    const refundedAmount = accounting.refundedPaise / 100;
-    const recordDate = donation.refundedAt ?? donation.capturedAt ?? donation.createdAt;
-    const destination = requireDonationDestination(donation);
-    const presentation = getDonationAcknowledgementPresentation(donation.status, amount, refundedAmount, destination.kind);
-    let appeal: { title: string; slug: string | null };
-    if (destination.kind === "FUND") {
-      if (!donation.fund) throw new Error("Fund donation has no linked designation");
-      const purpose = resolveFundDonationDesignation(donation.designationSnapshot, {
-        fundId: destination.id,
-        givingIntent: donation.givingIntent,
-      });
-      appeal = { title: purpose.label, slug: null };
-    } else {
-      if (!donation.appeal) throw new Error("Appeal donation has no linked designation");
-      const purpose = resolveAppealDonationDesignation(donation.designationSnapshot, {
-        appealId: destination.id,
-        givingIntent: donation.givingIntent,
-        currentTitle: donation.appeal.title,
-      });
-      // A confidentiality escalation must never reveal historic beneficiary
-      // names or a name-bearing slug through an old donor receipt link.
-      const highlySensitive = donation.appeal.assistanceRequest?.verification?.confidentialityLevel === "HIGHLY_SENSITIVE";
-      appeal = highlySensitive
-        ? { title: "Confidential assistance appeal", slug: null }
-        : { title: purpose.label, slug: donation.appeal.slug };
-    }
-
-    return NextResponse.json(
-      {
-        found: true,
-        presentation,
-        donation: {
-          referenceNumber: donation.referenceNumber,
-          receiptNumber: donation.receiptNumber,
-          donorName: donation.donorName,
-          givingIntent: donation.givingIntent,
-          amount,
-          refundedAmount,
-          recordDate: recordDate.toISOString(),
-          providerPaymentId: donation.providerPaymentId,
-          designationKind: destination.kind,
-          appeal,
-        },
-      },
-      { headers: privateHeaders },
-    );
+    return NextResponse.json(receipt, { headers: privateHeaders });
   } catch {
     return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
   }

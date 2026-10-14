@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   findUnique: vi.fn(),
+  allowReceiptRead: vi.fn(),
 }));
 
 vi.mock("@/lib/bounded-request-body", () => {
@@ -32,6 +33,7 @@ vi.mock("@/lib/prisma", () => ({
 
 vi.mock("@/lib/request-security", () => ({
   isSameOrigin: () => true,
+  enforceAcknowledgementRateLimit: mocks.allowReceiptRead,
 }));
 
 import { POST } from "./route";
@@ -48,7 +50,11 @@ function acknowledgementRequest(headers?: HeadersInit) {
 }
 
 describe("private donation acknowledgement request bounds", () => {
-  beforeEach(() => mocks.findUnique.mockReset());
+  beforeEach(() => {
+    mocks.findUnique.mockReset();
+    mocks.allowReceiptRead.mockReset();
+    mocks.allowReceiptRead.mockResolvedValue(true);
+  });
   it("rejects an oversized acknowledgement payload before donation lookup", async () => {
     const response = await POST(acknowledgementRequest({ "Content-Length": String(8 * 1024 + 1) }));
     const body = await response.json();
@@ -60,6 +66,15 @@ describe("private donation acknowledgement request bounds", () => {
     expect(response.headers.get("x-robots-tag")).toMatch(/noindex/i);
     expect(mocks.findUnique).not.toHaveBeenCalled();
   });
+  it("blocks receipt brute-force attempts before a donation lookup", async () => {
+    mocks.allowReceiptRead.mockResolvedValue(false);
+    const response = await POST(acknowledgementRequest());
+    expect(response.status).toBe(429);
+    expect(await response.json()).toEqual({ found: false });
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/);
+    expect(mocks.findUnique).not.toHaveBeenCalled();
+  });
+
   const original = {
     receiptTokenHash: "0".repeat(64),
     appealId: "appeal-1",
@@ -98,6 +113,20 @@ describe("private donation acknowledgement request bounds", () => {
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ found: false });
     expect(response.headers.get("cache-control")).toContain("private");
+  });
+
+  it("rejects an incorrect token with the same generic 404", async () => {
+    mocks.findUnique.mockResolvedValue({ ...original, receiptTokenHash: "1".repeat(64) });
+    const response = await POST(acknowledgementRequest());
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ found: false });
+  });
+
+  it("treats a missing record as a generic private miss", async () => {
+    mocks.findUnique.mockResolvedValue(null);
+    const response = await POST(acknowledgementRequest());
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ found: false });
   });
 
   it("returns the original donor designation rather than a later edited campaign title", async () => {

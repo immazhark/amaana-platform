@@ -90,8 +90,19 @@ describe("rate-limit client hashing", () => {
       getRateLimitClientHash(request, "donation"),
       getRateLimitClientHash(request, "assistance"),
       getRateLimitClientHash(request, "analytics"),
+      getRateLimitClientHash(request, "receipt"),
     ]);
-    expect(hashes.size).toBe(3);
+    expect(hashes.size).toBe(4);
+  });
+
+  it("keeps receipt view counters separate from donation order counters", () => {
+    const request = requestFor("203.0.113.10");
+    const receiptHash = getRateLimitClientHash(request, "receipt");
+    const donationHash = getRateLimitClientHash(request, "donation");
+    expect(receiptHash).not.toEqual(donationHash);
+    process.env.DONATION_TOKEN_PEPPER = "rotated-donation-value";
+    expect(getRateLimitClientHash(request, "receipt")).not.toEqual(receiptHash);
+    expect(getRateLimitClientHash(request, "donation")).not.toEqual(donationHash);
   });
 
   it("changes only the assistance hash when its pepper rotates", () => {
