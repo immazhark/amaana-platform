@@ -1,3 +1,29 @@
+## Donor Shukr recognition rollout (disabled by default)
+
+The optional donor recognition workflow is **NOT a donation requirement**.
+It uses donation receipt tokens for a separate opt-in request, requires staff
+`donation.reconcile` moderation, and permits donor withdrawal. Existing
+donor records have NULL recognition fields and must never be backfilled.
+
+1. Keep `AMAANA_DONOR_RECOGNITION_ENABLED` unset or `false` in every
+   environment until privacy/retention wording is reviewed and approved.
+2. Before enabling, back up the database, inspect and apply the dedicated
+   `20261015000000_donor_recognition_consent` migration to the intended
+   environment, and regenerate Prisma types. Do not apply it merely by
+   visiting the public page.
+3. Verify receipt token authorization, cross-origin/size/rate controls,
+   anonymity and refund exclusions, donor opt-in, staff-only moderation,
+   concurrent withdrawal, and names-only public projection with a synthetic
+   test donor in an isolated staging database.
+4. Confirm the `/shukr` response is not cached, that a previously approved
+   name disappears after revocation, and that a refunded/anonymous donation
+   cannot reappear. Confirm direct-transfer donors have valid private
+   receipts and that no consent fields are inferred from pre-existing data.
+5. Only after explicit owner approval, enable the server-only feature flag.
+   To disable immediately without removing a record, set the flag false.
+   Never expose receipt credentials or original private donor fields in
+   `/shukr`, analytics or logs.
+
 # Amaana Platform Operations
 
 ## Required infrastructure
