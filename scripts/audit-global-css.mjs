@@ -56,7 +56,7 @@ for (const [file, selectors] of [
   const source = await readFile(path.join(root, 'src/app', file), 'utf8');
   for (const selector of selectors) {
     const declarations = source.split(`${selector}{`)[1]?.split('}')[0];
-    if (!declarations || !/(?:^|;)\\s*line-height:\\s*1\\.12(?:\\s*;|$)/.test(declarations)) {
+    if (!declarations || !/(?:^|;)\s*line-height:\s*1\.12(?:\s*;|$)/.test(declarations)) {
       failures.push(`${file}: ${selector} must retain accessible 1.12 multiline leading.`);
     }
   }
