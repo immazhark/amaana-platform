@@ -1,7 +1,8 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { selectSafeGalleryImages } from "./gallery-publication";
 
 describe("public-safe gallery presentation boundary", () => {
+  afterEach(() => vi.unstubAllEnvs());
   const approved = { id: "photo1", url: "/media/2026/photo.webp", alt: "Volunteers packing food kits", caption: "Packing day" };
 
   it("preserves an approved photograph, caption and valid normalized address", () => {
@@ -34,6 +35,12 @@ describe("public-safe gallery presentation boundary", () => {
     expect(selectSafeGalleryImages([{ ...approved, id: " " }])).toEqual([]);
   });
 
+  it("rejects absolute same-origin links to private application routes", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const privateSameOrigin = "https://amaanafoundation.org/api/admin/private-evidence";
+    expect(selectSafeGalleryImages([{ ...approved, url: privateSameOrigin }])).toEqual([]);
+    expect(selectSafeGalleryImages([{ ...approved, url: "https://amaanafoundation.org/media/approved.webp" }])).toHaveLength(1);
+  });
   it("retains HTTPS media delivery from a separately approved public CDN", () => {
     expect(selectSafeGalleryImages([{ ...approved, url: "https://cdn.example.org/approved.webp" }])[0]?.url)
       .toBe("https://cdn.example.org/approved.webp");

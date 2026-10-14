@@ -1,5 +1,4 @@
-import { isPrivateRoute } from "./public-routing";
-import { normalizeSafePublicMediaUrl } from "./public-media";
+import { isPrivateAppMediaUrl, normalizeSafePublicMediaUrl } from "./public-media";
 
 export type GalleryPublicationCandidate = {
   id: string;
@@ -23,8 +22,7 @@ export function selectSafeGalleryImages<T extends GalleryPublicationCandidate>(
     const alt = item.alt.trim();
     const url = normalizeSafePublicMediaUrl(item.url);
     if (!id || !alt || !url) continue;
-    const privatePath = url.startsWith("/") ? url.split(/[?#]/, 1)[0] : null;
-    if (privatePath && (isPrivateRoute(privatePath) || privatePath.startsWith("/_next/"))) continue;
+    if (isPrivateAppMediaUrl(url)) continue;
     if (seenIds.has(id) || seenUrls.has(url)) continue;
     seenIds.add(id);
     seenUrls.add(url);
