@@ -2,6 +2,7 @@
 
 import { lazy, Suspense, useCallback, useRef, useState, type ReactNode } from "react";
 import { getPublicAppealProgress } from "@/lib/public-appeal-progress";
+import { PublicFundingMeter } from "@/components/public-funding-meter";
 import styles from "./appeal-donation-flow.module.css";
 
 const DonationMethods = lazy(() => import("@/components/donation-methods")
@@ -62,7 +63,7 @@ export function AppealDonationFlow({ appeals, paymentInstructions, bankAvailable
           onClick={() => { if (!lockRef.current) setSelectedId(appeal.id); }}>
           <strong>{appeal.title}</strong>
           <span>{progress.remainingLabel} remaining</span>
-          <span className={styles.track} aria-hidden="true"><span style={{ width: `${progress.percentage}%` }}/></span>
+          <PublicFundingMeter progress={progress} title={appeal.title} trackClassName={styles.track}/>
           <small>{progress.percentage}% of the reviewed {progress.goalLabel} goal</small>
         </button>;
       })}

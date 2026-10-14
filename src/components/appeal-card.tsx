@@ -2,6 +2,7 @@ import Link from "@/components/navigation-link";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import type { PublicAppeal } from "@/lib/appeals";
 import { getPublicAppealProgress } from "@/lib/public-appeal-progress";
+import { PublicFundingMeter } from "@/components/public-funding-meter";
 
 export function AppealCard({ appeal }: { appeal: PublicAppeal }) {
   const progress = getPublicAppealProgress(appeal.amountRaised, appeal.goalAmount);
@@ -21,12 +22,7 @@ export function AppealCard({ appeal }: { appeal: PublicAppeal }) {
         <div className="v2-appeal-card-progress">
           {progress ? <>
             <div className="v2-appeal-progress-meta"><strong>{progress.raisedLabel}</strong><span>of {progress.goalLabel}</span></div>
-            <div className="v2-appeal-progress" role="progressbar"
-              aria-label={`${appeal.title} funding progress`} aria-valuemin={0}
-              aria-valuemax={100} aria-valuenow={progress.percentage}
-              aria-valuetext={`${progress.raisedLabel} raised of ${progress.goalLabel}; ${progress.percentage}% supported`}>
-              <span style={{ width: `${progress.percentage}%` }} />
-            </div>
+            <PublicFundingMeter progress={progress} title={appeal.title} trackClassName="v2-appeal-progress"/>
             <div className="v2-appeal-progress-foot"><span>{progress.percentage}% supported</span><span>Reviewed appeal figures</span></div>
           </> : <p role="status">Financial figures are under reconciliation. Review the case details before contributing.</p>}
         </div>
