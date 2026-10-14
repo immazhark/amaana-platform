@@ -1,4 +1,5 @@
 import { serializeStructuredData, validateAppealStructuredDataInput } from "@/lib/structured-data";
+import { getAppealPublicCopy } from "@/lib/appeal-public-copy";
 
 type AppealStructuredDataProps = {
   slug: string;
@@ -14,10 +15,8 @@ export function AppealStructuredData(props: AppealStructuredDataProps) {
   const { slug, title, summary, isOpen, highlySensitive = false } = input;
   const siteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org").replace(/\/$/, "");
   const appealUrl = `${siteUrl}/appeals/${slug}`;
-  const safeTitle = highlySensitive ? "Verified Support Appeal" : title;
-  const safeSummary = highlySensitive
-    ? "A privacy-sensitive verified support appeal from Amaana Foundation. Public details are intentionally limited."
-    : summary;
+  const { title: safeTitle, description: safeSummary } =
+    getAppealPublicCopy(title, summary, highlySensitive);
 
   const graph: Record<string, unknown>[] = [
     {
