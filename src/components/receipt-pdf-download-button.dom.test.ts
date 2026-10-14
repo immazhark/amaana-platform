@@ -31,7 +31,7 @@ describe.skipIf(!runtime)("actual private PDF download client interactions", () 
     fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
     clicked = vi.fn();
-    win.HTMLAnchorElement.prototype.click = clicked;
+    Object.defineProperty(win.HTMLAnchorElement.prototype, "click", { configurable: true, value: clicked });
     createObjectUrl = vi.fn(() => "blob:synthetic-pdf");
     Object.defineProperty(win.URL, "createObjectURL", { value: createObjectUrl, configurable: true });
     Object.defineProperty(win.URL, "revokeObjectURL", { value: vi.fn(), configurable: true });

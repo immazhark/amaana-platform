@@ -51,7 +51,7 @@ export default function ReceiptPdfDownloadButton({ reference, getToken }: {
         body: JSON.stringify({ grant }), signal: controller.signal,
       });
       if (!pdfResponse.ok ||
-          pdfResponse.headers.get("content-type")?.split(";")[0].trim() !== "application/pdf" ||
+          pdfResponse.headers.get("content-type")?.split(";")[0]?.trim() !== "application/pdf" ||
           !/attachment/i.test(pdfResponse.headers.get("content-disposition") ?? "")) {
         throw new Error("Secure PDF unavailable");
       }

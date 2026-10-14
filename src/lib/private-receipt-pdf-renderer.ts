@@ -35,7 +35,7 @@ export async function renderPrivateReceiptPdf(record: AcknowledgementRecord): Pr
     ], {
       timeout: RENDER_DEADLINE_MS, killSignal: "SIGKILL",
       maxBuffer: 64 * 1024, windowsHide: true, cwd: directory,
-      env: { PATH: process.env.PATH ?? "/usr/bin:/bin", HOME: directory,
+      env: { NODE_ENV: process.env.NODE_ENV ?? "production", PATH: process.env.PATH ?? "/usr/bin:/bin", HOME: directory,
         TMPDIR: directory, LANG: "C.UTF-8" },
     });
     const size = (await stat(output)).size;
