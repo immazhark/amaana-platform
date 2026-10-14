@@ -1,3 +1,4 @@
+import Link from "@/components/navigation-link";
 import { notFound } from "next/navigation";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { summarizeDonationRecord } from "@/lib/fund-ledger";
@@ -24,6 +25,23 @@ export default async function DonationDetailPage({ params }: Props) {
   catch { accounting = null; }
   const displayedAmount = accounting ? formatPrivateReceiptINR(accounting.amountPaise / 100) : "Requires reconciliation";
   const direct = donation.paymentMethod !== "RAZORPAY";
+  // An advisory staff-only duplicate indicator. The serializable transaction
+  // is still the authoritative deduplication boundary at verification time.
+  const duplicateSettledTransfer = direct &&
+    donation.status === "PENDING_VERIFICATION" &&
+    typeof donation.transferReference === "string" &&
+    donation.transferReference.trim().length >= 6
+    ? await prisma.donation.findFirst({
+        where: {
+          id: { not: donation.id },
+          paymentMethod: { in: ["DIRECT_UPI", "BANK_TRANSFER"] },
+          status: { in: ["CAPTURED", "REFUNDED"] },
+          transferReference: { equals: donation.transferReference, mode: "insensitive" },
+        },
+        select: { id: true, referenceNumber: true },
+      })
+    : null;
+
   const designation = getAdminDonationPurpose(donation);
 
   return <>
@@ -31,6 +49,14 @@ export default async function DonationDetailPage({ params }: Props) {
     {designation.requiresReview && <p role="alert">This donation destination requires financial reconciliation. Do not use a renamed programme as evidence of the donor&apos;s original purpose.</p>}
     </div><span className="status-badge">{donation.status}</span></div>
     {!accounting && <p role="alert">Donation amounts require financial reconciliation.</p>}
+    {duplicateSettledTransfer && <p role="alert" className="admin-card">
+      <strong>Possible duplicate bank transaction.</strong>{" "}
+      A settled donation already carries a matching reference:{" "}
+      <Link href={`/admin/donations/${duplicateSettledTransfer.id}`}>
+        {duplicateSettledTransfer.referenceNumber}
+      </Link>. Compare the bank statements before acting. The server will reject a second
+      capture of the same transaction reference.
+    </p>}
     <div className="admin-detail-grid">
       <section className="card"><h2>Donation record</h2><dl className="details">
         <div><dt>Donor</dt><dd>{donation.donorName}</dd></div><div><dt>Public anonymity</dt><dd>{donation.isAnonymous ? "Anonymous" : "Name may be shown"}</dd></div>
