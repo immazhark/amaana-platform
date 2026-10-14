@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./islamic-companion-panel.module.css";
 import {
   HYDERABAD_ZONE,
@@ -13,6 +13,7 @@ import {
   type PrayerDay,
 } from "@/lib/daily-companion";
 import { AYAHS, HADITHS, dailyReading } from "@/lib/daily-companion-readings";
+import { upcomingHijriPlanningEvents } from "@/lib/hijri-event-planner";
 
 type Moon = {
   day: number;
@@ -144,6 +145,7 @@ export function IslamicCompanionPanel({
   const moon = currentData ? (afterSunset ? currentData.eveningMoon : currentData.moon) : null;
   const reading = now ? dailyReading(hyderabadClock(now)) : null;
   const upcoming = now && currentData ? nextSalah(currentData.today, currentData.tomorrow, now) : null;
+  const planningEvents = useMemo(() => date ? upcomingHijriPlanningEvents(date) : [], [date]);
 
   async function copyReading() {
     if (!reading) return;
@@ -224,6 +226,19 @@ export function IslamicCompanionPanel({
             <p>{moon ? <>Based on {moon.authority}. <a href={moon.sourceUrl} target="_blank" rel="noopener noreferrer">Moon-sighting announcement</a></> : "Calculated estimate · Hyderabad moon-sighting not yet confirmed."}</p>
             <small>{maghrib !== null ? "The Hijri day advances at Hyderabad Maghrib." : "Civil-day estimate; sunset rollover is unavailable until prayer times load."}</small>
           </div>
+          <section className={styles.planningSection} aria-labelledby="companion-planning-title">
+            <h3 id="companion-planning-title">Upcoming Hijri dates · estimates</h3>
+            <p>For planning only. Calculated using the Islamic civil calendar, not a Hyderabad moon-sighting announcement. Actual observance dates may differ; confirm with your local authority.</p>
+            <ol className={styles.planningList}>
+              {planningEvents.map(event => (
+                <li key={event.key}>
+                  <strong>{event.label}</strong>
+                  <time dateTime={event.estimatedCivilDate}>Around {new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" }).format(new Date(`${event.estimatedCivilDate}T12:00:00Z`))}</time>
+                  <small>{event.daysUntilEstimatedDate === 0 ? "Estimated for today" : `About ${event.daysUntilEstimatedDate} days until the calculated date`}</small>
+                </li>
+              ))}
+            </ol>
+          </section>
           <label className="amaana-asr-choice">
             Asr calculation
             <select value={school} onChange={event => setSchool(event.target.value)}>
