@@ -29,3 +29,24 @@ A final grouped safety correction ensures the disabled PDF grant-authorize route
 
 Source and test additions published on the same PR; no full exact-head `npm test`, TypeScript, production Next build, or rendered-browser verification has been executed in this session. No production feature, endpoint redemption, PDF generator, environment, payments, email or database mutation was activated. B09 remains Partial; master register counts unchanged.
 
+
+## 2026-10-15 — B09 source-complete encrypted PDF journey, release still blocked
+
+Current PR #292 HEAD at this checkpoint: `dce4ced655d889169455f6f0f93e4a45e810f64d`, on `fix/direct-transfer-feedback-20261013` (open/unmerged). The earlier code batches remain scoped to B09; no original 95-defect closure is inferred.
+
+**Implemented source this continuation:**
+- Actual native PDF/UA rendering through an optional offline, version-pinned WeasyPrint executable; Amaana-branded A4 typography with escaped donor text, Unicode Arabic/Telugu fallback, original designated purpose, exact INR paise and the explicit normal-acknowledgement/not-Form-10BE disclosure.
+- `POST /api/donations/receipt-download/redeem`, performing exact flag/key/absolute renderer readiness check, origin/bounded-body/timeout/rate-limit enforcement, encrypted five-minute grant redemption, **fresh original-purpose/accounting/privacy validation**, bounded PDF rendering and a private attachment-only response. No grant or token in GET/URL. Revoked, expired or financially inconsistent claims cannot download.
+- A lazy, separately guarded donor download control on the existing token-private acknowledgement page; hidden when disabled. It uses POST-only requests, validates the response content type and maximum size, creates a temporary Blob URL for the attachment, revokes it and provides retry-only download guidance without implying another payment.
+- Consolidated feature-readiness policy shared by issuance, redemption and page visibility; a missing renderer cannot issue a dangling grant. Additional integration tests cover policy, actual mocked-API response, optional browser DOM download, default-hidden UI, HTML escaping/Unicode/accounting and an opt-in real PDF renderer.
+- Privacy correction: temporary PDF/HTML cleanup failures **reject** the transaction, rather than silently leaving donor data in the scratch directory.
+- **Original-purpose restriction:** public token-private historical acknowledgements retain their existing `legacy` or `review` presentation, but native downloadable PDF grants now require provenance `original` on both issue and redemption. Incomplete/mismatched designation history is not silently represented as an approved donor-purpose PDF. Historical donors can still use the existing private print acknowledgement while staff reconcile records.
+
+**Executed local proof:** using synthetic donor names with Arabic and Telugu and hostile escaped HTML text, the TypeScript-backed WeasyPrint 68 engine returned a 25,847-byte tagged PDF/UA-1 output; one A4 page, extraction of both scripts, exact ₹100.30/₹0.10, and the disclaimer. PNG preview inspected for a balanced brand-aligned receipt layout. This demonstrates the *isolated local rendering engine*, not the full GitHub branch, deployed Alpine compatibility, conformance certification, production/browser acceptance or accessibility testing.
+
+**Still open and deployment-blocking:** `npm test`, full `tsc`, changed-file/full lint, client bundle budgets, Playwright/AT, native PostgreSQL, genuine sandboxed Alpine WeasyPrint/Pango/Noto runtime provisioning and Railway memory/image-cost assessment were NOT run at this HEAD. The Railway Dockerfile stays Node-only; no fonts, binaries, secret keys or feature flags were provisioned. The PDF action remains disabled in production. Secure **donor-owned token reissuance and revocation** is still a separate unimplemented governance workflow; grant is replayable within five minutes. Do not enable or publish until verification and owner approval.
+
+The canonical 149 register remains **57 Implemented / 48 Partial / 42 Not started / 1 Superseded / 1 Not applicable**; all original 95 aliases remain intact. AF-RECEIPTS/B09 remains Partial. No main merge, deploy, migration, provider transaction, refund, real donor query, email or live record mutation occurred.
+
+**Next highest-value action:** execute exact-head source testing in a hydrated repository, perform a cost-aware, pinned Alpine runtime integration rehearsal without touching production, then address donor-owned reissuance and the adjacent AF-SETTLEMENT/B09 accounting work. Never substitute a successful local PDF demo for production safety approval.
+
