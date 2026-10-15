@@ -44,6 +44,7 @@ describe.skipIf(!runtime)("actual private PDF download client interactions", () 
   afterEach(async () => {
     await act(async () => root.unmount());
     win.close();
+    vi.useRealTimers();
     vi.unstubAllGlobals();
   });
 
@@ -98,4 +99,30 @@ describe.skipIf(!runtime)("actual private PDF download client interactions", () 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(clicked).not.toHaveBeenCalled();
   });
+  it.each(["authorization", "body"])("ends a stalled %s and ignores late PDF completion", async stage => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    let finish: (value: unknown) => void = () => {};
+    const stalled = new Promise(resolve => { finish = resolve; });
+    fetchMock.mockImplementation((url: string) => url.endsWith("/authorize")
+      ? stage === "authorization" ? stalled : Promise.resolve(Response.json({ available: true, grant, expiresInSeconds: 300 }))
+      : Promise.resolve({ ok: true, headers: new Headers({ "content-type": "application/pdf", "content-disposition": "attachment" }), arrayBuffer: () => stalled }));
+    const button = await render(() => token);
+    await act(async () => button.click());
+    await act(async () => vi.advanceTimersByTimeAsync(25_000));
+    expect(button.disabled).toBe(false); expect(container.textContent).toContain("PDF unavailable");
+    await act(async () => finish(stage === "authorization" ? Response.json({ available: true, grant, expiresInSeconds: 300 }) : bytes.buffer));
+    expect(clicked).not.toHaveBeenCalled(); expect(createObjectUrl).not.toHaveBeenCalled();
+    vi.useRealTimers();
+  });
+  it("aborts preparation on unmount and never starts a late download", async () => {
+    let finish: (value: Response) => void = () => {};
+    fetchMock.mockImplementationOnce(() => new Promise<Response>(resolve => { finish = resolve; }));
+    const button = await render(() => token);
+    await act(async () => button.click());
+    const signal = fetchMock.mock.calls[0]![1].signal;
+    await act(async () => root.render(null)); expect(signal.aborted).toBe(true);
+    await act(async () => finish(Response.json({ available: true, grant, expiresInSeconds: 300 })));
+    expect(fetchMock).toHaveBeenCalledTimes(1); expect(clicked).not.toHaveBeenCalled();
+  });
+
 });

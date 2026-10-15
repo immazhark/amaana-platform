@@ -1,0 +1,8 @@
+import { notFound } from "next/navigation";
+import { PrivateReceiptControlsFixture } from "@/components/private-receipt-controls-fixture";
+export const dynamic = "force-dynamic";
+export const metadata = { robots: { index: false, follow: false } };
+export default function PrivateReceiptControlsPage() {
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+  return <main><h1>Synthetic private receipt controls</h1><PrivateReceiptControlsFixture/></main>;
+}
