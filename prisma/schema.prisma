@@ -166,6 +166,7 @@ model User {
   reconciledDonations     Donation[]                 @relation("DonationReconciler")
   proposedAllocations     DonationAllocationProposal[] @relation("AllocationMaker")
   reviewedAllocations     DonationAllocationProposal[] @relation("AllocationChecker")
+  allocationReversals     DonationAllocationReversal[] @relation("AllocationReverser")
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
 }
@@ -461,6 +462,19 @@ enum AllocationProposalStatus {
   REJECTED
 }
 
+/** Append-only reversal of an internal allocation, never a payment refund.
+ * A single reversal per approved proposal is enforced by a database unique key. */
+model DonationAllocationReversal {
+  id           String                     @id @default(cuid())
+  proposalId   String                     @unique
+  reason       String                     @db.VarChar(240)
+  reversedById String
+  createdAt    DateTime                   @default(now())
+  proposal     DonationAllocationProposal @relation(fields: [proposalId], references: [id], onDelete: Restrict)
+  reversedBy   User                       @relation("AllocationReverser", fields: [reversedById], references: [id], onDelete: Restrict)
+  @@index([createdAt])
+}
+
 model DonationAllocationProposal {
   id             String                   @id @default(cuid())
   donationId     String
@@ -478,6 +492,7 @@ model DonationAllocationProposal {
   fund           GivingFund               @relation(fields: [fundId], references: [id], onDelete: Restrict)
   createdBy      User                     @relation("AllocationMaker", fields: [createdById], references: [id], onDelete: Restrict)
   reviewedBy     User?                    @relation("AllocationChecker", fields: [reviewedById], references: [id], onDelete: Restrict)
+  reversal       DonationAllocationReversal?
   @@index([donationId, status])
   @@index([fundId, status, createdAt])
   @@index([status, createdAt])
