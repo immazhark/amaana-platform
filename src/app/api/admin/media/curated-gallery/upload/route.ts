@@ -9,6 +9,7 @@ import {
   assertCuratedGalleryRuntime,
   curatedGalleryRecordById,
   deriveCuratedGalleryStorage,
+  matchesCuratedGalleryAssetMetadata,
   parseCuratedGallerySessionMetadata,
 } from "@/lib/curated-gallery-server";
 import { prisma } from "@/lib/prisma";
@@ -109,7 +110,8 @@ export async function POST(request: Request) {
             existing.kind !== "IMAGE" ||
             existing.storageKey !== storageIdentity.storageKey ||
             existing.publicUrl !== storageIdentity.publicUrl ||
-            existing.sortOrder !== record.sortOrder) {
+            existing.sortOrder !== record.sortOrder ||
+            !matchesCuratedGalleryAssetMetadata(record, existing)) {
           throw new Error("Existing curated media record conflicts with the approved package");
         }
         if (!existing.blurDataURL && uploaded.blurDataURL) {

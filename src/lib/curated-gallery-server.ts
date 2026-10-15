@@ -74,3 +74,31 @@ export function curatedGalleryRecordById(manifest: CuratedGalleryManifest, recor
   if (!record) throw new Error("Curated media ID is not part of the approved package");
   return record;
 }
+
+/** Enforce the immutable owner-approved editorial metadata on all entry points.
+ * A matching ID, object key or image hash alone does not authorize modified
+ * captions, dimensions, attribution, or external media references. */
+export type CuratedGalleryAssetMetadata = {
+  altText: string | null;
+  caption: string | null;
+  sourcePath: string | null;
+  sourceYear: number | null;
+  width: number | null;
+  height: number | null;
+  title: string | null;
+  externalUrl: string | null;
+};
+
+export function matchesCuratedGalleryAssetMetadata(
+  record: CuratedGalleryRecord,
+  asset: CuratedGalleryAssetMetadata,
+): boolean {
+  return asset.altText === record.altText &&
+    asset.caption === (record.caption || null) &&
+    asset.sourcePath === `owner-curated://${CURATED_GALLERY_BATCH}/${record.sha256}` &&
+    asset.sourceYear === record.sourceYear &&
+    asset.width === record.width &&
+    asset.height === record.height &&
+    asset.title === null &&
+    asset.externalUrl === null;
+}

@@ -10,6 +10,7 @@ import {
   CURATED_GALLERY_START_ACTION,
   assertCuratedGalleryRuntime,
   deriveCuratedGalleryStorage,
+  matchesCuratedGalleryAssetMetadata,
   parseCuratedGallerySessionMetadata,
 } from "@/lib/curated-gallery-server";
 import { mediaPublicationIssues, type MediaPublicationReview } from "@/lib/media-governance";
@@ -114,6 +115,10 @@ export async function POST(request: Request) {
           caption: true,
           storageKey: true,
           sortOrder: true,
+          sourcePath: true,
+          sourceYear: true,
+          width: true,
+          height: true,
           isPublic: true,
           privacyApprovedAt: true,
           updatedAt: true,
@@ -136,7 +141,8 @@ export async function POST(request: Request) {
             asset.storageKey !== expected.storageKey ||
             asset.publicUrl !== expected.publicUrl ||
             asset.sortOrder !== record.sortOrder ||
-            asset.sortOrder < 0) {
+            asset.sortOrder < 0 ||
+            !matchesCuratedGalleryAssetMetadata(record, asset)) {
           throw new Error(`Curated media record drift detected: ${record.id}`);
         }
         if (!canRenderPublicMedia(asset)) throw new Error(`Curated media is not renderable: ${record.id}`);

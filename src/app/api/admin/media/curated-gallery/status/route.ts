@@ -11,6 +11,7 @@ import {
   CURATED_GALLERY_START_ACTION,
   assertCuratedGalleryRuntime,
   deriveCuratedGalleryStorage,
+  matchesCuratedGalleryAssetMetadata,
   parseCuratedGallerySessionMetadata,
 } from "@/lib/curated-gallery-server";
 import { prisma } from "@/lib/prisma";
@@ -64,6 +65,14 @@ export async function GET() {
           storageKey: true,
           publicUrl: true,
           sortOrder: true,
+          altText: true,
+          caption: true,
+          sourcePath: true,
+          sourceYear: true,
+          width: true,
+          height: true,
+          title: true,
+          externalUrl: true,
           isPublic: true,
           privacyApprovedAt: true,
         },
@@ -88,7 +97,8 @@ export async function GET() {
           asset.storageKey !== expected.storageKey ||
           asset.publicUrl !== expected.publicUrl ||
           asset.sortOrder !== record.sortOrder ||
-          asset.sortOrder < 0) {
+          asset.sortOrder < 0 ||
+          !matchesCuratedGalleryAssetMetadata(record, asset)) {
         mismatches.push(record.id);
         continue;
       }

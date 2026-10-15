@@ -13,6 +13,7 @@ import {
   assertCuratedGalleryRuntime,
   buildCuratedGallerySessionMetadata,
   deriveCuratedGalleryStorage,
+  matchesCuratedGalleryAssetMetadata,
   parseCuratedGalleryManifestText,
 } from "@/lib/curated-gallery-server";
 import { prisma } from "@/lib/prisma";
@@ -86,6 +87,14 @@ export async function POST(request: Request) {
         publicUrl: true,
         sortOrder: true,
         kind: true,
+        altText: true,
+        caption: true,
+        sourcePath: true,
+        sourceYear: true,
+        width: true,
+        height: true,
+        title: true,
+        externalUrl: true,
       },
     });
     const records = new Map(manifest.records.map(item => [item.id, item]));
@@ -97,7 +106,8 @@ export async function POST(request: Request) {
           asset.initiativeId !== targetIds.get(record.slug) ||
           asset.storageKey !== expectedStorage.storageKey ||
           asset.publicUrl !== expectedStorage.publicUrl ||
-          asset.sortOrder !== record.sortOrder) {
+          asset.sortOrder !== record.sortOrder ||
+          !matchesCuratedGalleryAssetMetadata(record, asset)) {
         return NextResponse.json(
           { error: "An existing curated MediaAsset conflicts with the approved package.", recordId: asset.id },
           { status: 409, headers: privateHeaders },
