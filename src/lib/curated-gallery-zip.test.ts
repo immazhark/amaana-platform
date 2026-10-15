@@ -57,6 +57,16 @@ describe("checksum-authenticated gallery ZIP structural parser", () => {
     expect(result.get(".curated-media/manifest.json")?.bytes.buffer).toBe(buffer);
   });
 
+  it("snapshots exactly an entry's byte range without an intermediate buffer copy", async () => {
+    const { buffer } = fixture();
+    const entry = parseCuratedStoredZip(buffer).get(".curated-media/manifest.json");
+    if (!entry) throw new Error("Expected archive entry");
+    const view = new Uint8Array(entry.bytes.buffer as ArrayBuffer, entry.bytes.byteOffset, entry.bytes.byteLength);
+    const file = new File([view], "manifest.json");
+    expect(file.size).toBe(entry.bytes.byteLength);
+    expect(new Uint8Array(await file.arrayBuffer())).toEqual(entry.bytes);
+  });
+
   it("rejects a truncated archive or a fake end record", () => {
     expect(() => parseCuratedStoredZip(new ArrayBuffer(10))).toThrow();
     const { buffer, view } = fixture();

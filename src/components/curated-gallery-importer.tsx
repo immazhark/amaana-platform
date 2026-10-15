@@ -230,12 +230,15 @@ export function CuratedGalleryImporter() {
         ensureActive();
         const entry = entries.get(archivePathForCuratedRecord(record));
         if (!entry) throw new Error(`Missing verified entry for ${record.id}.`);
-        const uploadBuffer = new ArrayBuffer(entry.bytes.byteLength);
-        new Uint8Array(uploadBuffer).set(entry.bytes);
+        // This typed view names only the verified entry range. File snapshots
+        // its bytes; a second eager uploadBuffer allocation is unnecessary.
+        const imageBytes = new Uint8Array(
+          entry.bytes.buffer as ArrayBuffer, entry.bytes.byteOffset, entry.bytes.byteLength,
+        );
         const body = new FormData();
         body.set("batch", CURATED_GALLERY_BATCH);
         body.set("recordId", record.id);
-        body.set("file", new File([uploadBuffer], record.originalName, { type: record.mimeType }));
+        body.set("file", new File([imageBytes], record.originalName, { type: record.mimeType }));
         await requestJson("/api/admin/media/curated-gallery/upload", {
           method: "POST", body,
         }, 90_000);
