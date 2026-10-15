@@ -61,7 +61,7 @@ describe("owner-curated gallery status: fail closed before publication", () => {
     ["invalid mismatch ID", (s: ReturnType<typeof statusFixture>) => { s.mismatches = ["../../../etc/passwd"]; }],
     ["invalid item count", (s: ReturnType<typeof statusFixture>) => { s.initiatives[0].uploaded = 500; }],
     ["invalid batch", (s: ReturnType<typeof statusFixture>) => { s.batch = "unapproved"; }],
-  ])("rejects %s", (_name, alter) => {
+  ] as const)("rejects %s", (_name, alter) => {
     const status = statusFixture();
     alter(status);
     expect(() => parseCuratedGalleryStatus(status)).toThrow("status response is invalid");
