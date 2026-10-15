@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import type { Prisma } from "@prisma/client";
 import Link from "@/components/navigation-link";
 import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -15,11 +16,11 @@ export default async function RecognitionReviewPage() {
     status: "CAPTURED", isAnonymous: false, refundedAmount: 0,
     recognitionRequestedAt: { not: null }, recognitionApprovedAt: null,
     recognitionRevokedAt: null, recognitionDisplayName: { not: null },
-  } as const;
+  } satisfies Prisma.DonationWhereInput;
   const approvedWhere = {
     recognitionApprovedAt: { not: null }, recognitionRequestedAt: { not: null },
     recognitionRevokedAt: null, recognitionDisplayName: { not: null },
-  } as const;
+  } satisfies Prisma.DonationWhereInput;
   const requests = donorRecognitionEnabled() ? await prisma.donation.findMany({
     where: pendingWhere,
     orderBy: [{ recognitionRequestedAt: "asc" }, { id: "asc" }],
@@ -52,7 +53,7 @@ export default async function RecognitionReviewPage() {
     recognitionDisplayName: { not: null },
     OR: [{ status: { not: "CAPTURED" } }, { isAnonymous: true },
       { refundedAmount: { gt: 0 } }],
-  } as const;
+  } satisfies Prisma.DonationWhereInput;
   const [ineligiblePending, ineligiblePendingCount] = donorRecognitionEnabled()
     ? await Promise.all([
         prisma.donation.findMany({

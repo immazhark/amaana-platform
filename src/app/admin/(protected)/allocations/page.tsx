@@ -1,5 +1,6 @@
 import Link from "@/components/navigation-link";
 import type { Metadata } from "next";
+import type { Prisma } from "@prisma/client";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { allocationPlanningEnabled } from "@/lib/allocation-proposal-operations";
@@ -27,7 +28,7 @@ const proposalIncludes = {
     fund: { select: { status: true } },
   } },
   fund: { select: { name: true, accountCode: true } },
-} as const;
+} satisfies Prisma.DonationAllocationProposalInclude;
 
 export default async function AllocationAdminPage() {
   const staff = await requirePermission("donation.view");
@@ -40,7 +41,7 @@ export default async function AllocationAdminPage() {
     status: "APPROVED",
     reversal: { is: null },
     donation: { OR: [{ status: { not: "CAPTURED" } }, { refundedAmount: { gt: 0 } }] },
-  } as const;
+  } satisfies Prisma.DonationAllocationProposalWhereInput;
   const [pending, conflicts, reviewed, conflictCount] = enabled ? await Promise.all([
     prisma.donationAllocationProposal.findMany({
       where: { status: "PENDING" },
