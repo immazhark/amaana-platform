@@ -1,3 +1,26 @@
+## Private giving-fund planning summary (flag OFF by default)
+
+The fund registry is viewable with `fund.view`; financial data
+additionally requires `donation.view`. Allocation planning
+summaries and the allocation sidebar link are shown only if the
+server-side `AMAANA_ALLOCATION_PLANNING_ENABLED=true` gate has
+been explicitly activated after migrations and financial review.
+
+The planner compares all **approved, unreversed internal proposals**
+with recorded captured and retained receipts using integer paise.
+Pending proposals do not reserve money. On refund conflict,
+over-allocation or invalid sum, show a finance warning instead of a
+remaining balance. "Unplanned" means only that internal plans have
+not consumed those recorded receipts; it is **not cash in bank,
+paid expenditure, verified disbursement or programme outcome**.
+
+Prior to activation, verify Prisma groupBy relation filters
+(`reversal is null`, donation captured/refunded status), SQL
+integer precision and concurrently posted allocations against an
+isolated PostgreSQL seed. Verify staff `fund.view` +
+`donation.view` RBAC, flag-off absence, admin zoom/accessibility,
+and clean rollback. Do not activate based solely on authored tests.
+
 ## Shukr search privacy and allocation conflict queues
 
 The optional donor Shukr page at `/shukr` is public for a
