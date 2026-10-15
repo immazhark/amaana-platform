@@ -3,7 +3,7 @@ import { renderToPipeableStream } from "react-dom/server";
 import { PassThrough } from "node:stream";
 import { describe, expect, it, vi } from "vitest";
 import { LazyDonationForm, LazyDirectTransferForm } from "@/components/donation-checkout-loaders";
-import { DonationMethods } from "@/components/donation-methods";
+import { DonationMethods } from "@/components/donation-checkout";
 import { DonationOptions } from "@/components/donation-options";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 function html(element: React.ReactNode): Promise<string> {

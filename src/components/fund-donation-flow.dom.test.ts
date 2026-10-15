@@ -83,13 +83,16 @@ describe.skipIf(!runtime)("actual fund donor component interactions", () => {
     expect(container.textContent).toContain("response could not be verified");
   });
 
-  it("retains the reviewed purpose until explicit revision re-review clears consent", async () => {
+  it.each([4, 5])("retains the reviewed purpose until explicit re-review clears consent (revision %s)", async revision => {
     await render();
-    const revised = { ...fund, revision: 5, purpose: "An updated independently reviewed purpose for future contributions." };
+    const revised = { ...fund, revision, purpose: "An updated independently reviewed purpose for future contributions." };
     await act(async () => root.render(createElement(FundDonationFlow, { funds: [revised, second] })));
     expect(container.textContent).toContain(fund.purpose);
     expect(container.textContent).not.toContain(revised.purpose);
     expect((container.querySelector('[name="fundPurposeConfirmed"]') as HTMLInputElement).checked).toBe(true);
+    expect(container.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(true);
+    await act(async () => container.querySelector("form")!.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true })));
+    expect(fetchOrder).not.toHaveBeenCalled();
     const review = [...container.querySelectorAll("button")].find(button => button.textContent === "Review updated fund details")!;
     await act(async () => review.click());
     expect(container.textContent).toContain(revised.purpose);
@@ -111,12 +114,39 @@ describe.skipIf(!runtime)("actual fund donor component interactions", () => {
     expect(container.querySelector("select")!.disabled).toBe(true);
   });
 
+  it("keeps an admitted original-purpose order connected through a fund refresh", async () => {
+    await render();
+    await act(async () => container.querySelector("form")!.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true })));
+    const revised = { ...fund, revision: 5, purpose: "A changed purpose for future contributions only." };
+    await act(async () => root.render(createElement(FundDonationFlow, { funds: [revised, second] })));
+    await act(async () => resolveOrder(response()));
+    expect(opened).toHaveBeenCalledOnce();
+    expect(container.textContent).toContain(fund.purpose);
+    expect(container.textContent).not.toContain(revised.purpose);
+    expect(container.querySelector("select")!.disabled).toBe(true);
+    await act(async () => checkout!.modal.ondismiss());
+    expect(container.querySelector("select")!.disabled).toBe(false);
+    expect(container.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(true);
+  });
+
+  it("retains entered details but blocks a withdrawn fund from new submission", async () => {
+    await render();
+    await act(async () => root.render(createElement(FundDonationFlow, { funds: [second] })));
+    expect(container.textContent).toContain(fund.purpose);
+    expect(container.querySelector<HTMLInputElement>('[name="donorName"]')!.value).toBe("Synthetic donor");
+    expect(container.querySelector<HTMLButtonElement>('button[type="submit"]')!.disabled).toBe(true);
+    await act(async () => container.querySelector("form")!.dispatchEvent(new window.Event("submit", { bubbles: true, cancelable: true })));
+    expect(fetchOrder).not.toHaveBeenCalled();
+    expect(container.textContent).toContain("no longer available for a new contribution");
+  });
+
   it("sets a suggested amount, clears invalidity, and rejects a same-turn change after submit", async () => {
     await render();
     const amount = container.querySelector<HTMLInputElement>('[name="amount"]')!;
     amount.value = "invalid"; amount.setCustomValidity("Enter a valid amount");
     const presets = [...container.querySelectorAll<HTMLButtonElement>('[aria-label="Suggested donation amounts"] button')];
-    await act(async () => presets[1]!.click());
+    const thousand = presets.find(button => button.textContent === "₹1,000")!;
+    await act(async () => thousand.click());
     expect(amount.value).toBe("1000"); expect(amount.validity.valid).toBe(true);
     expect(window.document.activeElement).toBe(amount);
     await act(async () => {

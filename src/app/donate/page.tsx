@@ -8,7 +8,7 @@ import { getWholeRupeeCheckoutRange } from "@/lib/donation-amount-input";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { DonationPaymentInstructions } from "@/components/donation-payment-instructions";
 import type { AppealDonationChoice } from "@/components/appeal-donation-flow";
-import { DonationLandingCheckout } from "@/components/donation-landing-checkout";
+import { DonationLandingCheckout } from "@/components/donation-checkout";
 import { VerifiedImpactStrip, type VerifiedImpactItem } from "@/components/verified-impact-strip";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { canExposeSyntheticStagingContent, isSyntheticStagingAppeal } from "@/lib/public-environment";

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { DonationLandingCheckout } from "./donation-landing-checkout";
+import { DonationLandingCheckout } from "./donation-checkout";
 import type { AppealDonationChoice } from "./appeal-donation-flow";
 import type { DonorFund } from "@/lib/fund-checkout-contract";
 
