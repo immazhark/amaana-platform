@@ -19,6 +19,18 @@ describe("live appeal rail cache boundary", () => {
     expect(await withdrawn.json()).toEqual({ items: [] });
   });
 
+  it("requests the complete four-item rail rather than the homepage's three-item default", async () => {
+    mocks.getHomepageAppeals.mockResolvedValue(
+      ["one", "two", "three", "four"].map(slug => ({ slug, title: `Reviewed ${slug}` })),
+    );
+    const response = await GET();
+    expect(mocks.getHomepageAppeals).toHaveBeenCalledWith(4);
+    const data = await response.json();
+    expect(data.items).toHaveLength(4);
+    expect(data.items.map((item: { id: string }) => item.id))
+      .toEqual(["appeal-one", "appeal-two", "appeal-three", "appeal-four"]);
+  });
+
   it("distinguishes an unavailable source from a confirmed empty result without caching it", async () => {
     mocks.getHomepageAppeals.mockRejectedValue(new Error("unavailable"));
     const response = await GET();
