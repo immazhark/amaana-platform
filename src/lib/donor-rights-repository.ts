@@ -4,7 +4,7 @@ import type { DonorRightsRequestKind } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { hashReceiptToken } from "@/lib/donations";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
-import { projectDonorRightsStatuses, type DonorRightsKind } from "@/lib/donor-rights";
+import { DONOR_RIGHTS_KINDS, projectDonorRightsStatuses, type DonorRightsKind } from "@/lib/donor-rights";
 
 export const donorRightsEnabled = () => process.env.AMAANA_DONOR_RIGHTS_ENABLED === "true";
 
@@ -24,13 +24,16 @@ export async function findDonationRightsCapability(reference: string, token: str
 /** Return only the most recent safe status for each kind, not donor identity,
  * receipt capability, monetary details or private administrative notes. */
 export async function readDonationRightsStatuses(donationId: string) {
-  const records = await prisma.donorRightsRequest.findMany({
-    where: { donationId },
-    select: { kind: true, status: true, createdAt: true },
-    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-    take: 30,
-  });
-  return projectDonorRightsStatuses(records);
+  // A combined take:30 silently hides one category after many prior
+  // requests in another category. Look up each latest row independently.
+  const latest = await Promise.all(DONOR_RIGHTS_KINDS.map(kind =>
+    prisma.donorRightsRequest.findFirst({
+      where: { donationId, kind },
+      select: { kind: true, status: true, createdAt: true },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    }),
+  ));
+  return projectDonorRightsStatuses(latest.filter(row => row !== null));
 }
 
 /** Serializable check-and-insert allows at most one active request per
