@@ -97,11 +97,14 @@ export function normalizeStructuredDataImage(imageUrl: string | null | undefined
     if (normalized.startsWith("/")) return new URL(normalized, site.origin).toString();
 
     const url = new URL(normalized);
-    // A caller-provided canonical siteUrl may differ from the process env in
-    // isolated/staging builds. The origin comparison remains exact.
-    if (url.origin === site.origin || isCspCompatiblePublicImageUrl(normalized)) {
+    // The explicit site origin may differ from NEXT_PUBLIC_APP_URL in preview
+    // builds. Classify its pathname as an application path independently, so
+    // admin/receipt URLs never become crawlable image metadata.
+    if (url.origin === site.origin) {
+      if (isPrivateAppMediaUrl(`${url.pathname}${url.search}${url.hash}`)) return null;
       return url.toString();
     }
+    if (isCspCompatiblePublicImageUrl(normalized)) return url.toString();
   } catch {
     return null;
   }

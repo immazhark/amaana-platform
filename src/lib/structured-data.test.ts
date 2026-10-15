@@ -97,6 +97,38 @@ describe("public structured data", () => {
       .toBe("https://amaanafoundation.org/brand/amaana-mark.svg");
   });
 
+  it("protects private paths on an explicitly supplied preview site origin", () => {
+    // Production env and an explicit preview canonical need not match.
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://approved-media.example");
+    const site = "https://preview.amaana.example";
+    for (const value of [
+      `${site}/admin/assistance/private.jpg`,
+      `${site}/api/donations/private.jpg`,
+      `${site}/donations/AF-PRIVATE/acknowledgement`,
+      `${site}/request-assistance/status`,
+      `${site}/_next/image?url=%2Fadmin%2Fprivate`,
+      `${site}/%61dmin/financial-evidence.jpg`,
+      `${site}/%2561pi/admin/document.jpg`,
+      `${site}/media/%252e%252e/admin/private.jpg`,
+    ]) {
+      expect(normalizeStructuredDataImage(value, site), value).toBeNull();
+      const data = buildPublicStructuredData({
+        type: "Article", title: "Approved programme", description: "Reviewed public account",
+        path: "/stories/approved", imageUrl: value,
+      }, site);
+      expect(data, value).not.toHaveProperty("image");
+    }
+    expect(normalizeStructuredDataImage(`${site}/media/approved.jpg`, site))
+      .toBe(`${site}/media/approved.jpg`);
+    expect(normalizeStructuredDataImage("/brand/amaana-mark.svg", site))
+      .toBe(`${site}/brand/amaana-mark.svg`);
+    expect(normalizeStructuredDataImage("https://approved-media.example/public/photo.jpg", site))
+      .toBe("https://approved-media.example/public/photo.jpg");
+    expect(normalizeStructuredDataImage("https://unapproved.example/public/photo.jpg", site))
+      .toBeNull();
+  });
+
   it("does not let malformed or insecure site origins produce image URLs", () => {
     expect(normalizeStructuredDataImage("/media/approved.jpg", "http://amaanafoundation.org")).toBeNull();
     expect(normalizeStructuredDataImage("/media/approved.jpg", "https://user:pass@amaanafoundation.org")).toBeNull();
