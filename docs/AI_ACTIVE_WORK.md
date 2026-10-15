@@ -1,6 +1,14 @@
-## 2026-10-15 — Live-appeal rail freshness and bounded revalidation (in progress)
+## 2026-10-15 — Cached appeal rollover and resource-conscious live-rail freshness
 
-Ownership: CHATGPT_ACTIVE, sole writer on open PR #292 / `fix/direct-transfer-feedback-20261013` from verified head `c3279ffc63147dad556b45169b68f0c3c151444e`. Repair indefinitely stale appeal actions in already-open tabs with visibility-aware bounded revalidation, cancellable late responses, and privacy-safe fallback. Preserve existing approved publicity/checkout gates. The exact source checkout is not available in this runtime; GitHub connector writes only. No budget relaxation, payment, feature activation, deployment or merge is authorized.
+Ownership: HANDOFF_PENDING after source batch on existing PR #292 `fix/direct-transfer-feedback-20261013` from `c3279ffc` to `21e75ac6e87b44cb86ae4b710e0711a0d4fec546`. Source changes:
+- `src/components/islamic-companion.tsx`: previously mounted a single live-appeal read for the lifetime of a tab. Visible tabs with active appeals now revalidate no more than every five minutes, clearing stale donation links before network revalidation and ignoring aborted, timed-out and late responses. Hidden tabs do not poll. Confirmed empty and unavailable rails do not make recurring requests; a tab returning to visibility after the freshness interval can recheck.
+- `src/lib/public-content.ts`: cached eligible appeal candidate projection retains 20 bounded candidates and performs the current deadline check **before** applying the caller's visible limit, so a recently expired high-ranked campaign does not consume a homepage/live-rail slot. Cache TTL remains 300 seconds, with the existing privacy/status gates and no additional database read.
+- `src/app/api/public/live-rail/route.ts`: explicitly requests four candidates, matching its four-item response contract rather than inheriting the homepage's three-item default.
+- Focused Vitest source coverage added/updated across companion effect lifecycle, cached promotional appeal projections and API response. It checks visibility/five-minute cooldown, no empty-rail polling, withdrawal, late timeout completion, time-advance cached rollover, sensitive exclusions and the four-item contract.
+
+Execution: GitHub connector source edits and exact-head branch lease verified. Repository checkout and dependency installation unavailable (GitHub DNS blocked in current container), so TypeScript, focused Vitest, lint, optimized build, asset budgets, real browser and provider/production acceptance **have not been executed in this environment**. Keep historic JS882837/819200 and CSS347365/348160 readings explicitly scoped to predecessor `a263dbee`; new head not measured. All 149 implementation states remain 60 Implemented / 60 Partial / 27 Not started / 1 Superseded / 1 Not applicable. No payment, migration, live database, mail, secrets, deployment, merge or feature activation was performed.
+
+Next: exact-head TypeScript and targeted lifecycle/expiry tests, then source-driven JS duplication investigation from clean emitted assets. Browser visibility and stale-link experience need actual hosted/Chromium acceptance before release.
 
 ## 2026-10-15 — Public galleries and structured-data destination safety (source batch complete)
 
