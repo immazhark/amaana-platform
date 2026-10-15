@@ -1542,3 +1542,34 @@ keyboard/zoom and payment sandbox acceptance remain unexecuted. No production
 operations. AF-R047 remains Partial; all 149 implementation states unchanged:
 60 Implemented / 59 Partial / 28 Not started / 2 other. Next: remaining bundle
 excess and route delivery/CWV, without increasing caps or dropping support.
+
+### 2026-10-15 — Retired page-shell CSS removal; aggregate CSS cap restored
+
+Continued PR #292 from `afc25cf4`. Removed unused trust, transparency and
+initiative stylesheet imports from their route layouts. Pruned source-confirmed
+retired hero, story, timeline, media-grid, amount-wrapper and legacy layout
+selectors from active stylesheets, while leaving unimported archives intact.
+Active shared hero variants, media grids, cards, forms, accessibility policies
+and programme content remain in source. No copy or business logic changed.
+The CSS audit now checks active stories headings and the retained section label
+instead of asserting the existence of retired markup.
+
+Executed: 24 focused tests across 6 suites, full TypeScript, changed-code
+zero-warning ESLint, global CSS architecture audit, whitespace checks and clean
+optimized compile-only build. An independent CSS AST subsequence comparison
+found 238 removed selector branches in 18 edited stylesheets, with surviving
+declarations and their order unchanged. No browser visual/AT/zoom acceptance
+was executed; source absence is not a live CSS-coverage percentage.
+
+**Aggregate CSS 384,242 → 347,365 bytes (-36,877)**, now below the unchanged
+348,160 cap by 795 bytes. JS remains **882,569 / 819,200**, still a release
+blocker. Root-global source CSS separately decreased **127,193 → 124,633 bytes**;
+the 60 KB goal remains unmet. AF-R067 **Not started → Partial** reflects actual
+root stylesheet pruning only, not completion of that stricter requirement.
+AF-R057 remains Partial; AF-R068 remains unverified/Not started because no live
+coverage measurement was performed. No budget, browser support, production
+flag, migration, provider operation, deployment or main merge changed.
+
+149-row register: **60 Implemented / 60 Partial / 27 Not started /
+1 Superseded / 1 Not applicable**. Next: remaining JS excess, then bounded
+rendered visual/interaction acceptance before release.

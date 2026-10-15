@@ -1,3 +1,7 @@
+## 2026-10-15 — Retired page-shell CSS cleanup
+
+Ownership: HANDOFF_PENDING after retired-shell CSS batch; sole writer on PR #292 from `afc25cf4`. Aggregate CSS restored to 347365/348160 bytes (-36877); JS remains blocked at 882569/819200. Root global source 124633 bytes still exceeds 60KB goal; AF-R067 source Partial. 24 focused tests, TypeScript, lint, CSS architecture audit and clean compile pass; 238 retired selector branches removed with surviving declarations/order unchanged. Master149: 60 Implemented / 60 Partial / 27 Not started / 2 other. Next: remaining JS excess and bounded browser acceptance. No release or budget changes.
+
 ## 2026-10-15 — Bundle deduplication execution
 
 Ownership: HANDOFF_PENDING at completed source boundary; sole writer on PR #292 from `ef9a09e1`. Completed shared async checkout imports: 16,017 aggregate JS bytes removed, CSS unchanged. 69 focused tests, TypeScript, zero-warning lint and clean compile-only build pass. Remaining caps fail: 882569/819200 JS, 384242/348160 CSS. Next: remaining delivery excess and browser slow-chunk/payment acceptance. No release, visual redesign or budget relaxation. Master149 remains 60 Implemented / 59 Partial / 28 Not started / 2 other.

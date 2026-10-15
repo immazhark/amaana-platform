@@ -51,13 +51,14 @@ if (!/import\s+["']\.\/appeal-card\.css["'];/.test(home)) {
 // owners. A component-only fix is insufficient if a later route sheet reverts it.
 for (const [file, selectors] of [
   ['appeals.css', ['.v2-appeal-card h3', '.v2-appeals-empty h3', '.v2-appeal-story-grid h2']],
-  ['stories.css', ['.v2-stories-feature-placeholder strong', '.v2-story-detail-context>strong', '.v2-story-detail-no-media strong']],
+  ['stories.css', ['.v2-stories-feature-copy h2', '.v2-stories-card-copy h3']],
 ]) {
   const source = await readFile(path.join(root, 'src/app', file), 'utf8');
   for (const selector of selectors) {
     const declarations = source.split(`${selector}{`)[1]?.split('}')[0];
-    if (!declarations || !/(?:^|;)\s*line-height:\s*1\.12(?:\s*;|$)/.test(declarations)) {
-      failures.push(`${file}: ${selector} must retain accessible 1.12 multiline leading.`);
+    const lineHeight = Number(declarations?.match(/(?:^|;)\s*line-height:\s*(\d*\.?\d+)(?:\s*;|$)/)?.[1]);
+    if (!Number.isFinite(lineHeight) || lineHeight < 1.12) {
+      failures.push(`${file}: ${selector} must retain multiline leading of at least 1.12.`);
     }
   }
 }
@@ -157,7 +158,7 @@ if (cssImports.includes('iteration-three.css')) {
   failures.push('iteration-three.css was consolidated into brand-expression.css and must not return as a root layer.');
 }
 
-for (const requiredRule of ['.v2-kicker,.v2-section-label', '.v2-closing', '.brand-official']) {
+for (const requiredRule of ['.v2-section-label', '.v2-closing', '.brand-official']) {
   if (!brandExpression.includes(requiredRule)) {
     failures.push(`brand-expression.css is missing consolidated rule ${requiredRule}.`);
   }
