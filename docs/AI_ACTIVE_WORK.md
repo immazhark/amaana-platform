@@ -1,3 +1,7 @@
+## 2026-10-15 — Shared public-media disclosure and gallery origin guards (in progress)
+
+Ownership: CHATGPT_ACTIVE on existing PR #292 `fix/direct-transfer-feedback-20261013`, claimed from verified head `f2af1b945becb467922737e19c3e9e9f61cd9661`. Implement gallery and structured-data image destination policy alignment, with focused negative/positive source regressions. Strictly preserve server-side media publication and payment/privacy gates, approved CDN behavior, and installed design. GitHub connector writes only; network-isolated local workspace is not a repository checkout. No release/migration/feature activation is authorized.
+
 ## 2026-10-15 — Public-media canonical host privacy guard (in progress)
 
 Ownership: HANDOFF_PENDING after source-only privacy batch on PR #292, branch `fix/direct-transfer-feedback-20261013`, claimed from exact head `a263dbeeecd65d847be6ce6b23f40568f930d1ca`. Scope: same-site domain aliases in public-media privacy checks plus focused regressions. Preserve external media-CDN allowance and all publication gates. GitHub-connector execution; no checkout or native test runner available in current environment. No production operation authorized. Source guard and focused regression authored; local repo checkout, Vitest, TypeScript, build, browser and deploy acceptance unavailable/not executed. No status promotion.
