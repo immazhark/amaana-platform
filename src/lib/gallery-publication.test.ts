@@ -57,6 +57,15 @@ describe("public-safe gallery presentation boundary", () => {
       .toBe("https://cdn.example.org/approved.webp");
   });
 
+  it("honors the exact server-serialized image host after client hydration", () => {
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "");
+    const url = "https://approved.example.org/2026/photo.webp";
+    expect(selectSafeGalleryImages([{ ...approved, url }])).toEqual([]);
+    expect(selectSafeGalleryImages([{ ...approved, url }], ["https://approved.example.org"])[0]?.url).toBe(url);
+    expect(selectSafeGalleryImages([{ ...approved, url: "https://approved.example.org.evil.test/photo.webp" }], ["https://approved.example.org"])).toEqual([]);
+    expect(selectSafeGalleryImages([{ ...approved, url: "https://approved.example.org/admin/private.webp" }], ["https://approved.example.org"])).toHaveLength(1);
+  });
+
   it("rejects unknown HTTPS image hosts even when a gallery record looks approved", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://media.amaana.example");

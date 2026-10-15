@@ -21,8 +21,16 @@ export type CampaignGalleryItem = {
   blurDataURL?: string | null;
 };
 
-export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }) {
-  const safeItems = useMemo(() => selectSafeGalleryImages(items), [items]);
+const NO_ADDITIONAL_IMAGE_ORIGINS: readonly string[] = [];
+
+export function CampaignMediaGallery({ items, approvedImageOrigins = NO_ADDITIONAL_IMAGE_ORIGINS }: {
+  items: CampaignGalleryItem[];
+  approvedImageOrigins?: readonly string[];
+}) {
+  const safeItems = useMemo(
+    () => selectSafeGalleryImages(items, approvedImageOrigins),
+    [items, approvedImageOrigins],
+  );
   const [activeId, setActiveId] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);

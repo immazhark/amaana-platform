@@ -13,10 +13,20 @@ describe("actual gallery image delivery", () => {
     expect(html).toContain('loading="lazy"');
     expect(html).not.toContain('rel="preload"');
   });
+  it("rejects external images when the server did not pass approved CDN origins", () => {
+    const html = renderToStaticMarkup(createElement(CampaignMediaGallery, {
+      items: [{ id: "unconfigured", url: "https://unapproved.example/photograph.webp", alt: "Not approved" }],
+    }));
+    expect(html).toBe("");
+  });
+
   it("retains direct external delivery without proxying its origin", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     for (const url of ["https://approved-cdn.example.org/media/synthetic.webp"]) {
-      const html = renderToStaticMarkup(createElement(CampaignMediaGallery, { items: [{ id: "synthetic", url, alt: "Synthetic fixture" }] }));
+      const html = renderToStaticMarkup(createElement(CampaignMediaGallery, {
+        items: [{ id: "synthetic", url, alt: "Synthetic fixture" }],
+        approvedImageOrigins: ["https://approved-cdn.example.org"],
+      }));
       expect(html).toContain(`src="${url}"`);
       expect(html).not.toContain('data-nimg');
     }

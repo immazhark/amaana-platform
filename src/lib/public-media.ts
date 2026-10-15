@@ -137,7 +137,16 @@ export function getPublicImageOptimizationUrl(value: string, configuredAppUrl = 
   return `${url.pathname}${url.search}${url.hash}`;
 }
 
-export function isCspCompatiblePublicImageUrl(value: string | null | undefined) {
+/** Server callers serialize these public origins into gallery props because
+ * unprefixed PUBLIC_MEDIA_BASE_URL is not available to browser components. */
+export function getConfiguredPublicImageOrigins(): string[] {
+  return [...new Set([
+    configuredHttpsOrigin(process.env.NEXT_PUBLIC_APP_URL),
+    configuredHttpsOrigin(process.env.PUBLIC_MEDIA_BASE_URL),
+  ].filter((origin): origin is string => Boolean(origin)))];
+}
+
+export function isCspCompatiblePublicImageUrl(value: string | null | undefined, additionalImageOrigins: readonly string[] = []) {
   const normalized = normalizeSafePublicMediaUrl(value);
   if (!normalized) return false;
   if (isPrivateAppMediaUrl(normalized)) return false;
@@ -147,9 +156,9 @@ export function isCspCompatiblePublicImageUrl(value: string | null | undefined) 
   if (!imageOrigin) return false;
 
   const allowedOrigins = new Set([
-    configuredHttpsOrigin(process.env.NEXT_PUBLIC_APP_URL),
-    configuredHttpsOrigin(process.env.PUBLIC_MEDIA_BASE_URL),
-  ].filter((origin): origin is string => Boolean(origin)));
+    ...getConfiguredPublicImageOrigins(),
+    ...additionalImageOrigins.map(configuredHttpsOrigin).filter((origin): origin is string => Boolean(origin)),
+  ]);
 
   return allowedOrigins.has(imageOrigin);
 }

@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   IDENTITY_MEDIA_SORT_ORDER,
   getPublicImageOptimizationUrl,
+  getConfiguredPublicImageOrigins,
   canRenderPublicMedia,
   isCspCompatiblePublicImageUrl,
   isPrivateAppMediaUrl,
@@ -66,6 +67,17 @@ describe("public media safety", () => {
       publicUrl: "https://unconfigured.example/photo.jpg",
       altText: "Externally hosted photograph",
     })).toBe(false);
+  });
+
+  it("derives only explicit HTTPS image origins for server-rendered gallery configuration", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org/path");
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://cdn.amaana.example/photos");
+    expect(getConfiguredPublicImageOrigins()).toEqual(["https://amaanafoundation.org", "https://cdn.amaana.example"]);
+    expect(isCspCompatiblePublicImageUrl("https://cdn.amaana.example/approved.webp")).toBe(true);
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "");
+    expect(isCspCompatiblePublicImageUrl("https://cdn.amaana.example/approved.webp")).toBe(false);
+    expect(isCspCompatiblePublicImageUrl("https://cdn.amaana.example/approved.webp", ["https://cdn.amaana.example"])).toBe(true);
+    expect(isCspCompatiblePublicImageUrl("https://unapproved.example/photo.webp", ["https://cdn.amaana.example"])).toBe(false);
   });
 
   it("never displays publicly published records pointing into private app paths", () => {

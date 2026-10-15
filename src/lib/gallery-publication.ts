@@ -12,6 +12,7 @@ export type GalleryPublicationCandidate = {
  * Next's optimizer can receive them. Do not silently proxy remote origins. */
 export function selectSafeGalleryImages<T extends GalleryPublicationCandidate>(
   items: readonly T[],
+  approvedImageOrigins: readonly string[] = [],
 ): Array<T & { url: string; alt: string }> {
   const seenIds = new Set<string>();
   const seenUrls = new Set<string>();
@@ -23,7 +24,7 @@ export function selectSafeGalleryImages<T extends GalleryPublicationCandidate>(
     const url = normalizeSafePublicMediaUrl(item.url);
     if (!id || !alt || !url) continue;
     // Match PublicMedia's image-host/CSP policy before mounting thumbnail or lightbox.
-    if (!isCspCompatiblePublicImageUrl(url)) continue;
+    if (!isCspCompatiblePublicImageUrl(url, approvedImageOrigins)) continue;
     if (seenIds.has(id) || seenUrls.has(url)) continue;
     seenIds.add(id);
     seenUrls.add(url);
