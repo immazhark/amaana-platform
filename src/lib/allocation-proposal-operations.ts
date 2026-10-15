@@ -47,6 +47,19 @@ export async function createAllocationProposal(input: {
     });
     const available = allocationAvailablePaise(source, approved.filter(row => row.reversal === null).map(row => row.amountPaise));
     if (amountPaise > available) throw new AllocationError("Proposed amount exceeds unallocated retained funds.");
+    // Duplicate form submissions should not fabricate additional finance
+    // tasks. Serializable predicate reads make concurrent identical attempts
+    // converge on the first pending proposal after retry.
+    const existingPending = await tx.donationAllocationProposal.findFirst({
+      where: {
+        donationId: source.id, fundId: source.fundId,
+        givingIntent: source.givingIntent, amountPaise, purposeNote,
+        createdById: input.actorId, status: "PENDING",
+      },
+      select: { id: true },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+    });
+    if (existingPending) return existingPending.id;
     // Pending proposals do not reserve money. Checker performs the same
     // accounting computation atomically, and rejects stale proposals.
     const created = await tx.donationAllocationProposal.create({

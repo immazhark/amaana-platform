@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   donateFind: vi.fn(), donateUpdate: vi.fn(),
-  proposalFind: vi.fn(), proposalList: vi.fn(), proposalCreate: vi.fn(), proposalUpdate: vi.fn(),
+  proposalFind: vi.fn(), proposalMatch: vi.fn(), proposalList: vi.fn(), proposalCreate: vi.fn(), proposalUpdate: vi.fn(),
   audit: vi.fn(), transaction: vi.fn(),
 }));
 vi.mock("server-only", () => ({}));
@@ -41,7 +41,7 @@ function harness() {
   return {
     donation: { findUnique: mocks.donateFind, updateMany: mocks.donateUpdate },
     donationAllocationProposal: {
-      findUnique: mocks.proposalFind, findMany: mocks.proposalList,
+      findUnique: mocks.proposalFind, findFirst: mocks.proposalMatch, findMany: mocks.proposalList,
       create: mocks.proposalCreate, updateMany: mocks.proposalUpdate,
     },
     auditEvent: { create: mocks.audit },
@@ -55,6 +55,7 @@ describe("allocation proposals never move funds and cannot bypass second approva
     mocks.donateFind.mockResolvedValue(donation);
     mocks.donateUpdate.mockResolvedValue({ count: 1 });
     mocks.proposalFind.mockResolvedValue(proposal);
+    mocks.proposalMatch.mockResolvedValue(null);
     mocks.proposalList.mockResolvedValue([]);
     mocks.proposalUpdate.mockResolvedValue({ count: 1 });
     mocks.proposalCreate.mockResolvedValue({ id: proposal.id });
@@ -87,6 +88,23 @@ describe("allocation proposals never move funds and cannot bypass second approva
       data: expect.objectContaining({ action: "ALLOCATION_PROPOSAL_CREATED" }),
     }));
     expect(mocks.donateUpdate).not.toHaveBeenCalled();
+  });
+
+  it("reuses identical pending maker submissions without creating a second audit or proposal", async () => {
+    mocks.proposalMatch.mockResolvedValue({ id: "existing-pending-proposal" });
+    const id = await createAllocationProposal({
+      donationId: donation.id, actorId: "finance-maker-id",
+      amount: "125.05", purposeNote: "Approved programme education materials",
+    });
+    expect(id).toBe("existing-pending-proposal");
+    expect(mocks.proposalMatch).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        donationId: donation.id, amountPaise: 12505, status: "PENDING",
+        createdById: "finance-maker-id",
+      }),
+    }));
+    expect(mocks.proposalCreate).not.toHaveBeenCalled();
+    expect(mocks.audit).not.toHaveBeenCalled();
   });
 
   it("refuses proposal creation from unreconciled, refunded or wrong-purpose donations", async () => {
