@@ -1,8 +1,8 @@
 .root{scroll-margin-top:7rem}
 .heading{font:600 clamp(1.5rem,2.8vw,2rem)/1.2 var(--af-font-display);color:var(--af-color-navy-950)}
 .tabs{display:flex;flex-wrap:wrap;gap:.6rem;margin:1rem 0 1.4rem}
-.tabs button{min-height:2.9rem;padding:.7rem 1rem;border:1px solid rgb(18 34 57 / 18%);border-radius:999px;background:#fffdf8;color:var(--af-color-navy-950);font-weight:750;cursor:pointer}
-.tabs button[aria-pressed=true]{background:var(--af-color-navy-950);color:#fffdf8;border-color:var(--af-color-gold-ink)}
+.tabs button{min-height:2.9rem;padding:.7rem 1rem;border:1px solid rgb(18 34 57 / 18%);border-radius:999px;background:var(--af-color-surface);color:var(--af-color-navy-950);font-weight:750;cursor:pointer}
+.tabs button[aria-pressed=true]{background:var(--af-color-navy-950);color:var(--af-color-surface);border-color:var(--af-color-gold-ink)}
 .tabs button:disabled{opacity:.65;cursor:wait}
 .tabs button:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
 .fund{margin:1.5rem 0;min-width:0}

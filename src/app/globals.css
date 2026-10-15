@@ -58,6 +58,10 @@
   --af-color-placeholder-night: #0f172a;
   --af-color-placeholder-forest: #064e3b;
   --af-color-placeholder-amber: #b45309;
+  --af-color-skeleton-base: #e6ece9;
+  --af-color-skeleton-highlight: #f4f6f3;
+  --af-color-skeleton-deep: #173f41;
+  --af-color-print-outline: #999999;
 
   /* Spacing */
   --af-space-1: .25rem;

@@ -22,9 +22,9 @@
   .mobileDonate{display:inline-flex;align-items:center;justify-content:center;
     min-height:2.75rem;margin-inline-start:auto;padding:.45rem .9rem;
     border:1px solid var(--af-color-gold-500);border-radius:999px;
-    background:var(--af-color-navy-950);color:#fffdf8;font-size:.8125rem;font-weight:800;
+    background:var(--af-color-navy-950);color:var(--af-color-surface);font-size:.8125rem;font-weight:800;
     text-decoration:none;white-space:nowrap}
-  .mobileDonate:is(:hover,:focus-visible){background:var(--af-color-navy-800);color:#fffdf8}
+  .mobileDonate:is(:hover,:focus-visible){background:var(--af-color-navy-800);color:var(--af-color-surface)}
   .mobileDonate:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:2px}
 }
 @media(max-width:360px){.mobileDonate{padding-inline:.65rem;font-size:.75rem}}
