@@ -46,6 +46,8 @@ export function CuratedGalleryImporter() {
   const [status, setStatus] = useState<CuratedGalleryStatus | null>(null);
   const statusRequest = useRef(0);
   const busyRef = useRef(false);
+  // A missing session can safely release an uncertain import, never an uncertain publish.
+  const uncertainWrite = useRef<"import" | "publish" | null>(null);
   const lifetime = useRef<AbortController | null>(null);
 
   function requestJson(path: string, init: RequestInit = {}, timeoutMs = 12_000) {
@@ -60,7 +62,9 @@ export function CuratedGalleryImporter() {
     setStatus(current);
     // Only an authoritative clean status read can permit a deliberate restart
     // after a possibly committed start/upload/publish request.
-    if (!current.initialized || (current.mismatches.length === 0 && current.galleryOnly)) {
+    if ((uncertainWrite.current !== "publish" && !current.initialized) ||
+        (current.initialized && current.mismatches.length === 0 && current.galleryOnly)) {
+      uncertainWrite.current = null;
       setNeedsReconciliation(false);
     }
     if (current.uploaded === CURATED_GALLERY_RECORD_COUNT && current.missing === 0 &&
@@ -99,7 +103,8 @@ export function CuratedGalleryImporter() {
       if (controller.signal.aborted || id !== statusRequest.current) return;
       const current = parseCuratedGalleryStatus(value);
       setStatus(current);
-      if (!current.initialized || (current.mismatches.length === 0 && current.galleryOnly)) setNeedsReconciliation(false);
+      if ((uncertainWrite.current !== "publish" && !current.initialized) ||
+        (current.initialized && current.mismatches.length === 0 && current.galleryOnly)) { uncertainWrite.current = null; setNeedsReconciliation(false); }
       if (current.uploaded === CURATED_GALLERY_RECORD_COUNT && current.missing === 0 &&
           current.mismatches.length === 0 && current.galleryOnly) {
         setProgress(100);
@@ -148,7 +153,10 @@ export function CuratedGalleryImporter() {
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Curated gallery publication was not verified.";
-      if (submitted && lifetime.current && !lifetime.current.signal.aborted) setNeedsReconciliation(true);
+      if (submitted && lifetime.current && !lifetime.current.signal.aborted) {
+        uncertainWrite.current = "publish";
+        setNeedsReconciliation(true);
+      }
       setPhase(submitted
         ? `${message} Check status before retrying; publication may have completed.`
         : message);
@@ -247,7 +255,10 @@ export function CuratedGalleryImporter() {
       setPhase("154 gallery originals are uploaded and attached as unpublished review records. Publication remains a separate audited step.");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Curated gallery import failed.";
-      if (started && lifetime.current && !lifetime.current.signal.aborted) setNeedsReconciliation(true);
+      if (started && lifetime.current && !lifetime.current.signal.aborted) {
+        uncertainWrite.current = "import";
+        setNeedsReconciliation(true);
+      }
       setPhase(started ? `${message} Progress may have changed on the server; check status before restarting.` : message);
     } finally {
       busyRef.current = false;

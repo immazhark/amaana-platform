@@ -113,6 +113,25 @@ describe.skipIf(!runtime)("curated gallery operator lifecycle", () => {
     expect(container.textContent).toContain("published");
   });
 
+  it("does not unlock an uncertain publication when the session becomes unavailable", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json(stageStatus()));
+    await render();
+
+    fetchMock.mockResolvedValueOnce(Response.json(stageStatus()));
+    fetchMock.mockImplementationOnce(() => new Promise(() => {}));
+    await act(async () => button("Publish all")?.click());
+    await act(async () => vi.advanceTimersByTimeAsync(45_000));
+    expect(container.textContent).toContain("may have completed");
+
+    fetchMock.mockResolvedValueOnce(Response.json({
+      initialized: false, uploaded: 0, published: 0, missing: 154,
+    }));
+    await act(async () => button("Check import")?.click());
+    expect((container.querySelector("#curatedGalleryZip") as HTMLInputElement).disabled).toBe(true);
+    expect(button("Publish all")).toBeUndefined();
+    expect(requests("POST")).toHaveLength(1);
+  });
+
   it("keeps server drift visible while preventing owner approval", async () => {
     const status = stageStatus(true);
     status.mismatches.push("curated-" + "c".repeat(32));
