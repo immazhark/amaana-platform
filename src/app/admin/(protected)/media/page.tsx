@@ -1,7 +1,6 @@
 import { getIndexNowConfiguration } from "@/lib/indexnow";
 import { AdminIndexNowSubmission } from "@/components/admin-indexnow-submission";
 import Link from "@/components/navigation-link";
-import { CuratedGalleryImporter } from "@/components/curated-gallery-importer";
 import { isCuratedGalleryRuntime } from "@/lib/curated-gallery-server";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { hasPermission, requirePermission } from "@/lib/auth";
@@ -29,6 +28,15 @@ export default async function AdminMediaPage({ searchParams }: Props) {
   const canEdit = hasPermission(user, "content.update");
   const canApprove = hasPermission(user, "content.approve");
   const storage = getPublicMediaStorageReadiness();
+  // This 154-image intake exists only on the dedicated staging service.
+  // Keep its heavy browser-side ZIP implementation out of ordinary admin
+  // routes and hydrate it only for authorized, storage-ready operators.
+  const canImportCuratedGallery = canEdit && canApprove &&
+    storage.uploadReady && storage.separateBucketConfigured &&
+    isCuratedGalleryRuntime();
+  const CuratedGalleryImporter = canImportCuratedGallery
+    ? (await import("@/components/curated-gallery-importer")).CuratedGalleryImporter
+    : null;
   const { visibility, page: pageParam } = await searchParams;
   const selectedVisibility = visibility === "public" || visibility === "review" ? visibility : undefined;
   const where = selectedVisibility ? { isPublic: selectedVisibility === "public" } : undefined;
@@ -89,8 +97,7 @@ export default async function AdminMediaPage({ searchParams }: Props) {
         <p role="status">Search notifications are disabled until ownership configuration and release approval are complete.</p>}
     </section>}
 
-    {canEdit && canApprove && storage.uploadReady && storage.separateBucketConfigured &&
-      isCuratedGalleryRuntime() && <CuratedGalleryImporter />}
+    {CuratedGalleryImporter && <CuratedGalleryImporter />}
 
     {canEdit && <section className="admin-card" style={{ marginBottom: "2rem" }}>
       <h2>Add reviewed media</h2>
