@@ -9,8 +9,12 @@ describe("donation-specific data-rights request contract", () => {
     }
   });
   it("provides latest per-kind status without exposing donation or contact data", () => {
+    const sourceWithPrivateData = {
+      kind: "ACCESS", status: "OPEN", createdAt: new Date("2026-10-10T12:00:00Z"),
+      email: "hidden@demo.invalid",
+    };
     const result = projectDonorRightsStatuses([
-      { kind: "ACCESS", status: "OPEN", createdAt: new Date("2026-10-10T12:00:00Z"), email: "hidden@demo.invalid" },
+      sourceWithPrivateData,
       { kind: "ACCESS", status: "IN_REVIEW", createdAt: new Date("2026-10-12T12:00:00Z") },
       { kind: "DELETION_REVIEW", status: "OPEN", createdAt: new Date("2026-10-11T12:00:00Z") },
       { kind: "UNKNOWN", status: "CLOSED", createdAt: new Date("2026-10-13T12:00:00Z") },
