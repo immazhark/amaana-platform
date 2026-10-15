@@ -79,8 +79,11 @@ test("cached homepage appeals are rechecked against the current fundraising wind
   const source = await readFile("src/lib/public-content.ts", "utf8");
   const wrapper = source.match(/export async function getHomepageAppeals\(limit = 3\)\s*\{([\s\S]*?)\n\}/)?.[1];
   assert.ok(wrapper, "Expected public homepage appeal wrapper");
-  assert.match(wrapper, /await getHomepageAppealsCached\(limit\)/);
-  assert.match(wrapper, /cached\.filter\(appeal => isAppealOpenForDonations\(appeal\)\)/);
+  assert.match(wrapper, /await getHomepageAppealsCached\(\)/);
+  const filterIndex = wrapper.indexOf("cached.filter(appeal => isAppealOpenForDonations(appeal))");
+  const limitIndex = wrapper.indexOf(".slice(0, Math.min(20, Math.max(1, limit)))");
+  assert.ok(filterIndex >= 0, "Current funding eligibility must be rechecked against the cached candidates");
+  assert.ok(limitIndex > filterIndex, "Apply the result limit only after the current deadline check");
 });
 
 test("highly sensitive appeal shares and breadcrumb JSON-LD use privacy-safe copy", async () => {
