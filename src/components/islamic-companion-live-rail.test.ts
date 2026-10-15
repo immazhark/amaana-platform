@@ -100,7 +100,9 @@ describe("actual companion live-rail lifecycle", () => {
     await drain();
     await vi.advanceTimersByTimeAsync(8000);
     expect(m.state).toHaveBeenLastCalledWith("unavailable");
-    await vi.advanceTimersByTimeAsync(5 * 60_000);
+    // Start the second request at the five-minute boundary, without also
+    // advancing to its independent eight-second timeout.
+    await vi.advanceTimersByTimeAsync(5 * 60_000 - 8000);
     expect(m.fetch).toHaveBeenCalledTimes(2);
     await drain();
     expect(m.state).toHaveBeenLastCalledWith("ready");

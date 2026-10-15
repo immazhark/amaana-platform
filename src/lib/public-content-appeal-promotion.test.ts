@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   appealFindMany: vi.fn(),
@@ -46,8 +46,8 @@ describe("public promotional appeal projections", () => {
     vi.clearAllMocks();
     mocks.hasCachedAppeals = false;
     mocks.cachedAppeals = undefined;
-    vi.useRealTimers();
   });
+  afterEach(() => vi.useRealTimers());
 
   it("does not promote a HIGHLY_SENSITIVE case on home or live-rail query", async () => {
     const sensitive = {
