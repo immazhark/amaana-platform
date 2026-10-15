@@ -198,17 +198,17 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("refund entity Pos
       approvedById: approver.id, approvedAt: new Date(),
     } });
     const snapshot = approvedFundDesignationSnapshot(fund, 4, "GENERAL");
-    const paymentId = "pay_fund_" + prefix;
+    const paymentId = "pay_" + prefix + "fund";
     const donation = await prisma.donation.create({ data: {
       referenceNumber: "AFD-FUND-" + prefix, appealId: null, fundId: fund.id,
       designationSnapshot: snapshot,
       donorName: "Synthetic donor", donorEmail: label + "@example.test",
       domesticConfirmedAt: new Date(), amount: 100, status: "CAPTURED",
-      providerOrderId: "order_fund_" + prefix, providerPaymentId: paymentId,
+      providerOrderId: "order_" + prefix + "fund", providerPaymentId: paymentId,
       receiptTokenHash: "synthetic-not-a-real-token",
     } });
     fundFixtures.push({ donationId: donation.id, fundId: fund.id, userIds: [creator.id, editor.id, approver.id] });
-    const refundId = "rfnd_fund_" + prefix;
+    const refundId = "rfnd_" + prefix + "fund";
     const f = { paymentId, refundId };
 
     expect((await POST(request(f, "fundRefundOne", 2500))).status).toBe(200);
