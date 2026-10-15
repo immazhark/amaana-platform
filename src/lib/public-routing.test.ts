@@ -56,6 +56,11 @@ describe("public route publication policy", () => {
     expect(PUBLIC_STATIC_ROUTES.some(route => /subscription|mandate/.test(route.path))).toBe(false);
   });
 
+  it("keeps legacy enquiries reachable on-site but outside search discovery until qualified review", () => {
+    expect(isPrivateRoute("/get-involved/legacy-giving")).toBe(false);
+    expect(PUBLIC_STATIC_ROUTES.some(route => route.path === "/get-involved/legacy-giving")).toBe(false);
+  });
+
   it("makes the reviewed Shukr wall discoverable but keeps recognition changes private", () => {
     expect(PUBLIC_STATIC_ROUTES.some(route => route.path === "/shukr")).toBe(false);
     expect(isPrivateRoute("/shukr")).toBe(false);

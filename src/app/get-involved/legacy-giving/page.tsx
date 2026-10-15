@@ -34,7 +34,7 @@ const principles = [
 ] as const;
 
 export default function LegacyGivingPage() {
-  return <main className="v2-home">
+  return <div className="v2-home">
     <PageHero
       variant="information"
       eyebrow="Get involved · Future intentions"
@@ -88,5 +88,5 @@ export default function LegacyGivingPage() {
         </div>
       </div>
     </section>
-  </main>;
+  </div>;
 }

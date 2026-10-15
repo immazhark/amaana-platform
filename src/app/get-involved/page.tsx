@@ -77,6 +77,14 @@ const waysToHelp = [
     href: "/get-involved/monthly-giving",
     action: "Create a manual reminder",
   },
+  {
+    number: "07",
+    icon: "support" as const,
+    title: "Consider a future charitable legacy",
+    copy: "A careful, non-binding conversation about future intentions. Independent legal and religious advice is essential before any formal document or commitment.",
+    href: "/get-involved/legacy-giving",
+    action: "Understand legacy enquiries",
+  },
 ] as const;
 
 export default async function GetInvolvedPage() {
