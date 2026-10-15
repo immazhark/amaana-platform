@@ -60,7 +60,7 @@ export function CuratedGalleryImporter() {
     setStatus(current);
     // Only an authoritative clean status read can permit a deliberate restart
     // after a possibly committed start/upload/publish request.
-    if (current.mismatches.length === 0 && current.galleryOnly) {
+    if (!current.initialized || (current.mismatches.length === 0 && current.galleryOnly)) {
       setNeedsReconciliation(false);
     }
     if (current.uploaded === CURATED_GALLERY_RECORD_COUNT && current.missing === 0 &&
@@ -99,7 +99,7 @@ export function CuratedGalleryImporter() {
       if (controller.signal.aborted || id !== statusRequest.current) return;
       const current = parseCuratedGalleryStatus(value);
       setStatus(current);
-      if (current.mismatches.length === 0 && current.galleryOnly) setNeedsReconciliation(false);
+      if (!current.initialized || (current.mismatches.length === 0 && current.galleryOnly)) setNeedsReconciliation(false);
       if (current.uploaded === CURATED_GALLERY_RECORD_COUNT && current.missing === 0 &&
           current.mismatches.length === 0 && current.galleryOnly) {
         setProgress(100);
