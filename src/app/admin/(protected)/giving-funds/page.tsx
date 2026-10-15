@@ -2,6 +2,8 @@ import Link from "@/components/navigation-link";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { summarizeSettledDonationAggregate } from "@/lib/fund-ledger";
+import { allocationPlanningEnabled } from "@/lib/allocation-proposal-operations";
+import { summarizeFundPlanning } from "@/lib/fund-planning-summary";
 import { FUND_INTENTS, fundNextStatuses } from "@/lib/giving-funds";
 import { createGivingFund, transitionGivingFund, updateGivingFund } from "./actions";
 
@@ -32,6 +34,34 @@ export default async function GivingFundsPage({ searchParams }: { searchParams: 
         })
       : Promise.resolve([]),
   ]);
+  const fundsWithReadPermission = funds.map(fund => fund.id);
+  const showPlanning = canViewDonations && allocationPlanningEnabled();
+  // Group directly in SQL: retrieving a bounded slice of allocation records
+  // would silently understate a busy fund's approved planning total.
+  const [planRows, refundConflictRows] = showPlanning && fundsWithReadPermission.length
+    ? await Promise.all([
+      prisma.donationAllocationProposal.groupBy({
+        by: ["fundId"],
+        where: {
+          fundId: { in: fundsWithReadPermission },
+          status: "APPROVED", reversal: { is: null },
+        },
+        _sum: { amountPaise: true }, _count: { _all: true },
+      }),
+      prisma.donationAllocationProposal.groupBy({
+        by: ["fundId"],
+        where: {
+          fundId: { in: fundsWithReadPermission },
+          status: "APPROVED", reversal: { is: null },
+          donation: { is: {
+            OR: [{ status: { not: "CAPTURED" } }, { refundedAmount: { gt: 0 } }],
+          } },
+        },
+        _count: { _all: true },
+      }),
+    ]) : [[], []];
+  const plans = new Map(planRows.map(row => [row.fundId, row]));
+  const refundConflicts = new Map(refundConflictRows.map(row => [row.fundId, row._count._all]));
   const balances = new Map(financialRows.map(row => [row.fundId, row]));
   const displayINR = (rupees: number) =>
     new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR" }).format(rupees);
@@ -53,25 +83,51 @@ export default async function GivingFundsPage({ searchParams }: { searchParams: 
           <p className="muted">{fund.accountCode} · {fund.currency} · {fund.acceptedIntents.join(" / ")} · Created by {fund.createdBy.name}{fund.approvedBy ? ` · Approved by ${fund.approvedBy.name}` : ""}</p>
           {canViewDonations && (() => {
             const balance = balances.get(fund.id);
-            if (!balance) return <p className="muted">No captured contributions recorded for this fund.</p>;
-            let totals;
+            let totals: ReturnType<typeof summarizeSettledDonationAggregate>;
             try {
-              totals = summarizeSettledDonationAggregate({
+              totals = balance ? summarizeSettledDonationAggregate({
                 amount: balance._sum.amount,
                 refundedAmount: balance._sum.refundedAmount,
                 settledDonations: balance._count._all,
-              });
+              }) : { grossCapturedPaise: 0, refundedPaise: 0,
+                netRetainedPaise: 0, settledDonations: 0 };
             } catch {
               return <p role="alert">Fund net receipts require financial reconciliation.</p>;
             }
-            return <p className="muted">Gross captured: {displayINR(totals.grossCapturedPaise / 100)} · Refunded: {displayINR(totals.refundedPaise / 100)} · Net retained: {displayINR(totals.netRetainedPaise / 100)} · {totals.settledDonations} settled records</p>;
+            const approved = plans.get(fund.id);
+            const planning = showPlanning ? summarizeFundPlanning({
+              netRetainedPaise: totals.netRetainedPaise,
+              approvedPaise: approved?._sum.amountPaise ?? null,
+              activeApprovals: approved?._count._all ?? 0,
+              refundConflictApprovals: refundConflicts.get(fund.id) ?? 0,
+            }) : null;
+            return <>
+              {balance
+                ? <p className="muted">Gross captured: {displayINR(totals.grossCapturedPaise / 100)} · Refunded: {displayINR(totals.refundedPaise / 100)} · Net retained: {displayINR(totals.netRetainedPaise / 100)} · {totals.settledDonations} settled records</p>
+                : <p className="muted">No captured contributions recorded for this fund.</p>}
+              {planning && <div>
+                <p className="muted">Internal allocation planning · {planning.activeApprovals} reviewed active proposals</p>
+                {planning.state === "CLEAR"
+                  ? <p className="muted">
+                      Internally approved plans: {displayINR(planning.approvedPaise / 100)} ·
+                      Unplanned portion of retained receipts: {displayINR(planning.remainingUnplannedPaise / 100)}
+                    </p>
+                  : <p role="alert">Internal allocation planning requires finance reconciliation
+                      ({planning.reason.replaceAll("_", " ").toLowerCase()}).
+                      Do not infer an available balance.</p>}
+                <p className="muted">These amounts describe internal proposed allocations only,
+                  not bank cash, paid expenses or beneficiary outcomes.{" "}
+                  <Link href="/admin/allocations">Review proposals and conflicts</Link>
+                </p>
+              </div>}
+            </>;
           })()}
           {fund.status === "DRAFT" && canManage && <details><summary>Edit draft</summary><form action={updateGivingFund} className="form-grid"><input type="hidden" name="id" value={fund.id} /><input type="hidden" name="revision" value={fund.revision} /><DraftFields prefix={fund.id} values={fund} /><div className="field full"><button className="button secondary">Save draft</button></div></form></details>}
           {nextStatuses.length > 0 && <form action={transitionGivingFund} className="field"><input type="hidden" name="id" value={fund.id} /><input type="hidden" name="revision" value={fund.revision} /><label htmlFor={`${fund.id}-status`}>Move to</label><select id={`${fund.id}-status`} name="status">{nextStatuses.map(status => <option key={status} value={status}>{status.replaceAll("_", " ")}</option>)}</select><label htmlFor={`${fund.id}-reason`}>Review or status-change reason</label><textarea id={`${fund.id}-reason`} name="reason" minLength={12} maxLength={500} required /><button className="button secondary">Apply status</button></form>}
           {fund.status === "UNDER_REVIEW" && canApprove && (user.id === fund.createdById || user.id === fund.lastEditedById) && <p>A different approver must review this fund.</p>}
         </article>;
       })}
-      {funds.length === 100 && <p className="muted">Showing the 100 most recently updated funds within each status.</p>}
+      {funds.length === 100 && <p className="muted">Showing the first 100 funds in registry status and last-updated order. Further records require an expanded registry view.</p>}
     </section>
   </>;
 }
