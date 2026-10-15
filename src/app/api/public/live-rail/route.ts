@@ -11,7 +11,6 @@ export async function GET() {
       kind: "appeal" as const,
       eyebrow: "Live appeal",
       title: appeal.title,
-      subtitle: appeal.summary,
       detailsHref: `/appeals/${appeal.slug}`,
       supportHref: `/donate/${appeal.slug}`,
       detailsCta: "View",
@@ -25,6 +24,6 @@ export async function GET() {
       { headers: { "Cache-Control": "no-store" } },
     );
   } catch {
-    return NextResponse.json({ items: [] }, { status: 200, headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json({ items: [] }, { status: 503, headers: { "Cache-Control": "no-store" } });
   }
 }

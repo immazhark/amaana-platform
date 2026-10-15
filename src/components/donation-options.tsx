@@ -1,7 +1,7 @@
 import "server-only";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import { Suspense } from "react";
-import { LazyDonationMethods as DonationMethods } from "./lazy-donation-methods";
+import { DonationMethods } from "./donation-methods";
 import { DonationPaymentInstructions } from "./donation-payment-instructions";
 
 export function DonationOptions({ paymentDetails, ...props }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible: boolean; paymentDetails: DonationPaymentDetails }) {

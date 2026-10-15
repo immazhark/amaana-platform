@@ -3,7 +3,7 @@ import { renderToPipeableStream } from "react-dom/server";
 import { PassThrough } from "node:stream";
 import { describe, expect, it, vi } from "vitest";
 import { LazyDonationForm, LazyDirectTransferForm } from "@/components/donation-checkout-loaders";
-import { LazyDonationMethods } from "@/components/lazy-donation-methods";
+import { DonationMethods } from "@/components/donation-methods";
 import { DonationOptions } from "@/components/donation-options";
 vi.mock("next/navigation", () => ({ useRouter: () => ({ push: vi.fn() }) }));
 function html(element: React.ReactNode): Promise<string> {
@@ -19,9 +19,9 @@ function html(element: React.ReactNode): Promise<string> {
   });
 }
 const appeal = { appealId: "synthetic-appeal", appealTitle: "Synthetic approved need", maxAmount: 400, zakatEligible: false };
-describe("shared async checkout module boundaries preserve real forms", () => {
-  it("renders all payment-method controls and the real online form through the shared lazy boundary", async () => {
-    const output = await html(createElement(LazyDonationMethods, { ...appeal, bankAvailable: false, paymentInstructions: { DIRECT_UPI: null, BANK_TRANSFER: null } }));
+describe("shared lazy payment forms preserve real checkout controls", () => {
+  it("renders the method selector and its real lazy online form", async () => {
+    const output = await html(createElement(DonationMethods, { ...appeal, bankAvailable: false, paymentInstructions: { DIRECT_UPI: null, BANK_TRANSFER: null } }));
     expect(output).toContain("Secure online payment"); expect(output).toContain("Direct UPI / QR"); expect(output).toContain("Bank transfer");
     expect(output).toContain('name="donorName"'); expect(output).toContain('name="domesticConfirmed"'); expect(output).toContain("Maximum available for this transaction: ₹400.");
   });

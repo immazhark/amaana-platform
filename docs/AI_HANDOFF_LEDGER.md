@@ -1,3 +1,26 @@
+## 2026-10-15 — Live-update rendering boundary and checkout imports
+
+Continued PR #292 from `a48d0f1a`. Public live updates now runtime-check bounded
+JSON, plain-text titles, distinct appeal identities and matching local appeal/
+donation links. Action labels are derived locally. Malformed JSON, HTTP failure
+and an 8-second deadline show unavailable state; initial loading no longer claims
+there are no public appeals. Cleanup prevents late JSON or an aborted deadline
+from replacing the current state. Fallback changes use polite announcements.
+The API now returns 503 on source failure and omits its unused summary field.
+
+Removed the duplicated outer lazy payment-method boundary while preserving the
+shared lazy online/direct-payment forms and their submission/consent guards.
+That isolated import change reduced built JS by 922 bytes (882619 to 881697).
+The complete correctness batch is 882837 bytes (+218 vs parent), still above
+the unchanged 819200 cap; CSS remains 347365/348160. No overall JS-budget success
+is claimed. No framework experiment or browser-support reduction was retained.
+
+Executed: 49 focused parser, actual-component lifecycle, API and streamed checkout
+regressions across 8 suites; full TypeScript, changed-code zero-warning ESLint,
+whitespace and clean compile-only build pass. Browser/CWV/payment-provider
+acceptance remains open. Master149 source states stay 60 Implemented / 60 Partial /
+27 Not started / 1 Superseded /1 Not applicable; no production operation.
+
 ## 2026-10-15 — Assistance triage and cache-failure fallback
 
 Continued PR #292 from `cbba0d7c`. Added assignment filters (all, mine,
@@ -709,7 +732,7 @@ Ownership: `CODEX_ACTIVE` under the owner's explicit execution handover. Single 
 
 Verified baseline: `87aa9c613f635dc75b960a801c722f3f2f0f8ed6`. CI 38294121822 completed successfully: fast, database, production, browser and verify; Chromium 1,151 passed with no failure/flake summary; Firefox/WebKit 24 passed. Aggregate JS 818,586/819,200 B; CSS 346,363/348,160 B. These results certify the baseline only.
 
-Parked R-024 work `58c10229` was recovered through `a4e9fa78` and `fdab2ad9`. Correct two literal backslash-n sequences that invalidated intended prayer-label wrapping. Regression guard fails on original parked CSS and passes after correction (2/2 Node tests). Pin browser client date and stub synthetic prayer timings; verify 200% reading/note sizes and seven loaded prayer row wrapping/containment cases at mobile and desktop widths. Spec syntax passes; local Chromium unavailable, so hosted browser results remain required.
+Parked R-024 work `58c10229` was recovered through `a4e9fa78` and `fdab2ad9`. Correct two literal backslash-n sequences that invalidated intended prayer-label wrapping. Regression guard fails on original parked CSS and passes after correction (2/ 2 Node tests). Pin browser client date and stub synthetic prayer timings; verify 200% reading/note sizes and seven loaded prayer row wrapping/containment cases at mobile and desktop widths. Spec syntax passes; local Chromium unavailable, so hosted browser results remain required.
 
 CI policy: retain the per-ref concurrency group but set cancel-in-progress false to preserve active expensive browser runs. No tests or budgets weakened. CI planner tests: 33/33 pass locally.
 

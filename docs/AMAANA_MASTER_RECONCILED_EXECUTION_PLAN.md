@@ -1,5 +1,28 @@
 # Amaana Master Reconciled Execution Plan
 
+### 2026-10-15 — Live-update correctness and checkout import flattening
+
+Continued PR #292 from `a48d0f1a`. Public live updates now runtime-check bounded
+JSON, plain-text titles, distinct appeal identities and matching local appeal/
+donation links. Action labels are derived locally. Malformed JSON, HTTP failure
+and an 8-second deadline show unavailable state; initial loading no longer claims
+there are no public appeals. Cleanup prevents late JSON or an aborted deadline
+from replacing the current state. Fallback changes use polite announcements.
+The API now returns 503 on source failure and omits its unused summary field.
+
+Removed the duplicated outer lazy payment-method boundary while preserving the
+shared lazy online/direct-payment forms and their submission/consent guards.
+That isolated import change reduced built JS by 922 bytes (882619 to 881697).
+The complete correctness batch is 882837 bytes (+218 vs parent), still above
+the unchanged 819200 cap; CSS remains 347365/348160. No overall JS-budget success
+is claimed. No framework experiment or browser-support reduction was retained.
+
+Executed: 49 focused parser, actual-component lifecycle, API and streamed checkout
+regressions across 8 suites; full TypeScript, changed-code zero-warning ESLint,
+whitespace and clean compile-only build pass. Browser/CWV/payment-provider
+acceptance remains open. Master149 source states stay 60 Implemented / 60 Partial /
+27 Not started / 1 Superseded /1 Not applicable; no production operation.
+
 ### 2026-10-15 — Private assistance queue and committed-review reliability
 
 Continued PR #292 from `cbba0d7c`. Added assignment filters (all, mine,

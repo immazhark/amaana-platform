@@ -6,7 +6,7 @@ import { getWholeRupeeCheckoutRange } from "@/lib/donation-amount-input";
 import { PublicFundingMeter } from "@/components/public-funding-meter";
 import styles from "./appeal-donation-flow.module.css";
 
-import { LazyDonationMethods as DonationMethods } from "./lazy-donation-methods";
+import { DonationMethods } from "./donation-methods";
 
 export type AppealDonationChoice = {
   id: string;

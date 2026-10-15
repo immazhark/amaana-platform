@@ -3,6 +3,7 @@
 import Link from "@/components/navigation-link";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { hyderabadClock, remindersFor } from "@/lib/daily-companion";
+import { readLiveRailResponse, type LiveRailItem } from "@/lib/live-rail-response";
 import type { CompanionPanelKind } from "@/components/islamic-companion-panel";
 
 type Moon = {
@@ -16,18 +17,6 @@ type Moon = {
 type MoonState = {
   date: string;
   moon: Moon | null;
-};
-
-type LiveRailItem = {
-  id: string;
-  kind: "appeal" | "initiative";
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  detailsHref: string;
-  supportHref: string;
-  detailsCta: string;
-  supportCta: string;
 };
 
 const IslamicCompanionPanel = lazy(() =>
@@ -55,6 +44,7 @@ export function IslamicCompanion() {
   const [focused, setFocused] = useState(false);
   const [liveItems, setLiveItems] = useState<LiveRailItem[]>([]);
   const [railIndex, setRailIndex] = useState(0);
+  const [railState, setRailState] = useState<"loading" | "ready" | "unavailable">("loading");
   const companionButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
@@ -82,17 +72,31 @@ export function IslamicCompanion() {
     const controller = new AbortController();
     let timeout: number | undefined;
     let idleHandle: number | undefined;
+    let requestTimeout: number | undefined;
+    let disposed = false;
     const idleWindow = window as Window & typeof globalThis & {
       requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
       cancelIdleCallback?: (handle: number) => void;
     };
     const load = () => {
-      fetch("/api/public/live-rail", { cache: "no-store", signal: controller.signal })
-        .then(response => response.ok ? response.json() : { items: [] })
-        .then((payload: { items?: LiveRailItem[] }) => {
-          if (!controller.signal.aborted && Array.isArray(payload.items)) setLiveItems(payload.items);
+      if (disposed) return;
+      requestTimeout = window.setTimeout(() => {
+        controller.abort();
+        if (!disposed) setRailState("unavailable");
+      }, 8000);
+      void fetch("/api/public/live-rail", { cache: "no-store", signal: controller.signal })
+        .then(async response => {
+          if (!response.ok) throw new Error("Public updates unavailable");
+          const payload: unknown = await response.json();
+          const items = readLiveRailResponse(payload);
+          if (!items) throw new Error("Invalid public updates");
+          return items;
         })
-        .catch(() => undefined);
+        .then(items => {
+          if (!disposed && !controller.signal.aborted) { setLiveItems(items); setRailState("ready"); }
+        })
+        .catch(() => { if (!disposed) setRailState("unavailable"); })
+        .finally(() => { if (requestTimeout !== undefined) window.clearTimeout(requestTimeout); });
     };
 
     if (idleWindow.requestIdleCallback) {
@@ -102,7 +106,9 @@ export function IslamicCompanion() {
     }
 
     return () => {
+      disposed = true;
       controller.abort();
+      if (requestTimeout !== undefined) window.clearTimeout(requestTimeout);
       if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.(idleHandle);
       if (timeout !== undefined) window.clearTimeout(timeout);
     };
@@ -166,9 +172,9 @@ export function IslamicCompanion() {
                 </span>
               </div>
             ) : (
-              <div className="amaana-live-content">
+              <div className="amaana-live-content" aria-live="polite" aria-atomic="true">
                 <span className="amaana-reminder-eyebrow">Foundation updates</span>
-                <strong>No public appeal is open right now.</strong>
+                <strong>{railState === "ready" ? "No public appeal is open right now." : railState === "loading" ? "Checking public appeal updates…" : "Public appeal updates are unavailable."}</strong>
                 <span className="amaana-live-actions">
                   <Link className="amaana-live-cta" href="/our-work">Explore our work<span aria-hidden="true"> →</span></Link>
                 </span>
