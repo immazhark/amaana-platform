@@ -164,6 +164,8 @@ model User {
   auditEvents             AuditEvent[]             @relation("AuditActor")
   appealUpdates           AppealUpdate[]
   reconciledDonations     Donation[]                 @relation("DonationReconciler")
+  proposedAllocations     DonationAllocationProposal[] @relation("AllocationMaker")
+  reviewedAllocations     DonationAllocationProposal[] @relation("AllocationChecker")
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
 }
@@ -453,6 +455,34 @@ model DonorRightsRequest {
   @@index([status, createdAt])
 }
 
+enum AllocationProposalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model DonationAllocationProposal {
+  id             String                   @id @default(cuid())
+  donationId     String
+  fundId         String
+  amountPaise    Int
+  purposeNote    String                   @db.VarChar(240)
+  givingIntent   DonationIntent
+  status         AllocationProposalStatus @default(PENDING)
+  createdById    String
+  reviewedById   String?
+  reviewedAt     DateTime?
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+  donation       Donation                 @relation(fields: [donationId], references: [id], onDelete: Restrict)
+  fund           GivingFund               @relation(fields: [fundId], references: [id], onDelete: Restrict)
+  createdBy      User                     @relation("AllocationMaker", fields: [createdById], references: [id], onDelete: Restrict)
+  reviewedBy     User?                    @relation("AllocationChecker", fields: [reviewedById], references: [id], onDelete: Restrict)
+  @@index([donationId, status])
+  @@index([fundId, status, createdAt])
+  @@index([status, createdAt])
+}
+
 model Donation {
   id                       String                @id @default(cuid())
   referenceNumber          String                @unique
@@ -501,6 +531,7 @@ model Donation {
   refunds                  RefundLedger[]
   notifications            Notification[]
   rightsRequests           DonorRightsRequest[]
+  allocationProposals      DonationAllocationProposal[]
   createdAt                DateTime              @default(now())
   updatedAt                DateTime              @updatedAt
   @@index([appealId, status, createdAt])
@@ -711,6 +742,7 @@ model GivingFund {
   currency        String           @default("INR")
   acceptedIntents DonationIntent[]
   donations       Donation[]
+  allocationProposals DonationAllocationProposal[]
   status          GivingFundStatus @default(DRAFT)
   revision        Int              @default(0)
   createdById     String
