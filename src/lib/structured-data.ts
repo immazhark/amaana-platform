@@ -60,7 +60,8 @@ export function validateAppealStructuredDataInput(input: unknown) {
 
 const DEFAULT_SITE_URL = "https://amaanafoundation.org";
 
-function normalizeSiteUrl(value: string | undefined) {
+/** Canonical HTTPS origin shared by all public JSON-LD graph owners. */
+export function normalizeSiteUrl(value: string | undefined) {
   try {
     const url = new URL(value || DEFAULT_SITE_URL);
     if (url.protocol !== "https:" || url.username || url.password) return DEFAULT_SITE_URL;

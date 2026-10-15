@@ -3,6 +3,7 @@ import {
   buildPublicStructuredData,
   normalizeStructuredDataImage,
   normalizeStructuredDataPath,
+  normalizeSiteUrl,
   validateBreadcrumbStructuredDataInput,
   serializeStructuredData,
 } from "./structured-data";
@@ -33,6 +34,13 @@ describe("public structured data", () => {
       articleSection: "Stories of Amanah",
       keywords: ["Dignity", "Community support"],
     });
+  });
+
+  it("retains HTTPS configured origin but drops paths, queries and invalid credentials", () => {
+    expect(normalizeSiteUrl("https://preview.example.org/something?token=private#fragment")).toBe("https://preview.example.org");
+    expect(normalizeSiteUrl("https://user:secret@amaanafoundation.org")).toBe("https://amaanafoundation.org");
+    expect(normalizeSiteUrl("http://localhost:3000")).toBe("https://amaanafoundation.org");
+    expect(normalizeSiteUrl(undefined)).toBe("https://amaanafoundation.org");
   });
 
   it("fails closed for unsafe route paths and image URLs", () => {

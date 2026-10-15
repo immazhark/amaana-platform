@@ -1,7 +1,7 @@
-import { normalizeStructuredDataImage, serializeStructuredData } from "@/lib/structured-data";
+import { normalizeSiteUrl, normalizeStructuredDataImage, serializeStructuredData } from "@/lib/structured-data";
 
 export function StructuredData() {
-  const siteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org").replace(/\/$/, "");
+  const siteUrl = normalizeSiteUrl(process.env.NEXT_PUBLIC_APP_URL);
   const logo = normalizeStructuredDataImage("/brand/amaana-mark.svg", siteUrl);
   const data = {
     "@context": "https://schema.org",

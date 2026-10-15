@@ -42,15 +42,37 @@ describe("actual JSON-LD rendering boundaries", () => {
     expect(asset.height).toBeGreaterThanOrEqual(112);
   });
 
-  it("uses hardened escaping for Organization configuration while preserving graph identity", () => {
-    const siteUrl = `https://amaanafoundation.org/?fixture=${sensitiveText}`;
-    vi.stubEnv("NEXT_PUBLIC_APP_URL", siteUrl);
+  it("does not let environment query strings or fragment text contaminate organization identities", () => {
+    const untrustedConfig = `https://amaanafoundation.org/?fixture=${sensitiveText}#injected`;
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", untrustedConfig);
     const payload = scriptPayload(renderToStaticMarkup(createElement(StructuredData)));
-    expectHardened(payload);
-    const data = JSON.parse(payload);
-    expect(data["@graph"][0].url).toBe(siteUrl);
-    expect(data["@graph"][1].publisher["@id"]).toBe(`${siteUrl}/#organization`);
+    const graph = JSON.parse(payload)["@graph"];
+    expect(graph[0].url).toBe("https://amaanafoundation.org");
+    expect(graph[0]["@id"]).toBe("https://amaanafoundation.org/#organization");
+    expect(graph[1].publisher["@id"]).toBe(graph[0]["@id"]);
+    expect(payload).not.toContain("fixture=");
+    expect(payload).not.toContain("injected");
   });
+  it.each([
+    ["http://amaanafoundation.org", "https://amaanafoundation.org"],
+    ["https://user:secret@amaanafoundation.org", "https://amaanafoundation.org"],
+    ["https://amaanafoundation.org/path?token=private#fragment", "https://amaanafoundation.org"],
+    ["invalid-url", "https://amaanafoundation.org"],
+    ["https://preview.amaana.example/path?key=unsafe", "https://preview.amaana.example"],
+  ])("uses one validated site origin across organization, breadcrumb and appeal schemas: %s", (configured, expected) => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", configured);
+    const organization = JSON.parse(scriptPayload(renderToStaticMarkup(createElement(StructuredData))));
+    const breadcrumb = JSON.parse(scriptPayload(renderToStaticMarkup(createElement(BreadcrumbStructuredData, { items: [{ name: "Home", path: "/" }] }))));
+    const appeal = JSON.parse(scriptPayload(renderToStaticMarkup(createElement(AppealStructuredData, {
+      slug: "reviewed", title: "Reviewed case", summary: "Reviewed summary", isOpen: true,
+    }))));
+    expect(organization["@graph"][0].url).toBe(expected);
+    expect(organization["@graph"][0]["@id"]).toBe(`${expected}/#organization`);
+    expect(breadcrumb.itemListElement[0].item).toBe(`${expected}/`);
+    expect(appeal["@graph"][0].url).toBe(`${expected}/appeals/reviewed`);
+    expect(appeal["@graph"][1].target.urlTemplate).toBe(`${expected}/donate/reviewed`);
+  });
+
   it("escapes Breadcrumb names without altering their parsed text or canonical destination", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     const payload = scriptPayload(renderToStaticMarkup(createElement(BreadcrumbStructuredData, { items: [{ name: sensitiveText, path: "/our-work" }] })));

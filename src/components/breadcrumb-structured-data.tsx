@@ -1,4 +1,4 @@
-import { serializeStructuredData, validateBreadcrumbStructuredDataInput } from "@/lib/structured-data";
+import { normalizeSiteUrl, serializeStructuredData, validateBreadcrumbStructuredDataInput } from "@/lib/structured-data";
 
 type BreadcrumbItem = {
   name: string;
@@ -9,7 +9,7 @@ export function BreadcrumbStructuredData({ items }: { items: BreadcrumbItem[] })
   const safeItems = validateBreadcrumbStructuredDataInput(items);
   if (!safeItems) return null;
 
-  const siteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org").replace(/\/$/, "");
+  const siteUrl = normalizeSiteUrl(process.env.NEXT_PUBLIC_APP_URL);
   const data = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",

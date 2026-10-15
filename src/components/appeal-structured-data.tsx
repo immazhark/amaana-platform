@@ -1,4 +1,4 @@
-import { serializeStructuredData, validateAppealStructuredDataInput } from "@/lib/structured-data";
+import { normalizeSiteUrl, serializeStructuredData, validateAppealStructuredDataInput } from "@/lib/structured-data";
 import { getAppealPublicCopy } from "@/lib/appeal-public-copy";
 
 type AppealStructuredDataProps = {
@@ -13,7 +13,7 @@ export function AppealStructuredData(props: AppealStructuredDataProps) {
   const input = validateAppealStructuredDataInput(props);
   if (!input) return null;
   const { slug, title, summary, isOpen, highlySensitive = false } = input;
-  const siteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org").replace(/\/$/, "");
+  const siteUrl = normalizeSiteUrl(process.env.NEXT_PUBLIC_APP_URL);
   const appealUrl = `${siteUrl}/appeals/${slug}`;
   const { title: safeTitle, description: safeSummary } =
     getAppealPublicCopy(title, summary, highlySensitive);
