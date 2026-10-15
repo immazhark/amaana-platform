@@ -11,74 +11,17 @@ import {
 } from "@/lib/curated-gallery-identity";
 import { readApprovedCuratedManifest, parseCuratedGalleryStatus, type CuratedGalleryStatus } from "@/lib/curated-gallery-browser";
 import { boundedPrivateRequest } from "@/lib/bounded-private-request";
-
-type ZipEntry = {
-  name: string;
-  bytes: Uint8Array;
-};
+import { parseCuratedStoredZip } from "@/lib/curated-gallery-zip";
 
 function hex(buffer: ArrayBuffer) {
   return Array.from(new Uint8Array(buffer), byte => byte.toString(16).padStart(2, "0")).join("");
 }
 
 async function sha256(bytes: ArrayBuffer | Uint8Array) {
-  const value = bytes instanceof Uint8Array ? Uint8Array.from(bytes) : new Uint8Array(bytes);
+  // The file buffer and verified ZIP views are not mutated while hashing.
+  // Avoid cloning the entire 147 MB package in browser memory.
+  const value = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
   return hex(await crypto.subtle.digest("SHA-256", value));
-}
-
-function safeZipPath(name: string) {
-  if (!name || name.startsWith("/") || /^[A-Za-z]:/.test(name) || name.includes("\\")) return false;
-  return !name.split("/").some(part => !part || part === "." || part === "..");
-}
-
-function parseStoredZip(buffer: ArrayBuffer) {
-  const view = new DataView(buffer);
-  const bytes = new Uint8Array(buffer);
-  const decoder = new TextDecoder("utf-8", { fatal: true });
-  const min = Math.max(0, bytes.byteLength - 65_557);
-  let eocd = -1;
-  for (let offset = bytes.byteLength - 22; offset >= min; offset--) {
-    if (view.getUint32(offset, true) === 0x06054b50) {
-      eocd = offset;
-      break;
-    }
-  }
-  if (eocd < 0) throw new Error("ZIP end-of-central-directory record was not found.");
-
-  const entryCount = view.getUint16(eocd + 10, true);
-  const centralSize = view.getUint32(eocd + 12, true);
-  const centralOffset = view.getUint32(eocd + 16, true);
-  if (entryCount !== CURATED_GALLERY_ARCHIVE_ENTRY_COUNT) throw new Error("ZIP entry count does not match the approved package.");
-  if (centralOffset + centralSize > bytes.byteLength) throw new Error("ZIP central directory is outside the archive.");
-
-  const entries = new Map<string, ZipEntry>();
-  let cursor = centralOffset;
-  for (let index = 0; index < entryCount; index++) {
-    if (view.getUint32(cursor, true) !== 0x02014b50) throw new Error("Invalid ZIP central-directory entry.");
-    const flags = view.getUint16(cursor + 8, true);
-    const method = view.getUint16(cursor + 10, true);
-    const compressedSize = view.getUint32(cursor + 20, true);
-    const uncompressedSize = view.getUint32(cursor + 24, true);
-    const nameLength = view.getUint16(cursor + 28, true);
-    const extraLength = view.getUint16(cursor + 30, true);
-    const commentLength = view.getUint16(cursor + 32, true);
-    const localOffset = view.getUint32(cursor + 42, true);
-    if (method !== 0 || compressedSize !== uncompressedSize) throw new Error("The approved ZIP must contain stored, unmodified files.");
-    if ((flags & 0x1) !== 0) throw new Error("Encrypted ZIP entries are not accepted.");
-
-    const nameStart = cursor + 46;
-    const name = decoder.decode(bytes.subarray(nameStart, nameStart + nameLength));
-    if (!safeZipPath(name) || entries.has(name)) throw new Error("ZIP contains an unsafe or duplicate path.");
-    if (view.getUint32(localOffset, true) !== 0x04034b50) throw new Error("Invalid ZIP local-file header.");
-    const localNameLength = view.getUint16(localOffset + 26, true);
-    const localExtraLength = view.getUint16(localOffset + 28, true);
-    const dataStart = localOffset + 30 + localNameLength + localExtraLength;
-    const dataEnd = dataStart + uncompressedSize;
-    if (dataEnd > bytes.byteLength) throw new Error("ZIP entry exceeds archive bounds.");
-    entries.set(name, { name, bytes: bytes.subarray(dataStart, dataEnd) });
-    cursor = nameStart + nameLength + extraLength + commentLength;
-  }
-  return entries;
 }
 
 async function responseJson(response: Response) {
@@ -165,8 +108,8 @@ export function CuratedGalleryImporter() {
   }, []);
 
   async function publishApprovedBatch() {
-    if (!window.confirm("Publish all 154 owner-approved gallery images now? This will not assign any hero, banner, identity or thumbnail role.")) return;
     if (busyRef.current) return;
+    if (!window.confirm("Publish all 154 owner-approved gallery images now? This will not assign any hero, banner, identity or thumbnail role.")) return;
     busyRef.current = true;
     setBusy(true);
     setPhase("Rechecking gallery staging before publication…");
@@ -219,7 +162,7 @@ export function CuratedGalleryImporter() {
       }
 
       setPhase("Inspecting safe archive structure…");
-      const entries = parseStoredZip(buffer);
+      const entries = parseCuratedStoredZip(buffer);
       const manifestEntry = entries.get(".curated-media/manifest.json");
       const reportEntry = entries.get(".curated-media/report.json");
       if (!manifestEntry || !reportEntry) throw new Error("ZIP is missing its manifest or verification report.");
