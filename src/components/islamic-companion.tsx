@@ -69,21 +69,39 @@ export function IslamicCompanion() {
   }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
-    let timeout: number | undefined;
+    let startupTimeout: number | undefined;
     let idleHandle: number | undefined;
-    let requestTimeout: number | undefined;
     let disposed = false;
+    let activeController: AbortController | null = null;
+    let lastRequestedAt: number | null = null;
+    let hasRequested = false;
     const idleWindow = window as Window & typeof globalThis & {
       requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
       cancelIdleCallback?: (handle: number) => void;
     };
+
     const load = () => {
-      if (disposed) return;
-      requestTimeout = window.setTimeout(() => {
+      if (disposed || document.hidden || activeController) return;
+      const requestedAt = Date.now();
+      if (lastRequestedAt !== null && requestedAt - lastRequestedAt < 5 * 60_000) return;
+      lastRequestedAt = requestedAt;
+
+      const controller = new AbortController();
+      activeController = controller;
+      // An appeal can be withdrawn while a tab stays open. Never preserve
+      // a stale donation shortcut while validating a fresh response.
+      if (hasRequested) {
+        setLiveItems([]);
+        setRailIndex(0);
+        setRailState("loading");
+      }
+      hasRequested = true;
+      const requestTimeout = window.setTimeout(() => {
         controller.abort();
+        if (activeController === controller) activeController = null;
         if (!disposed) setRailState("unavailable");
       }, 8000);
+
       void fetch("/api/public/live-rail", { cache: "no-store", signal: controller.signal })
         .then(async response => {
           if (!response.ok) throw new Error("Public updates unavailable");
@@ -93,24 +111,41 @@ export function IslamicCompanion() {
           return items;
         })
         .then(items => {
-          if (!disposed && !controller.signal.aborted) { setLiveItems(items); setRailState("ready"); }
+          if (!disposed && activeController === controller && !controller.signal.aborted) {
+            setLiveItems(items);
+            setRailIndex(0);
+            setRailState("ready");
+          }
         })
-        .catch(() => { if (!disposed) setRailState("unavailable"); })
-        .finally(() => { if (requestTimeout !== undefined) window.clearTimeout(requestTimeout); });
+        .catch(() => {
+          if (!disposed && activeController === controller) setRailState("unavailable");
+        })
+        .finally(() => {
+          window.clearTimeout(requestTimeout);
+          if (activeController === controller) activeController = null;
+        });
     };
 
+    const refreshIfVisible = () => {
+      if (!document.hidden) load();
+    };
     if (idleWindow.requestIdleCallback) {
       idleHandle = idleWindow.requestIdleCallback(load, { timeout: 1800 });
     } else {
-      timeout = window.setTimeout(load, 900);
+      startupTimeout = window.setTimeout(load, 900);
     }
+    // The timer only checks freshness; it never polls on hidden tabs.
+    // At most one request starts per five minutes on an active page.
+    const refreshTimer = window.setInterval(refreshIfVisible, 60_000);
+    document.addEventListener("visibilitychange", refreshIfVisible);
 
     return () => {
       disposed = true;
-      controller.abort();
-      if (requestTimeout !== undefined) window.clearTimeout(requestTimeout);
+      activeController?.abort();
+      window.clearInterval(refreshTimer);
+      document.removeEventListener("visibilitychange", refreshIfVisible);
       if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.(idleHandle);
-      if (timeout !== undefined) window.clearTimeout(timeout);
+      if (startupTimeout !== undefined) window.clearTimeout(startupTimeout);
     };
   }, []);
 
