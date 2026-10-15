@@ -38,6 +38,7 @@ describe("authorized donor data review transitions", () => {
       where: { id: "private-request-1234", status: "OPEN" },
       data: expect.objectContaining({ status: "IN_REVIEW", reviewedById: "staff-1" }),
     }));
+    expect(mocks.update.mock.calls[0][0].data).not.toHaveProperty("reviewedAt");
   });
   it("never swallows authorization failures or changes records for forbidden users", async () => {
     mocks.require.mockRejectedValue(new Error("Forbidden"));
@@ -51,7 +52,7 @@ describe("authorized donor data review transitions", () => {
     expect(result.state).toBe("success");
     expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({
       where: { id: "private-request-1234", status: "IN_REVIEW" },
-      data: expect.objectContaining({ status: "CLOSED" }),
+      data: expect.objectContaining({ status: "CLOSED", reviewedAt: expect.any(Date) }),
     }));
     expect(mocks.audit).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({ action: "DONOR_RIGHTS_REVIEW_CLOSED" }),

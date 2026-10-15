@@ -19,9 +19,10 @@ export async function reviewDonorRightsAction(
   const decision = form.get("decision");
   const attested = form.get("reviewConfirmed") === "true";
   const resolution = form.get("resolution");
+  const reviewOutcome = isDonorRightsReviewOutcome(resolution) ? resolution : null;
   if (typeof id !== "string" || id.length < 8 || id.length > 100 ||
       (decision !== "START_REVIEW" && decision !== "CLOSE_REVIEW") ||
-      (decision === "CLOSE_REVIEW" && (!attested || !isDonorRightsReviewOutcome(resolution)))) {
+      (decision === "CLOSE_REVIEW" && (!attested || !reviewOutcome))) {
     return { state: "error", message: "A valid review decision and completion attestation are required." };
   }
   const source = decision === "START_REVIEW" ? "OPEN" : "IN_REVIEW";
@@ -30,14 +31,15 @@ export async function reviewDonorRightsAction(
     const changed = await withSerializableTransactionRetry(async tx => {
       const updated = await tx.donorRightsRequest.updateMany({
         where: { id, status: source },
-        data: { status: next, reviewedAt: new Date(), reviewedById: actor.id },
+        data: { status: next, reviewedById: actor.id,
+          ...(decision === "CLOSE_REVIEW" ? { reviewedAt: new Date() } : {}) },
       });
       if (updated.count !== 1) return false;
       await tx.auditEvent.create({
         data: {
           actorId: actor.id, entityType: "DonorRightsRequest", entityId: id,
           action: decision === "START_REVIEW" ? "DONOR_RIGHTS_REVIEW_STARTED" : "DONOR_RIGHTS_REVIEW_CLOSED",
-          metadata: { resultingStatus: next, ...(decision === "CLOSE_REVIEW" ? { reviewOutcome: resolution } : {}) },
+          metadata: { resultingStatus: next, ...(decision === "CLOSE_REVIEW" ? { reviewOutcome } : {}) },
         },
       });
       return true;
