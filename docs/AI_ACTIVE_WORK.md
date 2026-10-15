@@ -1,6 +1,6 @@
 ## 2026-10-15 — Public-media canonical host privacy guard (in progress)
 
-Ownership: CHATGPT_ACTIVE on PR #292, branch `fix/direct-transfer-feedback-20261013`, claimed from exact head `a263dbeeecd65d847be6ce6b23f40568f930d1ca`. Scope: same-site domain aliases in public-media privacy checks plus focused regressions. Preserve external media-CDN allowance and all publication gates. GitHub-connector execution; no checkout or native test runner available in current environment. No production operation authorized.
+Ownership: HANDOFF_PENDING after source-only privacy batch on PR #292, branch `fix/direct-transfer-feedback-20261013`, claimed from exact head `a263dbeeecd65d847be6ce6b23f40568f930d1ca`. Scope: same-site domain aliases in public-media privacy checks plus focused regressions. Preserve external media-CDN allowance and all publication gates. GitHub-connector execution; no checkout or native test runner available in current environment. No production operation authorized. Source guard and focused regression authored; local repo checkout, Vitest, TypeScript, build, browser and deploy acceptance unavailable/not executed. No status promotion.
 
 ## 2026-10-15 — Live updates and shared checkout imports
 

@@ -91,6 +91,29 @@ describe("public media safety", () => {
     })).toBe(true);
   });
 
+  it("rejects private media links on Amaana www and DNS-equivalent hostnames", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://preview.amaana.example");
+
+    const aliases = [
+      "https://www.amaanafoundation.org/admin/assistance/private.jpg",
+      "https://amaanafoundation.org./api/donations/private.pdf",
+      "https://www.amaanafoundation.org./donations/AF-PRIVATE/acknowledgement",
+      "https://www.amaanafoundation.org/request-assistance/status",
+      "https://preview.amaana.example./admin/private.jpg",
+    ];
+    for (const url of aliases) {
+      expect(isPrivateAppMediaUrl(url), url).toBe(true);
+      expect(canRenderPublicMedia({ kind: "IMAGE", publicUrl: url, altText: "Staff-only file" }), url).toBe(false);
+      expect(canRenderPublicMedia({ kind: "DOCUMENT", publicUrl: url, title: "Private file" }), url).toBe(false);
+      expect(getPublicImageOptimizationUrl(url, "https://preview.amaana.example"), url).toBeNull();
+    }
+
+    // www is not a blanket block: only genuinely private app paths are denied.
+    expect(isPrivateAppMediaUrl("https://www.amaanafoundation.org/media/approved.webp")).toBe(false);
+    // A separately approved CDN is not an Amaana application routing origin.
+    expect(isPrivateAppMediaUrl("https://media.amaana.example/admin/approved.webp")).toBe(false);
+  });
+
   it("rejects encoded or double-encoded paths to private resources", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     const paths = [

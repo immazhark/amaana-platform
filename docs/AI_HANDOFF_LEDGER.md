@@ -1,3 +1,9 @@
+## 2026-10-15 — Public-media same-site alias privacy regression
+
+PR #292 source batch continues from exact verified head `a263dbee`. Public-media privacy classification now treats `www.amaanafoundation.org`, apex hosts with a DNS trailing dot, and a similarly dotted configured app hostname as application hosts before allowing a public IMAGE or DOCUMENT. Previously an absolute URL to an Amaana `/admin`, `/api`, `/donations` or private assistance route using an alias was not recognized as private for DOCUMENT media. Other separately approved HTTPS CDN hosts retain their existing handling. Focused negative and public/CDN control tests were added.
+
+Execution: GitHub connector source review and committed regression only; the old source checkout is absent and local GitHub DNS/network access was unavailable. Full Vitest, TypeScript, lint, bundling, browser and deployed/host-alias acceptance were not executed. All 149 ledger states remain unchanged. No production operations or feature gates were changed.
+
 ## 2026-10-15 — Live-update rendering boundary and checkout imports
 
 Continued PR #292 from `a48d0f1a`. Public live updates now runtime-check bounded

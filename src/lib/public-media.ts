@@ -93,6 +93,19 @@ function isPrivateAppPath(pathname: string): boolean {
   return true;
 }
 
+/** The live site's apex and www hostnames can serve the same private routes.
+ * A trailing DNS root dot is equivalent for hostname routing, even though
+ * URL.origin compares it as a different origin. Other media CDN hosts remain external. */
+function isApplicationMediaOrigin(url: URL): boolean {
+  const host = url.hostname.replace(/\\.+$/, "").toLowerCase();
+  const configuredOrigin = configuredHttpsOrigin(process.env.NEXT_PUBLIC_APP_URL);
+  const configuredHost = configuredOrigin
+    ? new URL(configuredOrigin).hostname.replace(/\\.+$/, "").toLowerCase()
+    : null;
+  return host === configuredHost ||
+    host === "amaanafoundation.org" || host === "www.amaanafoundation.org";
+}
+
 /** Fail closed if a purported public asset resolves into protected app routing.
  * External approved media hosts are not interpreted as this application's
  * private routes. Server-side publication and consent gates remain mandatory. */
@@ -103,11 +116,9 @@ export function isPrivateAppMediaUrl(value: string): boolean {
   if (normalized.startsWith("/")) {
     path = normalized.split(/[?#]/, 1)[0] ?? "";
   } else {
-    const origin = configuredHttpsOrigin(process.env.NEXT_PUBLIC_APP_URL);
     const parsed = new URL(normalized);
-    // The public domain remains an application origin even when a staging
-    // environment has no NEXT_PUBLIC_APP_URL configured.
-    if (parsed.origin !== origin && parsed.origin !== "https://amaanafoundation.org") return false;
+    // DNS-equivalent Amaana hostnames must never bypass private route checks.
+    if (!isApplicationMediaOrigin(parsed)) return false;
     path = parsed.pathname;
   }
   return isPrivateAppPath(path);
