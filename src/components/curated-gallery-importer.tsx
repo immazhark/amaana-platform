@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   CURATED_GALLERY_ARCHIVE_ENTRY_COUNT,
   CURATED_GALLERY_BATCH,
@@ -9,33 +9,12 @@ import {
   CURATED_GALLERY_RECORD_COUNT,
   archivePathForCuratedRecord,
 } from "@/lib/curated-gallery-identity";
-import { readApprovedCuratedManifest } from "@/lib/curated-gallery-browser";
+import { readApprovedCuratedManifest, parseCuratedGalleryStatus, type CuratedGalleryStatus } from "@/lib/curated-gallery-browser";
+import { boundedPrivateRequest } from "@/lib/bounded-private-request";
 
 type ZipEntry = {
   name: string;
   bytes: Uint8Array;
-};
-
-type ImportStatus = {
-  expected?: number;
-  uploaded?: number;
-  published?: number;
-  missing?: number;
-  mismatches?: string[];
-  galleryOnly?: boolean;
-  renderingReady?: boolean;
-  initiatives?: Array<{
-    slug: string;
-    expected: number;
-    uploaded: number;
-    published: number;
-    publicRecordFound: boolean;
-    publicSafeCount: number;
-    galleryVisibleCount: number;
-    curatedHeroSelected: boolean;
-    curatedHighlightSelected: boolean;
-    ready: boolean;
-  }>;
 };
 
 function hex(buffer: ArrayBuffer) {
@@ -103,90 +82,135 @@ function parseStoredZip(buffer: ArrayBuffer) {
 }
 
 async function responseJson(response: Response) {
-  const result = await response.json().catch(() => ({})) as { error?: string } & Record<string, unknown>;
-  if (!response.ok) throw new Error(result.error ?? `Request failed with status ${response.status}`);
-  return result;
+  const payload: unknown = await response.json().catch(() => null);
+  const value = payload && typeof payload === "object" && !Array.isArray(payload)
+    ? payload as Record<string, unknown> : null;
+  if (!response.ok) {
+    const message = typeof value?.error === "string" ? value.error.trim().slice(0, 200) : "";
+    throw new Error(message || `Gallery request failed (HTTP ${response.status}).`);
+  }
+  if (!value) throw new Error("Gallery service returned an invalid response.");
+  return value;
 }
 
 export function CuratedGalleryImporter() {
   const [phase, setPhase] = useState("Ready for the verified 154-image ZIP.");
   const [progress, setProgress] = useState(0);
   const [busy, setBusy] = useState(false);
-  const [status, setStatus] = useState<ImportStatus | null>(null);
+  const [status, setStatus] = useState<CuratedGalleryStatus | null>(null);
+  const statusRequest = useRef(0);
+  const busyRef = useRef(false);
+  const lifetime = useRef<AbortController | null>(null);
+
+  function requestJson(path: string, init: RequestInit = {}, timeoutMs = 12_000) {
+    return boundedPrivateRequest(
+      async signal => responseJson(await fetch(path, { ...init, credentials: "same-origin", signal })),
+      timeoutMs, lifetime.current?.signal,
+    );
+  }
+
+  function applyStatus(current: CuratedGalleryStatus, requestId: number) {
+    if (requestId !== statusRequest.current || lifetime.current?.signal.aborted) return false;
+    setStatus(current);
+    if (current.uploaded === CURATED_GALLERY_RECORD_COUNT && current.missing === 0 &&
+        current.mismatches.length === 0 && current.galleryOnly) {
+      setProgress(100);
+      if (current.published === CURATED_GALLERY_RECORD_COUNT) {
+        setPhase(current.renderingReady
+          ? "All 154 approved gallery images are published and rendering is verified."
+          : "154 gallery records published; public rendering still requires verification.");
+      } else {
+        setPhase(`154 approved gallery originals staged; ${current.published} published.`);
+      }
+    }
+    return true;
+  }
 
   async function refreshStatus() {
-    try {
-      const current = await responseJson(await fetch("/api/admin/media/curated-gallery/status", {
-        credentials: "same-origin",
-        cache: "no-store",
-      })) as ImportStatus;
-      setStatus(current);
-      if (current.uploaded === CURATED_GALLERY_RECORD_COUNT && current.published === CURATED_GALLERY_RECORD_COUNT) {
-        setProgress(100);
-        setPhase("All 154 approved gallery images are published.");
-      } else if (current.uploaded === CURATED_GALLERY_RECORD_COUNT) {
-        setProgress(100);
-        setPhase("154 gallery originals are uploaded and attached as unpublished review records. Publication is ready.");
-      }
-    } catch {
-      // The importer remains usable even if the initial status probe is unavailable.
-    }
+    const id = ++statusRequest.current;
+    const current = parseCuratedGalleryStatus(await requestJson(
+      "/api/admin/media/curated-gallery/status", { cache: "no-store" },
+    ));
+    return applyStatus(current, id) ? current : null;
   }
 
   useEffect(() => {
-    let cancelled = false;
-    void fetch("/api/admin/media/curated-gallery/status", {
-      credentials: "same-origin",
-      cache: "no-store",
-    })
-      .then(responseJson)
-      .then(result => {
-        if (cancelled) return;
-        const current = result as ImportStatus;
-        setStatus(current);
-        if (current.uploaded === CURATED_GALLERY_RECORD_COUNT && current.published === CURATED_GALLERY_RECORD_COUNT) {
-          setProgress(100);
-          setPhase("All 154 approved gallery images are published.");
-        } else if (current.uploaded === CURATED_GALLERY_RECORD_COUNT) {
-          setProgress(100);
-          setPhase("154 gallery originals are uploaded and attached as unpublished review records. Publication is ready.");
-        }
-      })
-      .catch(() => {
-        // The importer remains usable even if the initial status probe is unavailable.
-      });
+    const controller = new AbortController();
+    lifetime.current = controller;
+    const id = ++statusRequest.current;
+    void boundedPrivateRequest(
+      async signal => responseJson(await fetch("/api/admin/media/curated-gallery/status", {
+        credentials: "same-origin", cache: "no-store", signal,
+      })),
+      12_000, controller.signal,
+    ).then(value => {
+      if (controller.signal.aborted || id !== statusRequest.current) return;
+      const current = parseCuratedGalleryStatus(value);
+      setStatus(current);
+      if (current.uploaded === CURATED_GALLERY_RECORD_COUNT && current.missing === 0 &&
+          current.mismatches.length === 0 && current.galleryOnly) {
+        setProgress(100);
+        setPhase(current.published === CURATED_GALLERY_RECORD_COUNT
+          ? (current.renderingReady ? "All 154 approved gallery images are published." : "Public rendering requires verification.")
+          : "154 gallery originals staged for publication review.");
+      }
+    }).catch(() => {
+      // A failed initial read never grants permission to publish.
+    });
     return () => {
-      cancelled = true;
+      controller.abort();
+      ++statusRequest.current;
+      lifetime.current = null;
     };
   }, []);
 
   async function publishApprovedBatch() {
     if (!window.confirm("Publish all 154 owner-approved gallery images now? This will not assign any hero, banner, identity or thumbnail role.")) return;
+    if (busyRef.current) return;
+    busyRef.current = true;
     setBusy(true);
-    setPhase("Publishing the exact owner-approved 154-image gallery batch…");
+    setPhase("Rechecking gallery staging before publication…");
     try {
-      await responseJson(await fetch("/api/admin/media/curated-gallery/publish", {
+      const before = await refreshStatus();
+      if (!before || !before.initialized || before.uploaded !== CURATED_GALLERY_RECORD_COUNT ||
+          before.missing !== 0 || before.mismatches.length !== 0 || !before.galleryOnly ||
+          before.published === CURATED_GALLERY_RECORD_COUNT) {
+        throw new Error("Gallery staging changed; publication was not submitted.");
+      }
+      await requestJson("/api/admin/media/curated-gallery/publish", {
         method: "POST",
-        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ confirmation: "PUBLISH_EXACT_OWNER_CURATED_154" }),
-      }));
-      await refreshStatus();
+      }, 45_000);
+      const after = await refreshStatus();
+      if (!after || after.published !== CURATED_GALLERY_RECORD_COUNT || !after.renderingReady) {
+        throw new Error("Publication or public rendering could not yet be verified.");
+      }
     } catch (error) {
-      setPhase(error instanceof Error ? error.message : "Curated gallery publication failed.");
+      const message = error instanceof Error ? error.message : "Curated gallery publication was not verified.";
+      setPhase(`${message} Check status before retrying; publication may have completed.`);
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   }
 
   async function run(file: File) {
+    if (busyRef.current) return;
+    busyRef.current = true;
+    ++statusRequest.current;
     setBusy(true);
     setProgress(0);
     setStatus(null);
+    let started = false;
+    const ensureActive = () => {
+      if (lifetime.current?.signal.aborted) throw new Error("Gallery import cancelled.");
+    };
     try {
       if (file.size !== CURATED_GALLERY_PACKAGE_BYTES) throw new Error("ZIP byte size does not match the approved package.");
       setPhase("Verifying complete ZIP checksum…");
       const buffer = await file.arrayBuffer();
+      ensureActive();
       if (await sha256(buffer) !== CURATED_GALLERY_PACKAGE_SHA256) {
         throw new Error("ZIP SHA-256 does not match the owner-approved package.");
       }
@@ -210,6 +234,7 @@ export function CuratedGalleryImporter() {
 
       setPhase("Rechecking all 154 original image hashes…");
       for (const [index, record] of manifest.records.entries()) {
+        ensureActive();
         const entry = entries.get(archivePathForCuratedRecord(record));
         if (!entry || entry.bytes.byteLength !== record.bytes || await sha256(entry.bytes) !== record.sha256) {
           throw new Error(`Image verification failed for ${record.id}.`);
@@ -217,16 +242,18 @@ export function CuratedGalleryImporter() {
         setProgress(Math.floor(((index + 1) / CURATED_GALLERY_RECORD_COUNT) * 20));
       }
 
+      ensureActive();
       setPhase("Initializing authenticated staging import…");
-      await responseJson(await fetch("/api/admin/media/curated-gallery/start", {
+      started = true;
+      await requestJson("/api/admin/media/curated-gallery/start", {
         method: "POST",
-        credentials: "same-origin",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ packageSha256: CURATED_GALLERY_PACKAGE_SHA256, manifestText }),
-      }));
+      }, 25_000);
 
       setPhase("Uploading unchanged originals and creating gallery-only drafts…");
       for (const [index, record] of manifest.records.entries()) {
+        ensureActive();
         const entry = entries.get(archivePathForCuratedRecord(record));
         if (!entry) throw new Error(`Missing verified entry for ${record.id}.`);
         const uploadBuffer = new ArrayBuffer(entry.bytes.byteLength);
@@ -235,31 +262,27 @@ export function CuratedGalleryImporter() {
         body.set("batch", CURATED_GALLERY_BATCH);
         body.set("recordId", record.id);
         body.set("file", new File([uploadBuffer], record.originalName, { type: record.mimeType }));
-        await responseJson(await fetch("/api/admin/media/curated-gallery/upload", {
-          method: "POST",
-          credentials: "same-origin",
-          body,
-        }));
+        await requestJson("/api/admin/media/curated-gallery/upload", {
+          method: "POST", body,
+        }, 90_000);
         setProgress(20 + Math.floor(((index + 1) / CURATED_GALLERY_RECORD_COUNT) * 80));
         setPhase(`Imported ${index + 1} of ${CURATED_GALLERY_RECORD_COUNT} gallery images…`);
       }
 
-      const finalStatus = await responseJson(await fetch("/api/admin/media/curated-gallery/status", {
-        credentials: "same-origin",
-        cache: "no-store",
-      })) as ImportStatus;
-      setStatus(finalStatus);
+      const finalStatus = await refreshStatus();
       if (finalStatus.uploaded !== CURATED_GALLERY_RECORD_COUNT ||
           finalStatus.missing !== 0 ||
-          (finalStatus.mismatches?.length ?? 0) > 0 ||
+          finalStatus.mismatches.length > 0 ||
           finalStatus.galleryOnly !== true) {
         throw new Error("Staging reconciliation did not account cleanly for all 154 gallery records.");
       }
       setProgress(100);
       setPhase("154 gallery originals are uploaded and attached as unpublished review records. Publication remains a separate audited step.");
     } catch (error) {
-      setPhase(error instanceof Error ? error.message : "Curated gallery import failed.");
+      const message = error instanceof Error ? error.message : "Curated gallery import failed.";
+      setPhase(started ? `${message} Progress may have changed on the server; check status before restarting.` : message);
     } finally {
+      busyRef.current = false;
       setBusy(false);
     }
   }
@@ -286,6 +309,7 @@ export function CuratedGalleryImporter() {
           disabled={busy}
           onChange={event => {
             const file = event.currentTarget.files?.[0];
+            event.currentTarget.value = "";
             if (file) void run(file);
           }}
         />
@@ -293,8 +317,14 @@ export function CuratedGalleryImporter() {
       </div>
       <div style={{ marginTop: "1rem" }} aria-live="polite">
         <strong>{phase}</strong>
-        <progress value={progress} max={100} style={{ width: "100%", marginTop: ".5rem" }}>{progress}%</progress>
+        <progress value={progress} max={100} aria-label="Gallery import progress" style={{ width: "100%", marginTop: ".5rem" }}>{progress}%</progress>
       </div>
+      <button type="button" className="button secondary" disabled={busy}
+        onClick={() => void refreshStatus().catch(error => setPhase(
+          error instanceof Error ? error.message : "Gallery status could not be verified.",
+        ))} style={{ marginTop: ".75rem" }}>
+        Check import and publication status
+      </button>
       {status && (
         <>
           <p className="muted" style={{ marginTop: ".75rem" }}>
@@ -336,7 +366,7 @@ export function CuratedGalleryImporter() {
               </table>
             </div>
           ) : null}
-          {status.uploaded === CURATED_GALLERY_RECORD_COUNT &&
+          {status.initialized && status.uploaded === CURATED_GALLERY_RECORD_COUNT &&
            status.published !== CURATED_GALLERY_RECORD_COUNT &&
            status.missing === 0 &&
            (status.mismatches?.length ?? 0) === 0 &&
