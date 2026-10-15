@@ -5,7 +5,7 @@ import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { allocationPlanningEnabled } from "@/lib/allocation-proposal-operations";
 import { assessAllocationBalance } from "@/lib/allocation-finance-reconciliation";
-import { allocationAvailablePaise } from "@/lib/allocation-proposals";
+import { assessAllocationPurpose } from "@/lib/allocation-proposals";
 import { AdminAllocationReview } from "@/components/admin-allocation-review";
 import { AdminAllocationReversal } from "@/components/admin-allocation-reversal";
 
@@ -81,16 +81,12 @@ export default async function AllocationAdminPage() {
     const activeAmounts = (amounts.get(item.donationId) ?? [])
       .filter(value => !value.reversed).map(value => value.amountPaise);
     const health = assessAllocationBalance(item.donation, amounts.get(item.donationId) ?? []);
-    let eligibleBalance = false;
-    try {
-      eligibleBalance = item.donation.fund?.status === "APPROVED" &&
-        item.donation.fundId === item.fundId &&
-        item.donation.givingIntent === item.givingIntent &&
-        allocationAvailablePaise(item.donation, activeAmounts) >= item.amountPaise;
-    } catch {
-      eligibleBalance = false;
-    }
+    const purpose = assessAllocationPurpose(item.donation, item, activeAmounts);
+    const eligibleBalance = purpose.state === "VALID" &&
+      purpose.remainingPaise >= item.amountPaise;
     const hasConflict = item.status === "APPROVED" && !item.reversal && health.state !== "CLEAR";
+    const hasPurposeConflict = item.status === "APPROVED" && !item.reversal &&
+      health.state === "CLEAR" && purpose.state === "REVIEW_REQUIRED";
     const canApproveNow = item.status === "PENDING" && eligibleBalance &&
       health.state === "CLEAR" && canReview && item.createdBy.id !== staff.id;
 
@@ -110,6 +106,12 @@ export default async function AllocationAdminPage() {
             ? "Approved internal allocations exceed retained donation funds."
             : "The original donation accounting cannot be validated safely."}{" "}
         Do not treat this planning approval as retained cash or verified disbursement.
+      </p>}
+      {hasPurposeConflict && <p role="alert">
+        <strong>Original designation review required.</strong>{" "}
+        The approved internal plan no longer passes its original giving-fund,
+        consent or purpose checks. Check the historical donor designation and
+        fund governance privately; do not treat this approval as verified spending.
       </p>}
       {item.status === "PENDING" && !eligibleBalance && <p role="alert">
         This proposal currently fails an original-purpose, confirmation, approved-fund or retained-balance check.

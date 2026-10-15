@@ -67,6 +67,26 @@ export function allocationAvailablePaise(donation: AllocationSource, approvedAmo
   if (assigned > totals.netRetainedPaise) throw new AllocationError("Previously approved allocation exceeds retained donation funds.");
   return totals.netRetainedPaise - assigned;
 }
+/** The same donor-purpose guard is used for pending review eligibility and
+ * historical approval review. It cannot treat a fully allocated approval as
+ * invalid merely because its available *remaining* amount is now zero. */
+export function assessAllocationPurpose(
+  donation: AllocationSource & { fund?: { status: string } | null },
+  proposal: { fundId: string; givingIntent: string },
+  approvedAmounts: readonly number[],
+): { state: "VALID"; remainingPaise: number } | { state: "REVIEW_REQUIRED"; remainingPaise: null } {
+  if (!donation.fund || donation.fund.status !== "APPROVED" ||
+      donation.fundId !== proposal.fundId ||
+      donation.givingIntent !== proposal.givingIntent) {
+    return { state: "REVIEW_REQUIRED", remainingPaise: null };
+  }
+  try {
+    return { state: "VALID", remainingPaise: allocationAvailablePaise(donation, approvedAmounts) };
+  } catch {
+    return { state: "REVIEW_REQUIRED", remainingPaise: null };
+  }
+}
+
 export function assertAllocationReview(actorId: string, makerId: string, status: string) {
   if (!actorId || !makerId || actorId === makerId || status !== "PENDING") {
     throw new AllocationError("An independent authorized reviewer is required for each pending proposal.");

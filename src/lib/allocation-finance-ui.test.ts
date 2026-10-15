@@ -32,7 +32,9 @@ describe("role-limited allocation finance staff surfaces", () => {
     expect(ledger).toContain("conflictCount > conflicts.length");
     expect(ledger).toContain("conflicts.map(proposalRow)");
     expect(ledger).toContain("history.map(proposalRow)");
-    expect(ledger).toContain("allocationAvailablePaise(item.donation");
+    expect(ledger).toContain("assessAllocationPurpose(item.donation, item, activeAmounts)");
+    expect(ledger).toContain('purpose.state === "REVIEW_REQUIRED"');
+    expect(ledger).toContain("Original designation review required");
     expect(ledger).toContain("Do not treat this planning approval as retained cash or verified disbursement");
     expect(ledger).toContain('item.createdBy.id !== staff.id && item.reviewedBy?.id !== staff.id');
   });

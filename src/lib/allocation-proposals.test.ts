@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { AllocationError, allocationAvailablePaise, assertAllocationReview, parseAllocationNote, parseAllocationPaise } from "./allocation-proposals";
+import { AllocationError, assessAllocationPurpose, allocationAvailablePaise, assertAllocationReview, parseAllocationNote, parseAllocationPaise } from "./allocation-proposals";
 
 const decimal = (value: number) => ({ mul: (n: number) => ({ toNumber: () => value * n }) });
 const eligible = {
@@ -38,6 +38,23 @@ describe("restricted non-disbursing allocation proposals", () => {
     expect(() => allocationAvailablePaise({ ...eligible, fundDisclosureConfirmedAt: null }, [])).toThrow();
     expect(() => allocationAvailablePaise({ ...eligible, domesticConfirmedAt: new Date(NaN) }, [])).toThrow();
   });
+  it("separates historical original-purpose review from pending remaining-balance eligibility", () => {
+    const source = { ...eligible, fund: { status: "APPROVED" } };
+    const original = { fundId: "fund-1", givingIntent: "SADAQAH" };
+    expect(assessAllocationPurpose(source, original, [50000]))
+      .toEqual({ state: "VALID", remainingPaise: 0 });
+    expect(assessAllocationPurpose(source, original, [12000]))
+      .toEqual({ state: "VALID", remainingPaise: 38000 });
+    expect(assessAllocationPurpose(source, { ...original, fundId: "another-fund" }, []))
+      .toEqual({ state: "REVIEW_REQUIRED", remainingPaise: null });
+    expect(assessAllocationPurpose(source, { ...original, givingIntent: "GENERAL" }, []).state)
+      .toBe("REVIEW_REQUIRED");
+    expect(assessAllocationPurpose({ ...source, designationSnapshot: null }, original, []).state)
+      .toBe("REVIEW_REQUIRED");
+    expect(assessAllocationPurpose({ ...source, fund: { status: "PAUSED" } }, original, []).state)
+      .toBe("REVIEW_REQUIRED");
+  });
+
   it("requires a separate maker and checker and forbids reused terminal proposals", () => {
     expect(() => assertAllocationReview("creator", "creator", "PENDING")).toThrow(AllocationError);
     expect(() => assertAllocationReview("reviewer", "creator", "APPROVED")).toThrow(AllocationError);
