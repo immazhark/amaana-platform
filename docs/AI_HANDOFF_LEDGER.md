@@ -1483,3 +1483,37 @@ Continued existing PR #292 from verified clean `d73947387563df1ca565942a6bdc6536
 - Not executed: real PostgreSQL cursor/concurrency/migration acceptance, browser/AT/zoom acceptance, complete production build/generation and deployed runtime acceptance. No flags enabled, no migration/provider/payment/email/main merge/deployment operations. Native transactional behavior is not certified by mocks.
 
 Canonical 149-row register recalculated from actual rows: **60 Implemented / 58 Partial / 29 Not started / 1 Superseded / 1 Not applicable**, unchanged. AF-ALLOCATION and AF-DONOR remain Partial; this sub-scope does not close full product or rollout requirements.
+
+### 2026-10-15 — AF-BING explicit IndexNow source workflow
+
+AF-BING **Not started → Partial** on existing PR #292 from `a656c032`.
+Implemented official-production/opt-in configuration, exact root UTF-8 ownership
+proof, and a `content.approve` staff action in Media review. Each bounded batch
+is validated against a fresh privacy-filtered sitemap. Private/query/token URLs,
+Shukr, unreviewed legacy content and individual appeals are rejected. A
+serializable per-staff one-minute admission audit precedes a fixed-endpoint,
+five-second POST; redirects and automatic retries are disabled. Received,
+ownership-pending, rejected and unknown outcomes remain distinct; a later audit
+failure cannot misreport known receipt. Audit metadata contains counts/status,
+not key values or submitted URLs. Key and rollout flag remain unconfigured/OFF.
+No real IndexNow request or production setting was changed.
+
+Executed: **103 focused tests across 9 suites**, full generated-route TypeScript,
+changed-file zero-warning ESLint, whitespace checks and clean optimized
+**compile-only** build. Provider responses, audit faults and request transport
+were mocked; no real ownership, PostgreSQL parallel admission or browser
+acceptance is claimed. Official protocol references:
+https://www.indexnow.org/documentation and https://www.indexnow.org/faq.
+
+**Release blocker found by clean builds:** preserved baseline `a656c032` has
+896,790 JS / 384,242 CSS bytes, already above unchanged 819,200 / 348,160 caps.
+This batch has 898,586 JS (+1,796) / 384,242 CSS (unchanged). The baseline was
+built independently in an isolated checkout; this is not a stale-chunk estimate.
+Do not merge/deploy until asset budgets and remaining exact-head release gates
+pass. No budget or support target was relaxed.
+
+Remaining AF-BING scope: provision and verify ownership on approved host;
+review rollout/privacy; prove real-DB admission and deployed key headers;
+qualified withdrawn-URL/removal lifecycle (not implemented by this action).
+149-row counts: **60 Implemented / 59 Partial / 28 Not started /
+1 Superseded / 1 Not applicable**. No production closure inferred.

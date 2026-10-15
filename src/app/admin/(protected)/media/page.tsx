@@ -1,3 +1,5 @@
+import { getIndexNowConfiguration } from "@/lib/indexnow";
+import { AdminIndexNowSubmission } from "@/components/admin-indexnow-submission";
 import Link from "@/components/navigation-link";
 import { CuratedGalleryImporter } from "@/components/curated-gallery-importer";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
@@ -78,6 +80,13 @@ export default async function AdminMediaPage({ searchParams }: Props) {
       </div>
       {!storage.deliveryReady && <p className="muted" style={{ marginTop: "1rem" }}>Managed uploads are not publication-ready until the storage and delivery checks are green. Reviewed external URLs may still be documented independently.</p>}
     </section>
+
+    {canApprove && <section className="admin-card" style={{ marginBottom: "2rem" }}>
+      <h2>Public search discovery</h2>
+      <p className="muted">Notify participating search engines about approved public page updates. A notification is not a promise of indexing or a search-result removal.</p>
+      {getIndexNowConfiguration() ? <AdminIndexNowSubmission/> :
+        <p role="status">Search notifications are disabled until ownership configuration and release approval are complete.</p>}
+    </section>}
 
     {canEdit && canApprove && storage.uploadReady && <CuratedGalleryImporter />}
 

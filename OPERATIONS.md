@@ -311,3 +311,32 @@ Set provider spending alerts and hard limits where available. Upgrade Railway on
 - [ ] Mobile, keyboard and screen-reader checks completed
 - [ ] Domain, HTTPS, monitoring and alerting verified
 - [ ] Google indexing enabled only after final content approval
+
+## IndexNow public discovery (disabled until explicit rollout)
+
+`AMAANA_INDEXNOW_ENABLED=false` and empty `INDEXNOW_KEY` are the defaults.
+The Media review panel permits only `content.approve` staff to explicitly
+notify search engines of selected current public sitemap paths. There is no
+automatic publish hook, retry, cron or removal operation. Individual appeals,
+private URLs, query strings, Shukr and unreviewed legacy content are excluded.
+This restriction does not remove material already indexed by third parties.
+
+Before activation, review the protocol at https://www.indexnow.org/documentation
+and https://www.indexnow.org/faq. Provision an independently generated 8–128
+character alphanumeric/hyphen ownership key; never reuse receipt/payment secrets.
+The exact `/{key}.txt` response must be reachable on the official configured
+HTTPS origin, with no query parameters, plain UTF-8 text, no-store and noindex.
+Verify old keys disappear immediately after rotation. The application must have
+`APP_ENVIRONMENT=production` and explicit public indexing approval. Do not enable
+this workflow on a preview merely to test provider ownership.
+
+Prove isolated PostgreSQL concurrent audit admission, staff RBAC, stale
+publication rejection and deployed root-route behavior before release. Admission
+is committed before transmission; provider timeout means UNKNOWN and must not
+automatically trigger another request. HTTP 200 confirms receipt only; 202 leaves
+key validation pending. Outcome-audit faults preserve known provider receipt and
+require reconciliation. Audit metadata retains count/status only, not keys,
+submitted URLs or provider bodies. No automatic removal/privacy guarantee exists.
+
+Disabling the feature stops submissions and returns 404 for the ownership key.
+Do not activate while existing JS/CSS budgets or other release gates fail.

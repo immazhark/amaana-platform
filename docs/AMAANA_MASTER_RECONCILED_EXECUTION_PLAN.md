@@ -1,5 +1,40 @@
 # Amaana Master Reconciled Execution Plan
 
+### 2026-10-15 — AF-BING explicit IndexNow source workflow
+
+AF-BING **Not started → Partial** on existing PR #292 from `a656c032`.
+Implemented official-production/opt-in configuration, exact root UTF-8 ownership
+proof, and a `content.approve` staff action in Media review. Each bounded batch
+is validated against a fresh privacy-filtered sitemap. Private/query/token URLs,
+Shukr, unreviewed legacy content and individual appeals are rejected. A
+serializable per-staff one-minute admission audit precedes a fixed-endpoint,
+five-second POST; redirects and automatic retries are disabled. Received,
+ownership-pending, rejected and unknown outcomes remain distinct; a later audit
+failure cannot misreport known receipt. Audit metadata contains counts/status,
+not key values or submitted URLs. Key and rollout flag remain unconfigured/OFF.
+No real IndexNow request or production setting was changed.
+
+Executed: **103 focused tests across 9 suites**, full generated-route TypeScript,
+changed-file zero-warning ESLint, whitespace checks and clean optimized
+**compile-only** build. Provider responses, audit faults and request transport
+were mocked; no real ownership, PostgreSQL parallel admission or browser
+acceptance is claimed. Official protocol references:
+https://www.indexnow.org/documentation and https://www.indexnow.org/faq.
+
+**Release blocker found by clean builds:** preserved baseline `a656c032` has
+896,790 JS / 384,242 CSS bytes, already above unchanged 819,200 / 348,160 caps.
+This batch has 898,586 JS (+1,796) / 384,242 CSS (unchanged). The baseline was
+built independently in an isolated checkout; this is not a stale-chunk estimate.
+Do not merge/deploy until asset budgets and remaining exact-head release gates
+pass. No budget or support target was relaxed.
+
+Remaining AF-BING scope: provision and verify ownership on approved host;
+review rollout/privacy; prove real-DB admission and deployed key headers;
+qualified withdrawn-URL/removal lifecycle (not implemented by this action).
+149-row counts: **60 Implemented / 59 Partial / 28 Not started /
+1 Superseded / 1 Not applicable**. No production closure inferred.
+
+
 ### 2026-10-15 — Executed finance/privacy queue and typed integration batch
 
 Continued existing PR #292 from verified clean `d73947387563df1ca565942a6bdc653610a99c8f`.
@@ -1016,7 +1051,7 @@ Each row is one root cause/capability, not one occurrence in an input. Scope ali
 | AF-LISTINGS | Operation | W8 | GuideStar/Candid, IndiaZakat, Give.do, Ketto/Milaap reviewed eligibility | BP §10; CB §7.5/.7/.8/.9; GP §5.5/.6/.7 | P2 | I=Not started; V=Not tested; G=Uncommitted; P=Not deployed; D=Blocked | No applications/current verified listing evidence in repository | NOT VERIFIED; this capability is not certified live | Current official provider terms/KYC; domestic restrictions; explicit submission authorization | No unsupported badge/fees/fundability promises; no foreign contribution invitation | B12 |
 | AF-NONPROFITS | Operation | W8 | Google for Nonprofits/Ad Grants eligibility and validator verification | BP §10 gate; CB §3.12/§7.6; GP §5.8 | P2 | I=Not started; V=Not tested; G=Uncommitted; P=Not deployed; D=Blocked | Conflicting FCRA/12A/80G and TechSoup/Percent recommendations not verified | NOT VERIFIED; this capability is not certified live | Current official India eligibility + legal review | No assumed grant budget or third-party submission; documented provider requirement | B12 |
 | AF-CRYPTO | Innovation | W8 | Foreign/crypto donation activation via Giving Block | BP §10 gate/§14.4; CB §7 rejection | P0 | I=Not applicable; V=Not tested; G=Uncommitted; P=Not deployed; D=Deferred | No FCRA; outside authorized domestic scope | NOT VERIFIED; this capability is not certified live | Future legal/provider eligibility and separate explicit decision | Remain disabled; never accept foreign/crypto to satisfy a checklist | Deferred |
-| AF-BING | Operation | W6 | Bing/IndexNow ownership and publish/update/removal discovery | BP SEO-02/§10; CB §7.1; GP §5.2 | P1 | I=Not started; V=Not tested; G=Uncommitted; P=Not deployed; D=Open | Sitemap/robots exist; IndexNow integration not found | NOT VERIFIED; this capability is not certified live | Verified site key/ownership; safe canonical public URL filter | Only public approved URLs; withdrawn URLs handled; no private/token URL submissions | B12 |
+| AF-BING | Operation | W6 | Bing/IndexNow ownership and publish/update/removal discovery | BP SEO-02/§10; CB §7.1; GP §5.2 | P1 | I=Partial; V=Targeted tests passed; G=PR open; P=Not deployed; D=Blocked | 2026-10-15 continuation: root ownership proof and disabled-by-default content.approve staff submission workflow; current privacy-filtered sitemap authorization, bounded canonical paths, serialized audit admission and bounded fixed-endpoint transport. 103 focused tests, TypeScript, lint and clean compile pass. No live submission or ownership verification. | Source only; no deployment or feature activation. Existing aggregate JS/CSS budgets fail on baseline and this batch. | Verify official-host key deployment/ownership and explicit rollout; real PostgreSQL concurrency and browser/provider acceptance; withdrawn-URL/removal lifecycle remains separate. | Only public approved URLs; withdrawn URLs handled; no private/token URL submissions | B12 |
 | AF-EDITORIAL | Enhancement | W6 | Source-reviewed local SEO pillars and partner/internal link strategy | BP §11.1/§11.2; CB M-11; GP G-19/F-17 | P1 | I=Partial; V=Not tested; G=Merged; P=Deployed unverified; D=Open | Archive/master-copy and article schemas exist; dedicated charity education mapped AF-R094 | Railway main aedae001 control plane; journey NOT VERIFIED | Qualified copy ownership, verified programmes; language review | Unique useful intent, reviewed facts/media, real relationships; no thin neighborhood pages | B12 |
 | AF-PRESS | Operation | W8 | Approved institutional/press outreach and national expansion evidence | BP §11.2; GP §5.15 and phases; CB §7.11 | P2 | I=Not started; V=Not tested; G=Uncommitted; P=Not deployed; D=Deferred | No current press/partnership publication execution evidence | NOT VERIFIED; this capability is not certified live | Owner-approved factual data pack; service capacity; explicit sending instruction | Do not contact partners/press without authorization; no national coverage claim without operations | B13 |
 | AF-FIDYA | Enhancement | W7 | Reviewed Fidya/Kaffarah/Aqiqah/Waqf giving policies and destinations | BP R2; CB M-06; GP G-05/F-07 benchmark | P1 | I=Not started; V=Not tested; G=Uncommitted; P=Not deployed; D=Blocked | Only GENERAL/SADAQAH/ZAKAT supported | NOT VERIFIED; this capability is not certified live | Religious guidance + approved unit costs/purposes; AF-FUNDS | No automatic intent expansion or unreviewed rulings; UI/server/allocation eligibility agreement | B10 |
