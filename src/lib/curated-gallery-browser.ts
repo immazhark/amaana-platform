@@ -92,6 +92,7 @@ export function parseCuratedGalleryStatus(value: unknown): CuratedGalleryStatus 
     if (typeof slug !== "string" || !Object.hasOwn(counts, slug) || seen.has(slug)) return invalid();
     seen.add(slug);
     const expected = counts[slug];
+    if (expected === undefined) return invalid();
     if (count(entry, "expected", total) !== expected ||
         typeof entry.ready !== "boolean" ||
         typeof entry.publicRecordFound !== "boolean" ||
