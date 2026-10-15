@@ -23,9 +23,13 @@ const ADMIN_HOME_DESTINATIONS = [
   { permission: "rbac.manage", path: "/admin/audit" },
 ] as const;
 
-export function adminNavigationForPermissions(permissions: Iterable<string>) {
+export function adminNavigationForPermissions(
+  permissions: Iterable<string>,
+  options: { allocationEnabled?: boolean } = {},
+) {
   const allowed = new Set(permissions);
-  return ADMIN_NAV_ITEMS.filter(item => allowed.has(item.permission));
+  return ADMIN_NAV_ITEMS.filter(item => allowed.has(item.permission) &&
+    (item.path !== "/admin/allocations" || options.allocationEnabled === true));
 }
 
 export function adminHomePathForPermissions(permissions: Iterable<string>) {

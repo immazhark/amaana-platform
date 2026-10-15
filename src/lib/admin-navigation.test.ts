@@ -27,9 +27,20 @@ describe("admin navigation visibility", () => {
       .toEqual([
         { permission: "assistance.view", path: "/admin", label: "Assistance queue" },
         { permission: "donation.view", path: "/admin/donations", label: "Donations" },
-        { permission: "donation.view", path: "/admin/allocations", label: "Allocation proposals" },
         { permission: "notification.view", path: "/admin/notifications", label: "Notification delivery" },
       ]);
+  });
+
+  it("hides allocation planning until it is enabled server-side and the reader holds donation.view", () => {
+    const permissions = ["fund.manage", "fund.approve", "donation.view"];
+    expect(adminNavigationForPermissions(permissions).some(item => item.path === "/admin/allocations")).toBe(false);
+    expect(adminNavigationForPermissions(permissions, { allocationEnabled: false })
+      .some(item => item.path === "/admin/allocations")).toBe(false);
+    expect(adminNavigationForPermissions(["fund.manage", "fund.approve"],
+      { allocationEnabled: true }).some(item => item.path === "/admin/allocations")).toBe(false);
+    expect(adminNavigationForPermissions(permissions, { allocationEnabled: true }))
+      .toContainEqual({ permission: "donation.view", path: "/admin/allocations",
+        label: "Allocation proposals" });
   });
 
   it("does not treat mutation-only permissions as permission to browse an area", () => {
@@ -57,7 +68,6 @@ describe("admin navigation visibility", () => {
       "Media review",
       "Retention review",
       "Donations",
-      "Allocation proposals",
       "Notification delivery",
       "Audit history",
     ]);
