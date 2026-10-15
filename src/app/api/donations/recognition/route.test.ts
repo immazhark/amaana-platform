@@ -148,6 +148,23 @@ describe("donor-recognition capability and consent boundary", () => {
     expect(mocks.audit).not.toHaveBeenCalled();
     expect(mocks.revalidate).not.toHaveBeenCalled();
   });
+  it("uses the same post-commit cache refresh for request and withdrawal", async () => {
+    const first = await POST(request("request", { name: "Ayesha Khan" }));
+    expect(first.status).toBe(200);
+    expect(mocks.revalidate.mock.calls).toEqual([
+      ["/shukr"], ["/admin/donations/recognition"],
+    ]);
+    mocks.revalidate.mockClear();
+    mocks.lookup.mockResolvedValue({ ...record,
+      recognitionDisplayName: "Ayesha Khan",
+      recognitionRequestedAt: new Date("2026-10-12T10:00:00.000Z"),
+    });
+    const second = await POST(request("withdraw"));
+    expect(second.status).toBe(200);
+    expect(mocks.revalidate.mock.calls).toEqual([
+      ["/shukr"], ["/admin/donations/recognition"],
+    ]);
+  });
   it("acknowledges a fully committed request even if cache invalidation subsequently fails", async () => {
     mocks.revalidate.mockImplementation(() => { throw new Error("cache temporarily unavailable"); });
     const result = await POST(request("request", { name: "Ayesha Khan" }));

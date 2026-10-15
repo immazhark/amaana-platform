@@ -89,8 +89,7 @@ export async function POST(request: Request) {
       return true;
     });
     if (!saved) throw new RecognitionConflictError("Consent state changed");
-    revalidatePath("/shukr");
-    revalidatePath("/admin/donations/recognition");
+    refreshShukrViewsAfterConsent();
     return NextResponse.json({ state: "pending", name, revocable: true }, { headers: privateHeaders });
   } catch (error) {
     if (error instanceof RecognitionConflictError) {
