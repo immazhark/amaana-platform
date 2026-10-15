@@ -29,6 +29,18 @@ import { parsePositiveRupeeAmount } from "@/lib/amount-entry";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
+/** Call only after the transaction resolves. Cache failures cannot undo a
+ * committed review/assignment or justify replaying it. Try both views, then
+ * navigate to the dynamic detail page for a fresh database read if needed. */
+function refreshCommittedRequest(id: string) {
+  let refreshed = true;
+  for (const path of [`/admin/requests/${id}`, "/admin"]) {
+    try { revalidatePath(path); }
+    catch { refreshed = false; }
+  }
+  return refreshed;
+}
+
 const statuses = new Set(Object.values(AssistanceStatus));
 const verificationDecisions = new Set<string>(ASSISTANCE_VERIFICATION_DECISIONS);
 const consentDecisions = new Set<string>(ASSISTANCE_CONSENT_DECISIONS);
@@ -209,8 +221,7 @@ export async function saveVerification(formData: FormData) {
       },
     });
   });
-  revalidatePath(`/admin/requests/${id}`);
-  revalidatePath("/admin");
+  if (!refreshCommittedRequest(id)) redirect(`/admin/requests/${id}`);
 }
 
 export async function updateRequest(formData: FormData) {
@@ -277,8 +288,7 @@ export async function updateRequest(formData: FormData) {
       await tx.notification.create({ data: { channel: NotificationChannel.EMAIL, recipient: previous.email, templateKey: "assistance-status-updated", subject: "Your Amaana request status was updated", payload: { referenceNumber: previous.referenceNumber, status }, assistanceRequestId: id } });
     }
   });
-  revalidatePath(`/admin/requests/${id}`);
-  revalidatePath("/admin");
+  if (!refreshCommittedRequest(id)) redirect(`/admin/requests/${id}`);
 }
 
 export async function assignRequest(formData: FormData) {
@@ -323,8 +333,7 @@ export async function assignRequest(formData: FormData) {
       },
     });
   });
-  revalidatePath(`/admin/requests/${id}`);
-  revalidatePath("/admin");
+  if (!refreshCommittedRequest(id)) redirect(`/admin/requests/${id}`);
 }
 
 export async function convertToAppeal(formData: FormData) {
@@ -386,5 +395,6 @@ export async function convertToAppeal(formData: FormData) {
       await tx.notification.create({ data: { channel: NotificationChannel.EMAIL, recipient: request.email, templateKey: "assistance-status-updated", subject: "Your Amaana request status was updated", payload: { referenceNumber: request.referenceNumber, status: AssistanceStatus.CONVERTED_TO_APPEAL }, assistanceRequestId: id } });
     }
   });
+  refreshCommittedRequest(id);
   redirect(`/admin/requests/${id}`);
 }

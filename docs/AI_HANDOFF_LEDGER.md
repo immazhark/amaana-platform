@@ -1,3 +1,28 @@
+## 2026-10-15 — Assistance triage and cache-failure fallback
+
+Continued PR #292 from `cbba0d7c`. Added assignment filters (all, mine,
+unassigned), stable oldest/newest ordering, preserved combined filters through
+bounded pagination and elapsed request-age labels. Counts and status badges use
+the same assignment scope; “mine” always uses the authenticated user, never a
+query-string staff identity. Queue queries now select only displayed fields.
+Detail queries no longer retrieve full staff/authentication profiles, unused
+linked-appeal fields or unused audit metadata.
+
+Verification, review and assignment refresh both admin views independently after
+the transaction commits. If a refresh fails, a redirect opens the dynamic case
+detail instead of surfacing a cache failure as a failed database mutation.
+Draft-appeal conversion now also invalidates the queue before its redirect.
+Serializable writes, permission checks, stale-version guards, audits and
+notification atomicity remain in place.
+
+Executed: 41 targeted tests across 6 suites, full TypeScript, changed-code
+zero-warning ESLint, whitespace check and clean compile-only build passed.
+Built JS remains 882619/819200 bytes (blocked); CSS 347365/348160 passes.
+AF-LOCAL remains Partial: no service-zone/urgency vocabulary or SLA thresholds
+were invented, and median/p90 review metrics remain absent. No browser/mobile,
+native PostgreSQL or production acceptance is claimed. Master149 remains
+60 Implemented / 60 Partial / 27 Not started / 1 Superseded / 1 Not applicable.
+
 ## 2026-10-15 — Navigation fallback and test discovery
 
 Continued PR #292 from `9605af89`. Vitest now discovers both `.test.ts` and

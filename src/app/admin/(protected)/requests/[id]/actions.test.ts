@@ -13,6 +13,7 @@ const mocks = vi.hoisted(() => ({
   auditCreate: vi.fn(),
   notificationCreate: vi.fn(),
   transaction: vi.fn(),
+  revalidate: vi.fn(), redirect: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -31,8 +32,8 @@ vi.mock("@/lib/prisma", () => ({
 vi.mock("@/lib/prisma-transaction", () => ({
   withSerializableTransactionRetry: mocks.transaction,
 }));
-vi.mock("next/cache", () => ({ revalidatePath: vi.fn() }));
-vi.mock("next/navigation", () => ({ redirect: vi.fn() }));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidate }));
+vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 
 import { assignRequest, convertToAppeal, saveVerification } from "./actions";
 
@@ -60,6 +61,8 @@ function tx() {
 describe("assistance admin concurrency guards", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.revalidate.mockReset();
+    mocks.redirect.mockReset();
     mocks.requirePermission.mockResolvedValue({ id: "admin-1" });
     mocks.hasPermission.mockReturnValue(true);
     mocks.transaction.mockImplementation(async callback => callback(tx()));
@@ -152,5 +155,38 @@ describe("assistance admin concurrency guards", () => {
 
     expect(mocks.verificationUpsert).not.toHaveBeenCalled();
     expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("assistance post-commit refresh", () => {
+  beforeEach(() => {
+    vi.clearAllMocks(); mocks.revalidate.mockReset(); mocks.redirect.mockReset();
+    mocks.requirePermission.mockResolvedValue({ id: "admin-1" });
+    mocks.hasPermission.mockReturnValue(true);
+    mocks.transaction.mockImplementation(async callback => callback(tx()));
+    mocks.requestFind.mockResolvedValue({ assignedToId: "old-staff", updatedAt: new Date("2026-10-15T00:00:00Z") });
+    mocks.requestUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.auditCreate.mockResolvedValue({ id: "audit" });
+  });
+  const assignment = () => form({ id: "request-synthetic", assignedToId: "", expectedUpdatedAt: "2026-10-15T00:00:00.000Z" });
+  it.each(["/admin/requests/request-synthetic", "/admin"])("keeps an audited assignment committed when refreshing %s fails", async failedPath => {
+    mocks.revalidate.mockImplementation(path => { if (path === failedPath) throw new Error("cache service unavailable"); });
+    mocks.redirect.mockImplementation(() => { throw new Error("NEXT_REDIRECT"); });
+    await expect(assignRequest(assignment())).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.transaction).toHaveBeenCalledOnce(); expect(mocks.requestUpdateMany).toHaveBeenCalledOnce();
+    expect(mocks.auditCreate).toHaveBeenCalledOnce();
+    expect(mocks.revalidate.mock.calls.map(call => call[0])).toEqual(["/admin/requests/request-synthetic", "/admin"]);
+    expect(mocks.redirect).toHaveBeenCalledWith("/admin/requests/request-synthetic");
+    expect(mocks.auditCreate.mock.invocationCallOrder[0]).toBeLessThan(mocks.revalidate.mock.invocationCallOrder[0]!);
+  });
+  it("keeps the normal action response when both views refresh", async () => {
+    await assignRequest(assignment());
+    expect(mocks.revalidate).toHaveBeenCalledTimes(2); expect(mocks.redirect).not.toHaveBeenCalled();
+  });
+  it("does not refresh or redirect after a transaction failure", async () => {
+    mocks.transaction.mockRejectedValueOnce(new Error("transaction failed"));
+    await expect(assignRequest(assignment())).rejects.toThrow("transaction failed");
+    expect(mocks.revalidate).not.toHaveBeenCalled(); expect(mocks.redirect).not.toHaveBeenCalled();
   });
 });

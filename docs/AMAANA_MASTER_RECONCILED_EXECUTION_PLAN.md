@@ -1,5 +1,30 @@
 # Amaana Master Reconciled Execution Plan
 
+### 2026-10-15 — Private assistance queue and committed-review reliability
+
+Continued PR #292 from `cbba0d7c`. Added assignment filters (all, mine,
+unassigned), stable oldest/newest ordering, preserved combined filters through
+bounded pagination and elapsed request-age labels. Counts and status badges use
+the same assignment scope; “mine” always uses the authenticated user, never a
+query-string staff identity. Queue queries now select only displayed fields.
+Detail queries no longer retrieve full staff/authentication profiles, unused
+linked-appeal fields or unused audit metadata.
+
+Verification, review and assignment refresh both admin views independently after
+the transaction commits. If a refresh fails, a redirect opens the dynamic case
+detail instead of surfacing a cache failure as a failed database mutation.
+Draft-appeal conversion now also invalidates the queue before its redirect.
+Serializable writes, permission checks, stale-version guards, audits and
+notification atomicity remain in place.
+
+Executed: 41 targeted tests across 6 suites, full TypeScript, changed-code
+zero-warning ESLint, whitespace check and clean compile-only build passed.
+Built JS remains 882619/819200 bytes (blocked); CSS 347365/348160 passes.
+AF-LOCAL remains Partial: no service-zone/urgency vocabulary or SLA thresholds
+were invented, and median/p90 review metrics remain absent. No browser/mobile,
+native PostgreSQL or production acceptance is claimed. Master149 remains
+60 Implemented / 60 Partial / 27 Not started / 1 Superseded / 1 Not applicable.
+
 ### 2026-10-15 — Navigation fallback and executable component coverage
 
 Continued PR #292 from `9605af89`. Vitest now discovers both `.test.ts` and
@@ -1111,7 +1136,7 @@ Each row is one root cause/capability, not one occurrence in an input. Scope ali
 | AF-SETTLEMENT | Enhancement | W1 | Provider-bank settlement and direct-transfer exception reconciliation | BP E4/FUND-03; CB M-13; GP F-06/F-09 | P1 | I=Partial; V=Not tested; G=Merged; P=Deployed unverified; D=Open | src/lib/direct-donation-reconciliation.ts and admin donations reconcile verified transfers; no bank import/settlement ledger | Railway main aedae001 control plane; journey NOT VERIFIED | Approved bank import format; finance RBAC; economic identity | No screenshot-as-capture; exact settlement/refund matching, bounded import and audited exception handling | B09 |
 | AF-QR | Enhancement | W8 | Reviewed offline campaign/masjid QR attribution network | BP §10 local partners; CB M-07/M-19.3; GP G-09/F-06/I-07 | P1 | I=Partial; V=Not tested; G=Merged; P=Deployed unverified; D=Open | donation-payment-instructions.tsx direct UPI/bank methods exist; no scoped partner-code attribution registry | Railway main aedae001 control plane; journey NOT VERIFIED | Verified trust VPA; AF-FUNDS or eligible appeal; partner approval | QR links approved destination only; spoofed attribution cannot authorize funds; no private source strings | B12 |
 | AF-SPONSOR | Enhancement | W7 | Anonymous Taleem and aid-unit inventory/reservation sponsorship | BP R5/I3/TALEEM-01; CB M-06; GP F-07 quantity; SP §4 general sponsorship | P1 | I=Partial; V=Not tested; G=Merged; P=Deployed unverified; D=Open | /get-involved/sponsor-education is enquiry, not checkout inventory | Railway main aedae001 control plane; journey NOT VERIFIED | AF-FUNDS/ALLOCATION; approved unit costs and capacity | Atomic capacity reservations expire; counts capture-backed; refund behavior; no student PII | B10 |
-| AF-LOCAL | Enhancement | W3 | Service-zone assignment, urgency and reviewer SLA metrics | BP R4/LOCAL-01; CB M-14; GP F-10/F-11 | P1 | I=Partial; V=Not tested; G=Merged; P=Deployed unverified; D=Open | AssistanceRequest assignedToId/status and private intake/tracking exist | Railway main aedae001 control plane; journey NOT VERIFIED | Approved private SLA/zone vocabulary; assistance RBAC | No public exact address; legitimate review timestamps; safe aggregate median/p90 and urgency rules | B12 |
+| AF-LOCAL | Enhancement | W3 | Service-zone assignment, urgency and reviewer SLA metrics | BP R4/LOCAL-01; CB M-14; GP F-10/F-11 | P1 | I=Partial; V=Targeted tests passed; G=PR open; P=Not deployed; D=Open | AssistanceRequest assignedToId/status and private intake/tracking exist. 2026-10-15 PR292 continuation adds authenticated mine/unassigned filters, stable age ordering, bounded filter-preserving pages, honest elapsed-age labels, minimum staff/history projections and independent post-commit refresh with fresh-detail fallback. 41 targeted source tests/TypeScript/lint/compile pass; zones, urgency and median/p90 SLA metrics remain pending | Railway main aedae001 control plane; journey NOT VERIFIED | Approved private SLA/zone vocabulary; assistance RBAC | No public exact address; legitimate review timestamps; safe aggregate median/p90 and urgency rules | B12 |
 | AF-REFERRAL | Enhancement | W8 | Verified partner referrals and scope-limited private attestations | BP I5/LOCAL-01; CB M-14; GP G-13/F-11 | P2 | I=Not started; V=Not tested; G=Uncommitted; P=Not deployed; D=Open | No ReferralPartner/scoped referral-token model | NOT VERIFIED; this capability is not certified live | Partner review; single-case grant; expiry + audit | Partner cannot browse cases; referral cannot approve/publicize aid; revocation tested | B12 |
 | AF-VOLUNTEER | Enhancement | W8 | Consented volunteer/partner application and operations | CB M-14; GP G-13/F-11; BP §11.2 | P1 | I=Partial; V=Not tested; G=Merged; P=Deployed unverified; D=Open | Get Involved/contact enquiry exists; no Volunteer model [2026-10-15 PR292 6a18be88] /get-involved/volunteer live-source journey includes consent-respecting mailto interest builder, strict skill/availability whitelist, privacy notice, responsive presentation and Get Involved/Contact links. No database, server submission or applicant status/workflow; complete consented administration remains pending. | Railway main aedae001 control plane; journey NOT VERIFIED | Minimum contact fields; consent/retention policy; owner-managed capacity | Accessible bounded form; authorization for admin view; explicit consent and no auto-publication | B12 |
 | AF-MILESTONES | Enhancement | W3 | Separate private/public reviewed and revocable case milestones | BP I1/IMPACT-01; CB M-19.2; GP G-12/F-10/I-08; SP §4 innovation | P1 | I=Partial; V=Not tested; G=Merged; P=Deployed unverified; D=Open | Private verification/status and approved AppealUpdate exist | Railway main aedae001 control plane; journey NOT VERIFIED | Publication/consent review; AF-LOCAL optional | No private pipeline/health identity in public projections; milestones source-backed and promptly revocable | B09 |
