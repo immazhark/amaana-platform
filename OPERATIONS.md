@@ -1,3 +1,32 @@
+## Private donor information rights requests (disabled until reviewed)
+
+This new receipt-scoped workflow is NOT a donor account and NOT automatic
+statutory disclosure/deletion. Its `/api/donations/data-rights` POST uses
+a verified private receipt credential, bounded request types and status
+responses; the staff queue is `/admin/donations/rights`.
+
+- Leave `AMAANA_DONOR_RIGHTS_ENABLED` unset/false. Never set it true
+  before database migration, Prisma regeneration and acceptance.
+- After an approved database backup, apply the earlier
+  `20261015000000_donor_recognition_consent` migration and then
+  `20261015010000_donor_rights_requests` only in the intended
+  environment; review and test the SQL first. Neither was applied
+  by source commits.
+- Verify synthetic donor receipt authentication and origin/rate/body
+  limits, independent donation isolation, stale/duplicate submissions,
+  staff `donation.reconcile` RBAC, audit creation, status updates and
+  non-disclosure of contact/financial fields. Check other donation
+  histories cannot be inferred from an email address.
+- Obtain owner/qualified review of data retention, review routing,
+  legal communications and closing criteria before activating. There
+  is no automatic deletion, guaranteed response time, or all-donations
+  export.
+- Monitor the private staff review queue explicitly; no email/WhatsApp
+  notification is created by this source change. A feature-disable
+  rollback must not silently drop previously received requests.
+- Run full exact-HEAD TypeScript, Prisma generate/validate, tests
+  and E2E on staging with synthetic records before explicit approval.
+
 ## Donor Shukr recognition rollout (disabled by default)
 
 The optional donor recognition workflow is **NOT a donation requirement**.
