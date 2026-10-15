@@ -16,6 +16,13 @@ describe("private donor recognition event audit UI", () => {
     expect(source).toContain('approvedAt={null}');
     expect(source).toContain('remove the stale request');
   });
+  it("counts hidden moderation and removal backlog beyond the first 30 staff rows", () => {
+    expect(source).toContain("const [pendingCount, approvedCount] = donorRecognitionEnabled()");
+    expect(source).toContain("prisma.donation.count({ where: pendingWhere })");
+    expect(source).toContain("prisma.donation.count({ where: approvedWhere })");
+    expect(source).toContain("pendingCount > requests.length");
+    expect(source).toContain("approvedCount > active.length");
+  });
   it("only fetches action and timestamp, with a donation-scoped staff-only link", () => {
     expect(source).toContain('select: { id: true, action: true, createdAt: true, donationId: true,');
     expect(source).toContain('donation: { select: { referenceNumber: true } }');

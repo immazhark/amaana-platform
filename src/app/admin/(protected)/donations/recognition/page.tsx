@@ -11,12 +11,17 @@ export const metadata: Metadata = { title: "Donor Recognition Review", robots: {
 export const dynamic = "force-dynamic";
 export default async function RecognitionReviewPage() {
   await requirePermission("donation.reconcile");
+  const pendingWhere = {
+    status: "CAPTURED", isAnonymous: false, refundedAmount: 0,
+    recognitionRequestedAt: { not: null }, recognitionApprovedAt: null,
+    recognitionRevokedAt: null, recognitionDisplayName: { not: null },
+  } as const;
+  const approvedWhere = {
+    recognitionApprovedAt: { not: null }, recognitionRequestedAt: { not: null },
+    recognitionRevokedAt: null, recognitionDisplayName: { not: null },
+  } as const;
   const requests = donorRecognitionEnabled() ? await prisma.donation.findMany({
-    where: {
-      status: "CAPTURED", isAnonymous: false, refundedAmount: 0,
-      recognitionRequestedAt: { not: null }, recognitionApprovedAt: null,
-      recognitionRevokedAt: null, recognitionDisplayName: { not: null },
-    },
+    where: pendingWhere,
     orderBy: [{ recognitionRequestedAt: "asc" }, { id: "asc" }],
     take: 30,
     select: {
@@ -25,15 +30,17 @@ export default async function RecognitionReviewPage() {
     },
   }) : [];
   const active = donorRecognitionEnabled() ? await prisma.donation.findMany({
-    where: {
-      recognitionApprovedAt: { not: null }, recognitionRequestedAt: { not: null },
-      recognitionRevokedAt: null, recognitionDisplayName: { not: null },
-    },
+    where: approvedWhere,
     orderBy: [{ recognitionApprovedAt: "desc" }, { id: "desc" }],
     take: 30,
     select: { id: true, referenceNumber: true, recognitionDisplayName: true,
       recognitionRequestedAt: true, recognitionApprovedAt: true },
   }) : [];
+  const [pendingCount, approvedCount] = donorRecognitionEnabled()
+    ? await Promise.all([
+        prisma.donation.count({ where: pendingWhere }),
+        prisma.donation.count({ where: approvedWhere }),
+      ]) : [0, 0];
   // Pending requests can become invalid after a donor switches anonymity
   // or their payment is refunded. They must remain visible to authorized
   // staff for irreversible, audited cleanup rather than disappearing from
@@ -108,6 +115,11 @@ export default async function RecognitionReviewPage() {
         remain beyond the displayed queue. Complete the private backlog before claiming clearance.
       </p>}
     </section>
+    {pendingCount > requests.length && <p role="alert">
+      {pendingCount - requests.length} more eligible pending donor recognition
+      requests remain beyond the first 30 records. Review the full private queue
+      before declaring the backlog cleared.
+    </p>}
     <h2>Approved names and emergency unpublication</h2>
     <p className="muted">Staff may immediately unpublish a previously approved display name, including after a refund or privacy complaint. This does not change the donation's financial status.</p>
     {active.length === 0 ? <p className="empty-state">No approved names are awaiting review or removal.</p>
@@ -121,6 +133,10 @@ export default async function RecognitionReviewPage() {
             approvedAt={item.recognitionApprovedAt.toISOString()}/>
         </li>;
       })}</ol>}
+    {approvedCount > active.length && <p className="muted">
+      {approvedCount - active.length} older approved recognition records are not
+      shown in this first page. This is not an exhaustive takedown history.
+    </p>}
     <section aria-labelledby="recognition-consent-events">
       <h2 id="recognition-consent-events">Private donor consent changes</h2>
       <p className="muted">An append-only, receipt-authorized history of requests and withdrawals.
