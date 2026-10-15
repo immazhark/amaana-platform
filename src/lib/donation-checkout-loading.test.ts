@@ -34,6 +34,7 @@ describe("shared lazy payment forms preserve real checkout controls", () => {
     expect(bank).toContain('aria-label="Bank transfer (unavailable)"');
     expect(output).toContain("Bank transfer is unavailable right now.");
     const upi = output.match(/<button[^>]*>Direct UPI \/ QR<\/button>/)?.[0];
+    expect(upi).toBeDefined();
     expect(upi).not.toContain('disabled=""');
   });
 
