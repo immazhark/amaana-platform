@@ -1,3 +1,7 @@
+## 2026-10-15 — Explicit-site media metadata privacy boundary (in progress)
+
+Ownership: CHATGPT_ACTIVE on existing PR #292, `fix/direct-transfer-feedback-20261013`; exact parent `430d37054fad357d04a44d9c70e1632cb7c5d171`. One-writer handoff accepted by the user. Scope: prevent JSON-LD image metadata from exposing private app destinations on explicit alternate canonical/preview origins, while preserving HTTPS CDN and published public-image contracts. Source/reproduction tests first, then focused verification where possible. No main merge, production data, provider calls, secrets, flags or deployment.
+
 ## 2026-10-15 — Cached appeal rollover and resource-conscious live-rail freshness
 
 Ownership: HANDOFF_PENDING after source batch on existing PR #292 `fix/direct-transfer-feedback-20261013` from `c3279ffc` to `21e75ac6e87b44cb86ae4b710e0711a0d4fec546`. Source changes:
