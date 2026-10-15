@@ -42,6 +42,27 @@ describe("audited staff recognition takedown", () => {
     }));
     expect(mocks.revalidate).toHaveBeenCalledWith("/shukr");
   });
+  it("removes a previously pending ineligible name without pretending it was published", async () => {
+    const form = data();
+    form.set("approvedAt", "");
+    const result = await unpublishDonorRecognitionAction(initial, form);
+    expect(result.status).toBe("success");
+    expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ recognitionApprovedAt: null,
+        recognitionRequestedAt: new Date("2026-10-12T10:00:00.000Z"),
+        recognitionDisplayName: "Ayesha Khan", recognitionRevokedAt: null }),
+    }));
+    expect(mocks.audit).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ action: "DONOR_RECOGNITION_REQUEST_REMOVED" }),
+    }));
+  });
+  it("does not clear another request after stale removal timestamps or name changes", async () => {
+    mocks.update.mockResolvedValue({ count: 0 });
+    const form = data();
+    form.set("approvedAt", "");
+    expect((await unpublishDonorRecognitionAction(initial, form)).status).toBe("error");
+    expect(mocks.audit).not.toHaveBeenCalled();
+  });
   it("does not update records when permission fails or the feature is disabled", async () => {
     mocks.auth.mockRejectedValueOnce(new Error("Forbidden"));
     await expect(unpublishDonorRecognitionAction(initial, data())).rejects.toThrow();

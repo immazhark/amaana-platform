@@ -24,9 +24,14 @@ export async function unpublishDonorRecognitionAction(
       typeof requested !== "string" || requested.length > 48) {
     return { status: "error", message: "Invalid unpublication request." };
   }
-  const approvedAt = new Date(approved);
+  // The same CAS takedown works for a publicly approved name and for a
+  // pending request that became ineligible (refunded/anonymous/failed).
+  // The empty string means never approved; it is not parsed as a date.
+  const wasApproved = approved.length > 0;
+  const approvedAt = wasApproved ? new Date(approved) : null;
   const requestedAt = new Date(requested);
-  if (!Number.isFinite(approvedAt.getTime()) || !Number.isFinite(requestedAt.getTime())) {
+  if ((wasApproved && !Number.isFinite(approvedAt!.getTime())) ||
+      !Number.isFinite(requestedAt.getTime())) {
     return { status: "error", message: "Invalid approval details." };
   }
   try {
@@ -40,7 +45,7 @@ export async function unpublishDonorRecognitionAction(
       if (updated.count !== 1) return false;
       await tx.auditEvent.create({
         data: { actorId: actor.id, entityType: "Donation", entityId: id,
-          action: "DONOR_RECOGNITION_UNPUBLISHED",
+          action: wasApproved ? "DONOR_RECOGNITION_UNPUBLISHED" : "DONOR_RECOGNITION_REQUEST_REMOVED",
           metadata: { priorApprovalAt: approved, priorRequestAt: requested } },
       });
       return true;
@@ -48,7 +53,9 @@ export async function unpublishDonorRecognitionAction(
     if (!removed) return { status: "error", message: "The record changed or was already removed. Refresh to see the current state." };
     revalidatePath("/shukr");
     revalidatePath("/admin/donations/recognition");
-    return { status: "success", message: "The reviewed donor name has been unpublished." };
+    return { status: "success", message: wasApproved
+      ? "The reviewed donor name has been unpublished."
+      : "The ineligible pending name request has been removed." };
   } catch {
     return { status: "error", message: "Unable to unpublish safely. Retry or disable the recognition feature gate." };
   }
