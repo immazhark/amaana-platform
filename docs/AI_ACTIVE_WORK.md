@@ -1,3 +1,7 @@
+## 2026-10-16 — Grouped exact-head lint source remediation
+
+Ownership: CHATGPT_ACTIVE on PR #292, `fix/direct-transfer-feedback-20261013`, from verified `4f315eea8dc31f860d4c3b9b9cc8df4627755451`. Scoped to seven errors and two warnings in actual completed GitHub Actions run 38777759702, without changing donation privacy/payment behavior or design. Source edits and regression checks only, no merge, deploy, funds, secrets, or database writes. User explicitly resumed execution after interrupted stream.
+
 ## 2026-10-15 — Donation method selection and transfer state isolation
 
 Ownership: HANDOFF_PENDING after bounded source batch on existing PR #292 `fix/direct-transfer-feedback-20261013` from `8878ea6d`. Implemented `08db012c` and corrected test syntax `11ae905c`. The active UPI vs bank transfer form now uses a payment-method React identity; switching before submitting remounts the direct-transfer form rather than reusing its previous UTR, date, evidence and validation state. Existing in-flight submission locks still prevent switching during processing. A configured-unavailable bank method is non-selectable and described visibly; Razorpay and direct UPI remain selectable. These changes preserve pending-verification wording, donation intent and amount constraints.
