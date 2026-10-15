@@ -1,3 +1,7 @@
+## 2026-10-15 — Bundle deduplication execution
+
+Ownership: HANDOFF_PENDING at completed source boundary; sole writer on PR #292 from `ef9a09e1`. Completed shared async checkout imports: 16,017 aggregate JS bytes removed, CSS unchanged. 69 focused tests, TypeScript, zero-warning lint and clean compile-only build pass. Remaining caps fail: 882569/819200 JS, 384242/348160 CSS. Next: remaining delivery excess and browser slow-chunk/payment acceptance. No release, visual redesign or budget relaxation. Master149 remains 60 Implemented / 59 Partial / 28 Not started / 2 other.
+
 ## 2026-10-15 — IndexNow source execution ownership
 
 Ownership: HANDOFF_PENDING at completed source boundary; sole writer on PR #292 from `a656c032228cdcc8ddc6df100f5453615d635381`. Completed: AF-BING disabled-by-default ownership and staff search-discovery workflow; 103 focused tests/type/lint/clean compile pass. No live provider call or indexing activation. Asset budgets fail on baseline (896790 JS / 384242 CSS) and this batch (898586 JS / 384242 CSS); unchanged caps 819200/348160. Next implementation batch: remove actual JS/CSS delivery duplication without widening caps or browser-support targets. Master149: 60 Implemented / 59 Partial / 28 Not started / 2 other.

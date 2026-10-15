@@ -1517,3 +1517,28 @@ review rollout/privacy; prove real-DB admission and deployed key headers;
 qualified withdrawn-URL/removal lifecycle (not implemented by this action).
 149-row counts: **60 Implemented / 59 Partial / 28 Not started /
 1 Superseded / 1 Not applicable**. No production closure inferred.
+
+### 2026-10-15 — Shared checkout delivery boundaries
+
+PR #292 continuation from `ef9a09e1`: appeal selection and the server-rendered
+appeal checkout now share one lazy methods entry; appeal/fund online forms and
+direct-transfer forms share separate module-level lazy entries. Removed mixed
+static/lazy form imports that emitted duplicate checkout code; retained stable
+component identities, existing method locks, original-purpose properties and
+all payment/receipt state logic. Separate loader modules avoid import cycles.
+
+Executed: 69 focused tests (5 suites), including four streamed renders of the
+actual online, direct-transfer, giving-fund and server-entry forms; full
+TypeScript, zero-warning changed-file lint and clean optimized compile-only
+build. Final aggregate JS **898,586 → 882,569 bytes (-16,017)**; CSS unchanged
+**384,242**. Unchanged limits remain 819,200 JS / 348,160 CSS: both still fail.
+Manifest-assigned entry assets for /donate/[slug] changed 646,859 → 614,309 JS
+and 131,621 → 125,177 CSS; /donate JS changed 624,086 → 624,493. These exclude
+on-demand chunks and are not measured network transfer or Core Web Vitals.
+
+Impeccable performance guidance and No AI Slop copy checks applied; no approved
+styling or programme copy changed. Browser hydration, slow-chunk switching,
+keyboard/zoom and payment sandbox acceptance remain unexecuted. No production
+operations. AF-R047 remains Partial; all 149 implementation states unchanged:
+60 Implemented / 59 Partial / 28 Not started / 2 other. Next: remaining bundle
+excess and route delivery/CWV, without increasing caps or dropping support.

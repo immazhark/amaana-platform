@@ -1,8 +1,8 @@
 "use client";
-import { lazy, Suspense, useCallback, useRef, useState } from "react";
+import { Suspense, useCallback, useRef, useState } from "react";
 import { isSameReviewedFundSnapshot, type DonorFund } from "@/lib/fund-checkout-contract";
 
-const DonationForm = lazy(() => import("@/components/donation-form").then(module => ({ default: module.DonationForm })));
+import { LazyDonationForm as DonationForm } from "./donation-checkout-loaders";
 
 /** Only separately activated, independently reviewed disclosures reach here. */
 export function FundDonationFlow({ funds, onSubmissionLockChange }: { funds: readonly DonorFund[]; onSubmissionLockChange?: (locked: boolean) => void }) {

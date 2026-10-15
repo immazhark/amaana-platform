@@ -1,21 +1,21 @@
 "use client";
 
-import { type ReactNode, useCallback, useRef, useState } from "react";
-import { DonationForm } from "@/components/donation-form";
-import { DirectTransferForm } from "@/components/direct-transfer-form";
+import { Suspense, type ReactNode, useCallback, useRef, useState } from "react";
+import { LazyDonationForm as DonationForm, LazyDirectTransferForm as DirectTransferForm } from "./donation-checkout-loaders";
 import styles from "./donation-methods.module.css";
 
 type Method = "RAZORPAY" | "DIRECT_UPI" | "BANK_TRANSFER";
 export function DonationMethods(props: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible: boolean; bankAvailable: boolean; paymentInstructions: Record<Exclude<Method, "RAZORPAY">, ReactNode>;
   onSubmissionLockChange?: (locked: boolean) => void }) {
+  const { onSubmissionLockChange } = props;
   const [method,setMethod]=useState<Method>("RAZORPAY");
   const [methodLocked, setMethodLocked] = useState(false);
   const submissionLock = useRef(false);
   const updateSubmissionLock = useCallback((locked: boolean) => {
     submissionLock.current = locked;
     setMethodLocked(locked);
-    props.onSubmissionLockChange?.(locked);
-  }, [props.onSubmissionLockChange]);
+    onSubmissionLockChange?.(locked);
+  }, [onSubmissionLockChange]);
   function chooseMethod(next: Method) {
     if (!submissionLock.current) setMethod(next);
   }
@@ -26,7 +26,7 @@ export function DonationMethods(props: { appealId: string; appealTitle: string; 
       <button type="button" disabled={methodLocked} aria-pressed={method==="BANK_TRANSFER"} onClick={()=>chooseMethod("BANK_TRANSFER")}>Bank transfer</button>
     </div>
     <div>
-      {method==="RAZORPAY" ? <DonationForm appealId={props.appealId} appealTitle={props.appealTitle} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} onSubmissionLockChange={updateSubmissionLock}/> : <DirectTransferForm appealId={props.appealId} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} method={method} instructions={props.paymentInstructions[method]} bankAvailable={props.bankAvailable} onSubmissionLockChange={updateSubmissionLock}/>}
+      <Suspense fallback={<p role="status">Preparing secure donation form…</p>}>{method==="RAZORPAY" ? <DonationForm appealId={props.appealId} appealTitle={props.appealTitle} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} onSubmissionLockChange={updateSubmissionLock}/> : <DirectTransferForm appealId={props.appealId} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} method={method} instructions={props.paymentInstructions[method]} bankAvailable={props.bankAvailable} onSubmissionLockChange={updateSubmissionLock}/>}</Suspense>
     </div>
   </div>;
 }

@@ -1,13 +1,12 @@
 "use client";
 
-import { lazy, Suspense, useCallback, useRef, useState, type ReactNode } from "react";
+import { Suspense, useCallback, useRef, useState, type ReactNode } from "react";
 import { getPublicAppealProgress } from "@/lib/public-appeal-progress";
 import { getWholeRupeeCheckoutRange } from "@/lib/donation-amount-input";
 import { PublicFundingMeter } from "@/components/public-funding-meter";
 import styles from "./appeal-donation-flow.module.css";
 
-const DonationMethods = lazy(() => import("@/components/donation-methods")
-  .then(module => ({ default: module.DonationMethods })));
+import { LazyDonationMethods as DonationMethods } from "./lazy-donation-methods";
 
 export type AppealDonationChoice = {
   id: string;
