@@ -1,3 +1,7 @@
+## 2026-10-15 — Live-appeal rail freshness and bounded revalidation (in progress)
+
+Ownership: CHATGPT_ACTIVE, sole writer on open PR #292 / `fix/direct-transfer-feedback-20261013` from verified head `c3279ffc63147dad556b45169b68f0c3c151444e`. Repair indefinitely stale appeal actions in already-open tabs with visibility-aware bounded revalidation, cancellable late responses, and privacy-safe fallback. Preserve existing approved publicity/checkout gates. The exact source checkout is not available in this runtime; GitHub connector writes only. No budget relaxation, payment, feature activation, deployment or merge is authorized.
+
 ## 2026-10-15 — Public galleries and structured-data destination safety (source batch complete)
 
 Ownership: HANDOFF_PENDING following source-only PR #292 batch on `fix/direct-transfer-feedback-20261013`, originally claimed from `f2af1b9`; latest implemented code commit `15f77bb7569f871477c2bb857e24b170fd79135a`. Standard PublicMedia already enforced approved image origins, but the gallery client and crawlable Article/WebPage JSON-LD were weaker. Gallery now rejects non-CSP-approved hosts and aliases to private routes. Approved external CDN origins are derived **on the server** and serialized into all three gallery route owners; browser code never depends on the non-public `PUBLIC_MEDIA_BASE_URL` environment variable. Client lightbox/thumbnail rules remain common and no external image is proxied into Next's optimizer.
