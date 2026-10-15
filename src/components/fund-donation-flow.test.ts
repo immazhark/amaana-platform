@@ -29,10 +29,11 @@ describe("fund donor form rendering", () => {
     expect(html).not.toContain("₹2,500"); expect(html).not.toContain("₹5,000");
     const amountInput = html.match(/<input[^>]*name="amount"[^>]*>/)?.[0];
     expect(amountInput).toBeDefined(); expect(amountInput).not.toMatch(/\bvalue=/);
-    const belowPreset = renderToStaticMarkup(createElement(DonationForm, { fund, maxAmount: 100 }));
+    const belowPreset = renderToStaticMarkup(createElement(DonationForm, { fund, maxAmount: 99 }));
     expect(belowPreset).not.toContain('aria-label="Suggested donation amounts"');
     const appeal = renderToStaticMarkup(createElement(DonationForm, { appealId: "appeal", appealTitle: "Verified appeal", maxAmount: 1000 }));
-    expect(appeal).not.toContain('aria-label="Suggested donation amounts"');
+    expect(appeal).toContain('aria-label="Suggested donation amounts"');
+    expect(appeal).not.toContain("₹2,500");
   });
 
 });

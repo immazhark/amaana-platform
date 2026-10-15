@@ -10,7 +10,9 @@ describe("private acknowledgement bundle isolation", () => {
     expect(source).not.toContain('import { DonorDataRights }');
   });
   it("guards both optional features behind independent server-provided booleans", () => {
-    expect(source).toContain('recognitionEnabled && (presentation.tone');
+    expect(source).toContain('recognitionEnabled && <Suspense');
+    // Eligibility changes must not hide withdrawal of an earlier request.
+    expect(source).not.toContain('recognitionEnabled && (presentation.tone');
     expect(source).toContain('rightsEnabled && <Suspense');
     expect(source).toContain('getToken={recognitionToken}');
   });

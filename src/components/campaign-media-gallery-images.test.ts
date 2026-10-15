@@ -13,12 +13,17 @@ describe("actual gallery image delivery", () => {
     expect(html).toContain('loading="lazy"');
     expect(html).not.toContain('rel="preload"');
   });
-  it("retains direct external delivery and disposable data-image fixtures", () => {
+  it("retains direct external delivery without proxying its origin", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
-    for (const url of ["https://approved-cdn.example.org/media/synthetic.webp", "data:image/svg+xml,synthetic"]) {
+    for (const url of ["https://approved-cdn.example.org/media/synthetic.webp"]) {
       const html = renderToStaticMarkup(createElement(CampaignMediaGallery, { items: [{ id: "synthetic", url, alt: "Synthetic fixture" }] }));
       expect(html).toContain(`src="${url}"`);
       expect(html).not.toContain('data-nimg');
     }
   });
+});
+
+it("rejects inline data-image gallery entries at the publication boundary", () => {
+  const html = renderToStaticMarkup(createElement(CampaignMediaGallery, { items: [{ id: "inline", url: "data:image/svg+xml,synthetic", alt: "Synthetic fixture" }] }));
+  expect(html).toBe("");
 });

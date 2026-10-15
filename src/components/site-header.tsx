@@ -30,7 +30,7 @@ function isActivePath(pathname: string, href: string) {
 
 export function SiteHeader() {
   const [openForPath, setOpenForPath] = useState<string | null>(null);
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const open = openForPath === pathname;
   const toggleRef = useRef<HTMLButtonElement>(null);
   const mobileNavRef = useRef<HTMLElement>(null);

@@ -16,6 +16,7 @@ vi.mock("react", async original => ({
   },
   useEffect: (effect: () => (() => void) | undefined) => hooks.effects.push(effect),
   useRef: (value: unknown) => ({ current: value }),
+  useCallback: (callback: unknown) => callback,
 }));
 vi.mock("@/lib/use-private-tracking-credentials", () => ({ usePrivateTrackingCredentials: () => hooks.credentials }));
 vi.mock("@/components/navigation-link", () => ({ default: "a" }));

@@ -1,5 +1,31 @@
 # Amaana Master Reconciled Execution Plan
 
+### 2026-10-15 — Navigation fallback and executable component coverage
+
+Continued PR #292 from `9605af89`. Vitest now discovers both `.test.ts` and
+`.test.tsx`: 19 existing component suites (56 cases) had been excluded. Their
+first execution exposed a footer null-pathname render crash. Header navigation
+now stays closed while the pathname is unavailable; footer/admin active links
+remain unset, and delegated motion/wheel scrolling waits for a real pathname.
+Five route-render and six motion/scroll/admin guard cases cover the fallback.
+Existing route-selection and permission behavior is preserved.
+
+Full-suite execution also exposed stale mocks and assertions in eight existing
+suites. Updated the new impact/appeal data mocks, private-client callback mock,
+exact two-decimal financial output, safe gallery fixtures/ref initialization,
+inline-image rejection, shared amount presets, continued recognition withdrawal
+and the existing 48px mobile dock. No publication gate or consent restriction
+was relaxed to satisfy those tests. No new visual design or promotional copy.
+
+Executed: full Vitest 2084 passed / 19 skipped (216 passed suites, 3 skipped),
+full TypeScript, changed-code zero-warning ESLint and whitespace checks pass.
+Clean compile-only build passed: aggregate JS 882619/819200 bytes (still fails)
+and CSS 347365/348160 bytes (passes). The nested-chunking experiment saved no
+bytes and was reverted. Browser rendering/AT/mobile acceptance remains open;
+compile-only mode does not establish production generation or deployment.
+Master149 implementation states remain 60 Implemented / 60 Partial /
+27 Not started / 1 Superseded / 1 Not applicable. No status promotion.
+
 ### 2026-10-15 — Retired page-shell CSS removal; aggregate CSS cap restored
 
 Continued PR #292 from `afc25cf4`. Removed unused trust, transparency and

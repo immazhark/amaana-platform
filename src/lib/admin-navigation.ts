@@ -38,7 +38,8 @@ export function adminHomePathForPermissions(permissions: Iterable<string>) {
 }
 
 
-export function isAdminNavigationActive(pathname: string, path: string) {
+export function isAdminNavigationActive(pathname: string | null, path: string) {
+  if (!pathname) return false;
   if (path === "/admin") return pathname === "/admin" || pathname.startsWith("/admin/requests/");
   return pathname === path || pathname.startsWith(`${path}/`);
 }

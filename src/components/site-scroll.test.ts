@@ -208,3 +208,10 @@ test.each(["Home", "End"])(
     }
   },
 );
+
+test.each([null, "", "/admin/donations"])("does not initialize wheel enhancement for unavailable/private path %s", async pathname => {
+  vi.doMock("react", () => ({ useEffect: (effect: () => unknown) => effect() }));
+  const { useSiteScroll } = await import("./site-scroll");
+  // A guarded path must not require matchMedia, DOM access or Lenis.
+  expect(() => useSiteScroll(pathname)).not.toThrow();
+});

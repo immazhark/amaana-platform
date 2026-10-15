@@ -7,9 +7,9 @@ const nested = "[data-carousel-mode], .mobile-menu, .amaana-companion-panel, [da
 const nativeKeyboardNavigation = ["Tab", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "];
 
 /** Wheel-only enhancement; native touch, keyboard, anchors, focus and history retain their semantics. */
-export function useSiteScroll(pathname: string) {
+export function useSiteScroll(pathname: string | null) {
   useEffect(() => {
-    if (pathname.startsWith("/admin")) return;
+    if (!pathname || pathname.startsWith("/admin")) return;
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const pointer = window.matchMedia("(pointer: fine)");
     let instance: Lenis | undefined;

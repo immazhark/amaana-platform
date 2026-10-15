@@ -94,3 +94,8 @@ describe("admin active navigation semantics", () => {
     expect(isAdminNavigationActive("/admin/donations-archive", "/admin/donations")).toBe(false);
   });
 });
+
+it.each([null, ""])("leaves all admin destinations inactive for missing pathname %s", pathname => {
+  expect(isAdminNavigationActive(pathname, "/admin")).toBe(false);
+  expect(isAdminNavigationActive(pathname, "/admin/donations")).toBe(false);
+});

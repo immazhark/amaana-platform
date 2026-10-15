@@ -1,3 +1,7 @@
+## 2026-10-15 — Navigation fallback and component test discovery
+
+Ownership: HANDOFF_PENDING after navigation/test discovery batch; sole writer on PR #292 from verified `9605af89`. Fixed header/footer/admin missing-pathname handling and deferred motion/scroll until routing is ready. Enabled 19 previously excluded TSX suites; corrected stale fixtures without weakening source privacy gates. Full suite 2084 passed / 19 skipped; TypeScript, changed-code ESLint, clean compile and whitespace pass. JS remains blocked 882619/819200; CSS passes 347365/348160. No experimental config retained. Master149 unchanged: 60 Implemented / 60 Partial / 27 Not started / 2 other. Next: remaining actual JS duplication and rendered browser acceptance; no release operations.
+
 ## 2026-10-15 — Retired page-shell CSS cleanup
 
 Ownership: HANDOFF_PENDING after retired-shell CSS batch; sole writer on PR #292 from `afc25cf4`. Aggregate CSS restored to 347365/348160 bytes (-36877); JS remains blocked at 882569/819200. Root global source 124633 bytes still exceeds 60KB goal; AF-R067 source Partial. 24 focused tests, TypeScript, lint, CSS architecture audit and clean compile pass; 238 retired selector branches removed with surviving declarations/order unchanged. Master149: 60 Implemented / 60 Partial / 27 Not started / 2 other. Next: remaining JS excess and bounded browser acceptance. No release or budget changes.

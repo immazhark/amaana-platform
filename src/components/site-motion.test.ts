@@ -1,8 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const hooks = vi.hoisted(() => ({ cleanup: undefined as (() => void) | undefined }));
+const hooks = vi.hoisted(() => ({ cleanup: undefined as (() => void) | undefined, pathname: "/about" as string | null }));
 vi.mock("react", () => ({ useEffect: (effect: () => () => void) => { hooks.cleanup = effect(); } }));
-vi.mock("next/navigation", () => ({ usePathname: () => "/about" }));
+vi.mock("next/navigation", () => ({ usePathname: () => hooks.pathname }));
 vi.mock("./site-scroll", () => ({ useSiteScroll: vi.fn() }));
 import { SiteMotion } from "./site-motion";
 
@@ -55,6 +55,7 @@ function setup() {
 afterEach(() => {
   hooks.cleanup?.();
   hooks.cleanup = undefined;
+  hooks.pathname = "/about";
   vi.unstubAllGlobals();
 });
 
@@ -103,4 +104,11 @@ describe("delegated motion press ownership", () => {
     fire({ type: "blur" });
     expect(control.frames.at(-1)?.scale.at(-1)).toBe("1");
   });
+});
+
+it("leaves native interaction untouched while the pathname is unavailable", () => {
+  hooks.pathname = null;
+  // No window/document is installed: the pending router state must not touch DOM APIs.
+  expect(() => SiteMotion()).not.toThrow();
+  expect(hooks.cleanup).toBeUndefined();
 });

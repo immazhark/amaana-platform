@@ -19,11 +19,11 @@ describe("individual donation financial display", () => {
   beforeEach(() => { vi.resetAllMocks(); m.permission.mockResolvedValue({ id: "operator" }); m.find.mockResolvedValue(base); });
   it.each(["CREATED", "AUTHORIZED", "PENDING_VERIFICATION", "FAILED", "REJECTED"])("does not count %s as retained funds", async status => {
     m.find.mockResolvedValue({ ...base, status });
-    expect(await markup()).toContain("<dt>Net retained</dt><dd>₹0</dd>");
+    expect(await markup()).toContain("<dt>Net retained</dt><dd>₹0.00</dd>");
   });
   it("retains partial refund accounting for captured money", async () => {
     m.find.mockResolvedValue({ ...base, status: "CAPTURED", refundedAmount: new Prisma.Decimal(25) });
-    expect(await markup()).toContain("<dt>Net retained</dt><dd>₹75</dd>");
+    expect(await markup()).toContain("<dt>Net retained</dt><dd>₹75.00</dd>");
   });
   it.each([
     { refundedAmount: new Prisma.Decimal(101) },

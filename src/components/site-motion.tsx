@@ -16,6 +16,7 @@ export function SiteMotion() {
   const pathname = usePathname();
   useSiteScroll(pathname);
   useEffect(() => {
+    if (!pathname) return;
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const running = new Map<HTMLElement, Playback>();
     const owned = new Set<HTMLElement>();

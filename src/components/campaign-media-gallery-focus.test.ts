@@ -4,7 +4,7 @@ const hooks = vi.hoisted(() => ({ refs: [] as unknown[], cleanup: undefined as (
 vi.mock("react", async importOriginal => ({
   ...await importOriginal<typeof import("react")>(),
   useState: () => ["second", vi.fn()],
-  useRef: () => ({ current: hooks.refs.shift() }),
+  useRef: (initial: unknown) => ({ current: hooks.refs.length ? hooks.refs.shift() : initial }),
   useId: () => "fixture",
   useMemo: (compute: () => unknown) => compute(),
   useCallback: (callback: unknown) => callback,
@@ -34,7 +34,7 @@ describe("gallery modal focus return", () => {
       vi.stubGlobal("window", listeners);
       vi.stubGlobal("requestAnimationFrame", (callback: () => void) => frames.push(callback));
       hooks.refs = [dialog, close, triggers, opener];
-      CampaignMediaGallery({ items: order.map(id => ({ id, url: `data:image/png,${id}`, alt: id })) });
+      CampaignMediaGallery({ items: order.map(id => ({ id, url: `/media/2026/${id}.webp`, alt: id })) });
       expect(body.style.overflow).toBe("hidden");
       expect(close.focus).toHaveBeenCalledOnce();
       dialog.isConnected = false;

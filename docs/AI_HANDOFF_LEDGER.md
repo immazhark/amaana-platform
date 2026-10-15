@@ -1,3 +1,29 @@
+## 2026-10-15 — Navigation fallback and test discovery
+
+Continued PR #292 from `9605af89`. Vitest now discovers both `.test.ts` and
+`.test.tsx`: 19 existing component suites (56 cases) had been excluded. Their
+first execution exposed a footer null-pathname render crash. Header navigation
+now stays closed while the pathname is unavailable; footer/admin active links
+remain unset, and delegated motion/wheel scrolling waits for a real pathname.
+Five route-render and six motion/scroll/admin guard cases cover the fallback.
+Existing route-selection and permission behavior is preserved.
+
+Full-suite execution also exposed stale mocks and assertions in eight existing
+suites. Updated the new impact/appeal data mocks, private-client callback mock,
+exact two-decimal financial output, safe gallery fixtures/ref initialization,
+inline-image rejection, shared amount presets, continued recognition withdrawal
+and the existing 48px mobile dock. No publication gate or consent restriction
+was relaxed to satisfy those tests. No new visual design or promotional copy.
+
+Executed: full Vitest 2084 passed / 19 skipped (216 passed suites, 3 skipped),
+full TypeScript, changed-code zero-warning ESLint and whitespace checks pass.
+Clean compile-only build passed: aggregate JS 882619/819200 bytes (still fails)
+and CSS 347365/348160 bytes (passes). The nested-chunking experiment saved no
+bytes and was reverted. Browser rendering/AT/mobile acceptance remains open;
+compile-only mode does not establish production generation or deployment.
+Master149 implementation states remain 60 Implemented / 60 Partial /
+27 Not started / 1 Superseded / 1 Not applicable. No status promotion.
+
 ## 2026-10-15 — B09 private receipt trust-boundary continuation
 
 Work resumed in ChatGPT chat against existing PR #292; source head `ce6610f9c79ec6dd28af63fbd71024d078be5f7e`, privacy fixture commit `a3b97981efdac0c4a0008c0d1693ea835bb8d3a9`, and browser-regression commit `1f2ad4e75ffec758832790fca6696954a38fcb3f`. The existing token-verified acknowledgement projection is now an isolated server-only function suitable for future PDF delivery. Its contract retains constant-time stored token-hash verification, integer-paise accounting, original appeal/fund designation snapshots and late confidentiality redaction. The same-origin route retains bounded JSON, no-store/private, no-referrer, noindex and uniform private misses. A separate hashed `receipt` request bucket (60 reads/hour per trusted client) bounds guessing without consuming the 10/hour donation-checkout budget; rate denial occurs before private donation lookup, and counter errors fail closed. Raw client IPs and receipt tokens are not persisted in rate attempts. New unit cases cover 429, wrong/missing credentials and distinct hashing. The previous actual privacy-fixture suite has a scoped rate-limit mock while preserving real origin/auth/read checks, avoiding an incomplete Prisma fixture. Three new Playwright scenarios use only synthetic donor/payment data to exercise masked-token recovery and stripping of fragment secrets, paise/partial-refund copy, responsive 390/1440 print isolation and 80G disclaimer retention.

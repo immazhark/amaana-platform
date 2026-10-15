@@ -3,7 +3,7 @@ import { PassThrough } from "node:stream";
 import { renderToPipeableStream } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ appeals: vi.fn(), funds: vi.fn(), log: vi.fn() }));
-vi.mock("@/lib/public-page-data", () => ({ getAppealsIndexData: m.appeals }));
+vi.mock("@/lib/public-page-data", () => ({ getAppealsIndexData: m.appeals, getDonationImpactHighlights: async () => [], getDonationPageData: async () => null }));
 vi.mock("@/lib/prisma", () => ({ prisma: { givingFund: { findMany: m.funds } } }));
 vi.mock("@/lib/server-log", () => ({ logServerError: m.log }));
 vi.mock("@/components/navigation-link", () => ({ default: ({ children, ...props }: { children: ReactNode }) => createElement("a", props, children) }));
@@ -41,7 +41,7 @@ describe("donation landing with real fund release controls", () => {
   it("renders only reviewed public fields and explicit consent even without an open appeal", async () => {
     const result = await html();
     expect(result).toContain("Give With Confidence. Give With Purpose."); expect(result).toContain(approved.purpose); expect(result).toContain(approved.disclosure);
-    expect(result).toContain('href="#giving-fund-selection"'); expect(result).toContain('name="fundPurposeConfirmed"');
+    expect(result).toContain('href="/donate?giving=fund#donation-route-choice"'); expect(result).toContain('name="fundPurposeConfirmed"');
     expect(result).not.toMatch(/PRIVATE-ACCOUNT|DO NOT DISCLOSE|creator|reviewer|value="ZAKAT"/);
   });
   it("rereads approval on each server visit, withdrawing a paused fund", async () => {
@@ -50,7 +50,7 @@ describe("donation landing with real fund release controls", () => {
   });
   it("preserves available public appeals when the optional fund read fails", async () => {
     m.funds.mockRejectedValueOnce(new Error("private database details")); m.appeals.mockResolvedValue([appeal]);
-    const result = await html(); expect(result).toContain("See verified appeals"); expect(result).toContain("Giving fund availability could not be checked.");
+    const result = await html(); expect(result).toContain("See all verified appeals"); expect(result).toContain("Giving fund availability could not be checked.");
     expect(result).not.toContain("private database details"); expect(result).not.toContain("giving-fund-choice");
     expect(m.log).toHaveBeenCalledWith("donation.fund_choices_unavailable", { errorName: "Error" });
   });
