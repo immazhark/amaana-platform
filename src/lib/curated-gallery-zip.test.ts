@@ -33,7 +33,9 @@ function fixture(firstName = ".curated-media/manifest.json"): Archive {
     u16(cursor + 28, name.length);
     u32(cursor + 20, 1);
     u32(cursor + 24, 1);
-    u32(cursor + 42, offsets[index]);
+    const localOffset = offsets[index];
+    if (localOffset === undefined) throw new Error("ZIP fixture is incomplete.");
+    u32(cursor + 42, localOffset);
     bytes.set(name, cursor + 46);
     cursor += 46 + name.length;
   }
@@ -76,7 +78,8 @@ describe("checksum-authenticated gallery ZIP structural parser", () => {
 
   it("rejects local-name disagreement with the central directory", () => {
     const { buffer } = fixture();
-    new Uint8Array(buffer)[30] ^= 0x1;
+    const bytes = new Uint8Array(buffer);
+    bytes[30] = (bytes[30] ?? 0) ^ 0x1;
     expect(() => parseCuratedStoredZip(buffer)).toThrow("name disagrees");
   });
 

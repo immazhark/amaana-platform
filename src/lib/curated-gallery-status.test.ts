@@ -45,10 +45,12 @@ describe("owner-curated gallery status: fail closed before publication", () => {
   it("keeps an already published but drifted gallery inspectable instead of claiming it ready", () => {
     const status = statusFixture("published");
     status.mismatches.push("curated-" + "a".repeat(32));
-    status.initiatives[0].uploaded -= 1;
-    status.initiatives[0].ready = false;
+    const first = status.initiatives[0];
+    if (!first) throw new Error("Missing initiative fixture.");
+    first.uploaded -= 1;
+    first.ready = false;
     status.renderingReady = false;
-    expect(parseCuratedGalleryStatus(status).initiatives[0].uploaded).toBe(status.initiatives[0].expected - 1);
+    expect(parseCuratedGalleryStatus(status).initiatives[0]?.uploaded).toBe(first.expected - 1);
   });
 
   it.each([
@@ -57,9 +59,18 @@ describe("owner-curated gallery status: fail closed before publication", () => {
     ["impossible missing count", (s: ReturnType<typeof statusFixture>) => { s.missing = 153; }],
     ["published exceeds uploaded", (s: ReturnType<typeof statusFixture>) => { s.published = 1; }],
     ["missing initiative", (s: ReturnType<typeof statusFixture>) => { s.initiatives.pop(); }],
-    ["duplicate initiative", (s: ReturnType<typeof statusFixture>) => { s.initiatives[1].slug = s.initiatives[0].slug; }],
+    ["duplicate initiative", (s: ReturnType<typeof statusFixture>) => {
+      const first = s.initiatives[0];
+      const second = s.initiatives[1];
+      if (!first || !second) throw new Error("Missing initiative fixtures.");
+      second.slug = first.slug;
+    }],
     ["invalid mismatch ID", (s: ReturnType<typeof statusFixture>) => { s.mismatches = ["../../../etc/passwd"]; }],
-    ["invalid item count", (s: ReturnType<typeof statusFixture>) => { s.initiatives[0].uploaded = 500; }],
+    ["invalid item count", (s: ReturnType<typeof statusFixture>) => {
+      const first = s.initiatives[0];
+      if (!first) throw new Error("Missing initiative fixture.");
+      first.uploaded = 500;
+    }],
     ["invalid batch", (s: ReturnType<typeof statusFixture>) => { s.batch = "unapproved"; }],
   ] as const)("rejects %s", (_name, alter) => {
     const status = statusFixture();
@@ -69,10 +80,12 @@ describe("owner-curated gallery status: fail closed before publication", () => {
 
   it("rejects unverifiable false-positive public readiness", () => {
     const status = statusFixture("published");
-    status.initiatives[0].curatedHeroSelected = true;
+    const first = status.initiatives[0];
+    if (!first) throw new Error("Missing initiative fixture.");
+    first.curatedHeroSelected = true;
     expect(() => parseCuratedGalleryStatus(status)).toThrow();
-    status.initiatives[0].curatedHeroSelected = false;
-    status.initiatives[0].ready = false;
+    first.curatedHeroSelected = false;
+    first.ready = false;
     expect(() => parseCuratedGalleryStatus(status)).toThrow();
   });
 

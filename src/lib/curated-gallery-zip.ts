@@ -106,7 +106,9 @@ export function parseCuratedStoredZip(buffer: ArrayBuffer): Map<string, CuratedZ
   if (cursor !== end) throw new Error("ZIP central directory contains unexpected data.");
   occupied.sort((a, b) => a[0] - b[0]);
   for (let index = 1; index < occupied.length; index++) {
-    if (occupied[index][0] < occupied[index - 1][1]) {
+    const current = occupied[index];
+    const previous = occupied[index - 1];
+    if (!current || !previous || current[0] < previous[1]) {
       throw new Error("ZIP local-file entries overlap.");
     }
   }

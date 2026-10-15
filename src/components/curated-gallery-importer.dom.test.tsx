@@ -98,8 +98,10 @@ describe.skipIf(!runtime)("curated gallery operator lifecycle", () => {
   it("keeps server drift visible while preventing owner approval", async () => {
     const status = stageStatus(true);
     status.mismatches.push("curated-" + "c".repeat(32));
-    status.initiatives[0].uploaded -= 1;
-    status.initiatives[0].ready = false;
+    const first = status.initiatives[0];
+    if (!first) throw new Error("Missing initiative fixture.");
+    first.uploaded -= 1;
+    first.ready = false;
     status.renderingReady = false;
     fetchMock.mockResolvedValueOnce(Response.json(status));
     await render();
