@@ -79,6 +79,7 @@ export function CuratedGalleryImporter() {
 
   async function refreshStatus() {
     const id = ++statusRequest.current;
+    setStatus(null);
     const current = parseCuratedGalleryStatus(await requestJson(
       "/api/admin/media/curated-gallery/status", { cache: "no-store" },
     ));
@@ -107,7 +108,10 @@ export function CuratedGalleryImporter() {
           : "154 gallery originals staged for publication review.");
       }
     }).catch(() => {
-      // A failed initial read never grants permission to publish.
+      if (!controller.signal.aborted && id === statusRequest.current) {
+        setStatus(null);
+        setPhase("Gallery staging status is unavailable. Use Check status to retry the read.");
+      }
     });
     return () => {
       controller.abort();
