@@ -3,6 +3,7 @@ import {
   buildPublicStructuredData,
   normalizeStructuredDataImage,
   normalizeStructuredDataPath,
+  validateBreadcrumbStructuredDataInput,
   serializeStructuredData,
 } from "./structured-data";
 
@@ -49,6 +50,24 @@ describe("public structured data", () => {
       description: "This should not render.",
       path: "//evil.example/path",
     }, "https://amaanafoundation.org")).toBeNull();
+  });
+
+  it("does not advertise transactional or private app routes through public schemas", () => {
+    const privatePaths = [
+      "/admin/donors", "/api/donations/data-rights", "/donations/AF-PRIVATE/acknowledgement",
+      "/donate/example-appeal", "/request-assistance/status", "/_next/image",
+      "/%61dmin/assistance", "/%2561pi/private",
+    ];
+    for (const path of privatePaths) {
+      expect(normalizeStructuredDataPath(path), path).toBeNull();
+      const data = buildPublicStructuredData({
+        type: "WebPage", title: "Private", description: "Not for search", path,
+      }, "https://amaanafoundation.org");
+      expect(data, path).toBeNull();
+      expect(validateBreadcrumbStructuredDataInput([{ name: "Home", path: "/" }, { name: "Private", path }]), path).toBeNull();
+    }
+    expect(normalizeStructuredDataPath("/donate")).toBe("/donate");
+    expect(normalizeStructuredDataPath("/stories/approved")).toBe("/stories/approved");
   });
 
   it("never emits private or unconfigured image destinations into crawlable JSON-LD", () => {
