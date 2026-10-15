@@ -1,3 +1,9 @@
+## 2026-10-15 — PR292 public schema canonical origins and private preview media
+
+From verified head `430d3705`, committed `515927f1` and `9676aa12` on `fix/direct-transfer-feedback-20261013`. The first fixes JSON-LD metadata accepting an absolute private image on an explicit preview origin different from process NEXT_PUBLIC_APP_URL; same-site path is now re-evaluated through the existing private-path guard. The second exports the existing verified site-origin normalizer, replacing independent unvalidated root/appeal/breadcrumb origin construction. This makes organization/site @id, breadcrumb destinations, WebPage references and conditional DonateAction targets consistent. Previously one SSR test expected a raw configured origin containing an injected query string; it now asserts canonical stripping while other component tests retain script-escaping checks. No existing publication/consent, fundraising, indexing gate or CDN allowlist is altered.
+
+Added/regressed 8 same-site private image cases and 5 valid/malformed configured origins, preserving public source/CDN controls and existing sensitive text escaping. These tests were authored, not executed locally: no checkout/dependencies/GitHub network available in the runtime. GitHub PR head lease and source content commits verified; no build/browser/prod proof. Source-only status is unchanged; AF-R080 still awaits real crawler/browser acceptance. No release or live data/provider operations.
+
 ## 2026-10-15 — Cached appeal rollover and resource-conscious live-rail freshness
 
 Ownership: HANDOFF_PENDING after source batch on existing PR #292 `fix/direct-transfer-feedback-20261013` from `c3279ffc` to `21e75ac6e87b44cb86ae4b710e0711a0d4fec546`. Source changes:

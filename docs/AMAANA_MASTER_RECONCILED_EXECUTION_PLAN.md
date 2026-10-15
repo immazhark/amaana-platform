@@ -1,5 +1,10 @@
 # Amaana Master Reconciled Execution Plan
 
+### 2026-10-15 — Explicit-origin public schema boundary (source-only)
+
+PR #292 commits `515927f1` and `9676aa12`: public JSON-LD image URLs now recheck private paths when the caller explicitly supplies a preview/canonical origin that differs from NEXT_PUBLIC_APP_URL. Organization, Breadcrumb, Appeal and Article/WebPage graph builders share one validated HTTPS canonical-origin policy; malformed configured URLs cannot add query/fragment/credential data to @ids, breadcrumbs or DonateAction URLs. Existing review/publication/privacy checks, configured public CDN and safe-media output remain unchanged. Source regression cases authored but not executed in the current runtime. No status promotion: AF-R008's source guard strengthened; AF-R080 live rich-results verification Not started. Canonical 149: 60 Implemented / 60 Partial / 27 Not started / 1 Superseded / 1 Not applicable. Exact-head type/unit/lint/browser/asset/deployment acceptance still open.
+
+
 ### 2026-10-15 — Client stale-appeal removal and cached promotion rollover
 
 Source batch on existing PR #292, through `21e75ac6`: live update actions now refresh while a visible tab presents an appeal, at most every five minutes, without network polling on empty/failed/hidden rails; returning tabs recheck after the freshness interval. Timed-out requests cannot resurrect stale claims, and old donation actions are removed while validating. Server homepage cache now holds 20 previously eligible candidates, applies current close-time eligibility before per-caller `limit`, and retains original 300-second tag caching and restricted publicity checks. API asks for four appeals rather than default homepage three. Existing effect, provider, server projection, and API test suites extended with negative/control cases. These tests were **authored, not run** in this GitHub-connector-only runtime. JS/CSS sizes, browser and DB acceptance remain pending; caps unchanged. AF-PROMOTION and current source 149 register statuses remain unchanged: 60 Implemented / 60 Partial / 27 Not started / 2 other. No live operations.
