@@ -56,7 +56,7 @@ export function CuratedGalleryImporter() {
   }
 
   function applyStatus(current: CuratedGalleryStatus, requestId: number) {
-    if (requestId !== statusRequest.current || lifetime.current?.signal.aborted) return false;
+    if (requestId !== statusRequest.current || !lifetime.current || lifetime.current.signal.aborted) return false;
     setStatus(current);
     // Only an authoritative clean status read can permit a deliberate restart
     // after a possibly committed start/upload/publish request.
@@ -111,7 +111,9 @@ export function CuratedGalleryImporter() {
     });
     return () => {
       controller.abort();
-      ++statusRequest.current;
+      // Invalidate the effect's own request without reading a mutable ref
+      // from cleanup; the lifetime guard separately rejects all late replies.
+      statusRequest.current = id + 1;
       lifetime.current = null;
     };
   }, []);
