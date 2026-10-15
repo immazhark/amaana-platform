@@ -82,6 +82,8 @@ export function parseCuratedGalleryStatus(value: unknown): CuratedGalleryStatus 
 
   const counts: Record<string, number> = CURATED_GALLERY_EXPECTED_COUNTS;
   const seen = new Set<string>();
+  const mismatchIds = new Set(data.mismatches as string[]);
+  if (mismatchIds.size !== (data.mismatches as string[]).length) return invalid();
   if (data.initiatives.length !== Object.keys(counts).length) return invalid();
   const initiatives = data.initiatives.map((item: unknown) => {
     if (!item || typeof item !== "object" || Array.isArray(item)) return invalid();
@@ -97,7 +99,11 @@ export function parseCuratedGalleryStatus(value: unknown): CuratedGalleryStatus 
         typeof entry.curatedHighlightSelected !== "boolean") return invalid();
     const itemUploaded = count(entry, "uploaded", expected);
     const itemPublished = count(entry, "published", expected);
-    if (itemPublished > itemUploaded) return invalid();
+    // Drifted records may be published but excluded from the verified-upload
+    // count. Surface that discrepancy instead of hiding the status screen.
+    if (entry.ready && (itemUploaded !== expected || itemPublished !== expected ||
+        entry.publicSafeCount !== expected || entry.galleryVisibleCount !== expected ||
+        !entry.publicRecordFound || entry.curatedHeroSelected || entry.curatedHighlightSelected)) return invalid();
     return {
       slug, expected, uploaded: itemUploaded, published: itemPublished,
       publicRecordFound: entry.publicRecordFound as boolean,
@@ -108,7 +114,12 @@ export function parseCuratedGalleryStatus(value: unknown): CuratedGalleryStatus 
       ready: entry.ready as boolean,
     };
   });
-  if (data.renderingReady && !initiatives.every(item => item.ready)) return invalid();
+  const verifiedUploads = initiatives.reduce((sum, item) => sum + item.uploaded, 0);
+  const itemPublished = initiatives.reduce((sum, item) => sum + item.published, 0);
+  if (uploaded + missing !== total || verifiedUploads + mismatchIds.size !== uploaded ||
+      itemPublished !== published) return invalid();
+  if (data.renderingReady && (published !== total || missing !== 0 || mismatchIds.size !== 0 ||
+      !data.galleryOnly || !initiatives.every(item => item.ready))) return invalid();
   return {
     initialized: true, expected: total, uploaded, published, missing,
     mismatches: data.mismatches as string[],
