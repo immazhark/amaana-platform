@@ -1,6 +1,8 @@
-## 2026-10-15 — Interrupted continuation: protected admin access coverage
+## 2026-10-15 — Anonymous admin inventory drift (source complete)
 
-Ownership: CHATGPT_ACTIVE on existing PR #292 / `fix/direct-transfer-feedback-20261013`, resumed from exact reviewed handoff `84d17c2ba135aa606f69f2a8dcb242642dbdd9ee` after the user requested continuation. Fix verified Actions failure in anonymous protected-admin route inventory, preserving the redirect expectation and all permission gates. Then pursue meaningful source defects without speculative optimization. No main merge, deployment, production database/payment, secrets or flag changes.
+Ownership: HANDOFF_PENDING on existing PR #292 / `fix/direct-transfer-feedback-20261013`, resumed from explicit handoff `84d17c2`. Real Actions run 38773986971 failed its fast-lane admin-inventory guard because new protected routes were absent from the anonymous browser contract. Implemented `f08849b9`: added /admin/allocations, /admin/donations/recognition, /admin/donations/rights to `e2e/admin-anonymous-boundaries.spec.mjs`, retaining the same pre-content redirect-to-login assertions and route protection. GitHub recursive tree vs browser-contract source reconciliation confirms all 16 protected page routes have entries (0 omissions). Inspected protected layout: it invokes requireAuthenticatedUser; each added page also invokes requirePermission. This is static/source verification only; Playwright, TypeScript, Vitest, optimized build and hosted redirect acceptance were not executed. CI for this new head is not claimed green. The historical 149 master counts remain 60 Implemented / 60 Partial / 27 Not started / 1 Superseded / 1 Not applicable. No production/database/payment/migration/flag/secret/deploy/merge operation.
+
+Next: exact-head checks of the three additional anonymous redirects in a runnable checkout/CI, and actual JavaScript duplication investigation from emitted chunks. Avoid raising caps or inventing bundle savings.
 
 ## 2026-10-15 — Explicit-site JSON-LD private-media and canonical-origin guards
 
