@@ -1,6 +1,5 @@
 import "server-only";
 import { assertAllocationReversalAllowed, parseAllocationReversalReason } from "@/lib/allocation-reversal";
-import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import {
   AllocationError, allocationAvailablePaise, assertAllocationReview,

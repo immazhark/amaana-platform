@@ -448,6 +448,12 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
     where: { slug: { in: slugs }, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     select: {
       slug: true,
+      title: true,
+      year: true,
+      startYear: true,
+      endYear: true,
+      primaryMetric: true,
+      primaryMetricLabel: true,
       mediaAssets: PUBLIC_GALLERY_MEDIA_PROJECTION,
     },
   });

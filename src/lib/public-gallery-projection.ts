@@ -21,7 +21,7 @@ export function toPublicGalleryItems<T extends PublicMediaCandidate & {
     return [{
       id: asset.id,
       url,
-      alt: asset.altText,
+      alt: asset.altText ?? null,
       caption: asset.caption,
       width: asset.width,
       height: asset.height,

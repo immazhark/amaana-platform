@@ -22,7 +22,7 @@ function form(decision: string, confirmed = false) {
 }
 describe("authorized donor data review transitions", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
     mocks.require.mockResolvedValue({ id: "staff-1" });
     mocks.enabled.mockReturnValue(true);
     mocks.update.mockResolvedValue({ count: 1 });
@@ -31,6 +31,18 @@ describe("authorized donor data review transitions", () => {
       operation({ donorRightsRequest: { updateMany: mocks.update },
         auditEvent: { create: mocks.audit } }));
   });
+  it.each(["START_REVIEW", "CLOSE_REVIEW"])("reports committed %s truthfully if refreshing fails", async decision => {
+    mocks.revalidate.mockImplementation(() => { throw new Error("Cache unavailable"); });
+    const result = await reviewDonorRightsAction(before, form(decision, true));
+    expect(result.state).toBe("success");
+    expect(result.message).toContain("Your review was saved");
+    expect(mocks.audit).toHaveBeenCalledTimes(1);
+  });
+  it("never treats an audit write failure as a saved review", async () => {
+    mocks.audit.mockRejectedValue(new Error("Audit failed"));
+    expect((await reviewDonorRightsAction(before, form("START_REVIEW"))).state).toBe("error");
+    expect(mocks.revalidate).not.toHaveBeenCalled();
+  });
   it("requires a staff donation reconciliation permission", async () => {
     await reviewDonorRightsAction(before, form("START_REVIEW"));
     expect(mocks.require).toHaveBeenCalledWith("donation.reconcile");
@@ -38,7 +50,7 @@ describe("authorized donor data review transitions", () => {
       where: { id: "private-request-1234", status: "OPEN" },
       data: expect.objectContaining({ status: "IN_REVIEW", reviewedById: "staff-1" }),
     }));
-    expect(mocks.update.mock.calls[0][0].data).not.toHaveProperty("reviewedAt");
+    expect(mocks.update.mock.calls[0]?.[0].data).not.toHaveProperty("reviewedAt");
   });
   it("never swallows authorization failures or changes records for forbidden users", async () => {
     mocks.require.mockRejectedValue(new Error("Forbidden"));

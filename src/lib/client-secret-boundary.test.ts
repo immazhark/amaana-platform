@@ -17,7 +17,7 @@ function scanClientBuild(bundle: string, variables: Record<string, string> = {},
     }
     return spawnSync(process.execPath, [checkScript, ...(prebuild ? ["--public-env-only"] : [])], {
       cwd: fixture, encoding: "utf8",
-      env: { PATH: process.env.PATH ?? "", ...variables },
+      env: { NODE_ENV: "test", PATH: process.env.PATH ?? "", ...variables },
     });
   } finally {
     rmSync(fixture, { recursive: true, force: true });

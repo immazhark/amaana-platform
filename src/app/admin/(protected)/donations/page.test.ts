@@ -1,8 +1,8 @@
 import { Prisma } from "@prisma/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const m = vi.hoisted(() => ({ permission: vi.fn(), aggregate: vi.fn(), count: vi.fn(), group: vi.fn(), find: vi.fn(), events: vi.fn() }));
-vi.mock("@/lib/auth", () => ({ requirePermission: m.permission }));
+const m = vi.hoisted(() => ({ permission: vi.fn(), has: vi.fn(), aggregate: vi.fn(), count: vi.fn(), group: vi.fn(), find: vi.fn(), events: vi.fn() }));
+vi.mock("@/lib/auth", () => ({ requirePermission: m.permission, hasPermission: m.has }));
 vi.mock("@/lib/prisma", () => ({ prisma: {
   donation: { count: m.count, aggregate: m.aggregate, groupBy: m.group, findMany: m.find },
   paymentEvent: { count: m.count, findMany: m.events },
@@ -13,9 +13,18 @@ describe("private donation dashboard accounting", () => {
   beforeEach(() => {
     vi.resetAllMocks();
     m.permission.mockResolvedValue({ id: "operator" });
+    m.has.mockReturnValue(false);
     m.count.mockResolvedValue(0); m.group.mockResolvedValue([]);
     m.find.mockResolvedValue([]); m.events.mockResolvedValue([]);
     m.aggregate.mockResolvedValue({ _sum: { amount: null, refundedAmount: null }, _count: { _all: 0 } });
+  });
+  it("shows both donor review links only to reconciliation staff", async () => {
+    expect(await markup()).not.toContain('/admin/donations/recognition');
+    expect(await markup()).not.toContain('/admin/donations/rights');
+    m.has.mockReturnValue(true);
+    const html = await markup();
+    expect(html).toContain('href="/admin/donations/recognition"');
+    expect(html).toContain('href="/admin/donations/rights"');
   });
   it("checks authorization before financial reads", async () => {
     m.permission.mockRejectedValue(new Error("Forbidden"));

@@ -21,8 +21,8 @@ describe("role-limited allocation finance staff surfaces", () => {
     expect(ledger).toContain('health.state !== "CLEAR"');
     expect(ledger).toContain('where: { status: "PENDING" }');
     expect(ledger).toContain('where: { status: { in: ["APPROVED", "REJECTED"] } }');
-    expect(ledger).toContain('take: 60');
-    expect(ledger).toContain('take: 40');
+    expect(ledger).toContain('take: 61');
+    expect(ledger).toContain('take: 41');
     expect(ledger).toContain("Pending independent review");
     expect(ledger).toContain("Urgent refund and status reconciliation");
     expect(ledger).toContain('prisma.donationAllocationProposal.count({ where: refundConflictWhere })');

@@ -116,7 +116,7 @@ describe("donor-recognition capability and consent boundary", () => {
       donationId: "donation-id", action: "REQUESTED",
     } });
     expect(mocks.revalidate).toHaveBeenCalledWith("/shukr");
-    expect(mocks.update.mock.calls[0][0].where).toMatchObject({
+    expect(mocks.update.mock.calls[0]?.[0].where).toMatchObject({
       recognitionRequestedAt: null, recognitionApprovedAt: null, recognitionRevokedAt: null,
     });
   });

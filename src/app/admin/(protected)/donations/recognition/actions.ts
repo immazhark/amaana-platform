@@ -1,7 +1,6 @@
 "use server";
 import { refreshShukrViewsAfterConsent } from "@/lib/shukr-cache-refresh";
 import { requirePermission } from "@/lib/auth";
-import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { donorRecognitionEnabled } from "@/lib/donor-recognition-repository";
 import { parseDonorRecognitionName } from "@/lib/donor-recognition";

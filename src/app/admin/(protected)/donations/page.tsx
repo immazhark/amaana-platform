@@ -137,7 +137,11 @@ export default async function DonationsPage({ searchParams }: Props) {
     <div className="admin-heading">
       <div>
         <p className="eyebrow">Reconciliation</p>
-        <h1>Donations</h1>{hasPermission(viewer, "donation.reconcile") && <p><Link href="/admin/donations/recognition">Review Shukr donor recognition requests →</Link></p>{hasPermission(viewer, "donation.reconcile") && <p><Link href="/admin/donations/rights">Review private donor information requests →</Link></p>}}
+        <h1>Donations</h1>
+        {hasPermission(viewer, "donation.reconcile") && <>
+          <p><Link href="/admin/donations/recognition">Review Shukr donor recognition requests →</Link></p>
+          <p><Link href="/admin/donations/rights">Review private donor information requests →</Link></p>
+        </>}
         {financialTotals ? <p className="lead">
           Gross captured: {formatPrivateReceiptINR(financialTotals.grossCapturedPaise / 100)} · Refunded: {formatPrivateReceiptINR(financialTotals.refundedPaise / 100)} · Net retained: {formatPrivateReceiptINR(financialTotals.netRetainedPaise / 100)}
         </p> : <p role="alert">Donation totals require financial reconciliation.</p>}

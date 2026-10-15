@@ -45,10 +45,12 @@ export async function reviewDonorRightsAction(
       return true;
     });
     if (!changed) return { state: "error", message: "The request has changed. Refresh before taking action." };
-    revalidatePath("/admin/donations/rights");
+    let refreshNotice = "";
+    try { revalidatePath("/admin/donations/rights"); }
+    catch { refreshNotice = " Your review was saved, but the view refresh failed. Reload before another action."; }
     return { state: "success", message: next === "IN_REVIEW"
-      ? "Request marked for review. Follow up securely with the donor."
-      : "Review closed after staff attestation. No payment or donor data was deleted by this action." };
+      ? `Request marked for review. Follow up securely with the donor.${refreshNotice}`
+      : `Review closed after staff attestation. No payment or donor data was deleted by this action.${refreshNotice}` };
   } catch {
     return { state: "error", message: "Unable to update the request safely." };
   }

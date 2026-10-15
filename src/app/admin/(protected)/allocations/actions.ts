@@ -13,6 +13,19 @@ function messageFor(error: unknown) {
     : "Unable to save the allocation proposal safely. Refresh and retry.";
 }
 
+/** Database operations already committed, including their audit event. Cache
+ * failure cannot turn success into a retryable finance write failure. */
+function refreshAllocationViewsAfterCommit(): string {
+  let failed = false;
+  for (const path of ["/admin/allocations", "/admin/giving-funds", "/admin/donations/[id]"]) {
+    try {
+      if (path.includes("[id]")) revalidatePath(path, "page");
+      else revalidatePath(path);
+    } catch { failed = true; }
+  }
+  return failed ? " The saved change is recorded, but a view refresh failed. Reload before another review." : "";
+}
+
 export async function createAllocationAction(
   _previous: AllocationActionResult, form: FormData,
 ): Promise<AllocationActionResult> {
@@ -25,8 +38,8 @@ export async function createAllocationAction(
       purposeNote: String(form.get("purposeNote") ?? ""),
       actorId: maker.id,
     });
-    revalidatePath("/admin/allocations");
-    return { state: "success", message: `Proposal ${id} recorded for independent review. No money was transferred.` };
+    const refreshNotice = refreshAllocationViewsAfterCommit();
+    return { state: "success", message: `Proposal ${id} recorded for independent review. No money was transferred.${refreshNotice}` };
   } catch (error) {
     return { state: "error", message: messageFor(error) };
   }
@@ -45,8 +58,8 @@ export async function reviewAllocationAction(
       proposalId: String(form.get("proposalId") ?? ""),
       decision, actorId: checker.id,
     });
-    revalidatePath("/admin/allocations");
-    return { state: "success", message: `Proposal ${outcome.toLowerCase()}. This does not initiate a payment or confirm disbursement.` };
+    const refreshNotice = refreshAllocationViewsAfterCommit();
+    return { state: "success", message: `Proposal ${outcome.toLowerCase()}. This does not initiate a payment or confirm disbursement.${refreshNotice}` };
   } catch (error) {
     return { state: "error", message: messageFor(error) };
   }
@@ -64,7 +77,7 @@ export async function reverseAllocationAction(
       reason: String(form.get("reason") ?? ""),
       actorId: reviewer.id,
     });
-    revalidatePath("/admin/allocations");
-    return { state: "success", message: `A separate, immutable reversal ${reversalId} was recorded. No payment or bank transfer was changed.` };
+    const refreshNotice = refreshAllocationViewsAfterCommit();
+    return { state: "success", message: `A separate, immutable reversal ${reversalId} was recorded. No payment or bank transfer was changed.${refreshNotice}` };
   } catch (error) { return { state: "error", message: messageFor(error) }; }
 }

@@ -66,7 +66,7 @@ export function AppealDonationFlow({ appeals, paymentInstructions, bankAvailable
           onClick={() => { if (!lockRef.current) setSelectedId(appeal.id); }}>
           <strong>{appeal.title}</strong>
           <span>{progress.remainingLabel} remaining</span>
-          <PublicFundingMeter progress={progress} title={appeal.title} trackClassName={styles.track} decorative/>
+          <PublicFundingMeter progress={progress} title={appeal.title} trackClassName={styles.track ?? ""} decorative/>
           <small>{progress.percentage}% of the reviewed {progress.goalLabel} goal</small>
         </button>;
       })}

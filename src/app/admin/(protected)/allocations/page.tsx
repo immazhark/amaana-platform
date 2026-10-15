@@ -30,10 +30,42 @@ const proposalIncludes = {
   fund: { select: { name: true, accountCode: true } },
 } satisfies Prisma.DonationAllocationProposalInclude;
 
-export default async function AllocationAdminPage() {
+type QueueParams = { pendingAfter?: string; conflictsAfter?: string; historyAfter?: string };
+const queueKeys = ["pendingAfter", "conflictsAfter", "historyAfter"] as const;
+
+// Only bounded internal row identities may enter Prisma's seek cursor.
+function readCursor(value: unknown): string | undefined {
+  return typeof value === "string" && /^[a-zA-Z0-9_-]{8,100}$/.test(value) ? value : undefined;
+}
+
+export default async function AllocationAdminPage({ searchParams }: {
+  searchParams: Promise<QueueParams>;
+}) {
   const staff = await requirePermission("donation.view");
   const enabled = allocationPlanningEnabled();
   const canReview = hasPermission(staff, "fund.approve");
+
+  const raw = await searchParams;
+  const cursors = Object.fromEntries(queueKeys.map(key => [key, readCursor(raw[key])]));
+  const seek = (key: typeof queueKeys[number]): Pick<Prisma.DonationAllocationProposalFindManyArgs, "cursor" | "skip"> => {
+    const id = cursors[key];
+    return id ? { cursor: { id }, skip: 1 } : {};
+  };
+  function queueLink(key: typeof queueKeys[number], after?: string) {
+    const query = new URLSearchParams();
+    for (const other of queueKeys) {
+      const value = other === key ? after : cursors[other];
+      if (value) query.set(other, value);
+    }
+    return `/admin/allocations${query.size ? `?${query}` : ""}#${key}`;
+  }
+  function queueNavigation(key: typeof queueKeys[number], label: string,
+    rows: { id: string }[], size: number) {
+    return <nav aria-label={`${label} pages`}>
+      {cursors[key] && <Link href={queueLink(key)}>Start of {label.toLowerCase()}</Link>}{" "}
+      {rows.length > size && <Link href={queueLink(key, rows[size - 1]?.id)}>Next {label.toLowerCase()} →</Link>}
+    </nav>;
+  }
 
   // Refund-conflicted historical approvals must not vanish behind the recent
   // reviewed archive. Keep a separate oldest-first finance action queue.
@@ -42,27 +74,30 @@ export default async function AllocationAdminPage() {
     reversal: { is: null },
     donation: { OR: [{ status: { not: "CAPTURED" } }, { refundedAmount: { gt: 0 } }] },
   } satisfies Prisma.DonationAllocationProposalWhereInput;
-  const [pending, conflicts, reviewed, conflictCount] = enabled ? await Promise.all([
+  const [pendingRows, conflictRows, reviewedRows, conflictCount] = enabled ? await Promise.all([
     prisma.donationAllocationProposal.findMany({
       where: { status: "PENDING" },
       orderBy: [{ createdAt: "asc" }, { id: "asc" }],
-      take: 60, include: proposalIncludes,
+      take: 61, ...seek("pendingAfter"), include: proposalIncludes,
     }),
     prisma.donationAllocationProposal.findMany({
       where: refundConflictWhere,
       orderBy: [{ reviewedAt: "asc" }, { id: "asc" }],
-      take: 40, include: proposalIncludes,
+      take: 41, ...seek("conflictsAfter"), include: proposalIncludes,
     }),
     prisma.donationAllocationProposal.findMany({
       where: { status: { in: ["APPROVED", "REJECTED"] } },
       orderBy: [{ reviewedAt: "desc" }, { id: "desc" }],
-      take: 40, include: proposalIncludes,
+      take: 41, ...seek("historyAfter"), include: proposalIncludes,
     }),
     prisma.donationAllocationProposal.count({ where: refundConflictWhere }),
   ]) : [[], [], [], 0];
 
-  const conflictIds = new Set(conflicts.map(item => item.id));
-  const history = reviewed.filter(item => !conflictIds.has(item.id));
+  const pending = pendingRows.slice(0, 60);
+  const conflicts = conflictRows.slice(0, 40);
+  // History is deliberately independent of the conflict viewport. Removing
+  // overlapping rows would make advancing one queue silently hide another.
+  const history = reviewedRows.slice(0, 40);
   const all = [...pending, ...conflicts, ...history];
   const ids = [...new Set(all.map(item => item.donationId))];
   const approvals = enabled && ids.length > 0
@@ -117,7 +152,8 @@ export default async function AllocationAdminPage() {
         This proposal currently fails an original-purpose, confirmation, approved-fund or retained-balance check.
         It cannot be approved until finance reconciles the donation.
       </p>}
-      {canApproveNow && <AdminAllocationReview proposalId={item.id}/>}
+      {item.status === "PENDING" && canReview && item.createdBy.id !== staff.id &&
+        <AdminAllocationReview proposalId={item.id} canApprove={canApproveNow}/>}
       {item.status === "PENDING" && item.createdBy.id === staff.id &&
         <p className="muted">You created this proposal. A separate authorized reviewer must decide.</p>}
       {item.status === "APPROVED" && !item.reversal && canReview &&
@@ -135,7 +171,7 @@ export default async function AllocationAdminPage() {
       </div>
     </div>
     {!enabled && <p role="status">Allocation planning remains disabled until migration, finance review and release authorization.</p>}
-    <section aria-labelledby="allocation-refund-conflicts-title">
+    <section aria-labelledby="allocation-refund-conflicts-title" id="conflictsAfter">
       <h2 id="allocation-refund-conflicts-title">Urgent refund and status reconciliation</h2>
       <p className="muted">Approved internal allocation proposals linked to later-refunded
         or no-longer-captured donations. These are unresolved planning conflicts,
@@ -143,22 +179,23 @@ export default async function AllocationAdminPage() {
       {conflicts.length > 0 ? <ol className="history">{conflicts.map(proposalRow)}</ol> :
         <p className="muted">No known post-approval refund or status conflicts in the recorded proposals.</p>}
       {conflictCount > conflicts.length && <p role="alert">
-        {conflictCount - conflicts.length} more refund/status conflicts remain outside this
-        first review page. Continue reconciliation in the complete private ledger;
-        do not treat an incomplete queue as financial clearance.
+        {conflictCount} unresolved refund/status conflicts are recorded in total;
+        this page shows {conflicts.length}. Use the queue links to review further records.
+        An incomplete queue is not financial clearance.
       </p>}
+      {queueNavigation("conflictsAfter", "Refund conflicts", conflictRows, 40)}
     </section>
-    <section aria-labelledby="allocations-pending-title">
+    <section aria-labelledby="allocations-pending-title" id="pendingAfter">
       <h2 id="allocations-pending-title">Pending independent review</h2>
       {!pending.length ? <p className="muted">No pending internal allocation proposals.</p>
         : <ol className="history">{pending.map(proposalRow)}</ol>}
-      {pending.length === 60 && <p className="muted">Showing the oldest 60 pending requests. Additional pending records remain in the private database.</p>}
+      {queueNavigation("pendingAfter", "Pending reviews", pendingRows, 60)}
     </section>
-    <section aria-labelledby="allocations-history-title">
+    <section aria-labelledby="allocations-history-title" id="historyAfter">
       <h2 id="allocations-history-title">Recent reviewed proposals</h2>
-      {!history.length ? <p className="muted">No additional recent reviews outside the reconciliation queue.</p>
+      {!history.length ? <p className="muted">No reviewed proposals on this page.</p>
         : <ol className="history">{history.map(proposalRow)}</ol>}
-      {reviewed.length === 40 && <p className="muted">Showing the most recent 40 reviewed proposals. Earlier decisions remain preserved in the audit history.</p>}
+      {queueNavigation("historyAfter", "Reviewed proposals", reviewedRows, 40)}
     </section>
     <p><Link href="/admin/giving-funds">Giving funds registry →</Link></p>
   </section>;
