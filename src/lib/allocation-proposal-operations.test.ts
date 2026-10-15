@@ -103,13 +103,26 @@ describe("allocation proposals never move funds and cannot bypass second approva
   });
 
   it("blocks an independent reviewer from approving more than the available donation balance", async () => {
-    mocks.proposalList.mockResolvedValue([{ amountPaise: 19000 }]);
+    mocks.proposalList.mockResolvedValue([{ amountPaise: 19000, reversal: null }]);
     await expect(reviewAllocationProposal({
       proposalId: proposal.id, actorId: "other-finance-checker",
       decision: "APPROVE",
     })).rejects.toBeInstanceOf(AllocationError);
     expect(mocks.proposalUpdate).not.toHaveBeenCalled();
     expect(mocks.audit).not.toHaveBeenCalled();
+  });
+
+  it("excludes separately reversed approved allocations from the planning balance", async () => {
+    mocks.proposalList.mockResolvedValue([
+      { amountPaise: 35000, reversal: { id: "reversal-0001" } },
+      { amountPaise: 1000, reversal: null },
+    ]);
+    const result = await reviewAllocationProposal({
+      proposalId: proposal.id, actorId: "other-finance-checker",
+      decision: "APPROVE",
+    });
+    expect(result).toBe("APPROVED");
+    expect(mocks.proposalUpdate).toHaveBeenCalledTimes(1);
   });
 
   it("blocks creator self-approval and terminal replay", async () => {
