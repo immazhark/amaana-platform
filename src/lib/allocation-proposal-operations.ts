@@ -1,4 +1,5 @@
 import "server-only";
+import { assertAllocationReversalAllowed, parseAllocationReversalReason } from "@/lib/allocation-reversal";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import {
@@ -41,9 +42,9 @@ export async function createAllocationProposal(input: {
     }
     const approved = await tx.donationAllocationProposal.findMany({
       where: { donationId: source.id, status: "APPROVED" },
-      select: { amountPaise: true },
+      select: { amountPaise: true, reversal: { select: { id: true } } },
     });
-    const available = allocationAvailablePaise(source, approved.map(row => row.amountPaise));
+    const available = allocationAvailablePaise(source, approved.filter(row => row.reversal === null).map(row => row.amountPaise));
     if (amountPaise > available) throw new AllocationError("Proposed amount exceeds unallocated retained funds.");
     // Pending proposals do not reserve money. Checker performs the same
     // accounting computation atomically, and rejects stale proposals.
@@ -98,9 +99,9 @@ export async function reviewAllocationProposal(input: {
       }
       const approved = await tx.donationAllocationProposal.findMany({
         where: { donationId: proposal.donationId, status: "APPROVED" },
-        select: { amountPaise: true },
+        select: { amountPaise: true, reversal: { select: { id: true } } },
       });
-      if (proposal.amountPaise > allocationAvailablePaise(source, approved.map(row => row.amountPaise))) {
+      if (proposal.amountPaise > allocationAvailablePaise(source, approved.filter(row => row.reversal === null).map(row => row.amountPaise))) {
         throw new AllocationError("Proposal exceeds retained, currently unallocated donation funds.");
       }
       // Lock the donation row with a compare-and-swap. Concurrent refunds or
@@ -126,5 +127,47 @@ export async function reviewAllocationProposal(input: {
       },
     });
     return input.decision === "APPROVE" ? "APPROVED" as const : "REJECTED" as const;
+  });
+}
+
+/** Reversal is a separate immutable entry, never an update or DELETE of
+ * a previously approved allocation. It changes the internal available
+ * planning balance but is NOT a refund, transfer or beneficiary payout. */
+export async function reverseAllocationProposal(input: {
+  proposalId: string; reason: string; actorId: string;
+}) {
+  assertEnabled();
+  if (!validId(input.proposalId) || !validId(input.actorId)) {
+    throw new AllocationError("Invalid reversal identity.");
+  }
+  const reason = parseAllocationReversalReason(input.reason);
+  return withSerializableTransactionRetry(async tx => {
+    const proposal = await tx.donationAllocationProposal.findUnique({
+      where: { id: input.proposalId },
+      select: {
+        id: true, createdById: true, reviewedById: true, status: true,
+        donationId: true, fundId: true, amountPaise: true,
+        reversal: { select: { id: true } },
+      },
+    });
+    if (!proposal) throw new AllocationError("Allocation proposal not found.");
+    assertAllocationReversalAllowed(proposal, input.actorId);
+    const entry = await tx.donationAllocationReversal.create({
+      data: {
+        proposalId: proposal.id, reversedById: input.actorId, reason,
+      },
+      select: { id: true },
+    });
+    // Unique(proposalId) makes a concurrent second reversal fail closed.
+    // The insert and audit are one serializable unit of work.
+    await tx.auditEvent.create({
+      data: {
+        actorId: input.actorId, action: "ALLOCATION_PROPOSAL_REVERSED",
+        entityType: "DonationAllocationReversal", entityId: entry.id,
+        metadata: { proposalId: proposal.id, donationId: proposal.donationId,
+          fundId: proposal.fundId, amountPaise: proposal.amountPaise },
+      },
+    });
+    return entry.id;
   });
 }
