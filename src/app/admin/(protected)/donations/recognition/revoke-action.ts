@@ -38,7 +38,15 @@ export async function unpublishDonorRecognitionAction(
     const removed = await withSerializableTransactionRetry(async tx => {
       const updated = await tx.donation.updateMany({
         where: { id, recognitionApprovedAt: approvedAt, recognitionRequestedAt: requestedAt,
-          recognitionDisplayName: name, recognitionRevokedAt: null },
+          recognitionDisplayName: name, recognitionRevokedAt: null,
+          // A pending cleanup cannot be used as an alternative rejection
+          // path once this donation is again eligible. Use moderation instead.
+          ...(!wasApproved ? { OR: [
+            { status: { not: "CAPTURED" as const } },
+            { isAnonymous: true },
+            { refundedAmount: { gt: 0 } },
+          ] } : {}),
+        },
         data: { recognitionApprovedAt: null, recognitionRequestedAt: null,
           recognitionDisplayName: null, recognitionRevokedAt: new Date() },
       });

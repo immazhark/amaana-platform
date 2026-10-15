@@ -40,6 +40,7 @@ describe("audited staff recognition takedown", () => {
     expect(mocks.audit).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({ action: "DONOR_RECOGNITION_UNPUBLISHED" }),
     }));
+    expect(mocks.update.mock.calls[0][0].where).not.toHaveProperty("OR");
     expect(mocks.revalidate).toHaveBeenCalledWith("/shukr");
   });
   it("removes a previously pending ineligible name without pretending it was published", async () => {
@@ -55,6 +56,10 @@ describe("audited staff recognition takedown", () => {
     expect(mocks.audit).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({ action: "DONOR_RECOGNITION_REQUEST_REMOVED" }),
     }));
+    expect(mocks.update.mock.calls[0][0].where.OR).toEqual([
+      { status: { not: "CAPTURED" } }, { isAnonymous: true },
+      { refundedAmount: { gt: 0 } },
+    ]);
   });
   it("does not clear another request after stale removal timestamps or name changes", async () => {
     mocks.update.mockResolvedValue({ count: 0 });
