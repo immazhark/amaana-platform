@@ -1,3 +1,29 @@
+## Legacy giving enquiries — information only, not bequest acceptance
+
+`/get-involved/legacy-giving` is a preliminary information and
+contact journey. It is **not** a reviewed legal, religious or
+financial product. It collects no will, identity, family detail,
+estate records, amount or payment credential, provides no template
+or inheritance ruling, and accepts no pledge or estate gift.
+The only contact entry points lead to Amaana's ordinary
+contact/governance pages. No new backend intake is introduced.
+
+The page is reachable through ordinary on-site Get Involved/footer
+links, but is absent from the XML sitemap and deliberately carries
+`noindex,nofollow,noarchive` in page metadata and the HTTP
+`X-Robots-Tag` header. Do not remove these protections or market
+an accepted legacy-giving facility until an appropriately qualified
+legal/religious adviser, charity-governance owner and privacy
+reviewer approve copy, acceptance terms, beneficiary-designation
+policy and the legal-document handling procedure.
+
+The Shukr consent mutation must never be reported as failed merely
+because non-critical cache revalidation throws after a committed
+transaction. In case of invalidation service failure, public
+`/shukr` is force-dynamic and no-store and reads the DB directly.
+Database transactional or append-only consent audit failures
+remain fatal, fail closed, and must not return success.
+
 ## Shukr consent event history, cleanup and release gate (OFF by default)
 
 Donor Shukr recognition requires **separate affirmative opt-in** from
