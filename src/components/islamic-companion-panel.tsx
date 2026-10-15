@@ -70,11 +70,36 @@ const closeIcon = (
     </svg>
 );
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isText(value: unknown, maximum = 1000): value is string {
+  return typeof value === "string" && value.trim().length > 0 && value.length <= maximum;
+}
+
+function isPrayerDay(value: unknown, date: string): value is PrayerDay {
+  if (!isRecord(value) || value.date !== date || !isRecord(value.timings)) return false;
+  const timings = value.timings;
+  return PRAYERS.every(prayer => timeMinutes(timings[prayer]) !== null);
+}
+
+function isMoon(value: unknown): value is Moon | null {
+  if (value === null) return true;
+  if (!isRecord(value) || !Number.isInteger(value.day) || typeof value.day !== "number" || value.day < 1 || value.day > 30 ||
+      !Number.isInteger(value.month) || typeof value.month !== "number" || value.month < 1 || value.month > 12 ||
+      !isText(value.label, 200) || !isText(value.authority, 200) || !isText(value.sourceUrl, 2048)) return false;
+  try {
+    const source = new URL(value.sourceUrl);
+    return source.protocol === "https:" && !source.username && !source.password;
+  } catch { return false; }
+}
+
 function isPrayerData(value: unknown, date: string, school: string): value is PrayerData {
-  if (!value || typeof value !== "object") return false;
-  const candidate = value as Partial<PrayerData>;
-  if (candidate.school !== school || candidate.today?.date !== date) return false;
-  return PRAYERS.every(prayer => timeMinutes(candidate.today?.timings?.[prayer]) !== null);
+  return isRecord(value) && value.school === school && isPrayerDay(value.today, date)
+    && (value.tomorrow === null || isPrayerDay(value.tomorrow, shiftDate(date, 1)))
+    && isText(value.method, 200) && isText(value.asr, 200) && isText(value.note)
+    && isMoon(value.moon) && isMoon(value.eveningMoon);
 }
 
 export function IslamicCompanionPanel({
@@ -106,6 +131,11 @@ export function IslamicCompanionPanel({
     if (panel !== "prayers" || !date) return;
 
     const controller = new AbortController();
+    const timeout = window.setTimeout(() => {
+      controller.abort();
+      setLoading(false);
+      setError("Prayer times could not be loaded in time. Follow your local masjid timetable, or try again.");
+    }, 8_000);
 
     async function loadPrayerData() {
       setLoading(true);
@@ -118,7 +148,7 @@ export function IslamicCompanionPanel({
         const payload: unknown = await response.json();
         if (!response.ok) {
           const message = payload && typeof payload === "object" && "error" in payload && typeof payload.error === "string"
-            ? payload.error
+            ? payload.error.trim().slice(0, 500) || "Prayer times could not be loaded."
             : "Prayer times could not be loaded.";
           throw new Error(message);
         }
@@ -134,12 +164,13 @@ export function IslamicCompanionPanel({
           setError(failure instanceof Error ? failure.message : "Prayer times could not be loaded.");
         }
       } finally {
+        window.clearTimeout(timeout);
         if (!controller.signal.aborted) setLoading(false);
       }
     }
 
     void loadPrayerData();
-    return () => controller.abort();
+    return () => { window.clearTimeout(timeout); controller.abort(); };
   }, [date, onMoonChange, panel, requestVersion, school]);
 
   const currentData = data?.today.date === date && data.school === school ? data : null;

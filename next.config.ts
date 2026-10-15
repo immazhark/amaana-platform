@@ -69,6 +69,8 @@ const nextConfig: NextConfig = {
   reactStrictMode: true,
   compiler: { removeConsole: process.env.NODE_ENV === "production" },
   experimental: {
+    // Keep reusable client modules out of duplicated merged route chunks.
+    turbopackChunking: { maxMergeChunkSize: 10_000 },
     serverActions: {
       bodySizeLimit: "6mb",
     },
