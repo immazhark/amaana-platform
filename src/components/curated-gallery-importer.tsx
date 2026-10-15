@@ -20,7 +20,9 @@ function hex(buffer: ArrayBuffer) {
 async function sha256(bytes: ArrayBuffer | Uint8Array) {
   // The file buffer and verified ZIP views are not mutated while hashing.
   // Avoid cloning the entire 147 MB package in browser memory.
-  const value = bytes instanceof Uint8Array ? bytes : new Uint8Array(bytes);
+  const value: BufferSource = bytes instanceof Uint8Array
+    ? new Uint8Array(bytes.buffer as ArrayBuffer, bytes.byteOffset, bytes.byteLength)
+    : bytes;
   return hex(await crypto.subtle.digest("SHA-256", value));
 }
 
