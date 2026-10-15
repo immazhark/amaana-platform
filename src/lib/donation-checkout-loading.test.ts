@@ -25,6 +25,28 @@ describe("shared lazy payment forms preserve real checkout controls", () => {
     expect(output).toContain("Secure online payment"); expect(output).toContain("Direct UPI / QR"); expect(output).toContain("Bank transfer");
     expect(output).toContain('name="donorName"'); expect(output).toContain('name="domesticConfirmed"'); expect(output).toContain("Maximum available for this transaction: ₹400.");
   });
+  it("disables unavailable bank transfer while keeping other methods available", async () => {
+    const output = await html(createElement(DonationMethods, { ...appeal,
+      bankAvailable: false, paymentInstructions: { DIRECT_UPI: null, BANK_TRANSFER: null },
+    }));
+    const bank = output.match(/<button[^>]*>Bank transfer<\\/button>/)?.[0];
+    expect(bank).toContain('disabled=""');
+    expect(bank).toContain('aria-label="Bank transfer (unavailable)"');
+    expect(output).toContain("Bank transfer is unavailable right now.");
+    const upi = output.match(/<button[^>]*>Direct UPI \\/ QR<\\/button>/)?.[0];
+    expect(upi).not.toContain('disabled=""');
+  });
+
+  it("retains selectable bank transfer when verified instructions are available", async () => {
+    const output = await html(createElement(DonationMethods, { ...appeal,
+      bankAvailable: true, paymentInstructions: { DIRECT_UPI: null, BANK_TRANSFER: "Approved bank instructions" },
+    }));
+    const bank = output.match(/<button[^>]*>Bank transfer<\\/button>/)?.[0];
+    expect(bank).toBeDefined();
+    expect(bank).not.toContain('disabled=""');
+    expect(output).not.toContain("Bank transfer is unavailable right now.");
+  });
+
   it("preserves receipt/privacy and original-purpose controls on the real giving-fund form", async () => {
     const output = await html(createElement(LazyDonationForm, {
       maxAmount: 100,
