@@ -29,11 +29,11 @@ describe("shared lazy payment forms preserve real checkout controls", () => {
     const output = await html(createElement(DonationMethods, { ...appeal,
       bankAvailable: false, paymentInstructions: { DIRECT_UPI: null, BANK_TRANSFER: null },
     }));
-    const bank = output.match(/<button[^>]*>Bank transfer<\\/button>/)?.[0];
+    const bank = output.match(/<button[^>]*>Bank transfer<\/button>/)?.[0];
     expect(bank).toContain('disabled=""');
     expect(bank).toContain('aria-label="Bank transfer (unavailable)"');
     expect(output).toContain("Bank transfer is unavailable right now.");
-    const upi = output.match(/<button[^>]*>Direct UPI \\/ QR<\\/button>/)?.[0];
+    const upi = output.match(/<button[^>]*>Direct UPI \/ QR<\/button>/)?.[0];
     expect(upi).not.toContain('disabled=""');
   });
 
@@ -41,7 +41,7 @@ describe("shared lazy payment forms preserve real checkout controls", () => {
     const output = await html(createElement(DonationMethods, { ...appeal,
       bankAvailable: true, paymentInstructions: { DIRECT_UPI: null, BANK_TRANSFER: "Approved bank instructions" },
     }));
-    const bank = output.match(/<button[^>]*>Bank transfer<\\/button>/)?.[0];
+    const bank = output.match(/<button[^>]*>Bank transfer<\/button>/)?.[0];
     expect(bank).toBeDefined();
     expect(bank).not.toContain('disabled=""');
     expect(output).not.toContain("Bank transfer is unavailable right now.");
