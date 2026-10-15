@@ -57,7 +57,7 @@ describe("public route publication policy", () => {
   });
 
   it("makes the reviewed Shukr wall discoverable but keeps recognition changes private", () => {
-    expect(PUBLIC_STATIC_ROUTES.some(route => route.path === "/shukr")).toBe(true);
+    expect(PUBLIC_STATIC_ROUTES.some(route => route.path === "/shukr")).toBe(false);
     expect(isPrivateRoute("/shukr")).toBe(false);
     expect(isPrivateRoute("/api/donations/recognition")).toBe(true);
     expect(isPrivateRoute("/admin/donations/recognition")).toBe(true);

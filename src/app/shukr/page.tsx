@@ -11,6 +11,9 @@ export const metadata: Metadata = {
   title: "Shukr — Gratitude and Trust",
   description: "Amaana Foundation's optional, consent-reviewed gratitude recognition. Donor names appear only after individual permission and review.",
   alternates: { canonical: "/shukr" },
+  // Consent to optional on-site recognition is not consent to permanent
+  // third-party search-engine indexing of the donor's display name.
+  robots: { index: false, follow: false, noarchive: true },
   openGraph: { type: "website", url: "/shukr", title: "Shukr | Amaana Foundation",
     description: "A privacy-first space for gratitude, with donor names shown only by explicit choice." },
 };

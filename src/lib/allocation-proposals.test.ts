@@ -47,5 +47,11 @@ describe("restricted non-disbursing allocation proposals", () => {
     expect(parseAllocationNote("  Education supplies for approved programme  ")).toBe("Education supplies for approved programme");
     expect(() => parseAllocationNote("short")).toThrow();
     expect(() => parseAllocationNote("A".repeat(241))).toThrow();
+    for (const privateValue of [
+      "For beneficiary amina@example.org private welfare",
+      "Call beneficiary 9876543210 before planning aid",
+      "See https://example.org/private/beneficiary",
+      "Case detail <medical-private-document> should not appear",
+    ]) expect(() => parseAllocationNote(privateValue)).toThrow();
   });
 });

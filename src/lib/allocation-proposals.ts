@@ -23,7 +23,12 @@ export function parseAllocationPaise(value: unknown): number {
 export function parseAllocationNote(input: unknown): string {
   if (typeof input !== "string") throw new AllocationError("Describe the intended use.");
   const note = input.trim().replace(/\s+/gu, " ");
-  if (note.length < 15 || note.length > 240 || /[\u0000-\u001f\u007f]/u.test(note)) {
+  // Programme-purpose notes must not become a second shadow database for
+  // beneficiary identities, payment references or personal contact details.
+  const containsContactDetails =
+    /(?:https?:\/\/|www\.|[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}|\b(?:\+?91[-\s]?)?[6-9]\d{9}\b)/iu.test(note);
+  if (note.length < 15 || note.length > 240 || containsContactDetails ||
+      /[\u0000-\u001f\u007f<>]/u.test(note)) {
     throw new AllocationError("Enter 15–240 characters describing the approved fund use, without private beneficiary details.");
   }
   return note;
