@@ -4,6 +4,7 @@ import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { allocationPlanningEnabled } from "@/lib/allocation-proposal-operations";
 import { AdminAllocationReview } from "@/components/admin-allocation-review";
+import { AdminAllocationReversal } from "@/components/admin-allocation-reversal";
 
 export const metadata: Metadata = { title: "Internal Allocation Proposals", robots: { index: false, follow: false } };
 export const dynamic = "force-dynamic";
@@ -18,7 +19,8 @@ export default async function AllocationAdminPage() {
     take: 80,
     include: {
       createdBy: { select: { id: true, name: true } },
-      reviewedBy: { select: { name: true } },
+      reviewedBy: { select: { id: true, name: true } },
+      reversal: { select: { id: true, createdAt: true } },
       donation: { select: { id: true, referenceNumber: true, status: true } },
       fund: { select: { name: true, accountCode: true } },
     },
@@ -39,6 +41,11 @@ export default async function AllocationAdminPage() {
       <span>Maker: {item.createdBy.name} · {item.createdAt.toLocaleDateString("en-IN")}</span>
       <Link href={`/admin/donations/${item.donation.id}`}>Private donation reference: {item.donation.referenceNumber}</Link>
       {item.reviewedBy && <span>Reviewed by: {item.reviewedBy.name}</span>}
+      {item.reversal && <p role="status">Reversed on {item.reversal.createdAt.toLocaleDateString("en-IN")}. Original approval remains in the ledger.</p>}
+      {item.status === "APPROVED" && !item.reversal && canReview &&
+        item.createdBy.id !== staff.id && item.reviewedBy?.id !== staff.id &&
+        <AdminAllocationReversal proposalId={item.id}/>}
+
       {item.status === "PENDING" && canReview && item.createdBy.id !== staff.id && (
         <AdminAllocationReview proposalId={item.id}/>
       )}

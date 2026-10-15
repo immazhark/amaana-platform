@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth";
 import {
-  createAllocationProposal, reviewAllocationProposal, allocationPlanningEnabled,
+  createAllocationProposal, reviewAllocationProposal, reverseAllocationProposal, allocationPlanningEnabled,
 } from "@/lib/allocation-proposal-operations";
 import { AllocationError } from "@/lib/allocation-proposals";
 
@@ -50,4 +50,21 @@ export async function reviewAllocationAction(
   } catch (error) {
     return { state: "error", message: messageFor(error) };
   }
+}
+
+/** No disbursement happens; reversal is an append-only planning correction. */
+export async function reverseAllocationAction(
+  _previous: AllocationActionResult, form: FormData,
+): Promise<AllocationActionResult> {
+  const reviewer = await requirePermission("fund.approve");
+  if (!allocationPlanningEnabled()) return { state: "error", message: "Allocation planning is disabled." };
+  try {
+    const reversalId = await reverseAllocationProposal({
+      proposalId: String(form.get("proposalId") ?? ""),
+      reason: String(form.get("reason") ?? ""),
+      actorId: reviewer.id,
+    });
+    revalidatePath("/admin/allocations");
+    return { state: "success", message: `A separate, immutable reversal ${reversalId} was recorded. No payment or bank transfer was changed.` };
+  } catch (error) { return { state: "error", message: messageFor(error) }; }
 }
