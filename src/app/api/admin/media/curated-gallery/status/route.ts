@@ -15,7 +15,6 @@ import {
   parseCuratedGallerySessionMetadata,
 } from "@/lib/curated-gallery-server";
 import { prisma } from "@/lib/prisma";
-import { getPublishedInitiativeBySlug } from "@/lib/public-content";
 import { logServerError } from "@/lib/server-log";
 
 const privateHeaders = {
@@ -77,7 +76,30 @@ export async function GET() {
           privacyApprovedAt: true,
         },
       }),
-      Promise.all(slugs.map(slug => getPublishedInitiativeBySlug(slug))),
+      prisma.initiative.findMany({
+        where: {
+          slug: { in: slugs },
+          status: "PUBLISHED",
+          cause: { status: "PUBLISHED" },
+        },
+        select: {
+          slug: true,
+          mediaAssets: {
+            where: { isPublic: true, privacyApprovedAt: { not: null } },
+            orderBy: { sortOrder: "asc" },
+            select: {
+              id: true,
+              kind: true,
+              publicUrl: true,
+              externalUrl: true,
+              altText: true,
+              title: true,
+              caption: true,
+              sortOrder: true,
+            },
+          },
+        },
+      }),
     ]);
 
     const assetMap = new Map(assets.map(asset => [asset.id, asset]));
@@ -106,7 +128,9 @@ export async function GET() {
       validAssetIds.add(record.id);
     }
 
-    const initiatives = slugs.map((slug, index) => {
+    const publishedBySlug = new Map(publicRecords.map(record => [record.slug, record]));
+
+    const initiatives = slugs.map(slug => {
       const curatedIds = curatedIdsBySlug.get(slug) ?? new Set<string>();
       const uploaded = manifest.records.filter(record =>
         record.slug === slug && validAssetIds.has(record.id),
@@ -116,7 +140,7 @@ export async function GET() {
         asset.isPublic &&
         Boolean(asset.privacyApprovedAt),
       ).length;
-      const publicRecord = publicRecords[index];
+      const publicRecord = publishedBySlug.get(slug);
       const render = publicRecord
         ? reconcileCuratedGalleryPublicRecord(slug, publicRecord.mediaAssets, curatedIds)
         : {
