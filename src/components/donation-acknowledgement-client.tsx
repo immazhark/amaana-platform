@@ -2,17 +2,19 @@
 
 import Link from "@/components/navigation-link";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
+
+import { PrintButton } from "@/components/print-button";
+import { donationIntentLabel } from "@/lib/donation-intent";
+import { formatPrivateReceiptINR, parsePrivateDonationAcknowledgementLocation } from "@/lib/private-donation-ack";
+import { isAcknowledgementResponse, type AcknowledgementRecord } from "@/lib/private-record-response";
+const ReceiptPdfDownloadButton = lazy(() => import("@/components/receipt-pdf-download-button"));
+
 // Optional private features are separate client chunks. Neither loads for
 // ordinary receipts while its independent server-side feature gate is off.
 const DonorRecognitionPreferences = lazy(() => import("@/components/donor-recognition-preferences")
   .then(module => ({ default: module.DonorRecognitionPreferences })));
 const DonorDataRights = lazy(() => import("@/components/donor-data-rights")
   .then(module => ({ default: module.DonorDataRights })));
-import { PrintButton } from "@/components/print-button";
-import { donationIntentLabel } from "@/lib/donation-intent";
-import { formatPrivateReceiptINR, parsePrivateDonationAcknowledgementLocation } from "@/lib/private-donation-ack";
-import { isAcknowledgementResponse, type AcknowledgementRecord } from "@/lib/private-record-response";
-const ReceiptPdfDownloadButton = lazy(() => import("@/components/receipt-pdf-download-button"));
 
 
 function PrivateTokenRecovery({ onRecover }: { onRecover: (token: string) => void }) {
