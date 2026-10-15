@@ -77,6 +77,17 @@ describe("actual companion live-rail lifecycle", () => {
     m.cleanup?.();
   });
 
+  it("does not periodically poll when no public appeal is open", async () => {
+    const m = mount(async () => ({ items: [] }));
+    await drain();
+    await vi.advanceTimersByTimeAsync(30 * 60_000);
+    expect(m.fetch).toHaveBeenCalledTimes(1);
+    m.setHidden(true);
+    m.setHidden(false);
+    expect(m.fetch).toHaveBeenCalledTimes(2);
+    m.cleanup?.();
+  });
+
   it("does not poll hidden tabs and refreshes once on returning after the freshness window", async () => {
     const m = mount(async () => ({ items: [item] }));
     await drain();
@@ -103,6 +114,8 @@ describe("actual companion live-rail lifecycle", () => {
     // Start the second request at the five-minute boundary, without also
     // advancing to its independent eight-second timeout.
     await vi.advanceTimersByTimeAsync(5 * 60_000 - 8000);
+    m.setHidden(true);
+    m.setHidden(false);
     expect(m.fetch).toHaveBeenCalledTimes(2);
     await drain();
     expect(m.state).toHaveBeenLastCalledWith("ready");

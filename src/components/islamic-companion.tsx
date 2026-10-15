@@ -75,6 +75,7 @@ export function IslamicCompanion() {
     let activeController: AbortController | null = null;
     let lastRequestedAt: number | null = null;
     let hasRequested = false;
+    let hasLiveAppeals = false;
     const idleWindow = window as Window & typeof globalThis & {
       requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
       cancelIdleCallback?: (handle: number) => void;
@@ -99,6 +100,7 @@ export function IslamicCompanion() {
       const requestTimeout = window.setTimeout(() => {
         controller.abort();
         if (activeController === controller) activeController = null;
+        hasLiveAppeals = false;
         if (!disposed) setRailState("unavailable");
       }, 8000);
 
@@ -112,13 +114,17 @@ export function IslamicCompanion() {
         })
         .then(items => {
           if (!disposed && activeController === controller && !controller.signal.aborted) {
+            hasLiveAppeals = items.length > 0;
             setLiveItems(items);
             setRailIndex(0);
             setRailState("ready");
           }
         })
         .catch(() => {
-          if (!disposed && activeController === controller) setRailState("unavailable");
+          if (!disposed && activeController === controller) {
+            hasLiveAppeals = false;
+            setRailState("unavailable");
+          }
         })
         .finally(() => {
           window.clearTimeout(requestTimeout);
@@ -134,9 +140,12 @@ export function IslamicCompanion() {
     } else {
       startupTimeout = window.setTimeout(load, 900);
     }
-    // The timer only checks freshness; it never polls on hidden tabs.
-    // At most one request starts per five minutes on an active page.
-    const refreshTimer = window.setInterval(refreshIfVisible, 60_000);
+    // Check only while promoting live appeals. An empty/unavailable rail
+    // refreshes when the visitor returns, avoiding idle DB work on pages
+    // where no public appeal is open.
+    const refreshTimer = window.setInterval(() => {
+      if (hasLiveAppeals) refreshIfVisible();
+    }, 60_000);
     document.addEventListener("visibilitychange", refreshIfVisible);
 
     return () => {
