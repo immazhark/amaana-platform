@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   buildPublicStructuredData,
   normalizeStructuredDataImage,
@@ -7,6 +7,7 @@ import {
 } from "./structured-data";
 
 describe("public structured data", () => {
+  afterEach(() => vi.unstubAllEnvs());
   it("builds canonical Article data from public-safe values", () => {
     const data = buildPublicStructuredData({
       type: "Article",
@@ -48,6 +49,38 @@ describe("public structured data", () => {
       description: "This should not render.",
       path: "//evil.example/path",
     }, "https://amaanafoundation.org")).toBeNull();
+  });
+
+  it("never emits private or unconfigured image destinations into crawlable JSON-LD", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://media.amaana.example/reviewed");
+    const site = "https://amaanafoundation.org";
+    const excluded = [
+      "/api/donations/private.jpg",
+      "/%61dmin/assistance/private.webp",
+      "/media/%252e%252e/admin/private.jpg",
+      "https://www.amaanafoundation.org/admin/private.jpg",
+      "https://amaanafoundation.org./donations/private.jpg",
+      "https://unknown.example/picture.jpg",
+      "https://media.amaana.example.evil.test/picture.jpg",
+    ];
+    for (const url of excluded) {
+      expect(normalizeStructuredDataImage(url, site), url).toBeNull();
+      const data = buildPublicStructuredData({ type: "Article", title: "Reviewed programme",
+        description: "Verified public work", path: "/stories/reviewed", imageUrl: url }, site);
+      expect(data, url).not.toHaveProperty("image");
+    }
+    expect(normalizeStructuredDataImage("https://amaanafoundation.org/media/approved.webp", site))
+      .toBe("https://amaanafoundation.org/media/approved.webp");
+    expect(normalizeStructuredDataImage("https://media.amaana.example/reviewed/photo.webp", site))
+      .toBe("https://media.amaana.example/reviewed/photo.webp");
+    expect(normalizeStructuredDataImage("/brand/amaana-mark.svg", site))
+      .toBe("https://amaanafoundation.org/brand/amaana-mark.svg");
+  });
+
+  it("does not let malformed or insecure site origins produce image URLs", () => {
+    expect(normalizeStructuredDataImage("/media/approved.jpg", "http://amaanafoundation.org")).toBeNull();
+    expect(normalizeStructuredDataImage("/media/approved.jpg", "https://user:pass@amaanafoundation.org")).toBeNull();
   });
 
   it("fails closed when runtime JSON-LD input violates the schema", () => {

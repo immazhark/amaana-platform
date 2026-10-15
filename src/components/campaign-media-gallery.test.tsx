@@ -20,6 +20,14 @@ describe("actual public gallery rendering contract", () => {
     expect(html).not.toContain("/admin/private.jpg");
   });
 
+  it("does not render gallery thumbnails from external unconfigured hosts or private aliases", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[
+      { ...photo, id: "unknown-host", url: "https://unapproved.example/picture.webp" },
+      { ...photo, id: "private-alias", url: "https://www.amaanafoundation.org/api/private.webp" },
+    ]}/>);
+    expect(html).toBe("");
+  });
+
   it("does not render a modal or image for only unsafe entries", () => {
     const html = renderToStaticMarkup(<CampaignMediaGallery items={[
       { ...photo, id: "bad", url: "javascript:alert(1)" },

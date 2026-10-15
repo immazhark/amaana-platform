@@ -51,8 +51,23 @@ describe("public-safe gallery presentation boundary", () => {
     expect(selectSafeGalleryImages([{ ...approved, url: privateSameOrigin }])).toEqual([]);
     expect(selectSafeGalleryImages([{ ...approved, url: "https://amaanafoundation.org/media/approved.webp" }])).toHaveLength(1);
   });
-  it("retains HTTPS media delivery from a separately approved public CDN", () => {
+  it("retains image delivery only from a separately configured HTTPS public CDN", () => {
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://cdn.example.org/public");
     expect(selectSafeGalleryImages([{ ...approved, url: "https://cdn.example.org/approved.webp" }])[0]?.url)
       .toBe("https://cdn.example.org/approved.webp");
+  });
+
+  it("rejects unknown HTTPS image hosts even when a gallery record looks approved", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://media.amaana.example");
+    for (const url of [
+      "https://unapproved.example/photo.webp",
+      "https://media.amaana.example.evil.test/photo.webp",
+      "https://www.amaanafoundation.org/admin/private.webp",
+      "https://amaanafoundation.org./api/private.webp",
+    ]) {
+      expect(selectSafeGalleryImages([{ ...approved, url }]), url).toEqual([]);
+    }
+    expect(selectSafeGalleryImages([{ ...approved, url: "https://media.amaana.example/photo.webp" }])).toHaveLength(1);
   });
 });

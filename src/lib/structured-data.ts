@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isCspCompatiblePublicImageUrl, isPrivateAppMediaUrl, normalizeSafePublicMediaUrl } from "./public-media";
 
 export type PublicStructuredDataType = "Article" | "WebPage";
 
@@ -82,24 +83,29 @@ export function normalizeStructuredDataPath(path: string) {
   }
 }
 
+/** Never publish a private/unapproved media destination into crawlable JSON-LD.
+ * Keep the output host specific to the current site or an explicitly configured
+ * image CDN. Publication and consent are still checked by the caller. */
 export function normalizeStructuredDataImage(imageUrl: string | null | undefined, siteUrl: string) {
-  const value = imageUrl?.trim();
-  if (!value || /[\\\u0000-\u001F\u007F\s]/.test(value)) return null;
+  const normalized = normalizeSafePublicMediaUrl(imageUrl);
+  if (!normalized || isPrivateAppMediaUrl(normalized)) return null;
 
   try {
-    if (value.startsWith("/")) {
-      if (value.startsWith("//")) return null;
-      const url = new URL(value, siteUrl);
-      if (url.origin !== siteUrl) return null;
+    const site = new URL(siteUrl);
+    if (site.protocol !== "https:" || site.username || site.password) return null;
+
+    if (normalized.startsWith("/")) return new URL(normalized, site.origin).toString();
+
+    const url = new URL(normalized);
+    // A caller-provided canonical siteUrl may differ from the process env in
+    // isolated/staging builds. The origin comparison remains exact.
+    if (url.origin === site.origin || isCspCompatiblePublicImageUrl(normalized)) {
       return url.toString();
     }
-
-    const url = new URL(value);
-    if (url.protocol !== "https:" || url.username || url.password) return null;
-    return url.toString();
   } catch {
     return null;
   }
+  return null;
 }
 
 function isoDate(value: Date | string | null | undefined) {

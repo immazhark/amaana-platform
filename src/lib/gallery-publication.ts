@@ -1,4 +1,4 @@
-import { isPrivateAppMediaUrl, normalizeSafePublicMediaUrl } from "./public-media";
+import { isCspCompatiblePublicImageUrl, normalizeSafePublicMediaUrl } from "./public-media";
 
 export type GalleryPublicationCandidate = {
   id: string;
@@ -8,7 +8,7 @@ export type GalleryPublicationCandidate = {
 
 /** Defensive client-side presentation gate. This is NOT media approval:
  * server-side status/consent checks must run before gallery props are built.
- * Reject malformed/private URLs and undescribed images before lightbox or
+ * Reject malformed, private and unconfigured-origin URLs before lightbox or
  * Next's optimizer can receive them. Do not silently proxy remote origins. */
 export function selectSafeGalleryImages<T extends GalleryPublicationCandidate>(
   items: readonly T[],
@@ -22,7 +22,8 @@ export function selectSafeGalleryImages<T extends GalleryPublicationCandidate>(
     const alt = item.alt.trim();
     const url = normalizeSafePublicMediaUrl(item.url);
     if (!id || !alt || !url) continue;
-    if (isPrivateAppMediaUrl(url)) continue;
+    // Match PublicMedia's image-host/CSP policy before mounting thumbnail or lightbox.
+    if (!isCspCompatiblePublicImageUrl(url)) continue;
     if (seenIds.has(id) || seenUrls.has(url)) continue;
     seenIds.add(id);
     seenUrls.add(url);
