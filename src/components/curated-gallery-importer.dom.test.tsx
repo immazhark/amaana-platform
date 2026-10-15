@@ -13,7 +13,7 @@ function stageStatus(published = false) {
   return {
     initialized: true, batch: CURATED_GALLERY_BATCH, expected: 154,
     uploaded: 154, published: published ? 154 : 0, missing: 0,
-    mismatches: [], galleryOnly: true, renderingReady: published,
+    mismatches: [] as string[], galleryOnly: true, renderingReady: published,
     initiatives: Object.entries(CURATED_GALLERY_EXPECTED_COUNTS).map(([slug, expected]) => ({
       slug, expected, uploaded: expected, published: published ? expected : 0,
       publicRecordFound: published, publicSafeCount: published ? expected : 0,
