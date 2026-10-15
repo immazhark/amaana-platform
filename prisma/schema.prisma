@@ -427,6 +427,32 @@ model Appeal {
   @@index([updatedAt])
 }
 
+enum DonorRightsRequestKind {
+  ACCESS
+  CORRECTION
+  DELETION_REVIEW
+}
+
+enum DonorRightsRequestStatus {
+  OPEN
+  IN_REVIEW
+  CLOSED
+}
+
+model DonorRightsRequest {
+  id            String                   @id @default(cuid())
+  donationId    String
+  kind          DonorRightsRequestKind
+  status        DonorRightsRequestStatus @default(OPEN)
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  reviewedAt    DateTime?
+  reviewedById  String?
+  donation      Donation                 @relation(fields: [donationId], references: [id], onDelete: Restrict)
+  @@index([donationId, kind, status, createdAt])
+  @@index([status, createdAt])
+}
+
 model Donation {
   id                       String                @id @default(cuid())
   referenceNumber          String                @unique
@@ -474,6 +500,7 @@ model Donation {
   events                   PaymentEvent[]
   refunds                  RefundLedger[]
   notifications            Notification[]
+  rightsRequests           DonorRightsRequest[]
   createdAt                DateTime              @default(now())
   updatedAt                DateTime              @updatedAt
   @@index([appealId, status, createdAt])
