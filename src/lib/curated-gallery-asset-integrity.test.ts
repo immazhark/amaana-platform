@@ -32,6 +32,9 @@ const approved: CuratedGalleryAssetMetadata = {
   height: record.height,
   title: null,
   externalUrl: null,
+  causeId: null,
+  storyId: null,
+  faithContentId: null,
 };
 
 describe("immutable curated gallery metadata", () => {
@@ -48,6 +51,9 @@ describe("immutable curated gallery metadata", () => {
     ["changed height", { height: 1200 }],
     ["unauthorized title", { title: "Approved hero photograph" }],
     ["external asset URL", { externalUrl: "https://example.com/unreviewed.jpg" }],
+    ["cause-level placement", { causeId: "unapproved-cause" }],
+    ["story-level placement", { storyId: "unapproved-story" }],
+    ["faith editorial placement", { faithContentId: "unapproved-faith" }],
   ] as const)("%s fails closed in every importer endpoint", (_description, drift) => {
     expect(matchesCuratedGalleryAssetMetadata(record, { ...approved, ...drift })).toBe(false);
   });

@@ -92,6 +92,9 @@ export type CuratedGalleryAssetMetadata = {
   height: number | null;
   title: string | null;
   externalUrl: string | null;
+  causeId: string | null;
+  storyId: string | null;
+  faithContentId: string | null;
 };
 
 export function matchesCuratedGalleryAssetMetadata(
@@ -105,5 +108,8 @@ export function matchesCuratedGalleryAssetMetadata(
     asset.width === record.width &&
     asset.height === record.height &&
     asset.title === null &&
-    asset.externalUrl === null;
+    asset.externalUrl === null &&
+    asset.causeId === null &&
+    asset.storyId === null &&
+    asset.faithContentId === null;
 }
