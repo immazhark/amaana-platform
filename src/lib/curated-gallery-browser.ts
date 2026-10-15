@@ -18,3 +18,101 @@ export async function readApprovedCuratedManifest(bytes: Uint8Array) {
   const manifest = JSON.parse(manifestText) as CuratedGalleryManifest;
   return { manifest, manifestText };
 }
+
+/** Validate every value the administrative importer uses before showing progress
+ * or offering the irreversible publication action. Keep this dependency-light:
+ * the importer is in the constrained client bundle. */
+import {
+  CURATED_GALLERY_BATCH,
+  CURATED_GALLERY_EXPECTED_COUNTS,
+  CURATED_GALLERY_RECORD_COUNT,
+} from "./curated-gallery-identity";
+
+export type CuratedGalleryStatus = {
+  initialized: boolean;
+  expected: number;
+  uploaded: number;
+  published: number;
+  missing: number;
+  mismatches: string[];
+  galleryOnly: boolean;
+  renderingReady: boolean;
+  initiatives: Array<{
+    slug: string;
+    expected: number;
+    uploaded: number;
+    published: number;
+    publicRecordFound: boolean;
+    publicSafeCount: number;
+    galleryVisibleCount: number;
+    curatedHeroSelected: boolean;
+    curatedHighlightSelected: boolean;
+    ready: boolean;
+  }>;
+};
+
+export function parseCuratedGalleryStatus(value: unknown): CuratedGalleryStatus {
+  const invalid = (): never => { throw new Error("Curated gallery status response is invalid. Refresh before proceeding."); };
+  if (!value || typeof value !== "object" || Array.isArray(value)) return invalid();
+  const data = value as Record<string, unknown>;
+  const count = (source: Record<string, unknown>, key: string, max: number) => {
+    const n = source[key];
+    if (typeof n !== "number" || !Number.isInteger(n) || n < 0 || n > max) return invalid();
+    return n;
+  };
+  const total = CURATED_GALLERY_RECORD_COUNT;
+  const uploaded = count(data, "uploaded", total);
+  const published = count(data, "published", total);
+  const missing = count(data, "missing", total);
+  if (published > uploaded || uploaded + missing > total) return invalid();
+
+  if (data.initialized === false) {
+    if (uploaded !== 0 || published !== 0 || missing !== total) return invalid();
+    return {
+      initialized: false, expected: total, uploaded, published, missing,
+      mismatches: [], galleryOnly: false, renderingReady: false, initiatives: [],
+    };
+  }
+  if (data.initialized !== true || data.batch !== CURATED_GALLERY_BATCH ||
+      count(data, "expected", total) !== total ||
+      typeof data.galleryOnly !== "boolean" || typeof data.renderingReady !== "boolean" ||
+      !Array.isArray(data.mismatches) || data.mismatches.length > total ||
+      !data.mismatches.every((id: unknown) => typeof id === "string" && /^curated-[a-f0-9]{32}$/.test(id)) ||
+      !Array.isArray(data.initiatives)) return invalid();
+
+  const counts: Record<string, number> = CURATED_GALLERY_EXPECTED_COUNTS;
+  const seen = new Set<string>();
+  if (data.initiatives.length !== Object.keys(counts).length) return invalid();
+  const initiatives = data.initiatives.map((item: unknown) => {
+    if (!item || typeof item !== "object" || Array.isArray(item)) return invalid();
+    const entry = item as Record<string, unknown>;
+    const slug = entry.slug;
+    if (typeof slug !== "string" || !Object.hasOwn(counts, slug) || seen.has(slug)) return invalid();
+    seen.add(slug);
+    const expected = counts[slug];
+    if (count(entry, "expected", total) !== expected ||
+        typeof entry.ready !== "boolean" ||
+        typeof entry.publicRecordFound !== "boolean" ||
+        typeof entry.curatedHeroSelected !== "boolean" ||
+        typeof entry.curatedHighlightSelected !== "boolean") return invalid();
+    const itemUploaded = count(entry, "uploaded", expected);
+    const itemPublished = count(entry, "published", expected);
+    if (itemPublished > itemUploaded) return invalid();
+    return {
+      slug, expected, uploaded: itemUploaded, published: itemPublished,
+      publicRecordFound: entry.publicRecordFound as boolean,
+      publicSafeCount: count(entry, "publicSafeCount", expected),
+      galleryVisibleCount: count(entry, "galleryVisibleCount", expected),
+      curatedHeroSelected: entry.curatedHeroSelected as boolean,
+      curatedHighlightSelected: entry.curatedHighlightSelected as boolean,
+      ready: entry.ready as boolean,
+    };
+  });
+  if (data.renderingReady && !initiatives.every(item => item.ready)) return invalid();
+  return {
+    initialized: true, expected: total, uploaded, published, missing,
+    mismatches: data.mismatches as string[],
+    galleryOnly: data.galleryOnly, renderingReady: data.renderingReady,
+    initiatives,
+  };
+}
