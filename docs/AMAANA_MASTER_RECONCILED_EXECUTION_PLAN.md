@@ -1,5 +1,10 @@
 # Amaana Master Reconciled Execution Plan
 
+### 2026-10-15 — Public image destination and schema privacy reconciliation
+
+PR #292 source follow-up from `f2af1b9` through `15f77bb`. Existing page images enforced configured CSP origins, whereas gallery client previously admitted arbitrary HTTPS thumbnails and schema media image normalization admitted arbitrary HTTPS/private routes. Gallery now shares image-origin checks with PublicMedia; the three server gallery owners explicitly serialize configured public CDN origins to avoid relying on non-`NEXT_PUBLIC_` variables in the browser. Public Article/WebPage JSON-LD image URLs and private route/breadcrumb paths are fail-closed for unapproved external, admin/API, receipt, encoded and same-site alias destinations. Existing public/canonical and configured CDN routes remain supported. No consent/publishing semantics changed and no new remote optimizer hosts were authorized. Source regressions were authored and GitHub commits confirmed; Vitest, TypeScript, lint, JS/CSS budgets, live CSP, browser hydration, schema rich-results and deployed proof remain **unexecuted** at this HEAD. AF-R052 stays Partial, AF-R080 remains Not started (live acceptance), AF-R008 retains Implemented source validation, and master 149 totals are unchanged: 60 Implemented / 60 Partial / 27 Not started / 2 other.
+
+
 ### 2026-10-15 — Live-update correctness and checkout import flattening
 
 Continued PR #292 from `a48d0f1a`. Public live updates now runtime-check bounded
