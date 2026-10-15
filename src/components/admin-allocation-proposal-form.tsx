@@ -1,12 +1,9 @@
-"use client";
-
-import { useActionState } from "react";
+import { AdminActionForm, AdminActionButton } from "./admin-action-form";
 import { createAllocationAction, type AllocationActionResult } from "@/app/admin/(protected)/allocations/actions";
 const initial: AllocationActionResult = { state: "idle", message: "" };
 
 export function AllocationProposalForm({ donationId }: { donationId: string }) {
-  const [result, action, pending] = useActionState(createAllocationAction, initial);
-  return <form action={action} className="form-grid" aria-busy={pending}>
+  return <AdminActionForm action={createAllocationAction} initial={initial} messageClassName="field full" afterFeedback={<p className="muted field full">Proposals and approvals are internal governance records, not proof of disbursement, an expenditure voucher or a bank transfer.</p>}>
     <input type="hidden" name="donationId" value={donationId}/>
     <div className="field">
       <label htmlFor="allocation-amount">Proposed allocation (INR)</label>
@@ -22,9 +19,7 @@ export function AllocationProposalForm({ donationId }: { donationId: string }) {
       <p id="allocation-purpose-help" className="muted">Describe permitted programme expenditure only. Do not enter a person&apos;s medical, financial or identifying information.</p>
     </div>
     <div className="field full">
-      <button type="submit" className="button" disabled={pending}>Propose allocation for review</button>
+      <AdminActionButton type="submit" className="button">Propose allocation for review</AdminActionButton>
     </div>
-    {result.state !== "idle" && <p role={result.state === "error" ? "alert" : "status"} className="field full">{result.message}</p>}
-    <p className="muted field full">Proposals and approvals are internal governance records, not proof of disbursement, an expenditure voucher or a bank transfer.</p>
-  </form>;
+  </AdminActionForm>;
 }

@@ -1,6 +1,4 @@
-"use client";
-
-import { useActionState } from "react";
+import { AdminActionForm, AdminActionButton } from "./admin-action-form";
 import { reconcileDonationAction, type DonationReconciliationState } from "@/app/admin/(protected)/donations/actions";
 
 const initialState: DonationReconciliationState = { status: "idle", message: "" };
@@ -9,9 +7,17 @@ const initialState: DonationReconciliationState = { status: "idle", message: "" 
  * bank feed or an independent second approver. The server verifies everything
  * again before entering CAPTURED. */
 export function AdminDirectTransferForm({ donationId }: { donationId: string }) {
-  const [state, formAction, pending] = useActionState(reconcileDonationAction, initialState);
-
-  return <form action={formAction} className="form-grid" aria-busy={pending}>
+  return <AdminActionForm action={reconcileDonationAction} initial={initialState} messageClassName="field full" announce afterFeedback={<>
+    <div className="field full">
+      <AdminActionButton className="button" type="submit" name="decision" value="VERIFY" pendingLabel="Processing review…">
+        Verify received transfer
+      </AdminActionButton>{" "}
+      <AdminActionButton className="text-button" type="submit" name="decision" value="REJECT"
+        formNoValidate>Reject unverified claim</AdminActionButton>
+    </div>
+    <p className="muted field full">Verify creates a financial credit only after the server confirms
+      the exact recorded reference and amount. Rejection never creates a receipt or a credit.</p>
+  </>}>
     <input type="hidden" name="donationId" value={donationId} />
     <div className="field full">
       <label htmlFor="notes">Reconciliation notes</label>
@@ -42,18 +48,5 @@ export function AdminDirectTransferForm({ donationId }: { donationId: string }) 
         I personally confirmed both fields against Amaana&apos;s received bank credit.
       </label>
     </fieldset>
-    {state.status !== "idle" && <p role={state.status === "error" ? "alert" : "status"}
-      className="field full" aria-live={state.status === "error" ? "assertive" : "polite"}>
-      {state.message}
-    </p>}
-    <div className="field full">
-      <button className="button" type="submit" name="decision" value="VERIFY" disabled={pending}>
-        {pending ? "Processing review…" : "Verify received transfer"}
-      </button>{" "}
-      <button className="text-button" type="submit" name="decision" value="REJECT"
-        formNoValidate disabled={pending}>Reject unverified claim</button>
-    </div>
-    <p className="muted field full">Verify creates a financial credit only after the server confirms
-      the exact recorded reference and amount. Rejection never creates a receipt or a credit.</p>
-  </form>;
+  </AdminActionForm>;
 }
