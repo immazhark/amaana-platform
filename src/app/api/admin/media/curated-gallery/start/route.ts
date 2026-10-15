@@ -95,6 +95,8 @@ export async function POST(request: Request) {
         height: true,
         title: true,
         externalUrl: true,
+        isPublic: true,
+        privacyApprovedAt: true,
       },
     });
     const records = new Map(manifest.records.map(item => [item.id, item]));
@@ -107,7 +109,8 @@ export async function POST(request: Request) {
           asset.storageKey !== expectedStorage.storageKey ||
           asset.publicUrl !== expectedStorage.publicUrl ||
           asset.sortOrder !== record.sortOrder ||
-          !matchesCuratedGalleryAssetMetadata(record, asset)) {
+          !matchesCuratedGalleryAssetMetadata(record, asset) ||
+          asset.isPublic !== Boolean(asset.privacyApprovedAt)) {
         return NextResponse.json(
           { error: "An existing curated MediaAsset conflicts with the approved package.", recordId: asset.id },
           { status: 409, headers: privateHeaders },

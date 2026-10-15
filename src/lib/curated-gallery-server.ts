@@ -25,6 +25,11 @@ export function parseCuratedGalleryManifestText(manifestText: string) {
   return curatedGalleryManifestSchema.parse(JSON.parse(manifestText));
 }
 
+export function isCuratedGalleryRuntime() {
+  return process.env.APP_ENVIRONMENT === "staging" &&
+    process.env.RAILWAY_SERVICE_ID === CURATED_GALLERY_REQUIRED_SERVICE_ID;
+}
+
 export function assertCuratedGalleryRuntime() {
   if (process.env.APP_ENVIRONMENT !== "staging") {
     throw new Error("Curated gallery import is restricted to the staging application");

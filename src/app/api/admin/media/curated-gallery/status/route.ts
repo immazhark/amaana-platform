@@ -98,7 +98,8 @@ export async function GET() {
           asset.publicUrl !== expected.publicUrl ||
           asset.sortOrder !== record.sortOrder ||
           asset.sortOrder < 0 ||
-          !matchesCuratedGalleryAssetMetadata(record, asset)) {
+          !matchesCuratedGalleryAssetMetadata(record, asset) ||
+          asset.isPublic !== Boolean(asset.privacyApprovedAt)) {
         mismatches.push(record.id);
         continue;
       }
@@ -155,7 +156,7 @@ export async function GET() {
         missing: missing.length,
         missingIds: missing,
         mismatches,
-        galleryOnly: assets.every(asset => asset.sortOrder >= 0),
+        galleryOnly: mismatches.length === 0 && assets.every(asset => asset.sortOrder >= 0),
         renderingReady: initiatives.every(item => item.ready),
         initiatives,
       },

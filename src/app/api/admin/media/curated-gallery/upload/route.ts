@@ -99,6 +99,28 @@ export async function POST(request: Request) {
     }
 
     const storageIdentity = deriveCuratedGalleryStorage(record);
+    // Do not write any bytes to shared object storage for an already-conflicting
+    // record. Repeat the checks in the transaction to close concurrent edits.
+    const [target, previous] = await Promise.all([
+      prisma.initiative.findUnique({ where: { slug: record.slug }, select: { id: true } }),
+      prisma.mediaAsset.findUnique({ where: { id: record.id } }),
+    ]);
+    if (!target) {
+      return NextResponse.json({ error: "The approved initiative is missing." }, { status: 409, headers: privateHeaders });
+    }
+    if (previous && (
+      previous.initiativeId !== target.id ||
+      previous.kind !== "IMAGE" ||
+      previous.storageKey !== storageIdentity.storageKey ||
+      previous.publicUrl !== storageIdentity.publicUrl ||
+      previous.sortOrder !== record.sortOrder ||
+      !matchesCuratedGalleryAssetMetadata(record, previous) ||
+      previous.isPublic !== Boolean(previous.privacyApprovedAt)
+    )) {
+      return NextResponse.json({ error: "Existing curated media conflicts with the approved package." }, {
+        status: 409, headers: privateHeaders,
+      });
+    }
     const uploaded = await uploadCuratedPublicMediaFile(fileEntry, storageIdentity.storageKey, record.sha256);
     const result = await withSerializableTransactionRetry(async tx => {
       const initiative = await tx.initiative.findUnique({ where: { slug: record.slug }, select: { id: true } });
@@ -111,7 +133,8 @@ export async function POST(request: Request) {
             existing.storageKey !== storageIdentity.storageKey ||
             existing.publicUrl !== storageIdentity.publicUrl ||
             existing.sortOrder !== record.sortOrder ||
-            !matchesCuratedGalleryAssetMetadata(record, existing)) {
+            !matchesCuratedGalleryAssetMetadata(record, existing) ||
+            existing.isPublic !== Boolean(existing.privacyApprovedAt)) {
           throw new Error("Existing curated media record conflicts with the approved package");
         }
         if (!existing.blurDataURL && uploaded.blurDataURL) {

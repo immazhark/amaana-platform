@@ -2,6 +2,7 @@ import { getIndexNowConfiguration } from "@/lib/indexnow";
 import { AdminIndexNowSubmission } from "@/components/admin-indexnow-submission";
 import Link from "@/components/navigation-link";
 import { CuratedGalleryImporter } from "@/components/curated-gallery-importer";
+import { isCuratedGalleryRuntime } from "@/lib/curated-gallery-server";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -88,7 +89,8 @@ export default async function AdminMediaPage({ searchParams }: Props) {
         <p role="status">Search notifications are disabled until ownership configuration and release approval are complete.</p>}
     </section>}
 
-    {canEdit && canApprove && storage.uploadReady && <CuratedGalleryImporter />}
+    {canEdit && canApprove && storage.uploadReady && storage.separateBucketConfigured &&
+      isCuratedGalleryRuntime() && <CuratedGalleryImporter />}
 
     {canEdit && <section className="admin-card" style={{ marginBottom: "2rem" }}>
       <h2>Add reviewed media</h2>
