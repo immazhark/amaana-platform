@@ -2,6 +2,7 @@ import { expect, test } from "@playwright/test";
 
 const protectedAdminSurfaces = [
   "/admin",
+  "/admin/allocations",
   "/admin/appeals",
   "/admin/appeals/not-a-real-id",
   "/admin/audit",
@@ -9,6 +10,8 @@ const protectedAdminSurfaces = [
   "/admin/giving-funds/not-a-real-id/preview",
   "/admin/donations",
   "/admin/donations/not-a-real-id",
+  "/admin/donations/recognition",
+  "/admin/donations/rights",
   "/admin/home-carousel",
   "/admin/media",
   "/admin/notifications",
