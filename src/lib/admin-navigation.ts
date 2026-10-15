@@ -6,6 +6,7 @@ export const ADMIN_NAV_ITEMS = [
   { permission: "assistance.approve", path: "/admin/retention", label: "Retention review" },
   { permission: "fund.view", path: "/admin/giving-funds", label: "Giving fund registry" },
   { permission: "donation.view", path: "/admin/donations", label: "Donations" },
+  { permission: "donation.view", path: "/admin/allocations", label: "Allocation proposals" },
   { permission: "notification.view", path: "/admin/notifications", label: "Notification delivery" },
   { permission: "rbac.manage", path: "/admin/audit", label: "Audit history" },
 ] as const;

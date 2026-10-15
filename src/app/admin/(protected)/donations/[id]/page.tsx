@@ -8,6 +8,8 @@ import { getAdminDonationPurpose } from "@/lib/admin-donation-purpose";
 import { prisma } from "@/lib/prisma";
 import { getDonationEvidenceUrl } from "@/lib/storage";
 import { AdminDirectTransferForm } from "@/components/admin-direct-transfer-form";
+import { AllocationProposalForm } from "@/components/admin-allocation-proposal-form";
+import { allocationPlanningEnabled } from "@/lib/allocation-proposal-operations";
 
 type Props = { params: Promise<{ id: string }> };
 const formatDateTime = (value: Date | null) => value ? value.toLocaleString("en-IN") : "Not recorded";
@@ -57,6 +59,15 @@ export default async function DonationDetailPage({ params }: Props) {
       </Link>. Compare the bank statements before acting. The server will reject a second
       capture of the same transaction reference.
     </p>}
+    {allocationPlanningEnabled() && hasPermission(user, "fund.manage") &&
+      donation.fundId && donation.status === "CAPTURED" && (
+        <section className="card" aria-labelledby="allocation-proposal-heading">
+          <h2 id="allocation-proposal-heading">Internal fund allocation planning</h2>
+          <p>No money is transferred by a proposal or its approval. A different authorized reviewer must check original donor purpose, confirmed retained funds and any existing approved allocations.</p>
+          <AllocationProposalForm donationId={donation.id}/>
+          <p><Link href="/admin/allocations">View allocation review ledger →</Link></p>
+        </section>
+      )}
     <div className="admin-detail-grid">
       <section className="card"><h2>Donation record</h2><dl className="details">
         <div><dt>Donor</dt><dd>{donation.donorName}</dd></div><div><dt>Public anonymity</dt><dd>{donation.isAnonymous ? "Anonymous" : "Name may be shown"}</dd></div>
