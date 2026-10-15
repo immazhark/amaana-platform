@@ -1,3 +1,27 @@
+## Shukr search privacy and allocation conflict queues
+
+The optional donor Shukr page at `/shukr` is public for a
+**voluntarily consented, moderated, withdrawable on-site name list**,
+but must remain `noindex,nofollow,noarchive` and excluded from the
+sitemap. Donor recognition consent is not consent to permanent
+third-party search indexing. Do not remove this protection without
+independently reviewed, explicit consent and removal guarantees.
+
+The private allocation page has three separately bounded queues:
+1. Oldest refund or donation-status conflicts against approved,
+   un-reversed internal allocation plans, with a total count that
+   warns when records exceed the displayed viewport.
+2. Oldest pending independent reviews.
+3. Most recently reviewed approvals and rejections.
+
+Always reconcile all underlying donation records with approved
+non-reversed allocations, not just the visible rows. A historical
+planning approval is **not bank liquidity, a verified expenditure,
+or proof that a beneficiary was served**. Disable
+`AMAANA_ALLOCATION_PLANNING_ENABLED` if the accounting projection,
+fund purpose, refund reconciliation or third-party reviewer process
+cannot be demonstrated against an isolated real PostgreSQL instance.
+
 ## Internal giving-fund allocation planning (OFF by default)
 
 This feature is an **internal allocation proposal and second-reviewer
