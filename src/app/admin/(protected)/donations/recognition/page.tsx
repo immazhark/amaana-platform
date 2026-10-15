@@ -34,6 +34,20 @@ export default async function RecognitionReviewPage() {
     select: { id: true, referenceNumber: true, recognitionDisplayName: true,
       recognitionRequestedAt: true, recognitionApprovedAt: true },
   }) : [];
+  // Donor-origin consent actions use a separate minimal audit ledger because
+  // staff AuditEvent requires a staff actor. Do not fetch names, emails,
+  // receipt credentials, browser data or payment amounts for this timeline.
+  const [consentHistory, totalConsentEvents] = donorRecognitionEnabled()
+    ? await Promise.all([
+        prisma.donorRecognitionConsentEvent.findMany({
+          orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+          take: 50,
+          select: { id: true, action: true, createdAt: true, donationId: true,
+            donation: { select: { referenceNumber: true } } },
+        }),
+        prisma.donorRecognitionConsentEvent.count(),
+      ])
+    : [[], 0];
   return <section className="admin-card">
     <div className="admin-heading"><div><p className="eyebrow">Private moderation</p>
       <h1>Donor Shukr recognition requests</h1>
@@ -62,6 +76,25 @@ export default async function RecognitionReviewPage() {
             approvedAt={item.recognitionApprovedAt.toISOString()}/>
         </li>;
       })}</ol>}
+    <section aria-labelledby="recognition-consent-events">
+      <h2 id="recognition-consent-events">Private donor consent changes</h2>
+      <p className="muted">An append-only, receipt-authorized history of requests and withdrawals.
+        This history records no donor display name, amount, email, IP address or receipt token.
+        Staff approvals and emergency takedowns remain in the separate authorized audit trail.</p>
+      {consentHistory.length > 0
+        ? <ol className="history">{consentHistory.map(event => <li key={event.id}>
+            <strong>{event.action === "REQUESTED" ? "Recognition requested" :
+              event.action === "WITHDRAWN" ? "Recognition withdrawn" : "Unknown consent action"}</strong>
+            <span>{event.createdAt.toLocaleDateString("en-IN")}</span>
+            <Link href={`/admin/donations/${event.donationId}`}>
+              Private donation: {event.donation.referenceNumber}
+            </Link>
+          </li>)}</ol>
+        : <p className="muted">No receipt-authenticated consent changes recorded.</p>}
+      {totalConsentEvents > consentHistory.length && <p className="muted">
+        Showing {consentHistory.length} of {totalConsentEvents} historical events.
+        Older events remain in the private finance retention ledger.</p>}
+    </section>
     <p><Link href="/admin/donations">Back to private donation records</Link></p>
   </section>;
 }
