@@ -27,6 +27,7 @@ describe("admin navigation visibility", () => {
       .toEqual([
         { permission: "assistance.view", path: "/admin", label: "Assistance queue" },
         { permission: "donation.view", path: "/admin/donations", label: "Donations" },
+        { permission: "donation.view", path: "/admin/allocations", label: "Allocation proposals" },
         { permission: "notification.view", path: "/admin/notifications", label: "Notification delivery" },
       ]);
   });
@@ -56,6 +57,7 @@ describe("admin navigation visibility", () => {
       "Media review",
       "Retention review",
       "Donations",
+      "Allocation proposals",
       "Notification delivery",
       "Audit history",
     ]);
