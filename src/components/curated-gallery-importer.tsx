@@ -42,6 +42,7 @@ export function CuratedGalleryImporter() {
   const [phase, setPhase] = useState("Ready for the verified 154-image ZIP.");
   const [progress, setProgress] = useState(0);
   const [busy, setBusy] = useState(false);
+  const [needsReconciliation, setNeedsReconciliation] = useState(false);
   const [status, setStatus] = useState<CuratedGalleryStatus | null>(null);
   const statusRequest = useRef(0);
   const busyRef = useRef(false);
@@ -57,6 +58,11 @@ export function CuratedGalleryImporter() {
   function applyStatus(current: CuratedGalleryStatus, requestId: number) {
     if (requestId !== statusRequest.current || lifetime.current?.signal.aborted) return false;
     setStatus(current);
+    // Only an authoritative clean status read can permit a deliberate restart
+    // after a possibly committed start/upload/publish request.
+    if (current.mismatches.length === 0 && current.galleryOnly) {
+      setNeedsReconciliation(false);
+    }
     if (current.uploaded === CURATED_GALLERY_RECORD_COUNT && current.missing === 0 &&
         current.mismatches.length === 0 && current.galleryOnly) {
       setProgress(100);
@@ -92,6 +98,7 @@ export function CuratedGalleryImporter() {
       if (controller.signal.aborted || id !== statusRequest.current) return;
       const current = parseCuratedGalleryStatus(value);
       setStatus(current);
+      if (current.mismatches.length === 0 && current.galleryOnly) setNeedsReconciliation(false);
       if (current.uploaded === CURATED_GALLERY_RECORD_COUNT && current.missing === 0 &&
           current.mismatches.length === 0 && current.galleryOnly) {
         setProgress(100);
@@ -141,7 +148,7 @@ export function CuratedGalleryImporter() {
   }
 
   async function run(file: File) {
-    if (busyRef.current) return;
+    if (busyRef.current || needsReconciliation) return;
     busyRef.current = true;
     ++statusRequest.current;
     setBusy(true);
@@ -229,6 +236,7 @@ export function CuratedGalleryImporter() {
       setPhase("154 gallery originals are uploaded and attached as unpublished review records. Publication remains a separate audited step.");
     } catch (error) {
       const message = error instanceof Error ? error.message : "Curated gallery import failed.";
+      if (started && lifetime.current && !lifetime.current.signal.aborted) setNeedsReconciliation(true);
       setPhase(started ? `${message} Progress may have changed on the server; check status before restarting.` : message);
     } finally {
       busyRef.current = false;
@@ -255,19 +263,23 @@ export function CuratedGalleryImporter() {
           id="curatedGalleryZip"
           type="file"
           accept=".zip,application/zip"
-          disabled={busy}
+          disabled={busy || needsReconciliation}
+          aria-describedby="curatedGalleryZipInstructions"
           onChange={event => {
             const file = event.currentTarget.files?.[0];
             event.currentTarget.value = "";
             if (file) void run(file);
           }}
         />
-        <small>Expected SHA-256: {CURATED_GALLERY_PACKAGE_SHA256}</small>
+        <small id="curatedGalleryZipInstructions">Expected SHA-256: {CURATED_GALLERY_PACKAGE_SHA256}. If a request fails after staging begins, check server status before selecting the package again.</small>
       </div>
       <div style={{ marginTop: "1rem" }} aria-live="polite">
         <strong>{phase}</strong>
         <progress value={progress} max={100} aria-label="Gallery import progress" style={{ width: "100%", marginTop: ".5rem" }}>{progress}%</progress>
       </div>
+      {needsReconciliation && <p role="alert" className="muted" style={{ marginTop: ".75rem" }}>
+        Import or publication may have changed on the server. Check status before retrying.
+      </p>}
       <button type="button" className="button secondary" disabled={busy}
         onClick={() => void refreshStatus().catch(error => setPhase(
           error instanceof Error ? error.message : "Gallery status could not be verified.",
@@ -279,8 +291,15 @@ export function CuratedGalleryImporter() {
           <p className="muted" style={{ marginTop: ".75rem" }}>
             Uploaded {status.uploaded ?? 0}/{status.expected ?? CURATED_GALLERY_RECORD_COUNT} ·
             Published {status.published ?? 0} · Missing {status.missing ?? 0} ·
+            Mismatches {status.mismatches.length} ·
             Public render {status.renderingReady === true ? "22/22 verified" : status.renderingReady === false ? "requires review" : "checking"}
           </p>
+          {(status.mismatches.length > 0 || !status.galleryOnly) && (
+            <p role="alert" className="muted">
+              Gallery records differ from the approved package or include an invalid gallery role.
+              Publication is blocked until these records are reviewed.
+            </p>
+          )}
           {status.initiatives?.length ? (
             <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Gallery import records" style={{ marginTop: "1rem" }}>
               <table>
@@ -315,7 +334,7 @@ export function CuratedGalleryImporter() {
               </table>
             </div>
           ) : null}
-          {status.initialized && status.uploaded === CURATED_GALLERY_RECORD_COUNT &&
+          {!needsReconciliation && status.initialized && status.uploaded === CURATED_GALLERY_RECORD_COUNT &&
            status.published !== CURATED_GALLERY_RECORD_COUNT &&
            status.missing === 0 &&
            (status.mismatches?.length ?? 0) === 0 &&
