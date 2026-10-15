@@ -1,5 +1,10 @@
 # Amaana Master Reconciled Execution Plan
 
+### 2026-10-16 — Actual CI lint corrective batch (no source-status inflation)
+
+After recovering existing PR #292 head `4f315eea`, GitHub Actions run 38777759702 failed the full lint command with 7 errors and 2 warnings. Existing source was corrected at commit `ac5daac5`: three in-app contact navigations use the current Link wrapper; four JSX text apostrophes are escaped without copy changes; gallery closure captures stable dialog/trigger references, preserving the existing opener identity return. Exact remote readback confirmed the intended replacements. CI run 38793797760 was pending; type, Vitest, ESLint, browser, optimized build and bundle budgets are NOT claimed passed on this head. This batch addresses actionable code diagnostics but does not promote any AF-* requirement or establish production deployment. Canonical register remains 60 Implemented / 60 Partial / 27 Not started / 2 other.
+
+
 ### 2026-10-15 — Explicit-origin public schema boundary (source-only)
 
 PR #292 commits `515927f1` and `9676aa12`: public JSON-LD image URLs now recheck private paths when the caller explicitly supplies a preview/canonical origin that differs from NEXT_PUBLIC_APP_URL. Organization, Breadcrumb, Appeal and Article/WebPage graph builders share one validated HTTPS canonical-origin policy; malformed configured URLs cannot add query/fragment/credential data to @ids, breadcrumbs or DonateAction URLs. Existing review/publication/privacy checks, configured public CDN and safe-media output remain unchanged. Source regression cases authored but not executed in the current runtime. No status promotion: AF-R008's source guard strengthened; AF-R080 live rich-results verification Not started. Canonical 149: 60 Implemented / 60 Partial / 27 Not started / 1 Superseded / 1 Not applicable. Exact-head type/unit/lint/browser/asset/deployment acceptance still open.
