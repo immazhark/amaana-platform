@@ -32,3 +32,14 @@ export function projectDonorRightsStatuses(
   }
   return projected;
 }
+
+// This records a controlled operational outcome, not free-text personal
+// evidence or a legal assertion that any financial record was deleted.
+export const DONOR_RIGHTS_REVIEW_OUTCOMES = [
+  { id: "PRIVATE_FOLLOW_UP_COMPLETED", label: "Private review and donor follow-up completed" },
+  { id: "RETENTION_REVIEW_DOCUMENTED", label: "Retention decision reviewed and documented securely" },
+] as const;
+export type DonorRightsReviewOutcome = typeof DONOR_RIGHTS_REVIEW_OUTCOMES[number]["id"];
+export function isDonorRightsReviewOutcome(value: unknown): value is DonorRightsReviewOutcome {
+  return typeof value === "string" && DONOR_RIGHTS_REVIEW_OUTCOMES.some(item => item.id === value);
+}

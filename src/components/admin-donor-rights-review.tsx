@@ -2,6 +2,7 @@
 
 import { useActionState } from "react";
 import { reviewDonorRightsAction, type RightsReviewState } from "@/app/admin/(protected)/donations/rights/actions";
+import { DONOR_RIGHTS_REVIEW_OUTCOMES } from "@/lib/donor-rights";
 
 const initial: RightsReviewState = { state: "idle", message: "" };
 export function AdminDonorRightsReview({ requestId, status }: {
@@ -10,6 +11,14 @@ export function AdminDonorRightsReview({ requestId, status }: {
   const [state, action, pending] = useActionState(reviewDonorRightsAction, initial);
   return <form className="form-grid" action={action} aria-busy={pending}>
     <input type="hidden" name="requestId" value={requestId}/>
+    {status === "IN_REVIEW" && <label className="field">
+      Documented review outcome
+      <select name="resolution" defaultValue="" required>
+        <option value="" disabled>Choose the completed review outcome</option>
+        {DONOR_RIGHTS_REVIEW_OUTCOMES.map(item =>
+          <option value={item.id} key={item.id}>{item.label}</option>)}
+      </select>
+    </label>}
     {status === "IN_REVIEW" && <label className="checkbox-row">
       <input name="reviewConfirmed" type="checkbox" value="true" required/>
       I personally reviewed this request, followed the appropriate private process, and confirmed any necessary donor response or escalation outside this form.

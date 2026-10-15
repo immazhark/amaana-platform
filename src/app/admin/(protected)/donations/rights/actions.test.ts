@@ -17,7 +17,7 @@ function form(decision: string, confirmed = false) {
   const value = new FormData();
   value.set("requestId", "private-request-1234");
   value.set("decision", decision);
-  if (confirmed) value.set("reviewConfirmed", "true");
+  if (confirmed) { value.set("reviewConfirmed", "true"); value.set("resolution", "PRIVATE_FOLLOW_UP_COMPLETED"); }
   return value;
 }
 describe("authorized donor data review transitions", () => {
@@ -55,6 +55,21 @@ describe("authorized donor data review transitions", () => {
     }));
     expect(mocks.audit).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({ action: "DONOR_RIGHTS_REVIEW_CLOSED" }),
+    }));
+  });
+  it("rejects arbitrary review outcomes instead of recording unstructured sensitive evidence", async () => {
+    const untrusted = form("CLOSE_REVIEW", true);
+    untrusted.set("resolution", "DELETE_ALL_RECORDS");
+    const result = await reviewDonorRightsAction(before, untrusted);
+    expect(result.state).toBe("error");
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+  it("audits the controlled outcome without donor documents or free text", async () => {
+    await reviewDonorRightsAction(before, form("CLOSE_REVIEW", true));
+    expect(mocks.audit).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        metadata: { resultingStatus: "CLOSED", reviewOutcome: "PRIVATE_FOLLOW_UP_COMPLETED" },
+      }),
     }));
   });
   it("prevents stale second approvals and audits only a committed transition", async () => {
