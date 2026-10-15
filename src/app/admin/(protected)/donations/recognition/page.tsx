@@ -34,6 +34,30 @@ export default async function RecognitionReviewPage() {
     select: { id: true, referenceNumber: true, recognitionDisplayName: true,
       recognitionRequestedAt: true, recognitionApprovedAt: true },
   }) : [];
+  // Pending requests can become invalid after a donor switches anonymity
+  // or their payment is refunded. They must remain visible to authorized
+  // staff for irreversible, audited cleanup rather than disappearing from
+  // both moderation and takedown queues.
+  const ineligiblePendingWhere = {
+    recognitionRequestedAt: { not: null },
+    recognitionApprovedAt: null,
+    recognitionRevokedAt: null,
+    recognitionDisplayName: { not: null },
+    OR: [{ status: { not: "CAPTURED" } }, { isAnonymous: true },
+      { refundedAmount: { gt: 0 } }],
+  } as const;
+  const [ineligiblePending, ineligiblePendingCount] = donorRecognitionEnabled()
+    ? await Promise.all([
+        prisma.donation.findMany({
+          where: ineligiblePendingWhere,
+          orderBy: [{ recognitionRequestedAt: "asc" }, { id: "asc" }],
+          take: 30,
+          select: { id: true, referenceNumber: true,
+            recognitionDisplayName: true, recognitionRequestedAt: true },
+        }),
+        prisma.donation.count({ where: ineligiblePendingWhere }),
+      ])
+    : [[], 0];
   // Donor-origin consent actions use a separate minimal audit ledger because
   // staff AuditEvent requires a staff actor. Do not fetch names, emails,
   // receipt credentials, browser data or payment amounts for this timeline.
@@ -63,6 +87,27 @@ export default async function RecognitionReviewPage() {
           <AdminRecognitionReview donationId={request.id} requestedAt={request.recognitionRequestedAt.toISOString()} displayName={name}/>
         </li>;
       })}</ol>}
+    <section aria-labelledby="ineligible-shukr-title">
+      <h2 id="ineligible-shukr-title">Ineligible pending names requiring privacy cleanup</h2>
+      <p className="muted">These private requests are no longer eligible for publication
+        because the donation status, anonymity preference or refund position changed.
+        Staff can remove the stale request without publishing a name or altering payment records.</p>
+      {ineligiblePending.length > 0
+        ? <ol className="history">{ineligiblePending.map(item => {
+            const name = parseDonorRecognitionName(item.recognitionDisplayName);
+            if (!name || !item.recognitionRequestedAt) return null;
+            return <li key={item.id}><strong>{name}</strong>
+              <span>Private reference: {item.referenceNumber}</span>
+              <AdminRecognitionUnpublish donationId={item.id} displayName={name}
+                requestedAt={item.recognitionRequestedAt.toISOString()} approvedAt={null}/>
+            </li>;
+          })}</ol>
+        : <p className="muted">No ineligible pending recognition names need removal.</p>}
+      {ineligiblePendingCount > ineligiblePending.length && <p role="alert">
+        {ineligiblePendingCount - ineligiblePending.length} additional ineligible requests
+        remain beyond the displayed queue. Complete the private backlog before claiming clearance.
+      </p>}
+    </section>
     <h2>Approved names and emergency unpublication</h2>
     <p className="muted">Staff may immediately unpublish a previously approved display name, including after a refund or privacy complaint. This does not change the donation's financial status.</p>
     {active.length === 0 ? <p className="empty-state">No approved names are awaiting review or removal.</p>

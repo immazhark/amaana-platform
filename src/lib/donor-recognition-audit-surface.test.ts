@@ -8,6 +8,14 @@ describe("private donor recognition event audit UI", () => {
     expect(source).toContain("const [consentHistory, totalConsentEvents] = donorRecognitionEnabled()");
     expect(source).toContain("prisma.donorRecognitionConsentEvent.findMany");
   });
+  it("keeps hidden ineligible pending consent requests available for audited staff cleanup", () => {
+    expect(source).toContain('recognitionRequestedAt: { not: null }');
+    expect(source).toContain('OR: [{ status: { not: "CAPTURED" } }, { isAnonymous: true }');
+    expect(source).toContain('refundedAmount: { gt: 0 }');
+    expect(source).toContain("ineligiblePendingCount > ineligiblePending.length");
+    expect(source).toContain('approvedAt={null}');
+    expect(source).toContain('Remove the stale request');
+  });
   it("only fetches action and timestamp, with a donation-scoped staff-only link", () => {
     expect(source).toContain('select: { id: true, action: true, createdAt: true, donationId: true,');
     expect(source).toContain('donation: { select: { referenceNumber: true } }');
