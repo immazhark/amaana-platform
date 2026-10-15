@@ -12,5 +12,8 @@ describe("optional donor recognition does not create a search-index persistence 
     expect(page).toContain("robots: { index: false, follow: false, noarchive: true }");
     expect(page).toContain('export const dynamic = "force-dynamic"');
     expect(page).toContain("export const revalidate = 0");
+    const config = readFileSync(new URL("../../next.config.ts", import.meta.url), "utf8");
+    expect(config).toContain('{ source: "/shukr", headers: privateRecordHeaders }');
+
   });
 });

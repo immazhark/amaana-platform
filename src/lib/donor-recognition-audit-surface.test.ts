@@ -14,7 +14,7 @@ describe("private donor recognition event audit UI", () => {
     expect(source).toContain('refundedAmount: { gt: 0 }');
     expect(source).toContain("ineligiblePendingCount > ineligiblePending.length");
     expect(source).toContain('approvedAt={null}');
-    expect(source).toContain('Remove the stale request');
+    expect(source).toContain('remove the stale request');
   });
   it("only fetches action and timestamp, with a donation-scoped staff-only link", () => {
     expect(source).toContain('select: { id: true, action: true, createdAt: true, donationId: true,');

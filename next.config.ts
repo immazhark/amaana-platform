@@ -95,7 +95,7 @@ const nextConfig: NextConfig = {
       { source: "/admin/:path*", headers: privateRecordHeaders },
       { source: "/donate/:path*", headers: noStoreHeaders },
       { source: "/donations/:path*", headers: privateRecordHeaders },
-      { source: "/shukr", headers: noStoreHeaders },
+      { source: "/shukr", headers: privateRecordHeaders },
       { source: "/request-assistance/:path*", headers: noStoreHeaders },
       { source: "/request-assistance/received", headers: privateRecordHeaders },
       { source: "/request-assistance/status", headers: privateRecordHeaders },
