@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   parsePrivateDonationAcknowledgementLocation,
   privateDonationAcknowledgementPath,
-  formatPrivateReceiptINR,
 } from "./private-donation-ack";
+import { formatPrivateReceiptINR } from "./inr-format";
 
 describe("private donation acknowledgement links", () => {
   it("keeps the receipt token in the browser fragment", () => {

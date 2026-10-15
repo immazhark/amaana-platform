@@ -1,5 +1,5 @@
 import { amountToNumber, getAppealProgressPercent, type AmountLike } from "@/lib/appeals";
-import { formatPrivateReceiptINR } from "@/lib/private-donation-ack";
+import { formatPrivateReceiptINR } from "@/lib/inr-format";
 
 export type PublicAppealProgress = {
   raised: number;

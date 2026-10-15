@@ -29,10 +29,11 @@ afterEach(() => {
   hooks.states = [];
   hooks.setters = [];
   hooks.effects = [];
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
-function mount(kind: "donation" | "assistance", json: () => Promise<unknown>) {
+function mount(kind: "donation" | "assistance", json: () => Promise<unknown>, transport?: Promise<unknown>) {
   const frames: (() => void)[] = [];
   vi.stubGlobal("window", {
     location: { search: "", hash: "#token=synthetic-private-token-only", pathname: "/private-record" },
@@ -40,7 +41,7 @@ function mount(kind: "donation" | "assistance", json: () => Promise<unknown>) {
     requestAnimationFrame: (callback: () => void) => { frames.push(callback); return 1; },
     cancelAnimationFrame: vi.fn(),
   });
-  const fetch = vi.fn().mockResolvedValue({ ok: true, status: 200, json });
+  const fetch = vi.fn().mockImplementation(() => transport ?? Promise.resolve({ ok: true, status: 200, json }));
   vi.stubGlobal("fetch", fetch);
   hooks.states = [undefined, 0];
   if (kind === "donation") DonationAcknowledgementClient({ reference: hooks.credentials.reference });
@@ -55,6 +56,35 @@ function mount(kind: "donation" | "assistance", json: () => Promise<unknown>) {
 
 describe("private record clients at the JSON/effect boundary", () => {
   for (const kind of ["donation", "assistance"] as const) {
+    it(`${kind} clears the deadline after a completed private read`, async () => {
+      vi.useFakeTimers();
+      const { setter, fetch, cleanup } = mount(kind, async () => ({ found: false }));
+      await vi.advanceTimersByTimeAsync(0);
+      const calls = setter.mock.calls.length;
+      expect(setter).toHaveBeenLastCalledWith(kind === "donation" ? null : {
+        credentials: hooks.credentials, record: null, failed: false,
+      });
+      await vi.advanceTimersByTimeAsync(8_000);
+      expect(setter).toHaveBeenCalledTimes(calls);
+      expect(fetch.mock.calls[0]?.[1].signal.aborted).toBe(false);
+      cleanup?.();
+    });
+    it.each(["transport", "body"])(`${kind} ends stalled %s reads and ignores their late results`, async stage => {
+      vi.useFakeTimers();
+      let complete: (value: unknown) => void = () => {};
+      const pending = new Promise(resolve => { complete = resolve; });
+      const { setter, fetch, cleanup } = mount(kind, () => pending, stage === "transport" ? pending : undefined);
+      await vi.advanceTimersByTimeAsync(8_000);
+      expect(setter).toHaveBeenLastCalledWith(kind === "donation" ? "error" : {
+        credentials: hooks.credentials, record: null, failed: true,
+      });
+      expect(fetch.mock.calls[0]?.[1].signal.aborted).toBe(true);
+      const calls = setter.mock.calls.length;
+      complete(stage === "transport" ? { ok: true, status: 200, json: async () => ({ found: false }) } : { found: false });
+      await vi.advanceTimersByTimeAsync(0);
+      expect(setter).toHaveBeenCalledTimes(calls); expect(fetch).toHaveBeenCalledOnce();
+      cleanup?.();
+    });
     for (const payload of [null, { found: true }, { found: "true", status: {} }]) {
       it(`${kind} keeps malformed JSON in the read-retry state: ${JSON.stringify(payload)}`, async () => {
         const { setter, fetch } = mount(kind, async () => payload);
@@ -102,6 +132,21 @@ describe("private record clients at the JSON/effect boundary", () => {
     expect(html).toContain("Confidential assistance appeal");
     expect(html).not.toContain("/appeals/null");
     expect(html).not.toContain("Return to this appeal");
+  });
+
+  it("does not paint the previous donation under a newly selected reference", () => {
+    hooks.states = [{
+      found: true,
+      presentation: { tone: "captured", heading: "Previous private donation", summary: "Private record", statusLabel: "Verified" },
+      donation: {
+        referenceNumber: "AMAANA-PREVIOUS", receiptNumber: "ACK-SYNTHETIC", donorName: "Previous private donor",
+        givingIntent: "GENERAL", amount: 100, refundedAmount: 0, recordDate: "2026-10-13T00:00:00Z", providerPaymentId: null,
+        appeal: { title: "Confidential assistance appeal", slug: null },
+      },
+    }, 0];
+    const html = renderToStaticMarkup(createElement(DonationAcknowledgementClient, { reference: "AMAANA-NEXT" }));
+    expect(html).toContain("Opening your private transaction record");
+    expect(html).not.toContain("Previous private donor"); expect(html).not.toContain("AMAANA-PREVIOUS");
   });
 
   it("tracking status names cannot render inherited object properties", () => {

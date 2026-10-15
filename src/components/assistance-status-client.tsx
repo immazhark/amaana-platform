@@ -4,7 +4,7 @@ import Link from "@/components/navigation-link";
 import { useEffect, useState } from "react";
 import type { PrivateTrackingCredentials } from "@/lib/private-tracking";
 import { usePrivateTrackingCredentials } from "@/lib/use-private-tracking-credentials";
-import { isTrackingResponse, type TrackingRecord } from "@/lib/private-record-response";
+import { isTrackingResponse, type TrackingRecord } from "@/lib/private-tracking-response";
 
 const statusLabels: Record<string, string> = {
   SUBMITTED: "Submitted",
@@ -41,6 +41,10 @@ export function AssistanceStatusClient() {
     if (!credentials) return;
 
     const controller = new AbortController();
+    const timeout = setTimeout(() => {
+      controller.abort();
+      setResult({ credentials, record: null, failed: true });
+    }, 8_000);
     void fetch("/api/assistance/status", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -57,9 +61,10 @@ export function AssistanceStatusClient() {
       .then(response => { if (!controller.signal.aborted) setResult({ credentials, record: response.found ? response : null, failed: false }); })
       .catch(error => {
         if (!controller.signal.aborted && !(error instanceof DOMException && error.name === "AbortError")) setResult({ credentials, record: null, failed: true });
-      });
+      })
+      .finally(() => clearTimeout(timeout));
 
-    return () => controller.abort();
+    return () => { clearTimeout(timeout); controller.abort(); };
   }, [credentials, retry]);
 
   const loading = credentials === undefined || (Boolean(credentials) && result === undefined);

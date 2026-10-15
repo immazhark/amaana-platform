@@ -10,8 +10,6 @@ export type AcknowledgementRecord = {
   };
 };
 
-export type TrackingRecord = { found: true; status: string; createdAt: string; updatedAt: string };
-
 function object(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === "object" && !Array.isArray(value);
 }
@@ -60,9 +58,4 @@ export function isAcknowledgementResponse(value: unknown, reference: string): va
       : d.appeal.slug === null
         ? d.appeal.title === "Confidential assistance appeal"
         : text(d.appeal.slug) && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(d.appeal.slug));
-}
-
-export function isTrackingResponse(value: unknown): value is TrackingRecord | { found: false } {
-  return object(value) && (value.found === false
-    || (value.found === true && text(value.status) && date(value.createdAt) && date(value.updatedAt)));
 }

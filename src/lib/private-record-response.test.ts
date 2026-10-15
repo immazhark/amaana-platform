@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { isAcknowledgementResponse, isTrackingResponse } from "./private-record-response";
+import { isAcknowledgementResponse } from "./private-record-response";
+import { isTrackingResponse } from "./private-tracking-response";
 
 const reference = "AMAANA-RECORD-TEST";
 const acknowledgement = {

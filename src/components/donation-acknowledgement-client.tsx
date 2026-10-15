@@ -5,7 +5,8 @@ import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react"
 
 import { PrintButton } from "@/components/print-button";
 import { donationIntentLabel } from "@/lib/donation-intent";
-import { formatPrivateReceiptINR, parsePrivateDonationAcknowledgementLocation } from "@/lib/private-donation-ack";
+import { parsePrivateDonationAcknowledgementLocation } from "@/lib/private-donation-ack";
+import { formatPrivateReceiptINR } from "@/lib/inr-format";
 import { isAcknowledgementResponse, type AcknowledgementRecord } from "@/lib/private-record-response";
 const ReceiptPdfDownloadButton = lazy(() => import("@/components/receipt-pdf-download-button"));
 
@@ -44,7 +45,8 @@ function PrivateTokenRecovery({ onRecover }: { onRecover: (token: string) => voi
 }
 
 export function DonationAcknowledgementClient({ reference, pdfEnabled = false, recognitionEnabled = false, rightsEnabled = false }: { reference: string; pdfEnabled?: boolean; recognitionEnabled?: boolean; rightsEnabled?: boolean }) {
-  const [record, setRecord] = useState<AcknowledgementRecord | null | "error" | undefined>(undefined);
+  const [loadedRecord, setRecord] = useState<AcknowledgementRecord | null | "error" | undefined>(undefined);
+  const record = loadedRecord && loadedRecord !== "error" && loadedRecord.donation.referenceNumber !== reference ? undefined : loadedRecord;
   const [attempt, retry] = useState(0);
   const credential = useRef<[string, string | null]>([reference, null]);
   const recognitionToken = useCallback(() => credential.current[0] === reference ? credential.current[1] : null, [reference]);
@@ -52,6 +54,7 @@ export function DonationAcknowledgementClient({ reference, pdfEnabled = false, r
   useEffect(() => {
     let active = true;
     let controller: AbortController | undefined;
+    let timeout: ReturnType<typeof setTimeout> | undefined;
     const frame = window.requestAnimationFrame(() => {
       setRecord(undefined);
       const resolvedToken = parsePrivateDonationAcknowledgementLocation(window.location.search, window.location.hash)
@@ -67,6 +70,11 @@ export function DonationAcknowledgementClient({ reference, pdfEnabled = false, r
       }
 
       controller = new AbortController();
+      timeout = setTimeout(() => {
+        if (!active) return;
+        controller?.abort();
+        setRecord("error");
+      }, 8_000);
       void fetch("/api/donations/acknowledgement", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -80,15 +88,17 @@ export function DonationAcknowledgementClient({ reference, pdfEnabled = false, r
           if (!isAcknowledgementResponse(result, reference)) throw new Error("Invalid acknowledgement response");
           return result;
         })
-        .then(result => { if (active) setRecord(result.found ? result : null); })
+        .then(result => { if (active && !controller?.signal.aborted) setRecord(result.found ? result : null); })
         .catch(error => {
-          if (active && error?.name !== "AbortError") setRecord("error");
-        });
+          if (active && !controller?.signal.aborted && error?.name !== "AbortError") setRecord("error");
+        })
+        .finally(() => clearTimeout(timeout));
     });
 
     return () => {
       active = false;
       window.cancelAnimationFrame(frame);
+      clearTimeout(timeout);
       controller?.abort();
     };
   }, [reference, attempt]);

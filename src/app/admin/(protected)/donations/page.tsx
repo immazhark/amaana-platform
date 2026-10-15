@@ -2,7 +2,7 @@ import Link from "@/components/navigation-link";
 import { DonationIntent, DonationStatus, Prisma } from "@prisma/client";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { summarizeSettledDonationAggregate } from "@/lib/fund-ledger";
-import { formatPrivateReceiptINR } from "@/lib/private-donation-ack";
+import { formatPrivateReceiptINR } from "@/lib/inr-format";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
 import { getAdminDonationPurpose } from "@/lib/admin-donation-purpose";

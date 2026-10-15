@@ -2,7 +2,7 @@ import Link from "@/components/navigation-link";
 import { notFound } from "next/navigation";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { summarizeDonationRecord } from "@/lib/fund-ledger";
-import { formatPrivateReceiptINR } from "@/lib/private-donation-ack";
+import { formatPrivateReceiptINR } from "@/lib/inr-format";
 import { donationIntentLabel } from "@/lib/donation-intent";
 import { getAdminDonationPurpose } from "@/lib/admin-donation-purpose";
 import { prisma } from "@/lib/prisma";
