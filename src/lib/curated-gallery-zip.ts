@@ -2,115 +2,87 @@ import { CURATED_GALLERY_ARCHIVE_ENTRY_COUNT } from "./curated-gallery-identity"
 
 export type CuratedZipEntry = { name: string; bytes: Uint8Array };
 
-function safeZipPath(name: string) {
-  if (!name || name.startsWith("/") || /^[A-Za-z]:/.test(name) ||
-      name.includes("\\") || name.includes("\0")) return false;
-  return !name.split("/").some(part => !part || part === "." || part === "..");
-}
-
-/** Read only stored entries from an already SHA-256-authenticated ZIP.
- * Bounds-check metadata before every DataView read. Archive identities and
- * per-image checksums are validated separately by the owner-curated importer. */
+/** Called only after the entire fixed owner-approved ZIP passes its SHA-256
+ * check. Preserve bounded stored-entry decoding for every accepted entry. */
 export function parseCuratedStoredZip(buffer: ArrayBuffer): Map<string, CuratedZipEntry> {
-  const view = new DataView(buffer);
   const bytes = new Uint8Array(buffer);
+  const view = new DataView(buffer);
   const decoder = new TextDecoder("utf-8", { fatal: true });
-  if (bytes.length < 22) throw new Error("ZIP archive is truncated.");
-
-  const u16 = (offset: number) => {
-    if (offset < 0 || offset + 2 > bytes.length) throw new Error("ZIP metadata is truncated.");
-    return view.getUint16(offset, true);
+  const fail = (reason: string): never => { throw new Error(`ZIP ${reason}.`); };
+  const check = (at: number, length: number, limit = bytes.length) => {
+    if (at < 0 || length < 0 || at + length > limit) fail("metadata is truncated");
   };
-  const u32 = (offset: number) => {
-    if (offset < 0 || offset + 4 > bytes.length) throw new Error("ZIP metadata is truncated.");
-    return view.getUint32(offset, true);
-  };
+  const u16 = (at: number) => { check(at, 2); return view.getUint16(at, true); };
+  const u32 = (at: number) => { check(at, 4); return view.getUint32(at, true); };
+  if (bytes.length < 22) return fail("archive is truncated");
 
-  const min = Math.max(0, bytes.length - 65_557);
   let end = -1;
-  for (let index = bytes.length - 22; index >= min; index--) {
-    if (u32(index) === 0x06054b50 && index + 22 + u16(index + 20) === bytes.length) {
-      end = index;
+  for (let i = bytes.length - 22; i >= Math.max(0, bytes.length - 65_557); i--) {
+    if (u32(i) === 0x06054b50 && i + 22 + u16(i + 20) === bytes.length) {
+      end = i;
       break;
     }
   }
-  if (end < 0) throw new Error("ZIP end-of-central-directory record is missing or malformed.");
+  if (end < 0) return fail("end-of-central-directory record is missing or malformed");
   if (u16(end + 4) || u16(end + 6) || u16(end + 8) !== u16(end + 10)) {
-    throw new Error("Multi-disk ZIP archives are not accepted.");
+    return fail("multi-disk archives are not accepted");
   }
-
   const count = u16(end + 10);
-  const centralSize = u32(end + 12);
   const centralStart = u32(end + 16);
-  if (count !== CURATED_GALLERY_ARCHIVE_ENTRY_COUNT) {
-    throw new Error("ZIP entry count does not match the approved package.");
-  }
-  if (centralStart > end || centralSize !== end - centralStart) {
-    throw new Error("ZIP central directory is outside its declared bounds.");
+  if (count !== CURATED_GALLERY_ARCHIVE_ENTRY_COUNT) return fail("entry count does not match the approved package");
+  if (centralStart > end || u32(end + 12) !== end - centralStart) {
+    return fail("central directory is outside declared bounds");
   }
 
   const entries = new Map<string, CuratedZipEntry>();
-  const occupied: Array<[number, number]> = [];
-  let cursor = centralStart;
-  for (let index = 0; index < count; index++) {
-    if (cursor + 46 > end || u32(cursor) !== 0x02014b50) {
-      throw new Error("ZIP central-directory entry is truncated or invalid.");
-    }
-    const flags = u16(cursor + 8);
-    const method = u16(cursor + 10);
-    const size = u32(cursor + 20);
-    const rawSize = u32(cursor + 24);
-    const nameLength = u16(cursor + 28);
-    const extraLength = u16(cursor + 30);
-    const commentLength = u16(cursor + 32);
-    const localOffset = u32(cursor + 42);
-    const next = cursor + 46 + nameLength + extraLength + commentLength;
-    if (next > end || nameLength === 0) throw new Error("ZIP directory entry exceeds archive bounds.");
-    if (method !== 0 || size !== rawSize || (flags & 0x41) !== 0) {
-      throw new Error("Encrypted or compressed ZIP entries are not accepted.");
-    }
-    const centralName = bytes.subarray(cursor + 46, cursor + 46 + nameLength);
-    const name = decoder.decode(centralName);
-    if (!safeZipPath(name) || entries.has(name)) throw new Error("ZIP contains an unsafe or duplicate path.");
-
-    if (localOffset + 30 > centralStart || u32(localOffset) !== 0x04034b50) {
-      throw new Error("ZIP local-file header is missing or invalid.");
-    }
-    const localFlags = u16(localOffset + 6);
-    const localMethod = u16(localOffset + 8);
-    const localNameLength = u16(localOffset + 26);
-    const localExtraLength = u16(localOffset + 28);
-    if (localMethod !== method || localFlags !== flags || localNameLength !== nameLength) {
-      throw new Error("ZIP central and local-file headers disagree.");
-    }
-    if ((flags & 0x8) === 0 && (u32(localOffset + 18) !== size || u32(localOffset + 22) !== rawSize ||
-        u32(localOffset + 14) !== u32(cursor + 16))) {
-      throw new Error("ZIP local-file size or checksum disagrees with the directory.");
+  const spans: Array<[number, number]> = [];
+  let at = centralStart;
+  for (let i = 0; i < count; i++) {
+    check(at, 46, end);
+    if (u32(at) !== 0x02014b50) return fail("central-directory entry is invalid");
+    const flags = u16(at + 8);
+    const method = u16(at + 10);
+    const size = u32(at + 20);
+    const nameLength = u16(at + 28);
+    const next = at + 46 + nameLength + u16(at + 30) + u16(at + 32);
+    check(at, next - at, end);
+    if (!nameLength) return fail("directory entry has no name");
+    if (method || size !== u32(at + 24) || (flags & 0x41)) {
+      return fail("Encrypted or compressed entries are not accepted");
     }
 
-    const nameStart = localOffset + 30;
-    const dataStart = nameStart + localNameLength + localExtraLength;
-    const dataEnd = dataStart + rawSize;
-    if (dataEnd > centralStart || dataStart < nameStart) {
-      throw new Error("ZIP entry data exceeds archive bounds.");
+    const nameBytes = bytes.subarray(at + 46, at + 46 + nameLength);
+    const name = decoder.decode(nameBytes);
+    if (!name || name.startsWith("/") || /^[A-Za-z]:/.test(name) ||
+        name.includes("\\") || name.includes("\0") ||
+        name.split("/").some(part => !part || part === "." || part === "..") ||
+        entries.has(name)) return fail("contains an unsafe or duplicate path");
+
+    const local = u32(at + 42);
+    check(local, 30, centralStart);
+    if (u32(local) !== 0x04034b50 || u16(local + 6) !== flags ||
+        u16(local + 8) !== method || u16(local + 26) !== nameLength) {
+      return fail("local and central headers disagree");
     }
-    for (let byteIndex = 0; byteIndex < nameLength; byteIndex++) {
-      if (bytes[nameStart + byteIndex] !== centralName[byteIndex]) {
-        throw new Error("ZIP local-file name disagrees with its directory.");
-      }
+    if (!(flags & 8) && (u32(local + 14) !== u32(at + 16) ||
+        u32(local + 18) !== size || u32(local + 22) !== size)) {
+      return fail("local-file size or checksum disagrees with the directory");
     }
-    occupied.push([localOffset, dataEnd]);
-    entries.set(name, { name, bytes: bytes.subarray(dataStart, dataEnd) });
-    cursor = next;
+    const dataStart = local + 30 + nameLength + u16(local + 28);
+    check(dataStart, size, centralStart);
+    for (let j = 0; j < nameLength; j++) {
+      if (bytes[local + 30 + j] !== nameBytes[j]) return fail("local-file name disagrees with its directory");
+    }
+    spans.push([local, dataStart + size]);
+    entries.set(name, { name, bytes: bytes.subarray(dataStart, dataStart + size) });
+    at = next;
   }
-  if (cursor !== end) throw new Error("ZIP central directory contains unexpected data.");
-  occupied.sort((a, b) => a[0] - b[0]);
-  for (let index = 1; index < occupied.length; index++) {
-    const current = occupied[index];
-    const previous = occupied[index - 1];
-    if (!current || !previous || current[0] < previous[1]) {
-      throw new Error("ZIP local-file entries overlap.");
-    }
+  if (at !== end) return fail("central directory contains unexpected data");
+  spans.sort((a, b) => a[0] - b[0]);
+  for (let i = 1; i < spans.length; i++) {
+    const before = spans[i - 1];
+    const after = spans[i];
+    if (!before || !after || after[0] < before[1]) return fail("local-file entries overlap");
   }
   return entries;
 }
