@@ -60,7 +60,9 @@ export default async function DonationDetailPage({ params }: Props) {
       capture of the same transaction reference.
     </p>}
     {allocationPlanningEnabled() && hasPermission(user, "fund.manage") &&
-      donation.fundId && donation.status === "CAPTURED" && (
+      donation.fund?.status === "APPROVED" && donation.status === "CAPTURED" &&
+      accounting?.refundedPaise === 0 && !designation.requiresReview &&
+      ["GENERAL", "SADAQAH"].includes(donation.givingIntent) && (
         <section className="card" aria-labelledby="allocation-proposal-heading">
           <h2 id="allocation-proposal-heading">Internal fund allocation planning</h2>
           <p>No money is transferred by a proposal or its approval. A different authorized reviewer must check original donor purpose, confirmed retained funds and any existing approved allocations.</p>

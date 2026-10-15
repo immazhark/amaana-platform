@@ -21,7 +21,7 @@ export default async function AllocationAdminPage() {
       createdBy: { select: { id: true, name: true } },
       reviewedBy: { select: { id: true, name: true } },
       reversal: { select: { id: true, createdAt: true } },
-      donation: { select: { id: true, referenceNumber: true, status: true } },
+      donation: { select: { id: true, referenceNumber: true, status: true, refundedAmount: true } },
       fund: { select: { name: true, accountCode: true } },
     },
   }) : [];
@@ -41,6 +41,13 @@ export default async function AllocationAdminPage() {
       <span>Maker: {item.createdBy.name} · {item.createdAt.toLocaleDateString("en-IN")}</span>
       <Link href={`/admin/donations/${item.donation.id}`}>Private donation reference: {item.donation.referenceNumber}</Link>
       {item.reviewedBy && <span>Reviewed by: {item.reviewedBy.name}</span>}
+      {item.status === "APPROVED" && !item.reversal &&
+        (item.donation.status !== "CAPTURED" || item.donation.refundedAmount.toNumber() > 0) && (
+          <p role="alert">The source donation was refunded or changed after this internal approval.
+            Stop treating this allocation as retained cash. Escalate for finance reconciliation;
+            this screen does not issue a refund or alter the original approval.</p>
+        )}
+
       {item.reversal && <p role="status">Reversed on {item.reversal.createdAt.toLocaleDateString("en-IN")}. Original approval remains in the ledger.</p>}
       {item.status === "APPROVED" && !item.reversal && canReview &&
         item.createdBy.id !== staff.id && item.reviewedBy?.id !== staff.id &&
