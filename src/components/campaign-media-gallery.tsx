@@ -71,6 +71,7 @@ export function CampaignMediaGallery({ items, approvedImageOrigins = NO_ADDITION
   useEffect(() => {
     if (!isOpen) return;
     const dialog = dialogRef.current;
+    const triggerNodes = triggerRefs.current;
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
     closeRef.current?.focus();
@@ -123,9 +124,9 @@ export function CampaignMediaGallery({ items, approvedImageOrigins = NO_ADDITION
       if (!dialog?.isConnected) requestAnimationFrame(() => {
         // Reordering or removal changes the opener's array position. Resolve
         // by stable media ID only after the final gallery DOM has committed.
-        if (dialogRef.current?.isConnected) return;
+        if (dialog?.isConnected) return;
         const items = latestItems.current;
-        const triggers = triggerRefs.current;
+        const triggers = triggerNodes;
         const opener = triggers[items.findIndex(item => item.id === openingId.current)];
         const target = opener?.isConnected ? opener : triggers.find(node => node?.isConnected);
         target?.focus();

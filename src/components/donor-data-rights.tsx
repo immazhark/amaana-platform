@@ -94,7 +94,7 @@ export function DonorDataRights({ reference, getToken }: {
     </label>
     <button className="v2-button" type="button" disabled={loading || busy}
       onClick={() => void submit()}>{busy ? "Recording request…" : "Submit private review request"}</button>
-    {loading && <p role="status">Loading this receipt's request status…</p>}
+    {loading && <p role="status">Loading this receipt&apos;s request status…</p>}
     {!!requests.length && <div className={styles.history}>
       <h4>Latest request status for this donation</h4>
       <ul>{requests.map(item => <li key={item.kind}>

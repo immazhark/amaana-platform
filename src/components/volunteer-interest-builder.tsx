@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "@/components/navigation-link";
 import {
   buildVolunteerEnquiryHref,
   VOLUNTEER_AVAILABILITY,
@@ -56,7 +57,7 @@ export function VolunteerInterestBuilder() {
       <a className="v2-button" href={href}>
         Prepare email to Amaana <span aria-hidden="true">↗</span>
       </a>
-      <p>Opens your own email application with your chosen categories. Nothing is sent to Amaana until you review and send the email. If your email app does not open, use the <a href="/contact">official contact options</a>.</p>
+      <p>Opens your own email application with your chosen categories. Nothing is sent to Amaana until you review and send the email. If your email app does not open, use the <Link href="/contact">official contact options</Link>.</p>
     </div>
     <p className={styles.safety}>Please do not include ID documents, medical information, beneficiary photographs, bank details or other sensitive records in a volunteering enquiry. Participation is always voluntary.</p>
   </div>;

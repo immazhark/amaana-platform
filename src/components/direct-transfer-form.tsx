@@ -5,6 +5,7 @@ import { getWholeRupeeCheckoutRange, updateDonationAmountValidity } from "@/lib/
 import { DonationInputField } from "./donation-input-field";
 import { type FormEvent, type InputHTMLAttributes, type ReactNode, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "@/components/navigation-link";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
 import { DONATION_INTENT_DESCRIPTIONS, DONATION_INTENT_LABELS, type DonationIntentValue } from "@/lib/donation-intent";
 import { classifyDirectTransferResponse, isDirectTransferField, UNCERTAIN_TRANSFER_MESSAGE, type DirectTransferField, type DirectTransferFieldErrors } from "@/lib/direct-transfer-feedback";
@@ -134,7 +135,7 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
     {checkoutRange ? instructions : null}
     {!checkoutRange && <p role="status" className="form-error">The reviewed remaining balance cannot accept a whole-rupee contribution. Please check with Amaana before transferring an unsupported amount.</p>}
     <form ref={formRef} onSubmit={submit} onInvalid={handleInvalid} className="form-grid" aria-busy={busy}>
-      {error && <div ref={errorRef} className="form-error field full" role="alert" tabIndex={-1}>{error}{phase === "reconciliation" && <p><a className="v2-text-link" href="/contact">Contact Amaana about this transfer</a></p>}</div>}
+      {error && <div ref={errorRef} className="form-error field full" role="alert" tabIndex={-1}>{error}{phase === "reconciliation" && <p><Link className="v2-text-link" href="/contact">Contact Amaana about this transfer</Link></p>}</div>}
       {renderInput("donorName", "Full name", { autoComplete: "name", minLength: 2, required: true })}
       {renderInput("donorEmail", "Email", { type: "email", autoComplete: "email", required: true })}
       {renderInput("donorPhone", <>Phone <span className="muted">optional</span></>, { type: "tel", autoComplete: "tel" })}

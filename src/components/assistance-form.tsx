@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Link from "@/components/navigation-link";
 import { type FormEvent, type InputHTMLAttributes, type ReactNode, useEffect, useRef, useState } from "react";
 import { DonationInputField } from "./donation-input-field";
 import { privateTrackingPath } from "@/lib/private-tracking";
@@ -149,7 +150,7 @@ export function AssistanceForm() {
       <p aria-live="polite" aria-atomic="true"><strong>Step {step} of 4</strong><span>{stepLabels[step - 1]}</span></p>
       <ol>{stepLabels.map((label, index) => { const itemStep = (index + 1) as AssistanceStep; return <li key={label}><button type="button" onClick={() => navigateToStep(itemStep)} disabled={itemStep > maxVisitedStep || locked} aria-current={itemStep === step ? "step" : undefined} aria-controls={`assistance-step-${itemStep}`}><span>{String(itemStep).padStart(2, "0")}</span>{label}</button></li>; })}</ol>
     </nav>
-    {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{phase === "followup" && <p><a className="v2-text-link" href="/contact">Contact Amaana about this request</a></p>}</div>}
+    {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{phase === "followup" && <p><Link className="v2-text-link" href="/contact">Contact Amaana about this request</Link></p>}</div>}
     <fieldset id="assistance-step-1" data-assistance-step="1" tabIndex={-1} hidden={step !== 1} disabled={locked}><legend><span>01</span> Contact</legend><div className="form-grid">
       {contactField("applicantName", "name", "Applicant name", { autoComplete: "name", minLength: 2, maxLength: 120, required: true })}
       {contactField("phone", "phone", "Phone number", { type: "tel", autoComplete: "tel", required: true })}

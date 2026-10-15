@@ -74,7 +74,7 @@ export function ZakatEstimator() {
     <aside className={styles.result} aria-labelledby="zakat-estimate-title">
       <span className={styles.kicker}>Private, client-side calculation</span>
       <h2 id="zakat-estimate-title">Your estimate</h2>
-      <p className={styles.notice}>No account, upload or payment is created. Your entries stay in this page's temporary memory and are not sent to Amaana.</p>
+      <p className={styles.notice}>No account, upload or payment is created. Your entries stay in this page&apos;s temporary memory and are not sent to Amaana.</p>
       {result.status !== "invalid_input" && result.status !== "missing_nisab" &&
         <dl className={styles.breakdown}>
           <div><dt>Entered eligible assets</dt><dd>{formatZakatPaise(result.assetsPaise)}</dd></div>
@@ -87,7 +87,7 @@ export function ZakatEstimator() {
           <strong className={styles.amount}>{formatZakatPaise(result.zakatPaise)}</strong>}
         <p>{statusText}</p>
       </div>
-      <p className={styles.disclaimer}>Educational estimate only, not a fatwa or an assessment of Amaana's Zakat-eligible donation destinations. Jewellery, shares, debts, pensions and the appropriate nisab basis can require qualified scholarly advice.</p>
+      <p className={styles.disclaimer}>Educational estimate only, not a fatwa or an assessment of Amaana&apos;s Zakat-eligible donation destinations. Jewellery, shares, debts, pensions and the appropriate nisab basis can require qualified scholarly advice.</p>
       <Link className={styles.donate} href="/donate">Review currently approved donation purposes <span aria-hidden="true">↗</span></Link>
       <p className={styles.sources}>Calculation background:{" "}
         <a href="https://islamic-relief.org/news/how-to-calculate-and-pay-zakat/" target="_blank" rel="noopener noreferrer">Islamic Relief calculation guide</a>

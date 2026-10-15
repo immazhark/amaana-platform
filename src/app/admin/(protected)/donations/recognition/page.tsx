@@ -122,7 +122,7 @@ export default async function RecognitionReviewPage() {
       before declaring the backlog cleared.
     </p>}
     <h2>Approved names and emergency unpublication</h2>
-    <p className="muted">Staff may immediately unpublish a previously approved display name, including after a refund or privacy complaint. This does not change the donation's financial status.</p>
+    <p className="muted">Staff may immediately unpublish a previously approved display name, including after a refund or privacy complaint. This does not change the donation&apos;s financial status.</p>
     {active.length === 0 ? <p className="empty-state">No approved names are awaiting review or removal.</p>
       : <ol className="history">{active.map(item => {
         const name = parseDonorRecognitionName(item.recognitionDisplayName);
