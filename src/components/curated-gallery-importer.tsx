@@ -122,6 +122,7 @@ export function CuratedGalleryImporter() {
     busyRef.current = true;
     setBusy(true);
     setPhase("Rechecking gallery staging before publication…");
+    let submitted = false;
     try {
       const before = await refreshStatus();
       if (!before || !before.initialized || before.uploaded !== CURATED_GALLERY_RECORD_COUNT ||
@@ -129,6 +130,7 @@ export function CuratedGalleryImporter() {
           before.published === CURATED_GALLERY_RECORD_COUNT) {
         throw new Error("Gallery staging changed; publication was not submitted.");
       }
+      submitted = true;
       await requestJson("/api/admin/media/curated-gallery/publish", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -140,7 +142,10 @@ export function CuratedGalleryImporter() {
       }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Curated gallery publication was not verified.";
-      setPhase(`${message} Check status before retrying; publication may have completed.`);
+      if (submitted && lifetime.current && !lifetime.current.signal.aborted) setNeedsReconciliation(true);
+      setPhase(submitted
+        ? `${message} Check status before retrying; publication may have completed.`
+        : message);
     } finally {
       busyRef.current = false;
       setBusy(false);
