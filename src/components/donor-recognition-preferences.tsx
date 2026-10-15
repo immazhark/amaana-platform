@@ -5,14 +5,15 @@ import { DONOR_RECOGNITION_MAX_NAME, parseDonorRecognitionName } from "@/lib/don
 import styles from "./donor-recognition-preferences.module.css";
 
 type State = "loading" | "inactive" | "pending" | "published" | "unavailable" | "error";
-type ResponseBody = { state: "inactive" | "pending" | "published" | "unavailable"; name: string };
+type ResponseBody = { state: "inactive" | "pending" | "published" | "unavailable"; name: string; revocable: boolean };
 
 function isValidReply(value: unknown): value is ResponseBody {
   if (!value || typeof value !== "object") return false;
   const row = value as Record<string, unknown>;
   return typeof row.state === "string"
     && ["inactive", "pending", "published", "unavailable"].includes(row.state)
-    && typeof row.name === "string" && row.name.length <= DONOR_RECOGNITION_MAX_NAME;
+    && typeof row.name === "string" && row.name.length <= DONOR_RECOGNITION_MAX_NAME
+    && typeof row.revocable === "boolean";
 }
 
 /** Receipt capability is only transmitted in same-origin POST bodies. */
@@ -21,6 +22,7 @@ export function DonorRecognitionPreferences({ reference, getToken }: {
 }) {
   const [state, setState] = useState<State>("loading");
   const [name, setName] = useState("");
+  const [revocable, setRevocable] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const communicate = useCallback(async (
@@ -45,7 +47,7 @@ export function DonorRecognitionPreferences({ reference, getToken }: {
   useEffect(() => {
     const controller = new AbortController();
     void communicate("status", undefined, controller.signal).then(reply => {
-      if (!controller.signal.aborted) { setState(reply.state); setName(reply.name); }
+      if (!controller.signal.aborted) { setState(reply.state); setName(reply.name); setRevocable(reply.revocable); }
     }).catch(() => { if (!controller.signal.aborted) setState("error"); });
     return () => controller.abort();
   }, [communicate]);
@@ -64,6 +66,7 @@ export function DonorRecognitionPreferences({ reference, getToken }: {
       const result = await communicate(action, prepared ?? undefined);
       setState(result.state);
       setName(result.name);
+      setRevocable(result.revocable);
     } catch (failure) {
       setError(failure instanceof Error ? failure.message : "Unable to update recognition. Try again.");
     } finally { setBusy(false); }
@@ -74,12 +77,12 @@ export function DonorRecognitionPreferences({ reference, getToken }: {
     <p>Every donation is valued, including anonymous support. No name is published merely because you gave. A separate request and staff review are required, and you may withdraw later using this private acknowledgement.</p>
     {state === "loading" && <p role="status">Checking recognition preferences…</p>}
     {state === "error" && <p role="alert">Recognition preferences could not be retrieved. Your donation is unaffected. Contact Amaana privately for help.</p>}
-    {state === "unavailable" && <p>Public name recognition is unavailable for this record. Your private receipt remains unaffected.</p>}
-    {(state === "pending" || state === "published") && <>
-      <p role="status"><strong>{state === "pending" ? "Awaiting staff review" : "Name approved for public display"}:</strong> {name}</p>
-      <button className={styles.withdraw} type="button" disabled={busy}
-        onClick={() => void act("withdraw")}>Withdraw recognition request/name</button>
-    </>}
+    {state === "unavailable" && <p>Public name recognition is unavailable for this record. Your private receipt remains unaffected. You may still withdraw a past request below.</p>}
+    {(state === "pending" || state === "published") && <p role="status">
+      <strong>{state === "pending" ? "Awaiting staff review" : "Name approved for public display"}:</strong> {name}
+    </p>}
+    {revocable && <button className={styles.withdraw} type="button" disabled={busy}
+      onClick={() => void act("withdraw")}>Withdraw recognition request/name</button>}
     {state === "inactive" && <form onSubmit={event => void act("request", event)}>
       <label>Display name (optional)
         <input value={name} onChange={event => setName(event.target.value)}

@@ -100,17 +100,30 @@ describe("donor-recognition capability and consent boundary", () => {
   it("records new consent only as pending, never as immediate publication", async () => {
     const result = await POST(request("request", { name: "Ayesha Khan" }));
     expect(result.status).toBe(200);
-    expect(await result.json()).toEqual({ state: "pending", name: "Ayesha Khan" });
+    expect(await result.json()).toEqual({ state: "pending", name: "Ayesha Khan", revocable: true });
     expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({
       where: expect.objectContaining({ status: "CAPTURED", isAnonymous: false, refundedAmount: 0 }),
       data: expect.objectContaining({ recognitionDisplayName: "Ayesha Khan", recognitionApprovedAt: null, recognitionRevokedAt: null }),
     }));
   });
+  it("allows withdrawing prior recognition even after the donation becomes ineligible", async () => {
+    mocks.lookup.mockResolvedValue({ ...record, status: "REFUNDED",
+      recognitionDisplayName: "Ayesha Khan",
+      recognitionRequestedAt: new Date("2026-10-10T12:00:00Z"),
+      recognitionApprovedAt: new Date("2026-10-11T12:00:00Z") });
+    mocks.state.mockReturnValue("unavailable");
+    const result = await POST(request("status"));
+    expect(result.status).toBe(200);
+    expect(await result.json()).toEqual({
+      state: "unavailable", name: "Ayesha Khan", revocable: true,
+    });
+  });
+
   it("withdraws previously approved names without requiring capture eligibility again", async () => {
     mocks.lookup.mockResolvedValue({ ...record, status: "REFUNDED", recognitionDisplayName: "Ayesha Khan" });
     const result = await POST(request("withdraw"));
     expect(result.status).toBe(200);
-    expect(await result.json()).toEqual({ state: "inactive", name: "" });
+    expect(await result.json()).toEqual({ state: "inactive", name: "", revocable: false });
     expect(mocks.update).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
         recognitionApprovedAt: null, recognitionRequestedAt: null,

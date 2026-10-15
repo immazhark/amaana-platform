@@ -35,7 +35,9 @@ export async function POST(request: Request) {
 
     if (action === "status") {
       return NextResponse.json({ state: privateRecognitionState(donation),
-        name: donation.recognitionDisplayName ?? "" }, { headers: privateHeaders });
+        name: donation.recognitionDisplayName ?? "",
+        revocable: Boolean(donation.recognitionRequestedAt || donation.recognitionApprovedAt) &&
+          !donation.recognitionRevokedAt }, { headers: privateHeaders });
     }
     if (action === "withdraw") {
       // Revocation is permitted regardless of donation/refund status, and
@@ -45,7 +47,7 @@ export async function POST(request: Request) {
         data: { recognitionRequestedAt: null, recognitionApprovedAt: null,
           recognitionDisplayName: null, recognitionRevokedAt: new Date() },
       });
-      return NextResponse.json({ state: "inactive", name: "" }, { headers: privateHeaders });
+      return NextResponse.json({ state: "inactive", name: "", revocable: false }, { headers: privateHeaders });
     }
 
     const name = parseDonorRecognitionName(parsed.data.name);
@@ -60,7 +62,7 @@ export async function POST(request: Request) {
         recognitionApprovedAt: null, recognitionRevokedAt: null },
     });
     if (saved.count !== 1) return NextResponse.json({ error: "Donation state changed. Retry after refreshing." }, { status: 409, headers: privateHeaders });
-    return NextResponse.json({ state: "pending", name }, { headers: privateHeaders });
+    return NextResponse.json({ state: "pending", name, revocable: true }, { headers: privateHeaders });
   } catch (error) {
     if (error instanceof RequestBodyTooLargeError) return NextResponse.json({ error: "Request too large" }, { status: 413, headers: privateHeaders });
     return NextResponse.json({ error: "Unable to process the preference safely" }, { status: 503, headers: privateHeaders });
