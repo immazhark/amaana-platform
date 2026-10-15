@@ -21,6 +21,18 @@ describe("legacy giving information is not a premature charity payment product",
     expect(page).not.toContain("Razorpay");
     expect(page).not.toContain("80G deduction");
   });
+  it("keeps the six original participation cards balanced and offers a separate accessible enquiry invitation", () => {
+    const entry = file("../app/get-involved/page.tsx");
+    const footer = file("../components/site-footer.tsx");
+    const listingCss = file("../app/get-involved/get-involved-audit.module.css");
+    expect(entry).not.toContain('number: "07"');
+    expect(entry).toContain('aria-labelledby="legacy-invitation-title"');
+    expect(entry).toContain('href="/get-involved/legacy-giving"');
+    expect(entry).toContain("No will,");
+    expect(footer).toContain('href="/get-involved/legacy-giving"');
+    expect(listingCss).toContain(".legacyInvitation{");
+    expect(listingCss).toContain("@media(max-width:560px)");
+  });
   it("provides accessible step sequence and explicit legal/privacy safeguards", () => {
     expect(page).toContain('aria-labelledby="legacy-process-title"');
     expect(page).toContain("<ol className={styles.steps}>");

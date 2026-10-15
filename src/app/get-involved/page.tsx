@@ -77,14 +77,6 @@ const waysToHelp = [
     href: "/get-involved/monthly-giving",
     action: "Create a manual reminder",
   },
-  {
-    number: "07",
-    icon: "support" as const,
-    title: "Consider a future charitable legacy",
-    copy: "A careful, non-binding conversation about future intentions. Independent legal and religious advice is essential before any formal document or commitment.",
-    href: "/get-involved/legacy-giving",
-    action: "Understand legacy enquiries",
-  },
 ] as const;
 
 export default async function GetInvolvedPage() {
@@ -111,6 +103,18 @@ export default async function GetInvolvedPage() {
         <div className="v2-shell">
           <SectionHeading eyebrow={<>Choose your way in</>} title={<>Different people can contribute differently.</>} subtitle={<>Start with what is realistic for you and what the current work actually needs.</>} id="ways-to-help-title" />
           <ParticipationCards paths={waysToHelp.map(({ number, ...item }) => ({ ...item, marker: number }))} />
+          <aside className={styles.legacyInvitation} aria-labelledby="legacy-invitation-title">
+            <div>
+              <p className={styles.legacyEyebrow}>Future intentions · No obligation</p>
+              <h3 id="legacy-invitation-title">Thinking about a charitable legacy?</h3>
+              <p>Learn how to begin a careful conversation while keeping family
+                obligations, legal advice and privacy at the centre. No will,
+                pledge or financial commitment is collected here.</p>
+            </div>
+            <Link className="v2-button" href="/get-involved/legacy-giving">
+              Explore legacy enquiries <span aria-hidden="true">→</span>
+            </Link>
+          </aside>
         </div>
       </section>
 
