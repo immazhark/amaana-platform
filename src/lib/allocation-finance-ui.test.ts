@@ -24,6 +24,14 @@ describe("role-limited allocation finance staff surfaces", () => {
     expect(ledger).toContain('take: 60');
     expect(ledger).toContain('take: 40');
     expect(ledger).toContain("Pending independent review");
+    expect(ledger).toContain("Urgent refund and status reconciliation");
+    expect(ledger).toContain('prisma.donationAllocationProposal.count({ where: refundConflictWhere })');
+    expect(ledger).toContain('refundConflictWhere,');
+    expect(ledger).toContain('reviewedAt: "asc"');
+    expect(ledger).toContain('reviewedAt: "desc"');
+    expect(ledger).toContain("conflictCount > conflicts.length");
+    expect(ledger).toContain("conflicts.map(proposalRow)");
+    expect(ledger).toContain("history.map(proposalRow)");
     expect(ledger).toContain("allocationAvailablePaise(item.donation");
     expect(ledger).toContain("Do not treat this planning approval as retained cash or verified disbursement");
     expect(ledger).toContain('item.createdBy.id !== staff.id && item.reviewedBy?.id !== staff.id');

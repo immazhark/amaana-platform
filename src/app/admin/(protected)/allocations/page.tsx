@@ -34,20 +34,35 @@ export default async function AllocationAdminPage() {
   const enabled = allocationPlanningEnabled();
   const canReview = hasPermission(staff, "fund.approve");
 
-  const [pending, reviewed] = enabled ? await Promise.all([
+  // Refund-conflicted historical approvals must not vanish behind the recent
+  // reviewed archive. Keep a separate oldest-first finance action queue.
+  const refundConflictWhere = {
+    status: "APPROVED",
+    reversal: { is: null },
+    donation: { OR: [{ status: { not: "CAPTURED" } }, { refundedAmount: { gt: 0 } }] },
+  } as const;
+  const [pending, conflicts, reviewed, conflictCount] = enabled ? await Promise.all([
     prisma.donationAllocationProposal.findMany({
       where: { status: "PENDING" },
       orderBy: [{ createdAt: "asc" }, { id: "asc" }],
       take: 60, include: proposalIncludes,
     }),
     prisma.donationAllocationProposal.findMany({
-      where: { status: { in: ["APPROVED", "REJECTED"] } },
-      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      where: refundConflictWhere,
+      orderBy: [{ reviewedAt: "asc" }, { id: "asc" }],
       take: 40, include: proposalIncludes,
     }),
-  ]) : [[], []];
+    prisma.donationAllocationProposal.findMany({
+      where: { status: { in: ["APPROVED", "REJECTED"] } },
+      orderBy: [{ reviewedAt: "desc" }, { id: "desc" }],
+      take: 40, include: proposalIncludes,
+    }),
+    prisma.donationAllocationProposal.count({ where: refundConflictWhere }),
+  ]) : [[], [], [], 0];
 
-  const all = [...pending, ...reviewed];
+  const conflictIds = new Set(conflicts.map(item => item.id));
+  const history = reviewed.filter(item => !conflictIds.has(item.id));
+  const all = [...pending, ...conflicts, ...history];
   const ids = [...new Set(all.map(item => item.donationId))];
   const approvals = enabled && ids.length > 0
     ? await prisma.donationAllocationProposal.findMany({
@@ -117,6 +132,19 @@ export default async function AllocationAdminPage() {
       </div>
     </div>
     {!enabled && <p role="status">Allocation planning remains disabled until migration, finance review and release authorization.</p>}
+    <section aria-labelledby="allocation-refund-conflicts-title">
+      <h2 id="allocation-refund-conflicts-title">Urgent refund and status reconciliation</h2>
+      <p className="muted">Approved internal allocation proposals linked to later-refunded
+        or no-longer-captured donations. These are unresolved planning conflicts,
+        not verified expenditure or a reason to change provider payment records.</p>
+      {conflicts.length > 0 ? <ol className="history">{conflicts.map(proposalRow)}</ol> :
+        <p className="muted">No known post-approval refund or status conflicts in the recorded proposals.</p>}
+      {conflictCount > conflicts.length && <p role="alert">
+        {conflictCount - conflicts.length} more refund/status conflicts remain outside this
+        first review page. Continue reconciliation in the complete private ledger;
+        do not treat an incomplete queue as financial clearance.
+      </p>}
+    </section>
     <section aria-labelledby="allocations-pending-title">
       <h2 id="allocations-pending-title">Pending independent review</h2>
       {!pending.length ? <p className="muted">No pending internal allocation proposals.</p>
@@ -125,8 +153,8 @@ export default async function AllocationAdminPage() {
     </section>
     <section aria-labelledby="allocations-history-title">
       <h2 id="allocations-history-title">Recent reviewed proposals</h2>
-      {!reviewed.length ? <p className="muted">No approvals or rejections recorded.</p>
-        : <ol className="history">{reviewed.map(proposalRow)}</ol>}
+      {!history.length ? <p className="muted">No additional recent reviews outside the reconciliation queue.</p>
+        : <ol className="history">{history.map(proposalRow)}</ol>}
       {reviewed.length === 40 && <p className="muted">Showing the most recent 40 reviewed proposals. Earlier decisions remain preserved in the audit history.</p>}
     </section>
     <p><Link href="/admin/giving-funds">Giving funds registry →</Link></p>
