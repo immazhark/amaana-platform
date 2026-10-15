@@ -498,6 +498,17 @@ model DonationAllocationProposal {
   @@index([status, createdAt])
 }
 
+// Minimal private history of consent changes initiated through an individual
+// receipt capability. Never persist names, email, tokens or display metadata.
+model DonorRecognitionConsentEvent {
+  id         String   @id @default(cuid())
+  donationId String
+  action     String   @db.VarChar(16)
+  createdAt  DateTime @default(now())
+  donation   Donation @relation(fields: [donationId], references: [id], onDelete: Restrict)
+  @@index([donationId, createdAt])
+}
+
 model Donation {
   id                       String                @id @default(cuid())
   referenceNumber          String                @unique
@@ -546,6 +557,7 @@ model Donation {
   refunds                  RefundLedger[]
   notifications            Notification[]
   rightsRequests           DonorRightsRequest[]
+  recognitionConsentEvents DonorRecognitionConsentEvent[]
   allocationProposals      DonationAllocationProposal[]
   createdAt                DateTime              @default(now())
   updatedAt                DateTime              @updatedAt
