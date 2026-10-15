@@ -2,12 +2,15 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { enforceAcknowledgementRateLimit, isSameOrigin } from "@/lib/request-security";
-import { prisma } from "@/lib/prisma";
+import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
+import { donorConsentAuditEntry, recognitionVersionWhere } from "@/lib/donor-recognition-consent";
+import { revalidatePath } from "next/cache";
 import { donorRecognitionEnabled, findDonorRecognitionByReceipt, privateRecognitionState } from "@/lib/donor-recognition-repository";
 import { parseDonorRecognitionName } from "@/lib/donor-recognition";
 
 const privateHeaders = { "Cache-Control": "private, no-store, max-age=0", "Referrer-Policy": "no-referrer",
   "X-Robots-Tag": "noindex, nofollow, noarchive" };
+class RecognitionConflictError extends Error {}
 const schema = z.discriminatedUnion("action", [
   z.object({ action: z.literal("status"), reference: z.string().trim().min(8).max(80), token: z.string().min(20).max(300) }).strict(),
   z.object({ action: z.literal("request"), reference: z.string().trim().min(8).max(80), token: z.string().min(20).max(300),
@@ -40,13 +43,28 @@ export async function POST(request: Request) {
           !donation.recognitionRevokedAt }, { headers: privateHeaders });
     }
     if (action === "withdraw") {
-      // Revocation is permitted regardless of donation/refund status, and
-      // races safely with moderation by clearing the original request.
-      await prisma.donation.updateMany({
-        where: { id: donation.id },
-        data: { recognitionRequestedAt: null, recognitionApprovedAt: null,
-          recognitionDisplayName: null, recognitionRevokedAt: new Date() },
+      // Withdrawal works after a refund or status change. A no-op is not
+      // logged as another consent change. A stale token-authorized view may
+      // not overwrite subsequent moderation or a fresh donor request.
+      if (!donation.recognitionDisplayName &&
+          !donation.recognitionRequestedAt && !donation.recognitionApprovedAt) {
+        return NextResponse.json({ state: "inactive", name: "", revocable: false }, { headers: privateHeaders });
+      }
+      const withdrew = await withSerializableTransactionRetry(async tx => {
+        const result = await tx.donation.updateMany({
+          where: recognitionVersionWhere(donation),
+          data: { recognitionRequestedAt: null, recognitionApprovedAt: null,
+            recognitionDisplayName: null, recognitionRevokedAt: new Date() },
+        });
+        if (result.count !== 1) return false;
+        await tx.donorRecognitionConsentEvent.create({
+          data: donorConsentAuditEntry(donation.id, "WITHDRAWN"),
+        });
+        return true;
       });
+      if (!withdrew) throw new RecognitionConflictError("Consent state changed");
+      revalidatePath("/shukr");
+      revalidatePath("/admin/donations/recognition");
       return NextResponse.json({ state: "inactive", name: "", revocable: false }, { headers: privateHeaders });
     }
 
@@ -55,15 +73,31 @@ export async function POST(request: Request) {
     if (donation.status !== "CAPTURED" || donation.isAnonymous || donation.refundedAmount.toNumber() !== 0) {
       return NextResponse.json({ error: "Recognition is unavailable for this donation." }, { status: 409, headers: privateHeaders });
     }
-    // Name changes always require fresh review; they never inherit approval.
-    const saved = await prisma.donation.updateMany({
-      where: { id: donation.id, status: "CAPTURED", isAnonymous: false, refundedAmount: 0 },
-      data: { recognitionDisplayName: name, recognitionRequestedAt: new Date(),
-        recognitionApprovedAt: null, recognitionRevokedAt: null },
+    // A new request or name change never inherits a previous staff approval.
+    // The mutation and minimal donor-authored history are one serializable
+    // unit: no event can exist without its corresponding consent transition.
+    const saved = await withSerializableTransactionRetry(async tx => {
+      const updated = await tx.donation.updateMany({
+        where: { ...recognitionVersionWhere(donation),
+          status: "CAPTURED", isAnonymous: false, refundedAmount: 0 },
+        data: { recognitionDisplayName: name, recognitionRequestedAt: new Date(),
+          recognitionApprovedAt: null, recognitionRevokedAt: null },
+      });
+      if (updated.count !== 1) return false;
+      await tx.donorRecognitionConsentEvent.create({
+        data: donorConsentAuditEntry(donation.id, "REQUESTED"),
+      });
+      return true;
     });
-    if (saved.count !== 1) return NextResponse.json({ error: "Donation state changed. Retry after refreshing." }, { status: 409, headers: privateHeaders });
+    if (!saved) throw new RecognitionConflictError("Consent state changed");
+    revalidatePath("/shukr");
+    revalidatePath("/admin/donations/recognition");
     return NextResponse.json({ state: "pending", name, revocable: true }, { headers: privateHeaders });
   } catch (error) {
+    if (error instanceof RecognitionConflictError) {
+      return NextResponse.json({ error: "Recognition state changed. Refresh your private receipt." },
+        { status: 409, headers: privateHeaders });
+    }
     if (error instanceof RequestBodyTooLargeError) return NextResponse.json({ error: "Request too large" }, { status: 413, headers: privateHeaders });
     return NextResponse.json({ error: "Unable to process the preference safely" }, { status: 503, headers: privateHeaders });
   }

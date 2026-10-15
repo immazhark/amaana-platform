@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   enabled: vi.fn(), origin: vi.fn(), allow: vi.fn(), lookup: vi.fn(),
-  state: vi.fn(), update: vi.fn(),
+  state: vi.fn(), update: vi.fn(), audit: vi.fn(), transaction: vi.fn(), revalidate: vi.fn(),
 }));
 vi.mock("@/lib/donor-recognition-repository", () => ({
   donorRecognitionEnabled: mocks.enabled,
@@ -12,7 +12,8 @@ vi.mock("@/lib/donor-recognition-repository", () => ({
 vi.mock("@/lib/request-security", () => ({
   isSameOrigin: mocks.origin, enforceAcknowledgementRateLimit: mocks.allow,
 }));
-vi.mock("@/lib/prisma", () => ({ prisma: { donation: { updateMany: mocks.update } } }));
+vi.mock("@/lib/prisma-transaction", () => ({ withSerializableTransactionRetry: mocks.transaction }));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidate }));
 vi.mock("@/lib/bounded-request-body", () => {
   class RequestBodyTooLargeError extends Error {}
   return { RequestBodyTooLargeError, readTextBodyWithLimit: async (request: Request, max: number) => {
@@ -46,6 +47,11 @@ describe("donor-recognition capability and consent boundary", () => {
     mocks.lookup.mockResolvedValue(record);
     mocks.state.mockReturnValue("inactive");
     mocks.update.mockResolvedValue({ count: 1 });
+    mocks.audit.mockResolvedValue({ id: "consent-event" });
+    mocks.transaction.mockImplementation(async callback => callback({
+      donation: { updateMany: mocks.update },
+      donorRecognitionConsentEvent: { create: mocks.audit },
+    }));
   });
   it("is disabled by default until the database migration and review gate are enabled", async () => {
     mocks.enabled.mockReturnValue(false);
@@ -105,6 +111,13 @@ describe("donor-recognition capability and consent boundary", () => {
       where: expect.objectContaining({ status: "CAPTURED", isAnonymous: false, refundedAmount: 0 }),
       data: expect.objectContaining({ recognitionDisplayName: "Ayesha Khan", recognitionApprovedAt: null, recognitionRevokedAt: null }),
     }));
+    expect(mocks.audit).toHaveBeenCalledWith({ data: {
+      donationId: "donation-id", action: "REQUESTED",
+    } });
+    expect(mocks.revalidate).toHaveBeenCalledWith("/shukr");
+    expect(mocks.update.mock.calls[0][0].where).toMatchObject({
+      recognitionRequestedAt: null, recognitionApprovedAt: null, recognitionRevokedAt: null,
+    });
   });
   it("allows withdrawing prior recognition even after the donation becomes ineligible", async () => {
     mocks.lookup.mockResolvedValue({ ...record, status: "REFUNDED",
@@ -119,8 +132,30 @@ describe("donor-recognition capability and consent boundary", () => {
     });
   });
 
+  it("keeps an empty/inactive withdrawal idempotent without writing misleading audit events", async () => {
+    const response = await POST(request("withdraw"));
+    expect(response.status).toBe(200);
+    expect(mocks.update).not.toHaveBeenCalled();
+    expect(mocks.audit).not.toHaveBeenCalled();
+  });
+  it.each(["request", "withdraw"])("fails closed on a stale %s consent version without audit or cache invalidation", async action => {
+    mocks.update.mockResolvedValue({ count: 0 });
+    mocks.lookup.mockResolvedValue({ ...record, recognitionDisplayName: "Previously Approved",
+      recognitionRequestedAt: new Date("2026-10-10T10:00:00Z") });
+    const response = await POST(request(action, action === "request" ? { name: "New Name" } : {}));
+    expect(response.status).toBe(409);
+    expect(mocks.audit).not.toHaveBeenCalled();
+    expect(mocks.revalidate).not.toHaveBeenCalled();
+  });
+  it("does not acknowledge a consent change if writing the history fails", async () => {
+    mocks.audit.mockRejectedValue(new Error("history unavailable"));
+    const result = await POST(request("request", { name: "Ayesha Khan" }));
+    expect(result.status).toBe(503);
+    expect(mocks.revalidate).not.toHaveBeenCalled();
+  });
+
   it("withdraws previously approved names without requiring capture eligibility again", async () => {
-    mocks.lookup.mockResolvedValue({ ...record, status: "REFUNDED", recognitionDisplayName: "Ayesha Khan" });
+    mocks.lookup.mockResolvedValue({ ...record, status: "REFUNDED", recognitionDisplayName: "Ayesha Khan", recognitionRequestedAt: new Date("2026-10-11T10:00:00Z") });
     const result = await POST(request("withdraw"));
     expect(result.status).toBe(200);
     expect(await result.json()).toEqual({ state: "inactive", name: "", revocable: false });
@@ -130,6 +165,9 @@ describe("donor-recognition capability and consent boundary", () => {
         recognitionDisplayName: null, recognitionRevokedAt: expect.any(Date),
       }),
     }));
+    expect(mocks.audit).toHaveBeenCalledWith({ data: {
+      donationId: "donation-id", action: "WITHDRAWN",
+    } });
     expect(result.headers.get("cache-control")).toContain("no-store");
     expect(result.headers.get("referrer-policy")).toBe("no-referrer");
   });

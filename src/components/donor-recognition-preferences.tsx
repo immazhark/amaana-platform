@@ -38,7 +38,7 @@ export function DonorRecognitionPreferences({ reference, getToken }: {
     const payload: unknown = await response.json();
     if (!response.ok || !isValidReply(payload)) throw new Error(
       response.status === 429 ? "Too many requests. Try again later."
-      : response.status === 409 ? "Donation eligibility changed. Reopen your private record before trying again."
+      : response.status === 409 ? "Your donation or recognition preferences changed. Refresh your private receipt before trying again."
       : "Recognition preferences are temporarily unavailable.",
     );
     return payload;
