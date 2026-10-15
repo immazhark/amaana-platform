@@ -63,6 +63,12 @@ describe("public route publication policy", () => {
     expect(isPrivateRoute("/admin/donations/recognition")).toBe(true);
   });
 
+  it("never discovers private receipt-bound donor rights intake via the sitemap", () => {
+    expect(isPrivateRoute("/api/donations/data-rights")).toBe(true);
+    expect(isPrivateRoute("/admin/donations/rights")).toBe(true);
+    expect(PUBLIC_STATIC_ROUTES.some(route => route.path.includes("data-rights"))).toBe(false);
+  });
+
   it("does not allow duplicate publication rules", () => {
     const publicPaths = PUBLIC_STATIC_ROUTES.map(route => route.path);
     expect(new Set(publicPaths).size).toBe(publicPaths.length);
