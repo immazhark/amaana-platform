@@ -147,6 +147,14 @@ describe("donor-recognition capability and consent boundary", () => {
     expect(mocks.audit).not.toHaveBeenCalled();
     expect(mocks.revalidate).not.toHaveBeenCalled();
   });
+  it("acknowledges a fully committed request even if cache invalidation subsequently fails", async () => {
+    mocks.revalidate.mockImplementation(() => { throw new Error("cache temporarily unavailable"); });
+    const result = await POST(request("request", { name: "Ayesha Khan" }));
+    expect(result.status).toBe(200);
+    expect(await result.json()).toMatchObject({ state: "pending", revocable: true });
+    expect(mocks.audit).toHaveBeenCalledTimes(1);
+    expect(mocks.revalidate).toHaveBeenCalledTimes(2);
+  });
   it("does not acknowledge a consent change if writing the history fails", async () => {
     mocks.audit.mockRejectedValue(new Error("history unavailable"));
     const result = await POST(request("request", { name: "Ayesha Khan" }));

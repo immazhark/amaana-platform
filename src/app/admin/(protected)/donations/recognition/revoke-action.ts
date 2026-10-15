@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { refreshShukrViewsAfterConsent } from "@/lib/shukr-cache-refresh";
 import { requirePermission } from "@/lib/auth";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { donorRecognitionEnabled } from "@/lib/donor-recognition-repository";
@@ -59,8 +59,7 @@ export async function unpublishDonorRecognitionAction(
       return true;
     });
     if (!removed) return { status: "error", message: "The record changed or was already removed. Refresh to see the current state." };
-    revalidatePath("/shukr");
-    revalidatePath("/admin/donations/recognition");
+    refreshShukrViewsAfterConsent();
     return { status: "success", message: wasApproved
       ? "The reviewed donor name has been unpublished."
       : "The ineligible pending name request has been removed." };

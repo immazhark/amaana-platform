@@ -1,5 +1,5 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { refreshShukrViewsAfterConsent } from "@/lib/shukr-cache-refresh";
 import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
@@ -50,8 +50,7 @@ export async function reviewDonorRecognitionAction(
       return true;
     });
     if (!result) return { status: "error", message: "The request has changed or was withdrawn. Refresh before reviewing." };
-    revalidatePath("/admin/donations/recognition");
-    revalidatePath("/shukr");
+    refreshShukrViewsAfterConsent();
     return { status: "success", message: decision === "APPROVE"
       ? "Recognition approved. Only the reviewed display name may appear publicly."
       : "Request rejected. No donor details will be published." };

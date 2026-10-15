@@ -4,7 +4,7 @@ import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-r
 import { enforceAcknowledgementRateLimit, isSameOrigin } from "@/lib/request-security";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { donorConsentAuditEntry, recognitionVersionWhere } from "@/lib/donor-recognition-consent";
-import { revalidatePath } from "next/cache";
+import { refreshShukrViewsAfterConsent } from "@/lib/shukr-cache-refresh";
 import { donorRecognitionEnabled, findDonorRecognitionByReceipt, privateRecognitionState } from "@/lib/donor-recognition-repository";
 import { parseDonorRecognitionName } from "@/lib/donor-recognition";
 
@@ -63,8 +63,7 @@ export async function POST(request: Request) {
         return true;
       });
       if (!withdrew) throw new RecognitionConflictError("Consent state changed");
-      revalidatePath("/shukr");
-      revalidatePath("/admin/donations/recognition");
+      refreshShukrViewsAfterConsent();
       return NextResponse.json({ state: "inactive", name: "", revocable: false }, { headers: privateHeaders });
     }
 
