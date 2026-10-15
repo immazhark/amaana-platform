@@ -6,6 +6,10 @@ describe("legacy giving information is not a premature charity payment product",
   const page = file("../app/get-involved/legacy-giving/page.tsx");
   it("does not invite online transfers, legal drafting, tax promises or invented bequest acceptance", () => {
     expect(page).toContain("robots: { index: false, follow: false, noarchive: true }");
+    const nextConfig = file("../../next.config.ts");
+    expect(nextConfig).toContain('source: "/get-involved/legacy-giving"');
+    expect(nextConfig).toContain('value: "noindex, nofollow, noarchive"');
+
     expect(page).toContain('return <div className="v2-home">');
     expect(page).not.toContain('<main');
 

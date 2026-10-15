@@ -96,6 +96,8 @@ const nextConfig: NextConfig = {
       { source: "/donate/:path*", headers: noStoreHeaders },
       { source: "/donations/:path*", headers: privateRecordHeaders },
       { source: "/shukr", headers: privateRecordHeaders },
+      // Legal/religious editorial review has not approved this as an indexed giving product.
+      { source: "/get-involved/legacy-giving", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }] },
       { source: "/request-assistance/:path*", headers: noStoreHeaders },
       { source: "/request-assistance/received", headers: privateRecordHeaders },
       { source: "/request-assistance/status", headers: privateRecordHeaders },
