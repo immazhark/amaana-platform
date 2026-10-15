@@ -76,6 +76,24 @@ describe.skipIf(!runtime)("curated gallery operator lifecycle", () => {
     expect(button("Publish all")).toBeUndefined();
   });
 
+  it("hides stale publication readiness during a stalled status request and recovers on read", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json(stageStatus()));
+    await render();
+    expect(button("Publish all")).toBeDefined();
+
+    fetchMock.mockImplementationOnce(() => new Promise(() => {}));
+    await act(async () => button("Check import")?.click());
+    expect(button("Publish all")).toBeUndefined();
+    await act(async () => vi.advanceTimersByTimeAsync(12_000));
+    expect(button("Publish all")).toBeUndefined();
+    expect(container.textContent).toContain("status could not");
+
+    fetchMock.mockResolvedValueOnce(Response.json(stageStatus()));
+    await act(async () => button("Check import")?.click());
+    expect(button("Publish all")).toBeDefined();
+    expect(requests("POST")).toHaveLength(0);
+  });
+
   it("never blindly repeats an uncertain publish; recovery is read-only", async () => {
     fetchMock.mockResolvedValueOnce(Response.json(stageStatus()));
     await render();
