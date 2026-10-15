@@ -1,3 +1,37 @@
+## Internal giving-fund allocation planning (OFF by default)
+
+This feature is an **internal allocation proposal and second-reviewer
+governance workflow only**, not a disbursement, expense, receipt, provider
+payment, fund transfer or beneficiary-verified expenditure record.
+
+- Keep `AMAANA_ALLOCATION_PLANNING_ENABLED` unset or `false` until
+  a separate finance/legal approval and controlled release. It must
+  remain false on live Railway until both dedicated migrations
+  (`20261015020000_donation_allocation_proposals` and
+  `20261015030000_allocation_reversal_ledger`) have been reviewed,
+  backed up, applied and Prisma client generated in the target environment.
+- `fund.manage` may create pending proposals only for approved
+  original-purpose INR GENERAL/SADAQAH fund donations with CAPTURED
+  status and zero refunds. Another account with `fund.approve` may
+  approve or reject. A third independent fund.approve reviewer may
+  write a one-time append-only reversal. No actor may self-approve,
+  and a reversal must preserve the historical approval.
+- Pending proposals never reserve money; approval alone checks all
+  already approved and not reversed proposals atomically against
+  the original net captured donation. Verify concurrent approval
+  isolation and original designation in an isolated test DB.
+- Important release blocker: approval is *planning*, not settled
+  expenditure. Financial review must specify how later partial/full
+  refunds and disbursement voucher records will reconcile with
+  earlier approved internal allocations before activation. Never
+  treat proposal sums as available bank cash or completed impact.
+- Test maker/checker/reverser RBAC, forged form values, concurrency,
+  overflow/paise precision, fund revision/original snapshot,
+  net retained accounting, ineligible Zakat/appeal/pending claims,
+  append-only reversal uniqueness, and audit trails.
+- To disable immediately, unset the flag. Neither enabled nor
+  disabled modes should initiate any payment or expose a public API.
+
 ## Private donor information rights requests (disabled until reviewed)
 
 This new receipt-scoped workflow is NOT a donor account and NOT automatic
