@@ -17,9 +17,15 @@ describe("role-limited allocation finance staff surfaces", () => {
     const ledger = source("../app/admin/(protected)/allocations/page.tsx");
     expect(ledger).toContain('requirePermission("donation.view")');
     expect(ledger).toContain('hasPermission(staff, "fund.approve")');
-    expect(ledger).toContain('item.donation.refundedAmount.toNumber() > 0');
-    expect(ledger).toContain('item.donation.status !== "CAPTURED"');
-    expect(ledger).toContain("this screen does not issue a refund or alter the original approval");
+    expect(ledger).toContain('assessAllocationBalance(item.donation');
+    expect(ledger).toContain('health.state !== "CLEAR"');
+    expect(ledger).toContain('where: { status: "PENDING" }');
+    expect(ledger).toContain('where: { status: { in: ["APPROVED", "REJECTED"] } }');
+    expect(ledger).toContain('take: 60');
+    expect(ledger).toContain('take: 40');
+    expect(ledger).toContain("Pending independent review");
+    expect(ledger).toContain("allocationAvailablePaise(item.donation");
+    expect(ledger).toContain("Do not treat this planning approval as retained cash or verified disbursement");
     expect(ledger).toContain('item.createdBy.id !== staff.id && item.reviewedBy?.id !== staff.id');
   });
 });
