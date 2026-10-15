@@ -172,7 +172,7 @@ export async function getFeaturedFaithContent() {
  * this projection narrow lowers database work, serialization and server render
  * cost while preserving the publication/privacy gates used elsewhere.
  */
-const getHomepageAppealsCached = unstable_cache(async (limit: number) => {
+const getHomepageAppealsCached = unstable_cache(async () => {
   const appeals = await prisma.appeal.findMany({
     where: { status: "PUBLISHED" },
     orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
@@ -195,7 +195,7 @@ const getHomepageAppealsCached = unstable_cache(async (limit: number) => {
 
   return appeals
     .filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && canPromoteAppeal(appeal) && isAppealOpenForDonations(appeal))
-    .slice(0, Math.min(20, Math.max(1, limit)))
+    .slice(0, 20)
     .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => {
         void _privateReview;
         return publicAppeal;
@@ -206,8 +206,12 @@ export async function getHomepageAppeals(limit = 3) {
   // The cached projection may outlive a campaign's exact closing minute.
   // Recheck time-sensitive donation eligibility on every render without
   // fetching the database again or exposing an already closed appeal.
-  const cached = await getHomepageAppealsCached(limit);
-  return cached.filter(appeal => isAppealOpenForDonations(appeal));
+  const cached = await getHomepageAppealsCached();
+  // Restrict only after the fresh deadline check. A featured appeal can expire
+  // during the five-minute cache lifetime; a lower-ranked eligible appeal
+  // must be allowed to fill its place without another database read.
+  return cached.filter(appeal => isAppealOpenForDonations(appeal))
+    .slice(0, Math.min(20, Math.max(1, limit)));
 }
 
 export async function getHomepagePublicContent() {
