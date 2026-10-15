@@ -1,3 +1,49 @@
+## Shukr consent event history, cleanup and release gate (OFF by default)
+
+Donor Shukr recognition requires **separate affirmative opt-in** from
+the donor's private receipt. The new
+`DonorRecognitionConsentEvent` table only records donationId,
+REQUESTED/WITHDRAWN and timestamp. These donor actions are NOT
+`AuditEvent` staff actions. The public wall must never reveal
+contact details, payment amounts or hidden consent-event data.
+
+The receipt-authorized API uses one serializable transaction per
+consent mutation and atomically writes the minimal private event.
+Donor withdrawals are valid even after refunds or anonymity changes;
+stale token-authorized state cannot reverse a newer decision. The
+staff console may remove a pending ineligible request only if the
+database currently confirms refunded, anonymous or non-CAPTURED
+status, using a separate authorized and audited conditional write.
+Emergency unpublication of previously approved names remains
+available. Bounded queues MUST show when further records exist.
+
+**Do not activate** `AMAANA_DONOR_RECOGNITION_ENABLED` until all
+of the following are reviewed and proven:
+
+1. Review consent and event retention/deletion policy with a qualified
+   owner, including access requests and how donor withdrawals are
+   honored without retaining their prior public display name.
+2. Back up the real database; apply the original recognition
+   migration (`20261015000000_donor_recognition_consent`) **before**
+   `20261015040000_donor_recognition_consent_events` and regenerate
+   Prisma client on the exact checkout.
+3. Exercise parallel request/withdrawal/moderation races and
+   database uniqueness/audit rollback against a migrated isolated
+   PostgreSQL instance. Confirm errors fail closed without a
+   consent event or a partial data update.
+4. Verify valid/invalid receipt token behavior, origin/rate limiting,
+   donor anonymity/refunds, independent staff RBAC, moderated
+   publication and emergency takedown.
+5. Verify Shukr remains HTTP- and metadata-`noindex`, with
+   `no-store`, sitemap exclusion, keyboard access and 200% zoom.
+   Check withdrawn names are absent from fresh public reads and
+   any platform edge caches.
+6. Do not put contact details, receipt capabilities, chosen display
+   names or sensitive notes in the consent-event ledger or logs.
+
+For emergency takedown or privacy review, disable the feature flag.
+Disabling recognition does not alter donations or payment records.
+
 ## Private giving-fund planning summary (flag OFF by default)
 
 The fund registry is viewable with `fund.view`; financial data
