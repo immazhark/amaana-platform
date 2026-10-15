@@ -5,6 +5,8 @@ const decimal = (value: number) => ({ mul: (n: number) => ({ toNumber: () => val
 const eligible = {
   appealId: null, fundId: "fund-1", currency: "INR", status: "CAPTURED",
   amount: decimal(500), refundedAmount: decimal(0), givingIntent: "SADAQAH",
+  domesticConfirmedAt: new Date("2026-10-12T09:00:00Z"),
+  fundDisclosureConfirmedAt: new Date("2026-10-12T09:00:00Z"),
   designationSnapshot: {
     version: 1, kind: "FUND", fundId: "fund-1", fundRevision: 2,
     label: "Approved giving fund", purpose: "Reviewed purpose description for the donation",
@@ -33,6 +35,8 @@ describe("restricted non-disbursing allocation proposals", () => {
     expect(() => allocationAvailablePaise({ ...eligible, appealId: "appeal-1", fundId: null }, [])).toThrow();
     expect(() => allocationAvailablePaise({ ...eligible, givingIntent: "ZAKAT" }, [])).toThrow();
     expect(() => allocationAvailablePaise({ ...eligible, designationSnapshot: null }, [])).toThrow();
+    expect(() => allocationAvailablePaise({ ...eligible, fundDisclosureConfirmedAt: null }, [])).toThrow();
+    expect(() => allocationAvailablePaise({ ...eligible, domesticConfirmedAt: new Date(NaN) }, [])).toThrow();
   });
   it("requires a separate maker and checker and forbids reused terminal proposals", () => {
     expect(() => assertAllocationReview("creator", "creator", "PENDING")).toThrow(AllocationError);

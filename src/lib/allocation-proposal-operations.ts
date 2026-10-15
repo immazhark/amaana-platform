@@ -34,6 +34,7 @@ export async function createAllocationProposal(input: {
       select: {
         id: true, appealId: true, fundId: true, currency: true, status: true,
         amount: true, refundedAmount: true, givingIntent: true, designationSnapshot: true,
+        domesticConfirmedAt: true, fundDisclosureConfirmedAt: true,
         fund: { select: { status: true } },
       },
     });
@@ -89,6 +90,7 @@ export async function reviewAllocationProposal(input: {
           id: true, appealId: true, fundId: true, status: true,
           amount: true, refundedAmount: true, currency: true,
           givingIntent: true, designationSnapshot: true, updatedAt: true,
+          domesticConfirmedAt: true, fundDisclosureConfirmedAt: true,
           fund: { select: { status: true } },
         },
       });

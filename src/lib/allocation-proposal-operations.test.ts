@@ -20,6 +20,8 @@ const donation = {
   id: "donation-record-001", appealId: null, fundId: "approved-fund-id",
   status: "CAPTURED", amount: dec(500), refundedAmount: dec(0), currency: "INR",
   updatedAt: new Date("2026-10-15T07:00:00.000Z"), givingIntent: "GENERAL",
+  domesticConfirmedAt: new Date("2026-10-10T07:00:00Z"),
+  fundDisclosureConfirmedAt: new Date("2026-10-10T07:00:00Z"),
   designationSnapshot: {
     version: 1, kind: "FUND", fundId: "approved-fund-id", fundRevision: 2,
     label: "Original approved programme",
@@ -90,7 +92,7 @@ describe("allocation proposals never move funds and cannot bypass second approva
   it("refuses proposal creation from unreconciled, refunded or wrong-purpose donations", async () => {
     for (const patch of [
       { status: "PENDING_VERIFICATION" }, { refundedAmount: dec(1) },
-      { designationSnapshot: null }, { fundId: null }, { fund: { status: "DRAFT" } },
+      { designationSnapshot: null }, { fundDisclosureConfirmedAt: null }, { fundId: null }, { fund: { status: "DRAFT" } },
       { appealId: "appeal-id", fundId: null }, { givingIntent: "ZAKAT" },
     ]) {
       mocks.donateFind.mockResolvedValueOnce({ ...donation, ...patch });

@@ -34,11 +34,17 @@ export type AllocationSource = {
   appealId: string | null; fundId: string | null; currency: string;
   status: string; amount: Decimal; refundedAmount: Decimal;
   givingIntent: string; designationSnapshot: unknown;
+  fundDisclosureConfirmedAt: Date | null;
+  domesticConfirmedAt: Date;
 };
 export function allocationAvailablePaise(donation: AllocationSource, approvedAmounts: readonly number[]) {
   const destination = requireDonationFinancialDestination(donation);
   if (destination.kind !== "FUND" || donation.status !== "CAPTURED" ||
-      !FUND_INTENTS.some(intent => intent === donation.givingIntent)) {
+      !FUND_INTENTS.some(intent => intent === donation.givingIntent) ||
+      !(donation.domesticConfirmedAt instanceof Date) ||
+      !Number.isFinite(donation.domesticConfirmedAt.getTime()) ||
+      !(donation.fundDisclosureConfirmedAt instanceof Date) ||
+      !Number.isFinite(donation.fundDisclosureConfirmedAt.getTime())) {
     throw new AllocationError("Only captured eligible giving-fund donations can be allocated.");
   }
   const totals = summarizeDonationRecord(donation);
