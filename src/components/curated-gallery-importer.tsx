@@ -203,8 +203,11 @@ export function CuratedGalleryImporter() {
     setProgress(0);
     setStatus(null);
     let started = false;
+    const activeController = lifetime.current;
     const ensureActive = () => {
-      if (lifetime.current?.signal.aborted) throw new Error("Gallery import cancelled.");
+      if (!activeController || activeController.signal.aborted || lifetime.current !== activeController) {
+        throw new Error("Gallery import cancelled.");
+      }
     };
     try {
       if (file.size !== CURATED_GALLERY_PACKAGE_BYTES) throw new Error("ZIP byte size does not match the approved package.");
@@ -269,8 +272,9 @@ export function CuratedGalleryImporter() {
         setPhase(`Imported ${index + 1} of ${CURATED_GALLERY_RECORD_COUNT} gallery images…`);
       }
 
+      ensureActive();
       const finalStatus = await refreshStatus();
-      if (finalStatus.uploaded !== CURATED_GALLERY_RECORD_COUNT ||
+      if (!finalStatus || finalStatus.uploaded !== CURATED_GALLERY_RECORD_COUNT ||
           finalStatus.missing !== 0 ||
           finalStatus.mismatches.length > 0 ||
           finalStatus.galleryOnly !== true) {
