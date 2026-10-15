@@ -6,6 +6,7 @@ import Link from "@/components/navigation-link";
 import { PageHero, PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { TrustEvidenceBoundary } from "@/components/trust-evidence-boundary";
+import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { programmeBySlug } from "@/lib/master-copy";
 import { getImpactPageData } from "@/lib/public-page-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
@@ -37,6 +38,15 @@ export default async function ImpactPage() {
     const canonical = programmeBySlug(item.slug);
     return Boolean(canonical) && !(canonical && "parentSlug" in canonical && canonical.parentSlug);
   });
+  // A reviewed initiative's own published metric is the only source of
+  // truth here. No pooled amount, newly estimated impact or extra query.
+  const publishedImpact = initiatives
+    .filter(item => item.primaryMetric?.trim() && item.primaryMetricLabel?.trim())
+    .slice(0, 3)
+    .map(item => ({
+      slug: item.slug, title: item.title,
+      value: item.primaryMetric!, label: item.primaryMetricLabel!,
+    }));
   const witnesses = selectImpactWitnesses(initiatives);
   const heroMedia = witnesses[0]?.media ?? null;
 
@@ -60,6 +70,10 @@ export default async function ImpactPage() {
           </div>
         )}
       />
+
+      {publishedImpact.length > 0 && <div className="v2-shell">
+        <VerifiedImpactStrip headingId="impact-published-outcomes" items={publishedImpact}/>
+      </div>}
 
       <section className="v2-section paper v2-impact-wall-section" id="evidence" aria-labelledby="impact-wall-title">
         <div className="v2-shell">
