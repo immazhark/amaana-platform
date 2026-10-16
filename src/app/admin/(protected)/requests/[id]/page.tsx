@@ -185,7 +185,7 @@ export default async function RequestDetailPage({ params }: Props) {
   const mayReviewFinancialEvidence = hasPermission(user, "donation.reconcile");
   const mayReportOutcome = hasPermission(user, "assistance.update");
   const mayReviewOutcome = hasPermission(user, "assistance.approve");
-  const mayApproveAnonymousCopy = mayReviewOutcome && hasPermission(user, "content.publish");
+  const mayApproveAnonymousCopy = mayReviewOutcome && hasPermission(user, "content.approve");
   const activeOutcomeSources = new Set(activeSources.map(item => item.deliveryRecordId));
   const financeCorroborationCandidates = deliveries.filter(item =>
     mayReportDelivery && item.kind === "FINANCIAL" && item.state === "CONFIRMED" &&

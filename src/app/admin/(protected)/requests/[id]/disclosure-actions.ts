@@ -77,7 +77,7 @@ export async function proposeAnonymousOutcomeCopy(form: FormData) {
 /** Separate content plus case approval. APPROVED_COPY is NOT PUBLISHED.
  * No public route, impact increment, applicant messaging or payment mutation. */
 export async function reviewAnonymousOutcomeCopy(form: FormData) {
-  const actor = await requirePermission("content.publish");
+  const actor = await requirePermission("content.approve");
   if (!hasPermission(actor, "assistance.view") ||
       !hasPermission(actor, "assistance.approve")) {
     throw new Error("Both case-view and assistance-approval permissions are required.");
