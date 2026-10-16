@@ -25,7 +25,7 @@
 }
 .clear:focus-visible { outline:3px solid var(--af-color-focus);outline-offset:3px;border-radius:.2rem; }
 .resultsCount { color:var(--v2-ink);margin-bottom:2rem;font-variant-numeric:tabular-nums; }
-:global(#work-results) { scroll-margin-top:7.5rem; }
-:global(.v2-work-index .v2-section-head)::after { display:none; }
+.resultsSection { scroll-margin-top:7.5rem; }
+.resultsSection :global(.v2-section-head)::after { display:none; }
 @media(max-width:620px) { .toolbar>*{width:100%}.filterLabel{min-width:100%} }
 @media(forced-colors:active) { .toolbar .filterLabel .filterSelect{background-image:none} }
