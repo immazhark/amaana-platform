@@ -14,6 +14,7 @@ import {
 } from "@/lib/public-media";
 import { deletePublicMediaObject, uploadPublicMediaFile, validatePublicMediaFile } from "@/lib/storage";
 import { logServerError } from "@/lib/server-log";
+import { singleFormValue } from "@/lib/single-form-value";
 
 type TargetFields = { causeId?: string; initiativeId?: string; storyId?: string; faithContentId?: string };
 
@@ -38,6 +39,16 @@ function safePublicUrl(value: FormDataEntryValue | null) {
 function optionalText(value: FormDataEntryValue | null, max: number) {
   const text = String(value ?? "").trim();
   return text ? text.slice(0, max) : null;
+}
+
+/** Strict scalar action controls: first-value-wins permits tampered forms to
+ * bypass the intended publish/unpublish or deletion confirmation. */
+function requiredMediaActionText(form: FormData, field: string): string {
+  const value = singleFormValue(form, field);
+  if (typeof value !== "string") {
+    throw new Error(`${field} must be a text field.`);
+  }
+  return value.trim();
 }
 
 function usesApprovedManagedDelivery(asset: { storageKey?: string | null; publicUrl?: string | null }) {
@@ -261,8 +272,13 @@ export async function updateMediaAsset(formData: FormData) {
 
 export async function setMediaPublication(formData: FormData) {
   const user = await requirePermission("content.approve");
-  const id = String(formData.get("id") ?? "");
-  const publish = formData.get("publish") === "true";
+  const id = requiredMediaActionText(formData, "id");
+  const requestedAction = requiredMediaActionText(formData, "publish");
+  if (!id) throw new Error("Media record is required.");
+  if (requestedAction !== "true" && requestedAction !== "false") {
+    throw new Error("Explicit media publication action is required.");
+  }
+  const publish = requestedAction === "true";
   const asset = await prisma.mediaAsset.findUniqueOrThrow({
     where: { id },
     include: {
@@ -391,8 +407,8 @@ export async function setMediaPublication(formData: FormData) {
 
 export async function deleteMediaAsset(formData: FormData) {
   const user = await requirePermission("content.approve");
-  const id = String(formData.get("id") ?? "").trim();
-  const confirmation = String(formData.get("confirm") ?? "").trim();
+  const id = requiredMediaActionText(formData, "id");
+  const confirmation = requiredMediaActionText(formData, "confirm");
   if (!id) throw new Error("Media record is required");
   if (confirmation !== "DELETE") throw new Error("Type DELETE to confirm permanent media deletion");
 
