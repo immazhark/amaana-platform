@@ -1,3 +1,23 @@
+## 2026-10-17 — ECC-guided unambiguous private assistance inputs
+
+Ownership: HANDOFF_PENDING. Sole writer continued PR #292 from `871bd7c`; published source `e7dad1d17cf92288b1cb08dee586489333530bc8`. Same branch; no main merge/release.
+
+Applied the user-requested ECC guidance from the official `affaan-m/ecc` repository: [security-review](https://github.com/affaan-m/ecc/blob/76aaa77df6adc5b889e689007bf99b9a4f74af34/skills/security-review/SKILL.md) and [coding-standards](https://github.com/affaan-m/ecc/blob/76aaa77df6adc5b889e689007bf99b9a4f74af34/skills/coding-standards/SKILL.md), alongside Karpathy guidelines. Reference commit `76aaa77df6adc5b889e689007bf99b9a4f74af34`. Guidance was read and applied; no ECC installer, hosted scan, hooks, external agents or new project dependency was executed.
+
+Implementation:
+- One small scalar FormData reader rejects repeated values, including identical repeats and mixed string/File duplicates, while preserving missing/blank/File values for existing domain validation. Adopted across private follow-up scheduling/resolution/reassignment, milestones/redaction, delivery/report review, financial evidence, operational outcomes, consent-copy proposals/approval/withdrawal/publication, late proof linking and disclosure reconciliation.
+- Main staff case verification, case status/assignment and appeal-conversion scalar fields use the same boundary. Amounts, case/evidence identities, consent choices, decisions and revision snapshots cannot silently choose the first conflicting value. Existing authentication, permissions, independent reviewers, expected-version/CAS, transaction retry, audit, exact amounts and private/public evidence rules remain unchanged.
+- Voiding remains possible without a new affirmative evidence checkbox; in-kind reports retain blank amount/evidence semantics. No generic replacement of domain validators, upload-list handling, schema or financial accounting. Missing final-publication consent and missing withdrawal reasons now reach their specific corrective messages.
+- Existing post-commit tests now include the already-required /impact invalidation and prove a cache failure after commit does not replay the write. Actual source cache behavior was retained, not removed to satisfy stale tests.
+
+Validation: **82 duplicate-field cases failed against the inherited parser sources**; final **336 focused cases in 14 suites pass** across affected parsers and real action modules with mocked persistence. Application-only TypeScript, changed-file zero-warning ESLint, diff checks and clean optimized compile-only build pass. No full suite, native database/concurrency, production data generation, authenticated browser or live privacy/financial acceptance is claimed. Previously recorded whole-repository assistance fixture typing limitations remain separate from application-only type success.
+
+JS **814226/819200**, CSS **348052/348160**, unchanged. No UI, client framework, stylesheet, dependency, migration, financial/provider configuration, consent activation or budget change.
+
+Master149 implementation remains **60 Implemented /61 Partial /26 Not started /2 other**, no formal closure. AF-LOCAL/AF-MILESTONES/AF-CONSENT/AF-SETTLEMENT gain scoped input-boundary evidence. New milestone and bank-evidence source belongs to open PR, not the historical merged baseline. Consent retention, approved service-zone/SLA rules, bank settlement integration and real end-to-end acceptance remain incomplete.
+
+Next: continue the next substantive source-ready package without another broad audit. No external messages, real payment/refund, donor/beneficiary mutation, production database action, merge or deployment.
+
 ## 2026-10-17 — Private moderation access, follow-up history and consent input guards
 
 Ownership: HANDOFF_PENDING; sole writer continued existing PR #292 from `8c87e93`. Published source `28942de523540d6e12413d50960a783ebae5edd9`; main unchanged. No release authorization or live writes.
