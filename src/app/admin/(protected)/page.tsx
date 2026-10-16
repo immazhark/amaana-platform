@@ -11,7 +11,7 @@ import { prisma } from "@/lib/prisma";
 
 type Props = { searchParams: Promise<{
   status?: string | string[]; page?: string | string[];
-  assignment?: string | string[]; order?: string | string[]; age?: string | string[]; review?: string | string[];
+  assignment?: string | string[]; order?: string | string[]; age?: string | string[]; review?: string | string[]; city?: string | string[];
 }> };
 
 export default async function AdminQueuePage({ searchParams }: Props) {
