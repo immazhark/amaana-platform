@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
-import { AssistanceFollowUpState } from "@prisma/client";
+import { describe, expect, it, vi } from "vitest";
+import { AssistanceFollowUpState, type Prisma } from "@prisma/client";
 import {
-  eligibleFollowUpStaffWhere, followUpDueLabel, indiaCalendarDay, parseCalendarDay,
+  cancelOpenFollowUpsOnCaseExit, eligibleFollowUpStaffWhere, followUpDueLabel, indiaCalendarDay, parseCalendarDay,
   parseFollowUpAssignment, parseFollowUpCreation, parseFollowUpReschedule, parseFollowUpResolution, shiftedCalendarDay,
 } from "./assistance-follow-up";
 
@@ -86,5 +86,47 @@ describe("private date-only assistance follow-up scheduling", () => {
       .toBe("Due today");
     expect(followUpDueLabel(AssistanceFollowUpState.COMPLETED, new Date("2026-10-17T00:00:00Z"), day))
       .toBe("Completed");
+  });
+});
+
+describe("case exit retires internal scheduled tasks atomically", () => {
+  function makeTransaction(count: number, changed = count) {
+    const findMany = vi.fn().mockResolvedValue(Array.from({ length: count }, (_, i) => ({ id: `task-${i}` })));
+    const updateMany = vi.fn().mockResolvedValue({ count: changed });
+    const create = vi.fn().mockResolvedValue({ id: "audit-1" });
+    return {
+      findMany, updateMany, create,
+      tx: { assistanceFollowUp: { findMany, updateMany }, auditEvent: { create } } as unknown as Prisma.TransactionClient,
+    };
+  }
+  it("does not create a cancellation audit when no open tasks exist", async () => {
+    const { tx, updateMany, create } = makeTransaction(0);
+    await cancelOpenFollowUpsOnCaseExit(tx, "case-1", "reviewer-1", "CASE_CLOSED");
+    expect(updateMany).not.toHaveBeenCalled();
+    expect(create).not.toHaveBeenCalled();
+  });
+  it("cancels exactly the active case tasks and records the transition reason", async () => {
+    const { tx, findMany, updateMany, create } = makeTransaction(2);
+    await cancelOpenFollowUpsOnCaseExit(tx, "case-1", "reviewer-1", "APPEAL_CONVERSION");
+    expect(findMany).toHaveBeenCalledWith({
+      where: { assistanceRequestId: "case-1", state: AssistanceFollowUpState.OPEN },
+      select: { id: true },
+    });
+    expect(updateMany).toHaveBeenCalledWith({
+      where: { assistanceRequestId: "case-1", state: AssistanceFollowUpState.OPEN },
+      data: { state: AssistanceFollowUpState.CANCELLED,
+        resolvedAt: expect.any(Date), resolvedById: "reviewer-1" },
+    });
+    expect(create).toHaveBeenCalledWith({ data: {
+      actorId: "reviewer-1", action: "assistance.follow_up_tasks_closed_with_case",
+      entityType: "AssistanceRequest", entityId: "case-1",
+      metadata: { reason: "APPEAL_CONVERSION", count: 2 },
+    } });
+  });
+  it("rejects a concurrent task-count change so the caller rolls back", async () => {
+    const { tx, create } = makeTransaction(2, 1);
+    await expect(cancelOpenFollowUpsOnCaseExit(tx, "case-1", "reviewer-1", "CASE_REJECTED"))
+      .rejects.toThrow("Follow-up tasks changed during case closure");
+    expect(create).not.toHaveBeenCalled();
   });
 });
