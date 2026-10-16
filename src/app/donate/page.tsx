@@ -64,7 +64,6 @@ export default async function Page({ searchParams }: PageProps = {}) {
     getPublicAppealCheckoutEligibility(appeal) &&
     (isStaging || !isSyntheticStagingAppeal(appeal)),
   );
-  const hasPayableAppeals = payableAppeals.length > 0;
   const hasFunds = funds.length > 0;
   // Checkout choices are independently re-read through the full appeal donation
   // privacy/eligibility projection; index publication does not itself grant checkout.
@@ -82,6 +81,9 @@ export default async function Page({ searchParams }: PageProps = {}) {
       zakatEligible: appeal.zakatEligible,
     }];
   });
+  // The index only proposes candidates. Count a donation choice as available
+  // after its independent publication/privacy/amount recheck succeeds.
+  const hasPayableAppeals = appealChoices.length > 0;
   const impactItems: VerifiedImpactItem[] = publishedInitiatives.map(item => ({
       slug: item.slug, title: item.title,
       value: item.primaryMetric!, label: item.primaryMetricLabel!,
@@ -111,7 +113,7 @@ export default async function Page({ searchParams }: PageProps = {}) {
       ]}
     >
       <div className={styles.routes} role="group" aria-label="Donation routes">
-        <article className={styles.route}><span>Route 01</span><h3>{hasPayableAppeals ? "Support a verified public appeal" : "Public appeals"}</h3><p>{hasPayableAppeals ? `There ${payableAppeals.length === 1 ? "is" : "are"} currently ${payableAppeals.length} reviewed public ${payableAppeals.length === 1 ? "appeal" : "appeals"} accepting support. Review the context and remaining verified target before continuing to secure domestic INR checkout.` : "No public appeal checkout is currently available. Completed cases remain visible for accountability, and giving routes appear only when review and the current balance permit them."}</p>{appealChoices.length > 0 && <Link className="v2-button" href="/donate?giving=appeal#donation-route-choice">Choose an appeal & give here</Link>}
+        <article className={styles.route}><span>Route 01</span><h3>{hasPayableAppeals ? "Support a verified public appeal" : "Public appeals"}</h3><p>{hasPayableAppeals ? `There ${appealChoices.length === 1 ? "is" : "are"} currently ${appealChoices.length} reviewed public ${appealChoices.length === 1 ? "appeal" : "appeals"} available for checkout here. Review the context and remaining verified target before continuing to secure domestic INR checkout.` : "No public appeal checkout is currently available. Completed cases remain visible for accountability, and giving routes appear only when review and the current balance permit them."}</p>{appealChoices.length > 0 && <Link className="v2-button" href="/donate?giving=appeal#donation-route-choice">Choose an appeal & give here</Link>}
           <Link className="v2-text-link" href="/appeals">{hasPayableAppeals ? "See all verified appeals →" : "View appeals and completed cases →"}</Link></article>
         <article className={styles.route}><span>Route 02</span><h3>{hasFunds ? "Support an approved giving fund" : "Support education or another approved programme"}</h3><p>{hasFunds ? "Review each fund’s approved purpose and restrictions below. Contributions remain designated to the purpose you confirm." : "Taleem sponsorship and programme giving begin with the currently available programme route or a conversation with Amaana about an approved destination."}</p>{hasFunds && <Link className="v2-button" href="/donate?giving=fund#donation-route-choice">Review approved giving funds</Link>}<Link className="v2-button v2-button--paper-secondary" href="/get-involved/sponsor-education">Explore Taleem sponsorship</Link><Link className="v2-text-link" href="/contact">Ask about programme giving →</Link></article>
       </div>
@@ -137,7 +139,7 @@ export default async function Page({ searchParams }: PageProps = {}) {
           DIRECT_UPI: <DonationPaymentInstructions method="DIRECT_UPI" paymentDetails={paymentDetails} />,
           BANK_TRANSFER: <DonationPaymentInstructions method="BANK_TRANSFER" paymentDetails={paymentDetails} />,
         } : { DIRECT_UPI: null, BANK_TRANSFER: null }}/>}
-      {appealChoices.length === 0 && hasPayableAppeals && <p role="status" className={styles.note}>
+      {payableAppeals.length > 0 && !hasPayableAppeals && <p role="status" className={styles.note}>
         An appeal may have changed, or its exact remaining balance may no longer permit a whole-rupee checkout. Review the current case and contact Amaana before transferring any unsupported amount.
       </p>}
       {fundReadFailed && <p role="status" className={styles.note}>Giving fund availability could not be checked. Please refresh later or contact Amaana before contributing to a programme.</p>}
