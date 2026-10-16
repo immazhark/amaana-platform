@@ -1,0 +1,61 @@
+/** Internal assistance case notes. Never use this audit metadata as public
+ * appeal copy, a medical fact, an approval or an applicant notification. */
+export const PRIVATE_MILESTONE_ACTION = "assistance.private_milestone_added" as const;
+
+export const PRIVATE_MILESTONE_KINDS = {
+  CONTACT_ATTEMPT: "Contact attempt",
+  DOCUMENT_FOLLOW_UP: "Document follow-up",
+  INSTITUTION_COORDINATION: "Institution coordination",
+  ASSISTANCE_FOLLOW_UP: "Assistance follow-up",
+  REVIEW_HANDOFF: "Reviewer handoff",
+} as const;
+
+export type PrivateMilestoneKind = keyof typeof PRIVATE_MILESTONE_KINDS;
+export const PRIVATE_MILESTONE_SUMMARY_MAX = 600;
+const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const unsafe = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
+
+export function parsePrivateMilestoneInput(data: FormData) {
+  const id = data.get("id");
+  const kind = data.get("kind");
+  const summary = data.get("summary");
+  const submissionId = data.get("submissionId");
+  const updatedAt = data.get("expectedUpdatedAt");
+  if (typeof id !== "string" || !id || id.length > 128 || unsafe.test(id)) {
+    throw new Error("Invalid case reference.");
+  }
+  if (typeof kind !== "string" || !Object.hasOwn(PRIVATE_MILESTONE_KINDS, kind)) {
+    throw new Error("Choose an approved internal follow-up type.");
+  }
+  if (typeof summary !== "string") throw new Error("Enter a case follow-up summary.");
+  const normalized = summary.trim();
+  if (normalized.length < 12 || normalized.length > PRIVATE_MILESTONE_SUMMARY_MAX || unsafe.test(normalized)) {
+    throw new Error("Follow-up summary must contain 12–600 safe characters.");
+  }
+  if (typeof submissionId !== "string" || !uuid.test(submissionId)) {
+    throw new Error("Follow-up submission expired. Reload this case.");
+  }
+  if (typeof updatedAt !== "string" || !updatedAt || Number.isNaN(Date.parse(updatedAt))) {
+    throw new Error("Case version is missing. Reload before posting.");
+  }
+  return {
+    id, kind: kind as PrivateMilestoneKind, summary: normalized,
+    submissionId, expectedUpdatedAt: new Date(updatedAt),
+  };
+}
+
+/** Never project arbitrary historical audit JSON into case-visible text. */
+export function readPrivateMilestone(value: unknown) {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const row = value as Record<string, unknown>;
+  if (typeof row.kind !== "string" || !Object.hasOwn(PRIVATE_MILESTONE_KINDS, row.kind) ||
+      typeof row.summary !== "string" ||
+      row.summary.length < 12 || row.summary.length > PRIVATE_MILESTONE_SUMMARY_MAX ||
+      unsafe.test(row.summary)) return null;
+  return { kind: row.kind as PrivateMilestoneKind, summary: row.summary };
+}
+
+export function canAddPrivateMilestone(status: string, appealId: string | null) {
+  return !appealId && (status === "SUBMITTED" || status === "DOCUMENTS_REQUESTED" ||
+    status === "UNDER_VERIFICATION" || status === "APPROVED");
+}
