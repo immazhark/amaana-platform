@@ -177,7 +177,7 @@ export async function createMediaAsset(formData: FormData) {
     throw error;
   }
 
-  revalidatePath("/admin/media");
+  refreshCommittedMedia(["/admin/media"]);
 }
 
 export async function updateMediaAsset(formData: FormData) {
@@ -256,7 +256,7 @@ export async function updateMediaAsset(formData: FormData) {
     if (claimed.count !== 1) throw new Error("This media changed while you were reviewing it. Refresh before editing metadata.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "media.metadata_updated", entityType: "MediaAsset", entityId: id, metadata: { wasPublic: asset.isPublic, identityImage } } });
   });
-  revalidatePath("/admin/media");
+  refreshCommittedMedia(["/admin/media"]);
 }
 
 export async function setMediaPublication(formData: FormData) {
@@ -417,10 +417,5 @@ export async function deleteMediaAsset(formData: FormData) {
     }),
   ]);
 
-  revalidatePath("/admin/media");
-  revalidatePath("/");
-  revalidatePath("/our-work");
-  revalidatePath("/impact");
-  revalidatePath("/stories");
-  revalidatePath("/faith-and-reflections");
+  refreshCommittedMedia(affectedMediaPublicationPaths(asset));
 }
