@@ -99,9 +99,12 @@ export async function reviewAnonymousOutcomeCopy(form: FormData) {
       throw new Error("This copy proposal does not belong to the assistance case.");
     }
     if (item.state === input.decision) return; // idempotent response retry
+    // Only DRAFT -> APPROVED_COPY is allowed. Every active state may
+    // transition to WITHDRAWN; no approval action can reopen or downgrade
+    // a previously published disclosure.
     if (item.state === AssistanceOutcomeDisclosureState.WITHDRAWN ||
-        (item.state === AssistanceOutcomeDisclosureState.APPROVED_COPY &&
-         input.decision !== AssistanceOutcomeDisclosureState.WITHDRAWN)) {
+        (input.decision === AssistanceOutcomeDisclosureState.APPROVED_COPY &&
+          item.state !== AssistanceOutcomeDisclosureState.DRAFT)) {
       throw new Error("This anonymous-copy decision is final; create no automatic replacement.");
     }
     if (item.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) {
