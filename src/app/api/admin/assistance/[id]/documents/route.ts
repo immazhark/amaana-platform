@@ -45,10 +45,11 @@ export async function POST(request: Request, { params }: Props) {
     const body = await readBodyBytesWithLimit(request, MAX_BODY_BYTES, { timeoutMs: 20_000 });
     const form = await new Response(body, { headers: { "Content-Type": contentType } }).formData();
     const entries = form.getAll("document");
-    if (entries.length !== 1 || !(entries[0] instanceof File)) {
+    const candidate = entries[0];
+    if (entries.length !== 1 || !(candidate instanceof File)) {
       return failure("Choose exactly one supporting document.", 400);
     }
-    file = entries[0];
+    file = candidate;
     if (!file.name || file.size === 0 || file.size > MAX_FILE_BYTES) {
       return failure("Choose one non-empty document no larger than 5 MB.", 400);
     }
