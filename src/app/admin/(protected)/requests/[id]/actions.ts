@@ -412,6 +412,27 @@ export async function convertToAppeal(formData: FormData) {
   redirect(`/admin/requests/${id}`);
 }
 
+/** Compare legacy absolute and canonical relative URLs without granting access
+ * to any unreviewed object. The storage key remains private and immutable. */
+function coverPublicationUrls(url: string): string[] {
+  const variants = new Set([url]);
+  try {
+    const parsed = new URL(url, "https://amaanafoundation.org");
+    if ((url.startsWith("/media/") ||
+        (parsed.protocol === "https:" &&
+         ["amaanafoundation.org", "www.amaanafoundation.org"].includes(parsed.hostname) &&
+         parsed.pathname.startsWith("/media/"))) &&
+        parsed.pathname.startsWith("/media/")) {
+      const path = parsed.pathname + parsed.search + parsed.hash;
+      variants.add(path);
+      variants.add(`https://amaanafoundation.org${path}`);
+    }
+  } catch {
+    // Only an exact stored URL can match an invalid/legacy cover.
+  }
+  return [...variants];
+}
+
 /**
  * Last-resort one-way privacy stop after case-to-appeal conversion.
  * Ordinary verification stays locked. Revocation and appeal closure/pause must
@@ -459,7 +480,7 @@ export async function withdrawConvertedAppealDisclosure(formData: FormData) {
         id: true, status: true, appealId: true, updatedAt: true,
         appeal: {
           select: {
-            id: true, slug: true, status: true, updatedAt: true,
+            id: true, slug: true, status: true, updatedAt: true, coverImageUrl: true,
             initiative: { select: { slug: true } },
             cause: { select: { slug: true } },
           },
@@ -527,6 +548,38 @@ export async function withdrawConvertedAppealDisclosure(formData: FormData) {
     if (appealWrite.count !== 1) {
       throw new Error("Appeal changed while you were reviewing it. Refresh before withdrawing disclosure.");
     }
+    // A cover may be a managed storage object, an old absolute alias, or a
+    // separately hosted public URL. All matching approved library references
+    // must be unpublished atomically with the consent revocation. This can
+    // affect a programme reusing the same asset: privacy takes precedence.
+    const cover = request.appeal.coverImageUrl?.trim() ?? "";
+    const coverAssets = cover
+      ? await tx.mediaAsset.findMany({
+          where: { isPublic: true, publicUrl: { in: coverPublicationUrls(cover) } },
+          select: { id: true, updatedAt: true, publicUrl: true, storageKey: true },
+        })
+      : [];
+    let externalMediaReviewRequired = Boolean(cover && coverAssets.length === 0);
+    for (const asset of coverAssets) {
+      if (!asset.storageKey) externalMediaReviewRequired = true;
+      const unpublished = await tx.mediaAsset.updateMany({
+        where: { id: asset.id, isPublic: true, updatedAt: asset.updatedAt },
+        data: { isPublic: false, privacyApprovedAt: null },
+      });
+      if (unpublished.count !== 1) {
+        throw new Error("Media publication changed while withdrawing consent. Refresh and review the case.");
+      }
+      await tx.auditEvent.create({
+        data: {
+          actorId: user.id,
+          action: "media.unpublished_on_assistance_privacy_withdrawal",
+          entityType: "MediaAsset",
+          entityId: asset.id,
+          metadata: { assistanceRequestId: id, linkedAppealId: request.appeal.id },
+        },
+      });
+    }
+
     await withdrawStaleAnonymousOutcomeCopies(tx, id, user.id, "VERIFICATION_CHANGED");
     await tx.auditEvent.create({
       data: {
@@ -549,6 +602,7 @@ export async function withdrawConvertedAppealDisclosure(formData: FormData) {
       slug: request.appeal.slug,
       initiativeSlug: request.appeal.initiative?.slug,
       causeSlug: request.appeal.cause?.slug,
+      externalMediaReviewRequired,
     };
   });
 
@@ -566,5 +620,5 @@ export async function withdrawConvertedAppealDisclosure(formData: FormData) {
   for (const path of paths) {
     try { revalidatePath(path); } catch { refreshDelayed = true; }
   }
-  redirect(`/admin/requests/${encodeURIComponent(id)}?privacy=${refreshDelayed ? "refresh-delayed" : "withdrawn"}`);
+  redirect(`/admin/requests/${encodeURIComponent(id)}?privacy=${refreshDelayed ? "refresh-delayed" : "withdrawn"}${result.externalMediaReviewRequired ? "&media=review-required" : ""}`);
 }
