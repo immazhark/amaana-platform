@@ -11,13 +11,16 @@ export async function reviewDonorRecognitionAction(
 ): Promise<RecognitionReviewState> {
   const actor = await requirePermission("donation.reconcile");
   if (!donorRecognitionEnabled()) return { status: "error", message: "Recognition workflow is not enabled." };
+  if (["donationId", "requestedAt", "name", "decision"].some(key => form.getAll(key).length !== 1)) {
+    return { status: "error", message: "Invalid consent review request." };
+  }
   const donationId = form.get("donationId");
   const requestStamp = form.get("requestedAt");
   const name = form.get("name");
   const decision = form.get("decision");
   if (typeof donationId !== "string" || donationId.length < 8 || donationId.length > 100 ||
       typeof requestStamp !== "string" || requestStamp.length > 48 ||
-      typeof name !== "string" || !parseDonorRecognitionName(name) ||
+      typeof name !== "string" || parseDonorRecognitionName(name) !== name ||
       (decision !== "APPROVE" && decision !== "REJECT")) {
     return { status: "error", message: "Invalid consent review request." };
   }

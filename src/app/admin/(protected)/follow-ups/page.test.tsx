@@ -70,3 +70,48 @@ describe("restricted private next-action workboard", () => {
     expect(page).not.toContain("assignedToId=");
   });
 });
+
+
+describe("follow-up history and case scope", () => {
+  it("keeps completed history visible after a case closes, without applying a due-date filter", async () => {
+    mock.findMany.mockResolvedValue([{
+      id: "task-completed", summary: "Review institutional response.", dueOn: new Date("2026-10-10T00:00:00Z"),
+      createdAt: new Date("2026-10-09T10:00:00Z"), state: "COMPLETED", resolvedAt: new Date("2026-10-11T10:00:00Z"),
+      assignedTo: { name: "Staff member" }, assistanceRequest: { id: "closed-case", referenceNumber: "AF-PRIVATE-CLOSED", category: "EDUCATION", city: "Hyderabad", status: "CLOSED" },
+    }]);
+    const html = await render({ state: "COMPLETED", window: "due", view: "team" });
+    expect(mock.count.mock.calls[0]?.[0].where).toEqual({ state: "COMPLETED", assistanceRequest: {} });
+    expect(mock.findMany.mock.calls[0]?.[0]).toMatchObject({ take: 25, skip: 0, orderBy: [{ resolvedAt: { sort: "desc", nulls: "last" } }, { id: "desc" }] });
+    expect(html).toContain("AF-PRIVATE-CLOSED"); expect(html).toContain("Completed"); expect(html).toContain("IST");
+    expect(html).not.toContain('aria-label="Staff-selected follow-up dates"');
+    expect(html).toContain("not verified aid delivery");
+    expect(html).toContain("/admin/follow-ups?view=team");
+  });
+
+  it("allows staff to inspect open tasks on inactive cases without changing them", async () => {
+    const html = await render({ cases: "inactive", window: "all" });
+    const where = mock.count.mock.calls[0]?.[0].where;
+    expect(where.state).toBe("OPEN"); expect(where.assignedToId).toBe("synthetic-staff");
+    expect(where.assistanceRequest.OR).toEqual([
+      { status: { notIn: ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION", "APPROVED"] } },
+      { appealId: { not: null } },
+    ]);
+    expect(html).toContain("Closed or converted cases"); expect(html).not.toContain("<form");
+  });
+
+  it("preserves team, cancelled state and explicit case scope across pages", async () => {
+    mock.count.mockResolvedValue(75);
+    const html = await render({ view: "team", state: "CANCELLED", cases: "inactive", page: "2" });
+    expect(mock.findMany.mock.calls[0]?.[0].skip).toBe(25);
+    expect(html).toContain("view=team&amp;state=CANCELLED&amp;cases=inactive&amp;page=3");
+    expect(html).not.toContain("summary=");
+    expect(mock.findMany.mock.calls[0]?.[0].select).not.toHaveProperty("resolvedBy");
+    expect(mock.findMany.mock.calls[0]?.[0].select.assistanceRequest.select).not.toHaveProperty("applicantName");
+  });
+
+  it("defaults invalid or repeated state/scope values safely", async () => {
+    await render({ state: ["COMPLETED", "CANCELLED"], cases: ["all", "inactive"] });
+    expect(mock.count.mock.calls[0]?.[0].where.state).toBe("OPEN");
+    expect(mock.count.mock.calls[0]?.[0].where.assistanceRequest.appealId).toBeNull();
+  });
+});

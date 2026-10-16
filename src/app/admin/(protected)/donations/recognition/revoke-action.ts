@@ -14,6 +14,9 @@ export async function unpublishDonorRecognitionAction(
 ): Promise<RecognitionReviewState> {
   const actor = await requirePermission("donation.reconcile");
   if (!donorRecognitionEnabled()) return { status: "error", message: "Recognition workflow is disabled." };
+  if (["donationId", "name", "approvedAt", "requestedAt"].some(key => form.getAll(key).length !== 1)) {
+    return { status: "error", message: "Invalid unpublication request." };
+  }
   const id = form.get("donationId");
   const name = form.get("name");
   const approved = form.get("approvedAt");

@@ -81,4 +81,10 @@ describe("audited staff recognition takedown", () => {
     expect((await unpublishDonorRecognitionAction(initial, data())).status).toBe("error");
     expect(mocks.audit).not.toHaveBeenCalled();
   });
+  it.each(["donationId", "name", "requestedAt", "approvedAt"])("rejects repeated %s before mutation", async key => {
+    const form = data(); form.append(key, String(form.get(key)));
+    expect((await unpublishDonorRecognitionAction(initial, form)).status).toBe("error");
+    expect(mocks.transaction).not.toHaveBeenCalled(); expect(mocks.audit).not.toHaveBeenCalled();
+  });
+
 });
