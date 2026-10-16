@@ -8,7 +8,7 @@ import {
   ANONYMOUS_OUTCOME_COPY, ANONYMOUS_COPY_WITHDRAWAL_REASONS, DISCLOSURE_STATUS_LABELS,
 } from "@/lib/assistance-outcome-disclosure";
 import {
-  proposeAnonymousOutcomeCopy, reviewAnonymousOutcomeCopy,
+  proposeAnonymousOutcomeCopy, publishAnonymousOutcomeCopy, reviewAnonymousOutcomeCopy,
 } from "./disclosure-actions";
 import { linkAssistanceDeliveryEvidence, reportAssistanceDelivery, reviewAssistanceDelivery } from "./delivery-actions";
 import { FOLLOW_UP_SUMMARY_LIMIT, MAX_OPEN_FOLLOW_UPS_PER_CASE, eligibleFollowUpStaffWhere, followUpDueLabel,
@@ -110,7 +110,8 @@ export default async function RequestDetailPage({ params }: Props) {
         deliveryRecordId: true, reportedById: true, reviewedById: true, updatedAt: true,
         disclosure: { select: {
           id: true, copyText: true, consentDocumentId: true,
-          state: true, preparedById: true, updatedAt: true,
+          state: true, preparedById: true, approvedById: true,
+          publishedAt: true, updatedAt: true,
           approvedAt: true, approvedBy: { select: { name: true } },
         } },
         createdAt: true, reviewedAt: true,
@@ -542,6 +543,11 @@ export default async function RequestDetailPage({ params }: Props) {
                               rel="noreferrer" target="_blank">
                               View exact-copy consent evidence</a>
                           : "Not currently available"}</p>
+                      {item.disclosure.state === "PUBLISHED" && item.disclosure.publishedAt &&
+                        <p className="muted">Public release recorded {
+                          item.disclosure.publishedAt.toLocaleDateString("en-IN")
+                        }. The public site rechecks active eligibility on every response.
+                        <Link href="/impact">View Impact page</Link></p>}
                       {item.disclosure.approvedAt &&
                         <p className="muted">Decision recorded by {
                           item.disclosure.approvedBy?.name ?? "authorized staff"
@@ -551,9 +557,11 @@ export default async function RequestDetailPage({ params }: Props) {
                         !evidenceNames.has(item.disclosure.consentDocumentId)) &&
                         item.disclosure.state !== "WITHDRAWN" &&
                         <p role="alert" className="muted">Consent, confidentiality or underlying
-                          evidence changed. {item.disclosure.state === "APPROVED_COPY"
-                            ? "Previous approval is historical, not current authorization for publication."
-                            : "This draft must not be approved; withdraw it or resolve the underlying evidence issue."}</p>}
+                          evidence changed. {item.disclosure.state === "PUBLISHED"
+                            ? "The published note is now ineligible and must be withdrawn immediately."
+                            : item.disclosure.state === "APPROVED_COPY"
+                              ? "Previous approval is historical, not current authorization for publication."
+                              : "This draft must not be approved; withdraw it or resolve the underlying evidence issue."}</p>}
                       {mayApproveAnonymousCopy && item.disclosure.state === "DRAFT" &&
                         item.disclosure.preparedById !== user.id &&
                         item.reportedById !== user.id && item.reviewedById !== user.id &&
@@ -575,6 +583,33 @@ export default async function RequestDetailPage({ params }: Props) {
                             Approve anonymous copy internally — do not publish
                           </button>
                         </form>}
+                      {mayApproveAnonymousCopy &&
+                        item.disclosure.state === "APPROVED_COPY" &&
+                        item.disclosure.approvedById !== user.id &&
+                        item.disclosure.preparedById !== user.id &&
+                        item.reportedById !== user.id &&
+                        item.reviewedById !== user.id &&
+                        request.verification?.confidentialityLevel === "STANDARD" &&
+                        sourceEligible &&
+                        item.disclosure.consentDocumentId &&
+                        evidenceNames.has(item.disclosure.consentDocumentId) &&
+                        <form action={publishAnonymousOutcomeCopy} className="field">
+                          <input type="hidden" name="id" value={id}/>
+                          <input type="hidden" name="disclosureId" value={item.disclosure.id}/>
+                          <input type="hidden" name="expectedUpdatedAt"
+                            value={item.disclosure.updatedAt.toISOString()}/>
+                          <label>
+                            <input type="checkbox" name="publicationAttested"
+                              value="yes" required/>
+                            I am a separate authorized publisher. I checked the exact
+                            anonymous wording, specific written consent, confidentiality
+                            and current private evidence. I understand this action
+                            makes only this fixed text publicly visible on /impact.
+                          </label>
+                          <button className="button secondary" type="submit">
+                            Publish this anonymous note on Impact
+                          </button>
+                        </form>}
                       {mayApproveAnonymousCopy && item.disclosure.state !== "WITHDRAWN" &&
                         <form action={reviewAnonymousOutcomeCopy} className="field">
                           <input type="hidden" name="id" value={id}/>
@@ -590,7 +625,9 @@ export default async function RequestDetailPage({ params }: Props) {
                               <option key={value} value={value}>{title}</option>)}
                           </select>
                           <button className="button secondary" type="submit">
-                            Withdraw anonymous-copy approval or proposal
+                            {item.disclosure.state === "PUBLISHED"
+                              ? "Withdraw this public note immediately"
+                              : "Withdraw anonymous-copy approval or proposal"}
                           </button>
                         </form>}
                     </> : mayReportOutcome && request.verification?.confidentialityLevel === "STANDARD" &&
