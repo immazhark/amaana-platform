@@ -2,6 +2,7 @@
 
 import { AppealCategory, AppealStatus } from "@prisma/client";
 import { revalidatePath, updateTag } from "next/cache";
+import { redirect } from "next/navigation";
 import { getAppealConsentContentIssues, getAppealPublicationIssues, goalMatchesApprovedPublicTarget } from "@/lib/appeal-publication";
 import { getAppealUpdatePublicationIssues } from "@/lib/appeal-update-publication";
 import { getAppealCoverMediaIssues } from "@/lib/appeal-cover-media";
@@ -11,6 +12,24 @@ import { singleFormValue } from "@/lib/single-form-value";
 import { prisma } from "@/lib/prisma";
 import { normalizeSafePublicMediaUrl } from "@/lib/public-media";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
+
+/** Cache refresh is best-effort after an audited database commit. Never
+ * imply the write failed or retry it because a cache operation failed.
+ * Attempt every path independently, and surface delayed public visibility. */
+function finishCommittedAppeal(id: string, paths: readonly string[], expirePublicList = false) {
+  let refreshDelayed = false;
+  if (expirePublicList) {
+    try { updateTag("appeals"); }
+    catch { refreshDelayed = true; }
+  }
+  for (const path of paths) {
+    try { revalidatePath(path); }
+    catch { refreshDelayed = true; }
+  }
+  if (refreshDelayed) {
+    redirect(`/admin/appeals/${encodeURIComponent(id)}?saved=refresh-delayed`);
+  }
+}
 
 /** Text-only scalar parser: reject repeated fields and uploaded Files before
  * validation or persistence. Domain validators still handle missing values. */
@@ -96,7 +115,7 @@ export async function updateAppeal(formData: FormData) {
     if (updated.count !== 1) throw new Error("This appeal changed while you were reviewing it. Refresh before editing content.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.content_updated", entityType: "Appeal", entityId: id } });
   });
-  revalidatePath(`/admin/appeals/${id}`);
+  finishCommittedAppeal(id, [`/admin/appeals/${id}`]);
 }
 
 export async function transitionAppeal(formData: FormData) {
@@ -132,7 +151,7 @@ export async function transitionAppeal(formData: FormData) {
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.status_changed", entityType: "Appeal", entityId: id, metadata: { from: fresh.status, to: next } } });
   });
   // Expire immediately: stale-while-revalidate can advertise withdrawn appeals.
-  updateTag("appeals"); revalidatePath(`/admin/appeals/${id}`); revalidatePath("/admin/appeals"); revalidatePath("/appeals"); revalidatePath("/");
+  finishCommittedAppeal(id, [`/admin/appeals/${id}`, "/admin/appeals", "/appeals", "/", ...(current.slug ? [`/appeals/${current.slug}`] : [])], true);
 }
 
 export async function updateFeaturing(formData: FormData) {
@@ -152,7 +171,7 @@ export async function updateFeaturing(formData: FormData) {
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.featuring_updated", entityType: "Appeal", entityId: id, metadata: { previousIsFeatured: fresh.isFeatured, previousFeaturedOrder: fresh.featuredOrder, isFeatured, featuredOrder: isFeatured ? featuredOrderValue : null } } });
   });
   // Expire immediately: stale-while-revalidate can advertise withdrawn appeals.
-  updateTag("appeals"); revalidatePath(`/admin/appeals/${id}`); revalidatePath("/appeals"); revalidatePath("/");
+  finishCommittedAppeal(id, [`/admin/appeals/${id}`, "/appeals", "/"], true);
 }
 
 export async function addAppealUpdate(formData: FormData) {
@@ -174,8 +193,7 @@ export async function addAppealUpdate(formData: FormData) {
     await tx.appealUpdate.create({ data: { id: updateId, appealId, authorId: user.id, title, content, isPublic, publishedAt: isPublic ? new Date() : null } });
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_added", entityType: "Appeal", entityId: appealId, metadata: { updateId, isPublic, privacyReviewed: isPublic ? privacyReviewed : false } } });
   });
-  revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals");
-  if (isPublic) revalidatePath(`/appeals/${appeal.slug}`);
+  finishCommittedAppeal(appealId, [`/admin/appeals/${appealId}`, "/appeals", ...(isPublic ? [`/appeals/${appeal.slug}`] : [])]);
 }
 
 export async function publishAppealUpdate(formData: FormData) {
@@ -199,7 +217,7 @@ export async function publishAppealUpdate(formData: FormData) {
     if (claimed.count !== 1) throw new Error("Appeal update changed while you were reviewing it. Refresh before publishing.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_published", entityType: "Appeal", entityId: appealId, metadata: { updateId, privacyReviewed: true } } });
   });
-  revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals"); revalidatePath(`/appeals/${appeal.slug}`);
+  finishCommittedAppeal(appealId, [`/admin/appeals/${appealId}`, "/appeals", `/appeals/${appeal.slug}`]);
 }
 
 export async function unpublishAppealUpdate(formData: FormData) {
@@ -215,5 +233,5 @@ export async function unpublishAppealUpdate(formData: FormData) {
     if (claimed.count !== 1) throw new Error("Appeal update changed while you were reviewing it. Refresh before unpublishing.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_unpublished", entityType: "Appeal", entityId: appealId, metadata: { updateId } } });
   });
-  revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals"); revalidatePath(`/appeals/${appeal.slug}`);
+  finishCommittedAppeal(appealId, [`/admin/appeals/${appealId}`, "/appeals", `/appeals/${appeal.slug}`]);
 }
