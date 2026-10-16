@@ -523,6 +523,7 @@ export async function withdrawConvertedAppealDisclosure(formData: FormData) {
     if (appealWrite.count !== 1) {
       throw new Error("Appeal changed while you were reviewing it. Refresh before withdrawing disclosure.");
     }
+    await withdrawStaleAnonymousOutcomeCopies(tx, id, user.id, "VERIFICATION_CHANGED");
     await tx.auditEvent.create({
       data: {
         actorId: user.id,
