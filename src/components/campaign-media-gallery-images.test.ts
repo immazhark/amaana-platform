@@ -11,6 +11,7 @@ describe("actual gallery image delivery", () => {
     expect(html).toContain('data-nimg="1"');
     expect(html).toContain('url=%2Fmedia%2F2026%2Fsynthetic.webp');
     expect(html).toContain('loading="lazy"');
+    expect(html).toContain('(max-width: 360px) 100vw');
     expect(html).not.toContain('rel="preload"');
   });
   it("rejects external images when the server did not pass approved CDN origins", () => {

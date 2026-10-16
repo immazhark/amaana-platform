@@ -157,7 +157,7 @@ export function CampaignMediaGallery({ items, approvedImageOrigins = NO_ADDITION
               }}
               aria-label={`Enlarge image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
             >
-              {imageUrl ? <Image src={imageUrl} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" placeholder={blur ? "blur" : "empty"} blurDataURL={blur ?? undefined} /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
+              {imageUrl ? <Image src={imageUrl} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 360px) 100vw, (max-width: 900px) 50vw, 33vw" loading="lazy" placeholder={blur ? "blur" : "empty"} blurDataURL={blur ?? undefined} /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
               <span className={styles.openLabel}>Enlarge</span>
             </button>
             {item.caption ? <figcaption>{item.caption}</figcaption> : null}
@@ -185,7 +185,7 @@ export function CampaignMediaGallery({ items, approvedImageOrigins = NO_ADDITION
               <span id={dialogTitleId}>Image {activeIndex + 1} of {safeItems.length}: {active.alt ?? "programme photograph"}</span>
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
-            {activeImageUrl ? <Image className={styles.fullImage} src={activeImageUrl} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" placeholder={activeBlur ? "blur" : "empty"} blurDataURL={activeBlur ?? undefined} /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}
+            {activeImageUrl ? <Image className={styles.fullImage} src={activeImageUrl} alt={active.alt ?? ""} width={width} height={height} sizes="(max-width: 1200px) 90vw, 1120px" placeholder={activeBlur ? "blur" : "empty"} blurDataURL={activeBlur ?? undefined} /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} decoding="async" />}
             {active.caption ? <p id={dialogCaptionId} className={styles.caption}>{active.caption}</p> : null}
             {safeItems.length > 1 ? (
               <div className={styles.controls}>

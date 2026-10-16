@@ -41,7 +41,7 @@ describe("public-safe gallery presentation boundary", () => {
       { ...approved, id: "x".repeat(129) },
       { ...approved, alt: "a".repeat(301) },
       { ...approved, caption: "x".repeat(1001) },
-      { ...approved, caption: "unsafe\\u0000caption".replace("\\u0000", "\u0000") },
+      { ...approved, caption: `unsafe${String.fromCharCode(0)}caption` },
     ] as unknown as typeof approved[];
     expect(selectSafeGalleryImages(invalid)).toEqual([]);
     expect(selectSafeGalleryImages(null as unknown as typeof approved[])).toEqual([]);

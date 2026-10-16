@@ -144,13 +144,15 @@ export function ScrollCarousel({
     setActiveIndex(bounded);
   }, [slideCount]);
 
+  // The interval reads activeIndexRef, not render state. Do not restart autoplay
+  // for every native-scroll progress update.
   useEffect(() => {
     if (!autoAdvanceMs || slideCount < 2 || paused || reducedMotion) return;
     const timer = window.setInterval(() => {
       if (isVisibleRef.current && !document.hidden && !drag.current && !viewportRef.current?.closest("section")?.matches(":hover, :focus-within")) goTo(activeIndexRef.current + 1);
     }, autoAdvanceMs);
     return () => window.clearInterval(timer);
-  }, [autoAdvanceMs, activeIndex, goTo, paused, reducedMotion, slideCount]);
+  }, [autoAdvanceMs, goTo, paused, reducedMotion, slideCount]);
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.currentTarget !== event.target) return;
