@@ -3,7 +3,7 @@ import {
   type Prisma,
 } from "@prisma/client";
 import {
-  disclosureSourceSelect,
+  anonymousDisclosureEligibilitySelect,
   validatedAnonymousDisclosureEvidenceIds,
 } from "./assistance-outcome-disclosure";
 
@@ -49,7 +49,7 @@ export async function withdrawStaleAnonymousOutcomeCopies(
     select: {
       id: true, state: true, updatedAt: true,
       copyText: true, consentDocumentId: true,
-      observation: { select: disclosureSourceSelect },
+      observation: { select: anonymousDisclosureEligibilitySelect },
     },
   });
   if (!disclosures.length) return 0;

@@ -2,7 +2,7 @@ import { AssistanceOutcomeDisclosureState } from "@prisma/client";
 import { prisma } from "./prisma";
 import {
   ANONYMOUS_OUTCOME_COPY,
-  disclosureSourceSelect,
+  anonymousDisclosureEligibilitySelect,
   validatedAnonymousDisclosureEvidenceIds,
 } from "./assistance-outcome-disclosure";
 import { logServerError } from "./server-log";
@@ -23,7 +23,7 @@ export async function getPublishedAnonymousOutcomeNotes(): Promise<string[]> {
       where: { state: AssistanceOutcomeDisclosureState.PUBLISHED },
       select: {
         copyText: true, consentDocumentId: true,
-        observation: { select: disclosureSourceSelect },
+        observation: { select: anonymousDisclosureEligibilitySelect },
       },
       orderBy: [{ publishedAt: "desc" }, { id: "desc" }],
       take: CANDIDATE_LIMIT,
