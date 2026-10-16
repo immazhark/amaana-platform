@@ -549,10 +549,11 @@ export default async function RequestDetailPage({ params }: Props) {
                       {(item.state !== "REVIEWED" || request.verification?.confidentialityLevel !== "STANDARD" || !sourceEligible ||
                         !item.disclosure.consentDocumentId ||
                         !evidenceNames.has(item.disclosure.consentDocumentId)) &&
-                        item.disclosure.state === "APPROVED_COPY" &&
+                        item.disclosure.state !== "WITHDRAWN" &&
                         <p role="alert" className="muted">Consent, confidentiality or underlying
-                          evidence changed. Previous approval is historical, not current
-                          authorization to publish this wording.</p>}
+                          evidence changed. {item.disclosure.state === "APPROVED_COPY"
+                            ? "Previous approval is historical, not current authorization for publication."
+                            : "This draft must not be approved; withdraw it or resolve the underlying evidence issue."}</p>}
                       {mayApproveAnonymousCopy && item.disclosure.state === "DRAFT" &&
                         item.disclosure.preparedById !== user.id &&
                         item.reportedById !== user.id && item.reviewedById !== user.id &&
