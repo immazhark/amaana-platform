@@ -29,13 +29,14 @@ import { parsePositiveRupeeAmount } from "@/lib/amount-entry";
 import { prisma } from "@/lib/prisma";
 import { cancelOpenFollowUpsOnCaseExit } from "@/lib/assistance-follow-up";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
+import { withdrawStaleAnonymousOutcomeCopies } from "@/lib/assistance-outcome-invalidation";
 
 /** Call only after the transaction resolves. Cache failures cannot undo a
  * committed review/assignment or justify replaying it. Try both views, then
  * navigate to the dynamic detail page for a fresh database read if needed. */
 function refreshCommittedRequest(id: string) {
   let refreshed = true;
-  for (const path of [`/admin/requests/${id}`, "/admin"]) {
+  for (const path of [`/admin/requests/${id}`, "/admin", "/impact"]) {
     try { revalidatePath(path); }
     catch { refreshed = false; }
   }
@@ -212,6 +213,7 @@ export async function saveVerification(formData: FormData) {
         reviewedById,
       },
     });
+    await withdrawStaleAnonymousOutcomeCopies(tx, id, user.id, "VERIFICATION_CHANGED");
     await tx.auditEvent.create({
       data: {
         actorId: user.id,
@@ -284,6 +286,7 @@ export async function updateRequest(formData: FormData) {
     if (updated.count !== 1) {
       throw new Error("This request changed while you were reviewing it. Refresh before saving.");
     }
+    await withdrawStaleAnonymousOutcomeCopies(tx, id, user.id, "CASE_CHANGED");
     if (previous.status !== status &&
         (status === AssistanceStatus.CLOSED || status === AssistanceStatus.REJECTED)) {
       await cancelOpenFollowUpsOnCaseExit(
@@ -375,6 +378,7 @@ export async function convertToAppeal(formData: FormData) {
     });
     if (claimed.count !== 1) throw new Error("This request was changed or converted by another admin. Refresh before trying again.");
     await cancelOpenFollowUpsOnCaseExit(tx, id, user.id, "APPEAL_CONVERSION");
+    await withdrawStaleAnonymousOutcomeCopies(tx, id, user.id, "CASE_CHANGED");
 
     const appeal = await tx.appeal.create({
       data: {
