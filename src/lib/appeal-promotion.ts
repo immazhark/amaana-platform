@@ -9,12 +9,19 @@ export type AppealPromotionPrivacy = {
   } | null;
 };
 
-export function canPromoteAppeal(appeal: AppealPromotionPrivacy): boolean {
-  // Standalone legacy appeals have no assistance verification to consult.
-  if (!appeal.assistanceRequest) return true;
+/** A public projection cannot treat missing linked verification as standard.
+ * This is a display/search safety classification, not a database review edit. */
+export function getAppealPublicPrivacyClass(
+  appeal: AppealPromotionPrivacy,
+): "STANDARD" | "CONFIDENTIAL" | "HIGHLY_SENSITIVE" {
+  // Existing standalone public appeals have no linked private case to review.
+  if (!appeal.assistanceRequest) return "STANDARD";
 
-  // A linked case without an explicitly reviewed schema-defined privacy class
-  // must not enter homepage, programme or related-appeal promotion surfaces.
   const level = appeal.assistanceRequest.verification?.confidentialityLevel;
-  return level === "STANDARD" || level === "CONFIDENTIAL";
+  if (level === "STANDARD" || level === "CONFIDENTIAL") return level;
+  return "HIGHLY_SENSITIVE";
+}
+
+export function canPromoteAppeal(appeal: AppealPromotionPrivacy): boolean {
+  return getAppealPublicPrivacyClass(appeal) !== "HIGHLY_SENSITIVE";
 }
