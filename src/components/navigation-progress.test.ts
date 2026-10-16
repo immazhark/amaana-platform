@@ -58,6 +58,7 @@ beforeEach(() => {
 });
 afterEach(() => {
   hooks.cleanups.splice(0).reverse().forEach(cleanup => cleanup());
+  vi.useRealTimers();
   vi.unstubAllGlobals();
 });
 
@@ -79,6 +80,50 @@ describe("framework navigation feedback", () => {
     signal("first", true); signal("second", true); signal("first", false);
     expect(hooks.state?.id).toBe("second");
     signal("second", false);
+    expect(hooks.state).toBeNull();
+  });
+  it("releases abandoned native navigation without trapping page scroll", () => {
+    vi.useFakeTimers();
+    const event = new Event("click", { cancelable: true });
+    Object.defineProperties(event, { target: { value: new Anchor() }, button: { value: 0 } });
+    document.dispatchEvent(event);
+    expect(hooks.state).toEqual({ from: "/privacy", id: "native" });
+    vi.advanceTimersByTime(12_000);
+    expect(hooks.state).toBeNull();
+  });
+  it("keeps a newer transition alive when an old completion arrives", () => {
+    vi.useFakeTimers();
+    signal("older", true);
+    vi.advanceTimersByTime(8_000);
+    signal("newer", true);
+    signal("older", false);
+    expect(hooks.state?.id).toBe("newer");
+    vi.advanceTimersByTime(3_999);
+    expect(hooks.state?.id).toBe("newer");
+    vi.advanceTimersByTime(8_001);
+    expect(hooks.state).toBeNull();
+  });
+  it("ignores malformed plugin navigation events and invalid native destinations", () => {
+    window.dispatchEvent(new CustomEvent(NAVIGATION_STATUS_EVENT));
+    window.dispatchEvent(new CustomEvent(NAVIGATION_STATUS_EVENT, {
+      detail: { id: "bad", from: "https://external.example", pending: true },
+    }));
+    window.dispatchEvent(new CustomEvent(NAVIGATION_STATUS_EVENT, {
+      detail: { id: "bad", from: "/privacy", pending: "yes" },
+    }));
+    const anchor = new Anchor();
+    anchor.href = "://unparseable";
+    const event = new Event("click", { cancelable: true });
+    Object.defineProperties(event, { target: { value: anchor }, button: { value: 0 } });
+    document.dispatchEvent(event);
+    expect(hooks.state).toBeNull();
+  });
+  it("clears the native-navigation fallback on browser history and pagehide", () => {
+    vi.useFakeTimers();
+    signal("first", true);
+    window.dispatchEvent(new Event("pagehide"));
+    expect(hooks.state).toBeNull();
+    vi.advanceTimersByTime(15_000);
     expect(hooks.state).toBeNull();
   });
   it("resets feedback when the visitor navigates through browser history", () => {
