@@ -1,3 +1,7 @@
+## 2026-10-17 — Appeal post-commit cache-refresh integrity
+
+Ownership: CHATGPT_ACTIVE. Verified PR #292 open at HEAD `408f2c06df7817600d3d4395fc2d5a86b4ea643e`, base `main`; prior writer HANDOFF_PENDING. Scoped task: separate committed appeal writes from cache refresh failures; attempt all invalidations independently, avoid false failed-save signals and duplicate retries, provide admin recovery notice. Add targeted regression cases; no live mutation, merge or deployment. Tests require hydrated repo unavailable in this runtime.
+
 ## 2026-10-17 — Strict appeal administration input boundary
 
 Ownership: HANDOFF_PENDING. ChatGPT completed existing PR #292 on branch `fix/direct-transfer-feedback-20261013` (target `main`; not merged or deployed). Initial verified HEAD `94dedae77a40dd48daa56d20448063fdd1ea6908`. Source `82134f65bd3af049ec2ee480c0dc0e444f02038d` and `d5c1f9329509976a09f3aefdcd2b889b3e1bf1f2`, regression tests `9cad3d2eb9260c40555cd8295ee190544a2d0efc` / `5edaf9934b23474951dd17a25f78447abce9b609`, master149 `46849f170860a9728656f0b2baca233573773647`, handoff ledger `034fe718145b00890ec53b53c4d463507cc46ec7`.
