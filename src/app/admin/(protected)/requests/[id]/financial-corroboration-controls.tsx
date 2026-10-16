@@ -49,6 +49,7 @@ export function FinancialCorroborationControls({
   const evidenceNames = new Map(documents.map(document => [
     document.id, document.originalName,
   ]));
+  const separateBankProofs = documents.filter(document => document.id !== item.evidenceDocumentId);
   return (
     <>
       {item.kind === "FINANCIAL" && item.amountInr &&
@@ -60,6 +61,10 @@ export function FinancialCorroborationControls({
             verify live bank settlement, or publish impact.</p>
           {item.financialReconciliation ? <>
             <strong>{FINANCIAL_CORROBORATION_LABELS[item.financialReconciliation.status]}</strong>
+            {!caseEligible && item.state === "CONFIRMED" &&
+              item.financialReconciliation.status === "PENDING" &&
+              <p role="alert" className="muted">The case approval or verification changed.
+                New bank-proof review is blocked until eligibility is restored.</p>}
             {item.state !== "CONFIRMED" && <p role="alert" className="muted">
               The underlying delivery is no longer confirmed. This bank-proof history
               cannot be counted as an active reconciled financial delivery.</p>}
@@ -110,7 +115,7 @@ export function FinancialCorroborationControls({
                 <button className="button secondary" type="submit">Void incorrect bank-proof match</button>
               </form>}
           </> : canPropose && caseEligible && item.evidenceDocumentId &&
-            evidenceNames.has(item.evidenceDocumentId) ? (
+            evidenceNames.has(item.evidenceDocumentId) && separateBankProofs.length > 0 ? (
             <form action={proposeAssistanceFinancialCorroboration} className="field">
               <input type="hidden" name="id" value={caseId}/>
               <input type="hidden" name="deliveryRecordId" value={item.id}/>
@@ -120,14 +125,15 @@ export function FinancialCorroborationControls({
                 minLength={8} maxLength={64} pattern="[A-Za-z0-9/-]{8,64}" required/>
               <label htmlFor={`bank-amount-${item.id}`}>Exact supported INR amount</label>
               <input id={`bank-amount-${item.id}`} name="amountInr"
-                type="number" step="0.01" min="0.01" required
-                defaultValue={item.amountInr.toFixed(2)}/>
+                type="text" inputMode="decimal" maxLength={16}
+                pattern="(?:0\.(?:0[1-9]|[1-9][0-9]?)|[1-9][0-9]{0,9}(?:\.[0-9]{1,2})?)"
+                required defaultValue={item.amountInr.toFixed(2)}/>
               <label htmlFor={`bank-proof-${item.id}`}>Private bank transaction proof</label>
               <select id={`bank-proof-${item.id}`} name="bankProofDocumentId"
                 required defaultValue="">
                 <option value="" disabled>Select a separate bank-proof document</option>
-                {documents.filter(doc => doc.id !== item.evidenceDocumentId)
-                  .map(doc => <option key={doc.id} value={doc.id}>{doc.originalName}</option>)}
+                {separateBankProofs.map(doc =>
+                  <option key={doc.id} value={doc.id}>{doc.originalName}</option>)}
               </select>
               <label>
                 <input type="checkbox" name="bankEvidenceAttested" value="yes" required/>
@@ -138,8 +144,8 @@ export function FinancialCorroborationControls({
                 Propose private bank-proof corroboration
               </button>
             </form>
-          ) : <p className="muted">Current delivery proof is required before
-              separate bank evidence can be matched.</p>}
+          ) : <p className="muted">Current delivery proof and a separate private
+              bank-proof document are required before corroboration can be proposed.</p>}
         </div>}
     </>
   );

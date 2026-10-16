@@ -110,6 +110,23 @@ describe("private financial corroboration controls", () => {
     expect(html).not.toContain('value="delivery-proof"');
     expect(html).toContain('value="bank-proof"');
     expect(html).toContain("not live bank reconciliation");
+    expect(html).toContain('inputMode="decimal"');
+    expect(html).not.toContain('type="number"');
+  });
+  it("does not offer an unusable proposal without a separate bank-proof document", () => {
+    const markup = render({ canPropose: true,
+      documents: [{ id: "delivery-proof", originalName: "delivery.pdf" }],
+      delivery: { ...base.delivery, financialReconciliation: null },
+    });
+    expect(markup).not.toContain("Propose private bank-proof corroboration");
+    expect(markup).toContain("separate private");
+    expect(markup).toContain("bank-proof document");
+  });
+  it("explains case ineligibility without misrepresenting a pending finance review", () => {
+    const html = render({ canReview: true, caseEligible: false });
+    expect(html).toContain("New bank-proof review is blocked");
+    expect(html).toContain("Void incorrect bank-proof match");
+    expect(html).not.toContain("Record independent bank-proof review");
   });
   it("does not show financial controls for an in-kind delivery", () => {
     const html = render({
