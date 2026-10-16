@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import type { Prisma } from "@prisma/client";
 import { getCurrentUser, hasPermission } from "@/lib/auth";
 import { RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { canReportPrivateDelivery } from "@/lib/assistance-delivery";
@@ -41,9 +42,17 @@ export async function POST(request: Request, { params }: Props) {
     return failure("Upload must contain a single private document.", 415);
   }
   let file: File;
+  let purpose: "delivery" | "financial" = "delivery";
   try {
     const body = await readBodyBytesWithLimit(request, MAX_BODY_BYTES, { timeoutMs: 20_000 });
     const form = await new Response(body, { headers: { "Content-Type": contentType } }).formData();
+    const requestedPurpose = form.getAll("purpose");
+    if (requestedPurpose.length > 1 ||
+        (requestedPurpose[0] !== undefined &&
+         requestedPurpose[0] !== "delivery" && requestedPurpose[0] !== "financial")) {
+      return failure("Unsupported private evidence upload purpose.", 400);
+    }
+    purpose = requestedPurpose[0] === "financial" ? "financial" : "delivery";
     const entries = form.getAll("document");
     const candidate = entries[0];
     if (entries.length !== 1 || !(candidate instanceof File)) {
@@ -60,8 +69,13 @@ export async function POST(request: Request, { params }: Props) {
     return failure("Could not read the private document.", 400);
   }
 
-  // Read eligibility before touching object storage. Only a case with pending
-  // delivery evidence review may accept more private delivery documents.
+  // Financial bank corroboration and basic delivery reporting share the same
+  // private store but have distinct case/reporter eligibility.
+  const evidenceScope: Prisma.AssistanceDeliveryRecordWhereInput =
+    purpose === "financial"
+      ? { state: "CONFIRMED", kind: "FINANCIAL",
+          financialReconciliation: { is: null } }
+      : { state: "REPORTED", reportedById: user.id, evidenceDocumentId: null };
   const caseRecord = await prisma.assistanceRequest.findUnique({
     where: { id },
     select: {
@@ -69,14 +83,14 @@ export async function POST(request: Request, { params }: Props) {
       verification: { select: { decision: true, completedAt: true } },
       _count: { select: { documents: true } },
       deliveryRecords: {
-        where: { state: "REPORTED", reportedById: user.id, evidenceDocumentId: null },
+        where: evidenceScope,
         select: { id: true }, take: 1,
       },
     },
   });
   if (!caseRecord || !canReportPrivateDelivery(caseRecord.status, caseRecord.appealId, caseRecord.verification) ||
       caseRecord.deliveryRecords.length === 0) {
-    return failure("Only the reporter of an unreviewed delivery missing proof can upload new evidence.", 409);
+    return failure("No eligible private case delivery is available for this evidence purpose.", 409);
   }
   if (caseRecord._count.documents >= MAX_CASE_DOCUMENTS) {
     return failure("This case reached the private evidence limit. Ask an administrator for review.", 409);
@@ -100,7 +114,7 @@ export async function POST(request: Request, { params }: Props) {
           verification: { select: { decision: true, completedAt: true } },
           _count: { select: { documents: true } },
           deliveryRecords: {
-            where: { state: "REPORTED", reportedById: user.id, evidenceDocumentId: null },
+            where: evidenceScope,
             select: { id: true }, take: 1,
           },
         },
@@ -115,7 +129,9 @@ export async function POST(request: Request, { params }: Props) {
       });
       await tx.auditEvent.create({ data: {
         actorId: user.id,
-        action: "assistance.delivery_private_evidence_uploaded",
+        action: purpose === "financial"
+          ? "assistance.financial_private_proof_uploaded"
+          : "assistance.delivery_private_evidence_uploaded",
         entityType: "AssistanceRequest", entityId: id,
         metadata: { documentId: record.id },
       } });

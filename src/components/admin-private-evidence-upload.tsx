@@ -5,9 +5,11 @@ import { useRouter } from "next/navigation";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
-type Props = { caseId: string };
-export function AdminPrivateEvidenceUpload({ caseId }: Props) {
+type Props = { caseId: string; purpose?: "delivery" | "financial" };
+export function AdminPrivateEvidenceUpload({ caseId, purpose = "delivery" }: Props) {
   const router = useRouter();
+  const financial = purpose === "financial";
+  const fieldId = financial ? "case-financial-proof" : "case-delivery-evidence";
   const formRef = useRef<HTMLFormElement>(null);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -42,7 +44,9 @@ export function AdminPrivateEvidenceUpload({ caseId }: Props) {
         return;
       }
       formRef.current?.reset();
-      setMessage("Private evidence uploaded. Select the new document in the delivery report below to link it for review.");
+      setMessage(financial
+        ? "Private bank proof uploaded. Refresh and select it for the financial corroboration proposal."
+        : "Private evidence uploaded. Select the new document in the delivery report below to link it for review.");
       router.refresh();
     } catch {
       setError(true);
@@ -53,14 +57,16 @@ export function AdminPrivateEvidenceUpload({ caseId }: Props) {
   }
 
   return <form ref={formRef} className="field" onSubmit={submit}
-    encType="multipart/form-data" aria-label="Upload private delivery evidence">
-    <label htmlFor="case-delivery-evidence">Upload new private delivery proof</label>
-    <input id="case-delivery-evidence" name="document" type="file"
+    encType="multipart/form-data" aria-label={financial ? "Upload private bank proof" : "Upload private delivery evidence"}>
+    <input type="hidden" name="purpose" value={purpose}/>
+    <label htmlFor={fieldId}>{financial ? "Upload supporting bank transaction proof" : "Upload new private delivery proof"}</label>
+    <input id={fieldId} name="document" type="file"
       accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
       required disabled={busy}/>
     <small className="muted">One PDF, JPEG, PNG or WebP, up to 5 MB.
       Private evidence is not published or sent to donors. Upload first, then link
-      the document to an unreviewed delivery record.</small>
+      {financial ? " bank proof to an independently confirmed financial delivery." :
+        " the document to an unreviewed delivery record."}</small>
     <button className="button secondary" type="submit" disabled={busy}
       aria-busy={busy}>{busy ? "Uploading…" : "Upload private proof"}</button>
     <p role={error ? "alert" : "status"} aria-live="polite" className="muted">{message}</p>
