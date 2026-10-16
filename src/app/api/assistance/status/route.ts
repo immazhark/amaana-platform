@@ -66,6 +66,12 @@ export async function POST(request: Request) {
       { headers: privateHeaders },
     );
   } catch {
-    return NextResponse.json({ found: false }, { headers: privateHeaders });
+    // A backend failure is not evidence that a private tracking link is
+    // invalid. Return an explicit unavailable state so applicants do not
+    // submit the same sensitive case again.
+    return NextResponse.json(
+      { error: "Private request tracking is temporarily unavailable." },
+      { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+    );
   }
 }
