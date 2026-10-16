@@ -1,6 +1,15 @@
-## 2026-10-17 — Fail-closed linked appeal promotion (ACTIVE)
+## 2026-10-17 — Fail-closed linked appeal promotion and metadata
 
-Ownership: CHATGPT_ACTIVE. Sole-writer continuation on PR #292 at `0955b444f6d05e0176bb7d7581bc99824f5400e8`, target `main`. Scoped: public discovery must not promote assistance-linked appeals whose mandatory verification record or schema-defined confidentiality decision is absent or unrecognized. Preserve the legacy unlinked appeal pathway and valid STANDARD/CONFIDENTIAL classifications. Focused tests first; no dependency, provider mutation, migration, merge or deployment.
+Ownership: HANDOFF_PENDING. ChatGPT completed one privacy source batch on open PR #292 `fix/direct-transfer-feedback-20261013`, target `main`, starting HEAD `0955b444f6d05e0176bb7d7581bc99824f5400e8`. Promotion tests `f5b1d432`, first guard `168eb3df`, shared-class tests `940f21d1`, canonical privacy classifier `8a818445`, metadata tests `daa8a63c`, metadata integration `3f69b907`, master149 evidence `73f39aa27e7ed51e080a1ebbc2c9438943a7bceb`, handoff ledger `ecfc08aefdc048269f422d84c0b1a9de3fe91dac`.
+
+- Source root cause: prior `!== "HIGHLY_SENSITIVE"` comparison passed missing and unrecognized linked-assistance verification/classifications to public promotion. Concurrent `getAppealSearchPrivacy` nullish default labelled linked unknown verification STANDARD, risking identifiable metadata and share copy.
+- `src/lib/appeal-promotion.ts` centralizes schema-valid public privacy classification. Linked records promote only with exact STANDARD or CONFIDENTIAL; missing/unknown linked verification uses HIGHLY_SENSITIVE public classification. `src/lib/appeal-search-privacy.ts` shares it and fails closed on absent public record. Existing `public-content.ts` and `public-page-data.ts` apply the helper to homepage, initiative and appeal directory discovery. Legacy standalone records retain visibility. Approved direct accountability case body not changed.
+- Added/updated `src/lib/appeal-promotion.test.ts`, new `src/lib/appeal-search-privacy.test.ts`. Both cover approved decisions, missing/invalid linked decisions and standalone legacy. No provider activity, applicant/donor/DB changes, migrations, configuration, package or UI dependencies.
+- Read public Superpowers TDD, Ponytail, addyosmani/agent-skills and mattpocock/skills for directly applicable engineering principles. Did not import unrelated linked video or agent/model tooling.
+- GitHub readback verified source/test and projection wiring. **Vitest, project TS/lint, browser/public URL/DB and bundle checks were not run**: no hydrated repo in local container, git DNS inaccessible. Do not label these regressions as runtime passed. No main merge or production deploy.
+- Master149 unchanged: 60 Implemented /61 Partial /26 Not started /1 Superseded /1 Not applicable, zero formal closures. AF-PROMOTION / AF-CONSENT gain PR-open evidence only.
+
+Next: verify current PR head, execute focused `npx vitest run src/lib/appeal-promotion.test.ts src/lib/appeal-search-privacy.test.ts` and project TypeScript/ESLint on hydrated checkout; fix any failures before release, then select next source-ready backlog batch. Preserve single writer ownership.
 
 ## 2026-10-17 — Appeal cache refresh after confirmed commit
 
