@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   updateTag: vi.fn(),
+  redirect: vi.fn(),
   revalidatePath: vi.fn(),
   requirePermission: vi.fn(),
   hasPermission: vi.fn(),
@@ -42,6 +43,7 @@ vi.mock("@/lib/appeal-update-publication", () => ({
   getAppealUpdatePublicationIssues: ({ appealStatus }: { appealStatus: string }) => appealStatus === "PUBLISHED" ? [] : ["Appeal must be actively published."],
 }));
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath, updateTag: mocks.updateTag }));
+vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 
 import { addAppealUpdate, publishAppealUpdate, transitionAppeal, unpublishAppealUpdate, updateAppeal, updateFeaturing } from "./actions";
 
@@ -288,6 +290,97 @@ describe("appeal concurrent mutation guards", () => {
     await expect(updateFeaturing(form({ id: "appeal-1", isFeatured: "on", featuredOrder: "1", expectedUpdatedAt: "2026-09-23T04:00:00.000Z" }))).rejects.toThrow(/no longer actively published/i);
     expect(mocks.updateAppeal).not.toHaveBeenCalled();
     expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+});
+
+describe("appeal post-commit refresh recovery", () => {
+  const timestamp = new Date("2026-09-23T04:00:00.000Z");
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "approver" });
+    mocks.hasPermission.mockReturnValue(true);
+    mocks.publicationIssues.mockReturnValue([]);
+    mocks.updateManyAppeal.mockResolvedValue({ count: 1 });
+    mocks.updateManyUpdate.mockResolvedValue({ count: 1 });
+    mocks.appealFind.mockResolvedValue({
+      id: "appeal-1", slug: "public-appeal", status: "PUBLISHED",
+      updatedAt: timestamp, goalAmount: 1000, reviewedById: "approver",
+      publishedAt: timestamp, assistanceRequest: null,
+    });
+    mocks.auditCreate.mockResolvedValue({ id: "audit-1" });
+    (globalThis as typeof globalThis & { __appealTx: unknown }).__appealTx = {
+      appeal: { findUniqueOrThrow: mocks.appealFind, update: mocks.updateAppeal, updateMany: mocks.updateManyAppeal },
+      appealUpdate: { findUniqueOrThrow: mocks.updateFind, create: mocks.updateCreate, updateMany: mocks.updateManyUpdate },
+      auditEvent: { create: mocks.auditCreate, findFirst: mocks.auditFind },
+      mediaAsset: { findFirst: mocks.mediaFind },
+    };
+  });
+
+  it("does not report a committed status transition as a failed write when tag expiry fails", async () => {
+    mocks.updateTag.mockImplementation(() => { throw new Error("cache unavailable"); });
+    await transitionAppeal(form({ id: "appeal-1", expectedUpdatedAt: timestamp.toISOString(), status: "PAUSED" }));
+    expect(mocks.updateManyAppeal).toHaveBeenCalledTimes(1);
+    expect(mocks.auditCreate).toHaveBeenCalledTimes(1);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/appeals");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/");
+    expect(mocks.redirect).toHaveBeenCalledExactlyOnceWith("/admin/appeals/appeal-1?saved=refresh-delayed");
+  });
+
+  it("attempts all public views after a committed status mutation when one view fails", async () => {
+    mocks.revalidatePath.mockImplementation((path: string) => {
+      if (path === "/admin/appeals/appeal-1") throw new Error("admin cache unavailable");
+    });
+    await transitionAppeal(form({ id: "appeal-1", expectedUpdatedAt: timestamp.toISOString(), status: "PAUSED" }));
+    expect(mocks.updateTag).toHaveBeenCalledExactlyOnceWith("appeals");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/appeals");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/appeals");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/");
+    expect(mocks.redirect).toHaveBeenCalledExactlyOnceWith("/admin/appeals/appeal-1?saved=refresh-delayed");
+    expect(mocks.auditCreate).toHaveBeenCalledTimes(1);
+  });
+
+  it("preserves committed private updates when admin cache refresh fails", async () => {
+    mocks.updateCreate.mockResolvedValue({ id: "update-1" });
+    mocks.revalidatePath.mockImplementation((path: string) => {
+      if (path === "/admin/appeals/appeal-1") throw new Error("cache unavailable");
+    });
+    await addAppealUpdate(form({
+      id: "appeal-1", updateTitle: "Status reviewed",
+      updateContent: "An internal progress report with enough details to review.",
+    }));
+    expect(mocks.updateCreate).toHaveBeenCalledTimes(1);
+    expect(mocks.auditCreate).toHaveBeenCalledTimes(1);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/appeals");
+    expect(mocks.redirect).toHaveBeenCalledExactlyOnceWith("/admin/appeals/appeal-1?saved=refresh-delayed");
+  });
+
+  it("does not replay committed update unpublication when a cache refresh fails", async () => {
+    mocks.updateFind.mockResolvedValue({ appealId: "appeal-1", isPublic: true });
+    mocks.revalidatePath.mockImplementation((path: string) => {
+      if (path === "/appeals") throw new Error("public cache unavailable");
+    });
+    await unpublishAppealUpdate(form({ appealId: "appeal-1", updateId: "update-1" }));
+    expect(mocks.updateManyUpdate).toHaveBeenCalledTimes(1);
+    expect(mocks.auditCreate).toHaveBeenCalledTimes(1);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/appeals/appeal-1");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/appeals/public-appeal");
+    expect(mocks.redirect).toHaveBeenCalledExactlyOnceWith("/admin/appeals/appeal-1?saved=refresh-delayed");
+  });
+
+  it("keeps successful mutations on their normal path when cache expiry succeeds", async () => {
+    await transitionAppeal(form({ id: "appeal-1", expectedUpdatedAt: timestamp.toISOString(), status: "PAUSED" }));
+    expect(mocks.redirect).not.toHaveBeenCalled();
+    expect(mocks.updateTag).toHaveBeenCalledExactlyOnceWith("appeals");
+  });
+
+  it("does not describe a rejected mutation as committed or refresh public caches", async () => {
+    mocks.updateManyAppeal.mockResolvedValue({ count: 0 });
+    await expect(transitionAppeal(form({ id: "appeal-1", expectedUpdatedAt: timestamp.toISOString(), status: "PAUSED" })))
+      .rejects.toThrow(/changed while you were reviewing/i);
+    expect(mocks.redirect).not.toHaveBeenCalled();
+    expect(mocks.updateTag).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 });
 
