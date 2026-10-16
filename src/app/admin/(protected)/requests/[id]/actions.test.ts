@@ -12,6 +12,7 @@ const mocks = vi.hoisted(() => ({
   userFindFirst: vi.fn(),
   verificationUpsert: vi.fn(),
   verificationUpdateMany: vi.fn(),
+  mediaFindMany: vi.fn(), mediaUpdateMany: vi.fn(),
   appealUpdateMany: vi.fn(),
   updateTag: vi.fn(),
   appealCreate: vi.fn(),
@@ -62,6 +63,7 @@ function tx() {
     assistanceFollowUp: { findMany: mocks.followUpFindMany, updateMany: mocks.followUpUpdateMany },
     user: { findFirst: mocks.userFindFirst },
     appeal: { create: mocks.appealCreate, updateMany: mocks.appealUpdateMany },
+    mediaAsset: { findMany: mocks.mediaFindMany, updateMany: mocks.mediaUpdateMany },
     auditEvent: { create: mocks.auditCreate },
     notification: { create: mocks.notificationCreate },
   };
@@ -315,6 +317,8 @@ describe("post-conversion public disclosure withdrawal", () => {
     mocks.transaction.mockImplementation(async callback => callback(tx()));
     mocks.requestFind.mockResolvedValue(original);
     mocks.verificationUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.mediaFindMany.mockResolvedValue([]);
+    mocks.mediaUpdateMany.mockResolvedValue({ count: 1 });
     mocks.appealUpdateMany.mockResolvedValue({ count: 1 });
     mocks.auditCreate.mockResolvedValue({ id: "audit-1" });
     mocks.redirect.mockImplementation(() => { throw new Error("NEXT_REDIRECT"); });
@@ -410,6 +414,88 @@ describe("post-conversion public disclosure withdrawal", () => {
     expect(mocks.auditCreate).not.toHaveBeenCalled();
     expect(mocks.updateTag).not.toHaveBeenCalled();
     expect(mocks.revalidate).not.toHaveBeenCalled();
+  });
+
+  it("unpublishes a managed cover asset inside the same audited privacy transaction", async () => {
+    const cover = "/media/2026/123e4567-e89b-12d3-a456-426614174000.webp";
+    mocks.requestFind.mockResolvedValue({
+      ...original,
+      appeal: { ...original.appeal, coverImageUrl: cover },
+    });
+    mocks.mediaFindMany.mockResolvedValue([
+      { id: "media-1", isPublic: true, updatedAt: date, storageKey: "2026/123e4567-e89b-12d3-a456-426614174000.webp", publicUrl: cover },
+    ]);
+    await expect(withdrawConvertedAppealDisclosure(input())).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.mediaFindMany).toHaveBeenCalledWith({
+      where: {
+        isPublic: true,
+        publicUrl: { in: [cover, "https://amaanafoundation.org" + cover] },
+      },
+      select: { id: true, updatedAt: true, publicUrl: true, storageKey: true },
+    });
+    expect(mocks.mediaUpdateMany).toHaveBeenCalledWith({
+      where: { id: "media-1", isPublic: true, updatedAt: date },
+      data: { isPublic: false, privacyApprovedAt: null },
+    });
+    expect(mocks.auditCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "media.unpublished_on_assistance_privacy_withdrawal",
+        entityType: "MediaAsset",
+        entityId: "media-1",
+        metadata: { assistanceRequestId: "case-1", linkedAppealId: "appeal-1" },
+      }),
+    });
+    expect(mocks.redirect).toHaveBeenCalledWith("/admin/requests/case-1?privacy=withdrawn");
+  });
+
+  it("unpublishes every published media-library record using the revoked cover URL", async () => {
+    const cover = "/media/2026/123e4567-e89b-12d3-a456-426614174000.webp";
+    mocks.requestFind.mockResolvedValue({
+      ...original,
+      appeal: { ...original.appeal, coverImageUrl: "https://amaanafoundation.org" + cover },
+    });
+    mocks.mediaFindMany.mockResolvedValue([
+      { id: "media-1", updatedAt: date, storageKey: "2026/123e4567-e89b-12d3-a456-426614174000.webp", publicUrl: cover },
+      { id: "media-2", updatedAt: date, storageKey: "2026/123e4567-e89b-12d3-a456-426614174000.webp", publicUrl: "https://amaanafoundation.org" + cover },
+    ]);
+    await expect(withdrawConvertedAppealDisclosure(input())).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.mediaUpdateMany).toHaveBeenCalledTimes(2);
+    expect(mocks.auditCreate).toHaveBeenCalledTimes(3);
+    expect(mocks.mediaFindMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { isPublic: true, publicUrl: { in: ["https://amaanafoundation.org" + cover, cover] } },
+    }));
+  });
+
+  it("flags an external media host even after the matching published record is removed from the site", async () => {
+    const url = "https://cdn.example.org/private-photo.jpg";
+    mocks.requestFind.mockResolvedValue({ ...original, appeal: { ...original.appeal, coverImageUrl: url } });
+    mocks.mediaFindMany.mockResolvedValue([
+      { id: "external-1", updatedAt: date, storageKey: null, publicUrl: url },
+    ]);
+    await expect(withdrawConvertedAppealDisclosure(input())).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.mediaUpdateMany).toHaveBeenCalledTimes(1);
+    expect(mocks.redirect).toHaveBeenCalledWith("/admin/requests/case-1?privacy=withdrawn&media=review-required");
+  });
+
+  it("warns staff when the revoked cover has no matching published library asset", async () => {
+    mocks.requestFind.mockResolvedValue({
+      ...original, appeal: { ...original.appeal, coverImageUrl: "https://cdn.example.org/unmapped.jpg" },
+    });
+    await expect(withdrawConvertedAppealDisclosure(input())).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.mediaFindMany).toHaveBeenCalledOnce();
+    expect(mocks.mediaUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.redirect).toHaveBeenCalledWith("/admin/requests/case-1?privacy=withdrawn&media=review-required");
+  });
+
+  it("rolls back the privacy change and avoids cache invalidation on a conflicting media unpublish", async () => {
+    const cover = "/media/2026/123e4567-e89b-12d3-a456-426614174000.webp";
+    mocks.requestFind.mockResolvedValue({ ...original, appeal: { ...original.appeal, coverImageUrl: cover } });
+    mocks.mediaFindMany.mockResolvedValue([{ id: "media-1", updatedAt: date, storageKey: "2026/123e4567-e89b-12d3-a456-426614174000.webp", publicUrl: cover }]);
+    mocks.mediaUpdateMany.mockResolvedValue({ count: 0 });
+    await expect(withdrawConvertedAppealDisclosure(input())).rejects.toThrow(/Media publication changed/);
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+    expect(mocks.revalidate).not.toHaveBeenCalled();
+    expect(mocks.updateTag).not.toHaveBeenCalled();
   });
 
   it("attempts every cache refresh and reports delayed public removal if one invalidation fails", async () => {
