@@ -71,8 +71,25 @@ describe("approved public media delivery", () => {
         storageKey: objectKey,
         isPublic: true,
         privacyApprovedAt: { not: null },
+        publicUrl: { in: [
+          `/media/${objectKey}`,
+          `https://amaanafoundation.org/media/${objectKey}`,
+        ] },
       },
     }));
+    expect(mocks.getPublicMediaObject).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    "https://cdn.example.org/revoked-photo.webp",
+    "/media/2026/00000000-0000-4000-8000-000000000000.webp",
+    "https://www.amaanafoundation.org/legacy-public-photo.webp",
+  ])("does not serve a managed storage key through a noncanonical published URL (%s)", async publicUrl => {
+    // A mocked adapter may return a legacy/unreviewed row despite the DB
+    // predicate. Repeat the exact managed-delivery policy before object reads.
+    mocks.findFirst.mockResolvedValue({ ...approvedAsset(), publicUrl });
+    const response = await GET(request(), context());
+    expect(response.status).toBe(404);
     expect(mocks.getPublicMediaObject).not.toHaveBeenCalled();
   });
 
