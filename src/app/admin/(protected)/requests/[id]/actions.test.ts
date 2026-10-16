@@ -291,7 +291,7 @@ describe("post-conversion public disclosure withdrawal", () => {
     appeal: { id: "appeal-1", slug: "published-case", status: "PUBLISHED", updatedAt: date },
     verification: {
       id: "verification-1", updatedAt: date,
-      confidentialityLevel: "STANDARD",
+      decision: "APPROVED_PUBLIC", confidentialityLevel: "STANDARD",
       publicNameConsent: "ALLOWED", photoConsent: "ALLOWED",
       medicalDetailsConsent: "ALLOWED", institutionNameConsent: "ALLOWED",
       archiveConsent: "ALLOWED",
@@ -325,7 +325,7 @@ describe("post-conversion public disclosure withdrawal", () => {
     expect(mocks.verificationUpdateMany).toHaveBeenCalledWith({
       where: { id: "verification-1", assistanceRequestId: "case-1", updatedAt: date },
       data: {
-        confidentialityLevel: "HIGHLY_SENSITIVE",
+        decision: "APPROVED_PRIVATE", confidentialityLevel: "HIGHLY_SENSITIVE",
         publicNameConsent: "NOT_ALLOWED", photoConsent: "NOT_ALLOWED",
         medicalDetailsConsent: "NOT_ALLOWED", institutionNameConsent: "NOT_ALLOWED",
         archiveConsent: "NOT_ALLOWED",
@@ -343,6 +343,7 @@ describe("post-conversion public disclosure withdrawal", () => {
         metadata: expect.objectContaining({
           reason: "The family withdrew permission to publish this case.",
           previousAppealStatus: "PUBLISHED", nextAppealStatus: "PAUSED",
+          previousDecision: "APPROVED_PUBLIC",
         }),
       }),
     });
