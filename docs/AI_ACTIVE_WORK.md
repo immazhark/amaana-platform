@@ -1,6 +1,14 @@
-## 2026-10-17 — Current public appeal name and photo consent (IN PROGRESS)
+## 2026-10-17 — Current beneficiary name/photo consent at public render boundary
 
-Ownership: CHATGPT_ACTIVE. Verified sole-writer handoff from HEAD `f2ec234fc03404e3fe3c4ead36179abe1d98cf6e`, open PR #292 on `fix/direct-transfer-feedback-20261013` targeting `main`. Scoped implementation: enforce current linked public-name and photo consent in the public appeal detail server projection, including revoked/missing decisions; preserve standalone legacy appeals, current archive gating, and non-identifying artwork with NOT_APPLICABLE photo consent. Author tests before source, no CI pipeline, migration, provider call, merge or deployment.
+Ownership: HANDOFF_PENDING. ChatGPT completed source/tests on open PR #292, branch `fix/direct-transfer-feedback-20261013` (base `main`), starting verified HEAD `f2ec234fc03404e3fe3c4ead36179abe1d98cf6e`. Detail regression `47ff70f064865d953715e3695fc52d6d6c7725f6` and code `4e2e1ca9deed6613645caa0a7700aec3a6241448`; homepage regression `19ada83860e18535e21a00b0dc92034015f39ed4` and source `94fbfe1837e9400fc53f3130a6b4c5ad31aaa7a2`; master149 `87e1bd50264c07d91298aa8c379f5ab2cdc7e4a6`, handoff ledger `3ffe3da74324a64c67c5880eeadfbaf63b7dfe9a`.
+
+- Public appeal detail projection now checks current linked public-name and photo review decisions alongside existing archive consent. No explicit ALLOWED public-name consent => return null beneficiaryDisplayName. No photo ALLOWED/NOT_APPLICABLE => return null cover URL. Missing/invalid linked verification fails closed; private review relation stays server-only. Already-approved standalone legacy appeals and contextual approved imagery remain compatible.
+- Homepage's existing lean appeal cache projection also selects photo consent and withholds unapproved cover URLs before public serialization. Confidentiality/highly-sensitive discovery checks and donation eligibility stay unchanged. No added DB roundtrip or provider integration.
+- Authored targeted regression cases for approved/withdrawn/missing/unknown consent, independent consent choices, standalone legacy and closed archive, plus homepage withheld and approved image behavior. GitHub source/test readback confirmed exact branches and selection guards.
+- **Not runtime verified:** no hydrated local repository or working git DNS. Vitest, application TypeScript, changed-file ESLint, PostgreSQL, browser, real revocation/caching and bundle measurements remain pending. Editorial identifiers embedded in title/summary/story/update copy are outside the structured-field fix, and cached homepage data may require explicit invalidation on consent revocation.
+- Master149 unchanged: **60 Implemented /61 Partial /26 Not started /1 Superseded /1 Not applicable**, zero formal closures. PR open, no merge/deploy. No donation/payment, messaging, storage, schema, database or real beneficiary data mutations.
+
+Next: Verify exact PR HEAD, run `npx vitest run src/lib/public-page-data.test.ts src/lib/public-content-homepage-consent.test.ts` plus project TypeScript and changed-file lint on a hydrated checkout. Correct any failures, then continue source-ready privacy revocation/cache and editorial copy protection. Maintain sole writer.
 
 ## 2026-10-17 — Fail-closed linked appeal promotion and metadata
 
