@@ -18,7 +18,7 @@ describe("private assistance queue triage", () => {
     expect(parseAssistanceQueueFilters({ city: "x".repeat(81) }).city).toBeUndefined();
     expect(parseAssistanceQueueFilters({ city: ["Hyderabad", "Mumbai"] }).city).toBeUndefined();
     expect(assistanceQueueHref({ assignment: "mine", order: "newest", age: "7d", city: "Hyderabad", review: "complete", followUp: "open", delivery: "all" }))
-      .toEqual({ pathname: "/admin", query: { assignment: "mine", age: "7d", city: "Hyderabad", review: "complete", followUp: "open", delivery: "all" } });
+      .toEqual({ pathname: "/admin", query: { assignment: "mine", age: "7d", city: "Hyderabad", review: "complete", followUp: "open" } });
   });
   it("resolves mine exclusively against the authenticated staff identity", () => {
     expect(assistanceQueueAssignmentWhere("mine", "signed-in-staff")).toEqual({ assignedToId: "signed-in-staff" });
@@ -26,7 +26,7 @@ describe("private assistance queue triage", () => {
     expect(assistanceQueueAssignmentWhere("all", "signed-in-staff")).toEqual({});
   });
   it("retains combined filters through pagination without exposing a staff ID", () => {
-    expect(assistanceQueueHref({ status: "UNDER_VERIFICATION", assignment: "mine", order: "oldest", age: "30d", review: "incomplete", followUp: "all" }, 3))
+    expect(assistanceQueueHref({ status: "UNDER_VERIFICATION", assignment: "mine", order: "oldest", age: "30d", review: "incomplete", followUp: "all", delivery: "all" }, 3))
       .toEqual({ pathname: "/admin", query: { status: "UNDER_VERIFICATION", assignment: "mine", order: "oldest", age: "30d", review: "incomplete", page: 3 } });
     expect(assistanceQueueHref({ assignment: "all", order: "newest", age: "all", review: "all", followUp: "all", delivery: "all" })).toEqual({ pathname: "/admin", query: {} });
   });
