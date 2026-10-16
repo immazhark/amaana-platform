@@ -70,6 +70,7 @@ export async function updateAppeal(formData: FormData) {
   if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Appeal edit version is missing or invalid. Refresh before editing.");
   const title = String(appealText(formData, "title") ?? "").trim(); const slug = String(appealText(formData, "slug") ?? "").trim().toLowerCase(); const summary = String(appealText(formData, "summary") ?? "").trim(); const story = String(appealText(formData, "story") ?? "").trim(); const goalAmount = parsePositiveRupeeAmount(String(appealText(formData, "goalAmount") ?? ""), "Appeal goal");
   const category = String(appealText(formData, "category")); const coverImageRaw = String(appealText(formData, "coverImageUrl") || "").trim(); const beneficiaryDisplayName = String(appealText(formData, "beneficiaryDisplayName") || "").trim();
+  const beneficiaryLocation = (appealText(formData, "beneficiaryLocation") ?? "").trim() || null;
   if (title.length < 8 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || summary.length < 20 || story.length < 40 || !Number.isFinite(goalAmount) || goalAmount <= 0 || !Object.values(AppealCategory).includes(category as AppealCategory)) throw new Error("Complete all required appeal fields");
   const coverImageValue = coverImageRaw ? normalizeSafePublicMediaUrl(coverImageRaw) : null;
   if (coverImageRaw && !coverImageValue) throw new Error("Cover image URL must be a safe HTTPS or root-relative public media URL");
@@ -90,7 +91,7 @@ export async function updateAppeal(formData: FormData) {
     await assertApprovedAppealCoverMedia(tx, coverImageValue);
     const updated = await tx.appeal.updateMany({
       where: { id, status: current.status, updatedAt: expectedUpdatedAt },
-      data: { title, slug, summary, story, goalAmount, category: category as AppealCategory, beneficiaryDisplayName: beneficiaryDisplayName || null, beneficiaryLocation: String(appealText(formData, "beneficiaryLocation") || "").trim() || null, coverImageUrl: coverImageValue || null },
+      data: { title, slug, summary, story, goalAmount, category: category as AppealCategory, beneficiaryDisplayName: beneficiaryDisplayName || null, beneficiaryLocation, coverImageUrl: coverImageValue || null },
     });
     if (updated.count !== 1) throw new Error("This appeal changed while you were reviewing it. Refresh before editing content.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.content_updated", entityType: "Appeal", entityId: id } });
