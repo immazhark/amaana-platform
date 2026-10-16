@@ -26,6 +26,7 @@ describe("admin navigation visibility", () => {
     expect(adminNavigationForPermissions(["assistance.view", "assistance.update", "donation.view", "notification.view"]))
       .toEqual([
         { permission: "assistance.view", path: "/admin", label: "Assistance queue" },
+        { permission: "assistance.view", path: "/admin/follow-ups", label: "Next staff actions" },
         { permission: "donation.view", path: "/admin/donations", label: "Donations" },
         { permission: "notification.view", path: "/admin/notifications", label: "Notification delivery" },
       ]);
@@ -64,6 +65,7 @@ describe("admin navigation visibility", () => {
       "notification.view",
     ]).map(item => item.label)).toEqual([
       "Assistance queue",
+      "Next staff actions",
       "Appeals",
       "Media review",
       "Retention review",
@@ -80,6 +82,11 @@ describe("admin active navigation semantics", () => {
     expect(isAdminNavigationActive("/admin", "/admin")).toBe(true);
     expect(isAdminNavigationActive("/admin/requests/req_123", "/admin")).toBe(true);
     expect(isAdminNavigationActive("/admin/requests/req_123/evidence", "/admin")).toBe(true);
+  });
+
+  it("activates the dedicated follow-up workboard without treating it as the case queue", () => {
+    expect(isAdminNavigationActive("/admin/follow-ups", "/admin/follow-ups")).toBe(true);
+    expect(isAdminNavigationActive("/admin/follow-ups", "/admin")).toBe(false);
   });
 
   it("keeps non-assistance admin areas from activating the assistance queue", () => {

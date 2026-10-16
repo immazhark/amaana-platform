@@ -91,6 +91,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
 
   return <>
     <div className="admin-heading"><div><p className="eyebrow">Case management</p><h1>Assistance queue</h1></div></div>
+    <p className="muted"><Link href="/admin/follow-ups">Open the private next-action workboard</Link></p>
     <p className="muted">Filter by assignment, self-reported city, verification completion, operator-selected follow-up date, responsible staff member or elapsed age. Review the oldest requests first when useful. Follow-up log counts include entries later redacted from case view. Age is time since receipt, not a response deadline, verified urgency, or SLA breach. City is not a verified service-zone assignment.</p>
     <div className="filter-row" role="group" aria-label="Assistance request assignment filter"><strong>Assignment:</strong>{assignmentChoices.map(item => <Link key={item.value} href={assistanceQueueHref({ ...filters, assignment: item.value })} aria-current={filters.assignment === item.value ? "page" : undefined}>{item.label}</Link>)}</div>
     <div className="filter-row" role="group" aria-label="Assistance request order"><strong>Order:</strong>{(["newest", "oldest"] as const).map(order => <Link key={order} href={assistanceQueueHref({ ...filters, order })} aria-current={filters.order === order ? "page" : undefined}>{order === "oldest" ? "Oldest first" : "Newest first"}</Link>)}</div>

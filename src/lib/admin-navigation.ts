@@ -1,5 +1,6 @@
 export const ADMIN_NAV_ITEMS = [
   { permission: "assistance.view", path: "/admin", label: "Assistance queue" },
+  { permission: "assistance.view", path: "/admin/follow-ups", label: "Next staff actions" },
   { permission: "appeal.view", path: "/admin/appeals", label: "Appeals" },
   { permission: "content.view", path: "/admin/media", label: "Media review" },
   { permission: "content.update", path: "/admin/home-carousel", label: "Home carousel" },
