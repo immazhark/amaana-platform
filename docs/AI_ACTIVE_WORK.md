@@ -1,3 +1,21 @@
+## 2026-10-17 — Actionable notification attention queues
+
+Ownership: HANDOFF_PENDING. Sole writer continued existing PR #292 from `6ce052b`; source `67755678d906bc28a67976581654695e07de3cfb`. Main and separate PR291 refs unchanged. No provider operation or release.
+
+- Existing global stale/overdue/terminal health counters now link to actual staff work queues. Shared Prisma-checked predicates govern both health counts and selected rows; status intersection and count-clamped 50-row pagination preserve attention scope. Invalid/repeated attention parameters are not reflected. Counts below the selected view remain explicitly global.
+- Stalled and overdue lists sort oldest-first by update/schedule with deterministic IDs; terminal review is newest-first. Selected empty views offer an all-records recovery link. Stalled records remain read-only rather than restarting an in-flight delivery.
+- Delivery channel is displayed; retry forms appear only for failed EMAIL records and notification.manage users. Existing independent server permission, EMAIL/FAILED guard, expected timestamp CAS, serializable audit and provider idempotency behavior retained.
+- Manual requeue rejects duplicate/File-valued ID, reviewed timestamp and operational reason before transaction entry. Timestamp must exactly match the canonical ISO snapshot rendered by the page. Worker/dashboard retry and stale thresholds share unchanged five-attempt/fifteen-minute constants; no retry budget, scheduling policy or provider behavior changed.
+- Staff dates render in IST. No dependency, stylesheet, client boundary, migration, runtime flag, worker activation, cron change or external email added/executed.
+
+Applied relevant ECC/Karpathy/Ponytail principles and existing UI conventions; Impeccable source detector returned no findings. The owner's listed GitHub references remain task-selective; none was installed or executed solely to satisfy a tool-count target.
+
+Validation: **39 focused cases across four suites pass**, covering real page filters/pagination/permission, controlled retry action boundaries, established attention thresholds and existing mocked worker recovery/send behavior. Application-only TypeScript, changed-file zero-warning ESLint and diff checks pass. No CI workflow, authenticated job invocation, real provider send, native database/concurrency, browser acceptance, full build or bundle remeasurement was performed. Earlier whole-repository assistance fixture type limitations remain separate.
+
+Master149 implementation remains 60 Implemented /61 Partial /26 Not started /2 other, zero formally closed. AF-CRM gains scoped transactional delivery operations, not marketing/suppression consent. Its new source is PR-open/not deployed; current Git classifications 58 Merged /63 PR open /28 Uncommitted. No live job/recipient records were changed.
+
+Next: next concrete source-ready development batch; keep implementation dominant and preserve the existing release boundaries.
+
 ## 2026-10-17 — Correct filtered retention review and private controls
 
 Ownership: HANDOFF_PENDING. Sole writer continued PR #292 from `ec017cb`; source `b615087923fb817b6439a9c0406144ec90e99b88`. Same branch; no merge or deployment.
