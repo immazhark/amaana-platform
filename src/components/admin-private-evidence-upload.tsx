@@ -1,12 +1,17 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { boundedPrivateRequest } from "@/lib/bounded-private-request";
 
 const MAX_BYTES = 5 * 1024 * 1024;
 
 type Props = { caseId: string; purpose?: "delivery" | "financial" | "consent" };
 export function AdminPrivateEvidenceUpload({ caseId, purpose = "delivery" }: Props) {
+  return <EvidenceUpload key={`${caseId}:${purpose}`} caseId={caseId} purpose={purpose}/>;
+}
+
+function EvidenceUpload({ caseId, purpose = "delivery" }: Props) {
   const router = useRouter();
   const financial = purpose === "financial";
   const consent = purpose === "consent";
@@ -16,46 +21,75 @@ export function AdminPrivateEvidenceUpload({ caseId, purpose = "delivery" }: Pro
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
   const [error, setError] = useState(false);
+  const [uncertain, setUncertain] = useState(false);
+  const locked = useRef(false);
+  const lifetime = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    lifetime.current = controller;
+    return () => { controller.abort(); lifetime.current = null; };
+  }, []);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (busy) return;
-    const entry = new FormData(event.currentTarget).get("document");
+    if (locked.current || uncertain) return;
+    const body = new FormData(event.currentTarget);
+    const entry = body.get("document");
     if (!(entry instanceof File) || entry.size === 0 || entry.size > MAX_BYTES) {
       setError(true);
       setMessage("Choose one non-empty PDF or image, 5 MB or smaller.");
       return;
     }
+    const controller = lifetime.current;
+    if (!controller || controller.signal.aborted) return;
+    locked.current = true;
     setBusy(true);
     setError(false);
     setMessage("Uploading to private case storage…");
+    let uncertainOutcome = false;
     try {
-      const response = await fetch(`/api/admin/assistance/${encodeURIComponent(caseId)}/documents`, {
-        method: "POST",
-        body: new FormData(event.currentTarget),
-        cache: "no-store",
-        credentials: "same-origin",
-      });
-      const result: unknown = await response.json();
+      const { response, result } = await boundedPrivateRequest(async signal => {
+        const response = await fetch(`/api/admin/assistance/${encodeURIComponent(caseId)}/documents`, {
+          method: "POST", body, cache: "no-store", credentials: "same-origin", signal,
+        });
+        const result: unknown = await response.json();
+        return { response, result };
+      }, 30_000, controller.signal);
+      if (controller.signal.aborted) return;
       if (!response.ok) {
+        // A server failure can follow a committed object/database write.
+        if (response.status >= 500) throw new Error("Upload confirmation unavailable");
         const detail = typeof result === "object" && result !== null &&
           "error" in result && typeof result.error === "string"
-          ? result.error : "Upload failed. Review the case before trying again.";
+          ? result.error.slice(0, 200) : "Upload failed. Review the case before trying again.";
         setError(true);
         setMessage(detail);
         return;
       }
+      if (typeof result !== "object" || result === null || !("documentId" in result) ||
+          typeof result.documentId !== "string" || !/^[a-zA-Z0-9_-]{3,128}$/.test(result.documentId)) {
+        throw new Error("Upload receipt missing");
+      }
       formRef.current?.reset();
-      setMessage(financial
+      const confirmation = financial
         ? "Private bank proof uploaded. Refresh and select it for the financial corroboration proposal."
         : consent ? "Private consent document uploaded. Independently review its exact scope before proposing anonymous copy."
-        : "Private evidence uploaded. Select the new document in the delivery report below to link it for review.");
-      router.refresh();
+        : "Private evidence uploaded. Select the new document in the delivery report below to link it for review.";
+      setMessage(confirmation);
+      try { router.refresh(); }
+      catch { setMessage(`${confirmation} The view refresh failed; reload the case to see the document.`); }
     } catch {
+      if (controller.signal.aborted) return;
+      uncertainOutcome = true;
+      setUncertain(true);
       setError(true);
-      setMessage("Upload confirmation was interrupted. Refresh the case before trying again to avoid duplicate evidence.");
+      setMessage("Upload confirmation was interrupted. The file may already be stored. Reload the case and review its documents before uploading again.");
     } finally {
-      setBusy(false);
+      if (!controller.signal.aborted) {
+        locked.current = uncertainOutcome;
+        setBusy(false);
+      }
     }
   }
 
@@ -65,14 +99,15 @@ export function AdminPrivateEvidenceUpload({ caseId, purpose = "delivery" }: Pro
     <label htmlFor={fieldId}>{financial ? "Upload supporting bank transaction proof" : consent ? "Upload signed consent for the exact anonymous wording" : "Upload new private delivery proof"}</label>
     <input id={fieldId} name="document" type="file"
       accept=".pdf,.jpg,.jpeg,.png,.webp,application/pdf,image/jpeg,image/png,image/webp"
-      required disabled={busy}/>
+      required disabled={busy || uncertain}/>
     <small className="muted">One PDF, JPEG, PNG or WebP, up to 5 MB.
       Private evidence is not published or sent to donors. Upload first, then link
       {financial ? " bank proof to an independently confirmed financial delivery." :
         consent ? " signed, specific consent to the exact proposed anonymous copy; uploading alone does not approve disclosure." :
         " the document to an unreviewed delivery record."}</small>
-    <button className="button secondary" type="submit" disabled={busy}
+    <button className="button secondary" type="submit" disabled={busy || uncertain}
       aria-busy={busy}>{busy ? "Uploading…" : "Upload private proof"}</button>
     <p role={error ? "alert" : "status"} aria-live="polite" className="muted">{message}</p>
+    {uncertain && <a href={`/admin/requests/${encodeURIComponent(caseId)}`}>Reload case and review private documents</a>}
   </form>;
 }
