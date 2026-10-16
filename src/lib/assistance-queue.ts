@@ -9,11 +9,12 @@ export type AssistanceQueueFilters = {
   city?: string;
   review: "all" | "incomplete" | "complete";
   followUp: "all" | "due" | "open" | "none" | "mine";
+  delivery: "all" | "reported" | "confirmed" | "none";
 };
 type SearchValue = string | string[] | undefined;
 
 export function parseAssistanceQueueFilters(params: {
-  status?: SearchValue; assignment?: SearchValue; order?: SearchValue; age?: SearchValue; city?: SearchValue; review?: SearchValue; followUp?: SearchValue;
+  status?: SearchValue; assignment?: SearchValue; order?: SearchValue; age?: SearchValue; city?: SearchValue; review?: SearchValue; followUp?: SearchValue; delivery?: SearchValue;
 }): AssistanceQueueFilters {
   const status = ASSISTANCE_QUEUE_STATUSES.find(value => value === params.status);
   // Administrative geography is a verbatim self-reported city, never a
@@ -28,6 +29,7 @@ export function parseAssistanceQueueFilters(params: {
     ...(validCity ? { city } : {}),
     review: params.review === "incomplete" || params.review === "complete" ? params.review : "all",
     followUp: params.followUp === "due" || params.followUp === "open" || params.followUp === "none" || params.followUp === "mine" ? params.followUp : "all",
+    delivery: params.delivery === "reported" || params.delivery === "confirmed" || params.delivery === "none" ? params.delivery : "all",
   };
 }
 
@@ -74,6 +76,14 @@ export function assistanceQueueFollowUpWhere(
   } } };
 }
 
+/** A report awaiting evidence review is not independently confirmed support. */
+export function assistanceQueueDeliveryWhere(delivery: AssistanceQueueFilters["delivery"]): Prisma.AssistanceRequestWhereInput {
+  if (delivery === "reported") return { deliveryRecords: { some: { state: "REPORTED" } } };
+  if (delivery === "confirmed") return { deliveryRecords: { some: { state: "CONFIRMED" } } };
+  if (delivery === "none") return { deliveryRecords: { none: { state: { in: ["REPORTED", "CONFIRMED"] } } } };
+  return {};
+}
+
 export function assistanceQueueHref(filters: AssistanceQueueFilters, page = 1) {
   return {
     pathname: "/admin",
@@ -85,6 +95,7 @@ export function assistanceQueueHref(filters: AssistanceQueueFilters, page = 1) {
       ...(filters.city ? { city: filters.city } : {}),
       ...(filters.review !== "all" ? { review: filters.review } : {}),
       ...(filters.followUp !== "all" ? { followUp: filters.followUp } : {}),
+      ...(filters.delivery !== "all" ? { delivery: filters.delivery } : {}),
       ...(page > 1 ? { page } : {}),
     },
   };

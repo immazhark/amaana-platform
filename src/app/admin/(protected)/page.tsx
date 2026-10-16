@@ -2,7 +2,7 @@ import Link from "@/components/navigation-link";
 import { redirect } from "next/navigation";
 import {
   ASSISTANCE_QUEUE_STATUSES, assistanceQueueAge, assistanceQueueAgeWhere, assistanceQueueAssignmentWhere,
-  assistanceQueueFollowUpWhere, assistanceQueueHref, assistanceQueueReviewWhere, assistanceQueueVerificationLabel, parseAssistanceQueueFilters,
+  assistanceQueueDeliveryWhere, assistanceQueueFollowUpWhere, assistanceQueueHref, assistanceQueueReviewWhere, assistanceQueueVerificationLabel, parseAssistanceQueueFilters,
 } from "@/lib/assistance-queue";
 import { adminHomePathForPermissions } from "@/lib/admin-navigation";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
@@ -13,7 +13,7 @@ import { indiaCalendarDay } from "@/lib/assistance-follow-up";
 
 type Props = { searchParams: Promise<{
   status?: string | string[]; page?: string | string[];
-  assignment?: string | string[]; order?: string | string[]; age?: string | string[]; review?: string | string[]; city?: string | string[]; followUp?: string | string[];
+  assignment?: string | string[]; order?: string | string[]; age?: string | string[]; review?: string | string[]; city?: string | string[]; followUp?: string | string[]; delivery?: string | string[];
 }> };
 
 export default async function AdminQueuePage({ searchParams }: Props) {
@@ -28,6 +28,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     ...assignmentWhere, ...assistanceQueueAgeWhere(filters.age, now),
     ...assistanceQueueReviewWhere(filters.review),
     ...assistanceQueueFollowUpWhere(filters.followUp, localToday, user.id),
+    ...assistanceQueueDeliveryWhere(filters.delivery),
     ...(filters.city ? { city: filters.city } : {}),
   };
   const where = { ...scopedWhere, ...(filters.status ? { status: filters.status } : {}) };
@@ -63,6 +64,21 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     _count: { _all: true }, _min: { dueOn: true },
   }) : [];
   const tasksByCase = new Map(dueTasks.map(task => [task.assistanceRequestId, task]));
+  const deliveryCounts = requests.length ? await prisma.assistanceDeliveryRecord.groupBy({
+    by: ["assistanceRequestId", "state"],
+    where: {
+      assistanceRequestId: { in: requests.map(request => request.id) },
+      state: { in: ["REPORTED", "CONFIRMED"] },
+    },
+    _count: { _all: true },
+  }) : [];
+  const deliveryByCase = new Map<string, { reported: number; confirmed: number }>();
+  for (const row of deliveryCounts) {
+    const counts = deliveryByCase.get(row.assistanceRequestId) ?? { reported: 0, confirmed: 0 };
+    if (row.state === "REPORTED") counts.reported = row._count._all;
+    if (row.state === "CONFIRMED") counts.confirmed = row._count._all;
+    deliveryByCase.set(row.assistanceRequestId, counts);
+  }
   const myOpenTasks = requests.length ? await prisma.assistanceFollowUp.groupBy({
     by: ["assistanceRequestId"],
     where: {
@@ -92,7 +108,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
   return <>
     <div className="admin-heading"><div><p className="eyebrow">Case management</p><h1>Assistance queue</h1></div></div>
     <p className="muted"><Link href="/admin/follow-ups">Open the private next-action workboard</Link></p>
-    <p className="muted">Filter by assignment, self-reported city, verification completion, operator-selected follow-up date, responsible staff member or elapsed age. Review the oldest requests first when useful. Follow-up log counts include entries later redacted from case view. Age is time since receipt, not a response deadline, verified urgency, or SLA breach. City is not a verified service-zone assignment.</p>
+    <p className="muted">Filter by assignment, reported city, verification, private delivery evidence, follow-up dates or elapsed age. Review the oldest requests first when useful. Follow-up log counts include entries later redacted from case view. Age is time since receipt, not a response deadline, verified urgency, or SLA breach. City is not a verified service-zone assignment.</p>
     <div className="filter-row" role="group" aria-label="Assistance request assignment filter"><strong>Assignment:</strong>{assignmentChoices.map(item => <Link key={item.value} href={assistanceQueueHref({ ...filters, assignment: item.value })} aria-current={filters.assignment === item.value ? "page" : undefined}>{item.label}</Link>)}</div>
     <div className="filter-row" role="group" aria-label="Assistance request order"><strong>Order:</strong>{(["newest", "oldest"] as const).map(order => <Link key={order} href={assistanceQueueHref({ ...filters, order })} aria-current={filters.order === order ? "page" : undefined}>{order === "oldest" ? "Oldest first" : "Newest first"}</Link>)}</div>
     <form method="get" action="/admin" className="filter-row" aria-label="Filter assistance requests by reported city">
@@ -103,6 +119,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
       {filters.age !== "all" && <input type="hidden" name="age" value={filters.age}/>}
       {filters.review !== "all" && <input type="hidden" name="review" value={filters.review}/>}
       {filters.followUp !== "all" && <input type="hidden" name="followUp" value={filters.followUp}/>}
+      {filters.delivery !== "all" && <input type="hidden" name="delivery" value={filters.delivery}/>}
       <select id="assistance-queue-city" name="city" defaultValue={filters.city ?? ""}>
         <option value="">All reported cities</option>
         {filters.city && !cityCounts.some(item => item.city === filters.city) &&
@@ -138,8 +155,18 @@ export default async function AdminQueuePage({ searchParams }: Props) {
         href={assistanceQueueHref({ ...filters, followUp: item.value })}
         aria-current={filters.followUp === item.value ? "page" : undefined}>{item.label}</Link>)}
     </div>
+    <div className="filter-row" role="group" aria-label="Private delivery evidence review filter">
+      <strong>Support evidence:</strong>{([
+        { value: "all", label: "All delivery states" },
+        { value: "reported", label: "Awaiting independent review" },
+        { value: "confirmed", label: "Evidence reviewed" },
+        { value: "none", label: "No active delivery record" },
+      ] as const).map(item =>
+        <Link key={item.value} href={assistanceQueueHref({ ...filters, delivery: item.value })}
+          aria-current={filters.delivery === item.value ? "page" : undefined}>{item.label}</Link>)}
+    </div>
     <div className="filter-row" role="group" aria-label="Assistance request status filter"><strong>Status:</strong><Link href={assistanceQueueHref({ ...filters, status: undefined })} aria-current={!filters.status ? "page" : undefined}>All</Link>{ASSISTANCE_QUEUE_STATUSES.map(item => <Link key={item} href={assistanceQueueHref({ ...filters, status: item })} aria-current={filters.status === item ? "page" : undefined}>{item.replaceAll("_", " ")} ({counts.get(item) ?? 0})</Link>)}</div>
-    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Operational records"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Category</th><th>Status</th><th>Verification</th><th>Assigned to</th><th>Documents</th><th>Follow-up logs</th><th>Open tasks</th><th>My tasks</th><th>Next staff-set date</th><th>Received</th><th>Request age</th></tr></thead><tbody>{requests.map(item => {
+    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Operational records"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Category</th><th>Status</th><th>Verification</th><th>Assigned to</th><th>Documents</th><th>Follow-up logs</th><th>Open tasks</th><th>My tasks</th><th>Delivery reports pending</th><th>Delivery evidence reviewed</th><th>Next staff-set date</th><th>Received</th><th>Request age</th></tr></thead><tbody>{requests.map(item => {
       const tasks = tasksByCase.get(item.id);
       const due = tasks?._min.dueOn;
       const followUp = followUpsByCase.get(item.id);
@@ -147,6 +174,8 @@ export default async function AdminQueuePage({ searchParams }: Props) {
           <td>{followUp?._count._all ?? 0} · {followUp?._max.createdAt?.toLocaleDateString("en-IN") ?? "No recent update"}</td>
           <td>{tasks?._count._all ?? 0}</td>
           <td>{myTasksByCase.get(item.id) ?? 0}</td>
+          <td>{deliveryByCase.get(item.id)?.reported ?? 0}</td>
+          <td>{deliveryByCase.get(item.id)?.confirmed ?? 0}</td>
           <td>{due
             ? <span>{due.toLocaleDateString("en-IN", { timeZone: "UTC" })}
                 {" · "}{due.toISOString().slice(0, 10) < localToday ? "Past selected date" : "Upcoming / today"}</span>
