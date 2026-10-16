@@ -21,7 +21,7 @@ type ReviewMetadata = {
   reviewNotes?: string | null;
 };
 
-type Props = { searchParams: Promise<{ visibility?: string; page?: string }> };
+type Props = { searchParams: Promise<{ visibility?: string; page?: string; saved?: string }> };
 
 export default async function AdminMediaPage({ searchParams }: Props) {
   const user = await requirePermission("content.view");
@@ -38,7 +38,7 @@ export default async function AdminMediaPage({ searchParams }: Props) {
     canImportCuratedGallery
     ? (await import("@/components/curated-gallery-importer")).CuratedGalleryImporter
     : null;
-  const { visibility, page: pageParam } = await searchParams;
+  const { visibility, page: pageParam, saved } = await searchParams;
   const selectedVisibility = visibility === "public" || visibility === "review" ? visibility : undefined;
   const where = selectedVisibility ? { isPublic: selectedVisibility === "public" } : undefined;
   const [totalItems, visibilityGroups, causes, initiatives, stories, faith] = await Promise.all([
@@ -76,6 +76,13 @@ export default async function AdminMediaPage({ searchParams }: Props) {
   const targetLabel = (asset: (typeof assets)[number]) => asset.initiative?.title ?? asset.story?.title ?? asset.cause?.title ?? asset.faithContent?.title ?? "Unlinked";
 
   return <>
+    {saved === "refresh-delayed" && <section className="admin-card" role="alert">
+      <h2>Media change saved — public refresh delayed</h2>
+      <p>The requested database change completed, but at least one cache refresh could not be confirmed.
+        Do not repeat the publish, unpublish or delete action. Verify the affected public URLs
+        and contact an administrator to clear any remaining cached copies before treating a
+        privacy-related takedown as complete.</p>
+    </section>}
     <div className="admin-heading"><div><p className="eyebrow">Content evidence</p><h1>Media review</h1><p className="lead">Upload and document authentic Amaana material here. Nothing appears publicly until an approver explicitly publishes it.</p></div></div>
 
     <section className="admin-card" style={{ marginBottom: "2rem" }}>
