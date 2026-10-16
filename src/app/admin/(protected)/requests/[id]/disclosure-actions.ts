@@ -7,7 +7,7 @@ import { hasPermission, requirePermission } from "@/lib/auth";
 import {
   ANONYMOUS_OUTCOME_COPY, disclosureSourceSelect, eligibleForAnonymousCopy,
   parseDisclosureDecision, parseDisclosureProposal, parseDisclosurePublication,
-  requiredDisclosureEvidenceIds,
+  validatedAnonymousDisclosureEvidenceIds,
 } from "@/lib/assistance-outcome-disclosure";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { withdrawStaleAnonymousOutcomeCopies } from "@/lib/assistance-outcome-invalidation";
@@ -50,8 +50,10 @@ export async function proposeAnonymousOutcomeCopy(form: FormData) {
     if (observation.updatedAt.getTime() !== input.expectedObservationUpdatedAt.getTime()) {
       throw new Error("The observation changed. Reload before proposing anonymous copy.");
     }
-    const supportingIds = requiredDisclosureEvidenceIds(observation, input.consentDocumentId);
-    if (new Set(supportingIds).size !== supportingIds.length || supportingIds.length < 2) {
+    const supportingIds = validatedAnonymousDisclosureEvidenceIds(
+      observation, copyText, input.consentDocumentId,
+    );
+    if (!supportingIds) {
       throw new Error("Exact-copy consent must be separate from underlying delivery or bank evidence.");
     }
     const available = await tx.assistanceDocument.count({
@@ -123,8 +125,10 @@ export async function reviewAnonymousOutcomeCopy(form: FormData) {
       if (!item.consentDocumentId) {
         throw new Error("Separate written consent for this exact anonymous copy is required.");
       }
-      const ids = requiredDisclosureEvidenceIds(observation, item.consentDocumentId);
-      if (new Set(ids).size !== ids.length || ids.length < 2) {
+      const ids = validatedAnonymousDisclosureEvidenceIds(
+        observation, item.copyText, item.consentDocumentId,
+      );
+      if (!ids) {
         throw new Error("Consent must not reuse private delivery or bank evidence.");
       }
       const available = await tx.assistanceDocument.count({
@@ -200,9 +204,10 @@ export async function publishAnonymousOutcomeCopy(form: FormData) {
         !item.consentDocumentId) {
       throw new Error("Consent, case eligibility or anonymous wording changed; publication is blocked.");
     }
-    const ids = requiredDisclosureEvidenceIds(observation, item.consentDocumentId);
-    const distinct = new Set(ids);
-    if (ids.length < 2 || distinct.size !== ids.length) {
+    const ids = validatedAnonymousDisclosureEvidenceIds(
+      observation, item.copyText, item.consentDocumentId,
+    );
+    if (!ids) {
       throw new Error("Explicit consent must remain separate from delivery and bank documents.");
     }
     const available = await tx.assistanceDocument.count({
