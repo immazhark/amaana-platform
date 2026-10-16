@@ -57,6 +57,24 @@ describe('homepage carousel publication and schedules', () => {
     const config = {...defaultHomeConfig, slides:[scheduled,future,live]};
     expect(visibleHomeSlides(config,new Set(),now).map(slide => slide.image)).toEqual(['asset:visible-media']);
   });
+  it('blocks protected receipt and assistance-status journeys from public hero CTAs', () => {
+    for (const href of [
+      '/donations/private-receipt',
+      '/donations',
+      '/request-assistance/status',
+      '/request-assistance/received',
+      '/%64onations/private-receipt',
+      '/%72equest-assistance/status',
+    ]) expect(() => safeHomeHref(href), href).toThrow(/public website/);
+
+    for (const href of [
+      '/donate',
+      '/donate/verified-appeal',
+      '/request-assistance',
+      '/how-we-verify',
+      '/our-work#published',
+    ]) expect(safeHomeHref(href)).toBe(href);
+  });
   it('rejects duplicate identifiers, invalid date windows and unreviewable image addresses', () => {
     expect(()=>parseHomeConfig({...defaultHomeConfig,slides:[origin,origin]})).toThrow(/unique/);
     expect(()=>validateHomeSlide({...origin,startsAt:'2026-10-04T00:00Z',endsAt:'2026-10-03T00:00Z'})).toThrow(/follow/);

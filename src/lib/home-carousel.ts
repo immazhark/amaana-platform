@@ -1,3 +1,5 @@
+import { isPrivateRoute } from "./public-routing";
+
 export class HomeCarouselValidationError extends Error {}
 
 export type HomeSlide = {
@@ -26,7 +28,13 @@ export const defaultHomeConfig: HomeCarouselConfig = { slides: defaultHomeSlides
 export function safeHomeHref(value: string) {
   if (!/^\/(?!\/)[a-zA-Z0-9/_?=&%#.-]*$/.test(value) || /%(?:25|2f|5c|0[0-9a-f]|1[0-9a-f]|7f)/i.test(value)) throw new HomeCarouselValidationError('Use a safe internal website link.');
   const url = new URL(value, 'https://amaana.invalid');
-  if (url.origin !== 'https://amaana.invalid' || /^\/(?:admin|api)(?:\/|$)/i.test(decodeURIComponent(url.pathname))) throw new HomeCarouselValidationError('Choose a public website destination.');
+  const pathname = decodeURIComponent(url.pathname).toLowerCase();
+  // App Router has intentionally private paths adjacent to public giving.
+  // Keep approved /donate/[appeal] destinations public but never expose a
+  // personal donation receipt or assistance-status page in hero editorial CTAs.
+  const privateDestination = isPrivateRoute(pathname) && !pathname.startsWith('/donate/');
+  if (url.origin !== 'https://amaana.invalid' || privateDestination)
+    throw new HomeCarouselValidationError('Choose a public website destination.');
   return value;
 }
 export function validateHomeSlide(raw: unknown): HomeSlide {
