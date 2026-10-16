@@ -1,4 +1,5 @@
 import { AppealCategory, NotificationChannel } from "@prisma/client";
+import { parseUniqueAssistanceTextFields } from "@/lib/assistance-form-input";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { assistanceSchema, createReferenceNumber, createTrackingToken, hashTrackingToken } from "@/lib/assistance";
@@ -52,7 +53,19 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid assistance submission format." }, { status: 400, headers: privateHeaders });
     }
 
-    const parsed = assistanceSchema.safeParse(Object.fromEntries(formData.entries()));
+    // A multipart body may contain repeated identity, category or consent fields.
+    // Object.fromEntries silently picks the final value: reject ambiguity before
+    // validating or writing a private assistance case.
+    const input = parseUniqueAssistanceTextFields(formData);
+    if (!input.ok) {
+      return NextResponse.json(
+        { error: "Please correct the assistance form before submitting.", fields: {
+          [input.field]: [input.message],
+        } },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+    const parsed = assistanceSchema.safeParse(input.fields);
     if (!parsed.success) {
       return NextResponse.json(
         { error: "Please check the highlighted information and try again.", fields: parsed.error.flatten().fieldErrors },
