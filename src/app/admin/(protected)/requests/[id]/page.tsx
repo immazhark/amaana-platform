@@ -287,7 +287,7 @@ export default async function RequestDetailPage({ params }: Props) {
               <FinancialCorroborationControls
                 caseId={id} delivery={item} documents={request.documents}
                 actorId={user.id} canPropose={mayReportDelivery}
-                canReview={mayReviewFinancialEvidence}
+                canReview={mayReviewFinancialEvidence} caseEligible={currentDeliveryEligible}
               />
               {mayReviewDelivery && item.state !== "VOIDED" && <>
                 {item.state === "REPORTED" && currentDeliveryEligible && item.evidenceDocumentId &&

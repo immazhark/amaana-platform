@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({
   auth: vi.fn(), has: vi.fn(),
   invalidate: vi.fn(), tx: vi.fn(), reconcileFind: vi.fn(),
-  deliveryFind: vi.fn(), proofFind: vi.fn(), proofCount: vi.fn(),
+  deliveryFind: vi.fn(), proofCount: vi.fn(),
   reconcileCreate: vi.fn(), reconcileUpdate: vi.fn(), audit: vi.fn(),
   refresh: vi.fn(), redirect: vi.fn(),
 }));
@@ -45,7 +45,7 @@ const db = {
     updateMany: m.reconcileUpdate,
   },
   assistanceDeliveryRecord: { findUnique: m.deliveryFind },
-  assistanceDocument: { findFirst: m.proofFind, count: m.proofCount },
+  assistanceDocument: { count: m.proofCount },
   auditEvent: { create: m.audit },
 };
 function form(changes: Record<string, string> = {}) {
@@ -67,7 +67,6 @@ beforeEach(() => {
   m.tx.mockImplementation(async (fn: (value: typeof db) => Promise<unknown>) => fn(db));
   m.reconcileFind.mockResolvedValue(null);
   m.deliveryFind.mockResolvedValue(delivery);
-  m.proofFind.mockResolvedValue({ id: "bank-proof" });
   m.proofCount.mockResolvedValue(2);
   m.reconcileCreate.mockResolvedValue({ id: "recon-synthetic" });
   m.reconcileUpdate.mockResolvedValue({ count: 1 });
@@ -79,9 +78,9 @@ describe("staff corroboration of confirmed financial delivery", () => {
   it("compares exact existing delivery money and stores only bank-reference evidence", async () => {
     await expect(proposeAssistanceFinancialCorroboration(form())).rejects.toThrow("NAVIGATE");
     expect(m.auth).toHaveBeenCalledWith("assistance.update");
-    expect(m.proofFind).toHaveBeenCalledWith({
-      where: { id: "bank-proof", assistanceRequestId: "case-synthetic" },
-      select: { id: true },
+    expect(m.proofCount).toHaveBeenCalledWith({
+      where: { assistanceRequestId: "case-synthetic",
+        id: { in: ["delivery-proof", "bank-proof"] } },
     });
     expect(m.reconcileCreate).toHaveBeenCalledWith({
       data: {
@@ -104,9 +103,25 @@ describe("staff corroboration of confirmed financial delivery", () => {
       submittedById: "finance-synthetic",
       transactionReference: "BANK123456789",
       bankProofDocumentId: "bank-proof",
+      deliveryRecord: { assistanceRequestId: "case-synthetic", kind: "FINANCIAL",
+        amountInr: { toFixed: () => "1250.50" } },
     });
     await expect(proposeAssistanceFinancialCorroboration(form())).rejects.toThrow("NAVIGATE");
     expect(m.deliveryFind).not.toHaveBeenCalled();
+    expect(m.reconcileCreate).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+  });
+  it("rejects a cross-case or changed-amount financial proposal replay", async () => {
+    m.reconcileFind.mockResolvedValue({
+      submittedById: "finance-synthetic",
+      transactionReference: "BANK123456789", bankProofDocumentId: "bank-proof",
+      deliveryRecord: { assistanceRequestId: "case-synthetic", kind: "FINANCIAL",
+        amountInr: { toFixed: () => "1250.50" } },
+    });
+    await expect(proposeAssistanceFinancialCorroboration(form({ id: "other-case" })))
+      .rejects.toThrow("different private reconciliation");
+    await expect(proposeAssistanceFinancialCorroboration(form({ amountInr: "1251.00" })))
+      .rejects.toThrow("different private reconciliation");
     expect(m.reconcileCreate).not.toHaveBeenCalled();
     expect(m.audit).not.toHaveBeenCalled();
   });
@@ -126,13 +141,20 @@ describe("staff corroboration of confirmed financial delivery", () => {
     m.deliveryFind.mockResolvedValue({ ...delivery, state: "REPORTED" });
     await expect(proposeAssistanceFinancialCorroboration(form()))
       .rejects.toThrow("independently reviewed financial delivery");
-    expect(m.proofFind).not.toHaveBeenCalled();
+    expect(m.proofCount).not.toHaveBeenCalled();
   });
   it("requires bank evidence to be separate from delivery proof and within the same case", async () => {
     await expect(proposeAssistanceFinancialCorroboration(form({ bankProofDocumentId: "delivery-proof" })))
       .rejects.toThrow("separate from delivery");
-    m.proofFind.mockResolvedValue(null);
-    await expect(proposeAssistanceFinancialCorroboration(form())).rejects.toThrow("same private assistance case");
+    m.proofCount.mockResolvedValue(1);
+    await expect(proposeAssistanceFinancialCorroboration(form())).rejects.toThrow("Both original delivery evidence");
+    expect(m.reconcileCreate).not.toHaveBeenCalled();
+  });
+  it("refuses corroboration when the original delivery proof is no longer linked", async () => {
+    m.deliveryFind.mockResolvedValue({ ...delivery, evidenceDocumentId: null });
+    await expect(proposeAssistanceFinancialCorroboration(form()))
+      .rejects.toThrow("independently reviewed financial delivery");
+    expect(m.proofCount).not.toHaveBeenCalled();
     expect(m.reconcileCreate).not.toHaveBeenCalled();
   });
   it("blocks a withdrawn assistance approval before creating a match", async () => {

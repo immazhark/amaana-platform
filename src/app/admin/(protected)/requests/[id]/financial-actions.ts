@@ -28,10 +28,17 @@ export async function proposeAssistanceFinancialCorroboration(form: FormData) {
     const previous = await tx.assistanceFinancialReconciliation.findUnique({
       where: { deliveryRecordId: input.deliveryRecordId },
       select: { id: true, submittedById: true,
-        transactionReference: true, bankProofDocumentId: true },
+        transactionReference: true, bankProofDocumentId: true,
+        deliveryRecord: { select: {
+          assistanceRequestId: true, kind: true, amountInr: true,
+        } },
+      },
     });
     if (previous) {
-      if (previous.submittedById !== actor.id ||
+      if (previous.deliveryRecord.assistanceRequestId !== input.assistanceRequestId ||
+          previous.deliveryRecord.kind !== AssistanceDeliveryKind.FINANCIAL ||
+          previous.deliveryRecord.amountInr?.toFixed(2) !== input.matchedAmountInr ||
+          previous.submittedById !== actor.id ||
           previous.transactionReference !== input.transactionReference ||
           previous.bankProofDocumentId !== input.bankProofDocumentId) {
         throw new Error("This delivery already has a different private reconciliation. Request a review.");
@@ -59,7 +66,7 @@ export async function proposeAssistanceFinancialCorroboration(form: FormData) {
     if (!delivery || delivery.assistanceRequestId !== input.assistanceRequestId ||
         delivery.kind !== AssistanceDeliveryKind.FINANCIAL ||
         delivery.state !== AssistanceDeliveryReviewState.CONFIRMED ||
-        !delivery.amountInr ||
+        !delivery.amountInr || !delivery.evidenceDocumentId ||
         !canReportPrivateDelivery(delivery.assistanceRequest.status,
           delivery.assistanceRequest.appealId, delivery.assistanceRequest.verification)) {
       throw new Error("Only a currently approved, independently reviewed financial delivery can be corroborated.");
@@ -73,12 +80,13 @@ export async function proposeAssistanceFinancialCorroboration(form: FormData) {
     if (delivery.evidenceDocumentId === input.bankProofDocumentId) {
       throw new Error("Bank transaction proof must be separate from delivery-of-support evidence.");
     }
-    const bankProof = await tx.assistanceDocument.findFirst({
-      where: { id: input.bankProofDocumentId,
-        assistanceRequestId: input.assistanceRequestId },
-      select: { id: true },
+    const availableEvidence = await tx.assistanceDocument.count({
+      where: { assistanceRequestId: input.assistanceRequestId,
+        id: { in: [delivery.evidenceDocumentId, input.bankProofDocumentId] } },
     });
-    if (!bankProof) throw new Error("Bank proof must belong to the same private assistance case.");
+    if (availableEvidence !== 2) {
+      throw new Error("Both original delivery evidence and separate bank proof must remain in this assistance case.");
+    }
 
     const record = await tx.assistanceFinancialReconciliation.create({
       data: {

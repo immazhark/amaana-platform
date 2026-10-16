@@ -20,6 +20,7 @@ const base: Props = {
   actorId: "ordinary-viewer",
   canReview: false,
   canPropose: false,
+  caseEligible: true,
   documents: [
     { id: "delivery-proof", originalName: "delivery.pdf" },
     { id: "bank-proof", originalName: "bank.pdf" },
@@ -81,6 +82,18 @@ describe("private financial corroboration controls", () => {
     expect(html).toContain("cannot be counted as an active");
     expect(html).not.toContain("Record independent bank-proof review");
     expect(html).toContain("Void incorrect bank-proof match");
+  });
+  it("hides review if the case or one of its distinct evidence links is invalid", () => {
+    expect(render({ canReview: true, caseEligible: false }))
+      .not.toContain("Record independent bank-proof review");
+    expect(render({ canReview: true, documents: [{ id: "bank-proof", originalName: "bank.pdf" }] }))
+      .not.toContain("Record independent bank-proof review");
+    const duplicatedEvidence = render({ canReview: true,
+      delivery: { ...base.delivery, financialReconciliation: {
+        ...base.delivery.financialReconciliation!, bankProofDocumentId: "delivery-proof",
+      } },
+    });
+    expect(duplicatedEvidence).not.toContain("Record independent bank-proof review");
   });
   it("does not provide new bank-document proposal for staff without case-update permission", () => {
     const html = render({

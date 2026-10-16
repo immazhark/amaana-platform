@@ -38,12 +38,13 @@ type Props = {
   actorId: string;
   canPropose: boolean;
   canReview: boolean;
+  caseEligible: boolean;
 };
 
 /** Protected, review-gated bank-proof corroboration UI. No payment or
  * donor allocation is created; server actions enforce all access checks. */
 export function FinancialCorroborationControls({
-  caseId, delivery: item, documents, actorId, canPropose, canReview,
+  caseId, delivery: item, documents, actorId, canPropose, canReview, caseEligible,
 }: Props) {
   const evidenceNames = new Map(documents.map(document => [
     document.id, document.originalName,
@@ -75,11 +76,13 @@ export function FinancialCorroborationControls({
               Finance reviewer: {item.financialReconciliation.reviewedBy?.name ?? "authorized staff"} ·
               {" "}{item.financialReconciliation.reviewedAt.toLocaleDateString("en-IN")}
             </small>}
-            {canReview &&
+            {canReview && caseEligible &&
               item.state === "CONFIRMED" &&
               item.financialReconciliation.status === "PENDING" &&
               item.financialReconciliation.submittedById !== actorId &&
               item.reportedById !== actorId &&
+              item.evidenceDocumentId !== null && evidenceNames.has(item.evidenceDocumentId) &&
+              item.financialReconciliation.bankProofDocumentId !== item.evidenceDocumentId &&
               item.financialReconciliation.bankProofDocumentId !== null && evidenceNames.has(item.financialReconciliation.bankProofDocumentId) &&
               <form action={reviewAssistanceFinancialCorroboration} className="field">
                 <input type="hidden" name="id" value={caseId}/>
@@ -106,7 +109,7 @@ export function FinancialCorroborationControls({
                 <input type="hidden" name="state" value="VOIDED"/>
                 <button className="button secondary" type="submit">Void incorrect bank-proof match</button>
               </form>}
-          </> : canPropose && item.evidenceDocumentId &&
+          </> : canPropose && caseEligible && item.evidenceDocumentId &&
             evidenceNames.has(item.evidenceDocumentId) ? (
             <form action={proposeAssistanceFinancialCorroboration} className="field">
               <input type="hidden" name="id" value={caseId}/>
