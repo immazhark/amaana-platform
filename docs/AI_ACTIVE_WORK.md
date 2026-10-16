@@ -1,6 +1,13 @@
-## 2026-10-17 — Public assistance verification integrity (in progress)
+## 2026-10-17 — Public assistance verification integrity
 
-Ownership: CHATGPT_ACTIVE. Continuing PR #292 from verified head `008efa3bd3fd47c02fc08ab6b7716b568846f731`. Scope: fail-closed consent and Zakat review values and verification completion timestamp with focused regression coverage. No release, live data, provider, schema or configuration changes.
+Ownership: HANDOFF_PENDING. ChatGPT completed this sole-writer batch on PR #292, branch `fix/direct-transfer-feedback-20261013` (target `main`, not merged). Starting branch head `008efa3bd3fd47c02fc08ab6b7716b568846f731`; implementation `2c0509d4500ec3af1206d5845fc27f91c88704da`, tests `21d1610697b777dca40631b274b0b8849c1f5d40`, master register `8bfb582b3115fd6b3d3c99588556335afa185a66`, handoff ledger `25806b1b32dd3857d6cb320f822d7250a98606c5`.
+
+- The shared public-appeal verification gate no longer treats arbitrary strings as reviewed consent or Zakat evidence, nor malformed nonempty timestamp strings or invalid Date instances as a completed verification. The generic request approval helper uses the same timestamp boundary. Valid reviewed decisions and actual Date/ISO timestamps retain their previous behavior.
+- Updated existing AF-LOCAL/AF-CONSENT master149 evidence rows; no new register IDs, status promotions or formal closures. Counts unchanged: 60 Implemented /61 Partial /26 Not started /2 other.
+- Authored focused Vitest regression cases for all five disclosure fields, valid/invalid Zakat statuses, invalid timestamps and valid Date/ISO completions. GitHub readback confirmed source/tests. **Cases were not executed here**: previous checkout path and dependencies were absent, network git clone is unavailable in this container. No TypeScript, lint, optimized build, browser, native DB or provider verification is claimed for this batch.
+- No main merge, production deploy, payment, case mutation, schema/migration, provider activation or external messages. The fixed asset ceilings remain unchanged; bundle sizes were not remeasured. Do not claim release readiness.
+
+Next: incoming sole writer should verify the latest PR/branch head and run the focused tests, application TypeScript and changed-file lint on a hydrated checkout. If those pass, select the next independent master-register source-ready batch. Preserve the existing publication/consent and financial boundaries.
 
 ## 2026-10-17 — Reliable private proof upload lifecycle
 
