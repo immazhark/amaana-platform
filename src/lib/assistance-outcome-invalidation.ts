@@ -84,11 +84,9 @@ export async function withdrawStaleAnonymousOutcomeCopies(
       where: {
         id: disclosure.id, state: disclosure.state, updatedAt: disclosure.updatedAt,
       },
-      data: {
-        state: AssistanceOutcomeDisclosureState.WITHDRAWN,
-        ...(disclosure.state === AssistanceOutcomeDisclosureState.DRAFT
-          ? { approvedById: actorId, approvedAt: new Date() } : {}),
-      },
+      // Withdrawal is not copy approval. Retain prior approval attribution,
+      // but do not fabricate one for drafts that were never reviewed.
+      data: { state: AssistanceOutcomeDisclosureState.WITHDRAWN },
     });
     if (changed.count !== 1) {
       throw new Error("The anonymous disclosure changed during privacy invalidation.");

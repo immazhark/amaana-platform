@@ -415,16 +415,14 @@ describe("urgent assistance-staff consent takedown", () => {
     expect(m.updateMany).not.toHaveBeenCalled();
   });
 
-  it("assigns reviewer attribution when an unreviewed draft must be withdrawn", async () => {
+  it("does not invent copy-approval attribution for a withdrawn unreviewed draft", async () => {
     m.disclosureFind.mockResolvedValue({ ...disclosure, state: "DRAFT" });
     await expect(urgentlyWithdrawAnonymousOutcomeCopy(form({
       decision: "WITHDRAWN", withdrawalReason: "SOURCE_INVALIDATED",
     }))).rejects.toThrow("NAVIGATE");
     expect(m.updateMany).toHaveBeenCalledWith({
       where: { id: "disclosure-synthetic", state: "DRAFT", updatedAt: version },
-      data: {
-        state: "WITHDRAWN", approvedById: "content-reviewer", approvedAt: expect.any(Date),
-      },
+      data: { state: "WITHDRAWN" },
     });
   });
 });

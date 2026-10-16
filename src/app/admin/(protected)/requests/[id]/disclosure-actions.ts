@@ -142,8 +142,9 @@ export async function reviewAnonymousOutcomeCopy(form: FormData) {
       where: { id: item.id, state: item.state, updatedAt: input.expectedUpdatedAt },
       data: {
         state: input.decision,
-        // Do not erase original copy approval attribution on withdrawal.
-        ...(item.state === AssistanceOutcomeDisclosureState.DRAFT
+        // Only an actual approval records approver identity. A withdrawn
+        // unapproved draft is attributed through its audit event instead.
+        ...(input.decision === AssistanceOutcomeDisclosureState.APPROVED_COPY
           ? { approvedById: actor.id, approvedAt: new Date() } : {}),
       },
     });
@@ -294,11 +295,7 @@ export async function urgentlyWithdrawAnonymousOutcomeCopy(form: FormData) {
       where: {
         id: item.id, state: item.state, updatedAt: input.expectedUpdatedAt,
       },
-      data: {
-        state: AssistanceOutcomeDisclosureState.WITHDRAWN,
-        ...(item.state === AssistanceOutcomeDisclosureState.DRAFT
-          ? { approvedById: actor.id, approvedAt: new Date() } : {}),
-      },
+      data: { state: AssistanceOutcomeDisclosureState.WITHDRAWN },
     });
     if (changed.count !== 1) {
       throw new Error("Another reviewer modified this copy. Reload the case.");

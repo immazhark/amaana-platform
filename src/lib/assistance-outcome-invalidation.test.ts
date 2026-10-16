@@ -106,15 +106,13 @@ describe("transactional invalidation of anonymous public outcomes", () => {
     )).toBe(1);
   });
 
-  it("retires unreviewed draft copies with reviewer attribution, without claiming publication", async () => {
+  it("retires unapproved drafts without inventing approval attribution", async () => {
     m.find.mockResolvedValue([{ ...published, state: "DRAFT", consentDocumentId: null }]);
     expect(await withdrawStaleAnonymousOutcomeCopies(
       db, "case-private", "staff-private", "VERIFICATION_CHANGED",
     )).toBe(1);
     expect(m.update).toHaveBeenCalledWith(expect.objectContaining({
-      data: {
-        state: "WITHDRAWN", approvedById: "staff-private", approvedAt: expect.any(Date),
-      },
+      data: { state: "WITHDRAWN" },
     }));
   });
 
