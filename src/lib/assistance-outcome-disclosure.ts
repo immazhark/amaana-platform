@@ -1,3 +1,4 @@
+import { singleFormValue } from "./single-form-value";
 import {
   AssistanceOutcomeDisclosureState, AssistanceOutcomeKind,
   AssistanceOutcomeReviewState, ConfidentialityLevel, type Prisma,
@@ -7,7 +8,7 @@ import { hasCurrentPrivateOutcomeEvidence } from "./assistance-outcome";
 const validId = /^[A-Za-z0-9_-]{3,128}$/;
 const strictIso = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 function getText(form: FormData, name: string, max: number) {
-  const value = form.get(name);
+  const value = singleFormValue(form, name);
   if (typeof value !== "string" || value.length > max) throw new Error(`Invalid ${name}.`);
   return value.trim();
 }
@@ -61,7 +62,7 @@ export function parseDisclosureProposal(form: FormData) {
 export function parseDisclosurePublication(form: FormData) {
   const caseId = getId(form, "id");
   const disclosureId = getId(form, "disclosureId");
-  if (getText(form, "publicationAttested", 3) !== "yes") {
+  if (singleFormValue(form, "publicationAttested") !== "yes") {
     throw new Error("Explicitly confirm the precise anonymous wording and active consent before publication.");
   }
   return {
@@ -88,8 +89,9 @@ export function parseDisclosureDecision(form: FormData) {
       getText(form, "consentReviewAttested", 3) !== "yes") {
     throw new Error("The approver must review the actual consent document and exact copy.");
   }
-  const reason = decision === AssistanceOutcomeDisclosureState.WITHDRAWN
-    ? getText(form, "withdrawalReason", 30) : "";
+  const rawReason = decision === AssistanceOutcomeDisclosureState.WITHDRAWN
+    ? singleFormValue(form, "withdrawalReason") : "";
+  const reason = typeof rawReason === "string" && rawReason.length <= 30 ? rawReason.trim() : "";
   if (decision === AssistanceOutcomeDisclosureState.WITHDRAWN &&
       !Object.prototype.hasOwnProperty.call(ANONYMOUS_COPY_WITHDRAWAL_REASONS, reason)) {
     throw new Error("Choose why the anonymous-copy proposal is being withdrawn.");

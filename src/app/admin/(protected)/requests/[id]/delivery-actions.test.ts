@@ -261,3 +261,10 @@ describe("private delivery reporting and independent evidence confirmation", () 
     expect(m.transaction).not.toHaveBeenCalled();
   });
 });
+
+
+it.each(["id", "recordId", "evidenceDocumentId", "expectedRecordUpdatedAt"])("rejects repeated %s when linking later private proof", async key => {
+  const data = form(); data.append(key, String(data.get(key)));
+  await expect(linkAssistanceDeliveryEvidence(data)).rejects.toThrow("Repeated");
+  expect(m.transaction).not.toHaveBeenCalled(); expect(m.document).not.toHaveBeenCalled();
+});

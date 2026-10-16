@@ -176,19 +176,19 @@ describe("assistance post-commit refresh", () => {
     mocks.auditCreate.mockResolvedValue({ id: "audit" });
   });
   const assignment = () => form({ id: "request-synthetic", assignedToId: "", expectedUpdatedAt: "2026-10-15T00:00:00.000Z" });
-  it.each(["/admin/requests/request-synthetic", "/admin"])("keeps an audited assignment committed when refreshing %s fails", async failedPath => {
+  it.each(["/admin/requests/request-synthetic", "/admin", "/impact"])("keeps an audited assignment committed when refreshing %s fails", async failedPath => {
     mocks.revalidate.mockImplementation(path => { if (path === failedPath) throw new Error("cache service unavailable"); });
     mocks.redirect.mockImplementation(() => { throw new Error("NEXT_REDIRECT"); });
     await expect(assignRequest(assignment())).rejects.toThrow("NEXT_REDIRECT");
     expect(mocks.transaction).toHaveBeenCalledOnce(); expect(mocks.requestUpdateMany).toHaveBeenCalledOnce();
     expect(mocks.auditCreate).toHaveBeenCalledOnce();
-    expect(mocks.revalidate.mock.calls.map(call => call[0])).toEqual(["/admin/requests/request-synthetic", "/admin"]);
+    expect(mocks.revalidate.mock.calls.map(call => call[0])).toEqual(["/admin/requests/request-synthetic", "/admin", "/impact"]);
     expect(mocks.redirect).toHaveBeenCalledWith("/admin/requests/request-synthetic");
     expect(mocks.auditCreate.mock.invocationCallOrder[0]).toBeLessThan(mocks.revalidate.mock.invocationCallOrder[0]!);
   });
-  it("keeps the normal action response when both views refresh", async () => {
+  it("keeps the normal action response when all dependent views refresh", async () => {
     await assignRequest(assignment());
-    expect(mocks.revalidate).toHaveBeenCalledTimes(2); expect(mocks.redirect).not.toHaveBeenCalled();
+    expect(mocks.revalidate).toHaveBeenCalledTimes(3); expect(mocks.redirect).not.toHaveBeenCalled();
   });
   it("does not refresh or redirect after a transaction failure", async () => {
     mocks.transaction.mockRejectedValueOnce(new Error("transaction failed"));
@@ -250,5 +250,32 @@ describe("terminal assistance case task lifecycle", () => {
     await expect(updateRequest(close())).rejects.toThrow("Follow-up tasks changed");
     expect(mocks.notificationCreate).not.toHaveBeenCalled();
     expect(mocks.revalidate).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("unambiguous case verification fields", () => {
+  const values: Record<string, string> = {
+    id: "request-1", expectedRequestUpdatedAt: "2026-10-16T08:00:00.000Z", expectedVerificationUpdatedAt: "",
+    needConfirmed: "", evidenceReviewed: "", otherFundingChecked: "", verifiedNeedAmount: "1000", approvedPublicTarget: "",
+    paymentDestination: "Verified institution", otherFundingNotes: "", verificationSummary: "Evidence reviewed and need verified.",
+    decision: "PENDING", confidentialityLevel: "CONFIDENTIAL", publicNameConsent: "UNCONFIRMED", photoConsent: "UNCONFIRMED",
+    medicalDetailsConsent: "UNCONFIRMED", institutionNameConsent: "UNCONFIRMED", archiveConsent: "UNCONFIRMED", zakatStatus: "UNREVIEWED", markComplete: "",
+  };
+  beforeEach(() => {
+    vi.resetAllMocks(); mocks.requirePermission.mockResolvedValue({ id: "reviewer" });
+    mocks.hasPermission.mockReturnValue(true);
+    mocks.requestFind.mockResolvedValue({ id: "request-1", status: "SUBMITTED", appealId: null, verification: null });
+  });
+  it.each(Object.keys(values))("rejects repeated verification %s before mutation", async key => {
+    const data = form(values); data.append(key, values[key]!);
+    await expect(saveVerification(data)).rejects.toThrow("Repeated");
+    expect(mocks.transaction).not.toHaveBeenCalled(); expect(mocks.verificationUpsert).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+  it.each([assignRequest, updateRequest, convertToAppeal])("rejects repeated case identity before reading or mutating records", async action => {
+    const data = form({ id: "request-1" }); data.append("id", "another-case");
+    await expect(action(data)).rejects.toThrow("Repeated");
+    expect(mocks.requestFind).not.toHaveBeenCalled(); expect(mocks.transaction).not.toHaveBeenCalled();
   });
 });

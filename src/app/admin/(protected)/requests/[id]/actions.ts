@@ -1,5 +1,6 @@
 "use server";
 
+import { singleFormValue } from "@/lib/single-form-value";
 import {
   AppealCategory,
   AssistanceStatus,
@@ -83,11 +84,11 @@ function getGeneralVerificationIssues(input: {
 
 export async function saveVerification(formData: FormData) {
   const user = await requirePermission("assistance.update");
-  const id = String(formData.get("id") ?? "");
-  const expectedRequestUpdatedAtRaw = String(formData.get("expectedRequestUpdatedAt") ?? "");
+  const id = String(singleFormValue(formData, "id") ?? "");
+  const expectedRequestUpdatedAtRaw = String(singleFormValue(formData, "expectedRequestUpdatedAt") ?? "");
   const expectedRequestUpdatedAt = new Date(expectedRequestUpdatedAtRaw);
   if (!expectedRequestUpdatedAtRaw || Number.isNaN(expectedRequestUpdatedAt.getTime())) throw new Error("Request edit version is missing or invalid. Refresh before saving verification.");
-  const expectedVerificationUpdatedAtRaw = String(formData.get("expectedVerificationUpdatedAt") ?? "");
+  const expectedVerificationUpdatedAtRaw = String(singleFormValue(formData, "expectedVerificationUpdatedAt") ?? "");
   const expectedVerificationUpdatedAt = expectedVerificationUpdatedAtRaw ? new Date(expectedVerificationUpdatedAtRaw) : null;
   if (expectedVerificationUpdatedAtRaw && Number.isNaN(expectedVerificationUpdatedAt!.getTime())) throw new Error("Verification edit version is invalid. Refresh before saving.");
   const request = await prisma.assistanceRequest.findUniqueOrThrow({
@@ -96,23 +97,23 @@ export async function saveVerification(formData: FormData) {
   });
   if (request.appealId || request.status === AssistanceStatus.CONVERTED_TO_APPEAL) throw new Error("Verification is locked after conversion to an appeal");
 
-  const needConfirmed = formData.get("needConfirmed") === "on";
-  const evidenceReviewed = formData.get("evidenceReviewed") === "on";
-  const otherFundingChecked = formData.get("otherFundingChecked") === "on";
-  const verifiedNeedAmount = optionalPositiveAmount(formData.get("verifiedNeedAmount"), "Verified need amount");
-  const approvedPublicTarget = optionalPositiveAmount(formData.get("approvedPublicTarget"), "Approved public target");
-  const paymentDestination = String(formData.get("paymentDestination") ?? "").trim();
-  const otherFundingNotes = String(formData.get("otherFundingNotes") ?? "").trim();
-  const verificationSummary = String(formData.get("verificationSummary") ?? "").trim();
-  const decision = requiredEnum<AssistanceVerificationDecision>(formData.get("decision"), verificationDecisions, "verification decision");
-  const confidentialityLevel = requiredEnum<ConfidentialityLevel>(formData.get("confidentialityLevel"), confidentialityLevels, "confidentiality level");
-  const publicNameConsent = requiredEnum<ConsentDecision>(formData.get("publicNameConsent"), consentDecisions, "public-name consent");
-  const photoConsent = requiredEnum<ConsentDecision>(formData.get("photoConsent"), consentDecisions, "photo consent");
-  const medicalDetailsConsent = requiredEnum<ConsentDecision>(formData.get("medicalDetailsConsent"), consentDecisions, "medical-details consent");
-  const institutionNameConsent = requiredEnum<ConsentDecision>(formData.get("institutionNameConsent"), consentDecisions, "institution-name consent");
-  const archiveConsent = requiredEnum<ConsentDecision>(formData.get("archiveConsent"), consentDecisions, "archive consent");
-  const zakatStatus = requiredEnum<ZakatReviewStatus>(formData.get("zakatStatus"), zakatStatuses, "Zakat review status");
-  const markComplete = formData.get("markComplete") === "on";
+  const needConfirmed = singleFormValue(formData, "needConfirmed") === "on";
+  const evidenceReviewed = singleFormValue(formData, "evidenceReviewed") === "on";
+  const otherFundingChecked = singleFormValue(formData, "otherFundingChecked") === "on";
+  const verifiedNeedAmount = optionalPositiveAmount(singleFormValue(formData, "verifiedNeedAmount"), "Verified need amount");
+  const approvedPublicTarget = optionalPositiveAmount(singleFormValue(formData, "approvedPublicTarget"), "Approved public target");
+  const paymentDestination = String(singleFormValue(formData, "paymentDestination") ?? "").trim();
+  const otherFundingNotes = String(singleFormValue(formData, "otherFundingNotes") ?? "").trim();
+  const verificationSummary = String(singleFormValue(formData, "verificationSummary") ?? "").trim();
+  const decision = requiredEnum<AssistanceVerificationDecision>(singleFormValue(formData, "decision"), verificationDecisions, "verification decision");
+  const confidentialityLevel = requiredEnum<ConfidentialityLevel>(singleFormValue(formData, "confidentialityLevel"), confidentialityLevels, "confidentiality level");
+  const publicNameConsent = requiredEnum<ConsentDecision>(singleFormValue(formData, "publicNameConsent"), consentDecisions, "public-name consent");
+  const photoConsent = requiredEnum<ConsentDecision>(singleFormValue(formData, "photoConsent"), consentDecisions, "photo consent");
+  const medicalDetailsConsent = requiredEnum<ConsentDecision>(singleFormValue(formData, "medicalDetailsConsent"), consentDecisions, "medical-details consent");
+  const institutionNameConsent = requiredEnum<ConsentDecision>(singleFormValue(formData, "institutionNameConsent"), consentDecisions, "institution-name consent");
+  const archiveConsent = requiredEnum<ConsentDecision>(singleFormValue(formData, "archiveConsent"), consentDecisions, "archive consent");
+  const zakatStatus = requiredEnum<ZakatReviewStatus>(singleFormValue(formData, "zakatStatus"), zakatStatuses, "Zakat review status");
+  const markComplete = singleFormValue(formData, "markComplete") === "on";
 
   if (paymentDestination.length > ASSISTANCE_PAYMENT_DESTINATION_MAX_LENGTH) throw new Error("Payment destination is too long");
   if (otherFundingNotes.length > ASSISTANCE_OTHER_FUNDING_NOTES_MAX_LENGTH) throw new Error("Other-funding notes are too long");
@@ -229,12 +230,12 @@ export async function saveVerification(formData: FormData) {
 
 export async function updateRequest(formData: FormData) {
   const user = await requirePermission("assistance.update");
-  const id = String(formData.get("id"));
-  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "");
+  const id = String(singleFormValue(formData, "id"));
+  const expectedUpdatedAtRaw = String(singleFormValue(formData, "expectedUpdatedAt") ?? "");
   const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
   if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Request edit version is missing or invalid. Refresh before saving.");
-  const status = String(formData.get("status")) as AssistanceStatus;
-  const internalNotes = String(formData.get("internalNotes") ?? "").trim();
+  const status = String(singleFormValue(formData, "status")) as AssistanceStatus;
+  const internalNotes = String(singleFormValue(formData, "internalNotes") ?? "").trim();
   if (!statuses.has(status)) throw new Error("Invalid status");
   if (internalNotes.length > ASSISTANCE_INTERNAL_NOTES_MAX_LENGTH) throw new Error("Internal notes are too long");
   const previous = await prisma.assistanceRequest.findUniqueOrThrow({
@@ -303,9 +304,9 @@ export async function updateRequest(formData: FormData) {
 
 export async function assignRequest(formData: FormData) {
   const user = await requirePermission("assistance.assign");
-  const id = String(formData.get("id"));
-  const assignedToId = String(formData.get("assignedToId") || "");
-  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "");
+  const id = String(singleFormValue(formData, "id"));
+  const assignedToId = String(singleFormValue(formData, "assignedToId") || "");
+  const expectedUpdatedAtRaw = String(singleFormValue(formData, "expectedUpdatedAt") ?? "");
   const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
   if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Assignment version is missing or invalid. Refresh before assigning.");
   await withSerializableTransactionRetry(async tx => {
@@ -349,16 +350,16 @@ export async function assignRequest(formData: FormData) {
 export async function convertToAppeal(formData: FormData) {
   const user = await requirePermission("appeal.create");
   if (!hasPermission(user, "assistance.view") || !hasPermission(user, "assistance.update")) redirect("/admin/forbidden");
-  const id = String(formData.get("id"));
-  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "");
+  const id = String(singleFormValue(formData, "id"));
+  const expectedUpdatedAtRaw = String(singleFormValue(formData, "expectedUpdatedAt") ?? "");
   const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
   if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Conversion version is missing or invalid. Refresh before creating the appeal.");
-  const expectedVerificationUpdatedAtRaw = String(formData.get("expectedVerificationUpdatedAt") ?? "");
+  const expectedVerificationUpdatedAtRaw = String(singleFormValue(formData, "expectedVerificationUpdatedAt") ?? "");
   const expectedVerificationUpdatedAt = new Date(expectedVerificationUpdatedAtRaw);
   if (!expectedVerificationUpdatedAtRaw || Number.isNaN(expectedVerificationUpdatedAt.getTime())) throw new Error("Verification version is missing or invalid. Refresh before creating the appeal.");
-  const title = String(formData.get("title") ?? "").trim();
-  const publicSummary = String(formData.get("publicSummary") ?? "").trim();
-  const publicStory = String(formData.get("publicStory") ?? "").trim();
+  const title = String(singleFormValue(formData, "title") ?? "").trim();
+  const publicSummary = String(singleFormValue(formData, "publicSummary") ?? "").trim();
+  const publicStory = String(singleFormValue(formData, "publicStory") ?? "").trim();
   if (title.length < 8 || publicSummary.length < 20 || publicStory.length < 40) throw new Error("A public title, privacy-safe summary and privacy-safe story are required");
 
   await withSerializableTransactionRetry(async tx => {

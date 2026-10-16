@@ -1,3 +1,4 @@
+import { singleFormValue } from "./single-form-value";
 import { AssistanceDeliveryKind, AssistanceDeliveryReviewState, AssistanceVerificationDecision } from "@prisma/client";
 import { indiaCalendarDay, shiftedCalendarDay } from "./assistance-follow-up";
 
@@ -7,7 +8,7 @@ const iso = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 const dayPattern = /^\d{4}-\d{2}-\d{2}$/;
 const unsafe = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 const text = (form: FormData, name: string, limit = 300) => {
-  const value = form.get(name);
+  const value = singleFormValue(form, name);
   if (typeof value !== "string" || value.length > limit || unsafe.test(value)) {
     throw new Error(`Invalid ${name}.`);
   }
@@ -79,7 +80,7 @@ export function parseDeliveryReview(form: FormData) {
     throw new Error("Choose an allowed delivery review action.");
   }
   if (state === AssistanceDeliveryReviewState.CONFIRMED &&
-      form.get("evidenceAttested") !== "yes") {
+      singleFormValue(form, "evidenceAttested") !== "yes") {
     throw new Error("Confirm that you personally reviewed the delivery evidence.");
   }
   return { id, recordId, state: state as "CONFIRMED" | "VOIDED",

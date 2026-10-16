@@ -1,5 +1,6 @@
 "use server";
 
+import { singleFormValue } from "@/lib/single-form-value";
 import { AssistanceDeliveryReviewState } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -158,10 +159,10 @@ export async function reviewAssistanceDelivery(form: FormData) {
 export async function linkAssistanceDeliveryEvidence(form: FormData) {
   const actor = await requirePermission("assistance.update");
   if (!hasPermission(actor, "assistance.view")) throw new Error("Case-view permission is required.");
-  const idValue = form.get("id");
-  const recordValue = form.get("recordId");
-  const docValue = form.get("evidenceDocumentId");
-  const versionValue = form.get("expectedRecordUpdatedAt");
+  const idValue = singleFormValue(form, "id");
+  const recordValue = singleFormValue(form, "recordId");
+  const docValue = singleFormValue(form, "evidenceDocumentId");
+  const versionValue = singleFormValue(form, "expectedRecordUpdatedAt");
   const validId = (value: unknown): value is string =>
     typeof value === "string" && /^[a-zA-Z0-9_-]{3,128}$/.test(value);
   if (!validId(idValue) || !validId(recordValue) || !validId(docValue) ||

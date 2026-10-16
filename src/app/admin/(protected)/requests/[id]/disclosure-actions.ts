@@ -1,5 +1,6 @@
 "use server";
 
+import { singleFormValue } from "@/lib/single-form-value";
 import { AssistanceOutcomeDisclosureState } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -261,7 +262,7 @@ export async function publishAnonymousOutcomeCopy(form: FormData) {
  * Recheck live evidence and withdraw only stale copy. Never republish. */
 export async function reconcileAnonymousOutcomeDisclosures(form: FormData) {
   const actor = await requireAnonymousDisclosureApprover();
-  const value = form.get("id");
+  const value = singleFormValue(form, "id");
   if (typeof value !== "string" || !/^[a-zA-Z0-9_-]{3,128}$/.test(value)) {
     throw new Error("Invalid assistance case reference.");
   }

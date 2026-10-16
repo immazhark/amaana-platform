@@ -1,3 +1,4 @@
+import { singleFormValue } from "./single-form-value";
 import {
   AssistanceDeliveryKind, AssistanceDeliveryReviewState,
   AssistanceFinancialReconciliationState, AssistanceOutcomeKind,
@@ -23,7 +24,7 @@ const strictIso = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 const controls = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 
 function required(form: FormData, key: string, max: number) {
-  const value = form.get(key);
+  const value = singleFormValue(form, key);
   if (typeof value !== "string" || value.length > max || controls.test(value)) {
     throw new Error(`Invalid ${key}.`);
   }

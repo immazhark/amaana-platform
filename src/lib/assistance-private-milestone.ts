@@ -1,3 +1,4 @@
+import { singleFormValue } from "./single-form-value";
 /** Internal assistance case notes. Never use this audit metadata as public
  * appeal copy, a medical fact, an approval or an applicant notification. */
 export const PRIVATE_MILESTONE_ACTION = "assistance.private_milestone_added" as const;
@@ -16,11 +17,11 @@ const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{1
 const unsafe = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 
 export function parsePrivateMilestoneInput(data: FormData) {
-  const id = data.get("id");
-  const kind = data.get("kind");
-  const summary = data.get("summary");
-  const submissionId = data.get("submissionId");
-  const updatedAt = data.get("expectedUpdatedAt");
+  const id = singleFormValue(data, "id");
+  const kind = singleFormValue(data, "kind");
+  const summary = singleFormValue(data, "summary");
+  const submissionId = singleFormValue(data, "submissionId");
+  const updatedAt = singleFormValue(data, "expectedUpdatedAt");
   if (typeof id !== "string" || !id || id.length > 128 || unsafe.test(id)) {
     throw new Error("Invalid case reference.");
   }
@@ -75,9 +76,9 @@ export const PRIVATE_MILESTONE_REDACTION_REASONS = {
 export type PrivateMilestoneRedactionReason = keyof typeof PRIVATE_MILESTONE_REDACTION_REASONS;
 
 export function parsePrivateMilestoneRedaction(form: FormData) {
-  const id = form.get("id");
-  const targetId = form.get("targetId");
-  const reason = form.get("reason");
+  const id = singleFormValue(form, "id");
+  const targetId = singleFormValue(form, "targetId");
+  const reason = singleFormValue(form, "reason");
   if (typeof id !== "string" || !id || id.length > 128 || unsafe.test(id) ||
       typeof targetId !== "string" || !targetId || targetId.length > 128 || unsafe.test(targetId)) {
     throw new Error("The private follow-up reference is invalid.");

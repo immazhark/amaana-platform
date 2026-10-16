@@ -463,3 +463,10 @@ describe("urgent assistance-staff consent takedown", () => {
     });
   });
 });
+
+
+it("rejects repeated case identity before reconciling anonymous disclosures", async () => {
+  const data = form(); data.append("id", "another-case");
+  await expect(reconcileAnonymousOutcomeDisclosures(data)).rejects.toThrow("Repeated");
+  expect(m.transaction).not.toHaveBeenCalled(); expect(m.invalidate).not.toHaveBeenCalled();
+});

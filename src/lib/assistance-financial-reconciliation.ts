@@ -1,3 +1,4 @@
+import { singleFormValue } from "./single-form-value";
 import { AssistanceFinancialReconciliationState } from "@prisma/client";
 
 const privateId = /^[a-zA-Z0-9_-]{3,128}$/;
@@ -5,7 +6,7 @@ const bankRef = /^[A-Z0-9/-]{8,64}$/;
 const iso = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
 
 function text(form: FormData, field: string, max: number): string {
-  const candidate = form.get(field);
+  const candidate = singleFormValue(form, field);
   if (typeof candidate !== "string" || candidate.length > max) {
     throw new Error(`Invalid ${field}.`);
   }

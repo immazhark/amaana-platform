@@ -1,3 +1,4 @@
+import { singleFormValue } from "./single-form-value";
 import { AssistanceFollowUpState, type Prisma } from "@prisma/client";
 
 export const FOLLOW_UP_SUMMARY_LIMIT = 300;
@@ -47,7 +48,7 @@ export function parseCalendarDay(value: unknown, today: string): Date {
 }
 
 function requiredString(form: FormData, name: string, max: number): string {
-  const raw = form.get(name);
+  const raw = singleFormValue(form, name);
   if (typeof raw !== "string" || raw.length > max || unsafeControl.test(raw)) {
     throw new Error(`Invalid ${name}.`);
   }
@@ -68,7 +69,7 @@ export function parseFollowUpCreation(form: FormData, today: string) {
   if (!caseIdPattern.test(assignedToId)) throw new Error("Choose an eligible follow-up owner.");
   const summary = requiredString(form, "summary", FOLLOW_UP_SUMMARY_LIMIT).trim();
   if (summary.length < 12) throw new Error("Follow-up summary must contain at least 12 characters.");
-  const dueOn = parseCalendarDay(form.get("dueOn"), today);
+  const dueOn = parseCalendarDay(singleFormValue(form, "dueOn"), today);
   const version = requiredString(form, "expectedUpdatedAt", 32);
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(version) ||
       Number.isNaN(Date.parse(version)) || new Date(version).toISOString() !== version) {
@@ -98,7 +99,7 @@ export function parseFollowUpReschedule(form: FormData, today: string) {
   const id = requestId(form);
   const taskId = requiredString(form, "taskId", 128);
   if (!caseIdPattern.test(taskId)) throw new Error("Invalid follow-up reference.");
-  const dueOn = parseCalendarDay(form.get("dueOn"), today);
+  const dueOn = parseCalendarDay(singleFormValue(form, "dueOn"), today);
   const version = requiredString(form, "expectedTaskUpdatedAt", 32);
   if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(version) ||
       Number.isNaN(Date.parse(version)) || new Date(version).toISOString() !== version) {
