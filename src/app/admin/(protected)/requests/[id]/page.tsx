@@ -33,7 +33,7 @@ export default async function RequestDetailPage({ params }: Props) {
       select: { id: true, name: true },
       orderBy: [{ name: "asc" }, { id: "asc" }],
     }),
-    prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, select: { id: true, action: true, createdAt: true, actor: { select: { name: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }] }),
+    prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, select: { id: true, action: true, createdAt: true, actor: { select: { name: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 50 }),
   ]);
   if (!request) notFound();
 
@@ -152,7 +152,10 @@ export default async function RequestDetailPage({ params }: Props) {
 
         <section className="card">
           <h2>Audit history</h2>
-          {history.length ? <ol className="history">{history.map(event => <li key={event.id}><strong>{event.action.replaceAll("_", " ")}</strong><span>{event.actor.name} · {event.createdAt.toLocaleString("en-IN")}</span></li>)}</ol> : <p className="muted">No changes recorded yet.</p>}
+          {history.length ? <>
+            <p className="muted">Latest {history.length} recorded events (maximum 50 shown). Older events remain in the restricted audit history.</p>
+            <ol className="history">{history.map(event => <li key={event.id}><strong>{event.action.replaceAll("_", " ")}</strong><span>{event.actor.name} · {event.createdAt.toLocaleString("en-IN")}</span></li>)}</ol>
+          </> : <p className="muted">No changes recorded yet.</p>}
         </section>
       </div>
 

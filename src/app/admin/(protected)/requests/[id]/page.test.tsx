@@ -33,6 +33,7 @@ describe("private assistance detail projections", () => {
     expect(m.history).toHaveBeenCalledWith(expect.objectContaining({
       where: { entityType: "AssistanceRequest", entityId: "case-synthetic" },
       select: { id: true, action: true, createdAt: true, actor: { select: { name: true } } },
+      take: 50,
     }));
     expect(m.request.mock.calls[0]?.[0].include).toEqual({
       documents: true, appeal: { select: { title: true, status: true } },
