@@ -16,10 +16,18 @@ export function SiteMotion() {
   const pathname = usePathname();
   useSiteScroll(pathname);
   useEffect(() => {
-    if (!pathname) return;
+    if (!pathname || pathname.startsWith("/admin") || typeof window.matchMedia !== "function") return;
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const running = new Map<HTMLElement, Playback>();
     const owned = new Set<HTMLElement>();
+    const originals = new Map<HTMLElement, { translate: string; scale: string; opacity: string }>();
+    const own = (element: HTMLElement) => {
+      if (owned.has(element)) return;
+      originals.set(element, {
+        translate: element.style.translate, scale: element.style.scale, opacity: element.style.opacity,
+      });
+      owned.add(element);
+    };
     let pointerOwner: HTMLElement | null = null;
     const keyOwners = new Map<string, HTMLElement>();
     const isPressed = (element: HTMLElement) => pointerOwner === element || [...keyOwners.values()].includes(element);
@@ -27,12 +35,18 @@ export function SiteMotion() {
     const clear = (element: HTMLElement) => {
       running.get(element)?.cancel();
       running.delete(element);
-      element.style.translate = element.style.scale = element.style.opacity = "";
+      const original = originals.get(element);
+      if (original) {
+        element.style.translate = original.translate;
+        element.style.scale = original.scale;
+        element.style.opacity = original.opacity;
+      }
+      originals.delete(element);
       owned.delete(element);
     };
     const feedback = (element: HTMLElement, pressed = false) => {
       if (preference.matches) { clear(element); return; }
-      if (disposed || !element.isConnected) return;
+      if (disposed || !element.isConnected || typeof element.animate !== "function") return;
       // Snapshot the displayed frame before cancelling a running animation.
       // Otherwise rapid hover/press transitions jump back to the base style.
       const rendered = getComputedStyle(element);
@@ -40,13 +54,19 @@ export function SiteMotion() {
       const fromScale = rendered.scale;
       running.get(element)?.cancel();
       const raised = element.matches(":hover, :focus-visible");
-      owned.add(element);
+      own(element);
       const endTranslate = raised && !pressed ? "0 -1px" : "0 0px";
       const endScale = pressed ? "0.98" : "1";
-      const animation = element.animate({
-        translate: [fromTranslate, endTranslate],
-        scale: [fromScale, endScale],
-      }, { duration: pressed ? 100 : 220, easing, fill: "forwards" });
+      let animation: Playback;
+      try {
+        animation = element.animate({
+          translate: [fromTranslate, endTranslate],
+          scale: [fromScale, endScale],
+        }, { duration: pressed ? 100 : 220, easing, fill: "forwards" });
+      } catch {
+        clear(element);
+        return;
+      }
       running.set(element, animation);
       void animation.finished.then(() => {
         if (running.get(element) !== animation) return;
@@ -63,7 +83,7 @@ export function SiteMotion() {
       return element && !element.matches(":disabled, [aria-disabled='true']") ? element : null;
     };
     const hover = (event: Event) => {
-      if (event instanceof PointerEvent && event.pointerType !== "mouse") return;
+      if (typeof PointerEvent !== "undefined" && event instanceof PointerEvent && event.pointerType !== "mouse") return;
       const element = target(event);
       if (!element) return;
       const related = (event as PointerEvent | FocusEvent).relatedTarget;
@@ -71,7 +91,7 @@ export function SiteMotion() {
       feedback(element, isPressed(element));
     };
     const press = (event: Event) => {
-      if (event instanceof PointerEvent) {
+      if (typeof PointerEvent !== "undefined" && event instanceof PointerEvent) {
         if (event.type === "pointerdown") {
           if (event.button !== 0 || !event.isPrimary) return;
           const previous = pointerOwner;
@@ -84,7 +104,7 @@ export function SiteMotion() {
           pointerOwner = null;
           if (element) feedback(element, isPressed(element));
         }
-      } else if (event instanceof KeyboardEvent) {
+      } else if (typeof KeyboardEvent !== "undefined" && event instanceof KeyboardEvent) {
         if (event.repeat || !["Enter", " "].includes(event.key)) return;
         if (event.type === "keydown") {
           const element = target(event);
@@ -96,26 +116,35 @@ export function SiteMotion() {
         }
       }
     };
-    const observer = new IntersectionObserver(entries => {
+    // Introductory motion is optional. When IO or Web Animations is missing,
+    // section headings remain fully visible and usable without polyfills.
+    const observer = typeof IntersectionObserver === "undefined" ? null : new IntersectionObserver(entries => {
       for (const entry of entries) {
         if (!entry.isIntersecting || !(entry.target instanceof HTMLElement)) continue;
         const element = entry.target;
-        observer.unobserve(element);
-        if (preference.matches || entry.boundingClientRect.top < 80 || disposed || !element.isConnected) continue;
-        owned.add(element);
-        const animation = element.animate({ opacity: [0.86, 1], translate: ["0 8px", "0 0px"] }, { duration: 380, easing, fill: "forwards" });
+        observer?.unobserve(element);
+        if (preference.matches || entry.boundingClientRect.top < 80 ||
+            disposed || !element.isConnected || typeof element.animate !== "function") continue;
+        own(element);
+        let animation: Playback;
+        try {
+          animation = element.animate(
+            { opacity: [0.86, 1], translate: ["0 8px", "0 0px"] },
+            { duration: 380, easing, fill: "forwards" },
+          );
+        } catch {
+          clear(element);
+          continue;
+        }
         running.set(element, animation);
         void animation.finished.then(() => {
           if (running.get(element) === animation) clear(element);
         }).catch(() => {});
-
       }
     }, { threshold: 0.12 });
-    if (!pathname.startsWith("/admin")) {
-      const main = document.getElementById("main");
-      if (main) for (const element of main.querySelectorAll<HTMLElement>(introductions)) {
-        observer.observe(element);
-      }
+    const main = document.getElementById("main");
+    if (observer && main) {
+      for (const element of main.querySelectorAll<HTMLElement>(introductions)) observer.observe(element);
     }
     const reset = () => {
       if (!preference.matches) return;
@@ -132,12 +161,14 @@ export function SiteMotion() {
     };
     for (const event of hoverEvents) document.addEventListener(event, hover);
     for (const event of pressEvents) document.addEventListener(event, press);
-    preference.addEventListener("change", reset);
+    if (typeof preference.addEventListener === "function") preference.addEventListener("change", reset);
+    else preference.addListener(reset);
     window.addEventListener("blur", release);
     return () => {
       disposed = true;
-      observer.disconnect();
-      preference.removeEventListener("change", reset);
+      observer?.disconnect();
+      if (typeof preference.removeEventListener === "function") preference.removeEventListener("change", reset);
+      else preference.removeListener(reset);
       window.removeEventListener("blur", release);
       for (const event of hoverEvents) document.removeEventListener(event, hover);
       for (const event of pressEvents) document.removeEventListener(event, press);
