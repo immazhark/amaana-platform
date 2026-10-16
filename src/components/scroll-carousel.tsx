@@ -80,14 +80,19 @@ export function ScrollCarousel({
   }, [slideCount]);
 
   useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sync = () => {
       prefersReducedMotion.current = media.matches;
       setReducedMotion(media.matches);
     };
     sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", sync);
+      return () => media.removeEventListener("change", sync);
+    }
+    media.addListener(sync);
+    return () => media.removeListener(sync);
   }, []);
 
   const updateActiveFromScroll = useCallback(() => {
@@ -117,10 +122,15 @@ export function ScrollCarousel({
   useEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
-    const observer = new ResizeObserver(() => {
+    const alignSelected = () => {
       const slide = slideRefs.current[activeIndexRef.current];
       if (slide) viewport.scrollTo({ left: slide.offsetLeft, behavior: "auto" });
-    });
+    };
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", alignSelected);
+      return () => window.removeEventListener("resize", alignSelected);
+    }
+    const observer = new ResizeObserver(alignSelected);
     observer.observe(viewport);
     return () => observer.disconnect();
   }, []);
@@ -231,14 +241,27 @@ export function ScrollCarousel({
           // Clear stale drag suppression before testing interactive descendants.
           // If a drag ends without dispatching a click, the next real click works.
           suppressClick.current = false;
-          if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 || (event.target instanceof Element && event.target.closest("button,video,input"))) return;
+          if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 ||
+              (event.target instanceof Element && event.target.closest(
+                'a,button,input,textarea,select,summary,video,[contenteditable="true"],[role="button"]',
+              ))) return;
           drag.current = {x:event.clientX, scroll:event.currentTarget.scrollLeft, moved:false};
         }}
         onPointerMove={event => {
           const state = drag.current;
-          if (!state || !(event.buttons & 1)) return;
+          if (!state) return;
+          // A pointer-up outside the viewport can be missed before capture.
+          // Clear stale drag state so autoplay and native scrolling recover.
+          if (!(event.buttons & 1)) {
+            drag.current = null;
+            event.currentTarget.style.removeProperty("scroll-snap-type");
+            return;
+          }
           const delta = event.clientX - state.x;
-          if (Math.abs(delta) > 6) { state.moved = true; event.currentTarget.setPointerCapture(event.pointerId); }
+          if (!state.moved && Math.abs(delta) > 6) {
+            state.moved = true;
+            event.currentTarget.setPointerCapture(event.pointerId);
+          }
           if (!state.moved) return;
           event.preventDefault();
           event.currentTarget.style.scrollSnapType = "none";
@@ -250,6 +273,17 @@ export function ScrollCarousel({
           event.currentTarget.style.removeProperty("scroll-snap-type");
         }}
         onPointerCancel={event => { drag.current = null; suppressClick.current = false; event.currentTarget.style.removeProperty("scroll-snap-type"); }}
+        onLostPointerCapture={event => {
+          if (drag.current?.moved) suppressClick.current = true;
+          drag.current = null;
+          event.currentTarget.style.removeProperty("scroll-snap-type");
+        }}
+        onPointerLeave={event => {
+          if (drag.current && !event.currentTarget.hasPointerCapture(event.pointerId)) {
+            drag.current = null;
+            event.currentTarget.style.removeProperty("scroll-snap-type");
+          }
+        }}
         onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}
         onDragStart={event => { if (mode !== "hero") event.preventDefault(); }}
         onWheel={() => { navigation.current = null; }}

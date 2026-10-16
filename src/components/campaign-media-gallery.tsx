@@ -124,7 +124,9 @@ export function CampaignMediaGallery({ items, approvedImageOrigins = NO_ADDITION
       if (!dialog?.isConnected) requestAnimationFrame(() => {
         // Reordering or removal changes the opener's array position. Resolve
         // by stable media ID only after the final gallery DOM has committed.
-        if (dialog?.isConnected) return;
+        // A newer lightbox may already be mounted after a quick close/reopen.
+        // Never move focus out of that dialog to an old thumbnail.
+        if (dialog?.isConnected || dialogRef.current?.isConnected) return;
         const items = latestItems.current;
         const triggers = triggerNodes;
         const opener = triggers[items.findIndex(item => item.id === openingId.current)];

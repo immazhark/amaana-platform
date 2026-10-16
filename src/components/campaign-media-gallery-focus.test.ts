@@ -1,10 +1,18 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-const hooks = vi.hoisted(() => ({ refs: [] as unknown[], cleanup: undefined as (() => void) | undefined }));
+const hooks = vi.hoisted(() => ({
+  refs: [] as unknown[],
+  createdRefs: [] as Array<{ current: unknown }>,
+  cleanup: undefined as (() => void) | undefined,
+}));
 vi.mock("react", async importOriginal => ({
   ...await importOriginal<typeof import("react")>(),
   useState: () => ["second", vi.fn()],
-  useRef: (initial: unknown) => ({ current: hooks.refs.length ? hooks.refs.shift() : initial }),
+  useRef: (initial: unknown) => {
+    const ref = { current: hooks.refs.length ? hooks.refs.shift() : initial };
+    hooks.createdRefs.push(ref);
+    return ref;
+  },
   useId: () => "fixture",
   useMemo: (compute: () => unknown) => compute(),
   useCallback: (callback: unknown) => callback,
@@ -15,9 +23,31 @@ import { CampaignMediaGallery } from "./campaign-media-gallery";
 afterEach(() => {
   vi.unstubAllGlobals();
   hooks.cleanup = undefined;
+  hooks.createdRefs = [];
 });
 
 describe("gallery modal focus return", () => {
+  it("does not steal focus from a replacement dialog during deferred restoration", () => {
+    const opener = { isConnected: true, focus: vi.fn() };
+    const dialog = { isConnected: true };
+    const close = { focus: vi.fn() };
+    const frames: Array<() => void> = [];
+    const body = { style: { overflow: "" } };
+    vi.stubGlobal("document", { body });
+    vi.stubGlobal("window", { addEventListener: vi.fn(), removeEventListener: vi.fn() });
+    vi.stubGlobal("requestAnimationFrame", (fn: () => void) => frames.push(fn));
+    hooks.refs = [dialog, close, [opener], "second"];
+    CampaignMediaGallery({ items: [{ id: "second", url: "/media/2026/second.webp", alt: "Second" }] });
+    dialog.isConnected = false;
+    hooks.cleanup?.();
+    // React committed a newly opened lightbox before the old restore frame.
+    const newDialog = { isConnected: true };
+    hooks.createdRefs[0]!.current = newDialog;
+    frames.forEach(frame => frame());
+    expect(opener.focus).not.toHaveBeenCalled();
+    expect(body.style.overflow).toBe("");
+  });
+
   for (const [name, order, opener, expected] of [
     ["returns to the opener after navigation", ["first", "second"], "first", "first"],
     ["follows the opener after reorder", ["second", "first"], "first", "first"],
