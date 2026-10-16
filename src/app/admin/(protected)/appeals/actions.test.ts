@@ -66,6 +66,7 @@ describe("appeal scalar input boundary", () => {
   const cases = [
     ["edit: amount", updateAppeal, content, "goalAmount"],
     ["edit: beneficiary name", updateAppeal, content, "beneficiaryDisplayName"],
+    ["edit: beneficiary location", updateAppeal, content, "beneficiaryLocation"],
     ["transition: status", transitionAppeal, { id: "appeal-1", status: "PUBLISHED", expectedUpdatedAt: content.expectedUpdatedAt }, "status"],
     ["featuring: order", updateFeaturing, { id: "appeal-1", isFeatured: "on", featuredOrder: "1", expectedUpdatedAt: content.expectedUpdatedAt }, "featuredOrder"],
     ["update creation: public flag", addAppealUpdate, { ...update, isPublic: "on", privacyReviewed: "on" }, "isPublic"],
@@ -80,7 +81,7 @@ describe("appeal scalar input boundary", () => {
 
   it.each(cases)("rejects a repeated %s field before any database operation", async (_label, action, fields, field) => {
     const data = form(fields);
-    data.append(field, fields[field as keyof typeof fields] ?? "another value");
+    data.append(field, "malicious second value");
     await expect(action(data)).rejects.toThrow(`Repeated ${field} fields are not accepted.`);
     expect(mocks.appealFind).not.toHaveBeenCalled();
     expect(mocks.updateFind).not.toHaveBeenCalled();
