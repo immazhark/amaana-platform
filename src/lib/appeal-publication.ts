@@ -41,7 +41,7 @@ export function getAppealPublicationIssues(input: {
   toStatus: string;
   goalAmount: AmountLike;
   verification: VerificationLike;
-  hasAssistanceRequest?: boolean;
+  hasAssistanceRequest: boolean;
   beneficiaryDisplayName?: string | null;
   coverImageUrl?: string | null;
 }) {
