@@ -512,7 +512,7 @@ export default async function RequestDetailPage({ params }: Props) {
                     Review private operational outcome
                   </button>
                 </form>}
-                {item.state === "REVIEWED" &&
+                {(item.state === "REVIEWED" || Boolean(item.disclosure)) &&
                   <section aria-label="Anonymous outcome disclosure review">
                     <h4>Separate anonymous-copy consent and approval</h4>
                     <p className="muted">This is a private copy proposal, never a public update.
@@ -536,7 +536,7 @@ export default async function RequestDetailPage({ params }: Props) {
                         <p className="muted">Decision recorded by {
                           item.disclosure.approvedBy?.name ?? "authorized staff"
                         } · {item.disclosure.approvedAt.toLocaleDateString("en-IN")}</p>}
-                      {(request.verification?.confidentialityLevel !== "STANDARD" || !sourceEligible ||
+                      {(item.state !== "REVIEWED" || request.verification?.confidentialityLevel !== "STANDARD" || !sourceEligible ||
                         !item.disclosure.consentDocumentId ||
                         !evidenceNames.has(item.disclosure.consentDocumentId)) &&
                         item.disclosure.state === "APPROVED_COPY" &&
@@ -546,6 +546,7 @@ export default async function RequestDetailPage({ params }: Props) {
                       {mayApproveAnonymousCopy && item.disclosure.state === "DRAFT" &&
                         item.disclosure.preparedById !== user.id &&
                         item.reportedById !== user.id && item.reviewedById !== user.id &&
+                        item.state === "REVIEWED" &&
                         request.verification?.confidentialityLevel === "STANDARD" &&
                         sourceEligible && Boolean(item.disclosure.consentDocumentId &&
                           evidenceNames.has(item.disclosure.consentDocumentId)) &&
