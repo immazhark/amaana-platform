@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
+import type { ComponentProps, ReactNode } from "react";
 import {
   AssistanceOutcomeDisclosureState, AssistanceOutcomeKind, AssistanceOutcomeReviewState,
 } from "@prisma/client";
@@ -11,13 +12,13 @@ vi.mock("./disclosure-actions", () => ({
   urgentlyWithdrawAnonymousOutcomeCopy: vi.fn(),
 }));
 vi.mock("@/components/navigation-link", () => ({
-  default: ({ href, children }: { href: string; children: React.ReactNode }) =>
+  default: ({ href, children }: { href: string; children: ReactNode }) =>
     <a href={href}>{children}</a>,
 }));
 
 import { AnonymousDisclosureControls } from "./anonymous-disclosure-controls";
 
-type Props = React.ComponentProps<typeof AnonymousDisclosureControls>;
+type Props = ComponentProps<typeof AnonymousDisclosureControls>;
 const date = new Date("2026-10-16T09:00:00.000Z");
 const base: Props = {
   caseId: "case-synthetic",
