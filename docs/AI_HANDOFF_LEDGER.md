@@ -1,3 +1,15 @@
+## 2026-10-17 — Fail-closed public assistance verification
+
+Ownership: HANDOFF_PENDING. ChatGPT claimed sole implementation ownership after verifying PR #292 open at `008efa3bd3fd47c02fc08ab6b7716b568846f731` and returned it after a bounded source batch. Source `2c0509d4500ec3af1206d5845fc27f91c88704da`, regression tests `21d1610697b777dca40631b274b0b8849c1f5d40`; register reconciliation `8bfb582b3115fd6b3d3c99588556335afa185a66`.
+
+Fixed a fail-open domain boundary: unknown/empty disclosure decisions and Zakat labels previously passed review completeness, as did truthy malformed completion timestamps. Only accepted reviewed enum members and valid completed timestamps now pass the public-appeal review, and approval shares the completion-time guard. Five disclosure fields are checked independently. Valid NOT_ALLOWED/NOT_APPLICABLE remain legitimate reviewed outcomes; the fix does not grant publicity consent or substitute for field-level disclosure checks.
+
+Authored tests for every disclosure field with invalid and valid choices, Zakat status and invalid Date/string completion values, plus valid Date/ISO values. Source/test readback confirmed on GitHub. **No local repository checkout or dependencies were available, and the authored Vitest cases, TypeScript, build and browser/database tests were not executed in this session.** No test pass or runtime release acceptance is claimed. Existing historical checks do not certify this head. There was no schema, permission, provider, cache, payment, configuration or production change.
+
+Master149 remains **60 Implemented /61 Partial /26 Not started /2 other**, zero formal closures. AF-LOCAL/AF-CONSENT rows updated with scoped PR-open evidence only. Main remains at handoff baseline and PR #292 was not merged/deployed.
+
+Next: resume source-ready implementation after reading current head; verify focused `src/lib/assistance.test.ts`, application TypeScript, changed-file lint, then address any failures before release. Additional real workflow and browser acceptance remain open. Keep one implementation writer.
+
 ## 2026-10-17 — Reliable private proof upload lifecycle
 
 Ownership: HANDOFF_PENDING. Sole writer continued PR #292 from `ce01bd7`; source `7a2072b26c685f08940a1a98ce48b60622717c8f`. No main merge/deployment or actual evidence upload.
