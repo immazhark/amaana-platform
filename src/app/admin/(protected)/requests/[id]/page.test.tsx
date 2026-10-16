@@ -9,7 +9,10 @@ vi.mock("@/lib/prisma", () => ({ prisma: {
 } }));
 vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerification: vi.fn(), updateRequest: vi.fn() }));
 vi.mock("./milestone-actions", () => ({ addPrivateMilestone: vi.fn(), redactPrivateMilestone: vi.fn() }));
-vi.mock("./follow-up-actions", () => ({ createAssistanceFollowUp: vi.fn(), resolveAssistanceFollowUp: vi.fn() }));
+vi.mock("./follow-up-actions", () => ({
+  createAssistanceFollowUp: vi.fn(), resolveAssistanceFollowUp: vi.fn(),
+  rescheduleAssistanceFollowUp: vi.fn(),
+}));
 import RequestDetailPage from "./page";
 const render = async () => renderToStaticMarkup(await RequestDetailPage({ params: Promise.resolve({ id: "case-synthetic" }) }));
 beforeEach(() => {
