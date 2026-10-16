@@ -1,3 +1,17 @@
+## 2026-10-17 — Strict appeal administration FormData boundary
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer continuation on `fix/direct-transfer-feedback-20261013`, PR #292 targeting `main`. Verified starting HEAD `94dedae77a40dd48daa56d20448063fdd1ea6908`.
+
+Changed `src/app/admin/(protected)/appeals/actions.ts`: all 28 scalar `FormData.get` sites across seven existing actions now use a local text-only wrapper around established `singleFormValue`. Duplicate fields are rejected even if identical; File payloads cannot be silently serialized as strings. Editable beneficiary location is read and validated before opening the content-update transaction. Preserved existing missing/blank handling and all RBAC/CAS/review/notification rules; no endpoint or API contract additions.
+
+Added focused regression cases in `src/app/admin/(protected)/appeals/actions.test.ts` for duplicated goal, beneficiary name/location, status, featured order, public flag, public-update review checkbox, and update ID, plus File-valued text/cover/content/order/ID inputs. Tests expect refusal before the first persistence read. Existing valid-flow and transactional coverage is retained.
+
+Commits: `9cad3d2eb9260c40555cd8295ee190544a2d0efc` (regressions), `82134f65bd3af049ec2ee480c0dc0e444f02038d` (source), `d5c1f9329509976a09f3aefdcd2b889b3e1bf1f2` (location preflight), `5edaf9934b23474951dd17a25f78447abce9b609` (location case/test refinement), `46849f170860a9728656f0b2baca233573773647` (master149 update).
+
+Checks: GitHub readback confirms no raw `formData.get` remains in this module; 28 guarded reads; normal appeal staff form names remain unchanged. Source regression tests were **authored, not executed**, because no hydrated local checkout was available (git DNS to GitHub failed). No TypeScript, Vitest, ESLint, browser, native DB, bundle or CI result is claimed. No live database, donor/beneficiary mutation, provider, schema, migration, main merge, deployment or production configuration change.
+
+Master149 unchanged: 60 Implemented /61 Partial /26 Not started /1 Superseded /1 Not applicable; zero formal closures. AF-PROMOTION and AF-CONSENT gain PR-open source evidence only. Next writer should verify PR head and run `npx vitest run 'src/app/admin/(protected)/appeals/actions.test.ts'`, application TypeScript, changed-file lint, then continue substantive source-ready fixes. One writer at a time.
+
 ## 2026-10-17 — Paused appeal re-publication privacy guard
 
 Ownership: HANDOFF_PENDING after ChatGPT sole-writer continuation of existing PR #292. Started from verified branch HEAD `8acb60dc460947c32e6e6e349b5b1a5365818618` with main still `aedae00171d2cbf585f65f93b783f66c7f003a43`.
