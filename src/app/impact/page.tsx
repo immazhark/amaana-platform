@@ -11,6 +11,8 @@ import { programmeBySlug } from "@/lib/master-copy";
 import { getImpactPageData } from "@/lib/public-page-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import { selectImpactWitnesses } from "@/lib/impact-witnesses";
+import { getPublishedAnonymousOutcomeNotes } from "@/lib/public-anonymous-outcomes";
+import { ANONYMOUS_OUTCOME_COPY } from "@/lib/assistance-outcome-disclosure";
 import "./impact-refinement.module.css";
 
 export const dynamic = "force-dynamic";
@@ -33,7 +35,10 @@ export const metadata: Metadata = {
 };
 
 export default async function ImpactPage() {
-  const rawInitiatives = await getImpactPageData();
+  // Separate, bounded public-only projection. It never adds to impact metrics.
+  const [rawInitiatives, anonymousNotes] = await Promise.all([
+    getImpactPageData(), getPublishedAnonymousOutcomeNotes(),
+  ]);
   const initiatives = rawInitiatives.filter(item => {
     const canonical = programmeBySlug(item.slug);
     return Boolean(canonical) && !(canonical && "parentSlug" in canonical && canonical.parentSlug);
@@ -91,6 +96,32 @@ export default async function ImpactPage() {
           })}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Impact updates</span><h3>No initiative outcomes are published here yet.</h3><p>Outcomes will appear here when they are ready to share.</p></div>}
         </div>
       </section>
+
+      {anonymousNotes.length > 0 && (
+        <section className="v2-section paper" aria-labelledby="anonymous-support-notes">
+          <div className="v2-shell">
+            <SectionHeading
+              id="anonymous-support-notes"
+              eyebrow={<>Consent-reviewed updates</>}
+              title={<>Small outcomes. Protected identities.</>}
+              subtitle={<>These short, anonymous notes were released through a separate
+                consent and staff-publication decision. They do not imply recovery,
+                complete case resolution or independently audited financial settlement.</>}
+            />
+            <div className="v2-impact-principles">
+              {anonymousNotes.map(copy => (
+                <article key={copy}>
+                  <h3>{copy === ANONYMOUS_OUTCOME_COPY.PARTIAL_SUPPORT
+                    ? "Partial support"
+                    : copy === ANONYMOUS_OUTCOME_COPY.SPECIFIC_SUPPORT_COMPLETED
+                      ? "A support action completed" : "Further follow-up"}</h3>
+                  <p>{copy}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {witnesses.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p></div><p className="v2-section-intro">Only photographs suitable for public sharing appear here. Personal documents and sensitive verification material remain private.</p></div><BodyCarousel heading={<h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2>} label="Documented impact photographs" className="v2-impact-witness-carousel">{witnesses.map(({ item, media }) => <Link href={`/our-work/${item.slug}`} className="v2-impact-witness-item" key={item.id} aria-label={`Open ${item.title}`}><PublicMedia asset={media} sizes="(max-width: 700px) 86vw, (max-width: 1200px) 46vw, 31vw" /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Explore this work →</span></div></Link>)}</BodyCarousel></div></section>}
 
