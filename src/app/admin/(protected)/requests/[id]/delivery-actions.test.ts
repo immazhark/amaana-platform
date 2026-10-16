@@ -187,7 +187,7 @@ describe("private delivery reporting and independent evidence confirmation", () 
     await expect(reviewAssistanceDelivery(form())).rejects.toThrow("does not belong");
     m.record.mockResolvedValue({ assistanceRequestId: "case-synthetic",
       reportedById: "original-reviewer", state: "CONFIRMED",
-      evidenceDocumentId: "private-proof", updatedAt: version });
+      reviewedById: "approver-1", evidenceDocumentId: "private-proof", updatedAt: version });
     await expect(reviewAssistanceDelivery(form())).rejects.toThrow("NAVIGATE");
     expect(m.update).not.toHaveBeenCalled();
     expect(m.audit).not.toHaveBeenCalled();
