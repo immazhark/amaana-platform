@@ -99,12 +99,10 @@ describe("private assistance queue triage", () => {
       outcomeObservations: { some: { state: "REVIEWED" } },
     });
     expect(assistanceQueueOutcomeWhere("copy_draft")).toEqual({
-      outcomeObservations: { some: { state: "REVIEWED",
-        disclosure: { is: { state: "DRAFT" } } } },
+      outcomeObservations: { some: { disclosure: { is: { state: "DRAFT" } } } },
     });
     expect(assistanceQueueOutcomeWhere("copy_approved")).toEqual({
-      outcomeObservations: { some: { state: "REVIEWED",
-        disclosure: { is: { state: "APPROVED_COPY" } } } },
+      outcomeObservations: { some: { disclosure: { is: { state: "APPROVED_COPY" } } } },
     });
     expect(assistanceQueueOutcomeWhere("none")).toEqual({
       outcomeObservations: { none: { state: { in: ["REPORTED", "REVIEWED"] } } },

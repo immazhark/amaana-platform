@@ -113,12 +113,12 @@ export function assistanceQueueOutcomeWhere(
   if (outcome === "reported") return { outcomeObservations: { some: { state: "REPORTED" } } };
   if (outcome === "reviewed") return { outcomeObservations: { some: { state: "REVIEWED" } } };
   if (outcome === "copy_draft") return {
-    outcomeObservations: { some: { state: "REVIEWED",
-      disclosure: { is: { state: "DRAFT" } } } },
+    outcomeObservations: { some: { disclosure: { is: { state: "DRAFT" } } } },
   };
+  // Include approvals whose source was voided: staff must still be able
+  // to locate and withdraw historical approvals.
   if (outcome === "copy_approved") return {
-    outcomeObservations: { some: { state: "REVIEWED",
-      disclosure: { is: { state: "APPROVED_COPY" } } } },
+    outcomeObservations: { some: { disclosure: { is: { state: "APPROVED_COPY" } } } },
   };
   if (outcome === "none") return {
     outcomeObservations: { none: { state: { in: ["REPORTED", "REVIEWED"] } } },
