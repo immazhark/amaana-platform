@@ -16,6 +16,7 @@ vi.mock("./outcome-actions", () => ({ reportAssistanceOutcome: vi.fn(), reviewAs
 vi.mock("./disclosure-actions", () => ({
   proposeAnonymousOutcomeCopy: vi.fn(), reviewAnonymousOutcomeCopy: vi.fn(),
   publishAnonymousOutcomeCopy: vi.fn(), reconcileAnonymousOutcomeDisclosures: vi.fn(),
+  urgentlyWithdrawAnonymousOutcomeCopy: vi.fn(),
 }));
 vi.mock("./financial-actions", () => ({
   proposeAssistanceFinancialCorroboration: vi.fn(), reviewAssistanceFinancialCorroboration: vi.fn(),
