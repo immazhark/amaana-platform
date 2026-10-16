@@ -169,6 +169,7 @@ model User {
   reviewedOutcomeObservations AssistanceOutcomeObservation[] @relation("AssistanceOutcomeReviewer")
   preparedOutcomeDisclosures AssistanceOutcomeDisclosure[] @relation("AssistanceOutcomeDisclosurePreparer")
   approvedOutcomeDisclosures AssistanceOutcomeDisclosure[] @relation("AssistanceOutcomeDisclosureApprover")
+  publishedOutcomeDisclosures AssistanceOutcomeDisclosure[] @relation("AssistanceOutcomeDisclosurePublisher")
   notifications           Notification[]
   credential              PasswordCredential?
   sessions                Session[]
@@ -830,6 +831,7 @@ model AssistanceOutcomeObservation {
 enum AssistanceOutcomeDisclosureState {
   DRAFT
   APPROVED_COPY
+  PUBLISHED
   WITHDRAWN
 }
 
@@ -844,14 +846,18 @@ model AssistanceOutcomeDisclosure {
   preparedById       String
   approvedById       String?
   approvedAt         DateTime?
+  publishedById      String?
+  publishedAt        DateTime?
   observation        AssistanceOutcomeObservation      @relation(fields: [observationId], references: [id], onDelete: Restrict)
   consentDocument    AssistanceDocument?               @relation(fields: [consentDocumentId], references: [id], onDelete: SetNull)
   preparedBy         User                              @relation("AssistanceOutcomeDisclosurePreparer", fields: [preparedById], references: [id], onDelete: Restrict)
   approvedBy         User?                             @relation("AssistanceOutcomeDisclosureApprover", fields: [approvedById], references: [id], onDelete: Restrict)
+  publishedBy        User?                             @relation("AssistanceOutcomeDisclosurePublisher", fields: [publishedById], references: [id], onDelete: Restrict)
   createdAt          DateTime                          @default(now())
   updatedAt          DateTime                          @updatedAt
 
   @@index([state, createdAt])
+  @@index([state, publishedAt])
 }
 
 model AssistanceVerification {
