@@ -6,7 +6,7 @@ CREATE TABLE "AssistanceFinancialReconciliation" (
   "id" TEXT NOT NULL,
   "deliveryRecordId" TEXT NOT NULL,
   "transactionReference" VARCHAR(64) NOT NULL,
-  "bankProofDocumentId" TEXT NOT NULL,
+  "bankProofDocumentId" TEXT,
   "status" "AssistanceFinancialReconciliationState" NOT NULL DEFAULT 'PENDING',
   "submittedById" TEXT NOT NULL,
   "reviewedById" TEXT,
@@ -36,7 +36,7 @@ CREATE INDEX "AssistanceFinancialReconciliation_submittedById_createdAt_idx"
 ALTER TABLE "AssistanceFinancialReconciliation" ADD CONSTRAINT "AssistanceFinancialReconciliation_deliveryRecordId_fkey"
   FOREIGN KEY ("deliveryRecordId") REFERENCES "AssistanceDeliveryRecord"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "AssistanceFinancialReconciliation" ADD CONSTRAINT "AssistanceFinancialReconciliation_bankProofDocumentId_fkey"
-  FOREIGN KEY ("bankProofDocumentId") REFERENCES "AssistanceDocument"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+  FOREIGN KEY ("bankProofDocumentId") REFERENCES "AssistanceDocument"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 ALTER TABLE "AssistanceFinancialReconciliation" ADD CONSTRAINT "AssistanceFinancialReconciliation_submittedById_fkey"
   FOREIGN KEY ("submittedById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "AssistanceFinancialReconciliation" ADD CONSTRAINT "AssistanceFinancialReconciliation_reviewedById_fkey"

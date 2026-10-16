@@ -261,7 +261,7 @@ export default async function RequestDetailPage({ params }: Props) {
                     <span>External reference: {mayReviewFinancialEvidence
                       ? item.financialReconciliation.transactionReference
                       : maskFinancialReference(item.financialReconciliation.transactionReference)}</span>
-                    <p className="muted">Bank proof: {evidenceNames.has(item.financialReconciliation.bankProofDocumentId)
+                    <p className="muted">Bank proof: {item.financialReconciliation.bankProofDocumentId !== null && evidenceNames.has(item.financialReconciliation.bankProofDocumentId)
                       ? <a href={`/admin/documents/${item.financialReconciliation.bankProofDocumentId}`}
                           target="_blank" rel="noreferrer">
                           {evidenceNames.get(item.financialReconciliation.bankProofDocumentId)}</a>
@@ -275,7 +275,7 @@ export default async function RequestDetailPage({ params }: Props) {
                       item.financialReconciliation.status === "PENDING" &&
                       item.financialReconciliation.submittedById !== user.id &&
                       item.reportedById !== user.id &&
-                      evidenceNames.has(item.financialReconciliation.bankProofDocumentId) &&
+                      item.financialReconciliation.bankProofDocumentId !== null && evidenceNames.has(item.financialReconciliation.bankProofDocumentId) &&
                       <form action={reviewAssistanceFinancialCorroboration} className="field">
                         <input type="hidden" name="id" value={id}/>
                         <input type="hidden" name="reconciliationId" value={item.financialReconciliation.id}/>

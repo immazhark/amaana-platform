@@ -137,8 +137,8 @@ export async function reviewAssistanceFinancialCorroboration(form: FormData) {
             delivery.assistanceRequest.appealId, delivery.assistanceRequest.verification)) {
         throw new Error("The underlying case or financial delivery is no longer eligible for bank-proof review.");
       }
-      if (!delivery.evidenceDocumentId) {
-        throw new Error("The original delivery evidence is no longer linked.");
+      if (!delivery.evidenceDocumentId || !item.bankProofDocumentId) {
+        throw new Error("Original delivery evidence and bank proof must still be linked.");
       }
       const documents = await tx.assistanceDocument.count({
         where: { assistanceRequestId: input.assistanceRequestId,

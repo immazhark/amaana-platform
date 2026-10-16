@@ -767,13 +767,13 @@ model AssistanceFinancialReconciliation {
   id                   String                                @id @default(cuid())
   deliveryRecordId     String                                @unique
   transactionReference String                                @unique @db.VarChar(64)
-  bankProofDocumentId  String
+  bankProofDocumentId  String?
   status               AssistanceFinancialReconciliationState @default(PENDING)
   submittedById        String
   reviewedById         String?
   reviewedAt           DateTime?
   deliveryRecord       AssistanceDeliveryRecord              @relation(fields: [deliveryRecordId], references: [id], onDelete: Restrict)
-  bankProofDocument    AssistanceDocument                    @relation(fields: [bankProofDocumentId], references: [id], onDelete: Restrict)
+  bankProofDocument    AssistanceDocument?                   @relation(fields: [bankProofDocumentId], references: [id], onDelete: SetNull)
   submittedBy          User                                  @relation("AssistanceFinancialReconciliationMaker", fields: [submittedById], references: [id], onDelete: Restrict)
   reviewedBy           User?                                 @relation("AssistanceFinancialReconciliationChecker", fields: [reviewedById], references: [id], onDelete: Restrict)
   createdAt            DateTime                              @default(now())
