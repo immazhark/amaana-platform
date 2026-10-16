@@ -10,5 +10,11 @@ export type AppealPromotionPrivacy = {
 };
 
 export function canPromoteAppeal(appeal: AppealPromotionPrivacy): boolean {
-  return appeal.assistanceRequest?.verification?.confidentialityLevel !== "HIGHLY_SENSITIVE";
+  // Standalone legacy appeals have no assistance verification to consult.
+  if (!appeal.assistanceRequest) return true;
+
+  // A linked case without an explicitly reviewed schema-defined privacy class
+  // must not enter homepage, programme or related-appeal promotion surfaces.
+  const level = appeal.assistanceRequest.verification?.confidentialityLevel;
+  return level === "STANDARD" || level === "CONFIDENTIAL";
 }
