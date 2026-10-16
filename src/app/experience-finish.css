@@ -383,46 +383,6 @@ main,:is(.v2-home,.v3-home){background:var(--af-color-canvas)}
 
 
 
-/* Assistance flow: align process geometry with the same card vocabulary used elsewhere. */
-.v2-assistance-form-layout{gap:clamp(1.5rem,4vw,4rem)}
-.v2-assistance-form-layout>aside{
-  border:1px solid var(--af-card-border);
-  border-radius:var(--af-card-radius);
-  padding:var(--af-card-pad);
-  background:rgb(255 253 248 / 78%);
-  box-shadow:var(--af-card-shadow);
-}
-.v2-assistance-form-layout>aside ol{display:grid;gap:.75rem;margin:1.25rem 0 0;padding:0;list-style:none}
-.v2-assistance-form-layout>aside li{
-  display:grid;
-  grid-template-columns:2.25rem minmax(0,1fr);
-  gap:.8rem;
-  align-items:start;
-  padding:.85rem 0;
-  border-top:1px solid rgb(117 86 7 / 10%);
-}
-.v2-assistance-form-layout>aside li>span{font-weight:850;color:var(--af-color-gold-ink)}
-.v2-assistance-form-layout>aside li p{margin:0;line-height:1.55}
-.v2-assistance-form-layout>aside li strong{display:block;margin-bottom:.15rem;color:var(--af-color-navy-800)}
-.v2-assistance-after-flow{
-  display:grid;
-  grid-template-columns:repeat(4,minmax(0,1fr));
-  gap:.8rem;
-  margin-top:clamp(1.5rem,3vw,2.5rem);
-}
-.v2-assistance-after-flow>div{
-  min-width:0;
-  padding:1.15rem;
-  border:1px solid var(--af-card-border);
-  border-radius:var(--af-card-radius);
-  background:rgb(255 253 248 / 78%);
-  box-shadow:0 10px 28px rgb(18 34 57 / 5%);
-}
-.v2-assistance-after-flow span{display:block;margin-bottom:.7rem;color:var(--af-color-gold-ink);font-size:.75rem;font-weight:850;letter-spacing:.12em}
-.v2-assistance-after-flow strong{display:block;color:var(--af-color-navy-800);line-height:1.25}
-@media(max-width:900px){.v2-assistance-after-flow{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:600px){.v2-assistance-after-flow{grid-template-columns:1fr}.v2-assistance-form-layout>aside{padding:1rem}}
-
 /* Browser acceptance corrections: canonical body art, hero controls and compact footer. */
 :is(.v2-section.paper,.v3-section,.amaana-bg-body,.v2-closing,.v3-closing,.v2-assistance-before,.v2-assistance-after,.v2-stories-feature,.campaign-story,.campaign-history-note,.campaign-data-visual,.campaign-gallery,.campaign-next){background-size:var(--af-surface-size)!important}
 .page-hero__button{min-height:3.1875rem!important;padding-block:.82rem!important}
@@ -738,25 +698,3 @@ body{font-weight:var(--af-weight-body)}
 @media(max-width:600px){:is(.v2-state-hero,.v2-receipt-hero,.v2-not-found,.v2-error-page,.v2-loading-page) h1{font-size:clamp(2.4rem,11.5vw,3.8rem)}}
 @media print{.v2-receipt-hero{background:#fff!important;color:#000!important}.v2-receipt-hero::after{display:none}}
 
-/* B09: isolate a verified private acknowledgement for browser Print / Save as PDF,
-   retaining live Unicode text and the financial/tax disclaimer. */
-@media print {
-  body:has(.v2-receipt-page) { background: #fff !important; color: #111 !important; }
-  body:has(.v2-receipt-page) :is(.site-header, .site-footer, .amaana-companion, .v2-skip-link) { display: none !important; }
-  .v2-receipt-page .v2-receipt-hero,
-  .v2-receipt-page .v2-receipt-next,
-  .v2-receipt-page .print-button { display: none !important; }
-  .v2-receipt-page, .v2-receipt-page .v2-section,
-  .v2-receipt-page .v2-receipt-layout { margin: 0 !important; padding: 0 !important; background: #fff !important; }
-  .v2-receipt-page .v2-shell { width: 100% !important; max-width: none !important; }
-  .v2-receipt-page .v2-receipt-layout { display: block !important; }
-  .v2-receipt-page .v2-receipt-sheet {
-    width: 100% !important; max-width: none !important; margin: 0 !important;
-    padding: 0 !important; border: 0 !important; box-shadow: none !important;
-    background: #fff !important; color: #111 !important;
-  }
-  .v2-receipt-page .v2-receipt-sheet-head,
-  .v2-receipt-page .v2-receipt-sheet dl > div,
-  .v2-receipt-page .v2-receipt-disclaimer { break-inside: avoid; }
-  .v2-receipt-page .v2-receipt-sheet :is(h2, dt, dd, p, strong, span) { color: #111 !important; }
-}

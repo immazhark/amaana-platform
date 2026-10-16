@@ -1,3 +1,5 @@
+// Route-owned process geometry replaces the former global finish rules.
+import "./assistance-process-geometry.css";
 import "../forms-experience.css";
 import "../assistance-structure.css";
 import "../assistance-wow.css";
