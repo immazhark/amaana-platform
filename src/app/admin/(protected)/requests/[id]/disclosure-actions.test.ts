@@ -177,6 +177,17 @@ describe("independent anonymous copy approval and consent withdrawal", () => {
     await expect(reviewAnonymousOutcomeCopy(form())).rejects.toThrow("independent");
     expect(m.updateMany).not.toHaveBeenCalled();
   });
+  it("rejects trying to downgrade a PUBLISHED copy back into internal approval", async () => {
+    m.disclosureFind.mockResolvedValue({
+      ...disclosure, state: "PUBLISHED",
+      approvedById: "previous-approver", approvedAt: version,
+    });
+    await expect(reviewAnonymousOutcomeCopy(form()))
+      .rejects.toThrow("decision is final");
+    expect(m.updateMany).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+  });
+
   it("blocks approval after exact-copy consent deletion or confidentiality change", async () => {
     m.evidenceCount.mockResolvedValueOnce(1);
     await expect(reviewAnonymousOutcomeCopy(form())).rejects.toThrow("is missing");
