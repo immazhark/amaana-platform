@@ -42,17 +42,18 @@ export async function POST(request: Request, { params }: Props) {
     return failure("Upload must contain a single private document.", 415);
   }
   let file: File;
-  let purpose: "delivery" | "financial" = "delivery";
+  let purpose: "delivery" | "financial" | "consent" = "delivery";
   try {
     const body = await readBodyBytesWithLimit(request, MAX_BODY_BYTES, { timeoutMs: 20_000 });
     const form = await new Response(body, { headers: { "Content-Type": contentType } }).formData();
     const requestedPurpose = form.getAll("purpose");
     if (requestedPurpose.length > 1 ||
         (requestedPurpose[0] !== undefined &&
-         requestedPurpose[0] !== "delivery" && requestedPurpose[0] !== "financial")) {
+         requestedPurpose[0] !== "delivery" && requestedPurpose[0] !== "financial" && requestedPurpose[0] !== "consent")) {
       return failure("Unsupported private evidence upload purpose.", 400);
     }
-    purpose = requestedPurpose[0] === "financial" ? "financial" : "delivery";
+    purpose = requestedPurpose[0] === "financial" ? "financial"
+      : requestedPurpose[0] === "consent" ? "consent" : "delivery";
     const entries = form.getAll("document");
     const candidate = entries[0];
     if (entries.length !== 1 || !(candidate instanceof File)) {
@@ -75,21 +76,32 @@ export async function POST(request: Request, { params }: Props) {
     purpose === "financial"
       ? { state: "CONFIRMED", kind: "FINANCIAL",
           financialReconciliation: { is: null } }
+      : purpose === "consent" ? { state: "CONFIRMED" }
       : { state: "REPORTED", reportedById: user.id, evidenceDocumentId: null };
   const caseRecord = await prisma.assistanceRequest.findUnique({
     where: { id },
     select: {
       status: true, appealId: true,
-      verification: { select: { decision: true, completedAt: true } },
+      verification: { select: { decision: true, completedAt: true, confidentialityLevel: true } },
       _count: { select: { documents: true } },
       deliveryRecords: {
         where: evidenceScope,
         select: { id: true }, take: 1,
       },
+      outcomeObservations: {
+        where: {
+          state: "REVIEWED", disclosure: { is: null },
+          deliveryRecord: { is: { state: "CONFIRMED" } },
+        },
+        select: { id: true }, take: 1,
+      },
     },
   });
   if (!caseRecord || !canReportPrivateDelivery(caseRecord.status, caseRecord.appealId, caseRecord.verification) ||
-      caseRecord.deliveryRecords.length === 0) {
+      (purpose === "consent"
+        ? caseRecord.verification?.confidentialityLevel !== "STANDARD" ||
+          caseRecord.outcomeObservations.length === 0
+        : caseRecord.deliveryRecords.length === 0)) {
     return failure("No eligible private case delivery is available for this evidence purpose.", 409);
   }
   if (caseRecord._count.documents >= MAX_CASE_DOCUMENTS) {
@@ -111,16 +123,27 @@ export async function POST(request: Request, { params }: Props) {
         where: { id },
         select: {
           status: true, appealId: true,
-          verification: { select: { decision: true, completedAt: true } },
+          verification: { select: { decision: true, completedAt: true, confidentialityLevel: true } },
           _count: { select: { documents: true } },
           deliveryRecords: {
             where: evidenceScope,
             select: { id: true }, take: 1,
           },
+          outcomeObservations: {
+            where: {
+              state: "REVIEWED", disclosure: { is: null },
+              deliveryRecord: { is: { state: "CONFIRMED" } },
+            },
+            select: { id: true }, take: 1,
+          },
         },
       });
       if (!current || !canReportPrivateDelivery(current.status, current.appealId, current.verification) ||
-          current.deliveryRecords.length === 0 || current._count.documents >= MAX_CASE_DOCUMENTS) {
+          (purpose === "consent"
+            ? current.verification?.confidentialityLevel !== "STANDARD" ||
+              current.outcomeObservations.length === 0
+            : current.deliveryRecords.length === 0) ||
+          current._count.documents >= MAX_CASE_DOCUMENTS) {
         throw new Error("CASE_NOT_ELIGIBLE");
       }
       const record = await tx.assistanceDocument.create({
@@ -131,6 +154,7 @@ export async function POST(request: Request, { params }: Props) {
         actorId: user.id,
         action: purpose === "financial"
           ? "assistance.financial_private_proof_uploaded"
+          : purpose === "consent" ? "assistance.anonymous_outcome_consent_proof_uploaded"
           : "assistance.delivery_private_evidence_uploaded",
         entityType: "AssistanceRequest", entityId: id,
         metadata: { documentId: record.id },
