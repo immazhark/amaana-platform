@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { randomUUID } from "node:crypto";
-import { FOLLOW_UP_SUMMARY_LIMIT, MAX_OPEN_FOLLOW_UPS_PER_CASE, followUpDueLabel,
+import { FOLLOW_UP_SUMMARY_LIMIT, MAX_OPEN_FOLLOW_UPS_PER_CASE, eligibleFollowUpStaffWhere, followUpDueLabel,
   indiaCalendarDay, shiftedCalendarDay, taskDay } from "@/lib/assistance-follow-up";
-import { createAssistanceFollowUp, resolveAssistanceFollowUp, rescheduleAssistanceFollowUp } from "./follow-up-actions";
+import { assignAssistanceFollowUp, createAssistanceFollowUp, resolveAssistanceFollowUp, rescheduleAssistanceFollowUp } from "./follow-up-actions";
 import {
   PRIVATE_MILESTONE_ACTION, PRIVATE_MILESTONE_KINDS,
   PRIVATE_MILESTONE_REDACTED_ACTION, PRIVATE_MILESTONE_REDACTION_REASONS,
@@ -30,7 +30,7 @@ const label = (value: string) => value.replaceAll("_", " ").toLowerCase().replac
 export default async function RequestDetailPage({ params }: Props) {
   const user = await requirePermission("assistance.view");
   const { id } = await params;
-  const [request, staff, history, milestones, openTasks, resolvedTasks] = await Promise.all([
+  const [request, staff, history, milestones, openTasks, resolvedTasks, taskStaff] = await Promise.all([
     prisma.assistanceRequest.findUnique({
       where: { id },
       include: {
@@ -55,7 +55,8 @@ export default async function RequestDetailPage({ params }: Props) {
     }),
     prisma.assistanceFollowUp.findMany({
       where: { assistanceRequestId: id, state: "OPEN" },
-      select: { id: true, summary: true, dueOn: true, state: true,
+      select: { id: true, summary: true, dueOn: true, state: true, assignedToId: true,
+        assignedTo: { select: { name: true } },
         updatedAt: true, createdAt: true, createdBy: { select: { name: true } } },
       orderBy: [{ dueOn: "asc" }, { createdAt: "asc" }, { id: "asc" }],
       take: MAX_OPEN_FOLLOW_UPS_PER_CASE,
@@ -66,6 +67,11 @@ export default async function RequestDetailPage({ params }: Props) {
         resolvedBy: { select: { name: true } } },
       orderBy: [{ resolvedAt: "desc" }, { id: "desc" }],
       take: 10,
+    }),
+    prisma.user.findMany({
+      where: eligibleFollowUpStaffWhere(),
+      select: { id: true, name: true },
+      orderBy: [{ name: "asc" }, { id: "asc" }],
     }),
   ]);
   if (!request) notFound();
@@ -99,6 +105,9 @@ export default async function RequestDetailPage({ params }: Props) {
   const mayRedactMilestone = hasPermission(user, "assistance.approve");
   const canManageTasks = hasPermission(user, "assistance.update");
   const canCancelTasks = canManageTasks && hasPermission(user, "assistance.approve");
+  const mayReassignTasks = hasPermission(user, "assistance.assign");
+  const defaultTaskOwner = taskStaff.find(member => member.id === request.assignedToId)?.id ??
+    taskStaff.find(member => member.id === user.id)?.id ?? taskStaff[0]?.id;
   const today = indiaCalendarDay(new Date());
 
   return <>
@@ -134,12 +143,16 @@ export default async function RequestDetailPage({ params }: Props) {
           <p className="muted">Staff-set dates, not urgency classifications or SLA deadlines.
             Tasks are internal only and never appear as public appeal milestones.
             Open tasks remain on the case until a reviewer completes or cancels them.</p>
-          {canManageTasks && canAddPrivateMilestone(request.status, request.appealId) &&
+          {canManageTasks && defaultTaskOwner && canAddPrivateMilestone(request.status, request.appealId) &&
             openTasks.length < MAX_OPEN_FOLLOW_UPS_PER_CASE ? (
             <form action={createAssistanceFollowUp} className="field">
               <input type="hidden" name="id" value={id}/>
               <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
               <input type="hidden" name="submissionId" value={randomUUID()}/>
+              <label htmlFor="newTaskOwner">Responsible staff member</label>
+              <select id="newTaskOwner" name="assignedToId" defaultValue={defaultTaskOwner} required>
+                {taskStaff.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}
+              </select>
               <label htmlFor="taskDueOn">Next action date (Hyderabad calendar)</label>
               <input id="taskDueOn" type="date" name="dueOn" defaultValue={today}
                 min={today} max={shiftedCalendarDay(today, 365)} required/>
@@ -160,8 +173,24 @@ export default async function RequestDetailPage({ params }: Props) {
               <strong>{task.summary}</strong>
               <span>Selected date: {task.dueOn.toLocaleDateString("en-IN", { timeZone: "UTC", dateStyle: "medium" })}
                 {" · "}{followUpDueLabel(task.state, task.dueOn, today)}
+                {" · "}Responsible: {task.assignedTo.name}
                 {" · "}Recorded by {task.createdBy.name}</span>
-              {canManageTasks && canAddPrivateMilestone(request.status, request.appealId) &&
+              {mayReassignTasks && canAddPrivateMilestone(request.status, request.appealId) &&
+                <form action={assignAssistanceFollowUp} className="field">
+                  <input type="hidden" name="id" value={id}/>
+                  <input type="hidden" name="taskId" value={task.id}/>
+                  <input type="hidden" name="expectedTaskUpdatedAt" value={task.updatedAt.toISOString()}/>
+                  <label htmlFor={`task-owner-${task.id}`}>Transfer responsibility</label>
+                  <select id={`task-owner-${task.id}`} name="assignedToId"
+                    defaultValue={task.assignedToId} required>
+                    {!taskStaff.some(member => member.id === task.assignedToId) &&
+                      <option value={task.assignedToId} disabled>{task.assignedTo.name} (not eligible)</option>}
+                    {taskStaff.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}
+                  </select>
+                  <button type="submit" className="button secondary">Assign to staff</button>
+                </form>}
+              {canManageTasks && (task.assignedToId === user.id || mayReassignTasks) &&
+                canAddPrivateMilestone(request.status, request.appealId) &&
                 <form action={rescheduleAssistanceFollowUp} className="field">
                   <input type="hidden" name="id" value={id}/>
                   <input type="hidden" name="taskId" value={task.id}/>
@@ -172,14 +201,16 @@ export default async function RequestDetailPage({ params }: Props) {
                     max={shiftedCalendarDay(today, 365)} required/>
                   <button type="submit" className="button secondary">Save new date</button>
                 </form>}
-              {canManageTasks && <form action={resolveAssistanceFollowUp} className="field">
+              {canManageTasks && (task.assignedToId === user.id || mayReassignTasks) &&
+                <form action={resolveAssistanceFollowUp} className="field">
                 <input type="hidden" name="id" value={id}/>
                 <input type="hidden" name="taskId" value={task.id}/>
                 <input type="hidden" name="state" value="COMPLETED"/>
                 <input type="hidden" name="expectedTaskUpdatedAt" value={task.updatedAt.toISOString()}/>
                 <button type="submit" className="button secondary">Mark action completed</button>
               </form>}
-              {canCancelTasks && <form action={resolveAssistanceFollowUp} className="field">
+              {canCancelTasks && (task.assignedToId === user.id || mayReassignTasks) &&
+                <form action={resolveAssistanceFollowUp} className="field">
                 <input type="hidden" name="id" value={id}/>
                 <input type="hidden" name="taskId" value={task.id}/>
                 <input type="hidden" name="state" value="CANCELLED"/>
