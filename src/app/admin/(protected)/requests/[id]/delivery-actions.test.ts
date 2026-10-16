@@ -194,6 +194,20 @@ describe("private delivery reporting and independent evidence confirmation", () 
       metadata: { deliveryRecordId: "delivery-synthetic", evidenceLinked: true },
     } });
   });
+  it("blocks late evidence linking after case approval was withdrawn", async () => {
+    m.record.mockResolvedValue({
+      assistanceRequestId: "case-synthetic", reportedById: "approver-1",
+      state: "REPORTED", evidenceDocumentId: null, updatedAt: version,
+    });
+    m.request.mockResolvedValue({
+      status: "REJECTED", appealId: null,
+      verification: { decision: "DECLINED", completedAt: version },
+    });
+    await expect(linkAssistanceDeliveryEvidence(form()))
+      .rejects.toThrow("Case approval changed");
+    expect(m.update).not.toHaveBeenCalled();
+  });
+
   it("rejects post-review proof replacement and other reporters' attachments", async () => {
     const data = form();
     m.record.mockResolvedValue({ assistanceRequestId: "case-synthetic",
