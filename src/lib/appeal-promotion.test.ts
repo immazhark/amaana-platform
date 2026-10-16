@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { canPromoteAppeal } from "./appeal-promotion";
+import { canPromoteAppeal, getAppealPublicPrivacyClass } from "./appeal-promotion";
 
 describe("appeal promotion confidentiality gate", () => {
   it.each(["STANDARD", "CONFIDENTIAL"])(
@@ -32,5 +32,14 @@ describe("appeal promotion confidentiality gate", () => {
   it("preserves legacy standalone appeals that have no linked assistance request", () => {
     expect(canPromoteAppeal({ assistanceRequest: null })).toBe(true);
     expect(canPromoteAppeal({})).toBe(true);
+  });
+
+  it("uses a privacy-safe public classification for metadata and discovery", () => {
+    expect(getAppealPublicPrivacyClass({ assistanceRequest: null })).toBe("STANDARD");
+    expect(getAppealPublicPrivacyClass({ assistanceRequest: { verification: { confidentialityLevel: "STANDARD" } } })).toBe("STANDARD");
+    expect(getAppealPublicPrivacyClass({ assistanceRequest: { verification: { confidentialityLevel: "CONFIDENTIAL" } } })).toBe("CONFIDENTIAL");
+    expect(getAppealPublicPrivacyClass({ assistanceRequest: { verification: { confidentialityLevel: "HIGHLY_SENSITIVE" } } })).toBe("HIGHLY_SENSITIVE");
+    expect(getAppealPublicPrivacyClass({ assistanceRequest: { verification: null } })).toBe("HIGHLY_SENSITIVE");
+    expect(getAppealPublicPrivacyClass({ assistanceRequest: { verification: { confidentialityLevel: "RESTRICTED" } } })).toBe("HIGHLY_SENSITIVE");
   });
 });
