@@ -68,8 +68,15 @@ export function visibleHomeSlides(config: HomeCarouselConfig, activeAppealSlugs:
 }
 
 /** Insert automatically sourced appeals once; custom linked slides take precedence. */
-export function composeHomeSlides(config: HomeCarouselConfig, appealSlides: HomeSlide[], now = new Date()) {
-  const visible = visibleHomeSlides(config, new Set(appealSlides.map(s => s.appealSlug)), now);
+export function composeHomeSlides(
+  config: HomeCarouselConfig,
+  appealSlides: HomeSlide[],
+  now = new Date(),
+  eligibleAppealSlugs: ReadonlySet<string> = new Set(appealSlides.map(slide => slide.appealSlug)),
+) {
+  // The active appeal set is separate from automatically injected slides:
+  // a reviewed editor-linked slide may target another eligible appeal.
+  const visible = visibleHomeSlides(config, eligibleAppealSlugs, now);
   const linked = new Set(visible.map(s => s.appealSlug).filter(Boolean));
   const automatic = appealSlides.filter(s => !linked.has(s.appealSlug));
   // Valid admin saves retain an unscheduled fallback. Protect rendering of old/corrupt empty visibility windows too.
