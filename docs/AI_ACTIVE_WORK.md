@@ -1,6 +1,13 @@
-## 2026-10-17 — Appeal post-commit cache-refresh integrity
+## 2026-10-17 — Appeal cache refresh after confirmed commit
 
-Ownership: CHATGPT_ACTIVE. Verified PR #292 open at HEAD `408f2c06df7817600d3d4395fc2d5a86b4ea643e`, base `main`; prior writer HANDOFF_PENDING. Scoped task: separate committed appeal writes from cache refresh failures; attempt all invalidations independently, avoid false failed-save signals and duplicate retries, provide admin recovery notice. Add targeted regression cases; no live mutation, merge or deployment. Tests require hydrated repo unavailable in this runtime.
+Ownership: HANDOFF_PENDING. ChatGPT completed source changes on open PR #292, branch `fix/direct-transfer-feedback-20261013`, target `main`. Starting verified HEAD `408f2c06df7817600d3d4395fc2d5a86b4ea643e`. Tests `e916945a31110f573f2b8bcd955878e61bda2755` and `47af3a708632ecec19f4264582290deaeff545c3`; source `84e64fbaa965a9ac45ec86edf44242551b06358b`; admin delayed-state notice `36ef8e5aa0a0184652d2edef295977757e8e56bb`; master149 `c4aeebdce36a1e040dd5703b15dfc29ead90b3e7`; handoff ledger `5ce4f4ef2f93f2b104f008276eb9919564ca7bf4`.
+
+- Six appeal mutation actions now keep database/audit success separate from cache invalidation failure. All planned invalidations run independently after commit; partial errors redirect to a saved-but-refresh-delayed staff notice, avoiding false rollback messages and duplicate retry. Public status transitions also invalidate specific detail URLs when possible. A privacy escalation warning addresses potentially stale public content.
+- Added targeted tests for cache failures after status/featuring/edit/create/publish/unpublish updates, fallback invalidations, unaffected valid completion and genuine transaction conflict. Existing consent/verification, privacy media review, RBAC, optimistic CAS and serializable mutation behavior remain unchanged. No runtime dependency, schema/migration, CSS or provider behavior change.
+- GitHub readback confirmed six post-commit helper calls and matching notification markup. **Tests authored, not executed**: this session lacks a hydrated checkout and working git DNS. Vitest, TypeScript, changed-file lint, native DB, production cache, browser and bundle sizes remain unverified. No main merge, live mutation, external provider operation or production deploy.
+- Master149 unchanged: **60 Implemented /61 Partial /26 Not started /2 other**, no formal closures. AF-PROMOTION and AF-CONSENT gained scoped source evidence only, PR open.
+
+Next: verify PR branch head and run targeted `npx vitest run 'src/app/admin/(protected)/appeals/actions.test.ts'`, application TypeScript and changed-file ESLint on a hydrated checkout, then continue independently source-ready items. Treat delayed public cache invalidation as a follow-up operational concern until public URLs are verified. Maintain one implementation writer.
 
 ## 2026-10-17 — Strict appeal administration input boundary
 
