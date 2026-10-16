@@ -11,7 +11,7 @@ vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), 
 vi.mock("./milestone-actions", () => ({ addPrivateMilestone: vi.fn(), redactPrivateMilestone: vi.fn() }));
 vi.mock("./follow-up-actions", () => ({
   createAssistanceFollowUp: vi.fn(), resolveAssistanceFollowUp: vi.fn(),
-  rescheduleAssistanceFollowUp: vi.fn(),
+  rescheduleAssistanceFollowUp: vi.fn(), assignAssistanceFollowUp: vi.fn(),
 }));
 import RequestDetailPage from "./page";
 const render = async () => renderToStaticMarkup(await RequestDetailPage({ params: Promise.resolve({ id: "case-synthetic" }) }));
@@ -85,12 +85,15 @@ describe("private assistance detail projections", () => {
       state: "OPEN", dueOn: new Date("2026-10-20T00:00:00Z"),
       createdAt: new Date("2026-10-16T00:00:00Z"),
       updatedAt: new Date("2026-10-16T00:00:00Z"), createdBy: { name: "Reviewer" },
+      assignedToId: "viewer", assignedTo: { name: "Synthetic reviewer" },
     }]).mockResolvedValueOnce([]);
     const result = await render();
     expect(result).toContain("Next private follow-up actions");
     expect(result).toContain("Call the referral institution about the pending case.");
     expect(result).toContain("Mark action completed");
     expect(result).toContain("Cancel this action");
+    expect(result).toContain("Responsible: Synthetic reviewer");
+    expect(result).toContain("Transfer responsibility");
     expect(m.tasks).toHaveBeenCalledTimes(2);
   });
   it("does not expose task actions to view-only staff", async () => {

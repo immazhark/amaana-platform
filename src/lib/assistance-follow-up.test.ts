@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { AssistanceFollowUpState } from "@prisma/client";
 import {
-  followUpDueLabel, indiaCalendarDay, parseCalendarDay,
-  parseFollowUpCreation, parseFollowUpReschedule, parseFollowUpResolution, shiftedCalendarDay,
+  eligibleFollowUpStaffWhere, followUpDueLabel, indiaCalendarDay, parseCalendarDay,
+  parseFollowUpAssignment, parseFollowUpCreation, parseFollowUpReschedule, parseFollowUpResolution, shiftedCalendarDay,
 } from "./assistance-follow-up";
 
 const now = new Date("2026-10-16T20:15:00Z");
@@ -15,7 +15,8 @@ const form = (fields: Record<string, string>) => {
   return result;
 };
 const create = (override: Record<string, string> = {}) => form({
-  id: "case-synthetic", submissionId: token, summary: "Contact the family to confirm document availability.",
+  id: "case-synthetic", submissionId: token, assignedToId: "reviewer-synthetic",
+  summary: "Contact the family to confirm document availability.",
   dueOn: day, expectedUpdatedAt: version, ...override,
 });
 
@@ -26,7 +27,7 @@ describe("private date-only assistance follow-up scheduling", () => {
   });
   it("normalizes a bounded valid staff-authored task", () => {
     expect(parseFollowUpCreation(create(), day)).toEqual({
-      id: "case-synthetic", submissionId: token,
+      id: "case-synthetic", submissionId: token, assignedToId: "reviewer-synthetic",
       summary: "Contact the family to confirm document availability.",
       dueOn: new Date("2026-10-17T00:00:00.000Z"),
       expectedUpdatedAt: new Date(version),
@@ -51,6 +52,19 @@ describe("private date-only assistance follow-up scheduling", () => {
     });
     data.set("dueOn", "2026-10-16");
     expect(() => parseFollowUpReschedule(data, day)).toThrow();
+  });
+  it("requires explicit task responsibility and parses coordinator reassignment", () => {
+    const data = form({ id: "case-synthetic", taskId: "task-synthetic",
+      assignedToId: "reviewer-synthetic", expectedTaskUpdatedAt: version });
+    expect(parseFollowUpAssignment(data)).toEqual({
+      id: "case-synthetic", taskId: "task-synthetic",
+      assignedToId: "reviewer-synthetic", expectedUpdatedAt: new Date(version),
+    });
+    expect(() => parseFollowUpCreation(create({ assignedToId: "" }), day)).toThrow("eligible");
+    data.set("assignedToId", "../untrusted");
+    expect(() => parseFollowUpAssignment(data)).toThrow();
+    expect(eligibleFollowUpStaffWhere("reviewer-synthetic")).toEqual(
+      expect.objectContaining({ id: "reviewer-synthetic", status: "ACTIVE" }));
   });
   it("resolves only explicit terminal task states and exact versions", () => {
     expect(parseFollowUpResolution(form({

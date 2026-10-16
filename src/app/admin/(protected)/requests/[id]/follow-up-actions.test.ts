@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({
   auth: vi.fn(), has: vi.fn(), transaction: vi.fn(), request: vi.fn(),
-  taskFind: vi.fn(), count: vi.fn(), create: vi.fn(), update: vi.fn(),
+  taskFind: vi.fn(), count: vi.fn(), create: vi.fn(), update: vi.fn(), staffFind: vi.fn(),
   audit: vi.fn(), revalidate: vi.fn(), redirect: vi.fn(),
 }));
 vi.mock("@/lib/auth", () => ({ requirePermission: m.auth, hasPermission: m.has }));
@@ -11,7 +11,7 @@ vi.mock("@/lib/prisma-transaction", () => ({
 vi.mock("next/cache", () => ({ revalidatePath: m.revalidate }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
 import {
-  createAssistanceFollowUp, resolveAssistanceFollowUp,
+  assignAssistanceFollowUp, createAssistanceFollowUp, resolveAssistanceFollowUp,
   rescheduleAssistanceFollowUp,
 } from "./follow-up-actions";
 import { indiaCalendarDay, shiftedCalendarDay } from "@/lib/assistance-follow-up";
@@ -25,7 +25,7 @@ const form = (values: Record<string, string>) => {
   return data;
 };
 const creation = () => form({
-  id: "case-synthetic", submissionId,
+  id: "case-synthetic", submissionId, assignedToId: "reviewer-1",
   summary: "Contact the case referral institution for an update.",
   dueOn: tomorrow(), expectedUpdatedAt: version.toISOString(),
 });
@@ -35,11 +35,11 @@ const resolution = (state = "COMPLETED") => form({
 });
 const task = () => ({
   id: "task-synthetic", assistanceRequestId: "case-synthetic",
-  state: "OPEN", dueOn: new Date(tomorrow() + "T00:00:00.000Z"),
+  assignedToId: "reviewer-1", state: "OPEN", dueOn: new Date(tomorrow() + "T00:00:00.000Z"),
   updatedAt: version,
 });
 const tx = {
-  assistanceRequest: { findUnique: m.request },
+  assistanceRequest: { findUnique: m.request }, user: { findFirst: m.staffFind },
   assistanceFollowUp: {
     findUnique: m.taskFind, count: m.count,
     create: m.create, updateMany: m.update,
@@ -57,6 +57,7 @@ beforeEach(() => {
     appealId: null, updatedAt: version,
   });
   m.taskFind.mockResolvedValue(null);
+  m.staffFind.mockResolvedValue({ id: "reviewer-1" });
   m.count.mockResolvedValue(0);
   m.create.mockResolvedValue({ id: "task-synthetic" });
   m.update.mockResolvedValue({ count: 1 });
@@ -70,7 +71,7 @@ describe("staff-selected assistance follow-up actions", () => {
     expect(m.auth).toHaveBeenCalledWith("assistance.update");
     expect(m.create).toHaveBeenCalledWith(expect.objectContaining({
       data: expect.objectContaining({
-        assistanceRequestId: "case-synthetic", submissionId, createdById: "reviewer-1",
+        assistanceRequestId: "case-synthetic", submissionId, createdById: "reviewer-1", assignedToId: "reviewer-1",
       }),
     }));
     expect(m.audit).toHaveBeenCalledWith(expect.objectContaining({
@@ -84,7 +85,7 @@ describe("staff-selected assistance follow-up actions", () => {
 
   it("does not duplicate a prior matching submission", async () => {
     m.taskFind.mockResolvedValue({
-      assistanceRequestId: "case-synthetic",
+      assistanceRequestId: "case-synthetic", assignedToId: "reviewer-1",
       summary: "Contact the case referral institution for an update.",
       dueOn: new Date(tomorrow() + "T00:00:00.000Z"),
     });
@@ -95,7 +96,7 @@ describe("staff-selected assistance follow-up actions", () => {
 
   it("rejects changed replay payloads and stale case versions", async () => {
     m.taskFind.mockResolvedValueOnce({
-      assistanceRequestId: "another-case", summary: "Unrelated task",
+      assistanceRequestId: "another-case", assignedToId: "reviewer-1", summary: "Unrelated task",
       dueOn: new Date(tomorrow() + "T00:00:00.000Z"),
     });
     await expect(createAssistanceFollowUp(creation())).rejects.toThrow("token was already used");
@@ -134,6 +135,37 @@ describe("staff-selected assistance follow-up actions", () => {
     await expect(resolveAssistanceFollowUp(resolution("CANCELLED"))).rejects
       .toThrow("Only an assistance approver");
     expect(m.transaction).not.toHaveBeenCalled();
+  });
+
+  it("does not let a non-coordinator resolve or reschedule another person's task", async () => {
+    m.has.mockReturnValue(false);
+    m.taskFind.mockResolvedValue({ ...task(), assignedToId: "another-reviewer" });
+    await expect(resolveAssistanceFollowUp(resolution())).rejects.toThrow("responsible staff");
+    const change = form({ id: "case-synthetic", taskId: "task-synthetic",
+      dueOn: shiftedCalendarDay(tomorrow(), 3), expectedTaskUpdatedAt: version.toISOString() });
+    await expect(rescheduleAssistanceFollowUp(change)).rejects.toThrow("responsible staff");
+    expect(m.update).not.toHaveBeenCalled();
+  });
+
+  it("validates an eligible assignee for new tasks", async () => {
+    m.staffFind.mockResolvedValue(null);
+    await expect(createAssistanceFollowUp(creation())).rejects.toThrow("not an active eligible");
+    expect(m.create).not.toHaveBeenCalled();
+  });
+
+  it("moves task ownership with CAS and a restricted audit trail", async () => {
+    m.taskFind.mockResolvedValue(task());
+    const reassignment = form({ id: "case-synthetic", taskId: "task-synthetic",
+      assignedToId: "reviewer-2", expectedTaskUpdatedAt: version.toISOString() });
+    await expect(assignAssistanceFollowUp(reassignment)).rejects.toThrow("NEXT_REDIRECT");
+    expect(m.auth).toHaveBeenCalledWith("assistance.assign");
+    expect(m.staffFind).toHaveBeenCalledOnce();
+    expect(m.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: { assignedToId: "reviewer-2" },
+    }));
+    expect(m.audit).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ action: "assistance.follow_up_task_reassigned" }),
+    }));
   });
 
   it("does not resolve a task belonging to a different assistance case", async () => {
