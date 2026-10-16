@@ -12,6 +12,14 @@ describe("private assistance queue triage", () => {
     expect(parseAssistanceQueueFilters({ status: ["CLOSED"], assignment: ["mine"], order: ["oldest"], age: ["30d"] }))
       .toEqual({ assignment: "all", order: "newest", age: "all" });
   });
+  it("accepts bounded self-reported cities and excludes unsafe query strings", () => {
+    expect(parseAssistanceQueueFilters({ city: " Hyderabad " }).city).toBe("Hyderabad");
+    expect(parseAssistanceQueueFilters({ city: "Hyderabad\\ninvalid".replace("\\n", "\n") }).city).toBeUndefined();
+    expect(parseAssistanceQueueFilters({ city: "x".repeat(81) }).city).toBeUndefined();
+    expect(parseAssistanceQueueFilters({ city: ["Hyderabad", "Mumbai"] }).city).toBeUndefined();
+    expect(assistanceQueueHref({ assignment: "mine", order: "newest", age: "7d", city: "Hyderabad" }))
+      .toEqual({ pathname: "/admin", query: { assignment: "mine", age: "7d", city: "Hyderabad" } });
+  });
   it("resolves mine exclusively against the authenticated staff identity", () => {
     expect(assistanceQueueAssignmentWhere("mine", "signed-in-staff")).toEqual({ assignedToId: "signed-in-staff" });
     expect(assistanceQueueAssignmentWhere("unassigned", "signed-in-staff")).toEqual({ assignedToId: null });

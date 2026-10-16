@@ -21,11 +21,18 @@ export default async function AdminQueuePage({ searchParams }: Props) {
   const filters = parseAssistanceQueueFilters(params);
   const now = new Date();
   const assignmentWhere = assistanceQueueAssignmentWhere(filters.assignment, user.id);
-  const scopedWhere = { ...assignmentWhere, ...assistanceQueueAgeWhere(filters.age, now) };
+  const scopedWhere = { ...assignmentWhere, ...assistanceQueueAgeWhere(filters.age, now),
+    ...(filters.city ? { city: filters.city } : {}) };
   const where = { ...scopedWhere, ...(filters.status ? { status: filters.status } : {}) };
-  const [totalItems, grouped] = await Promise.all([
+  const [totalItems, grouped, cityCounts] = await Promise.all([
     prisma.assistanceRequest.count({ where }),
     prisma.assistanceRequest.groupBy({ where: scopedWhere, by: ["status"], _count: { _all: true } }),
+    // Only self-reported city names within the operator's assignment scope.
+    // Keep the selector bounded, and never fetch applicant names or addresses.
+    prisma.assistanceRequest.groupBy({
+      where: assignmentWhere, by: ["city"], orderBy: { city: "asc" },
+      _count: { _all: true }, take: 100,
+    }),
   ]);
   const pagination = getAdminPagination(totalItems, parseAdminPage(typeof params.page === "string" ? params.page : undefined));
   const requests = await prisma.assistanceRequest.findMany({
@@ -50,9 +57,25 @@ export default async function AdminQueuePage({ searchParams }: Props) {
 
   return <>
     <div className="admin-heading"><div><p className="eyebrow">Case management</p><h1>Assistance queue</h1></div></div>
-    <p className="muted">Filter by assignment, elapsed age, or review the oldest requests first. Age is time since receipt, not a response deadline, verified urgency, or SLA breach.</p>
+    <p className="muted">Filter by assignment, self-reported city or elapsed age, or review the oldest requests first. Age is time since receipt, not a response deadline, verified urgency, or SLA breach. City is not a verified service-zone assignment.</p>
     <div className="filter-row" role="group" aria-label="Assistance request assignment filter"><strong>Assignment:</strong>{assignmentChoices.map(item => <Link key={item.value} href={assistanceQueueHref({ ...filters, assignment: item.value })} aria-current={filters.assignment === item.value ? "page" : undefined}>{item.label}</Link>)}</div>
     <div className="filter-row" role="group" aria-label="Assistance request order"><strong>Order:</strong>{(["newest", "oldest"] as const).map(order => <Link key={order} href={assistanceQueueHref({ ...filters, order })} aria-current={filters.order === order ? "page" : undefined}>{order === "oldest" ? "Oldest first" : "Newest first"}</Link>)}</div>
+    <form method="get" action="/admin" className="filter-row" aria-label="Filter assistance requests by reported city">
+      <label htmlFor="assistance-queue-city"><strong>Reported city:</strong></label>
+      {filters.status && <input type="hidden" name="status" value={filters.status}/>}
+      {filters.assignment !== "all" && <input type="hidden" name="assignment" value={filters.assignment}/>}
+      {filters.order !== "newest" && <input type="hidden" name="order" value={filters.order}/>}
+      {filters.age !== "all" && <input type="hidden" name="age" value={filters.age}/>}
+      <select id="assistance-queue-city" name="city" defaultValue={filters.city ?? ""}>
+        <option value="">All reported cities</option>
+        {filters.city && !cityCounts.some(item => item.city === filters.city) &&
+          <option value={filters.city}>{filters.city} (outside current selector)</option>}
+        {cityCounts.map(item => <option key={item.city} value={item.city}>
+          {item.city} ({item._count._all})
+        </option>)}
+      </select>
+      <button type="submit" className="button secondary">Apply city</button>
+    </form>
     <div className="filter-row" role="group" aria-label="Assistance request age filter">
       <strong>Received:</strong>{([
         { value: "all", label: "Any time" },

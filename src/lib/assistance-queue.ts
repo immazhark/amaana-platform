@@ -6,18 +6,24 @@ export type AssistanceQueueFilters = {
   assignment: "all" | "mine" | "unassigned";
   order: "newest" | "oldest";
   age: "all" | "7d" | "30d";
+  city?: string;
 };
 type SearchValue = string | string[] | undefined;
 
 export function parseAssistanceQueueFilters(params: {
-  status?: SearchValue; assignment?: SearchValue; order?: SearchValue; age?: SearchValue;
+  status?: SearchValue; assignment?: SearchValue; order?: SearchValue; age?: SearchValue; city?: SearchValue;
 }): AssistanceQueueFilters {
   const status = ASSISTANCE_QUEUE_STATUSES.find(value => value === params.status);
+  // Administrative geography is a verbatim self-reported city, never a
+  // guessed service zone. Bound it before passing it to a database predicate.
+  const city = typeof params.city === "string" ? params.city.trim() : "";
+  const validCity = city && city.length <= 80 && !/[\u0000-\u001f\u007f]/.test(city);
   return {
     ...(status ? { status } : {}),
     assignment: params.assignment === "mine" || params.assignment === "unassigned" ? params.assignment : "all",
     order: params.order === "oldest" ? "oldest" : "newest",
     age: params.age === "7d" || params.age === "30d" ? params.age : "all",
+    ...(validCity ? { city } : {}),
   };
 }
 
@@ -46,6 +52,7 @@ export function assistanceQueueHref(filters: AssistanceQueueFilters, page = 1) {
       ...(filters.assignment !== "all" ? { assignment: filters.assignment } : {}),
       ...(filters.order !== "newest" ? { order: filters.order } : {}),
       ...(filters.age !== "all" ? { age: filters.age } : {}),
+      ...(filters.city ? { city: filters.city } : {}),
       ...(page > 1 ? { page } : {}),
     },
   };
