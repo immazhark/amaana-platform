@@ -13,7 +13,10 @@ vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), 
 vi.mock("./milestone-actions", () => ({ addPrivateMilestone: vi.fn(), redactPrivateMilestone: vi.fn() }));
 vi.mock("./delivery-actions", () => ({ linkAssistanceDeliveryEvidence: vi.fn(), reportAssistanceDelivery: vi.fn(), reviewAssistanceDelivery: vi.fn() }));
 vi.mock("./outcome-actions", () => ({ reportAssistanceOutcome: vi.fn(), reviewAssistanceOutcome: vi.fn() }));
-vi.mock("./disclosure-actions", () => ({ proposeAnonymousOutcomeCopy: vi.fn(), reviewAnonymousOutcomeCopy: vi.fn() }));
+vi.mock("./disclosure-actions", () => ({
+  proposeAnonymousOutcomeCopy: vi.fn(), reviewAnonymousOutcomeCopy: vi.fn(),
+  publishAnonymousOutcomeCopy: vi.fn(), reconcileAnonymousOutcomeDisclosures: vi.fn(),
+}));
 vi.mock("./financial-actions", () => ({
   proposeAssistanceFinancialCorroboration: vi.fn(), reviewAssistanceFinancialCorroboration: vi.fn(),
 }));

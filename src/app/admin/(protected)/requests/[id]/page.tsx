@@ -429,7 +429,7 @@ export default async function RequestDetailPage({ params }: Props) {
         <section className="card" aria-labelledby="private-outcome-heading">
           <h2 id="private-outcome-heading">Private case-outcome observations</h2>
           {mayApproveAnonymousCopy &&
-            outcomes.some(item => item.disclosure && item.disclosure.state !== "WITHDRAWN") &&
+            outcomes.length > 0 &&
             <form action={reconcileAnonymousOutcomeDisclosures} className="field">
               <input type="hidden" name="id" value={id}/>
               <p className="muted">Recheck current case eligibility and all consent/evidence

@@ -3,16 +3,20 @@ const m = vi.hoisted(() => ({
   auth: vi.fn(), has: vi.fn(), transaction: vi.fn(),
   disclosureFind: vi.fn(), observationFind: vi.fn(), evidenceCount: vi.fn(),
   create: vi.fn(), updateMany: vi.fn(), audit: vi.fn(),
-  revalidate: vi.fn(), redirect: vi.fn(),
+  revalidate: vi.fn(), redirect: vi.fn(), invalidate: vi.fn(), caseFind: vi.fn(),
 }));
 vi.mock("@/lib/auth", () => ({ requirePermission: m.auth, hasPermission: m.has }));
+vi.mock("@/lib/assistance-outcome-invalidation", () => ({
+  withdrawStaleAnonymousOutcomeCopies: m.invalidate,
+}));
 vi.mock("@/lib/prisma-transaction", () => ({
   withSerializableTransactionRetry: m.transaction,
 }));
 vi.mock("next/cache", () => ({ revalidatePath: m.revalidate }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
 import {
-  proposeAnonymousOutcomeCopy, publishAnonymousOutcomeCopy, reviewAnonymousOutcomeCopy,
+  proposeAnonymousOutcomeCopy, publishAnonymousOutcomeCopy,
+  reconcileAnonymousOutcomeDisclosures, reviewAnonymousOutcomeCopy,
 } from "./disclosure-actions";
 import { ANONYMOUS_OUTCOME_COPY } from "@/lib/assistance-outcome-disclosure";
 
@@ -45,6 +49,7 @@ const db = {
   },
   assistanceOutcomeObservation: { findUnique: m.observationFind },
   assistanceDocument: { count: m.evidenceCount },
+  assistanceRequest: { findUnique: m.caseFind },
   auditEvent: { create: m.audit },
 };
 function form(changes: Record<string, string> = {}) {
@@ -70,6 +75,7 @@ beforeEach(() => {
   m.disclosureFind.mockResolvedValue(null);
   m.observationFind.mockResolvedValue(source);
   m.evidenceCount.mockResolvedValue(2);
+  m.caseFind.mockResolvedValue({ id: "case-synthetic" });
   m.create.mockResolvedValue({ id: "disclosure-synthetic" });
   m.updateMany.mockResolvedValue({ count: 1 });
   m.audit.mockResolvedValue({ id: "audit-synthetic" });
@@ -316,5 +322,34 @@ describe("explicit final public release and withdrawal", () => {
         withdrawalReason: "CONSENT_WITHDRAWN",
       }),
     }) });
+  });
+});
+
+describe("manual private-publication privacy reconciliation", () => {
+  it("checks current case and invokes only the fail-closed withdrawal routine", async () => {
+    const input = form({ id: "case-synthetic" });
+    await expect(reconcileAnonymousOutcomeDisclosures(input)).rejects.toThrow("NAVIGATE");
+    expect(m.auth).toHaveBeenCalledWith("content.approve");
+    expect(m.caseFind).toHaveBeenCalledWith({
+      where: { id: "case-synthetic" }, select: { id: true },
+    });
+    expect(m.invalidate).toHaveBeenCalledWith(
+      db, "case-synthetic", "content-reviewer", "MANUAL_RECONCILIATION",
+    );
+    expect(m.revalidate).toHaveBeenCalledWith("/impact");
+    expect(m.create).not.toHaveBeenCalled();
+    expect(m.updateMany).not.toHaveBeenCalled();
+  });
+  it("refuses reconciliation to staff missing assistance approval permission", async () => {
+    m.has.mockReturnValue(false);
+    await expect(reconcileAnonymousOutcomeDisclosures(form())).rejects.toThrow(
+      "Case-view and assistance-approval permissions",
+    );
+    expect(m.transaction).not.toHaveBeenCalled();
+  });
+  it("blocks a stale reconciliation for a case that does not exist", async () => {
+    m.caseFind.mockResolvedValue(null);
+    await expect(reconcileAnonymousOutcomeDisclosures(form())).rejects.toThrow("not found");
+    expect(m.invalidate).not.toHaveBeenCalled();
   });
 });
