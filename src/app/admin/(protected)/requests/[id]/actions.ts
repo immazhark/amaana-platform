@@ -612,6 +612,11 @@ export async function withdrawConvertedAppealDisclosure(formData: FormData) {
       initiativeSlug: request.appeal.initiative?.slug,
       causeSlug: request.appeal.cause?.slug,
       externalMediaReviewRequired,
+      managedMediaPaths: [...new Set(
+        coverAssets.flatMap(asset =>
+          asset.storageKey && /^\\d{4}\\/[0-9a-f-]{36}\\.(?:pdf|jpg|png|webp)$/i.test(asset.storageKey)
+            ? [`/media/${asset.storageKey}`] : []),
+      )],
     };
   });
 
@@ -623,6 +628,7 @@ export async function withdrawConvertedAppealDisclosure(formData: FormData) {
     `/admin/requests/${id}`, `/admin/appeals/${result.appealId}`, "/admin/appeals",
     "/", "/appeals", `/appeals/${result.slug}`, `/donate/${result.slug}`,
     "/our-work", "/impact",
+    ...result.managedMediaPaths,
     ...(result.initiativeSlug ? [`/our-work/${result.initiativeSlug}`] : []),
     ...(result.causeSlug ? [`/our-work/${result.causeSlug}`] : []),
   ];
