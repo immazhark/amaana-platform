@@ -1,6 +1,6 @@
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { isAppealOpenForDonations } from "@/lib/appeals";
+import { getPublicAppealCheckoutEligibility } from "@/lib/public-appeal-checkout";
 import { canPromoteAppeal } from "@/lib/appeal-promotion";
 import { publicFaithWhere } from "@/lib/faith-publication";
 import { canExposePublicAppeal, isSyntheticStagingAppeal } from "@/lib/public-environment";
@@ -194,7 +194,7 @@ const getHomepageAppealsCached = unstable_cache(async () => {
   });
 
   return appeals
-    .filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && canPromoteAppeal(appeal) && isAppealOpenForDonations(appeal))
+    .filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && canPromoteAppeal(appeal) && getPublicAppealCheckoutEligibility(appeal) !== null)
     .slice(0, 20)
     .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => {
         void _privateReview;
@@ -204,13 +204,13 @@ const getHomepageAppealsCached = unstable_cache(async () => {
 
 export async function getHomepageAppeals(limit = 3) {
   // The cached projection may outlive a campaign's exact closing minute.
-  // Recheck time-sensitive donation eligibility on every render without
-  // fetching the database again or exposing an already closed appeal.
+  // Recheck both the deadline and payable paise balance on every render
+  // without refetching the cached homepage projection.
   const cached = await getHomepageAppealsCached();
   // Restrict only after the fresh deadline check. A featured appeal can expire
   // during the five-minute cache lifetime; a lower-ranked eligible appeal
   // must be allowed to fill its place without another database read.
-  return cached.filter(appeal => isAppealOpenForDonations(appeal))
+  return cached.filter(appeal => getPublicAppealCheckoutEligibility(appeal) !== null)
     .slice(0, Math.min(20, Math.max(1, limit)));
 }
 

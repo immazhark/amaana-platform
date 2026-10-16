@@ -17,7 +17,7 @@ import { buildPublicRecordFallback, programmeStoryParagraphs, heroTeaser } from 
 import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
 import { toPublicGalleryItems } from "@/lib/public-gallery-projection";
 import { PublicContentStructuredData } from "@/components/public-content-structured-data";
-import { isAppealOpenForDonations } from "@/lib/appeals";
+import { getPublicAppealCheckoutEligibility } from "@/lib/public-appeal-checkout";
 import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 import { legacyOurWorkRoute } from "@/lib/our-work-routing";
@@ -111,7 +111,9 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
   const period = formatYears(initiative.startYear, initiative.endYear, initiative.year);
   const paragraphs = programmeStoryParagraphs(initiative.summary, initiative.story || initiative.summary);
   const fallbackStory = buildPublicRecordFallback({ metric: initiative.primaryMetric, metricLabel: initiative.primaryMetricLabel });
-  const activeAppeals = initiative.appeals.filter(appeal => canExposePublicAppeal(appeal) && isAppealOpenForDonations(appeal));
+  const activeAppeals = initiative.appeals.filter(appeal =>
+    canExposePublicAppeal(appeal) && getPublicAppealCheckoutEligibility(appeal) !== null,
+  );
   const isTaleemInitiative = initiative.slug.startsWith("taleem-");
 
   return (
