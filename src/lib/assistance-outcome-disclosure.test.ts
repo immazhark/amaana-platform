@@ -8,6 +8,7 @@ import {
   ANONYMOUS_OUTCOME_COPY, DISCLOSURE_STATUS_LABELS,
   eligibleForAnonymousCopy, parseDisclosureDecision,
   parseDisclosureProposal, parseDisclosurePublication, requiredDisclosureEvidenceIds,
+  validatedAnonymousDisclosureEvidenceIds,
 } from "./assistance-outcome-disclosure";
 
 const version = "2026-10-16T11:20:00.000Z";
@@ -127,6 +128,62 @@ describe("current private evidence and confidentiality boundary", () => {
       },
     })).toBe(false);
   });
+  it("applies one fail-closed source and evidence policy to every disclosure step", () => {
+    const copy = ANONYMOUS_OUTCOME_COPY.PARTIAL_SUPPORT;
+    expect(validatedAnonymousDisclosureEvidenceIds(
+      source, copy, "specific-consent-document",
+    )).toEqual(["delivery-proof", "specific-consent-document"]);
+    expect(validatedAnonymousDisclosureEvidenceIds(source, copy, null)).toBeNull();
+    expect(validatedAnonymousDisclosureEvidenceIds(source, copy, "delivery-proof")).toBeNull();
+    expect(validatedAnonymousDisclosureEvidenceIds(source, "Modified private note", "specific-consent-document"))
+      .toBeNull();
+    expect(validatedAnonymousDisclosureEvidenceIds({
+      ...source, state: AssistanceOutcomeReviewState.REPORTED,
+    }, copy, "specific-consent-document")).toBeNull();
+    const confidential = {
+      ...source, deliveryRecord: {
+        ...source.deliveryRecord,
+        assistanceRequest: {
+          ...source.deliveryRecord.assistanceRequest,
+          verification: {
+            ...source.deliveryRecord.assistanceRequest.verification,
+            confidentialityLevel: "CONFIDENTIAL" as const,
+          },
+        },
+      },
+    };
+    expect(validatedAnonymousDisclosureEvidenceIds(
+      confidential, copy, "specific-consent-document",
+    )).toBeNull();
+  });
+  it("requires the complete distinct three-document chain for financial disclosures", () => {
+    const finance = {
+      ...source, deliveryRecord: {
+        ...source.deliveryRecord,
+        kind: AssistanceDeliveryKind.FINANCIAL,
+        financialReconciliation: {
+          status: AssistanceFinancialReconciliationState.EVIDENCE_REVIEWED,
+          bankProofDocumentId: "bank-proof",
+        },
+      },
+    };
+    const copy = ANONYMOUS_OUTCOME_COPY.PARTIAL_SUPPORT;
+    expect(validatedAnonymousDisclosureEvidenceIds(
+      finance, copy, "specific-consent-document",
+    )).toEqual(["delivery-proof", "bank-proof", "specific-consent-document"]);
+    expect(validatedAnonymousDisclosureEvidenceIds(
+      { ...finance, deliveryRecord: {
+        ...finance.deliveryRecord,
+        financialReconciliation: { ...finance.deliveryRecord.financialReconciliation,
+          bankProofDocumentId: null },
+      } },
+      copy, "specific-consent-document",
+    )).toBeNull();
+    expect(validatedAnonymousDisclosureEvidenceIds(
+      finance, copy, "bank-proof",
+    )).toBeNull();
+  });
+
   it("requires separate financial and consent evidence instead of substituting private notes", () => {
     expect(requiredDisclosureEvidenceIds(source, "specific-consent-document"))
       .toEqual(["delivery-proof", "specific-consent-document"]);
