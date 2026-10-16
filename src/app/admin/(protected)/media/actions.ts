@@ -76,7 +76,7 @@ function affectedMediaPublicationPaths(asset: MediaPublicationRefreshContext) {
     "/admin/media", "/", "/our-work", "/impact", "/stories", "/faith-and-reflections", "/appeals",
   ];
   if (asset.storageKey &&
-      /^\\d{4}\\/[0-9a-f-]{36}\\.(?:pdf|jpg|png|webp)$/i.test(asset.storageKey)) {
+      /^\d{4}\/[0-9a-f-]{36}\.(?:pdf|jpg|png|webp)$/i.test(asset.storageKey)) {
     paths.push(`/media/${asset.storageKey}`);
   }
   if (asset.initiative?.slug) {
