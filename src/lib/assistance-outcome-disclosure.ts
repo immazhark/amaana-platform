@@ -125,7 +125,32 @@ export const disclosureSourceSelect = {
   },
 } satisfies Prisma.AssistanceOutcomeObservationSelect;
 
-type Source = Prisma.AssistanceOutcomeObservationGetPayload<{ select: typeof disclosureSourceSelect }>;
+/** Minimal projection for privacy-sensitive public reads and automatic
+ * withdrawal. Staff identity, reviewer attribution, audit revisions and
+ * confidential applicant fields never need to be fetched by these paths. */
+export const anonymousDisclosureEligibilitySelect = {
+  assistanceRequestId: true,
+  state: true,
+  kind: true,
+  deliveryRecord: {
+    select: {
+      kind: true, state: true, evidenceDocumentId: true,
+      financialReconciliation: { select: { status: true, bankProofDocumentId: true } },
+      assistanceRequest: {
+        select: {
+          status: true, appealId: true,
+          verification: {
+            select: { decision: true, completedAt: true, confidentialityLevel: true },
+          },
+        },
+      },
+    },
+  },
+} satisfies Prisma.AssistanceOutcomeObservationSelect;
+
+type Source = Prisma.AssistanceOutcomeObservationGetPayload<{
+  select: typeof anonymousDisclosureEligibilitySelect
+}>;
 
 /** A fresh approval requires STANDARD confidentiality and a reviewed delivery.
  * The existence of private evidence does not itself provide publication consent. */
