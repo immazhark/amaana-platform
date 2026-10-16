@@ -25,6 +25,14 @@ export const PUBLIC_DETAIL_MEDIA_PROJECTION = {
   where: {
     isPublic: true,
     privacyApprovedAt: { not: null },
+    // Hosted VIDEO is intentionally unsupported until reviewed captions exist.
+    // Exclude assets without renderable URL/alt metadata before applying the
+    // 48-record page limit. The browser independently checks each media URL.
+    OR: [
+      { kind: "IMAGE" as const, publicUrl: { not: null }, altText: { not: "" } },
+      { kind: "DOCUMENT" as const, publicUrl: { not: null } },
+      { kind: "EXTERNAL_VIDEO" as const, externalUrl: { not: null } },
+    ],
   },
   orderBy: [{ sortOrder: "asc" as const }, { sourceYear: "desc" as const }, { createdAt: "desc" as const }],
   take: PUBLIC_DETAIL_MEDIA_LIMIT,
