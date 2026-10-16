@@ -268,7 +268,7 @@ const getHomepageAppealsCached = unstable_cache(async () => {
       amountRaised: true,
       closesAt: true,
       assistanceRequest: {
-        select: { verification: { select: { confidentialityLevel: true } } },
+        select: { verification: { select: { confidentialityLevel: true, photoConsent: true } } },
       },
     },
   });
@@ -276,10 +276,17 @@ const getHomepageAppealsCached = unstable_cache(async () => {
   return appeals
     .filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && canPromoteAppeal(appeal) && getPublicAppealCheckoutEligibility(appeal) !== null)
     .slice(0, 20)
-    .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => {
-        void _privateReview;
-        return publicAppeal;
-      });
+    .map(({ assistanceRequest, ...publicAppeal }) => ({
+      ...publicAppeal,
+      // Keep revoked/unreviewed beneficiary image URLs out of public RSC data.
+      // Standalone legacy covers remain subject to public media library review.
+      coverImageUrl:
+        !assistanceRequest ||
+        assistanceRequest.verification?.photoConsent === "ALLOWED" ||
+        assistanceRequest.verification?.photoConsent === "NOT_APPLICABLE"
+          ? publicAppeal.coverImageUrl
+          : null,
+    }));
 }, ["homepage-appeals"], { revalidate: 300, tags: ["appeals"] });
 
 export async function getHomepageAppeals(limit = 3) {
