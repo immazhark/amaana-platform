@@ -165,6 +165,18 @@ describe("segregated review of private bank-proof evidence", () => {
         id: { in: ["delivery-proof", "bank-proof"] } },
     });
   });
+  it("limits completed bank-proof review retries to the original finance reviewer", async () => {
+    m.reconcileFind.mockResolvedValue({ ...review, status: "EVIDENCE_REVIEWED",
+      reviewedById: "previous-finance-reviewer", reviewedAt: version });
+    await expect(reviewAssistanceFinancialCorroboration(form()))
+      .rejects.toThrow("Another finance reviewer");
+    expect(m.reconcileUpdate).not.toHaveBeenCalled();
+    m.reconcileFind.mockResolvedValue({ ...review, status: "EVIDENCE_REVIEWED",
+      reviewedById: "finance-synthetic", reviewedAt: version });
+    await expect(reviewAssistanceFinancialCorroboration(form())).rejects.toThrow("NAVIGATE");
+    expect(m.reconcileUpdate).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+  });
   it("rejects both maker self-review and the original delivery reporter", async () => {
     m.auth.mockResolvedValue({ id: "maker-synthetic" });
     await expect(reviewAssistanceFinancialCorroboration(form()))

@@ -110,7 +110,13 @@ export async function reviewAnonymousOutcomeCopy(form: FormData) {
     if (!item || item.observation.assistanceRequestId !== input.caseId) {
       throw new Error("This copy proposal does not belong to the assistance case.");
     }
-    if (item.state === input.decision) return; // idempotent response retry
+    if (item.state === input.decision) {
+      if (input.decision === AssistanceOutcomeDisclosureState.APPROVED_COPY &&
+          item.approvedById !== actor.id) {
+        throw new Error("Another reviewer already approved this anonymous copy. Reload the case.");
+      }
+      return; // withdrawal remains an idempotent, fail-closed takedown
+    }
     // Only DRAFT -> APPROVED_COPY is allowed. Every active state may
     // transition to WITHDRAWN; no approval action can reopen or downgrade
     // a previously published disclosure.
@@ -193,7 +199,12 @@ export async function publishAnonymousOutcomeCopy(form: FormData) {
     if (!item || item.observation.assistanceRequestId !== input.caseId) {
       throw new Error("This anonymous copy does not belong to the assistance case.");
     }
-    if (item.state === AssistanceOutcomeDisclosureState.PUBLISHED) return;
+    if (item.state === AssistanceOutcomeDisclosureState.PUBLISHED) {
+      if (item.publishedById !== actor.id) {
+        throw new Error("Another authorized publisher already released this copy. Reload the case.");
+      }
+      return; // only the original publisher may replay a lost response
+    }
     if (item.state !== AssistanceOutcomeDisclosureState.APPROVED_COPY ||
         !item.approvedById || !item.approvedAt) {
       throw new Error("Only independently approved anonymous copy can be published.");

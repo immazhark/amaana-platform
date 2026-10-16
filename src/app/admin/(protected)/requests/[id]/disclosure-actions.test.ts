@@ -183,6 +183,17 @@ describe("independent anonymous copy approval and consent withdrawal", () => {
     } });
     expect(m.audit.mock.calls[0]?.[0]?.data?.metadata).not.toHaveProperty("copyText");
   });
+  it("only replays internal copy approval for its original approving reviewer", async () => {
+    m.disclosureFind.mockResolvedValue({ ...disclosure,
+      state: "APPROVED_COPY", approvedById: "original-approver", approvedAt: version });
+    await expect(reviewAnonymousOutcomeCopy(form())).rejects.toThrow("Another reviewer");
+    expect(m.updateMany).not.toHaveBeenCalled();
+    m.disclosureFind.mockResolvedValue({ ...disclosure,
+      state: "APPROVED_COPY", approvedById: "content-reviewer", approvedAt: version });
+    await expect(reviewAnonymousOutcomeCopy(form())).rejects.toThrow("NAVIGATE");
+    expect(m.updateMany).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+  });
   it("forbids the preparer and the original outcome reviewer from approving", async () => {
     m.auth.mockResolvedValueOnce({ id: "copy-preparer" });
     await expect(reviewAnonymousOutcomeCopy(form())).rejects.toThrow("independent");
@@ -278,6 +289,19 @@ describe("explicit final public release and withdrawal", () => {
     expect(m.revalidate).toHaveBeenCalledWith("/impact");
   });
 
+  it("only replays a published-copy response for its original authorized publisher", async () => {
+    m.disclosureFind.mockResolvedValue({ ...disclosure, state: "PUBLISHED",
+      publishedById: "other-publisher", publishedAt: version });
+    await expect(publishAnonymousOutcomeCopy(form({ publicationAttested: "yes" })))
+      .rejects.toThrow("Another authorized publisher");
+    expect(m.updateMany).not.toHaveBeenCalled();
+    m.disclosureFind.mockResolvedValue({ ...disclosure, state: "PUBLISHED",
+      publishedById: "content-reviewer", publishedAt: version });
+    await expect(publishAnonymousOutcomeCopy(form({ publicationAttested: "yes" })))
+      .rejects.toThrow("NAVIGATE");
+    expect(m.updateMany).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+  });
   it("never publishes merely because a copy was approved or an actor skipped attestation", async () => {
     await expect(publishAnonymousOutcomeCopy(form())).rejects.toThrow("Explicitly confirm");
     expect(m.transaction).not.toHaveBeenCalled();

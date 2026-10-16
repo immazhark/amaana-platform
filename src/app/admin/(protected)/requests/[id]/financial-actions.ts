@@ -126,7 +126,12 @@ export async function reviewAssistanceFinancialCorroboration(form: FormData) {
     if (!item || item.deliveryRecord.assistanceRequestId !== input.assistanceRequestId) {
       throw new Error("Financial corroboration does not belong to this assistance case.");
     }
-    if (item.status === input.state) return;
+    if (item.status === input.state) {
+      if (item.reviewedById !== actor.id) {
+        throw new Error("Another finance reviewer already completed this decision. Reload the case.");
+      }
+      return; // replay by the original finance reviewer only
+    }
     if (item.status === AssistanceFinancialReconciliationState.VOIDED ||
         (item.status === AssistanceFinancialReconciliationState.EVIDENCE_REVIEWED &&
          input.state !== AssistanceFinancialReconciliationState.VOIDED)) {
