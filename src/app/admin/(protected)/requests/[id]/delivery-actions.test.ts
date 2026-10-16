@@ -67,6 +67,19 @@ describe("private delivery reporting and independent evidence confirmation", () 
       metadata: { deliveryRecordId: "delivery-synthetic", kind: "FINANCIAL", evidenceLinked: true },
     } });
   });
+  it("accepts replaying the original no-proof report after evidence was later attached", async () => {
+    m.record.mockResolvedValue({
+      assistanceRequestId: "case-synthetic", kind: "FINANCIAL",
+      summary: "Medical support reportedly provided directly to a verified institution.",
+      occurredOn: new Date("2026-10-15T00:00:00Z"),
+      amountInr: { toFixed: () => "1250.00" },
+      evidenceDocumentId: "private-proof",
+    });
+    await expect(reportAssistanceDelivery(form({ evidenceDocumentId: "" })))
+      .rejects.toThrow("NAVIGATE");
+    expect(m.create).not.toHaveBeenCalled();
+  });
+
   it("rejects mismatched case evidence before any delivery write", async () => {
     m.document.mockResolvedValue(null);
     await expect(reportAssistanceDelivery(form())).rejects.toThrow("does not belong");
