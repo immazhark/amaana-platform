@@ -23,9 +23,11 @@ type ViewportProps = {
   onClickCapture?: (event: ReactMouseEvent<HTMLDivElement>) => void;
 };
 class TestElement {
-  constructor(private readonly interactive = false) {}
+  constructor(private readonly kind: "plain" | "form" | "link" = "plain") {}
   closest(selector: string) {
-    return this.interactive && selector.includes("textarea") ? this : null;
+    if (this.kind === "form" && selector.includes("textarea")) return this;
+    if (this.kind === "link" && selector.split(",").includes("a")) return this;
+    return null;
   }
 }
 function handlers(): ViewportProps {
@@ -72,12 +74,30 @@ describe("carousel pointer and browser lifecycle", () => {
   it("does not hijack textareas, form controls, or interactive descendants", () => {
     const ui = handlers();
     const viewport = viewportNode();
-    ui.onPointerDown?.(event(new TestElement(true), viewport));
+    ui.onPointerDown?.(event(new TestElement("form"), viewport));
     const movement = event(new TestElement(), viewport, 70);
     ui.onPointerMove?.(movement);
     expect(viewport.setPointerCapture).not.toHaveBeenCalled();
     expect(movement.preventDefault).not.toHaveBeenCalled();
     expect(viewport.scrollLeft).toBe(120);
+  });
+  it("keeps whole-card anchor links draggable without breaking click suppression", () => {
+    const ui = handlers();
+    const viewport = viewportNode();
+    const link = new TestElement("link");
+    ui.onPointerDown?.(event(link, viewport));
+    const movement = event(link, viewport, 70);
+    ui.onPointerMove?.(movement);
+    expect(viewport.setPointerCapture).toHaveBeenCalledOnce();
+    expect(movement.preventDefault).toHaveBeenCalledOnce();
+    ui.onPointerUp?.(event(link, viewport, 70));
+    const click = { preventDefault: vi.fn(), stopPropagation: vi.fn() } as unknown as ReactMouseEvent<HTMLDivElement>;
+    ui.onClickCapture?.(click);
+    expect(click.preventDefault).toHaveBeenCalledOnce();
+    ui.onPointerDown?.(event(link, viewport));
+    const genuineClick = { preventDefault: vi.fn(), stopPropagation: vi.fn() } as unknown as ReactMouseEvent<HTMLDivElement>;
+    ui.onClickCapture?.(genuineClick);
+    expect(genuineClick.preventDefault).not.toHaveBeenCalled();
   });
   it("captures mouse dragging once and restores scroll snapping after lost release", () => {
     const ui = handlers();
@@ -107,7 +127,7 @@ describe("carousel pointer and browser lifecycle", () => {
     ui.onPointerDown?.(event(blank, viewport));
     ui.onPointerMove?.(event(blank, viewport, 70));
     expect(viewport.style.scrollSnapType).toBe("none");
-    ui.onPointerDown?.(event(new TestElement(true), viewport));
+    ui.onPointerDown?.(event(new TestElement("form"), viewport));
     expect(viewport.style.removeProperty).toHaveBeenCalledWith("scroll-snap-type");
     const move = event(blank, viewport, 50);
     ui.onPointerMove?.(move);

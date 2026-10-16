@@ -245,7 +245,7 @@ export function ScrollCarousel({
           suppressClick.current = false;
           if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 ||
               (event.target instanceof Element && event.target.closest(
-                'a,button,input,textarea,select,summary,video,[contenteditable="true"],[role="button"]',
+                'button,input,textarea,select,summary,video,[contenteditable="true"],[role="button"]',
               ))) return;
           drag.current = {x:event.clientX, scroll:event.currentTarget.scrollLeft, moved:false};
         }}
