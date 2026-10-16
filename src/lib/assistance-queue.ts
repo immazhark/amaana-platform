@@ -1,4 +1,4 @@
-import { AssistanceStatus, type Prisma } from "@prisma/client";
+import { AssistanceStatus, type AssistanceVerificationDecision, type Prisma } from "@prisma/client";
 
 export const ASSISTANCE_QUEUE_STATUSES = Object.values(AssistanceStatus);
 export type AssistanceQueueFilters = {
@@ -56,6 +56,24 @@ export function assistanceQueueHref(filters: AssistanceQueueFilters, page = 1) {
       ...(page > 1 ? { page } : {}),
     },
   };
+}
+
+/** Keep the queue's completion signal aligned with the private review record.
+ * Draft decisions remain incomplete until an authorized reviewer records completion. */
+export function assistanceQueueVerificationLabel(
+  review: { decision: AssistanceVerificationDecision; completedAt: Date | null } | null,
+): string {
+  if (!review) return "Not started";
+  if (!review.completedAt) return "In progress";
+  const decisions: Record<AssistanceVerificationDecision, string> = {
+    PENDING: "Decision needs review",
+    APPROVED_PUBLIC: "Public appeal approved",
+    APPROVED_PRIVATE: "Private support approved",
+    APPROVED_PARTIAL: "Partial support approved",
+    REFERRED: "Referred",
+    DECLINED: "Declined",
+  };
+  return decisions[review.decision];
 }
 
 /** Operational elapsed age only; no invented urgency classification or SLA. */

@@ -1,4 +1,6 @@
 import { notFound } from "next/navigation";
+import Link from "@/components/navigation-link";
+import { assistanceQueueAge, assistanceQueueVerificationLabel } from "@/lib/assistance-queue";
 import {
   ASSISTANCE_CONFIDENTIALITY_LEVELS,
   ASSISTANCE_CONSENT_DECISIONS,
@@ -48,12 +50,16 @@ export default async function RequestDetailPage({ params }: Props) {
   const canCompleteVerification = hasPermission(user, "assistance.approve");
   const verificationLocked = converted;
 
+  const operationalAge = assistanceQueueAge(request.createdAt, new Date());
+
   return <>
+    <nav aria-label="Case navigation"><Link href="/admin">← Back to assistance queue</Link></nav>
     <div className="admin-heading">
       <div>
         <p className="eyebrow">{request.referenceNumber}</p>
         <h1>{request.applicantName}</h1>
         <p className="muted">{request.category.replaceAll("_", " ")} · {request.city} · received {request.createdAt.toLocaleDateString("en-IN", { dateStyle: "long" })}</p>
+        <p className="muted">Queue age: {operationalAge} · Verification: {assistanceQueueVerificationLabel(verification)}. Elapsed age is not an urgency assessment or deadline.</p>
       </div>
       <span className="status-badge">{request.status.replaceAll("_", " ")}</span>
     </div>

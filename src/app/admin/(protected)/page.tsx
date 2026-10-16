@@ -2,7 +2,7 @@ import Link from "@/components/navigation-link";
 import { redirect } from "next/navigation";
 import {
   ASSISTANCE_QUEUE_STATUSES, assistanceQueueAge, assistanceQueueAgeWhere, assistanceQueueAssignmentWhere,
-  assistanceQueueHref, parseAssistanceQueueFilters,
+  assistanceQueueHref, assistanceQueueVerificationLabel, parseAssistanceQueueFilters,
 } from "@/lib/assistance-queue";
 import { adminHomePathForPermissions } from "@/lib/admin-navigation";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
@@ -40,7 +40,9 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     select: {
       id: true, referenceNumber: true, applicantName: true, city: true,
       category: true, status: true, createdAt: true,
-      assignedTo: { select: { name: true } }, _count: { select: { documents: true } },
+      assignedTo: { select: { name: true } },
+      verification: { select: { decision: true, completedAt: true } },
+      _count: { select: { documents: true } },
     },
     orderBy: filters.order === "oldest"
       ? [{ createdAt: "asc" }, { id: "asc" }]
@@ -84,7 +86,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
       ] as const).map(item => <Link key={item.value} href={assistanceQueueHref({ ...filters, age: item.value })} aria-current={filters.age === item.value ? "page" : undefined}>{item.label}</Link>)}
     </div>
     <div className="filter-row" role="group" aria-label="Assistance request status filter"><strong>Status:</strong><Link href={assistanceQueueHref({ ...filters, status: undefined })} aria-current={!filters.status ? "page" : undefined}>All</Link>{ASSISTANCE_QUEUE_STATUSES.map(item => <Link key={item} href={assistanceQueueHref({ ...filters, status: item })} aria-current={filters.status === item ? "page" : undefined}>{item.replaceAll("_", " ")} ({counts.get(item) ?? 0})</Link>)}</div>
-    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Operational records"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Category</th><th>Status</th><th>Assigned to</th><th>Documents</th><th>Received</th><th>Request age</th></tr></thead><tbody>{requests.map(item => <tr key={item.id}><td><Link href={`/admin/requests/${item.id}`}><strong>{item.referenceNumber}</strong></Link></td><td>{item.applicantName}<br/><small>{item.city}</small></td><td>{item.category.replaceAll("_", " ")}</td><td><span className="status-badge">{item.status.replaceAll("_", " ")}</span></td><td>{item.assignedTo?.name ?? "Unassigned"}</td><td>{item._count.documents}</td><td>{item.createdAt.toLocaleDateString("en-IN")}</td><td>{assistanceQueueAge(item.createdAt, now)}</td></tr>)}</tbody></table>{requests.length === 0 && <p className="empty-state">No requests match this view.</p>}</div>
+    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Operational records"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Category</th><th>Status</th><th>Verification</th><th>Assigned to</th><th>Documents</th><th>Received</th><th>Request age</th></tr></thead><tbody>{requests.map(item => <tr key={item.id}><td><Link href={`/admin/requests/${item.id}`}><strong>{item.referenceNumber}</strong></Link></td><td>{item.applicantName}<br/><small>{item.city}</small></td><td>{item.category.replaceAll("_", " ")}</td><td><span className="status-badge">{item.status.replaceAll("_", " ")}</span></td><td>{assistanceQueueVerificationLabel(item.verification)}</td><td>{item.assignedTo?.name ?? "Unassigned"}</td><td>{item._count.documents}</td><td>{item.createdAt.toLocaleDateString("en-IN")}</td><td>{assistanceQueueAge(item.createdAt, now)}</td></tr>)}</tbody></table>{requests.length === 0 && <p className="empty-state">No requests match this view.</p>}</div>
     <nav className="filter-row" aria-label="Assistance request pagination">
       {pagination.hasPrevious && <Link href={assistanceQueueHref(filters, pagination.page - 1)}>Previous</Link>}
       <span>Page {pagination.page} of {pagination.totalPages} · {pagination.totalItems} records</span>

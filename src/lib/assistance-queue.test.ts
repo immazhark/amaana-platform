@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { assistanceQueueAge, assistanceQueueAgeWhere, assistanceQueueAssignmentWhere, assistanceQueueHref, parseAssistanceQueueFilters } from "./assistance-queue";
+import { assistanceQueueAge, assistanceQueueAgeWhere, assistanceQueueAssignmentWhere, assistanceQueueHref, assistanceQueueVerificationLabel, parseAssistanceQueueFilters } from "./assistance-queue";
 
 describe("private assistance queue triage", () => {
   it("accepts only known status, assignment and order values", () => {
@@ -29,6 +29,15 @@ describe("private assistance queue triage", () => {
     expect(assistanceQueueHref({ status: "UNDER_VERIFICATION", assignment: "mine", order: "oldest", age: "30d" }, 3))
       .toEqual({ pathname: "/admin", query: { status: "UNDER_VERIFICATION", assignment: "mine", order: "oldest", age: "30d", page: 3 } });
     expect(assistanceQueueHref({ assignment: "all", order: "newest", age: "all" })).toEqual({ pathname: "/admin", query: {} });
+  });
+  it("distinguishes incomplete verification from an approved review without exposing private notes", () => {
+    expect(assistanceQueueVerificationLabel(null)).toBe("Not started");
+    expect(assistanceQueueVerificationLabel({ decision: "APPROVED_PUBLIC", completedAt: null })).toBe("In progress");
+    const completedAt = new Date("2026-10-15T12:00:00Z");
+    expect(assistanceQueueVerificationLabel({ decision: "APPROVED_PUBLIC", completedAt })).toBe("Public appeal approved");
+    expect(assistanceQueueVerificationLabel({ decision: "APPROVED_PRIVATE", completedAt })).toBe("Private support approved");
+    expect(assistanceQueueVerificationLabel({ decision: "REFERRED", completedAt })).toBe("Referred");
+    expect(assistanceQueueVerificationLabel({ decision: "PENDING", completedAt })).toBe("Decision needs review");
   });
   const now = new Date("2026-10-15T12:00:00Z");
   it("builds exact elapsed-age predicates without a new SLA or case priority", () => {
