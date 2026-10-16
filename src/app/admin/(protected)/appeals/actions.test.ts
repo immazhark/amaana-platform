@@ -176,6 +176,33 @@ describe("appeal concurrent mutation guards", () => {
     expect(mocks.auditCreate).not.toHaveBeenCalled();
   });
 
+  it("restores a paused appeal with still-approved media without resetting its first publication", async () => {
+    const reviewedAt = new Date("2026-09-23T04:00:00.000Z");
+    const firstPublishedAt = new Date("2026-09-01T04:00:00.000Z");
+    const cover = {
+      id: "media-1", kind: "IMAGE", isPublic: true, privacyApprovedAt: reviewedAt,
+      publicUrl: "/media/reviewed.jpg",
+    };
+    mocks.appealFind.mockResolvedValue({
+      status: "PAUSED", updatedAt: reviewedAt, goalAmount: 1000,
+      publishedAt: firstPublishedAt, reviewedById: "reviewer-1",
+      beneficiaryDisplayName: null, coverImageUrl: cover.publicUrl, assistanceRequest: null,
+    });
+    mocks.mediaFind.mockResolvedValue(cover);
+    mocks.auditFind.mockResolvedValue({ metadata: {
+      privacyClass: "GREEN_PUBLIC", websiteApproved: true, provenanceConfirmed: true,
+      containsPrivateDocument: false, consentStatus: "DOCUMENTED", heroEligible: true,
+    } });
+
+    await transitionAppeal(form({ id: "appeal-1", status: "PUBLISHED", expectedUpdatedAt: reviewedAt.toISOString() }));
+
+    expect(mocks.mediaFind).toHaveBeenCalledTimes(2);
+    expect(mocks.updateManyAppeal).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ status: "PUBLISHED", publishedAt: firstPublishedAt }),
+    }));
+    expect(mocks.updateTag).toHaveBeenCalledExactlyOnceWith("appeals");
+  });
+
   it("rechecks cover approval inside the transaction before restoring a paused appeal", async () => {
     const reviewedAt = new Date("2026-09-23T04:00:00.000Z");
     const cover = {
