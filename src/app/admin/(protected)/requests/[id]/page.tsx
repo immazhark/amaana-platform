@@ -9,7 +9,7 @@ import {
 } from "@/lib/assistance-outcome-disclosure";
 import {
   proposeAnonymousOutcomeCopy, publishAnonymousOutcomeCopy, reviewAnonymousOutcomeCopy,
-  reconcileAnonymousOutcomeDisclosures,
+  reconcileAnonymousOutcomeDisclosures, urgentlyWithdrawAnonymousOutcomeCopy,
 } from "./disclosure-actions";
 import { linkAssistanceDeliveryEvidence, reportAssistanceDelivery, reviewAssistanceDelivery } from "./delivery-actions";
 import { FOLLOW_UP_SUMMARY_LIMIT, MAX_OPEN_FOLLOW_UPS_PER_CASE, eligibleFollowUpStaffWhere, followUpDueLabel,
@@ -642,6 +642,29 @@ export default async function RequestDetailPage({ params }: Props) {
                             {item.disclosure.state === "PUBLISHED"
                               ? "Withdraw this public note immediately"
                               : "Withdraw anonymous-copy approval or proposal"}
+                          </button>
+                        </form>}
+                      {mayReportOutcome && !mayApproveAnonymousCopy &&
+                        item.disclosure.state !== "WITHDRAWN" &&
+                        <form action={urgentlyWithdrawAnonymousOutcomeCopy} className="field">
+                          <input type="hidden" name="id" value={id}/>
+                          <input type="hidden" name="disclosureId" value={item.disclosure.id}/>
+                          <input type="hidden" name="expectedUpdatedAt"
+                            value={item.disclosure.updatedAt.toISOString()}/>
+                          <input type="hidden" name="decision" value="WITHDRAWN"/>
+                          <label htmlFor={`copy-urgent-reason-${item.disclosure.id}`}>
+                            Reason to withdraw this anonymous copy
+                          </label>
+                          <select id={`copy-urgent-reason-${item.disclosure.id}`}
+                            name="withdrawalReason" required defaultValue="">
+                            <option value="" disabled>Choose a documented reason</option>
+                            {Object.entries(ANONYMOUS_COPY_WITHDRAWAL_REASONS).map(([value, title]) =>
+                              <option key={value} value={value}>{title}</option>)}
+                          </select>
+                          <p className="muted">Urgent privacy withdrawal is available to authorized
+                            assistance staff. It cannot publish or approve content.</p>
+                          <button className="button secondary" type="submit">
+                            Withdraw anonymous copy now
                           </button>
                         </form>}
                     </> : mayReportOutcome && request.verification?.confidentialityLevel === "STANDARD" &&
