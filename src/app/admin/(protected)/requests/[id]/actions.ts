@@ -412,25 +412,28 @@ export async function convertToAppeal(formData: FormData) {
   redirect(`/admin/requests/${id}`);
 }
 
-/** Compare legacy absolute and canonical relative URLs without granting access
- * to any unreviewed object. The storage key remains private and immutable. */
-function coverPublicationUrls(url: string): string[] {
+/** Match canonical and legacy absolute aliases for an approved managed cover.
+ * Public storage keys are opaque; do not interpret arbitrary external URLs. */
+function coverPublicationUrls(url: string): { urls: string[]; storageKey: string | null } {
   const variants = new Set([url]);
+  let storageKey: string | null = null;
   try {
     const parsed = new URL(url, "https://amaanafoundation.org");
-    if ((url.startsWith("/media/") ||
-        (parsed.protocol === "https:" &&
-         ["amaanafoundation.org", "www.amaanafoundation.org"].includes(parsed.hostname) &&
-         parsed.pathname.startsWith("/media/"))) &&
-        parsed.pathname.startsWith("/media/")) {
-      const path = parsed.pathname + parsed.search + parsed.hash;
+    const sameOrigin = parsed.protocol === "https:" &&
+      ["amaanafoundation.org", "www.amaanafoundation.org"].includes(parsed.hostname);
+    if ((url.startsWith("/media/") || sameOrigin) &&
+        /^\/media\/\d{4}\/[0-9a-f-]{36}\.(?:pdf|jpg|png|webp)$/i.test(parsed.pathname) &&
+        !parsed.search && !parsed.hash) {
+      const path = parsed.pathname;
+      storageKey = path.slice("/media/".length);
       variants.add(path);
       variants.add(`https://amaanafoundation.org${path}`);
+      variants.add(`https://www.amaanafoundation.org${path}`);
     }
   } catch {
-    // Only an exact stored URL can match an invalid/legacy cover.
+    // Invalid old cover paths match only their exact stored URL, never a key.
   }
-  return [...variants];
+  return { urls: [...variants], storageKey };
 }
 
 /**
@@ -553,9 +556,15 @@ export async function withdrawConvertedAppealDisclosure(formData: FormData) {
     // must be unpublished atomically with the consent revocation. This can
     // affect a programme reusing the same asset: privacy takes precedence.
     const cover = request.appeal.coverImageUrl?.trim() ?? "";
-    const coverAssets = cover
+    const matching = cover ? coverPublicationUrls(cover) : null;
+    const coverAssets = matching
       ? await tx.mediaAsset.findMany({
-          where: { isPublic: true, publicUrl: { in: coverPublicationUrls(cover) } },
+          where: matching.storageKey
+            ? { isPublic: true, OR: [
+                { publicUrl: { in: matching.urls } },
+                { storageKey: matching.storageKey },
+              ] }
+            : { isPublic: true, publicUrl: { in: matching.urls } },
           select: { id: true, updatedAt: true, publicUrl: true, storageKey: true },
         })
       : [];
