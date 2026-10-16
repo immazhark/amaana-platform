@@ -10,7 +10,7 @@ import {
   NotificationChannel,
   ZakatReviewStatus,
 } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   ASSISTANCE_CONFIDENTIALITY_LEVELS,
@@ -410,4 +410,155 @@ export async function convertToAppeal(formData: FormData) {
   });
   refreshCommittedRequest(id);
   redirect(`/admin/requests/${id}`);
+}
+
+/**
+ * Last-resort one-way privacy stop after case-to-appeal conversion.
+ * Ordinary verification stays locked. Revocation and appeal closure/pause must
+ * commit together so neither fundraising nor previously public copy outlives
+ * the withdrawal in the database.
+ */
+export async function withdrawConvertedAppealDisclosure(formData: FormData) {
+  const user = await requirePermission("assistance.approve");
+  if (!hasPermission(user, "appeal.approve")) {
+    throw new Error("Both assistance and appeal approval permission are required.");
+  }
+
+  function textField(name: string): string {
+    const value = singleFormValue(formData, name);
+    if (value !== null && typeof value !== "string") {
+      throw new Error(`${name} must be a text field.`);
+    }
+    return value ?? "";
+  }
+
+  const id = textField("id").trim();
+  const reason = textField("reason").trim();
+  const confirmation = textField("confirmWithdrawal");
+  const readVersion = (field: string) => {
+    const raw = textField(field);
+    const parsed = new Date(raw);
+    if (!raw || Number.isNaN(parsed.getTime())) {
+      throw new Error(`Invalid ${field}. Refresh the request before withdrawing disclosure.`);
+    }
+    return parsed;
+  };
+  const expectedRequestUpdatedAt = readVersion("expectedRequestUpdatedAt");
+  const expectedVerificationUpdatedAt = readVersion("expectedVerificationUpdatedAt");
+  const expectedAppealUpdatedAt = readVersion("expectedAppealUpdatedAt");
+  if (!id) throw new Error("Assistance request identity is required.");
+  if (confirmation !== "on") throw new Error("Explicit confirmation is required to withdraw public disclosure.");
+  if (reason.length < 20 || reason.length > 500) {
+    throw new Error("Record a factual private withdrawal reason between 20 and 500 characters.");
+  }
+
+  const result = await withSerializableTransactionRetry(async tx => {
+    const request = await tx.assistanceRequest.findUniqueOrThrow({
+      where: { id },
+      select: {
+        id: true, status: true, appealId: true, updatedAt: true,
+        appeal: {
+          select: {
+            id: true, slug: true, status: true, updatedAt: true,
+            initiative: { select: { slug: true } },
+            cause: { select: { slug: true } },
+          },
+        },
+        verification: {
+          select: {
+            id: true, updatedAt: true, confidentialityLevel: true,
+            publicNameConsent: true, photoConsent: true,
+            medicalDetailsConsent: true, institutionNameConsent: true,
+            archiveConsent: true,
+          },
+        },
+      },
+    });
+
+    if (request.status !== AssistanceStatus.CONVERTED_TO_APPEAL ||
+        !request.appealId || !request.appeal || request.appeal.id !== request.appealId ||
+        !request.verification) {
+      throw new Error("An existing linked appeal and verification are required for emergency disclosure withdrawal.");
+    }
+    if (request.updatedAt.getTime() !== expectedRequestUpdatedAt.getTime() ||
+        request.appeal.updatedAt.getTime() !== expectedAppealUpdatedAt.getTime() ||
+        request.verification.updatedAt.getTime() !== expectedVerificationUpdatedAt.getTime()) {
+      throw new Error("This request, verification or appeal changed while you were reviewing it. Refresh before withdrawing disclosure.");
+    }
+
+    const status = request.appeal.status;
+    if (!["PUBLISHED", "FUNDED", "CLOSED", "PAUSED"].includes(status)) {
+      throw new Error("The linked appeal is not in a public or paused disclosure state.");
+    }
+    const previous = request.verification;
+    if (previous.confidentialityLevel === "HIGHLY_SENSITIVE" &&
+        previous.publicNameConsent === "NOT_ALLOWED" &&
+        previous.photoConsent === "NOT_ALLOWED" &&
+        previous.medicalDetailsConsent === "NOT_ALLOWED" &&
+        previous.institutionNameConsent === "NOT_ALLOWED" &&
+        previous.archiveConsent === "NOT_ALLOWED" &&
+        (status === "CLOSED" || status === "PAUSED")) {
+      throw new Error("Public disclosure has already been withdrawn for this appeal.");
+    }
+
+    const nextStatus = status === "PUBLISHED" ? "PAUSED" : status === "FUNDED" ? "CLOSED" : status;
+    const verificationWrite = await tx.assistanceVerification.updateMany({
+      where: { id: previous.id, assistanceRequestId: id, updatedAt: expectedVerificationUpdatedAt },
+      data: {
+        confidentialityLevel: "HIGHLY_SENSITIVE",
+        publicNameConsent: "NOT_ALLOWED",
+        photoConsent: "NOT_ALLOWED",
+        medicalDetailsConsent: "NOT_ALLOWED",
+        institutionNameConsent: "NOT_ALLOWED",
+        archiveConsent: "NOT_ALLOWED",
+      },
+    });
+    if (verificationWrite.count !== 1) {
+      throw new Error("Verification changed while you were reviewing it. Refresh before withdrawing disclosure.");
+    }
+    const appealWrite = await tx.appeal.updateMany({
+      where: { id: request.appeal.id, status, updatedAt: expectedAppealUpdatedAt },
+      data: { status: nextStatus, isFeatured: false, featuredOrder: null },
+    });
+    if (appealWrite.count !== 1) {
+      throw new Error("Appeal changed while you were reviewing it. Refresh before withdrawing disclosure.");
+    }
+    await tx.auditEvent.create({
+      data: {
+        actorId: user.id,
+        action: "assistance.public_disclosure_withdrawn",
+        entityType: "AssistanceRequest",
+        entityId: id,
+        metadata: {
+          linkedAppealId: request.appeal.id,
+          reason,
+          previousAppealStatus: status,
+          nextAppealStatus: nextStatus,
+          previousConfidentiality: previous.confidentialityLevel,
+        },
+      },
+    });
+    return {
+      appealId: request.appeal.id,
+      slug: request.appeal.slug,
+      initiativeSlug: request.appeal.initiative?.slug,
+      causeSlug: request.appeal.cause?.slug,
+    };
+  });
+
+  // Do not replay a committed revocation if a cache adapter fails. Invalidate
+  // every public route independently and show a conspicuous staff warning.
+  let refreshDelayed = false;
+  try { updateTag("appeals"); } catch { refreshDelayed = true; }
+  const paths = [
+    `/admin/requests/${id}`, `/admin/appeals/${result.appealId}`, "/admin/appeals",
+    "/", "/appeals", `/appeals/${result.slug}`, `/donate/${result.slug}`,
+    "/our-work", "/impact",
+    ...(result.initiativeSlug ? [`/our-work/${result.initiativeSlug}`] : []),
+    ...(result.causeSlug ? [`/our-work/${result.causeSlug}`] : []),
+  ];
+  for (const path of paths) {
+    try { revalidatePath(path); } catch { refreshDelayed = true; }
+  }
+  redirect(`/admin/requests/${encodeURIComponent(id)}?privacy=${refreshDelayed ? "refresh-delayed" : "withdrawn"}`);
 }
