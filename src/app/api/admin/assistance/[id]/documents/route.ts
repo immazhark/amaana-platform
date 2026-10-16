@@ -68,13 +68,14 @@ export async function POST(request: Request, { params }: Props) {
       verification: { select: { decision: true, completedAt: true } },
       _count: { select: { documents: true } },
       deliveryRecords: {
-        where: { state: "REPORTED" }, select: { id: true }, take: 1,
+        where: { state: "REPORTED", reportedById: user.id, evidenceDocumentId: null },
+        select: { id: true }, take: 1,
       },
     },
   });
   if (!caseRecord || !canReportPrivateDelivery(caseRecord.status, caseRecord.appealId, caseRecord.verification) ||
       caseRecord.deliveryRecords.length === 0) {
-    return failure("Only cases with an unreviewed delivery report can receive this proof.", 409);
+    return failure("Only the reporter of an unreviewed delivery missing proof can upload new evidence.", 409);
   }
   if (caseRecord._count.documents >= MAX_CASE_DOCUMENTS) {
     return failure("This case reached the private evidence limit. Ask an administrator for review.", 409);
@@ -97,7 +98,10 @@ export async function POST(request: Request, { params }: Props) {
           status: true, appealId: true,
           verification: { select: { decision: true, completedAt: true } },
           _count: { select: { documents: true } },
-          deliveryRecords: { where: { state: "REPORTED" }, select: { id: true }, take: 1 },
+          deliveryRecords: {
+            where: { state: "REPORTED", reportedById: user.id, evidenceDocumentId: null },
+            select: { id: true }, take: 1,
+          },
         },
       });
       if (!current || !canReportPrivateDelivery(current.status, current.appealId, current.verification) ||

@@ -87,6 +87,12 @@ describe("staff-only private delivery-proof upload", () => {
     expect((await POST(request(), params)).status).toBe(409);
     expect(m.upload).not.toHaveBeenCalled();
   });
+  it("only allows the original reporter of an unreviewed report missing proof", async () => {
+    m.caseFind.mockResolvedValue({ ...eligible, deliveryRecords: [] });
+    const response = await POST(request(), params);
+    expect(response.status).toBe(409);
+    expect(m.upload).not.toHaveBeenCalled();
+  });
   it("caps evidence growth before private storage is written", async () => {
     m.caseFind.mockResolvedValue({ ...eligible, _count: { documents: 30 } });
     expect((await POST(request(), params)).status).toBe(409);
@@ -98,6 +104,14 @@ describe("staff-only private delivery-proof upload", () => {
     expect(await result.json()).toEqual({ documentId: "document-new" });
     expect(result.headers.get("Cache-Control")).toBe("private, no-store");
     expect(m.upload).toHaveBeenCalledWith(expect.any(File), id);
+    expect(m.caseFind).toHaveBeenCalledWith(expect.objectContaining({
+      select: expect.objectContaining({
+        deliveryRecords: {
+          where: { state: "REPORTED", reportedById: "staff-1", evidenceDocumentId: null },
+          select: { id: true }, take: 1,
+        },
+      }),
+    }));
     expect(m.documentCreate).toHaveBeenCalledWith({
       data: { assistanceRequestId: id, ...evidence }, select: { id: true },
     });

@@ -163,9 +163,11 @@ export default async function RequestDetailPage({ params }: Props) {
           <p className="muted">Approved request ≠ delivered support. Record only what was actually delivered;
             another authorized reviewer must confirm supporting evidence. This register
             does not post donations or publish impact and is never visible to applicants or donors.</p>
-          {mayReportDelivery && deliveries.some(item => item.state === "REPORTED") &&
+          {mayReportDelivery && deliveries.some(item => item.state === "REPORTED" &&
+              item.reportedById === user.id && !item.evidenceDocumentId) &&
             request.documents.length < 30 && <AdminPrivateEvidenceUpload caseId={id}/>}
-          {mayReportDelivery && deliveries.some(item => item.state === "REPORTED") &&
+          {mayReportDelivery && deliveries.some(item => item.state === "REPORTED" &&
+              item.reportedById === user.id && !item.evidenceDocumentId) &&
             request.documents.length >= 30 &&
             <p className="muted">This case has reached the private document limit.
               Ask an authorized reviewer to evaluate existing evidence.</p>}
