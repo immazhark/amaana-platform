@@ -10,7 +10,7 @@ vi.mock("@/lib/prisma", () => ({ prisma: {
 } }));
 vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerification: vi.fn(), updateRequest: vi.fn() }));
 vi.mock("./milestone-actions", () => ({ addPrivateMilestone: vi.fn(), redactPrivateMilestone: vi.fn() }));
-vi.mock("./delivery-actions", () => ({ reportAssistanceDelivery: vi.fn(), reviewAssistanceDelivery: vi.fn() }));
+vi.mock("./delivery-actions", () => ({ linkAssistanceDeliveryEvidence: vi.fn(), reportAssistanceDelivery: vi.fn(), reviewAssistanceDelivery: vi.fn() }));
 vi.mock("./follow-up-actions", () => ({
   createAssistanceFollowUp: vi.fn(), resolveAssistanceFollowUp: vi.fn(),
   rescheduleAssistanceFollowUp: vi.fn(), assignAssistanceFollowUp: vi.fn(),

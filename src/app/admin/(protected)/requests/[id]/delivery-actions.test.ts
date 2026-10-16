@@ -7,7 +7,7 @@ vi.mock("@/lib/auth", () => ({ requirePermission: m.permission }));
 vi.mock("@/lib/prisma-transaction", () => ({ withSerializableTransactionRetry: m.transaction }));
 vi.mock("next/cache", () => ({ revalidatePath: m.cache }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
-import { reportAssistanceDelivery, reviewAssistanceDelivery } from "./delivery-actions";
+import { linkAssistanceDeliveryEvidence, reportAssistanceDelivery, reviewAssistanceDelivery } from "./delivery-actions";
 
 const version = new Date("2026-10-16T08:00:00.000Z");
 const uid = "ac637580-d949-4c62-9d98-d97c4768425e";
@@ -134,6 +134,43 @@ describe("private delivery reporting and independent evidence confirmation", () 
     expect(m.update).not.toHaveBeenCalled();
     expect(m.audit).not.toHaveBeenCalled();
   });
+  it("permits the reporter to link late-arriving same-case evidence exactly once", async () => {
+    m.record.mockResolvedValue({
+      assistanceRequestId: "case-synthetic", reportedById: "approver-1",
+      state: "REPORTED", evidenceDocumentId: null, updatedAt: version,
+    });
+    const input = form();
+    await expect(linkAssistanceDeliveryEvidence(input)).rejects.toThrow("NAVIGATE");
+    expect(m.document).toHaveBeenCalledWith({
+      where: { id: "private-proof", assistanceRequestId: "case-synthetic" },
+      select: { id: true },
+    });
+    expect(m.update).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        assistanceRequestId: "case-synthetic", state: "REPORTED",
+        evidenceDocumentId: null, updatedAt: version,
+      }),
+      data: { evidenceDocumentId: "private-proof" },
+    }));
+    expect(m.audit).toHaveBeenCalledWith({ data: {
+      actorId: "approver-1", action: "assistance.delivery_evidence_linked",
+      entityType: "AssistanceRequest", entityId: "case-synthetic",
+      metadata: { deliveryRecordId: "delivery-synthetic", evidenceLinked: true },
+    } });
+  });
+  it("rejects post-review proof replacement and other reporters' attachments", async () => {
+    const data = form();
+    m.record.mockResolvedValue({ assistanceRequestId: "case-synthetic",
+      reportedById: "other-staff", state: "REPORTED",
+      evidenceDocumentId: null, updatedAt: version });
+    await expect(linkAssistanceDeliveryEvidence(data)).rejects.toThrow("reporting staff member");
+    m.record.mockResolvedValue({ assistanceRequestId: "case-synthetic",
+      reportedById: "approver-1", state: "CONFIRMED",
+      evidenceDocumentId: "private-proof", updatedAt: version });
+    await expect(linkAssistanceDeliveryEvidence(data)).rejects.toThrow("cannot be changed");
+    expect(m.update).not.toHaveBeenCalled();
+  });
+
   it("denies access before private DB queries when permission is missing", async () => {
     m.permission.mockRejectedValue(new Error("Forbidden"));
     await expect(reviewAssistanceDelivery(form())).rejects.toThrow("Forbidden");
