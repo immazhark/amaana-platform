@@ -1,3 +1,7 @@
+## 2026-10-17 — Media publication post-commit integrity (IN PROGRESS)
+
+Ownership: CHATGPT_ACTIVE. Verified sole-writer continuation on PR #292 `fix/direct-transfer-feedback-20261013` targeting `main` from head `09c8f899c71b7c974a011852cf28a8d946c443ee`. Scope: protect audited publish/unpublish actions from postcommit refresh failure and invalidate precisely affected public media, programme, faith and story routes, while preserving transactional publication and privacy review. Add focused source-backed regression cases first, then code. No CI pipeline, migration, dependency, merge or deployment.
+
 ## 2026-10-17 — Linked appeal cover media withdrawal + managed URL alias safety
 
 Ownership: HANDOFF_PENDING. ChatGPT completed one sole-writer source batch on existing PR #292 `fix/direct-transfer-feedback-20261013`, base `main`, beginning from verified HEAD `c70e64fbd859d2ee0f7ea10af843aec4018d2a71`. Source `cb0a24b514c023dc2b52fac5d134e61a200a3467`, `e9751cf400fb5727d16c599af74ed823f0877be3`, `089b27ad6f522f88d32b00350d0817a304e32bf8`, `856ccc61a4c264a78d706fc5512e52a38a311404`, `bb03d5aa66781521a3b105380f383281017557b3`; UI `2528cac5426adb8bdb36c8c1c454cf9480a91441`; regression cases `ee1179e3f5e11c468fbb2418519ee05f255463f6`, `49418e62878e08a107ba05237c7d87324cab0753`, `c717fc115b9ca3bdc2601bddd999fe64348f0a39`, `0151737c270cc841a3bc377e38ec1e0807231bd2`; master register `1f54fa0b19555d5f690d480f3eea35d9e0febc5a`, ledger `17da3202b5430fc858be9f4c6e99e83ff196f2a6`.
