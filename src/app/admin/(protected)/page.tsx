@@ -2,7 +2,7 @@ import Link from "@/components/navigation-link";
 import { redirect } from "next/navigation";
 import {
   ASSISTANCE_QUEUE_STATUSES, assistanceQueueAge, assistanceQueueAgeWhere, assistanceQueueAssignmentWhere,
-  assistanceQueueDeliveryWhere, assistanceQueueFollowUpWhere, assistanceQueueHref, assistanceQueueReviewWhere, assistanceQueueVerificationLabel, parseAssistanceQueueFilters,
+  assistanceQueueDeliveryWhere, assistanceQueueFollowUpWhere, assistanceQueueOutcomeWhere, assistanceQueueHref, assistanceQueueReviewWhere, assistanceQueueVerificationLabel, parseAssistanceQueueFilters,
 } from "@/lib/assistance-queue";
 import { adminHomePathForPermissions } from "@/lib/admin-navigation";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
@@ -13,7 +13,7 @@ import { indiaCalendarDay } from "@/lib/assistance-follow-up";
 
 type Props = { searchParams: Promise<{
   status?: string | string[]; page?: string | string[];
-  assignment?: string | string[]; order?: string | string[]; age?: string | string[]; review?: string | string[]; city?: string | string[]; followUp?: string | string[]; delivery?: string | string[];
+  assignment?: string | string[]; order?: string | string[]; age?: string | string[]; review?: string | string[]; city?: string | string[]; followUp?: string | string[]; delivery?: string | string[]; outcome?: string | string[];
 }> };
 
 export default async function AdminQueuePage({ searchParams }: Props) {
@@ -29,6 +29,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     ...assistanceQueueReviewWhere(filters.review),
     ...assistanceQueueFollowUpWhere(filters.followUp, localToday, user.id),
     ...assistanceQueueDeliveryWhere(filters.delivery),
+    ...assistanceQueueOutcomeWhere(filters.outcome),
     ...(filters.city ? { city: filters.city } : {}),
   };
   const where = { ...scopedWhere, ...(filters.status ? { status: filters.status } : {}) };
@@ -79,6 +80,22 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     if (row.state === "CONFIRMED") counts.confirmed = row._count._all;
     deliveryByCase.set(row.assistanceRequestId, counts);
   }
+  // Count only state and case references; never load private outcome narratives.
+  const outcomeCounts = requests.length ? await prisma.assistanceOutcomeObservation.groupBy({
+    by: ["assistanceRequestId", "state"],
+    where: {
+      assistanceRequestId: { in: requests.map(request => request.id) },
+      state: { in: ["REPORTED", "REVIEWED"] },
+    },
+    _count: { _all: true },
+  }) : [];
+  const outcomeByCase = new Map<string, { reported: number; reviewed: number }>();
+  for (const row of outcomeCounts) {
+    const current = outcomeByCase.get(row.assistanceRequestId) ?? { reported: 0, reviewed: 0 };
+    if (row.state === "REPORTED") current.reported = row._count._all;
+    if (row.state === "REVIEWED") current.reviewed = row._count._all;
+    outcomeByCase.set(row.assistanceRequestId, current);
+  }
   const myOpenTasks = requests.length ? await prisma.assistanceFollowUp.groupBy({
     by: ["assistanceRequestId"],
     where: {
@@ -120,6 +137,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
       {filters.review !== "all" && <input type="hidden" name="review" value={filters.review}/>}
       {filters.followUp !== "all" && <input type="hidden" name="followUp" value={filters.followUp}/>}
       {filters.delivery !== "all" && <input type="hidden" name="delivery" value={filters.delivery}/>}
+      {filters.outcome !== "all" && <input type="hidden" name="outcome" value={filters.outcome}/>}
       <select id="assistance-queue-city" name="city" defaultValue={filters.city ?? ""}>
         <option value="">All reported cities</option>
         {filters.city && !cityCounts.some(item => item.city === filters.city) &&
@@ -170,8 +188,20 @@ export default async function AdminQueuePage({ searchParams }: Props) {
         <Link key={item.value} href={assistanceQueueHref({ ...filters, delivery: item.value })}
           aria-current={filters.delivery === item.value ? "page" : undefined}>{item.label}</Link>)}
     </div>
+    <div className="filter-row" role="group" aria-label="Private operational outcome filter">
+      <strong>Internal outcome review:</strong>{([
+        { value: "all", label: "All observations" },
+        { value: "reported", label: "Awaiting independent review" },
+        { value: "reviewed", label: "Historically reviewed" },
+        { value: "none", label: "No active observation" },
+      ] as const).map(item => <Link key={item.value}
+        href={assistanceQueueHref({ ...filters, outcome: item.value })}
+        aria-current={filters.outcome === item.value ? "page" : undefined}>
+        {item.label}
+      </Link>)}
+    </div>
     <div className="filter-row" role="group" aria-label="Assistance request status filter"><strong>Status:</strong><Link href={assistanceQueueHref({ ...filters, status: undefined })} aria-current={!filters.status ? "page" : undefined}>All</Link>{ASSISTANCE_QUEUE_STATUSES.map(item => <Link key={item} href={assistanceQueueHref({ ...filters, status: item })} aria-current={filters.status === item ? "page" : undefined}>{item.replaceAll("_", " ")} ({counts.get(item) ?? 0})</Link>)}</div>
-    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Operational records"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Category</th><th>Status</th><th>Verification</th><th>Assigned to</th><th>Documents</th><th>Follow-up logs</th><th>Open tasks</th><th>My tasks</th><th>Delivery reports pending</th><th>Delivery reports historically reviewed</th><th>Next staff-set date</th><th>Received</th><th>Request age</th></tr></thead><tbody>{requests.map(item => {
+    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Operational records"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Category</th><th>Status</th><th>Verification</th><th>Assigned to</th><th>Documents</th><th>Follow-up logs</th><th>Open tasks</th><th>My tasks</th><th>Delivery reports pending</th><th>Delivery reports historically reviewed</th><th>Private outcome review</th><th>Next staff-set date</th><th>Received</th><th>Request age</th></tr></thead><tbody>{requests.map(item => {
       const tasks = tasksByCase.get(item.id);
       const due = tasks?._min.dueOn;
       const followUp = followUpsByCase.get(item.id);
@@ -181,6 +211,8 @@ export default async function AdminQueuePage({ searchParams }: Props) {
           <td>{myTasksByCase.get(item.id) ?? 0}</td>
           <td>{deliveryByCase.get(item.id)?.reported ?? 0}</td>
           <td>{deliveryByCase.get(item.id)?.confirmed ?? 0}</td>
+          <td>{outcomeByCase.get(item.id)?.reported ?? 0} awaiting ·
+            {" "}{outcomeByCase.get(item.id)?.reviewed ?? 0} reviewed (historical)</td>
           <td>{due
             ? <span>{due.toLocaleDateString("en-IN", { timeZone: "UTC" })}
                 {" · "}{due.toISOString().slice(0, 10) < localToday ? "Past selected date" : "Upcoming / today"}</span>
