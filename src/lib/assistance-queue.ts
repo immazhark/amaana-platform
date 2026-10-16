@@ -93,10 +93,10 @@ export function assistanceQueueDeliveryWhere(delivery: AssistanceQueueFilters["d
     kind: "FINANCIAL", state: "CONFIRMED", financialReconciliation: { is: null },
   } } };
   if (delivery === "bank_pending") return { deliveryRecords: { some: {
-    kind: "FINANCIAL", financialReconciliation: { is: { status: "PENDING" } },
+    kind: "FINANCIAL", state: "CONFIRMED", financialReconciliation: { is: { status: "PENDING" } },
   } } };
   if (delivery === "bank_reviewed") return { deliveryRecords: { some: {
-    kind: "FINANCIAL", financialReconciliation: { is: { status: "EVIDENCE_REVIEWED" } },
+    kind: "FINANCIAL", state: "CONFIRMED", financialReconciliation: { is: { status: "EVIDENCE_REVIEWED" } },
   } } };
   if (delivery === "none") return { deliveryRecords: { none: { state: { in: ["REPORTED", "CONFIRMED"] } } } };
   return {};

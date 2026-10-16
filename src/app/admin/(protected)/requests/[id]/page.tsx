@@ -250,7 +250,8 @@ export default async function RequestDetailPage({ params }: Props) {
               {item.reviewedAt &&
                 <small>Reviewed by {item.reviewedBy?.name ?? "authorized staff"} ·
                   {" "}{item.reviewedAt.toLocaleDateString("en-IN")}</small>}
-              {item.kind === "FINANCIAL" && item.state === "CONFIRMED" && item.amountInr &&
+              {item.kind === "FINANCIAL" && item.amountInr &&
+                (item.state === "CONFIRMED" || Boolean(item.financialReconciliation)) &&
                 <div className="field">
                   <h4>Private bank-proof corroboration</h4>
                   <p className="muted">A case delivery, a donor allocation and a bank transaction
@@ -258,6 +259,9 @@ export default async function RequestDetailPage({ params }: Props) {
                     verify live bank settlement, or publish impact.</p>
                   {item.financialReconciliation ? <>
                     <strong>{FINANCIAL_CORROBORATION_LABELS[item.financialReconciliation.status]}</strong>
+                    {item.state !== "CONFIRMED" && <p role="alert" className="muted">
+                      The underlying delivery is no longer confirmed. This bank-proof history
+                      cannot be counted as an active reconciled financial delivery.</p>}
                     <span>External reference: {mayReviewFinancialEvidence
                       ? item.financialReconciliation.transactionReference
                       : maskFinancialReference(item.financialReconciliation.transactionReference)}</span>
@@ -272,6 +276,7 @@ export default async function RequestDetailPage({ params }: Props) {
                       {" "}{item.financialReconciliation.reviewedAt.toLocaleDateString("en-IN")}
                     </small>}
                     {mayReviewFinancialEvidence &&
+                      item.state === "CONFIRMED" &&
                       item.financialReconciliation.status === "PENDING" &&
                       item.financialReconciliation.submittedById !== user.id &&
                       item.reportedById !== user.id &&

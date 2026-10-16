@@ -67,12 +67,12 @@ describe("private assistance queue triage", () => {
     });
     expect(assistanceQueueDeliveryWhere("bank_pending")).toEqual({
       deliveryRecords: { some: {
-        kind: "FINANCIAL", financialReconciliation: { is: { status: "PENDING" } },
+        kind: "FINANCIAL", state: "CONFIRMED", financialReconciliation: { is: { status: "PENDING" } },
       } },
     });
     expect(assistanceQueueDeliveryWhere("bank_reviewed")).toEqual({
       deliveryRecords: { some: {
-        kind: "FINANCIAL", financialReconciliation: { is: { status: "EVIDENCE_REVIEWED" } },
+        kind: "FINANCIAL", state: "CONFIRMED", financialReconciliation: { is: { status: "EVIDENCE_REVIEWED" } },
       } },
     });
     expect(assistanceQueueDeliveryWhere("confirmed")).toEqual({
