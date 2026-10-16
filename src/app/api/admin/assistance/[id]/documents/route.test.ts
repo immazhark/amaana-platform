@@ -112,6 +112,47 @@ describe("staff-only private delivery-proof upload", () => {
     expect(m.upload).toHaveBeenCalledOnce();
   });
 
+  it("permits private consent-document intake only for eligible reviewed anonymous outcomes", async () => {
+    m.caseFind.mockResolvedValue({
+      ...eligible,
+      verification: { ...eligible.verification, confidentialityLevel: "STANDARD" },
+      outcomeObservations: [{ id: "outcome-synthetic" }],
+    });
+    const result = await POST(request(undefined, "consent"), params);
+    expect(result.status).toBe(201);
+    expect(m.caseFind).toHaveBeenCalledWith(expect.objectContaining({
+      select: expect.objectContaining({
+        outcomeObservations: {
+          where: {
+            state: "REVIEWED", disclosure: { is: null },
+            deliveryRecord: { is: { state: "CONFIRMED" } },
+          },
+          select: { id: true }, take: 1,
+        },
+      }),
+    }));
+    expect(m.auditCreate).toHaveBeenCalledWith({ data: expect.objectContaining({
+      action: "assistance.anonymous_outcome_consent_proof_uploaded",
+    }) });
+    expect(m.upload).toHaveBeenCalledOnce();
+  });
+
+  it("does not accept consent documents for confidential cases or unreviewed outcomes", async () => {
+    m.caseFind.mockResolvedValue({
+      ...eligible,
+      verification: { ...eligible.verification, confidentialityLevel: "CONFIDENTIAL" },
+      outcomeObservations: [{ id: "outcome-synthetic" }],
+    });
+    expect((await POST(request(undefined, "consent"), params)).status).toBe(409);
+    m.caseFind.mockResolvedValue({
+      ...eligible,
+      verification: { ...eligible.verification, confidentialityLevel: "STANDARD" },
+      outcomeObservations: [],
+    });
+    expect((await POST(request(undefined, "consent"), params)).status).toBe(409);
+    expect(m.upload).not.toHaveBeenCalled();
+  });
+
   it("rejects an arbitrary upload purpose before private storage is touched", async () => {
     const result = await POST(request(undefined, "public"), params);
     expect(result.status).toBe(400);
