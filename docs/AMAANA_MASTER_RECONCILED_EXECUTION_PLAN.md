@@ -1,5 +1,16 @@
 # Amaana Master Reconciled Execution Plan
 
+## 2026-10-17 — W5 public-detail projection implementation checkpoint
+
+Existing PR #292 advanced through six source commits `e4ae79d`, `5730272`, `f834dd7`, `7a26f3f`, `dac1648`, `82482b9`. This is **source work, not release acceptance**.
+
+- `src/lib/public-content.ts`: public initiative, story and faith-detail getters now use explicitly selected root fields instead of whole Prisma entities. Detail media is capped at 48 reviewed candidates, ordered deterministically, and returns only public rendering fields including approved intrinsic dimensions and bounded LQIP metadata. Non-renderable hosted video and missing URL/alt candidates are excluded before the database cap; existing independent publication/privacy/CSP validators remain mandatory at render time.
+- Initiative detail related-story and reflection cards now use short, bounded projections, preserving a path to the full reviewed archives. Related appeal data is minimal, with confidentiality classification applied **before** limiting public display, so 24 earlier sensitive records cannot conceal a lower-ranked legitimate eligible record.
+- `src/app/page.tsx` no longer equates “no payable checkout” with “no published appeal open”; `src/app/stories/[slug]/page.tsx` no longer describes a capped projection count as the entire approved media archive.
+- Verified remote commit/branch readback and schema-field presence. The six commits touch four source files (+104/−25 lines). No PostgreSQL runtime query execution, full compilation, field performance measurement, visual gallery acceptance, release merge or production deployment was performed.
+
+**Master classification unchanged:** 60 Implemented / 61 Partial / 26 Not started / 2 other, 149 unique entries. Work supports W5 public-media/response-size remediation, but AF-R052 raw remote images, AF-R053 generated media byte weights, AF-R054 hero preload/sizes consistency, AF-R056 LQIP publication coverage, AF-R047 per-route bundle analysis and exact-head acceptance remain open. Do not claim media-asset compression, CWV improvement or closure from narrower selects alone. Larger galleries exceeding the 48-item detail projection require a separately reviewed paginated archive, not silent removal of historical media.
+
 ## 2026-10-17 — Evidence-led master 149 progress checkpoint
 
 Current source-classified implementation: **60 Implemented / 61 Partial / 26 Not started / 2 other**; 149 unique master records. One justified transition: **AF-GIVING-PLANNER, Not started → Partial**, because weekly Friday manual calendar reminders were added to existing monthly giving at `641967a` and corrected at `85da443`. Ramadan/Dhul-Hijjah and independent browser/calendar-import acceptance remain outstanding; this is not a subscription or a live payment automation.
