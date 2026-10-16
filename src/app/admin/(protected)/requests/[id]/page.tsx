@@ -1,11 +1,13 @@
 import { notFound } from "next/navigation";
 import { randomUUID } from "node:crypto";
 import { DELIVERY_REPORT_LIMIT, DELIVERY_STATE_LABELS, canReportPrivateDelivery } from "@/lib/assistance-delivery";
-import { OUTCOME_KIND_LABELS, OUTCOME_REVIEW_LABELS, OUTCOME_SUMMARY_LIMIT,
-  hasCurrentPrivateOutcomeEvidence } from "@/lib/assistance-outcome";
-import { reportAssistanceOutcome, reviewAssistanceOutcome } from "./outcome-actions";
+import { OUTCOME_KIND_LABELS, OUTCOME_SUMMARY_LIMIT } from "@/lib/assistance-outcome";
+import {
+  assistanceCaseOutcomeSelect, hasAccessiblePrivateOutcomeEvidence,
+} from "@/lib/assistance-case-outcome-view";
+import { reportAssistanceOutcome } from "./outcome-actions";
+import { OutcomeObservationRow } from "./outcome-observation-row";
 import { reconcileAnonymousOutcomeDisclosures } from "./disclosure-actions";
-import { AnonymousDisclosureControls } from "./anonymous-disclosure-controls";
 import { linkAssistanceDeliveryEvidence, reportAssistanceDelivery, reviewAssistanceDelivery } from "./delivery-actions";
 import { FOLLOW_UP_SUMMARY_LIMIT, MAX_OPEN_FOLLOW_UPS_PER_CASE, eligibleFollowUpStaffWhere, followUpDueLabel,
   indiaCalendarDay, shiftedCalendarDay, taskDay } from "@/lib/assistance-follow-up";
@@ -100,27 +102,7 @@ export default async function RequestDetailPage({ params }: Props) {
     }),
     prisma.assistanceOutcomeObservation.findMany({
       where: { assistanceRequestId: id },
-      select: {
-        id: true, kind: true, state: true, summary: true,
-        deliveryRecordId: true, reportedById: true, reviewedById: true, updatedAt: true,
-        disclosure: { select: {
-          id: true, copyText: true, consentDocumentId: true,
-          state: true, preparedById: true, approvedById: true,
-          publishedAt: true, updatedAt: true,
-          approvedAt: true, approvedBy: { select: { name: true } },
-        } },
-        createdAt: true, reviewedAt: true,
-        reportedBy: { select: { name: true } },
-        reviewedBy: { select: { name: true } },
-        deliveryRecord: {
-          select: {
-            kind: true, state: true, reportedById: true, evidenceDocumentId: true,
-            financialReconciliation: {
-              select: { status: true, bankProofDocumentId: true, submittedById: true },
-            },
-          },
-        },
-      },
+      select: assistanceCaseOutcomeSelect,
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: 30,
     }),
@@ -188,18 +170,15 @@ export default async function RequestDetailPage({ params }: Props) {
     Boolean(item.amountInr) && Boolean(item.evidenceDocumentId) &&
     !item.financialReconciliation);
   const evidenceNames = new Map(request.documents.map(doc => [doc.id, doc.originalName]));
+  const caseDocumentIds = new Set(evidenceNames.keys());
   const eligibleOutcomeCandidates = mayReportOutcome ? deliveries.filter(item =>
     !activeOutcomeSources.has(item.id) &&
-    hasCurrentPrivateOutcomeEvidence({
+    hasAccessiblePrivateOutcomeEvidence({
       ...item,
       assistanceRequest: {
         status: request.status, appealId: request.appealId, verification,
       },
-    }) &&
-    Boolean(item.evidenceDocumentId && evidenceNames.has(item.evidenceDocumentId)) &&
-    (item.kind !== "FINANCIAL" ||
-      Boolean(item.financialReconciliation?.bankProofDocumentId &&
-        evidenceNames.has(item.financialReconciliation.bankProofDocumentId))),
+    }, caseDocumentIds),
   ) : [];
 
   return <>
@@ -397,75 +376,28 @@ export default async function RequestDetailPage({ params }: Props) {
           {mayReportOutcome && request.verification?.confidentialityLevel === "STANDARD" &&
             request.documents.length < 30 &&
             outcomes.some(item => item.state === "REVIEWED" && !item.disclosure &&
-              hasCurrentPrivateOutcomeEvidence({
+              hasAccessiblePrivateOutcomeEvidence({
                 ...item.deliveryRecord,
                 assistanceRequest: {
                   status: request.status, appealId: request.appealId, verification,
                 },
-              })) &&
+              }, caseDocumentIds)) &&
             <AdminPrivateEvidenceUpload caseId={id} purpose="consent"/>}
           {outcomes.length > 0 && <p className="muted">Latest {outcomes.length}
             private observations shown (maximum 30). Review state is not public-impact approval.</p>}
           {outcomes.length ? <ol className="history">
-            {outcomes.map(item => {
-              const source = {
-                ...item.deliveryRecord,
-                assistanceRequest: {
-                  status: request.status, appealId: request.appealId, verification,
-                },
-              };
-              const sourceEligible = hasCurrentPrivateOutcomeEvidence(source) &&
-                Boolean(source.evidenceDocumentId && evidenceNames.has(source.evidenceDocumentId)) &&
-                (source.kind !== "FINANCIAL" ||
-                  Boolean(source.financialReconciliation?.bankProofDocumentId &&
-                    evidenceNames.has(source.financialReconciliation.bankProofDocumentId)));
-              const canReview = mayReviewOutcome && item.state === "REPORTED" &&
-                item.reportedById !== user.id && item.deliveryRecord.reportedById !== user.id &&
-                item.deliveryRecord.financialReconciliation?.submittedById !== user.id &&
-                sourceEligible;
-              return <li key={item.id}>
-                <strong>{OUTCOME_KIND_LABELS[item.kind]} · {OUTCOME_REVIEW_LABELS[item.state]}</strong>
-                <p>{item.summary}</p>
-                <span>Recorded by {item.reportedBy.name}
-                  {" · "}{item.createdAt.toLocaleDateString("en-IN")}</span>
-                {item.reviewedAt && <p className="muted">Reviewed by {item.reviewedBy?.name ?? "authorized staff"}
-                  {" · "}{item.reviewedAt.toLocaleDateString("en-IN")}</p>}
-                {!sourceEligible && item.state === "REVIEWED" &&
-                  <p role="alert" className="muted">Supporting delivery evidence or case eligibility
-                    has changed. This is historical internal review, not a current verified outcome.</p>}
-                {canReview && <form action={reviewAssistanceOutcome} className="field">
-                  <input type="hidden" name="id" value={id}/>
-                  <input type="hidden" name="observationId" value={item.id}/>
-                  <input type="hidden" name="expectedUpdatedAt" value={item.updatedAt.toISOString()}/>
-                  <input type="hidden" name="state" value="REVIEWED"/>
-                  <label>
-                    <input type="checkbox" name="evidenceAttested" value="yes" required/>
-                    I reviewed the specific delivery and current private evidence,
-                    and I am independent of the original report and financial corroboration.
-                  </label>
-                  <button type="submit" className="button secondary">
-                    Review private operational outcome
-                  </button>
-                </form>}
-                <AnonymousDisclosureControls
-                  caseId={id} outcome={item} documents={request.documents}
-                  sourceEligible={sourceEligible}
-                  standardConfidentiality={verification?.confidentialityLevel === "STANDARD"}
-                  canPropose={mayReportOutcome} canApprove={mayApproveAnonymousCopy}
-                  actorId={user.id}
-                />
-                {mayReviewOutcome && item.state !== "VOIDED" &&
-                  <form action={reviewAssistanceOutcome} className="field">
-                    <input type="hidden" name="id" value={id}/>
-                    <input type="hidden" name="observationId" value={item.id}/>
-                    <input type="hidden" name="expectedUpdatedAt" value={item.updatedAt.toISOString()}/>
-                    <input type="hidden" name="state" value="VOIDED"/>
-                    <button type="submit" className="button secondary">
-                      Void incorrect private outcome
-                    </button>
-                  </form>}
-              </li>;
-            })}
+            {outcomes.map(item => (
+              <OutcomeObservationRow
+                key={item.id} caseId={id} outcome={item}
+                caseStatus={request.status} appealId={request.appealId}
+                verification={verification}
+                standardConfidentiality={verification?.confidentialityLevel === "STANDARD"}
+                documentIds={caseDocumentIds} documents={request.documents}
+                actorId={user.id}
+                mayReport={mayReportOutcome} mayReview={mayReviewOutcome}
+                mayApproveCopy={mayApproveAnonymousCopy}
+              />
+            ))}
           </ol> : <p className="muted">No private outcome observations have been recorded.</p>}
         </section>
 
