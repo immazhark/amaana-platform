@@ -60,6 +60,21 @@ describe("private assistance queue triage", () => {
     expect(assistanceQueueDeliveryWhere("ready")).toEqual({
       deliveryRecords: { some: { state: "REPORTED", evidenceDocumentId: { not: null } } },
     });
+    expect(assistanceQueueDeliveryWhere("bank_missing")).toEqual({
+      deliveryRecords: { some: {
+        kind: "FINANCIAL", state: "CONFIRMED", financialReconciliation: { is: null },
+      } },
+    });
+    expect(assistanceQueueDeliveryWhere("bank_pending")).toEqual({
+      deliveryRecords: { some: {
+        kind: "FINANCIAL", financialReconciliation: { is: { status: "PENDING" } },
+      } },
+    });
+    expect(assistanceQueueDeliveryWhere("bank_reviewed")).toEqual({
+      deliveryRecords: { some: {
+        kind: "FINANCIAL", financialReconciliation: { is: { status: "EVIDENCE_REVIEWED" } },
+      } },
+    });
     expect(assistanceQueueDeliveryWhere("confirmed")).toEqual({
       deliveryRecords: { some: { state: "CONFIRMED" } },
     });
@@ -69,6 +84,9 @@ describe("private assistance queue triage", () => {
     expect(parseAssistanceQueueFilters({ delivery: "confirmed" }).delivery).toBe("confirmed");
     expect(parseAssistanceQueueFilters({ delivery: "proof_missing" }).delivery).toBe("proof_missing");
     expect(parseAssistanceQueueFilters({ delivery: "ready" }).delivery).toBe("ready");
+    expect(parseAssistanceQueueFilters({ delivery: "bank_missing" }).delivery).toBe("bank_missing");
+    expect(parseAssistanceQueueFilters({ delivery: "bank_pending" }).delivery).toBe("bank_pending");
+    expect(parseAssistanceQueueFilters({ delivery: "bank_reviewed" }).delivery).toBe("bank_reviewed");
     expect(parseAssistanceQueueFilters({ delivery: ["reported"] }).delivery).toBe("all");
     expect(parseAssistanceQueueFilters({ delivery: "PUBLISHED" }).delivery).toBe("all");
   });

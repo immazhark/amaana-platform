@@ -161,7 +161,10 @@ export default async function AdminQueuePage({ searchParams }: Props) {
         { value: "reported", label: "All unreviewed reports" },
         { value: "proof_missing", label: "Missing linked proof" },
         { value: "ready", label: "Proof linked · ready for review" },
-        { value: "confirmed", label: "Evidence reviewed" },
+        { value: "confirmed", label: "Delivery evidence reviewed" },
+        { value: "bank_missing", label: "Financial: missing bank corroboration" },
+        { value: "bank_pending", label: "Financial: bank proof awaiting review" },
+        { value: "bank_reviewed", label: "Financial: bank evidence historically reviewed" },
         { value: "none", label: "No active delivery record" },
       ] as const).map(item =>
         <Link key={item.value} href={assistanceQueueHref({ ...filters, delivery: item.value })}
