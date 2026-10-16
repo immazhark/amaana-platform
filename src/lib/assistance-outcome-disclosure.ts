@@ -143,3 +143,25 @@ export function requiredDisclosureEvidenceIds(source: Source, consentDocumentId:
   return [source.deliveryRecord.evidenceDocumentId, bank, consentDocumentId]
     .filter((id): id is string => typeof id === "string");
 }
+
+/**
+ * Single source of truth for whether an anonymous disclosure has a complete,
+ * separate, current evidence chain. The caller must still verify that every
+ * returned document exists and belongs to this same assistance request.
+ *
+ * null means DO NOT approve, publish, or render on the public website.
+ */
+export function validatedAnonymousDisclosureEvidenceIds(
+  source: Source,
+  copyText: string,
+  consentDocumentId: string | null,
+): string[] | null {
+  if (!consentDocumentId ||
+      !eligibleForAnonymousCopy(source) ||
+      copyText !== ANONYMOUS_OUTCOME_COPY[source.kind]) return null;
+
+  const ids = requiredDisclosureEvidenceIds(source, consentDocumentId);
+  const requiredCount = source.deliveryRecord.kind === "FINANCIAL" ? 3 : 2;
+  if (ids.length !== requiredCount || new Set(ids).size !== ids.length) return null;
+  return ids;
+}
