@@ -259,6 +259,57 @@ describe("private assistance detail projections", () => {
     expect(markup).not.toContain("Approve anonymous copy internally");
   });
 
+  it("offers a private consent workflow only for a reviewed, STANDARD-confidentiality source", async () => {
+    m.has.mockReturnValue(true);
+    m.request.mockResolvedValue({
+      id: "case-synthetic", referenceNumber: "AF-SYNTHETIC", applicantName: "Synthetic applicant",
+      category: "MEDICAL", city: "Hyderabad", status: "APPROVED",
+      createdAt: new Date("2026-10-15T00:00:00Z"),
+      updatedAt: new Date("2026-10-16T00:00:00Z"),
+      phone: "synthetic-contact", email: null, description: "Private case narrative",
+      documents: [
+        { id: "delivery-proof", originalName: "evidence.pdf",
+          mimeType: "application/pdf", sizeBytes: 1024 },
+        { id: "copy-consent", originalName: "signed-consent.pdf",
+          mimeType: "application/pdf", sizeBytes: 1024 },
+      ],
+      verification: {
+        status: "APPROVED", decision: "APPROVED_PRIVATE",
+        completedAt: new Date("2026-10-15T10:00:00Z"),
+        confidentialityLevel: "STANDARD",
+        reviewedBy: { name: "Case approver" },
+        publicNameConsent: "NOT_ALLOWED",
+        photoConsent: "NOT_ALLOWED", medicalDetailsConsent: "NOT_ALLOWED",
+        institutionNameConsent: "NOT_ALLOWED", archiveConsent: "UNCONFIRMED",
+        updatedAt: new Date("2026-10-15T10:00:00Z"),
+      },
+      appeal: null, appealId: null,
+    });
+    m.outcomes.mockResolvedValue([{
+      id: "outcome-one", kind: "PARTIAL_SUPPORT", state: "REVIEWED",
+      summary: "Private supporting information must not appear in public copy.",
+      deliveryRecordId: "delivery-one", reportedById: "reporter",
+      reviewedById: "different-outcome-reviewer",
+      updatedAt: new Date("2026-10-16T08:00:00Z"),
+      createdAt: new Date("2026-10-16T08:00:00Z"),
+      reviewedAt: new Date("2026-10-16T09:00:00Z"),
+      reportedBy: { name: "Reporter" }, reviewedBy: { name: "Reviewer" },
+      deliveryRecord: {
+        kind: "IN_KIND", state: "CONFIRMED",
+        reportedById: "reporter", evidenceDocumentId: "delivery-proof",
+        financialReconciliation: null,
+      },
+      disclosure: null,
+    }]);
+    const markup = await render();
+    expect(markup).toContain("Upload signed consent for the exact anonymous wording");
+    expect(markup).toContain("Submit anonymous wording for independent approval");
+    expect(markup).toContain("copy-consent");
+    expect(markup).toContain("not a general intake consent");
+    expect(markup).not.toContain("Approve anonymous copy internally");
+    expect(markup).not.toContain("Private supporting information must not appear in public copy.</blockquote>");
+  });
+
   it("does not create disclosure publication controls for an unreviewed outcome", async () => {
     m.outcomes.mockResolvedValue([{
       id: "outcome-reported", kind: "PARTIAL_SUPPORT", state: "REPORTED",
