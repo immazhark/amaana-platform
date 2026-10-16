@@ -108,8 +108,8 @@ export async function transitionAppeal(formData: FormData) {
     if (!transitions[fresh.status].includes(next)) throw new Error("Invalid appeal status transition");
     const freshPublicationIssues = getAppealPublicationIssues({ fromStatus: fresh.status, toStatus: next, goalAmount: fresh.goalAmount, verification: fresh.assistanceRequest?.verification, hasAssistanceRequest: Boolean(fresh.assistanceRequest), beneficiaryDisplayName: fresh.beneficiaryDisplayName, coverImageUrl: fresh.coverImageUrl });
     if (freshPublicationIssues.length) throw new Error(`Appeal cannot be published: ${freshPublicationIssues.join(" ")}`);
-    // Both first publication and paused resumption must use the current media review.
-  if (next === "PUBLISHED") {
+    // Recheck media approval inside the transaction before restoring public access.
+    if (next === "PUBLISHED") {
       await assertApprovedAppealCoverMedia(tx, fresh.coverImageUrl);
     }
     const updated = await tx.appeal.updateMany({
