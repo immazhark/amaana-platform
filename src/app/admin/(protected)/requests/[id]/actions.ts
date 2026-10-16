@@ -614,7 +614,7 @@ export async function withdrawConvertedAppealDisclosure(formData: FormData) {
       externalMediaReviewRequired,
       managedMediaPaths: [...new Set(
         coverAssets.flatMap(asset =>
-          asset.storageKey && /^\\d{4}\\/[0-9a-f-]{36}\\.(?:pdf|jpg|png|webp)$/i.test(asset.storageKey)
+          asset.storageKey && /^\d{4}\/[0-9a-f-]{36}\.(?:pdf|jpg|png|webp)$/i.test(asset.storageKey)
             ? [`/media/${asset.storageKey}`] : []),
       )],
     };
