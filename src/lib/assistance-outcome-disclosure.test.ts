@@ -7,7 +7,7 @@ import {
 import {
   ANONYMOUS_OUTCOME_COPY, DISCLOSURE_STATUS_LABELS,
   eligibleForAnonymousCopy, parseDisclosureDecision,
-  parseDisclosureProposal, requiredDisclosureEvidenceIds,
+  parseDisclosureProposal, parseDisclosurePublication, requiredDisclosureEvidenceIds,
 } from "./assistance-outcome-disclosure";
 
 const version = "2026-10-16T11:20:00.000Z";
@@ -71,6 +71,18 @@ describe("explicit anonymous-outcome copy consent", () => {
       withdrawalReason: "PUBLICATION_REQUESTED" }))).toThrow();
     expect(() => parseDisclosureDecision(form({ consentReviewAttested: "" }))).toThrow();
   });
+  it("demands explicit opt-in to final publication, independent of copy approval", () => {
+    expect(() => parseDisclosurePublication(form())).toThrow("Explicitly confirm");
+    expect(parseDisclosurePublication(form({ publicationAttested: "yes" }))).toEqual({
+      caseId: "case-synthetic",
+      disclosureId: "disclosure-synthetic",
+      expectedUpdatedAt: new Date(version),
+    });
+    expect(() => parseDisclosurePublication(form({
+      publicationAttested: "yes", expectedUpdatedAt: "not-a-date",
+    }))).toThrow();
+  });
+
   it("exposes only fixed, anonymous, nonclinical templates", () => {
     expect(Object.keys(ANONYMOUS_OUTCOME_COPY)).toEqual([
       "PARTIAL_SUPPORT", "SPECIFIC_SUPPORT_COMPLETED", "FURTHER_ACTION_REQUIRED",
@@ -81,7 +93,7 @@ describe("explicit anonymous-outcome copy consent", () => {
       expect(wording).not.toMatch(/name|hospital|cancer|patient|INR|₹|account|school|street|date|family/i);
     }
     expect(Object.keys(DISCLOSURE_STATUS_LABELS)).toEqual([
-      "DRAFT", "APPROVED_COPY", "WITHDRAWN",
+      "DRAFT", "APPROVED_COPY", "PUBLISHED", "WITHDRAWN",
     ]);
   });
 });
