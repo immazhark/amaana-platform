@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { getPublicAppealCheckoutEligibility } from "@/lib/public-appeal-checkout";
@@ -16,8 +17,8 @@ const publishedWhere = {
  * PublicMedia and CampaignMediaGallery.
  *
  * 48 records cover existing multi-year programme galleries while preventing
- * a future unbounded upload batch from inflating the HTML/RSC payload. A
- * dedicated paginated gallery endpoint is required for larger archives.
+ * a future unbounded upload batch from inflating the HTML/RSC payload.
+ * Larger archives remain accessible through /media-archive/[kind]/[slug].
  */
 export const PUBLIC_DETAIL_MEDIA_LIMIT = 48;
 
@@ -50,7 +51,7 @@ export const PUBLIC_DETAIL_MEDIA_PROJECTION = {
     height: true,
     blurDataURL: true,
   },
-} as const;
+} satisfies Prisma.MediaAssetFindManyArgs;
 
 export async function getPublishedCauses() {
   return prisma.cause.findMany({

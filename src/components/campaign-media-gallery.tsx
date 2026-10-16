@@ -117,6 +117,8 @@ export function CampaignMediaGallery({ items, approvedImageOrigins = NO_ADDITION
       }
     }
 
+    // Read the latest dialog when the deferred restoration actually runs.
+    const hasOpenDialog = () => dialogRef.current?.isConnected;
     window.addEventListener("keydown", onKeyDown);
     return () => {
       document.body.style.overflow = originalOverflow;
@@ -126,7 +128,7 @@ export function CampaignMediaGallery({ items, approvedImageOrigins = NO_ADDITION
         // by stable media ID only after the final gallery DOM has committed.
         // A newer lightbox may already be mounted after a quick close/reopen.
         // Never move focus out of that dialog to an old thumbnail.
-        if (dialog?.isConnected || dialogRef.current?.isConnected) return;
+        if (dialog?.isConnected || hasOpenDialog()) return;
         // Preserve a new deliberate focus choice made before this animation frame.
         const focused = document.activeElement;
         if (focused && focused !== document.body && focused.isConnected) return;
@@ -162,7 +164,7 @@ export function CampaignMediaGallery({ items, approvedImageOrigins = NO_ADDITION
               }}
               aria-label={`Enlarge image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
             >
-              {imageUrl ? <Image src={imageUrl} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 360px) 100vw, (max-width: 900px) 50vw, 33vw" loading="lazy" placeholder={blur ? "blur" : "empty"} blurDataURL={blur ?? undefined} /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
+              {imageUrl ? <Image src={imageUrl} alt={item.alt ?? ""} width={width} height={height} sizes="auto, (max-width: 360px) calc(100vw - 2rem), (max-width: 900px) calc(50vw - 1.5rem), (max-width: 1440px) calc(33.333vw - 1.3rem), 29rem" loading="lazy" placeholder={blur ? "blur" : "empty"} blurDataURL={blur ?? undefined} /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
               <span className={styles.openLabel}>Enlarge</span>
             </button>
             {item.caption ? <figcaption>{item.caption}</figcaption> : null}
@@ -190,7 +192,7 @@ export function CampaignMediaGallery({ items, approvedImageOrigins = NO_ADDITION
               <span id={dialogTitleId}>Image {activeIndex + 1} of {safeItems.length}: {active.alt ?? "programme photograph"}</span>
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
-            {activeImageUrl ? <Image className={styles.fullImage} src={activeImageUrl} alt={active.alt ?? ""} width={width} height={height} sizes="(max-width: 1200px) 90vw, 1120px" placeholder={activeBlur ? "blur" : "empty"} blurDataURL={activeBlur ?? undefined} /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} decoding="async" />}
+            {activeImageUrl ? <Image className={styles.fullImage} src={activeImageUrl} alt={active.alt ?? ""} width={width} height={height} sizes="(max-width: 1200px) 90vw, 1120px" loading="eager" placeholder={activeBlur ? "blur" : "empty"} blurDataURL={activeBlur ?? undefined} /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} decoding="async" />}
             {active.caption ? <p id={dialogCaptionId} className={styles.caption}>{active.caption}</p> : null}
             {safeItems.length > 1 ? (
               <div className={styles.controls}>

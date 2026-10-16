@@ -1,3 +1,4 @@
+import ArchiveLink from "next/link";
 import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel, BodyCard } from "@/components/body-carousel";
 import type { Metadata } from "next";
@@ -73,7 +74,8 @@ export default async function StoryPage({ params }: Props) {
 
       <section className="v2-story-detail-ethic"><div className="v2-shell v2-story-detail-ethic-grid"><div><p className="v2-section-label">Editorial boundary</p><h2>Evidence without exposure.</h2></div><p>Stories can explain the work without turning vulnerability into spectacle. Private documents stay private, identity details are minimized, and public media is optional rather than assumed.</p></div></section>
 
-      <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Continue the journey</p><h2>One account belongs to a wider body of work.</h2><div className="v2-hero-actions" style={{ justifyContent: "center" }}>{relatedInitiative && <Link className="v2-button" href={canonicalOurWorkDestination(relatedInitiative.slug)}>View this initiative</Link>}<Link className="v2-text-link" href="/stories">Return to the field journal →</Link></div></div></section>
+      {story.mediaAssets.length >= 48 ? <div className="v2-shell"><ArchiveLink className="v2-text-link" prefetch={false} href={`/media-archive/story/${encodeURIComponent(story.slug)}`}>Browse the full approved media archive</ArchiveLink></div> : null}
+<section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Continue the journey</p><h2>One account belongs to a wider body of work.</h2><div className="v2-hero-actions" style={{ justifyContent: "center" }}>{relatedInitiative && <Link className="v2-button" href={canonicalOurWorkDestination(relatedInitiative.slug)}>View this initiative</Link>}<Link className="v2-text-link" href="/stories">Return to the field journal →</Link></div></div></section>
     </div>
   );
 }
