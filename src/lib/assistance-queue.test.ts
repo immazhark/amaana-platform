@@ -1,24 +1,24 @@
 import { describe, expect, it } from "vitest";
-import { assistanceQueueAge, assistanceQueueAgeWhere, assistanceQueueAssignmentWhere, assistanceQueueHref, assistanceQueueVerificationLabel, parseAssistanceQueueFilters } from "./assistance-queue";
+import { assistanceQueueAge, assistanceQueueAgeWhere, assistanceQueueAssignmentWhere, assistanceQueueHref, assistanceQueueReviewWhere, assistanceQueueVerificationLabel, parseAssistanceQueueFilters } from "./assistance-queue";
 
 describe("private assistance queue triage", () => {
   it("accepts only known status, assignment and order values", () => {
-    expect(parseAssistanceQueueFilters({ status: "SUBMITTED", assignment: "mine", order: "oldest", age: "7d" }))
-      .toEqual({ status: "SUBMITTED", assignment: "mine", order: "oldest", age: "7d" });
-    expect(parseAssistanceQueueFilters({ status: "invented", assignment: "staff-private-id", order: "urgent", age: "365d" }))
-      .toEqual({ assignment: "all", order: "newest", age: "all" });
+    expect(parseAssistanceQueueFilters({ status: "SUBMITTED", assignment: "mine", order: "oldest", age: "7d", review: "incomplete" }))
+      .toEqual({ status: "SUBMITTED", assignment: "mine", order: "oldest", age: "7d", review: "incomplete" });
+    expect(parseAssistanceQueueFilters({ status: "invented", assignment: "staff-private-id", order: "urgent", age: "365d", review: "approved" }))
+      .toEqual({ assignment: "all", order: "newest", age: "all", review: "all" });
   });
   it("ignores repeated query values rather than trusting an arbitrary first value", () => {
-    expect(parseAssistanceQueueFilters({ status: ["CLOSED"], assignment: ["mine"], order: ["oldest"], age: ["30d"] }))
-      .toEqual({ assignment: "all", order: "newest", age: "all" });
+    expect(parseAssistanceQueueFilters({ status: ["CLOSED"], assignment: ["mine"], order: ["oldest"], age: ["30d"], review: ["complete"] }))
+      .toEqual({ assignment: "all", order: "newest", age: "all", review: "all" });
   });
   it("accepts bounded self-reported cities and excludes unsafe query strings", () => {
     expect(parseAssistanceQueueFilters({ city: " Hyderabad " }).city).toBe("Hyderabad");
     expect(parseAssistanceQueueFilters({ city: "Hyderabad\\ninvalid".replace("\\n", "\n") }).city).toBeUndefined();
     expect(parseAssistanceQueueFilters({ city: "x".repeat(81) }).city).toBeUndefined();
     expect(parseAssistanceQueueFilters({ city: ["Hyderabad", "Mumbai"] }).city).toBeUndefined();
-    expect(assistanceQueueHref({ assignment: "mine", order: "newest", age: "7d", city: "Hyderabad" }))
-      .toEqual({ pathname: "/admin", query: { assignment: "mine", age: "7d", city: "Hyderabad" } });
+    expect(assistanceQueueHref({ assignment: "mine", order: "newest", age: "7d", city: "Hyderabad", review: "complete" }))
+      .toEqual({ pathname: "/admin", query: { assignment: "mine", age: "7d", city: "Hyderabad", review: "complete" } });
   });
   it("resolves mine exclusively against the authenticated staff identity", () => {
     expect(assistanceQueueAssignmentWhere("mine", "signed-in-staff")).toEqual({ assignedToId: "signed-in-staff" });
@@ -26,9 +26,21 @@ describe("private assistance queue triage", () => {
     expect(assistanceQueueAssignmentWhere("all", "signed-in-staff")).toEqual({});
   });
   it("retains combined filters through pagination without exposing a staff ID", () => {
-    expect(assistanceQueueHref({ status: "UNDER_VERIFICATION", assignment: "mine", order: "oldest", age: "30d" }, 3))
-      .toEqual({ pathname: "/admin", query: { status: "UNDER_VERIFICATION", assignment: "mine", order: "oldest", age: "30d", page: 3 } });
-    expect(assistanceQueueHref({ assignment: "all", order: "newest", age: "all" })).toEqual({ pathname: "/admin", query: {} });
+    expect(assistanceQueueHref({ status: "UNDER_VERIFICATION", assignment: "mine", order: "oldest", age: "30d", review: "incomplete" }, 3))
+      .toEqual({ pathname: "/admin", query: { status: "UNDER_VERIFICATION", assignment: "mine", order: "oldest", age: "30d", review: "incomplete", page: 3 } });
+    expect(assistanceQueueHref({ assignment: "all", order: "newest", age: "all", review: "all" })).toEqual({ pathname: "/admin", query: {} });
+  });
+  it("scopes incomplete versus completed verification from the persisted completion field", () => {
+    expect(assistanceQueueReviewWhere("all")).toEqual({});
+    expect(assistanceQueueReviewWhere("complete")).toEqual({
+      verification: { is: { completedAt: { not: null } } },
+    });
+    expect(assistanceQueueReviewWhere("incomplete")).toEqual({
+      OR: [
+        { verification: { is: null } },
+        { verification: { is: { completedAt: null } } },
+      ],
+    });
   });
   it("distinguishes incomplete verification from an approved review without exposing private notes", () => {
     expect(assistanceQueueVerificationLabel(null)).toBe("Not started");

@@ -7,11 +7,12 @@ export type AssistanceQueueFilters = {
   order: "newest" | "oldest";
   age: "all" | "7d" | "30d";
   city?: string;
+  review: "all" | "incomplete" | "complete";
 };
 type SearchValue = string | string[] | undefined;
 
 export function parseAssistanceQueueFilters(params: {
-  status?: SearchValue; assignment?: SearchValue; order?: SearchValue; age?: SearchValue; city?: SearchValue;
+  status?: SearchValue; assignment?: SearchValue; order?: SearchValue; age?: SearchValue; city?: SearchValue; review?: SearchValue;
 }): AssistanceQueueFilters {
   const status = ASSISTANCE_QUEUE_STATUSES.find(value => value === params.status);
   // Administrative geography is a verbatim self-reported city, never a
@@ -24,6 +25,7 @@ export function parseAssistanceQueueFilters(params: {
     order: params.order === "oldest" ? "oldest" : "newest",
     age: params.age === "7d" || params.age === "30d" ? params.age : "all",
     ...(validCity ? { city } : {}),
+    review: params.review === "incomplete" || params.review === "complete" ? params.review : "all",
   };
 }
 
@@ -44,6 +46,18 @@ export function assistanceQueueAgeWhere(age: AssistanceQueueFilters["age"], now:
   return { createdAt: { lte: new Date(now.getTime() - days * 86_400_000) } };
 }
 
+/** Draft review decisions cannot substitute for reviewer completion. */
+export function assistanceQueueReviewWhere(review: AssistanceQueueFilters["review"]): Prisma.AssistanceRequestWhereInput {
+  if (review === "complete") return { verification: { is: { completedAt: { not: null } } } };
+  if (review === "incomplete") return {
+    OR: [
+      { verification: { is: null } },
+      { verification: { is: { completedAt: null } } },
+    ],
+  };
+  return {};
+}
+
 export function assistanceQueueHref(filters: AssistanceQueueFilters, page = 1) {
   return {
     pathname: "/admin",
@@ -53,6 +67,7 @@ export function assistanceQueueHref(filters: AssistanceQueueFilters, page = 1) {
       ...(filters.order !== "newest" ? { order: filters.order } : {}),
       ...(filters.age !== "all" ? { age: filters.age } : {}),
       ...(filters.city ? { city: filters.city } : {}),
+      ...(filters.review !== "all" ? { review: filters.review } : {}),
       ...(page > 1 ? { page } : {}),
     },
   };
