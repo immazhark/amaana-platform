@@ -94,7 +94,7 @@ describe("transactional invalidation of anonymous public outcomes", () => {
     expect(m.update).toHaveBeenCalledOnce();
     expect(m.audit).toHaveBeenCalledWith({ data: expect.objectContaining({
       metadata: expect.objectContaining({
-        trigger: "DOCUMENT_DELETION", evidenceRetired: true,
+        trigger: "DOCUMENT_DELETION", evidenceDeletionPlanned: true,
       }),
     }) });
   });

@@ -101,7 +101,7 @@ export async function withdrawStaleAnonymousOutcomeCopies(
         entityType: "AssistanceRequest", entityId: assistanceRequestId,
         metadata: {
           disclosureId: disclosure.id, previousState: disclosure.state, trigger,
-          ...(retiringDocumentId ? { evidenceRetired: true } : {}),
+          ...(retiringDocumentId ? { evidenceDeletionPlanned: true } : {}),
         },
       },
     });
