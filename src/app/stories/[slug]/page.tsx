@@ -64,7 +64,7 @@ export default async function StoryPage({ params }: Props) {
         visual={leadMedia ? <PublicMedia asset={leadMedia} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : undefined}
         visualKicker="Field note · Privacy reviewed"
         visualTitle={context}
-        visualNote={story.mediaAssets.length > 0 ? `${story.mediaAssets.length} approved ${story.mediaAssets.length === 1 ? "asset" : "assets"}` : "This account does not need a person’s image to be worth documenting."}
+        visualNote={publicMedia.length > 0 ? "Selected approved supporting material" : "This account does not need a person’s image to be worth documenting."}
       />
 
       <section className="v2-story-detail-body"><div className="v2-shell v2-story-detail-body-grid"><aside><p className="v2-section-label">Documented account</p><h2>What Amaana knows and can responsibly share.</h2><div className="v2-story-detail-rule"><span>Fact</span><p>Keep the account attached to documented information.</p></div><div className="v2-story-detail-rule"><span>Dignity</span><p>Leave private proofs and unnecessary identity details outside the public story.</p></div></aside><article className="v2-story-detail-prose"><div className="v2-story-detail-dropcap" aria-hidden="true">A</div><p>{story.body}</p>{story.sourceNote && <div className="v2-story-source-note"><span>Source note</span><p>{story.sourceNote}</p></div>}</article></div></section>

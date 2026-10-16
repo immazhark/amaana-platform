@@ -189,8 +189,8 @@ export default async function HomePage() {
           ) : (
             <div className="v3-empty">
               <div>
-                <h3>No Public Appeal Is Open Right Now</h3>
-                <p>That does not mean the work has stopped. You can explore completed cases or ask about Amaana’s recurring initiatives. New urgent appeals will appear here after verification.</p>
+                <h3>No Public Appeal Checkout Is Currently Available</h3>
+                <p>Published cases may remain available to review even when they cannot accept a donation. Explore documented work or ask Amaana about currently approved programme giving routes.</p>
               </div>
               <div className="v3-actions">
                 <Link className="v3-btn" href="/our-work">Explore our work</Link>

@@ -144,8 +144,10 @@ export async function getPublishedStoryBySlug(slug: string) {
       privacyApprovedAt: { not: null },
     },
     include: {
-      cause: true,
-      initiative: { include: { cause: true } },
+      cause: { select: { title: true, status: true } },
+      initiative: {
+        select: { slug: true, title: true, status: true, cause: { select: { status: true } } },
+      },
       mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
     },
   });
@@ -174,9 +176,11 @@ export async function getPublishedFaithContentBySlug(slug: string) {
       ...publicFaithWhere,
     },
     include: {
-      topics: { include: { topic: true } },
-      cause: true,
-      initiative: { include: { cause: true } },
+      topics: { select: { topic: { select: { name: true } } } },
+      cause: { select: { title: true, status: true } },
+      initiative: {
+        select: { slug: true, title: true, status: true, cause: { select: { status: true } } },
+      },
       mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
     },
   });
