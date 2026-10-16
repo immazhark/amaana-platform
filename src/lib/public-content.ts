@@ -103,8 +103,9 @@ export async function getPublishedInitiativeBySlug(slug: string) {
       },
       appeals: {
         where: { status: { in: ["PUBLISHED", "FUNDED"] } },
+        // Do not cap before privacy filtering: many confidential records may
+        // precede a legitimate public appeal. Select minimal fields instead.
         orderBy: { publishedAt: "desc" },
-        take: 24,
         select: {
           id: true, slug: true, title: true, status: true,
           amountRaised: true, goalAmount: true, closesAt: true,
@@ -126,6 +127,7 @@ export async function getPublishedInitiativeBySlug(slug: string) {
     ...initiative,
     appeals: initiative.appeals
       .filter(canPromoteAppeal)
+      .slice(0, 6)
       .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => {
         void _privateReview;
         return publicAppeal;
