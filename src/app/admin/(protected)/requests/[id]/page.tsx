@@ -106,8 +106,10 @@ export default async function RequestDetailPage({ params }: Props) {
   const canManageTasks = hasPermission(user, "assistance.update");
   const canCancelTasks = canManageTasks && hasPermission(user, "assistance.approve");
   const mayReassignTasks = hasPermission(user, "assistance.assign");
-  const defaultTaskOwner = taskStaff.find(member => member.id === request.assignedToId)?.id ??
-    taskStaff.find(member => member.id === user.id)?.id ?? taskStaff[0]?.id;
+  const creatableTaskStaff = mayReassignTasks
+    ? taskStaff : taskStaff.filter(member => member.id === user.id);
+  const defaultTaskOwner = creatableTaskStaff.find(member => member.id === request.assignedToId)?.id ??
+    creatableTaskStaff.find(member => member.id === user.id)?.id ?? creatableTaskStaff[0]?.id;
   const today = indiaCalendarDay(new Date());
 
   return <>
@@ -151,7 +153,7 @@ export default async function RequestDetailPage({ params }: Props) {
               <input type="hidden" name="submissionId" value={randomUUID()}/>
               <label htmlFor="newTaskOwner">Responsible staff member</label>
               <select id="newTaskOwner" name="assignedToId" defaultValue={defaultTaskOwner} required>
-                {taskStaff.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}
+                {creatableTaskStaff.map(member => <option key={member.id} value={member.id}>{member.name}</option>)}
               </select>
               <label htmlFor="taskDueOn">Next action date (Hyderabad calendar)</label>
               <input id="taskDueOn" type="date" name="dueOn" defaultValue={today}
@@ -361,6 +363,9 @@ export default async function RequestDetailPage({ params }: Props) {
       <aside className="grid">
         <section className="card">
           <h2>Assignment</h2>
+          <p className="muted">Case ownership and scheduled task responsibility are separate.
+            Changing the case assignee does not silently transfer open tasks;
+            use each task's Transfer responsibility control for an audited handoff.</p>
           <form action={assignRequest} className="field">
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>

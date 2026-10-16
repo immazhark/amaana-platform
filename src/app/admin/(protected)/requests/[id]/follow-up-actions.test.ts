@@ -147,6 +147,14 @@ describe("staff-selected assistance follow-up actions", () => {
     expect(m.update).not.toHaveBeenCalled();
   });
 
+  it("does not permit a reviewer to delegate a new task without assignment authority", async () => {
+    m.has.mockReturnValue(false);
+    const data = creation();
+    data.set("assignedToId", "other-reviewer");
+    await expect(createAssistanceFollowUp(data)).rejects.toThrow("Assignment permission");
+    expect(m.transaction).not.toHaveBeenCalled();
+  });
+
   it("validates an eligible assignee for new tasks", async () => {
     m.staffFind.mockResolvedValue(null);
     await expect(createAssistanceFollowUp(creation())).rejects.toThrow("not an active eligible");

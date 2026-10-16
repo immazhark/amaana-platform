@@ -23,6 +23,9 @@ export async function createAssistanceFollowUp(form: FormData) {
   const user = await requirePermission("assistance.update");
   const { id, submissionId, assignedToId, summary, dueOn, expectedUpdatedAt } =
     parseFollowUpCreation(form, indiaCalendarDay(new Date()));
+  if (assignedToId !== user.id && !hasPermission(user, "assistance.assign")) {
+    throw new Error("Assignment permission is required to schedule work for another staff member.");
+  }
   await withSerializableTransactionRetry(async tx => {
     const prior = await tx.assistanceFollowUp.findUnique({
       where: { submissionId },
