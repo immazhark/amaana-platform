@@ -12,7 +12,7 @@ vi.mock("@/lib/prisma-transaction", () => ({
 vi.mock("next/cache", () => ({ revalidatePath: m.revalidate }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
 import {
-  proposeAnonymousOutcomeCopy, reviewAnonymousOutcomeCopy,
+  proposeAnonymousOutcomeCopy, publishAnonymousOutcomeCopy, reviewAnonymousOutcomeCopy,
 } from "./disclosure-actions";
 import { ANONYMOUS_OUTCOME_COPY } from "@/lib/assistance-outcome-disclosure";
 
@@ -208,5 +208,113 @@ describe("independent anonymous copy approval and consent withdrawal", () => {
     await expect(reviewAnonymousOutcomeCopy(form())).rejects.toThrow("reviewer changed");
     expect(m.updateMany).not.toHaveBeenCalled();
     expect(m.audit).not.toHaveBeenCalled();
+  });
+});
+
+describe("explicit final public release and withdrawal", () => {
+  beforeEach(() => {
+    m.disclosureFind.mockResolvedValue({
+      ...disclosure, state: "APPROVED_COPY",
+      approvedById: "previous-approver", approvedAt: version,
+      publishedById: null,
+    });
+  });
+
+  it("requires a DIFFERENT authorized publisher and rechecks exact-copy consent", async () => {
+    await expect(publishAnonymousOutcomeCopy(form({
+      publicationAttested: "yes",
+    }))).rejects.toThrow("NAVIGATE");
+    expect(m.auth).toHaveBeenCalledWith("content.approve");
+    expect(m.updateMany).toHaveBeenCalledWith({
+      where: {
+        id: "disclosure-synthetic", state: "APPROVED_COPY",
+        updatedAt: version, publishedAt: null,
+      },
+      data: {
+        state: "PUBLISHED", publishedAt: expect.any(Date),
+        publishedById: "content-reviewer",
+      },
+    });
+    expect(m.audit).toHaveBeenCalledWith({ data: {
+      actorId: "content-reviewer",
+      action: "assistance.anonymous_outcome_explicitly_published",
+      entityType: "AssistanceRequest", entityId: "case-synthetic",
+      metadata: {
+        disclosureId: "disclosure-synthetic",
+        observationId: "outcome-synthetic",
+      },
+    } });
+    expect(m.revalidate).toHaveBeenCalledWith("/impact");
+  });
+
+  it("never publishes merely because a copy was approved or an actor skipped attestation", async () => {
+    await expect(publishAnonymousOutcomeCopy(form())).rejects.toThrow("Explicitly confirm");
+    expect(m.transaction).not.toHaveBeenCalled();
+    m.disclosureFind.mockResolvedValue({ ...disclosure, state: "DRAFT" });
+    await expect(publishAnonymousOutcomeCopy(form({ publicationAttested: "yes" })))
+      .rejects.toThrow("independently approved");
+    expect(m.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("denies final release to the copy approver, preparer or outcome reviewer", async () => {
+    for (const id of ["previous-approver", "copy-preparer", "outcome-reviewer"]) {
+      m.auth.mockResolvedValueOnce({ id });
+      await expect(publishAnonymousOutcomeCopy(form({ publicationAttested: "yes" })))
+        .rejects.toThrow("different authorized publisher");
+    }
+    expect(m.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("refuses publication after consent deletion, confidentiality withdrawal or stale revision", async () => {
+    m.evidenceCount.mockResolvedValueOnce(1);
+    await expect(publishAnonymousOutcomeCopy(form({ publicationAttested: "yes" })))
+      .rejects.toThrow("supporting evidence is missing");
+    m.disclosureFind.mockResolvedValueOnce({
+      ...disclosure, state: "APPROVED_COPY",
+      approvedById: "previous-approver", approvedAt: version,
+      observation: {
+        ...source, deliveryRecord: {
+          ...source.deliveryRecord, assistanceRequest: {
+            ...source.deliveryRecord.assistanceRequest,
+            verification: {
+              ...source.deliveryRecord.assistanceRequest.verification,
+              confidentialityLevel: "HIGHLY_SENSITIVE",
+            },
+          },
+        },
+      },
+    });
+    await expect(publishAnonymousOutcomeCopy(form({ publicationAttested: "yes" })))
+      .rejects.toThrow("Consent, case eligibility");
+    m.disclosureFind.mockResolvedValueOnce({
+      ...disclosure, state: "APPROVED_COPY",
+      approvedById: "previous-approver", approvedAt: version,
+      updatedAt: new Date("2026-10-16T11:21:00Z"),
+    });
+    await expect(publishAnonymousOutcomeCopy(form({ publicationAttested: "yes" })))
+      .rejects.toThrow("changed");
+    expect(m.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("withdrawing a published note keeps original attribution and invalidates public impact", async () => {
+    m.disclosureFind.mockResolvedValue({
+      ...disclosure, state: "PUBLISHED",
+      approvedById: "previous-approver", approvedAt: version,
+    });
+    await expect(reviewAnonymousOutcomeCopy(form({
+      decision: "WITHDRAWN", withdrawalReason: "CONSENT_WITHDRAWN",
+      consentReviewAttested: "",
+    }))).rejects.toThrow("NAVIGATE");
+    expect(m.updateMany).toHaveBeenCalledWith({
+      where: { id: "disclosure-synthetic", state: "PUBLISHED", updatedAt: version },
+      data: { state: "WITHDRAWN" },
+    });
+    expect(m.revalidate).toHaveBeenCalledWith("/impact");
+    expect(m.audit).toHaveBeenCalledWith({ data: expect.objectContaining({
+      metadata: expect.objectContaining({
+        previousState: "PUBLISHED", state: "WITHDRAWN",
+        withdrawalReason: "CONSENT_WITHDRAWN",
+      }),
+    }) });
   });
 });
