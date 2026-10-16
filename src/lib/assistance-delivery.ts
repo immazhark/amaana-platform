@@ -27,7 +27,7 @@ const version = (form: FormData, name: string) => {
 export const DELIVERY_REPORT_LIMIT = 300;
 export const DELIVERY_STATE_LABELS = {
   REPORTED: "Delivery reported · awaiting independent review",
-  CONFIRMED: "Delivery evidence reviewed · private record",
+  CONFIRMED: "Delivery evidence previously reviewed · private record",
   VOIDED: "Record voided · excluded from delivery reporting",
 } as const;
 

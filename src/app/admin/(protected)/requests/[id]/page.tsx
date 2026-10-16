@@ -220,6 +220,10 @@ export default async function RequestDetailPage({ params }: Props) {
                   </select>
                   <button type="submit" className="button secondary">Attach private evidence for review</button>
                 </form>}
+              {item.state === "CONFIRMED" &&
+                (!item.evidenceDocumentId || !evidenceNames.has(item.evidenceDocumentId)) &&
+                <p role="alert" className="muted">Supporting proof is no longer available here.
+                  This is a historical review record, not current evidence suitable for public reporting.</p>}
               {item.reviewedAt &&
                 <small>Reviewed by {item.reviewedBy?.name ?? "authorized staff"} ·
                   {" "}{item.reviewedAt.toLocaleDateString("en-IN")}</small>}
