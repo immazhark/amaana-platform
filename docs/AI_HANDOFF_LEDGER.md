@@ -1,3 +1,20 @@
+## 2026-10-17 — Complete fund registry traversal and truthful saves
+
+Ownership: HANDOFF_PENDING. Sole writer continued PR #292 from `3872eb6`; source `1d9b1af75dddc7b650554d7b97f2fc6bf967878c`. No main merge, public fund activation or deployment.
+
+- Replaced inaccessible first-100 registry cap with count-clamped 50-row pages, deterministic status/update/ID ordering and native status plus name/slug/account-code search. Same combined predicate drives counts and rows; links preserve filters and changing filters starts from the beginning. Invalid/repeated status/search values are ignored without reflection. Empty views are described as filtered views, not an empty registry.
+- Registry reads select only displayed/edit/revision/independent-review fields. Receipt, active approved-plan and refund-conflict aggregate queries use only displayed fund IDs; they still aggregate ALL qualifying contributions/proposals per displayed fund in SQL. Empty/view-only lists do not issue money reads; planning rollout gate remains. Exact decimal paise validation, original-purpose restrictions, independent maker/checker, refund conflicts and no-cash/no-outcome disclaimers remain.
+- Fund creation, draft editing and status review no longer report post-commit cache refresh failure as a failed write. Both view invalidations are attempted independently after persistence/audit; fixed saved+delayed feedback instructs reload before another change. Database/audit failures remain failures. No mutation is replayed to repair a view.
+- No new client boundary, stylesheet, package, schema, fund seed, public checkout/allowlist activation or provider/financial operation.
+
+Applied relevant ECC coding/security, Karpathy and Ponytail principles plus existing Impeccable UI conventions. Source detector returned no findings. Listed GitHub repos/plugins are used when relevant rather than installing unrelated runtimes.
+
+Validation: **59 focused cases in four suites pass**, including later-than-100 access, stable pages, shared filter predicates, empty/minimal reads, independent review controls, exact-paise and refund-conflict suppression, and post-commit refresh failures across create/edit/status actions. Application-only TypeScript, changed-file zero-warning ESLint and diff checks pass. Earlier broad string-based approval assertions were narrowed to the actual per-fund transition select so the new read-only APPROVED filter is not confused with self-approval authority; server maker/checker guards remain tested unchanged. No CI pipeline, real fund/donor mutation, PostgreSQL concurrency, browser acceptance, full build or bundle remeasurement is claimed; whole-repository assistance fixture typing limits remain separate.
+
+Master149 source classification remains 60 Implemented /61 Partial /26 Not started /2 other, zero formal closures. AF-FUNDS and AF-ALLOCATION gain scoped operational evidence; they remain partial pending reviewed activation/financial policy/native acceptance. Git classification remains 58 Merged /63 PR open /28 Uncommitted. Main/production and PR291 refs unchanged.
+
+Next: continue next independently source-ready implementation package, preserving the same release boundaries and implementation-first allocation.
+
 ## 2026-10-17 — Actionable notification attention queues
 
 Ownership: HANDOFF_PENDING. Sole writer continued existing PR #292 from `6ce052b`; source `67755678d906bc28a67976581654695e07de3cfb`. Main and separate PR291 refs unchanged. No provider operation or release.
