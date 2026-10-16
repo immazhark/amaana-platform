@@ -9,6 +9,7 @@ import {
 } from "@/lib/assistance-outcome-disclosure";
 import {
   proposeAnonymousOutcomeCopy, publishAnonymousOutcomeCopy, reviewAnonymousOutcomeCopy,
+  reconcileAnonymousOutcomeDisclosures,
 } from "./disclosure-actions";
 import { linkAssistanceDeliveryEvidence, reportAssistanceDelivery, reviewAssistanceDelivery } from "./delivery-actions";
 import { FOLLOW_UP_SUMMARY_LIMIT, MAX_OPEN_FOLLOW_UPS_PER_CASE, eligibleFollowUpStaffWhere, followUpDueLabel,
@@ -427,6 +428,18 @@ export default async function RequestDetailPage({ params }: Props) {
 
         <section className="card" aria-labelledby="private-outcome-heading">
           <h2 id="private-outcome-heading">Private case-outcome observations</h2>
+          {mayApproveAnonymousCopy &&
+            outcomes.some(item => item.disclosure && item.disclosure.state !== "WITHDRAWN") &&
+            <form action={reconcileAnonymousOutcomeDisclosures} className="field">
+              <input type="hidden" name="id" value={id}/>
+              <p className="muted">Recheck current case eligibility and all consent/evidence
+                links. Invalid anonymous-copy proposals or publications will be
+                withdrawn with an audit event. Valid approvals remain unchanged.</p>
+              <button className="button secondary" type="submit">
+                Reconcile and withdraw stale anonymous approvals
+              </button>
+            </form>}
+
           <p className="muted">Observations are about one specific delivery only.
             A completed support action does not mean medical recovery, full case resolution,
             financial settlement or publicly approved impact. Nothing here is published
