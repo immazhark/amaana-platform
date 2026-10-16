@@ -129,6 +129,19 @@ describe("internal-only anonymous outcome copy proposal", () => {
     await expect(proposeAnonymousOutcomeCopy(form())).rejects.toThrow("STANDARD-confidentiality");
     expect(m.create).not.toHaveBeenCalled();
   });
+  it("refuses to replay a previously withdrawn consent proposal", async () => {
+    m.disclosureFind.mockResolvedValue({
+      state: "WITHDRAWN",
+      preparedById: "content-reviewer",
+      consentDocumentId: "specific-consent-document",
+      copyText: ANONYMOUS_OUTCOME_COPY.PARTIAL_SUPPORT,
+    });
+    await expect(proposeAnonymousOutcomeCopy(form()))
+      .rejects.toThrow("was withdrawn and cannot be reused");
+    expect(m.create).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+  });
+
   it("preserves idempotency for a matching proposal without second audit", async () => {
     m.disclosureFind.mockResolvedValue({
       preparedById: "content-reviewer",
