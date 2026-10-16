@@ -35,9 +35,13 @@ async function finishMutation(operation: () => Promise<void>) {
       : "Unable to save the fund. Refresh and check the registry before trying again.";
     redirect(`/admin/giving-funds?error=${encodeURIComponent(notice)}`);
   }
-  revalidatePath("/admin/giving-funds");
-  revalidatePath("/donate");
-  redirect("/admin/giving-funds?saved=1");
+  // Persistence and audit already committed. A view-refresh failure must not
+  // turn a successful registry change into an apparent failed write.
+  let delayed = false;
+  for (const path of ["/admin/giving-funds", "/donate"]) {
+    try { revalidatePath(path); } catch { delayed = true; }
+  }
+  redirect(`/admin/giving-funds?saved=1${delayed ? "&refresh=delayed" : ""}`);
 }
 
 export async function createGivingFund(form: FormData) {

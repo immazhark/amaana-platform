@@ -17,7 +17,7 @@ function draftForm(values: Record<string, string> = {}) {
   return f;
 }
 describe("fund registry server actions", () => {
-  beforeEach(() => { vi.clearAllMocks(); m.permission.mockResolvedValue({ id: "approver" }); m.find.mockResolvedValue(current); m.create.mockResolvedValue({ id: "fund-1" }); m.update.mockResolvedValue({ count: 1 }); m.audit.mockResolvedValue({ id: "audit-1" }); });
+  beforeEach(() => { vi.resetAllMocks(); m.permission.mockResolvedValue({ id: "approver" }); m.find.mockResolvedValue(current); m.create.mockResolvedValue({ id: "fund-1" }); m.update.mockResolvedValue({ count: 1 }); m.audit.mockResolvedValue({ id: "audit-1" }); });
   it.each([createGivingFund, updateGivingFund, transitionGivingFund])("requires permission before any persistence", async action => {
     m.permission.mockRejectedValue(new Error("Forbidden"));
     await expect(action(draftForm())).rejects.toThrow("Forbidden");
@@ -94,4 +94,16 @@ describe("fund registry server actions", () => {
     await expect((boundary === "create" ? createGivingFund : transitionGivingFund)(draftForm())).rejects.toThrow("error=Unable%20to%20save");
     expect(m.revalidate).not.toHaveBeenCalled();
   });
+  it.each([createGivingFund, updateGivingFund, transitionGivingFund])("keeps a committed change successful when either view refresh fails", async action => {
+    for (const failingPath of ["/admin/giving-funds", "/donate"]) {
+      vi.clearAllMocks();
+      m.find.mockResolvedValue({ ...current, status: action === updateGivingFund ? "DRAFT" : "UNDER_REVIEW" });
+      m.revalidate.mockImplementation((path: string) => { if (path === failingPath) throw new Error("Private cache diagnostic"); });
+      await expect(action(draftForm())).rejects.toThrow("saved=1&refresh=delayed");
+      expect(m.audit).toHaveBeenCalledTimes(1);
+      expect(action === createGivingFund ? m.create : m.update).toHaveBeenCalledTimes(1);
+      expect(m.revalidate).toHaveBeenCalledWith("/admin/giving-funds"); expect(m.revalidate).toHaveBeenCalledWith("/donate");
+    }
+  });
+
 });
