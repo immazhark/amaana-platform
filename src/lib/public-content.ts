@@ -78,7 +78,19 @@ export async function getPublishedInitiatives() {
 export async function getPublishedInitiativeBySlug(slug: string) {
   const initiative = await prisma.initiative.findFirst({
     where: { slug, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
-    include: {
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      summary: true,
+      story: true,
+      year: true,
+      startYear: true,
+      endYear: true,
+      primaryMetric: true,
+      primaryMetricLabel: true,
+      publishedAt: true,
+      updatedAt: true,
       cause: { select: { title: true } },
       mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
       // Related cards need only public-facing copy and a valid destination.
@@ -143,7 +155,15 @@ export async function getPublishedStoryBySlug(slug: string) {
       status: "PUBLISHED",
       privacyApprovedAt: { not: null },
     },
-    include: {
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      summary: true,
+      body: true,
+      sourceNote: true,
+      publishedAt: true,
+      updatedAt: true,
       cause: { select: { title: true, status: true } },
       initiative: {
         select: { slug: true, title: true, status: true, cause: { select: { status: true } } },
@@ -175,7 +195,17 @@ export async function getPublishedFaithContentBySlug(slug: string) {
       slug,
       ...publicFaithWhere,
     },
-    include: {
+    select: {
+      id: true,
+      slug: true,
+      type: true,
+      title: true,
+      excerpt: true,
+      body: true,
+      sourceCitation: true,
+      verifiedAt: true,
+      publishedAt: true,
+      updatedAt: true,
       topics: { select: { topic: { select: { name: true } } } },
       cause: { select: { title: true, status: true } },
       initiative: {
