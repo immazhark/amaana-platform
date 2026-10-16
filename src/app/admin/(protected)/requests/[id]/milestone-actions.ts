@@ -7,6 +7,7 @@ import {
   PRIVATE_MILESTONE_ACTION,
   canAddPrivateMilestone,
   parsePrivateMilestoneInput,
+  readPrivateMilestone,
 } from "@/lib/assistance-private-milestone";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
@@ -32,9 +33,15 @@ export async function addPrivateMilestone(form: FormData) {
         action: PRIVATE_MILESTONE_ACTION,
         metadata: { path: ["submissionId"], equals: submissionId },
       },
-      select: { id: true },
+      select: { id: true, metadata: true },
     });
-    if (previous) return;
+    if (previous) {
+      const recorded = readPrivateMilestone(previous.metadata);
+      if (!recorded || recorded.kind !== kind || recorded.summary !== summary) {
+        throw new Error("Submission token was reused for a different private follow-up. Reload this case.");
+      }
+      return;
+    }
 
     if (!canAddPrivateMilestone(request.status, request.appealId)) {
       throw new Error("This case is closed, rejected or linked to an appeal. New case follow-ups are locked.");

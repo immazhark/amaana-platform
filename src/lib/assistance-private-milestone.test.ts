@@ -30,6 +30,7 @@ describe("private assistance follow-up boundary", () => {
     { summary: "Unsafe\u0000entry content" },
     { submissionId: "not-a-uuid" },
     { expectedUpdatedAt: "invalid" },
+    { expectedUpdatedAt: "2026-02-30T08:00:00.000Z" },
     { id: "" },
   ])("rejects malformed follow-up fields (%j)", patch => {
     expect(() => parsePrivateMilestoneInput(entry(patch))).toThrow();

@@ -35,7 +35,9 @@ export function parsePrivateMilestoneInput(data: FormData) {
   if (typeof submissionId !== "string" || !uuid.test(submissionId)) {
     throw new Error("Follow-up submission expired. Reload this case.");
   }
-  if (typeof updatedAt !== "string" || !updatedAt || Number.isNaN(Date.parse(updatedAt))) {
+  if (typeof updatedAt !== "string" ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(updatedAt) ||
+      Number.isNaN(Date.parse(updatedAt)) || new Date(updatedAt).toISOString() !== updatedAt) {
     throw new Error("Case version is missing. Reload before posting.");
   }
   return {

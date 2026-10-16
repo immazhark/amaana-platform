@@ -50,12 +50,22 @@ describe("authorized private case milestone mutation", () => {
   });
 
   it("does not append a duplicate when a prior submission committed", async () => {
-    mock.duplicate.mockResolvedValue({ id: "previous-entry" });
+    mock.duplicate.mockResolvedValue({ id: "previous-entry", metadata: {
+      kind: "REVIEW_HANDOFF", summary: "Waiting for the designated reviewer to check this case.", submissionId,
+    } });
     await expect(addPrivateMilestone(form())).rejects.toThrow("NAVIGATE");
     expect(mock.audit).not.toHaveBeenCalled();
     expect(mock.duplicate).toHaveBeenCalledWith(expect.objectContaining({
       where: expect.objectContaining({ metadata: { path: ["submissionId"], equals: submissionId } }),
     }));
+  });
+
+  it("rejects a reused submission token with different note content", async () => {
+    mock.duplicate.mockResolvedValue({ id: "previous-entry", metadata: {
+      kind: "CONTACT_ATTEMPT", summary: "A different event using the same token.", submissionId,
+    } });
+    await expect(addPrivateMilestone(form())).rejects.toThrow("token was reused");
+    expect(mock.audit).not.toHaveBeenCalled();
   });
 
   it("rejects a changed request version before any append-only write", async () => {
