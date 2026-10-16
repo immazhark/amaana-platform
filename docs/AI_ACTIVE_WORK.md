@@ -1,3 +1,7 @@
+## 2026-10-17 — Recheck consent and media before resuming paused appeals
+
+Ownership: CHATGPT_ACTIVE. Continuing PR #292 from verified `8acb60dc460947c32e6e6e349b5b1a5365818618`, target `main`. Scope: resume PAUSED → PUBLISHED rechecking current linked assistance verification, public content/goal consent, and approved cover image both before and inside the status transition transaction. Preserve unlinked legacy resume and other status transitions. Add targeted regression tests; no merge/deployment or live data mutation.
+
 ## 2026-10-17 — Public assistance verification integrity
 
 Ownership: HANDOFF_PENDING. ChatGPT completed this sole-writer batch on PR #292, branch `fix/direct-transfer-feedback-20261013` (target `main`, not merged). Starting branch head `008efa3bd3fd47c02fc08ab6b7716b568846f731`; implementation `2c0509d4500ec3af1206d5845fc27f91c88704da`, tests `21d1610697b777dca40631b274b0b8849c1f5d40`, master register `8bfb582b3115fd6b3d3c99588556335afa185a66`, handoff ledger `25806b1b32dd3857d6cb320f822d7250a98606c5`.
