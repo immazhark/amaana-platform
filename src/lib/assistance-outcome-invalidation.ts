@@ -3,10 +3,9 @@ import {
   type Prisma,
 } from "@prisma/client";
 import {
-  ANONYMOUS_OUTCOME_COPY,
   disclosureSourceSelect,
-  eligibleForAnonymousCopy,
   requiredDisclosureEvidenceIds,
+  validatedAnonymousDisclosureEvidenceIds,
 } from "./assistance-outcome-disclosure";
 
 export const ANONYMOUS_COPY_INVALIDATION_TRIGGERS = {
@@ -72,14 +71,13 @@ export async function withdrawStaleAnonymousOutcomeCopies(
   const available = new Set(documents.map(doc => doc.id));
 
   let withdrawn = 0;
-  for (const { disclosure, evidence } of requiredByDisclosure) {
+  for (const { disclosure } of requiredByDisclosure) {
     const observation = disclosure.observation;
-    const invalid = !disclosure.consentDocumentId ||
-      !eligibleForAnonymousCopy(observation) ||
-      disclosure.copyText !== ANONYMOUS_OUTCOME_COPY[observation.kind] ||
-      evidence.length < 2 ||
-      new Set(evidence).size !== evidence.length ||
-      evidence.some(id => id === retiringDocumentId || !available.has(id));
+    const ids = validatedAnonymousDisclosureEvidenceIds(
+      observation, disclosure.copyText, disclosure.consentDocumentId,
+    );
+    const invalid = !ids ||
+      ids.some(id => id === retiringDocumentId || !available.has(id));
     if (!invalid) continue;
 
     const changed = await tx.assistanceOutcomeDisclosure.updateMany({

@@ -3,8 +3,7 @@ import { prisma } from "./prisma";
 import {
   ANONYMOUS_OUTCOME_COPY,
   disclosureSourceSelect,
-  eligibleForAnonymousCopy,
-  requiredDisclosureEvidenceIds,
+  validatedAnonymousDisclosureEvidenceIds,
 } from "./assistance-outcome-disclosure";
 import { logServerError } from "./server-log";
 
@@ -32,10 +31,10 @@ export async function getPublishedAnonymousOutcomeNotes(): Promise<string[]> {
 
     const possible = rows.flatMap(row => {
       const source = row.observation;
-      if (!row.consentDocumentId || !eligibleForAnonymousCopy(source) ||
-          row.copyText !== ANONYMOUS_OUTCOME_COPY[source.kind]) return [];
-      const ids = requiredDisclosureEvidenceIds(source, row.consentDocumentId);
-      if (ids.length < 2 || new Set(ids).size !== ids.length) return [];
+      const ids = validatedAnonymousDisclosureEvidenceIds(
+        source, row.copyText, row.consentDocumentId,
+      );
+      if (!ids) return [];
       return [{
         copy: ANONYMOUS_OUTCOME_COPY[source.kind],
         caseId: source.assistanceRequestId,
