@@ -2,6 +2,10 @@ import { describe, expect, it } from "vitest";
 import { boundedCarouselScrollLeft, closestCarouselIndex } from "./carousel-position";
 
 describe("browser-reachable carousel geometry", () => {
+  it("positions nonzero start slides without requesting an unreachable offset", () => {
+    expect(boundedCarouselScrollLeft(720, 1000, 400)).toBe(600);
+    expect(boundedCarouselScrollLeft(440, 1000, 400)).toBe(440);
+  });
   it("clamps unreachable slide positions at either viewport boundary", () => {
     expect(boundedCarouselScrollLeft(900, 1200, 500)).toBe(700);
     expect(boundedCarouselScrollLeft(-25, 1200, 500)).toBe(0);

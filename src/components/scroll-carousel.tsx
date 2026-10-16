@@ -77,8 +77,26 @@ export function ScrollCarousel({
     navigation.current = null;
     setActiveIndex(lastIndex);
     const slide = slideRefs.current[lastIndex];
-    if (slide && viewportRef.current) viewportRef.current.scrollTo({ left: slide.offsetLeft, behavior: "auto" });
+    const viewport = viewportRef.current;
+    if (slide && viewport) {
+      const left = boundedCarouselScrollLeft(slide.offsetLeft, viewport.scrollWidth, viewport.clientWidth);
+      viewport.scrollTo({ left, behavior: "auto" });
+    }
   }, [slideCount]);
+
+  // startAt configures more than the status badge: align the viewport on the
+  // first client commit rather than waiting for an optional ResizeObserver.
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    const index = activeIndexRef.current;
+    const slide = slideRefs.current[index];
+    if (!viewport || !slide || index === 0) return;
+    const left = boundedCarouselScrollLeft(slide.offsetLeft, viewport.scrollWidth, viewport.clientWidth);
+    if (Math.abs(viewport.scrollLeft - left) > 1) {
+      navigation.current = { left, index };
+      viewport.scrollTo({ left, behavior: "auto" });
+    }
+  }, []);
 
   useEffect(() => {
     if (typeof window.matchMedia !== "function") return;
