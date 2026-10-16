@@ -448,6 +448,7 @@ describe("post-conversion public disclosure withdrawal", () => {
         metadata: { assistanceRequestId: "case-1", linkedAppealId: "appeal-1" },
       }),
     });
+    expect(mocks.revalidate).toHaveBeenCalledWith("/media/2026/123e4567-e89b-12d3-a456-426614174000.webp");
     expect(mocks.redirect).toHaveBeenCalledWith("/admin/requests/case-1?privacy=withdrawn");
   });
 
