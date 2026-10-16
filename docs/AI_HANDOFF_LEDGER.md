@@ -1,3 +1,16 @@
+## 2026-10-17 — Paused appeal re-publication privacy guard
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer continuation of existing PR #292. Started from verified branch HEAD `8acb60dc460947c32e6e6e349b5b1a5365818618` with main still `aedae00171d2cbf585f65f93b783f66c7f003a43`.
+
+- Root cause: PAUSED→PUBLISHED skipped the UNDER_REVIEW-only verification/consent/goal gate and fresh approved-cover check, allowing prior approval to survive later changes without review.
+- `src/lib/appeal-publication.ts`: renamed the helper `getAppealPublicationIssues`; strongly requires `hasAssistanceRequest`. Rechecks linked assistance verification, public disclosure consent, approved fundraising target on both first-publication and resume. Unlinked previously published legacy appeal resumes remain allowed; no fabricated case verification is required.
+- `src/app/admin/(protected)/appeals/actions.ts`: passes linkage and fresh records both before and inside serializable transaction. Checks current approved media for both paths twice; no status, audit or public invalidation on a rejected request. Keeps previously published timestamp on success.
+- Test files: `src/lib/appeal-publication.test.ts` and `src/app/admin/(protected)/appeals/actions.test.ts`. New scenarios cover revoked disclosure, goal mismatch, absent linked verification, legacy resumes, withdrawn media, between-check media change, and successful review without republishing timestamp. Repo readback showed 13 explicitly linked helper scenarios and no stale helper imports.
+- Source/test commits in order: `7f1eb027`, `825211b2`, `3b5e47cd`, `10c8d73a`, `863cc231`, `72f3d621`, `5e224e17`, `3ea8c295`, `d49a5c37`. Master149 evidence commit: `4420f8a227ec3502f200495f545323e7a7404096`.
+- **Runtime evidence limit:** native repository checkout, project dependencies, Vitest/TypeScript, PostgreSQL, Chromium and production build were unavailable; new tests were committed but not executed in this session. Do not describe the batch as runtime tested or release-ready. No DB/provider/payment/email/storage writes, feature activation, live media publication, migration, main merge or deployment were performed.
+- Master149 still 60 Implemented /61 Partial /26 Not started /2 other; AF-PROMOTION and AF-CONSENT have scoped evidence appended, not new closures. Existing fixed JS/CSS budgets unchanged; bundle not remeasured.
+- Next: on hydrated checkout run focused `src/lib/appeal-publication.test.ts` and `src/app/admin/(protected)/appeals/actions.test.ts`, application TypeScript and changed-file lint, then continue next source-ready batch. Do not merge without independent exact-head release checks and authorization.
+
 ## 2026-10-17 — Fail-closed public assistance verification
 
 Ownership: HANDOFF_PENDING. ChatGPT claimed sole implementation ownership after verifying PR #292 open at `008efa3bd3fd47c02fc08ab6b7716b568846f731` and returned it after a bounded source batch. Source `2c0509d4500ec3af1206d5845fc27f91c88704da`, regression tests `21d1610697b777dca40631b274b0b8849c1f5d40`; register reconciliation `8bfb582b3115fd6b3d3c99588556335afa185a66`.
