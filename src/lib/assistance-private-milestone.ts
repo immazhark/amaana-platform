@@ -61,3 +61,36 @@ export function canAddPrivateMilestone(status: string, appealId: string | null) 
   return !appealId && (status === "SUBMITTED" || status === "DOCUMENTS_REQUESTED" ||
     status === "UNDER_VERIFICATION" || status === "APPROVED");
 }
+
+/** A redaction changes private-case visibility only. The original audit
+ * event remains restricted and immutable for compliance review. */
+export const PRIVATE_MILESTONE_REDACTED_ACTION = "assistance.private_milestone_redacted" as const;
+
+export const PRIVATE_MILESTONE_REDACTION_REASONS = {
+  ENTRY_ERROR: "Recorded in error",
+  DUPLICATE: "Duplicate entry",
+  SENSITIVE_DETAIL: "Contains unnecessary sensitive information",
+} as const;
+
+export type PrivateMilestoneRedactionReason = keyof typeof PRIVATE_MILESTONE_REDACTION_REASONS;
+
+export function parsePrivateMilestoneRedaction(form: FormData) {
+  const id = form.get("id");
+  const targetId = form.get("targetId");
+  const reason = form.get("reason");
+  if (typeof id !== "string" || !id || id.length > 128 || unsafe.test(id) ||
+      typeof targetId !== "string" || !targetId || targetId.length > 128 || unsafe.test(targetId)) {
+    throw new Error("The private follow-up reference is invalid.");
+  }
+  if (typeof reason !== "string" || !Object.hasOwn(PRIVATE_MILESTONE_REDACTION_REASONS, reason)) {
+    throw new Error("Choose a valid private follow-up redaction reason.");
+  }
+  return { id, targetId, reason: reason as PrivateMilestoneRedactionReason };
+}
+
+export function readPrivateMilestoneRedaction(value: unknown): string | null {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+  const targetId = (value as Record<string, unknown>).targetId;
+  return typeof targetId === "string" && targetId.length > 0 &&
+    targetId.length <= 128 && !unsafe.test(targetId) ? targetId : null;
+}
