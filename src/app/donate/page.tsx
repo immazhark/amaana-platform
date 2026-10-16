@@ -46,15 +46,18 @@ type PageProps = { searchParams?: Promise<{ giving?: string | string[] }> };
 export default async function Page({ searchParams }: PageProps = {}) {
   // Deep links change which *approved* checkout is initially visible, never
   // bypass the existing live eligibility gates in either destination form.
-  const givingQuery = (await searchParams)?.giving;
-  const initialRoute = givingQuery === "fund" ? "fund" : "appeal";
-  const [appealRecords, fundResult, publishedInitiatives] = await Promise.all([getAppealsIndexData(), getDonorFundChoices().then(funds => ({ funds, failed: false }), error => {
+  const [resolvedSearch, appealRecords, fundResult, publishedInitiatives] = await Promise.all([
+    searchParams,
+    getAppealsIndexData(),
+    getDonorFundChoices().then(funds => ({ funds, failed: false }), error => {
     logServerError("donation.fund_choices_unavailable", { errorName: error instanceof Error ? error.name : "unknown" });
     return { funds: [], failed: true };
   }), getDonationImpactHighlights().catch(error => {
     logServerError("donation.published_impact_unavailable", { errorName: error instanceof Error ? error.name : "unknown" });
     return [];
-  })]);
+  }),
+  ]);
+  const initialRoute = resolvedSearch?.giving === "fund" ? "fund" : "appeal";
   const { funds, failed: fundReadFailed } = fundResult;
   const isStaging = canExposeSyntheticStagingContent();
   const openAppeals = appealRecords.filter(appeal => isAppealOpenForDonations(appeal) && (isStaging || !isSyntheticStagingAppeal(appeal)));

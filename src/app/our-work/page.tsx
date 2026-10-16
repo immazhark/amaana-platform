@@ -9,7 +9,6 @@ import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import { filterWork, type WorkSearch } from "@/lib/work-filters";
-import "./work-filters.css";
 import auditStyles from "./work-filter-audit.module.css";
 import { programmeBySlug, programmeCategories } from '@/lib/master-copy';
 
@@ -24,8 +23,8 @@ export const metadata: Metadata = {
 };
 
 export default async function OurWorkPage({ searchParams }: { searchParams: Promise<WorkSearch> }) {
-  const rawCauses = await getOurWorkIndexData();
-  const search = await searchParams;
+  // The public index query is independent of the URL search parameters.
+  const [rawCauses, search] = await Promise.all([getOurWorkIndexData(), searchParams]);
   const allInitiatives = rawCauses.flatMap(cause => cause.initiatives);
   // Already publication-gated by getOurWorkIndexData. Reuse this projection:
   // no additional DB request and no unsupported pooled impact totals.
@@ -70,8 +69,8 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
       </div>}
 
       <section className="v2-section paper" id="work-results"><div className="v2-shell"><SectionHeading eyebrow={<>Explore by need</>} title={<>A living portfolio of service.</>} subtitle={<>Start with a programme area, then use the year filter to explore a specific annual edition.</>} />
-        <form className={`work-filters ${auditStyles.toolbar}`} action="/our-work#work-results" method="get" aria-label="Filter published initiatives"><label className={auditStyles.filterLabel} htmlFor="work-programme">Programme<select className={auditStyles.filterSelect} id="work-programme" name="programme" defaultValue={filters.programme}><option value="">All programmes</option>{filters.programme && !visibleCauses.some(cause => cause.slug === filters.programme) && <option value={filters.programme}>Unavailable programme</option>}{visibleCauses.map(cause => <option key={cause.slug} value={cause.slug}>{cause.title}</option>)}</select></label><label className={auditStyles.filterLabel} htmlFor="work-year">Year<select className={auditStyles.filterSelect} id="work-year" name="year" defaultValue={filters.year}><option value="">All years</option>{filters.year && !filters.years.some(year => String(year) === filters.year) && <option value={filters.year}>Unavailable year</option>}{filters.years.map(year => <option key={year} value={year}>{year}</option>)}</select></label><button className="v2-button" type="submit">Apply filters</button>{filters.active && <Link className={auditStyles.clear} href="/our-work#work-results">Clear filters</Link>}</form>
-        <p className="work-results-count">{filters.count} published {filters.count === 1 ? "initiative" : "initiatives"}{filters.active ? " matching these filters" : " available to explore"}.</p>
+        <form className={auditStyles.toolbar} action="/our-work#work-results" method="get" aria-label="Filter published initiatives"><label className={auditStyles.filterLabel} htmlFor="work-programme">Programme<select className={auditStyles.filterSelect} id="work-programme" name="programme" defaultValue={filters.programme}><option value="">All programmes</option>{filters.programme && !visibleCauses.some(cause => cause.slug === filters.programme) && <option value={filters.programme}>Unavailable programme</option>}{visibleCauses.map(cause => <option key={cause.slug} value={cause.slug}>{cause.title}</option>)}</select></label><label className={auditStyles.filterLabel} htmlFor="work-year">Year<select className={auditStyles.filterSelect} id="work-year" name="year" defaultValue={filters.year}><option value="">All years</option>{filters.year && !filters.years.some(year => String(year) === filters.year) && <option value={filters.year}>Unavailable year</option>}{filters.years.map(year => <option key={year} value={year}>{year}</option>)}</select></label><button className="v2-button" type="submit">Apply filters</button>{filters.active && <Link className={auditStyles.clear} href="/our-work#work-results">Clear filters</Link>}</form>
+        <p className={auditStyles.resultsCount}>{filters.count} published {filters.count === 1 ? "initiative" : "initiatives"}{filters.active ? " matching these filters" : " available to explore"}.</p>
         {filters.results.length > 0 ? (
           <WorkPortfolio causes={filters.results} expanded={filters.active} yearFiltered={Boolean(search.year)} />) : <div className="v2-reminder v2-light-reminder"><h3>{filters.active ? "No published initiatives match these filters." : "The public archive is being prepared."}</h3><p>{filters.active ? "Choose another programme or year, or clear the filters to see all available work." : "Initiative stories and evidence will appear here as public records are available."}</p></div>}
       </div></section>

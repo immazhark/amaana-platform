@@ -1,4 +1,5 @@
 import Link from "@/components/navigation-link";
+import styles from "./work-portfolio.module.css";
 import { PublicMedia } from "@/components/public-media";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { ActionIcon } from "@/components/action-icon";
@@ -63,12 +64,12 @@ export function WorkPortfolio({ causes, expanded = false, yearFiltered = false }
                   </div>
 
                   {cause.slug === "amaana-taleem" && !yearFiltered && (
-                    <div className="v2-taleem-highlights" aria-label="Amaana Taleem documented pathways">
-                      <div className="v2-taleem-highlight">
+                    <div className={styles.taleemHighlights} aria-label="Amaana Taleem documented pathways">
+                      <div className={styles.taleemHighlight}>
                         <strong>25 students</strong>
                         <span>Qur’an Nazira and Hifdh students sponsored combined, as of September 2026.</span>
                       </div>
-                      <div className="v2-taleem-highlight">
+                      <div className={styles.taleemHighlight}>
                         <strong>50 children</strong>
                         <span>Stationery kits provided to orphan children through the 2025 Taleem initiative.</span>
                       </div>
