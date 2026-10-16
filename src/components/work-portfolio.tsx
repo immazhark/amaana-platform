@@ -1,4 +1,6 @@
-import Link from "@/components/navigation-link";
+// High-density archive links use the framework link directly. The global
+// navigation-progress controller already handles their click feedback.
+import Link from "next/link";
 import styles from "./work-portfolio.module.css";
 import { PublicMedia } from "@/components/public-media";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
