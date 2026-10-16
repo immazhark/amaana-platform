@@ -6,9 +6,11 @@ import { redirect } from "next/navigation";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { canReportPrivateDelivery, parseDeliveryCreation, parseDeliveryReview } from "@/lib/assistance-delivery";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
+import { withdrawStaleAnonymousOutcomeCopies } from "@/lib/assistance-outcome-invalidation";
 
 function returnToCase(id: string): never {
   try { revalidatePath(`/admin/requests/${id}`); } catch { /* do not replay committed writes */ }
+  try { revalidatePath("/impact"); } catch { /* withdrawal already committed */ }
   redirect(`/admin/requests/${id}`);
 }
 
@@ -128,6 +130,9 @@ export async function reviewAssistanceDelivery(form: FormData) {
       data: { state, reviewedById: actor.id, reviewedAt: new Date() },
     });
     if (changed.count !== 1) throw new Error("Another reviewer updated this report. Reload the case.");
+    if (state === AssistanceDeliveryReviewState.VOIDED) {
+      await withdrawStaleAnonymousOutcomeCopies(tx, id, actor.id, "DELIVERY_VOIDED");
+    }
     await tx.auditEvent.create({ data: {
       actorId: actor.id, action: "assistance.delivery_reviewed",
       entityType: "AssistanceRequest", entityId: id,

@@ -9,10 +9,12 @@ import {
   parseFinancialCorroboration, parseFinancialCorroborationReview,
 } from "@/lib/assistance-financial-reconciliation";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
+import { withdrawStaleAnonymousOutcomeCopies } from "@/lib/assistance-outcome-invalidation";
 
 function backToCase(id: string): never {
   try { revalidatePath(`/admin/requests/${id}`); } catch { /* transaction was committed */ }
   try { revalidatePath("/admin"); } catch { /* refresh will load committed record */ }
+  try { revalidatePath("/impact"); } catch { /* withdrawal already committed */ }
   redirect(`/admin/requests/${id}`);
 }
 
@@ -162,6 +164,11 @@ export async function reviewAssistanceFinancialCorroboration(form: FormData) {
       data: { status: input.state, reviewedById: actor.id, reviewedAt: new Date() },
     });
     if (result.count !== 1) throw new Error("Another finance reviewer changed this record.");
+    if (input.state === AssistanceFinancialReconciliationState.VOIDED) {
+      await withdrawStaleAnonymousOutcomeCopies(
+        tx, input.assistanceRequestId, actor.id, "FINANCIAL_PROOF_VOIDED",
+      );
+    }
     await tx.auditEvent.create({ data: {
       actorId: actor.id, action: "assistance.financial_corroboration_reviewed",
       entityType: "AssistanceRequest", entityId: input.assistanceRequestId,

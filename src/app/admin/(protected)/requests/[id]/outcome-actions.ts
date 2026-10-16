@@ -8,10 +8,12 @@ import {
   hasCurrentPrivateOutcomeEvidence, parseOutcomeReport, parseOutcomeReview,
 } from "@/lib/assistance-outcome";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
+import { withdrawStaleAnonymousOutcomeCopies } from "@/lib/assistance-outcome-invalidation";
 
 function returnToCase(id: string): never {
   try { revalidatePath(`/admin/requests/${id}`); } catch { /* writes already committed */ }
   try { revalidatePath("/admin"); } catch { /* do not replay successful actions */ }
+  try { revalidatePath("/impact"); } catch { /* withdrawal already committed */ }
   redirect(`/admin/requests/${id}`);
 }
 
@@ -173,6 +175,11 @@ export async function reviewAssistanceOutcome(form: FormData) {
     });
     if (changed.count !== 1) {
       throw new Error("Another reviewer changed this observation. Reload before reviewing.");
+    }
+    if (input.state === AssistanceOutcomeReviewState.VOIDED) {
+      await withdrawStaleAnonymousOutcomeCopies(
+        tx, input.assistanceRequestId, actor.id, "OUTCOME_VOIDED",
+      );
     }
     await tx.auditEvent.create({ data: {
       actorId: actor.id, action: "assistance.outcome_observation_reviewed",
