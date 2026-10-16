@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requirePermission: vi.fn(),
+  invalidate: vi.fn(),
   findUniqueOrThrow: vi.fn(),
   findFirstAudit: vi.fn(),
   createAudit: vi.fn(),
@@ -16,6 +17,9 @@ const mocks = vi.hoisted(() => ({
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.requirePermission }));
 vi.mock("@/lib/storage", () => ({ deletePrivateDocumentObject: mocks.deletePrivateDocumentObject }));
+vi.mock("@/lib/assistance-outcome-invalidation", () => ({
+  withdrawStaleAnonymousOutcomeCopies: mocks.invalidate,
+}));
 vi.mock("@/lib/prisma-transaction", () => ({
   withSerializableTransactionRetry: mocks.serializableTransaction,
 }));

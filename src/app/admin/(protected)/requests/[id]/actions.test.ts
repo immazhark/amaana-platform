@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requirePermission: vi.fn(),
+  invalidate: vi.fn(),
   hasPermission: vi.fn(),
   requestFind: vi.fn(),
   requestFindFirst: vi.fn(),
@@ -29,6 +30,9 @@ vi.mock("@/lib/prisma", () => ({
       updateMany: mocks.requestUpdateMany,
     },
   },
+}));
+vi.mock("@/lib/assistance-outcome-invalidation", () => ({
+  withdrawStaleAnonymousOutcomeCopies: mocks.invalidate,
 }));
 vi.mock("@/lib/prisma-transaction", () => ({
   withSerializableTransactionRetry: mocks.transaction,

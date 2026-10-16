@@ -1,9 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({
-  permission: vi.fn(), has: vi.fn(), transaction: vi.fn(), request: vi.fn(), document: vi.fn(),
+  permission: vi.fn(), has: vi.fn(),
+  invalidate: vi.fn(), transaction: vi.fn(), request: vi.fn(), document: vi.fn(),
   record: vi.fn(), create: vi.fn(), update: vi.fn(), audit: vi.fn(), cache: vi.fn(), redirect: vi.fn(),
 }));
 vi.mock("@/lib/auth", () => ({ requirePermission: m.permission, hasPermission: m.has }));
+vi.mock("@/lib/assistance-outcome-invalidation", () => ({
+  withdrawStaleAnonymousOutcomeCopies: m.invalidate,
+}));
 vi.mock("@/lib/prisma-transaction", () => ({ withSerializableTransactionRetry: m.transaction }));
 vi.mock("next/cache", () => ({ revalidatePath: m.cache }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
