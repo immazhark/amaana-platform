@@ -106,6 +106,13 @@ describe("staff corroboration of confirmed financial delivery", () => {
     expect(m.reconcileCreate).not.toHaveBeenCalled();
     expect(m.audit).not.toHaveBeenCalled();
   });
+  it("rejects reusing another case's external bank reference", async () => {
+    m.reconcileFind.mockResolvedValueOnce(null).mockResolvedValueOnce({ id: "other-reconciliation" });
+    await expect(proposeAssistanceFinancialCorroboration(form()))
+      .rejects.toThrow("already linked to another delivery");
+    expect(m.deliveryFind).not.toHaveBeenCalled();
+    expect(m.reconcileCreate).not.toHaveBeenCalled();
+  });
   it("rejects an amount discrepancy before writing financial corroboration", async () => {
     await expect(proposeAssistanceFinancialCorroboration(form({ amountInr: "1250.40" })))
       .rejects.toThrow("does not match");

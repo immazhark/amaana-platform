@@ -36,6 +36,13 @@ export async function proposeAssistanceFinancialCorroboration(form: FormData) {
       }
       return; // safe replay after a lost response, no new financial event
     }
+    const referenceInUse = await tx.assistanceFinancialReconciliation.findUnique({
+      where: { transactionReference: input.transactionReference },
+      select: { id: true },
+    });
+    if (referenceInUse) {
+      throw new Error("This external transaction reference is already linked to another delivery.");
+    }
     const delivery = await tx.assistanceDeliveryRecord.findUnique({
       where: { id: input.deliveryRecordId },
       select: {
