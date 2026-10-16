@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { isApprovedCuratedGalleryTarget } from "./src/lib/curated-gallery-target";
 
 const devEval = process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
 const browserAcceptance = process.env.AMAANA_BROWSER_ACCEPTANCE === "true";
@@ -64,6 +65,14 @@ const privateRecordHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // Do not emit 154-image admin ZIP processing code into ordinary production
+  // artifacts. This public, build-inlined flag is NOT an authorization boundary.
+  // Every upload/publish endpoint retains independent runtime permission checks.
+  env: {
+    AMAANA_CURATED_GALLERY_BUILD: String(isApprovedCuratedGalleryTarget(
+      process.env.APP_ENVIRONMENT, process.env.RAILWAY_SERVICE_ID,
+    )),
+  },
   output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,

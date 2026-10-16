@@ -34,7 +34,8 @@ export default async function AdminMediaPage({ searchParams }: Props) {
   const canImportCuratedGallery = canEdit && canApprove &&
     storage.uploadReady && storage.separateBucketConfigured &&
     isCuratedGalleryRuntime();
-  const CuratedGalleryImporter = canImportCuratedGallery
+  const CuratedGalleryImporter = process.env.AMAANA_CURATED_GALLERY_BUILD === "true" &&
+    canImportCuratedGallery
     ? (await import("@/components/curated-gallery-importer")).CuratedGalleryImporter
     : null;
   const { visibility, page: pageParam } = await searchParams;

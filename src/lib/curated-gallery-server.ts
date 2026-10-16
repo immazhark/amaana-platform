@@ -12,7 +12,8 @@ import {
 
 export const CURATED_GALLERY_ENTITY_TYPE = "CuratedGalleryBatch";
 export const CURATED_GALLERY_START_ACTION = "media.curated_import_started";
-export const CURATED_GALLERY_REQUIRED_SERVICE_ID = "fcb9d167-eba1-40c8-a4e6-ac35af470989";
+export { CURATED_GALLERY_REQUIRED_SERVICE_ID } from "./curated-gallery-target";
+import { CURATED_GALLERY_REQUIRED_SERVICE_ID, isApprovedCuratedGalleryTarget } from "./curated-gallery-target";
 
 export function sha256Hex(value: string | Uint8Array) {
   return createHash("sha256").update(value).digest("hex");
@@ -26,8 +27,7 @@ export function parseCuratedGalleryManifestText(manifestText: string) {
 }
 
 export function isCuratedGalleryRuntime() {
-  return process.env.APP_ENVIRONMENT === "staging" &&
-    process.env.RAILWAY_SERVICE_ID === CURATED_GALLERY_REQUIRED_SERVICE_ID;
+  return isApprovedCuratedGalleryTarget(process.env.APP_ENVIRONMENT, process.env.RAILWAY_SERVICE_ID);
 }
 
 export function assertCuratedGalleryRuntime() {
