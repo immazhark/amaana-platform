@@ -186,6 +186,18 @@ export async function linkAssistanceDeliveryEvidence(form: FormData) {
     if (record.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
       throw new Error("The delivery report changed. Reload before attaching evidence.");
     }
+    const currentCase = await tx.assistanceRequest.findUnique({
+      where: { id },
+      select: {
+        status: true, appealId: true,
+        verification: { select: { decision: true, completedAt: true } },
+      },
+    });
+    if (!currentCase || !canReportPrivateDelivery(
+      currentCase.status, currentCase.appealId, currentCase.verification,
+    )) {
+      throw new Error("Case approval changed; additional proof cannot be linked.");
+    }
     const evidence = await tx.assistanceDocument.findFirst({
       where: { id: documentId, assistanceRequestId: id }, select: { id: true },
     });
