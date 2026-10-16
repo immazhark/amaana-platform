@@ -20,6 +20,7 @@ import {
 } from "@/lib/assistance-private-milestone";
 import Link from "@/components/navigation-link";
 import { AdminPrivateEvidenceUpload } from "@/components/admin-private-evidence-upload";
+import { AdminPrivateDeliveryKindFields } from "@/components/admin-private-delivery-kind-fields";
 import { FinancialCorroborationControls } from "./financial-corroboration-controls";
 import { assistanceQueueAge, assistanceQueueVerificationLabel } from "@/lib/assistance-queue";
 import {
@@ -228,17 +229,11 @@ export default async function RequestDetailPage({ params }: Props) {
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
             <input type="hidden" name="submissionId" value={randomUUID()}/>
-            <label htmlFor="support-kind">Actual support type</label>
-            <select id="support-kind" name="kind" required defaultValue="IN_KIND">
-              <option value="IN_KIND">Goods or services (no invented cash value)</option>
-              <option value="FINANCIAL">Financial support (actual INR amount required)</option>
-            </select>
+            <AdminPrivateDeliveryKindFields/>
             <label htmlFor="support-occurred">Actual delivery date (Hyderabad calendar)</label>
             <input id="support-occurred" name="occurredOn" type="date"
               defaultValue={today} max={today} min={shiftedCalendarDay(today, -1826)} required/>
-            <label htmlFor="support-amount">Amount delivered in INR, financial support only</label>
-            <input id="support-amount" name="amountInr" type="number" step="0.01"
-              min="0.01" max="9999999999.99" inputMode="decimal" placeholder="Leave empty for in-kind support"/>
+
             <label htmlFor="support-evidence">Existing private delivery-proof document</label>
             <select id="support-evidence" name="evidenceDocumentId" defaultValue="">
               <option value="">Not yet available — report cannot be confirmed</option>
