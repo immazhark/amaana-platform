@@ -238,8 +238,10 @@ export function ScrollCarousel({
         tabIndex={slideCount > 1 ? 0 : -1}
         onPointerDown={event => {
           navigation.current = null;
-          // Clear stale drag suppression before testing interactive descendants.
-          // If a drag ends without dispatching a click, the next real click works.
+          // A lost pointer-up can leave a drag pending. Every new gesture
+          // resets its state, including gestures originating on links or forms.
+          drag.current = null;
+          event.currentTarget.style.removeProperty("scroll-snap-type");
           suppressClick.current = false;
           if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 ||
               (event.target instanceof Element && event.target.closest(

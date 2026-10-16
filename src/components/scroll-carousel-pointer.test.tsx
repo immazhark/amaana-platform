@@ -100,6 +100,20 @@ describe("carousel pointer and browser lifecycle", () => {
     expect(click.preventDefault).toHaveBeenCalledOnce();
     expect(click.stopPropagation).toHaveBeenCalledOnce();
   });
+  it("allows a new interactive gesture after a previously interrupted drag", () => {
+    const ui = handlers();
+    const viewport = viewportNode();
+    const blank = new TestElement();
+    ui.onPointerDown?.(event(blank, viewport));
+    ui.onPointerMove?.(event(blank, viewport, 70));
+    expect(viewport.style.scrollSnapType).toBe("none");
+    ui.onPointerDown?.(event(new TestElement(true), viewport));
+    expect(viewport.style.removeProperty).toHaveBeenCalledWith("scroll-snap-type");
+    const move = event(blank, viewport, 50);
+    ui.onPointerMove?.(move);
+    expect(move.preventDefault).not.toHaveBeenCalled();
+    expect(viewport.setPointerCapture).toHaveBeenCalledTimes(1);
+  });
   it("clears uncaptured pointer state when the pointer leaves the carousel", () => {
     const ui = handlers();
     const viewport = viewportNode();
