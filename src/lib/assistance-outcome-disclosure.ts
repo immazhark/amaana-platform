@@ -40,6 +40,7 @@ export const DISCLOSURE_STATUS_LABELS = {
   [AssistanceOutcomeDisclosureState.DRAFT]: "Proposed anonymous copy · consent review pending",
   [AssistanceOutcomeDisclosureState.APPROVED_COPY]:
     "Anonymous copy approved internally · NOT published",
+  [AssistanceOutcomeDisclosureState.PUBLISHED]: "Anonymous copy published · subject to immediate withdrawal",
   [AssistanceOutcomeDisclosureState.WITHDRAWN]:
     "Copy approval withdrawn · NOT published",
 } as const;
@@ -54,6 +55,18 @@ export function parseDisclosureProposal(form: FormData) {
   return {
     caseId, observationId, consentDocumentId,
     expectedObservationUpdatedAt: getVersion(form, "expectedObservationUpdatedAt"),
+  };
+}
+
+export function parseDisclosurePublication(form: FormData) {
+  const caseId = getId(form, "id");
+  const disclosureId = getId(form, "disclosureId");
+  if (getText(form, "publicationAttested", 3) !== "yes") {
+    throw new Error("Explicitly confirm the precise anonymous wording and active consent before publication.");
+  }
+  return {
+    caseId, disclosureId,
+    expectedUpdatedAt: getVersion(form, "expectedUpdatedAt"),
   };
 }
 
