@@ -254,3 +254,55 @@ export async function reconcileAnonymousOutcomeDisclosures(form: FormData) {
   });
   finish(value);
 }
+
+/** Emergency privacy takedown: assistance staff can revoke active copy, but
+ * cannot approve or publish it. Avoid delays when consent is withdrawn.
+ * Both the actor and structured withdrawal reason remain in restricted audit. */
+export async function urgentlyWithdrawAnonymousOutcomeCopy(form: FormData) {
+  const actor = await requirePermission("assistance.update");
+  if (!hasPermission(actor, "assistance.view")) {
+    throw new Error("Case-view permission is required to revoke anonymous copy.");
+  }
+  const input = parseDisclosureDecision(form);
+  if (input.decision !== AssistanceOutcomeDisclosureState.WITHDRAWN) {
+    throw new Error("Assistance staff can only revoke anonymous copy.");
+  }
+  await withSerializableTransactionRetry(async tx => {
+    const item = await tx.assistanceOutcomeDisclosure.findUnique({
+      where: { id: input.disclosureId },
+      select: {
+        id: true, state: true, updatedAt: true,
+        observation: { select: { assistanceRequestId: true } },
+      },
+    });
+    if (!item || item.observation.assistanceRequestId !== input.caseId) {
+      throw new Error("This copy does not belong to the assistance case.");
+    }
+    if (item.state === AssistanceOutcomeDisclosureState.WITHDRAWN) return;
+    if (item.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) {
+      throw new Error("Anonymous copy changed. Reload before withdrawal.");
+    }
+    const changed = await tx.assistanceOutcomeDisclosure.updateMany({
+      where: {
+        id: item.id, state: item.state, updatedAt: input.expectedUpdatedAt,
+      },
+      data: {
+        state: AssistanceOutcomeDisclosureState.WITHDRAWN,
+        ...(item.state === AssistanceOutcomeDisclosureState.DRAFT
+          ? { approvedById: actor.id, approvedAt: new Date() } : {}),
+      },
+    });
+    if (changed.count !== 1) {
+      throw new Error("Another reviewer modified this copy. Reload the case.");
+    }
+    await tx.auditEvent.create({ data: {
+      actorId: actor.id, action: "assistance.anonymous_outcome_urgent_withdrawal",
+      entityType: "AssistanceRequest", entityId: input.caseId,
+      metadata: {
+        disclosureId: item.id, previousState: item.state,
+        reason: input.withdrawalReason,
+      },
+    } });
+  });
+  finish(input.caseId);
+}
