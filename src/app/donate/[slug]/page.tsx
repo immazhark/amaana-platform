@@ -4,6 +4,8 @@ import { DonationOptions } from "@/components/donation-options";
 import { PageHero } from "@/components/page-hero";
 import { getPublicAppealCheckoutEligibility } from "@/lib/public-appeal-checkout";
 import { getDonationPageData } from "@/lib/public-page-data";
+import { getAppealSearchPrivacy } from "@/lib/appeal-search-privacy";
+import { getAppealPublicCopy } from "@/lib/appeal-public-copy";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -11,11 +13,26 @@ export const dynamic = "force-dynamic";
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const appeal = await getDonationPageData(slug);
-  if (!appeal) return { title: "Donation unavailable" };
+  const [appeal, confidentiality] = await Promise.all([
+    getDonationPageData(slug), getAppealSearchPrivacy(slug),
+  ]);
+  if (!appeal) return { title: "Donation unavailable", robots: { index: false, follow: false } };
   const canonical = `/donate/${appeal.slug}`;
-  const description = `Support ${appeal.title} through Amaana Foundation's secure domestic INR donation journey.`;
-  return { title: `Support ${appeal.title}`, description, alternates: { canonical }, robots: { index: false, follow: true }, openGraph: { type: "website", url: canonical, title: `Support ${appeal.title} | Amaana Foundation`, description }, twitter: { card: "summary", title: `Support ${appeal.title} | Amaana Foundation`, description } };
+  const sensitive = confidentiality === "HIGHLY_SENSITIVE";
+  const publicCopy = getAppealPublicCopy(appeal.title, appeal.summary, sensitive);
+  // Donation pages are intentionally excluded from indexing, but previews
+  // and direct link shares must still obey the stricter confidential metadata boundary.
+  const title = sensitive ? "Support a Verified Appeal" : `Support ${publicCopy.title}`;
+  const description = sensitive
+    ? publicCopy.description
+    : `Support ${publicCopy.title} through Amaana Foundation's secure domestic INR donation journey.`;
+  return {
+    title, description,
+    alternates: { canonical },
+    robots: { index: false, follow: true },
+    openGraph: { type: "website", url: canonical, title: `${title} | Amaana Foundation`, description },
+    twitter: { card: "summary", title: `${title} | Amaana Foundation`, description },
+  };
 }
 
 export default async function DonatePage({ params }: Props) {
