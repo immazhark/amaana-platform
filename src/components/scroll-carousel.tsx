@@ -11,6 +11,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { boundedCarouselScrollLeft, closestCarouselIndex } from "@/lib/carousel-position";
 import styles from "./scroll-carousel.module.css";
 import { UIIcon } from "./ui-icon";
 
@@ -44,7 +45,7 @@ export function ScrollCarousel({
   const isVisibleRef = useRef(true);
   const slideRefs = useRef<Array<HTMLDivElement | null>>([]);
   const frameRef = useRef<number | null>(null);
-  const navigation = useRef<number | null>(null);
+  const navigation = useRef<{ left: number; index: number } | null>(null);
   const drag = useRef<{x:number; scroll:number; moved:boolean} | null>(null);
   const suppressClick = useRef(false);
   const [activeIndex, setActiveIndex] = useState(() => Math.min(Math.max(startAt, 0), Math.max(slideCount - 1, 0)));
@@ -100,20 +101,20 @@ export function ScrollCarousel({
     if (!viewport || slideCount < 2) return;
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
     frameRef.current = requestAnimationFrame(() => {
+      frameRef.current = null;
       const pending = navigation.current;
-      if (pending !== null && Math.abs(viewport.scrollLeft - pending) > 2) return;
+      if (pending && Math.abs(viewport.scrollLeft - pending.left) > 2) return;
+      // Several final cards can share the same maximum reachable offset.
+      // Preserve the requested slide when scrolling finishes at that edge.
+      const closestIndex = pending
+        ? pending.index
+        : closestCarouselIndex(
+            slideRefs.current.map(slide => slide?.offsetLeft ?? null),
+            viewport.scrollLeft,
+            viewport.scrollWidth,
+            viewport.clientWidth,
+          );
       navigation.current = null;
-      let closestIndex = 0;
-      let closestDistance = Number.POSITIVE_INFINITY;
-      slideRefs.current.forEach((slide, index) => {
-        if (!slide) return;
-        const target = slide.offsetLeft;
-        const distance = Math.abs(target - viewport.scrollLeft);
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestIndex = index;
-        }
-      });
       activeIndexRef.current = closestIndex;
       setActiveIndex(closestIndex);
     });
@@ -124,7 +125,11 @@ export function ScrollCarousel({
     if (!viewport) return;
     const alignSelected = () => {
       const slide = slideRefs.current[activeIndexRef.current];
-      if (slide) viewport.scrollTo({ left: slide.offsetLeft, behavior: "auto" });
+      if (slide) {
+        const left = boundedCarouselScrollLeft(slide.offsetLeft, viewport.scrollWidth, viewport.clientWidth);
+        navigation.current = { left, index: activeIndexRef.current };
+        viewport.scrollTo({ left, behavior: "auto" });
+      }
     };
     if (typeof ResizeObserver === "undefined") {
       window.addEventListener("resize", alignSelected);
@@ -145,10 +150,11 @@ export function ScrollCarousel({
     const viewport = viewportRef.current;
     const slide = slideRefs.current[bounded];
     if (!viewport || !slide) return;
-    navigation.current = slide.offsetLeft;
+    const left = boundedCarouselScrollLeft(slide.offsetLeft, viewport.scrollWidth, viewport.clientWidth);
+    navigation.current = { left, index: bounded };
     activeIndexRef.current = bounded;
     viewport.scrollTo({
-      left: slide.offsetLeft,
+      left,
       behavior: prefersReducedMotion.current ? "auto" : "smooth",
     });
     setActiveIndex(bounded);
