@@ -1,3 +1,19 @@
+## 2026-10-17 — Current public appeal beneficiary disclosure consent
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer execution on existing `fix/direct-transfer-feedback-20261013` PR #292 against `main`; verified initial HEAD `f2ec234fc03404e3fe3c4ead36179abe1d98cf6e`.
+
+Exact defect: `src/lib/public-page-data.ts` provided stored public beneficiary display names and cover URLs without consulting current linked case name/photo consent. The homepage cached `src/lib/public-content.ts` selected/serialized covers after confidentiality eligibility but no current photo consent. Revoked or unresolved permission could thus remain exposed on approved direct public pages and in homepage RSC data.
+
+Implemented detail: query current `publicNameConsent`/`photoConsent` alongside archive consent; remove named beneficiary value unless exactly ALLOWED, withhold cover unless ALLOWED or NOT_APPLICABLE contextual image; do so before stripping private relation and returning public projection. Missing linked verification or unknown decision fails closed. Existing archive consent and direct approved URL lifecycle are unchanged; standalone appeals stay unchanged. Public promotion cached query now selects current photo consent and similarly strips unapproved cover before serialization without new database round trips.
+
+Files and commits: `src/lib/public-page-data.test.ts` `47ff70f064865d953715e3695fc52d6d6c7725f6`, `src/lib/public-page-data.ts` `4e2e1ca9deed6613645caa0a7700aec3a6241448`, new `src/lib/public-content-homepage-consent.test.ts` `19ada83860e18535e21a00b0dc92034015f39ed4`, `src/lib/public-content.ts` `94fbfe1837e9400fc53f3130a6b4c5ad31aaa7a2`, master149 `87e1bd50264c07d91298aa8c379f5ab2cdc7e4a6`.
+
+Verification: GitHub readback confirmed content, guard sites, projection selection, and test source. **New tests have not been executed** (checkout/dependencies absent and prior direct git DNS failed); no TS, ESLint, browser, production cache or consent revocation E2E run. The batch specifically protects explicit structured display-name/cover fields, **not arbitrary identifiers embedded in published title, summary, story or update prose**, which still requires separate editorial review. Cached homepage data remains subject to live expiry/invalidation, not a synchronous revoked-consent cache guarantee. No live records, providers, payments, migration, main merge or deployment modified.
+
+Master149 stays 60 Implemented /61 Partial /26 Not started /2 other, zero closed. AF-PROMOTION and AF-CONSENT gain PR-open source evidence only.
+
+Next: Verify exact head and ownership, run focused `npx vitest run src/lib/public-page-data.test.ts src/lib/public-content-homepage-consent.test.ts` plus application TS and changed-file ESLint on a hydrated checkout; correct failures. Next high-impact work: ensure revocations trigger cache invalidation and review risks of direct-public prose containing beneficiary identifiers. Use one writer only.
+
 ## 2026-10-17 — Linked appeal confidentiality fail-closed on public discovery
 
 Ownership: HANDOFF_PENDING after ChatGPT sole-writer continuation, PR #292, branch `fix/direct-transfer-feedback-20261013`, target `main`. Verified starting head `0955b444f6d05e0176bb7d7581bc99824f5400e8`.
