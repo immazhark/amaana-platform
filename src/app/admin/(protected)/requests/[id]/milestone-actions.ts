@@ -5,8 +5,10 @@ import { redirect } from "next/navigation";
 import { requirePermission } from "@/lib/auth";
 import {
   PRIVATE_MILESTONE_ACTION,
+  PRIVATE_MILESTONE_REDACTED_ACTION,
   canAddPrivateMilestone,
   parsePrivateMilestoneInput,
+  parsePrivateMilestoneRedaction,
   readPrivateMilestone,
 } from "@/lib/assistance-private-milestone";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
@@ -62,6 +64,45 @@ export async function addPrivateMilestone(form: FormData) {
   });
 
   // Cache invalidation is not part of the committed append-only transaction.
+  try { revalidatePath(`/admin/requests/${id}`); } catch { /* navigation forces a fresh read */ }
+  redirect(`/admin/requests/${id}`);
+}
+
+/** Authorized privacy correction. Keep the original append-only event in the
+ * restricted audit system, but hide it from the ordinary case timeline. */
+export async function redactPrivateMilestone(form: FormData) {
+  const actor = await requirePermission("assistance.approve");
+  const { id, targetId, reason } = parsePrivateMilestoneRedaction(form);
+
+  await withSerializableTransactionRetry(async tx => {
+    const target = await tx.auditEvent.findFirst({
+      where: {
+        id: targetId, entityType: "AssistanceRequest", entityId: id,
+        action: PRIVATE_MILESTONE_ACTION,
+      },
+      select: { id: true },
+    });
+    if (!target) throw new Error("The selected private follow-up does not belong to this case.");
+
+    const alreadyRedacted = await tx.auditEvent.findFirst({
+      where: {
+        entityType: "AssistanceRequest", entityId: id,
+        action: PRIVATE_MILESTONE_REDACTED_ACTION,
+        metadata: { path: ["targetId"], equals: targetId },
+      },
+      select: { id: true },
+    });
+    if (alreadyRedacted) return; // safe under a replay or a concurrent request
+
+    await tx.auditEvent.create({
+      data: {
+        actorId: actor.id, action: PRIVATE_MILESTONE_REDACTED_ACTION,
+        entityType: "AssistanceRequest", entityId: id,
+        metadata: { targetId, reason },
+      },
+    });
+  });
+
   try { revalidatePath(`/admin/requests/${id}`); } catch { /* navigation forces a fresh read */ }
   redirect(`/admin/requests/${id}`);
 }
