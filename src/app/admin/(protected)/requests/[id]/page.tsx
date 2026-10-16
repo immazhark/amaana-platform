@@ -1,4 +1,10 @@
 import { notFound } from "next/navigation";
+import { randomUUID } from "node:crypto";
+import {
+  PRIVATE_MILESTONE_ACTION, PRIVATE_MILESTONE_KINDS,
+  PRIVATE_MILESTONE_SUMMARY_MAX, canAddPrivateMilestone,
+  readPrivateMilestone,
+} from "@/lib/assistance-private-milestone";
 import Link from "@/components/navigation-link";
 import { assistanceQueueAge, assistanceQueueVerificationLabel } from "@/lib/assistance-queue";
 import {
@@ -12,6 +18,7 @@ import {
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { assignRequest, convertToAppeal, saveVerification, updateRequest } from "./actions";
+import { addPrivateMilestone } from "./milestone-actions";
 
 type Props = { params: Promise<{ id: string }> };
 const label = (value: string) => value.replaceAll("_", " ").toLowerCase().replace(/^./, character => character.toUpperCase());
@@ -19,7 +26,7 @@ const label = (value: string) => value.replaceAll("_", " ").toLowerCase().replac
 export default async function RequestDetailPage({ params }: Props) {
   const user = await requirePermission("assistance.view");
   const { id } = await params;
-  const [request, staff, history] = await Promise.all([
+  const [request, staff, history, milestones] = await Promise.all([
     prisma.assistanceRequest.findUnique({
       where: { id },
       include: {
@@ -34,6 +41,12 @@ export default async function RequestDetailPage({ params }: Props) {
       orderBy: [{ name: "asc" }, { id: "asc" }],
     }),
     prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, select: { id: true, action: true, createdAt: true, actor: { select: { name: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 50 }),
+    prisma.auditEvent.findMany({
+      where: { entityType: "AssistanceRequest", entityId: id, action: PRIVATE_MILESTONE_ACTION },
+      select: { id: true, metadata: true, createdAt: true, actor: { select: { name: true } } },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 20,
+    }),
   ]);
   if (!request) notFound();
 
@@ -51,6 +64,12 @@ export default async function RequestDetailPage({ params }: Props) {
   const verificationLocked = converted;
 
   const operationalAge = assistanceQueueAge(request.createdAt, new Date());
+  const canRecordMilestone = hasPermission(user, "assistance.update") &&
+    canAddPrivateMilestone(request.status, request.appealId);
+  const privateTimeline = milestones.flatMap(event => {
+    const note = readPrivateMilestone(event.metadata);
+    return note ? [{ ...note, id: event.id, actor: event.actor.name, createdAt: event.createdAt }] : [];
+  });
 
   return <>
     <nav aria-label="Case navigation"><Link href="/admin">← Back to assistance queue</Link></nav>
@@ -78,6 +97,42 @@ export default async function RequestDetailPage({ params }: Props) {
         <section className="card">
           <h2>Private documents</h2>
           {request.documents.length ? <ul className="document-list">{request.documents.map(document => <li key={document.id}><a href={`/admin/documents/${document.id}`} target="_blank" rel="noreferrer">{document.originalName}</a><small>{document.mimeType} · {(document.sizeBytes / 1048576).toFixed(2)} MB</small></li>)}</ul> : <p className="muted">No documents were submitted.</p>}
+        </section>
+
+        <section className="card" aria-labelledby="private-case-timeline">
+          <h2 id="private-case-timeline">Private case follow-ups</h2>
+          <p className="muted">Internal operational milestones only. These entries are append-only,
+            not applicant notifications, public appeal updates, approval decisions or evidence of case impact.
+            Record only the minimum details needed by the case team.</p>
+          {canRecordMilestone ? <form action={addPrivateMilestone} className="field">
+            <input type="hidden" name="id" value={id}/>
+            <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
+            <input type="hidden" name="submissionId" value={randomUUID()}/>
+            <label htmlFor="privateMilestoneKind">Follow-up type</label>
+            <select id="privateMilestoneKind" name="kind" required>
+              {Object.entries(PRIVATE_MILESTONE_KINDS).map(([value, label]) =>
+                <option key={value} value={value}>{label}</option>)}
+            </select>
+            <label htmlFor="privateMilestoneSummary">Internal follow-up summary</label>
+            <textarea id="privateMilestoneSummary" name="summary" minLength={12}
+              maxLength={PRIVATE_MILESTONE_SUMMARY_MAX} required
+              placeholder="What was followed up, by whom, and what remains to be checked?"/>
+            <small className="muted">12–{PRIVATE_MILESTONE_SUMMARY_MAX} characters.
+              Do not duplicate identity documents, account details or clinical reports.</small>
+            <button className="button secondary" type="submit">Record private follow-up</button>
+          </form> : <p className="muted">New follow-ups are available only to authorized staff while the case is open and not converted to an appeal.</p>}
+          {privateTimeline.length ? <>
+            <h3>Recent operational history</h3>
+            <p className="muted">Latest {privateTimeline.length} private entries (maximum 20 displayed).
+              Full audit records remain restricted to authorized administrators.</p>
+            <ol className="history">
+              {privateTimeline.map(item => <li key={item.id}>
+                <strong>{PRIVATE_MILESTONE_KINDS[item.kind]}</strong>
+                <p>{item.summary}</p>
+                <span>{item.actor} · {item.createdAt.toLocaleString("en-IN")}</span>
+              </li>)}
+            </ol>
+          </> : <p className="muted">No private follow-ups have been recorded.</p>}
         </section>
 
         <section className="card">
