@@ -11,6 +11,9 @@ const mocks = vi.hoisted(() => ({
   followUpFindMany: vi.fn(), followUpUpdateMany: vi.fn(),
   userFindFirst: vi.fn(),
   verificationUpsert: vi.fn(),
+  verificationUpdateMany: vi.fn(),
+  appealUpdateMany: vi.fn(),
+  updateTag: vi.fn(),
   appealCreate: vi.fn(),
   auditCreate: vi.fn(),
   notificationCreate: vi.fn(),
@@ -37,10 +40,10 @@ vi.mock("@/lib/assistance-outcome-invalidation", () => ({
 vi.mock("@/lib/prisma-transaction", () => ({
   withSerializableTransactionRetry: mocks.transaction,
 }));
-vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidate }));
+vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidate, updateTag: mocks.updateTag }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 
-import { assignRequest, convertToAppeal, saveVerification, updateRequest } from "./actions";
+import { assignRequest, convertToAppeal, saveVerification, updateRequest, withdrawConvertedAppealDisclosure } from "./actions";
 
 function form(values: Record<string, string>) {
   const data = new FormData();
@@ -55,10 +58,10 @@ function tx() {
       findFirst: mocks.requestFindFirst,
       updateMany: mocks.requestUpdateMany,
     },
-    assistanceVerification: { upsert: mocks.verificationUpsert },
+    assistanceVerification: { upsert: mocks.verificationUpsert, updateMany: mocks.verificationUpdateMany },
     assistanceFollowUp: { findMany: mocks.followUpFindMany, updateMany: mocks.followUpUpdateMany },
     user: { findFirst: mocks.userFindFirst },
-    appeal: { create: mocks.appealCreate },
+    appeal: { create: mocks.appealCreate, updateMany: mocks.appealUpdateMany },
     auditEvent: { create: mocks.auditCreate },
     notification: { create: mocks.notificationCreate },
   };
@@ -277,5 +280,139 @@ describe("unambiguous case verification fields", () => {
     const data = form({ id: "request-1" }); data.append("id", "another-case");
     await expect(action(data)).rejects.toThrow("Repeated");
     expect(mocks.requestFind).not.toHaveBeenCalled(); expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+});
+
+describe("post-conversion public disclosure withdrawal", () => {
+  const date = new Date("2026-10-17T03:00:00.000Z");
+  const original = {
+    id: "case-1", status: AssistanceStatus.CONVERTED_TO_APPEAL,
+    appealId: "appeal-1", updatedAt: date,
+    appeal: { id: "appeal-1", slug: "published-case", status: "PUBLISHED", updatedAt: date },
+    verification: {
+      id: "verification-1", updatedAt: date,
+      confidentialityLevel: "STANDARD",
+      publicNameConsent: "ALLOWED", photoConsent: "ALLOWED",
+      medicalDetailsConsent: "ALLOWED", institutionNameConsent: "ALLOWED",
+      archiveConsent: "ALLOWED",
+    },
+  };
+  const input = () => form({
+    id: "case-1", expectedRequestUpdatedAt: date.toISOString(),
+    expectedVerificationUpdatedAt: date.toISOString(),
+    expectedAppealUpdatedAt: date.toISOString(),
+    confirmWithdrawal: "on",
+    reason: "The family withdrew permission to publish this case.",
+  });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "privacy-reviewer" });
+    mocks.hasPermission.mockReturnValue(true);
+    mocks.transaction.mockImplementation(async callback => callback(tx()));
+    mocks.requestFind.mockResolvedValue(original);
+    mocks.verificationUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.appealUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.auditCreate.mockResolvedValue({ id: "audit-1" });
+    mocks.redirect.mockImplementation(() => { throw new Error("NEXT_REDIRECT"); });
+  });
+
+  it("atomically revokes disclosures, pauses active fundraising, audits reason and invalidates public caches", async () => {
+    await expect(withdrawConvertedAppealDisclosure(input())).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.verificationUpdateMany).toHaveBeenCalledWith({
+      where: { id: "verification-1", assistanceRequestId: "case-1", updatedAt: date },
+      data: {
+        confidentialityLevel: "HIGHLY_SENSITIVE",
+        publicNameConsent: "NOT_ALLOWED", photoConsent: "NOT_ALLOWED",
+        medicalDetailsConsent: "NOT_ALLOWED", institutionNameConsent: "NOT_ALLOWED",
+        archiveConsent: "NOT_ALLOWED",
+      },
+    });
+    expect(mocks.appealUpdateMany).toHaveBeenCalledWith({
+      where: { id: "appeal-1", status: "PUBLISHED", updatedAt: date },
+      data: { status: "PAUSED", isFeatured: false, featuredOrder: null },
+    });
+    expect(mocks.auditCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        action: "assistance.public_disclosure_withdrawn",
+        entityId: "case-1",
+        metadata: expect.objectContaining({
+          reason: "The family withdrew permission to publish this case.",
+          previousAppealStatus: "PUBLISHED", nextAppealStatus: "PAUSED",
+        }),
+      }),
+    });
+    expect(mocks.updateTag).toHaveBeenCalledExactlyOnceWith("appeals");
+    for (const path of ["/", "/appeals", "/appeals/published-case", "/donate/published-case", "/admin/requests/case-1", "/admin/appeals/appeal-1"]) {
+      expect(mocks.revalidate).toHaveBeenCalledWith(path);
+    }
+    expect(mocks.redirect).toHaveBeenCalledWith("/admin/requests/case-1?privacy=withdrawn");
+    expect(mocks.auditCreate.mock.invocationCallOrder[0]).toBeLessThan(mocks.updateTag.mock.invocationCallOrder[0]!);
+  });
+
+  it("closes a previously funded linked appeal so archive denial hides the direct public page", async () => {
+    mocks.requestFind.mockResolvedValue({ ...original, appeal: { ...original.appeal, status: "FUNDED" } });
+    await expect(withdrawConvertedAppealDisclosure(input())).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.appealUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ status: "CLOSED" }),
+    }));
+  });
+
+  it("retains an already closed appeal while denying its public archive", async () => {
+    mocks.requestFind.mockResolvedValue({ ...original, appeal: { ...original.appeal, status: "CLOSED" } });
+    await expect(withdrawConvertedAppealDisclosure(input())).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.appealUpdateMany).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ status: "CLOSED" }),
+    }));
+  });
+
+  it("rejects unconfirmed or malicious repeated withdrawal values before the database transaction", async () => {
+    const missing = input(); missing.delete("confirmWithdrawal");
+    await expect(withdrawConvertedAppealDisclosure(missing)).rejects.toThrow(/confirm/i);
+    const repeated = input(); repeated.append("reason", "contradictory reason");
+    await expect(withdrawConvertedAppealDisclosure(repeated)).rejects.toThrow(/Repeated reason/);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("requires both private verification approval and appeal approval", async () => {
+    mocks.hasPermission.mockReturnValue(false);
+    await expect(withdrawConvertedAppealDisclosure(input())).rejects.toThrow(/approval permission/i);
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("rejects a changed verification/appeal version before any modification", async () => {
+    mocks.requestFind.mockResolvedValue({
+      ...original, verification: { ...original.verification, updatedAt: new Date(date.getTime() + 1000) },
+    });
+    await expect(withdrawConvertedAppealDisclosure(input())).rejects.toThrow(/changed while/i);
+    expect(mocks.verificationUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.appealUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+    expect(mocks.updateTag).not.toHaveBeenCalled();
+  });
+
+  it("rejects an unlinked assistance case without generating audit or cache calls", async () => {
+    mocks.requestFind.mockResolvedValue({ ...original, appealId: null, appeal: null });
+    await expect(withdrawConvertedAppealDisclosure(input())).rejects.toThrow(/linked appeal/i);
+    expect(mocks.verificationUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+    expect(mocks.updateTag).not.toHaveBeenCalled();
+  });
+
+  it("rolls back the emergency withdrawal on a losing appeal CAS update", async () => {
+    mocks.appealUpdateMany.mockResolvedValue({ count: 0 });
+    await expect(withdrawConvertedAppealDisclosure(input())).rejects.toThrow(/changed while/i);
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+    expect(mocks.updateTag).not.toHaveBeenCalled();
+    expect(mocks.revalidate).not.toHaveBeenCalled();
+  });
+
+  it("attempts every cache refresh and reports delayed public removal if one invalidation fails", async () => {
+    mocks.updateTag.mockImplementation(() => { throw new Error("cache offline"); });
+    await expect(withdrawConvertedAppealDisclosure(input())).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.revalidate).toHaveBeenCalledWith("/appeals/published-case");
+    expect(mocks.revalidate).toHaveBeenCalledWith("/donate/published-case");
+    expect(mocks.redirect).toHaveBeenCalledWith("/admin/requests/case-1?privacy=refresh-delayed");
+    expect(mocks.auditCreate).toHaveBeenCalledTimes(1);
   });
 });
