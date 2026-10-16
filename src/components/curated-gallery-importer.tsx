@@ -85,14 +85,17 @@ export function CuratedGalleryImporter() {
   useEffect(() => {
     const controller = new AbortController();
     lifetime.current = controller;
-    void refreshStatus().catch(() => {
-      if (!controller.signal.aborted) {
-        setStatus(null);
-        setPhase("Gallery staging status is unavailable. Use Check status to retry the read.");
-      }
-    });
+    const id = ++generation.current;
+    void galleryRequest("status", { cache: "no-store" }, controller.signal)
+      .then(value => applyStatus(parseCuratedGalleryStatus(value), id))
+      .catch(() => {
+        if (!controller.signal.aborted && id === generation.current) {
+          setStatus(null);
+          setPhase("Gallery staging status is unavailable. Use Check status to retry the read.");
+        }
+      });
     return () => { controller.abort(); lifetime.current = null; };
-  }, [refreshStatus]);
+  }, [applyStatus]);
 
   const request = (path: string, init: RequestInit, timeout?: number) =>
     galleryRequest(path, init, lifetime.current?.signal, timeout);
