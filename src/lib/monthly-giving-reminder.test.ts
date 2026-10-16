@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildMonthlyGivingReminder, MONTHLY_GIVING_DAYS, nextMonthlyGivingDate } from "./monthly-giving-reminder";
+import { buildMonthlyGivingReminder, buildFridayGivingReminder, nextFridayGivingDate, MONTHLY_GIVING_DAYS, nextMonthlyGivingDate } from "./monthly-giving-reminder";
 
 describe("non-charging monthly giving calendar", () => {
   it("rolls to the next month or year using the visitor's local date", () => {
@@ -25,8 +25,26 @@ describe("non-charging monthly giving calendar", () => {
     expect(result).toContain("DTSTART;VALUE=DATE:20260228\r\n");
     expect(result).toContain("DTEND;VALUE=DATE:20260301\r\n");
   });
+  it("creates a Friday reminder without a payment mandate or inferred Hijri date", () => {
+    expect(nextFridayGivingDate(new Date(2026, 9, 16))).toBe("20261016");
+    expect(nextFridayGivingDate(new Date(2026, 9, 17))).toBe("20261023");
+    expect(nextFridayGivingDate(new Date(2026, 11, 31))).toBe("20270101");
+    const ics = buildFridayGivingReminder(new Date(2026, 9, 17));
+    const unfolded = ics.replace(/\\r\\n /g, "");
+    expect(unfolded).toContain("DTSTART;VALUE=DATE:20261023");
+    expect(unfolded).toContain("DTEND;VALUE=DATE:20261024");
+    expect(unfolded).toContain("RRULE:FREQ=WEEKLY;BYDAY=FR");
+    expect(unfolded).toContain("no automatic debit or subscription");
+    expect(unfolded).toContain("URL:https://amaanafoundation.org/donate");
+    expect(unfolded).not.toMatch(/RAZORPAY|mandate|Ramadan|Eid/);
+    for (const line of ics.split("\\r\\n")) {
+      expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75);
+    }
+  });
   it("does not allow invalid days or invalid Date", () => {
     expect(() => buildMonthlyGivingReminder(31 as 28, new Date())).toThrow(RangeError);
     expect(() => nextMonthlyGivingDate(1, new Date(NaN))).toThrow(RangeError);
+    expect(() => nextFridayGivingDate(new Date(NaN))).toThrow(RangeError);
+    expect(() => buildFridayGivingReminder(new Date(NaN))).toThrow(RangeError);
   });
 });

@@ -5,6 +5,8 @@ import { MonthlyGivingReminder } from "./monthly-giving-reminder";
 describe("monthly calendar planner disclosure", () => {
   it("renders the date choice and direct download, never a payment form", () => {
     const html = renderToStaticMarkup(<MonthlyGivingReminder/>);
+    expect(html).toContain("Reminder frequency");
+    expect(html).toContain("Every Friday");
     expect(html).toContain("Day of each month");
     expect(html).toContain("Day 28");
     expect(html).toContain("Download calendar reminder");

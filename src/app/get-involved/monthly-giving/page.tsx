@@ -5,21 +5,21 @@ import { SectionHeading } from "@/components/section-heading";
 import { MonthlyGivingReminder } from "@/components/monthly-giving-reminder";
 
 export const metadata: Metadata = {
-  title: "Manual Monthly Giving Reminder",
-  description: "Download a private monthly calendar reminder to review Amaana Foundation's currently approved domestic giving routes. No recurring charge is set up.",
+  title: "Manual Giving Calendar Reminders",
+  description: "Download a private monthly or Friday calendar reminder to review approved domestic giving routes. No recurring charge is set up.",
   alternates: { canonical: "/get-involved/monthly-giving" },
   openGraph: {
-    type: "website", title: "Monthly Giving Reminder | Amaana Foundation",
+    type: "website", title: "Giving Calendar Reminders | Amaana Foundation",
     description: "A personal reminder, never an automatic donation or subscription.",
     url: "/get-involved/monthly-giving",
   },
-  twitter: { card: "summary_large_image", title: "Monthly Giving Reminder | Amaana Foundation" },
+  twitter: { card: "summary_large_image", title: "Giving Calendar Reminders | Amaana Foundation" },
 };
 export default function MonthlyGivingPage() {
   return <div className="v2-home">
     <PageHero variant="information" eyebrow="Get Involved · Personal planning"
       title="Make room for giving. Keep full control."
-      description={<p>Create a private monthly reminder to review current giving opportunities. Any contribution is always a separate voluntary decision made through Amaana’s approved donation routes.</p>}
+      description={<p>Create a private monthly or weekly Friday reminder to review current giving opportunities. Any contribution is always a separate voluntary decision made through Amaana’s approved donation routes.</p>}
       actions={[{ label: "Prepare reminder", href: "#giving-reminder" }, { label: "Review donation routes", href: "/donate", secondary: true }]}
       visualKicker="Your choice each month" visualTitle="A reminder is not a mandate."
       visualNote="No automatic debits · No active subscription · No stored donor profile"
@@ -28,7 +28,7 @@ export default function MonthlyGivingPage() {
       <div className="v2-shell">
         <SectionHeading id="giving-reminder-title" eyebrow="Optional personal calendar"
           title="A gentle reminder, never an automatic charge."
-          subtitle="Download an all-day calendar event that repeats monthly. You choose if and when to contribute."/>
+          subtitle="Download an all-day event that repeats each month or every Friday. You choose if and when to contribute."/>
         <MonthlyGivingReminder/>
       </div>
     </section>
