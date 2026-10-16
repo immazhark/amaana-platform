@@ -230,11 +230,13 @@ describe("published media editing", () => {
 describe("media publication concurrency", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.findMany.mockReset();
+    mocks.findMany.mockResolvedValue([]);
     mocks.requirePermission.mockResolvedValue({ id: "approver_123" });
     mocks.updateMany.mockResolvedValue({ count: 1 });
     mocks.createAudit.mockResolvedValue({ id: "audit_123" });
     mocks.serializableTransaction.mockImplementation(async callback => callback({
-      mediaAsset: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateMany },
+      mediaAsset: { findUniqueOrThrow: mocks.findUniqueOrThrow, findMany: mocks.findMany, updateMany: mocks.updateMany },
       auditEvent: { create: mocks.createAudit },
     }));
   });
@@ -311,6 +313,67 @@ describe("media publication concurrency", () => {
     expect(mocks.createAudit).toHaveBeenCalledWith({ data: expect.objectContaining({ action: "media.unpublished", entityId: "media_123" }) });
   });
 
+  it("atomically unpublishes every public record sharing a managed storage object and audits each revocation", async () => {
+    const updatedAt = new Date("2026-10-17T00:00:00.000Z");
+    const key = "2026/123e4567-e89b-12d3-a456-426614174000.webp";
+    const url = "/media/" + key;
+    const target = { id: "media_123", isPublic: true, updatedAt, storageKey: key, publicUrl: url,
+      initiative: { slug: "primary-initiative" }, cause: null, story: null, faithContent: null };
+    const sibling = { id: "media_shared", updatedAt, storageKey: key, publicUrl: "https://amaanafoundation.org/media/" + key,
+      initiative: { slug: "secondary-initiative" }, cause: null, story: null, faithContent: null };
+    mocks.findUniqueOrThrow.mockResolvedValueOnce(target).mockResolvedValueOnce(target);
+    mocks.findMany.mockResolvedValueOnce([sibling]);
+    const form = new FormData(); form.set("id", target.id); form.set("publish", "false");
+    await setMediaPublication(form);
+    expect(mocks.findMany).toHaveBeenCalledWith({
+      where: { id: { not: target.id }, isPublic: true, OR: [{ storageKey: key }, { publicUrl: url }] },
+      select: expect.objectContaining({
+        id: true, updatedAt: true, storageKey: true, publicUrl: true,
+        initiative: { select: { slug: true } },
+      }),
+    });
+    expect(mocks.updateMany).toHaveBeenCalledTimes(2);
+    expect(mocks.updateMany).toHaveBeenCalledWith({
+      where: { id: "media_shared", isPublic: true, updatedAt },
+      data: { isPublic: false, privacyApprovedAt: null },
+    });
+    expect(mocks.createAudit).toHaveBeenCalledWith({ data: expect.objectContaining({
+      action: "media.unpublished_shared_reference", entityId: "media_shared",
+      metadata: { sourceMediaId: target.id },
+    }) });
+    for (const path of ["/media/" + key, "/our-work/primary-initiative", "/our-work/secondary-initiative",
+      "/media-archive/initiative/secondary-initiative"]) {
+      expect(mocks.revalidatePath).toHaveBeenCalledWith(path);
+    }
+  });
+
+  it("revokes separate public references using the same external photograph URL", async () => {
+    const updatedAt = new Date("2026-10-17T00:00:00.000Z");
+    const url = "https://cdn.example.org/approved-cover.webp";
+    mocks.findUniqueOrThrow.mockResolvedValueOnce({ id: "media_123", isPublic: true, publicUrl: url, storageKey: null, updatedAt })
+      .mockResolvedValueOnce({ id: "media_123", isPublic: true, publicUrl: url, storageKey: null, updatedAt });
+    mocks.findMany.mockResolvedValueOnce([{ id: "media_shared", updatedAt, storageKey: null, publicUrl: url }]);
+    const form = new FormData(); form.set("id", "media_123"); form.set("publish", "false");
+    await setMediaPublication(form);
+    expect(mocks.findMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: { not: "media_123" }, isPublic: true, OR: [{ publicUrl: url }] },
+    }));
+    expect(mocks.updateMany).toHaveBeenCalledTimes(2);
+  });
+
+  it("rolls back all alias unpublications if one shared record changed while reviewing", async () => {
+    const updatedAt = new Date("2026-10-17T00:00:00.000Z");
+    const key = "2026/123e4567-e89b-12d3-a456-426614174000.webp";
+    const target = { id: "media_123", isPublic: true, updatedAt, storageKey: key, publicUrl: "/media/" + key };
+    mocks.findUniqueOrThrow.mockResolvedValueOnce(target).mockResolvedValueOnce(target);
+    mocks.findMany.mockResolvedValueOnce([{ id: "media_shared", updatedAt, storageKey: key, publicUrl: "/media/" + key }]);
+    mocks.updateMany.mockResolvedValueOnce({ count: 1 }).mockResolvedValueOnce({ count: 0 });
+    const form = new FormData(); form.set("id", "media_123"); form.set("publish", "false");
+    await expect(setMediaPublication(form)).rejects.toThrow(/changed while you were reviewing/i);
+    expect(mocks.createAudit).toHaveBeenCalledTimes(1);
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
   it("does not duplicate an unpublication audit when another admin wins the race", async () => {
     const updatedAt = new Date("2026-09-23T00:00:00.000Z");
     mocks.findUniqueOrThrow
@@ -358,6 +421,8 @@ describe("committed media publication refresh integrity", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.findMany.mockReset();
+    mocks.findMany.mockResolvedValue([]);
     mocks.requirePermission.mockResolvedValue({ id: "reviewer_123" });
     mocks.updateMany.mockResolvedValue({ count: 1 });
     mocks.createAudit.mockResolvedValue({ id: "audit_123" });
@@ -365,7 +430,7 @@ describe("committed media publication refresh integrity", () => {
       .mockResolvedValueOnce(asset)
       .mockResolvedValueOnce({ isPublic: true, updatedAt });
     mocks.serializableTransaction.mockImplementation(async callback => callback({
-      mediaAsset: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateMany },
+      mediaAsset: { findUniqueOrThrow: mocks.findUniqueOrThrow, findMany: mocks.findMany, updateMany: mocks.updateMany },
       auditEvent: { create: mocks.createAudit },
     }));
     mocks.redirect.mockImplementation(() => { throw new Error("NEXT_REDIRECT"); });
