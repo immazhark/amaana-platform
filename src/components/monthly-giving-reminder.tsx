@@ -1,71 +1,43 @@
-"use client";
-
-import { useState } from "react";
-import {
-  buildMonthlyGivingReminder, buildFridayGivingReminder, MONTHLY_GIVING_DAYS,
-  MONTHLY_REMINDER_FILE, FRIDAY_REMINDER_FILE, type MonthlyGivingDay,
-} from "@/lib/monthly-giving-reminder";
+import { MONTHLY_GIVING_DAYS } from "@/lib/monthly-giving-reminder";
 import styles from "./monthly-giving-reminder.module.css";
 
-export function MonthlyGivingReminder() {
-  const [day, setDay] = useState<MonthlyGivingDay>(15);
-  const [frequency, setFrequency] = useState<"monthly" | "friday">("monthly");
-  const [failed, setFailed] = useState(false);
-  function downloadCalendar() {
-    try {
-      const calendar = frequency === "monthly"
-        ? buildMonthlyGivingReminder(day, new Date()) : buildFridayGivingReminder(new Date());
-      const url = URL.createObjectURL(new Blob([calendar], { type: "text/calendar;charset=utf-8" }));
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = frequency === "monthly" ? MONTHLY_REMINDER_FILE : FRIDAY_REMINDER_FILE;
-      document.body.appendChild(link);
-      try { link.click(); }
-      finally {
-        link.remove();
-        window.setTimeout(() => URL.revokeObjectURL(url), 1000);
-      }
-      setFailed(false);
-    } catch { setFailed(true); }
-  }
-
+export function MonthlyGivingReminder({ invalid = false }: { invalid?: boolean }) {
   return <div className={styles.panel}>
     <div className={styles.intro}>
       <h3>Set a private giving reminder</h3>
-      <p>Your calendar can invite you to review the currently approved giving routes. <strong>This is not a subscription, standing instruction or automatic payment.</strong></p>
+      <p>Choose a schedule for reviewing approved giving routes. <strong>This is not a subscription, standing instruction or automatic payment.</strong></p>
+      <p>Monthly and Friday schedules start from today’s date in India (IST). All reminders are all-day calendar events.</p>
+      {invalid ? <p role="alert">The reminder could not be prepared. Choose a valid schedule below. Daily reminders must cover one to ten consecutive days.</p> : null}
     </div>
-    <label className={styles.field}>
-      Reminder frequency
-      <select value={frequency} onChange={event => {
-        const next = event.target.value;
-        if (next === "monthly" || next === "friday") {
-          setFrequency(next);
-          setFailed(false);
-        }
-      }}>
-        <option value="monthly">Monthly — choose a day</option>
-        <option value="friday">Every Friday — weekly</option>
-      </select>
-      <span>Each event is a personal reminder, not a promise of available fundraising.</span>
-    </label>
-    {frequency === "monthly" && <label className={styles.field}>
-      Day of each month
-      <select value={day} onChange={event => {
-        const proposed = Number(event.target.value);
-        if (MONTHLY_GIVING_DAYS.some(value => value === proposed)) {
-          setDay(proposed as MonthlyGivingDay);
-          setFailed(false);
-        }
-      }}>
-        {MONTHLY_GIVING_DAYS.map(value => <option key={value} value={value}>Day {value}</option>)}
-      </select>
-      <span>Days 1–28 recur every month, including February.</span>
-    </label>}
     <div className={styles.action}>
-      <button type="button" className="v2-button" onClick={downloadCalendar}>Download calendar reminder</button>
-      {failed && <p role="alert">The calendar file could not be prepared. You can still review giving options directly.</p>}
-      <p>Import the downloaded file into your calendar application. You can change or delete the event. Your calendar provider may synchronize it to your own account.</p>
+      <form method="get" action="/api/giving-reminder">
+        <input type="hidden" name="frequency" value="monthly" />
+        <label className={styles.field}>Day of each month
+          <select name="day" defaultValue="15">{MONTHLY_GIVING_DAYS.map(day => <option value={day} key={day}>Day {day}</option>)}</select>
+          <span>Days 1–28 recur every month, including February.</span>
+        </label>
+        <button className="v2-button" type="submit">Download monthly reminder</button>
+      </form>
+      <form method="get" action="/api/giving-reminder">
+        <input type="hidden" name="frequency" value="friday" />
+        <button className="v2-button" type="submit">Download every Friday reminder</button>
+      </form>
+      <details><summary>Choose one date or a short daily schedule</summary>
+        <p>For Ramadan, Dhul-Hijjah or Eid, confirm dates with your local masjid before choosing civil dates here. Amaana does not calculate or confirm those dates in this planner.</p>
+        <form method="get" action="/api/giving-reminder">
+          <input type="hidden" name="frequency" value="date" />
+          <label className={styles.field}>One reminder date<input name="start" type="date" min="2000-01-01" max="9998-12-31" required /></label>
+          <button className="v2-button" type="submit">Download one-date reminder</button>
+        </form>
+        <form method="get" action="/api/giving-reminder">
+          <input type="hidden" name="frequency" value="daily" />
+          <label className={styles.field}>First day<input name="start" type="date" min="2000-01-01" max="9998-12-31" required /></label>
+          <label className={styles.field}>Last day (up to ten days, inclusive)<input name="end" type="date" min="2000-01-01" max="9998-12-31" required /></label>
+          <button className="v2-button" type="submit">Download daily reminders</button>
+        </form>
+      </details>
+      <p>Import the file into your calendar. You can edit or delete its events; your calendar provider may synchronize them to your account. Reimporting the same schedule may update an existing event or create a duplicate, depending on your calendar.</p>
     </div>
-    <p className={styles.disclosure}>Amaana does not collect donor information, create a mandate or initiate any payment here. A reminder never authorizes a contribution or proves a fund is currently eligible. Only domestic approved donation options are available.</p>
+    <p className={styles.disclosure}>The download requests only your chosen schedule. Amaana does not collect donor information or initiate payment here. Review current domestic giving options before each contribution.</p>
   </div>;
 }

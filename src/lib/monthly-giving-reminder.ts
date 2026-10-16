@@ -54,52 +54,54 @@ export function nextFridayGivingDate(today: Date): string {
   ].join("");
 }
 
-/** A civil Friday recurring reminder, not a forecast of Hijri dates and
- * never a subscription, debit authorization or fund reservation. */
-export function buildFridayGivingReminder(today: Date): string {
-  const start = nextFridayGivingDate(today);
-  const stamp = today.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
-  const description = [
-    "Optional Friday reminder only; no automatic debit or subscription.",
-    "Review currently approved domestic giving routes before every decision.",
-    "https://amaanafoundation.org/donate",
-    "You may change or remove this reminder in your own calendar.",
-  ].join("\\n");
+/** A civil-date reminder never forecasts Hijri dates or authorizes payment. */
+function calendar(start: string, recurrence: string | null, uid: string, stamp: Date): string {
+  if (!Number.isFinite(stamp.getTime())) throw new RangeError("Invalid reminder creation date");
   return [
     "BEGIN:VCALENDAR", "VERSION:2.0",
     "PRODID:-//Amaana Foundation//Manual Giving Reminder//EN",
     "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "BEGIN:VEVENT",
-    "UID:manual-giving-friday@amaanafoundation.org",
-    `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${start}`,
-    `DTEND;VALUE=DATE:${nextCalendarDate(start)}`,
-    "RRULE:FREQ=WEEKLY;BYDAY=FR",
+    `UID:${uid}@amaanafoundation.org`,
+    `DTSTAMP:${stamp.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z")}`,
+    `DTSTART;VALUE=DATE:${start}`, `DTEND;VALUE=DATE:${nextCalendarDate(start)}`,
+    ...(recurrence ? [`RRULE:${recurrence}`] : []),
     "SUMMARY:Review approved Amaana giving options",
-    `DESCRIPTION:${description}`,
+    "DESCRIPTION:Optional personal reminder only; no automatic debit or subscription.\\nReview currently approved domestic giving routes before every decision.\\nYou may change or remove this reminder in your own calendar.",
     "URL:https://amaanafoundation.org/donate",
     "TRANSP:TRANSPARENT", "END:VEVENT", "END:VCALENDAR",
   ].map(foldLine).join("\r\n") + "\r\n";
 }
 
-export function buildMonthlyGivingReminder(day: MonthlyGivingDay, today: Date): string {
-  const start = nextMonthlyGivingDate(day, today);
-  const stamp = today.toISOString().replace(/[-:]/g, "").replace(/\.\d{3}Z$/, "Z");
-  const description = [
-    "Optional personal reminder only; no automatic debit or subscription.",
-    "Review currently approved domestic giving routes before every decision.",
-    "https://amaanafoundation.org/donate",
-    "You may change or remove this reminder in your own calendar.",
-  ].join("\\n");
-  return [
-    "BEGIN:VCALENDAR", "VERSION:2.0",
-    "PRODID:-//Amaana Foundation//Manual Giving Reminder//EN",
-    "CALSCALE:GREGORIAN", "METHOD:PUBLISH", "BEGIN:VEVENT",
-    `UID:manual-giving-day-${day}@amaanafoundation.org`,
-    `DTSTAMP:${stamp}`, `DTSTART;VALUE=DATE:${start}`,
-    `DTEND;VALUE=DATE:${nextCalendarDate(start)}`,
-    `RRULE:FREQ=MONTHLY;BYMONTHDAY=${day}`,
-    "SUMMARY:Review approved Amaana giving options",
-    `DESCRIPTION:${description}`,
-    "URL:https://amaanafoundation.org/donate",
-    "TRANSP:TRANSPARENT", "END:VEVENT", "END:VCALENDAR",
-  ].map(foldLine).join("\r\n") + "\r\n";
+export function buildFridayGivingReminder(today: Date, stamp = today): string {
+  return calendar(nextFridayGivingDate(today), "FREQ=WEEKLY;BYDAY=FR", "manual-giving-friday", stamp);
+}
+
+export function buildMonthlyGivingReminder(day: MonthlyGivingDay, today: Date, stamp = today): string {
+  return calendar(nextMonthlyGivingDate(day, today), `FREQ=MONTHLY;BYMONTHDAY=${day}`, `manual-giving-day-${day}`, stamp);
+}
+
+function civilDate(value: string): { compact: string; time: number } {
+  if (!/^[2-9]\d{3}-\d{2}-\d{2}$/.test(value) || value.startsWith("9999")) throw new RangeError("Choose a supported calendar date");
+  const time = Date.parse(`${value}T00:00:00.000Z`);
+  if (!Number.isFinite(time) || new Date(time).toISOString().slice(0, 10) !== value) throw new RangeError("Choose a real calendar date");
+  return { compact: value.replaceAll("-", ""), time };
+}
+
+/** A single date or at most ten explicitly selected days. No assumed moon
+ * sighting, named religious event, subscription or donor information. */
+export function buildDatedGivingReminder(startDate: string, endDate: string | undefined, stamp: Date): string {
+  const start = civilDate(startDate);
+  const end = endDate === undefined ? start : civilDate(endDate);
+  const count = (end.time - start.time) / 86_400_000 + 1;
+  if (count < 1 || count > 10) throw new RangeError("Choose one to ten consecutive days");
+  return calendar(start.compact, endDate === undefined ? null : `FREQ=DAILY;COUNT=${count}`,
+    `manual-giving-${start.compact}-${end.compact}`, stamp);
+}
+
+/** India civil date for the domestic giving page. The actual creation stamp
+ * stays UTC; all-day events deliberately contain no time-zone conversion. */
+export function givingCalendarDateInIndia(now: Date): Date {
+  const parts = new Intl.DateTimeFormat("en", { timeZone: "Asia/Kolkata", year: "numeric", month: "numeric", day: "numeric" }).formatToParts(now);
+  const value = (type: string) => Number(parts.find(part => part.type === type)?.value);
+  return new Date(value("year"), value("month") - 1, value("day"));
 }

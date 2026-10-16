@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildMonthlyGivingReminder, buildFridayGivingReminder, nextFridayGivingDate, MONTHLY_GIVING_DAYS, nextMonthlyGivingDate } from "./monthly-giving-reminder";
+import { buildDatedGivingReminder, buildMonthlyGivingReminder, buildFridayGivingReminder, nextFridayGivingDate, MONTHLY_GIVING_DAYS, nextMonthlyGivingDate } from "./monthly-giving-reminder";
 
 describe("non-charging monthly giving calendar", () => {
   it("rolls to the next month or year using the visitor's local date", () => {
@@ -48,5 +48,30 @@ describe("non-charging monthly giving calendar", () => {
     expect(() => nextMonthlyGivingDate(1, new Date(NaN))).toThrow(RangeError);
     expect(() => nextFridayGivingDate(new Date(NaN))).toThrow(RangeError);
     expect(() => buildFridayGivingReminder(new Date(NaN))).toThrow(RangeError);
+  });
+});
+
+describe("visitor-selected dated reminders", () => {
+  it("creates one all-day event without an implicit annual or monthly recurrence", () => {
+    const text = buildDatedGivingReminder("2028-02-29", undefined, new Date("2027-10-01T10:00:00Z"));
+    expect(text).toContain("DTSTART;VALUE=DATE:20280229\r\n");
+    expect(text).toContain("DTEND;VALUE=DATE:20280301\r\n");
+    expect(text).not.toContain("RRULE:");
+  });
+  it("bounds daily recurrence inclusively across months and years", () => {
+    const text = buildDatedGivingReminder("2027-12-27", "2028-01-05", new Date());
+    expect(text).toContain("RRULE:FREQ=DAILY;COUNT=10\r\n");
+    expect(text).toContain("DTEND;VALUE=DATE:20271228\r\n");
+    expect(text).not.toMatch(/Ramadan|Dhul|Eid|BYMONTH=/);
+    for (const line of text.split("\r\n")) expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75);
+  });
+  it.each(["2027-02-29", "2027-04-31", "2027-13-01", "2027-00-01", "2027-1-1", "0000-01-01", "9999-12-31", "2027-01-01\r\nATTENDEE:attacker"])("rejects impossible or injected date %s", start => {
+    expect(() => buildDatedGivingReminder(start, undefined, new Date())).toThrow(RangeError);
+  });
+  it("rejects reversed, overlong and invalid ranges", () => {
+    expect(() => buildDatedGivingReminder("2027-03-10", "2027-03-09", new Date())).toThrow(RangeError);
+    expect(() => buildDatedGivingReminder("2027-03-01", "2027-03-11", new Date())).toThrow(RangeError);
+    expect(() => buildDatedGivingReminder("2027-03-01", "", new Date())).toThrow(RangeError);
+    expect(() => buildDatedGivingReminder("2027-03-01", undefined, new Date(NaN))).toThrow(RangeError);
   });
 });
