@@ -1,3 +1,20 @@
+## 2026-10-17 — Correct filtered retention review and private controls
+
+Ownership: HANDOFF_PENDING. Sole writer continued PR #292 from `ec017cb`; source `b615087923fb817b6439a9c0406144ec90e99b88`. Same branch; no merge or deployment.
+
+- Fixed a verified query bug: active/eligible filters previously affected counts and pagination but were absent from the document read. Counts, rows and preserved page links now use the same predicate, with clamped 50-row pages and truthful filtered-empty wording.
+- Replaced whole-document includes with displayed-field selection. Storage object keys and unused applicant names, appeal titles and case timestamps are no longer read for this list. Audit reads match the exact displayed document/case pairs and select only rendered history fields; no global history cap can hide an active hold. Existing history retrieval is not claimed fully bounded by row count.
+- Retention decisions, dates, reasons, confirmation and hold snapshots reject repeated scalar values or File inputs before document reads. Calendar dates must be canonical real civil dates; invalid February overflow no longer rolls into March. Existing future-review rule, permission, hold rechecks, terminal-state checks, exact DELETE confirmation, document CAS, privacy withdrawal before storage deletion and audit semantics remain.
+- Visible labels are wired to unique document controls. The DELETE option appears only for terminal unheld evidence; hold release remains available and server checks remain authoritative. Staff history dates use Asia/Kolkata rather than server timezone. No policy schedule, dependency, stylesheet, client boundary, migration or automatic deletion added.
+
+Guidance: ECC security/coding standards, Karpathy and the installed Ponytail workflow were read/applied as relevant; Impeccable source detector returned no findings. Owner's newly supplied repository references remain task-selective, not an instruction to run every installer, scan or model router. No new tool installation is claimed.
+
+Validation: **33 focused cases across actual page/action suites pass**, including wrong-filter regression, permission-before-read, pagination, private projections, held/active/linked-appeal decisions, form label connections, scalar cardinality, real leap days and existing destructive ordering/hold guards. Application-only TypeScript, changed-file zero-warning ESLint and diff checks pass. Persistence/storage are mocked; no native PostgreSQL concurrency, real object deletion, browser/manual AT, full build or bundle remeasurement is claimed. Previously recorded whole-repository assistance fixture typing limitations remain separate.
+
+Master149 source classifications unchanged: 60 Implemented /61 Partial /26 Not started /2 other; no formal closure. AF-CONSENT gains actual retention queue/input evidence, while professionally reviewed retention policy and end-to-end acceptance remain open. No live evidence/donor mutation, external message, production configuration, migration, merge or release.
+
+Next: continue the next source-ready implementation batch; retain single-writer ownership and proportionate checks.
+
 ## 2026-10-17 — Private donor review evidence and request filters
 
 Ownership: HANDOFF_PENDING. Sole writer continued existing PR #292 from `69780c3`; source commit `5803db150f04784fcc688f168bca9b4c7afe415b`. No merge or release.
