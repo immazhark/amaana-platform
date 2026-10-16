@@ -15,6 +15,7 @@ CREATE TABLE "AssistanceFollowUp" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     CONSTRAINT "AssistanceFollowUp_pkey" PRIMARY KEY ("id"),
+    CONSTRAINT "AssistanceFollowUp_summary_check" CHECK (char_length(btrim("summary")) BETWEEN 12 AND 300),
     CONSTRAINT "AssistanceFollowUp_resolution_check" CHECK (
       ("state" = 'OPEN' AND "resolvedAt" IS NULL AND "resolvedById" IS NULL) OR
       ("state" <> 'OPEN' AND "resolvedAt" IS NOT NULL AND "resolvedById" IS NOT NULL)
