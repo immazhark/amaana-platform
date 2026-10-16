@@ -1,3 +1,18 @@
+## 2026-10-17 — Private donor review evidence and request filters
+
+Ownership: HANDOFF_PENDING. Sole writer continued existing PR #292 from `69780c3`; source commit `5803db150f04784fcc688f168bca9b4c7afe415b`. No merge or release.
+
+- Staff donor-rights history now shows closure time in IST and the controlled outcome from existing transactional closure audit evidence. Only fixed outcome labels render; missing/malformed latest evidence remains explicitly unavailable. No raw audit text, donor contact, actor details or receipt credentials are added. Closed reviews sort newest closure first, with missing dates last; active requests retain oldest-first processing.
+- Existing 40-row queue plus one lookahead remains bounded. One audit read selects only entity IDs and metadata for displayed closed requests, capped at 80 rows even for duplicate legacy evidence. Unknown evidence is not inferred from older duplicate entries. No additional audit read for disabled, empty or active-only queues.
+- Native request-type filter supports access/correction/deletion-review with strict whitelist. Queue switching, reset and next-page links preserve the chosen type; changing type starts from the first page. No new client boundary, styles, dependency, schema or retention policy.
+- Staff start/close decisions reject repeated scalar fields (including identical values and File mixtures) before transactions. Existing permission, disabled-feature gate, status CAS, staff attestation, controlled outcomes, transactional audit and post-commit refresh semantics remain.
+
+Applied previously reviewed ECC coding/security guidance and Karpathy minimal-change principles. Validation: 30 focused page/action tests pass; application-only TypeScript, changed-file zero-warning ESLint and diff checks pass. Persistence is mocked; no native database, browser, full build, bundle remeasurement or live workflow acceptance is claimed. Previously recorded whole-repository test-fixture typing limitations remain separate. Optional workflow activation, retention/legal decisions and deployment remain pending.
+
+Master149 classifications unchanged: 60 Implemented /61 Partial /26 Not started /2 other; no formal closure. AF-CONSENT gains scoped review-history evidence only. No external message, donor record mutation, migration, flag activation, provider operation, merge or deployment.
+
+Next: continue the next unblocked implementation package from existing source and register; keep checks proportionate.
+
 ## 2026-10-17 — ECC-guided unambiguous private assistance inputs
 
 Ownership: HANDOFF_PENDING. Sole writer continued PR #292 from `871bd7c`; published source `e7dad1d17cf92288b1cb08dee586489333530bc8`. Same branch; no main merge/release.
