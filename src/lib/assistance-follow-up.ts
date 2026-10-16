@@ -78,6 +78,21 @@ export function parseFollowUpResolution(form: FormData) {
   return { id, taskId, state: state as FollowUpResolution, expectedUpdatedAt: new Date(version) };
 }
 
+/** A reschedule is a reversible private operational change, never a public
+ * case-impact claim or a change to verification/approval. */
+export function parseFollowUpReschedule(form: FormData, today: string) {
+  const id = requestId(form);
+  const taskId = requiredString(form, "taskId", 128);
+  if (!caseIdPattern.test(taskId)) throw new Error("Invalid follow-up reference.");
+  const dueOn = parseCalendarDay(form.get("dueOn"), today);
+  const version = requiredString(form, "expectedTaskUpdatedAt", 32);
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(version) ||
+      Number.isNaN(Date.parse(version)) || new Date(version).toISOString() !== version) {
+    throw new Error("Follow-up version is missing. Reload before rescheduling.");
+  }
+  return { id, taskId, dueOn, expectedUpdatedAt: new Date(version) };
+}
+
 /** Date-only source fields are stored as UTC-midnight DATE values in PostgreSQL. */
 export function taskDay(date: Date): string {
   return date.toISOString().slice(0, 10);

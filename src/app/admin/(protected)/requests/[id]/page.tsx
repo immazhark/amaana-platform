@@ -1,8 +1,8 @@
 import { notFound } from "next/navigation";
 import { randomUUID } from "node:crypto";
 import { FOLLOW_UP_SUMMARY_LIMIT, MAX_OPEN_FOLLOW_UPS_PER_CASE, followUpDueLabel,
-  indiaCalendarDay, shiftedCalendarDay } from "@/lib/assistance-follow-up";
-import { createAssistanceFollowUp, resolveAssistanceFollowUp } from "./follow-up-actions";
+  indiaCalendarDay, shiftedCalendarDay, taskDay } from "@/lib/assistance-follow-up";
+import { createAssistanceFollowUp, resolveAssistanceFollowUp, rescheduleAssistanceFollowUp } from "./follow-up-actions";
 import {
   PRIVATE_MILESTONE_ACTION, PRIVATE_MILESTONE_KINDS,
   PRIVATE_MILESTONE_REDACTED_ACTION, PRIVATE_MILESTONE_REDACTION_REASONS,
@@ -161,6 +161,17 @@ export default async function RequestDetailPage({ params }: Props) {
               <span>Selected date: {task.dueOn.toLocaleDateString("en-IN", { timeZone: "UTC", dateStyle: "medium" })}
                 {" · "}{followUpDueLabel(task.state, task.dueOn, today)}
                 {" · "}Recorded by {task.createdBy.name}</span>
+              {canManageTasks && canAddPrivateMilestone(request.status, request.appealId) &&
+                <form action={rescheduleAssistanceFollowUp} className="field">
+                  <input type="hidden" name="id" value={id}/>
+                  <input type="hidden" name="taskId" value={task.id}/>
+                  <input type="hidden" name="expectedTaskUpdatedAt" value={task.updatedAt.toISOString()}/>
+                  <label htmlFor={`task-due-${task.id}`}>Change this action date</label>
+                  <input id={`task-due-${task.id}`} name="dueOn" type="date"
+                    defaultValue={taskDay(task.dueOn)} min={today}
+                    max={shiftedCalendarDay(today, 365)} required/>
+                  <button type="submit" className="button secondary">Save new date</button>
+                </form>}
               {canManageTasks && <form action={resolveAssistanceFollowUp} className="field">
                 <input type="hidden" name="id" value={id}/>
                 <input type="hidden" name="taskId" value={task.id}/>

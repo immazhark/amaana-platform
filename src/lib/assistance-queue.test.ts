@@ -26,7 +26,7 @@ describe("private assistance queue triage", () => {
     expect(assistanceQueueAssignmentWhere("all", "signed-in-staff")).toEqual({});
   });
   it("retains combined filters through pagination without exposing a staff ID", () => {
-    expect(assistanceQueueHref({ status: "UNDER_VERIFICATION", assignment: "mine", order: "oldest", age: "30d", review: "incomplete" }, 3))
+    expect(assistanceQueueHref({ status: "UNDER_VERIFICATION", assignment: "mine", order: "oldest", age: "30d", review: "incomplete", followUp: "all" }, 3))
       .toEqual({ pathname: "/admin", query: { status: "UNDER_VERIFICATION", assignment: "mine", order: "oldest", age: "30d", review: "incomplete", page: 3 } });
     expect(assistanceQueueHref({ assignment: "all", order: "newest", age: "all", review: "all", followUp: "all" })).toEqual({ pathname: "/admin", query: {} });
   });

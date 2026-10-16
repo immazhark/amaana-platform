@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { AssistanceFollowUpState } from "@prisma/client";
 import {
   followUpDueLabel, indiaCalendarDay, parseCalendarDay,
-  parseFollowUpCreation, parseFollowUpResolution, shiftedCalendarDay,
+  parseFollowUpCreation, parseFollowUpReschedule, parseFollowUpResolution, shiftedCalendarDay,
 } from "./assistance-follow-up";
 
 const now = new Date("2026-10-16T20:15:00Z");
@@ -40,6 +40,17 @@ describe("private date-only assistance follow-up scheduling", () => {
     { id: "../cases" }, { expectedUpdatedAt: "invalid" },
   ])("rejects invalid task fields (%j)", fields => {
     expect(() => parseFollowUpCreation(create(fields), day)).toThrow();
+  });
+  it("accepts only a valid future reschedule with an unchanged task identity", () => {
+    const data = form({ id: "case-synthetic", taskId: "task-synthetic",
+      dueOn: "2026-10-23", expectedTaskUpdatedAt: version });
+    expect(parseFollowUpReschedule(data, day)).toEqual({
+      id: "case-synthetic", taskId: "task-synthetic",
+      dueOn: new Date("2026-10-23T00:00:00Z"),
+      expectedUpdatedAt: new Date(version),
+    });
+    data.set("dueOn", "2026-10-16");
+    expect(() => parseFollowUpReschedule(data, day)).toThrow();
   });
   it("resolves only explicit terminal task states and exact versions", () => {
     expect(parseFollowUpResolution(form({

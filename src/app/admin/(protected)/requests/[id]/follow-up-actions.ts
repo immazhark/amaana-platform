@@ -6,7 +6,7 @@ import { redirect } from "next/navigation";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import {
   MAX_OPEN_FOLLOW_UPS_PER_CASE, indiaCalendarDay,
-  parseFollowUpCreation, parseFollowUpResolution, taskDay,
+  parseFollowUpCreation, parseFollowUpResolution, parseFollowUpReschedule, taskDay,
 } from "@/lib/assistance-follow-up";
 import { canAddPrivateMilestone } from "@/lib/assistance-private-milestone";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
@@ -102,6 +102,52 @@ export async function resolveAssistanceFollowUp(form: FormData) {
         actorId: user.id, action: "assistance.follow_up_task_resolved",
         entityType: "AssistanceRequest", entityId: id,
         metadata: { taskId, state },
+      },
+    });
+  });
+  returnToCase(id);
+}
+
+/** Explicit due-date amendment using the same CAS and audit discipline as
+ * completion; original task authorship and text stay unchanged. */
+export async function rescheduleAssistanceFollowUp(form: FormData) {
+  const user = await requirePermission("assistance.update");
+  const { id, taskId, dueOn, expectedUpdatedAt } =
+    parseFollowUpReschedule(form, indiaCalendarDay(new Date()));
+  await withSerializableTransactionRetry(async tx => {
+    const task = await tx.assistanceFollowUp.findUnique({
+      where: { id: taskId },
+      select: { assistanceRequestId: true, state: true, dueOn: true, updatedAt: true },
+    });
+    if (!task || task.assistanceRequestId !== id) {
+      throw new Error("The follow-up does not belong to this assistance case.");
+    }
+    if (task.state !== AssistanceFollowUpState.OPEN) {
+      throw new Error("Resolved follow-ups cannot be rescheduled.");
+    }
+    if (task.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
+      throw new Error("A reviewer changed this task. Reload before rescheduling.");
+    }
+    const request = await tx.assistanceRequest.findUnique({
+      where: { id }, select: { status: true, appealId: true },
+    });
+    if (!request || !canAddPrivateMilestone(request.status, request.appealId)) {
+      throw new Error("This case is no longer open for new follow-up dates.");
+    }
+    if (task.dueOn.getTime() === dueOn.getTime()) return;
+    const changed = await tx.assistanceFollowUp.updateMany({
+      where: { id: taskId, assistanceRequestId: id,
+        state: AssistanceFollowUpState.OPEN, updatedAt: expectedUpdatedAt },
+      data: { dueOn },
+    });
+    if (changed.count !== 1) {
+      throw new Error("Another reviewer changed this task. Reload before rescheduling.");
+    }
+    await tx.auditEvent.create({
+      data: {
+        actorId: user.id, action: "assistance.follow_up_task_rescheduled",
+        entityType: "AssistanceRequest", entityId: id,
+        metadata: { taskId, previousDueOn: taskDay(task.dueOn), dueOn: taskDay(dueOn) },
       },
     });
   });
