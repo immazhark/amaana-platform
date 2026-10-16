@@ -1,16 +1,18 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const m = vi.hoisted(() => ({ permission: vi.fn(), has: vi.fn(), request: vi.fn(), staff: vi.fn(), history: vi.fn(), tasks: vi.fn(), deliveries: vi.fn(), missing: vi.fn() }));
+const m = vi.hoisted(() => ({ permission: vi.fn(), has: vi.fn(), request: vi.fn(), staff: vi.fn(), history: vi.fn(), tasks: vi.fn(), deliveries: vi.fn(), outcomes: vi.fn(), missing: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requirePermission: m.permission, hasPermission: m.has }));
 vi.mock("next/navigation", () => ({ notFound: m.missing, useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/lib/prisma", () => ({ prisma: {
   assistanceRequest: { findUnique: m.request }, user: { findMany: m.staff },
   auditEvent: { findMany: m.history }, assistanceFollowUp: { findMany: m.tasks },
   assistanceDeliveryRecord: { findMany: m.deliveries },
+  assistanceOutcomeObservation: { findMany: m.outcomes },
 } }));
 vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerification: vi.fn(), updateRequest: vi.fn() }));
 vi.mock("./milestone-actions", () => ({ addPrivateMilestone: vi.fn(), redactPrivateMilestone: vi.fn() }));
 vi.mock("./delivery-actions", () => ({ linkAssistanceDeliveryEvidence: vi.fn(), reportAssistanceDelivery: vi.fn(), reviewAssistanceDelivery: vi.fn() }));
+vi.mock("./outcome-actions", () => ({ reportAssistanceOutcome: vi.fn(), reviewAssistanceOutcome: vi.fn() }));
 vi.mock("./financial-actions", () => ({
   proposeAssistanceFinancialCorroboration: vi.fn(), reviewAssistanceFinancialCorroboration: vi.fn(),
 }));
@@ -28,7 +30,7 @@ beforeEach(() => {
     phone: "synthetic-contact", email: null, description: "Private case narrative", documents: [], verification: null, appeal: null, appealId: null,
   });
   m.staff.mockResolvedValue([{ id: "reviewer", name: "Synthetic reviewer" }]);
-  m.history.mockResolvedValue([]); m.tasks.mockResolvedValue([]); m.deliveries.mockResolvedValue([]);
+  m.history.mockResolvedValue([]); m.tasks.mockResolvedValue([]); m.deliveries.mockResolvedValue([]); m.outcomes.mockResolvedValue([]);
 });
 describe("private assistance detail projections", () => {
   it("enforces view permission before any case, staff or history read", async () => {
@@ -190,6 +192,38 @@ describe("private assistance detail projections", () => {
     expect(markup).toContain("Record independent bank-proof review");
     expect(markup).toContain("INR 1250.50");
     expect(markup).toContain("Void incorrect bank-proof match");
+  });
+
+  it("hides outcome actions from case viewers without assistance-update authority", async () => {
+    const markup = await render();
+    expect(markup).toContain("Private case-outcome observations");
+    expect(markup).toContain("No private outcome observations");
+    expect(markup).not.toContain("Submit private outcome for independent review");
+    expect(markup).not.toContain("Review private operational outcome");
+    expect(m.outcomes).toHaveBeenCalledWith(expect.objectContaining({
+      where: { assistanceRequestId: "case-synthetic" }, take: 30,
+    }));
+  });
+
+  it("marks reviewed outcomes as historical when source evidence disappears", async () => {
+    m.outcomes.mockResolvedValue([{
+      id: "outcome-one", kind: "SPECIFIC_SUPPORT_COMPLETED", state: "REVIEWED",
+      summary: "The specific support action was completed according to the record.",
+      deliveryRecordId: "delivery-one", reportedById: "reporter",
+      updatedAt: new Date("2026-10-16T09:00:00Z"),
+      createdAt: new Date("2026-10-16T08:00:00Z"),
+      reviewedAt: new Date("2026-10-16T10:00:00Z"),
+      reportedBy: { name: "Reporter" }, reviewedBy: { name: "Reviewer" },
+      deliveryRecord: {
+        kind: "IN_KIND", state: "VOIDED", reportedById: "reporter",
+        evidenceDocumentId: null, financialReconciliation: null,
+      },
+    }]);
+    const markup = await render();
+    expect(markup).toContain("historical internal review");
+    expect(markup).toContain("no longer");
+    expect(markup).not.toContain("Review private operational outcome");
+    expect(markup).not.toContain("Submit private outcome for independent review");
   });
 
   it("fetches only staff names/IDs and never full authentication profiles or audit metadata", async () => {
