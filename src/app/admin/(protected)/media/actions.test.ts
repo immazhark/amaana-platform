@@ -13,10 +13,11 @@ const mocks = vi.hoisted(() => ({
   serializableTransaction: vi.fn(),
   deletePublicMediaObject: vi.fn(),
   uploadPublicMediaFile: vi.fn(),
-  revalidatePath: vi.fn(),
+  revalidatePath: vi.fn(), redirect: vi.fn(),
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
+vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 vi.mock("@/lib/auth", () => ({
   hasPermission: () => true,
   requirePermission: mocks.requirePermission,
@@ -334,6 +335,87 @@ describe("media publication concurrency", () => {
 
     await expect(setMediaPublication(formData)).rejects.toThrow(/changed while you were reviewing/i);
     expect(mocks.createAudit).not.toHaveBeenCalled();
+  });
+});
+
+describe("committed media publication refresh integrity", () => {
+  const updatedAt = new Date("2026-10-17T00:00:00.000Z");
+  const key = "2026/123e4567-e89b-12d3-a456-426614174000.webp";
+  const asset = {
+    id: "media_123", kind: "IMAGE", isPublic: true,
+    storageKey: key, publicUrl: "/media/" + key, altText: "Approved evidence",
+    sortOrder: 0, initiative: { slug: "winter-relief-2025" },
+    cause: { slug: "seasonal-relief" }, story: null, faithContent: null,
+  };
+  const publicationForm = () => {
+    const data = new FormData();
+    data.set("id", asset.id);
+    data.set("publish", "false");
+    return data;
+  };
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "reviewer_123" });
+    mocks.updateMany.mockResolvedValue({ count: 1 });
+    mocks.createAudit.mockResolvedValue({ id: "audit_123" });
+    mocks.findUniqueOrThrow
+      .mockResolvedValueOnce(asset)
+      .mockResolvedValueOnce({ isPublic: true, updatedAt });
+    mocks.serializableTransaction.mockImplementation(async callback => callback({
+      mediaAsset: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateMany },
+      auditEvent: { create: mocks.createAudit },
+    }));
+    mocks.redirect.mockImplementation(() => { throw new Error("NEXT_REDIRECT"); });
+  });
+
+  it("invalidates both specific detail/archives and managed delivery after a successful unpublication", async () => {
+    await setMediaPublication(publicationForm());
+    for (const path of [
+      "/admin/media", "/", "/our-work", "/impact", "/stories", "/faith-and-reflections",
+      "/appeals", "/media/" + key, "/our-work/winter-relief-2025", "/our-work/seasonal-relief",
+      "/media-archive/initiative/winter-relief-2025",
+    ]) expect(mocks.revalidatePath).toHaveBeenCalledWith(path);
+    expect(mocks.redirect).not.toHaveBeenCalled();
+    expect(mocks.createAudit).toHaveBeenCalledOnce();
+    expect(mocks.updateMany).toHaveBeenCalledOnce();
+  });
+
+  it("does not misreport a committed withdrawal as a transaction failure when a refresh throws", async () => {
+    mocks.revalidatePath.mockImplementation(path => {
+      if (path === "/") throw new Error("cache unavailable");
+    });
+    await expect(setMediaPublication(publicationForm())).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.updateMany).toHaveBeenCalledOnce();
+    expect(mocks.createAudit).toHaveBeenCalledOnce();
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/media/" + key);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/media-archive/initiative/winter-relief-2025");
+    expect(mocks.redirect).toHaveBeenCalledWith("/admin/media?saved=refresh-delayed");
+    expect(mocks.createAudit.mock.invocationCallOrder[0]).toBeLessThan(mocks.revalidatePath.mock.invocationCallOrder[0]!);
+  });
+
+  it("does not revalidate or report committed success after transaction failure", async () => {
+    mocks.serializableTransaction.mockRejectedValueOnce(new Error("failed transaction"));
+    await expect(setMediaPublication(publicationForm())).rejects.toThrow("failed transaction");
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+    expect(mocks.redirect).not.toHaveBeenCalled();
+  });
+
+  it("refreshes story and faith detail archives when their reviewed media changes", async () => {
+    const storyAsset = {
+      ...asset, storageKey: null, publicUrl: "https://cdn.example.org/documentary.jpg",
+      initiative: null, cause: null,
+      story: { slug: "completed-support" },
+      faithContent: { slug: "reflection" },
+    };
+    mocks.findUniqueOrThrow.mockReset()
+      .mockResolvedValueOnce(storyAsset)
+      .mockResolvedValueOnce({ isPublic: true, updatedAt });
+    await setMediaPublication(publicationForm());
+    for (const path of [
+      "/stories/completed-support", "/media-archive/story/completed-support",
+      "/faith-and-reflections/reflection", "/media-archive/faith/reflection",
+    ]) expect(mocks.revalidatePath).toHaveBeenCalledWith(path);
   });
 });
 
