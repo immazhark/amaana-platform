@@ -2,7 +2,7 @@
 
 import { AppealCategory, AppealStatus } from "@prisma/client";
 import { revalidatePath, updateTag } from "next/cache";
-import { getAppealConsentContentIssues, getFirstPublicationIssues, goalMatchesApprovedPublicTarget } from "@/lib/appeal-publication";
+import { getAppealConsentContentIssues, getAppealPublicationIssues, goalMatchesApprovedPublicTarget } from "@/lib/appeal-publication";
 import { getAppealUpdatePublicationIssues } from "@/lib/appeal-update-publication";
 import { getAppealCoverMediaIssues } from "@/lib/appeal-cover-media";
 import { hasPermission, requirePermission } from "@/lib/auth";
@@ -96,18 +96,20 @@ export async function transitionAppeal(formData: FormData) {
   if (!transitions[current.status].includes(next)) throw new Error("Invalid appeal status transition");
   const approvalTransition = ["PUBLISHED", "PAUSED", "FUNDED", "CLOSED", "REJECTED"].includes(next);
   if (approvalTransition && !hasPermission(user, "appeal.approve")) throw new Error("Approval permission is required");
-  const publicationIssues = getFirstPublicationIssues({ fromStatus: current.status, toStatus: next, goalAmount: current.goalAmount, verification: current.assistanceRequest?.verification, beneficiaryDisplayName: current.beneficiaryDisplayName, coverImageUrl: current.coverImageUrl });
+  const publicationIssues = getAppealPublicationIssues({ fromStatus: current.status, toStatus: next, goalAmount: current.goalAmount, verification: current.assistanceRequest?.verification, hasAssistanceRequest: Boolean(current.assistanceRequest), beneficiaryDisplayName: current.beneficiaryDisplayName, coverImageUrl: current.coverImageUrl });
   if (publicationIssues.length) throw new Error(`Appeal cannot be published: ${publicationIssues.join(" ")}`);
-  if (current.status === "UNDER_REVIEW" && next === "PUBLISHED") {
+  // Both first publication and paused resumption must use the current media review.
+  if (next === "PUBLISHED") {
     await assertApprovedAppealCoverMedia(prisma, current.coverImageUrl);
   }
   await withSerializableTransactionRetry(async tx => {
     const fresh = await tx.appeal.findUniqueOrThrow({ where: { id }, include: { assistanceRequest: { include: { verification: true } } } });
     if (fresh.status !== current.status || fresh.updatedAt.getTime() !== expectedUpdatedAt.getTime()) throw new Error("This appeal changed while you were reviewing it. Refresh before changing status.");
     if (!transitions[fresh.status].includes(next)) throw new Error("Invalid appeal status transition");
-    const freshPublicationIssues = getFirstPublicationIssues({ fromStatus: fresh.status, toStatus: next, goalAmount: fresh.goalAmount, verification: fresh.assistanceRequest?.verification, beneficiaryDisplayName: fresh.beneficiaryDisplayName, coverImageUrl: fresh.coverImageUrl });
+    const freshPublicationIssues = getAppealPublicationIssues({ fromStatus: fresh.status, toStatus: next, goalAmount: fresh.goalAmount, verification: fresh.assistanceRequest?.verification, hasAssistanceRequest: Boolean(fresh.assistanceRequest), beneficiaryDisplayName: fresh.beneficiaryDisplayName, coverImageUrl: fresh.coverImageUrl });
     if (freshPublicationIssues.length) throw new Error(`Appeal cannot be published: ${freshPublicationIssues.join(" ")}`);
-    if (fresh.status === "UNDER_REVIEW" && next === "PUBLISHED") {
+    // Both first publication and paused resumption must use the current media review.
+  if (next === "PUBLISHED") {
       await assertApprovedAppealCoverMedia(tx, fresh.coverImageUrl);
     }
     const updated = await tx.appeal.updateMany({
