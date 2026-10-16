@@ -1,3 +1,19 @@
+## 2026-10-17 — W7 sponsorship review and manual calendar planning
+
+Ownership: HANDOFF_PENDING on `fix/direct-transfer-feedback-20261013`, PR #292. Sole writer resumed `1ea37edf`; published source `0fd4c049629fa9cd3cab9c493d4f755a7dc04043`. No main merge or production release.
+
+- Sponsorship now has a native server-rendered preference form, fixed education/support choices, optional request to keep the donor name out of public recognition, visible message review, mailto handoff and copy/contact fallback. All existing path CTAs lead into this review. Rejects unknown/repeated/personal query fields without reflecting their values. No message is sent by the website, no student identity/capacity/unit price is invented, and no placement/payment is reserved. School/college remain developing pathways; receipt identity is not confused with public anonymity.
+- Giving planner now offers one-date and one-to-ten-day inclusive calendars alongside monthly/Friday schedules. Visitors confirm local religious dates themselves; no moon-sighting forecast. Pure bounded GET download rejects unexpected/duplicate/malformed parameters, uses fixed filenames and private no-store/no-referrer/noindex headers, and redirects invalid requests to inline recovery. Monthly/Friday dates use India civil date; DTSTAMP records actual UTC creation. Calendar events can be edited/deleted and repeat-import behavior is disclosed.
+- Removed the reminder client boundary, useState, browser Blob/object-URL download and client calendar serializer. Native forms work without hydration. Reused existing form styles for sponsorship and removed reminder layout/error rules orphaned by the server conversion. No dependency, database migration, provider mandate or new client framework.
+
+Evidence: **60 focused tests across five suites pass**; application-only TypeScript and changed-file zero-warning ESLint pass; diff check and clean optimized compile-only build pass. Impeccable context/detector ran without findings; new copy reviewed using No AI Slop principles. Full repository typecheck still has the previously reproduced assistance-test diagnostics; no full-suite, full data generation, database/browser/screen-reader or external calendar-import acceptance is claimed.
+
+Clean emitted bytes versus preceding W5 build: JS **819856 →814226 (-5630)**, **4974 below819200**; CSS **347875 →348052 (+177)**, **108 below348160**. JS chunks49→48. Inherited JS excess is removed; no budget/configuration relaxation. These are emitted raw-byte figures, not transfer/CWV measurements.
+
+Master149: **60 Implemented /61 Partial /26 Not started /2 other**, no implementation promotion or formal closure. AF-SPONSOR advances only enquiry preparation; inventory/capacity/reservation/refund accounting still depends on approved operating rules. AF-GIVING-PLANNER advances user-chosen dates and mandate separation; local-date/calendar-import acceptance remains open. Updated current sponsorship Git classification from historical Merged to PR open for the new source; aggregate **62 Merged /59 PR open /28 Uncommitted**. No new source is claimed deployed/live.
+
+Next: extend an independently approved W8 operational flow or the next source-ready giving enhancement; preserve the fixed budgets. No payment, external message, migration, production configuration, merge or deployment occurred.
+
 ## 2026-10-17 — W5 approved archives beyond the detail cap
 
 Ownership: HANDOFF_PENDING. Continued the authorized existing branch `fix/direct-transfer-feedback-20261013`, PR #292, from verified `d410c027172198ff156e3c045e5463f2c63dea64`; published code `4a0c65e2ef462ad6df88d9d26b93cb7a1d56569d`. Sole implementation writer. Main remains `aedae00171d2cbf585f65f93b783f66c7f003a43`.
