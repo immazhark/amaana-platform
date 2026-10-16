@@ -36,13 +36,15 @@ import { prisma } from "@/lib/prisma";
 import { assignRequest, convertToAppeal, saveVerification, updateRequest, withdrawConvertedAppealDisclosure } from "./actions";
 import { addPrivateMilestone, redactPrivateMilestone } from "./milestone-actions";
 
-type Props = { params: Promise<{ id: string }>; searchParams?: Promise<{ privacy?: string | string[] }> };
+type Props = { params: Promise<{ id: string }>; searchParams?: Promise<{ privacy?: string | string[]; media?: string | string[] }> };
 const label = (value: string) => value.replaceAll("_", " ").toLowerCase().replace(/^./, character => character.toUpperCase());
 
 export default async function RequestDetailPage({ params, searchParams }: Props) {
   const user = await requirePermission("assistance.view");
   const { id } = await params;
-  const privacyResult = (await searchParams)?.privacy;
+  const results = await searchParams;
+  const privacyResult = results?.privacy;
+  const mediaReviewRequired = results?.media === "review-required";
   const [request, staff, history, milestones, openTasks, resolvedTasks, taskStaff, deliveries, outcomes] = await Promise.all([
     prisma.assistanceRequest.findUnique({
       where: { id },
@@ -189,11 +191,15 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
   return <>
     {privacyResult === "withdrawn" && <section role="status" className="card" aria-live="polite">
       <strong>Public disclosure withdrawn.</strong>
-      <p>Case verification was restricted and public fundraising was stopped. Review the public appeal URL and linked media records; do not re-publish without fresh documented consent.</p>
+      <p>Case verification was restricted, linked cover-media publication was withdrawn where matched, and public fundraising was stopped. Check the direct appeal URL and original media URLs; previously cached copies may remain available temporarily. Do not re-publish without fresh documented consent.</p>
     </section>}
     {privacyResult === "refresh-delayed" && <section role="alert" className="card">
       <strong>Public disclosure withdrawal was saved, but cache refresh was not confirmed.</strong>
       <p>The database change committed. Do not submit this action again. Escalate immediately to an administrator to clear public caches, verify the appeal and donation URLs, and review any externally stored media.</p>
+    </section>}
+    {mediaReviewRequired && <section role="alert" className="card">
+      <strong>Original cover media requires manual takedown review.</strong>
+      <p>The site could not confirm a managed media-library record for every referenced cover, or the cover is externally hosted. Ask the media approver to check the original image URL and request removal at its external host. Do not assume withdrawal from Amaana also deletes externally hosted copies.</p>
     </section>}
     <nav aria-label="Case navigation"><Link href="/admin">← Back to assistance queue</Link></nav>
     <div className="admin-heading">
