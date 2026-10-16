@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import { randomUUID } from "node:crypto";
 import { DELIVERY_REPORT_LIMIT, DELIVERY_STATE_LABELS, canReportPrivateDelivery } from "@/lib/assistance-delivery";
-import { reportAssistanceDelivery, reviewAssistanceDelivery } from "./delivery-actions";
+import { linkAssistanceDeliveryEvidence, reportAssistanceDelivery, reviewAssistanceDelivery } from "./delivery-actions";
 import { FOLLOW_UP_SUMMARY_LIMIT, MAX_OPEN_FOLLOW_UPS_PER_CASE, eligibleFollowUpStaffWhere, followUpDueLabel,
   indiaCalendarDay, shiftedCalendarDay, taskDay } from "@/lib/assistance-follow-up";
 import { assignAssistanceFollowUp, createAssistanceFollowUp, resolveAssistanceFollowUp, rescheduleAssistanceFollowUp } from "./follow-up-actions";
@@ -206,6 +206,20 @@ export default async function RequestDetailPage({ params }: Props) {
                 ? <a href={`/admin/documents/${item.evidenceDocumentId}`} target="_blank" rel="noreferrer">
                   {evidenceNames.get(item.evidenceDocumentId)}</a>
                 : "No currently linked private document"}</p>
+              {canManageTasks && item.state === "REPORTED" &&
+                item.reportedById === user.id && !item.evidenceDocumentId &&
+                request.documents.length > 0 &&
+                <form className="field" action={linkAssistanceDeliveryEvidence}>
+                  <input type="hidden" name="id" value={id}/>
+                  <input type="hidden" name="recordId" value={item.id}/>
+                  <input type="hidden" name="expectedRecordUpdatedAt" value={item.updatedAt.toISOString()}/>
+                  <label htmlFor={`delivery-proof-${item.id}`}>Attach subsequently received delivery proof</label>
+                  <select id={`delivery-proof-${item.id}`} name="evidenceDocumentId" required defaultValue="">
+                    <option value="" disabled>Choose an existing case document</option>
+                    {request.documents.map(doc => <option key={doc.id} value={doc.id}>{doc.originalName}</option>)}
+                  </select>
+                  <button type="submit" className="button secondary">Attach private evidence for review</button>
+                </form>}
               {item.reviewedAt &&
                 <small>Reviewed by {item.reviewedBy?.name ?? "authorized staff"} ·
                   {" "}{item.reviewedAt.toLocaleDateString("en-IN")}</small>}
