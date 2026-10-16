@@ -5,6 +5,8 @@ import Link from "@/components/navigation-link";
 import { type FormEvent, type InputHTMLAttributes, type ReactNode, useEffect, useRef, useState } from "react";
 import { DonationInputField } from "./donation-input-field";
 import { privateTrackingPath } from "@/lib/private-tracking";
+import { boundedPrivateRequest } from "@/lib/bounded-private-request";
+import { assistanceDocumentSelectionIssue } from "@/lib/assistance-document-selection";
 import { ASSISTANCE_FIELDS, classifyAssistanceResponse, UNCERTAIN_ASSISTANCE_MESSAGE, type AssistanceField, type AssistanceFieldErrors } from "@/lib/assistance-feedback";
 import styles from "./assistance-form.module.css";
 
@@ -26,6 +28,8 @@ export function AssistanceForm() {
   const [fieldErrors, setFieldErrors] = useState<AssistanceFieldErrors>({});
   const [phase, setPhase] = useState<"ready" | "submitting" | "submitted" | "followup">("ready");
   const submissionLocked = useRef(false);
+  const inFlight = useRef<AbortController | null>(null);
+  useEffect(() => () => { inFlight.current?.abort(); }, []);
   const [focusTarget, setFocusTarget] = useState<AssistanceField | AssistanceStep | "summary" | null>(null);
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const submitting = phase === "submitting";
@@ -109,11 +113,21 @@ export function AssistanceForm() {
     if (!validateFields(form)) return;
 
     const values = new FormData(form);
+    const requestLifetime = new AbortController();
+    inFlight.current = requestLifetime;
     submissionLocked.current = true;
     setPhase("submitting");
     try {
-      const response = await fetch("/api/assistance", { method: "POST", body: values });
-      const result = classifyAssistanceResponse(response.status, await response.json());
+      // Bound both the upload and response decoding. A timeout never proves
+      // that the server failed to write the case: do not retry automatically.
+      const response = await boundedPrivateRequest(async signal => {
+        const result = await fetch("/api/assistance", {
+          method: "POST", body: values, signal,
+        });
+        return { status: result.status, payload: await result.json() };
+      }, 120_000, requestLifetime.signal);
+      if (requestLifetime.signal.aborted) return;
+      const result = classifyAssistanceResponse(response.status, response.payload);
       if (result.kind === "rejected") {
         submissionLocked.current = false;
         setPhase("ready");
@@ -137,7 +151,12 @@ export function AssistanceForm() {
       }
     } catch {
       // Transport/JSON/navigation failures can follow a committed case write.
+    } finally {
+      if (inFlight.current === requestLifetime) inFlight.current = null;
     }
+    // A navigated-away page must never publish a stale local error. The
+    // server may still be completing an aborted HTTP submission.
+    if (requestLifetime.signal.aborted) return;
     setPhase("followup");
     setError(UNCERTAIN_ASSISTANCE_MESSAGE);
     setFocusTarget("summary");
@@ -161,7 +180,13 @@ export function AssistanceForm() {
       <div className="field full"><label htmlFor="category">Type of assistance</label><select id="category" name="category" required defaultValue="" {...fieldProps("category")}><option value="" disabled>Select the closest category</option><option value="MEDICAL">Medical</option><option value="EDUCATION">Education</option><option value="LIVELIHOOD">Livelihood</option><option value="FOOD_HARDSHIP">Food hardship</option><option value="HOUSING">Housing</option><option value="EMERGENCY">Emergency</option><option value="OTHER">Other</option></select>{fieldError("category")}</div>
       <div className="field full"><label htmlFor="description">Describe the need</label><textarea id="description" name="description" minLength={40} maxLength={5000} required placeholder="In your own words: what has happened, what support is needed, approximate amount if known, and anything time-sensitive." {...fieldProps("description", "description-help")} /><small id="description-help">40–5,000 characters. Please avoid unrelated sensitive information, passwords, OTPs or full banking credentials.</small>{fieldError("description")}</div>
     </div><div className={styles.stepActions}><button className={styles.backButton} type="button" onClick={() => goToStep(1)}>← Back</button><button className="v2-button" type="button" onClick={advance}>Continue to evidence →</button></div></fieldset>
-    <fieldset id="assistance-step-3" data-assistance-step="3" tabIndex={-1} hidden={step !== 3} disabled={locked}><legend><span>03</span> Supporting evidence <small>optional</small></legend><div className="form-grid"><div className="field full v2-file-field"><label className="v2-file-dropzone" htmlFor="documents"><strong>Add private supporting files</strong><span>PDF, JPG, PNG or WEBP · up to 5 files · maximum 5 MB each</span><span className="v2-file-cta">Choose files securely</span><span className="v2-file-selection" aria-live="polite">{selectedFiles.length ? `${selectedFiles.length} selected · ${selectedFiles.join(", ")}` : "No files selected"}</span></label><input className="v2-file-input" id="documents" name="documents" type="file" accept=".pdf,image/jpeg,image/png,image/webp" multiple {...fieldProps("documents", "documents-help")} onChange={event => { setSelectedFiles(Array.from(event.currentTarget.files ?? []).map(file => file.name)); clearFieldError("documents"); }} /><small id="documents-help">Documents are used for private verification and administration. Uploading a document does not give Amaana permission to publish it.</small>{fieldError("documents")}</div></div><div className={styles.stepActions}><button className={styles.backButton} type="button" onClick={() => goToStep(2)}>← Back</button><button className="v2-button" type="button" onClick={advance}>Continue to confirm →</button></div></fieldset>
+    <fieldset id="assistance-step-3" data-assistance-step="3" tabIndex={-1} hidden={step !== 3} disabled={locked}><legend><span>03</span> Supporting evidence <small>optional</small></legend><div className="form-grid"><div className="field full v2-file-field"><label className="v2-file-dropzone" htmlFor="documents"><strong>Add private supporting files</strong><span>PDF, JPG, PNG or WEBP · up to 5 files · maximum 5 MB each</span><span className="v2-file-cta">Choose files securely</span><span className="v2-file-selection" aria-live="polite">{selectedFiles.length ? `${selectedFiles.length} selected · ${selectedFiles.join(", ")}` : "No files selected"}</span></label><input className="v2-file-input" id="documents" name="documents" type="file" accept=".pdf,image/jpeg,image/png,image/webp" multiple {...fieldProps("documents", "documents-help")} onChange={event => {
+        const files = Array.from(event.currentTarget.files ?? []);
+        const issue = assistanceDocumentSelectionIssue(files);
+        event.currentTarget.setCustomValidity(issue ?? "");
+        setSelectedFiles(files.slice(0, 5).map(file => file.name));
+        setFieldErrors(current => ({ ...current, documents: issue ? [issue] : undefined }));
+      }} /><small id="documents-help">Documents are used for private verification and administration. Uploading a document does not give Amaana permission to publish it.</small>{fieldError("documents")}</div></div><div className={styles.stepActions}><button className={styles.backButton} type="button" onClick={() => goToStep(2)}>← Back</button><button className="v2-button" type="button" onClick={advance}>Continue to confirm →</button></div></fieldset>
     <fieldset id="assistance-step-4" data-assistance-step="4" tabIndex={-1} hidden={step !== 4} disabled={locked} className="v2-consent-fieldset"><legend><span>04</span> Confirm</legend><p className={styles.privacyNote}>Your request and supporting documents remain private by default. Public use of identity, photographs or sensitive circumstances is a separate reviewed decision.</p><div className="field full v2-form-choice"><label className="checkbox"><input name="consent" type="checkbox" required {...fieldProps("consent", "assistance-consent-help")} /><span><strong>I confirm the information I have provided is accurate to the best of my knowledge.</strong><small id="assistance-consent-help">I understand that submission does not guarantee assistance or public fundraising, and that Amaana may request further information to verify the need. Public use of a name, photograph or sensitive story details requires a separate decision and consent review.</small></span></label>{fieldError("consent")}</div><p className="muted">Before submitting, please review the <a href="/terms" target="_blank" rel="noreferrer">assistance and platform terms</a> and <a href="/privacy" target="_blank" rel="noreferrer">privacy notice</a>.</p><div className={styles.stepActions}><button className={styles.backButton} type="button" onClick={() => goToStep(3)} disabled={locked}>← Back</button></div></fieldset>
     {step === 4 ? <div className="v2-form-submit"><button className="v2-button" type="submit" disabled={locked}>{submitting ? "Submitting securely…" : phase === "followup" ? "Request follow-up required" : phase === "submitted" ? "Request submitted" : "Submit private request →"}</button><small aria-live="polite">{submitting ? "Your private request is being submitted. Please do not close this page." : phase === "followup" ? "Contact Amaana before resubmitting." : "After successful submission, keep the private reference and tracking link shown on the confirmation page."}</small></div> : null}
   </form>;
