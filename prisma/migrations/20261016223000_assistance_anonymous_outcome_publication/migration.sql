@@ -13,7 +13,7 @@ ALTER TABLE "AssistanceOutcomeDisclosure"
 
 ALTER TABLE "AssistanceOutcomeDisclosure"
   ADD CONSTRAINT "AssistanceOutcomeDisclosure_published_requires_actor_check"
-  CHECK ("state" <> 'PUBLISHED' OR
+  CHECK ("state"::text <> 'PUBLISHED' OR
     ("publishedById" IS NOT NULL AND "publishedAt" IS NOT NULL));
 
 ALTER TABLE "AssistanceOutcomeDisclosure"
