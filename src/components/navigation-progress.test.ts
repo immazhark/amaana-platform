@@ -103,6 +103,17 @@ describe("framework navigation feedback", () => {
     vi.advanceTimersByTime(8_001);
     expect(hooks.state).toBeNull();
   });
+  it("ignores stale pending status for a route already left", () => {
+    window.dispatchEvent(new CustomEvent(NAVIGATION_STATUS_EVENT, {
+      detail: { id: "stale", from: "/other-page", pending: true },
+    }));
+    expect(hooks.state).toBeNull();
+    signal("current", true);
+    window.dispatchEvent(new CustomEvent(NAVIGATION_STATUS_EVENT, {
+      detail: { id: "stale", from: "/other-page", pending: false },
+    }));
+    expect(hooks.state).toEqual({ from: "/privacy", id: "current" });
+  });
   it("ignores malformed plugin navigation events and invalid native destinations", () => {
     window.dispatchEvent(new CustomEvent(NAVIGATION_STATUS_EVENT));
     window.dispatchEvent(new CustomEvent(NAVIGATION_STATUS_EVENT, {

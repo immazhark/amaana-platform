@@ -20,15 +20,19 @@ export function NavigationProgress() {
     // to emit a completion event. Never leave the whole document scroll-locked.
     const MAX_PENDING_MS = 12_000;
     let releaseTimer: ReturnType<typeof setTimeout> | null = null;
+    let activeTransition: { id: string; from: string } | null = null;
     const clearReleaseTimer = () => {
       if (releaseTimer !== null) clearTimeout(releaseTimer);
       releaseTimer = null;
     };
     const startPending = (id: string, from: string) => {
       clearReleaseTimer();
+      activeTransition = { id, from };
       setPending({ id, from });
       releaseTimer = setTimeout(() => {
         releaseTimer = null;
+        if (activeTransition?.id !== id || activeTransition.from !== from) return;
+        activeTransition = null;
         setPending(current => current?.id === id && current.from === from ? null : current);
       }, MAX_PENDING_MS);
     };
@@ -55,16 +59,18 @@ export function NavigationProgress() {
       if (typeof id !== "string" || !id || typeof from !== "string" ||
           !from.startsWith("/") || typeof isPending !== "boolean") return;
       if (isPending) {
+        // Events for pages the visitor has already left must never relock
+        // the current document after a rapid route change.
+        if (from !== location.pathname) return;
         startPending(id, from);
-      } else {
-        setPending(current => {
-          if (current?.id !== id || current.from !== from) return current;
-          clearReleaseTimer();
-          return null;
-        });
+      } else if (activeTransition?.id === id && activeTransition.from === from) {
+        activeTransition = null;
+        clearReleaseTimer();
+        setPending(current => current?.id === id && current.from === from ? null : current);
       }
     };
     const reset = () => {
+      activeTransition = null;
       clearReleaseTimer();
       setPending(null);
     };
@@ -74,6 +80,7 @@ export function NavigationProgress() {
     window.addEventListener("pagehide", reset);
     window.addEventListener(NAVIGATION_STATUS_EVENT, status);
     return () => {
+      activeTransition = null;
       clearReleaseTimer();
       document.removeEventListener("click", begin);
       window.removeEventListener("popstate", reset);

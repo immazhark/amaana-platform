@@ -47,17 +47,25 @@ export function SiteHeader() {
     if (!nav || !toggle) return;
     const focusable = [toggle, ...nav.getElementsByTagName("a")];
     focusable[1]?.focus();
-    const mobile = window.matchMedia("(max-width: 1020px)");
+    const mobile = typeof window.matchMedia === "function"
+      ? window.matchMedia("(max-width: 1020px)") : null;
     const onBreakpoint = () => {
-      if (mobile.matches) return;
+      if (!mobile || mobile.matches) return;
       setOpenForPath(null);
       toggle.parentElement?.querySelector<HTMLElement>("a")?.focus();
     };
-    mobile.addEventListener("change", onBreakpoint);
+    if (mobile) {
+      if (typeof mobile.addEventListener === "function") {
+        mobile.addEventListener("change", onBreakpoint);
+      } else {
+        mobile.addListener(onBreakpoint);
+      }
+    }
     document.body.classList.add("af-menu-lock");
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        event.preventDefault();
         setOpenForPath(null);
         toggle.focus();
         return;
@@ -65,7 +73,10 @@ export function SiteHeader() {
       if (event.key !== "Tab") return;
       const last = focusable.at(-1)!;
       const active = document.activeElement;
-      if (event.shiftKey && active === toggle) {
+      if (active !== toggle && !nav.contains(active)) {
+        event.preventDefault();
+        (event.shiftKey ? last : focusable[1] ?? toggle).focus();
+      } else if (event.shiftKey && active === toggle) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && active === last) {
@@ -78,7 +89,13 @@ export function SiteHeader() {
     return () => {
       document.body.classList.remove("af-menu-lock");
       window.removeEventListener("keydown", onKeyDown);
-      mobile.removeEventListener("change", onBreakpoint);
+      if (mobile) {
+        if (typeof mobile.removeEventListener === "function") {
+          mobile.removeEventListener("change", onBreakpoint);
+        } else {
+          mobile.removeListener(onBreakpoint);
+        }
+      }
     };
   }, [open]);
 
