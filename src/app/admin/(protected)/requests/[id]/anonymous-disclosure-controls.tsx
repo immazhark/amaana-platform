@@ -149,50 +149,38 @@ export function AnonymousDisclosureControls({
                                   Publish this anonymous note on Impact
                                 </button>
                               </form>}
-                            {canApprove && item.disclosure.state !== "WITHDRAWN" &&
-                              <form action={reviewAnonymousOutcomeCopy} className="field">
-                                <input type="hidden" name="id" value={caseId}/>
-                                <input type="hidden" name="disclosureId" value={item.disclosure.id}/>
-                                <input type="hidden" name="expectedUpdatedAt"
-                                  value={item.disclosure.updatedAt.toISOString()}/>
-                                <input type="hidden" name="decision" value="WITHDRAWN"/>
-                                <label htmlFor={`copy-withdraw-reason-${item.disclosure.id}`}>Reason for withdrawal</label>
-                                <select id={`copy-withdraw-reason-${item.disclosure.id}`}
-                                  name="withdrawalReason" required defaultValue="">
-                                  <option value="" disabled>Choose a reason</option>
-                                  {Object.entries(ANONYMOUS_COPY_WITHDRAWAL_REASONS).map(([value, title]) =>
-                                    <option key={value} value={value}>{title}</option>)}
-                                </select>
-                                <button className="button secondary" type="submit">
-                                  {item.disclosure.state === "PUBLISHED"
-                                    ? "Withdraw this public note immediately"
-                                    : "Withdraw anonymous-copy approval or proposal"}
-                                </button>
-                              </form>}
-                            {canPropose && !canApprove &&
+                            {(canApprove || canPropose) &&
                               item.disclosure.state !== "WITHDRAWN" &&
-                              <form action={urgentlyWithdrawAnonymousOutcomeCopy} className="field">
+                              <form action={canApprove
+                                ? reviewAnonymousOutcomeCopy
+                                : urgentlyWithdrawAnonymousOutcomeCopy} className="field">
                                 <input type="hidden" name="id" value={caseId}/>
                                 <input type="hidden" name="disclosureId" value={item.disclosure.id}/>
                                 <input type="hidden" name="expectedUpdatedAt"
                                   value={item.disclosure.updatedAt.toISOString()}/>
                                 <input type="hidden" name="decision" value="WITHDRAWN"/>
-                                <label htmlFor={`copy-urgent-reason-${item.disclosure.id}`}>
+                                <label htmlFor={`copy-withdraw-reason-${item.disclosure.id}`}>
                                   Reason to withdraw this anonymous copy
                                 </label>
-                                <select id={`copy-urgent-reason-${item.disclosure.id}`}
+                                <select id={`copy-withdraw-reason-${item.disclosure.id}`}
                                   name="withdrawalReason" required defaultValue="">
                                   <option value="" disabled>Choose a documented reason</option>
                                   {Object.entries(ANONYMOUS_COPY_WITHDRAWAL_REASONS).map(([value, title]) =>
                                     <option key={value} value={value}>{title}</option>)}
                                 </select>
-                                <p className="muted">Urgent privacy withdrawal is available to authorized
-                                  assistance staff. It cannot publish or approve content.</p>
+                                {!canApprove && <p className="muted">
+                                  Assistance editors may urgently withdraw private copy,
+                                  but cannot approve or publish it.
+                                </p>}
                                 <button className="button secondary" type="submit">
-                                  Withdraw anonymous copy now
+                                  {item.disclosure.state === "PUBLISHED"
+                                    ? "Withdraw this public note immediately"
+                                    : canApprove
+                                      ? "Withdraw anonymous-copy approval or proposal"
+                                      : "Withdraw anonymous copy now"}
                                 </button>
                               </form>}
-                          </> : canPropose && standardConfidentiality &&
+                                                  </> : canPropose && standardConfidentiality &&
                             sourceEligible ? (
                             <form className="field" action={proposeAnonymousOutcomeCopy}>
                               <input type="hidden" name="id" value={caseId}/>
