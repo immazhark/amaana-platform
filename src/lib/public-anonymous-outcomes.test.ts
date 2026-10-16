@@ -51,6 +51,14 @@ describe("public projection of explicitly released anonymous outcomes", () => {
     expect(m.findDisclosures).toHaveBeenCalledWith(expect.objectContaining({
       where: { state: "PUBLISHED" }, take: 48,
     }));
+    const disclosureQuery = m.findDisclosures.mock.calls[0]?.[0];
+    const sourceProjection = disclosureQuery?.select?.observation?.select;
+    expect(sourceProjection).toBeDefined();
+    expect(sourceProjection).not.toHaveProperty("reportedById");
+    expect(sourceProjection).not.toHaveProperty("reviewedById");
+    expect(sourceProjection).not.toHaveProperty("updatedAt");
+    expect(sourceProjection.deliveryRecord.select.assistanceRequest.select)
+      .not.toHaveProperty("applicantName");
     expect(m.findDocuments).toHaveBeenCalledWith({
       where: { id: { in: ["delivery-proof", "signed-specific-consent"] } },
       select: { id: true, assistanceRequestId: true },
