@@ -1,0 +1,2 @@
+/* Participation journey timeline; retain former declarations. */
+.v2-journey{position:relative}.v2-journey:before{content:"";position:absolute;top:.62rem;left:10%;right:10%;height:2px;background:linear-gradient(90deg,var(--af-gold),var(--af-blue))}.v2-journey-step{position:relative}.v2-journey-step:before{content:"";position:absolute;top:.15rem;left:calc(50% - .48rem);width:.96rem;height:.96rem;border-radius:50%;background:var(--af-gold);border:3px solid #fffdf8}

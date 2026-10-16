@@ -1,3 +1,5 @@
+// Keep the former shared geometry ahead of route detail and card refinements.
+import "./appeal-funding-geometry.css";
 import "../appeal-card.css";
 import "../appeals.css";
 import "../appeals-wow.css";
