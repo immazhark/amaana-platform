@@ -18,6 +18,17 @@ function finish(id: string): never {
   redirect(`/admin/requests/${id}`);
 }
 
+/** Central RBAC for private copy review, explicit publication and remediation.
+ * The individual server actions still validate ownership, eligibility and state. */
+async function requireAnonymousDisclosureApprover() {
+  const actor = await requirePermission("content.approve");
+  if (!hasPermission(actor, "assistance.view") ||
+      !hasPermission(actor, "assistance.approve")) {
+    throw new Error("Case-view and assistance-approval permissions are required.");
+  }
+  return actor;
+}
+
 /** Propose fixed anonymous wording ONLY. The consent document must authorize
  * the exact text; neither proposal nor approval creates a public page/update. */
 export async function proposeAnonymousOutcomeCopy(form: FormData) {
@@ -85,11 +96,7 @@ export async function proposeAnonymousOutcomeCopy(form: FormData) {
 /** Separate content plus case approval. APPROVED_COPY is NOT PUBLISHED.
  * No public route, impact increment, applicant messaging or payment mutation. */
 export async function reviewAnonymousOutcomeCopy(form: FormData) {
-  const actor = await requirePermission("content.approve");
-  if (!hasPermission(actor, "assistance.view") ||
-      !hasPermission(actor, "assistance.approve")) {
-    throw new Error("Both case-view and assistance-approval permissions are required.");
-  }
+  const actor = await requireAnonymousDisclosureApprover();
   const input = parseDisclosureDecision(form);
   await withSerializableTransactionRetry(async tx => {
     const item = await tx.assistanceOutcomeDisclosure.findUnique({
@@ -171,11 +178,7 @@ export async function reviewAnonymousOutcomeCopy(form: FormData) {
  * can never create a public item. Private records, names and IDs stay private.
  * A different authorized staff member must make this final release decision. */
 export async function publishAnonymousOutcomeCopy(form: FormData) {
-  const actor = await requirePermission("content.approve");
-  if (!hasPermission(actor, "assistance.view") ||
-      !hasPermission(actor, "assistance.approve")) {
-    throw new Error("Case-view and assistance-approval permissions are required.");
-  }
+  const actor = await requireAnonymousDisclosureApprover();
   const input = parseDisclosurePublication(form);
   await withSerializableTransactionRetry(async tx => {
     const item = await tx.assistanceOutcomeDisclosure.findUnique({
@@ -246,11 +249,7 @@ export async function publishAnonymousOutcomeCopy(form: FormData) {
 /** Authorized remediation for legacy or externally invalidated records.
  * Recheck live evidence and withdraw only stale copy. Never republish. */
 export async function reconcileAnonymousOutcomeDisclosures(form: FormData) {
-  const actor = await requirePermission("content.approve");
-  if (!hasPermission(actor, "assistance.view") ||
-      !hasPermission(actor, "assistance.approve")) {
-    throw new Error("Case-view and assistance-approval permissions are required.");
-  }
+  const actor = await requireAnonymousDisclosureApprover();
   const value = form.get("id");
   if (typeof value !== "string" || !/^[a-zA-Z0-9_-]{3,128}$/.test(value)) {
     throw new Error("Invalid assistance case reference.");
