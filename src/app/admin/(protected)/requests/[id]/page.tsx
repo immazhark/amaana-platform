@@ -526,10 +526,11 @@ export default async function RequestDetailPage({ params }: Props) {
                 {(item.state === "REVIEWED" || Boolean(item.disclosure)) &&
                   <section aria-label="Anonymous outcome disclosure review">
                     <h4>Separate anonymous-copy consent and approval</h4>
-                    <p className="muted">This is a private copy proposal, never a public update.
-                      Intake consent, internal evidence review and archive consent do not
-                      authorize publishing this outcome. The exact wording needs distinct,
-                      documented permission from the applicant or authorized representative.</p>
+                    <p className="muted">Internal outcome review does not authorize publication.
+                      An approved anonymous copy remains private until a separate release
+                      decision. Publication requires consent for the exact text, and the
+                      public note can be withdrawn when consent or evidence changes.
+                      Private case documents never appear on the public page.</p>
                     <blockquote>{ANONYMOUS_OUTCOME_COPY[item.kind]}</blockquote>
                     {item.disclosure ? <>
                       <p><strong>{DISCLOSURE_STATUS_LABELS[item.disclosure.state]}</strong></p>
