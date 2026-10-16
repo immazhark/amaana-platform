@@ -124,3 +124,68 @@ export async function reviewAssistanceDelivery(form: FormData) {
   });
   returnToCase(id);
 }
+
+// A late-arriving proof can be linked only while the delivery is still
+// unreviewed. Confirmation requires a separate reviewer after this action.
+export async function linkAssistanceDeliveryEvidence(form: FormData) {
+  const actor = await requirePermission("assistance.update");
+  const idValue = form.get("id");
+  const recordValue = form.get("recordId");
+  const docValue = form.get("evidenceDocumentId");
+  const versionValue = form.get("expectedRecordUpdatedAt");
+  const validId = (value: unknown): value is string =>
+    typeof value === "string" && /^[a-zA-Z0-9_-]{3,128}$/.test(value);
+  if (!validId(idValue) || !validId(recordValue) || !validId(docValue) ||
+      typeof versionValue !== "string" ||
+      !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(versionValue) ||
+      Number.isNaN(Date.parse(versionValue)) ||
+      new Date(versionValue).toISOString() !== versionValue) {
+    throw new Error("Choose a valid private evidence document and reload the record if it changed.");
+  }
+  const id = idValue, recordId = recordValue, documentId = docValue;
+  const expectedUpdatedAt = new Date(versionValue);
+  await withSerializableTransactionRetry(async tx => {
+    const record = await tx.assistanceDeliveryRecord.findUnique({
+      where: { id: recordId },
+      select: {
+        assistanceRequestId: true, reportedById: true, state: true,
+        evidenceDocumentId: true, updatedAt: true,
+      },
+    });
+    if (!record || record.assistanceRequestId !== id) {
+      throw new Error("The report does not belong to this assistance case.");
+    }
+    if (record.reportedById !== actor.id) {
+      throw new Error("Only the reporting staff member can attach evidence before independent review.");
+    }
+    if (record.state !== AssistanceDeliveryReviewState.REPORTED) {
+      throw new Error("Evidence cannot be changed after delivery review.");
+    }
+    if (record.evidenceDocumentId === documentId) return;
+    if (record.evidenceDocumentId) {
+      throw new Error("Existing delivery proof cannot be silently replaced; void and re-report instead.");
+    }
+    if (record.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
+      throw new Error("The delivery report changed. Reload before attaching evidence.");
+    }
+    const evidence = await tx.assistanceDocument.findFirst({
+      where: { id: documentId, assistanceRequestId: id }, select: { id: true },
+    });
+    if (!evidence) throw new Error("Evidence document must belong to this assistance case.");
+    const changed = await tx.assistanceDeliveryRecord.updateMany({
+      where: {
+        id: recordId, assistanceRequestId: id,
+        state: AssistanceDeliveryReviewState.REPORTED,
+        evidenceDocumentId: null, updatedAt: expectedUpdatedAt,
+      },
+      data: { evidenceDocumentId: documentId },
+    });
+    if (changed.count !== 1) throw new Error("Another reviewer changed the report. Reload before attaching evidence.");
+    await tx.auditEvent.create({ data: {
+      actorId: actor.id, action: "assistance.delivery_evidence_linked",
+      entityType: "AssistanceRequest", entityId: id,
+      metadata: { deliveryRecordId: recordId, evidenceLinked: true },
+    } });
+  });
+  returnToCase(id);
+}
