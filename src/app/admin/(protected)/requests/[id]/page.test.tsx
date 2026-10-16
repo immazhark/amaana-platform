@@ -7,7 +7,7 @@ vi.mock("@/lib/prisma", () => ({ prisma: {
   assistanceRequest: { findUnique: m.request }, user: { findMany: m.staff }, auditEvent: { findMany: m.history },
 } }));
 vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerification: vi.fn(), updateRequest: vi.fn() }));
-vi.mock("./milestone-actions", () => ({ addPrivateMilestone: vi.fn() }));
+vi.mock("./milestone-actions", () => ({ addPrivateMilestone: vi.fn(), redactPrivateMilestone: vi.fn() }));
 import RequestDetailPage from "./page";
 const render = async () => renderToStaticMarkup(await RequestDetailPage({ params: Promise.resolve({ id: "case-synthetic" }) }));
 beforeEach(() => {
@@ -28,7 +28,7 @@ describe("private assistance detail projections", () => {
   it("shows authorized private milestones only on the protected case detail", async () => {
     m.has.mockReturnValue(true);
     m.history.mockResolvedValueOnce([]).mockResolvedValueOnce([{
-      id: "private-note-synthetic",
+      id: "private-note-synthetic", action: "assistance.private_milestone_added",
       metadata: { kind: "DOCUMENT_FOLLOW_UP", summary: "Documents were requested for an internal second review." },
       createdAt: new Date("2026-10-16T08:00:00Z"),
       actor: { name: "Synthetic reviewer" },
@@ -39,9 +39,27 @@ describe("private assistance detail projections", () => {
     expect(markup).toContain("Documents were requested for an internal second review.");
     expect(m.history).toHaveBeenCalledWith(expect.objectContaining({
       where: { entityType: "AssistanceRequest", entityId: "case-synthetic",
-        action: "assistance.private_milestone_added" },
-      take: 20,
+        action: { in: ["assistance.private_milestone_added", "assistance.private_milestone_redacted"] } },
+      take: 60,
     }));
+  });
+
+  it("hides private notes after a valid redaction while retaining the audit trail", async () => {
+    m.has.mockReturnValue(true);
+    m.history.mockResolvedValueOnce([]).mockResolvedValueOnce([{
+      id: "redaction-1", action: "assistance.private_milestone_redacted",
+      metadata: { targetId: "private-note" },
+      createdAt: new Date("2026-10-16T09:00:00Z"),
+      actor: { name: "Approver" },
+    }, {
+      id: "private-note", action: "assistance.private_milestone_added",
+      metadata: { kind: "CONTACT_ATTEMPT", summary: "This sensitive follow-up should no longer appear." },
+      createdAt: new Date("2026-10-16T08:00:00Z"),
+      actor: { name: "Reviewer" },
+    }]);
+    const markup = await render();
+    expect(markup).not.toContain("This sensitive follow-up should no longer appear.");
+    expect(markup).toContain("No private follow-ups have been recorded.");
   });
 
   it("does not surface free-text notes from malformed historical audit metadata", async () => {

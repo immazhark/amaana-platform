@@ -7,7 +7,7 @@ vi.mock("@/lib/auth", () => ({ requirePermission: mock.permission }));
 vi.mock("@/lib/prisma-transaction", () => ({ withSerializableTransactionRetry: mock.transact }));
 vi.mock("next/cache", () => ({ revalidatePath: mock.revalidate }));
 vi.mock("next/navigation", () => ({ redirect: mock.redirect }));
-import { addPrivateMilestone } from "./milestone-actions";
+import { addPrivateMilestone, redactPrivateMilestone } from "./milestone-actions";
 
 const updatedAt = new Date("2026-10-16T08:00:00Z");
 const submissionId = "56d6e16d-781f-464f-bc4c-2178d93cdd01";
@@ -87,6 +87,40 @@ describe("authorized private case milestone mutation", () => {
     mock.permission.mockRejectedValue(new Error("Forbidden"));
     await expect(addPrivateMilestone(form())).rejects.toThrow("Forbidden");
     expect(mock.transact).not.toHaveBeenCalled();
+  });
+
+  it("redacts only a milestone belonging to the same private case", async () => {
+    mock.duplicate.mockResolvedValueOnce({ id: "note-synthetic" }).mockResolvedValueOnce(null);
+    const data = new FormData();
+    data.set("id", "case-synthetic"); data.set("targetId", "note-synthetic");
+    data.set("reason", "SENSITIVE_DETAIL");
+    await expect(redactPrivateMilestone(data)).rejects.toThrow("NAVIGATE");
+    expect(mock.permission).toHaveBeenCalledWith("assistance.approve");
+    expect(mock.audit).toHaveBeenCalledWith({ data: {
+      actorId: "reviewer-synthetic", action: "assistance.private_milestone_redacted",
+      entityType: "AssistanceRequest", entityId: "case-synthetic",
+      metadata: { targetId: "note-synthetic", reason: "SENSITIVE_DETAIL" },
+    } });
+    expect(mock.audit).toHaveBeenCalledTimes(1);
+  });
+
+  it("never redacts a milestone attached to another case", async () => {
+    mock.duplicate.mockResolvedValue(null);
+    const data = new FormData();
+    data.set("id", "case-synthetic"); data.set("targetId", "another-case-note");
+    data.set("reason", "ENTRY_ERROR");
+    await expect(redactPrivateMilestone(data)).rejects.toThrow("does not belong");
+    expect(mock.audit).not.toHaveBeenCalled();
+  });
+
+  it("does not append a duplicate redaction when the privacy correction already exists", async () => {
+    mock.duplicate.mockResolvedValueOnce({ id: "note-synthetic" })
+      .mockResolvedValueOnce({ id: "existing-redaction" });
+    const data = new FormData();
+    data.set("id", "case-synthetic"); data.set("targetId", "note-synthetic");
+    data.set("reason", "DUPLICATE");
+    await expect(redactPrivateMilestone(data)).rejects.toThrow("NAVIGATE");
+    expect(mock.audit).not.toHaveBeenCalled();
   });
 
   it("rejects malformed follow-up types before a transaction", async () => {

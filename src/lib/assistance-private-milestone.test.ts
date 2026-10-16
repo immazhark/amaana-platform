@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   PRIVATE_MILESTONE_ACTION, canAddPrivateMilestone,
-  parsePrivateMilestoneInput, readPrivateMilestone,
+  parsePrivateMilestoneInput, parsePrivateMilestoneRedaction, readPrivateMilestone, readPrivateMilestoneRedaction,
 } from "./assistance-private-milestone";
 
 const submissionId = "56d6e16d-781f-464f-bc4c-2178d93cdd01";
@@ -47,6 +47,20 @@ describe("private assistance follow-up boundary", () => {
     expect(readPrivateMilestone({ kind: "REVIEW_HANDOFF", summary: "x".repeat(601) })).toBeNull();
     expect(readPrivateMilestone(null)).toBeNull();
     expect(PRIVATE_MILESTONE_ACTION).toBe("assistance.private_milestone_added");
+  });
+  it("validates redaction targets and suppresses malformed historical redaction references", () => {
+    const data = new FormData();
+    data.set("id", "case-synthetic");
+    data.set("targetId", "milestone-synthetic");
+    data.set("reason", "SENSITIVE_DETAIL");
+    expect(parsePrivateMilestoneRedaction(data)).toEqual({
+      id: "case-synthetic", targetId: "milestone-synthetic", reason: "SENSITIVE_DETAIL",
+    });
+    expect(readPrivateMilestoneRedaction({ targetId: "milestone-synthetic" })).toBe("milestone-synthetic");
+    expect(readPrivateMilestoneRedaction({ targetId: "x".repeat(129) })).toBeNull();
+    expect(readPrivateMilestoneRedaction({ targetId: null })).toBeNull();
+    data.set("reason", "PUBLIC_APPROVAL");
+    expect(() => parsePrivateMilestoneRedaction(data)).toThrow();
   });
   it("locks terminal and converted cases, but permits authorized work on active cases", () => {
     for (const status of ["SUBMITTED", "DOCUMENTS_REQUESTED", "UNDER_VERIFICATION", "APPROVED"]) {
