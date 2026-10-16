@@ -419,6 +419,60 @@ describe("committed media publication refresh integrity", () => {
   });
 });
 
+describe("committed media draft refresh integrity", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "editor_123" });
+    mocks.redirect.mockImplementation(() => { throw new Error("NEXT_REDIRECT"); });
+    mocks.revalidatePath.mockImplementation(path => {
+      if (path === "/admin/media") throw new Error("cache unreachable");
+    });
+  });
+
+  it("does not erase a created managed object or replay its audit after a committed create", async () => {
+    mocks.uploadPublicMediaFile.mockResolvedValue({
+      objectKey: "2026/123e4567-e89b-12d3-a456-426614174000.webp",
+      publicUrl: "/media/2026/123e4567-e89b-12d3-a456-426614174000.webp",
+      originalName: "evidence.webp",
+      width: 10, height: 10, blurDataURL: null,
+    });
+    mocks.createRecord.mockResolvedValue({ id: "new-media" });
+    mocks.serializableTransaction.mockImplementation(async callback => callback({
+      mediaAsset: { findMany: mocks.findMany, updateMany: mocks.updateMany, create: mocks.createRecord },
+      auditEvent: { create: mocks.createAudit },
+    }));
+    const form = new FormData();
+    form.set("target", "initiative:initiative-1");
+    form.set("file", new File(["synthetic"], "evidence.webp", { type: "image/webp" }));
+    form.set("altText", "A consent-reviewed initiative photograph");
+    await expect(createMediaAsset(form)).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.createRecord).toHaveBeenCalledOnce();
+    expect(mocks.createAudit).toHaveBeenCalledOnce();
+    expect(mocks.deletePublicMediaObject).not.toHaveBeenCalled();
+    expect(mocks.redirect).toHaveBeenCalledWith("/admin/media?saved=refresh-delayed");
+  });
+
+  it("does not return a false failed-edit response after an audited metadata update", async () => {
+    const updatedAt = new Date("2026-09-23T00:00:00.000Z");
+    mocks.findUniqueOrThrow.mockResolvedValue({
+      id: "media_123", kind: "IMAGE", isPublic: false, updatedAt,
+      title: null, altText: "Documentary photograph", caption: null,
+      sourcePath: null, sourceYear: null, publicUrl: "https://cdn.example/original.jpg",
+      storageKey: null, sortOrder: 0, causeId: "cause_1",
+      initiativeId: null, storyId: null, faithContentId: null,
+    });
+    mocks.updateMany.mockResolvedValue({ count: 1 });
+    mocks.serializableTransaction.mockImplementation(async callback => callback({
+      mediaAsset: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateMany },
+      auditEvent: { create: mocks.createAudit },
+    }));
+    await expect(updateMediaAsset(updateForm())).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.updateMany).toHaveBeenCalledOnce();
+    expect(mocks.createAudit).toHaveBeenCalledOnce();
+    expect(mocks.redirect).toHaveBeenCalledWith("/admin/media?saved=refresh-delayed");
+  });
+});
+
 describe("admin media deletion", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -487,6 +541,26 @@ describe("admin media deletion", () => {
     await expect(deleteMediaAsset(deletionForm())).rejects.toThrow(/changed while you were reviewing/i);
     expect(mocks.deletePublicMediaObject).not.toHaveBeenCalled();
     expect(mocks.createAudit).not.toHaveBeenCalled();
+  });
+
+  it("does not claim permanent media deletion failed after storage and database records were removed", async () => {
+    const state = {
+      id: "media_123", isPublic: false,
+      storageKey: "2026/11111111-1111-4111-8111-111111111111.jpg",
+      publicUrl: "/media/2026/11111111-1111-4111-8111-111111111111.jpg",
+      updatedAt: new Date("2026-09-23T00:00:00.000Z"),
+    };
+    mocks.findUniqueOrThrow.mockResolvedValue(state);
+    mocks.revalidatePath.mockImplementation(path => {
+      if (path === "/admin/media") throw new Error("cache offline");
+    });
+    mocks.redirect.mockImplementation(() => { throw new Error("NEXT_REDIRECT"); });
+
+    await expect(deleteMediaAsset(deletionForm())).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.deletePublicMediaObject).toHaveBeenCalledOnce();
+    expect(mocks.transaction).toHaveBeenCalledOnce();
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/media/2026/11111111-1111-4111-8111-111111111111.jpg");
+    expect(mocks.redirect).toHaveBeenCalledWith("/admin/media?saved=refresh-delayed");
   });
 
   it("deletes managed storage before atomically removing an unpublished record and recording the audit", async () => {
