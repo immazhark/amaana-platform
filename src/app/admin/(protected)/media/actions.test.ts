@@ -370,7 +370,7 @@ describe("media publication concurrency", () => {
     mocks.updateMany.mockResolvedValueOnce({ count: 1 }).mockResolvedValueOnce({ count: 0 });
     const form = new FormData(); form.set("id", "media_123"); form.set("publish", "false");
     await expect(setMediaPublication(form)).rejects.toThrow(/changed while you were reviewing/i);
-    expect(mocks.createAudit).toHaveBeenCalledTimes(1);
+    expect(mocks.createAudit).not.toHaveBeenCalled();
     expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 
