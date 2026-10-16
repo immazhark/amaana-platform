@@ -82,7 +82,13 @@ export const getAppealPageData = cache(async (slug: string) => {
       assistanceRequest: {
         select: {
           id: true,
-          verification: { select: { archiveConsent: true } },
+          verification: {
+            select: {
+              archiveConsent: true,
+              publicNameConsent: true,
+              photoConsent: true,
+            },
+          },
         },
       },
       updates: {
@@ -105,9 +111,26 @@ export const getAppealPageData = cache(async (slug: string) => {
     archiveConsent: appeal.assistanceRequest?.verification?.archiveConsent,
   })) return null;
 
-  const { assistanceRequest: privateVerificationContext, ...publicAppeal } = appeal;
-  void privateVerificationContext;
-  return publicAppeal;
+  // A previously approved public page may outlive a withdrawal of field-level
+  // disclosure permission. Apply CURRENT linked consent at the server data
+  // boundary so no identity or cover URL reaches the renderer or RSC payload.
+  // Standalone legacy appeals have no linked verification record.
+  const { assistanceRequest, ...publicAppeal } = appeal;
+  if (!assistanceRequest) return publicAppeal;
+
+  const verification = assistanceRequest.verification;
+  return {
+    ...publicAppeal,
+    beneficiaryDisplayName:
+      verification?.publicNameConsent === "ALLOWED"
+        ? publicAppeal.beneficiaryDisplayName
+        : null,
+    coverImageUrl:
+      verification?.photoConsent === "ALLOWED" ||
+      verification?.photoConsent === "NOT_APPLICABLE"
+        ? publicAppeal.coverImageUrl
+        : null,
+  };
 });
 
 export const getHomepageHeroMedia = cache(async () => {
