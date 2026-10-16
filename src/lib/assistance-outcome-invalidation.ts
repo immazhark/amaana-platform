@@ -4,7 +4,6 @@ import {
 } from "@prisma/client";
 import {
   disclosureSourceSelect,
-  requiredDisclosureEvidenceIds,
   validatedAnonymousDisclosureEvidenceIds,
 } from "./assistance-outcome-disclosure";
 
@@ -55,13 +54,16 @@ export async function withdrawStaleAnonymousOutcomeCopies(
   });
   if (!disclosures.length) return 0;
 
+  // Apply the same eligibility policy as the public projection BEFORE
+  // querying private documents. Ineligible rows are handled as withdrawals,
+  // without needlessly reading their outdated evidence references.
   const requiredByDisclosure = disclosures.map(disclosure => ({
     disclosure,
-    evidence: disclosure.consentDocumentId
-      ? requiredDisclosureEvidenceIds(disclosure.observation, disclosure.consentDocumentId)
-      : [],
+    ids: validatedAnonymousDisclosureEvidenceIds(
+      disclosure.observation, disclosure.copyText, disclosure.consentDocumentId,
+    ),
   }));
-  const documentIds = [...new Set(requiredByDisclosure.flatMap(item => item.evidence))];
+  const documentIds = [...new Set(requiredByDisclosure.flatMap(item => item.ids ?? []))];
   const documents = documentIds.length
     ? await tx.assistanceDocument.findMany({
       where: { assistanceRequestId, id: { in: documentIds } },
@@ -71,11 +73,7 @@ export async function withdrawStaleAnonymousOutcomeCopies(
   const available = new Set(documents.map(doc => doc.id));
 
   let withdrawn = 0;
-  for (const { disclosure } of requiredByDisclosure) {
-    const observation = disclosure.observation;
-    const ids = validatedAnonymousDisclosureEvidenceIds(
-      observation, disclosure.copyText, disclosure.consentDocumentId,
-    );
+  for (const { disclosure, ids } of requiredByDisclosure) {
     const invalid = !ids ||
       ids.some(id => id === retiringDocumentId || !available.has(id));
     if (!invalid) continue;
