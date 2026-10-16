@@ -1,3 +1,7 @@
+## 2026-10-17 — Manual unpublication alias revocation
+
+Ownership: CHATGPT_ACTIVE. Verified sole writer from `e50c08464ffb18af5624ab81e65367be6b8fab81` on PR #292 `fix/direct-transfer-feedback-20261013` against `main`. Scope: prevent manual media unpublication from leaving approved shared storage-key or public-URL aliases serving revoked photos; atomically CAS-unpublish every matching approved media record, audit each, refresh associated public paths and managed routes, report external host limitations. Regression tests first, then source changes; no merge, deployment, live media removal or CI-focused churn.
+
 ## 2026-10-17 — Admin media postcommit refresh integrity and storage alias deletion
 
 Ownership: HANDOFF_PENDING. ChatGPT sole-writer batch on open PR #292, `fix/direct-transfer-feedback-20261013` targeting `main`, initial verified SHA `09c8f899c71b7c974a011852cf28a8d946c443ee`. Media action tests `15a1d3deaabcf4542a6abf0f8bb70a09ded5d035`, `01c36e77c194b1518e6d5a86978f8d6bc6b13d1d`, `10bca6586789e35a9fba89c517b707bdde01375a`; code `46b433519938e0fbe3eceb097adaa812d3f2c04a`, `11c7408edcbe85bdb5fe60b7f56ffb1c211c24a1`, `e013b129e1536ebb018c077b0bfd2755050cd9b1`, `11ee97981602c357e388461c9aeee7acf26c49fe`; UI `448606099b19df8bccb2f9c98d4492da4ff4d498`; master `1b57e14ad0774475fc70809a557d074cf652b922`; handoff ledger `b5972beb7af807a563c206ae75dd1ad50f202fe6`.
