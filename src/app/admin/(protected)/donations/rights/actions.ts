@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth";
 import { donorRightsEnabled } from "@/lib/donor-rights-repository";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
+import { singleFormValue } from "@/lib/single-form-value";
 import { isDonorRightsReviewOutcome } from "@/lib/donor-rights";
 
 export type RightsReviewState = { state: "idle" | "success" | "error"; message: string };
@@ -15,10 +16,14 @@ export async function reviewDonorRightsAction(
 ): Promise<RightsReviewState> {
   const actor = await requirePermission("donation.reconcile");
   if (!donorRightsEnabled()) return { state: "error", message: "Donor data-rights requests are disabled." };
-  const id = form.get("requestId");
-  const decision = form.get("decision");
-  const attested = form.get("reviewConfirmed") === "true";
-  const resolution = form.get("resolution");
+  // Reject ambiguous scalars before choosing a decision or opening a transaction.
+  for (const field of ["requestId", "decision", "reviewConfirmed", "resolution"]) {
+    if (form.getAll(field).length > 1) return { state: "error", message: "Repeated review fields are not accepted. Refresh and try again." };
+  }
+  const id = singleFormValue(form, "requestId");
+  const decision = singleFormValue(form, "decision");
+  const attested = singleFormValue(form, "reviewConfirmed") === "true";
+  const resolution = singleFormValue(form, "resolution");
   const reviewOutcome = isDonorRightsReviewOutcome(resolution) ? resolution : null;
   if (typeof id !== "string" || id.length < 8 || id.length > 100 ||
       (decision !== "START_REVIEW" && decision !== "CLOSE_REVIEW") ||

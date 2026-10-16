@@ -96,4 +96,13 @@ describe("authorized donor data review transitions", () => {
     expect((await reviewDonorRightsAction(before, form("START_REVIEW"))).state).toBe("error");
     expect(mocks.transaction).not.toHaveBeenCalled();
   });
+  it.each(["requestId", "decision", "reviewConfirmed", "resolution"])("rejects repeated %s before a transaction", async field => {
+    for (const duplicate of ["same", "different", "file"]) {
+      const data = form("CLOSE_REVIEW", true);
+      data.append(field, duplicate === "file" ? new File(["private"], "private.txt") : duplicate === "same" ? String(data.get(field)) : "CONFLICT");
+      expect((await reviewDonorRightsAction(before, data)).state).toBe("error");
+      expect(mocks.transaction).not.toHaveBeenCalled();
+    }
+  });
+
 });
