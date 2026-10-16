@@ -253,6 +253,7 @@ export function ScrollCarousel({
           // A pointer-up outside the viewport can be missed before capture.
           // Clear stale drag state so autoplay and native scrolling recover.
           if (!(event.buttons & 1)) {
+            if (state.moved) suppressClick.current = true;
             drag.current = null;
             event.currentTarget.style.removeProperty("scroll-snap-type");
             return;
@@ -280,6 +281,7 @@ export function ScrollCarousel({
         }}
         onPointerLeave={event => {
           if (drag.current && !event.currentTarget.hasPointerCapture(event.pointerId)) {
+            if (drag.current.moved) suppressClick.current = true;
             drag.current = null;
             event.currentTarget.style.removeProperty("scroll-snap-type");
           }

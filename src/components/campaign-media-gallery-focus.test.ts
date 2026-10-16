@@ -27,6 +27,23 @@ afterEach(() => {
 });
 
 describe("gallery modal focus return", () => {
+  it("does not override deliberate focus on another connected element", () => {
+    const opener = { isConnected: true, focus: vi.fn() };
+    const dialog = { isConnected: true };
+    const nextTarget = { isConnected: true };
+    const body = { style: { overflow: "" } };
+    const frames: Array<() => void> = [];
+    vi.stubGlobal("document", { body, activeElement: nextTarget });
+    vi.stubGlobal("window", { addEventListener: vi.fn(), removeEventListener: vi.fn() });
+    vi.stubGlobal("requestAnimationFrame", (fn: () => void) => frames.push(fn));
+    hooks.refs = [dialog, { focus: vi.fn() }, [opener], "second"];
+    CampaignMediaGallery({ items: [{ id: "second", url: "/media/2026/second.webp", alt: "Second" }] });
+    dialog.isConnected = false;
+    hooks.cleanup?.();
+    frames.forEach(frame => frame());
+    expect(opener.focus).not.toHaveBeenCalled();
+  });
+
   it("does not steal focus from a replacement dialog during deferred restoration", () => {
     const opener = { isConnected: true, focus: vi.fn() };
     const dialog = { isConnected: true };

@@ -127,6 +127,9 @@ export function CampaignMediaGallery({ items, approvedImageOrigins = NO_ADDITION
         // A newer lightbox may already be mounted after a quick close/reopen.
         // Never move focus out of that dialog to an old thumbnail.
         if (dialog?.isConnected || dialogRef.current?.isConnected) return;
+        // Preserve a new deliberate focus choice made before this animation frame.
+        const focused = document.activeElement;
+        if (focused && focused !== document.body && focused.isConnected) return;
         const items = latestItems.current;
         const triggers = triggerNodes;
         const opener = triggers[items.findIndex(item => item.id === openingId.current)];
