@@ -241,6 +241,30 @@ describe("media publication concurrency", () => {
     }));
   });
 
+  it.each(["id", "publish"])("rejects duplicate %s controls before fetching publication state", async field => {
+    const form = new FormData();
+    form.set("id", "media_123"); form.set("publish", "false");
+    form.append(field, field === "id" ? "media_other" : "true");
+    await expect(setMediaPublication(form)).rejects.toThrow(/Repeated/);
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+  });
+
+  it.each(["", "unpublish", "0", "FALSE"])("rejects invalid publication action %s rather than defaulting to unpublish", async value => {
+    const form = new FormData();
+    form.set("id", "media_123"); form.set("publish", value);
+    await expect(setMediaPublication(form)).rejects.toThrow(/publication action/i);
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+  });
+
+  it("rejects a File masquerading as a media publication control", async () => {
+    const form = new FormData();
+    form.set("id", new File(["synthetic"], "id.txt", { type: "text/plain" }));
+    form.set("publish", "false");
+    await expect(setMediaPublication(form)).rejects.toThrow(/text field/i);
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+  });
+
   it("refuses publication of a managed file pointing to an unreviewed CDN", async () => {
     mocks.findUniqueOrThrow.mockResolvedValueOnce({
       id: "media_123",
@@ -550,6 +574,17 @@ describe("admin media deletion", () => {
     mocks.updateMany.mockResolvedValue({ count: 1 });
     mocks.createAudit.mockResolvedValue({ id: "audit_123" });
     mocks.transaction.mockResolvedValue([]);
+  });
+
+  it("rejects duplicate or uploaded media-delete controls before reading the record", async () => {
+    const repeated = deletionForm();
+    repeated.append("id", "media_other");
+    await expect(deleteMediaAsset(repeated)).rejects.toThrow(/Repeated/);
+    const uploaded = deletionForm();
+    uploaded.set("confirm", new File(["DELETE"], "confirm.txt", { type: "text/plain" }));
+    await expect(deleteMediaAsset(uploaded)).rejects.toThrow(/text field/i);
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.deletePublicMediaObject).not.toHaveBeenCalled();
   });
 
   it("requires explicit DELETE confirmation before reading the media record", async () => {
