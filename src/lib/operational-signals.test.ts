@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   donationOperationalState,
+  notificationAttentionQueries,
   notificationOperationalState,
 } from "./operational-signals";
 
@@ -43,4 +44,11 @@ describe("operational signal derivation", () => {
       status: "attention",
     });
   });
+  it("keeps attention eligibility at the established fifteen-minute/five-attempt boundaries", () => {
+    const queries = notificationAttentionQueries(new Date("2026-10-17T12:30:00.000Z"));
+    expect(queries.staleProcessing).toEqual({ channel: "EMAIL", status: "PROCESSING", updatedAt: { lt: new Date("2026-10-17T12:15:00.000Z") } });
+    expect(queries.overdueDue).toEqual({ channel: "EMAIL", status: { in: ["PENDING", "FAILED"] }, attempts: { lt: 5 }, scheduledFor: { lt: new Date("2026-10-17T12:15:00.000Z") } });
+    expect(queries.terminalFailures).toEqual({ channel: "EMAIL", status: "FAILED", OR: [{ attempts: { gte: 5 } }, { scheduledFor: { gte: new Date("9999-01-01T00:00:00.000Z") } }] });
+  });
+
 });

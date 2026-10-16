@@ -3,6 +3,7 @@
 import { NotificationStatus } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth";
+import { singleFormValue } from "@/lib/single-form-value";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
 export async function enqueueControlledEmailAcceptance() {
@@ -53,13 +54,15 @@ export async function enqueueControlledEmailAcceptance() {
 
 export async function requeueFailedNotification(formData: FormData) {
   const user = await requirePermission("notification.manage");
-  const id = String(formData.get("id") ?? "").trim();
-  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "").trim();
+  const [id = "", expectedUpdatedAtRaw = "", reason = ""] = ["id", "expectedUpdatedAt", "reason"].map(field => {
+    const value = singleFormValue(formData, field);
+    if (value !== null && typeof value !== "string") throw new Error(`${field} must be text`);
+    return value?.trim() ?? "";
+  });
   const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
-  const reason = String(formData.get("reason") ?? "").trim();
 
-  if (!id) throw new Error("Notification is required");
-  if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Notification version is missing or invalid. Refresh before requeueing");
+  if (!id || id.length > 100) throw new Error("Notification is required");
+  if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime()) || expectedUpdatedAt.toISOString() !== expectedUpdatedAtRaw) throw new Error("Notification version is missing or invalid. Refresh before requeueing");
   if (reason.length < 10) throw new Error("Provide a short operational reason before requeueing");
   if (reason.length > 1000) throw new Error("Operational reason is too long");
 

@@ -228,4 +228,19 @@ describe("manual notification recovery", () => {
     expect(recoveryAudit?.data?.metadata).not.toHaveProperty("previousFailureReason");
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/notifications");
   });
+  it.each(["id", "expectedUpdatedAt", "reason"])("rejects repeated or file-valued %s before starting recovery", async field => {
+    for (const duplicate of [false, true]) {
+      const data = form();
+      if (duplicate) data.append(field, String(data.get(field)));
+      else data.set(field, new File(["private"], "private.txt"));
+      await expect(requeueFailedNotification(data)).rejects.toThrow();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+    }
+  });
+  it.each(["2026-09-23", "2026-09-23T04:00:00+00:00", "2026-02-30T00:00:00.000Z"])("rejects a noncanonical version snapshot %s before recovery", async value => {
+    const data = form(); data.set("expectedUpdatedAt", value);
+    await expect(requeueFailedNotification(data)).rejects.toThrow(/version/);
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+  });
+
 });
