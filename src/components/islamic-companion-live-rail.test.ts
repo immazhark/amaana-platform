@@ -38,6 +38,22 @@ function mount(reply: () => Promise<unknown>, ok = true) {
 }
 const drain = async () => { for (let i = 0; i < 12; i++) await Promise.resolve(); };
 describe("actual companion live-rail lifecycle", () => {
+  it("keeps the clock running without media-query APIs and avoids hidden-tab state updates", async () => {
+    const m = mount(async () => ({ items: [] }));
+    const cleanupClock = h.effects[0]?.();
+    expect(cleanupClock).toBeTypeOf("function");
+    const updateNow = h.setters[1];
+    expect(updateNow).toHaveBeenCalledTimes(1);
+    m.setHidden(true);
+    await vi.advanceTimersByTimeAsync(90_000);
+    expect(updateNow).toHaveBeenCalledTimes(1);
+    m.setHidden(false);
+    expect(updateNow).toHaveBeenCalledTimes(2);
+    cleanupClock?.();
+    await vi.advanceTimersByTimeAsync(90_000);
+    expect(updateNow).toHaveBeenCalledTimes(2);
+    m.cleanup?.();
+  });
   it("shows checking rather than claiming an empty appeal list during initial load", async () => {
     const m = mount(async () => ({ items: [] }));
     expect(m.markup).toContain("Checking public appeal updates"); expect(m.markup).not.toContain("No public appeal is open");

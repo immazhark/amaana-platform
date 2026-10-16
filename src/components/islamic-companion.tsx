@@ -50,21 +50,36 @@ export function IslamicCompanion() {
   useEffect(() => {
     const update = () => setNow(new Date());
     update();
-    const timer = window.setInterval(update, 30_000);
+    // A hidden tab does not need continuous clock state updates. Refresh
+    // immediately when it becomes visible again instead of waking React.
+    const timer = window.setInterval(() => {
+      if (!document.hidden) update();
+    }, 30_000);
     const visible = () => {
       if (!document.hidden) update();
     };
     document.addEventListener("visibilitychange", visible);
 
-    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const motion = () => setReducedMotion(preference.matches);
+    // Motion is decorative; an unsupported media-query API must not prevent
+    // the clock from initializing or leak its already-started interval.
+    const preference = typeof window.matchMedia === "function"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+    const motion = () => {
+      if (preference) setReducedMotion(preference.matches);
+    };
     motion();
-    preference.addEventListener("change", motion);
+    if (preference) {
+      if (typeof preference.addEventListener === "function") preference.addEventListener("change", motion);
+      else preference.addListener(motion);
+    }
 
     return () => {
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", visible);
-      preference.removeEventListener("change", motion);
+      if (preference) {
+        if (typeof preference.removeEventListener === "function") preference.removeEventListener("change", motion);
+        else preference.removeListener(motion);
+      }
     };
   }, []);
 

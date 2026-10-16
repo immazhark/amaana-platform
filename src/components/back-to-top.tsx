@@ -35,7 +35,8 @@ export function BackToTop() {
       type="button"
       aria-label="Back to top"
       onClick={() => {
-        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const reduced = typeof window.matchMedia !== "function" ||
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
       }}
     >
