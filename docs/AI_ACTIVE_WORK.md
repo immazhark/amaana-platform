@@ -1,3 +1,23 @@
+## 2026-10-17 — Reliable private proof upload lifecycle
+
+Ownership: HANDOFF_PENDING. Sole writer continued PR #292 from `ce01bd7`; source `7a2072b26c685f08940a1a98ce48b60622717c8f`. No main merge/deployment or actual evidence upload.
+
+- Shared delivery/bank/consent proof uploader now uses the existing bounded private-request helper for a thirty-second transport AND response-body deadline. Synchronous submission lock prevents overlapping requests before React renders disabled controls; file validation stays before transport.
+- Case/purpose identity keys reset browser state immediately when the target changes. Lifetime abort on unmount/scope replacement and ignored late responses prevent an old case upload from displaying success, clearing a new file selection or refreshing the replacement case.
+- Only a valid document-ID response confirms success. Timeout, network failure, unreadable/malformed receipt or server 5xx means uncertain outcome: uploads remain blocked and a native case reload link requires document review before another attempt. Cancellation ends the browser wait; it never claims to roll back a server write. Definite 4xx validation remains manually retryable. No automatic upload retries or server deduplication claim.
+- Verified receipts remain success if router refresh throws, with manual reload guidance. Existing server permission, same-origin/body/file limits, case/role eligibility, transaction/audit and uncertain-commit/orphan safeguards are unchanged. Upload alone does not confirm delivery, corroborate finance or approve disclosure.
+- No database schema, public media role, consent activation, provider operation, client framework or project dependency added. A temporary external jsdom test runtime was used for real React component lifecycle checks; no repository dependency/lockfile change.
+
+Applied ECC trust-boundary principles, Karpathy/Ponytail minimal change and existing Impeccable conventions. Detector reported no findings. Relevant GitHub/plugin guidance is used selectively; no unrelated scanner/installer/model-router execution.
+
+Validation: **32 focused cases across real DOM component, bounded-request helper and existing upload-route suites pass**. Cases cover same-tick double submit, hung transport/body, timeout then late success, case/purpose replacement, unmount, 4xx/5xx/malformed receipts, all three proof purposes and refresh-after-success failure. Actual object storage/database/provider writes are mocked. Application-only TypeScript, changed-file zero-warning ESLint, diff checks and clean optimized compile-only build pass. No CI pipeline, full data generation, native database concurrency or authenticated browser/live upload acceptance is claimed. Earlier whole-repository assistance fixture typing limits remain separate.
+
+Emitted JS **815858/819200**, CSS **348052/348160**; JS +1632 from the earlier 814226-byte build, still 3342 below the fixed ceiling. CSS unchanged. No budget/config relaxation.
+
+Master149 remains 60 Implemented /61 Partial /26 Not started /2 other, zero formal closures; AF-MILESTONES/AF-SETTLEMENT/AF-CONSENT gain scoped private-proof lifecycle evidence only. Financial reconciliation, verified outcomes, exact consent and retention policy remain separate approval gates. Git classifications remain 58 Merged /63 PR open /28 Uncommitted.
+
+Next: continue the next concrete source-ready package. No external message, real case/donor/file mutation, public publication, migration, cron/configuration change, merge or release occurred.
+
 ## 2026-10-17 — Complete fund registry traversal and truthful saves
 
 Ownership: HANDOFF_PENDING. Sole writer continued PR #292 from `3872eb6`; source `1d9b1af75dddc7b650554d7b97f2fc6bf967878c`. No main merge, public fund activation or deployment.
