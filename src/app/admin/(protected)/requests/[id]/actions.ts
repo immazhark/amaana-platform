@@ -466,7 +466,7 @@ export async function withdrawConvertedAppealDisclosure(formData: FormData) {
         },
         verification: {
           select: {
-            id: true, updatedAt: true, confidentialityLevel: true,
+            id: true, updatedAt: true, decision: true, confidentialityLevel: true,
             publicNameConsent: true, photoConsent: true,
             medicalDetailsConsent: true, institutionNameConsent: true,
             archiveConsent: true,
@@ -491,7 +491,8 @@ export async function withdrawConvertedAppealDisclosure(formData: FormData) {
       throw new Error("The linked appeal is not in a public or paused disclosure state.");
     }
     const previous = request.verification;
-    if (previous.confidentialityLevel === "HIGHLY_SENSITIVE" &&
+    if (previous.decision === "APPROVED_PRIVATE" &&
+        previous.confidentialityLevel === "HIGHLY_SENSITIVE" &&
         previous.publicNameConsent === "NOT_ALLOWED" &&
         previous.photoConsent === "NOT_ALLOWED" &&
         previous.medicalDetailsConsent === "NOT_ALLOWED" &&
@@ -505,6 +506,9 @@ export async function withdrawConvertedAppealDisclosure(formData: FormData) {
     const verificationWrite = await tx.assistanceVerification.updateMany({
       where: { id: previous.id, assistanceRequestId: id, updatedAt: expectedVerificationUpdatedAt },
       data: {
+        // Remove public approval while retaining verified needs and ledger facts.
+        // This makes PAUSED→PUBLISHED fail even if name and cover are blank.
+        decision: "APPROVED_PRIVATE",
         confidentialityLevel: "HIGHLY_SENSITIVE",
         publicNameConsent: "NOT_ALLOWED",
         photoConsent: "NOT_ALLOWED",
@@ -535,6 +539,7 @@ export async function withdrawConvertedAppealDisclosure(formData: FormData) {
           reason,
           previousAppealStatus: status,
           nextAppealStatus: nextStatus,
+          previousDecision: previous.decision,
           previousConfidentiality: previous.confidentialityLevel,
         },
       },
