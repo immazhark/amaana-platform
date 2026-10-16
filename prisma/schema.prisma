@@ -167,6 +167,8 @@ model User {
   reviewedFinancialReconciliations  AssistanceFinancialReconciliation[] @relation("AssistanceFinancialReconciliationChecker")
   reportedOutcomeObservations AssistanceOutcomeObservation[] @relation("AssistanceOutcomeReporter")
   reviewedOutcomeObservations AssistanceOutcomeObservation[] @relation("AssistanceOutcomeReviewer")
+  preparedOutcomeDisclosures AssistanceOutcomeDisclosure[] @relation("AssistanceOutcomeDisclosurePreparer")
+  approvedOutcomeDisclosures AssistanceOutcomeDisclosure[] @relation("AssistanceOutcomeDisclosureApprover")
   notifications           Notification[]
   credential              PasswordCredential?
   sessions                Session[]
@@ -814,6 +816,7 @@ model AssistanceOutcomeObservation {
   reviewedAt          DateTime?
   assistanceRequest   AssistanceRequest           @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
   deliveryRecord      AssistanceDeliveryRecord    @relation(fields: [deliveryRecordId], references: [id], onDelete: Restrict)
+  disclosure          AssistanceOutcomeDisclosure?
   reportedBy          User                        @relation("AssistanceOutcomeReporter", fields: [reportedById], references: [id], onDelete: Restrict)
   reviewedBy          User?                       @relation("AssistanceOutcomeReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
   createdAt           DateTime                    @default(now())
@@ -821,6 +824,33 @@ model AssistanceOutcomeObservation {
 
   @@index([assistanceRequestId, state, createdAt])
   @@index([deliveryRecordId, state])
+  @@index([state, createdAt])
+}
+
+enum AssistanceOutcomeDisclosureState {
+  DRAFT
+  APPROVED_COPY
+  WITHDRAWN
+}
+
+/** Explicitly reviewed ANONYMOUS copy only. An internal approval is never
+ * a public publish event: there is deliberately no public retrieval path. */
+model AssistanceOutcomeDisclosure {
+  id                 String                            @id @default(cuid())
+  observationId      String                            @unique
+  copyText           String                            @db.VarChar(240)
+  consentDocumentId  String?                           @unique
+  state              AssistanceOutcomeDisclosureState  @default(DRAFT)
+  preparedById       String
+  approvedById       String?
+  approvedAt         DateTime?
+  observation        AssistanceOutcomeObservation      @relation(fields: [observationId], references: [id], onDelete: Restrict)
+  consentDocument    AssistanceDocument?               @relation(fields: [consentDocumentId], references: [id], onDelete: SetNull)
+  preparedBy         User                              @relation("AssistanceOutcomeDisclosurePreparer", fields: [preparedById], references: [id], onDelete: Restrict)
+  approvedBy         User?                             @relation("AssistanceOutcomeDisclosureApprover", fields: [approvedById], references: [id], onDelete: Restrict)
+  createdAt          DateTime                          @default(now())
+  updatedAt          DateTime                          @updatedAt
+
   @@index([state, createdAt])
 }
 
@@ -865,6 +895,7 @@ model AssistanceDocument {
   updatedAt           DateTime          @updatedAt
   deliveryRecords     AssistanceDeliveryRecord[]
   financialProofs     AssistanceFinancialReconciliation[]
+  outcomeConsentProofs AssistanceOutcomeDisclosure[]
   @@index([assistanceRequestId])
 }
 
