@@ -139,7 +139,12 @@ export async function reviewAssistanceOutcome(form: FormData) {
     if (!item || item.assistanceRequestId !== input.assistanceRequestId) {
       throw new Error("This observation does not belong to the assistance case.");
     }
-    if (item.state === input.state) return; // idempotent retry of same resolution
+    if (item.state === input.state) {
+      if (item.reviewedById !== actor.id) {
+        throw new Error("This observation was already reviewed by another staff member. Reload the case.");
+      }
+      return; // only the original reviewer may replay a lost response
+    }
     if (item.state === AssistanceOutcomeReviewState.VOIDED ||
         (item.state === AssistanceOutcomeReviewState.REVIEWED &&
          input.state !== AssistanceOutcomeReviewState.VOIDED)) {

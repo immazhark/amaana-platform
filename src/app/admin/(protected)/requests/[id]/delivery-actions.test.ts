@@ -22,7 +22,7 @@ const form = (changes: Record<string, string> = {}) => {
     summary: "Medical support reportedly provided directly to a verified institution.",
     occurredOn: "2026-10-15", amountInr: "1250.00",
     evidenceDocumentId: "private-proof", expectedUpdatedAt: version.toISOString(),
-    recordId: "delivery-synthetic", state: "CONFIRMED",
+    recordId: "delivery-synthetic", state: "CONFIRMED", evidenceAttested: "yes",
     expectedRecordUpdatedAt: version.toISOString(),
     ...changes,
   }).forEach(([key, value]) => data.set(key, value));
@@ -77,13 +77,24 @@ describe("private delivery reporting and independent evidence confirmation", () 
       summary: "Medical support reportedly provided directly to a verified institution.",
       occurredOn: new Date("2026-10-15T00:00:00Z"),
       amountInr: { toFixed: () => "1250.00" },
-      evidenceDocumentId: "private-proof",
+      evidenceDocumentId: "private-proof", reportedById: "approver-1",
     });
     await expect(reportAssistanceDelivery(form({ evidenceDocumentId: "" })))
       .rejects.toThrow("NAVIGATE");
     expect(m.create).not.toHaveBeenCalled();
   });
 
+  it("binds lost-response submission tokens to the originating staff member", async () => {
+    m.record.mockResolvedValue({
+      assistanceRequestId: "case-synthetic", reportedById: "different-staff", kind: "FINANCIAL",
+      summary: "Medical support reportedly provided directly to a verified institution.",
+      occurredOn: new Date("2026-10-15T00:00:00Z"), amountInr: { toFixed: () => "1250.00" },
+      evidenceDocumentId: "private-proof",
+    });
+    await expect(reportAssistanceDelivery(form())).rejects.toThrow("different information");
+    expect(m.create).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+  });
   it("rejects mismatched case evidence before any delivery write", async () => {
     m.document.mockResolvedValue(null);
     await expect(reportAssistanceDelivery(form())).rejects.toThrow("does not belong");
@@ -130,6 +141,12 @@ describe("private delivery reporting and independent evidence confirmation", () 
     await expect(reviewAssistanceDelivery(form())).rejects.toThrow("Attach private evidence");
     expect(m.update).not.toHaveBeenCalled();
   });
+  it("requires an explicit personal attestation for evidence confirmation", async () => {
+    const invalid = form(); invalid.delete("evidenceAttested");
+    await expect(reviewAssistanceDelivery(invalid)).rejects.toThrow("personally reviewed");
+    expect(m.transaction).not.toHaveBeenCalled();
+    expect(m.update).not.toHaveBeenCalled();
+  });
   it("confirms valid evidence using a version-checked independent review", async () => {
     m.record.mockResolvedValue({ assistanceRequestId: "case-synthetic",
       reportedById: "original-reviewer", state: "REPORTED",
@@ -151,7 +168,8 @@ describe("private delivery reporting and independent evidence confirmation", () 
     m.record.mockResolvedValue({ assistanceRequestId: "case-synthetic",
       reportedById: "original-reviewer", state: "CONFIRMED",
       evidenceDocumentId: "private-proof", reviewedById: "first-reviewer", reviewedAt: version, updatedAt: version });
-    await expect(reviewAssistanceDelivery(form({ state: "VOIDED" }))).rejects.toThrow("NAVIGATE");
+    await expect(reviewAssistanceDelivery(form({ state: "VOIDED", evidenceAttested: "" })))
+      .rejects.toThrow("NAVIGATE");
     expect(m.update).toHaveBeenCalledWith(expect.objectContaining({
       data: { state: "VOIDED", reviewedById: "approver-1", reviewedAt: expect.any(Date) },
     }));
@@ -170,6 +188,18 @@ describe("private delivery reporting and independent evidence confirmation", () 
     m.record.mockResolvedValue({ assistanceRequestId: "case-synthetic",
       reportedById: "original-reviewer", state: "CONFIRMED",
       evidenceDocumentId: "private-proof", updatedAt: version });
+    await expect(reviewAssistanceDelivery(form())).rejects.toThrow("NAVIGATE");
+    expect(m.update).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+  });
+  it("permits only the original delivery reviewer to retry a completed decision", async () => {
+    const recorded = { assistanceRequestId: "case-synthetic", reportedById: "original-reporter",
+      state: "CONFIRMED", reviewedById: "different-approver",
+      evidenceDocumentId: "private-proof", updatedAt: version };
+    m.record.mockResolvedValue(recorded);
+    await expect(reviewAssistanceDelivery(form())).rejects.toThrow("another staff member");
+    expect(m.update).not.toHaveBeenCalled();
+    m.record.mockResolvedValue({ ...recorded, reviewedById: "approver-1" });
     await expect(reviewAssistanceDelivery(form())).rejects.toThrow("NAVIGATE");
     expect(m.update).not.toHaveBeenCalled();
     expect(m.audit).not.toHaveBeenCalled();

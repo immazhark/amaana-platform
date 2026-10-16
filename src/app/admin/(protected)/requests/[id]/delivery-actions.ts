@@ -25,11 +25,12 @@ export async function reportAssistanceDelivery(form: FormData) {
       where: { submissionId: data.submissionId },
       select: {
         assistanceRequestId: true, kind: true, summary: true,
-        occurredOn: true, amountInr: true, evidenceDocumentId: true,
+        occurredOn: true, amountInr: true, evidenceDocumentId: true, reportedById: true,
       },
     });
     if (existing) {
       if (existing.assistanceRequestId !== data.id ||
+          existing.reportedById !== actor.id ||
           existing.kind !== data.kind || existing.summary !== data.summary ||
           existing.occurredOn.getTime() !== data.occurredOn.getTime() ||
           (existing.amountInr?.toFixed(2) ?? null) !== data.amountInr ||
@@ -93,7 +94,12 @@ export async function reviewAssistanceDelivery(form: FormData) {
     if (!record || record.assistanceRequestId !== id) {
       throw new Error("Delivery report does not belong to this assistance case.");
     }
-    if (record.state === state) return; // repeated response cannot duplicate the review
+    if (record.state === state) {
+      if (record.reviewedById !== actor.id) {
+        throw new Error("This delivery was already reviewed by another staff member. Reload the case.");
+      }
+      return; // only the original reviewer may replay a lost response
+    }
     if (record.state === AssistanceDeliveryReviewState.VOIDED ||
         (record.state === AssistanceDeliveryReviewState.CONFIRMED && state !== "VOIDED")) {
       throw new Error("This delivery report has already reached a final review state.");

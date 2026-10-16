@@ -134,6 +134,34 @@ describe("private assistance detail projections", () => {
       where: { assistanceRequestId: "case-synthetic" }, take: 30,
     }));
   });
+  it("requires an explicit attestation and an eligible case to offer delivery confirmation", async () => {
+    m.has.mockReturnValue(true);
+    const request = {
+      id: "case-synthetic", referenceNumber: "AF-SYNTHETIC", applicantName: "Synthetic applicant",
+      category: "MEDICAL", city: "Hyderabad", status: "APPROVED",
+      createdAt: new Date("2026-10-15T00:00:00Z"), updatedAt: new Date("2026-10-16T00:00:00Z"),
+      phone: "synthetic-contact", email: null, description: "Private case narrative",
+      documents: [{ id: "delivery-proof", originalName: "delivery.pdf", mimeType: "application/pdf", sizeBytes: 100 }],
+      verification: { decision: "APPROVED_PRIVATE", completedAt: new Date("2026-10-15T10:00:00Z"),
+        confidentialityLevel: "RESTRICTED" }, appeal: null, appealId: null,
+    };
+    m.request.mockResolvedValue(request);
+    m.deliveries.mockResolvedValue([{ id: "delivery-one", kind: "IN_KIND", state: "REPORTED",
+      summary: "Essential goods reportedly delivered with private evidence.",
+      occurredOn: new Date("2026-10-15T00:00:00Z"), amountInr: null,
+      evidenceDocumentId: "delivery-proof", updatedAt: new Date("2026-10-16T00:00:00Z"),
+      reportedById: "original-reporter", reportedBy: { name: "Original reporter" },
+      reviewedBy: null, reviewedAt: null,
+    }]);
+    const ready = await render();
+    expect(ready).toContain("Confirm reviewed delivery evidence");
+    expect(ready).toContain('name="evidenceAttested"');
+    expect(ready).toContain("I personally reviewed the linked private evidence");
+    m.request.mockResolvedValue({ ...request, status: "REJECTED" });
+    const invalid = await render();
+    expect(invalid).not.toContain("Confirm reviewed delivery evidence");
+    expect(invalid).toContain("Void erroneous delivery record");
+  });
   it("does not expose delivery review actions to view-only staff", async () => {
     const result = await render();
     expect(result).not.toContain("Record delivered support for review");

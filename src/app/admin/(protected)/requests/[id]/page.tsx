@@ -158,8 +158,8 @@ export default async function RequestDetailPage({ params }: Props) {
   const defaultTaskOwner = creatableTaskStaff.find(member => member.id === request.assignedToId)?.id ??
     creatableTaskStaff.find(member => member.id === user.id)?.id ?? creatableTaskStaff[0]?.id;
   const today = indiaCalendarDay(new Date());
-  const mayReportDelivery = hasPermission(user, "assistance.update") &&
-    canReportPrivateDelivery(request.status, request.appealId, verification);
+  const currentDeliveryEligible = canReportPrivateDelivery(request.status, request.appealId, verification);
+  const mayReportDelivery = hasPermission(user, "assistance.update") && currentDeliveryEligible;
   const mayReviewDelivery = hasPermission(user, "assistance.approve");
   const mayReviewFinancialEvidence = hasPermission(user, "donation.reconcile");
   const mayReportOutcome = hasPermission(user, "assistance.update");
@@ -290,13 +290,18 @@ export default async function RequestDetailPage({ params }: Props) {
                 canReview={mayReviewFinancialEvidence}
               />
               {mayReviewDelivery && item.state !== "VOIDED" && <>
-                {item.state === "REPORTED" && item.evidenceDocumentId &&
+                {item.state === "REPORTED" && currentDeliveryEligible && item.evidenceDocumentId &&
                   evidenceNames.has(item.evidenceDocumentId) && item.reportedById !== user.id &&
                   <form className="field" action={reviewAssistanceDelivery}>
                     <input type="hidden" name="id" value={id}/>
                     <input type="hidden" name="recordId" value={item.id}/>
                     <input type="hidden" name="expectedRecordUpdatedAt" value={item.updatedAt.toISOString()}/>
                     <input type="hidden" name="state" value="CONFIRMED"/>
+                    <label>
+                      <input type="checkbox" name="evidenceAttested" value="yes" required/>
+                      I personally reviewed the linked private evidence and am independent
+                      of the reporting staff member.
+                    </label>
                     <button className="button secondary" type="submit">Confirm reviewed delivery evidence</button>
                   </form>}
                 <form className="field" action={reviewAssistanceDelivery}>

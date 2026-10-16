@@ -187,6 +187,17 @@ describe("independent outcome review and audited correction", () => {
     await expect(reviewAssistanceOutcome(form())).rejects.toThrow("no longer eligible");
     expect(m.update).not.toHaveBeenCalled();
   });
+  it("permits only the original outcome reviewer to retry a completed decision", async () => {
+    m.existing.mockResolvedValue({ ...outcome, state: "REVIEWED",
+      reviewedById: "different-approver", reviewedAt: version });
+    await expect(reviewAssistanceOutcome(form())).rejects.toThrow("another staff member");
+    expect(m.update).not.toHaveBeenCalled();
+    m.existing.mockResolvedValue({ ...outcome, state: "REVIEWED",
+      reviewedById: "independent-reviewer", reviewedAt: version });
+    await expect(reviewAssistanceOutcome(form())).rejects.toThrow("NAVIGATE");
+    expect(m.update).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+  });
   it("voids an already reviewed outcome while retaining original reviewer attribution", async () => {
     m.existing.mockResolvedValue({
       ...outcome, state: "REVIEWED",

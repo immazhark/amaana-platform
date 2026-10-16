@@ -78,6 +78,10 @@ export function parseDeliveryReview(form: FormData) {
       state !== AssistanceDeliveryReviewState.VOIDED) {
     throw new Error("Choose an allowed delivery review action.");
   }
+  if (state === AssistanceDeliveryReviewState.CONFIRMED &&
+      form.get("evidenceAttested") !== "yes") {
+    throw new Error("Confirm that you personally reviewed the delivery evidence.");
+  }
   return { id, recordId, state: state as "CONFIRMED" | "VOIDED",
     expectedUpdatedAt: version(form, "expectedRecordUpdatedAt") };
 }

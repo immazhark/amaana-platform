@@ -50,12 +50,16 @@ describe("bounded private support-delivery reporting", () => {
     expect(() => parseDeliveryCreation(f, today)).toThrow();
   });
   it("restricts private review actions to confirmation or voiding", () => {
-    const f = fields({ recordId: "delivery-synthetic", state: "CONFIRMED",
+    const f = fields({ recordId: "delivery-synthetic", state: "CONFIRMED", evidenceAttested: "yes",
       expectedRecordUpdatedAt: "2026-10-16T08:00:00.000Z" });
     expect(parseDeliveryReview(f)).toEqual({
       id: "case-synthetic", recordId: "delivery-synthetic", state: AssistanceDeliveryReviewState.CONFIRMED,
       expectedUpdatedAt: new Date("2026-10-16T08:00:00.000Z"),
     });
+    f.set("evidenceAttested", "");
+    expect(() => parseDeliveryReview(f)).toThrow("personally reviewed");
+    f.set("state", "VOIDED");
+    expect(parseDeliveryReview(f).state).toBe(AssistanceDeliveryReviewState.VOIDED);
     f.set("state", "PUBLISHED");
     expect(() => parseDeliveryReview(f)).toThrow();
   });
