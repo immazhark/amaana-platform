@@ -124,6 +124,18 @@ describe("private document retention deletion", () => {
     }));
   });
 
+  it("blocks object deletion when privacy withdrawal cannot be committed", async () => {
+    mocks.invalidate.mockRejectedValueOnce(new Error("PRIVACY_INVALIDATION_FAILED"));
+    await expect(reviewDocumentRetention(deletionForm()))
+      .rejects.toThrow("PRIVACY_INVALIDATION_FAILED");
+    expect(mocks.invalidate).toHaveBeenCalledWith(
+      expect.anything(), "request_123", "user_123", "DOCUMENT_DELETION", "doc_123",
+    );
+    expect(mocks.updateManyDocument).not.toHaveBeenCalled();
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
   it("requires exact destructive confirmation before loading the document", async () => {
     await expect(reviewDocumentRetention(deletionForm("delete"))).rejects.toThrow(/Type DELETE/);
     expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
@@ -149,12 +161,15 @@ describe("private document retention deletion", () => {
       "assistance/request_123/123e4567-e89b-12d3-a456-426614174000.pdf",
       "request_123",
     );
+    const invalidateOrder = mocks.invalidate.mock.invocationCallOrder[0];
     const auditOrder = mocks.createAudit.mock.invocationCallOrder[0];
     const deleteObjectOrder = mocks.deletePrivateDocumentObject.mock.invocationCallOrder[0];
     const transactionOrder = mocks.transaction.mock.invocationCallOrder[0];
     if (auditOrder === undefined || deleteObjectOrder === undefined || transactionOrder === undefined) {
       throw new Error("Expected retention deletion call ordering.");
     }
+    expect(invalidateOrder).toBeDefined();
+    expect(invalidateOrder!).toBeLessThan(deleteObjectOrder);
     expect(auditOrder).toBeLessThan(deleteObjectOrder);
     expect(deleteObjectOrder).toBeLessThan(transactionOrder);
     expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({
