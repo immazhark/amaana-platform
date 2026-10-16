@@ -10,6 +10,7 @@ CREATE TABLE "AssistanceFollowUp" (
     "dueOn" DATE NOT NULL,
     "state" "AssistanceFollowUpState" NOT NULL DEFAULT 'OPEN',
     "createdById" TEXT NOT NULL,
+    "assignedToId" TEXT NOT NULL,
     "resolvedById" TEXT,
     "resolvedAt" TIMESTAMP(3),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -25,11 +26,14 @@ CREATE TABLE "AssistanceFollowUp" (
 CREATE UNIQUE INDEX "AssistanceFollowUp_submissionId_key" ON "AssistanceFollowUp"("submissionId");
 CREATE INDEX "AssistanceFollowUp_assistanceRequestId_state_dueOn_idx" ON "AssistanceFollowUp"("assistanceRequestId", "state", "dueOn");
 CREATE INDEX "AssistanceFollowUp_state_dueOn_idx" ON "AssistanceFollowUp"("state", "dueOn");
+CREATE INDEX "AssistanceFollowUp_assignedToId_state_dueOn_idx" ON "AssistanceFollowUp"("assignedToId", "state", "dueOn");
 CREATE INDEX "AssistanceFollowUp_createdById_createdAt_idx" ON "AssistanceFollowUp"("createdById", "createdAt");
 
 ALTER TABLE "AssistanceFollowUp" ADD CONSTRAINT "AssistanceFollowUp_assistanceRequestId_fkey"
   FOREIGN KEY ("assistanceRequestId") REFERENCES "AssistanceRequest"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 ALTER TABLE "AssistanceFollowUp" ADD CONSTRAINT "AssistanceFollowUp_createdById_fkey"
   FOREIGN KEY ("createdById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "AssistanceFollowUp" ADD CONSTRAINT "AssistanceFollowUp_assignedToId_fkey"
+  FOREIGN KEY ("assignedToId") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 ALTER TABLE "AssistanceFollowUp" ADD CONSTRAINT "AssistanceFollowUp_resolvedById_fkey"
   FOREIGN KEY ("resolvedById") REFERENCES "User"("id") ON DELETE RESTRICT ON UPDATE CASCADE;

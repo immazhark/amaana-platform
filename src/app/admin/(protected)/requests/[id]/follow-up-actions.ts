@@ -5,8 +5,8 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import {
-  MAX_OPEN_FOLLOW_UPS_PER_CASE, indiaCalendarDay,
-  parseFollowUpCreation, parseFollowUpResolution, parseFollowUpReschedule, taskDay,
+  MAX_OPEN_FOLLOW_UPS_PER_CASE, eligibleFollowUpStaffWhere, indiaCalendarDay,
+  parseFollowUpAssignment, parseFollowUpCreation, parseFollowUpResolution, parseFollowUpReschedule, taskDay,
 } from "@/lib/assistance-follow-up";
 import { canAddPrivateMilestone } from "@/lib/assistance-private-milestone";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
@@ -21,15 +21,16 @@ function returnToCase(id: string): never {
  * updates, alter case approval, or send donor/applicant notifications. */
 export async function createAssistanceFollowUp(form: FormData) {
   const user = await requirePermission("assistance.update");
-  const { id, submissionId, summary, dueOn, expectedUpdatedAt } =
+  const { id, submissionId, assignedToId, summary, dueOn, expectedUpdatedAt } =
     parseFollowUpCreation(form, indiaCalendarDay(new Date()));
   await withSerializableTransactionRetry(async tx => {
     const prior = await tx.assistanceFollowUp.findUnique({
       where: { submissionId },
-      select: { assistanceRequestId: true, summary: true, dueOn: true },
+      select: { assistanceRequestId: true, assignedToId: true, summary: true, dueOn: true },
     });
     if (prior) {
-      if (prior.assistanceRequestId !== id || prior.summary !== summary ||
+      if (prior.assistanceRequestId !== id || prior.assignedToId !== assignedToId ||
+          prior.summary !== summary ||
           prior.dueOn.getTime() !== dueOn.getTime()) {
         throw new Error("The follow-up token was already used for another action. Reload this case.");
       }
@@ -45,6 +46,10 @@ export async function createAssistanceFollowUp(form: FormData) {
     if (request.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
       throw new Error("The case changed while this task was being prepared. Reload the case.");
     }
+    const owner = await tx.user.findFirst({
+      where: eligibleFollowUpStaffWhere(assignedToId), select: { id: true },
+    });
+    if (!owner) throw new Error("Selected follow-up owner is not an active eligible staff member.");
     const active = await tx.assistanceFollowUp.count({
       where: { assistanceRequestId: id, state: AssistanceFollowUpState.OPEN },
     });
@@ -52,14 +57,15 @@ export async function createAssistanceFollowUp(form: FormData) {
       throw new Error("This case already has 20 open tasks. Complete or cancel a task first.");
     }
     const task = await tx.assistanceFollowUp.create({
-      data: { assistanceRequestId: id, submissionId, summary, dueOn, createdById: user.id },
+      data: { assistanceRequestId: id, submissionId, summary, dueOn,
+        createdById: user.id, assignedToId },
       select: { id: true },
     });
     await tx.auditEvent.create({
       data: {
         actorId: user.id, action: "assistance.follow_up_task_created",
         entityType: "AssistanceRequest", entityId: id,
-        metadata: { taskId: task.id, dueOn: taskDay(dueOn) },
+        metadata: { taskId: task.id, dueOn: taskDay(dueOn), assignedToId },
       },
     });
   });
@@ -77,10 +83,13 @@ export async function resolveAssistanceFollowUp(form: FormData) {
   await withSerializableTransactionRetry(async tx => {
     const task = await tx.assistanceFollowUp.findUnique({
       where: { id: taskId },
-      select: { id: true, assistanceRequestId: true, state: true, updatedAt: true },
+      select: { id: true, assistanceRequestId: true, assignedToId: true, state: true, updatedAt: true },
     });
     if (!task || task.assistanceRequestId !== id) {
       throw new Error("The follow-up does not belong to this assistance case.");
+    }
+    if (task.assignedToId !== user.id && !hasPermission(user, "assistance.assign")) {
+      throw new Error("Only the responsible staff member or an assignment coordinator can resolve this task.");
     }
     if (task.state === state) return; // response retry; no additional audit event
     if (task.state !== AssistanceFollowUpState.OPEN) {
@@ -117,13 +126,16 @@ export async function rescheduleAssistanceFollowUp(form: FormData) {
   await withSerializableTransactionRetry(async tx => {
     const task = await tx.assistanceFollowUp.findUnique({
       where: { id: taskId },
-      select: { assistanceRequestId: true, state: true, dueOn: true, updatedAt: true },
+      select: { assistanceRequestId: true, assignedToId: true, state: true, dueOn: true, updatedAt: true },
     });
     if (!task || task.assistanceRequestId !== id) {
       throw new Error("The follow-up does not belong to this assistance case.");
     }
     if (task.state !== AssistanceFollowUpState.OPEN) {
       throw new Error("Resolved follow-ups cannot be rescheduled.");
+    }
+    if (task.assignedToId !== user.id && !hasPermission(user, "assistance.assign")) {
+      throw new Error("Only the responsible staff member or an assignment coordinator can reschedule this task.");
     }
     if (task.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
       throw new Error("A reviewer changed this task. Reload before rescheduling.");
@@ -148,6 +160,52 @@ export async function rescheduleAssistanceFollowUp(form: FormData) {
         actorId: user.id, action: "assistance.follow_up_task_rescheduled",
         entityType: "AssistanceRequest", entityId: id,
         metadata: { taskId, previousDueOn: taskDay(task.dueOn), dueOn: taskDay(dueOn) },
+      },
+    });
+  });
+  returnToCase(id);
+}
+
+/** Coordinator-only reassignment; updatedAt CAS and audit are transactionally coupled. */
+export async function assignAssistanceFollowUp(form: FormData) {
+  const user = await requirePermission("assistance.assign");
+  const { id, taskId, assignedToId, expectedUpdatedAt } = parseFollowUpAssignment(form);
+  await withSerializableTransactionRetry(async tx => {
+    const task = await tx.assistanceFollowUp.findUnique({
+      where: { id: taskId },
+      select: { assistanceRequestId: true, state: true, assignedToId: true, updatedAt: true },
+    });
+    if (!task || task.assistanceRequestId !== id) {
+      throw new Error("The follow-up does not belong to this assistance case.");
+    }
+    if (task.state !== AssistanceFollowUpState.OPEN) {
+      throw new Error("Resolved follow-ups cannot be reassigned.");
+    }
+    if (task.assignedToId === assignedToId) return;
+    if (task.updatedAt.getTime() !== expectedUpdatedAt.getTime()) {
+      throw new Error("Task ownership changed. Reload before assigning it again.");
+    }
+    const request = await tx.assistanceRequest.findUnique({
+      where: { id }, select: { status: true, appealId: true },
+    });
+    if (!request || !canAddPrivateMilestone(request.status, request.appealId)) {
+      throw new Error("Closed or converted cases cannot receive new task assignments.");
+    }
+    const owner = await tx.user.findFirst({
+      where: eligibleFollowUpStaffWhere(assignedToId), select: { id: true },
+    });
+    if (!owner) throw new Error("Selected follow-up owner is not an active eligible staff member.");
+    const changed = await tx.assistanceFollowUp.updateMany({
+      where: { id: taskId, assistanceRequestId: id,
+        state: AssistanceFollowUpState.OPEN, updatedAt: expectedUpdatedAt },
+      data: { assignedToId },
+    });
+    if (changed.count !== 1) throw new Error("Another reviewer changed this task. Reload before assigning it.");
+    await tx.auditEvent.create({
+      data: {
+        actorId: user.id, action: "assistance.follow_up_task_reassigned",
+        entityType: "AssistanceRequest", entityId: id,
+        metadata: { taskId, previousAssignedToId: task.assignedToId, assignedToId },
       },
     });
   });

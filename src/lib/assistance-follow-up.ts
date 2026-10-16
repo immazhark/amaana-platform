@@ -1,7 +1,19 @@
-import { AssistanceFollowUpState } from "@prisma/client";
+import { AssistanceFollowUpState, type Prisma } from "@prisma/client";
 
 export const FOLLOW_UP_SUMMARY_LIMIT = 300;
 export const MAX_OPEN_FOLLOW_UPS_PER_CASE = 20;
+
+/** Owner can act on tasks only when active and permitted to view and update cases. */
+export function eligibleFollowUpStaffWhere(id?: string): Prisma.UserWhereInput {
+  return {
+    ...(id ? { id } : {}),
+    status: "ACTIVE",
+    AND: [
+      { roles: { some: { role: { permissions: { some: { permission: { key: "assistance.view" } } } } } } },
+      { roles: { some: { role: { permissions: { some: { permission: { key: "assistance.update" } } } } } } },
+    ],
+  };
+}
 const unsafeControl = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/;
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const caseIdPattern = /^[a-zA-Z0-9_-]{3,128}$/;
@@ -52,6 +64,8 @@ export function parseFollowUpCreation(form: FormData, today: string) {
   const id = requestId(form);
   const submissionId = requiredString(form, "submissionId", 36);
   if (!uuid.test(submissionId)) throw new Error("Reload the form before creating a follow-up.");
+  const assignedToId = requiredString(form, "assignedToId", 128);
+  if (!caseIdPattern.test(assignedToId)) throw new Error("Choose an eligible follow-up owner.");
   const summary = requiredString(form, "summary", FOLLOW_UP_SUMMARY_LIMIT).trim();
   if (summary.length < 12) throw new Error("Follow-up summary must contain at least 12 characters.");
   const dueOn = parseCalendarDay(form.get("dueOn"), today);
@@ -60,7 +74,7 @@ export function parseFollowUpCreation(form: FormData, today: string) {
       Number.isNaN(Date.parse(version)) || new Date(version).toISOString() !== version) {
     throw new Error("Case version is missing. Reload before recording a task.");
   }
-  return { id, submissionId, summary, dueOn, expectedUpdatedAt: new Date(version) };
+  return { id, submissionId, assignedToId, summary, dueOn, expectedUpdatedAt: new Date(version) };
 }
 
 export type FollowUpResolution = "COMPLETED" | "CANCELLED";
@@ -91,6 +105,22 @@ export function parseFollowUpReschedule(form: FormData, today: string) {
     throw new Error("Follow-up version is missing. Reload before rescheduling.");
   }
   return { id, taskId, dueOn, expectedUpdatedAt: new Date(version) };
+}
+
+/** Explicit, version-checked staff reassignment for an open private task. */
+export function parseFollowUpAssignment(form: FormData) {
+  const id = requestId(form);
+  const taskId = requiredString(form, "taskId", 128);
+  const assignedToId = requiredString(form, "assignedToId", 128);
+  if (!caseIdPattern.test(taskId) || !caseIdPattern.test(assignedToId)) {
+    throw new Error("Invalid task or staff reference.");
+  }
+  const version = requiredString(form, "expectedTaskUpdatedAt", 32);
+  if (!/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/.test(version) ||
+      Number.isNaN(Date.parse(version)) || new Date(version).toISOString() !== version) {
+    throw new Error("Follow-up version is missing. Reload before reassigning.");
+  }
+  return { id, taskId, assignedToId, expectedUpdatedAt: new Date(version) };
 }
 
 /** Date-only source fields are stored as UTC-midnight DATE values in PostgreSQL. */
