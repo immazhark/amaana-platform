@@ -33,6 +33,19 @@ describe("public-safe gallery presentation boundary", () => {
     const malformed = { ...approved, url: 21 } as unknown as typeof approved;
     expect(selectSafeGalleryImages([malformed])).toEqual([]);
   });
+  it("does not allow malformed caption objects or oversized editorial fields into gallery rendering", () => {
+    const valid = selectSafeGalleryImages([approved]);
+    expect(valid).toHaveLength(1);
+    const invalid = [
+      { ...approved, caption: { hidden: "untrusted-object" } },
+      { ...approved, id: "x".repeat(129) },
+      { ...approved, alt: "a".repeat(301) },
+      { ...approved, caption: "x".repeat(1001) },
+      { ...approved, caption: "unsafe\\u0000caption".replace("\\u0000", "\u0000") },
+    ] as unknown as typeof approved[];
+    expect(selectSafeGalleryImages(invalid)).toEqual([]);
+    expect(selectSafeGalleryImages(null as unknown as typeof approved[])).toEqual([]);
+  });
   it("rejects empty descriptions and identifiers rather than producing unnamed lightbox controls", () => {
     expect(selectSafeGalleryImages([{ ...approved, alt: null }])).toEqual([]);
     expect(selectSafeGalleryImages([{ ...approved, alt: " " }])).toEqual([]);

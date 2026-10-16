@@ -28,6 +28,17 @@ describe("actual public gallery rendering contract", () => {
     expect(html).toBe("");
   });
 
+  it("does not infer privacy protection from editorial copy or render malformed captions", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[{
+      ...photo, alt: "Volunteers recorded during privacy review", caption: "Consent checked by the team",
+    }]}/>);
+    expect(html).toContain("Consent checked by the team");
+    expect(html).not.toContain("Privacy protected");
+    const invalid = renderToStaticMarkup(<CampaignMediaGallery items={[{
+      ...photo, caption: { private: true } as unknown as string,
+    }]}/>);
+    expect(invalid).toBe("");
+  });
   it("does not render a modal or image for only unsafe entries", () => {
     const html = renderToStaticMarkup(<CampaignMediaGallery items={[
       { ...photo, id: "bad", url: "javascript:alert(1)" },
