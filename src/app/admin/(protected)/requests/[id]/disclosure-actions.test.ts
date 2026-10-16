@@ -17,6 +17,7 @@ vi.mock("next/navigation", () => ({ redirect: m.redirect }));
 import {
   proposeAnonymousOutcomeCopy, publishAnonymousOutcomeCopy,
   reconcileAnonymousOutcomeDisclosures, reviewAnonymousOutcomeCopy,
+  urgentlyWithdrawAnonymousOutcomeCopy,
 } from "./disclosure-actions";
 import { ANONYMOUS_OUTCOME_COPY } from "@/lib/assistance-outcome-disclosure";
 
@@ -351,5 +352,68 @@ describe("manual private-publication privacy reconciliation", () => {
     m.caseFind.mockResolvedValue(null);
     await expect(reconcileAnonymousOutcomeDisclosures(form())).rejects.toThrow("not found");
     expect(m.invalidate).not.toHaveBeenCalled();
+  });
+});
+
+describe("urgent assistance-staff consent takedown", () => {
+  beforeEach(() => {
+    m.disclosureFind.mockResolvedValue({ ...disclosure, state: "PUBLISHED" });
+  });
+
+  it("allows withdrawal, never publication, through assistance-update permission", async () => {
+    await expect(urgentlyWithdrawAnonymousOutcomeCopy(form({
+      decision: "WITHDRAWN", withdrawalReason: "CONSENT_WITHDRAWN",
+      consentReviewAttested: "",
+    }))).rejects.toThrow("NAVIGATE");
+    expect(m.auth).toHaveBeenCalledWith("assistance.update");
+    expect(m.updateMany).toHaveBeenCalledWith({
+      where: { id: "disclosure-synthetic", state: "PUBLISHED", updatedAt: version },
+      data: { state: "WITHDRAWN" },
+    });
+    expect(m.audit).toHaveBeenCalledWith({ data: {
+      actorId: "content-reviewer",
+      action: "assistance.anonymous_outcome_urgent_withdrawal",
+      entityType: "AssistanceRequest", entityId: "case-synthetic",
+      metadata: {
+        disclosureId: "disclosure-synthetic",
+        previousState: "PUBLISHED", reason: "CONSENT_WITHDRAWN",
+      },
+    } });
+    expect(m.revalidate).toHaveBeenCalledWith("/impact");
+  });
+
+  it("does not authorize an assistance editor to approve or publish copy", async () => {
+    await expect(urgentlyWithdrawAnonymousOutcomeCopy(form()))
+      .rejects.toThrow("only revoke");
+    expect(m.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("requires case-view permission and matching case ownership", async () => {
+    m.has.mockReturnValue(false);
+    await expect(urgentlyWithdrawAnonymousOutcomeCopy(form({
+      decision: "WITHDRAWN", withdrawalReason: "CONSENT_WITHDRAWN",
+    }))).rejects.toThrow("Case-view permission");
+    expect(m.transaction).not.toHaveBeenCalled();
+    m.has.mockReturnValue(true);
+    m.disclosureFind.mockResolvedValue({
+      ...disclosure, observation: { assistanceRequestId: "different-case" },
+    });
+    await expect(urgentlyWithdrawAnonymousOutcomeCopy(form({
+      decision: "WITHDRAWN", withdrawalReason: "CONSENT_WITHDRAWN",
+    }))).rejects.toThrow("does not belong");
+    expect(m.updateMany).not.toHaveBeenCalled();
+  });
+
+  it("assigns reviewer attribution when an unreviewed draft must be withdrawn", async () => {
+    m.disclosureFind.mockResolvedValue({ ...disclosure, state: "DRAFT" });
+    await expect(urgentlyWithdrawAnonymousOutcomeCopy(form({
+      decision: "WITHDRAWN", withdrawalReason: "SOURCE_INVALIDATED",
+    }))).rejects.toThrow("NAVIGATE");
+    expect(m.updateMany).toHaveBeenCalledWith({
+      where: { id: "disclosure-synthetic", state: "DRAFT", updatedAt: version },
+      data: {
+        state: "WITHDRAWN", approvedById: "content-reviewer", approvedAt: expect.any(Date),
+      },
+    });
   });
 });
