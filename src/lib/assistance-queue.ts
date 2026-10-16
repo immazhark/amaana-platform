@@ -5,17 +5,19 @@ export type AssistanceQueueFilters = {
   status?: AssistanceStatus;
   assignment: "all" | "mine" | "unassigned";
   order: "newest" | "oldest";
+  age: "all" | "7d" | "30d";
 };
 type SearchValue = string | string[] | undefined;
 
 export function parseAssistanceQueueFilters(params: {
-  status?: SearchValue; assignment?: SearchValue; order?: SearchValue;
+  status?: SearchValue; assignment?: SearchValue; order?: SearchValue; age?: SearchValue;
 }): AssistanceQueueFilters {
   const status = ASSISTANCE_QUEUE_STATUSES.find(value => value === params.status);
   return {
     ...(status ? { status } : {}),
     assignment: params.assignment === "mine" || params.assignment === "unassigned" ? params.assignment : "all",
     order: params.order === "oldest" ? "oldest" : "newest",
+    age: params.age === "7d" || params.age === "30d" ? params.age : "all",
   };
 }
 
@@ -28,6 +30,14 @@ export function assistanceQueueAssignmentWhere(
   return {};
 }
 
+/** Elapsed-age cutoffs are triage aids, not deadlines or case urgency assessments.
+ * Compare timestamps in UTC with a single request-local snapshot. */
+export function assistanceQueueAgeWhere(age: AssistanceQueueFilters["age"], now: Date): Prisma.AssistanceRequestWhereInput {
+  if (age === "all") return {};
+  const days = age === "30d" ? 30 : 7;
+  return { createdAt: { lte: new Date(now.getTime() - days * 86_400_000) } };
+}
+
 export function assistanceQueueHref(filters: AssistanceQueueFilters, page = 1) {
   return {
     pathname: "/admin",
@@ -35,6 +45,7 @@ export function assistanceQueueHref(filters: AssistanceQueueFilters, page = 1) {
       ...(filters.status ? { status: filters.status } : {}),
       ...(filters.assignment !== "all" ? { assignment: filters.assignment } : {}),
       ...(filters.order !== "newest" ? { order: filters.order } : {}),
+      ...(filters.age !== "all" ? { age: filters.age } : {}),
       ...(page > 1 ? { page } : {}),
     },
   };
