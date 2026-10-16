@@ -2,7 +2,7 @@ import type { Prisma } from "@prisma/client";
 import { cache } from "react";
 import { getAppealCoverMediaIssues } from "@/lib/appeal-cover-media";
 import { prisma } from "@/lib/prisma";
-import { isAppealOpenForDonations } from "@/lib/appeals";
+import { getPublicAppealCheckoutEligibility } from "@/lib/public-appeal-checkout";
 import { canPromoteAppeal } from "@/lib/appeal-promotion";
 import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
 import { canExposePublicAppeal } from "@/lib/public-environment";
@@ -388,7 +388,9 @@ export const getDonationPageData = cache(async (slug: string) => {
     },
   });
 
-  if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return null;
+  // Both public entrypoints and the checkout itself must reject cases without
+  // any valid whole-rupee amount, even while the appeal status remains PUBLISHED.
+  if (!appeal || !canExposePublicAppeal(appeal) || !getPublicAppealCheckoutEligibility(appeal)) return null;
   const { assistanceRequest, ...publicAppeal } = appeal;
   return {
     ...publicAppeal,

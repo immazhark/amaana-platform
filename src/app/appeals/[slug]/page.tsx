@@ -13,7 +13,7 @@ import { getAppealSearchPrivacy } from "@/lib/appeal-search-privacy";
 import { getAppealPublicCopy } from "@/lib/appeal-public-copy";
 import { normalizeSafePublicMediaUrl } from "@/lib/public-media";
 import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
-import { isAppealOpenForDonations } from "@/lib/appeals";
+import { getPublicAppealCheckoutEligibility } from "@/lib/public-appeal-checkout";
 import { getPublicAppealProgress } from "@/lib/public-appeal-progress";
 import { PublicFundingMeter } from "@/components/public-funding-meter";
 import { getAppealCoverMedia, getAppealPageData } from "@/lib/public-page-data";
@@ -44,7 +44,9 @@ export default async function AppealDetailPage({ params }: Props) {
   // One ledger projection for detail, cards and checkout. Never advertise
   // a public amount or donation CTA if its paise precision cannot be trusted.
   const progress = getPublicAppealProgress(appeal.amountRaised, appeal.goalAmount);
-  const isOpen = Boolean(progress) && isAppealOpenForDonations(appeal);
+  // Publication alone does not guarantee a payable whole-rupee balance.
+  // All public donation CTAs, including mobile and JSON-LD, share this gate.
+  const isOpen = getPublicAppealCheckoutEligibility(appeal) !== null;
   const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE";
   const safeShareCopy = getAppealPublicCopy(appeal.title, appeal.summary, highlySensitive);
 

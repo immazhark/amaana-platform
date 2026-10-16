@@ -8,7 +8,7 @@ import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { BodyCarousel, BodyCard } from "@/components/body-carousel";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
-import { isAppealOpenForDonations } from "@/lib/appeals";
+import { getPublicAppealCheckoutEligibility } from "@/lib/public-appeal-checkout";
 import { getAppealsIndexData, getCompletedAidShowcaseData, getDonationImpactHighlights } from "@/lib/public-page-data";
 import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { logServerError } from "@/lib/server-log";
@@ -38,7 +38,10 @@ export default async function AppealsPage() {
     }),
   ]);
   const isStaging = canExposeSyntheticStagingContent();
-  const appeals = appealRecords.filter(appeal => isAppealOpenForDonations(appeal) && (isStaging || !isSyntheticStagingAppeal(appeal)));
+  const appeals = appealRecords.filter(appeal =>
+    getPublicAppealCheckoutEligibility({ ...appeal, status: appeal.status }) &&
+    (isStaging || !isSyntheticStagingAppeal(appeal)),
+  );
   const completedAidMedia = new Map(completedAid.map(item => [item.slug, selectGalleryPublicImage(item.mediaAssets)]));
   const publishedCompletedProgrammes = programmes.filter(
     programme => programme.causeSlug === "medical-financial-relief" && completedAidMedia.has(programme.slug),

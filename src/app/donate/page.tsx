@@ -10,7 +10,7 @@ import { DonationPaymentInstructions } from "@/components/donation-payment-instr
 import type { AppealDonationChoice } from "@/components/appeal-donation-flow";
 import { DonationLandingCheckout } from "@/components/donation-checkout";
 import { VerifiedImpactStrip, type VerifiedImpactItem } from "@/components/verified-impact-strip";
-import { isAppealOpenForDonations } from "@/lib/appeals";
+import { getPublicAppealCheckoutEligibility } from "@/lib/public-appeal-checkout";
 import { canExposeSyntheticStagingContent, isSyntheticStagingAppeal } from "@/lib/public-environment";
 import { getDonorFundChoices } from "@/lib/donor-funds";
 
@@ -60,7 +60,10 @@ export default async function Page({ searchParams }: PageProps = {}) {
   const initialRoute = resolvedSearch?.giving === "fund" ? "fund" : "appeal";
   const { funds, failed: fundReadFailed } = fundResult;
   const isStaging = canExposeSyntheticStagingContent();
-  const openAppeals = appealRecords.filter(appeal => isAppealOpenForDonations(appeal) && (isStaging || !isSyntheticStagingAppeal(appeal)));
+  const openAppeals = appealRecords.filter(appeal =>
+    getPublicAppealCheckoutEligibility(appeal) &&
+    (isStaging || !isSyntheticStagingAppeal(appeal)),
+  );
   const hasOpenAppeals = openAppeals.length > 0;
   const hasFunds = funds.length > 0;
   // Checkout choices are independently re-read through the full appeal donation
