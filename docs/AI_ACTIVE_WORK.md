@@ -1,6 +1,14 @@
-## 2026-10-17 — Recheck consent and media before resuming paused appeals
+## 2026-10-17 — Safe paused appeal resumption
 
-Ownership: CHATGPT_ACTIVE. Continuing PR #292 from verified `8acb60dc460947c32e6e6e349b5b1a5365818618`, target `main`. Scope: resume PAUSED → PUBLISHED rechecking current linked assistance verification, public content/goal consent, and approved cover image both before and inside the status transition transaction. Preserve unlinked legacy resume and other status transitions. Add targeted regression tests; no merge/deployment or live data mutation.
+Ownership: HANDOFF_PENDING. ChatGPT completed the sole-writer batch on `fix/direct-transfer-feedback-20261013`, PR #292 targeting `main`. Starting branch HEAD `8acb60dc460947c32e6e349b5b1a5365818618`. Source `825211b27c9940908c3f872792361605ea3563bd`, `3b5e47cd4b7920023c929577b2bc608650115092`, required-link change `5e224e1751c004cf2b7ba2ec28237dddc5b04c06`, test commit `d49a5c3769bf3edeb3601c42ab2823d98946c806`, master update `4420f8a227ec3502f200495f545323e7a7404096`, handoff ledger `689ce2e42bdfbc6c573391e341f4d5c0bd37a6e3`.
+
+- PAUSED→PUBLISHED now repeats current linked-assistance verification, name/media permissions, exact approved-goal check and approved-media review before and within the transactional status change. Withdrawal or media revocation stops the public transition without a status write, audit event or public invalidation. First publication remains guarded.
+- Previously public, unlinked legacy appeals can resume without an invented case verification, but their cover still needs current library approval. Valid resumed appeals keep the first publishedAt. Other transitions unchanged.
+- Added focused helper/action regression cases: withdrawn disclosure, altered goal, missing verification, legacy resumption, cover withdrawn before review or inside transaction, and successful reviewed resume with preserved published timestamp.
+- GitHub source/test readback and symbol/call-site checks passed. **Runtime tests were not executed** because no hydrated repository checkout is available and git cannot resolve GitHub here. TypeScript, Vitest, lint, native database and browser evidence remain pending. No new JS/CSS bundle measurement.
+- Master149 remains 60 Implemented /61 Partial /26 Not started /2 other, zero closures. AF-PROMOTION and AF-CONSENT receive only scoped PR-open evidence. No live records, providers, migrations, emails, transactions, main merge or deployment were changed.
+
+Next: verify current PR head and run targeted `npx vitest run src/lib/appeal-publication.test.ts 'src/app/admin/(protected)/appeals/actions.test.ts'`, application TypeScript and changed-file lint on a hydrated checkout. Fix any failures before release or the next source-ready batch. Maintain one implementation writer.
 
 ## 2026-10-17 — Public assistance verification integrity
 
