@@ -163,6 +163,8 @@ model User {
   assistanceVerifications AssistanceVerification[] @relation("AssistanceVerifier")
   reportedDeliveries AssistanceDeliveryRecord[] @relation("AssistanceDeliveryReporter")
   reviewedDeliveries AssistanceDeliveryRecord[] @relation("AssistanceDeliveryReviewer")
+  submittedFinancialReconciliations AssistanceFinancialReconciliation[] @relation("AssistanceFinancialReconciliationMaker")
+  reviewedFinancialReconciliations  AssistanceFinancialReconciliation[] @relation("AssistanceFinancialReconciliationChecker")
   notifications           Notification[]
   credential              PasswordCredential?
   sessions                Session[]
@@ -740,6 +742,7 @@ model AssistanceDeliveryRecord {
   reportedById        String
   reviewedById        String?
   reviewedAt          DateTime?
+  financialReconciliation AssistanceFinancialReconciliation?
   assistanceRequest   AssistanceRequest             @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
   evidenceDocument    AssistanceDocument?           @relation(fields: [evidenceDocumentId], references: [id], onDelete: SetNull)
   reportedBy          User                          @relation("AssistanceDeliveryReporter", fields: [reportedById], references: [id], onDelete: Restrict)
@@ -750,6 +753,34 @@ model AssistanceDeliveryRecord {
   @@index([assistanceRequestId, state, occurredOn])
   @@index([state, createdAt])
   @@index([reportedById, createdAt])
+}
+
+enum AssistanceFinancialReconciliationState {
+  PENDING
+  EVIDENCE_REVIEWED
+  VOIDED
+}
+
+/** A one-to-one private verification of an existing payout reference against a
+ * CONFIRMED financial delivery; not a bank integration, ledger or donor allocation. */
+model AssistanceFinancialReconciliation {
+  id                   String                                @id @default(cuid())
+  deliveryRecordId     String                                @unique
+  transactionReference String                                @unique @db.VarChar(64)
+  bankProofDocumentId  String
+  status               AssistanceFinancialReconciliationState @default(PENDING)
+  submittedById        String
+  reviewedById         String?
+  reviewedAt           DateTime?
+  deliveryRecord       AssistanceDeliveryRecord              @relation(fields: [deliveryRecordId], references: [id], onDelete: Restrict)
+  bankProofDocument    AssistanceDocument                    @relation(fields: [bankProofDocumentId], references: [id], onDelete: Restrict)
+  submittedBy          User                                  @relation("AssistanceFinancialReconciliationMaker", fields: [submittedById], references: [id], onDelete: Restrict)
+  reviewedBy           User?                                 @relation("AssistanceFinancialReconciliationChecker", fields: [reviewedById], references: [id], onDelete: Restrict)
+  createdAt            DateTime                              @default(now())
+  updatedAt            DateTime                              @updatedAt
+
+  @@index([status, createdAt])
+  @@index([submittedById, createdAt])
 }
 
 model AssistanceVerification {
@@ -792,6 +823,7 @@ model AssistanceDocument {
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
   deliveryRecords     AssistanceDeliveryRecord[]
+  financialProofs     AssistanceFinancialReconciliation[]
   @@index([assistanceRequestId])
 }
 
