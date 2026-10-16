@@ -8,7 +8,7 @@ export type AssistanceQueueFilters = {
   age: "all" | "7d" | "30d";
   city?: string;
   review: "all" | "incomplete" | "complete";
-  followUp: "all" | "due" | "open" | "none";
+  followUp: "all" | "due" | "open" | "none" | "mine";
 };
 type SearchValue = string | string[] | undefined;
 
@@ -27,7 +27,7 @@ export function parseAssistanceQueueFilters(params: {
     age: params.age === "7d" || params.age === "30d" ? params.age : "all",
     ...(validCity ? { city } : {}),
     review: params.review === "incomplete" || params.review === "complete" ? params.review : "all",
-    followUp: params.followUp === "due" || params.followUp === "open" || params.followUp === "none" ? params.followUp : "all",
+    followUp: params.followUp === "due" || params.followUp === "open" || params.followUp === "none" || params.followUp === "mine" ? params.followUp : "all",
   };
 }
 
@@ -63,9 +63,10 @@ export function assistanceQueueReviewWhere(review: AssistanceQueueFilters["revie
 /** Only operator-authored, unresolved task dates are used for action triage;
  * never infer clinical priority or an organization-wide response deadline. */
 export function assistanceQueueFollowUpWhere(
-  followUp: AssistanceQueueFilters["followUp"], today: string,
+  followUp: AssistanceQueueFilters["followUp"], today: string, userId: string,
 ): Prisma.AssistanceRequestWhereInput {
   if (followUp === "all") return {};
+  if (followUp === "mine") return { followUps: { some: { state: "OPEN", assignedToId: userId } } };
   if (followUp === "none") return { followUps: { none: { state: "OPEN" } } };
   if (followUp === "open") return { followUps: { some: { state: "OPEN" } } };
   return { followUps: { some: {

@@ -31,17 +31,21 @@ describe("private assistance queue triage", () => {
     expect(assistanceQueueHref({ assignment: "all", order: "newest", age: "all", review: "all", followUp: "all" })).toEqual({ pathname: "/admin", query: {} });
   });
   it("scopes only unresolved task due dates without inventing an SLA", () => {
-    expect(assistanceQueueFollowUpWhere("all", "2026-10-16")).toEqual({});
-    expect(assistanceQueueFollowUpWhere("open", "2026-10-16")).toEqual({
+    expect(assistanceQueueFollowUpWhere("all", "2026-10-16", "staff-1")).toEqual({});
+    expect(assistanceQueueFollowUpWhere("open", "2026-10-16", "staff-1")).toEqual({
       followUps: { some: { state: "OPEN" } },
     });
-    expect(assistanceQueueFollowUpWhere("none", "2026-10-16")).toEqual({
+    expect(assistanceQueueFollowUpWhere("none", "2026-10-16", "staff-1")).toEqual({
       followUps: { none: { state: "OPEN" } },
     });
-    expect(assistanceQueueFollowUpWhere("due", "2026-10-16")).toEqual({
+    expect(assistanceQueueFollowUpWhere("due", "2026-10-16", "staff-1")).toEqual({
       followUps: { some: { state: "OPEN",
         dueOn: { lte: new Date("2026-10-16T00:00:00Z") } } },
     });
+    expect(assistanceQueueFollowUpWhere("mine", "2026-10-16", "authenticated-staff")).toEqual({
+      followUps: { some: { state: "OPEN", assignedToId: "authenticated-staff" } },
+    });
+    expect(parseAssistanceQueueFilters({ followUp: "mine" }).followUp).toBe("mine");
     expect(parseAssistanceQueueFilters({ followUp: ["due", "open"] }).followUp).toBe("all");
     expect(parseAssistanceQueueFilters({ followUp: "priority" }).followUp).toBe("all");
   });
