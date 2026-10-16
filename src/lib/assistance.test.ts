@@ -75,6 +75,49 @@ describe("assistance verification gate", () => {
     expect(issues).toContain("Zakat review must be recorded as eligible, not eligible, or not applicable.");
   });
 
+  it("rejects unexpected or unreviewed disclosure values before appeal publication", () => {
+    const fields = [
+      "publicNameConsent",
+      "photoConsent",
+      "medicalDetailsConsent",
+      "institutionNameConsent",
+      "archiveConsent",
+    ] as const;
+    for (const field of fields) {
+      for (const consent of ["UNCONFIRMED", "", "ALLOWED_BY_DEFAULT", "allowed"]) {
+        const verification = { ...completePublicVerification, [field]: consent };
+        expect(getPublicAppealVerificationIssues(verification), `${field}=${consent}`).not.toEqual([]);
+      }
+    }
+    for (const consent of ["ALLOWED", "NOT_ALLOWED", "NOT_APPLICABLE"]) {
+      expect(getPublicAppealVerificationIssues({ ...completePublicVerification, photoConsent: consent })).toEqual([]);
+    }
+  });
+
+  it("rejects invalid Zakat classifications rather than treating them as reviewed", () => {
+    for (const zakatStatus of ["UNREVIEWED", "", "ELIGIBLE_BY_DEFAULT", "eligible"]) {
+      expect(getPublicAppealVerificationIssues({ ...completePublicVerification, zakatStatus })).toContain(
+        "Zakat review must be recorded as eligible, not eligible, or not applicable.",
+      );
+    }
+    for (const zakatStatus of ["ELIGIBLE", "NOT_ELIGIBLE", "NOT_APPLICABLE"]) {
+      expect(getPublicAppealVerificationIssues({ ...completePublicVerification, zakatStatus })).toEqual([]);
+    }
+  });
+
+  it("requires an actual completed timestamp for public-appeal and request-approval gates", () => {
+    for (const completedAt of [new Date(Number.NaN), "not-a-date", "yesterday", ""]) {
+      expect(getPublicAppealVerificationIssues({ ...completePublicVerification, completedAt })).toContain(
+        "Verification must be formally completed.",
+      );
+      expect(canApproveAssistanceRequest({ decision: "APPROVED_PUBLIC", completedAt })).toBe(false);
+    }
+    for (const completedAt of [new Date("2026-09-15T12:00:00.000Z"), "2026-09-15T12:00:00.000Z"]) {
+      expect(getPublicAppealVerificationIssues({ ...completePublicVerification, completedAt })).toEqual([]);
+      expect(canApproveAssistanceRequest({ decision: "APPROVED_PUBLIC", completedAt })).toBe(true);
+    }
+  });
+
   it("requires a completed approved verification before generic request approval", () => {
     expect(canApproveAssistanceRequest({ decision: "APPROVED_PUBLIC", completedAt: new Date() })).toBe(true);
     expect(canApproveAssistanceRequest({ decision: "APPROVED_PRIVATE", completedAt: new Date() })).toBe(true);
