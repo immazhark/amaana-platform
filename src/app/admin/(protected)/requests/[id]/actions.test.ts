@@ -7,6 +7,7 @@ const mocks = vi.hoisted(() => ({
   requestFind: vi.fn(),
   requestFindFirst: vi.fn(),
   requestUpdateMany: vi.fn(),
+  followUpFindMany: vi.fn(), followUpUpdateMany: vi.fn(),
   userFindFirst: vi.fn(),
   verificationUpsert: vi.fn(),
   appealCreate: vi.fn(),
@@ -35,7 +36,7 @@ vi.mock("@/lib/prisma-transaction", () => ({
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidate }));
 vi.mock("next/navigation", () => ({ redirect: mocks.redirect }));
 
-import { assignRequest, convertToAppeal, saveVerification } from "./actions";
+import { assignRequest, convertToAppeal, saveVerification, updateRequest } from "./actions";
 
 function form(values: Record<string, string>) {
   const data = new FormData();
@@ -51,6 +52,7 @@ function tx() {
       updateMany: mocks.requestUpdateMany,
     },
     assistanceVerification: { upsert: mocks.verificationUpsert },
+    assistanceFollowUp: { findMany: mocks.followUpFindMany, updateMany: mocks.followUpUpdateMany },
     user: { findFirst: mocks.userFindFirst },
     appeal: { create: mocks.appealCreate },
     auditEvent: { create: mocks.auditCreate },
@@ -188,5 +190,61 @@ describe("assistance post-commit refresh", () => {
     mocks.transaction.mockRejectedValueOnce(new Error("transaction failed"));
     await expect(assignRequest(assignment())).rejects.toThrow("transaction failed");
     expect(mocks.revalidate).not.toHaveBeenCalled(); expect(mocks.redirect).not.toHaveBeenCalled();
+  });
+});
+
+describe("terminal assistance case task lifecycle", () => {
+  const time = new Date("2026-10-16T08:00:00.000Z");
+  const caseRecord = {
+    id: "case-synthetic", status: AssistanceStatus.SUBMITTED,
+    appealId: null, email: null, referenceNumber: "AF-SYNTHETIC",
+    updatedAt: time, verification: null,
+  };
+  const close = () => form({
+    id: "case-synthetic", expectedUpdatedAt: time.toISOString(),
+    status: AssistanceStatus.CLOSED, internalNotes: "",
+  });
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "reviewer-synthetic" });
+    mocks.hasPermission.mockReturnValue(true);
+    mocks.transaction.mockImplementation(async cb => cb(tx()));
+    mocks.requestFind.mockResolvedValue(caseRecord);
+    mocks.requestUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.followUpFindMany.mockResolvedValue([]);
+    mocks.followUpUpdateMany.mockResolvedValue({ count: 0 });
+    mocks.auditCreate.mockResolvedValue({ id: "audit-synthetic" });
+  });
+  it("closes a case without a task audit when no open tasks remain", async () => {
+    await updateRequest(close());
+    expect(mocks.followUpFindMany).toHaveBeenCalledWith({
+      where: { assistanceRequestId: "case-synthetic", state: "OPEN" },
+      select: { id: true },
+    });
+    expect(mocks.followUpUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).toHaveBeenCalledOnce();
+  });
+  it("retires open tasks and keeps an auditable count in the same transaction", async () => {
+    mocks.followUpFindMany.mockResolvedValue([{ id: "task-1" }, { id: "task-2" }]);
+    mocks.followUpUpdateMany.mockResolvedValue({ count: 2 });
+    await updateRequest(close());
+    expect(mocks.followUpUpdateMany).toHaveBeenCalledWith({
+      where: { assistanceRequestId: "case-synthetic", state: "OPEN" },
+      data: { state: "CANCELLED", resolvedAt: expect.any(Date),
+        resolvedById: "reviewer-synthetic" },
+    });
+    expect(mocks.auditCreate).toHaveBeenCalledWith({ data: {
+      actorId: "reviewer-synthetic", action: "assistance.follow_up_tasks_closed_with_case",
+      entityType: "AssistanceRequest", entityId: "case-synthetic",
+      metadata: { reason: "CASE_CLOSED", count: 2 },
+    } });
+    expect(mocks.auditCreate).toHaveBeenCalledTimes(2);
+  });
+  it("rejects a concurrent cleanup mismatch before notification or refresh", async () => {
+    mocks.followUpFindMany.mockResolvedValue([{ id: "task-1" }, { id: "task-2" }]);
+    mocks.followUpUpdateMany.mockResolvedValue({ count: 1 });
+    await expect(updateRequest(close())).rejects.toThrow("Follow-up tasks changed");
+    expect(mocks.notificationCreate).not.toHaveBeenCalled();
+    expect(mocks.revalidate).not.toHaveBeenCalled();
   });
 });
