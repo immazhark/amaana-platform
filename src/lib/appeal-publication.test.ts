@@ -21,7 +21,7 @@ const approvedVerification = {
 
 describe("first appeal publication gate", () => {
   it("checks first publication with completed public verification", () => {
-    expect(getFirstPublicationIssues({
+    expect(getAppealPublicationIssues({
       fromStatus: "UNDER_REVIEW",
       toStatus: "PUBLISHED",
       goalAmount: 75000,
@@ -30,7 +30,7 @@ describe("first appeal publication gate", () => {
   });
 
   it("fails closed when a new appeal has no linked verification", () => {
-    expect(getFirstPublicationIssues({
+    expect(getAppealPublicationIssues({
       fromStatus: "UNDER_REVIEW",
       toStatus: "PUBLISHED",
       goalAmount: 75000,
@@ -39,7 +39,7 @@ describe("first appeal publication gate", () => {
   });
 
   it("fails closed when public consent/review requirements are unresolved", () => {
-    const issues = getFirstPublicationIssues({
+    const issues = getAppealPublicationIssues({
       fromStatus: "UNDER_REVIEW",
       toStatus: "PUBLISHED",
       goalAmount: 75000,
@@ -52,7 +52,7 @@ describe("first appeal publication gate", () => {
   it("locks the appeal goal to the approved public fundraising target", () => {
     expect(goalMatchesApprovedPublicTarget(75000, approvedVerification)).toBe(true);
     expect(goalMatchesApprovedPublicTarget(80000, approvedVerification)).toBe(false);
-    expect(getFirstPublicationIssues({
+    expect(getAppealPublicationIssues({
       fromStatus: "UNDER_REVIEW",
       toStatus: "PUBLISHED",
       goalAmount: 80000,
@@ -136,7 +136,7 @@ describe("first appeal publication gate", () => {
   });
 
   it("does not block lifecycle transitions for appeals that were already public", () => {
-    expect(getFirstPublicationIssues({ fromStatus: "PAUSED", toStatus: "PUBLISHED", goalAmount: 1, verification: null })).toEqual([]);
-    expect(getFirstPublicationIssues({ fromStatus: "PUBLISHED", toStatus: "FUNDED", goalAmount: 1, verification: null })).toEqual([]);
+    expect(getAppealPublicationIssues({ fromStatus: "PAUSED", toStatus: "PUBLISHED", goalAmount: 1, verification: null })).toEqual([]);
+    expect(getAppealPublicationIssues({ fromStatus: "PUBLISHED", toStatus: "FUNDED", goalAmount: 1, verification: null })).toEqual([]);
   });
 });
