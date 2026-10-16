@@ -2,7 +2,7 @@ import Link from "@/components/navigation-link";
 import { redirect } from "next/navigation";
 import {
   ASSISTANCE_QUEUE_STATUSES, assistanceQueueAge, assistanceQueueAgeWhere, assistanceQueueAssignmentWhere,
-  assistanceQueueHref, assistanceQueueReviewWhere, assistanceQueueVerificationLabel, parseAssistanceQueueFilters,
+  assistanceQueueFollowUpWhere, assistanceQueueHref, assistanceQueueReviewWhere, assistanceQueueVerificationLabel, parseAssistanceQueueFilters,
 } from "@/lib/assistance-queue";
 import { adminHomePathForPermissions } from "@/lib/admin-navigation";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
@@ -13,7 +13,7 @@ import { indiaCalendarDay } from "@/lib/assistance-follow-up";
 
 type Props = { searchParams: Promise<{
   status?: string | string[]; page?: string | string[];
-  assignment?: string | string[]; order?: string | string[]; age?: string | string[]; review?: string | string[]; city?: string | string[];
+  assignment?: string | string[]; order?: string | string[]; age?: string | string[]; review?: string | string[]; city?: string | string[]; followUp?: string | string[];
 }> };
 
 export default async function AdminQueuePage({ searchParams }: Props) {
@@ -22,10 +22,12 @@ export default async function AdminQueuePage({ searchParams }: Props) {
   const params = await searchParams;
   const filters = parseAssistanceQueueFilters(params);
   const now = new Date();
+  const localToday = indiaCalendarDay(now);
   const assignmentWhere = assistanceQueueAssignmentWhere(filters.assignment, user.id);
   const scopedWhere = {
     ...assignmentWhere, ...assistanceQueueAgeWhere(filters.age, now),
     ...assistanceQueueReviewWhere(filters.review),
+    ...assistanceQueueFollowUpWhere(filters.followUp, localToday),
     ...(filters.city ? { city: filters.city } : {}),
   };
   const where = { ...scopedWhere, ...(filters.status ? { status: filters.status } : {}) };
@@ -61,7 +63,6 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     _count: { _all: true }, _min: { dueOn: true },
   }) : [];
   const tasksByCase = new Map(dueTasks.map(task => [task.assistanceRequestId, task]));
-  const localToday = indiaCalendarDay(now);
   const recentFollowUps = requests.length ? await prisma.auditEvent.groupBy({
     by: ["entityId"],
     where: {
@@ -81,7 +82,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
 
   return <>
     <div className="admin-heading"><div><p className="eyebrow">Case management</p><h1>Assistance queue</h1></div></div>
-    <p className="muted">Filter by assignment, self-reported city, verification completion or elapsed age, or review the oldest requests first. Follow-up log counts include entries later redacted from case view. Age is time since receipt, not a response deadline, verified urgency, or SLA breach. City is not a verified service-zone assignment.</p>
+    <p className="muted">Filter by assignment, self-reported city, verification completion, operator-selected follow-up date or elapsed age. Review the oldest requests first when useful. Follow-up log counts include entries later redacted from case view. Age is time since receipt, not a response deadline, verified urgency, or SLA breach. City is not a verified service-zone assignment.</p>
     <div className="filter-row" role="group" aria-label="Assistance request assignment filter"><strong>Assignment:</strong>{assignmentChoices.map(item => <Link key={item.value} href={assistanceQueueHref({ ...filters, assignment: item.value })} aria-current={filters.assignment === item.value ? "page" : undefined}>{item.label}</Link>)}</div>
     <div className="filter-row" role="group" aria-label="Assistance request order"><strong>Order:</strong>{(["newest", "oldest"] as const).map(order => <Link key={order} href={assistanceQueueHref({ ...filters, order })} aria-current={filters.order === order ? "page" : undefined}>{order === "oldest" ? "Oldest first" : "Newest first"}</Link>)}</div>
     <form method="get" action="/admin" className="filter-row" aria-label="Filter assistance requests by reported city">
@@ -91,6 +92,7 @@ export default async function AdminQueuePage({ searchParams }: Props) {
       {filters.order !== "newest" && <input type="hidden" name="order" value={filters.order}/>}
       {filters.age !== "all" && <input type="hidden" name="age" value={filters.age}/>}
       {filters.review !== "all" && <input type="hidden" name="review" value={filters.review}/>}
+      {filters.followUp !== "all" && <input type="hidden" name="followUp" value={filters.followUp}/>}
       <select id="assistance-queue-city" name="city" defaultValue={filters.city ?? ""}>
         <option value="">All reported cities</option>
         {filters.city && !cityCounts.some(item => item.city === filters.city) &&
@@ -115,14 +117,30 @@ export default async function AdminQueuePage({ searchParams }: Props) {
         { value: "complete", label: "Review completed" },
       ] as const).map(item => <Link key={item.value} href={assistanceQueueHref({ ...filters, review: item.value })} aria-current={filters.review === item.value ? "page" : undefined}>{item.label}</Link>)}
     </div>
+    <div className="filter-row" role="group" aria-label="Private follow-up task filter">
+      <strong>Next actions:</strong>{([
+        { value: "all", label: "All tasks" },
+        { value: "due", label: "Selected date reached" },
+        { value: "open", label: "Has open tasks" },
+        { value: "none", label: "No open tasks" },
+      ] as const).map(item => <Link key={item.value}
+        href={assistanceQueueHref({ ...filters, followUp: item.value })}
+        aria-current={filters.followUp === item.value ? "page" : undefined}>{item.label}</Link>)}
+    </div>
     <div className="filter-row" role="group" aria-label="Assistance request status filter"><strong>Status:</strong><Link href={assistanceQueueHref({ ...filters, status: undefined })} aria-current={!filters.status ? "page" : undefined}>All</Link>{ASSISTANCE_QUEUE_STATUSES.map(item => <Link key={item} href={assistanceQueueHref({ ...filters, status: item })} aria-current={filters.status === item ? "page" : undefined}>{item.replaceAll("_", " ")} ({counts.get(item) ?? 0})</Link>)}</div>
-    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Operational records"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Category</th><th>Status</th><th>Verification</th><th>Assigned to</th><th>Documents</th><th>Follow-up logs</th><th>Open tasks</th><th>Next staff-set date</th><th>Received</th><th>Request age</th></tr></thead><tbody>{requests.map(item => <tr key={item.id}><td><Link href={`/admin/requests/${item.id}`}><strong>{item.referenceNumber}</strong></Link></td><td>{item.applicantName}<br/><small>{item.city}</small></td><td>{item.category.replaceAll("_", " ")}</td><td><span className="status-badge">{item.status.replaceAll("_", " ")}</span></td><td>{assistanceQueueVerificationLabel(item.verification)}</td><td>{item.assignedTo?.name ?? "Unassigned"}</td><td>{item._count.documents}</td>
-          <td>{tasksByCase.get(item.id)?._count._all ?? 0}</td>
-          <td>{tasksByCase.get(item.id)?._min.dueOn
-            ? <span>{tasksByCase.get(item.id)!._min.dueOn!.toLocaleDateString("en-IN", { timeZone: "UTC" })}
-              {" · "}{tasksByCase.get(item.id)!._min.dueOn!.toISOString().slice(0, 10) < localToday ? "Past selected date" : "Upcoming / today"}</span>
+    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Operational records"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Category</th><th>Status</th><th>Verification</th><th>Assigned to</th><th>Documents</th><th>Follow-up logs</th><th>Open tasks</th><th>Next staff-set date</th><th>Received</th><th>Request age</th></tr></thead><tbody>{requests.map(item => {
+      const tasks = tasksByCase.get(item.id);
+      const due = tasks?._min.dueOn;
+      const followUp = followUpsByCase.get(item.id);
+      return <tr key={item.id}><td><Link href={`/admin/requests/${item.id}`}><strong>{item.referenceNumber}</strong></Link></td><td>{item.applicantName}<br/><small>{item.city}</small></td><td>{item.category.replaceAll("_", " ")}</td><td><span className="status-badge">{item.status.replaceAll("_", " ")}</span></td><td>{assistanceQueueVerificationLabel(item.verification)}</td><td>{item.assignedTo?.name ?? "Unassigned"}</td><td>{item._count.documents}</td>
+          <td>{followUp?._count._all ?? 0} · {followUp?._max.createdAt?.toLocaleDateString("en-IN") ?? "No recent update"}</td>
+          <td>{tasks?._count._all ?? 0}</td>
+          <td>{due
+            ? <span>{due.toLocaleDateString("en-IN", { timeZone: "UTC" })}
+                {" · "}{due.toISOString().slice(0, 10) < localToday ? "Past selected date" : "Upcoming / today"}</span>
             : "None"}</td>
-          <td>{item.createdAt.toLocaleDateString("en-IN")}</td><td>{assistanceQueueAge(item.createdAt, now)}</td></tr>)}</tbody></table>{requests.length === 0 && <p className="empty-state">No requests match this view.</p>}</div>
+          <td>{item.createdAt.toLocaleDateString("en-IN")}</td><td>{assistanceQueueAge(item.createdAt, now)}</td></tr>;
+    })}</tbody></table>{requests.length === 0 && <p className="empty-state">No requests match this view.</p>}</div>
     <nav className="filter-row" aria-label="Assistance request pagination">
       {pagination.hasPrevious && <Link href={assistanceQueueHref(filters, pagination.page - 1)}>Previous</Link>}
       <span>Page {pagination.page} of {pagination.totalPages} · {pagination.totalItems} records</span>

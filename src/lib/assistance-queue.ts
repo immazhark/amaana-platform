@@ -8,11 +8,12 @@ export type AssistanceQueueFilters = {
   age: "all" | "7d" | "30d";
   city?: string;
   review: "all" | "incomplete" | "complete";
+  followUp: "all" | "due" | "open" | "none";
 };
 type SearchValue = string | string[] | undefined;
 
 export function parseAssistanceQueueFilters(params: {
-  status?: SearchValue; assignment?: SearchValue; order?: SearchValue; age?: SearchValue; city?: SearchValue; review?: SearchValue;
+  status?: SearchValue; assignment?: SearchValue; order?: SearchValue; age?: SearchValue; city?: SearchValue; review?: SearchValue; followUp?: SearchValue;
 }): AssistanceQueueFilters {
   const status = ASSISTANCE_QUEUE_STATUSES.find(value => value === params.status);
   // Administrative geography is a verbatim self-reported city, never a
@@ -26,6 +27,7 @@ export function parseAssistanceQueueFilters(params: {
     age: params.age === "7d" || params.age === "30d" ? params.age : "all",
     ...(validCity ? { city } : {}),
     review: params.review === "incomplete" || params.review === "complete" ? params.review : "all",
+    followUp: params.followUp === "due" || params.followUp === "open" || params.followUp === "none" ? params.followUp : "all",
   };
 }
 
@@ -58,6 +60,19 @@ export function assistanceQueueReviewWhere(review: AssistanceQueueFilters["revie
   return {};
 }
 
+/** Only operator-authored, unresolved task dates are used for action triage;
+ * never infer clinical priority or an organization-wide response deadline. */
+export function assistanceQueueFollowUpWhere(
+  followUp: AssistanceQueueFilters["followUp"], today: string,
+): Prisma.AssistanceRequestWhereInput {
+  if (followUp === "all") return {};
+  if (followUp === "none") return { followUps: { none: { state: "OPEN" } } };
+  if (followUp === "open") return { followUps: { some: { state: "OPEN" } } };
+  return { followUps: { some: {
+    state: "OPEN", dueOn: { lte: new Date(`${today}T00:00:00.000Z`) },
+  } } };
+}
+
 export function assistanceQueueHref(filters: AssistanceQueueFilters, page = 1) {
   return {
     pathname: "/admin",
@@ -68,6 +83,7 @@ export function assistanceQueueHref(filters: AssistanceQueueFilters, page = 1) {
       ...(filters.age !== "all" ? { age: filters.age } : {}),
       ...(filters.city ? { city: filters.city } : {}),
       ...(filters.review !== "all" ? { review: filters.review } : {}),
+      ...(filters.followUp !== "all" ? { followUp: filters.followUp } : {}),
       ...(page > 1 ? { page } : {}),
     },
   };
