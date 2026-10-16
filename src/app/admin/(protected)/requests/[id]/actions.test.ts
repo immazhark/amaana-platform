@@ -429,7 +429,10 @@ describe("post-conversion public disclosure withdrawal", () => {
     expect(mocks.mediaFindMany).toHaveBeenCalledWith({
       where: {
         isPublic: true,
-        publicUrl: { in: [cover, "https://amaanafoundation.org" + cover] },
+        OR: [
+          { publicUrl: { in: [cover, "https://amaanafoundation.org" + cover, "https://www.amaanafoundation.org" + cover] } },
+          { storageKey: "2026/123e4567-e89b-12d3-a456-426614174000.webp" },
+        ],
       },
       select: { id: true, updatedAt: true, publicUrl: true, storageKey: true },
     });
@@ -462,8 +465,33 @@ describe("post-conversion public disclosure withdrawal", () => {
     expect(mocks.mediaUpdateMany).toHaveBeenCalledTimes(2);
     expect(mocks.auditCreate).toHaveBeenCalledTimes(3);
     expect(mocks.mediaFindMany).toHaveBeenCalledWith(expect.objectContaining({
-      where: { isPublic: true, publicUrl: { in: ["https://amaanafoundation.org" + cover, cover] } },
+      where: {
+        isPublic: true,
+        OR: [
+          { publicUrl: { in: ["https://amaanafoundation.org" + cover, cover, "https://www.amaanafoundation.org" + cover] } },
+          { storageKey: "2026/123e4567-e89b-12d3-a456-426614174000.webp" },
+        ],
+      },
     }));
+  });
+
+  it("revokes managed storage-key aliases even when their public URLs differ", async () => {
+    const cover = "/media/2026/123e4567-e89b-12d3-a456-426614174000.webp";
+    mocks.requestFind.mockResolvedValue({
+      ...original, appeal: { ...original.appeal, coverImageUrl: cover },
+    });
+    mocks.mediaFindMany.mockResolvedValue([
+      { id: "canonical", updatedAt: date, storageKey: "2026/123e4567-e89b-12d3-a456-426614174000.webp", publicUrl: cover },
+      { id: "alias", updatedAt: date, storageKey: "2026/123e4567-e89b-12d3-a456-426614174000.webp", publicUrl: "https://www.amaanafoundation.org/old-alias.jpg" },
+    ]);
+    await expect(withdrawConvertedAppealDisclosure(input())).rejects.toThrow("NEXT_REDIRECT");
+    expect(mocks.mediaUpdateMany).toHaveBeenCalledTimes(2);
+    expect(mocks.mediaFindMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({
+        OR: expect.arrayContaining([{ storageKey: "2026/123e4567-e89b-12d3-a456-426614174000.webp" }]),
+      }),
+    }));
+    expect(mocks.redirect).toHaveBeenCalledWith("/admin/requests/case-1?privacy=withdrawn");
   });
 
   it("flags an external media host even after the matching published record is removed from the site", async () => {
