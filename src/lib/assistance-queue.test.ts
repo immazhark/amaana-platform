@@ -104,12 +104,16 @@ describe("private assistance queue triage", () => {
     expect(assistanceQueueOutcomeWhere("copy_approved")).toEqual({
       outcomeObservations: { some: { disclosure: { is: { state: "APPROVED_COPY" } } } },
     });
+    expect(assistanceQueueOutcomeWhere("copy_published")).toEqual({
+      outcomeObservations: { some: { disclosure: { is: { state: "PUBLISHED" } } } },
+    });
     expect(assistanceQueueOutcomeWhere("none")).toEqual({
       outcomeObservations: { none: { state: { in: ["REPORTED", "REVIEWED"] } } },
     });
     expect(parseAssistanceQueueFilters({ outcome: "reviewed" }).outcome).toBe("reviewed");
     expect(parseAssistanceQueueFilters({ outcome: "copy_draft" }).outcome).toBe("copy_draft");
     expect(parseAssistanceQueueFilters({ outcome: "copy_approved" }).outcome).toBe("copy_approved");
+    expect(parseAssistanceQueueFilters({ outcome: "copy_published" }).outcome).toBe("copy_published");
     expect(parseAssistanceQueueFilters({ outcome: "public" }).outcome).toBe("all");
     expect(parseAssistanceQueueFilters({ outcome: ["reported"] }).outcome).toBe("all");
     expect(assistanceQueueHref({
