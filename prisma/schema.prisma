@@ -161,6 +161,8 @@ model User {
   assistanceFollowUpsAssigned AssistanceFollowUp[]   @relation("AssistanceFollowUpAssignee")
   assistanceFollowUpsResolved AssistanceFollowUp[]   @relation("AssistanceFollowUpResolver")
   assistanceVerifications AssistanceVerification[] @relation("AssistanceVerifier")
+  reportedDeliveries AssistanceDeliveryRecord[] @relation("AssistanceDeliveryReporter")
+  reviewedDeliveries AssistanceDeliveryRecord[] @relation("AssistanceDeliveryReviewer")
   notifications           Notification[]
   credential              PasswordCredential?
   sessions                Session[]
@@ -674,6 +676,7 @@ model AssistanceRequest {
   appeal             Appeal?                 @relation(fields: [appealId], references: [id])
   verification       AssistanceVerification?
   followUps         AssistanceFollowUp[]
+  deliveryRecords   AssistanceDeliveryRecord[]
   notifications     Notification[]
   documents         AssistanceDocument[]
   createdAt         DateTime                 @default(now())
@@ -711,6 +714,42 @@ model AssistanceFollowUp {
   @@index([state, dueOn])
   @@index([assignedToId, state, dueOn])
   @@index([createdById, createdAt])
+}
+
+enum AssistanceDeliveryKind {
+  FINANCIAL
+  IN_KIND
+}
+enum AssistanceDeliveryReviewState {
+  REPORTED
+  CONFIRMED
+  VOIDED
+}
+
+/** Private case-level delivery evidence, never a public impact counter or donation ledger. */
+model AssistanceDeliveryRecord {
+  id                  String                        @id @default(cuid())
+  assistanceRequestId String
+  submissionId        String                        @unique
+  kind                AssistanceDeliveryKind
+  summary             String                        @db.VarChar(300)
+  occurredOn          DateTime                      @db.Date
+  amountInr           Decimal?                      @db.Decimal(12, 2)
+  evidenceDocumentId  String?
+  state               AssistanceDeliveryReviewState @default(REPORTED)
+  reportedById        String
+  reviewedById        String?
+  reviewedAt          DateTime?
+  assistanceRequest   AssistanceRequest             @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
+  evidenceDocument    AssistanceDocument?           @relation(fields: [evidenceDocumentId], references: [id], onDelete: SetNull)
+  reportedBy          User                          @relation("AssistanceDeliveryReporter", fields: [reportedById], references: [id], onDelete: Restrict)
+  reviewedBy          User?                         @relation("AssistanceDeliveryReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
+  createdAt           DateTime                      @default(now())
+  updatedAt           DateTime                      @updatedAt
+
+  @@index([assistanceRequestId, state, occurredOn])
+  @@index([state, createdAt])
+  @@index([reportedById, createdAt])
 }
 
 model AssistanceVerification {
@@ -752,6 +791,7 @@ model AssistanceDocument {
   assistanceRequest   AssistanceRequest @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
+  deliveryRecords     AssistanceDeliveryRecord[]
   @@index([assistanceRequestId])
 }
 
