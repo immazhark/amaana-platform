@@ -12,6 +12,7 @@ import {
   readPrivateMilestone, readPrivateMilestoneRedaction,
 } from "@/lib/assistance-private-milestone";
 import Link from "@/components/navigation-link";
+import { AdminPrivateEvidenceUpload } from "@/components/admin-private-evidence-upload";
 import { assistanceQueueAge, assistanceQueueVerificationLabel } from "@/lib/assistance-queue";
 import {
   ASSISTANCE_CONFIDENTIALITY_LEVELS,
@@ -162,6 +163,12 @@ export default async function RequestDetailPage({ params }: Props) {
           <p className="muted">Approved request ≠ delivered support. Record only what was actually delivered;
             another authorized reviewer must confirm supporting evidence. This register
             does not post donations or publish impact and is never visible to applicants or donors.</p>
+          {mayReportDelivery && deliveries.some(item => item.state === "REPORTED") &&
+            request.documents.length < 30 && <AdminPrivateEvidenceUpload caseId={id}/>}
+          {mayReportDelivery && deliveries.some(item => item.state === "REPORTED") &&
+            request.documents.length >= 30 &&
+            <p className="muted">This case has reached the private document limit.
+              Ask an authorized reviewer to evaluate existing evidence.</p>}
           {mayReportDelivery && <form action={reportAssistanceDelivery} className="field">
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
