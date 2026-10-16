@@ -2,6 +2,7 @@
 
 import { MediaKind } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { mediaPublicationIssues, parseMediaPublicationReview } from "@/lib/media-governance";
 import { prisma } from "@/lib/prisma";
@@ -46,6 +47,52 @@ function usesApprovedManagedDelivery(asset: { storageKey?: string | null; public
   // Older managed assets can retain a canonical absolute URL to the same
   // permission-checking route. Never accept an external bucket/CDN URL.
   return asset.publicUrl === `https://amaanafoundation.org${expectedPath}`;
+}
+
+/** A failed public cache refresh cannot undo an audited database commit.
+ * Keep attempting unrelated routes, then show a confirmed-save warning.
+ * Never retry the publication write in response to a cache error. */
+function refreshCommittedMedia(paths: readonly string[]) {
+  let delayed = false;
+  for (const path of new Set(paths)) {
+    try { revalidatePath(path); }
+    catch { delayed = true; }
+  }
+  if (delayed) redirect("/admin/media?saved=refresh-delayed");
+}
+
+type MediaPublicationRefreshContext = {
+  storageKey?: string | null;
+  initiative?: { slug: string } | null;
+  cause?: { slug: string } | null;
+  story?: { slug: string } | null;
+  faithContent?: { slug: string } | null;
+};
+
+/** Only narrow observed public paths; do not require invalidating every
+ * initiative/archive on each media review or adding more database reads. */
+function affectedMediaPublicationPaths(asset: MediaPublicationRefreshContext) {
+  const paths = [
+    "/admin/media", "/", "/our-work", "/impact", "/stories", "/faith-and-reflections", "/appeals",
+  ];
+  if (asset.storageKey &&
+      /^\\d{4}\\/[0-9a-f-]{36}\\.(?:pdf|jpg|png|webp)$/i.test(asset.storageKey)) {
+    paths.push(`/media/${asset.storageKey}`);
+  }
+  if (asset.initiative?.slug) {
+    paths.push(`/our-work/${asset.initiative.slug}`);
+    paths.push(`/media-archive/initiative/${asset.initiative.slug}`);
+  }
+  if (asset.cause?.slug) paths.push(`/our-work/${asset.cause.slug}`);
+  if (asset.story?.slug) {
+    paths.push(`/stories/${asset.story.slug}`);
+    paths.push(`/media-archive/story/${asset.story.slug}`);
+  }
+  if (asset.faithContent?.slug) {
+    paths.push(`/faith-and-reflections/${asset.faithContent.slug}`);
+    paths.push(`/media-archive/faith/${asset.faithContent.slug}`);
+  }
+  return paths;
 }
 
 export async function createMediaAsset(formData: FormData) {
@@ -216,7 +263,15 @@ export async function setMediaPublication(formData: FormData) {
   const user = await requirePermission("content.approve");
   const id = String(formData.get("id") ?? "");
   const publish = formData.get("publish") === "true";
-  const asset = await prisma.mediaAsset.findUniqueOrThrow({ where: { id } });
+  const asset = await prisma.mediaAsset.findUniqueOrThrow({
+    where: { id },
+    include: {
+      initiative: { select: { slug: true } },
+      cause: { select: { slug: true } },
+      story: { select: { slug: true } },
+      faithContent: { select: { slug: true } },
+    },
+  });
 
   if (publish && !usesApprovedManagedDelivery(asset)) {
     throw new Error("Managed media must use Amaana's consent-gated /media/ route before publication.");
@@ -276,12 +331,7 @@ export async function setMediaPublication(formData: FormData) {
     });
   }
 
-  revalidatePath("/admin/media");
-  revalidatePath("/");
-  revalidatePath("/our-work");
-  revalidatePath("/impact");
-  revalidatePath("/stories");
-  revalidatePath("/faith-and-reflections");
+  refreshCommittedMedia(affectedMediaPublicationPaths(asset));
 }
 
 export async function deleteMediaAsset(formData: FormData) {
