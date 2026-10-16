@@ -10,6 +10,7 @@ import {
   requiredDisclosureEvidenceIds,
 } from "@/lib/assistance-outcome-disclosure";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
+import { withdrawStaleAnonymousOutcomeCopies } from "@/lib/assistance-outcome-invalidation";
 
 function finish(id: string): never {
   try { revalidatePath(`/admin/requests/${id}`); } catch { /* committed transaction */ }
@@ -228,4 +229,28 @@ export async function publishAnonymousOutcomeCopy(form: FormData) {
     } });
   });
   finish(input.caseId);
+}
+
+/** Authorized remediation for legacy or externally invalidated records.
+ * Recheck live evidence and withdraw only stale copy. Never republish. */
+export async function reconcileAnonymousOutcomeDisclosures(form: FormData) {
+  const actor = await requirePermission("content.approve");
+  if (!hasPermission(actor, "assistance.view") ||
+      !hasPermission(actor, "assistance.approve")) {
+    throw new Error("Case-view and assistance-approval permissions are required.");
+  }
+  const value = form.get("id");
+  if (typeof value !== "string" || !/^[a-zA-Z0-9_-]{3,128}$/.test(value)) {
+    throw new Error("Invalid assistance case reference.");
+  }
+  await withSerializableTransactionRetry(async tx => {
+    const request = await tx.assistanceRequest.findUnique({
+      where: { id: value }, select: { id: true },
+    });
+    if (!request) throw new Error("Assistance case not found.");
+    await withdrawStaleAnonymousOutcomeCopies(
+      tx, value, actor.id, "MANUAL_RECONCILIATION",
+    );
+  });
+  finish(value);
 }
