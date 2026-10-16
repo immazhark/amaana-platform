@@ -159,7 +159,7 @@ describe("independent anonymous copy approval and consent withdrawal", () => {
 
   it("requires combined content, case view and approval authority", async () => {
     m.has.mockReturnValue(false);
-    await expect(reviewAnonymousOutcomeCopy(form())).rejects.toThrow("Both case-view");
+    await expect(reviewAnonymousOutcomeCopy(form())).rejects.toThrow("Case-view and assistance-approval permissions");
     expect(m.auth).toHaveBeenCalledWith("content.approve");
     expect(m.transaction).not.toHaveBeenCalled();
   });
