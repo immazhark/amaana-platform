@@ -143,7 +143,8 @@ describe("private assistance detail projections", () => {
       phone: "synthetic-contact", email: null, description: "Private case narrative",
       documents: [{ id: "delivery-proof", originalName: "delivery.pdf", mimeType: "application/pdf", sizeBytes: 100 }],
       verification: { decision: "APPROVED_PRIVATE", completedAt: new Date("2026-10-15T10:00:00Z"),
-        confidentialityLevel: "RESTRICTED" }, appeal: null, appealId: null,
+        confidentialityLevel: "RESTRICTED", updatedAt: new Date("2026-10-15T10:00:00Z"),
+        reviewedBy: { name: "Independent approver" } }, appeal: null, appealId: null,
     };
     m.request.mockResolvedValue(request);
     m.deliveries.mockResolvedValue([{ id: "delivery-one", kind: "IN_KIND", state: "REPORTED",
