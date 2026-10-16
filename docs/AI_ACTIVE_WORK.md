@@ -1,6 +1,13 @@
-## 2026-10-17 — Appeal admin scalar-field integrity (in progress)
+## 2026-10-17 — Strict appeal administration input boundary
 
-Ownership: CHATGPT_ACTIVE. Verified PR #292 head `94dedae77a40dd48daa56d20448063fdd1ea6908`, target `main`, prior state HANDOFF_PENDING. Scope: prevent first-value-wins scalar ambiguity and File-as-text coercion in public appeal editor, status, featuring, update publication and unpublication. Preserve role/transaction/media safeguards and existing valid forms. Author focused regressions. No CI pipeline, migration, provider, live record, merge or deployment.
+Ownership: HANDOFF_PENDING. ChatGPT completed existing PR #292 on branch `fix/direct-transfer-feedback-20261013` (target `main`; not merged or deployed). Initial verified HEAD `94dedae77a40dd48daa56d20448063fdd1ea6908`. Source `82134f65bd3af049ec2ee480c0dc0e444f02038d` and `d5c1f9329509976a09f3aefdcd2b889b3e1bf1f2`, regression tests `9cad3d2eb9260c40555cd8295ee190544a2d0efc` / `5edaf9934b23474951dd17a25f78447abce9b609`, master149 `46849f170860a9728656f0b2baca233573773647`, handoff ledger `034fe718145b00890ec53b53c4d463507cc46ec7`.
+
+- Replaced first-wins `FormData.get()` with established single-field cardinality guard and a text-only input boundary in all seven appeal administration actions. All 28 scalar reads now reject duplicates; File-valued text fails before coercion. BeneficiaryLocation parsing moved before transaction entry. Retains valid forms, permissions, approved financial-goal/media/consent checks and existing CAS/audit.
+- Added unit/action regression cases for duplicate goal/beneficiary name/location/status/featured order/publication flags/review/identity and File-as-text inputs. GitHub source readback: 0 raw reads, 28 guarded reads, form control names preserved.
+- **Validation limit:** local repository checkout and dependencies unavailable; GitHub DNS failed. Authored Vitest cases were not run. Application TypeScript, lint, database, browser, bundle and release validation remain outstanding; do not promote the new source as runtime verified. No provider/DB/payment/email mutations, new dependency/migration/config, main merge or production deployment.
+- Master149 remains **60 Implemented /61 Partial /26 Not started /2 other** with zero formal closures. AF-PROMOTION and AF-CONSENT gain only bounded PR-open evidence.
+
+Next: verify current PR/branch SHA and run focused `npx vitest run 'src/app/admin/(protected)/appeals/actions.test.ts'`, application TypeScript and changed-file lint in a hydrated checkout; correct failures before release. Resume next source-ready batch only with sole writer ownership.
 
 ## 2026-10-17 — Safe paused appeal resumption
 
