@@ -27,6 +27,7 @@ import {
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { parsePositiveRupeeAmount } from "@/lib/amount-entry";
 import { prisma } from "@/lib/prisma";
+import { cancelOpenFollowUpsOnCaseExit } from "@/lib/assistance-follow-up";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
 /** Call only after the transaction resolves. Cache failures cannot undo a
@@ -283,6 +284,12 @@ export async function updateRequest(formData: FormData) {
     if (updated.count !== 1) {
       throw new Error("This request changed while you were reviewing it. Refresh before saving.");
     }
+    if (previous.status !== status &&
+        (status === AssistanceStatus.CLOSED || status === AssistanceStatus.REJECTED)) {
+      await cancelOpenFollowUpsOnCaseExit(
+        tx, id, user.id, status === AssistanceStatus.CLOSED ? "CASE_CLOSED" : "CASE_REJECTED",
+      );
+    }
     await tx.auditEvent.create({ data: { actorId: user.id, action: "assistance.updated", entityType: "AssistanceRequest", entityId: id, metadata: { previousStatus: previous.status, status } } });
     if (previous.status !== status && previous.email) {
       await tx.notification.create({ data: { channel: NotificationChannel.EMAIL, recipient: previous.email, templateKey: "assistance-status-updated", subject: "Your Amaana request status was updated", payload: { referenceNumber: previous.referenceNumber, status }, assistanceRequestId: id } });
@@ -367,6 +374,7 @@ export async function convertToAppeal(formData: FormData) {
       data: { status: AssistanceStatus.CONVERTED_TO_APPEAL },
     });
     if (claimed.count !== 1) throw new Error("This request was changed or converted by another admin. Refresh before trying again.");
+    await cancelOpenFollowUpsOnCaseExit(tx, id, user.id, "APPEAL_CONVERSION");
 
     const appeal = await tx.appeal.create({
       data: {

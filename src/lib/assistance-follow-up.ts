@@ -141,3 +141,32 @@ export function followUpDueLabel(
   }
   return `Planned for ${due}`;
 }
+
+/** Retire outstanding private tasks atomically when the owning case enters a
+ * terminal workflow. Never publish task text or send external notifications. */
+export async function cancelOpenFollowUpsOnCaseExit(
+  tx: Prisma.TransactionClient,
+  assistanceRequestId: string,
+  actorId: string,
+  reason: "CASE_CLOSED" | "CASE_REJECTED" | "APPEAL_CONVERSION",
+) {
+  const due = await tx.assistanceFollowUp.findMany({
+    where: { assistanceRequestId, state: AssistanceFollowUpState.OPEN },
+    select: { id: true },
+  });
+  if (due.length === 0) return;
+  const now = new Date();
+  const result = await tx.assistanceFollowUp.updateMany({
+    where: { assistanceRequestId, state: AssistanceFollowUpState.OPEN },
+    data: { state: AssistanceFollowUpState.CANCELLED, resolvedAt: now, resolvedById: actorId },
+  });
+  if (result.count !== due.length) throw new Error("Follow-up tasks changed during case closure.");
+  await tx.auditEvent.create({
+    data: {
+      actorId,
+      action: "assistance.follow_up_tasks_closed_with_case",
+      entityType: "AssistanceRequest", entityId: assistanceRequestId,
+      metadata: { reason, count: result.count },
+    },
+  });
+}
