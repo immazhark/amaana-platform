@@ -1,3 +1,7 @@
+## 2026-10-17 — Current public appeal name and photo consent (IN PROGRESS)
+
+Ownership: CHATGPT_ACTIVE. Verified sole-writer handoff from HEAD `f2ec234fc03404e3fe3c4ead36179abe1d98cf6e`, open PR #292 on `fix/direct-transfer-feedback-20261013` targeting `main`. Scoped implementation: enforce current linked public-name and photo consent in the public appeal detail server projection, including revoked/missing decisions; preserve standalone legacy appeals, current archive gating, and non-identifying artwork with NOT_APPLICABLE photo consent. Author tests before source, no CI pipeline, migration, provider call, merge or deployment.
+
 ## 2026-10-17 — Fail-closed linked appeal promotion and metadata
 
 Ownership: HANDOFF_PENDING. ChatGPT completed one privacy source batch on open PR #292 `fix/direct-transfer-feedback-20261013`, target `main`, starting HEAD `0955b444f6d05e0176bb7d7581bc99824f5400e8`. Promotion tests `f5b1d432`, first guard `168eb3df`, shared-class tests `940f21d1`, canonical privacy classifier `8a818445`, metadata tests `daa8a63c`, metadata integration `3f69b907`, master149 evidence `73f39aa27e7ed51e080a1ebbc2c9438943a7bceb`, handoff ledger `ecfc08aefdc048269f422d84c0b1a9de3fe91dac`.
