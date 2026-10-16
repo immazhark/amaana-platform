@@ -370,6 +370,19 @@ export async function deleteMediaAsset(formData: FormData) {
     throw new Error("This media changed while you were reviewing it. Refresh before deleting.");
   }
 
+  // MediaAsset.storageKey is not unique. Deleting this S3 object would break
+  // every other public or unpublished record sharing the key. Fail closed
+  // rather than silently removing another asset's underlying evidence.
+  async function assertNoSharedManagedObject() {
+    if (!asset.storageKey) return;
+    const sibling = await prisma.mediaAsset.findFirst({
+      where: { storageKey: asset.storageKey, id: { not: id } },
+      select: { id: true },
+    });
+    if (sibling) throw new Error("Cannot delete a shared media storage object. Resolve the other media references first.");
+  }
+  await assertNoSharedManagedObject();
+
   // Atomically claim the still-unpublished, exact reviewed version before any
   // external storage mutation. The updatedAt bump makes stale publication or
   // metadata actions fail their own optimistic-concurrency claims.
@@ -380,6 +393,10 @@ export async function deleteMediaAsset(formData: FormData) {
   if (claimed.count !== 1) {
     throw new Error("This media changed while you were reviewing it. Refresh before deleting.");
   }
+
+  // Repeat the sibling check after our version claim. This is a safety check
+  // against stale pre-claim reads; it cannot replace a DB uniqueness contract.
+  await assertNoSharedManagedObject();
 
   // Record the destructive intent before storage deletion so a partial failure
   // remains diagnosable even when the managed object is already gone.
