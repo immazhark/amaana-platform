@@ -32,7 +32,10 @@ export function safeHomeHref(value: string) {
   // App Router has intentionally private paths adjacent to public giving.
   // Keep approved /donate/[appeal] destinations public but never expose a
   // personal donation receipt or assistance-status page in hero editorial CTAs.
-  const privateDestination = isPrivateRoute(pathname) && !pathname.startsWith('/donate/');
+  // Only the actual public /donate/[appealSlug] page is excepted:
+  // nested payment/acknowledgement paths are not public editorial targets.
+  const publicAppealDestination = /^\/donate\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname);
+  const privateDestination = isPrivateRoute(pathname) && !publicAppealDestination;
   if (url.origin !== 'https://amaana.invalid' || privateDestination)
     throw new HomeCarouselValidationError('Choose a public website destination.');
   return value;

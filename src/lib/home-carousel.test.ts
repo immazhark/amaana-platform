@@ -63,6 +63,8 @@ describe('homepage carousel publication and schedules', () => {
       '/donations',
       '/request-assistance/status',
       '/request-assistance/received',
+      '/donate/verified-appeal/receipt',
+      '/donate/verified-appeal/confirm',
       '/%64onations/private-receipt',
       '/%72equest-assistance/status',
     ]) expect(() => safeHomeHref(href), href).toThrow(/public website/);
