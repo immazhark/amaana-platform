@@ -1,14 +1,16 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const m = vi.hoisted(() => ({ permission: vi.fn(), has: vi.fn(), request: vi.fn(), staff: vi.fn(), history: vi.fn(), tasks: vi.fn(), missing: vi.fn() }));
+const m = vi.hoisted(() => ({ permission: vi.fn(), has: vi.fn(), request: vi.fn(), staff: vi.fn(), history: vi.fn(), tasks: vi.fn(), deliveries: vi.fn(), missing: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requirePermission: m.permission, hasPermission: m.has }));
 vi.mock("next/navigation", () => ({ notFound: m.missing }));
 vi.mock("@/lib/prisma", () => ({ prisma: {
   assistanceRequest: { findUnique: m.request }, user: { findMany: m.staff },
   auditEvent: { findMany: m.history }, assistanceFollowUp: { findMany: m.tasks },
+  assistanceDeliveryRecord: { findMany: m.deliveries },
 } }));
 vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerification: vi.fn(), updateRequest: vi.fn() }));
 vi.mock("./milestone-actions", () => ({ addPrivateMilestone: vi.fn(), redactPrivateMilestone: vi.fn() }));
+vi.mock("./delivery-actions", () => ({ reportAssistanceDelivery: vi.fn(), reviewAssistanceDelivery: vi.fn() }));
 vi.mock("./follow-up-actions", () => ({
   createAssistanceFollowUp: vi.fn(), resolveAssistanceFollowUp: vi.fn(),
   rescheduleAssistanceFollowUp: vi.fn(), assignAssistanceFollowUp: vi.fn(),
@@ -23,7 +25,7 @@ beforeEach(() => {
     phone: "synthetic-contact", email: null, description: "Private case narrative", documents: [], verification: null, appeal: null, appealId: null,
   });
   m.staff.mockResolvedValue([{ id: "reviewer", name: "Synthetic reviewer" }]);
-  m.history.mockResolvedValue([]); m.tasks.mockResolvedValue([]);
+  m.history.mockResolvedValue([]); m.tasks.mockResolvedValue([]); m.deliveries.mockResolvedValue([]);
 });
 describe("private assistance detail projections", () => {
   it("enforces view permission before any case, staff or history read", async () => {
@@ -102,6 +104,32 @@ describe("private assistance detail projections", () => {
     expect(result).not.toContain("Schedule private follow-up");
     expect(result).not.toContain("Mark action completed");
   });
+  it("keeps reported delivery evidence restricted to the authorized case screen", async () => {
+    m.has.mockReturnValue(true);
+    m.deliveries.mockResolvedValue([{
+      id: "delivery-one", kind: "IN_KIND", state: "REPORTED",
+      summary: "Clothing and essential items reportedly supplied to the household.",
+      occurredOn: new Date("2026-10-15T00:00:00Z"), amountInr: null,
+      evidenceDocumentId: null, updatedAt: new Date("2026-10-16T00:00:00Z"),
+      reportedById: "different-staff", reportedBy: { name: "Synthetic reviewer" },
+      reviewedBy: null, reviewedAt: null,
+    }]);
+    const result = await render();
+    expect(result).toContain("Private support-delivery evidence");
+    expect(result).toContain("Delivery reported");
+    expect(result).toContain("No currently linked private document");
+    expect(result).toContain("Void erroneous delivery record");
+    expect(result).not.toContain("Confirm reviewed delivery evidence");
+    expect(m.deliveries).toHaveBeenCalledWith(expect.objectContaining({
+      where: { assistanceRequestId: "case-synthetic" }, take: 30,
+    }));
+  });
+  it("does not expose delivery review actions to view-only staff", async () => {
+    const result = await render();
+    expect(result).not.toContain("Record delivered support for review");
+    expect(result).not.toContain("Confirm reviewed delivery evidence");
+  });
+
   it("fetches only staff names/IDs and never full authentication profiles or audit metadata", async () => {
     const result = await render();
     expect(m.permission).toHaveBeenCalledWith("assistance.view");
