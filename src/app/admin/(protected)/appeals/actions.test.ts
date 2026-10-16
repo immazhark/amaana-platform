@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   updateTag: vi.fn(),
@@ -296,6 +296,12 @@ describe("appeal concurrent mutation guards", () => {
 describe("appeal post-commit refresh recovery", () => {
   const timestamp = new Date("2026-09-23T04:00:00.000Z");
 
+  afterEach(() => {
+    mocks.updateTag.mockReset();
+    mocks.revalidatePath.mockReset();
+    mocks.redirect.mockReset();
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     mocks.requirePermission.mockResolvedValue({ id: "approver" });
@@ -364,6 +370,43 @@ describe("appeal post-commit refresh recovery", () => {
     expect(mocks.updateManyUpdate).toHaveBeenCalledTimes(1);
     expect(mocks.auditCreate).toHaveBeenCalledTimes(1);
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/appeals/appeal-1");
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/appeals/public-appeal");
+    expect(mocks.redirect).toHaveBeenCalledExactlyOnceWith("/admin/appeals/appeal-1?saved=refresh-delayed");
+  });
+
+  it("reports confirmed draft edits even when detail cache refresh fails", async () => {
+    mocks.appealFind.mockResolvedValue({ status: "DRAFT", updatedAt: timestamp, assistanceRequest: null });
+    mocks.revalidatePath.mockImplementation(() => { throw new Error("cache unavailable"); });
+    await updateAppeal(form({
+      id: "appeal-1", expectedUpdatedAt: timestamp.toISOString(),
+      title: "Verified community help", slug: "verified-community-help",
+      summary: "A privacy-safe verified appeal summary for staff review.",
+      story: "A sufficiently long reviewed appeal story for public editorial controls.",
+      goalAmount: "1000", category: "MEDICAL",
+    }));
+    expect(mocks.updateManyAppeal).toHaveBeenCalledTimes(1);
+    expect(mocks.auditCreate).toHaveBeenCalledTimes(1);
+    expect(mocks.redirect).toHaveBeenCalledExactlyOnceWith("/admin/appeals/appeal-1?saved=refresh-delayed");
+  });
+
+  it("does not replay a committed featuring change after failed public cache expiry", async () => {
+    mocks.updateTag.mockImplementation(() => { throw new Error("tag invalidation failed"); });
+    mocks.appealFind.mockResolvedValue({ status: "PUBLISHED", updatedAt: timestamp, isFeatured: false, featuredOrder: null });
+    await updateFeaturing(form({ id: "appeal-1", expectedUpdatedAt: timestamp.toISOString(), isFeatured: "on", featuredOrder: "1" }));
+    expect(mocks.updateManyAppeal).toHaveBeenCalledTimes(1);
+    expect(mocks.auditCreate).toHaveBeenCalledTimes(1);
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/");
+    expect(mocks.redirect).toHaveBeenCalledExactlyOnceWith("/admin/appeals/appeal-1?saved=refresh-delayed");
+  });
+
+  it("preserves a committed publication even if a later cache path fails", async () => {
+    mocks.updateFind.mockResolvedValue({ appealId: "appeal-1", isPublic: false });
+    mocks.revalidatePath.mockImplementation((path: string) => {
+      if (path === "/appeals") throw new Error("cache unavailable");
+    });
+    await publishAppealUpdate(form({ appealId: "appeal-1", updateId: "update-1", privacyReviewed: "on" }));
+    expect(mocks.updateManyUpdate).toHaveBeenCalledTimes(1);
+    expect(mocks.auditCreate).toHaveBeenCalledTimes(1);
     expect(mocks.revalidatePath).toHaveBeenCalledWith("/appeals/public-appeal");
     expect(mocks.redirect).toHaveBeenCalledExactlyOnceWith("/admin/appeals/appeal-1?saved=refresh-delayed");
   });
