@@ -119,6 +119,19 @@ export default async function RequestDetailPage({ params }: Props) {
     }),
   ]);
   if (!request) notFound();
+  // The displayed history is intentionally bounded, but duplicate-form
+  // eligibility must consider every active observation on the 30 loaded
+  // deliveries, not only the newest 30 historical rows.
+  const activeSources = deliveries.length
+    ? await prisma.assistanceOutcomeObservation.findMany({
+      where: {
+        deliveryRecordId: { in: deliveries.map(item => item.id) },
+        state: { in: ["REPORTED", "REVIEWED"] },
+      },
+      select: { deliveryRecordId: true },
+      take: deliveries.length,
+    })
+    : [];
 
   const converted = request.status === "CONVERTED_TO_APPEAL" || Boolean(request.appealId);
   const manualStatuses = [...MANUAL_ASSISTANCE_STATUSES];
@@ -161,14 +174,25 @@ export default async function RequestDetailPage({ params }: Props) {
   const mayReviewFinancialEvidence = hasPermission(user, "donation.reconcile");
   const mayReportOutcome = hasPermission(user, "assistance.update");
   const mayReviewOutcome = hasPermission(user, "assistance.approve");
-  const activeOutcomeSources = new Set(outcomes.filter(
-    item => item.state === "REPORTED" || item.state === "REVIEWED",
-  ).map(item => item.deliveryRecordId));
+  const activeOutcomeSources = new Set(activeSources.map(item => item.deliveryRecordId));
   const financeCorroborationCandidates = deliveries.filter(item =>
     mayReportDelivery && item.kind === "FINANCIAL" && item.state === "CONFIRMED" &&
     Boolean(item.amountInr) && Boolean(item.evidenceDocumentId) &&
     !item.financialReconciliation);
   const evidenceNames = new Map(request.documents.map(doc => [doc.id, doc.originalName]));
+  const eligibleOutcomeCandidates = mayReportOutcome ? deliveries.filter(item =>
+    !activeOutcomeSources.has(item.id) &&
+    hasCurrentPrivateOutcomeEvidence({
+      ...item,
+      assistanceRequest: {
+        status: request.status, appealId: request.appealId, verification,
+      },
+    }) &&
+    Boolean(item.evidenceDocumentId && evidenceNames.has(item.evidenceDocumentId)) &&
+    (item.kind !== "FINANCIAL" ||
+      Boolean(item.financialReconciliation?.bankProofDocumentId &&
+        evidenceNames.has(item.financialReconciliation.bankProofDocumentId))),
+  ) : [];
 
   return <>
     <nav aria-label="Case navigation"><Link href="/admin">← Back to assistance queue</Link></nav>
@@ -397,18 +421,7 @@ export default async function RequestDetailPage({ params }: Props) {
             would be required for any future public communication.</p>
           {mayReportOutcome && <div className="field">
             <h3>Record a source-linked observation</h3>
-            {deliveries.filter(item =>
-              !activeOutcomeSources.has(item.id) &&
-              hasCurrentPrivateOutcomeEvidence({
-                ...item,
-                assistanceRequest: { status: request.status, appealId: request.appealId,
-                  verification },
-              }) &&
-              Boolean(item.evidenceDocumentId && evidenceNames.has(item.evidenceDocumentId)) &&
-              (item.kind !== "FINANCIAL" ||
-                Boolean(item.financialReconciliation?.bankProofDocumentId &&
-                  evidenceNames.has(item.financialReconciliation.bankProofDocumentId))),
-            ).map(item => (
+            {eligibleOutcomeCandidates.map(item => (
               <details key={item.id}>
                 <summary>Record outcome for {item.kind === "FINANCIAL" ? "financial" : "in-kind"} delivery
                   {" · "}{item.occurredOn.toLocaleDateString("en-IN", { timeZone: "UTC", dateStyle: "medium" })}
@@ -440,14 +453,12 @@ export default async function RequestDetailPage({ params }: Props) {
                 </form>
               </details>
             ))}
-            {deliveries.every(item => activeOutcomeSources.has(item.id) ||
-              !hasCurrentPrivateOutcomeEvidence({
-                ...item, assistanceRequest: {
-                  status: request.status, appealId: request.appealId, verification,
-                },
-              })) && <p className="muted">No additional independently evidenced delivery
+            {eligibleOutcomeCandidates.length === 0 &&
+              <p className="muted">No additional independently evidenced delivery
                 is currently available for a new outcome observation.</p>}
           </div>}
+          {outcomes.length > 0 && <p className="muted">Latest {outcomes.length}
+            private observations shown (maximum 30). Review state is not public-impact approval.</p>}
           {outcomes.length ? <ol className="history">
             {outcomes.map(item => {
               const source = {
