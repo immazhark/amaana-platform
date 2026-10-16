@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 import { retentionDeletionConfirmed } from "@/lib/retention-safety";
 import { deletePrivateDocumentObject } from "@/lib/storage";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
+import { withdrawStaleAnonymousOutcomeCopies } from "@/lib/assistance-outcome-invalidation";
 
 const allowedDecisions = new Set(["RETAIN", "PLACE_HOLD", "RELEASE_HOLD", "DELETE"]);
 
@@ -151,6 +152,14 @@ export async function reviewDocumentRetention(formData: FormData) {
       throw new Error("The request or linked appeal changed while you were reviewing it. Refresh before deleting.");
     }
 
+    // Withdraw any public note backed by this consent, bank proof or delivery
+    // evidence BEFORE touching object storage. A storage failure may leave
+    // evidence available, but must never resurrect publication permission.
+    await withSerializableTransactionRetry(tx =>
+      withdrawStaleAnonymousOutcomeCopies(
+        tx, document.assistanceRequestId, user.id, "DOCUMENT_DELETION", documentId,
+      ),
+    );
     const claimed = await prisma.assistanceDocument.updateMany({
       where: { id: documentId, objectKey: document.objectKey, updatedAt: deletionSnapshot.updatedAt },
       data: { updatedAt: new Date() },
@@ -188,6 +197,7 @@ export async function reviewDocumentRetention(formData: FormData) {
     ]);
   }
 
+  revalidatePath("/impact");
   revalidatePath("/admin/retention");
   revalidatePath(`/admin/requests/${document.assistanceRequestId}`);
   revalidatePath("/admin");
