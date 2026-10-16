@@ -1,3 +1,19 @@
+## 2026-10-17 — Private moderation access, follow-up history and consent input guards
+
+Ownership: HANDOFF_PENDING; sole writer continued existing PR #292 from `8c87e93`. Published source `28942de523540d6e12413d50960a783ebae5edd9`; main unchanged. No release authorization or live writes.
+
+- Recognition staff page now exposes all later pending, approved, ineligible-cleanup and donor-consent records through independent bounded pages (30/30/30/50). Count-clamped offsets, stable order, preserved companion-page positions and anchor links replace inaccessible first-page truncation. Counts and row reads use two parallel rounds; no unbounded query or extra donor/contact/receipt fields. Approved names remain removable after refunds/anonymity changes. Feature OFF returns before database reads and never falsely declares the backlog cleared. Noncanonical/malformed names are visible as private record-review entries without echoing raw values or offering mismatched snapshot actions.
+- Recognition approve/reject and staff takedown reject repeated required FormData fields before transactions; approval requires canonical reviewed name equality. Existing reconciliation permission, consent timestamp/name CAS, captured/non-anonymous/unrefunded approval eligibility, pending-cleanup ineligibility, serializable updates and audit/cache semantics retained.
+- Follow-up workboard now supports completed/cancelled task history and explicit active/inactive/all-case scope. Default remains the operator's open due tasks on active unconverted cases. Resolved history is ordered by resolution time (missing times last), shows IST timestamps and preserves state/scope/team filters across bounded pages. Task completion is explicitly distinguished from verified aid delivery. No mutation shortcut, SLA/urgency inference, applicant names or new case permissions.
+
+Evidence: reproduced **12 failing page cases** and **10 failing ambiguous-input/canonical-name cases** against prior sources. Final **47 focused tests across six suites pass**, including read authorization/gating, pagination after removals, unreachable later records, privacy projections, task history and transactional staff guards. Replaced obsolete source-string truncation checks with actual page/action tests. Application-only TypeScript, changed-file zero-warning ESLint, diff checks and clean optimized compile-only build pass. Impeccable detector reported no findings. Browser/staff round trips, native PostgreSQL concurrency, full data generation and live withdrawal acceptance are NOT certified. Previously reported unrelated assistance-test typing limitations remain.
+
+Emitted JS **814226/819200**, CSS **348052/348160**, unchanged; no new client boundary, stylesheet, dependency, migration or budget relaxation.
+
+Master149 implementation remains **60 Implemented /61 Partial /26 Not started /2 other**, no formal closure or live promotion. AF-R091 and AF-CONSENT now record targeted test evidence for these scoped controls; AF-LOCAL gains task-history/filter evidence. Consent retention, reviewed feature activation, service-zone/urgency/SLA policy and end-to-end acceptance remain open. Current Git classifications **61 Merged /60 PR open /28 Uncommitted**, reflecting new AF-CONSENT source in PR rather than its prior merged baseline.
+
+Next: continue the next unblocked substantive source package; no broad re-audit. No main merge, deployment, production/provider/payment/email operation, consent activation or database migration occurred.
+
 ## 2026-10-17 — W7 sponsorship review and manual calendar planning
 
 Ownership: HANDOFF_PENDING on `fix/direct-transfer-feedback-20261013`, PR #292. Sole writer resumed `1ea37edf`; published source `0fd4c049629fa9cd3cab9c493d4f755a7dc04043`. No main merge or production release.
