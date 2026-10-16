@@ -30,7 +30,7 @@ export default async function RequestDetailPage({ params }: Props) {
     prisma.assistanceRequest.findUnique({
       where: { id },
       include: {
-        documents: true,
+        documents: { select: { id: true, originalName: true, mimeType: true, sizeBytes: true } },
         appeal: { select: { title: true, status: true } },
         verification: { include: { reviewedBy: { select: { name: true } } } },
       },

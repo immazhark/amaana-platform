@@ -66,7 +66,8 @@ describe("private assistance detail projections", () => {
       take: 50,
     }));
     expect(m.request.mock.calls[0]?.[0].include).toEqual({
-      documents: true, appeal: { select: { title: true, status: true } },
+      documents: { select: { id: true, originalName: true, mimeType: true, sizeBytes: true } },
+      appeal: { select: { title: true, status: true } },
       verification: { include: { reviewedBy: { select: { name: true } } } },
     });
     expect(result).toContain("Synthetic reviewer"); expect(result).toContain("Private case narrative");
