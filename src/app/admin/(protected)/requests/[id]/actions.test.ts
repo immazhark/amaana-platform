@@ -307,6 +307,9 @@ describe("post-conversion public disclosure withdrawal", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.revalidate.mockReset();
+    mocks.updateTag.mockReset();
+    mocks.invalidate.mockReset();
     mocks.requirePermission.mockResolvedValue({ id: "privacy-reviewer" });
     mocks.hasPermission.mockReturnValue(true);
     mocks.transaction.mockImplementation(async callback => callback(tx()));
@@ -332,6 +335,7 @@ describe("post-conversion public disclosure withdrawal", () => {
       where: { id: "appeal-1", status: "PUBLISHED", updatedAt: date },
       data: { status: "PAUSED", isFeatured: false, featuredOrder: null },
     });
+    expect(mocks.invalidate).toHaveBeenCalledWith(expect.anything(), "case-1", "privacy-reviewer", "VERIFICATION_CHANGED");
     expect(mocks.auditCreate).toHaveBeenCalledWith({
       data: expect.objectContaining({
         action: "assistance.public_disclosure_withdrawn",
