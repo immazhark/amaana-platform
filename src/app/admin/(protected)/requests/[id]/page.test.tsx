@@ -7,6 +7,7 @@ vi.mock("@/lib/prisma", () => ({ prisma: {
   assistanceRequest: { findUnique: m.request }, user: { findMany: m.staff }, auditEvent: { findMany: m.history },
 } }));
 vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerification: vi.fn(), updateRequest: vi.fn() }));
+vi.mock("./milestone-actions", () => ({ addPrivateMilestone: vi.fn() }));
 import RequestDetailPage from "./page";
 const render = async () => renderToStaticMarkup(await RequestDetailPage({ params: Promise.resolve({ id: "case-synthetic" }) }));
 beforeEach(() => {
@@ -24,6 +25,35 @@ describe("private assistance detail projections", () => {
     await expect(render()).rejects.toThrow("Forbidden");
     expect(m.request).not.toHaveBeenCalled(); expect(m.staff).not.toHaveBeenCalled(); expect(m.history).not.toHaveBeenCalled();
   });
+  it("shows authorized private milestones only on the protected case detail", async () => {
+    m.has.mockReturnValue(true);
+    m.history.mockResolvedValueOnce([]).mockResolvedValueOnce([{
+      id: "private-note-synthetic",
+      metadata: { kind: "DOCUMENT_FOLLOW_UP", summary: "Documents were requested for an internal second review." },
+      createdAt: new Date("2026-10-16T08:00:00Z"),
+      actor: { name: "Synthetic reviewer" },
+    }]);
+    const markup = await render();
+    expect(markup).toContain("Private case follow-ups");
+    expect(markup).toContain("Record private follow-up");
+    expect(markup).toContain("Documents were requested for an internal second review.");
+    expect(m.history).toHaveBeenCalledWith(expect.objectContaining({
+      where: { entityType: "AssistanceRequest", entityId: "case-synthetic",
+        action: "assistance.private_milestone_added" },
+      take: 20,
+    }));
+  });
+
+  it("does not surface free-text notes from malformed historical audit metadata", async () => {
+    m.history.mockResolvedValueOnce([]).mockResolvedValueOnce([{
+      id: "invalid-note", metadata: { kind: "PUBLIC_APPROVAL", summary: "Unreviewed disclosure must remain private." },
+      createdAt: new Date("2026-10-16T08:00:00Z"), actor: { name: "Synthetic reviewer" },
+    }]);
+    const markup = await render();
+    expect(markup).not.toContain("Unreviewed disclosure must remain private.");
+    expect(markup).toContain("No private follow-ups have been recorded");
+  });
+
   it("fetches only staff names/IDs and never full authentication profiles or audit metadata", async () => {
     const result = await render();
     expect(m.permission).toHaveBeenCalledWith("assistance.view");
