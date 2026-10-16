@@ -31,7 +31,7 @@ export function AssistanceForm() {
   const inFlight = useRef<AbortController | null>(null);
   useEffect(() => () => { inFlight.current?.abort(); }, []);
   const [focusTarget, setFocusTarget] = useState<AssistanceField | AssistanceStep | "summary" | null>(null);
-  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [selectedFiles, setSelectedFiles] = useState<{ count: number; names: string[] }>({ count: 0, names: [] });
   const submitting = phase === "submitting";
   const locked = phase !== "ready";
 
@@ -132,6 +132,12 @@ export function AssistanceForm() {
         submissionLocked.current = false;
         setPhase("ready");
         setFieldErrors(result.fields);
+        // File evidence rejected by the server must be replaced before any
+        // new submission. Merely navigating back through steps is not a fix.
+        const documents = form.elements.namedItem("documents");
+        if (documents instanceof HTMLInputElement && result.fields.documents?.[0]) {
+          documents.setCustomValidity(result.fields.documents[0]);
+        }
         setError(result.message);
         const firstInvalidField = ASSISTANCE_FIELDS.find(field => result.fields[field]?.length);
         if (firstInvalidField) {
@@ -172,19 +178,19 @@ export function AssistanceForm() {
     {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{phase === "followup" && <p><Link className="v2-text-link" href="/contact">Contact Amaana about this request</Link></p>}</div>}
     <fieldset id="assistance-step-1" data-assistance-step="1" tabIndex={-1} hidden={step !== 1} disabled={locked}><legend><span>01</span> Contact</legend><div className="form-grid">
       {contactField("applicantName", "name", "Applicant name", { autoComplete: "name", minLength: 2, maxLength: 120, required: true })}
-      {contactField("phone", "phone", "Phone number", { type: "tel", autoComplete: "tel", required: true })}
-      {contactField("email", "email", <>Email <span className="muted">optional</span></>, { type: "email", autoComplete: "email" })}
+      {contactField("phone", "phone", "Phone number", { type: "tel", inputMode: "tel", autoComplete: "tel", maxLength: 18, pattern: "[+]?[0-9][0-9\\s-]{7,16}", required: true })}
+      {contactField("email", "email", <>Email <span className="muted">optional</span></>, { type: "email", autoComplete: "email", maxLength: 254 })}
       {contactField("city", "city", "City", { autoComplete: "address-level2", required: true })}
     </div><div className={styles.stepActions}><button className="v2-button" type="button" onClick={advance}>Continue to need →</button></div></fieldset>
     <fieldset id="assistance-step-2" data-assistance-step="2" tabIndex={-1} hidden={step !== 2} disabled={locked}><legend><span>02</span> Need</legend><div className="form-grid">
       <div className="field full"><label htmlFor="category">Type of assistance</label><select id="category" name="category" required defaultValue="" {...fieldProps("category")}><option value="" disabled>Select the closest category</option><option value="MEDICAL">Medical</option><option value="EDUCATION">Education</option><option value="LIVELIHOOD">Livelihood</option><option value="FOOD_HARDSHIP">Food hardship</option><option value="HOUSING">Housing</option><option value="EMERGENCY">Emergency</option><option value="OTHER">Other</option></select>{fieldError("category")}</div>
       <div className="field full"><label htmlFor="description">Describe the need</label><textarea id="description" name="description" minLength={40} maxLength={5000} required placeholder="In your own words: what has happened, what support is needed, approximate amount if known, and anything time-sensitive." {...fieldProps("description", "description-help")} /><small id="description-help">40–5,000 characters. Please avoid unrelated sensitive information, passwords, OTPs or full banking credentials.</small>{fieldError("description")}</div>
     </div><div className={styles.stepActions}><button className={styles.backButton} type="button" onClick={() => goToStep(1)}>← Back</button><button className="v2-button" type="button" onClick={advance}>Continue to evidence →</button></div></fieldset>
-    <fieldset id="assistance-step-3" data-assistance-step="3" tabIndex={-1} hidden={step !== 3} disabled={locked}><legend><span>03</span> Supporting evidence <small>optional</small></legend><div className="form-grid"><div className="field full v2-file-field"><label className="v2-file-dropzone" htmlFor="documents"><strong>Add private supporting files</strong><span>PDF, JPG, PNG or WEBP · up to 5 files · maximum 5 MB each</span><span className="v2-file-cta">Choose files securely</span><span className="v2-file-selection" aria-live="polite">{selectedFiles.length ? `${selectedFiles.length} selected · ${selectedFiles.join(", ")}` : "No files selected"}</span></label><input className="v2-file-input" id="documents" name="documents" type="file" accept=".pdf,image/jpeg,image/png,image/webp" multiple {...fieldProps("documents", "documents-help")} onChange={event => {
+    <fieldset id="assistance-step-3" data-assistance-step="3" tabIndex={-1} hidden={step !== 3} disabled={locked}><legend><span>03</span> Supporting evidence <small>optional</small></legend><div className="form-grid"><div className="field full v2-file-field"><label className="v2-file-dropzone" htmlFor="documents"><strong>Add private supporting files</strong><span>PDF, JPG, PNG or WEBP · up to 5 files · maximum 5 MB each</span><span className="v2-file-cta">Choose files securely</span><span className="v2-file-selection" aria-live="polite">{selectedFiles.count ? `${selectedFiles.count} selected · ${selectedFiles.names.join(", ")}${selectedFiles.count > 5 ? ", …" : ""}` : "No files selected"}</span></label><input className="v2-file-input" id="documents" name="documents" type="file" accept=".pdf,image/jpeg,image/png,image/webp" multiple {...fieldProps("documents", "documents-help")} onChange={event => {
         const files = Array.from(event.currentTarget.files ?? []);
         const issue = assistanceDocumentSelectionIssue(files);
         event.currentTarget.setCustomValidity(issue ?? "");
-        setSelectedFiles(files.slice(0, 5).map(file => file.name));
+        setSelectedFiles({ count: files.length, names: files.slice(0, 5).map(file => file.name) });
         setFieldErrors(current => ({ ...current, documents: issue ? [issue] : undefined }));
       }} /><small id="documents-help">Documents are used for private verification and administration. Uploading a document does not give Amaana permission to publish it.</small>{fieldError("documents")}</div></div><div className={styles.stepActions}><button className={styles.backButton} type="button" onClick={() => goToStep(2)}>← Back</button><button className="v2-button" type="button" onClick={advance}>Continue to confirm →</button></div></fieldset>
     <fieldset id="assistance-step-4" data-assistance-step="4" tabIndex={-1} hidden={step !== 4} disabled={locked} className="v2-consent-fieldset"><legend><span>04</span> Confirm</legend><p className={styles.privacyNote}>Your request and supporting documents remain private by default. Public use of identity, photographs or sensitive circumstances is a separate reviewed decision.</p><div className="field full v2-form-choice"><label className="checkbox"><input name="consent" type="checkbox" required {...fieldProps("consent", "assistance-consent-help")} /><span><strong>I confirm the information I have provided is accurate to the best of my knowledge.</strong><small id="assistance-consent-help">I understand that submission does not guarantee assistance or public fundraising, and that Amaana may request further information to verify the need. Public use of a name, photograph or sensitive story details requires a separate decision and consent review.</small></span></label>{fieldError("consent")}</div><p className="muted">Before submitting, please review the <a href="/terms" target="_blank" rel="noreferrer">assistance and platform terms</a> and <a href="/privacy" target="_blank" rel="noreferrer">privacy notice</a>.</p><div className={styles.stepActions}><button className={styles.backButton} type="button" onClick={() => goToStep(3)} disabled={locked}>← Back</button></div></fieldset>
