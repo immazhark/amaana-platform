@@ -469,6 +469,16 @@ export default async function RequestDetailPage({ params }: Props) {
               <p className="muted">No additional independently evidenced delivery
                 is currently available for a new outcome observation.</p>}
           </div>}
+          {mayReportOutcome && request.verification?.confidentialityLevel === "STANDARD" &&
+            request.documents.length < 30 &&
+            outcomes.some(item => item.state === "REVIEWED" && !item.disclosure &&
+              hasCurrentPrivateOutcomeEvidence({
+                ...item.deliveryRecord,
+                assistanceRequest: {
+                  status: request.status, appealId: request.appealId, verification,
+                },
+              })) &&
+            <AdminPrivateEvidenceUpload caseId={id} purpose="consent"/>}
           {outcomes.length > 0 && <p className="muted">Latest {outcomes.length}
             private observations shown (maximum 30). Review state is not public-impact approval.</p>}
           {outcomes.length ? <ol className="history">
