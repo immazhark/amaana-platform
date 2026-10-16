@@ -13,6 +13,7 @@ vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), 
 vi.mock("./milestone-actions", () => ({ addPrivateMilestone: vi.fn(), redactPrivateMilestone: vi.fn() }));
 vi.mock("./delivery-actions", () => ({ linkAssistanceDeliveryEvidence: vi.fn(), reportAssistanceDelivery: vi.fn(), reviewAssistanceDelivery: vi.fn() }));
 vi.mock("./outcome-actions", () => ({ reportAssistanceOutcome: vi.fn(), reviewAssistanceOutcome: vi.fn() }));
+vi.mock("./disclosure-actions", () => ({ proposeAnonymousOutcomeCopy: vi.fn(), reviewAnonymousOutcomeCopy: vi.fn() }));
 vi.mock("./financial-actions", () => ({
   proposeAssistanceFinancialCorroboration: vi.fn(), reviewAssistanceFinancialCorroboration: vi.fn(),
 }));
@@ -224,6 +225,56 @@ describe("private assistance detail projections", () => {
     expect(markup).toContain("no longer");
     expect(markup).not.toContain("Review private operational outcome");
     expect(markup).not.toContain("Submit private outcome for independent review");
+  });
+
+  it("retains withdrawal control after an earlier approved copy loses source eligibility", async () => {
+    m.has.mockReturnValue(true);
+    m.outcomes.mockResolvedValue([{
+      id: "outcome-one", kind: "PARTIAL_SUPPORT", state: "VOIDED",
+      summary: "This private note must not be presented as public impact.",
+      deliveryRecordId: "delivery-one", reportedById: "another-reporter",
+      reviewedById: "another-reviewer",
+      updatedAt: new Date("2026-10-16T09:00:00Z"),
+      createdAt: new Date("2026-10-16T08:00:00Z"),
+      reviewedAt: new Date("2026-10-16T10:00:00Z"),
+      reportedBy: { name: "Reporter" }, reviewedBy: { name: "Reviewer" },
+      deliveryRecord: {
+        kind: "IN_KIND", state: "VOIDED",
+        reportedById: "delivery-reporter", evidenceDocumentId: null,
+        financialReconciliation: null,
+      },
+      disclosure: {
+        id: "disclosure-one", state: "APPROVED_COPY",
+        copyText: "Amaana Foundation recorded partial support for a verified assistance case. Additional needs may remain.",
+        consentDocumentId: "expired-consent", preparedById: "original-preparer",
+        approvedBy: { name: "First approver" },
+        approvedAt: new Date("2026-10-16T10:30:00Z"),
+        updatedAt: new Date("2026-10-16T10:30:00Z"),
+      },
+    }]);
+    const markup = await render();
+    expect(markup).toContain("Anonymous copy approved internally");
+    expect(markup).toContain("historical, not current");
+    expect(markup).toContain("Withdraw anonymous-copy approval");
+    expect(markup).not.toContain("Approve anonymous copy internally");
+  });
+
+  it("does not create disclosure publication controls for an unreviewed outcome", async () => {
+    m.outcomes.mockResolvedValue([{
+      id: "outcome-reported", kind: "PARTIAL_SUPPORT", state: "REPORTED",
+      summary: "Internal report awaiting review, not suitable for public disclosure.",
+      deliveryRecordId: "delivery-one", reportedById: "other-reporter",
+      updatedAt: new Date(), createdAt: new Date(), reviewedAt: null,
+      reportedBy: { name: "Reporter" }, reviewedBy: null,
+      deliveryRecord: {
+        kind: "IN_KIND", state: "REPORTED",
+        reportedById: "other-reporter", evidenceDocumentId: null,
+        financialReconciliation: null,
+      }, disclosure: null,
+    }]);
+    const markup = await render();
+    expect(markup).not.toContain("Submit anonymous wording for independent approval");
+    expect(markup).not.toContain("Approve anonymous copy internally");
   });
 
   it("fetches only staff names/IDs and never full authentication profiles or audit metadata", async () => {
