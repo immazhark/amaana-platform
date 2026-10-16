@@ -6,12 +6,14 @@ import { redirect } from "next/navigation";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import {
   ANONYMOUS_OUTCOME_COPY, disclosureSourceSelect, eligibleForAnonymousCopy,
-  parseDisclosureDecision, parseDisclosureProposal, requiredDisclosureEvidenceIds,
+  parseDisclosureDecision, parseDisclosureProposal, parseDisclosurePublication,
+  requiredDisclosureEvidenceIds,
 } from "@/lib/assistance-outcome-disclosure";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
 function finish(id: string): never {
   try { revalidatePath(`/admin/requests/${id}`); } catch { /* committed transaction */ }
+  try { revalidatePath("/impact"); } catch { /* public path dynamically rechecks eligibility */ }
   redirect(`/admin/requests/${id}`);
 }
 
@@ -131,7 +133,10 @@ export async function reviewAnonymousOutcomeCopy(form: FormData) {
     const changed = await tx.assistanceOutcomeDisclosure.updateMany({
       where: { id: item.id, state: item.state, updatedAt: input.expectedUpdatedAt },
       data: {
-        state: input.decision, approvedById: actor.id, approvedAt: new Date(),
+        state: input.decision,
+        // Do not erase original copy approval attribution on withdrawal.
+        ...(item.state === AssistanceOutcomeDisclosureState.DRAFT
+          ? { approvedById: actor.id, approvedAt: new Date() } : {}),
       },
     });
     if (changed.count !== 1) throw new Error("A separate reviewer changed this proposal.");
@@ -145,6 +150,81 @@ export async function reviewAnonymousOutcomeCopy(form: FormData) {
           ? { previousApprovedById: item.approvedById,
               previousApprovedAt: item.approvedAt?.toISOString() ?? null } : {}),
       },
+    } });
+  });
+  finish(input.caseId);
+}
+
+/** Explicit, audited publication after separate copy approval. Approval alone
+ * can never create a public item. Private records, names and IDs stay private.
+ * A different authorized staff member must make this final release decision. */
+export async function publishAnonymousOutcomeCopy(form: FormData) {
+  const actor = await requirePermission("content.approve");
+  if (!hasPermission(actor, "assistance.view") ||
+      !hasPermission(actor, "assistance.approve")) {
+    throw new Error("Case-view and assistance-approval permissions are required.");
+  }
+  const input = parseDisclosurePublication(form);
+  await withSerializableTransactionRetry(async tx => {
+    const item = await tx.assistanceOutcomeDisclosure.findUnique({
+      where: { id: input.disclosureId },
+      select: {
+        id: true, state: true, updatedAt: true, publishedById: true,
+        approvedById: true, approvedAt: true, preparedById: true,
+        consentDocumentId: true, copyText: true,
+        observation: { select: disclosureSourceSelect },
+      },
+    });
+    if (!item || item.observation.assistanceRequestId !== input.caseId) {
+      throw new Error("This anonymous copy does not belong to the assistance case.");
+    }
+    if (item.state === AssistanceOutcomeDisclosureState.PUBLISHED) return;
+    if (item.state !== AssistanceOutcomeDisclosureState.APPROVED_COPY ||
+        !item.approvedById || !item.approvedAt) {
+      throw new Error("Only independently approved anonymous copy can be published.");
+    }
+    if (item.updatedAt.getTime() !== input.expectedUpdatedAt.getTime()) {
+      throw new Error("The approved copy changed. Reload before publication.");
+    }
+    const observation = item.observation;
+    if (actor.id === item.approvedById || actor.id === item.preparedById ||
+        actor.id === observation.reportedById || actor.id === observation.reviewedById) {
+      throw new Error("A different authorized publisher must make the final release decision.");
+    }
+    if (!eligibleForAnonymousCopy(observation) ||
+        item.copyText !== ANONYMOUS_OUTCOME_COPY[observation.kind] ||
+        !item.consentDocumentId) {
+      throw new Error("Consent, case eligibility or anonymous wording changed; publication is blocked.");
+    }
+    const ids = requiredDisclosureEvidenceIds(observation, item.consentDocumentId);
+    const distinct = new Set(ids);
+    if (ids.length < 2 || distinct.size !== ids.length) {
+      throw new Error("Explicit consent must remain separate from delivery and bank documents.");
+    }
+    const available = await tx.assistanceDocument.count({
+      where: { assistanceRequestId: input.caseId, id: { in: ids } },
+    });
+    if (available !== ids.length) {
+      throw new Error("Written consent or supporting evidence is missing. Publication is blocked.");
+    }
+    const changed = await tx.assistanceOutcomeDisclosure.updateMany({
+      where: {
+        id: item.id, state: AssistanceOutcomeDisclosureState.APPROVED_COPY,
+        updatedAt: input.expectedUpdatedAt, publishedAt: null,
+      },
+      data: {
+        state: AssistanceOutcomeDisclosureState.PUBLISHED,
+        publishedAt: new Date(), publishedById: actor.id,
+      },
+    });
+    if (changed.count !== 1) {
+      throw new Error("The copy changed before publication; reload its approval state.");
+    }
+    await tx.auditEvent.create({ data: {
+      actorId: actor.id, action: "assistance.anonymous_outcome_explicitly_published",
+      entityType: "AssistanceRequest", entityId: input.caseId,
+      // Never write consent wording, private facts or bank evidence into audit JSON.
+      metadata: { disclosureId: item.id, observationId: observation.id },
     } });
   });
   finish(input.caseId);
