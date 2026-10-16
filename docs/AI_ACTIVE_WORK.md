@@ -1,3 +1,7 @@
+## 2026-10-17 — Linked appeal cover media takedown (IN PROGRESS)
+
+Ownership: CHATGPT_ACTIVE. Verified PR #292 open, sole writer on `fix/direct-transfer-feedback-20261013`, from `c70e64fbd859d2ee0f7ea10af843aec4018d2a71`. Scope: on emergency converted-appeal consent withdrawal, atomically unpublish matching media-library cover asset(s), including shared library references, with auditable provenance, independent route invalidation, and staff warning for external/cached residual copies. Preserve storage objects and unrelated media; write focused regression tests first. No main merge, deploy, provider calls, CI pipeline or schema migration.
+
 ## 2026-10-17 — Emergency public consent withdrawal after appeal conversion
 
 Ownership: HANDOFF_PENDING. ChatGPT completed source/administration and regression coverage on open PR #292, branch `fix/direct-transfer-feedback-20261013` targeting `main`. Initial verified head `927effa29c746f7b7f0a062e9cc5f328d2ceae62`. Tests `9b4f8bb72404370624adbd6156efed1c101a0525`, `a28a5cd87683f8b3d11b6932d00336f672104ecf`, `09fc5c3fe18e3549a40b373386da4787b87870f3`, `b3ac8c4db5df9f61a02f9b42fb4f9488ccbc13a8`. Source `cbea70fdf2f892e80fcaa46c7e22d62c31792fa6`, `7460674b90dc4675e46eda2db05f9c83d28b38af`, `5b893febb2917cdd4c3b662ad5484edc8b3d9461`; admin UI `8e32747c17a9d847411c47e80f554f3ab15541bd`; master `07b3064b32552f2c40f66a91c2f916663cf990a3`; ledger `88c7934d6379d58e9fe2d0b15c0fb8683e197993`.
