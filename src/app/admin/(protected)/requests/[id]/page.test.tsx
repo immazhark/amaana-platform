@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({ permission: vi.fn(), has: vi.fn(), request: vi.fn(), staff: vi.fn(), history: vi.fn(), tasks: vi.fn(), deliveries: vi.fn(), missing: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requirePermission: m.permission, hasPermission: m.has }));
-vi.mock("next/navigation", () => ({ notFound: m.missing }));
+vi.mock("next/navigation", () => ({ notFound: m.missing, useRouter: () => ({ refresh: vi.fn() }) }));
 vi.mock("@/lib/prisma", () => ({ prisma: {
   assistanceRequest: { findUnique: m.request }, user: { findMany: m.staff },
   auditEvent: { findMany: m.history }, assistanceFollowUp: { findMany: m.tasks },
@@ -11,6 +11,9 @@ vi.mock("@/lib/prisma", () => ({ prisma: {
 vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerification: vi.fn(), updateRequest: vi.fn() }));
 vi.mock("./milestone-actions", () => ({ addPrivateMilestone: vi.fn(), redactPrivateMilestone: vi.fn() }));
 vi.mock("./delivery-actions", () => ({ linkAssistanceDeliveryEvidence: vi.fn(), reportAssistanceDelivery: vi.fn(), reviewAssistanceDelivery: vi.fn() }));
+vi.mock("./financial-actions", () => ({
+  proposeAssistanceFinancialCorroboration: vi.fn(), reviewAssistanceFinancialCorroboration: vi.fn(),
+}));
 vi.mock("./follow-up-actions", () => ({
   createAssistanceFollowUp: vi.fn(), resolveAssistanceFollowUp: vi.fn(),
   rescheduleAssistanceFollowUp: vi.fn(), assignAssistanceFollowUp: vi.fn(),
@@ -128,6 +131,65 @@ describe("private assistance detail projections", () => {
     const result = await render();
     expect(result).not.toContain("Record delivered support for review");
     expect(result).not.toContain("Confirm reviewed delivery evidence");
+  });
+
+  it("masks a finance reference from ordinary case viewers and preserves historical evidence status", async () => {
+    m.deliveries.mockResolvedValue([{
+      id: "delivery-finance", kind: "FINANCIAL", state: "CONFIRMED",
+      summary: "Previously reviewed assistance delivered to a verified institution.",
+      occurredOn: new Date("2026-10-15T00:00:00Z"),
+      amountInr: { toFixed: () => "1250.50" },
+      evidenceDocumentId: "delivery-proof", updatedAt: new Date("2026-10-16T00:00:00Z"),
+      reportedById: "reporter-synthetic", reportedBy: { name: "Reporter" },
+      reviewedBy: { name: "Independent reviewer" }, reviewedAt: new Date(),
+      financialReconciliation: {
+        id: "reconciliation-synthetic", status: "EVIDENCE_REVIEWED",
+        transactionReference: "ABCD12345678", bankProofDocumentId: null,
+        submittedById: "maker-synthetic",
+        reviewedAt: new Date(), reviewedBy: { name: "Finance reviewer" },
+        updatedAt: new Date(),
+      },
+    }]);
+    const markup = await render();
+    expect(markup).toContain("••••5678");
+    expect(markup).not.toContain("ABCD12345678");
+    expect(markup).toContain("historical review information only");
+    expect(markup).not.toContain("Record independent bank-proof review");
+  });
+
+  it("renders controlled finance review with a separate bank document", async () => {
+    m.has.mockReturnValue(true);
+    m.deliveries.mockResolvedValue([{
+      id: "delivery-finance", kind: "FINANCIAL", state: "CONFIRMED",
+      summary: "Previously reviewed assistance delivered to a verified institution.",
+      occurredOn: new Date("2026-10-15T00:00:00Z"),
+      amountInr: { toFixed: () => "1250.50" },
+      evidenceDocumentId: "delivery-proof", updatedAt: new Date("2026-10-16T00:00:00Z"),
+      reportedById: "reporter-synthetic", reportedBy: { name: "Reporter" },
+      reviewedBy: { name: "Independent reviewer" }, reviewedAt: new Date(),
+      financialReconciliation: {
+        id: "reconciliation-synthetic", status: "PENDING",
+        transactionReference: "ABCD12345678", bankProofDocumentId: "bank-proof",
+        submittedById: "maker-synthetic", reviewedAt: null, reviewedBy: null,
+        updatedAt: new Date("2026-10-16T00:00:00Z"),
+      },
+    }]);
+    m.request.mockResolvedValue({
+      id: "case-synthetic", referenceNumber: "AF-SYNTHETIC",
+      applicantName: "Synthetic applicant", category: "MEDICAL", city: "Hyderabad",
+      status: "SUBMITTED", createdAt: new Date(), updatedAt: new Date(),
+      phone: "synthetic-contact", email: null, description: "Private case narrative",
+      documents: [
+        { id: "delivery-proof", originalName: "delivery.pdf", mimeType: "application/pdf", sizeBytes: 100 },
+        { id: "bank-proof", originalName: "bank.pdf", mimeType: "application/pdf", sizeBytes: 100 },
+      ],
+      verification: null, appeal: null, appealId: null,
+    });
+    const markup = await render();
+    expect(markup).toContain("ABCD12345678");
+    expect(markup).toContain("Record independent bank-proof review");
+    expect(markup).toContain("INR 1250.50");
+    expect(markup).toContain("Void incorrect bank-proof match");
   });
 
   it("fetches only staff names/IDs and never full authentication profiles or audit metadata", async () => {

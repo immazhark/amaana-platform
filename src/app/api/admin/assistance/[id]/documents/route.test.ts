@@ -43,9 +43,10 @@ const transaction = {
   assistanceDocument: { create: m.documentCreate },
   auditEvent: { create: m.auditCreate },
 };
-function request(file: File | null = new File(["%PDF-1.4\nproof"], "delivery-evidence.pdf", { type: "application/pdf" })) {
+function request(file: File | null = new File(["%PDF-1.4\nproof"], "delivery-evidence.pdf", { type: "application/pdf" }), purpose: string = "delivery") {
   const body = new FormData();
   if (file) body.set("document", file);
+  body.set("purpose", purpose);
   return new Request("https://example.org/api/admin/assistance/case-synthetic/documents", {
     method: "POST", body,
     headers: { origin: "https://example.org" },
@@ -93,6 +94,30 @@ describe("staff-only private delivery-proof upload", () => {
     expect(response.status).toBe(409);
     expect(m.upload).not.toHaveBeenCalled();
   });
+  it("allows bank proof for an approved financial delivery without changing donor data", async () => {
+    const result = await POST(request(undefined, "financial"), params);
+    expect(result.status).toBe(201);
+    expect(m.caseFind).toHaveBeenCalledWith(expect.objectContaining({
+      select: expect.objectContaining({
+        deliveryRecords: {
+          where: { kind: "FINANCIAL", state: "CONFIRMED",
+            financialReconciliation: { is: null } },
+          select: { id: true }, take: 1,
+        },
+      }),
+    }));
+    expect(m.auditCreate).toHaveBeenCalledWith({ data: expect.objectContaining({
+      action: "assistance.financial_private_proof_uploaded",
+    }) });
+    expect(m.upload).toHaveBeenCalledOnce();
+  });
+
+  it("rejects an arbitrary upload purpose before private storage is touched", async () => {
+    const result = await POST(request(undefined, "public"), params);
+    expect(result.status).toBe(400);
+    expect(m.upload).not.toHaveBeenCalled();
+  });
+
   it("caps evidence growth before private storage is written", async () => {
     m.caseFind.mockResolvedValue({ ...eligible, _count: { documents: 30 } });
     expect((await POST(request(), params)).status).toBe(409);
