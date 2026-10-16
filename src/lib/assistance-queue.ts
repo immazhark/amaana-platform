@@ -9,7 +9,7 @@ export type AssistanceQueueFilters = {
   city?: string;
   review: "all" | "incomplete" | "complete";
   followUp: "all" | "due" | "open" | "none" | "mine";
-  delivery: "all" | "reported" | "confirmed" | "none";
+  delivery: "all" | "reported" | "proof_missing" | "ready" | "confirmed" | "none";
 };
 type SearchValue = string | string[] | undefined;
 
@@ -29,7 +29,9 @@ export function parseAssistanceQueueFilters(params: {
     ...(validCity ? { city } : {}),
     review: params.review === "incomplete" || params.review === "complete" ? params.review : "all",
     followUp: params.followUp === "due" || params.followUp === "open" || params.followUp === "none" || params.followUp === "mine" ? params.followUp : "all",
-    delivery: params.delivery === "reported" || params.delivery === "confirmed" || params.delivery === "none" ? params.delivery : "all",
+    delivery: params.delivery === "reported" || params.delivery === "proof_missing" ||
+      params.delivery === "ready" || params.delivery === "confirmed" ||
+      params.delivery === "none" ? params.delivery : "all",
   };
 }
 
@@ -79,6 +81,12 @@ export function assistanceQueueFollowUpWhere(
 /** A report awaiting evidence review is not independently confirmed support. */
 export function assistanceQueueDeliveryWhere(delivery: AssistanceQueueFilters["delivery"]): Prisma.AssistanceRequestWhereInput {
   if (delivery === "reported") return { deliveryRecords: { some: { state: "REPORTED" } } };
+  if (delivery === "proof_missing") return {
+    deliveryRecords: { some: { state: "REPORTED", evidenceDocumentId: null } },
+  };
+  if (delivery === "ready") return {
+    deliveryRecords: { some: { state: "REPORTED", evidenceDocumentId: { not: null } } },
+  };
   if (delivery === "confirmed") return { deliveryRecords: { some: { state: "CONFIRMED" } } };
   if (delivery === "none") return { deliveryRecords: { none: { state: { in: ["REPORTED", "CONFIRMED"] } } } };
   return {};

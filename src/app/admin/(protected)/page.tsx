@@ -158,7 +158,9 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     <div className="filter-row" role="group" aria-label="Private delivery evidence review filter">
       <strong>Support evidence:</strong>{([
         { value: "all", label: "All delivery states" },
-        { value: "reported", label: "Awaiting independent review" },
+        { value: "reported", label: "All unreviewed reports" },
+        { value: "proof_missing", label: "Missing linked proof" },
+        { value: "ready", label: "Proof linked · ready for review" },
         { value: "confirmed", label: "Evidence reviewed" },
         { value: "none", label: "No active delivery record" },
       ] as const).map(item =>

@@ -54,6 +54,12 @@ describe("private assistance queue triage", () => {
     expect(assistanceQueueDeliveryWhere("reported")).toEqual({
       deliveryRecords: { some: { state: "REPORTED" } },
     });
+    expect(assistanceQueueDeliveryWhere("proof_missing")).toEqual({
+      deliveryRecords: { some: { state: "REPORTED", evidenceDocumentId: null } },
+    });
+    expect(assistanceQueueDeliveryWhere("ready")).toEqual({
+      deliveryRecords: { some: { state: "REPORTED", evidenceDocumentId: { not: null } } },
+    });
     expect(assistanceQueueDeliveryWhere("confirmed")).toEqual({
       deliveryRecords: { some: { state: "CONFIRMED" } },
     });
@@ -61,6 +67,8 @@ describe("private assistance queue triage", () => {
       deliveryRecords: { none: { state: { in: ["REPORTED", "CONFIRMED"] } } },
     });
     expect(parseAssistanceQueueFilters({ delivery: "confirmed" }).delivery).toBe("confirmed");
+    expect(parseAssistanceQueueFilters({ delivery: "proof_missing" }).delivery).toBe("proof_missing");
+    expect(parseAssistanceQueueFilters({ delivery: "ready" }).delivery).toBe("ready");
     expect(parseAssistanceQueueFilters({ delivery: ["reported"] }).delivery).toBe("all");
     expect(parseAssistanceQueueFilters({ delivery: "PUBLISHED" }).delivery).toBe("all");
   });
