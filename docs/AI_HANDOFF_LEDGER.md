@@ -1,3 +1,17 @@
+## 2026-10-17 — Linked appeal confidentiality fail-closed on public discovery
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer continuation, PR #292, branch `fix/direct-transfer-feedback-20261013`, target `main`. Verified starting head `0955b444f6d05e0176bb7d7581bc99824f5400e8`.
+
+Source: `src/lib/appeal-promotion.ts` and `src/lib/appeal-search-privacy.ts`. A first-wins negative comparison `confidentialityLevel !== "HIGHLY_SENSITIVE"` allowed linked assistance requests with missing verification, null label, unknown value or invalid enum value to appear in public discovery, despite Prisma declaring only STANDARD/CONFIDENTIAL/HIGHLY_SENSITIVE. Search/share metadata separately defaulted missing linked review to STANDARD and could expose title/summary. Unified the public privacy classification: valid STANDARD and CONFIDENTIAL remain discoverable; HIGHLY_SENSITIVE, invalid or absent linked review are withheld from discovery and receive restricted metadata. Standalone legacy appeals without a linked assistance request preserve prior visibility. High-sensitivity direct accountability URLs and their previously approved content are unchanged. No new queries or migrations.
+
+Test-first source commits: `f5b1d432` (promotion negatives), `168eb3df` (explicit linked gate), `940f21d1` (shared metadata classification tests), `8a818445` (shared safe classifier), `daa8a63c` (new metadata DB-projection test), `3f69b907` (metadata integration). Master register evidence commit `73f39aa27e7ed51e080a1ebbc2c9438943a7bceb`.
+
+Engineering references actually used: `obra/superpowers` TDD and engineering-simplicity guidance from `DietrichGebert/ponytail`, `mattpocock/skills`, `addyosmani/agent-skills`. Unrelated video generation and routing repositories were not installed or executed; no new project dependency.
+
+GitHub readback verified helper/test source and existing `public-content` and `public-page-data` caller projections. **No hydrated checkout; new Vitest cases, typecheck, ESLint, real browser and public URL tests were not executed here**, and no production state can be claimed. No schema/DB/provider/payment/media mutation, main merge or deployment. Master149 stays 60 Implemented /61 Partial /26 Not started /2 other, zero formally closed. AF-PROMOTION and AF-CONSENT gain only PR-open evidence.
+
+Next: sole writer should verify exact PR head; execute focused tests `src/lib/appeal-promotion.test.ts`, `src/lib/appeal-search-privacy.test.ts`, TypeScript/changed-file lint in a hydrated checkout, then continue next source-ready master149 batch. Keep separate issue of actual direct accountability page content, which was not altered by the search/discovery privacy fix.
+
 ## 2026-10-17 — Appeal post-commit cache refresh recovery
 
 Ownership: HANDOFF_PENDING after ChatGPT sole-writer source batch. Continued existing `fix/direct-transfer-feedback-20261013` PR #292 against `main`, starting verified HEAD `408f2c06df7817600d3d4395fc2d5a86b4ea643e`.
