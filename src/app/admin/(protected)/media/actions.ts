@@ -282,6 +282,9 @@ export async function setMediaPublication(formData: FormData) {
       : "Media needs a safe public URL and, for images, meaningful alt text before publication.");
   }
 
+  // Collect every affected published surface, not only the clicked record.
+  // Revoking a shared photograph must also clear cache for other programmes.
+  let invalidatedAssets: MediaPublicationRefreshContext[] = [asset];
   if (publish) {
     const review = parseMediaPublicationReview(formData);
     const issues = mediaPublicationIssues(review);
@@ -319,19 +322,71 @@ export async function setMediaPublication(formData: FormData) {
       await tx.auditEvent.create({ data: { actorId: user.id, action: "media.published", entityType: "MediaAsset", entityId: id, metadata: { privacyGate: "passed" } } });
     });
   } else {
-    await withSerializableTransactionRetry(async tx => {
-      const freshAsset = await tx.mediaAsset.findUniqueOrThrow({ where: { id }, select: { isPublic: true, updatedAt: true } });
-      if (!freshAsset.isPublic) throw new Error("This media is already unpublished. Refresh before changing publication state.");
-      const claimed = await tx.mediaAsset.updateMany({
-        where: { id, isPublic: true, updatedAt: freshAsset.updatedAt },
-        data: { isPublic: false, privacyApprovedAt: null },
+    // Public URL and storage-key aliases can represent the same original
+    // photograph. An ordinary "Unpublish" must revoke every public copy of
+    // that reference, not merely the selected media database row.
+    const revokedSiblings = await withSerializableTransactionRetry(async tx => {
+      const freshAsset = await tx.mediaAsset.findUniqueOrThrow({
+        where: { id },
+        select: { isPublic: true, updatedAt: true, storageKey: true, publicUrl: true },
       });
-      if (claimed.count !== 1) throw new Error("This media changed while you were reviewing it. Refresh before unpublishing.");
-      await tx.auditEvent.create({ data: { actorId: user.id, action: "media.unpublished", entityType: "MediaAsset", entityId: id } });
+      if (!freshAsset.isPublic) {
+        throw new Error("This media is already unpublished. Refresh before changing publication state.");
+      }
+
+      // Predicate read under SERIALIZABLE catches concurrently created or
+      // published matching aliases. Cross-target reuse is intentionally
+      // withdrawn as one privacy operation, regardless of programme.
+      const aliases = [
+        ...(freshAsset.storageKey ? [{ storageKey: freshAsset.storageKey }] : []),
+        ...(freshAsset.publicUrl ? [{ publicUrl: freshAsset.publicUrl }] : []),
+      ];
+      const siblings = aliases.length
+        ? await tx.mediaAsset.findMany({
+            where: { id: { not: id }, isPublic: true, OR: aliases },
+            select: {
+              id: true, updatedAt: true, storageKey: true, publicUrl: true,
+              initiative: { select: { slug: true } },
+              cause: { select: { slug: true } },
+              story: { select: { slug: true } },
+              faithContent: { select: { slug: true } },
+            },
+          })
+        : [];
+
+      const targets = [
+        { id, updatedAt: freshAsset.updatedAt },
+        ...siblings.map(other => ({ id: other.id, updatedAt: other.updatedAt })),
+      ];
+      // Complete every optimistic-concurrency claim before audit events.
+      // A lost claim rolls the whole transaction back, including earlier
+      // updates to shared references.
+      for (const target of targets) {
+        const claimed = await tx.mediaAsset.updateMany({
+          where: { id: target.id, isPublic: true, updatedAt: target.updatedAt },
+          data: { isPublic: false, privacyApprovedAt: null },
+        });
+        if (claimed.count !== 1) {
+          throw new Error("Media changed while you were reviewing it. Refresh before unpublishing.");
+        }
+      }
+      for (const target of targets) {
+        await tx.auditEvent.create({
+          data: {
+            actorId: user.id,
+            action: target.id === id ? "media.unpublished" : "media.unpublished_shared_reference",
+            entityType: "MediaAsset",
+            entityId: target.id,
+            ...(target.id !== id ? { metadata: { sourceMediaId: id } } : {}),
+          },
+        });
+      }
+      return siblings;
     });
+    invalidatedAssets = [asset, ...revokedSiblings];
   }
 
-  refreshCommittedMedia(affectedMediaPublicationPaths(asset));
+  refreshCommittedMedia(invalidatedAssets.flatMap(affectedMediaPublicationPaths));
 }
 
 export async function deleteMediaAsset(formData: FormData) {
