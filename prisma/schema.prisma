@@ -157,6 +157,8 @@ model User {
   createdAppeals          Appeal[]                 @relation("AppealCreator")
   reviewedAppeals         Appeal[]                 @relation("AppealReviewer")
   assistanceAssignments   AssistanceRequest[]      @relation("AssistanceAssignee")
+  assistanceFollowUpsMade AssistanceFollowUp[]       @relation("AssistanceFollowUpCreator")
+  assistanceFollowUpsResolved AssistanceFollowUp[]   @relation("AssistanceFollowUpResolver")
   assistanceVerifications AssistanceVerification[] @relation("AssistanceVerifier")
   notifications           Notification[]
   credential              PasswordCredential?
@@ -670,6 +672,7 @@ model AssistanceRequest {
   assignedTo        User?                   @relation("AssistanceAssignee", fields: [assignedToId], references: [id])
   appeal             Appeal?                 @relation(fields: [appealId], references: [id])
   verification       AssistanceVerification?
+  followUps         AssistanceFollowUp[]
   notifications     Notification[]
   documents         AssistanceDocument[]
   createdAt         DateTime                 @default(now())
@@ -677,6 +680,33 @@ model AssistanceRequest {
   @@index([status, createdAt])
   @@index([phone])
   @@index([createdAt])
+}
+
+enum AssistanceFollowUpState {
+  OPEN
+  COMPLETED
+  CANCELLED
+}
+
+model AssistanceFollowUp {
+  id                  String                   @id @default(cuid())
+  assistanceRequestId String
+  submissionId        String                   @unique
+  summary             String                   @db.VarChar(300)
+  dueOn               DateTime                 @db.Date
+  state               AssistanceFollowUpState  @default(OPEN)
+  createdById         String
+  resolvedById        String?
+  resolvedAt          DateTime?
+  assistanceRequest   AssistanceRequest        @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
+  createdBy           User                     @relation("AssistanceFollowUpCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  resolvedBy          User?                    @relation("AssistanceFollowUpResolver", fields: [resolvedById], references: [id], onDelete: Restrict)
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+
+  @@index([assistanceRequestId, state, dueOn])
+  @@index([state, dueOn])
+  @@index([createdById, createdAt])
 }
 
 model AssistanceVerification {
