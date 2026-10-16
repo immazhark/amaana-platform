@@ -10,11 +10,12 @@ export type AssistanceQueueFilters = {
   review: "all" | "incomplete" | "complete";
   followUp: "all" | "due" | "open" | "none" | "mine";
   delivery: "all" | "reported" | "proof_missing" | "ready" | "confirmed" | "bank_pending" | "bank_missing" | "bank_reviewed" | "none";
+  outcome: "all" | "reported" | "reviewed" | "none";
 };
 type SearchValue = string | string[] | undefined;
 
 export function parseAssistanceQueueFilters(params: {
-  status?: SearchValue; assignment?: SearchValue; order?: SearchValue; age?: SearchValue; city?: SearchValue; review?: SearchValue; followUp?: SearchValue; delivery?: SearchValue;
+  status?: SearchValue; assignment?: SearchValue; order?: SearchValue; age?: SearchValue; city?: SearchValue; review?: SearchValue; followUp?: SearchValue; delivery?: SearchValue; outcome?: SearchValue;
 }): AssistanceQueueFilters {
   const status = ASSISTANCE_QUEUE_STATUSES.find(value => value === params.status);
   // Administrative geography is a verbatim self-reported city, never a
@@ -33,6 +34,8 @@ export function parseAssistanceQueueFilters(params: {
       params.delivery === "bank_reviewed" || params.delivery === "reported" || params.delivery === "proof_missing" ||
       params.delivery === "ready" || params.delivery === "confirmed" ||
       params.delivery === "none" ? params.delivery : "all",
+    outcome: params.outcome === "reported" || params.outcome === "reviewed" ||
+      params.outcome === "none" ? params.outcome : "all",
   };
 }
 
@@ -102,6 +105,18 @@ export function assistanceQueueDeliveryWhere(delivery: AssistanceQueueFilters["d
   return {};
 }
 
+/** Only internal observation review states. Never imply public impact. */
+export function assistanceQueueOutcomeWhere(
+  outcome: AssistanceQueueFilters["outcome"],
+): Prisma.AssistanceRequestWhereInput {
+  if (outcome === "reported") return { outcomeObservations: { some: { state: "REPORTED" } } };
+  if (outcome === "reviewed") return { outcomeObservations: { some: { state: "REVIEWED" } } };
+  if (outcome === "none") return {
+    outcomeObservations: { none: { state: { in: ["REPORTED", "REVIEWED"] } } },
+  };
+  return {};
+}
+
 export function assistanceQueueHref(filters: AssistanceQueueFilters, page = 1) {
   return {
     pathname: "/admin",
@@ -114,6 +129,7 @@ export function assistanceQueueHref(filters: AssistanceQueueFilters, page = 1) {
       ...(filters.review !== "all" ? { review: filters.review } : {}),
       ...(filters.followUp !== "all" ? { followUp: filters.followUp } : {}),
       ...(filters.delivery !== "all" ? { delivery: filters.delivery } : {}),
+      ...(filters.outcome !== "all" ? { outcome: filters.outcome } : {}),
       ...(page > 1 ? { page } : {}),
     },
   };
