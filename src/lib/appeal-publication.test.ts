@@ -118,6 +118,22 @@ describe("first appeal publication gate", () => {
     })).toContain("Appeal goal must match the approved public fundraising target.");
   });
 
+  it("cannot republish after emergency disclosure withdrawal even with no name or cover", () => {
+    expect(getAppealPublicationIssues({
+      fromStatus: "PAUSED", toStatus: "PUBLISHED", goalAmount: 75000,
+      hasAssistanceRequest: true,
+      verification: {
+        ...approvedVerification,
+        decision: "APPROVED_PRIVATE",
+        publicNameConsent: "NOT_ALLOWED",
+        photoConsent: "NOT_ALLOWED",
+        archiveConsent: "NOT_ALLOWED",
+      },
+      beneficiaryDisplayName: null,
+      coverImageUrl: null,
+    })).toContain("Verification decision must approve a public appeal.");
+  });
+
   it("requires restored review evidence for a linked paused appeal but preserves an unlinked legacy resume", () => {
     expect(getAppealPublicationIssues({
       fromStatus: "PAUSED", toStatus: "PUBLISHED", goalAmount: 75000,
