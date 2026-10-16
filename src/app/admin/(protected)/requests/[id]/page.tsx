@@ -1,6 +1,9 @@
 import { notFound } from "next/navigation";
 import { randomUUID } from "node:crypto";
 import { DELIVERY_REPORT_LIMIT, DELIVERY_STATE_LABELS, canReportPrivateDelivery } from "@/lib/assistance-delivery";
+import { OUTCOME_KIND_LABELS, OUTCOME_REVIEW_LABELS, OUTCOME_SUMMARY_LIMIT,
+  hasCurrentPrivateOutcomeEvidence } from "@/lib/assistance-outcome";
+import { reportAssistanceOutcome, reviewAssistanceOutcome } from "./outcome-actions";
 import { linkAssistanceDeliveryEvidence, reportAssistanceDelivery, reviewAssistanceDelivery } from "./delivery-actions";
 import { FOLLOW_UP_SUMMARY_LIMIT, MAX_OPEN_FOLLOW_UPS_PER_CASE, eligibleFollowUpStaffWhere, followUpDueLabel,
   indiaCalendarDay, shiftedCalendarDay, taskDay } from "@/lib/assistance-follow-up";
@@ -35,7 +38,7 @@ const label = (value: string) => value.replaceAll("_", " ").toLowerCase().replac
 export default async function RequestDetailPage({ params }: Props) {
   const user = await requirePermission("assistance.view");
   const { id } = await params;
-  const [request, staff, history, milestones, openTasks, resolvedTasks, taskStaff, deliveries] = await Promise.all([
+  const [request, staff, history, milestones, openTasks, resolvedTasks, taskStaff, deliveries, outcomes] = await Promise.all([
     prisma.assistanceRequest.findUnique({
       where: { id },
       include: {
@@ -94,6 +97,26 @@ export default async function RequestDetailPage({ params }: Props) {
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: 30,
     }),
+    prisma.assistanceOutcomeObservation.findMany({
+      where: { assistanceRequestId: id },
+      select: {
+        id: true, kind: true, state: true, summary: true,
+        deliveryRecordId: true, reportedById: true, updatedAt: true,
+        createdAt: true, reviewedAt: true,
+        reportedBy: { select: { name: true } },
+        reviewedBy: { select: { name: true } },
+        deliveryRecord: {
+          select: {
+            kind: true, state: true, reportedById: true, evidenceDocumentId: true,
+            financialReconciliation: {
+              select: { status: true, bankProofDocumentId: true, submittedById: true },
+            },
+          },
+        },
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 30,
+    }),
   ]);
   if (!request) notFound();
 
@@ -136,6 +159,11 @@ export default async function RequestDetailPage({ params }: Props) {
     canReportPrivateDelivery(request.status, request.appealId, verification);
   const mayReviewDelivery = hasPermission(user, "assistance.approve");
   const mayReviewFinancialEvidence = hasPermission(user, "donation.reconcile");
+  const mayReportOutcome = hasPermission(user, "assistance.update");
+  const mayReviewOutcome = hasPermission(user, "assistance.approve");
+  const activeOutcomeSources = new Set(outcomes.filter(
+    item => item.state === "REPORTED" || item.state === "REVIEWED",
+  ).map(item => item.deliveryRecordId));
   const financeCorroborationCandidates = deliveries.filter(item =>
     mayReportDelivery && item.kind === "FINANCIAL" && item.state === "CONFIRMED" &&
     Boolean(item.amountInr) && Boolean(item.evidenceDocumentId) &&
@@ -358,6 +386,122 @@ export default async function RequestDetailPage({ params }: Props) {
               </>}
             </li>)}</ol>
           </> : <p className="muted">No delivery has been reported or independently reviewed.</p>}
+        </section>
+
+        <section className="card" aria-labelledby="private-outcome-heading">
+          <h2 id="private-outcome-heading">Private case-outcome observations</h2>
+          <p className="muted">Observations are about one specific delivery only.
+            A completed support action does not mean medical recovery, full case resolution,
+            financial settlement or publicly approved impact. Nothing here is published
+            automatically. Independent review and an explicit separate publication process
+            would be required for any future public communication.</p>
+          {mayReportOutcome && <div className="field">
+            <h3>Record a source-linked observation</h3>
+            {deliveries.filter(item =>
+              !activeOutcomeSources.has(item.id) &&
+              hasCurrentPrivateOutcomeEvidence({
+                ...item,
+                assistanceRequest: { status: request.status, appealId: request.appealId,
+                  verification },
+              }) &&
+              Boolean(item.evidenceDocumentId && evidenceNames.has(item.evidenceDocumentId)) &&
+              (item.kind !== "FINANCIAL" ||
+                Boolean(item.financialReconciliation?.bankProofDocumentId &&
+                  evidenceNames.has(item.financialReconciliation.bankProofDocumentId))),
+            ).map(item => (
+              <details key={item.id}>
+                <summary>Record outcome for {item.kind === "FINANCIAL" ? "financial" : "in-kind"} delivery
+                  {" · "}{item.occurredOn.toLocaleDateString("en-IN", { timeZone: "UTC", dateStyle: "medium" })}
+                </summary>
+                <form action={reportAssistanceOutcome} className="field">
+                  <input type="hidden" name="id" value={id}/>
+                  <input type="hidden" name="deliveryRecordId" value={item.id}/>
+                  <input type="hidden" name="expectedDeliveryUpdatedAt" value={item.updatedAt.toISOString()}/>
+                  <input type="hidden" name="submissionId" value={randomUUID()}/>
+                  <p className="muted">Linked delivery: {item.summary}</p>
+                  <label htmlFor={`outcome-kind-${item.id}`}>Observed operational outcome</label>
+                  <select id={`outcome-kind-${item.id}`} name="kind" required defaultValue="">
+                    <option value="" disabled>Select only what evidence supports</option>
+                    {Object.entries(OUTCOME_KIND_LABELS).map(([value, title]) =>
+                      <option key={value} value={value}>{title}</option>)}
+                  </select>
+                  <label htmlFor={`outcome-summary-${item.id}`}>Specific internal observation</label>
+                  <textarea id={`outcome-summary-${item.id}`} name="summary" minLength={20}
+                    maxLength={OUTCOME_SUMMARY_LIMIT} required
+                    placeholder="Record only evidence-supported operational facts, without private clinical speculation."/>
+                  <label>
+                    <input type="checkbox" name="limitedScopeAttested" value="yes" required/>
+                    I confirm this describes only the linked support delivery, not case-wide
+                    success, medical recovery, bank settlement or public impact.
+                  </label>
+                  <button className="button secondary" type="submit">
+                    Submit private outcome for independent review
+                  </button>
+                </form>
+              </details>
+            ))}
+            {deliveries.every(item => activeOutcomeSources.has(item.id) ||
+              !hasCurrentPrivateOutcomeEvidence({
+                ...item, assistanceRequest: {
+                  status: request.status, appealId: request.appealId, verification,
+                },
+              })) && <p className="muted">No additional independently evidenced delivery
+                is currently available for a new outcome observation.</p>}
+          </div>}
+          {outcomes.length ? <ol className="history">
+            {outcomes.map(item => {
+              const source = {
+                ...item.deliveryRecord,
+                assistanceRequest: {
+                  status: request.status, appealId: request.appealId, verification,
+                },
+              };
+              const sourceEligible = hasCurrentPrivateOutcomeEvidence(source) &&
+                Boolean(source.evidenceDocumentId && evidenceNames.has(source.evidenceDocumentId)) &&
+                (source.kind !== "FINANCIAL" ||
+                  Boolean(source.financialReconciliation?.bankProofDocumentId &&
+                    evidenceNames.has(source.financialReconciliation.bankProofDocumentId)));
+              const canReview = mayReviewOutcome && item.state === "REPORTED" &&
+                item.reportedById !== user.id && item.deliveryRecord.reportedById !== user.id &&
+                item.deliveryRecord.financialReconciliation?.submittedById !== user.id &&
+                sourceEligible;
+              return <li key={item.id}>
+                <strong>{OUTCOME_KIND_LABELS[item.kind]} · {OUTCOME_REVIEW_LABELS[item.state]}</strong>
+                <p>{item.summary}</p>
+                <span>Recorded by {item.reportedBy.name}
+                  {" · "}{item.createdAt.toLocaleDateString("en-IN")}</span>
+                {item.reviewedAt && <p className="muted">Reviewed by {item.reviewedBy?.name ?? "authorized staff"}
+                  {" · "}{item.reviewedAt.toLocaleDateString("en-IN")}</p>}
+                {!sourceEligible && item.state === "REVIEWED" &&
+                  <p role="alert" className="muted">Supporting delivery evidence or case eligibility
+                    has changed. This is historical internal review, not a current verified outcome.</p>}
+                {canReview && <form action={reviewAssistanceOutcome} className="field">
+                  <input type="hidden" name="id" value={id}/>
+                  <input type="hidden" name="observationId" value={item.id}/>
+                  <input type="hidden" name="expectedUpdatedAt" value={item.updatedAt.toISOString()}/>
+                  <input type="hidden" name="state" value="REVIEWED"/>
+                  <label>
+                    <input type="checkbox" name="evidenceAttested" value="yes" required/>
+                    I reviewed the specific delivery and current private evidence,
+                    and I am independent of the original report and financial corroboration.
+                  </label>
+                  <button type="submit" className="button secondary">
+                    Review private operational outcome
+                  </button>
+                </form>}
+                {mayReviewOutcome && item.state !== "VOIDED" &&
+                  <form action={reviewAssistanceOutcome} className="field">
+                    <input type="hidden" name="id" value={id}/>
+                    <input type="hidden" name="observationId" value={item.id}/>
+                    <input type="hidden" name="expectedUpdatedAt" value={item.updatedAt.toISOString()}/>
+                    <input type="hidden" name="state" value="VOIDED"/>
+                    <button type="submit" className="button secondary">
+                      Void incorrect private outcome
+                    </button>
+                  </form>}
+              </li>;
+            })}
+          </ol> : <p className="muted">No private outcome observations have been recorded.</p>}
         </section>
 
         <section className="card" aria-labelledby="private-follow-up-heading">
