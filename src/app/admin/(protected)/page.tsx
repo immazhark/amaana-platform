@@ -9,6 +9,7 @@ import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { hasPermission, permissionKeys, requireAuthenticatedUser } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { PRIVATE_MILESTONE_ACTION } from "@/lib/assistance-private-milestone";
+import { indiaCalendarDay } from "@/lib/assistance-follow-up";
 
 type Props = { searchParams: Promise<{
   status?: string | string[]; page?: string | string[];
@@ -54,6 +55,13 @@ export default async function AdminQueuePage({ searchParams }: Props) {
     skip: pagination.skip,
     take: pagination.pageSize,
   });
+  const dueTasks = requests.length ? await prisma.assistanceFollowUp.groupBy({
+    by: ["assistanceRequestId"],
+    where: { assistanceRequestId: { in: requests.map(request => request.id) }, state: "OPEN" },
+    _count: { _all: true }, _min: { dueOn: true },
+  }) : [];
+  const tasksByCase = new Map(dueTasks.map(task => [task.assistanceRequestId, task]));
+  const localToday = indiaCalendarDay(now);
   const recentFollowUps = requests.length ? await prisma.auditEvent.groupBy({
     by: ["entityId"],
     where: {
@@ -108,7 +116,13 @@ export default async function AdminQueuePage({ searchParams }: Props) {
       ] as const).map(item => <Link key={item.value} href={assistanceQueueHref({ ...filters, review: item.value })} aria-current={filters.review === item.value ? "page" : undefined}>{item.label}</Link>)}
     </div>
     <div className="filter-row" role="group" aria-label="Assistance request status filter"><strong>Status:</strong><Link href={assistanceQueueHref({ ...filters, status: undefined })} aria-current={!filters.status ? "page" : undefined}>All</Link>{ASSISTANCE_QUEUE_STATUSES.map(item => <Link key={item} href={assistanceQueueHref({ ...filters, status: item })} aria-current={filters.status === item ? "page" : undefined}>{item.replaceAll("_", " ")} ({counts.get(item) ?? 0})</Link>)}</div>
-    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Operational records"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Category</th><th>Status</th><th>Verification</th><th>Assigned to</th><th>Documents</th><th>Follow-up logs</th><th>Received</th><th>Request age</th></tr></thead><tbody>{requests.map(item => <tr key={item.id}><td><Link href={`/admin/requests/${item.id}`}><strong>{item.referenceNumber}</strong></Link></td><td>{item.applicantName}<br/><small>{item.city}</small></td><td>{item.category.replaceAll("_", " ")}</td><td><span className="status-badge">{item.status.replaceAll("_", " ")}</span></td><td>{assistanceQueueVerificationLabel(item.verification)}</td><td>{item.assignedTo?.name ?? "Unassigned"}</td><td>{item._count.documents}</td><td>{followUpsByCase.get(item.id)?._count._all ?? 0} · {followUpsByCase.get(item.id)?._max.createdAt?.toLocaleDateString("en-IN") ?? "No recent update"}</td><td>{item.createdAt.toLocaleDateString("en-IN")}</td><td>{assistanceQueueAge(item.createdAt, now)}</td></tr>)}</tbody></table>{requests.length === 0 && <p className="empty-state">No requests match this view.</p>}</div>
+    <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Operational records"><table><thead><tr><th>Reference</th><th>Applicant</th><th>Category</th><th>Status</th><th>Verification</th><th>Assigned to</th><th>Documents</th><th>Follow-up logs</th><th>Open tasks</th><th>Next staff-set date</th><th>Received</th><th>Request age</th></tr></thead><tbody>{requests.map(item => <tr key={item.id}><td><Link href={`/admin/requests/${item.id}`}><strong>{item.referenceNumber}</strong></Link></td><td>{item.applicantName}<br/><small>{item.city}</small></td><td>{item.category.replaceAll("_", " ")}</td><td><span className="status-badge">{item.status.replaceAll("_", " ")}</span></td><td>{assistanceQueueVerificationLabel(item.verification)}</td><td>{item.assignedTo?.name ?? "Unassigned"}</td><td>{item._count.documents}</td>
+          <td>{tasksByCase.get(item.id)?._count._all ?? 0}</td>
+          <td>{tasksByCase.get(item.id)?._min.dueOn
+            ? <span>{tasksByCase.get(item.id)!._min.dueOn!.toLocaleDateString("en-IN", { timeZone: "UTC" })}
+              {" · "}{tasksByCase.get(item.id)!._min.dueOn!.toISOString().slice(0, 10) < localToday ? "Past selected date" : "Upcoming / today"}</span>
+            : "None"}</td>
+          <td>{item.createdAt.toLocaleDateString("en-IN")}</td><td>{assistanceQueueAge(item.createdAt, now)}</td></tr>)}</tbody></table>{requests.length === 0 && <p className="empty-state">No requests match this view.</p>}</div>
     <nav className="filter-row" aria-label="Assistance request pagination">
       {pagination.hasPrevious && <Link href={assistanceQueueHref(filters, pagination.page - 1)}>Previous</Link>}
       <span>Page {pagination.page} of {pagination.totalPages} · {pagination.totalItems} records</span>

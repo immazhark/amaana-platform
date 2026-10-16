@@ -1,5 +1,8 @@
 import { notFound } from "next/navigation";
 import { randomUUID } from "node:crypto";
+import { FOLLOW_UP_SUMMARY_LIMIT, MAX_OPEN_FOLLOW_UPS_PER_CASE, followUpDueLabel,
+  indiaCalendarDay, shiftedCalendarDay } from "@/lib/assistance-follow-up";
+import { createAssistanceFollowUp, resolveAssistanceFollowUp } from "./follow-up-actions";
 import {
   PRIVATE_MILESTONE_ACTION, PRIVATE_MILESTONE_KINDS,
   PRIVATE_MILESTONE_REDACTED_ACTION, PRIVATE_MILESTONE_REDACTION_REASONS,
@@ -27,7 +30,7 @@ const label = (value: string) => value.replaceAll("_", " ").toLowerCase().replac
 export default async function RequestDetailPage({ params }: Props) {
   const user = await requirePermission("assistance.view");
   const { id } = await params;
-  const [request, staff, history, milestones] = await Promise.all([
+  const [request, staff, history, milestones, openTasks, resolvedTasks] = await Promise.all([
     prisma.assistanceRequest.findUnique({
       where: { id },
       include: {
@@ -49,6 +52,20 @@ export default async function RequestDetailPage({ params }: Props) {
         actor: { select: { name: true } } },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
       take: 60,
+    }),
+    prisma.assistanceFollowUp.findMany({
+      where: { assistanceRequestId: id, state: "OPEN" },
+      select: { id: true, summary: true, dueOn: true, state: true,
+        updatedAt: true, createdAt: true, createdBy: { select: { name: true } } },
+      orderBy: [{ dueOn: "asc" }, { createdAt: "asc" }, { id: "asc" }],
+      take: MAX_OPEN_FOLLOW_UPS_PER_CASE,
+    }),
+    prisma.assistanceFollowUp.findMany({
+      where: { assistanceRequestId: id, state: { in: ["COMPLETED", "CANCELLED"] } },
+      select: { id: true, summary: true, dueOn: true, state: true, resolvedAt: true,
+        resolvedBy: { select: { name: true } } },
+      orderBy: [{ resolvedAt: "desc" }, { id: "desc" }],
+      take: 10,
     }),
   ]);
   if (!request) notFound();
@@ -80,6 +97,9 @@ export default async function RequestDetailPage({ params }: Props) {
     return note ? [{ ...note, id: event.id, actor: event.actor.name, createdAt: event.createdAt }] : [];
   }).slice(0, 20);
   const mayRedactMilestone = hasPermission(user, "assistance.approve");
+  const canManageTasks = hasPermission(user, "assistance.update");
+  const canCancelTasks = canManageTasks && hasPermission(user, "assistance.approve");
+  const today = indiaCalendarDay(new Date());
 
   return <>
     <nav aria-label="Case navigation"><Link href="/admin">← Back to assistance queue</Link></nav>
@@ -107,6 +127,66 @@ export default async function RequestDetailPage({ params }: Props) {
         <section className="card">
           <h2>Private documents</h2>
           {request.documents.length ? <ul className="document-list">{request.documents.map(document => <li key={document.id}><a href={`/admin/documents/${document.id}`} target="_blank" rel="noreferrer">{document.originalName}</a><small>{document.mimeType} · {(document.sizeBytes / 1048576).toFixed(2)} MB</small></li>)}</ul> : <p className="muted">No documents were submitted.</p>}
+        </section>
+
+        <section className="card" aria-labelledby="private-follow-up-heading">
+          <h2 id="private-follow-up-heading">Next private follow-up actions</h2>
+          <p className="muted">Staff-set dates, not urgency classifications or SLA deadlines.
+            Tasks are internal only and never appear as public appeal milestones.
+            Open tasks remain on the case until a reviewer completes or cancels them.</p>
+          {canManageTasks && canAddPrivateMilestone(request.status, request.appealId) &&
+            openTasks.length < MAX_OPEN_FOLLOW_UPS_PER_CASE ? (
+            <form action={createAssistanceFollowUp} className="field">
+              <input type="hidden" name="id" value={id}/>
+              <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
+              <input type="hidden" name="submissionId" value={randomUUID()}/>
+              <label htmlFor="taskDueOn">Next action date (Hyderabad calendar)</label>
+              <input id="taskDueOn" type="date" name="dueOn" defaultValue={today}
+                min={today} max={shiftedCalendarDay(today, 365)} required/>
+              <label htmlFor="taskSummary">Private action to complete</label>
+              <textarea id="taskSummary" name="summary" minLength={12}
+                maxLength={FOLLOW_UP_SUMMARY_LIMIT} required
+                placeholder="Describe the next operational action without repeating private documents."/>
+              <button className="button secondary" type="submit">Schedule private follow-up</button>
+            </form>
+          ) : <p className="muted">
+            {openTasks.length >= MAX_OPEN_FOLLOW_UPS_PER_CASE
+              ? "This case has 20 open tasks. Resolve an existing task before adding another."
+              : "Scheduling is restricted to authorized staff working on open cases."}
+          </p>}
+          {openTasks.length ? <>
+            <h3>Open tasks ({openTasks.length})</h3>
+            <ol className="history">{openTasks.map(task => <li key={task.id}>
+              <strong>{task.summary}</strong>
+              <span>Selected date: {task.dueOn.toLocaleDateString("en-IN", { timeZone: "UTC", dateStyle: "medium" })}
+                {" · "}{followUpDueLabel(task.state, task.dueOn, today)}
+                {" · "}Recorded by {task.createdBy.name}</span>
+              {canManageTasks && <form action={resolveAssistanceFollowUp} className="field">
+                <input type="hidden" name="id" value={id}/>
+                <input type="hidden" name="taskId" value={task.id}/>
+                <input type="hidden" name="state" value="COMPLETED"/>
+                <input type="hidden" name="expectedTaskUpdatedAt" value={task.updatedAt.toISOString()}/>
+                <button type="submit" className="button secondary">Mark action completed</button>
+              </form>}
+              {canCancelTasks && <form action={resolveAssistanceFollowUp} className="field">
+                <input type="hidden" name="id" value={id}/>
+                <input type="hidden" name="taskId" value={task.id}/>
+                <input type="hidden" name="state" value="CANCELLED"/>
+                <input type="hidden" name="expectedTaskUpdatedAt" value={task.updatedAt.toISOString()}/>
+                <button type="submit" className="button secondary">Cancel this action</button>
+              </form>}
+            </li>)}</ol>
+          </> : <p className="muted">No open follow-up tasks for this case.</p>}
+          {resolvedTasks.length > 0 && <>
+            <h3>Recently resolved tasks</h3>
+            <ol className="history">{resolvedTasks.map(task => <li key={task.id}>
+              <strong>{task.summary}</strong>
+              <span>{followUpDueLabel(task.state, task.dueOn, today)}
+                {" · "}{task.resolvedAt?.toLocaleString("en-IN") ?? "Resolution date unavailable"}
+                {" · "}{task.resolvedBy?.name ?? "Authorized staff"}
+              </span>
+            </li>)}</ol>
+          </>}
         </section>
 
         <section className="card" aria-labelledby="private-case-timeline">

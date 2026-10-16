@@ -1,13 +1,15 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const m = vi.hoisted(() => ({ permission: vi.fn(), has: vi.fn(), request: vi.fn(), staff: vi.fn(), history: vi.fn(), missing: vi.fn() }));
+const m = vi.hoisted(() => ({ permission: vi.fn(), has: vi.fn(), request: vi.fn(), staff: vi.fn(), history: vi.fn(), tasks: vi.fn(), missing: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requirePermission: m.permission, hasPermission: m.has }));
 vi.mock("next/navigation", () => ({ notFound: m.missing }));
 vi.mock("@/lib/prisma", () => ({ prisma: {
-  assistanceRequest: { findUnique: m.request }, user: { findMany: m.staff }, auditEvent: { findMany: m.history },
+  assistanceRequest: { findUnique: m.request }, user: { findMany: m.staff },
+  auditEvent: { findMany: m.history }, assistanceFollowUp: { findMany: m.tasks },
 } }));
 vi.mock("./actions", () => ({ assignRequest: vi.fn(), convertToAppeal: vi.fn(), saveVerification: vi.fn(), updateRequest: vi.fn() }));
 vi.mock("./milestone-actions", () => ({ addPrivateMilestone: vi.fn(), redactPrivateMilestone: vi.fn() }));
+vi.mock("./follow-up-actions", () => ({ createAssistanceFollowUp: vi.fn(), resolveAssistanceFollowUp: vi.fn() }));
 import RequestDetailPage from "./page";
 const render = async () => renderToStaticMarkup(await RequestDetailPage({ params: Promise.resolve({ id: "case-synthetic" }) }));
 beforeEach(() => {
@@ -17,7 +19,8 @@ beforeEach(() => {
     status: "SUBMITTED", createdAt: new Date("2026-10-15T00:00:00Z"), updatedAt: new Date("2026-10-15T00:00:00Z"),
     phone: "synthetic-contact", email: null, description: "Private case narrative", documents: [], verification: null, appeal: null, appealId: null,
   });
-  m.staff.mockResolvedValue([{ id: "reviewer", name: "Synthetic reviewer" }]); m.history.mockResolvedValue([]);
+  m.staff.mockResolvedValue([{ id: "reviewer", name: "Synthetic reviewer" }]);
+  m.history.mockResolvedValue([]); m.tasks.mockResolvedValue([]);
 });
 describe("private assistance detail projections", () => {
   it("enforces view permission before any case, staff or history read", async () => {
@@ -72,6 +75,27 @@ describe("private assistance detail projections", () => {
     expect(markup).toContain("No private follow-ups have been recorded");
   });
 
+  it("renders a private due-date task and approver-only cancellation control", async () => {
+    m.has.mockReturnValue(true);
+    m.tasks.mockResolvedValueOnce([{
+      id: "task-synthetic", summary: "Call the referral institution about the pending case.",
+      state: "OPEN", dueOn: new Date("2026-10-20T00:00:00Z"),
+      createdAt: new Date("2026-10-16T00:00:00Z"),
+      updatedAt: new Date("2026-10-16T00:00:00Z"), createdBy: { name: "Reviewer" },
+    }]).mockResolvedValueOnce([]);
+    const result = await render();
+    expect(result).toContain("Next private follow-up actions");
+    expect(result).toContain("Call the referral institution about the pending case.");
+    expect(result).toContain("Mark action completed");
+    expect(result).toContain("Cancel this action");
+    expect(m.tasks).toHaveBeenCalledTimes(2);
+  });
+  it("does not expose task actions to view-only staff", async () => {
+    const result = await render();
+    expect(result).toContain("No open follow-up tasks");
+    expect(result).not.toContain("Schedule private follow-up");
+    expect(result).not.toContain("Mark action completed");
+  });
   it("fetches only staff names/IDs and never full authentication profiles or audit metadata", async () => {
     const result = await render();
     expect(m.permission).toHaveBeenCalledWith("assistance.view");
