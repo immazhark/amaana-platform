@@ -4,6 +4,12 @@ import { DELIVERY_REPORT_LIMIT, DELIVERY_STATE_LABELS, canReportPrivateDelivery 
 import { OUTCOME_KIND_LABELS, OUTCOME_REVIEW_LABELS, OUTCOME_SUMMARY_LIMIT,
   hasCurrentPrivateOutcomeEvidence } from "@/lib/assistance-outcome";
 import { reportAssistanceOutcome, reviewAssistanceOutcome } from "./outcome-actions";
+import {
+  ANONYMOUS_OUTCOME_COPY, DISCLOSURE_STATUS_LABELS,
+} from "@/lib/assistance-outcome-disclosure";
+import {
+  proposeAnonymousOutcomeCopy, reviewAnonymousOutcomeCopy,
+} from "./disclosure-actions";
 import { linkAssistanceDeliveryEvidence, reportAssistanceDelivery, reviewAssistanceDelivery } from "./delivery-actions";
 import { FOLLOW_UP_SUMMARY_LIMIT, MAX_OPEN_FOLLOW_UPS_PER_CASE, eligibleFollowUpStaffWhere, followUpDueLabel,
   indiaCalendarDay, shiftedCalendarDay, taskDay } from "@/lib/assistance-follow-up";
@@ -101,7 +107,12 @@ export default async function RequestDetailPage({ params }: Props) {
       where: { assistanceRequestId: id },
       select: {
         id: true, kind: true, state: true, summary: true,
-        deliveryRecordId: true, reportedById: true, updatedAt: true,
+        deliveryRecordId: true, reportedById: true, reviewedById: true, updatedAt: true,
+        disclosure: { select: {
+          id: true, copyText: true, consentDocumentId: true,
+          state: true, preparedById: true, updatedAt: true,
+          approvedAt: true, approvedBy: { select: { name: true } },
+        } },
         createdAt: true, reviewedAt: true,
         reportedBy: { select: { name: true } },
         reviewedBy: { select: { name: true } },
@@ -174,6 +185,7 @@ export default async function RequestDetailPage({ params }: Props) {
   const mayReviewFinancialEvidence = hasPermission(user, "donation.reconcile");
   const mayReportOutcome = hasPermission(user, "assistance.update");
   const mayReviewOutcome = hasPermission(user, "assistance.approve");
+  const mayApproveAnonymousCopy = mayReviewOutcome && hasPermission(user, "content.publish");
   const activeOutcomeSources = new Set(activeSources.map(item => item.deliveryRecordId));
   const financeCorroborationCandidates = deliveries.filter(item =>
     mayReportDelivery && item.kind === "FINANCIAL" && item.state === "CONFIRMED" &&
@@ -500,6 +512,104 @@ export default async function RequestDetailPage({ params }: Props) {
                     Review private operational outcome
                   </button>
                 </form>}
+                {item.state === "REVIEWED" &&
+                  <section aria-label="Anonymous outcome disclosure review">
+                    <h4>Separate anonymous-copy consent and approval</h4>
+                    <p className="muted">This is a private copy proposal, never a public update.
+                      Intake consent, internal evidence review and archive consent do not
+                      authorize publishing this outcome. The exact wording needs distinct,
+                      documented permission from the applicant or authorized representative.</p>
+                    <blockquote>{ANONYMOUS_OUTCOME_COPY[item.kind]}</blockquote>
+                    {item.disclosure ? <>
+                      <p><strong>{DISCLOSURE_STATUS_LABELS[item.disclosure.state]}</strong></p>
+                      {item.disclosure.copyText !== ANONYMOUS_OUTCOME_COPY[item.kind] &&
+                        <p role="alert" className="muted">The drafted copy differs from the approved
+                          standard wording. It cannot be approved.</p>}
+                      <p className="muted">Consent document: {
+                        item.disclosure.consentDocumentId &&
+                        evidenceNames.has(item.disclosure.consentDocumentId)
+                          ? <a href={`/admin/documents/${item.disclosure.consentDocumentId}`}
+                              rel="noreferrer" target="_blank">
+                              View exact-copy consent evidence</a>
+                          : "Not currently available"}</p>
+                      {item.disclosure.approvedAt &&
+                        <p className="muted">Decision recorded by {
+                          item.disclosure.approvedBy?.name ?? "authorized staff"
+                        } · {item.disclosure.approvedAt.toLocaleDateString("en-IN")}</p>}
+                      {(request.verification?.confidentialityLevel !== "STANDARD" || !sourceEligible ||
+                        !item.disclosure.consentDocumentId ||
+                        !evidenceNames.has(item.disclosure.consentDocumentId)) &&
+                        item.disclosure.state === "APPROVED_COPY" &&
+                        <p role="alert" className="muted">Consent, confidentiality or underlying
+                          evidence changed. Previous approval is historical, not current
+                          authorization to publish this wording.</p>}
+                      {mayApproveAnonymousCopy && item.disclosure.state === "DRAFT" &&
+                        item.disclosure.preparedById !== user.id &&
+                        item.reportedById !== user.id && item.reviewedById !== user.id &&
+                        request.verification?.confidentialityLevel === "STANDARD" &&
+                        sourceEligible && Boolean(item.disclosure.consentDocumentId &&
+                          evidenceNames.has(item.disclosure.consentDocumentId)) &&
+                        <form action={reviewAnonymousOutcomeCopy} className="field">
+                          <input type="hidden" name="id" value={id}/>
+                          <input type="hidden" name="disclosureId" value={item.disclosure.id}/>
+                          <input type="hidden" name="expectedUpdatedAt"
+                            value={item.disclosure.updatedAt.toISOString()}/>
+                          <input type="hidden" name="decision" value="APPROVED_COPY"/>
+                          <label><input type="checkbox" name="consentReviewAttested"
+                            value="yes" required/>I independently reviewed this
+                            exact anonymous wording, the signed consent evidence,
+                            and the currently verified case and delivery records.</label>
+                          <button className="button secondary" type="submit">
+                            Approve anonymous copy internally — do not publish
+                          </button>
+                        </form>}
+                      {mayApproveAnonymousCopy && item.disclosure.state !== "WITHDRAWN" &&
+                        <form action={reviewAnonymousOutcomeCopy} className="field">
+                          <input type="hidden" name="id" value={id}/>
+                          <input type="hidden" name="disclosureId" value={item.disclosure.id}/>
+                          <input type="hidden" name="expectedUpdatedAt"
+                            value={item.disclosure.updatedAt.toISOString()}/>
+                          <input type="hidden" name="decision" value="WITHDRAWN"/>
+                          <button className="button secondary" type="submit">
+                            Withdraw anonymous-copy approval or proposal
+                          </button>
+                        </form>}
+                    </> : mayReportOutcome && request.verification?.confidentialityLevel === "STANDARD" &&
+                      sourceEligible ? (
+                      <form className="field" action={proposeAnonymousOutcomeCopy}>
+                        <input type="hidden" name="id" value={id}/>
+                        <input type="hidden" name="observationId" value={item.id}/>
+                        <input type="hidden" name="expectedObservationUpdatedAt"
+                          value={item.updatedAt.toISOString()}/>
+                        <label htmlFor={`copy-consent-${item.id}`}>
+                          Private document authorizing this exact wording
+                        </label>
+                        <select id={`copy-consent-${item.id}`} name="consentDocumentId"
+                          defaultValue="" required>
+                          <option value="" disabled>Select specific, signed consent</option>
+                          {request.documents.filter(document =>
+                            document.id !== source.evidenceDocumentId &&
+                            document.id !== source.financialReconciliation?.bankProofDocumentId)
+                            .map(document =>
+                              <option key={document.id} value={document.id}>
+                                {document.originalName}
+                              </option>)}
+                        </select>
+                        <label>
+                          <input type="checkbox" name="exactCopyConsentAttested"
+                            value="yes" required/>
+                          I confirmed that this document records permission from the
+                          applicant or authorized representative for the exact
+                          anonymous text shown above, not a general intake consent.
+                        </label>
+                        <button className="button secondary" type="submit">
+                          Submit anonymous wording for independent approval
+                        </button>
+                      </form>
+                    ) : <p className="muted">Anonymous-copy proposals require STANDARD
+                        confidentiality, a current reviewed outcome and complete
+                        supporting private evidence. Otherwise the outcome stays internal.</p>}
+                  </section>}
                 {mayReviewOutcome && item.state !== "VOIDED" &&
                   <form action={reviewAssistanceOutcome} className="field">
                     <input type="hidden" name="id" value={id}/>
