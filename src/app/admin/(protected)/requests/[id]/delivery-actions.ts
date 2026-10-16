@@ -31,7 +31,7 @@ export async function reportAssistanceDelivery(form: FormData) {
           existing.kind !== data.kind || existing.summary !== data.summary ||
           existing.occurredOn.getTime() !== data.occurredOn.getTime() ||
           (existing.amountInr?.toFixed(2) ?? null) !== data.amountInr ||
-          existing.evidenceDocumentId !== data.evidenceDocumentId) {
+          (data.evidenceDocumentId !== null && existing.evidenceDocumentId !== data.evidenceDocumentId)) {
         throw new Error("This delivery submission token belongs to different information. Reload the case.");
       }
       return;
