@@ -1,3 +1,7 @@
+## 2026-10-17 — Fail-closed linked appeal promotion (ACTIVE)
+
+Ownership: CHATGPT_ACTIVE. Sole-writer continuation on PR #292 at `0955b444f6d05e0176bb7d7581bc99824f5400e8`, target `main`. Scoped: public discovery must not promote assistance-linked appeals whose mandatory verification record or schema-defined confidentiality decision is absent or unrecognized. Preserve the legacy unlinked appeal pathway and valid STANDARD/CONFIDENTIAL classifications. Focused tests first; no dependency, provider mutation, migration, merge or deployment.
+
 ## 2026-10-17 — Appeal cache refresh after confirmed commit
 
 Ownership: HANDOFF_PENDING. ChatGPT completed source changes on open PR #292, branch `fix/direct-transfer-feedback-20261013`, target `main`. Starting verified HEAD `408f2c06df7817600d3d4395fc2d5a86b4ea643e`. Tests `e916945a31110f573f2b8bcd955878e61bda2755` and `47af3a708632ecec19f4264582290deaeff545c3`; source `84e64fbaa965a9ac45ec86edf44242551b06358b`; admin delayed-state notice `36ef8e5aa0a0184652d2edef295977757e8e56bb`; master149 `c4aeebdce36a1e040dd5703b15dfc29ead90b3e7`; handoff ledger `5ce4f4ef2f93f2b104f008276eb9919564ca7bf4`.
