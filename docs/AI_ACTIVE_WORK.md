@@ -1,3 +1,7 @@
+## 2026-10-17 — Emergency withdrawal of converted appeal disclosure
+
+Ownership: CHATGPT_ACTIVE. Verified sole-writer handoff on existing PR #292 (`fix/direct-transfer-feedback-20261013` targeting `main`), starting HEAD `927effa29c746f7b7f0a062e9cc5f328d2ceae62`. Implement review-only emergency public-disclosure withdrawal after assistance-to-appeal conversion: atomic one-way revocation, stop public fundraising/access, audited reason, independently attempted cache invalidations, accessible admin confirmation. Preserve locked financial verification and existing public publication controls. Test-first source changes; no CI pipeline, dependency, schema migration, provider/payment operation, main merge or production deploy.
+
 ## 2026-10-17 — Current beneficiary name/photo consent at public render boundary
 
 Ownership: HANDOFF_PENDING. ChatGPT completed source/tests on open PR #292, branch `fix/direct-transfer-feedback-20261013` (base `main`), starting verified HEAD `f2ec234fc03404e3fe3c4ead36179abe1d98cf6e`. Detail regression `47ff70f064865d953715e3695fc52d6d6c7725f6` and code `4e2e1ca9deed6613645caa0a7700aec3a6241448`; homepage regression `19ada83860e18535e21a00b0dc92034015f39ed4` and source `94fbfe1837e9400fc53f3130a6b4c5ad31aaa7a2`; master149 `87e1bd50264c07d91298aa8c379f5ab2cdc7e4a6`, handoff ledger `3ffe3da74324a64c67c5880eeadfbaf63b7dfe9a`.
