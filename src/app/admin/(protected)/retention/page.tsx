@@ -31,15 +31,16 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
   ]);
   const pagination = getAdminPagination(totalItems, parseAdminPage(pageParam));
   const documents = await prisma.assistanceDocument.findMany({
-      include: {
+      where,
+      select: {
+        id: true, assistanceRequestId: true, originalName: true,
+        mimeType: true, sizeBytes: true,
         assistanceRequest: {
           select: {
             id: true,
             referenceNumber: true,
-            applicantName: true,
             status: true,
-            createdAt: true,
-            appeal: { select: { status: true, title: true } },
+            appeal: { select: { status: true } },
           },
         },
       },
@@ -50,15 +51,17 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
   const events = documents.length === 0 ? [] : await prisma.auditEvent.findMany({
       where: {
         entityType: "AssistanceRequest",
-        entityId: { in: [...new Set(documents.map(document => document.assistanceRequestId))] },
+        OR: documents.map(document => ({
+          entityId: document.assistanceRequestId,
+          metadata: { path: ["documentId"], equals: document.id },
+        })),
         action: { in: [
           "assistance.document_retention_reviewed",
           "assistance.document_legal_hold_placed",
           "assistance.document_legal_hold_released",
-          "assistance.document_deleted",
         ] },
       },
-      include: { actor: { select: { name: true } } },
+      select: { action: true, metadata: true, createdAt: true, actor: { select: { name: true } } },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     });
 
@@ -97,7 +100,7 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
         <Link href="/admin/retention?state=eligible" aria-current={selectedState === "eligible" ? "page" : undefined}>Review eligible ({eligibleDocuments})</Link>
         <Link href="/admin/retention?state=active" aria-current={selectedState === "active" ? "page" : undefined}>Active case ({activeDocuments})</Link>
       </div>
-      {documents.length === 0 ? <p className="empty-state">No private assistance documents are currently stored.</p> : <div className="admin-media-list">{documents.map(document => {
+      {documents.length === 0 ? <p className="empty-state">No private assistance documents match this view.</p> : <div className="admin-media-list">{documents.map(document => {
         const history = documentEvents.get(document.id) ?? [];
         const latestHoldEvent = history.find(event => ["assistance.document_legal_hold_placed", "assistance.document_legal_hold_released"].includes(event.action));
         const held = latestHoldEvent?.action === "assistance.document_legal_hold_placed";
@@ -105,25 +108,26 @@ export default async function RetentionReviewPage({ searchParams }: Props) {
         const reviewMeta = (latestReview?.metadata ?? {}) as EventMetadata;
         const terminal = ["CLOSED", "REJECTED"].includes(document.assistanceRequest.status) || document.assistanceRequest.appeal?.status === "CLOSED";
 
+        const fieldId = (field: string) => `retention-${document.id}-${field}`;
         return <article className="admin-media-item" key={document.id}>
           <div className="admin-media-summary">
             <div><span className="status-badge">{held ? "HOLD" : terminal ? "REVIEW ELIGIBLE" : "ACTIVE CASE"}</span><small>{document.mimeType} · {(document.sizeBytes / 1048576).toFixed(2)} MB</small></div>
             <h3>{document.originalName}</h3>
-            <p><Link href={`/admin/requests/${document.assistanceRequestId}`}>{document.assistanceRequest.referenceNumber} · {document.assistanceRequest.applicantName}</Link></p>
+            <p><Link href={`/admin/requests/${document.assistanceRequestId}`}>{document.assistanceRequest.referenceNumber}</Link></p>
             <small>Request status: {document.assistanceRequest.status.replaceAll("_", " ")}{document.assistanceRequest.appeal ? ` · linked appeal ${document.assistanceRequest.appeal.status}` : ""}</small>
             <div style={{ marginTop: "0.75rem" }}><a href={`/admin/documents/${document.id}`} target="_blank" rel="noreferrer">Open private document ↗</a></div>
-            {latestReview && <div className="admin-media-review-summary"><strong>Last retention review</strong><small>{latestReview.actor.name} · {latestReview.createdAt.toLocaleString("en-IN")} · {reviewMeta.reason ?? "Reason recorded"}{reviewMeta.reviewAfter ? ` · review after ${new Date(reviewMeta.reviewAfter).toLocaleDateString("en-IN")}` : ""}</small></div>}
-            {held && latestHoldEvent && <div className="admin-media-review-summary"><strong>Deletion suspended by hold</strong><small>Placed by {latestHoldEvent.actor.name} on {latestHoldEvent.createdAt.toLocaleString("en-IN")}.</small></div>}
+            {latestReview && <div className="admin-media-review-summary"><strong>Last retention review</strong><small>{latestReview.actor.name} · {latestReview.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })} · {reviewMeta.reason ?? "Reason recorded"}{reviewMeta.reviewAfter ? ` · review after ${new Date(reviewMeta.reviewAfter).toLocaleDateString("en-IN", { timeZone: "Asia/Kolkata" })}` : ""}</small></div>}
+            {held && latestHoldEvent && <div className="admin-media-review-summary"><strong>Deletion suspended by hold</strong><small>Placed by {latestHoldEvent.actor.name} on {latestHoldEvent.createdAt.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" })}.</small></div>}
           </div>
 
           <form action={reviewDocumentRetention} className="form-grid admin-media-edit">
             <input type="hidden" name="documentId" value={document.id}/>
             <input type="hidden" name="expectedHoldAction" value={latestHoldEvent?.action ?? ""}/>
             <input type="hidden" name="expectedHoldCreatedAt" value={latestHoldEvent?.createdAt.toISOString() ?? ""}/>
-            <div className="field"><label>Decision</label><select name="decision" required defaultValue="RETAIN"><option value="RETAIN">Retain and review later</option>{held ? <option value="RELEASE_HOLD">Release legal/audit/safeguarding hold</option> : <option value="PLACE_HOLD">Place legal/audit/safeguarding hold</option>}<option value="DELETE">Permanently delete raw evidence</option></select></div>
-            <div className="field"><label>Review again after <span className="muted">optional</span></label><input type="date" name="reviewAfter"/></div>
-            <div className="field full"><label>Permanent deletion confirmation <span className="muted">only when deleting</span></label><input name="deleteConfirmation" autoComplete="off" placeholder="Type DELETE to confirm permanent deletion"/><small>For RETAIN or hold decisions, leave this blank. Permanent deletion fails closed unless the exact word DELETE is entered.</small></div>
-            <div className="field full"><label>Reason</label><textarea name="reason" required maxLength={2000} placeholder="Why the file is still needed, why a hold applies, why a hold can be released, or why deletion is now appropriate."/></div>
+            <div className="field"><label htmlFor={fieldId("decision")}>Decision</label><select id={fieldId("decision")} name="decision" required defaultValue="RETAIN"><option value="RETAIN">Retain and review later</option>{held ? <option value="RELEASE_HOLD">Release legal/audit/safeguarding hold</option> : <option value="PLACE_HOLD">Place legal/audit/safeguarding hold</option>}{terminal && !held && <option value="DELETE">Permanently delete raw evidence</option>}</select></div>
+            <div className="field"><label htmlFor={fieldId("reviewAfter")}>Review again after <span className="muted">optional</span></label><input id={fieldId("reviewAfter")} type="date" name="reviewAfter"/></div>
+            <div className="field full"><label htmlFor={fieldId("deleteConfirmation")}>Permanent deletion confirmation <span className="muted">only when deleting</span></label><input id={fieldId("deleteConfirmation")} name="deleteConfirmation" autoComplete="off" placeholder="Type DELETE to confirm permanent deletion"/><small>For RETAIN or hold decisions, leave this blank. Permanent deletion fails closed unless the exact word DELETE is entered.</small></div>
+            <div className="field full"><label htmlFor={fieldId("reason")}>Reason</label><textarea id={fieldId("reason")} name="reason" required maxLength={2000} placeholder="Why the file is still needed, why a hold applies, why a hold can be released, or why deletion is now appropriate."/></div>
             <div className="field full"><button className="button secondary" type="submit">Record retention decision</button><small>{terminal ? "Deletion is technically eligible if no hold applies, but the reviewer remains responsible for confirming audit/accounting/safeguarding needs first." : "Deletion is blocked while the case/linked appeal is still active; retain or place a hold instead."}</small></div>
           </form>
         </article>;

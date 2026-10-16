@@ -253,4 +253,32 @@ describe("private document retention deletion", () => {
     await expect(reviewDocumentRetention(deletionForm())).rejects.toThrow(/Release the legal/);
     expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
   });
+  it.each(["documentId", "decision", "deleteConfirmation", "reason", "reviewAfter", "expectedHoldAction", "expectedHoldCreatedAt"])("rejects duplicate or non-text %s before any private read", async field => {
+    for (const duplicate of [false, true]) {
+      const form = deletionForm();
+      if (duplicate) { form.set(field, String(form.get(field) ?? "")); form.append(field, String(form.get(field))); }
+      else form.set(field, new File(["private"], "evidence.txt"));
+      await expect(reviewDocumentRetention(form)).rejects.toThrow();
+      expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+      expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+    }
+  });
+  it.each(["2030-02-30", "2031-02-29", "2030-13-01", "2030-1-01", "2030-01-01T00:00:00Z"])("rejects impossible or noncanonical calendar date %s before reads", async date => {
+    const form = deletionForm(); form.set("decision", "RETAIN"); form.set("reviewAfter", date);
+    await expect(reviewDocumentRetention(form)).rejects.toThrow("Invalid review date");
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+  });
+  it("accepts a genuine future leap day without converting it to March", async () => {
+    const form = deletionForm(); form.set("decision", "RETAIN"); form.set("reviewAfter", "2032-02-29");
+    await reviewDocumentRetention(form);
+    expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ metadata: expect.objectContaining({ reviewAfter: "2032-02-29T00:00:00.000Z" }) }) }));
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+  });
+  it("denies unauthorized retention before inspecting or mutating documents", async () => {
+    mocks.requirePermission.mockRejectedValueOnce(new Error("Forbidden"));
+    await expect(reviewDocumentRetention(deletionForm())).rejects.toThrow("Forbidden");
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+  });
+
 });
