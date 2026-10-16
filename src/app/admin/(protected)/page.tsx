@@ -193,6 +193,8 @@ export default async function AdminQueuePage({ searchParams }: Props) {
         { value: "all", label: "All observations" },
         { value: "reported", label: "Awaiting independent review" },
         { value: "reviewed", label: "Historically reviewed" },
+        { value: "copy_draft", label: "Anonymous copy needs consent review" },
+        { value: "copy_approved", label: "Anonymous copy approved internally" },
         { value: "none", label: "No active observation" },
       ] as const).map(item => <Link key={item.value}
         href={assistanceQueueHref({ ...filters, outcome: item.value })}

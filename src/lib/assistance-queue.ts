@@ -10,7 +10,7 @@ export type AssistanceQueueFilters = {
   review: "all" | "incomplete" | "complete";
   followUp: "all" | "due" | "open" | "none" | "mine";
   delivery: "all" | "reported" | "proof_missing" | "ready" | "confirmed" | "bank_pending" | "bank_missing" | "bank_reviewed" | "none";
-  outcome: "all" | "reported" | "reviewed" | "none";
+  outcome: "all" | "reported" | "reviewed" | "copy_draft" | "copy_approved" | "none";
 };
 type SearchValue = string | string[] | undefined;
 
@@ -35,6 +35,7 @@ export function parseAssistanceQueueFilters(params: {
       params.delivery === "ready" || params.delivery === "confirmed" ||
       params.delivery === "none" ? params.delivery : "all",
     outcome: params.outcome === "reported" || params.outcome === "reviewed" ||
+      params.outcome === "copy_draft" || params.outcome === "copy_approved" ||
       params.outcome === "none" ? params.outcome : "all",
   };
 }
@@ -111,6 +112,14 @@ export function assistanceQueueOutcomeWhere(
 ): Prisma.AssistanceRequestWhereInput {
   if (outcome === "reported") return { outcomeObservations: { some: { state: "REPORTED" } } };
   if (outcome === "reviewed") return { outcomeObservations: { some: { state: "REVIEWED" } } };
+  if (outcome === "copy_draft") return {
+    outcomeObservations: { some: { state: "REVIEWED",
+      disclosure: { is: { state: "DRAFT" } } } },
+  };
+  if (outcome === "copy_approved") return {
+    outcomeObservations: { some: { state: "REVIEWED",
+      disclosure: { is: { state: "APPROVED_COPY" } } } },
+  };
   if (outcome === "none") return {
     outcomeObservations: { none: { state: { in: ["REPORTED", "REVIEWED"] } } },
   };
