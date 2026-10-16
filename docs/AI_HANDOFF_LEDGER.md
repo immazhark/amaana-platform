@@ -1,3 +1,15 @@
+## 2026-10-17 — Appeal post-commit cache refresh recovery
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer source batch. Continued existing `fix/direct-transfer-feedback-20261013` PR #292 against `main`, starting verified HEAD `408f2c06df7817600d3d4395fc2d5a86b4ea643e`.
+
+Root cause: six appeal staff mutations (draft edits, status, featuring, add/publish/unpublish updates) made successful database/audit commits and then ran potentially throwing `revalidatePath`/`updateTag`. If these post-commit cache operations failed, the UI could report a failure despite completed writes, encouraging duplicate submissions; earlier cache failures also skipped later independent invalidations.
+
+Implementation: source `84e64fbaa965a9ac45ec86edf44242551b06358b`; `finishCommittedAppeal` attempts all prior invalidations independently and uses a single saved-but-refresh-delayed redirect if any fail. Status actions add direct public detail invalidation to supplement the public `appeals` tag. `src/app/admin/(protected)/appeals/[id]/page.tsx` now displays an accessible staff warning with no-retry and urgent public privacy escalation guidance (commit `36ef8e5aa0a0184652d2edef295977757e8e56bb`). New focused cases `e916945a31110f573f2b8bcd955878e61bda2755` and `47af3a708632ecec19f4264582290deaeff545c3` cover each action, independent invalidations, saved-state warning redirect and genuine pre-commit conflict. Master149 scoped evidence `c4aeebdce36a1e040dd5703b15dfc29ead90b3e7`.
+
+GitHub readback verified exactly six call sites and no raw cache invalidation outside the helper, clear delayed-warning copy, and all new tests in source. **Tests were not executed**: current environment lacks hydrated repo dependencies and actual GitHub clone DNS. Vitest, application typecheck, lint, browser, native DB, production caching and JS/CSS bundle sizes remain unverified for this batch. New tests must not be claimed passing; no live payment, media, case mutation, migration, provider send, production configuration, main merge or release. Source counts unchanged: 60 Implemented /61 Partial /26 Not started /2 other, zero formally closed. AF-PROMOTION/AF-CONSENT evidence remains PR open.
+
+Next: incoming sole writer verify HEAD; run focused `src/app/admin/(protected)/appeals/actions.test.ts` tests, application TypeScript and changed-file lint on hydrated checkout, fix failures before release; keep public expiry behavior fail-visible if public content lingers. Continue next source-ready master149 batch and preserve consent/privacy locks.
+
 ## 2026-10-17 — Strict appeal administration FormData boundary
 
 Ownership: HANDOFF_PENDING after ChatGPT sole-writer continuation on `fix/direct-transfer-feedback-20261013`, PR #292 targeting `main`. Verified starting HEAD `94dedae77a40dd48daa56d20448063fdd1ea6908`.
