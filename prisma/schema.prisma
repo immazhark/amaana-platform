@@ -165,6 +165,8 @@ model User {
   reviewedDeliveries AssistanceDeliveryRecord[] @relation("AssistanceDeliveryReviewer")
   submittedFinancialReconciliations AssistanceFinancialReconciliation[] @relation("AssistanceFinancialReconciliationMaker")
   reviewedFinancialReconciliations  AssistanceFinancialReconciliation[] @relation("AssistanceFinancialReconciliationChecker")
+  reportedOutcomeObservations AssistanceOutcomeObservation[] @relation("AssistanceOutcomeReporter")
+  reviewedOutcomeObservations AssistanceOutcomeObservation[] @relation("AssistanceOutcomeReviewer")
   notifications           Notification[]
   credential              PasswordCredential?
   sessions                Session[]
@@ -679,6 +681,7 @@ model AssistanceRequest {
   verification       AssistanceVerification?
   followUps         AssistanceFollowUp[]
   deliveryRecords   AssistanceDeliveryRecord[]
+  outcomeObservations AssistanceOutcomeObservation[]
   notifications     Notification[]
   documents         AssistanceDocument[]
   createdAt         DateTime                 @default(now())
@@ -743,6 +746,7 @@ model AssistanceDeliveryRecord {
   reviewedById        String?
   reviewedAt          DateTime?
   financialReconciliation AssistanceFinancialReconciliation?
+  outcomeObservations AssistanceOutcomeObservation[]
   assistanceRequest   AssistanceRequest             @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
   evidenceDocument    AssistanceDocument?           @relation(fields: [evidenceDocumentId], references: [id], onDelete: SetNull)
   reportedBy          User                          @relation("AssistanceDeliveryReporter", fields: [reportedById], references: [id], onDelete: Restrict)
@@ -781,6 +785,43 @@ model AssistanceFinancialReconciliation {
 
   @@index([status, createdAt])
   @@index([submittedById, createdAt])
+}
+
+enum AssistanceOutcomeKind {
+  PARTIAL_SUPPORT
+  SPECIFIC_SUPPORT_COMPLETED
+  FURTHER_ACTION_REQUIRED
+}
+
+enum AssistanceOutcomeReviewState {
+  REPORTED
+  REVIEWED
+  VOIDED
+}
+
+/** Private, source-linked operational outcomes only. They are not clinical
+ * outcomes, case-wide success claims, or approved public impact. */
+model AssistanceOutcomeObservation {
+  id                  String                      @id @default(cuid())
+  assistanceRequestId String
+  deliveryRecordId    String
+  submissionId        String                      @unique
+  kind                AssistanceOutcomeKind
+  summary             String                      @db.VarChar(300)
+  state               AssistanceOutcomeReviewState @default(REPORTED)
+  reportedById        String
+  reviewedById        String?
+  reviewedAt          DateTime?
+  assistanceRequest   AssistanceRequest           @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
+  deliveryRecord      AssistanceDeliveryRecord    @relation(fields: [deliveryRecordId], references: [id], onDelete: Restrict)
+  reportedBy          User                        @relation("AssistanceOutcomeReporter", fields: [reportedById], references: [id], onDelete: Restrict)
+  reviewedBy          User?                       @relation("AssistanceOutcomeReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
+  createdAt           DateTime                    @default(now())
+  updatedAt           DateTime                    @updatedAt
+
+  @@index([assistanceRequestId, state, createdAt])
+  @@index([deliveryRecordId, state])
+  @@index([state, createdAt])
 }
 
 model AssistanceVerification {
