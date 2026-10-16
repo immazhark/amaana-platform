@@ -1,5 +1,7 @@
 import { notFound } from "next/navigation";
 import { randomUUID } from "node:crypto";
+import { DELIVERY_REPORT_LIMIT, DELIVERY_STATE_LABELS, canReportPrivateDelivery } from "@/lib/assistance-delivery";
+import { reportAssistanceDelivery, reviewAssistanceDelivery } from "./delivery-actions";
 import { FOLLOW_UP_SUMMARY_LIMIT, MAX_OPEN_FOLLOW_UPS_PER_CASE, eligibleFollowUpStaffWhere, followUpDueLabel,
   indiaCalendarDay, shiftedCalendarDay, taskDay } from "@/lib/assistance-follow-up";
 import { assignAssistanceFollowUp, createAssistanceFollowUp, resolveAssistanceFollowUp, rescheduleAssistanceFollowUp } from "./follow-up-actions";
@@ -30,7 +32,7 @@ const label = (value: string) => value.replaceAll("_", " ").toLowerCase().replac
 export default async function RequestDetailPage({ params }: Props) {
   const user = await requirePermission("assistance.view");
   const { id } = await params;
-  const [request, staff, history, milestones, openTasks, resolvedTasks, taskStaff] = await Promise.all([
+  const [request, staff, history, milestones, openTasks, resolvedTasks, taskStaff, deliveries] = await Promise.all([
     prisma.assistanceRequest.findUnique({
       where: { id },
       include: {
@@ -73,6 +75,17 @@ export default async function RequestDetailPage({ params }: Props) {
       select: { id: true, name: true },
       orderBy: [{ name: "asc" }, { id: "asc" }],
     }),
+    prisma.assistanceDeliveryRecord.findMany({
+      where: { assistanceRequestId: id },
+      select: {
+        id: true, kind: true, state: true, summary: true, occurredOn: true,
+        amountInr: true, evidenceDocumentId: true, updatedAt: true,
+        reportedById: true, reportedBy: { select: { name: true } },
+        reviewedBy: { select: { name: true } }, reviewedAt: true,
+      },
+      orderBy: [{ createdAt: "desc" }, { id: "desc" }],
+      take: 30,
+    }),
   ]);
   if (!request) notFound();
 
@@ -111,6 +124,10 @@ export default async function RequestDetailPage({ params }: Props) {
   const defaultTaskOwner = creatableTaskStaff.find(member => member.id === request.assignedToId)?.id ??
     creatableTaskStaff.find(member => member.id === user.id)?.id ?? creatableTaskStaff[0]?.id;
   const today = indiaCalendarDay(new Date());
+  const mayReportDelivery = hasPermission(user, "assistance.update") &&
+    canReportPrivateDelivery(request.status, request.appealId, verification);
+  const mayReviewDelivery = hasPermission(user, "assistance.approve");
+  const evidenceNames = new Map(request.documents.map(doc => [doc.id, doc.originalName]));
 
   return <>
     <nav aria-label="Case navigation"><Link href="/admin">← Back to assistance queue</Link></nav>
@@ -138,6 +155,80 @@ export default async function RequestDetailPage({ params }: Props) {
         <section className="card">
           <h2>Private documents</h2>
           {request.documents.length ? <ul className="document-list">{request.documents.map(document => <li key={document.id}><a href={`/admin/documents/${document.id}`} target="_blank" rel="noreferrer">{document.originalName}</a><small>{document.mimeType} · {(document.sizeBytes / 1048576).toFixed(2)} MB</small></li>)}</ul> : <p className="muted">No documents were submitted.</p>}
+        </section>
+
+        <section className="card" aria-labelledby="private-delivery-heading">
+          <h2 id="private-delivery-heading">Private support-delivery evidence</h2>
+          <p className="muted">Approved request ≠ delivered support. Record only what was actually delivered;
+            another authorized reviewer must confirm supporting evidence. This register
+            does not post donations or publish impact and is never visible to applicants or donors.</p>
+          {mayReportDelivery && <form action={reportAssistanceDelivery} className="field">
+            <input type="hidden" name="id" value={id}/>
+            <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
+            <input type="hidden" name="submissionId" value={randomUUID()}/>
+            <label htmlFor="support-kind">Actual support type</label>
+            <select id="support-kind" name="kind" required defaultValue="IN_KIND">
+              <option value="IN_KIND">Goods or services (no invented cash value)</option>
+              <option value="FINANCIAL">Financial support (actual INR amount required)</option>
+            </select>
+            <label htmlFor="support-occurred">Actual delivery date (Hyderabad calendar)</label>
+            <input id="support-occurred" name="occurredOn" type="date"
+              defaultValue={today} max={today} min={shiftedCalendarDay(today, -1826)} required/>
+            <label htmlFor="support-amount">Amount delivered in INR, financial support only</label>
+            <input id="support-amount" name="amountInr" type="number" step="0.01"
+              min="0.01" max="9999999999.99" inputMode="decimal" placeholder="Leave empty for in-kind support"/>
+            <label htmlFor="support-evidence">Existing private delivery-proof document</label>
+            <select id="support-evidence" name="evidenceDocumentId" defaultValue="">
+              <option value="">Not yet available — report cannot be confirmed</option>
+              {request.documents.map(doc =>
+                <option key={doc.id} value={doc.id}>{doc.originalName}</option>)}
+            </select>
+            <p className="muted">Select proof of actual delivery, not merely evidence of need.
+              Documentation stays private; if proof is absent the report remains awaiting review.</p>
+            <label htmlFor="support-summary">Internal delivery record (20–{DELIVERY_REPORT_LIMIT} characters)</label>
+            <textarea id="support-summary" name="summary" minLength={20}
+              maxLength={DELIVERY_REPORT_LIMIT} required
+              placeholder="Briefly describe confirmed facts about the assistance reportedly delivered."/>
+            <button type="submit" className="button secondary">Record delivered support for review</button>
+          </form>}
+          {deliveries.length ? <>
+            <h3>Recorded deliveries</h3>
+            <p className="muted">Latest {deliveries.length} records (maximum 30 shown).
+              A confirmed review is an internal evidence check, not public-impact publication.</p>
+            <ol className="history">{deliveries.map(item => <li key={item.id}>
+              <strong>{item.kind === "FINANCIAL" ? "Financial support" : "Goods or services"}
+                {" · "}{DELIVERY_STATE_LABELS[item.state]}</strong>
+              <p>{item.summary}</p>
+              <span>Reported delivery date: {item.occurredOn.toLocaleDateString("en-IN", { timeZone: "UTC" })}
+                {item.amountInr ? ` · INR ${item.amountInr.toFixed(2)} (not a donor-ledger posting)` : ""}
+                {" · "}Recorded by {item.reportedBy.name}</span>
+              <p className="muted">Evidence: {item.evidenceDocumentId && evidenceNames.has(item.evidenceDocumentId)
+                ? <a href={`/admin/documents/${item.evidenceDocumentId}`} target="_blank" rel="noreferrer">
+                  {evidenceNames.get(item.evidenceDocumentId)}</a>
+                : "No currently linked private document"}</p>
+              {item.reviewedAt &&
+                <small>Reviewed by {item.reviewedBy?.name ?? "authorized staff"} ·
+                  {" "}{item.reviewedAt.toLocaleDateString("en-IN")}</small>}
+              {mayReviewDelivery && item.state !== "VOIDED" && <>
+                {item.state === "REPORTED" && item.evidenceDocumentId &&
+                  evidenceNames.has(item.evidenceDocumentId) && item.reportedById !== user.id &&
+                  <form className="field" action={reviewAssistanceDelivery}>
+                    <input type="hidden" name="id" value={id}/>
+                    <input type="hidden" name="recordId" value={item.id}/>
+                    <input type="hidden" name="expectedRecordUpdatedAt" value={item.updatedAt.toISOString()}/>
+                    <input type="hidden" name="state" value="CONFIRMED"/>
+                    <button className="button secondary" type="submit">Confirm reviewed delivery evidence</button>
+                  </form>}
+                <form className="field" action={reviewAssistanceDelivery}>
+                  <input type="hidden" name="id" value={id}/>
+                  <input type="hidden" name="recordId" value={item.id}/>
+                  <input type="hidden" name="expectedRecordUpdatedAt" value={item.updatedAt.toISOString()}/>
+                  <input type="hidden" name="state" value="VOIDED"/>
+                  <button className="button secondary" type="submit">Void erroneous delivery record</button>
+                </form>
+              </>}
+            </li>)}</ol>
+          </> : <p className="muted">No delivery has been reported or independently reviewed.</p>}
         </section>
 
         <section className="card" aria-labelledby="private-follow-up-heading">
