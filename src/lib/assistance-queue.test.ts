@@ -46,8 +46,8 @@ describe("private assistance queue triage", () => {
     expect(assistanceQueueVerificationLabel(null)).toBe("Not started");
     expect(assistanceQueueVerificationLabel({ decision: "APPROVED_PUBLIC", completedAt: null })).toBe("In progress");
     const completedAt = new Date("2026-10-15T12:00:00Z");
-    expect(assistanceQueueVerificationLabel({ decision: "APPROVED_PUBLIC", completedAt })).toBe("Public appeal approved");
-    expect(assistanceQueueVerificationLabel({ decision: "APPROVED_PRIVATE", completedAt })).toBe("Private support approved");
+    expect(assistanceQueueVerificationLabel({ decision: "APPROVED_PUBLIC", completedAt })).toBe("Approved for draft appeal");
+    expect(assistanceQueueVerificationLabel({ decision: "APPROVED_PRIVATE", completedAt })).toBe("Approved for private support");
     expect(assistanceQueueVerificationLabel({ decision: "REFERRED", completedAt })).toBe("Referred");
     expect(assistanceQueueVerificationLabel({ decision: "PENDING", completedAt })).toBe("Decision needs review");
   });

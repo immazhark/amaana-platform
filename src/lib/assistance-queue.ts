@@ -75,8 +75,8 @@ export function assistanceQueueHref(filters: AssistanceQueueFilters, page = 1) {
 
 const VERIFICATION_LABELS: Record<AssistanceVerificationDecision, string> = {
   PENDING: "Decision needs review",
-  APPROVED_PUBLIC: "Public appeal approved",
-  APPROVED_PRIVATE: "Private support approved",
+  APPROVED_PUBLIC: "Approved for draft appeal",
+  APPROVED_PRIVATE: "Approved for private support",
   APPROVED_PARTIAL: "Partial support approved",
   REFERRED: "Referred",
   DECLINED: "Declined",
