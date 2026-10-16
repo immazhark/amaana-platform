@@ -57,6 +57,12 @@ export function parseDisclosureProposal(form: FormData) {
   };
 }
 
+export const ANONYMOUS_COPY_WITHDRAWAL_REASONS = {
+  CONSENT_WITHDRAWN: "The applicant or authorized representative withdrew consent",
+  SOURCE_INVALIDATED: "Supporting case, delivery or outcome evidence changed",
+  EDITORIAL_CORRECTION: "The anonymous wording needs correction",
+} as const;
+
 export function parseDisclosureDecision(form: FormData) {
   const caseId = getId(form, "id");
   const disclosureId = getId(form, "disclosureId");
@@ -69,8 +75,15 @@ export function parseDisclosureDecision(form: FormData) {
       getText(form, "consentReviewAttested", 3) !== "yes") {
     throw new Error("The approver must review the actual consent document and exact copy.");
   }
+  const reason = decision === AssistanceOutcomeDisclosureState.WITHDRAWN
+    ? getText(form, "withdrawalReason", 30) : "";
+  if (decision === AssistanceOutcomeDisclosureState.WITHDRAWN &&
+      !Object.prototype.hasOwnProperty.call(ANONYMOUS_COPY_WITHDRAWAL_REASONS, reason)) {
+    throw new Error("Choose why the anonymous-copy proposal is being withdrawn.");
+  }
   return {
     caseId, disclosureId, decision: decision as "APPROVED_COPY" | "WITHDRAWN",
+    withdrawalReason: reason as keyof typeof ANONYMOUS_COPY_WITHDRAWAL_REASONS | "",
     expectedUpdatedAt: getVersion(form, "expectedUpdatedAt"),
   };
 }

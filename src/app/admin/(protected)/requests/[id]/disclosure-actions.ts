@@ -140,6 +140,7 @@ export async function reviewAnonymousOutcomeCopy(form: FormData) {
       entityType: "AssistanceRequest", entityId: input.caseId,
       metadata: {
         disclosureId: item.id, previousState: item.state, state: input.decision,
+        ...(input.withdrawalReason ? { withdrawalReason: input.withdrawalReason } : {}),
         ...(item.state === AssistanceOutcomeDisclosureState.APPROVED_COPY
           ? { previousApprovedById: item.approvedById,
               previousApprovedAt: item.approvedAt?.toISOString() ?? null } : {}),

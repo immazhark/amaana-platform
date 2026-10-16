@@ -190,11 +190,12 @@ describe("independent anonymous copy approval and consent withdrawal", () => {
       state: "APPROVED_COPY", approvedById: "first-approver", approvedAt: version,
     });
     await expect(reviewAnonymousOutcomeCopy(form({
-      decision: "WITHDRAWN", consentReviewAttested: "",
+      decision: "WITHDRAWN", consentReviewAttested: "", withdrawalReason: "CONSENT_WITHDRAWN",
     }))).rejects.toThrow("NAVIGATE");
     expect(m.audit).toHaveBeenCalledWith({ data: expect.objectContaining({
       action: "assistance.anonymous_outcome_copy_reviewed",
       metadata: expect.objectContaining({
+        withdrawalReason: "CONSENT_WITHDRAWN",
         previousApprovedById: "first-approver",
         previousApprovedAt: version.toISOString(),
       }),

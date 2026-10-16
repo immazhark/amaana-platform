@@ -5,7 +5,7 @@ import { OUTCOME_KIND_LABELS, OUTCOME_REVIEW_LABELS, OUTCOME_SUMMARY_LIMIT,
   hasCurrentPrivateOutcomeEvidence } from "@/lib/assistance-outcome";
 import { reportAssistanceOutcome, reviewAssistanceOutcome } from "./outcome-actions";
 import {
-  ANONYMOUS_OUTCOME_COPY, DISCLOSURE_STATUS_LABELS,
+  ANONYMOUS_OUTCOME_COPY, ANONYMOUS_COPY_WITHDRAWAL_REASONS, DISCLOSURE_STATUS_LABELS,
 } from "@/lib/assistance-outcome-disclosure";
 import {
   proposeAnonymousOutcomeCopy, reviewAnonymousOutcomeCopy,
@@ -581,6 +581,13 @@ export default async function RequestDetailPage({ params }: Props) {
                           <input type="hidden" name="expectedUpdatedAt"
                             value={item.disclosure.updatedAt.toISOString()}/>
                           <input type="hidden" name="decision" value="WITHDRAWN"/>
+                          <label htmlFor={`copy-withdraw-reason-${item.disclosure.id}`}>Reason for withdrawal</label>
+                          <select id={`copy-withdraw-reason-${item.disclosure.id}`}
+                            name="withdrawalReason" required defaultValue="">
+                            <option value="" disabled>Choose a reason</option>
+                            {Object.entries(ANONYMOUS_COPY_WITHDRAWAL_REASONS).map(([value, title]) =>
+                              <option key={value} value={value}>{title}</option>)}
+                          </select>
                           <button className="button secondary" type="submit">
                             Withdraw anonymous-copy approval or proposal
                           </button>

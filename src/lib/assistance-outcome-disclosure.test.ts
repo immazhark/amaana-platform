@@ -63,9 +63,12 @@ describe("explicit anonymous-outcome copy consent", () => {
   });
   it("only accepts internal copy approval or withdrawal, never public publication", () => {
     expect(parseDisclosureDecision(form()).decision).toBe("APPROVED_COPY");
-    expect(parseDisclosureDecision(form({ decision: "WITHDRAWN", consentReviewAttested: "" })).decision)
+    expect(parseDisclosureDecision(form({ decision: "WITHDRAWN", consentReviewAttested: "", withdrawalReason: "CONSENT_WITHDRAWN" })).decision)
       .toBe("WITHDRAWN");
     expect(() => parseDisclosureDecision(form({ decision: "PUBLISHED" }))).toThrow();
+    expect(() => parseDisclosureDecision(form({ decision: "WITHDRAWN" }))).toThrow("Choose why");
+    expect(() => parseDisclosureDecision(form({ decision: "WITHDRAWN",
+      withdrawalReason: "PUBLICATION_REQUESTED" }))).toThrow();
     expect(() => parseDisclosureDecision(form({ consentReviewAttested: "" }))).toThrow();
   });
   it("exposes only fixed, anonymous, nonclinical templates", () => {
