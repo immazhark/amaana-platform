@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 const m = vi.hoisted(() => ({
-  permission: vi.fn(), transaction: vi.fn(), request: vi.fn(), document: vi.fn(),
+  permission: vi.fn(), has: vi.fn(), transaction: vi.fn(), request: vi.fn(), document: vi.fn(),
   record: vi.fn(), create: vi.fn(), update: vi.fn(), audit: vi.fn(), cache: vi.fn(), redirect: vi.fn(),
 }));
-vi.mock("@/lib/auth", () => ({ requirePermission: m.permission }));
+vi.mock("@/lib/auth", () => ({ requirePermission: m.permission, hasPermission: m.has }));
 vi.mock("@/lib/prisma-transaction", () => ({ withSerializableTransactionRetry: m.transaction }));
 vi.mock("next/cache", () => ({ revalidatePath: m.cache }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
@@ -35,6 +35,7 @@ const tx = {
 beforeEach(() => {
   vi.resetAllMocks();
   m.permission.mockResolvedValue({ id: "approver-1" });
+  m.has.mockReturnValue(true);
   m.transaction.mockImplementation(async (fn: (value: typeof tx) => Promise<void>) => fn(tx));
   m.request.mockResolvedValue({
     id: "case-synthetic", status: "APPROVED", appealId: null, updatedAt: version,
@@ -83,6 +84,22 @@ describe("private delivery reporting and independent evidence confirmation", () 
       verification: { decision: "APPROVED_PRIVATE", completedAt: version } });
     await expect(reportAssistanceDelivery(form())).rejects.toThrow("case changed");
     expect(m.create).not.toHaveBeenCalled();
+  });
+  it("blocks independent confirmation if the case becomes rejected or converted", async () => {
+    m.record.mockResolvedValue({ assistanceRequestId: "case-synthetic",
+      reportedById: "original-reviewer", state: "REPORTED",
+      evidenceDocumentId: "private-proof", updatedAt: version });
+    m.request.mockResolvedValue({ status: "REJECTED", appealId: null,
+      verification: { decision: "DECLINED", completedAt: version } });
+    await expect(reviewAssistanceDelivery(form())).rejects.toThrow("case verification or status changed");
+    expect(m.update).not.toHaveBeenCalled();
+  });
+  it("requires case-view permission even for an update- or approve-role holder", async () => {
+    m.has.mockReturnValue(false);
+    await expect(reportAssistanceDelivery(form())).rejects.toThrow("Case-view permission");
+    await expect(reviewAssistanceDelivery(form())).rejects.toThrow("Case-view permission");
+    await expect(linkAssistanceDeliveryEvidence(form())).rejects.toThrow("Case-view permission");
+    expect(m.transaction).not.toHaveBeenCalled();
   });
   it("requires a different approver and documentary evidence before confirmation", async () => {
     m.record.mockResolvedValue({ assistanceRequestId: "case-synthetic",

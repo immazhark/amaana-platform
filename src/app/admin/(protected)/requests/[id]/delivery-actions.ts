@@ -3,7 +3,7 @@
 import { AssistanceDeliveryReviewState } from "@prisma/client";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { requirePermission } from "@/lib/auth";
+import { hasPermission, requirePermission } from "@/lib/auth";
 import { canReportPrivateDelivery, parseDeliveryCreation, parseDeliveryReview } from "@/lib/assistance-delivery";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
@@ -16,6 +16,7 @@ function returnToCase(id: string): never {
  * verify a payout or increment a public impact metric. */
 export async function reportAssistanceDelivery(form: FormData) {
   const actor = await requirePermission("assistance.update");
+  if (!hasPermission(actor, "assistance.view")) throw new Error("Case-view permission is required.");
   const data = parseDeliveryCreation(form);
   await withSerializableTransactionRetry(async tx => {
     const existing = await tx.assistanceDeliveryRecord.findUnique({
@@ -77,6 +78,7 @@ export async function reportAssistanceDelivery(form: FormData) {
  * describes reviewed support; no transfer, impact publishing or status change. */
 export async function reviewAssistanceDelivery(form: FormData) {
   const actor = await requirePermission("assistance.approve");
+  if (!hasPermission(actor, "assistance.view")) throw new Error("Case-view permission is required.");
   const { id, recordId, state, expectedUpdatedAt } = parseDeliveryReview(form);
   await withSerializableTransactionRetry(async tx => {
     const record = await tx.assistanceDeliveryRecord.findUnique({
@@ -98,6 +100,16 @@ export async function reviewAssistanceDelivery(form: FormData) {
       throw new Error("The delivery report changed. Reload before reviewing.");
     }
     if (state === AssistanceDeliveryReviewState.CONFIRMED) {
+      const request = await tx.assistanceRequest.findUnique({
+        where: { id },
+        select: {
+          status: true, appealId: true,
+          verification: { select: { decision: true, completedAt: true } },
+        },
+      });
+      if (!request || !canReportPrivateDelivery(request.status, request.appealId, request.verification)) {
+        throw new Error("Delivery confirmation is blocked because the case verification or status changed.");
+      }
       if (record.reportedById === actor.id) {
         throw new Error("An independent approver must review evidence reported by another staff member.");
       }
@@ -129,6 +141,7 @@ export async function reviewAssistanceDelivery(form: FormData) {
 // unreviewed. Confirmation requires a separate reviewer after this action.
 export async function linkAssistanceDeliveryEvidence(form: FormData) {
   const actor = await requirePermission("assistance.update");
+  if (!hasPermission(actor, "assistance.view")) throw new Error("Case-view permission is required.");
   const idValue = form.get("id");
   const recordValue = form.get("recordId");
   const docValue = form.get("evidenceDocumentId");
