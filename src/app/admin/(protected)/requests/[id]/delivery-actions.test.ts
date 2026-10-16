@@ -133,11 +133,17 @@ describe("private delivery reporting and independent evidence confirmation", () 
   it("supports correction through a private void without erasing history", async () => {
     m.record.mockResolvedValue({ assistanceRequestId: "case-synthetic",
       reportedById: "original-reviewer", state: "CONFIRMED",
-      evidenceDocumentId: "private-proof", updatedAt: version });
+      evidenceDocumentId: "private-proof", reviewedById: "first-reviewer", reviewedAt: version, updatedAt: version });
     await expect(reviewAssistanceDelivery(form({ state: "VOIDED" }))).rejects.toThrow("NAVIGATE");
     expect(m.update).toHaveBeenCalledWith(expect.objectContaining({
       data: { state: "VOIDED", reviewedById: "approver-1", reviewedAt: expect.any(Date) },
     }));
+    expect(m.audit).toHaveBeenCalledWith({ data: expect.objectContaining({
+      action: "assistance.delivery_reviewed",
+      metadata: expect.objectContaining({
+        previousReviewedById: "first-reviewer", previousReviewedAt: version.toISOString(),
+      }),
+    }) });
   });
   it("does not review another case or duplicate a confirmed review", async () => {
     m.record.mockResolvedValue({ assistanceRequestId: "another-case",

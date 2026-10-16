@@ -85,7 +85,7 @@ export async function reviewAssistanceDelivery(form: FormData) {
       where: { id: recordId },
       select: {
         assistanceRequestId: true, reportedById: true, state: true,
-        evidenceDocumentId: true, updatedAt: true,
+        evidenceDocumentId: true, reviewedById: true, reviewedAt: true, updatedAt: true,
       },
     });
     if (!record || record.assistanceRequestId !== id) {
@@ -131,7 +131,12 @@ export async function reviewAssistanceDelivery(form: FormData) {
     await tx.auditEvent.create({ data: {
       actorId: actor.id, action: "assistance.delivery_reviewed",
       entityType: "AssistanceRequest", entityId: id,
-      metadata: { deliveryRecordId: recordId, previousState: record.state, state },
+      metadata: {
+        deliveryRecordId: recordId, previousState: record.state, state,
+        ...(record.state === AssistanceDeliveryReviewState.CONFIRMED
+          ? { previousReviewedById: record.reviewedById,
+              previousReviewedAt: record.reviewedAt?.toISOString() ?? null } : {}),
+      },
     } });
   });
   returnToCase(id);
