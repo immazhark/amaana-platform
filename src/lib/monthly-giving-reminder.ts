@@ -77,7 +77,7 @@ export function buildFridayGivingReminder(today: Date): string {
     `DESCRIPTION:${description}`,
     "URL:https://amaanafoundation.org/donate",
     "TRANSP:TRANSPARENT", "END:VEVENT", "END:VCALENDAR",
-  ].map(foldLine).join("\\r\\n") + "\\r\\n";
+  ].map(foldLine).join("\r\n") + "\r\n";
 }
 
 export function buildMonthlyGivingReminder(day: MonthlyGivingDay, today: Date): string {

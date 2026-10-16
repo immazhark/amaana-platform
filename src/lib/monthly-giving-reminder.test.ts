@@ -30,14 +30,16 @@ describe("non-charging monthly giving calendar", () => {
     expect(nextFridayGivingDate(new Date(2026, 9, 17))).toBe("20261023");
     expect(nextFridayGivingDate(new Date(2026, 11, 31))).toBe("20270101");
     const ics = buildFridayGivingReminder(new Date(2026, 9, 17));
-    const unfolded = ics.replace(/\\r\\n /g, "");
+    const unfolded = ics.replace(/\r\n /g, "");
     expect(unfolded).toContain("DTSTART;VALUE=DATE:20261023");
     expect(unfolded).toContain("DTEND;VALUE=DATE:20261024");
     expect(unfolded).toContain("RRULE:FREQ=WEEKLY;BYDAY=FR");
+    expect(ics.startsWith("BEGIN:VCALENDAR\r\n")).toBe(true);
+    expect(ics.endsWith("END:VCALENDAR\r\n")).toBe(true);
     expect(unfolded).toContain("no automatic debit or subscription");
     expect(unfolded).toContain("URL:https://amaanafoundation.org/donate");
     expect(unfolded).not.toMatch(/RAZORPAY|mandate|Ramadan|Eid/);
-    for (const line of ics.split("\\r\\n")) {
+    for (const line of ics.split("\r\n")) {
       expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75);
     }
   });
