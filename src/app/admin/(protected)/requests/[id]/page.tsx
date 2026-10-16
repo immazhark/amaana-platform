@@ -2,8 +2,9 @@ import { notFound } from "next/navigation";
 import { randomUUID } from "node:crypto";
 import {
   PRIVATE_MILESTONE_ACTION, PRIVATE_MILESTONE_KINDS,
+  PRIVATE_MILESTONE_REDACTED_ACTION, PRIVATE_MILESTONE_REDACTION_REASONS,
   PRIVATE_MILESTONE_SUMMARY_MAX, canAddPrivateMilestone,
-  readPrivateMilestone,
+  readPrivateMilestone, readPrivateMilestoneRedaction,
 } from "@/lib/assistance-private-milestone";
 import Link from "@/components/navigation-link";
 import { assistanceQueueAge, assistanceQueueVerificationLabel } from "@/lib/assistance-queue";
@@ -18,7 +19,7 @@ import {
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { assignRequest, convertToAppeal, saveVerification, updateRequest } from "./actions";
-import { addPrivateMilestone } from "./milestone-actions";
+import { addPrivateMilestone, redactPrivateMilestone } from "./milestone-actions";
 
 type Props = { params: Promise<{ id: string }> };
 const label = (value: string) => value.replaceAll("_", " ").toLowerCase().replace(/^./, character => character.toUpperCase());
@@ -42,10 +43,12 @@ export default async function RequestDetailPage({ params }: Props) {
     }),
     prisma.auditEvent.findMany({ where: { entityType: "AssistanceRequest", entityId: id }, select: { id: true, action: true, createdAt: true, actor: { select: { name: true } } }, orderBy: [{ createdAt: "desc" }, { id: "desc" }], take: 50 }),
     prisma.auditEvent.findMany({
-      where: { entityType: "AssistanceRequest", entityId: id, action: PRIVATE_MILESTONE_ACTION },
-      select: { id: true, metadata: true, createdAt: true, actor: { select: { name: true } } },
+      where: { entityType: "AssistanceRequest", entityId: id,
+        action: { in: [PRIVATE_MILESTONE_ACTION, PRIVATE_MILESTONE_REDACTED_ACTION] } },
+      select: { id: true, action: true, metadata: true, createdAt: true,
+        actor: { select: { name: true } } },
       orderBy: [{ createdAt: "desc" }, { id: "desc" }],
-      take: 20,
+      take: 60,
     }),
   ]);
   if (!request) notFound();
@@ -66,10 +69,17 @@ export default async function RequestDetailPage({ params }: Props) {
   const operationalAge = assistanceQueueAge(request.createdAt, new Date());
   const canRecordMilestone = hasPermission(user, "assistance.update") &&
     canAddPrivateMilestone(request.status, request.appealId);
+  const redactedMilestones = new Set(milestones.flatMap(event => {
+    const target = event.action === PRIVATE_MILESTONE_REDACTED_ACTION
+      ? readPrivateMilestoneRedaction(event.metadata) : null;
+    return target ? [target] : [];
+  }));
   const privateTimeline = milestones.flatMap(event => {
+    if (event.action !== PRIVATE_MILESTONE_ACTION || redactedMilestones.has(event.id)) return [];
     const note = readPrivateMilestone(event.metadata);
     return note ? [{ ...note, id: event.id, actor: event.actor.name, createdAt: event.createdAt }] : [];
-  });
+  }).slice(0, 20);
+  const mayRedactMilestone = hasPermission(user, "assistance.approve");
 
   return <>
     <nav aria-label="Case navigation"><Link href="/admin">← Back to assistance queue</Link></nav>
@@ -123,13 +133,25 @@ export default async function RequestDetailPage({ params }: Props) {
           </form> : <p className="muted">New follow-ups are available only to authorized staff while the case is open and not converted to an appeal.</p>}
           {privateTimeline.length ? <>
             <h3>Recent operational history</h3>
-            <p className="muted">Latest {privateTimeline.length} private entries (maximum 20 displayed).
-              Full audit records remain restricted to authorized administrators.</p>
+            <p className="muted">Up to 20 of the latest non-redacted private entries are shown.
+              Redacted entries remain in the restricted audit record but are not displayed here.</p>
             <ol className="history">
               {privateTimeline.map(item => <li key={item.id}>
                 <strong>{PRIVATE_MILESTONE_KINDS[item.kind]}</strong>
                 <p>{item.summary}</p>
                 <span>{item.actor} · {item.createdAt.toLocaleString("en-IN")}</span>
+                {mayRedactMilestone && <form action={redactPrivateMilestone} className="field">
+                  <input type="hidden" name="id" value={id}/>
+                  <input type="hidden" name="targetId" value={item.id}/>
+                  <label htmlFor={`milestone-redaction-${item.id}`}>Reason to remove from case view</label>
+                  <select id={`milestone-redaction-${item.id}`} name="reason" required>
+                    {Object.entries(PRIVATE_MILESTONE_REDACTION_REASONS).map(([reason, label]) =>
+                      <option key={reason} value={reason}>{label}</option>)}
+                  </select>
+                  <button type="submit" className="button secondary">
+                    Redact this private follow-up
+                  </button>
+                </form>}
               </li>)}
             </ol>
           </> : <p className="muted">No private follow-ups have been recorded.</p>}
