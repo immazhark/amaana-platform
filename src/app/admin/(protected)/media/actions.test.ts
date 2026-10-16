@@ -3,6 +3,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   requirePermission: vi.fn(),
   findUniqueOrThrow: vi.fn(),
+  findFirst: vi.fn(),
   findMany: vi.fn(),
   createRecord: vi.fn(),
   deleteRecord: vi.fn(),
@@ -41,6 +42,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     mediaAsset: {
       findUniqueOrThrow: mocks.findUniqueOrThrow,
+      findFirst: mocks.findFirst,
       delete: mocks.deleteRecord,
       create: mocks.createRecord,
       update: mocks.updateRecord,
@@ -479,6 +481,7 @@ describe("admin media deletion", () => {
     mocks.requirePermission.mockResolvedValue({ id: "user_123" });
     mocks.deletePublicMediaObject.mockResolvedValue(undefined);
     mocks.deleteRecord.mockResolvedValue({ id: "media_123" });
+    mocks.findFirst.mockResolvedValue(null);
     mocks.updateMany.mockResolvedValue({ count: 1 });
     mocks.createAudit.mockResolvedValue({ id: "audit_123" });
     mocks.transaction.mockResolvedValue([]);
@@ -502,6 +505,48 @@ describe("admin media deletion", () => {
 
     await expect(deleteMediaAsset(deletionForm())).rejects.toThrow(/unpublish/i);
     expect(mocks.deletePublicMediaObject).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["published", true],
+    ["unpublished", false],
+  ])("refuses object deletion when another %s media record shares its managed storage key", async (_label, isPublic) => {
+    const current = {
+      id: "media_123", isPublic: false,
+      storageKey: "2026/11111111-1111-4111-8111-111111111111.jpg",
+      publicUrl: "/media/2026/11111111-1111-4111-8111-111111111111.jpg",
+      updatedAt: new Date("2026-09-23T00:00:00.000Z"),
+    };
+    mocks.findUniqueOrThrow.mockResolvedValue(current);
+    mocks.findFirst.mockResolvedValue({ id: "shared-asset", isPublic });
+    await expect(deleteMediaAsset(deletionForm())).rejects.toThrow(/shared.*storage object/i);
+    expect(mocks.findFirst).toHaveBeenCalledWith({
+      where: {
+        storageKey: current.storageKey,
+        id: { not: "media_123" },
+      },
+      select: { id: true },
+    });
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.deletePublicMediaObject).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
+  it("blocks a newly discovered storage-key alias after the deletion claim and before object removal", async () => {
+    mocks.findUniqueOrThrow.mockResolvedValue({
+      id: "media_123", isPublic: false,
+      storageKey: "2026/11111111-1111-4111-8111-111111111111.jpg",
+      publicUrl: "/media/2026/11111111-1111-4111-8111-111111111111.jpg",
+      updatedAt: new Date("2026-09-23T00:00:00.000Z"),
+    });
+    mocks.findFirst.mockResolvedValueOnce(null).mockResolvedValueOnce({ id: "racing-alias" });
+    await expect(deleteMediaAsset(deletionForm())).rejects.toThrow(/shared.*storage object/i);
+    expect(mocks.findFirst).toHaveBeenCalledTimes(2);
+    expect(mocks.updateMany).toHaveBeenCalledOnce();
+    expect(mocks.deletePublicMediaObject).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
     expect(mocks.transaction).not.toHaveBeenCalled();
   });
 
