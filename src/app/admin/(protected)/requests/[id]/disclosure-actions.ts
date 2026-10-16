@@ -27,7 +27,7 @@ export async function proposeAnonymousOutcomeCopy(form: FormData) {
   await withSerializableTransactionRetry(async tx => {
     const previous = await tx.assistanceOutcomeDisclosure.findUnique({
       where: { observationId: input.observationId },
-      select: { observationId: true, preparedById: true, consentDocumentId: true, copyText: true },
+      select: { observationId: true, preparedById: true, consentDocumentId: true, copyText: true, state: true },
     });
     const observation = await tx.assistanceOutcomeObservation.findUnique({
       where: { id: input.observationId },
@@ -38,6 +38,9 @@ export async function proposeAnonymousOutcomeCopy(form: FormData) {
     }
     const copyText = ANONYMOUS_OUTCOME_COPY[observation.kind];
     if (previous) {
+      if (previous.state === AssistanceOutcomeDisclosureState.WITHDRAWN) {
+        throw new Error("This anonymous-copy consent was withdrawn and cannot be reused.");
+      }
       if (previous.preparedById !== actor.id || previous.copyText !== copyText ||
           previous.consentDocumentId !== input.consentDocumentId) {
         throw new Error("An anonymous-copy proposal already exists for this observation.");
