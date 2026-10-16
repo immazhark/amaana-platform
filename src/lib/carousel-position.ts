@@ -15,6 +15,8 @@ export function closestCarouselIndex(
   scrollWidth: number,
   clientWidth: number,
 ) {
+  // When the full track fits, no manual scroll position exists to infer.
+  if (scrollWidth <= clientWidth) return 0;
   let selected = 0;
   let distance = Number.POSITIVE_INFINITY;
   offsets.forEach((offset, index) => {

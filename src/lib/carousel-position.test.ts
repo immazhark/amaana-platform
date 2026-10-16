@@ -16,6 +16,9 @@ describe("browser-reachable carousel geometry", () => {
     expect(closestCarouselIndex(offsets, 1100, 1500, 400)).toBe(4);
     expect(closestCarouselIndex(offsets, 1070, 1500, 400)).toBe(4);
   });
+  it("does not classify the last card as active when all cards fit the viewport", () => {
+    expect(closestCarouselIndex([0, 0, 0], 0, 350, 500)).toBe(0);
+  });
   it("ignores detached slide nodes and gives a deterministic empty fallback", () => {
     expect(closestCarouselIndex([0, null, 450], 450, 900, 450)).toBe(2);
     expect(closestCarouselIndex([null, null], 120, 800, 400)).toBe(0);
