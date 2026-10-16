@@ -33,21 +33,22 @@ import {
 } from "@/lib/assistance";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { assignRequest, convertToAppeal, saveVerification, updateRequest } from "./actions";
+import { assignRequest, convertToAppeal, saveVerification, updateRequest, withdrawConvertedAppealDisclosure } from "./actions";
 import { addPrivateMilestone, redactPrivateMilestone } from "./milestone-actions";
 
-type Props = { params: Promise<{ id: string }> };
+type Props = { params: Promise<{ id: string }>; searchParams?: Promise<{ privacy?: string | string[] }> };
 const label = (value: string) => value.replaceAll("_", " ").toLowerCase().replace(/^./, character => character.toUpperCase());
 
-export default async function RequestDetailPage({ params }: Props) {
+export default async function RequestDetailPage({ params, searchParams }: Props) {
   const user = await requirePermission("assistance.view");
   const { id } = await params;
+  const privacyResult = (await searchParams)?.privacy;
   const [request, staff, history, milestones, openTasks, resolvedTasks, taskStaff, deliveries, outcomes] = await Promise.all([
     prisma.assistanceRequest.findUnique({
       where: { id },
       include: {
         documents: { select: { id: true, originalName: true, mimeType: true, sizeBytes: true } },
-        appeal: { select: { title: true, status: true } },
+        appeal: { select: { id: true, title: true, status: true, updatedAt: true } },
         verification: { include: { reviewedBy: { select: { name: true } } } },
       },
     }),
@@ -164,6 +165,9 @@ export default async function RequestDetailPage({ params }: Props) {
   const mayReviewFinancialEvidence = hasPermission(user, "donation.reconcile");
   const mayReportOutcome = hasPermission(user, "assistance.update");
   const mayReviewOutcome = hasPermission(user, "assistance.approve");
+  const canWithdrawPublicDisclosure = converted && Boolean(request.appeal) && Boolean(verification) &&
+    ["PUBLISHED", "PAUSED", "FUNDED", "CLOSED"].includes(request.appeal?.status ?? "") &&
+    hasPermission(user, "assistance.approve") && hasPermission(user, "appeal.approve");
   const mayApproveAnonymousCopy = mayReviewOutcome && hasPermission(user, "content.approve");
   const activeOutcomeSources = new Set(activeSources.map(item => item.deliveryRecordId));
   const financeCorroborationCandidates = deliveries.filter(item =>
@@ -183,6 +187,14 @@ export default async function RequestDetailPage({ params }: Props) {
   ) : [];
 
   return <>
+    {privacyResult === "withdrawn" && <section role="status" className="card" aria-live="polite">
+      <strong>Public disclosure withdrawn.</strong>
+      <p>Case verification was restricted and public fundraising was stopped. Review the public appeal URL and linked media records; do not re-publish without fresh documented consent.</p>
+    </section>}
+    {privacyResult === "refresh-delayed" && <section role="alert" className="card">
+      <strong>Public disclosure withdrawal was saved, but cache refresh was not confirmed.</strong>
+      <p>The database change committed. Do not submit this action again. Escalate immediately to an administrator to clear public caches, verify the appeal and donation URLs, and review any externally stored media.</p>
+    </section>}
     <nav aria-label="Case navigation"><Link href="/admin">← Back to assistance queue</Link></nav>
     <div className="admin-heading">
       <div>
@@ -674,7 +686,31 @@ export default async function RequestDetailPage({ params }: Props) {
           <p className="muted">This verification decision is {label(verification.decision)}. No public appeal conversion is offered unless the case has been specifically approved for public fundraising.</p>
         </section>}
 
-        {request.appeal && <section className="card"><h2>Linked appeal</h2><p>{request.appeal.title}</p><span className="status-badge">{request.appeal.status}</span></section>}
+        {request.appeal && <section className="card">
+          <h2>Linked appeal</h2>
+          <p>{request.appeal.title}</p>
+          <span className="status-badge">{request.appeal.status}</span>
+          {canWithdrawPublicDisclosure && <form action={withdrawConvertedAppealDisclosure} className="field">
+            <h3>Emergency withdrawal of public disclosure</h3>
+            <p className="muted">Use only when permission to display this linked case is withdrawn.
+              This one-way control restricts all name, photo, medical, institution and archive disclosures,
+              prevents public discovery, and pauses active fundraising. Previously funded appeals become closed.
+              Financial verification and historical audit records remain intact.</p>
+            <input type="hidden" name="id" value={id}/>
+            <input type="hidden" name="expectedRequestUpdatedAt" value={request.updatedAt.toISOString()}/>
+            <input type="hidden" name="expectedVerificationUpdatedAt" value={verification!.updatedAt.toISOString()}/>
+            <input type="hidden" name="expectedAppealUpdatedAt" value={request.appeal.updatedAt.toISOString()}/>
+            <label htmlFor="withdrawal-reason">Private reason for withdrawal</label>
+            <textarea id="withdrawal-reason" name="reason" minLength={20} maxLength={500}
+              placeholder="Record the beneficiary or authorised contact's documented request and date, without adding unnecessary private details."
+              required/>
+            <label className="checkbox">
+              <input type="checkbox" name="confirmWithdrawal" value="on" required/>
+              <span>I confirmed this disclosure withdrawal and understand that public appeal pages and fundraising will be stopped.</span>
+            </label>
+            <button type="submit" className="button secondary">Withdraw public disclosure</button>
+          </form>}
+        </section>}
       </aside>
     </div>
   </>;
