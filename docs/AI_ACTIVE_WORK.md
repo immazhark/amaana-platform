@@ -1,3 +1,7 @@
+## 2026-10-17 — Appeal admin scalar-field integrity (in progress)
+
+Ownership: CHATGPT_ACTIVE. Verified PR #292 head `94dedae77a40dd48daa56d20448063fdd1ea6908`, target `main`, prior state HANDOFF_PENDING. Scope: prevent first-value-wins scalar ambiguity and File-as-text coercion in public appeal editor, status, featuring, update publication and unpublication. Preserve role/transaction/media safeguards and existing valid forms. Author focused regressions. No CI pipeline, migration, provider, live record, merge or deployment.
+
 ## 2026-10-17 — Safe paused appeal resumption
 
 Ownership: HANDOFF_PENDING. ChatGPT completed the sole-writer batch on `fix/direct-transfer-feedback-20261013`, PR #292 targeting `main`. Starting branch HEAD `8acb60dc460947c32e6e349b5b1a5365818618`. Source `825211b27c9940908c3f872792361605ea3563bd`, `3b5e47cd4b7920023c929577b2bc608650115092`, required-link change `5e224e1751c004cf2b7ba2ec28237dddc5b04c06`, test commit `d49a5c3769bf3edeb3601c42ab2823d98946c806`, master update `4420f8a227ec3502f200495f545323e7a7404096`, handoff ledger `689ce2e42bdfbc6c573391e341f4d5c0bd37a6e3`.
