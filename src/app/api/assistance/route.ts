@@ -39,7 +39,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid assistance submission format." }, { status: 400, headers: privateHeaders });
     }
 
-    let bodyBytes: Uint8Array;
+    let bodyBytes: Uint8Array<ArrayBuffer>;
     try {
       // An absolute deadline prevents stalled or trickling multipart requests
       // from tying up the assistance submission handler indefinitely.
