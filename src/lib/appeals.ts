@@ -1,3 +1,5 @@
+import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
+
 export type AmountLike = { toNumber(): number } | number | string;
 
 export type PublicAppeal = {
@@ -43,10 +45,10 @@ export function isAppealOpenForDonations(
   appeal: AppealFundraisingState,
   now: Date = new Date(),
 ) {
-  if (appeal.status !== "PUBLISHED") return false;
-  if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) return false;
-  if (appeal.closesAt && new Date(appeal.closesAt).getTime() <= now.getTime()) return false;
-  return true;
+  // Public CTAs, donation pages and payment APIs must share one eligibility
+  // boundary. A malformed or unpayable remaining amount must never render
+  // an enabled donation journey only for the provider to reject it later.
+  return getDonationCheckoutRemainingAmount(appeal, now) !== null;
 }
 
 export const formatINR = (amount: number) =>

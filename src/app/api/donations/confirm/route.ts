@@ -99,6 +99,16 @@ export async function POST(request: Request) {
       throw new Error("Donation disappeared during payment confirmation");
     }
 
+    if (currentDonation.status !== "CAPTURED" && currentDonation.status !== "REFUNDED") {
+      return NextResponse.json(
+        {
+          status: currentDonation.status,
+          error: "Payment verification is pending. Please retain your payment confirmation and do not submit another payment.",
+        },
+        { status: 409, headers: privateHeaders },
+      );
+    }
+
     return NextResponse.json(
       {
         referenceNumber: donation.referenceNumber,
