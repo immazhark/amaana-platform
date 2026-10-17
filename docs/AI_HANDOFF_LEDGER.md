@@ -1,6 +1,6 @@
 ## 2026-10-17 — Settlement release retained in receipt deadline
 
-Ownership: HANDOFF_PENDING. PR303 merged main fb2d1c19 after fullCI39048295083, ready gate39050449878 and independent AI review; Railway4ecc31e9 BUILDING, deployed SHA pending verification. PR306 incorporates this main, preserving both settlement and receipt retry browser cases and both handoff entries. Combined full912 passed/9 skipped, types/E2E syntax/diff pass. No production charge/refund. Fresh hosted checks required on reconciled306.
+Ownership: HANDOFF_PENDING. PR303 merged main fb2d1c19 after fullCI39048295083, ready gate39050449878 and independent AI review; Railway4ecc31e9 SUCCESS; direct production origin version200 confirms exact fb2d1c19/main/production/live and synthetic empty confirmation POST returns private400/noindex without provider action. Custom-domain verification remains Cloudflare-blocked. PR306 incorporates this main, preserving both settlement and receipt retry browser cases and both handoff entries. Combined full912 passed/9 skipped, types/E2E syntax/diff pass. No production charge/refund. Fresh hosted checks required on reconciled306.
 
 ## 2026-10-17 — Private receipt body read deadline
 
