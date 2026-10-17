@@ -1,3 +1,7 @@
+## 2026-10-17 — ACTIVE: donor payment settlement confirmation and acknowledgement boundaries
+
+**Ownership: CHATGPT_ACTIVE.** Sole-writer claim after verifying open PR #292 `fix/direct-transfer-feedback-20261013` -> `main`, HEAD `5116e7b0f951e9687acdca0b1237fac6573cc901`, previous HANDOFF_PENDING. Implement a source-backed terminal-payment response invariant: no HTTP 200 confirmation of CREATED/AUTHORIZED/FAILED pending donations. Browser remains in reconciliation for nonterminal status and avoids false completion. Add focused tests first; optionally harden private receipt body reads. Do not merge, deploy, touch production, or alter schema/payment gateway configuration.
+
 ## 2026-10-17 — Razorpay webhook ingress and capture-event durability; handoff
 
 **Ownership: HANDOFF_PENDING.** Sole-writer ChatGPT batch on open PR #292, `fix/direct-transfer-feedback-20261013` to `main`. Incoming verified HEAD `18a1aaaf6ce7e7e66b085efe8c3c00180edb77ac`, ownership claim `251fbe78e68466dcadd460a1a4509e2ef828efc6`. No competing writer observed.
