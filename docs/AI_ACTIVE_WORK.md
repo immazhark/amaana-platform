@@ -1,6 +1,18 @@
+## 2026-10-17 — Integrated financial webhook guards on capped-refund candidate
+
+Ownership: CHATGPT_ACTIVE. Existing PR307 strict signed capture/failure/processed-refund entity validation before replay DB lookup is combined in its own candidate branch with existing PR301 capped-refund rollback guard. Parent financial candidate PR301 b349917b89bf3e3b2adb6e382f410bf2b97ad52d must be independently reviewed, fully tested, and merged first. After #301, PR307 becomes a strict-state-only delta against main; rerun exact-head hosted integration if main changes. Added both financial-over-refund tests to PR307's strict-state and valid HMAC regression suite; no real provider/refund/replay or outgoing message actions. Preserve unmodified payment-confirmation and exact-paise guards. Do not publish PR307 ahead of PR301.
+
 ## 2026-10-17 — Signed webhook financial state validation
 
 Ownership: HANDOFF_PENDING after strict webhook guard. Branch fix/webhook-financial-state-validation-20261017 from deployed main303 fb2d1c19. Extract strict capture/failure/refund entity states before replay acknowledgement from historical292. Official Razorpay payment/refund webhook examples checked: capture statuscaptured + capturedtrue; refundprocessed statusprocessed. Preserve signatures, exact INR amounts, ledger/idempotency and PR301 over-refund reconciliation on integration. RED:16 strict-state/replay regressions fail before implementation. GREEN:97 focused/full921 passed9 skipped; type/focused lint/diff pass. Positive capture+matching replay verified; valid failed HMAC cases retained and missing statuses added. Original capture-invalid fixture now includes capturedtrue so identity cases remain reachable. Independent review requested; hosted DB/build/browser acceptance pending. No provider or real ledger operations.
+
+## 2026-10-17 — Exact checkout and settlement current-main verification
+
+Ownership: HANDOFF_PENDING. PR299 corrected4ef74ae5 passed full hostedCI39050147508. Reconciled deployed303 fb2d1c19 preserving exact page bounds and all settlement/browser controls; only coordination notes conflicted and both records retained. Combined full938 passed9 skipped; TypeScript/diff pass. Fresh exact-head hosted acceptance required. Preserve299-before300; no provider/financial writes or deployment.
+
+## 2026-10-17 — Exact checkout page bounds regression
+
+Ownership: HANDOFF_PENDING after exact-bound repair. Existing PR299 head045c497b passed hosted CI but independent AI review found page still passes floating subtraction to both forms. goal2.01 raised0.01 yields max1.9999999999999998 and rejects valid2. Repair page to consume exact-paise helper, with actual server-page/rendered prop regression and valid/unpayable cases. RED: actual server-page render shows max1.9999999999999998 and unpayable projection renders. GREEN: shared exact-paise helper feeds page/form with null fail-closed guard;64 focused and full combined934 passed/9 skipped, TypeScript/focused lint/diff pass. Independent AI follow-up confirms important finding resolved. Incorporated main302 additively. Fresh hosted acceptance required; preserve299-before300 order.
 
 ## 2026-10-17 — Settled payment confirmation extraction
 
