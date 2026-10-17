@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
-import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
+import { getPublicAppealCheckoutEligibility } from "@/lib/public-appeal-checkout";
 import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { appealDonationDesignationSnapshot, createDonationReference, createReceiptToken, donationSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
@@ -81,7 +81,17 @@ export async function POST(request: Request) {
         },
       },
     });
-    if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+    // The provider API must enforce the same paise-accurate, whole-rupee
+    // checkout eligibility as the public appeal and direct-transfer forms.
+    // Otherwise malformed fractional-paise totals could create valid-looking
+    // provider orders for donations the public experience forbids.
+    if (!appeal || !canExposePublicAppeal(appeal)) {
+      return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+    }
+    const eligibility = getPublicAppealCheckoutEligibility(appeal);
+    if (!eligibility) {
+      return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+    }
 
     const zakatEligible = appeal.assistanceRequest?.verification?.zakatStatus === "ELIGIBLE";
     if (parsed.data.givingIntent === "ZAKAT" && !zakatEligible) {
@@ -91,7 +101,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
+    const remainingAmount = eligibility.progress.remaining;
     if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) {
       if (parsed.data.amount > remainingAmount) {
         return NextResponse.json(
