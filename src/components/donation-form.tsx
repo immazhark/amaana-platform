@@ -300,6 +300,14 @@ export function DonationForm({ appealId, appealTitle, fund, maxAmount, zakatElig
               changePhase("reconciliation");
               return;
             }
+            // A successful HTTP response or a valid reference alone does not
+            // prove that the donation is captured. Fail closed even if a
+            // proxy, older server or malformed response returns HTTP 200.
+            if (result?.status !== "CAPTURED" && result?.status !== "REFUNDED") {
+              showError("Payment verification is not complete. Retain your Razorpay payment confirmation and do not submit another payment. Amaana can reconcile the transaction.");
+              changePhase("reconciliation");
+              return;
+            }
             if (typeof result?.referenceNumber !== "string" || !/^[A-Za-z0-9-]{1,80}$/.test(result.referenceNumber)) throw new Error("Invalid confirmation reference");
             if (formRef.current?.isConnected) window.location.assign(privateDonationAcknowledgementPath(result.referenceNumber, order.receiptToken));
           } catch {
