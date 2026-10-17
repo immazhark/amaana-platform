@@ -7,7 +7,7 @@ export function HomeGrowth({ eidProgrammePublished = true }: { eidProgrammePubli
   return (
       <section className="v3-section v3-eid dark" aria-labelledby="eid-growth-title">
         <div className="v3-shell">
-          <SectionHeading eyebrow={<>Seven documented distributions</>} title={<>From 85 in 2020 to 710 in 2026.</>} subtitle={<>Explore seven documented Eid Gift Kit distributions, compare annual growth, and see the cumulative record without counting the same families as unique recipients.</>} id="eid-growth-title" className="v3-section-head" titleClassName="v3-heading" />
+          <SectionHeading eyebrow={<>Seven documented Eid drives</>} title={<>From 85 families in 2020 to 710 in 2026.</>} subtitle={<>Explore annual family reach across seven Eid Gift Kit drives, compare growth, and see cumulative distributions without treating families served in multiple years as unique recipients.</>} id="eid-growth-title" className="v3-section-head" titleClassName="v3-heading" />
 
           <EidGrowthExplorer />
 

@@ -2,15 +2,15 @@ export type EidGrowthRecord = Readonly<{ year: string; families: number }>;
 
 export type EidGrowthMilestone = Readonly<{
   year: string;
-  distributions: number;
+  familiesReached: number;
   growthFromPrevious: number | null;
-  cumulativeDistributions: number;
+  cumulativeFamilyDistributions: number;
   barPercent: number;
 }>;
 
 /**
- * Interpret the existing approved figures as annual kit distributions.
- * Cumulative distributions are not a count of distinct beneficiary families.
+ * Interpret the existing approved figures as annual family reach, not a count of kits.
+ * Cumulative family distributions can include the same families in different years.
  * No amount is estimated, extrapolated, or fetched from personal records.
  */
 export function buildEidGrowthMilestones(records: readonly EidGrowthRecord[]): EidGrowthMilestone[] {
@@ -35,9 +35,9 @@ export function buildEidGrowthMilestones(records: readonly EidGrowthRecord[]): E
     }
     milestones.push({
       year: record.year,
-      distributions: record.families,
+      familiesReached: record.families,
       growthFromPrevious: previousCount === null ? null : record.families - previousCount,
-      cumulativeDistributions: cumulative,
+      cumulativeFamilyDistributions: cumulative,
       barPercent: max === 0 ? 0 : (record.families / max) * 100,
     });
     previousCount = record.families;
