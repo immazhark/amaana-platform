@@ -75,6 +75,13 @@ const validData = {
   transferredAt: new Date("2026-09-30T05:00:00.000Z"),
 };
 
+function syntheticPng(content: string): File {
+  return new File([
+    new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]).buffer,
+    content,
+  ], "transfer.png", { type: "image/png" });
+}
+
 function requestWith(file?: File) {
   const form = new FormData();
   form.set("appealId", validData.appealId);
@@ -256,7 +263,7 @@ describe("direct donation transfer submission", () => {
   it("recovers the original receipt credentials when claim creation committed without acknowledgement", async () => {
     mocks.donationCreate.mockRejectedValueOnce(new Error("commit acknowledgement lost"));
     mocks.donationFindUnique.mockImplementationOnce(async ({ where }) => ({ id: where.id, referenceNumber: "AFD-2026-12345678", receiptTokenHash: "hashed-token" }));
-    const file = new File(["synthetic evidence"], "transfer.png", { type: "image/png" });
+    const file = syntheticPng("synthetic evidence");
     mocks.uploadDonationEvidence.mockResolvedValueOnce({ objectKey: "private-key", originalName: "transfer.png", mimeType: "image/png", sizeBytes: file.size });
 
     const response = await POST(requestWith(file));
@@ -270,7 +277,7 @@ describe("direct donation transfer submission", () => {
     expect(id).toMatch(/^[0-9a-f-]{36}$/);
     expect(mocks.donationFindUnique).toHaveBeenCalledWith({ where: { id }, select: { id: true, referenceNumber: true, receiptTokenHash: true } });
     expect(mocks.uploadDonationEvidence).toHaveBeenCalledWith(expect.objectContaining({ name: file.name, size: file.size, type: file.type }), id);
-    expect(await uploadCall[0].text()).toBe("synthetic evidence");
+    expect(await uploadCall[0].text()).toContain("synthetic evidence");
     expect(mocks.donationUpdate).toHaveBeenCalledWith(expect.objectContaining({ where: { id } }));
     expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
   });
@@ -323,7 +330,7 @@ describe("direct donation transfer submission", () => {
   });
 
   it("preserves a transfer and its private evidence if another worker updated the donation before cleanup", async () => {
-    const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
+    const file = syntheticPng("synthetic transfer evidence");
     mocks.uploadDonationEvidence.mockResolvedValue({
       objectKey: "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
       originalName: "transfer.png",
@@ -344,7 +351,7 @@ describe("direct donation transfer submission", () => {
   });
 
   it("preserves evidence on an uncertain cleanup database failure", async () => {
-    const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
+    const file = syntheticPng("synthetic transfer evidence");
     mocks.uploadDonationEvidence.mockResolvedValue({
       objectKey: "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
       originalName: "transfer.png",
@@ -361,7 +368,7 @@ describe("direct donation transfer submission", () => {
   });
 
   it("removes uploaded evidence and the draft claim if evidence metadata persistence fails", async () => {
-    const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
+    const file = syntheticPng("synthetic transfer evidence");
     mocks.uploadDonationEvidence.mockResolvedValue({
       objectKey: "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
       originalName: "transfer.png",
