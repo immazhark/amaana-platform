@@ -51,6 +51,11 @@ export async function POST(request: Request) {
 
   try {
     validateProductionEnvironment();
+    // A missing signature can never authorize a Razorpay webhook. Reject it
+    // before accepting an untrusted body, even if the stream is slow or large.
+    if (!signature.trim()) {
+      return new NextResponse("Invalid signature", { status: 401 });
+    }
     const rawBody = await readTextBodyWithLimit(request, MAX_RAZORPAY_WEBHOOK_BYTES, {
       timeoutMs: RAZORPAY_WEBHOOK_BODY_TIMEOUT_MS,
     });
