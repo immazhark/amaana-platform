@@ -13,7 +13,7 @@ export function VolunteerInterestBuilder() {
         and your availability before sending. These are interests, not advertised
         vacancies or confirmed placements.
       </p>
-      <div className="v2-hero-actions" aria-label="Volunteer enquiry topics">
+      <div className="v2-hero-actions" role="group" aria-label="Volunteer enquiry topics">
         {VOLUNTEER_SKILLS.map(skill => (
           <a className="v2-button v2-button--paper-secondary" href={buildVolunteerEnquiryHref([skill], "")} key={skill}>
             {skill}
