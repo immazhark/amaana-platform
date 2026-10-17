@@ -36,6 +36,10 @@ export function classifyDirectTransferResponse(status: number, value: unknown): 
   if (status >= 500 || !value || typeof value !== "object" || Array.isArray(value)) return { kind: "uncertain" };
   const body = value as Record<string, unknown>;
   if (body.submissionUncertain === true) return { kind: "uncertain" };
+  // A generic 408 might follow a committed transfer claim. Only the server's
+  // documented multipart *pre-write* timeout explicitly proves that neither
+  // a donation record nor private evidence was saved.
+  if (status === 408 && body.submissionUncertain !== false) return { kind: "uncertain" };
   if (status === 202 && body.status === "PENDING_VERIFICATION" &&
       typeof body.referenceNumber === "string" && /^[A-Za-z0-9-]{1,80}$/.test(body.referenceNumber) &&
       typeof body.receiptToken === "string" && /^[A-Za-z0-9_-]{20,128}$/.test(body.receiptToken)) {
