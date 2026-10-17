@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getDonationCheckoutRemainingAmount } from "./donation-checkout-balance";
+import { formatCheckoutRemainingINR, getDonationCheckoutRemainingAmount } from "./donation-checkout-balance";
 
 const now = new Date("2026-10-17T10:00:00.000Z");
 const active = (amountRaised: number | string, goalAmount: number | string, options: Record<string, unknown> = {}) => ({
@@ -7,6 +7,17 @@ const active = (amountRaised: number | string, goalAmount: number | string, opti
   amountRaised, goalAmount,
   closesAt: "2026-11-30T00:00:00.000Z",
   ...options,
+});
+
+describe("checkout remaining currency display", () => {
+  it("does not round a paise-accurate donation balance up to an unpayable rupee", () => {
+    expect(formatCheckoutRemainingINR(399.71)).toMatch(/399\.71/);
+    expect(formatCheckoutRemainingINR(399.71)).not.toMatch(/400/);
+  });
+  it("does not add invented paise to whole-rupee balances", () => {
+    expect(formatCheckoutRemainingINR(1000)).toMatch(/1,000/);
+    expect(formatCheckoutRemainingINR(1000)).not.toMatch(/1,000\.00/);
+  });
 });
 
 describe("strict donation checkout balance", () => {
