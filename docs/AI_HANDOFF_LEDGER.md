@@ -1,3 +1,39 @@
+## 2026-10-18 — Private header release and tracking integration
+
+Ownership: CHATGPT_ACTIVE on existing PR304. PR305 passed full CI39069179565 and ready-state39073443799, guarded merge70dcbfc417c11a8c5197d0fc582ff81eb0e591a2. Railway99892b30-9230-4bba-a726-c3c43e1a3895 SUCCESS; origin version returned exact merge/main/production/live. Official domain returned403 from this environment; live header/readiness checks pending. PR304 inherits released header source/tests; tracking code unchanged from green57d4d404. Both coordination histories retained. Fresh combined exact-head CI and ready-state gate required before merge. Git push lacks credentials; connected GitHub API used. No live financial operations or outgoing mail.
+
+## 2026-10-18 — Private response referrer policy after checkout-read production merge
+
+Ownership: CHATGPT_ACTIVE. Reconciled PR305 against main b5b12f0cf0586f909660e61ea2f9525edd49ec1f (PR309 five-second Razorpay checkout body deadline merge). `next.config.ts`, `e2e/security-headers.spec.mjs`, `src/lib/private-response-headers.test.ts` remain disjoint and unchanged in main since last PR305 head. Private API/admin/checkout/referrer policy improvement remains isolated, while PR307 strict webhook accounting and PR309 checkout deadline are inherited from new main. Prior exact-head fast, database, production build successful and browser previously in-progress; fresh exact-head CI, browser/final verification and ready-state promotion are required before this PR merges. No provider events, live donation, private customer records or outgoing mail.
+
+## 2026-10-18 — Referrer-Policy override isolated after strict webhook release
+
+Ownership: CHATGPT_ACTIVE. Existing PR305 private response `no-referrer` override and unit/browser tests applied to deployed main d5d401b84627615a0a81836559fdacac9f948e68 (PR307 strict signed state now live). No Next config or header tests changed between old and new main; preserve finance, checkout, donation, receipt and assistance paths. Previous full hosted CI 39062129864 covered older head only; require new exact-head CI with browser and final verification, then promotion and guarded merge. No live donor/payment, secret modification or outgoing email performed.
+
+## 2026-10-18 — Private no-referrer headers after refund-cap production release
+
+Ownership: CHATGPT_ACTIVE. Reconcile PR305 effective no-referrer policy for private API/admin/payment endpoints with deployed main 82a9566ad98890a1613c547a4c9fad7571ccde91 including PR301 over-refund ledger safeguard. Code delta remains one Next config source and two matching unit/browser regressions. Previous exact-head full CI39062129864 passed on prior parent e05c88fa; this new head requires fresh CI and ready-state checks. Preserve checkout, receipt, transfer evidence and financial source untouched; no live financial operations or outgoing email.
+
+## 2026-10-18 — Private Referrer-Policy integration after receipt timeout release
+
+Ownership: CHATGPT_ACTIVE. Reconcile effective no-referrer response policy on private API/admin/donate endpoints with current main e05c88fac09de95cc4243ad9ea0b42b100c52f07, preserving released receipt 5-second absolute read timeout, evidence byte preflight and exact-paise eligibility. Only Next header policy and its source/browser tests differ from main. Previous CI39057939248 was full green for earlier f9d589 candidate, not this exact head. Require new hosted CI, promotion checks and guarded merge. No private donor lookup, financial operation, outgoing email or credentials change.
+
+## 2026-10-17 — Private response policy after production transfer-proof release
+
+Ownership: CHATGPT_ACTIVE. Reconciled PR305 private no-referrer override and effective Next/HTTP header regressions with main f9d589ffc0716c06ed1444db3dadb4836d7ec4b3 (merged PR300). Preserve receipt-signature preflight and exact-paise safeguards. Changes remain scoped to global headers, security-header browser tests, effective-header unit tests, and additive coordination records. Original CI39056681474 covers prior head only; new exact-head CI required, then ready-state promotion and main merge. No provider/donor writes, secret changes, or production deployment from this branch.
+
+## 2026-10-17 — ChatGPT private-response policy integration
+
+Ownership: CHATGPT_ACTIVE. Branch fix/private-response-referrer-policy-20261017, PR305. Reconcile already-tested private no-referrer policy and regression coverage against main #299 without changing provider or donor flows. Preserve both older coordination histories; PR300 remains a separate draft undergoing browser acceptance. No merge/deployment until fresh exact-head hosted checks and later main reconciliation. GitHub connector used because original local checkout is unavailable.
+
+## 2026-10-17 — Private header reconciliation with deployed settlement
+
+Ownership: HANDOFF_PENDING. PR305 original f0227ffe passed full hostedCI39049214820. Reconciled deployed main303 fb2d1c19, preserving both handoff entries and all runtime changes. Combined47 focused/full912 passed9 skipped; types/E2E syntax/diff pass. No new runtime edits to privacy policy, no payments. Fresh exact-head hosted validation required after this integration.
+
+## 2026-10-17 — Live-confirmed private response header override
+
+Ownership: HANDOFF_PENDING after scoped header repair. Branch fix/private-response-referrer-policy-20261017 from deployed main ebc0b8e. Direct production version reports exact merged SHA and invalid synthetic receipt404 remains generic, but response Referrer-Policy is strict-origin-when-cross-origin despite route no-referrer. Repair global Next private-surface header precedence using real Next configuration resolver regression tests. Public Cloudflare request blocked403; origin behavior verified separately. RED: eight sensitive paths resolved public referrer policy through actual Next config resolver. GREEN:11 effective-policy regressions pass (plus2 optimizer tests); full908 passed/9 skipped, TypeScript/focused lint/E2E syntax/diff pass. New native HTTP browser tests pending hosted gates; independent review requested. No donor/payment/credential mutation.
+
 ## 2026-10-18 — Assistance tracking privacy and outage classification on live checkout-deadline baseline
 
 Ownership: CHATGPT_ACTIVE. Surgical reconcile PR304 against released main b5b12f0cf0586f909660e61ea2f9525edd49ec1f. Existing independent 60/hour hashed tracking quota, private 8 KiB absolute five-second body stream guard, client 429 guidance, and new tests for database outage (private retryable 503), interrupted body stream (private retryable 503) and malformed but complete JSON (private indistinguishable found:false) preserved. PR309 live checkout deadline is inherited without rewriting payment code. The 8 private tracking/assist source and test files were verified identical between PR304's previous base and new main before graft. Fresh exact-head fast/type/build/db/browser/final verification and ready-state gate required; do not merge based on prior older-head green checks. No donor/assistance production records changed or viewed.

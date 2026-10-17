@@ -45,7 +45,11 @@ const securityHeaders = [
   ...(!allowPublicIndexing ? [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }] : []),
 ];
 
-const noStoreHeaders = [{ key: "Cache-Control", value: "private, no-store, max-age=0" }];
+// Later private-route rules must override the public referrer default too.
+const noStoreHeaders = [
+  { key: "Cache-Control", value: "private, no-store, max-age=0" },
+  { key: "Referrer-Policy", value: "no-referrer" },
+];
 
 const nextConfig: NextConfig = {
   output: "standalone",
