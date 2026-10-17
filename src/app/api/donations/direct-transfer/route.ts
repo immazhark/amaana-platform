@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
-import { RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { createDonationReference, createReceiptToken, directTransferSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { canExposePublicAppeal } from "@/lib/public-environment";
@@ -27,10 +27,16 @@ export async function POST(request: Request) {
 
     let body: Awaited<ReturnType<typeof readBodyBytesWithLimit>>;
     try {
-      body = await readBodyBytesWithLimit(request, MAX_MULTIPART_BYTES);
+      body = await readBodyBytesWithLimit(request, MAX_MULTIPART_BYTES, { timeoutMs: 120_000 });
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ error: "Transfer submission is too large." }, { status: 413, headers: privateHeaders });
+      }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        return NextResponse.json(
+          { error: "Transfer upload timed out. Please try again." },
+          { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+        );
       }
       throw error;
     }
