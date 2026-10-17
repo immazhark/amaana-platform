@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
-import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
+import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
 import { RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { createDonationReference, createReceiptToken, directTransferSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
@@ -67,9 +67,13 @@ export async function POST(request: Request) {
       where: { id: parsed.data.appealId, status: "PUBLISHED" },
       select: { id: true, slug: true, title: true, status: true, goalAmount: true, amountRaised: true, closesAt: true, assistanceRequest: { select: { verification: { select: { zakatStatus: true } } } } },
     });
-    if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+    if (!appeal || !canExposePublicAppeal(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
     if (parsed.data.givingIntent === "ZAKAT" && appeal.assistanceRequest?.verification?.zakatStatus !== "ELIGIBLE") return NextResponse.json({ error: "This appeal is not currently marked as Zakat-eligible." }, { status: 409, headers: privateHeaders });
-    const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
+    const remainingAmount = getDonationCheckoutRemainingAmount(appeal);
+    if (remainingAmount === null) return NextResponse.json(
+      { error: "This appeal is not accepting donations." },
+      { status: 409, headers: privateHeaders },
+    );
     if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) return NextResponse.json({ error: parsed.data.amount > remainingAmount ? `This appeal currently needs up to ₹${remainingAmount.toLocaleString("en-IN")} more.` : `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}, unless a smaller exact amount is all that remains.`, remainingAmount }, { status: parsed.data.amount > remainingAmount ? 409 : 400, headers: privateHeaders });
 
     const donationId = randomUUID();

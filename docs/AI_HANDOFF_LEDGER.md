@@ -1,3 +1,7 @@
+## 2026-10-17 — Private tracking integration against current main
+
+Ownership: CHATGPT_ACTIVE. PR304 existing branch fix/assistance-tracking-rate-limit-20261017 integrates exact 60/hour tracking quota, isolated hashed quota, privacy-safe 429/503 before case reads and retry browser regressions against main #299. Preserve existing receipt 30/hour and assistance submission 3/hour quotas, exact-paise payment guards and settled confirmation. Browser tests from main #303 retained in shared journey file. Previous local RED/GREEN and 903-pass evidence is historical; fresh hosted exact-head CI needed. No live case, payment, refund, secret or outgoing email action. PR300 and PR305 remain independently gated.
+
 ## 2026-10-17 — Receipt release and additive tracking reconciliation
 
 Ownership: HANDOFF_PENDING. PR302 merged main ebc0b8e after full exact-head CI39045711385, successful ready-for-review promotion39048668531 and independent AI source review (no critical/important findings, no fabricated GitHub approval). Railway deployment5a6f0f10 is BUILDING on the merged SHA; not yet live-verified. PR304 reconciled with this main, preserving both receipt/tracking hashes, allowance helpers and isolated privacy stubs. Combined focused50 and full903 tests pass/9 skipped; type/lint pass. Additional actual-helper coverage exercises tracking60, receipt30 and assistance3 independent boundaries. Fresh reconciled hosted gates required.
@@ -5,6 +9,18 @@ Ownership: HANDOFF_PENDING. PR302 merged main ebc0b8e after full exact-head CI39
 ## 2026-10-17 — Private assistance tracking quota extraction
 
 Ownership: HANDOFF_PENDING after scoped implementation. Branch fix/assistance-tracking-rate-limit-20261017 from main aedae001. Extract one privacy safeguard from #292: independent 60/hour tracking allowance before private case reads, with fail-closed availability errors. Reuse hashed attempt ledger and assistance pepper; no migration or private record mutation. RED: route quota denial and ledger failure returned 200; tracking purpose used wrong pepper and lacked quota function. GREEN: 46 focused tests and full suite 900 passed/9 skipped; TypeScript/focused ESLint/diff/E2E syntax pass. Added two browser quota/outage retry journeys; not yet executed. Shared request-security/private-record test files require additive reconciliation after #302, preserving both purposes and both fixture stubs. No main merge, live requests, case records or deployments.
+
+## 2026-10-17 — Exact checkout and settlement current-main verification
+
+Ownership: HANDOFF_PENDING. PR299 corrected4ef74ae5 passed full hostedCI39050147508. Reconciled deployed303 fb2d1c19 preserving exact page bounds and all settlement/browser controls; only coordination notes conflicted and both records retained. Combined full938 passed9 skipped; TypeScript/diff pass. Fresh exact-head hosted acceptance required. Preserve299-before300; no provider/financial writes or deployment.
+
+## 2026-10-17 — Exact checkout page bounds regression
+
+Ownership: HANDOFF_PENDING after exact-bound repair. Existing PR299 head045c497b passed hosted CI but independent AI review found page still passes floating subtraction to both forms. goal2.01 raised0.01 yields max1.9999999999999998 and rejects valid2. Repair page to consume exact-paise helper, with actual server-page/rendered prop regression and valid/unpayable cases. RED: actual server-page render shows max1.9999999999999998 and unpayable projection renders. GREEN: shared exact-paise helper feeds page/form with null fail-closed guard;64 focused and full combined934 passed/9 skipped, TypeScript/focused lint/diff pass. Independent AI follow-up confirms important finding resolved. Incorporated main302 additively. Fresh hosted acceptance required; preserve299-before300 order.
+
+## 2026-10-17 — Settled payment confirmation extraction
+
+Ownership: HANDOFF_PENDING after scoped extraction. Branch fix/settled-payment-confirmation-20261017 from main aedae001. Extract only persisted settlement confirmation and browser lock from historical #292; preserve current provider validation and webhook concurrency. New PR, independent of #299/#300/#301/#302. RED: four nonsettled status cases returned 200 instead of 409. GREEN: 14 confirmation tests pass; full local suite 898 passed/9 skipped. TypeScript, focused ESLint, E2E syntax and diff checks pass. Six browser cases authored for nonsettled HTTP-200 responses; hosted browser/build/database gates pending. No live payment, merge or deployment.
 
 ## 2026-10-13 — actual HTTP cancellation regressions
 
