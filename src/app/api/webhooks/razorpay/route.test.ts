@@ -378,6 +378,39 @@ describe("Razorpay webhook route", () => {
     expect(mocks.transactionRetry).not.toHaveBeenCalled();
   });
 
+  it.each([
+    { event: "payment.captured", entity: {
+      id: "pay_123", order_id: "order_123", amount: 50000,
+      currency: "INR", status: "captured",
+      // Missing captured === true must never be considered a paid event.
+    }, expected: "Invalid captured payment entity" },
+    { event: "payment.failed", entity: {
+      id: "pay_123", order_id: "order_123", amount: 50000, currency: "INR",
+      // Missing explicit failed status must not mark an unpaid attempt failed.
+    }, expected: "Invalid payment entity" },
+    { event: "refund.processed", entity: {
+      id: "rfnd_123", payment_id: "pay_123", amount: 50000, currency: "INR",
+      // Missing processed status must not release refund ledger accounting.
+    }, expected: "Invalid refund entity" },
+  ])("validates $event before even acknowledging a stored duplicate", async ({ event, entity, expected }) => {
+    const payload = {
+      event,
+      payload: event === "refund.processed"
+        ? { refund: { entity } }
+        : { payment: { entity } },
+    };
+    mocks.paymentEventFindUnique.mockResolvedValue({
+      id: "preexisting_event", eventType: event, payload,
+    });
+    const response = await POST(webhookRequest(payload, { "x-razorpay-event-id": "evt_preexisting" }));
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe(expected);
+    expect(mocks.paymentEventFindUnique).not.toHaveBeenCalled();
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
+    expect(mocks.ensureCapturedDonationForRefund).not.toHaveBeenCalled();
+    expect(mocks.transactionRetry).not.toHaveBeenCalled();
+  });
+
   it("rejects an invalid signature before any event lookup or accounting", async () => {
     mocks.verifyWebhookSignature.mockReturnValue(false);
 
