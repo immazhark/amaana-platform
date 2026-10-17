@@ -908,3 +908,34 @@ test('receipt availability failure preserves the private token for explicit retr
   await expect(page.getByRole('heading', { name: 'Private acknowledgement unavailable.' })).toBeVisible();
   expect(requests).toEqual([{ reference, token }, { reference, token }]);
 });
+
+for (const status of [429, 503]) {
+  test(`tracking HTTP ${status} preserves private credentials for explicit retry`, async ({ page }) => {
+    await mockAnalytics(page);
+    const bodies = [];
+    let unavailable = true;
+    await page.route('**/api/assistance/status', async route => {
+      bodies.push(route.request().postDataJSON());
+      await route.fulfill({
+        status: unavailable ? status : 200,
+        contentType: 'application/json',
+        body: JSON.stringify(unavailable ? { found: false } : {
+          found: true, status: 'UNDER_VERIFICATION',
+          createdAt: '2026-09-16T00:00:00.000Z', updatedAt: '2026-09-16T01:00:00.000Z',
+        }),
+      });
+    });
+    await page.goto(`/request-assistance/status#reference=${assistanceReference}&token=${trackingToken}`);
+    await expect(page.getByRole('heading', { name: 'Unable to check your request' })).toBeVisible();
+    expect(new URL(page.url()).hash).toBe('');
+    expect(new URL(page.url()).search).toBe('');
+    await expect(page.getByRole('link', { name: 'Start a new request' })).toHaveCount(0);
+    unavailable = false;
+    await page.getByRole('button', { name: 'Try tracking again' }).click();
+    await expect(page.getByRole('heading', { name: 'Under verification' })).toBeVisible();
+    expect(bodies).toEqual([
+      { reference: assistanceReference, token: trackingToken },
+      { reference: assistanceReference, token: trackingToken },
+    ]);
+  });
+}
