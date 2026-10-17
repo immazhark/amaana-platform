@@ -27,7 +27,7 @@ export function validatePrContract(input) {
     errors.push("PR branch must be a lowercase task branch: feat|fix|chore|docs|test|refactor|perf|security|content/short-name.");
   if (!Array.isArray(files) || !files.length || files.some(file => typeof file !== "string"))
     errors.push("PR changed files could not be established.");
-  const text = typeof body === "string" ? body : "";
+  const text = typeof body === "string" ? body.replace(/<!--[\s\S]*?(?:-->|$)/g, "") : "";
   for (const heading of requiredSections) {
     const content = section(text, heading);
     if (!content || content.length < 20)

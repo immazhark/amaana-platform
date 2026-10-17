@@ -1,5 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { validatePrContract } from "./check-pr-contract.mjs";
 
 const body = `## Purpose
@@ -81,4 +82,26 @@ test("ready-to-review PR requires recorded acceptance and verification completio
   const checked = body.replaceAll("- [ ]", "- [x]");
   assert.deepEqual(validatePrContract(change({ draft: false, body: checked })), []);
   assert.deepEqual(validatePrContract(change({ draft: true })), []);
+});
+
+
+test("rejects comment-only delivery sections", () => {
+  for (const heading of ["Purpose", "Acceptance criteria", "Verification", "Release plan"]) {
+    const commentOnly = body.replace(new RegExp(`## ${heading}[\\s\\S]*?(?=\\n## |$)`),
+      `## ${heading}\n<!-- Document the complete outcome here.\n- [x] This hidden checklist is not evidence. -->\n`);
+    assert.match(validatePrContract(change({ body: commentOnly })).join(" "), new RegExp(heading, "i"));
+  }
+});
+
+test("ignores hidden unchecked guidance in a completed PR", () => {
+  const completed = body.replaceAll("- [ ]", "- [x]") +
+    "\n<!-- ## Verification\n- [ ] Hidden author guidance only. -->\n";
+  assert.deepEqual(validatePrContract(change({ draft: false, body: completed })), []);
+});
+
+test("rejects the untouched repository PR template", () => {
+  const template = readFileSync(new URL("../.github/pull_request_template.md", import.meta.url), "utf8");
+  const errors = validatePrContract(change({ body: template }));
+  assert.match(errors.join(" "), /Purpose/i);
+  assert.match(errors.join(" "), /Release plan/i);
 });
