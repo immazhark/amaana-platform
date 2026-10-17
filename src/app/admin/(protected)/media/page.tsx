@@ -154,7 +154,12 @@ export default async function AdminMediaPage({ searchParams }: Props) {
             <div className="field full"><label>Review notes</label><textarea name="reviewNotes" maxLength={2000} placeholder="Consent source, crop restriction, provenance note or other publication context."/></div>
             <div className="field full"><button className="button" type="submit">Approve privacy gate & publish</button><small>AMBER/RED classifications, restricted consent, unconfirmed provenance, private documents, or child/patient media without documented consent will fail closed.</small></div>
           </form>}
-          {canApprove && asset.isPublic && <form action={setMediaPublication} className="admin-media-publish"><input type="hidden" name="id" value={asset.id}/><input type="hidden" name="publish" value="false"/><button className="text-button" type="submit">Unpublish</button></form>}
+          {canApprove && asset.isPublic && <form action={setMediaPublication} className="admin-media-publish">
+            <input type="hidden" name="id" value={asset.id}/>
+            <input type="hidden" name="publish" value="false"/>
+            <p className="muted">Unpublishing also withdraws any other public media records sharing this storage object or original URL, including other initiatives. Files remain in storage; externally hosted originals require removal at their source.</p>
+            <button className="text-button" type="submit">Unpublish this image and shared public references</button>
+          </form>}
           {canApprove && !asset.isPublic && <form action={deleteMediaAsset} className="form-grid admin-media-publish"><input type="hidden" name="id" value={asset.id}/><div className="field full"><label>Permanent deletion confirmation</label><input name="confirm" required pattern="DELETE" placeholder="Type DELETE"/><small>Deletes the unpublished record and its Amaana-managed storage object. External source URLs are not modified.</small></div><div className="field full"><button className="text-button" type="submit">Delete unpublished media permanently</button></div></form>}
         </article>;
       })}</div>}
