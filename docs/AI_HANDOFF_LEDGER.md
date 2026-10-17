@@ -1,3 +1,22 @@
+## 2026-10-17 — Razorpay signed-webhook ingress and capture event persistence before cache refresh
+
+Outgoing agent: ChatGPT. Current PR #292, branch `fix/direct-transfer-feedback-20261013`, target `main`, no production deployment. Incoming checkpoint `18a1aaaf6ce7e7e66b085efe8c3c00180edb77ac`; single-writer claim `251fbe78e68466dcadd460a1a4509e2ef828efc6`.
+
+Confirmed root causes:
+1. Razorpay webhook read unsigned request streams up to its 256 KiB limit with no elapsed read deadline. Invalid/missing signatures still occupied the read path. A stalled body had no bounded rejection.
+2. `payment.captured` invoked `expireDonationViews` after durable `captureDonation` but before writing the `PaymentEvent` idempotency/audit row. Cache refresh failure caused an HTTP 500 and prevented the matching event row from being persisted, even though donation capture succeeded.
+
+Code:
+- `src/app/api/webhooks/razorpay/route.ts` rejects missing/blank signature immediately with HTTP 401 before body reads; nonblank signatures still require full cryptographic verification.
+- Adds 15,000 ms to the existing 256 KiB bounded signed-body reader. Distinct timeout responds HTTP 503 + Retry-After 60 before any signature verification or database operation, prompting provider retry instead of pretending a valid signed event was processed.
+- Writes/verifies event ID, event type, donor relation and audit payload following `captureDonation`, then expires caches. A cache outage still returns 500 to induce a webhook retry; the existing matching-event replay path retries cache invalidation without recapturing or double-counting. Different payload under the same event ID remains rejected.
+- Tests written first in `src/app/api/webhooks/razorpay/route.test.ts`: early rejection before reading, exact deadline, timeout/no side effects and capture-event persistence before a cache outage with safe replay.
+- Test commits `8dc7b9d2ff64d8aa969122d7bab526a75f814e34`, `f850ecd99b92c465f394537de974afa5f616a2c6`. Source commits `bc644ef21e7075921d38be1ba43cb5bd59cbf0cd`, `ea99b42689460c5b23be90bea8e45301f0dfed2b`. Master register update `0405be94175ec319830fb742e8be3f8daaf2c845`.
+
+Verification: GitHub source and tests re-read. Local git command failed DNS; repository dependencies were not hydrated. **Authored tests have NOT been executed.** No Vitest, TypeScript, lint, Playwright, live webhook, Razorpay, real DB or cache verification. No CI orchestration, production financial record/provider write, schema change, merge or production deployment performed. Master149 unchanged 60 Implemented / 61 Partial / 26 Not started / 1 Superseded / 1 Not applicable; zero formally closed. Claims limited to open PR source.
+
+Next writer: Verify current HEAD and HANDOFF_PENDING, run `npx vitest run src/app/api/webhooks/razorpay/route.test.ts src/app/api/webhooks/razorpay/event-id-fallback.test.ts src/app/api/webhooks/razorpay/payment-failed.test.ts src/lib/bounded-request-body.test.ts` plus focused type/lint in hydrated checkout; fix demonstrated failures. Continue highest-impact Master149 implementation without unnecessary branch creation. Never merge/deploy without authorization.
+
 ## 2026-10-17 — Donor/assistance intake transport deadlines and strictly provable retries
 
 Outgoing ChatGPT, single writer. Incoming ownership to HANDOFF_PENDING. Existing open PR #292, branch `fix/direct-transfer-feedback-20261013`, target `main`. Incoming HEAD `e860c492d895d13142406dc4c7606538d1a007f2`, ownership claim `7bcb9a37cd27c807705ff669d6df643ba018b564`.
