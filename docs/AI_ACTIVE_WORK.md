@@ -1,3 +1,7 @@
+## 2026-10-17 — Private tracking abuse limits and committed payment confirmation integrity
+
+Ownership: CHATGPT_ACTIVE. Verified PR #292 open, sole writer on `fix/direct-transfer-feedback-20261013` targeting `main`, starting SHA `c7af4374a42fd6912698d73099a7240b310c543f`. Scope: add isolated hashed rate-limit bucket for private assistance tracking POST before any private lookup; preserve origin and bounded-body guards. Fix post-capture donation confirmation so a cache-expiry service failure after a successful payment-state write does not fabricate payment failure; retain webhook/reconciliation and persisted-status read. Tests first, source then ledger/master and handoff. No CI pipeline, migration, provider operation, main merge or deployment.
+
 ## 2026-10-17 — Manual unpublication revocation of shared media and fail-closed review inputs
 
 Ownership: HANDOFF_PENDING. ChatGPT completed sole-writer source+test batch on PR #292, `fix/direct-transfer-feedback-20261013` targeting `main`, beginning from verified HEAD `e50c08464ffb18af5624ab81e65367be6b8fab81`. New code `f7b6b1e9f1409768b6613b0f905faaaa79136492`, `53370c6374e97d9e07a34141735ab0661ec4a1c6`, `c981da2e665f14ee2bcf71957fa4640cf472bf37`; regression tests `74875c3aa4cfb34c5d5a8f60a7b97fcb603e43cc`, `cd98a334d6991545d85b59967c6f6018bb12a6dd`, `22971f780ed6936084e910f2baa6e76a8b6a9d6c`, `0d298094f45d10c6191f1f18e4ac3ebdb4043ada`; UI `c76e312fb86ed1a4236f42a1ab6ff38cd355f364`; master `f0ce533114774cc3b72d279542e8def50e196df7`; ledger `8803a708bbd1f9b6c0716e8bec4c4a2a5d49a8d8`.
