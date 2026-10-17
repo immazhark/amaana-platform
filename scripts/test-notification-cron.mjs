@@ -43,6 +43,44 @@ test("propagates request timeout without retrying", async () => {
   assert.equal(calls, 1);
 });
 
+for (const status of [200, 401]) {
+  test(`HTTP ${status} completes even when response cancellation stalls`, async () => {
+    let cancelled = false;
+    const response = new Response(new ReadableStream({
+      cancel() {
+        cancelled = true;
+        return new Promise(() => {});
+      },
+    }), { status });
+    let timer;
+    try {
+      const result = Promise.race([
+        runNotificationJob(env, async () => response),
+        new Promise((_, reject) => { timer = setTimeout(() => reject(new Error("cancellation stalled")), 100); }),
+      ]);
+      if (status === 200) assert.equal(await result, 200);
+      else await assert.rejects(result, { message: "Notification job HTTP 401" });
+      assert.equal(cancelled, true);
+    } finally {
+      clearTimeout(timer);
+    }
+  });
+}
+
+test("failed response cancellation does not change successful HTTP outcome", async () => {
+  const response = new Response(new ReadableStream({ cancel() { throw new Error("private diagnostic"); } }));
+  assert.equal(await runNotificationJob(env, async () => response), 200);
+});
+
+test("contained deployment uses the isolated image without restoring five-minute delivery", async () => {
+  const readConfig = async (name) => JSON.parse(await readFile(new URL(`../ops/notification-cron/${name}`, import.meta.url), "utf8"));
+  const active = await readConfig("railway.json");
+  const contained = await readConfig("railway.contained.json");
+  assert.equal(contained.deploy.cronSchedule, "0 0 1 1 *");
+  assert.equal(active.deploy.cronSchedule, "*/5 * * * *");
+  assert.deepEqual(contained, { ...active, deploy: { ...active.deploy, cronSchedule: "0 0 1 1 *" } });
+});
+
 test("worker image/config do not inherit the website build or healthcheck", async () => {
   const dockerfile = await readFile(new URL("../ops/notification-cron/Dockerfile", import.meta.url), "utf8");
   assert.doesNotMatch(dockerfile, /npm|prisma|DATABASE_URL|COPY \.|HEALTHCHECK/);
