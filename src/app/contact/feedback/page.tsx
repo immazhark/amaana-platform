@@ -16,7 +16,10 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Feedback and Concerns | Amaana Foundation" },
 };
 
-export default function FeedbackPage() {
+export default async function FeedbackPage({ searchParams }: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const preferences = await (searchParams ?? Promise.resolve({}));
   return <div className="v2-home">
     <PageHero variant="information" eyebrow="Listening · Privacy · Accountability"
       title="Your concerns deserve a respectful hearing."
@@ -33,8 +36,8 @@ export default function FeedbackPage() {
       <div className="v2-shell">
         <SectionHeading id="feedback-title" eyebrow="Send feedback privately"
           title="Choose the right conversation."
-          subtitle="This page prepares an email; it does not store a report, create an account or publish your words."/>
-        <FeedbackEnquiryBuilder/>
+          subtitle="Choose a feedback type and subject, review a private email, and send only if you decide. No complaint data is stored on this page."/>
+        <FeedbackEnquiryBuilder preferences={preferences} />
       </div>
     </section>
     <section className="v2-section amaana-bg-body">
