@@ -1,3 +1,7 @@
+## 2026-10-17 — Approved publication and donor feedback correction
+
+**Ownership: CHATGPT_ACTIVE.** User approved commit publication. Incoming remote HEAD `954c277f23ae6f72ee1fa707ce37add7c9579c59`. Local regression batch restored compilation and passed 710 tests, with 25 skipped. Terminal push lacks credentials; connected GitHub app will publish matching reviewed files. Continue direct-transfer feedback correction, then return ownership. No main merge or production deployment authorized.
+
 ## 2026-10-17 — Direct-transfer upload bounded, uncertain outcomes preserved; handoff
 
 **Ownership: HANDOFF_PENDING.** ChatGPT sole writer for open PR #292, branch `fix/direct-transfer-feedback-20261013` -> main. Starting HEAD `a9175e95a19f9fd1c97eac308ea87388dfadefd5`, owner claim `d8bc52d1c837821950ec1981211674c10539d351`. No competing writer observed.
