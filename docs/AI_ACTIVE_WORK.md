@@ -1,6 +1,14 @@
-## 2026-10-17 — ACTIVE: donor payment settlement confirmation and acknowledgement boundaries
+## 2026-10-17 — Donor confirmation and acknowledgement reliability; ownership returned
 
-**Ownership: CHATGPT_ACTIVE.** Sole-writer claim after verifying open PR #292 `fix/direct-transfer-feedback-20261013` -> `main`, HEAD `5116e7b0f951e9687acdca0b1237fac6573cc901`, previous HANDOFF_PENDING. Implement a source-backed terminal-payment response invariant: no HTTP 200 confirmation of CREATED/AUTHORIZED/FAILED pending donations. Browser remains in reconciliation for nonterminal status and avoids false completion. Add focused tests first; optionally harden private receipt body reads. Do not merge, deploy, touch production, or alter schema/payment gateway configuration.
+**Ownership: HANDOFF_PENDING.** ChatGPT finished the sole-writer batch on open PR #292 `fix/direct-transfer-feedback-20261013` targeting `main`. Verified incoming HEAD `5116e7b0f951e9687acdca0b1237fac6573cc901`, claimed with `07e31f374e91d05a691fc663b4c6f5bc4069f41d`. No other implementation owner observed during this atomic batch.
+
+- API: `src/app/api/donations/confirm/route.ts`, `dc3ba6df460bb175232d788eb9c700f69ae88c29`: HTTP 200 now requires persisted CAPTURED or REFUNDED after Razorpay validation and guarded updates. Nonterminal CREATED, AUTHORIZED, FAILED and PENDING_VERIFICATION return private 409, retain-payment-evidence wording; no premature donation completion.
+- Client: `src/components/donation-form.tsx`, `90808b235731f44ef9e90975def4dcd9b76f234c`: defense-in-depth status check before private acknowledgement redirect, preserving reconciliation lock on HTTP 200 with invalid/unknown state.
+- Private receipt: `src/app/api/donations/acknowledgement/route.ts`, `ca7b6960a3a3e9e0b4c6e13673607e33b62de2d7`: 5s read deadline for existing 8 KiB body limit, generic private 503/Retry-After on timeout, earlier than client 8s abort and without token or DB lookup.
+- Tests authored first: confirmation `038d6705c459d26af2723ed18ee4de2d412daa48`, browser `df1d2dd44ca3615424bd4d81e3fcb4385c42a0e7`, acknowledgement `cce634d2b703f7cdcc2c9010821ffd7d14cf8517`. Read back code/test files via GitHub; **these tests were NOT executed**.
+- Master reconciled register `e492e741136c7d02fc902f662a0fc6f26e75ee93`; ledger `b7763f35e6c0a2f43b199b17649f5fe276f9214d`. Master149 **unchanged:** 60 Implemented / 61 Partial / 26 Not started / 1 Superseded / 1 Not applicable; zero formally closed.
+- Verification blocker: no hydrated checkout, direct GitHub DNS failure. No Vitest, TypeScript, ESLint, Playwright, live provider, DB or actual stream run. No CI orchestration, main merge, deploy, schema or real donor/beneficiary writes.
+- Next writer: verify this HEAD and ownership; execute `npx vitest run src/app/api/donations/confirm/route.test.ts src/app/api/donations/acknowledgement/route.test.ts src/lib/bounded-request-body.test.ts`, scoped TS/lint, targeted Playwright payment flow, repair observed problems, then continue priority Master149 implementation. Do not merge/deploy until authorized.
 
 ## 2026-10-17 — Razorpay webhook ingress and capture-event durability; handoff
 
