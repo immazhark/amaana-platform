@@ -231,6 +231,50 @@ describe("assistance submission request bounds", () => {
     expect(mocks.assistanceCreate).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["applicantName", "Different applicant"],
+    ["category", "EMERGENCY"],
+    ["consent", "on"],
+  ])("rejects duplicate %s before interpreting private assistance data", async (field, repeatedValue) => {
+    const form = new FormData();
+    for (const [key, value] of Object.entries({
+      applicantName: "Acceptance Applicant",
+      phone: "9000000000",
+      email: "applicant@example.test",
+      city: "Hyderabad",
+      category: "MEDICAL",
+      description: "Synthetic assistance request data used only for route acceptance coverage.",
+      consent: "on",
+    })) form.set(key, value);
+    form.append(field, repeatedValue);
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/single text value/i);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.assistanceSafeParse).not.toHaveBeenCalled();
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.staffFindMany).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects a file-valued identity field before interpreting applicant data", async () => {
+    const form = new FormData();
+    form.set("applicantName", new File(["unexpected binary identity"], "identity.txt", { type: "text/plain" }));
+    for (const [key, value] of Object.entries({
+      phone: "9000000000",
+      city: "Hyderabad",
+      category: "MEDICAL",
+      description: "Synthetic assistance request data used only for route acceptance coverage.",
+      consent: "on",
+    })) form.set(key, value);
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/single text value/i);
+    expect(mocks.assistanceSafeParse).not.toHaveBeenCalled();
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
   it("preserves private 400 for a complete but malformed multipart body", async () => {
     const request = new Request("https://amaana.example/api/assistance", {
       method: "POST",
