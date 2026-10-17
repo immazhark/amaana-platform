@@ -1,3 +1,11 @@
+test("Contact routes volunteer enquiries directly to the private interest page", async ({ page }) => {
+  await page.goto("/contact");
+  const link = page.getByRole("link", { name: "Explore volunteering" });
+  await expect(link).toHaveAttribute("href", "/get-involved/volunteer");
+  await link.click();
+  await expect(page.getByRole("heading", { name: "Choose an area of volunteering" })).toBeVisible();
+});
+
 import { expect, test } from "@playwright/test";
 
 test("Get Involved opens an enquiry-only volunteer route with no client-side application form", async ({ page }) => {
