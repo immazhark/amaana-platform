@@ -4,3 +4,7 @@
 
 /* UI/UX audit: monetary and metric values must stay intact. */
 .v2-appeal-progress-meta strong,.v2-appeal-progress-meta span,.v2-appeal-donation-panel>div:first-child strong,.page-hero__stat-row b,.v3-proof-item strong{white-space:nowrap!important;overflow-wrap:normal!important;word-break:normal!important;font-variant-numeric:tabular-nums}
+
+
+/* Metadata on paper/ivory reminder surfaces needs AA dark-gold ink. */
+.v2-light-reminder .v2-reminder-label{color:var(--af-color-gold-ink)}
