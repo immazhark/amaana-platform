@@ -17,6 +17,18 @@ export function nextMonthlyGivingDate(day: MonthlyGivingDay, today: Date): strin
   return [year.toString().padStart(4, "0"), (month + 1).toString().padStart(2, "0"), day.toString().padStart(2, "0")].join("");
 }
 
+/** Month-end means the actual last civil day (28, 29, 30 or 31), not
+ * a fixed 31st that would silently skip shorter months. */
+export function nextLastDayMonthlyGivingDate(today: Date): string {
+  if (!Number.isFinite(today.getTime())) throw new RangeError("Invalid monthly reminder date");
+  const last = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+  return [
+    last.getFullYear().toString().padStart(4, "0"),
+    (last.getMonth() + 1).toString().padStart(2, "0"),
+    last.getDate().toString().padStart(2, "0"),
+  ].join("");
+}
+
 function nextCalendarDate(date: string): string {
   const start = new Date(Date.UTC(+date.slice(0, 4), +date.slice(4, 6) - 1, +date.slice(6, 8) + 1));
   return [start.getUTCFullYear().toString().padStart(4, "0"), (start.getUTCMonth() + 1).toString().padStart(2, "0"), start.getUTCDate().toString().padStart(2, "0")].join("");
@@ -70,6 +82,11 @@ function calendar(start: string, recurrence: string | null, uid: string, stamp: 
     "URL:https://amaanafoundation.org/donate",
     "TRANSP:TRANSPARENT", "END:VEVENT", "END:VCALENDAR",
   ].map(foldLine).join("\r\n") + "\r\n";
+}
+
+/** One stable calendar identity; recurrence moves naturally with month length. */
+export function buildLastDayMonthlyGivingReminder(today: Date, stamp = today): string {
+  return calendar(nextLastDayMonthlyGivingDate(today), "FREQ=MONTHLY;BYMONTHDAY=-1", "manual-giving-last-day", stamp);
 }
 
 export function buildFridayGivingReminder(today: Date, stamp = today): string {
