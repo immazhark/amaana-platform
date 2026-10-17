@@ -1,6 +1,14 @@
+## 2026-10-17 — Giving Planner current-main verification
+
+Ownership: HANDOFF_PENDING. PR293 original93594f41 fullCI39049069983 passed. Reconciled deployed303 fb2d1c19 preserving both handoff records and settlement/browser scope. Combined43 focused/full944 passed9 skipped; TypeScript/diff pass. Independent reviewer confirmed calendar TEXT escaping P2 resolved, no new findings. Monthly presets unchanged. Fresh hosted exact-head acceptance required; no planner release or payment action.
+
 ## 2026-10-17 — Giving Planner calendar compatibility
 
 Ownership: HANDOFF_PENDING after calendar repair. Existing PR293 branch feat/manual-giving-planner-20261017 at a9acb5e4. Independent AI review identified unescaped semicolon in ICS DESCRIPTION; correct only calendar TEXT encoding with regression coverage. RED: calendar TEXT delimiter regression failed on unescaped semicolon. GREEN: escaped semicolon in shared DESCRIPTION; all four calendar variants covered. Combined main receipt safeguard retained; 43 focused tests and full940 passed/9 skipped, type/lint/diff checks pass. No mandates, payments or extra data collection. Fresh hosted acceptance required. PR302 deployed by Railway SUCCESS ebc0b8e, public HTTP verification blocked403 in this environment; do not assert live journey verified.
+
+## 2026-10-17 — Settled payment confirmation extraction
+
+Ownership: HANDOFF_PENDING after scoped extraction. Branch fix/settled-payment-confirmation-20261017 from main aedae001. Extract only persisted settlement confirmation and browser lock from historical #292; preserve current provider validation and webhook concurrency. New PR, independent of #299/#300/#301/#302. RED: four nonsettled status cases returned 200 instead of 409. GREEN: 14 confirmation tests pass; full local suite 898 passed/9 skipped. TypeScript, focused ESLint, E2E syntax and diff checks pass. Six browser cases authored for nonsettled HTTP-200 responses; hosted browser/build/database gates pending. No live payment, merge or deployment.
 
 ## 2026-10-13 — actual HTTP cancellation regressions
 
