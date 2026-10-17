@@ -40,7 +40,7 @@ export function validatePrContract(input) {
   if (draft === false) {
     for (const heading of ["Acceptance criteria", "Verification"]) {
       const content = section(text, heading) || "";
-      if (/^\\s*-\\s+\\[ \\]/m.test(content) || !/^\\s*-\\s+\\[[xX]\\]\\s+\\S/m.test(content)) {
+      if (/^\s*-\s+\[ \]/m.test(content) || !/^\s*-\s+\[[xX]\]\s+\S/m.test(content)) {
         errors.push(`Ready PR has unchecked or unconfirmed "${heading}" items; keep it draft until verified.`);
       }
     }
