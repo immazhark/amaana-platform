@@ -51,6 +51,20 @@ export async function POST(request: Request) {
     } catch {
       return NextResponse.json({ error: "Transfer submission could not be parsed." }, { status: 400, headers: privateHeaders });
     }
+    // FormData.get() silently takes the first value. Do not let duplicated
+    // donation amount, payment identity, donor fields or evidence alter a
+    // financial claim through HTTP multipart parameter pollution.
+    const scalarFields = [
+      "appealId", "donorName", "donorEmail", "donorPhone", "amount",
+      "givingIntent", "paymentMethod", "transferReference", "transferredAt",
+    ] as const;
+    if (scalarFields.some(field => form.getAll(field).length > 1) || form.getAll("evidence").length > 1) {
+      return NextResponse.json(
+        { error: "Duplicate transfer fields are not allowed. Please submit one value per field." },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+
     // Never silently convert malformed or duplicate privacy fields to a named donation.
     // An absent checkbox is legitimate and retains the existing named default.
     const anonymityEntries = form.getAll("isAnonymous");
