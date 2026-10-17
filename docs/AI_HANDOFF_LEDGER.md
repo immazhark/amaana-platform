@@ -1,3 +1,7 @@
+## 2026-10-17 — ChatGPT private-response policy integration
+
+Ownership: CHATGPT_ACTIVE. Branch fix/private-response-referrer-policy-20261017, PR305. Reconcile already-tested private no-referrer policy and regression coverage against main #299 without changing provider or donor flows. Preserve both older coordination histories; PR300 remains a separate draft undergoing browser acceptance. No merge/deployment until fresh exact-head hosted checks and later main reconciliation. GitHub connector used because original local checkout is unavailable.
+
 ## 2026-10-17 — Private header reconciliation with deployed settlement
 
 Ownership: HANDOFF_PENDING. PR305 original f0227ffe passed full hostedCI39049214820. Reconciled deployed main303 fb2d1c19, preserving both handoff entries and all runtime changes. Combined47 focused/full912 passed9 skipped; types/E2E syntax/diff pass. No new runtime edits to privacy policy, no payments. Fresh exact-head hosted validation required after this integration.
@@ -5,6 +9,14 @@ Ownership: HANDOFF_PENDING. PR305 original f0227ffe passed full hostedCI39049214
 ## 2026-10-17 — Live-confirmed private response header override
 
 Ownership: HANDOFF_PENDING after scoped header repair. Branch fix/private-response-referrer-policy-20261017 from deployed main ebc0b8e. Direct production version reports exact merged SHA and invalid synthetic receipt404 remains generic, but response Referrer-Policy is strict-origin-when-cross-origin despite route no-referrer. Repair global Next private-surface header precedence using real Next configuration resolver regression tests. Public Cloudflare request blocked403; origin behavior verified separately. RED: eight sensitive paths resolved public referrer policy through actual Next config resolver. GREEN:11 effective-policy regressions pass (plus2 optimizer tests); full908 passed/9 skipped, TypeScript/focused lint/E2E syntax/diff pass. New native HTTP browser tests pending hosted gates; independent review requested. No donor/payment/credential mutation.
+
+## 2026-10-17 — Exact checkout and settlement current-main verification
+
+Ownership: HANDOFF_PENDING. PR299 corrected4ef74ae5 passed full hostedCI39050147508. Reconciled deployed303 fb2d1c19 preserving exact page bounds and all settlement/browser controls; only coordination notes conflicted and both records retained. Combined full938 passed9 skipped; TypeScript/diff pass. Fresh exact-head hosted acceptance required. Preserve299-before300; no provider/financial writes or deployment.
+
+## 2026-10-17 — Exact checkout page bounds regression
+
+Ownership: HANDOFF_PENDING after exact-bound repair. Existing PR299 head045c497b passed hosted CI but independent AI review found page still passes floating subtraction to both forms. goal2.01 raised0.01 yields max1.9999999999999998 and rejects valid2. Repair page to consume exact-paise helper, with actual server-page/rendered prop regression and valid/unpayable cases. RED: actual server-page render shows max1.9999999999999998 and unpayable projection renders. GREEN: shared exact-paise helper feeds page/form with null fail-closed guard;64 focused and full combined934 passed/9 skipped, TypeScript/focused lint/diff pass. Independent AI follow-up confirms important finding resolved. Incorporated main302 additively. Fresh hosted acceptance required; preserve299-before300 order.
 
 ## 2026-10-17 — Settled payment confirmation extraction
 
