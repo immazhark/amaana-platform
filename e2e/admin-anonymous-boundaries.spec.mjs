@@ -12,6 +12,7 @@ const protectedAdminSurfaces = [
   "/admin/donations/not-a-real-id",
   "/admin/donations/recognition",
   "/admin/donations/rights",
+  "/admin/follow-ups",
   "/admin/home-carousel",
   "/admin/media",
   "/admin/notifications",
@@ -24,6 +25,7 @@ const mutatingAdminApiRoutes = [
   "/api/admin/media/curated-gallery/start",
   "/api/admin/media/curated-gallery/upload",
   "/api/admin/media/curated-gallery/publish",
+  "/api/admin/assistance/not-a-real-id/documents",
 ];
 
 function expectPrivateApiHeaders(response) {
