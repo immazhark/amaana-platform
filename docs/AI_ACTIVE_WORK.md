@@ -1,6 +1,14 @@
+## 2026-10-17 — Private header reconciliation with deployed settlement
+
+Ownership: HANDOFF_PENDING. PR305 original f0227ffe passed full hostedCI39049214820. Reconciled deployed main303 fb2d1c19, preserving both handoff entries and all runtime changes. Combined47 focused/full912 passed9 skipped; types/E2E syntax/diff pass. No new runtime edits to privacy policy, no payments. Fresh exact-head hosted validation required after this integration.
+
 ## 2026-10-17 — Live-confirmed private response header override
 
 Ownership: HANDOFF_PENDING after scoped header repair. Branch fix/private-response-referrer-policy-20261017 from deployed main ebc0b8e. Direct production version reports exact merged SHA and invalid synthetic receipt404 remains generic, but response Referrer-Policy is strict-origin-when-cross-origin despite route no-referrer. Repair global Next private-surface header precedence using real Next configuration resolver regression tests. Public Cloudflare request blocked403; origin behavior verified separately. RED: eight sensitive paths resolved public referrer policy through actual Next config resolver. GREEN:11 effective-policy regressions pass (plus2 optimizer tests); full908 passed/9 skipped, TypeScript/focused lint/E2E syntax/diff pass. New native HTTP browser tests pending hosted gates; independent review requested. No donor/payment/credential mutation.
+
+## 2026-10-17 — Settled payment confirmation extraction
+
+Ownership: HANDOFF_PENDING after scoped extraction. Branch fix/settled-payment-confirmation-20261017 from main aedae001. Extract only persisted settlement confirmation and browser lock from historical #292; preserve current provider validation and webhook concurrency. New PR, independent of #299/#300/#301/#302. RED: four nonsettled status cases returned 200 instead of 409. GREEN: 14 confirmation tests pass; full local suite 898 passed/9 skipped. TypeScript, focused ESLint, E2E syntax and diff checks pass. Six browser cases authored for nonsettled HTTP-200 responses; hosted browser/build/database gates pending. No live payment, merge or deployment.
 
 ## 2026-10-13 — actual HTTP cancellation regressions
 
