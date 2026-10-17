@@ -19,6 +19,28 @@ describe("direct transfer submission outcomes", () => {
     expect(classifyDirectTransferResponse(status, { error: "Please try again", fieldErrors: { amount: ["Ignored"] } })).toEqual({ kind: "uncertain" });
   });
 
+  it("allows re-submitting the evidence claim only when a 408 confirms no database or storage write began", () => {
+    const response = { error: "The transfer upload took too long. No submission was recorded.", submissionUncertain: false };
+    expect(classifyDirectTransferResponse(408, response)).toEqual({
+      kind: "rejected", message: response.error, fieldErrors: {},
+    });
+  });
+
+  it.each([
+    { error: "Transfer upload timed out." },
+    { error: "Transfer upload timed out.", submissionUncertain: true },
+    { error: "Transfer upload timed out.", submissionUncertain: "false" },
+    { error: "", submissionUncertain: false },
+    null,
+  ])("keeps ambiguous HTTP 408 outcome locked: %j", body => {
+    expect(classifyDirectTransferResponse(408, body)).toEqual({ kind: "uncertain" });
+  });
+
+  it("never treats an error-shaped 503 as safe even with a false no-write marker", () => {
+    expect(classifyDirectTransferResponse(503, { error: "Upstream unavailable", submissionUncertain: false }))
+      .toEqual({ kind: "uncertain" });
+  });
+
   it("keeps an already-submitted reference locked for reconciliation", () => {
     expect(classifyDirectTransferResponse(409, { error: "Already submitted", submissionUncertain: true })).toEqual({ kind: "uncertain" });
   });
