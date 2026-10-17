@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { enforceAcknowledgementRateLimit, isSameOrigin } from "@/lib/request-security";
 import { readVerifiedDonationAcknowledgement } from "@/lib/private-donation-receipt";
 
@@ -15,6 +15,9 @@ const privateHeaders = {
   "X-Robots-Tag": "noindex, nofollow, noarchive",
 };
 const MAX_ACKNOWLEDGEMENT_JSON_BYTES = 8 * 1024;
+// The private acknowledgement browser aborts after 8 seconds. A shorter
+// server-side body deadline makes a stalled request recoverable in the UI.
+const ACKNOWLEDGEMENT_BODY_TIMEOUT_MS = 5_000;
 
 export async function POST(request: Request) {
   try {
@@ -24,10 +27,20 @@ export async function POST(request: Request) {
 
     let body: unknown;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_ACKNOWLEDGEMENT_JSON_BYTES));
+      body = JSON.parse(await readTextBodyWithLimit(request, MAX_ACKNOWLEDGEMENT_JSON_BYTES, {
+        timeoutMs: ACKNOWLEDGEMENT_BODY_TIMEOUT_MS,
+      }));
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ found: false }, { status: 413, headers: privateHeaders });
+      }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        // Do not turn an incomplete private request into a false token miss.
+        // No receipt quota, token verification or donation lookup occurred.
+        return NextResponse.json(
+          { found: false },
+          { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+        );
       }
       return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
     }
