@@ -1,9 +1,20 @@
 import Link from "next/link";
+import { ActionIcon } from "@/components/action-icon";
 import { buildVolunteerEnquiryHref, VOLUNTEER_SKILLS } from "@/lib/volunteer-enquiry";
+import styles from "./participation-card.module.css";
 
-/** Native, server-rendered contact actions keep donor/volunteer data private.
- * A visitor edits availability and any extra interests in their own mail app.
- * No JavaScript bundle, API request, storage, or application submission. */
+const skillDescriptions: Record<(typeof VOLUNTEER_SKILLS)[number], string> = {
+  "Distribution and packing": "Offer practical help preparing or distributing approved relief items when a suitable need arises.",
+  "Photography and documentation": "Discuss consent-aware photography or documentation of approved work, never private case records.",
+  "Design and communication": "Offer responsible design, writing or communication skills for reviewed public material.",
+  "Technology and website support": "Help improve accessible digital services, content quality or technical workflows.",
+  "Event logistics": "Explore coordination and event-day support, subject to local needs and safeguarding.",
+  "Other practical help": "Tell Amaana about another skill or the kind of contribution you can realistically offer.",
+};
+
+/** Visitor-owned email links: no on-site submission, account, or volunteer database.
+ * Reuse the reviewed participation-card design so choice geometry stays consistent
+ * with Get Involved and Contact without increasing the CSS/JS bundle budgets. */
 export function VolunteerInterestBuilder() {
   return (
     <div>
@@ -13,12 +24,33 @@ export function VolunteerInterestBuilder() {
         and your availability before sending. These are interests, not advertised
         vacancies or confirmed placements.
       </p>
-      <div className="v2-hero-actions" role="group" aria-label="Volunteer enquiry topics">
-        {VOLUNTEER_SKILLS.map(skill => (
-          <a className="v2-button v2-button--paper-secondary" href={buildVolunteerEnquiryHref([skill], "")} key={skill}>
-            {skill}
-          </a>
-        ))}
+      <div className={styles.grid} role="group" aria-label="Volunteer enquiry topics">
+        {VOLUNTEER_SKILLS.map((skill, index) => {
+          const headingId = `volunteer-interest-${index + 1}`;
+          const descriptionId = `volunteer-interest-description-${index + 1}`;
+          return (
+            <a
+              key={skill}
+              className={styles.card}
+              href={buildVolunteerEnquiryHref([skill], "")}
+              data-volunteer-skill={index + 1}
+              aria-labelledby={headingId}
+              aria-describedby={descriptionId}
+            >
+              <span className={styles.marker} aria-hidden="true"><ActionIcon kind="volunteer" /></span>
+              <div className={styles.copy}>
+                <h3 id={headingId}>{skill}</h3>
+                <p id={descriptionId}>{skillDescriptions[skill]}</p>
+              </div>
+              <span className={styles.action}>
+                Prepare private enquiry
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                  <path d="M5 12h14m-6-6 6 6-6 6" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+              </span>
+            </a>
+          );
+        })}
       </div>
       <p>
         Not sure which category fits?{" "}
