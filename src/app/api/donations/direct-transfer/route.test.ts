@@ -193,6 +193,22 @@ describe("direct donation transfer submission", () => {
     expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["forbidden text attachment", "text/plain", "fake PDF", "receipt.txt"],
+    ["spoofed PNG", "image/png", "plain-text-without-signature", "receipt.png"],
+    ["spoofed PDF", "application/pdf", "this-is-not-a-pdf", "receipt.pdf"],
+  ])("rejects %s before creating a financial claim", async (_case, mime, content, filename) => {
+    const response = await POST(requestWith(new File([content], filename, { type: mime })));
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toMatch(/valid PDF|JPEG|PNG|WebP/i);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+  });
+
   it("treats an empty optional evidence file as no evidence", async () => {
     const form = new FormData();
     form.set("appealId", validData.appealId);
