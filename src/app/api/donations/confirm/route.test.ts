@@ -107,10 +107,25 @@ describe("donation confirmation persisted status", () => {
     },
   );
 
+  it.each(["CREATED", "AUTHORIZED", "FAILED", "PENDING_VERIFICATION"])(
+    "does not report successful confirmation for persisted %s",
+    async status => {
+      mocks.findUnique.mockResolvedValueOnce(storedDonation()).mockResolvedValueOnce({ status });
+      const response = await POST(confirmationRequest());
+      expect(response.status).toBe(409);
+      expect(await response.json()).toEqual({
+        status,
+        error: "Payment verification is pending. Please retain your payment confirmation and do not submit another payment.",
+      });
+      expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+      expect(mocks.captureDonation).not.toHaveBeenCalled();
+    },
+  );
+
   it("keeps payment confirmation responses private and non-indexable", async () => {
     mocks.findUnique
       .mockResolvedValueOnce(storedDonation())
-      .mockResolvedValueOnce({ status: "AUTHORIZED" });
+      .mockResolvedValueOnce({ status: "CAPTURED" });
 
     const response = await POST(confirmationRequest());
 
