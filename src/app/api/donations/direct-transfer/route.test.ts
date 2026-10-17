@@ -548,3 +548,50 @@ describe("direct-transfer domestic confirmation is unambiguous", () => {
     expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
   });
 });
+
+
+describe("direct-transfer multipart field ambiguity", () => {
+  async function formForTest() {
+    const original = requestWith();
+    return { url: original.url, form: await original.formData() };
+  }
+
+  it.each([
+    "appealId", "donorName", "donorEmail", "donorPhone", "amount",
+    "givingIntent", "paymentMethod", "transferReference", "transferredAt",
+  ] as const)("rejects duplicate financial field %s before persistence", async field => {
+    const { url, form } = await formForTest();
+    if (field === "donorPhone") form.set("donorPhone", "");
+    form.append(field, "conflicting-value");
+    const response = await POST(new Request(url, { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/duplicate|repeated|field/i);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+  });
+
+  it("rejects an identical repeated transfer reference instead of accepting the first", async () => {
+    const { url, form } = await formForTest();
+    form.append("transferReference", validData.transferReference);
+    const response = await POST(new Request(url, { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects multiple evidence files, including when both have valid signatures", async () => {
+    const { url, form } = await formForTest();
+    form.append("evidence", syntheticPng("first synthetic transfer"));
+    form.append("evidence", syntheticPng("second synthetic transfer"));
+    const response = await POST(new Request(url, { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/duplicate|repeated|field/i);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+  });
+});
