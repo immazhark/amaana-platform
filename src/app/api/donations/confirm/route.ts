@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { expireDonationViews } from "@/lib/donation-cache";
 import { hashReceiptToken } from "@/lib/donations";
 import { captureDonation } from "@/lib/payment-processing";
@@ -16,6 +16,7 @@ const privateHeaders = {
   "X-Robots-Tag": "noindex, nofollow, noarchive",
 };
 const MAX_PAYMENT_JSON_BYTES = 32 * 1024;
+const CONFIRMATION_BODY_TIMEOUT_MS = 15_000;
 
 const schema = z.object({
   razorpay_order_id: z.string().min(1),
@@ -34,10 +35,18 @@ export async function POST(request: Request) {
 
     let body: unknown;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES));
+      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES, { timeoutMs: CONFIRMATION_BODY_TIMEOUT_MS }));
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ error: "Payment confirmation payload is too large." }, { status: 413, headers: privateHeaders });
+      }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        // No provider lookup or capture was attempted; do not report this
+        // transient transport failure as a rejected payment credential.
+        return NextResponse.json(
+          { error: "Payment confirmation is temporarily unavailable. Please retain your payment confirmation." },
+          { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+        );
       }
       return NextResponse.json({ error: "Invalid payment confirmation." }, { status: 400, headers: privateHeaders });
     }
