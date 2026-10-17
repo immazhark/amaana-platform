@@ -17,7 +17,10 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Volunteer With Amaana Foundation" },
 };
 
-export default function VolunteerPage() {
+export default async function VolunteerPage({ searchParams }: {
+  searchParams?: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const preferences = await (searchParams ?? Promise.resolve({}));
   return <div className="v2-home">
     <PageHero variant="level2" eyebrow="Get Involved · Volunteering"
       title="Your time and skills can matter."
@@ -34,8 +37,8 @@ export default function VolunteerPage() {
       <div className="v2-shell">
         <SectionHeading id="volunteer-title" eyebrow="Offer what you can"
           title="Tell us where you may be able to help."
-          subtitle="Select an interest, then add your availability to the prepared email. This is an enquiry, not an application to access beneficiary information."/>
-        <VolunteerInterestBuilder/>
+          subtitle="Choose several interests and an availability window, review the prepared enquiry, and decide whether to email Amaana. No beneficiary records are accessed."/>
+        <VolunteerInterestBuilder preferences={preferences} />
       </div>
     </section>
     <section className="v2-section amaana-bg-body">

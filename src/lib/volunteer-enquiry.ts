@@ -42,3 +42,22 @@ export function buildVolunteerEnquiryHref(
   ].join("\n");
   return `mailto:amaanafoundation24@gmail.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
 }
+
+/** Fixed public choices only. Query strings must never accept names, contact
+ * details, free text or duplicate values from an untrusted browser URL. */
+export function parseVolunteerPreferences(
+  input: Record<string, string | string[] | undefined>,
+): { skills: VolunteerSkill[]; availability: VolunteerAvailability | "" } | null {
+  const keys = Object.keys(input);
+  if (keys.some(key => !["intent", "skill", "availability"].includes(key)) || input.intent !== "review") return null;
+  const rawSkills = input.skill === undefined ? [] : Array.isArray(input.skill) ? input.skill : [input.skill];
+  if (rawSkills.length > VOLUNTEER_SKILLS.length || new Set(rawSkills).size !== rawSkills.length
+    || rawSkills.some(skill => !VOLUNTEER_SKILLS.some(allowed => allowed === skill))) return null;
+  const availability = input.availability ?? "";
+  if (typeof availability !== "string"
+    || (availability !== "" && !VOLUNTEER_AVAILABILITY.some(allowed => allowed === availability))) return null;
+  return {
+    skills: VOLUNTEER_SKILLS.filter(skill => rawSkills.includes(skill)),
+    availability: availability as VolunteerAvailability | "",
+  };
+}
