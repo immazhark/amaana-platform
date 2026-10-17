@@ -1,5 +1,15 @@
 # Amaana Master Reconciled Execution Plan
 
+## 2026-10-17 — Bounded private status and payment confirmation body reads (PR #292)
+
+- ChatGPT sole-writer implementation on `fix/direct-transfer-feedback-20261013` (open PR #292 to `main`); source/test regression batch after prior `3aaed3e` handoff.
+- **Private tracking:** `src/app/api/assistance/status/route.ts` now enforces a 15-second deadline on its existing 8-KiB JSON body limit, and distinguishes `RequestBodyReadTimeoutError` from malformed credentials. Stalled client streams return private/non-cacheable HTTP 503 with `Retry-After: 60`, without querying case records; oversize still returns 413; origin/rate-limit/token controls remain intact.
+- **Captured-payment integrity:** `src/app/api/donations/confirm/route.ts` now enforces the same 15-second deadline on its existing 32-KiB confirmation JSON body limit. A read deadline returns private/non-cacheable 503 with explicit retain-your-confirmation guidance, never a false 400 signature/credential rejection; the request exits before signature verification, provider lookup or capture. Existing committed-capture/cache-outage recovery is unchanged.
+- Regression tests authored first: `src/app/api/assistance/status/route.test.ts` and `src/app/api/donations/confirm/route.test.ts` cover supplied deadline arguments, timeout/availability status, response privacy and absence of downstream side effects; the tracking error mock now accepts numeric maxBytes, matching the real error constructor. Tests `3f4187a`, `9991b5`; source `8f9ce37`, `91c304e`.
+- GitHub source readback confirmed expected route and regression content; **tests not executed**: no hydrated checkout (git DNS unavailable), no Vitest/TypeScript/ESLint/browser/actual stream or provider run. No production writes, schema changes, payment capture, deployment, merge or CI workflow was performed.
+- Master149 counts remain **60 Implemented / 61 Partial / 26 Not started / 1 Superseded / 1 Not applicable (149 total), formally closed 0**. AF-R012 and AF-SETTLEMENT receive more PR-open, source-only reliability evidence; neither is promoted to closed or deployed.
+
+
 ## 2026-10-17 — Private assistance tracking abuse protection and post-capture payment confirmation
 
 Ownership: ChatGPT sole-writer implementation on open PR #292 `fix/direct-transfer-feedback-20261013` targeting `main`, start HEAD `c7af4374a42fd6912698d73099a7240b310c543f`; return HANDOFF_PENDING at completion.
