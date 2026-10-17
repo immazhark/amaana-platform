@@ -1,3 +1,7 @@
+## 2026-10-17 — PR governance template validation
+
+Ownership: HANDOFF_PENDING after scoped implementation. Branch chore/atomic-pr-governance-20261017, PR #294, starting head 3a02109987bbad78b9a2ab66dddf19cb805840f4. Confirmed RED: comment-only sections and untouched template passed incorrectly. GREEN: strip HTML comments before section parsing and make template guidance comment-only; 44 PR-contract/CI-planner tests pass, syntax and diff checks pass. New exact-head hosted acceptance pending. Financial #299 and #302 browser acceptance remains pending; no merge or deployment.
+
 ## 2026-10-13 — actual HTTP cancellation regressions
 
 Ownership: CODEX_ACTIVE on the preserved N-28 follow-up branch; validated release3414858b remains unchanged. Added actual assistance and direct-transfer route cases using the real body reader/error class: an oversized stream whose cancel promise never settles returns private413 and does not create a case/donation or upload evidence. Both route cases fail with rejection stalled when only awaited cancellation is restored. Fixed source:34 tests across3 suites passed; TypeScript and focused ESLint passed. Assistance test mock now retains the actual error class to verify the real classifier. No live requests, provider calls or production database writes.

@@ -16,7 +16,8 @@ on:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  # Cancel superseded PR runs; preserve production and integration checks.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -50,7 +51,9 @@ jobs:
           CI_RELEASE: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           node --check scripts/diagnose-resend-dns.mjs
-          node --test scripts/test-ci-plan.mjs
+          node --test scripts/test-ci-plan.mjs scripts/test-pr-contract.mjs
+          # Enforce metadata/scope on PRs using the checkout; skip non-PR events.
+          node scripts/check-pr-contract.mjs
           node scripts/ci-plan.mjs
 
   fast:
