@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildDatedGivingReminder, buildMonthlyGivingReminder, buildFridayGivingReminder, nextFridayGivingDate, MONTHLY_GIVING_DAYS, nextMonthlyGivingDate } from "./monthly-giving-reminder";
+import { buildDatedGivingReminder, buildMonthlyGivingReminder, buildLastDayMonthlyGivingReminder, buildFridayGivingReminder, nextFridayGivingDate, nextLastDayMonthlyGivingDate, MONTHLY_GIVING_DAYS, nextMonthlyGivingDate } from "./monthly-giving-reminder";
 
 describe("non-charging monthly giving calendar", () => {
   it("rolls to the next month or year using the visitor's local date", () => {
@@ -24,6 +24,26 @@ describe("non-charging monthly giving calendar", () => {
     const result = buildMonthlyGivingReminder(28, new Date(2026, 1, 27));
     expect(result).toContain("DTSTART;VALUE=DATE:20260228\r\n");
     expect(result).toContain("DTEND;VALUE=DATE:20260301\r\n");
+  });
+  it("schedules on the real last day, including normal and leap-year Februaries", () => {
+    expect(nextLastDayMonthlyGivingDate(new Date(2026, 1, 10))).toBe("20260228");
+    expect(nextLastDayMonthlyGivingDate(new Date(2028, 1, 1))).toBe("20280229");
+    expect(nextLastDayMonthlyGivingDate(new Date(2026, 3, 30))).toBe("20260430");
+    expect(nextLastDayMonthlyGivingDate(new Date(2026, 11, 31))).toBe("20261231");
+    expect(() => nextLastDayMonthlyGivingDate(new Date(NaN))).toThrow(RangeError);
+  });
+  it("exports one calendar identity with last-day recurrence and no payment mandate", () => {
+    const date = new Date(2028, 1, 29);
+    const ics = buildLastDayMonthlyGivingReminder(date, new Date("2028-02-28T20:00:00Z"));
+    const unfolded = ics.replace(/\\r\\n /g, "");
+    expect(unfolded).toContain("DTSTART;VALUE=DATE:20280229");
+    expect(unfolded).toContain("DTEND;VALUE=DATE:20280301");
+    expect(unfolded).toContain("RRULE:FREQ=MONTHLY;BYMONTHDAY=-1");
+    expect(unfolded).toContain("UID:manual-giving-last-day@amaanafoundation.org");
+    expect(unfolded).toContain("no automatic debit or subscription");
+    for (const line of ics.split("\\r\\n")) {
+      expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75);
+    }
   });
   it("creates a Friday reminder without a payment mandate or inferred Hijri date", () => {
     expect(nextFridayGivingDate(new Date(2026, 9, 16))).toBe("20261016");
