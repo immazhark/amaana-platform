@@ -13,8 +13,8 @@ export function MonthlyGivingReminder({ invalid = false }: { invalid?: boolean }
       <form method="get" action="/api/giving-reminder">
         <input type="hidden" name="frequency" value="monthly" />
         <label className={styles.field}>Day of each month
-          <select name="day" defaultValue="15">{MONTHLY_GIVING_DAYS.map(day => <option value={day} key={day}>Day {day}</option>)}</select>
-          <span>Days 1–28 recur every month, including February.</span>
+          <select name="day" defaultValue="15">{MONTHLY_GIVING_DAYS.map(day => <option value={day} key={day}>Day {day}</option>)}<option value="last">Last day of the month</option></select>
+          <span>Days 1–28 recur on the same day each month. Last day follows the actual month-end, including February.</span>
         </label>
         <button className="v2-button" type="submit">Download monthly reminder</button>
       </form>
