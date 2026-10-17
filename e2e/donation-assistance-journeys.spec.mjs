@@ -884,6 +884,31 @@ test('legacy query donation acknowledgement token is scrubbed from the visible U
   expect(page.url()).not.toContain(token);
 });
 
+test('receipt availability failure preserves the private token for explicit retry', async ({ page }) => {
+  await mockAnalytics(page);
+  const reference = 'AFD-DEADLINE-RETRY';
+  const token = 'synthetic-private-receipt-retry-token';
+  const requests = [];
+  let unavailable = true;
+  await page.route('**/api/donations/acknowledgement', async route => {
+    requests.push(route.request().postDataJSON());
+    await route.fulfill({
+      status: unavailable ? 503 : 404,
+      contentType: 'application/json',
+      body: JSON.stringify({ found: false }),
+    });
+  });
+  await page.goto(`/donations/${reference}/acknowledgement#token=${token}`);
+  await expect(page.getByRole('heading', { name: 'Unable to open your acknowledgement.' })).toBeVisible();
+  await expect(page.getByText(/Retry without paying again/)).toBeVisible();
+  expect(new URL(page.url()).hash).toBe('');
+  expect(new URL(page.url()).search).toBe('');
+  unavailable = false;
+  await page.getByRole('button', { name: 'Try again', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Private acknowledgement unavailable.' })).toBeVisible();
+  expect(requests).toEqual([{ reference, token }, { reference, token }]);
+});
+
 for (const status of [429, 503]) {
   test(`tracking HTTP ${status} preserves private credentials for explicit retry`, async ({ page }) => {
     await mockAnalytics(page);

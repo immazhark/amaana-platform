@@ -1,7 +1,7 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { getDonationAcknowledgementPresentation, hashReceiptToken } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { enforceAcknowledgementRateLimit, isSameOrigin } from "@/lib/request-security";
@@ -26,10 +26,13 @@ export async function POST(request: Request) {
 
     let body: unknown;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_ACKNOWLEDGEMENT_JSON_BYTES));
+      body = JSON.parse(await readTextBodyWithLimit(request, MAX_ACKNOWLEDGEMENT_JSON_BYTES, { timeoutMs: 5_000 }));
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ found: false }, { status: 413, headers: privateHeaders });
+      }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        return NextResponse.json({ found: false }, { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } });
       }
       return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
     }
