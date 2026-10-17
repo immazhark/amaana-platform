@@ -17,9 +17,12 @@ export function classifyAssistanceResponse(status: number, value: unknown): Assi
       typeof body.trackingToken === "string" && /^[A-Za-z0-9_-]{20,128}$/.test(body.trackingToken)) {
     return { kind: "accepted", referenceNumber: body.referenceNumber, trackingToken: body.trackingToken };
   }
-  // These responses are returned before case creation. Other statuses, a lost
-  // response or a malformed acknowledgement cannot establish a safe retry.
-  if (![400, 403, 413, 429].includes(status) || typeof body.error !== "string" || !body.error.trim()) return { kind: "uncertain" };
+  // The multipart reader's 408 explicitly confirms the body was never
+  // fully read, so storage and case creation did not begin. A generic 408,
+  // 5xx, or lost acknowledgement is still uncertain and must remain locked.
+  const explicitNoWriteTimeout = status === 408 && body.submissionUncertain === false;
+  if ((!explicitNoWriteTimeout && ![400, 403, 413, 429].includes(status)) ||
+      typeof body.error !== "string" || !body.error.trim()) return { kind: "uncertain" };
   const fields: AssistanceFieldErrors = {};
   if (body.fields && typeof body.fields === "object" && !Array.isArray(body.fields)) {
     const input = body.fields as Record<string, unknown>;
