@@ -35,7 +35,7 @@ const source = {
     evidenceDocumentId: "delivery-proof",
     financialReconciliation: null,
     assistanceRequest: {
-      id: "case-synthetic", status: "APPROVED", appealId: null,
+      id: "case-synthetic", status: "APPROVED" as const, appealId: null,
       verification: {
         decision: "APPROVED_PRIVATE" as const,
         completedAt: new Date(version), confidentialityLevel: "STANDARD" as const,
@@ -53,7 +53,7 @@ describe("explicit anonymous-outcome copy consent", () => {
       expectedObservationUpdatedAt: new Date(version),
     });
   });
-  it.each([
+  it.each<Record<string, string>>([
     { exactCopyConsentAttested: "" },
     { consentDocumentId: "" },
     { consentDocumentId: "../another-case" },

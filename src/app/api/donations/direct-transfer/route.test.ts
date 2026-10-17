@@ -87,6 +87,31 @@ describe("transfer feedback preserves financial and privacy boundaries", () => {
     expect(response.headers.get("cache-control")).toContain("no-store");
   });
 
+  it.each([null, "true", "false"])("preserves valid anonymity choice %s", async value => {
+    const original = requestWith();
+    const form = await original.formData();
+    if (value !== null) form.set("isAnonymous", value);
+    const response = await POST(new Request(original.url, { method: "POST", body: form }));
+    expect(response.status).toBe(202);
+    expect(mocks.safeParse).toHaveBeenCalledWith(expect.objectContaining({ isAnonymous: value === "true" }));
+  });
+
+  it.each(["TRUE", "on", "", "false ", new File(["true"], "privacy.txt")])(
+    "rejects malformed anonymity choice %s before persistence",
+    async value => {
+      const original = requestWith();
+      const form = await original.formData();
+      form.set("isAnonymous", value);
+      const response = await POST(new Request(original.url, { method: "POST", body: form }));
+      expect(response.status).toBe(400);
+      expect(response.headers.get("cache-control")).toContain("no-store");
+      expect(mocks.safeParse).not.toHaveBeenCalled();
+      expect(mocks.findFirst).not.toHaveBeenCalled();
+      expect(mocks.donationCreate).not.toHaveBeenCalled();
+      expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    },
+  );
+
   it("marks an unrecovered database outcome as uncertain without retry advice or credentials", async () => {
     mocks.donationCreate.mockRejectedValue(new Error("private database diagnostic"));
     mocks.donationFindUnique.mockResolvedValue(null);

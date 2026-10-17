@@ -20,7 +20,7 @@ export function directTransferFieldErrors(value: unknown): DirectTransferFieldEr
     const messages = input[field];
     if (Array.isArray(messages)) {
       const message = messages.find((item): item is string => typeof item === "string" && item.trim().length > 0);
-      if (message) errors[field] = [message.slice(0, 300)];
+      if (message) errors[field] = [message.trim().slice(0, 300)];
     }
   }
   return errors;
@@ -46,7 +46,7 @@ export function classifyDirectTransferResponse(status: number, value: unknown): 
     return { kind: "accepted", referenceNumber: body.referenceNumber, receiptToken: body.receiptToken };
   }
   if (status >= 400 && status < 500 && typeof body.error === "string" && body.error.trim()) {
-    return { kind: "rejected", message: body.error.slice(0, 500), fieldErrors: directTransferFieldErrors(body.fieldErrors) };
+    return { kind: "rejected", message: body.error.trim().slice(0, 500), fieldErrors: directTransferFieldErrors(body.fieldErrors) };
   }
   return { kind: "uncertain" };
 }

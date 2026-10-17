@@ -34,7 +34,7 @@ describe("bounded private support-delivery reporting", () => {
     expect(() => parseDeliveryCreation(fields({ kind: "IN_KIND", amountInr: "10.00" }), today))
       .toThrow("invented cash value");
   });
-  it.each([
+  it.each<Record<string, string>>([
     { kind: "REFERRAL" }, { summary: "short" }, { occurredOn: "2026-10-17" },
     { occurredOn: "2026-02-30" }, { occurredOn: "2020-01-01" },
     { amountInr: "" }, { amountInr: "0.00" }, { amountInr: "-5" },

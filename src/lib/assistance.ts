@@ -99,7 +99,7 @@ export function getPublicAppealVerificationIssues(verification: PublicAppealVeri
 }
 
 export function canApproveAssistanceRequest(verification: Pick<PublicAppealVerificationLike, "decision" | "completedAt"> | null | undefined) {
-  if (!hasCompletedVerificationTimestamp(verification?.completedAt)) return false;
+  if (!verification || !hasCompletedVerificationTimestamp(verification.completedAt)) return false;
   return ["APPROVED_PUBLIC", "APPROVED_PRIVATE", "APPROVED_PARTIAL"].includes(verification.decision);
 }
 

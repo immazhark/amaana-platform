@@ -29,7 +29,7 @@ describe("private retention queue", () => {
   });
   it.each(["eligible", "active"])("applies %s to document reads as well as counts", async state => {
     m.count.mockResolvedValue(125); const html = await markup({ state, page: "2" });
-    const where = m.count.mock.calls[0][0].where;
+    const where = m.count.mock.calls[0]![0].where;
     expect(where).toBeDefined(); expect(m.list).toHaveBeenCalledWith(expect.objectContaining({ where, skip: 50, take: 50 }));
     expect(state === "active" ? where.NOT : where.OR).toBeDefined();
     expect(html).toContain(`state=${state}&amp;page=3`);
@@ -39,7 +39,7 @@ describe("private retention queue", () => {
     expect(m.list).toHaveBeenCalledWith(expect.objectContaining({ where: undefined, skip: 0, take: 50 }));
   });
   it("selects only the displayed private fields and scopes audit reads to each document and case", async () => {
-    await markup(); const query = m.list.mock.calls[0][0];
+    await markup(); const query = m.list.mock.calls[0]![0];
     expect(query.include).toBeUndefined(); expect(query.select.objectKey).toBeUndefined();
     expect(query.select.assistanceRequest.select.applicantName).toBeUndefined();
     expect(m.events).toHaveBeenCalledWith(expect.objectContaining({ where: expect.objectContaining({

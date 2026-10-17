@@ -44,7 +44,7 @@ describe("private operational outcome input", () => {
       expectedDeliveryUpdatedAt: new Date(version),
     });
   });
-  it.each([
+  it.each<Record<string, string>>([
     { kind: "MEDICAL_RECOVERY" }, { kind: "PUBLIC_IMPACT" },
     { kind: "BANK_CLEARED" }, { summary: "Too short" },
     { summary: "x".repeat(301) }, { summary: "Contains\u0000unsafe text" },

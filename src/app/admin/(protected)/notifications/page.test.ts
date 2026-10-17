@@ -28,22 +28,22 @@ describe("actionable notification attention queues", () => {
   });
   it.each(["staleProcessing", "overdueDue", "terminalFailures"])("uses the same %s predicate for health counts and the filtered list", async view => {
     await markup({ view });
-    const selected = m.count.mock.calls[0][0].where.AND[0];
+    const selected = m.count.mock.calls[0]![0].where.AND[0];
     const countIndex = ["staleProcessing", "overdueDue", "terminalFailures"].indexOf(view) + 1;
-    expect(selected).toEqual(m.count.mock.calls[countIndex][0].where);
+    expect(selected).toEqual(m.count.mock.calls[countIndex]![0].where);
     expect(selected.channel).toBe("EMAIL");
     expect(m.list).toHaveBeenCalledWith(expect.objectContaining({ where: { AND: [selected] }, take: 50, skip: 0 }));
   });
   it("keeps status and attention scope across pages and status changes", async () => {
     m.count.mockResolvedValue(125); const html = await markup({ view: "overdueDue", status: "FAILED", page: "2" });
-    expect(m.list.mock.calls[0][0].where.AND[1]).toEqual({ status: "FAILED" });
-    expect(m.list.mock.calls[0][0].orderBy).toEqual([{ scheduledFor: "asc" }, { id: "asc" }]);
+    expect(m.list.mock.calls[0]![0].where.AND[1]).toEqual({ status: "FAILED" });
+    expect(m.list.mock.calls[0]![0].orderBy).toEqual([{ scheduledFor: "asc" }, { id: "asc" }]);
     expect(html).toContain('href="/admin/notifications?status=FAILED&amp;view=overdueDue&amp;page=3"');
     expect(html).toContain('href="/admin/notifications?view=overdueDue&amp;status=PENDING"');
     expect(html).toContain("Status totals below cover all delivery records.");
   });
   it.each(["untrusted-private-text", ["overdueDue", "terminalFailures"]])("does not reflect unknown or repeated attention filters %j", async view => {
-    const html = await markup({ view }); expect(m.count.mock.calls[0][0].where).toBeUndefined();
+    const html = await markup({ view }); expect(m.count.mock.calls[0]![0].where).toBeUndefined();
     expect(html).not.toContain("untrusted-private-text");
   });
   it("shows a read-only stalled view and keeps non-email retry controls unavailable", async () => {

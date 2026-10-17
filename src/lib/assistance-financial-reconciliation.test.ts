@@ -30,7 +30,7 @@ describe("private financial evidence corroboration", () => {
       expectedDeliveryUpdatedAt: new Date(updatedAt),
     });
   });
-  it.each([
+  it.each<Record<string, string>>([
     { transactionReference: "short" }, { transactionReference: "ABC 1234" },
     { transactionReference: "aaaaaaaaaa\u0000" },
     { amountInr: "" }, { amountInr: "0.00" }, { amountInr: "-5" },

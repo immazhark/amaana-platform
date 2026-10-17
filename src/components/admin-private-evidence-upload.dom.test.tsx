@@ -57,13 +57,13 @@ describe.skipIf(!runtime)("private evidence upload lifecycle", () => {
     fetchMock.mockReturnValue(new Promise(() => {})); await render();
     await act(async () => { submit(); submit(); });
     expect(fetchMock).toHaveBeenCalledTimes(1); expect(button().disabled).toBe(true);
-    expect(fetchMock.mock.calls[0][1].body.get("purpose")).toBe("delivery");
+    expect(fetchMock.mock.calls[0]![1].body.get("purpose")).toBe("delivery");
   });
   it.each(["transport", "body"])("bounds stalled %s and blocks another write until document review", async boundary => {
     fetchMock.mockReturnValue(boundary === "transport" ? new Promise(() => {}) : Promise.resolve({ ok: true, status: 201, json: () => new Promise(() => {}) }));
     await render(); await upload();
     await act(async () => { await vi.advanceTimersByTimeAsync(30_000); });
-    expect(fetchMock.mock.calls[0][1].signal.aborted).toBe(true);
+    expect(fetchMock.mock.calls[0]![1].signal.aborted).toBe(true);
     expect(button().disabled).toBe(true); expect(container.textContent).toContain("file may already be stored");
     expect(container.querySelector("a")?.getAttribute("href")).toBe("/admin/requests/case-a");
     await upload(); expect(fetchMock).toHaveBeenCalledTimes(1); expect(m.refresh).not.toHaveBeenCalled();
@@ -76,12 +76,12 @@ describe.skipIf(!runtime)("private evidence upload lifecycle", () => {
   });
   it.each([["case-b", "financial"], ["case-a", "consent"]] as const)("isolates case/purpose changes to %s/%s from old results", async (caseId, purpose) => {
     const pending = deferred<Response>(); fetchMock.mockReturnValueOnce(pending.promise).mockResolvedValueOnce(receipt());
-    await render(); await upload(); const signal = fetchMock.mock.calls[0][1].signal;
+    await render(); await upload(); const signal = fetchMock.mock.calls[0]![1].signal;
     await render(caseId, purpose); expect(signal.aborted).toBe(true); expect(button().disabled).toBe(false);
     await act(async () => pending.resolve(receipt())); expect(m.refresh).not.toHaveBeenCalled();
     expect(container.textContent).not.toContain("Private evidence uploaded.");
-    await upload(); expect(fetchMock.mock.calls[1][0]).toBe(`/api/admin/assistance/${caseId}/documents`);
-    expect(fetchMock.mock.calls[1][1].body.get("purpose")).toBe(purpose); expect(m.refresh).toHaveBeenCalledTimes(1);
+    await upload(); expect(fetchMock.mock.calls[1]![0]).toBe(`/api/admin/assistance/${caseId}/documents`);
+    expect(fetchMock.mock.calls[1]![1].body.get("purpose")).toBe(purpose); expect(m.refresh).toHaveBeenCalledTimes(1);
   });
   it("keeps definite validation rejection retryable without automatically resubmitting", async () => {
     fetchMock.mockResolvedValueOnce(Response.json({ error: "Unsupported private file." }, { status: 400 })).mockResolvedValueOnce(receipt());
@@ -103,7 +103,7 @@ describe.skipIf(!runtime)("private evidence upload lifecycle", () => {
   });
   it("aborts on unmount and discards the abandoned receipt", async () => {
     const pending = deferred<Response>(); fetchMock.mockReturnValue(pending.promise);
-    await render(); await upload(); const signal = fetchMock.mock.calls[0][1].signal;
+    await render(); await upload(); const signal = fetchMock.mock.calls[0]![1].signal;
     await act(async () => root.unmount()); unmounted = true; expect(signal.aborted).toBe(true);
     await act(async () => pending.resolve(receipt())); expect(m.refresh).not.toHaveBeenCalled();
   });

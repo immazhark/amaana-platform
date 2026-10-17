@@ -83,7 +83,7 @@ describe("donation confirmation persisted status", () => {
       const declared = Number(request.headers.get("content-length"));
       if (Number.isFinite(declared) && declared > maxBytes) {
         const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");
-        throw new RequestBodyTooLargeError();
+        throw new RequestBodyTooLargeError(maxBytes);
       }
       return request.text();
     });

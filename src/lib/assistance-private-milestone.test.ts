@@ -23,7 +23,7 @@ describe("private assistance follow-up boundary", () => {
       submissionId, expectedUpdatedAt: new Date("2026-10-16T08:00:00.000Z"),
     });
   });
-  it.each([
+  it.each<Record<string, string>>([
     { kind: "APPROVED_PUBLIC" },
     { summary: "short" },
     { summary: "x".repeat(601) },

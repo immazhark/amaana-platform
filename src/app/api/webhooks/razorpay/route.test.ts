@@ -113,7 +113,7 @@ describe("Razorpay webhook route", () => {
       const declared = Number(request.headers.get("content-length"));
       if (Number.isFinite(declared) && declared > maxBytes) {
         const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");
-        throw new RequestBodyTooLargeError();
+        throw new RequestBodyTooLargeError(maxBytes);
       }
       return request.text();
     });
@@ -232,7 +232,7 @@ describe("Razorpay webhook route", () => {
     expect(mocks.captureDonation).toHaveBeenCalledExactlyOnceWith("order_001", "pay_001", 50000);
     expect(mocks.rootPaymentEventCreate).toHaveBeenCalledOnce();
     expect(mocks.rootPaymentEventCreate.mock.invocationCallOrder[0]).toBeLessThan(
-      vi.mocked(expireDonationViews).mock.invocationCallOrder[0],
+      vi.mocked(expireDonationViews).mock.invocationCallOrder[0]!,
     );
 
     mocks.paymentEventFindUnique.mockResolvedValueOnce({

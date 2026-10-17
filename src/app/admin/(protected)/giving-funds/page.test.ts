@@ -89,7 +89,7 @@ describe("private giving fund admin rendering", () => {
     expect(html).toContain("Later reviewed fund"); expect(html).toContain("Page 3 of 3");
     expect(html).toContain('href="/admin/giving-funds?page=2"');
     expect(html).not.toContain("Further records require an expanded registry view");
-    expect(m.totals.mock.calls[0][0].where.fundId).toEqual({ in: ["fund-101"] });
+    expect(m.totals.mock.calls[0]![0].where.fundId).toEqual({ in: ["fund-101"] });
   });
   it("uses the same combined status and search predicate for counts and records", async () => {
     m.count.mockResolvedValue(150); const html = await markup({ status: "PAUSED", q: "  TEST-FUND  ", page: "2" });
@@ -114,7 +114,7 @@ describe("private giving fund admin rendering", () => {
   });
   it("reads only displayed registry fields and aggregates complete planning groups for displayed funds", async () => {
     m.planning.mockReturnValue(true); await markup();
-    const query = m.find.mock.calls[0][0]; expect(query.include).toBeUndefined(); expect(query.select.approvedAt).toBeUndefined();
+    const query = m.find.mock.calls[0]![0]; expect(query.include).toBeUndefined(); expect(query.select.approvedAt).toBeUndefined();
     expect(query.select.revision).toBe(true); expect(query.select.lastEditedById).toBe(true);
     expect(m.plans).toHaveBeenCalledTimes(2);
     for (const [args] of m.plans.mock.calls) { expect(args.where.fundId).toEqual({ in: ["fund-1"] }); expect(args.take).toBeUndefined(); }

@@ -73,6 +73,14 @@ export async function POST(request: Request) {
       );
     }
 
+    const anonymity = form.get("isAnonymous");
+    if (anonymity !== null && anonymity !== "true" && anonymity !== "false") {
+      return NextResponse.json(
+        { error: "Please choose a valid donor privacy preference." },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+
     const evidenceEntry = form.get("evidence");
     if (evidenceEntry !== null && evidenceEntry !== "" && !(evidenceEntry instanceof File)) {
       return NextResponse.json({ error: "Please attach a valid transfer screenshot or PDF.", fieldErrors: { evidence: ["Please attach a valid transfer screenshot or PDF."] } }, { status: 400, headers: privateHeaders });
@@ -87,7 +95,7 @@ export async function POST(request: Request) {
 
     const parsed = directTransferSchema.safeParse({
       appealId: form.get("appealId"), fundId: form.get("fundId") ?? undefined, donorName: form.get("donorName"), donorEmail: form.get("donorEmail"), donorPhone: form.get("donorPhone") ?? "",
-      amount: form.get("amount"), givingIntent: form.get("givingIntent"), isAnonymous: form.get("isAnonymous") === "true", domesticConfirmed: form.get("domesticConfirmed") === "true",
+      amount: form.get("amount"), givingIntent: form.get("givingIntent"), isAnonymous: anonymity === "true", domesticConfirmed: form.get("domesticConfirmed") === "true",
       paymentMethod: form.get("paymentMethod"), transferReference: form.get("transferReference"), transferredAt: form.get("transferredAt"),
     });
     if (!parsed.success) return NextResponse.json({ error: "Please check the transfer information and reference.", fieldErrors: directTransferFieldErrors(parsed.error.flatten().fieldErrors) }, { status: 400, headers: privateHeaders });

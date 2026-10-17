@@ -54,6 +54,13 @@ describe("direct transfer submission outcomes", () => {
     expect(classifyDirectTransferResponse(200, { error: "Try again" })).toEqual({ kind: "uncertain" });
   });
 
+  it("trims rejection text before bounding it so feedback cannot become blank", () => {
+    expect(classifyDirectTransferResponse(400, { error: " ".repeat(600) + "Check the bank reference" + " ".repeat(20) }))
+      .toEqual({ kind: "rejected", message: "Check the bank reference", fieldErrors: {} });
+    expect(directTransferFieldErrors({ transferReference: [" ".repeat(400) + "Use the original reference   "] }))
+      .toEqual({ transferReference: ["Use the original reference"] });
+  });
+
   it("drops hidden/unknown fields and malformed messages and bounds displayed feedback", () => {
     expect(directTransferFieldErrors({
       donorEmail: [null, "", "Enter an email"],

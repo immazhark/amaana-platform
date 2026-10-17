@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 import { AssistanceFollowUpState, type Prisma } from "@prisma/client";
 import {
-  cancelOpenFollowUpsOnCaseExit, eligibleFollowUpStaffWhere, followUpDueLabel, indiaCalendarDay, parseCalendarDay,
+  cancelOpenFollowUpsOnCaseExit, eligibleFollowUpStaffWhere, followUpDueLabel, indiaCalendarDay,
   parseFollowUpAssignment, parseFollowUpCreation, parseFollowUpReschedule, parseFollowUpResolution, shiftedCalendarDay,
 } from "./assistance-follow-up";
 
@@ -33,7 +33,7 @@ describe("private date-only assistance follow-up scheduling", () => {
       expectedUpdatedAt: new Date(version),
     });
   });
-  it.each([
+  it.each<Record<string, string>>([
     { dueOn: "2026-10-16" }, { dueOn: "2027-10-18" },
     { dueOn: "2026-02-30" }, { dueOn: "invalid" },
     { submissionId: "reuse" }, { summary: "short" },
