@@ -1,3 +1,17 @@
+## 2026-10-17 — Stalled tracking/confirmation reads are bounded without false invalid-credential outcomes
+
+Outgoing: ChatGPT. Existing PR #292 / `fix/direct-transfer-feedback-20261013` -> `main`. At start, source handoff HEAD `3aaed3e88dc22eabf1e69a39c1f1b6a85e131c67`; owner claimed with commit `738c6c424f61eb0177100a44ced2e2c271f963d0`. No competing active agent identified; sole-writer protocol honored.
+
+Issue: tracking and Razorpay browser confirmation used bounded-body size limits but supplied no elapsed read deadline. A client could leave a body read unresolved. The shared reader already supported `timeoutMs` and a specific `RequestBodyReadTimeoutError`; no new reader/runtime dependency required.
+
+Test-first commits `3f4187a6002288f16ad09bfcecce342da9afccbc` and `9991b5e6ae722c111e1c16079bffcc2fe91b248d` assert 15s deadlines and private 503 availability responses, plus no private status lookup or gateway verification/capture after timeout; also fix a tracking oversize-error mock constructor mismatch.
+
+Source commits `8f9ce3774db3bf67ea5aa14ab1c62c2b1e93f696` and `91c304e28a92a7156841957217964a80bc5fe7b1`: `src/app/api/assistance/status/route.ts` and `src/app/api/donations/confirm/route.ts` now time-bound request reading (15,000 ms). Stalled requests return 503 and Retry-After 60 with private no-store headers; tracking does not misidentify tokens, and confirmation does not misidentify signatures/payments. Byte-limit, origin, rate limits, successful capture, post-capture cache recovery and idempotency are preserved. Master evidence: `8c7e9f99275fabfe37478a3bd0a2502a4d987e2d`.
+
+Verification: read back all four modified files through GitHub; checks confirmed expected imports, timeout options, error branches and test assertions. **Tests authored but NOT executed.** No local checkout/dependencies (git DNS failed); no Vitest, TypeScript, ESLint, actual stream, browser, gateway, production database or CI tests performed. No merge, deployment, live payments or sensitive record mutations. Master 149 remains **60/61/26/1/1**, zero formal closures. AF-R012 and AF-SETTLEMENT gain bounded PR-open evidence only.
+
+Next incoming writer: verify the latest PR SHA and HANDOFF_PENDING status; run the two route tests along with prior request-security/donation-cache tests and typecheck in a hydrated checkout; repair demonstrated failures. Then select the highest-impact verified next Master149 code batch. Do not merge/deploy without authorization.
+
 ## 2026-10-17 — Private assistance status throttling and persisted donation confirmation
 
 Ownership: HANDOFF_PENDING after ChatGPT source batch on open PR #292 branch `fix/direct-transfer-feedback-20261013` against `main`. Starting verified HEAD `c7af4374a42fd6912698d73099a7240b310c543f`, no parallel writer.
