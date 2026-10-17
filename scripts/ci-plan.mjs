@@ -37,6 +37,15 @@ const groups = [
   { paths: /^src\/components\/(participation-card|social-icon)(\.|\/)/, tests: ['participation-contact.spec.mjs', 'site-chrome-footer.spec.mjs', 'typography-hierarchy.spec.mjs'] },
   { paths: /^src\/components\/work-visual-placeholder\.module\.css$/, tests: ['participation-contact.spec.mjs', 'background-system.spec.mjs', 'owner-screenshot-polish.spec.mjs'] },
   { paths: /^e2e\/(participation-contact|visual-system)\.spec\.mjs$/, tests: ['participation-contact.spec.mjs', 'visual-system.spec.mjs'] },
+  // Explicitly reviewed, nontransactional email-enquiry surfaces: no stored
+  // donor/beneficiary records, no provider calls, and no new API endpoints.
+  // Include route journeys plus responsive Contact/Get Involved coverage.
+  { paths: /^(src\/app\/get-involved\/volunteer\/page\.tsx|src\/components\/volunteer-interest-builder(?:\.test)?\.tsx|src\/lib\/volunteer-enquiry(?:\.test)?\.ts|e2e\/volunteer-enquiry\.spec\.mjs)$/, tests: ['volunteer-enquiry.spec.mjs', 'participation-contact.spec.mjs', 'site-regression-audit.spec.mjs', 'public-seo.spec.mjs'] },
+  { paths: /^(src\/app\/contact\/feedback\/page\.tsx|src\/components\/feedback-enquiry-builder(?:\.test)?\.tsx|src\/lib\/feedback-enquiry(?:\.test)?\.ts|e2e\/private-feedback-enquiry\.spec\.mjs)$/, tests: ['private-feedback-enquiry.spec.mjs', 'participation-contact.spec.mjs', 'site-regression-audit.spec.mjs', 'public-seo.spec.mjs'] },
+  // The all-page site audit itself is always executed when that spec changes.
+  { paths: /^e2e\/site-regression-audit\.spec\.mjs$/, tests: ['site-regression-audit.spec.mjs', 'participation-contact.spec.mjs'] },
+  // Safe civil-date/education preferences, never donor payment or student data.
+  { paths: /^(src\/components\/sponsorship-enquiry(?:\.test)?\.tsx|src\/lib\/sponsorship-enquiry(?:\.test)?\.ts|e2e\/taleem-sponsorship-enquiry\.spec\.mjs)$/, tests: ['taleem-sponsorship-enquiry.spec.mjs', 'donate-sponsorship-layout.spec.mjs', 'participation-contact.spec.mjs', 'public-seo.spec.mjs'] },
   // Planner-only changes run their mandatory Node regression suite in plan;
   // workflow, auth, database and unknown paths still select full acceptance.
   { paths: /^scripts\/(ci-plan|test-ci-plan)\.mjs$/, tests: [] },
