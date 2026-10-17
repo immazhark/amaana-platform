@@ -1,23 +1,15 @@
 import { SectionHeading } from "@/components/section-heading";
 import Link from "next/link";
-import { eidGrowth } from "@/content/amaana";
+import { EidGrowthExplorer } from "@/components/eid-growth-explorer";
 import { ActionIcon } from "@/components/action-icon";
 
 export function HomeGrowth({ eidProgrammePublished = true }: { eidProgrammePublished?: boolean }) {
   return (
       <section className="v3-section v3-eid dark" aria-labelledby="eid-growth-title">
         <div className="v3-shell">
-          <SectionHeading eyebrow={<>Seven documented distributions</>} title={<>85 families became 710 — one year at a time.</>} subtitle={<>The year-by-year record shows the scale of the Eid Gift Kits programme more clearly than another retelling of its origin: steady continuity, documented across seven Ramadan distributions.</>} id="eid-growth-title" className="v3-section-head" titleClassName="v3-heading" />
+          <SectionHeading eyebrow={<>Seven documented distributions</>} title={<>From 85 in 2020 to 710 in 2026.</>} subtitle={<>Explore seven documented Eid Gift Kit distributions, compare annual growth, and see the cumulative record without counting the same families as unique recipients.</>} id="eid-growth-title" className="v3-section-head" titleClassName="v3-heading" />
 
-          <div className="v3-timeline" role="group" aria-label="Eid Gift Kits growth from 2020 to 2026">
-            {eidGrowth.map(item => (
-              <div className="v3-year" key={item.year}>
-                <strong>{item.year}</strong>
-                <span>{item.families}</span>
-                <small>families</small>
-              </div>
-            ))}
-          </div>
+          <EidGrowthExplorer />
 
           <div className="v3-actions">
             <Link className="v3-btn" href={eidProgrammePublished ? "/our-work/eid-gift-kits" : "/our-work"}>
