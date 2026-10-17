@@ -402,3 +402,55 @@ describe("direct donation transfer submission", () => {
     expect(mocks.donationDeleteMany).toHaveBeenCalledWith({ where: { id: "donation-1", status: "PENDING_VERIFICATION", transferEvidenceKey: null } });
   });
 });
+
+
+describe("direct-transfer anonymity field privacy contract", () => {
+  async function withAnonymityValues(values: FormDataEntryValue[]) {
+    const original = requestWith();
+    const form = await original.formData();
+    for (const value of values) form.append("isAnonymous", value);
+    return new Request(original.url, { method: "POST", body: form });
+  }
+
+  it.each([
+    ["missing", [], false],
+    ["explicitly anonymous", ["true"], true],
+    ["explicitly named", ["false"], false],
+  ] as const)("keeps %s as an unambiguous donor choice", async (_case, values, expected) => {
+    mocks.safeParse.mockImplementationOnce(input => ({
+      success: true,
+      data: { ...validData, isAnonymous: input.isAnonymous },
+    }));
+
+    const response = await POST(await withAnonymityValues([...values]));
+
+    expect(response.status).toBe(202);
+    expect(mocks.safeParse).toHaveBeenCalledWith(expect.objectContaining({ isAnonymous: expected }));
+    expect(mocks.donationCreate).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ isAnonymous: expected }),
+    }));
+  });
+
+  it.each([
+    ["empty", [""]],
+    ["mixed case", ["TRUE"]],
+    ["checkbox-style on", ["on"]],
+    ["space padded", [" false "]],
+    ["unexpected number", ["1"]],
+    ["ambiguous true then false", ["true", "false"]],
+    ["ambiguous false then true", ["false", "true"]],
+    ["repeated true", ["true", "true"]],
+    ["repeated false", ["false", "false"]],
+    ["file instead of scalar", [new File(["true"], "anonymity.txt", { type: "text/plain" })]],
+  ] as const)("rejects %s instead of changing the donor's privacy choice", async (_case, values) => {
+    const response = await POST(await withAnonymityValues([...values]));
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/anonymous|privacy|choice/i);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+  });
+});
