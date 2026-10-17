@@ -1,14 +1,18 @@
+import { createElement } from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { VolunteerInterestBuilder } from "./volunteer-interest-builder";
 
 describe("volunteer interest experience", () => {
   it("renders useful native links without client-only application state or network submission", () => {
-    const html = renderToStaticMarkup(<VolunteerInterestBuilder />);
+    const html = renderToStaticMarkup(createElement(VolunteerInterestBuilder));
     expect(html).toContain("Choose an area of volunteering");
     expect(html).toContain('role="group" aria-label="Volunteer enquiry topics"');
     expect(html).toContain("Technology and website support");
     expect(html).toContain("Distribution and packing");
+    expect(html.match(/data-volunteer-skill="/g)).toHaveLength(6);
+    expect(html).toContain('aria-labelledby="volunteer-interest-1"');
+    expect(html).toContain("Prepare private enquiry");
     expect(html.split("mailto:amaanafoundation24@gmail.com?").length - 1).toBeGreaterThanOrEqual(7);
     expect(html).toContain("Nothing is sent to Amaana until");
     expect(html).toContain("not advertised vacancies");
