@@ -10,7 +10,7 @@ test('owner policy and institutional surface polish selects responsive regressio
   assert.ok(plan.tests.includes('policy-navigation.spec.mjs'));
   assert.equal(planChanges([...files, 'src/app/api/assistance/route.ts']).mode, 'full');
   assert.equal(planChanges([...files, 'unknown-module.css']).mode, 'full');
-  assert.equal(planChanges(files, {target:'main'}).mode, 'full');
+  assert.equal(planChanges(files, { event: 'push', target: 'main' }).mode, 'full');
 });
 
 test('donation and sponsorship presentation uses focused route acceptance', () => {
@@ -20,7 +20,7 @@ test('donation and sponsorship presentation uses focused route acceptance', () =
   assert.ok(plan.tests.includes('donate-sponsorship-layout.spec.mjs'));
   assert.ok(plan.tests.includes('donation-assistance-journeys.spec.mjs'));
   assert.equal(planChanges([...files, 'src/app/api/donations/order/route.ts']).mode, 'full');
-  assert.equal(planChanges(files, {target: 'main'}).mode, 'full');
+  assert.equal(planChanges(files, { event: 'push', target: 'main' }).mode, 'full');
 });
 
 test('expanded Companion presentation selects its keyboard and chrome checks', () => {
@@ -31,7 +31,7 @@ test('expanded Companion presentation selects its keyboard and chrome checks', (
   assert.ok(plan.tests.includes('companion-panel.spec.mjs'));
   assert.ok(plan.tests.includes('navigation-resilience.spec.mjs'));
   assert.equal(planChanges([...files, 'src/app/api/public/islamic-companion/route.ts']).mode, 'full');
-  assert.equal(planChanges(files, {target: 'main'}).mode, 'full');
+  assert.equal(planChanges(files, { event: 'push', target: 'main' }).mode, 'full');
 });
 
 test('shared menu presentation and interaction select navigation resilience coverage', () => {
@@ -42,7 +42,7 @@ test('shared menu presentation and interaction select navigation resilience cove
   assert.ok(plan.tests.includes('site-chrome-footer.spec.mjs'));
   assert.ok(plan.tests.includes('page-banner-standardization.spec.mjs'));
   assert.equal(planChanges(['src/components/site-header.tsx', 'src/lib/auth.ts']).mode, 'full');
-  assert.equal(planChanges(['src/components/site-header.tsx'], { target: 'main' }).mode, 'full');
+  assert.equal(planChanges(['src/components/site-header.tsx'], { event: 'push', target: 'main' }).mode, 'full');
 });
 test('docs skip application checks', () => { const p = planChanges(['docs/guide.md']); assert.equal(p.app,false); assert.equal(p.mode,'none'); });
 test('carousel selects dependency and performance tests', () => { const p = planChanges(['src/components/body-carousel.tsx']); assert.equal(p.mode,'focused'); assert.ok(p.tests.includes('carousel-acceptance.spec.mjs')); assert.ok(p.tests.includes('public-performance.spec.mjs')); });
@@ -50,7 +50,7 @@ test('gallery CSS selects gallery suite', () => assert.ok(planChanges(['src/comp
 test('mixed shared changes widen coverage', () => assert.equal(planChanges(['src/components/body-carousel.tsx','src/app/globals.css']).mode,'full'));
 test('security/payment/config/unknown and empty diffs fail closed', () => { for (const f of ['src/app/api/webhooks/razorpay/route.ts','prisma/schema.prisma','.github/workflows/ci.yml','package-lock.json','unknown']) assert.equal(planChanges([f]).mode,'full'); assert.equal(planChanges([]).mode,'full'); });
 test('integration avoids duplicate acceptance but keeps application checks', () => { const p = planChanges(['src/app/globals.css'],{event:'push',validatedMerge:true}); assert.equal(p.mode,'none'); assert.equal(p.app,true); });
-test('production and manual release enforce all checks even for docs', () => { for (const opts of [{target:'main'},{release:true},{target:'main',event:'push'}]) { const p = planChanges(['docs/a.md'],opts); assert.equal(p.mode,'full'); assert.equal(p.app,true); assert.equal(p.visual,true); assert.equal(p.crossBrowser,true); } });
+test('production and manual release enforce all checks even for docs', () => { for (const opts of [{event:'push',target:'main'},{release:true},{target:'main',event:'push'}]) { const p = planChanges(['docs/a.md'],opts); assert.equal(p.mode,'full'); assert.equal(p.app,true); assert.equal(p.visual,true); assert.equal(p.crossBrowser,true); } });
 
 test('direct or unverified integration pushes retain acceptance', () => assert.equal(planChanges(['src/app/globals.css'], {event:'push'}).mode,'full'));
 
@@ -139,7 +139,7 @@ test('private intake presentation selects its surfaces and existing transactiona
   for (const name of ['assistance-surface.spec.mjs', 'donation-assistance-journeys.spec.mjs', 'page-banner-standardization.spec.mjs', 'typography-hierarchy.spec.mjs']) assert.ok(p.tests.includes(name));
   assert.equal(planChanges(['src/app/request-assistance/page.tsx', 'src/app/api/assistance/route.ts']).mode, 'full');
   assert.equal(planChanges(['src/components/assistance-form.tsx']).mode, 'full');
-  assert.equal(planChanges(['src/app/request-assistance/page.tsx'], { target: 'main' }).mode, 'full');
+  assert.equal(planChanges(['src/app/request-assistance/page.tsx'], { event: 'push', target: 'main' }).mode, 'full');
 });
 
 test('policy navigation styles retain reading and anchor checks without the whole-site matrix', () => {
@@ -150,7 +150,7 @@ test('policy navigation styles retain reading and anchor checks without the whol
   assert.ok(!p.tests.includes('public-shell.spec.mjs'));
   for (const name of ['policy-navigation.spec.mjs', 'typography-hierarchy.spec.mjs', 'public-performance.spec.mjs']) assert.ok(p.tests.includes(name));
   assert.equal(planChanges(['src/app/policy-experience.css', 'src/lib/auth.ts']).mode, 'full');
-  assert.equal(planChanges(['src/components/policy-toc.module.css'], { target: 'main' }).mode, 'full');
+  assert.equal(planChanges(['src/components/policy-toc.module.css'], { event: 'push', target: 'main' }).mode, 'full');
 });
 
 test('shared accessibility utility changes retain full global acceptance', () => {
@@ -167,7 +167,7 @@ test('home banner composition is scoped and shared logic still fails closed', ()
   assert.ok(p.tests.includes('home-banner-composition.spec.mjs'));
   assert.ok(p.tests.includes('public-seo.spec.mjs'));
   assert.equal(planChanges(['src/app/page.tsx', 'src/lib/auth.ts']).mode, 'full');
-  assert.equal(planChanges(['src/app/page.tsx'], { target: 'main' }).mode, 'full');
+  assert.equal(planChanges(['src/app/page.tsx'], { event: 'push', target: 'main' }).mode, 'full');
 });
 
 test('owner nine-surface presentation stays focused with its regression suite', () => {
@@ -193,7 +193,7 @@ test('gallery SVG label acceptance remains focused and core changes fail closed'
   assert.equal(p.crossBrowser, false);
   assert.ok(p.tests.includes('campaign-gallery.spec.mjs'));
   assert.equal(planChanges(['e2e/campaign-gallery.spec.mjs', 'src/lib/auth.ts']).mode, 'full');
-  assert.equal(planChanges(['e2e/campaign-gallery.spec.mjs'], { target: 'main' }).mode, 'full');
+  assert.equal(planChanges(['e2e/campaign-gallery.spec.mjs'], { event: 'push', target: 'main' }).mode, 'full');
 });
 
 
@@ -203,7 +203,7 @@ test('initiative photo selection and detail styling retain focused dependency co
  assert.equal(plan.mode,'focused'); assert.equal(plan.database,false);
  assert.ok(plan.tests.includes('initiative-banners.spec.mjs')); assert.ok(plan.tests.includes('campaign-gallery.spec.mjs'));
  assert.equal(planChanges([...files,'src/lib/public-content.ts']).mode,'full');
- assert.equal(planChanges(files,{target:'main'}).mode,'full');
+ assert.equal(planChanges(files,{ event: 'push', target: 'main' }).mode,'full');
 });
 
 
@@ -215,7 +215,7 @@ test('programme closing presentation selects real detail and responsive fixture 
   assert.equal(plan.crossBrowser, false);
   for (const name of ['section-layout.spec.mjs', 'initiative-detail.spec.mjs', 'section-heading.spec.mjs', 'public-performance.spec.mjs', 'typography-hierarchy.spec.mjs']) assert.ok(plan.tests.includes(name));
   for (const extra of ['src/lib/auth.ts', 'src/components/site-scroll.tsx', 'src/app/api/donations/order/route.ts', 'unmapped-component.tsx', '.github/workflows/ci.yml']) assert.equal(planChanges([...files, extra]).mode, 'full');
-  assert.equal(planChanges(files, { target: 'main' }).mode, 'full');
+  assert.equal(planChanges(files, { event: 'push', target: 'main' }).mode, 'full');
 });
 
 test('complete route diagnostics run the disposable audit and retain auth fail-closed coverage', () => {
@@ -243,7 +243,7 @@ test('read-only Resend DNS diagnostic does not launch unrelated application acce
   assert.equal(combined.mode, 'none');
   assert.equal(planChanges([path, 'scripts/ci-plan.mjs', 'src/app/api/donations/order/route.ts']).mode, 'full');
   assert.equal(planChanges([path, 'src/app/api/donations/order/route.ts']).mode, 'full');
-  assert.equal(planChanges([path], { target: 'main' }).mode, 'full');
+  assert.equal(planChanges([path], { event: 'push', target: 'main' }).mode, 'full');
   assert.equal(planChanges([path], { release: true }).mode, 'full');
 });
 
@@ -261,7 +261,7 @@ test('read-only DNS workflow does not run the application browser matrix', () =>
   for (const path of ['.github/workflows/ci.yml', '.github/workflows/deploy.yml', 'src/lib/auth.ts', 'src/app/api/donations/order/route.ts', 'package-lock.json']) {
     assert.equal(planChanges([workflow, path]).mode, 'full');
   }
-  assert.equal(planChanges([workflow], { target: 'main' }).mode, 'full');
+  assert.equal(planChanges([workflow], { event: 'push', target: 'main' }).mode, 'full');
   assert.equal(planChanges([workflow], { release: true }).mode, 'full');
 });
 
@@ -271,7 +271,7 @@ test('donation presentation changes retain route label readability coverage', ()
     assert.equal(plan.mode, 'focused');
     assert.ok(plan.tests.includes('donation-route-labels.spec.mjs'));
     assert.ok(plan.tests.includes('donation-assistance-journeys.spec.mjs'));
-    assert.equal(planChanges([file], { target: 'main' }).mode, 'full');
+    assert.equal(planChanges([file], { event: 'push', target: 'main' }).mode, 'full');
     assert.equal(planChanges([file, 'src/app/api/donations/order/route.ts']).mode, 'full');
   }
 });
