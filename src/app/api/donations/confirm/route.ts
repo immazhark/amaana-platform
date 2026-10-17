@@ -116,6 +116,19 @@ export async function POST(request: Request) {
     if (!currentDonation) {
       throw new Error("Donation disappeared during payment confirmation");
     }
+    // The signature identifies a Razorpay checkout callback, not proof that
+    // money is captured. An authorized, created or failed local record must
+    // never be presented as a completed donor confirmation. Another webhook
+    // may settle it later; do not prompt a second payment while uncertain.
+    if (currentDonation.status !== "CAPTURED" && currentDonation.status !== "REFUNDED") {
+      return NextResponse.json(
+        {
+          error: "Payment has not been confirmed as captured. Retain your payment confirmation and do not submit another payment.",
+          status: currentDonation.status,
+        },
+        { status: 409, headers: privateHeaders },
+      );
+    }
 
     return NextResponse.json(
       {
