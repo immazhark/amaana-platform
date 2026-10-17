@@ -6,6 +6,7 @@ describe("volunteer interest experience", () => {
   it("renders useful native links without client-only application state or network submission", () => {
     const html = renderToStaticMarkup(<VolunteerInterestBuilder />);
     expect(html).toContain("Choose an area of volunteering");
+    expect(html).toContain('role="group" aria-label="Volunteer enquiry topics"');
     expect(html).toContain("Technology and website support");
     expect(html).toContain("Distribution and packing");
     expect(html.split("mailto:amaanafoundation24@gmail.com?").length - 1).toBeGreaterThanOrEqual(7);
