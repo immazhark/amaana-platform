@@ -34,7 +34,7 @@ describe("manual calendar download boundary", () => {
     vi.setSystemTime(new Date("2028-02-28T20:00:00.000Z")); // 29 February in India
     const response = GET(request("frequency=monthly&day=last"));
     expect(response.status).toBe(200);
-    const calendar = (await response.text()).replace(/\\r\\n /g, "");
+    const calendar = (await response.text()).replace(/\r\n /g, "");
     expect(calendar).toContain("DTSTART;VALUE=DATE:20280229");
     expect(calendar).toContain("DTEND;VALUE=DATE:20280301");
     expect(calendar).toContain("RRULE:FREQ=MONTHLY;BYMONTHDAY=-1");
