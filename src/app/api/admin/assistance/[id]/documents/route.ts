@@ -182,6 +182,9 @@ export async function POST(request: Request, { params }: Props) {
       await deletePrivateDocumentObject(saved.objectKey, id);
     } catch {
       logServerError("assistance.delivery_proof_orphan_cleanup_failed");
+      // The private object may still exist. Do not advise another upload
+      // before staff reconcile storage and the case evidence record.
+      return failure("Private evidence cleanup is uncertain. Ask an administrator to review before uploading again.", 503);
     }
     return failure("Evidence could not be attached to this case. No delivery was confirmed.", 409);
   }
