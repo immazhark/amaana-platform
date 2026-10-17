@@ -121,6 +121,25 @@ describe("assistance tracking privacy and request bounds", () => {
     expect(mocks.findUnique).toHaveBeenCalledOnce();
   });
 
+  it("reports body-stream transport failure as temporary unavailability, not an invalid private token", async () => {
+    mocks.readTextBodyWithLimit.mockRejectedValueOnce(new Error("synthetic stream interrupted"));
+    const response = await POST(request());
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ found: false });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("keeps malformed but completely read JSON privacy-indistinguishable from an invalid tracking token", async () => {
+    mocks.readTextBodyWithLimit.mockResolvedValueOnce("not-json");
+    const response = await POST(request());
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ found: false });
+    expect(response.headers.get("retry-after")).toBeNull();
+    expect(mocks.findUnique).not.toHaveBeenCalled();
+  });
+
   it("rejects an oversized tracking payload before database lookup", async () => {
     const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");
     mocks.readTextBodyWithLimit.mockRejectedValue(new RequestBodyTooLargeError(8192));
