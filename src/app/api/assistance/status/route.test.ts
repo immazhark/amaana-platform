@@ -1,8 +1,10 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   readTextBodyWithLimit: vi.fn(),
   findUnique: vi.fn(),
+  enforceTrackingRateLimit: vi.fn(),
+  isSameOrigin: vi.fn(),
 }));
 
 vi.mock("@/lib/assistance", () => ({
@@ -10,7 +12,7 @@ vi.mock("@/lib/assistance", () => ({
 }));
 
 vi.mock("@/lib/bounded-request-body", () => {
-  class RequestBodyTooLargeError extends Error {}
+  class RequestBodyTooLargeError extends Error { constructor(maxBytes: number) { super(String(maxBytes)); } }
   return {
     RequestBodyTooLargeError,
     readTextBodyWithLimit: mocks.readTextBodyWithLimit,
@@ -21,11 +23,51 @@ vi.mock("@/lib/prisma", () => ({
   prisma: { assistanceRequest: { findUnique: mocks.findUnique } },
 }));
 
-vi.mock("@/lib/request-security", () => ({ isSameOrigin: () => true }));
+vi.mock("@/lib/request-security", () => ({ isSameOrigin: mocks.isSameOrigin, enforceTrackingRateLimit: mocks.enforceTrackingRateLimit }));
 
 import { POST } from "./route";
 
 describe("assistance tracking privacy and request bounds", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mocks.isSameOrigin.mockReturnValue(true);
+    mocks.enforceTrackingRateLimit.mockResolvedValue(true);
+  });
+
+  const request = () => new Request("https://amaana.example/api/assistance/status", { method: "POST", body: "{}" });
+
+  it("rejects exhausted tracking quota before reading payload or case records", async () => {
+    mocks.enforceTrackingRateLimit.mockResolvedValue(false);
+    const response = await POST(request());
+    expect(response.status).toBe(429);
+    expect(await response.json()).toEqual({ found: false });
+    expect(response.headers.get("retry-after")).toBe("3600");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex/i);
+    expect(mocks.readTextBodyWithLimit).not.toHaveBeenCalled();
+    expect(mocks.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("fails closed with temporary unavailability if the quota ledger fails", async () => {
+    mocks.enforceTrackingRateLimit.mockRejectedValue(new Error("synthetic ledger outage"));
+    const response = await POST(request());
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ found: false });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.readTextBodyWithLimit).not.toHaveBeenCalled();
+    expect(mocks.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("rejects a foreign origin before consuming quota", async () => {
+    mocks.isSameOrigin.mockReturnValue(false);
+    const response = await POST(request());
+    expect(response.status).toBe(403);
+    expect(mocks.enforceTrackingRateLimit).not.toHaveBeenCalled();
+    expect(mocks.readTextBodyWithLimit).not.toHaveBeenCalled();
+  });
+
   it("applies private response headers even when tracking credentials are invalid", async () => {
     mocks.readTextBodyWithLimit.mockResolvedValue(JSON.stringify({ reference: "AFR-1", token: "too-short" }));
 

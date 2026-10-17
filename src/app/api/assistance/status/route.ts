@@ -4,7 +4,7 @@ import { z } from "zod";
 import { hashTrackingToken } from "@/lib/assistance";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { prisma } from "@/lib/prisma";
-import { isSameOrigin } from "@/lib/request-security";
+import { enforceTrackingRateLimit, isSameOrigin } from "@/lib/request-security";
 
 const privateHeaders = {
   "Cache-Control": "no-store, private",
@@ -21,6 +21,18 @@ export async function POST(request: Request) {
   try {
     if (!isSameOrigin(request)) {
       return NextResponse.json({ found: false }, { status: 403, headers: privateHeaders });
+    }
+
+    try {
+      if (!(await enforceTrackingRateLimit(request))) {
+        return NextResponse.json({ found: false }, {
+          status: 429, headers: { ...privateHeaders, "Retry-After": "3600" },
+        });
+      }
+    } catch {
+      return NextResponse.json({ found: false }, {
+        status: 503, headers: { ...privateHeaders, "Retry-After": "60" },
+      });
     }
 
     let body: unknown;
