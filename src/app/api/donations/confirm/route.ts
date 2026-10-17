@@ -79,7 +79,14 @@ export async function POST(request: Request) {
 
     if (payment.status === "captured") {
       await captureDonation(payment.order_id, payment.id, payment.amount);
-      expireDonationViews();
+      // Capture is a durable money-state transition. An unavailable Next.js
+      // cache adapter must not turn a verified payment into a false HTTP 500
+      // or encourage the donor to repay. Persisted status is read below.
+      try {
+        expireDonationViews();
+      } catch {
+        logServerError("donation.confirmation_cache_invalidation_failed");
+      }
     } else if (payment.status === "authorized") {
       // A Razorpay order can be retried. A later authorized attempt may follow a
       // failed attempt, but it must never regress an already captured/refunded donation.
