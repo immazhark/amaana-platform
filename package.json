@@ -25,6 +25,7 @@
     "launch:rehearsal": "node scripts/check-launch-readiness.mjs --rehearsal",
     "launch:production": "node scripts/check-launch-readiness.mjs --production",
     "test": "vitest run",
+    "roadmap:status": "node scripts/report-master-roadmap.mjs",
     "test:coverage": "vitest run --coverage",
     "editorial:check": "node scripts/check-public-editorial-consistency.mjs",
     "master:check": "node scripts/compile-master-copy.mjs --check",
