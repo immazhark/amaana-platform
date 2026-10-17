@@ -107,6 +107,40 @@ describe("assistance submission request bounds", () => {
     } finally { vi.useRealTimers(); }
   });
 
+  it("uses a bounded deadline while receiving a private multipart submission", async () => {
+    const request = new Request("https://amaana.example/api/assistance", {
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=test" },
+      body: "not a valid multipart request",
+    });
+    await POST(request);
+    expect(mocks.readBodyBytesWithLimit).toHaveBeenCalledWith(
+      expect.any(Request),
+      5 * (5 * 1024 * 1024) + 512 * 1024,
+      { timeoutMs: 120_000 },
+    );
+  });
+
+  it("allows an explicit no-write retry when multipart reading times out", async () => {
+    const { RequestBodyReadTimeoutError } = await import("@/lib/bounded-request-body");
+    mocks.readBodyBytesWithLimit.mockRejectedValueOnce(new RequestBodyReadTimeoutError());
+    const response = await POST(new Request("https://amaana.example/api/assistance", {
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=test" },
+      body: "stalled upload",
+    }));
+
+    expect(response.status).toBe(408);
+    expect(await response.json()).toEqual({
+      error: "The assistance upload took too long. No request was recorded. Check your connection and try again.",
+      submissionUncertain: false,
+    });
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.staffFindMany).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
   it("rejects an oversized multipart body before parsing, storage or database work", async () => {
     mocks.enforceAssistanceRateLimit.mockResolvedValue(true);
     const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");
