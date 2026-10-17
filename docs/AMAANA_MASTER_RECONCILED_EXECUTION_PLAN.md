@@ -1,5 +1,18 @@
 # Amaana Master Reconciled Execution Plan
 
+## 2026-10-17 — Bounded public submission ingress and provable pre-write retry (PR #292)
+
+ChatGPT continued the existing sole-writer branch `fix/direct-transfer-feedback-20261013`, open PR #292 targeting `main`, after verified handoff `e860c492d895d13142406dc4c7606538d1a007f2`; ownership claimed in `7bcb9a37cd27c807705ff669d6df643ba018b564`.
+
+- **Appeal donation checkout:** `src/app/api/donations/order/route.ts` now applies a 15-second total body-read deadline within the existing 32 KiB limit. On `RequestBodyReadTimeoutError`, it returns private no-store HTTP 408 with the exact `orderStarted:false` marker before schema parsing, appeal DB lookup, Razorpay order creation or donor persistence. This is distinguishable from unknown provider or storage outcomes; existing 413 and validation errors are preserved.
+- **Reviewed fund checkout:** The dormant gated `src/app/api/donations/fund-order/route.ts` uses the same 15-second and explicit no-order timeout contract; server-only feature flag, per-fund allowlist, designation approval and SQL constraints remain unchanged. No fund donation route was activated.
+- **Private assistance submission:** `src/app/api/assistance/route.ts` now imposes a 90-second multipart body-read deadline (existing maximum 25 MiB evidence + 512 KiB multipart overhead), deliberately below the existing 120-second browser lifetime. A body-read timeout occurs before any private object upload or case creation and returns private HTTP 408 with `submissionUncertain:false`. Oversized, malformed, post-upload and potentially committed DB failure behavior remains unchanged.
+- **Precisely scoped client recovery:** `src/lib/assistance-feedback.ts` treats only a 408 with literal `submissionUncertain:false` and a valid server error as safely correctable. `src/components/donation-form.tsx` permits retry only for a 408 with literal `orderStarted:false`; otherwise 408/5xx/gateway/transport uncertainty keeps donor data and reconciliation lock. No automatic payment submission/replay was added.
+- Authored-first tests in `src/app/api/donations/order/route.test.ts`, `src/app/api/donations/fund-order/route.test.ts`, `src/app/api/assistance/route.test.ts`, `src/lib/assistance-feedback.test.ts` and rendered `e2e/donation-assistance-journeys.spec.mjs` cover option deadlines, no downstream writes, precise 408 markers, retry on proven no-write outcomes and lock for ambiguous 408 values. Code/test GitHub readback verified the changed sources. Relevant commits: tests `835c467`, `01b1ec4`, `7c12f49`, `82136f9`, `5f13777`, `f65f54d`, `b787ee4`; production source `923d897`, `99c7a2e`, `0615c5c`, `6dd90c6`, `5f5b469`, `15efcb6`.
+- **Verification and release limitations:** Git clone from GitHub failed DNS resolution in this environment; no hydrated Vitest, TypeScript, ESLint, browser, database, provider or real streaming tests executed. No CI workflow triggered, provider call, real donor/applicant write, migration, main merge or deployment. Code is PR-open source evidence, **not a runtime-certified production fix**.
+- Master 149 unchanged: **60 Implemented / 61 Partial / 26 Not started / 1 Superseded / 1 Not applicable; formally closed 0**. AF-R012 and AF-SETTLEMENT receive additional bounded ingress and donor-integrity evidence only. No item artificially advanced to completed/deployed/closed.
+
+
 ## 2026-10-17 — Bounded private status and payment confirmation body reads (PR #292)
 
 - ChatGPT sole-writer implementation on `fix/direct-transfer-feedback-20261013` (open PR #292 to `main`); source/test regression batch after prior `3aaed3e` handoff.
