@@ -144,6 +144,59 @@ describe("direct donation transfer submission", () => {
     } finally { vi.useRealTimers(); }
   });
 
+  it("times out a stalled multipart upload without waiting for hostile cancellation", async () => {
+    const cancel = vi.fn(() => new Promise<void>(() => {}));
+    vi.useFakeTimers();
+    try {
+      const request = new Request("https://amaana.example/api/donations/direct-transfer", {
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+        body: new ReadableStream<Uint8Array>({ cancel }),
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      let response: Response | undefined;
+      void POST(request).then(value => { response = value; });
+      await vi.advanceTimersByTimeAsync(119_999);
+      expect(response).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(1);
+      expect(response?.status).toBe(503);
+      expect(await response?.json()).toEqual({ error: "Transfer upload timed out. Please try again." });
+      expect(response?.headers.get("retry-after")).toBe("60");
+      expect(response?.headers.get("cache-control")).toMatch(/no-store.*private/i);
+      expect(response?.headers.get("referrer-policy")).toBe("no-referrer");
+      expect(response?.headers.get("x-robots-tag")).toMatch(/noindex/i);
+      expect(cancel).toHaveBeenCalledOnce();
+      expect(mocks.findFirst).not.toHaveBeenCalled();
+      expect(mocks.donationCreate).not.toHaveBeenCalled();
+      expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+      expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("enforces the absolute multipart deadline even while small chunks keep arriving", async () => {
+    vi.useFakeTimers();
+    try {
+      let controller!: ReadableStreamDefaultController<Uint8Array>;
+      const request = new Request("https://amaana.example/api/donations/direct-transfer", {
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+        body: new ReadableStream<Uint8Array>({
+          start(stream) { controller = stream; },
+        }),
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      let response: Response | undefined;
+      void POST(request).then(value => { response = value; });
+      await vi.advanceTimersByTimeAsync(60_000);
+      controller.enqueue(new Uint8Array([65]));
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(response?.status).toBe(503);
+      expect(mocks.findFirst).not.toHaveBeenCalled();
+      expect(mocks.donationCreate).not.toHaveBeenCalled();
+      expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    } finally { vi.useRealTimers(); }
+  });
+
   it("rejects oversized multipart submissions before form parsing or database work", async () => {
     const response = await POST(new Request("https://amaana.example/api/donations/direct-transfer", {
       method: "POST",
