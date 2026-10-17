@@ -4,17 +4,16 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   findUnique: vi.fn(),
   allowReceiptRead: vi.fn(),
+  readTextBodyWithLimit: vi.fn(),
 }));
 
 vi.mock("@/lib/bounded-request-body", () => {
   class RequestBodyTooLargeError extends Error {}
+  class RequestBodyReadTimeoutError extends Error {}
   return {
     RequestBodyTooLargeError,
-    readTextBodyWithLimit: async (request: Request, maxBytes: number) => {
-      const declared = Number(request.headers.get("content-length"));
-      if (Number.isFinite(declared) && declared > maxBytes) throw new RequestBodyTooLargeError();
-      return request.text();
-    },
+    RequestBodyReadTimeoutError,
+    readTextBodyWithLimit: mocks.readTextBodyWithLimit,
   };
 });
 
@@ -54,7 +53,36 @@ describe("private donation acknowledgement request bounds", () => {
     mocks.findUnique.mockReset();
     mocks.allowReceiptRead.mockReset();
     mocks.allowReceiptRead.mockResolvedValue(true);
+    mocks.readTextBodyWithLimit.mockReset().mockImplementation(async (request: Request, maxBytes: number) => {
+      const declared = Number(request.headers.get("content-length"));
+      if (Number.isFinite(declared) && declared > maxBytes) {
+        const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");
+        throw new RequestBodyTooLargeError();
+      }
+      return request.text();
+    });
   });
+  it("enforces a body-read deadline shorter than the private browser request lifetime", async () => {
+    await POST(acknowledgementRequest());
+    expect(mocks.readTextBodyWithLimit).toHaveBeenCalledWith(
+      expect.any(Request), 8 * 1024, { timeoutMs: 5_000 },
+    );
+  });
+
+  it("treats a stalled acknowledgement read as temporary unavailability without private lookup", async () => {
+    const { RequestBodyReadTimeoutError } = await import("@/lib/bounded-request-body");
+    mocks.readTextBodyWithLimit.mockRejectedValueOnce(new RequestBodyReadTimeoutError());
+    const response = await POST(acknowledgementRequest());
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ found: false });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex/i);
+    expect(mocks.allowReceiptRead).not.toHaveBeenCalled();
+    expect(mocks.findUnique).not.toHaveBeenCalled();
+  });
+
   it("rejects an oversized acknowledgement payload before donation lookup", async () => {
     const response = await POST(acknowledgementRequest({ "Content-Length": String(8 * 1024 + 1) }));
     const body = await response.json();
