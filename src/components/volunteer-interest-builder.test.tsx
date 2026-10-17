@@ -8,7 +8,7 @@ describe("volunteer interest experience", () => {
     expect(html).toContain("Choose an area of volunteering");
     expect(html).toContain("Technology and website support");
     expect(html).toContain("Distribution and packing");
-    expect((html.match(/mailto:amaanafoundation24@gmail.com\\?/g) ?? []).length).toBeGreaterThanOrEqual(7);
+    expect(html.split("mailto:amaanafoundation24@gmail.com?").length - 1).toBeGreaterThanOrEqual(7);
     expect(html).toContain("Nothing is sent to Amaana until");
     expect(html).toContain("not advertised vacancies");
     expect(html).not.toContain("<form");
