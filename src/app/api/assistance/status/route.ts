@@ -35,18 +35,25 @@ export async function POST(request: Request) {
       });
     }
 
-    let body: unknown;
+    let rawBody: string;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_TRACKING_JSON_BYTES, { timeoutMs: 5_000 }));
+      rawBody = await readTextBodyWithLimit(request, MAX_TRACKING_JSON_BYTES, { timeoutMs: 5_000 });
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ found: false }, { status: 413, headers: privateHeaders });
       }
-      if (error instanceof RequestBodyReadTimeoutError) {
-        return NextResponse.json({ found: false }, {
-          status: 503, headers: { ...privateHeaders, "Retry-After": "60" },
-        });
-      }
+      // Includes stalled or interrupted transport reads. Never turn an
+      // unreadable request into a false claim that the private link is invalid.
+      return NextResponse.json({ found: false }, {
+        status: 503, headers: { ...privateHeaders, "Retry-After": "60" },
+      });
+    }
+
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      // Complete but malformed credentials are indistinguishable from missing records.
       return NextResponse.json({ found: false }, { headers: privateHeaders });
     }
 
