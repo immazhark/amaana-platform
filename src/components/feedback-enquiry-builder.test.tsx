@@ -11,6 +11,9 @@ describe("private feedback enquiry", () => {
     expect(markup.split("mailto:amaanafoundation24@gmail.com?").length - 1).toBe(3);
     expect(markup).toContain("not a tracked complaint ticket");
     expect(markup).toContain("never permission to publish");
+    expect((markup.match(/data-feedback-kind=/g) ?? [])).toHaveLength(3);
+    expect(markup).toContain("Prepare private message");
+    expect(markup).toContain("Raise a service, safety or conduct concern");
     expect(markup).not.toContain("<form");
     expect(markup).not.toContain("<input");
     expect(markup).not.toContain("<textarea");
