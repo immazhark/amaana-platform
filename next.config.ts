@@ -1,5 +1,5 @@
 import type { NextConfig } from "next";
-import { isApprovedCuratedGalleryTarget } from "./src/lib/curated-gallery-target";
+import { isApprovedCuratedGalleryTarget } from "./src/lib/curated-gallery-target.ts";
 
 const devEval = process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
 const browserAcceptance = process.env.AMAANA_BROWSER_ACCEPTANCE === "true";
