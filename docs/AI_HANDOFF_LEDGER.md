@@ -1,6 +1,14 @@
+## 2026-10-17 — Settlement release retained in receipt deadline
+
+Ownership: HANDOFF_PENDING. PR303 merged main fb2d1c19 after fullCI39048295083, ready gate39050449878 and independent AI review; Railway4ecc31e9 BUILDING, deployed SHA pending verification. PR306 incorporates this main, preserving both settlement and receipt retry browser cases and both handoff entries. Combined full912 passed/9 skipped, types/E2E syntax/diff pass. No production charge/refund. Fresh hosted checks required on reconciled306.
+
 ## 2026-10-17 — Private receipt body read deadline
 
 Ownership: HANDOFF_PENDING after receipt deadline slice. Branch fix/receipt-body-deadline-20261017 from deployed main ebc0b8e. Extract bounded elapsed reader option and five-second receipt JSON deadline from historical292; preserve default byte reader behavior, hostile cancellation safety, private503 availability recovery before quota/donor lookup. RED: stalled/trickle reads remain pending, invalid timeouts accepted and route never returns by5s. GREEN:43 focused and full908 passed/9 skipped; TypeScript/focused lint/diff/E2E syntax pass. Independent AI source review no critical/important findings; noted timer upper bound now tested and rejected. One E2E503 explicit retry/token preservation case authored, not yet executed. Hosted exact-head gates pending. No secrets/schema/payment/receipt-data mutations.
+
+## 2026-10-17 — Settled payment confirmation extraction
+
+Ownership: HANDOFF_PENDING after scoped extraction. Branch fix/settled-payment-confirmation-20261017 from main aedae001. Extract only persisted settlement confirmation and browser lock from historical #292; preserve current provider validation and webhook concurrency. New PR, independent of #299/#300/#301/#302. RED: four nonsettled status cases returned 200 instead of 409. GREEN: 14 confirmation tests pass; full local suite 898 passed/9 skipped. TypeScript, focused ESLint, E2E syntax and diff checks pass. Six browser cases authored for nonsettled HTTP-200 responses; hosted browser/build/database gates pending. No live payment, merge or deployment.
 
 ## 2026-10-13 — actual HTTP cancellation regressions
 
