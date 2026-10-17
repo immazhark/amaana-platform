@@ -74,6 +74,83 @@ beforeEach(() => {
 });
 
 describe("assistance submission request bounds", () => {
+  it("returns a retryable private response when an assistance upload exceeds its absolute deadline", async () => {
+    const { RequestBodyReadTimeoutError } = await import("@/lib/bounded-request-body");
+    mocks.readBodyBytesWithLimit.mockRejectedValueOnce(new RequestBodyReadTimeoutError());
+    const request = new Request("https://amaana.example/api/assistance", {
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+      body: "synthetic upload",
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "The assistance upload timed out. Please try again." });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(mocks.assistanceSafeParse).not.toHaveBeenCalled();
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.staffFindMany).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
+  it("returns retryable 503 for interrupted multipart transport, not malformed applicant information", async () => {
+    const request = new Request("https://amaana.example/api/assistance", {
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+      body: new ReadableStream<Uint8Array>({
+        start(controller) { controller.error(new Error("synthetic network interruption")); },
+      }),
+      duplex: "half",
+    } as RequestInit & { duplex: "half" });
+    const response = await POST(request);
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "The assistance upload could not be read. Please try again." });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.staffFindMany).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
+  it("enforces one absolute upload deadline even while body chunks keep arriving", async () => {
+    const actual = await vi.importActual<typeof import("@/lib/bounded-request-body")>("@/lib/bounded-request-body");
+    mocks.readBodyBytesWithLimit.mockImplementation(actual.readBodyBytesWithLimit);
+    vi.useFakeTimers();
+    try {
+      let controller!: ReadableStreamDefaultController<Uint8Array>;
+      const request = new Request("https://amaana.example/api/assistance", {
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+        body: new ReadableStream<Uint8Array>({
+          start(streamController) { controller = streamController; },
+          cancel() { return new Promise<void>(() => {}); },
+        }),
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+
+      const result = Promise.race([
+        POST(request),
+        new Promise<"stalled">(resolve => setTimeout(() => resolve("stalled"), 120_001)),
+      ]);
+      await vi.advanceTimersByTimeAsync(0);
+      for (let index = 0; index < 3; index++) {
+        await vi.advanceTimersByTimeAsync(30_000);
+        controller.enqueue(new Uint8Array([65]));
+      }
+      await vi.advanceTimersByTimeAsync(30_001);
+      const outcome = await result;
+      if (outcome === "stalled") throw new Error("Assistance upload had no absolute deadline");
+      expect(outcome.status).toBe(503);
+      expect(outcome.headers.get("retry-after")).toBe("60");
+      expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+      expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("returns a private 413 without persistence when oversized stream cancellation stalls", async () => {
     const actual = await vi.importActual<typeof import("@/lib/bounded-request-body")>("@/lib/bounded-request-body");
     mocks.readBodyBytesWithLimit.mockImplementation(actual.readBodyBytesWithLimit);
