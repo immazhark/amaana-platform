@@ -2,8 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DonationMethods } from "@/components/donation-methods";
 import { PageHero } from "@/components/page-hero";
-import { getRemainingAppealAmount } from "@/lib/appeals";
-import { formatCheckoutRemainingINR } from "@/lib/donation-checkout-balance";
+import { formatCheckoutRemainingINR, getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
 import { getDonationPageData } from "@/lib/public-page-data";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 
@@ -23,7 +22,8 @@ export default async function DonatePage({ params }: Props) {
   const { slug } = await params;
   const appeal = await getDonationPageData(slug);
   if (!appeal) notFound();
-  const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
+  const remainingAmount = getDonationCheckoutRemainingAmount(appeal);
+  if (remainingAmount === null) notFound();
   const paymentDetails = getDonationPaymentDetails();
 
   return <div className="v2-home v2-donate-page">
