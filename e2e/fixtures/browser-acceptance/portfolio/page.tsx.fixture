@@ -2,7 +2,6 @@ import { notFound } from "next/navigation";
 import { WorkPortfolio } from "@/components/work-portfolio";
 import { programmeCategories, programmes } from "@/lib/master-copy";
 import "@/app/our-work.css";
-import "@/app/our-work/work-filters.css";
 import styles from "@/app/our-work/work-filter-audit.module.css";
 export const dynamic = "force-dynamic";
 export default async function PortfolioFixture({ searchParams }: { searchParams: Promise<{ photos?: string }> }) {
