@@ -1,6 +1,14 @@
-## 2026-10-17 — ACTIVE: bounded direct-transfer intake and safe retry classification
+## 2026-10-17 — Direct-transfer upload bounded, uncertain outcomes preserved; handoff
 
-**Ownership: CHATGPT_ACTIVE.** Verified PR #292 open, base main, branch `fix/direct-transfer-feedback-20261013`, initial HEAD `a9175e95a19f9fd1c97eac308ea87388dfadefd5`, HANDOFF_PENDING. Task: enforce pre-write deadline on direct bank/UPI receipt multipart intake; classify only authenticated explicit no-write 408 as resubmittable, preserve uncertain postcommit 5xx/dropped response locks. Add bounded browser transport fail-safe, TDD source/tests. No merge, deployment, real payment, or schema changes.
+**Ownership: HANDOFF_PENDING.** ChatGPT sole writer for open PR #292, branch `fix/direct-transfer-feedback-20261013` -> main. Starting HEAD `a9175e95a19f9fd1c97eac308ea87388dfadefd5`, owner claim `d8bc52d1c837821950ec1981211674c10539d351`. No competing writer observed.
+
+- Server `src/app/api/donations/direct-transfer/route.ts` commit `9dea75eef3f6fee0b9a649e9d4360c35dd99bdb3`: 90-second deadline on existing size-limited multipart read. Its exact pre-write 408 marks `submissionUncertain:false` before evidence/storage/DB mutation; all postcommit exceptions stay uncertain.
+- Feedback `src/lib/direct-transfer-feedback.ts` commit `deb3f87618e22331246530730171fafb54081ba2`: only exact server no-write 408 unlocks manual corrective retry. Generic/ambiguous 408 and 5xx remain reconciliation-locked; prevents duplicated UTR claims or misleading second-payment advice.
+- Browser `src/components/direct-transfer-form.tsx` commits `da5ab39c5c48644e9212ef7961b2b985a54cc5cc`, `14fd6e774f580953d4bb269d7465c444e83b5f38`: 120s `boundedPrivateRequest` covers fetch and JSON body, cancel on unmount and conservative timeout. Existing prefilled bank reference/evidence preserved.
+- Tests authored first: `d91208e9d9db8a105c894f51dd002aa0630b265d` classifier; `82422570b69b7a9e82c511ef25272fdfa20efdc2` stream deadline; `9b0d4af8f435e3712372fbbfcbfba1a7e231a032` and `5cec3b2784b63a1894055ba908ca3c94d648a397` browser retry/lock and permanently stalled upload.
+- Master `95796e6071b6d3c09bd99776180939e83bffc242`, ledger `e79ad074d2c21b0881a7795bbcbf581d48dcdee7`. Categories **unchanged:** 60 Implemented /61 Partial /26 Not started /1 Superseded /1 Not applicable, zero formally closed.
+- **No runnable hydrated checkout:** GitHub source/test readback only; Vitest, TypeScript, ESLint, Playwright, signed provider, DB, object-storage, actual request deadline tests **not run**. No CI orchestration, main merge, production deployment, real payment or donor/beneficiary records altered.
+- Next writer: verify PR and ownership; run targeted direct-transfer route, feedback, `bounded-private-request` and body-reader Vitest plus TS/lint and focused Playwright when checkout is available; repair observed failures. Continue prioritized Master149 hands-on implementation; no merge/deploy without authorization.
 
 ## 2026-10-17 — Financial webhook state validation; handoff
 
