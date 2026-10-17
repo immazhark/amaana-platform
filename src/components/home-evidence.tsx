@@ -50,7 +50,7 @@ export function HomeTrust({ hasOpenAppeals = false }: { hasOpenAppeals?: boolean
               <Link href="/our-work"><ActionIcon kind="work" /><span>Explore our work</span><ActionIcon /></Link>
               <Link href={hasOpenAppeals ? "/appeals" : "/get-involved"}><ActionIcon kind="support" /><span>{hasOpenAppeals ? "Support a verified need" : "Ways to support Amaana"}</span><ActionIcon /></Link>
               <Link href="/request-assistance"><ActionIcon kind="assistance" /><span>Request assistance privately</span><ActionIcon /></Link>
-              <Link href="/get-involved"><ActionIcon kind="volunteer" /><span>Volunteer time or skills</span><ActionIcon /></Link>
+              <Link href="/get-involved/volunteer"><ActionIcon kind="volunteer" /><span>Volunteer time or skills</span><ActionIcon /></Link>
               <Link href="/contact"><ActionIcon kind="contact" /><span>Contact Amaana</span><ActionIcon /></Link>
             </div>
           </div>
