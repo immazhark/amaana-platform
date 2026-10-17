@@ -148,11 +148,11 @@ describe("donation order request bounds", () => {
       method: "POST", body: "{}",
     }));
 
-    expect(response.status).toBe(503);
+    expect(response.status).toBe(408);
     expect(await response.json()).toEqual({
-      error: "Checkout request upload timed out. Please contact Amaana before starting another payment attempt.",
+      error: "Checkout request upload timed out. No payment order was created. Please check your connection and try again.",
+      orderStarted: false,
     });
-    expect(response.headers.get("retry-after")).toBe("60");
     expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
     expect(mocks.safeParse).not.toHaveBeenCalled();
     expect(mocks.findFirst).not.toHaveBeenCalled();
