@@ -1,10 +1,11 @@
+import { createElement } from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MonthlyGivingReminder } from "./monthly-giving-reminder";
 
 describe("monthly calendar planner disclosure", () => {
   it("renders the date choice and direct download, never a payment form", () => {
-    const html = renderToStaticMarkup(<MonthlyGivingReminder/>);
+    const html = renderToStaticMarkup(createElement(MonthlyGivingReminder));
     expect(html).toContain("up to ten");
     expect(html).toContain("every Friday");
     expect(html).toContain("Day of each month");
@@ -20,7 +21,7 @@ describe("monthly calendar planner disclosure", () => {
 });
 
 it("renders a recoverable schedule error without reflecting query text", () => {
-  const html = renderToStaticMarkup(<MonthlyGivingReminder invalid />);
+  const html = renderToStaticMarkup(createElement(MonthlyGivingReminder, { invalid: true }));
   expect(html).toContain('role="alert"');
   expect(html).toContain("Choose a valid schedule below");
 });

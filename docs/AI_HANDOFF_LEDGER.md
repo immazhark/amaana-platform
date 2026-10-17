@@ -1,3 +1,7 @@
+## 2026-10-17 — Giving Planner rendered tests discovered
+
+Ownership: HANDOFF_PENDING. Existing planner component tests used .test.tsx but Vitest includes only .test.ts. Renamed that test file to .test.ts and used createElement instead of JSX; no runtime or global test config change. All3 existing rendered/privacy-boundary checks now execute in default suite:46 focused/full947 passed9 skipped, TypeScript/focused lint/diff pass. Retained current-main303 integration. Fresh hosted gates required.
+
 ## 2026-10-17 — Giving Planner current-main verification
 
 Ownership: HANDOFF_PENDING. PR293 original93594f41 fullCI39049069983 passed. Reconciled deployed303 fb2d1c19 preserving both handoff records and settlement/browser scope. Combined43 focused/full944 passed9 skipped; TypeScript/diff pass. Independent reviewer confirmed calendar TEXT escaping P2 resolved, no new findings. Monthly presets unchanged. Fresh hosted exact-head acceptance required; no planner release or payment action.
