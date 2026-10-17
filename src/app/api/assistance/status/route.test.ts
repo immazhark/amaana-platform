@@ -13,8 +13,10 @@ vi.mock("@/lib/assistance", () => ({
 
 vi.mock("@/lib/bounded-request-body", () => {
   class RequestBodyTooLargeError extends Error { constructor(maxBytes: number) { super(String(maxBytes)); } }
+  class RequestBodyReadTimeoutError extends Error { constructor() { super("Body read timed out"); } }
   return {
     RequestBodyTooLargeError,
+    RequestBodyReadTimeoutError,
     readTextBodyWithLimit: mocks.readTextBodyWithLimit,
   };
 });
@@ -81,6 +83,22 @@ describe("assistance tracking privacy and request bounds", () => {
     expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
     expect(response.headers.get("referrer-policy")).toBe("no-referrer");
     expect(response.headers.get("x-robots-tag")).toMatch(/noindex.*nofollow.*noarchive/i);
+    expect(mocks.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("returns generic private 503 and Retry-After when the body read expires", async () => {
+    const { RequestBodyReadTimeoutError } = await import("@/lib/bounded-request-body");
+    mocks.readTextBodyWithLimit.mockRejectedValueOnce(new RequestBodyReadTimeoutError());
+
+    const response = await POST(request());
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ found: false });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex/i);
+    expect(mocks.readTextBodyWithLimit).toHaveBeenCalledWith(expect.any(Request), 8 * 1024, { timeoutMs: 5_000 });
     expect(mocks.findUnique).not.toHaveBeenCalled();
   });
 
