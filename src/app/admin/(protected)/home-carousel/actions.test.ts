@@ -1,15 +1,17 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { defaultHomeConfig } from '@/lib/home-carousel';
-const m = vi.hoisted(()=>({permission:vi.fn(),publish:vi.fn(),find:vi.fn(),update:vi.fn(),create:vi.fn(),audit:vi.fn(),media:vi.fn(),review:vi.fn(),appeal:vi.fn()}));
+const m = vi.hoisted(()=>({permission:vi.fn(),publish:vi.fn(),find:vi.fn(),update:vi.fn(),create:vi.fn(),audit:vi.fn(),media:vi.fn(),review:vi.fn(),appeal:vi.fn(),expire:vi.fn()}));
 vi.mock('@/lib/auth',()=>({requirePermission:m.permission,hasPermission:m.publish}));
 vi.mock('@/lib/prisma',()=>({prisma:{}}));
 vi.mock('@/lib/prisma-transaction',()=>({withSerializableTransactionRetry:(cb:(tx:unknown)=>unknown)=>cb({homeCarousel:{findUnique:m.find,updateMany:m.update,create:m.create},auditEvent:{create:m.audit,findFirst:m.review},mediaAsset:{findUnique:m.media},appeal:{findUnique:m.appeal}})}));
-vi.mock('next/cache',()=>({revalidatePath:vi.fn(),revalidateTag:vi.fn()}));
+vi.mock('next/cache',()=>({revalidatePath:vi.fn(),revalidateTag:vi.fn(),updateTag:m.expire}));
 vi.mock('next/navigation',()=>({redirect:(url:string)=>{throw new Error(url);}}));
 import {saveHomeCarousel} from './actions';
 function form(extra:Record<string,string>={}) { const data=new FormData(); Object.entries({...defaultHomeConfig.slides[0],revision:'1',operation:'save',...extra}).forEach(([k,v])=>data.set(k,String(v))); return data; }
 describe('carousel admin boundary',()=>{
  beforeEach(()=>{vi.clearAllMocks();m.permission.mockResolvedValue({id:'editor'});m.publish.mockReturnValue(true);m.find.mockResolvedValue({revision:1,config:structuredClone(defaultHomeConfig)});m.update.mockResolvedValue({count:1});});
+ it('expires carousel configuration after a committed save without serving a stale published slide',async()=>{await expect(saveHomeCarousel(form())).rejects.toThrow('/admin/home-carousel?saved=1');expect(m.expire).toHaveBeenCalledExactlyOnceWith('home-carousel');expect(m.expire.mock.invocationCallOrder[0]).toBeGreaterThan(m.audit.mock.invocationCallOrder[0]!);});
+ it('does not expire the public carousel when persistence fails',async()=>{m.update.mockResolvedValue({count:0});await expect(saveHomeCarousel(form())).rejects.toThrow(/changed/);expect(m.expire).not.toHaveBeenCalled();});
  it('requires update permission before reaching persistence',async()=>{m.permission.mockRejectedValue(new Error('Forbidden'));await expect(saveHomeCarousel(form())).rejects.toThrow('Forbidden');expect(m.find).not.toHaveBeenCalled();});
  it('rejects stale revisions without writes or audit',async()=>{await expect(saveHomeCarousel(form({revision:'0'}))).rejects.toThrow(/changed/);expect(m.update).not.toHaveBeenCalled();expect(m.audit).not.toHaveBeenCalled();});
  it('cannot edit or remove a published slide without approval permission',async()=>{m.publish.mockReturnValue(false);await expect(saveHomeCarousel(form())).rejects.toThrow(/Publishing/);await expect(saveHomeCarousel(form({operation:'remove'}))).rejects.toThrow(/Publishing/);expect(m.update).not.toHaveBeenCalled();});

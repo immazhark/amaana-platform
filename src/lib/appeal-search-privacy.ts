@@ -1,5 +1,6 @@
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
+import { getAppealPublicPrivacyClass } from "@/lib/appeal-promotion";
 
 /**
  * Search/social metadata can require a stricter privacy boundary than the
@@ -18,5 +19,6 @@ export const getAppealSearchPrivacy = cache(async (slug: string) => {
     },
   });
 
-  return appeal?.assistanceRequest?.verification?.confidentialityLevel ?? "STANDARD";
+  if (!appeal) return "HIGHLY_SENSITIVE";
+  return getAppealPublicPrivacyClass(appeal);
 });

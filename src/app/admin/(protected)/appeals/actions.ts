@@ -1,15 +1,45 @@
 "use server";
 
 import { AppealCategory, AppealStatus } from "@prisma/client";
-import { revalidatePath, revalidateTag } from "next/cache";
-import { getAppealConsentContentIssues, getFirstPublicationIssues, goalMatchesApprovedPublicTarget } from "@/lib/appeal-publication";
+import { revalidatePath, updateTag } from "next/cache";
+import { redirect } from "next/navigation";
+import { getAppealConsentContentIssues, getAppealPublicationIssues, goalMatchesApprovedPublicTarget } from "@/lib/appeal-publication";
 import { getAppealUpdatePublicationIssues } from "@/lib/appeal-update-publication";
 import { getAppealCoverMediaIssues } from "@/lib/appeal-cover-media";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { parsePositiveRupeeAmount } from "@/lib/amount-entry";
+import { singleFormValue } from "@/lib/single-form-value";
 import { prisma } from "@/lib/prisma";
 import { normalizeSafePublicMediaUrl } from "@/lib/public-media";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
+
+/** Cache refresh is best-effort after an audited database commit. Never
+ * imply the write failed or retry it because a cache operation failed.
+ * Attempt every path independently, and surface delayed public visibility. */
+function finishCommittedAppeal(id: string, paths: readonly string[], expirePublicList = false) {
+  let refreshDelayed = false;
+  if (expirePublicList) {
+    try { updateTag("appeals"); }
+    catch { refreshDelayed = true; }
+  }
+  for (const path of paths) {
+    try { revalidatePath(path); }
+    catch { refreshDelayed = true; }
+  }
+  if (refreshDelayed) {
+    redirect(`/admin/appeals/${encodeURIComponent(id)}?saved=refresh-delayed`);
+  }
+}
+
+/** Text-only scalar parser: reject repeated fields and uploaded Files before
+ * validation or persistence. Domain validators still handle missing values. */
+function appealText(form: FormData, field: string): string | null {
+  const value = singleFormValue(form, field);
+  if (value !== null && typeof value !== "string") {
+    throw new Error(`${field} must be a text field.`);
+  }
+  return value;
+}
 
 const transitions: Record<AppealStatus, AppealStatus[]> = {
   DRAFT: ["UNDER_REVIEW"], UNDER_REVIEW: ["DRAFT", "PUBLISHED", "REJECTED"], PUBLISHED: ["PAUSED", "FUNDED", "CLOSED"], PAUSED: ["PUBLISHED", "CLOSED"], FUNDED: ["CLOSED"], CLOSED: [], REJECTED: ["DRAFT"],
@@ -53,12 +83,13 @@ async function assertApprovedAppealCoverMedia(db: AppealCoverDb, coverImageUrl: 
 }
 
 export async function updateAppeal(formData: FormData) {
-  const user = await requirePermission("appeal.update"); const id = String(formData.get("id"));
-  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "").trim();
+  const user = await requirePermission("appeal.update"); const id = String(appealText(formData, "id"));
+  const expectedUpdatedAtRaw = String(appealText(formData, "expectedUpdatedAt") ?? "").trim();
   const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
   if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Appeal edit version is missing or invalid. Refresh before editing.");
-  const title = String(formData.get("title") ?? "").trim(); const slug = String(formData.get("slug") ?? "").trim().toLowerCase(); const summary = String(formData.get("summary") ?? "").trim(); const story = String(formData.get("story") ?? "").trim(); const goalAmount = parsePositiveRupeeAmount(String(formData.get("goalAmount") ?? ""), "Appeal goal");
-  const category = String(formData.get("category")); const coverImageRaw = String(formData.get("coverImageUrl") || "").trim(); const beneficiaryDisplayName = String(formData.get("beneficiaryDisplayName") || "").trim();
+  const title = String(appealText(formData, "title") ?? "").trim(); const slug = String(appealText(formData, "slug") ?? "").trim().toLowerCase(); const summary = String(appealText(formData, "summary") ?? "").trim(); const story = String(appealText(formData, "story") ?? "").trim(); const goalAmount = parsePositiveRupeeAmount(String(appealText(formData, "goalAmount") ?? ""), "Appeal goal");
+  const category = String(appealText(formData, "category")); const coverImageRaw = String(appealText(formData, "coverImageUrl") || "").trim(); const beneficiaryDisplayName = String(appealText(formData, "beneficiaryDisplayName") || "").trim();
+  const beneficiaryLocation = (appealText(formData, "beneficiaryLocation") ?? "").trim() || null;
   if (title.length < 8 || !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug) || summary.length < 20 || story.length < 40 || !Number.isFinite(goalAmount) || goalAmount <= 0 || !Object.values(AppealCategory).includes(category as AppealCategory)) throw new Error("Complete all required appeal fields");
   const coverImageValue = coverImageRaw ? normalizeSafePublicMediaUrl(coverImageRaw) : null;
   if (coverImageRaw && !coverImageValue) throw new Error("Cover image URL must be a safe HTTPS or root-relative public media URL");
@@ -79,35 +110,37 @@ export async function updateAppeal(formData: FormData) {
     await assertApprovedAppealCoverMedia(tx, coverImageValue);
     const updated = await tx.appeal.updateMany({
       where: { id, status: current.status, updatedAt: expectedUpdatedAt },
-      data: { title, slug, summary, story, goalAmount, category: category as AppealCategory, beneficiaryDisplayName: beneficiaryDisplayName || null, beneficiaryLocation: String(formData.get("beneficiaryLocation") || "").trim() || null, coverImageUrl: coverImageValue || null },
+      data: { title, slug, summary, story, goalAmount, category: category as AppealCategory, beneficiaryDisplayName: beneficiaryDisplayName || null, beneficiaryLocation, coverImageUrl: coverImageValue || null },
     });
     if (updated.count !== 1) throw new Error("This appeal changed while you were reviewing it. Refresh before editing content.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.content_updated", entityType: "Appeal", entityId: id } });
   });
-  revalidatePath(`/admin/appeals/${id}`);
+  finishCommittedAppeal(id, [`/admin/appeals/${id}`]);
 }
 
 export async function transitionAppeal(formData: FormData) {
-  const user = await requirePermission("appeal.update"); const id = String(formData.get("id")); const next = String(formData.get("status")) as AppealStatus;
-  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "").trim();
+  const user = await requirePermission("appeal.update"); const id = String(appealText(formData, "id")); const next = String(appealText(formData, "status")) as AppealStatus;
+  const expectedUpdatedAtRaw = String(appealText(formData, "expectedUpdatedAt") ?? "").trim();
   const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
   if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Appeal workflow version is missing or invalid. Refresh before changing status.");
   const current = await prisma.appeal.findUniqueOrThrow({ where: { id }, include: { assistanceRequest: { include: { verification: true } } } });
   if (!transitions[current.status].includes(next)) throw new Error("Invalid appeal status transition");
   const approvalTransition = ["PUBLISHED", "PAUSED", "FUNDED", "CLOSED", "REJECTED"].includes(next);
   if (approvalTransition && !hasPermission(user, "appeal.approve")) throw new Error("Approval permission is required");
-  const publicationIssues = getFirstPublicationIssues({ fromStatus: current.status, toStatus: next, goalAmount: current.goalAmount, verification: current.assistanceRequest?.verification, beneficiaryDisplayName: current.beneficiaryDisplayName, coverImageUrl: current.coverImageUrl });
+  const publicationIssues = getAppealPublicationIssues({ fromStatus: current.status, toStatus: next, goalAmount: current.goalAmount, verification: current.assistanceRequest?.verification, hasAssistanceRequest: Boolean(current.assistanceRequest), beneficiaryDisplayName: current.beneficiaryDisplayName, coverImageUrl: current.coverImageUrl });
   if (publicationIssues.length) throw new Error(`Appeal cannot be published: ${publicationIssues.join(" ")}`);
-  if (current.status === "UNDER_REVIEW" && next === "PUBLISHED") {
+  // Both first publication and paused resumption must use the current media review.
+  if (next === "PUBLISHED") {
     await assertApprovedAppealCoverMedia(prisma, current.coverImageUrl);
   }
   await withSerializableTransactionRetry(async tx => {
     const fresh = await tx.appeal.findUniqueOrThrow({ where: { id }, include: { assistanceRequest: { include: { verification: true } } } });
     if (fresh.status !== current.status || fresh.updatedAt.getTime() !== expectedUpdatedAt.getTime()) throw new Error("This appeal changed while you were reviewing it. Refresh before changing status.");
     if (!transitions[fresh.status].includes(next)) throw new Error("Invalid appeal status transition");
-    const freshPublicationIssues = getFirstPublicationIssues({ fromStatus: fresh.status, toStatus: next, goalAmount: fresh.goalAmount, verification: fresh.assistanceRequest?.verification, beneficiaryDisplayName: fresh.beneficiaryDisplayName, coverImageUrl: fresh.coverImageUrl });
+    const freshPublicationIssues = getAppealPublicationIssues({ fromStatus: fresh.status, toStatus: next, goalAmount: fresh.goalAmount, verification: fresh.assistanceRequest?.verification, hasAssistanceRequest: Boolean(fresh.assistanceRequest), beneficiaryDisplayName: fresh.beneficiaryDisplayName, coverImageUrl: fresh.coverImageUrl });
     if (freshPublicationIssues.length) throw new Error(`Appeal cannot be published: ${freshPublicationIssues.join(" ")}`);
-    if (fresh.status === "UNDER_REVIEW" && next === "PUBLISHED") {
+    // Recheck media approval inside the transaction before restoring public access.
+    if (next === "PUBLISHED") {
       await assertApprovedAppealCoverMedia(tx, fresh.coverImageUrl);
     }
     const updated = await tx.appeal.updateMany({
@@ -117,12 +150,13 @@ export async function transitionAppeal(formData: FormData) {
     if (updated.count !== 1) throw new Error("This appeal changed while you were reviewing it. Refresh before changing status.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.status_changed", entityType: "Appeal", entityId: id, metadata: { from: fresh.status, to: next } } });
   });
-  revalidateTag("appeals", "max"); revalidatePath(`/admin/appeals/${id}`); revalidatePath("/admin/appeals"); revalidatePath("/appeals"); revalidatePath("/");
+  // Expire immediately: stale-while-revalidate can advertise withdrawn appeals.
+  finishCommittedAppeal(id, [`/admin/appeals/${id}`, "/admin/appeals", "/appeals", "/", ...(current.slug ? [`/appeals/${current.slug}`] : [])], true);
 }
 
 export async function updateFeaturing(formData: FormData) {
-  const user = await requirePermission("appeal.approve"); const id = String(formData.get("id")); const isFeatured = formData.get("isFeatured") === "on"; const featuredOrderValue = Number(formData.get("featuredOrder"));
-  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "").trim();
+  const user = await requirePermission("appeal.approve"); const id = String(appealText(formData, "id")); const isFeatured = appealText(formData, "isFeatured") === "on"; const featuredOrderValue = Number(appealText(formData, "featuredOrder"));
+  const expectedUpdatedAtRaw = String(appealText(formData, "expectedUpdatedAt") ?? "").trim();
   const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
   if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Appeal featuring version is missing or invalid. Refresh before saving.");
   const appeal = await prisma.appeal.findUniqueOrThrow({ where: { id }, select: { status: true } });
@@ -136,11 +170,12 @@ export async function updateFeaturing(formData: FormData) {
     if (claimed.count !== 1) throw new Error("This appeal changed while you were reviewing it. Refresh before saving featuring.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.featuring_updated", entityType: "Appeal", entityId: id, metadata: { previousIsFeatured: fresh.isFeatured, previousFeaturedOrder: fresh.featuredOrder, isFeatured, featuredOrder: isFeatured ? featuredOrderValue : null } } });
   });
-  revalidateTag("appeals", "max"); revalidatePath(`/admin/appeals/${id}`); revalidatePath("/appeals"); revalidatePath("/");
+  // Expire immediately: stale-while-revalidate can advertise withdrawn appeals.
+  finishCommittedAppeal(id, [`/admin/appeals/${id}`, "/appeals", "/"], true);
 }
 
 export async function addAppealUpdate(formData: FormData) {
-  const user = await requirePermission("appeal.update"); const appealId = String(formData.get("id")); const title = String(formData.get("updateTitle") ?? "").trim(); const content = String(formData.get("updateContent") ?? "").trim(); const requestedPublic = formData.get("isPublic") === "on"; const privacyReviewed = formData.get("privacyReviewed") === "on";
+  const user = await requirePermission("appeal.update"); const appealId = String(appealText(formData, "id")); const title = String(appealText(formData, "updateTitle") ?? "").trim(); const content = String(appealText(formData, "updateContent") ?? "").trim(); const requestedPublic = appealText(formData, "isPublic") === "on"; const privacyReviewed = appealText(formData, "privacyReviewed") === "on";
   if (title.length < 5 || content.length < 20) throw new Error("Update title and content are required");
   const isPublic = requestedPublic && hasPermission(user, "appeal.approve");
   const appeal = await prisma.appeal.findUniqueOrThrow({ where: { id: appealId }, select: { slug: true, status: true, assistanceRequest: { select: { id: true, verification: true } } } });
@@ -158,12 +193,11 @@ export async function addAppealUpdate(formData: FormData) {
     await tx.appealUpdate.create({ data: { id: updateId, appealId, authorId: user.id, title, content, isPublic, publishedAt: isPublic ? new Date() : null } });
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_added", entityType: "Appeal", entityId: appealId, metadata: { updateId, isPublic, privacyReviewed: isPublic ? privacyReviewed : false } } });
   });
-  revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals");
-  if (isPublic) revalidatePath(`/appeals/${appeal.slug}`);
+  finishCommittedAppeal(appealId, [`/admin/appeals/${appealId}`, "/appeals", ...(isPublic ? [`/appeals/${appeal.slug}`] : [])]);
 }
 
 export async function publishAppealUpdate(formData: FormData) {
-  const user = await requirePermission("appeal.approve"); const appealId = String(formData.get("appealId")); const updateId = String(formData.get("updateId")); const privacyReviewed = formData.get("privacyReviewed") === "on";
+  const user = await requirePermission("appeal.approve"); const appealId = String(appealText(formData, "appealId")); const updateId = String(appealText(formData, "updateId")); const privacyReviewed = appealText(formData, "privacyReviewed") === "on";
   const [appeal, update] = await Promise.all([
     prisma.appeal.findUniqueOrThrow({ where: { id: appealId }, select: { slug: true, status: true, assistanceRequest: { select: { id: true, verification: true } } } }),
     prisma.appealUpdate.findUniqueOrThrow({ where: { id: updateId }, select: { appealId: true, isPublic: true } }),
@@ -183,11 +217,11 @@ export async function publishAppealUpdate(formData: FormData) {
     if (claimed.count !== 1) throw new Error("Appeal update changed while you were reviewing it. Refresh before publishing.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_published", entityType: "Appeal", entityId: appealId, metadata: { updateId, privacyReviewed: true } } });
   });
-  revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals"); revalidatePath(`/appeals/${appeal.slug}`);
+  finishCommittedAppeal(appealId, [`/admin/appeals/${appealId}`, "/appeals", `/appeals/${appeal.slug}`]);
 }
 
 export async function unpublishAppealUpdate(formData: FormData) {
-  const user = await requirePermission("appeal.approve"); const appealId = String(formData.get("appealId")); const updateId = String(formData.get("updateId"));
+  const user = await requirePermission("appeal.approve"); const appealId = String(appealText(formData, "appealId")); const updateId = String(appealText(formData, "updateId"));
   const [appeal, update] = await Promise.all([
     prisma.appeal.findUniqueOrThrow({ where: { id: appealId }, select: { slug: true } }),
     prisma.appealUpdate.findUniqueOrThrow({ where: { id: updateId }, select: { appealId: true, isPublic: true } }),
@@ -199,5 +233,5 @@ export async function unpublishAppealUpdate(formData: FormData) {
     if (claimed.count !== 1) throw new Error("Appeal update changed while you were reviewing it. Refresh before unpublishing.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "appeal.update_unpublished", entityType: "Appeal", entityId: appealId, metadata: { updateId } } });
   });
-  revalidatePath(`/admin/appeals/${appealId}`); revalidatePath("/appeals"); revalidatePath(`/appeals/${appeal.slug}`);
+  finishCommittedAppeal(appealId, [`/admin/appeals/${appealId}`, "/appeals", `/appeals/${appeal.slug}`]);
 }

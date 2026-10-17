@@ -67,6 +67,45 @@ describe("Razorpay signatures", () => {
     );
   });
 
+  it("binds a reviewed fund order to fundId instead of an appeal", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true, json: async () => ({
+        id: "order_fund", amount: 50000, currency: "INR",
+        receipt: "AFD-FUND", status: "created",
+      }),
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await createRazorpayOrder({
+      amountPaise: 50000, receipt: "AFD-FUND",
+      fundId: "fund_reviewed", givingIntent: "SADAQAH",
+    });
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://api.razorpay.com/v1/orders",
+      expect.objectContaining({
+        body: JSON.stringify({
+          amount: 50000, currency: "INR", receipt: "AFD-FUND",
+          notes: { fundId: "fund_reviewed", givingIntent: "SADAQAH" },
+        }),
+      }),
+    );
+  });
+
+  it("rejects missing or mixed order destinations before contacting Razorpay", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(createRazorpayOrder({
+      amountPaise: 50000, receipt: "AFD-MIXED",
+      appealId: "appeal_1", fundId: "fund_1", givingIntent: "GENERAL",
+    })).rejects.toThrow(/exactly one/);
+    await expect(createRazorpayOrder({
+      amountPaise: 50000, receipt: "AFD-MISSING",
+      givingIntent: "GENERAL",
+    })).rejects.toThrow(/exactly one/);
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
   it("fetches a payment for server-side verification", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,

@@ -29,11 +29,18 @@ export async function GET(
   if (!isManagedPublicMediaKey(objectKey)) return notFound();
 
   try {
+    // Public objects may have legacy aliases in the media library. A row with
+    // this storageKey is not permission to serve it through an unrelated URL.
+    const permittedUrls = [
+      `/media/${objectKey}`,
+      `https://amaanafoundation.org/media/${objectKey}`,
+    ];
     const asset = await prisma.mediaAsset.findFirst({
       where: {
         storageKey: objectKey,
         isPublic: true,
         privacyApprovedAt: { not: null },
+        publicUrl: { in: permittedUrls },
       },
       select: {
         kind: true,
@@ -43,7 +50,8 @@ export async function GET(
       },
     });
 
-    if (!asset || !canRenderPublicMedia(asset)) return notFound();
+    if (!asset || !permittedUrls.includes(asset.publicUrl ?? "") ||
+        !canRenderPublicMedia(asset)) return notFound();
     const object = await getPublicMediaObject(objectKey);
     const expectedContentType = contentTypeForKey(objectKey);
     if (object.contentType.toLowerCase() !== expectedContentType) {

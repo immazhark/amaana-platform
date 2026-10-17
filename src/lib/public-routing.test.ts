@@ -37,6 +37,43 @@ describe("public route publication policy", () => {
     expect(PUBLIC_STATIC_ROUTES.some(route => route.path === "/donate")).toBe(true);
   });
 
+  it("lists only the public volunteer enquiry rather than a private application endpoint", () => {
+    const path = "/get-involved/volunteer";
+    expect(PUBLIC_STATIC_ROUTES.some(route => route.path === path)).toBe(true);
+    expect(isPrivateRoute(path)).toBe(false);
+    expect(PUBLIC_STATIC_ROUTES.some(route => route.path.startsWith("/api/volunteer"))).toBe(false);
+  });
+
+  it("publishes a separate contact-feedback path without exposing private reports", () => {
+    expect(PUBLIC_STATIC_ROUTES.some(route => route.path === "/contact/feedback")).toBe(true);
+    expect(isPrivateRoute("/contact/feedback")).toBe(false);
+    expect(PUBLIC_STATIC_ROUTES.some(route => route.path.startsWith("/api/feedback"))).toBe(false);
+  });
+
+  it("lists manual giving planning without publicly exposing a payment mandate endpoint", () => {
+    expect(PUBLIC_STATIC_ROUTES.some(route => route.path === "/get-involved/monthly-giving")).toBe(true);
+    expect(isPrivateRoute("/get-involved/monthly-giving")).toBe(false);
+    expect(PUBLIC_STATIC_ROUTES.some(route => /subscription|mandate/.test(route.path))).toBe(false);
+  });
+
+  it("keeps legacy enquiries reachable on-site but outside search discovery until qualified review", () => {
+    expect(isPrivateRoute("/get-involved/legacy-giving")).toBe(false);
+    expect(PUBLIC_STATIC_ROUTES.map(route => String(route.path)).includes("/get-involved/legacy-giving")).toBe(false);
+  });
+
+  it("makes the reviewed Shukr wall discoverable but keeps recognition changes private", () => {
+    expect(PUBLIC_STATIC_ROUTES.map(route => String(route.path)).includes("/shukr")).toBe(false);
+    expect(isPrivateRoute("/shukr")).toBe(false);
+    expect(isPrivateRoute("/api/donations/recognition")).toBe(true);
+    expect(isPrivateRoute("/admin/donations/recognition")).toBe(true);
+  });
+
+  it("never discovers private receipt-bound donor rights intake via the sitemap", () => {
+    expect(isPrivateRoute("/api/donations/data-rights")).toBe(true);
+    expect(isPrivateRoute("/admin/donations/rights")).toBe(true);
+    expect(PUBLIC_STATIC_ROUTES.some(route => route.path.includes("data-rights"))).toBe(false);
+  });
+
   it("does not allow duplicate publication rules", () => {
     const publicPaths = PUBLIC_STATIC_ROUTES.map(route => route.path);
     expect(new Set(publicPaths).size).toBe(publicPaths.length);

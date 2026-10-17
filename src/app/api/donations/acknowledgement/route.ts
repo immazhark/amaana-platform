@@ -1,10 +1,8 @@
-import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
-import { getDonationAcknowledgementPresentation, hashReceiptToken } from "@/lib/donations";
-import { prisma } from "@/lib/prisma";
-import { isSameOrigin } from "@/lib/request-security";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { enforceAcknowledgementRateLimit, isSameOrigin } from "@/lib/request-security";
+import { readVerifiedDonationAcknowledgement } from "@/lib/private-donation-receipt";
 
 const schema = z.object({
   reference: z.string().trim().min(8).max(80),
@@ -17,6 +15,9 @@ const privateHeaders = {
   "X-Robots-Tag": "noindex, nofollow, noarchive",
 };
 const MAX_ACKNOWLEDGEMENT_JSON_BYTES = 8 * 1024;
+// The private acknowledgement browser aborts after 8 seconds. A shorter
+// server-side body deadline makes a stalled request recoverable in the UI.
+const ACKNOWLEDGEMENT_BODY_TIMEOUT_MS = 5_000;
 
 export async function POST(request: Request) {
   try {
@@ -26,10 +27,20 @@ export async function POST(request: Request) {
 
     let body: unknown;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_ACKNOWLEDGEMENT_JSON_BYTES));
+      body = JSON.parse(await readTextBodyWithLimit(request, MAX_ACKNOWLEDGEMENT_JSON_BYTES, {
+        timeoutMs: ACKNOWLEDGEMENT_BODY_TIMEOUT_MS,
+      }));
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ found: false }, { status: 413, headers: privateHeaders });
+      }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        // Do not turn an incomplete private request into a false token miss.
+        // No receipt quota, token verification or donation lookup occurred.
+        return NextResponse.json(
+          { found: false },
+          { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+        );
       }
       return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
     }
@@ -39,54 +50,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
     }
 
-    const donation = await prisma.donation.findUnique({
-      where: { referenceNumber: parsed.data.reference },
-      select: {
-        receiptTokenHash: true,
-        status: true,
-        amount: true,
-        refundedAmount: true,
-        receiptNumber: true,
-        referenceNumber: true,
-        donorName: true,
-        givingIntent: true,
-        capturedAt: true,
-        refundedAt: true,
-        createdAt: true,
-        providerPaymentId: true,
-        appeal: { select: { title: true, slug: true } },
-      },
-    });
-
-    const supplied = Buffer.from(hashReceiptToken(parsed.data.token));
-    const expected = Buffer.from(donation?.receiptTokenHash ?? "0".repeat(64));
-    if (!donation || supplied.length !== expected.length || !timingSafeEqual(supplied, expected)) {
-      return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
+    // A receipt read uses its own keyed abuse bucket, not the donation-order
+    // budget. Denial must occur before looking up any private donation.
+    if (!(await enforceAcknowledgementRateLimit(request))) {
+      return NextResponse.json({ found: false }, { status: 429, headers: privateHeaders });
     }
 
-    const amount = donation.amount.toNumber();
-    const refundedAmount = donation.refundedAmount.toNumber();
-    const presentation = getDonationAcknowledgementPresentation(donation.status, amount, refundedAmount);
-    const recordDate = donation.refundedAt ?? donation.capturedAt ?? donation.createdAt;
-
-    return NextResponse.json(
-      {
-        found: true,
-        presentation,
-        donation: {
-          referenceNumber: donation.referenceNumber,
-          receiptNumber: donation.receiptNumber,
-          donorName: donation.donorName,
-          givingIntent: donation.givingIntent,
-          amount,
-          refundedAmount,
-          recordDate: recordDate.toISOString(),
-          providerPaymentId: donation.providerPaymentId,
-          appeal: donation.appeal,
-        },
-      },
-      { headers: privateHeaders },
-    );
+    const receipt = await readVerifiedDonationAcknowledgement(parsed.data);
+    if (!receipt) {
+      return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
+    }
+    return NextResponse.json(receipt, { headers: privateHeaders });
   } catch {
     return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
   }

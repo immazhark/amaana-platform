@@ -1,7 +1,7 @@
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
-import Link from "next/link";
-import { PageHero } from "@/components/page-hero";
+import Link from "@/components/navigation-link";
+import { PageHero, PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { getGetInvolvedHeroMedia } from "@/lib/get-involved-media";
 import { ParticipationCards } from "@/components/participation-card";
@@ -50,8 +50,8 @@ const waysToHelp = [
     icon: "volunteer" as const,
     title: "Offer your time or skills",
     copy: "Packing, documentation, creative work, technology and field support can all matter. Availability depends on the needs of each initiative.",
-    href: "/contact",
-    action: "Talk to the team",
+    href: "/get-involved/volunteer",
+    action: "Explore volunteering",
   },
   {
     number: "04",
@@ -69,6 +69,14 @@ const waysToHelp = [
     href: "/request-assistance",
     action: "Request assistance",
   },
+  {
+    number: "06",
+    icon: "support" as const,
+    title: "Review giving each month",
+    copy: "A private calendar reminder can help you revisit currently approved giving routes. No subscription, stored donor profile or automatic payment is created.",
+    href: "/get-involved/monthly-giving",
+    action: "Create a manual reminder",
+  },
 ] as const;
 
 export default async function GetInvolvedPage() {
@@ -83,10 +91,10 @@ export default async function GetInvolvedPage() {
         description={<p>There is more than one way to stand with the work. Sponsor education, offer useful skills, share responsibly or help a genuine need reach Amaana.</p>}
         actions={[
           { label: "Sponsor education", href: "/get-involved/sponsor-education" },
-          { label: "Connect with Amaana", href: "/contact", secondary: true },
+          { label: "Explore volunteering", href: "/get-involved/volunteer", secondary: true },
         ]}
-        visual={heroMedia ? <PublicMedia asset={heroMedia} priority /> : undefined}
-        visualKicker="Five ways to take part"
+        visual={heroMedia ? <PublicMedia asset={heroMedia} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : undefined}
+        visualKicker="Ways to take part"
         visualTitle="Time. Skills. Support. Care."
         visualNote="Choose a path that matches what you can offer and what the work needs now."
       />
@@ -95,6 +103,18 @@ export default async function GetInvolvedPage() {
         <div className="v2-shell">
           <SectionHeading eyebrow={<>Choose your way in</>} title={<>Different people can contribute differently.</>} subtitle={<>Start with what is realistic for you and what the current work actually needs.</>} id="ways-to-help-title" />
           <ParticipationCards paths={waysToHelp.map(({ number, ...item }) => ({ ...item, marker: number }))} />
+          <aside className={styles.legacyInvitation} aria-labelledby="legacy-invitation-title">
+            <div>
+              <p className={styles.legacyEyebrow}>Future intentions · No obligation</p>
+              <h3 id="legacy-invitation-title">Thinking about a charitable legacy?</h3>
+              <p>Learn how to begin a careful conversation while keeping family
+                obligations, legal advice and privacy at the centre. No will,
+                pledge or financial commitment is collected here.</p>
+            </div>
+            <Link className="v2-button" href="/get-involved/legacy-giving">
+              Explore legacy enquiries <span aria-hidden="true">→</span>
+            </Link>
+          </aside>
         </div>
       </section>
 

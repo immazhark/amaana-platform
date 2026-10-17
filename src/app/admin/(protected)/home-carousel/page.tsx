@@ -1,4 +1,4 @@
-import Link from 'next/link';
+import Link from '@/components/navigation-link';
 import { hasPermission, requirePermission } from '@/lib/auth';
 import { getHomeCarouselConfig } from '@/lib/home-carousel-data';
 import { HOME_ARTWORK } from '@/lib/home-carousel';

@@ -1,6 +1,6 @@
 import { SocialIcon, type SocialNetwork } from "@/components/social-icon";
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { FooterNavGroup } from "@/components/footer-nav-group";
 
 const socialLinks: ReadonlyArray<{ network: SocialNetwork; label: string; href: string | null }> = [
@@ -25,7 +25,7 @@ export function SiteFooter() {
           </div>
           <div className="footer-lead-actions">
             <Link href="/our-work">Explore our work <span aria-hidden="true">→</span></Link>
-            <Link href="/appeals">Support a verified need <span aria-hidden="true">→</span></Link>
+            <Link href="/donate">Review approved giving routes <span aria-hidden="true">→</span></Link>
           </div>
         </div>
 
@@ -49,10 +49,10 @@ export function SiteFooter() {
             <Link href="/our-work">Our Work</Link><Link href="/impact">Impact</Link><Link href="/stories">Stories of Amanah</Link><Link href="/faith-and-reflections">Faith & Reflections</Link><Link href="/about">Our Story</Link>
           </FooterNavGroup>
           <FooterNavGroup label="Take part">
-            <Link href="/appeals">Current Appeals</Link><Link href="/get-involved">Get Involved</Link><Link href="/donate">Donate</Link><Link href="/get-involved/sponsor-education">Sponsor Education</Link><Link href="/partner">Partner With Amaana</Link><Link href="/request-assistance">Request Assistance</Link><Link href="/how-we-verify">How Amaana Works</Link><Link href="/contact">Contact</Link>
+            <Link href="/appeals">Current Appeals</Link><Link href="/get-involved">Get Involved</Link><Link href="/get-involved/volunteer">Volunteer</Link><Link href="/get-involved/monthly-giving">Monthly Reminder</Link><Link href="/get-involved/legacy-giving">Legacy Enquiries</Link><Link href="/donate">Donate</Link><Link href="/get-involved/sponsor-education">Sponsor Education</Link><Link href="/partner">Partner With Amaana</Link><Link href="/request-assistance">Request Assistance</Link><Link href="/how-we-verify">How Amaana Works</Link><Link href="/contact">Contact</Link>
           </FooterNavGroup>
           <FooterNavGroup label="Trust & policies">
-            <Link href="/transparency">Transparency</Link><Link href="/governance">Governance</Link><Link href="/recognition">Awards & Recognition</Link><Link href="/compliance">Registration & Compliance</Link><Link href="/donation-policy">Donation Policy</Link><Link href="/refund-policy">Refund Policy</Link><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link>
+            <Link href="/transparency">Transparency</Link><Link href="/governance">Governance</Link><Link href="/recognition">Awards & Recognition</Link><Link href="/shukr">Shukr · Donor Choice</Link><Link href="/compliance">Registration & Compliance</Link><Link href="/donation-policy">Donation Policy</Link><Link href="/refund-policy">Refund Policy</Link><Link href="/privacy">Privacy</Link><Link href="/contact/feedback">Feedback &amp; Concerns</Link><Link href="/terms">Terms</Link>
           </FooterNavGroup>
         </div>
 

@@ -1,3 +1,4 @@
+import DonateLayout from "@/app/donate/layout";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DonationRemountFixture } from "@/components/donation-remount-fixture";
@@ -14,7 +15,7 @@ export default function BrowserDonationAcceptanceFixture() {
   if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
 
   return (
-    <div className="v2-home v2-donate-page">
+    <DonateLayout><div className="v2-home v2-donate-page">
       <section className="v2-section paper" aria-labelledby="donation-fixture-heading">
         <div className="v2-shell v2-donate-layout">
           <aside className="v2-donate-guide">
@@ -30,6 +31,6 @@ export default function BrowserDonationAcceptanceFixture() {
           </div>
         </div>
       </section>
-    </div>
+    </div></DonateLayout>
   );
 }

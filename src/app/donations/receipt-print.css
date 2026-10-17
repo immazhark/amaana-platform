@@ -1,0 +1,22 @@
+/* B09: isolate a verified private acknowledgement for browser Print / Save as PDF,
+   retaining live Unicode text and the financial/tax disclaimer. */
+@media print {
+  body:has(.v2-receipt-page) { background: #fff !important; color: #111 !important; }
+  body:has(.v2-receipt-page) :is(.site-header, .site-footer, .amaana-companion, .v2-skip-link) { display: none !important; }
+  .v2-receipt-page .v2-receipt-hero,
+  .v2-receipt-page .v2-receipt-next,
+  .v2-receipt-page .print-button { display: none !important; }
+  .v2-receipt-page, .v2-receipt-page .v2-section,
+  .v2-receipt-page .v2-receipt-layout { margin: 0 !important; padding: 0 !important; background: #fff !important; }
+  .v2-receipt-page .v2-shell { width: 100% !important; max-width: none !important; }
+  .v2-receipt-page .v2-receipt-layout { display: block !important; }
+  .v2-receipt-page .v2-receipt-sheet {
+    width: 100% !important; max-width: none !important; margin: 0 !important;
+    padding: 0 !important; border: 0 !important; box-shadow: none !important;
+    background: #fff !important; color: #111 !important;
+  }
+  .v2-receipt-page .v2-receipt-sheet-head,
+  .v2-receipt-page .v2-receipt-sheet dl > div,
+  .v2-receipt-page .v2-receipt-disclaimer { break-inside: avoid; }
+  .v2-receipt-page .v2-receipt-sheet :is(h2, dt, dd, p, strong, span) { color: #111 !important; }
+}

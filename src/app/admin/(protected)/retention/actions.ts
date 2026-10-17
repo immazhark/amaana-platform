@@ -3,24 +3,29 @@
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { singleFormValue } from "@/lib/single-form-value";
 import { retentionDeletionConfirmed } from "@/lib/retention-safety";
 import { deletePrivateDocumentObject } from "@/lib/storage";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
+import { withdrawStaleAnonymousOutcomeCopies } from "@/lib/assistance-outcome-invalidation";
 
 const allowedDecisions = new Set(["RETAIN", "PLACE_HOLD", "RELEASE_HOLD", "DELETE"]);
 
 function requiredText(value: FormDataEntryValue | null, field: string, max: number) {
-  const text = String(value ?? "").trim();
+  if (value !== null && typeof value !== "string") throw new Error(`${field} must be text`);
+  const text = (value ?? "").trim();
   if (!text) throw new Error(`${field} is required`);
   if (text.length > max) throw new Error(`${field} is too long`);
   return text;
 }
 
 function optionalReviewDate(value: FormDataEntryValue | null) {
-  const raw = String(value ?? "").trim();
+  if (value !== null && typeof value !== "string") throw new Error("Invalid review date");
+  const raw = (value ?? "").trim();
   if (!raw) return null;
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(raw)) throw new Error("Invalid review date");
   const date = new Date(`${raw}T00:00:00.000Z`);
-  if (Number.isNaN(date.getTime())) throw new Error("Invalid review date");
+  if (Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== raw) throw new Error("Invalid review date");
   return date.toISOString();
 }
 
@@ -31,7 +36,7 @@ async function latestLegalHoldEvent(documentId: string, db: Pick<typeof prisma, 
       action: { in: ["assistance.document_legal_hold_placed", "assistance.document_legal_hold_released"] },
       metadata: { path: ["documentId"], equals: documentId },
     },
-    orderBy: { createdAt: "desc" },
+    orderBy: [{ createdAt: "desc" }, { id: "desc" }],
     select: { action: true, createdAt: true },
   });
 }
@@ -43,17 +48,21 @@ async function currentLegalHold(documentId: string, db: Pick<typeof prisma, "aud
 
 export async function reviewDocumentRetention(formData: FormData) {
   const user = await requirePermission("assistance.approve");
-  const documentId = String(formData.get("documentId") ?? "").trim();
-  const decision = String(formData.get("decision") ?? "");
-  if (!documentId) throw new Error("Document is required");
+  const values = new Map(["documentId", "decision", "deleteConfirmation", "reason", "reviewAfter", "expectedHoldAction", "expectedHoldCreatedAt"].map(field => {
+    const value = singleFormValue(formData, field);
+    if (value !== null && typeof value !== "string") throw new Error(`${field} must be text`);
+    return [field, value] as const;
+  }));
+  const documentId = requiredText(values.get("documentId") ?? null, "Document", 100);
+  const decision = String(values.get("decision") ?? "");
   if (!allowedDecisions.has(decision)) throw new Error("Invalid retention decision");
-  if (!retentionDeletionConfirmed(decision, String(formData.get("deleteConfirmation") ?? ""))) {
+  if (!retentionDeletionConfirmed(decision, String(values.get("deleteConfirmation") ?? ""))) {
     throw new Error("Type DELETE to confirm permanent evidence deletion");
   }
-  const reason = requiredText(formData.get("reason"), "Retention reason", 2000);
-  const reviewAfter = optionalReviewDate(formData.get("reviewAfter"));
-  const expectedHoldAction = String(formData.get("expectedHoldAction") ?? "");
-  const expectedHoldCreatedAt = String(formData.get("expectedHoldCreatedAt") ?? "");
+  const reason = requiredText(values.get("reason") ?? null, "Retention reason", 2000);
+  const reviewAfter = optionalReviewDate(values.get("reviewAfter") ?? null);
+  const expectedHoldAction = String(values.get("expectedHoldAction") ?? "");
+  const expectedHoldCreatedAt = String(values.get("expectedHoldCreatedAt") ?? "");
   if (["RETAIN", "PLACE_HOLD"].includes(decision) && reviewAfter && new Date(reviewAfter).getTime() <= Date.now()) {
     throw new Error("Next retention review must be scheduled for a future date");
   }
@@ -151,6 +160,14 @@ export async function reviewDocumentRetention(formData: FormData) {
       throw new Error("The request or linked appeal changed while you were reviewing it. Refresh before deleting.");
     }
 
+    // Withdraw any public note backed by this consent, bank proof or delivery
+    // evidence BEFORE touching object storage. A storage failure may leave
+    // evidence available, but must never resurrect publication permission.
+    await withSerializableTransactionRetry(tx =>
+      withdrawStaleAnonymousOutcomeCopies(
+        tx, document.assistanceRequestId, user.id, "DOCUMENT_DELETION", documentId,
+      ),
+    );
     const claimed = await prisma.assistanceDocument.updateMany({
       where: { id: documentId, objectKey: document.objectKey, updatedAt: deletionSnapshot.updatedAt },
       data: { updatedAt: new Date() },
@@ -188,6 +205,7 @@ export async function reviewDocumentRetention(formData: FormData) {
     ]);
   }
 
+  revalidatePath("/impact");
   revalidatePath("/admin/retention");
   revalidatePath(`/admin/requests/${document.assistanceRequestId}`);
   revalidatePath("/admin");

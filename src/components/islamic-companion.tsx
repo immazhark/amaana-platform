@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { hyderabadClock, remindersFor } from "@/lib/daily-companion";
+import { readLiveRailResponse, type LiveRailItem } from "@/lib/live-rail-response";
 import type { CompanionPanelKind } from "@/components/islamic-companion-panel";
 
 type Moon = {
@@ -16,18 +17,6 @@ type Moon = {
 type MoonState = {
   date: string;
   moon: Moon | null;
-};
-
-type LiveRailItem = {
-  id: string;
-  kind: "appeal" | "initiative";
-  eyebrow: string;
-  title: string;
-  subtitle: string;
-  detailsHref: string;
-  supportHref: string;
-  detailsCta: string;
-  supportCta: string;
 };
 
 const IslamicCompanionPanel = lazy(() =>
@@ -55,56 +44,132 @@ export function IslamicCompanion() {
   const [focused, setFocused] = useState(false);
   const [liveItems, setLiveItems] = useState<LiveRailItem[]>([]);
   const [railIndex, setRailIndex] = useState(0);
+  const [railState, setRailState] = useState<"loading" | "ready" | "unavailable">("loading");
   const companionButton = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     const update = () => setNow(new Date());
     update();
-    const timer = window.setInterval(update, 30_000);
+    // A hidden tab does not need continuous clock state updates. Refresh
+    // immediately when it becomes visible again instead of waking React.
+    const timer = window.setInterval(() => {
+      if (!document.hidden) update();
+    }, 30_000);
     const visible = () => {
       if (!document.hidden) update();
     };
     document.addEventListener("visibilitychange", visible);
 
-    const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const motion = () => setReducedMotion(preference.matches);
+    // Motion is decorative; an unsupported media-query API must not prevent
+    // the clock from initializing or leak its already-started interval.
+    const preference = typeof window.matchMedia === "function"
+      ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
+    const motion = () => {
+      if (preference) setReducedMotion(preference.matches);
+    };
     motion();
-    preference.addEventListener("change", motion);
+    if (preference) {
+      if (typeof preference.addEventListener === "function") preference.addEventListener("change", motion);
+      else preference.addListener(motion);
+    }
 
     return () => {
       window.clearInterval(timer);
       document.removeEventListener("visibilitychange", visible);
-      preference.removeEventListener("change", motion);
+      if (preference) {
+        if (typeof preference.removeEventListener === "function") preference.removeEventListener("change", motion);
+        else preference.removeListener(motion);
+      }
     };
   }, []);
 
   useEffect(() => {
-    const controller = new AbortController();
-    let timeout: number | undefined;
+    let startupTimeout: number | undefined;
     let idleHandle: number | undefined;
+    let disposed = false;
+    let activeController: AbortController | null = null;
+    let lastRequestedAt: number | null = null;
+    let hasRequested = false;
+    let hasLiveAppeals = false;
     const idleWindow = window as Window & typeof globalThis & {
       requestIdleCallback?: (callback: () => void, options?: { timeout: number }) => number;
       cancelIdleCallback?: (handle: number) => void;
     };
+
     const load = () => {
-      fetch("/api/public/live-rail", { cache: "no-store", signal: controller.signal })
-        .then(response => response.ok ? response.json() : { items: [] })
-        .then((payload: { items?: LiveRailItem[] }) => {
-          if (!controller.signal.aborted && Array.isArray(payload.items)) setLiveItems(payload.items);
+      if (disposed || document.hidden || activeController) return;
+      const requestedAt = Date.now();
+      if (lastRequestedAt !== null && requestedAt - lastRequestedAt < 5 * 60_000) return;
+      lastRequestedAt = requestedAt;
+
+      const controller = new AbortController();
+      activeController = controller;
+      // An appeal can be withdrawn while a tab stays open. Never preserve
+      // a stale donation shortcut while validating a fresh response.
+      if (hasRequested) {
+        setLiveItems([]);
+        setRailIndex(0);
+        setRailState("loading");
+      }
+      hasRequested = true;
+      const requestTimeout = window.setTimeout(() => {
+        controller.abort();
+        if (activeController === controller) activeController = null;
+        hasLiveAppeals = false;
+        if (!disposed) setRailState("unavailable");
+      }, 8000);
+
+      void fetch("/api/public/live-rail", { cache: "no-store", signal: controller.signal })
+        .then(async response => {
+          if (!response.ok) throw new Error("Public updates unavailable");
+          const payload: unknown = await response.json();
+          const items = readLiveRailResponse(payload);
+          if (!items) throw new Error("Invalid public updates");
+          return items;
         })
-        .catch(() => undefined);
+        .then(items => {
+          if (!disposed && activeController === controller && !controller.signal.aborted) {
+            hasLiveAppeals = items.length > 0;
+            setLiveItems(items);
+            setRailIndex(0);
+            setRailState("ready");
+          }
+        })
+        .catch(() => {
+          if (!disposed && activeController === controller) {
+            hasLiveAppeals = false;
+            setRailState("unavailable");
+          }
+        })
+        .finally(() => {
+          window.clearTimeout(requestTimeout);
+          if (activeController === controller) activeController = null;
+        });
     };
 
+    const refreshIfVisible = () => {
+      if (!document.hidden) load();
+    };
     if (idleWindow.requestIdleCallback) {
       idleHandle = idleWindow.requestIdleCallback(load, { timeout: 1800 });
     } else {
-      timeout = window.setTimeout(load, 900);
+      startupTimeout = window.setTimeout(load, 900);
     }
+    // Check only while promoting live appeals. An empty/unavailable rail
+    // refreshes when the visitor returns, avoiding idle DB work on pages
+    // where no public appeal is open.
+    const refreshTimer = window.setInterval(() => {
+      if (hasLiveAppeals) refreshIfVisible();
+    }, 60_000);
+    document.addEventListener("visibilitychange", refreshIfVisible);
 
     return () => {
-      controller.abort();
+      disposed = true;
+      activeController?.abort();
+      window.clearInterval(refreshTimer);
+      document.removeEventListener("visibilitychange", refreshIfVisible);
       if (idleHandle !== undefined) idleWindow.cancelIdleCallback?.(idleHandle);
-      if (timeout !== undefined) window.clearTimeout(timeout);
+      if (startupTimeout !== undefined) window.clearTimeout(startupTimeout);
     };
   }, []);
 
@@ -166,9 +231,9 @@ export function IslamicCompanion() {
                 </span>
               </div>
             ) : (
-              <div className="amaana-live-content">
+              <div className="amaana-live-content" aria-live="polite" aria-atomic="true">
                 <span className="amaana-reminder-eyebrow">Foundation updates</span>
-                <strong>No public appeal is open right now.</strong>
+                <strong>{railState === "ready" ? "No public appeal is open right now." : railState === "loading" ? "Checking public appeal updates…" : "Public appeal updates are unavailable."}</strong>
                 <span className="amaana-live-actions">
                   <Link className="amaana-live-cta" href="/our-work">Explore our work<span aria-hidden="true"> →</span></Link>
                 </span>

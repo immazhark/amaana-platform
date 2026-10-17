@@ -16,7 +16,8 @@ on:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  # Cancel superseded PR checks; never cancel main/integration push verification.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -50,7 +51,7 @@ jobs:
           CI_RELEASE: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           node --check scripts/diagnose-resend-dns.mjs
-          node --test scripts/test-ci-plan.mjs
+          node --test scripts/test-ci-plan.mjs scripts/test-report-master-roadmap.mjs
           node scripts/ci-plan.mjs
 
   fast:
@@ -151,7 +152,9 @@ jobs:
 
       - run: npm run prisma:generate
       - run: npm run prisma:validate
+      - run: node --test scripts/test-security-headers.mjs
       - run: npm run lint
+      - run: npm run format:check:governed
       - run: npm run typecheck
 
       - name: Run fast test suite for pull requests

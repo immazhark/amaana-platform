@@ -1,5 +1,5 @@
 'use server';
-import { revalidatePath, revalidateTag } from 'next/cache';
+import { revalidatePath, updateTag } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
@@ -60,7 +60,7 @@ export async function saveHomeCarousel(form: FormData) {
       } else await tx.homeCarousel.create({ data: { id: 'homepage', config: json } });
       await tx.auditEvent.create({ data: { actorId: user.id, action: `home_carousel.${operation}`, entityType: 'HomeCarousel', entityId: 'homepage', metadata: { slideId: id || null, revision: revision + 1 } } });
     });
-    revalidateTag('home-carousel', 'max'); revalidatePath('/'); revalidatePath('/admin/home-carousel');
+    updateTag('home-carousel'); revalidatePath('/'); revalidatePath('/admin/home-carousel');
   } catch (error) {
     notice = error instanceof Prisma.PrismaClientKnownRequestError ? 'Unable to save. Refresh and try again.' : error instanceof HomeCarouselValidationError ? error.message : 'Unable to save the carousel.';
     redirect(`/admin/home-carousel?error=${encodeURIComponent(notice.slice(0,400))}`);

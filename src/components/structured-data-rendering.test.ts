@@ -1,0 +1,126 @@
+import { readFileSync } from "node:fs";
+import sharp from "sharp";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { StructuredData } from "./structured-data";
+import { BreadcrumbStructuredData } from "./breadcrumb-structured-data";
+import { AppealStructuredData } from "./appeal-structured-data";
+
+const sensitiveText = "A > B & C </script><script>synthetic</script>\u2028\u2029";
+function scriptPayload(html: string) {
+  expect(html.match(/<script\b/g)).toHaveLength(1);
+  const payload = html.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+  expect(payload).toBeDefined();
+  return payload!;
+}
+function expectHardened(payload: string) {
+  expect(payload).not.toMatch(/[<>&\u2028\u2029]/);
+  for (const escaped of ["\\u003e", "\\u0026", "\\u2028", "\\u2029"]) expect(payload).toContain(escaped);
+}
+
+afterEach(() => vi.unstubAllEnvs());
+describe("actual JSON-LD rendering boundaries", () => {
+  it.each(["https://amaanafoundation.org", "https://amaanafoundation.org/"])("enriches one existing organization with reviewed logo and Threads at %s", async siteUrl => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", siteUrl);
+    const data = JSON.parse(scriptPayload(renderToStaticMarkup(createElement(StructuredData))));
+    const organizations = data["@graph"].filter((item: { "@type": unknown }) => Array.isArray(item["@type"]) && item["@type"].includes("Organization"));
+    expect(organizations).toHaveLength(1);
+    const organization = organizations[0];
+    expect(organization["@id"]).toBe("https://amaanafoundation.org/#organization");
+    expect(organization.logo).toBe("https://amaanafoundation.org/brand/amaana-mark.svg");
+    expect(organization.sameAs).toContain("https://www.threads.net/@amaanafoundation");
+    expect(new Set(organization.sameAs).size).toBe(organization.sameAs.length);
+    expect(data["@graph"][1].publisher["@id"]).toBe(organization["@id"]);
+    expect(organization).not.toHaveProperty("taxID");
+    expect(organization).not.toHaveProperty("potentialAction");
+    const footer = readFileSync("src/components/site-footer.tsx", "utf8");
+    expect(footer).toContain(organization.sameAs.at(-1));
+    expect(footer).toContain("/brand/amaana-mark.svg");
+    const asset = await sharp("public/brand/amaana-mark.svg").metadata();
+    expect(asset.width).toBeGreaterThanOrEqual(112);
+    expect(asset.height).toBeGreaterThanOrEqual(112);
+  });
+
+  it("does not let environment query strings or fragment text contaminate organization identities", () => {
+    const untrustedConfig = `https://amaanafoundation.org/?fixture=${sensitiveText}#injected`;
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", untrustedConfig);
+    const payload = scriptPayload(renderToStaticMarkup(createElement(StructuredData)));
+    const graph = JSON.parse(payload)["@graph"];
+    expect(graph[0].url).toBe("https://amaanafoundation.org");
+    expect(graph[0]["@id"]).toBe("https://amaanafoundation.org/#organization");
+    expect(graph[1].publisher["@id"]).toBe(graph[0]["@id"]);
+    expect(payload).not.toContain("fixture=");
+    expect(payload).not.toContain("injected");
+  });
+  it.each([
+    ["http://amaanafoundation.org", "https://amaanafoundation.org"],
+    ["https://user:secret@amaanafoundation.org", "https://amaanafoundation.org"],
+    ["https://amaanafoundation.org/path?token=private#fragment", "https://amaanafoundation.org"],
+    ["invalid-url", "https://amaanafoundation.org"],
+    ["https://preview.amaana.example/path?key=unsafe", "https://preview.amaana.example"],
+  ])("uses one validated site origin across organization, breadcrumb and appeal schemas: %s", (configured, expected) => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", configured);
+    const organization = JSON.parse(scriptPayload(renderToStaticMarkup(createElement(StructuredData))));
+    const breadcrumb = JSON.parse(scriptPayload(renderToStaticMarkup(createElement(BreadcrumbStructuredData, { items: [{ name: "Home", path: "/" }] }))));
+    const appeal = JSON.parse(scriptPayload(renderToStaticMarkup(createElement(AppealStructuredData, {
+      slug: "reviewed", title: "Reviewed case", summary: "Reviewed summary", isOpen: true,
+    }))));
+    expect(organization["@graph"][0].url).toBe(expected);
+    expect(organization["@graph"][0]["@id"]).toBe(`${expected}/#organization`);
+    expect(breadcrumb.itemListElement[0].item).toBe(`${expected}/`);
+    expect(appeal["@graph"][0].url).toBe(`${expected}/appeals/reviewed`);
+    expect(appeal["@graph"][1].target.urlTemplate).toBe(`${expected}/donate/reviewed`);
+  });
+
+  it("escapes Breadcrumb names without altering their parsed text or canonical destination", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const payload = scriptPayload(renderToStaticMarkup(createElement(BreadcrumbStructuredData, { items: [{ name: sensitiveText, path: "/our-work" }] })));
+    expectHardened(payload);
+    const item = JSON.parse(payload).itemListElement[0];
+    expect(item).toMatchObject({ name: sensitiveText, item: "https://amaanafoundation.org/our-work", position: 1 });
+  });
+  it("escapes public Appeal text while preserving the verified donation action", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const payload = scriptPayload(renderToStaticMarkup(createElement(AppealStructuredData, { slug: "synthetic-appeal", title: sensitiveText, summary: sensitiveText, isOpen: true })));
+    expectHardened(payload);
+    const graph = JSON.parse(payload)["@graph"];
+    expect(graph[0]).toMatchObject({ name: sensitiveText, description: sensitiveText });
+    expect(graph[1]).toMatchObject({ "@type": "DonateAction", target: { urlTemplate: "https://amaanafoundation.org/donate/synthetic-appeal" } });
+  });
+  it("retains sensitive-appeal redaction and omits donation actions", () => {
+    const payload = scriptPayload(renderToStaticMarkup(createElement(AppealStructuredData, { slug: "synthetic-appeal", title: sensitiveText, summary: sensitiveText, isOpen: true, highlySensitive: true })));
+    const graph = JSON.parse(payload)["@graph"];
+    expect(graph).toHaveLength(1);
+    expect(graph[0].name).toBe("Verified Support Appeal");
+    expect(graph[0].description).not.toContain("synthetic");
+    expect(payload).not.toContain("DonateAction");
+  });
+  it("does not advertise a donation action for a closed appeal", () => {
+    const payload = scriptPayload(renderToStaticMarkup(createElement(AppealStructuredData, { slug: "synthetic-appeal", title: "Synthetic closed appeal", summary: "Synthetic test only", isOpen: false })));
+    expect(JSON.parse(payload)["@graph"]).toHaveLength(1);
+    expect(payload).not.toContain("DonateAction");
+  });
+});
+
+
+describe("R-008 runtime JSON-LD input boundaries", () => {
+  it.each([
+    null, {}, [], [{ name: 42, path: "/" }], [{ name: "Home", path: null }],
+    [{ name: "   ", path: "/" }], [{ name: "Home", path: "//untrusted.example/path" }],
+    [{ name: "Home", path: "https://untrusted.example/path" }],
+    [{ name: "Home", path: "/unsafe\\path" }],
+    Array.from({ length: 21 }, () => ({ name: "Home", path: "/" })),
+  ])("omits malformed Breadcrumb input without throwing: %j", items => {
+    const props = { items } as unknown as Parameters<typeof BreadcrumbStructuredData>[0];
+    expect(renderToStaticMarkup(createElement(BreadcrumbStructuredData, props))).toBe("");
+  });
+  it.each([
+    { title: { nested: "invalid" } }, { summary: null }, { isOpen: "false" },
+    { highlySensitive: "false" }, { slug: "../other-page" }, { slug: "" },
+    { title: " " }, { summary: "" }, { title: "x".repeat(301) },
+  ])("omits malformed Appeal input instead of publishing invalid schema: %j", invalid => {
+    const props = { slug: "synthetic-appeal", title: "Synthetic title", summary: "Synthetic summary", isOpen: false, ...invalid } as unknown as Parameters<typeof AppealStructuredData>[0];
+    expect(renderToStaticMarkup(createElement(AppealStructuredData, props))).toBe("");
+  });
+});

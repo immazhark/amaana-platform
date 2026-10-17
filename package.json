@@ -25,6 +25,7 @@
     "launch:rehearsal": "node scripts/check-launch-readiness.mjs --rehearsal",
     "launch:production": "node scripts/check-launch-readiness.mjs --production",
     "test": "vitest run",
+    "roadmap:status": "node scripts/report-master-roadmap.mjs",
     "test:coverage": "vitest run --coverage",
     "editorial:check": "node scripts/check-public-editorial-consistency.mjs",
     "master:check": "node scripts/compile-master-copy.mjs --check",
@@ -37,15 +38,16 @@
     "launch:env:production:indexing-enabled": "PRODUCTION_INDEXING_DECISION=enable NEXT_PUBLIC_ALLOW_INDEXING=true node scripts/check-production-environment.mjs",
     "launch:env:production:indexing-disabled": "PRODUCTION_INDEXING_DECISION=keep_disabled NEXT_PUBLIC_ALLOW_INDEXING=false node scripts/check-production-environment.mjs",
     "artwork:refine": "node scripts/refine-programme-artwork.mjs",
-    "prebuild": "npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
-    "predev": "npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
+    "prebuild": "node scripts/check-client-secret-boundary.mjs --public-env-only && npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
+    "predev": "node scripts/check-client-secret-boundary.mjs --public-env-only && npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
     "icons:generate": "node scripts/generate-brand-icons.mjs",
     "icons:verify": "npm run icons:generate && node scripts/verify-brand-icons.mjs",
     "browser-fixtures:materialize": "node scripts/materialize-browser-acceptance.mjs",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "audit:route-bundles": "node scripts/report-route-bundles.mjs",
     "security:client-bundle": "node scripts/check-client-secret-boundary.mjs",
-    "stylelint:governed": "npx --yes stylelint@17.16.0 src/app/donate/donate-audit.module.css"
+    "stylelint:governed": "npx --yes stylelint@17.16.0 \"src/components/*.module.css\" src/app/donate/donate-audit.module.css src/app/stories.css --max-warnings 0",
+    "format:check:governed": "npx --yes prettier@3.6.2 --check stylelint.config.mjs .prettierrc.json"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "3.1128.0",
@@ -58,6 +60,7 @@
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "server-only": "0.0.1",
+    "sharp": "0.35.5",
     "zod": "4.1.5"
   },
   "devDependencies": {
@@ -68,8 +71,7 @@
     "eslint": "9.35.0",
     "eslint-config-next": "16.3.8",
     "typescript": "5.9.2",
-    "vitest": "5.0.0",
-    "sharp": "0.35.5"
+    "vitest": "5.0.0"
   },
   "browserslist": [
     "chrome >= 107",

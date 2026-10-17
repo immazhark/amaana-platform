@@ -1,12 +1,57 @@
+import type { Prisma } from "@prisma/client";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
-import { isAppealOpenForDonations } from "@/lib/appeals";
+import { getPublicAppealCheckoutEligibility } from "@/lib/public-appeal-checkout";
+import { canPromoteAppeal } from "@/lib/appeal-promotion";
 import { publicFaithWhere } from "@/lib/faith-publication";
 import { canExposePublicAppeal, isSyntheticStagingAppeal } from "@/lib/public-environment";
 
 const publishedWhere = {
   status: "PUBLISHED" as const,
 };
+
+/** Public story/programme pages render only a curated set of approved media.
+ * Keep the data boundary bounded before serialization and never select private
+ * source-object identifiers, ingest internals or review metadata. Image
+ * eligibility and approved remote-host validation are still rechecked by
+ * PublicMedia and CampaignMediaGallery.
+ *
+ * 48 records cover existing multi-year programme galleries while preventing
+ * a future unbounded upload batch from inflating the HTML/RSC payload.
+ * Larger archives remain accessible through /media-archive/[kind]/[slug].
+ */
+export const PUBLIC_DETAIL_MEDIA_LIMIT = 48;
+
+export const PUBLIC_DETAIL_MEDIA_PROJECTION = {
+  where: {
+    isPublic: true,
+    privacyApprovedAt: { not: null },
+    // Hosted VIDEO is intentionally unsupported until reviewed captions exist.
+    // Exclude assets without renderable URL/alt metadata before applying the
+    // 48-record page limit. The browser independently checks each media URL.
+    OR: [
+      { kind: "IMAGE" as const, publicUrl: { not: null }, altText: { not: "" } },
+      { kind: "DOCUMENT" as const, publicUrl: { not: null } },
+      { kind: "EXTERNAL_VIDEO" as const, externalUrl: { not: null } },
+    ],
+  },
+  orderBy: [{ sortOrder: "asc" as const }, { sourceYear: "desc" as const }, { createdAt: "desc" as const }],
+  take: PUBLIC_DETAIL_MEDIA_LIMIT,
+  select: {
+    id: true,
+    kind: true,
+    title: true,
+    publicUrl: true,
+    externalUrl: true,
+    altText: true,
+    caption: true,
+    sourceYear: true,
+    sortOrder: true,
+    width: true,
+    height: true,
+    blurDataURL: true,
+  },
+} satisfies Prisma.MediaAssetFindManyArgs;
 
 export async function getPublishedCauses() {
   return prisma.cause.findMany({
@@ -40,28 +85,63 @@ export async function getPublishedInitiatives() {
 }
 
 export async function getPublishedInitiativeBySlug(slug: string) {
-  return prisma.initiative.findFirst({
+  const initiative = await prisma.initiative.findFirst({
     where: { slug, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
-    include: {
-      cause: true,
-      mediaAssets: {
-        where: { isPublic: true, privacyApprovedAt: { not: null } },
-        orderBy: { sortOrder: "asc" },
-      },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      summary: true,
+      story: true,
+      year: true,
+      startYear: true,
+      endYear: true,
+      primaryMetric: true,
+      primaryMetricLabel: true,
+      publishedAt: true,
+      updatedAt: true,
+      cause: { select: { title: true } },
+      mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
+      // Related cards need only public-facing copy and a valid destination.
+      // Keep the relation bounded as more years and editorial posts accumulate.
       stories: {
         where: { status: "PUBLISHED", privacyApprovedAt: { not: null } },
         orderBy: { publishedAt: "desc" },
+        take: 6,
+        select: { id: true, slug: true, title: true, summary: true },
       },
       appeals: {
         where: { status: { in: ["PUBLISHED", "FUNDED"] } },
+        // Do not cap before privacy filtering: many confidential records may
+        // precede a legitimate public appeal. Select minimal fields instead.
         orderBy: { publishedAt: "desc" },
+        select: {
+          id: true, slug: true, title: true, status: true,
+          amountRaised: true, goalAmount: true, closesAt: true,
+          assistanceRequest: {
+            select: { verification: { select: { confidentialityLevel: true } } },
+          },
+        },
       },
       faithContent: {
         where: publicFaithWhere,
         orderBy: { publishedAt: "desc" },
+        take: 6,
+        select: { id: true, slug: true, title: true, excerpt: true },
       },
     },
   });
+  if (!initiative) return null;
+  return {
+    ...initiative,
+    appeals: initiative.appeals
+      .filter(canPromoteAppeal)
+      .slice(0, 6)
+      .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => {
+        void _privateReview;
+        return publicAppeal;
+      }),
+  };
 }
 
 export async function getPublishedStories() {
@@ -86,13 +166,20 @@ export async function getPublishedStoryBySlug(slug: string) {
       status: "PUBLISHED",
       privacyApprovedAt: { not: null },
     },
-    include: {
-      cause: true,
-      initiative: { include: { cause: true } },
-      mediaAssets: {
-        where: { isPublic: true, privacyApprovedAt: { not: null } },
-        orderBy: { sortOrder: "asc" },
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      summary: true,
+      body: true,
+      sourceNote: true,
+      publishedAt: true,
+      updatedAt: true,
+      cause: { select: { title: true, status: true } },
+      initiative: {
+        select: { slug: true, title: true, status: true, cause: { select: { status: true } } },
       },
+      mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
     },
   });
 }
@@ -119,14 +206,23 @@ export async function getPublishedFaithContentBySlug(slug: string) {
       slug,
       ...publicFaithWhere,
     },
-    include: {
-      topics: { include: { topic: true } },
-      cause: true,
-      initiative: { include: { cause: true } },
-      mediaAssets: {
-        where: { isPublic: true, privacyApprovedAt: { not: null } },
-        orderBy: { sortOrder: "asc" },
+    select: {
+      id: true,
+      slug: true,
+      type: true,
+      title: true,
+      excerpt: true,
+      body: true,
+      sourceCitation: true,
+      verifiedAt: true,
+      publishedAt: true,
+      updatedAt: true,
+      topics: { select: { topic: { select: { name: true } } } },
+      cause: { select: { title: true, status: true } },
+      initiative: {
+        select: { slug: true, title: true, status: true, cause: { select: { status: true } } },
       },
+      mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
     },
   });
 }
@@ -156,7 +252,7 @@ export async function getFeaturedFaithContent() {
  * this projection narrow lowers database work, serialization and server render
  * cost while preserving the publication/privacy gates used elsewhere.
  */
-const getHomepageAppealsCached = unstable_cache(async (limit: number) => {
+const getHomepageAppealsCached = unstable_cache(async () => {
   const appeals = await prisma.appeal.findMany({
     where: { status: "PUBLISHED" },
     orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
@@ -171,16 +267,38 @@ const getHomepageAppealsCached = unstable_cache(async (limit: number) => {
       goalAmount: true,
       amountRaised: true,
       closesAt: true,
+      assistanceRequest: {
+        select: { verification: { select: { confidentialityLevel: true, photoConsent: true } } },
+      },
     },
   });
 
   return appeals
-    .filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && isAppealOpenForDonations(appeal))
-    .slice(0, Math.min(20, Math.max(1, limit)));
+    .filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && canPromoteAppeal(appeal) && getPublicAppealCheckoutEligibility(appeal) !== null)
+    .slice(0, 20)
+    .map(({ assistanceRequest, ...publicAppeal }) => ({
+      ...publicAppeal,
+      // Keep revoked/unreviewed beneficiary image URLs out of public RSC data.
+      // Standalone legacy covers remain subject to public media library review.
+      coverImageUrl:
+        !assistanceRequest ||
+        assistanceRequest.verification?.photoConsent === "ALLOWED" ||
+        assistanceRequest.verification?.photoConsent === "NOT_APPLICABLE"
+          ? publicAppeal.coverImageUrl
+          : null,
+    }));
 }, ["homepage-appeals"], { revalidate: 300, tags: ["appeals"] });
 
 export async function getHomepageAppeals(limit = 3) {
-  return getHomepageAppealsCached(limit);
+  // The cached projection may outlive a campaign's exact closing minute.
+  // Recheck both the deadline and payable paise balance on every render
+  // without refetching the cached homepage projection.
+  const cached = await getHomepageAppealsCached();
+  // Restrict only after the fresh deadline check. A featured appeal can expire
+  // during the five-minute cache lifetime; a lower-ranked eligible appeal
+  // must be allowed to fill its place without another database read.
+  return cached.filter(appeal => getPublicAppealCheckoutEligibility(appeal) !== null)
+    .slice(0, Math.min(20, Math.max(1, limit)));
 }
 
 export async function getHomepagePublicContent() {

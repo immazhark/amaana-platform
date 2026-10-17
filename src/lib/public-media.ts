@@ -1,3 +1,5 @@
+import { isPrivateRoute } from "./public-routing";
+
 export type PublicMediaCandidate = {
   kind: "IMAGE" | "VIDEO" | "DOCUMENT" | "EXTERNAL_VIDEO";
   publicUrl?: string | null;
@@ -9,6 +11,12 @@ export type PublicMediaCandidate = {
 };
 
 export const IDENTITY_MEDIA_SORT_ORDER = -1000;
+
+/** Only the bounded JPEG format produced by ingestion may become inline image CSS. */
+export function getPublicImagePlaceholder(value: unknown): string | null {
+  return typeof value === "string" && value.length <= 1400
+    && /^data:image\/jpeg;base64,\/9j\/[A-Za-z0-9+/]*={0,2}$/.test(value) ? value : null;
+}
 
 const PUBLIC_MEDIA_RELATIVE_ORIGIN = "https://amaana.invalid";
 
@@ -49,18 +57,108 @@ function configuredHttpsOrigin(value: string | undefined) {
   }
 }
 
-export function isCspCompatiblePublicImageUrl(value: string | null | undefined) {
+/** Recheck repeatedly decoded paths: routing/proxy layers can decode %61dmin
+ * or %252e%252e where the browser URL parser alone sees an ordinary segment.
+ * Treat ambiguous/double-encoded paths as private rather than risking a
+ * private-origin request. Allow harmless encoding within ordinary filenames. */
+function isPrivateAppPath(pathname: string): boolean {
+  let candidate = pathname;
+  for (let depth = 0; depth < 4; depth++) {
+    let path: string;
+    try {
+      const parsed = new URL(candidate, PUBLIC_MEDIA_RELATIVE_ORIGIN);
+      if (parsed.origin !== PUBLIC_MEDIA_RELATIVE_ORIGIN) return true;
+      path = parsed.pathname;
+    } catch {
+      return true;
+    }
+    if (isPrivateRoute(path) || path === "/_next" || path.startsWith("/_next/")) return true;
+    let decoded: string;
+    try { decoded = decodeURIComponent(path); }
+    catch { return true; }
+    if (decoded === path) return false;
+    if (decoded.includes("\\") || decoded.includes("//") ||
+        decoded.includes("?") || decoded.includes("#") ||
+        /[\u0000-\u001F\u007F]/.test(decoded)) return true;
+    try {
+      const next = new URL(decoded, PUBLIC_MEDIA_RELATIVE_ORIGIN);
+      if (next.origin !== PUBLIC_MEDIA_RELATIVE_ORIGIN) return true;
+      // %20 in approved filenames is harmless; it normalizes to the same path.
+      if (next.pathname === path) return false;
+      candidate = next.pathname;
+    } catch {
+      return true;
+    }
+  }
+  return true;
+}
+
+/** The live site's apex and www hostnames can serve the same private routes.
+ * A trailing DNS root dot is equivalent for hostname routing, even though
+ * URL.origin compares it as a different origin. Other media CDN hosts remain external. */
+function isApplicationMediaOrigin(url: URL): boolean {
+  const host = url.hostname.replace(/[.]+$/, "").toLowerCase();
+  const configuredOrigin = configuredHttpsOrigin(process.env.NEXT_PUBLIC_APP_URL);
+  const configuredHost = configuredOrigin
+    ? new URL(configuredOrigin).hostname.replace(/[.]+$/, "").toLowerCase()
+    : null;
+  return host === configuredHost ||
+    host === "amaanafoundation.org" || host === "www.amaanafoundation.org";
+}
+
+/** Fail closed if a purported public asset resolves into protected app routing.
+ * External approved media hosts are not interpreted as this application's
+ * private routes. Server-side publication and consent gates remain mandatory. */
+export function isPrivateAppMediaUrl(value: string): boolean {
+  const normalized = normalizeSafePublicMediaUrl(value);
+  if (!normalized) return true;
+  let path: string;
+  if (normalized.startsWith("/")) {
+    path = normalized.split(/[?#]/, 1)[0] ?? "";
+  } else {
+    const parsed = new URL(normalized);
+    // DNS-equivalent Amaana hostnames must never bypass private route checks.
+    if (!isApplicationMediaOrigin(parsed)) return false;
+    path = parsed.pathname;
+  }
+  return isPrivateAppPath(path);
+}
+
+/** Optimize only managed public paths on this application, never arbitrary remote/private URLs. */
+export function getPublicImageOptimizationUrl(value: string, configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL) {
+  const normalized = normalizeSafePublicMediaUrl(value);
+  if (!normalized) return null;
+  const managed = (path: string) => path.startsWith("/media/") || path.startsWith("/brand/");
+  if (normalized.startsWith("/")) return managed(normalized) && !isPrivateAppMediaUrl(normalized) ? normalized : null;
+  const appOrigin = configuredHttpsOrigin(configuredAppUrl);
+  if (!appOrigin) return null;
+  const url = new URL(normalized);
+  if (url.origin !== appOrigin || !managed(url.pathname) || isPrivateAppPath(url.pathname)) return null;
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
+/** Server callers serialize these public origins into gallery props because
+ * unprefixed PUBLIC_MEDIA_BASE_URL is not available to browser components. */
+export function getConfiguredPublicImageOrigins(): string[] {
+  return [...new Set([
+    configuredHttpsOrigin(process.env.NEXT_PUBLIC_APP_URL),
+    configuredHttpsOrigin(process.env.PUBLIC_MEDIA_BASE_URL),
+  ].filter((origin): origin is string => Boolean(origin)))];
+}
+
+export function isCspCompatiblePublicImageUrl(value: string | null | undefined, additionalImageOrigins: readonly string[] = []) {
   const normalized = normalizeSafePublicMediaUrl(value);
   if (!normalized) return false;
+  if (isPrivateAppMediaUrl(normalized)) return false;
   if (normalized.startsWith("/")) return true;
 
   const imageOrigin = configuredHttpsOrigin(normalized);
   if (!imageOrigin) return false;
 
   const allowedOrigins = new Set([
-    configuredHttpsOrigin(process.env.NEXT_PUBLIC_APP_URL),
-    configuredHttpsOrigin(process.env.PUBLIC_MEDIA_BASE_URL),
-  ].filter((origin): origin is string => Boolean(origin)));
+    ...getConfiguredPublicImageOrigins(),
+    ...additionalImageOrigins.map(configuredHttpsOrigin).filter((origin): origin is string => Boolean(origin)),
+  ]);
 
   return allowedOrigins.has(imageOrigin);
 }
@@ -77,7 +175,7 @@ export function canRenderPublicMedia(asset: PublicMediaCandidate) {
     return Boolean(asset.altText?.trim()) && isCspCompatiblePublicImageUrl(url);
   }
 
-  return true;
+  return !isPrivateAppMediaUrl(url);
 }
 
 

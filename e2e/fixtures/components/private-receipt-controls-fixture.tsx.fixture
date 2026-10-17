@@ -1,0 +1,15 @@
+"use client";
+import { useState } from "react";
+import { DonorDataRights } from "./donor-data-rights";
+import { DonorRecognitionPreferences } from "./donor-recognition-preferences";
+import ReceiptPdfDownloadButton from "./receipt-pdf-download-button";
+const getToken = () => "synthetic-private-receipt-token";
+export function PrivateReceiptControlsFixture() {
+  const [reference, setReference] = useState("AFD-SYNTHETIC-ONE");
+  return <>
+    <button type="button" onClick={() => setReference("AFD-SYNTHETIC-TWO")}>Switch synthetic receipt</button>
+    <DonorDataRights reference={reference} getToken={getToken}/>
+    <DonorRecognitionPreferences reference={reference} getToken={getToken}/>
+    <ReceiptPdfDownloadButton reference={reference} getToken={getToken}/>
+  </>;
+}

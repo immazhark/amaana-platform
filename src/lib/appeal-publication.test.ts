@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getAppealConsentContentIssues, getFirstPublicationIssues, goalMatchesApprovedPublicTarget } from "./appeal-publication";
+import { getAppealConsentContentIssues, getAppealPublicationIssues, goalMatchesApprovedPublicTarget } from "./appeal-publication";
 
 const approvedVerification = {
   needConfirmed: true,
@@ -20,9 +20,9 @@ const approvedVerification = {
 };
 
 describe("first appeal publication gate", () => {
-  it("allows first publication only with a completed public verification", () => {
-    expect(getFirstPublicationIssues({
-      fromStatus: "UNDER_REVIEW",
+  it("checks first publication with completed public verification", () => {
+    expect(getAppealPublicationIssues({
+      fromStatus: "UNDER_REVIEW", hasAssistanceRequest: true,
       toStatus: "PUBLISHED",
       goalAmount: 75000,
       verification: approvedVerification,
@@ -30,8 +30,8 @@ describe("first appeal publication gate", () => {
   });
 
   it("fails closed when a new appeal has no linked verification", () => {
-    expect(getFirstPublicationIssues({
-      fromStatus: "UNDER_REVIEW",
+    expect(getAppealPublicationIssues({
+      fromStatus: "UNDER_REVIEW", hasAssistanceRequest: true,
       toStatus: "PUBLISHED",
       goalAmount: 75000,
       verification: null,
@@ -39,8 +39,8 @@ describe("first appeal publication gate", () => {
   });
 
   it("fails closed when public consent/review requirements are unresolved", () => {
-    const issues = getFirstPublicationIssues({
-      fromStatus: "UNDER_REVIEW",
+    const issues = getAppealPublicationIssues({
+      fromStatus: "UNDER_REVIEW", hasAssistanceRequest: true,
       toStatus: "PUBLISHED",
       goalAmount: 75000,
       verification: { ...approvedVerification, archiveConsent: "UNCONFIRMED", zakatStatus: "UNREVIEWED" },
@@ -52,8 +52,8 @@ describe("first appeal publication gate", () => {
   it("locks the appeal goal to the approved public fundraising target", () => {
     expect(goalMatchesApprovedPublicTarget(75000, approvedVerification)).toBe(true);
     expect(goalMatchesApprovedPublicTarget(80000, approvedVerification)).toBe(false);
-    expect(getFirstPublicationIssues({
-      fromStatus: "UNDER_REVIEW",
+    expect(getAppealPublicationIssues({
+      fromStatus: "UNDER_REVIEW", hasAssistanceRequest: true,
       toStatus: "PUBLISHED",
       goalAmount: 80000,
       verification: approvedVerification,
@@ -90,8 +90,69 @@ describe("first appeal publication gate", () => {
     })).toEqual([]);
   });
 
+  it("rechecks linked assistance verification and disclosure on paused appeal resumption", () => {
+    expect(getAppealPublicationIssues({
+      fromStatus: "PAUSED", toStatus: "PUBLISHED", goalAmount: 75000,
+      hasAssistanceRequest: true,
+      verification: { ...approvedVerification, decision: "PENDING" },
+    })).toContain("Verification decision must approve a public appeal.");
+
+    expect(getAppealPublicationIssues({
+      fromStatus: "PAUSED", toStatus: "PUBLISHED", goalAmount: 75000,
+      hasAssistanceRequest: true,
+      verification: { ...approvedVerification, publicNameConsent: "NOT_ALLOWED" },
+      beneficiaryDisplayName: "Name previously permitted",
+    })).toContain("A public beneficiary name requires explicit public-name consent.");
+
+    expect(getAppealPublicationIssues({
+      fromStatus: "PAUSED", toStatus: "PUBLISHED", goalAmount: 75000,
+      hasAssistanceRequest: true,
+      verification: { ...approvedVerification, photoConsent: "NOT_ALLOWED" },
+      coverImageUrl: "/media/previously-approved.jpg",
+    })).toContain("A beneficiary-related cover image cannot be used when photo/media consent is not allowed.");
+
+    expect(getAppealPublicationIssues({
+      fromStatus: "PAUSED", toStatus: "PUBLISHED", goalAmount: 75001,
+      hasAssistanceRequest: true,
+      verification: approvedVerification,
+    })).toContain("Appeal goal must match the approved public fundraising target.");
+  });
+
+  it("cannot republish after emergency disclosure withdrawal even with no name or cover", () => {
+    expect(getAppealPublicationIssues({
+      fromStatus: "PAUSED", toStatus: "PUBLISHED", goalAmount: 75000,
+      hasAssistanceRequest: true,
+      verification: {
+        ...approvedVerification,
+        decision: "APPROVED_PRIVATE",
+        publicNameConsent: "NOT_ALLOWED",
+        photoConsent: "NOT_ALLOWED",
+        archiveConsent: "NOT_ALLOWED",
+      },
+      beneficiaryDisplayName: null,
+      coverImageUrl: null,
+    })).toContain("Verification decision must approve a public appeal.");
+  });
+
+  it("requires restored review evidence for a linked paused appeal but preserves an unlinked legacy resume", () => {
+    expect(getAppealPublicationIssues({
+      fromStatus: "PAUSED", toStatus: "PUBLISHED", goalAmount: 75000,
+      hasAssistanceRequest: true, verification: null,
+    })).toContain("Verification record is required.");
+
+    expect(getAppealPublicationIssues({
+      fromStatus: "PAUSED", toStatus: "PUBLISHED", goalAmount: 75000,
+      hasAssistanceRequest: false, verification: null,
+    })).toEqual([]);
+
+    expect(getAppealPublicationIssues({
+      fromStatus: "PAUSED", toStatus: "PUBLISHED", goalAmount: 75000,
+      hasAssistanceRequest: true, verification: approvedVerification,
+    })).toEqual([]);
+  });
+
   it("does not block lifecycle transitions for appeals that were already public", () => {
-    expect(getFirstPublicationIssues({ fromStatus: "PAUSED", toStatus: "PUBLISHED", goalAmount: 1, verification: null })).toEqual([]);
-    expect(getFirstPublicationIssues({ fromStatus: "PUBLISHED", toStatus: "FUNDED", goalAmount: 1, verification: null })).toEqual([]);
+    expect(getAppealPublicationIssues({ fromStatus: "PAUSED", toStatus: "PUBLISHED", hasAssistanceRequest: false, goalAmount: 1, verification: null })).toEqual([]);
+    expect(getAppealPublicationIssues({ fromStatus: "PUBLISHED", toStatus: "FUNDED", hasAssistanceRequest: false, goalAmount: 1, verification: null })).toEqual([]);
   });
 });

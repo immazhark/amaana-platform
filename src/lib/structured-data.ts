@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isCspCompatiblePublicImageUrl, isPrivateAppMediaUrl, normalizeSafePublicMediaUrl } from "./public-media";
 
 export type PublicStructuredDataType = "Article" | "WebPage";
 
@@ -26,9 +27,41 @@ const publicStructuredDataInputSchema = z.object({
   keywords: z.array(z.string().max(120)).max(50).optional(),
 }).strict();
 
+const breadcrumbInputSchema = z.array(z.object({
+  name: z.string().min(1).max(300).refine(value => Boolean(value.trim())),
+  path: z.string().min(1).max(2_048),
+}).strict()).min(1).max(20);
+
+const appealInputSchema = z.object({
+  slug: z.string().min(1).max(200).regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/),
+  title: z.string().min(1).max(300).refine(value => Boolean(value.trim())),
+  summary: z.string().min(1).max(5_000).refine(value => Boolean(value.trim())),
+  isOpen: z.boolean(),
+  highlySensitive: z.boolean().optional(),
+}).strict();
+
+/** Optional schema output must fail closed rather than crash the public page. */
+export function validateBreadcrumbStructuredDataInput(input: unknown) {
+  const parsed = breadcrumbInputSchema.safeParse(input);
+  if (!parsed.success) return null;
+  const items: { name: string; path: string }[] = [];
+  for (const item of parsed.data) {
+    const path = normalizeStructuredDataPath(item.path);
+    if (!path) return null;
+    items.push({ name: item.name, path });
+  }
+  return items;
+}
+
+export function validateAppealStructuredDataInput(input: unknown) {
+  const parsed = appealInputSchema.safeParse(input);
+  return parsed.success ? parsed.data : null;
+}
+
 const DEFAULT_SITE_URL = "https://amaanafoundation.org";
 
-function normalizeSiteUrl(value: string | undefined) {
+/** Canonical HTTPS origin shared by all public JSON-LD graph owners. */
+export function normalizeSiteUrl(value: string | undefined) {
   try {
     const url = new URL(value || DEFAULT_SITE_URL);
     if (url.protocol !== "https:" || url.username || url.password) return DEFAULT_SITE_URL;
@@ -44,31 +77,39 @@ export function normalizeStructuredDataPath(path: string) {
 
   try {
     const url = new URL(value, DEFAULT_SITE_URL);
-    if (url.origin !== DEFAULT_SITE_URL) return null;
+    if (url.origin !== DEFAULT_SITE_URL || isPrivateAppMediaUrl(value)) return null;
     return `${url.pathname}${url.search}${url.hash}`;
   } catch {
     return null;
   }
 }
 
+/** Never publish a private/unapproved media destination into crawlable JSON-LD.
+ * Keep the output host specific to the current site or an explicitly configured
+ * image CDN. Publication and consent are still checked by the caller. */
 export function normalizeStructuredDataImage(imageUrl: string | null | undefined, siteUrl: string) {
-  const value = imageUrl?.trim();
-  if (!value || /[\\\u0000-\u001F\u007F\s]/.test(value)) return null;
+  const normalized = normalizeSafePublicMediaUrl(imageUrl);
+  if (!normalized || isPrivateAppMediaUrl(normalized)) return null;
 
   try {
-    if (value.startsWith("/")) {
-      if (value.startsWith("//")) return null;
-      const url = new URL(value, siteUrl);
-      if (url.origin !== siteUrl) return null;
+    const site = new URL(siteUrl);
+    if (site.protocol !== "https:" || site.username || site.password) return null;
+
+    if (normalized.startsWith("/")) return new URL(normalized, site.origin).toString();
+
+    const url = new URL(normalized);
+    // The explicit site origin may differ from NEXT_PUBLIC_APP_URL in preview
+    // builds. Classify its pathname as an application path independently, so
+    // admin/receipt URLs never become crawlable image metadata.
+    if (url.origin === site.origin) {
+      if (isPrivateAppMediaUrl(`${url.pathname}${url.search}${url.hash}`)) return null;
       return url.toString();
     }
-
-    const url = new URL(value);
-    if (url.protocol !== "https:" || url.username || url.password) return null;
-    return url.toString();
+    if (isCspCompatiblePublicImageUrl(normalized)) return url.toString();
   } catch {
     return null;
   }
+  return null;
 }
 
 function isoDate(value: Date | string | null | undefined) {

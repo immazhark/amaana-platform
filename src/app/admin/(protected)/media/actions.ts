@@ -2,6 +2,7 @@
 
 import { MediaKind } from "@prisma/client";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { mediaPublicationIssues, parseMediaPublicationReview } from "@/lib/media-governance";
 import { prisma } from "@/lib/prisma";
@@ -13,6 +14,7 @@ import {
 } from "@/lib/public-media";
 import { deletePublicMediaObject, uploadPublicMediaFile, validatePublicMediaFile } from "@/lib/storage";
 import { logServerError } from "@/lib/server-log";
+import { singleFormValue } from "@/lib/single-form-value";
 
 type TargetFields = { causeId?: string; initiativeId?: string; storyId?: string; faithContentId?: string };
 
@@ -39,6 +41,16 @@ function optionalText(value: FormDataEntryValue | null, max: number) {
   return text ? text.slice(0, max) : null;
 }
 
+/** Strict scalar action controls: first-value-wins permits tampered forms to
+ * bypass the intended publish/unpublish or deletion confirmation. */
+function requiredMediaActionText(form: FormData, field: string): string {
+  const value = singleFormValue(form, field);
+  if (typeof value !== "string") {
+    throw new Error(`${field} must be a text field.`);
+  }
+  return value.trim();
+}
+
 function usesApprovedManagedDelivery(asset: { storageKey?: string | null; publicUrl?: string | null }) {
   if (!asset.storageKey) return true;
   const expectedPath = `/media/${asset.storageKey}`;
@@ -46,6 +58,52 @@ function usesApprovedManagedDelivery(asset: { storageKey?: string | null; public
   // Older managed assets can retain a canonical absolute URL to the same
   // permission-checking route. Never accept an external bucket/CDN URL.
   return asset.publicUrl === `https://amaanafoundation.org${expectedPath}`;
+}
+
+/** A failed public cache refresh cannot undo an audited database commit.
+ * Keep attempting unrelated routes, then show a confirmed-save warning.
+ * Never retry the publication write in response to a cache error. */
+function refreshCommittedMedia(paths: readonly string[]) {
+  let delayed = false;
+  for (const path of new Set(paths)) {
+    try { revalidatePath(path); }
+    catch { delayed = true; }
+  }
+  if (delayed) redirect("/admin/media?saved=refresh-delayed");
+}
+
+type MediaPublicationRefreshContext = {
+  storageKey?: string | null;
+  initiative?: { slug: string } | null;
+  cause?: { slug: string } | null;
+  story?: { slug: string } | null;
+  faithContent?: { slug: string } | null;
+};
+
+/** Only narrow observed public paths; do not require invalidating every
+ * initiative/archive on each media review or adding more database reads. */
+function affectedMediaPublicationPaths(asset: MediaPublicationRefreshContext) {
+  const paths = [
+    "/admin/media", "/", "/our-work", "/impact", "/stories", "/faith-and-reflections", "/appeals",
+  ];
+  if (asset.storageKey &&
+      /^\d{4}\/[0-9a-f-]{36}\.(?:pdf|jpg|png|webp)$/i.test(asset.storageKey)) {
+    paths.push(`/media/${asset.storageKey}`);
+  }
+  if (asset.initiative?.slug) {
+    paths.push(`/our-work/${asset.initiative.slug}`);
+    paths.push(`/media-archive/initiative/${asset.initiative.slug}`);
+  }
+  if (asset.cause?.slug) paths.push(`/our-work/${asset.cause.slug}`);
+  if (asset.story?.slug) {
+    paths.push(`/stories/${asset.story.slug}`);
+    paths.push(`/media-archive/story/${asset.story.slug}`);
+  }
+  if (asset.faithContent?.slug) {
+    paths.push(`/faith-and-reflections/${asset.faithContent.slug}`);
+    paths.push(`/media-archive/faith/${asset.faithContent.slug}`);
+  }
+  return paths;
 }
 
 export async function createMediaAsset(formData: FormData) {
@@ -102,6 +160,7 @@ export async function createMediaAsset(formData: FormData) {
           sourceYear: Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null,
           width: uploaded?.width ?? null,
           height: uploaded?.height ?? null,
+          blurDataURL: uploaded?.blurDataURL ?? null,
           sortOrder: displayOrder,
           isPublic: false,
           ...target,
@@ -129,7 +188,7 @@ export async function createMediaAsset(formData: FormData) {
     throw error;
   }
 
-  revalidatePath("/admin/media");
+  refreshCommittedMedia(["/admin/media"]);
 }
 
 export async function updateMediaAsset(formData: FormData) {
@@ -208,14 +267,27 @@ export async function updateMediaAsset(formData: FormData) {
     if (claimed.count !== 1) throw new Error("This media changed while you were reviewing it. Refresh before editing metadata.");
     await tx.auditEvent.create({ data: { actorId: user.id, action: "media.metadata_updated", entityType: "MediaAsset", entityId: id, metadata: { wasPublic: asset.isPublic, identityImage } } });
   });
-  revalidatePath("/admin/media");
+  refreshCommittedMedia(["/admin/media"]);
 }
 
 export async function setMediaPublication(formData: FormData) {
   const user = await requirePermission("content.approve");
-  const id = String(formData.get("id") ?? "");
-  const publish = formData.get("publish") === "true";
-  const asset = await prisma.mediaAsset.findUniqueOrThrow({ where: { id } });
+  const id = requiredMediaActionText(formData, "id");
+  const requestedAction = requiredMediaActionText(formData, "publish");
+  if (!id) throw new Error("Media record is required.");
+  if (requestedAction !== "true" && requestedAction !== "false") {
+    throw new Error("Explicit media publication action is required.");
+  }
+  const publish = requestedAction === "true";
+  const asset = await prisma.mediaAsset.findUniqueOrThrow({
+    where: { id },
+    include: {
+      initiative: { select: { slug: true } },
+      cause: { select: { slug: true } },
+      story: { select: { slug: true } },
+      faithContent: { select: { slug: true } },
+    },
+  });
 
   if (publish && !usesApprovedManagedDelivery(asset)) {
     throw new Error("Managed media must use Amaana's consent-gated /media/ route before publication.");
@@ -226,6 +298,9 @@ export async function setMediaPublication(formData: FormData) {
       : "Media needs a safe public URL and, for images, meaningful alt text before publication.");
   }
 
+  // Collect every affected published surface, not only the clicked record.
+  // Revoking a shared photograph must also clear cache for other programmes.
+  let invalidatedAssets: MediaPublicationRefreshContext[] = [asset];
   if (publish) {
     const review = parseMediaPublicationReview(formData);
     const issues = mediaPublicationIssues(review);
@@ -263,30 +338,77 @@ export async function setMediaPublication(formData: FormData) {
       await tx.auditEvent.create({ data: { actorId: user.id, action: "media.published", entityType: "MediaAsset", entityId: id, metadata: { privacyGate: "passed" } } });
     });
   } else {
-    await withSerializableTransactionRetry(async tx => {
-      const freshAsset = await tx.mediaAsset.findUniqueOrThrow({ where: { id }, select: { isPublic: true, updatedAt: true } });
-      if (!freshAsset.isPublic) throw new Error("This media is already unpublished. Refresh before changing publication state.");
-      const claimed = await tx.mediaAsset.updateMany({
-        where: { id, isPublic: true, updatedAt: freshAsset.updatedAt },
-        data: { isPublic: false, privacyApprovedAt: null },
+    // Public URL and storage-key aliases can represent the same original
+    // photograph. An ordinary "Unpublish" must revoke every public copy of
+    // that reference, not merely the selected media database row.
+    const revokedSiblings = await withSerializableTransactionRetry(async tx => {
+      const freshAsset = await tx.mediaAsset.findUniqueOrThrow({
+        where: { id },
+        select: { isPublic: true, updatedAt: true, storageKey: true, publicUrl: true },
       });
-      if (claimed.count !== 1) throw new Error("This media changed while you were reviewing it. Refresh before unpublishing.");
-      await tx.auditEvent.create({ data: { actorId: user.id, action: "media.unpublished", entityType: "MediaAsset", entityId: id } });
+      if (!freshAsset.isPublic) {
+        throw new Error("This media is already unpublished. Refresh before changing publication state.");
+      }
+
+      // Predicate read under SERIALIZABLE catches concurrently created or
+      // published matching aliases. Cross-target reuse is intentionally
+      // withdrawn as one privacy operation, regardless of programme.
+      const aliases = [
+        ...(freshAsset.storageKey ? [{ storageKey: freshAsset.storageKey }] : []),
+        ...(freshAsset.publicUrl ? [{ publicUrl: freshAsset.publicUrl }] : []),
+      ];
+      const siblings = aliases.length
+        ? await tx.mediaAsset.findMany({
+            where: { id: { not: id }, isPublic: true, OR: aliases },
+            select: {
+              id: true, updatedAt: true, storageKey: true, publicUrl: true,
+              initiative: { select: { slug: true } },
+              cause: { select: { slug: true } },
+              story: { select: { slug: true } },
+              faithContent: { select: { slug: true } },
+            },
+          })
+        : [];
+
+      const targets = [
+        { id, updatedAt: freshAsset.updatedAt },
+        ...siblings.map(other => ({ id: other.id, updatedAt: other.updatedAt })),
+      ];
+      // Complete every optimistic-concurrency claim before audit events.
+      // A lost claim rolls the whole transaction back, including earlier
+      // updates to shared references.
+      for (const target of targets) {
+        const claimed = await tx.mediaAsset.updateMany({
+          where: { id: target.id, isPublic: true, updatedAt: target.updatedAt },
+          data: { isPublic: false, privacyApprovedAt: null },
+        });
+        if (claimed.count !== 1) {
+          throw new Error("Media changed while you were reviewing it. Refresh before unpublishing.");
+        }
+      }
+      for (const target of targets) {
+        await tx.auditEvent.create({
+          data: {
+            actorId: user.id,
+            action: target.id === id ? "media.unpublished" : "media.unpublished_shared_reference",
+            entityType: "MediaAsset",
+            entityId: target.id,
+            ...(target.id !== id ? { metadata: { sourceMediaId: id } } : {}),
+          },
+        });
+      }
+      return siblings;
     });
+    invalidatedAssets = [asset, ...revokedSiblings];
   }
 
-  revalidatePath("/admin/media");
-  revalidatePath("/");
-  revalidatePath("/our-work");
-  revalidatePath("/impact");
-  revalidatePath("/stories");
-  revalidatePath("/faith-and-reflections");
+  refreshCommittedMedia(invalidatedAssets.flatMap(affectedMediaPublicationPaths));
 }
 
 export async function deleteMediaAsset(formData: FormData) {
   const user = await requirePermission("content.approve");
-  const id = String(formData.get("id") ?? "").trim();
-  const confirmation = String(formData.get("confirm") ?? "").trim();
+  const id = requiredMediaActionText(formData, "id");
+  const confirmation = requiredMediaActionText(formData, "confirm");
   if (!id) throw new Error("Media record is required");
   if (confirmation !== "DELETE") throw new Error("Type DELETE to confirm permanent media deletion");
 
@@ -319,6 +441,19 @@ export async function deleteMediaAsset(formData: FormData) {
     throw new Error("This media changed while you were reviewing it. Refresh before deleting.");
   }
 
+  // MediaAsset.storageKey is not unique. Deleting this S3 object would break
+  // every other public or unpublished record sharing the key. Fail closed
+  // rather than silently removing another asset's underlying evidence.
+  async function assertNoSharedManagedObject() {
+    if (!asset.storageKey) return;
+    const sibling = await prisma.mediaAsset.findFirst({
+      where: { storageKey: asset.storageKey, id: { not: id } },
+      select: { id: true },
+    });
+    if (sibling) throw new Error("Cannot delete a shared media storage object. Resolve the other media references first.");
+  }
+  await assertNoSharedManagedObject();
+
   // Atomically claim the still-unpublished, exact reviewed version before any
   // external storage mutation. The updatedAt bump makes stale publication or
   // metadata actions fail their own optimistic-concurrency claims.
@@ -329,6 +464,10 @@ export async function deleteMediaAsset(formData: FormData) {
   if (claimed.count !== 1) {
     throw new Error("This media changed while you were reviewing it. Refresh before deleting.");
   }
+
+  // Repeat the sibling check after our version claim. This is a safety check
+  // against stale pre-claim reads; it cannot replace a DB uniqueness contract.
+  await assertNoSharedManagedObject();
 
   // Record the destructive intent before storage deletion so a partial failure
   // remains diagnosable even when the managed object is already gone.
@@ -366,10 +505,5 @@ export async function deleteMediaAsset(formData: FormData) {
     }),
   ]);
 
-  revalidatePath("/admin/media");
-  revalidatePath("/");
-  revalidatePath("/our-work");
-  revalidatePath("/impact");
-  revalidatePath("/stories");
-  revalidatePath("/faith-and-reflections");
+  refreshCommittedMedia(affectedMediaPublicationPaths(asset));
 }

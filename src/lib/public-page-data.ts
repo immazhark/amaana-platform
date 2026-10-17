@@ -2,7 +2,8 @@ import type { Prisma } from "@prisma/client";
 import { cache } from "react";
 import { getAppealCoverMediaIssues } from "@/lib/appeal-cover-media";
 import { prisma } from "@/lib/prisma";
-import { isAppealOpenForDonations } from "@/lib/appeals";
+import { getPublicAppealCheckoutEligibility } from "@/lib/public-appeal-checkout";
+import { canPromoteAppeal } from "@/lib/appeal-promotion";
 import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 import { IDENTITY_MEDIA_SORT_ORDER } from "@/lib/public-media";
@@ -36,6 +37,7 @@ export const PUBLIC_IMAGE_SELECT = {
   sourceYear: true,
   width: true,
   height: true,
+  blurDataURL: true,
   sortOrder: true,
 } as const;
 
@@ -80,7 +82,13 @@ export const getAppealPageData = cache(async (slug: string) => {
       assistanceRequest: {
         select: {
           id: true,
-          verification: { select: { archiveConsent: true } },
+          verification: {
+            select: {
+              archiveConsent: true,
+              publicNameConsent: true,
+              photoConsent: true,
+            },
+          },
         },
       },
       updates: {
@@ -103,9 +111,26 @@ export const getAppealPageData = cache(async (slug: string) => {
     archiveConsent: appeal.assistanceRequest?.verification?.archiveConsent,
   })) return null;
 
-  const { assistanceRequest: privateVerificationContext, ...publicAppeal } = appeal;
-  void privateVerificationContext;
-  return publicAppeal;
+  // A previously approved public page may outlive a withdrawal of field-level
+  // disclosure permission. Apply CURRENT linked consent at the server data
+  // boundary so no identity or cover URL reaches the renderer or RSC payload.
+  // Standalone legacy appeals have no linked verification record.
+  const { assistanceRequest, ...publicAppeal } = appeal;
+  if (!assistanceRequest) return publicAppeal;
+
+  const verification = assistanceRequest.verification;
+  return {
+    ...publicAppeal,
+    beneficiaryDisplayName:
+      verification?.publicNameConsent === "ALLOWED"
+        ? publicAppeal.beneficiaryDisplayName
+        : null,
+    coverImageUrl:
+      verification?.photoConsent === "ALLOWED" ||
+      verification?.photoConsent === "NOT_APPLICABLE"
+        ? publicAppeal.coverImageUrl
+        : null,
+  };
 });
 
 export const getHomepageHeroMedia = cache(async () => {
@@ -133,6 +158,7 @@ export const getHomepageHeroMedia = cache(async () => {
       sourceYear: true,
       width: true,
       height: true,
+      blurDataURL: true,
       initiative: { select: { slug: true, title: true } },
       story: { select: { slug: true, title: true } },
     },
@@ -292,9 +318,9 @@ export const getImpactPageData = cache(async () => {
       primaryMetricLabel: true,
       cause: { select: { title: true } },
       mediaAssets: {
-        where: PUBLIC_APPROVED_IMAGE_WHERE,
-        orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
-        take: 12,
+        where: PUBLIC_IDENTITY_IMAGE_WHERE,
+        orderBy: [{ sourceYear: "desc" }],
+        take: 1,
         select: PUBLIC_IMAGE_SELECT,
       },
     },
@@ -315,6 +341,12 @@ export const getCompletedAidShowcaseData = cache(async () => {
     orderBy: [{ displayOrder: "asc" }, { publishedAt: "desc" }],
     select: {
       slug: true,
+      title: true,
+      year: true,
+      startYear: true,
+      endYear: true,
+      primaryMetric: true,
+      primaryMetricLabel: true,
       mediaAssets: PUBLIC_GALLERY_MEDIA_PROJECTION,
     },
   });
@@ -325,7 +357,7 @@ export const getCompletedAidShowcaseData = cache(async () => {
  * it should not serialize the private-facing story, internal notes or updates.
  */
 export const getAppealsIndexData = cache(async () => {
-  return prisma.appeal.findMany({
+  const appeals = await prisma.appeal.findMany({
     where: { status: "PUBLISHED" },
     orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
     select: {
@@ -338,8 +370,19 @@ export const getAppealsIndexData = cache(async () => {
       goalAmount: true,
       amountRaised: true,
       closesAt: true,
+      assistanceRequest: {
+        select: { verification: { select: { confidentialityLevel: true } } },
+      },
     },
   });
+  // Direct approved case URLs remain available; discoverable indexes do not
+  // promote the identity of explicitly HIGHLY_SENSITIVE beneficiaries.
+  return appeals
+    .filter(canPromoteAppeal)
+    .map(({ assistanceRequest: _privateReview, ...publicAppeal }) => {
+        void _privateReview;
+        return publicAppeal;
+      });
 });
 
 /**
@@ -368,7 +411,9 @@ export const getDonationPageData = cache(async (slug: string) => {
     },
   });
 
-  if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return null;
+  // Both public entrypoints and the checkout itself must reject cases without
+  // any valid whole-rupee amount, even while the appeal status remains PUBLISHED.
+  if (!appeal || !canExposePublicAppeal(appeal) || !getPublicAppealCheckoutEligibility(appeal)) return null;
   const { assistanceRequest, ...publicAppeal } = appeal;
   return {
     ...publicAppeal,
@@ -380,6 +425,26 @@ export const getDonationPageData = cache(async (slug: string) => {
  * Transparency needs initiative identity, cause context and published metrics,
  * but not galleries, appeals, stories or financial-summary relations.
  */
+/**
+ * Donation trust strip uses at most eight publication-gated initiative records,
+ * rather than hydrating the full public impact archive on every donor visit.
+ * Never infer money raised from delivery outcomes or show unpublished figures.
+ */
+export const getDonationImpactHighlights = cache(async () => {
+  const rows = await prisma.initiative.findMany({
+    where: {
+      status: "PUBLISHED",
+      cause: { status: "PUBLISHED" },
+      primaryMetric: { not: null },
+      primaryMetricLabel: { not: null },
+    },
+    orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
+    take: 8,
+    select: { slug: true, title: true, primaryMetric: true, primaryMetricLabel: true },
+  });
+  return rows.filter(item => item.primaryMetric?.trim() && item.primaryMetricLabel?.trim()).slice(0, 3);
+});
+
 export const getTransparencyPageData = cache(async () => {
   return prisma.initiative.findMany({
     where: { status: "PUBLISHED", cause: { status: "PUBLISHED" } },
@@ -408,6 +473,12 @@ export const getProgrammeChildMedia = cache(async (slugs: string[]) => {
     where: { slug: { in: slugs }, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     select: {
       slug: true,
+      title: true,
+      year: true,
+      startYear: true,
+      endYear: true,
+      primaryMetric: true,
+      primaryMetricLabel: true,
       mediaAssets: PUBLIC_GALLERY_MEDIA_PROJECTION,
     },
   });

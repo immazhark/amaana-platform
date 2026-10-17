@@ -1,0 +1,36 @@
+import { notFound } from "next/navigation";
+import "@/app/home-showcase.css";
+import "@/app/home-documentary.css";
+import "@/app/appeal-card.css";
+import { AppealCard } from "@/components/appeal-card";
+
+export const dynamic = "force-dynamic";
+export const metadata = { robots: { index: false, follow: false } };
+
+// Synthetic route: no database, donor, beneficiary or payment access.
+export default function HomepageAppealStyleFixture() {
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+
+  const appeal = {
+    slug: "synthetic-home-style-check",
+    title: "Synthetic home appeal",
+    summary: "Local styling fixture only, without a real beneficiary or donation.",
+    category: "MEDICAL",
+    beneficiaryLocation: "Synthetic location",
+    goalAmount: 50000,
+    amountRaised: 10000,
+  };
+
+  return (
+    <div className="v3-home">
+      <section className="v3-section v3-appeals" aria-labelledby="home-appeal-style-title">
+        <div className="v3-shell">
+          <h1 id="home-appeal-style-title">Homepage appeal stylesheet acceptance</h1>
+          <div className="grid appeal-grid">
+            <AppealCard appeal={appeal} />
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

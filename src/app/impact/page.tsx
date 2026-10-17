@@ -2,13 +2,18 @@ import evidenceStyles from "@/components/evidence-pathway.module.css";
 import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel } from "@/components/body-carousel";
 import type { Metadata } from "next";
-import Link from "next/link";
-import { PageHero } from "@/components/page-hero";
+import Link from "@/components/navigation-link";
+import ArchiveLink from "next/link";
+import { PageHero, PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { TrustEvidenceBoundary } from "@/components/trust-evidence-boundary";
+import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { programmeBySlug } from "@/lib/master-copy";
 import { getImpactPageData } from "@/lib/public-page-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
+import { selectImpactWitnesses } from "@/lib/impact-witnesses";
+import { getPublishedAnonymousOutcomeNotes } from "@/lib/public-anonymous-outcomes";
+import { ANONYMOUS_OUTCOME_COPY } from "@/lib/assistance-outcome-disclosure";
 import "./impact-refinement.module.css";
 
 export const dynamic = "force-dynamic";
@@ -31,14 +36,25 @@ export const metadata: Metadata = {
 };
 
 export default async function ImpactPage() {
-  const rawInitiatives = await getImpactPageData();
+  // Separate, bounded public-only projection. It never adds to impact metrics.
+  const [rawInitiatives, anonymousNotes] = await Promise.all([
+    getImpactPageData(), getPublishedAnonymousOutcomeNotes(),
+  ]);
   const initiatives = rawInitiatives.filter(item => {
     const canonical = programmeBySlug(item.slug);
     return Boolean(canonical) && !(canonical && "parentSlug" in canonical && canonical.parentSlug);
   });
-  const initiativesWithMedia = initiatives.filter(item => item.mediaAssets.length > 0);
-  const heroSource = initiativesWithMedia.find(item => selectIdentityPublicImage(item.mediaAssets)) ?? initiativesWithMedia[0];
-  const heroMedia = heroSource ? selectIdentityPublicImage(heroSource.mediaAssets) ?? null : null;
+  // A reviewed initiative's own published metric is the only source of
+  // truth here. No pooled amount, newly estimated impact or extra query.
+  const publishedImpact = initiatives
+    .filter(item => item.primaryMetric?.trim() && item.primaryMetricLabel?.trim())
+    .slice(0, 3)
+    .map(item => ({
+      slug: item.slug, title: item.title,
+      value: item.primaryMetric!, label: item.primaryMetricLabel!,
+    }));
+  const witnesses = selectImpactWitnesses(initiatives);
+  const heroMedia = witnesses[0]?.media ?? null;
 
   return (
     <div className="v2-home v2-impact-page">
@@ -51,7 +67,7 @@ export default async function ImpactPage() {
           { label: "Follow the evidence", href: "#evidence" },
           { label: "How we report", href: "/transparency", secondary: true },
         ]}
-        visual={heroMedia ? <PublicMedia asset={heroMedia} /> : (
+        visual={heroMedia ? <PublicMedia asset={heroMedia} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : (
           <div className="page-hero__visual-fallback page-hero__visual-fallback--impact">
             <span>Evidence chain</span>
             <strong>Need → Trust → Action → Outcome</strong>
@@ -61,24 +77,54 @@ export default async function ImpactPage() {
         )}
       />
 
+      {publishedImpact.length > 0 && <div className="v2-shell">
+        <VerifiedImpactStrip headingId="impact-published-outcomes" items={publishedImpact}/>
+      </div>}
+
       <section className="v2-section paper v2-impact-wall-section" id="evidence" aria-labelledby="impact-wall-title">
         <div className="v2-shell">
           <TrustEvidenceBoundary context="impact" className={evidenceStyles.boundary} />
           <SectionHeading eyebrow={<>Wall of impact</>} title={<>See what each initiative achieved.</>} subtitle={<>Explore an outcome, then open the initiative to understand the work behind it.</>} id="impact-wall-title" />
           {initiatives.length > 0 ? <div className="v2-impact-wall">{initiatives.map((item, index) => {
             const thumbnail = selectIdentityPublicImage(item.mediaAssets) ?? null;
-            return <Link href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id} aria-label={`Explore impact: ${item.title}`}>
-              {thumbnail ? <div className="v2-impact-tile-media" aria-hidden="true"><PublicMedia asset={thumbnail} /></div> : null}
+            return <ArchiveLink href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id} aria-label={`Explore impact: ${item.title}`}>
+              {thumbnail ? <div className="v2-impact-tile-media" aria-hidden="true"><PublicMedia asset={thumbnail} sizes="(max-width: 620px) 100vw, (max-width: 1050px) 50vw, 34vw" /></div> : null}
               <div className="v2-impact-tile-shade" aria-hidden="true" />
               <span className="v2-impact-tile-index">{String(index + 1).padStart(2, "0")}</span>
               <div className="v2-impact-tile-copy"><small>{item.cause.title}</small>{item.primaryMetric ? <strong>{item.primaryMetric}</strong> : null}<span>{item.primaryMetricLabel ?? item.title}</span><h3>{item.title}</h3></div>
               <span className="v2-impact-tile-action" aria-hidden="true">Explore impact ↗</span>
-            </Link>;
+            </ArchiveLink>;
           })}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Impact updates</span><h3>No initiative outcomes are published here yet.</h3><p>Outcomes will appear here when they are ready to share.</p></div>}
         </div>
       </section>
 
-      {initiativesWithMedia.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p></div><p className="v2-section-intro">Only photographs suitable for public sharing appear here. Personal documents and sensitive verification material remain private.</p></div><BodyCarousel heading={<h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2>} label="Documented impact photographs" className="v2-impact-witness-carousel">{initiativesWithMedia.slice(0, 6).map(item => { const media=selectIdentityPublicImage(item.mediaAssets); if(!media) return null; return <Link href={`/our-work/${item.slug}`} className="v2-impact-witness-item" key={item.id} aria-label={`Open ${item.title}`}><PublicMedia asset={media} /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Explore this work →</span></div></Link>; })}</BodyCarousel></div></section>}
+      {anonymousNotes.length > 0 && (
+        <section className="v2-section paper" aria-labelledby="anonymous-support-notes">
+          <div className="v2-shell">
+            <SectionHeading
+              id="anonymous-support-notes"
+              eyebrow={<>Consent-reviewed updates</>}
+              title={<>Small outcomes. Protected identities.</>}
+              subtitle={<>These short, anonymous notes were released through a separate
+                consent and staff-publication decision. They do not imply recovery,
+                complete case resolution or independently audited financial settlement.</>}
+            />
+            <div className="v2-impact-principles">
+              {anonymousNotes.map(copy => (
+                <article key={copy}>
+                  <h3>{copy === ANONYMOUS_OUTCOME_COPY.PARTIAL_SUPPORT
+                    ? "Partial support"
+                    : copy === ANONYMOUS_OUTCOME_COPY.SPECIFIC_SUPPORT_COMPLETED
+                      ? "A support action completed" : "Further follow-up"}</h3>
+                  <p>{copy}</p>
+                </article>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {witnesses.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p></div><p className="v2-section-intro">Only photographs suitable for public sharing appear here. Personal documents and sensitive verification material remain private.</p></div><BodyCarousel heading={<h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2>} label="Documented impact photographs" className="v2-impact-witness-carousel">{witnesses.map(({ item, media }) => <ArchiveLink href={`/our-work/${item.slug}`} className="v2-impact-witness-item" key={item.id} aria-label={`Open ${item.title}`}><PublicMedia asset={media} sizes="(max-width: 700px) 86vw, (max-width: 1200px) 46vw, 31vw" /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Explore this work →</span></div></ArchiveLink>)}</BodyCarousel></div></section>}
 
       <section className="v2-section v2-impact-philosophy">
         <div className="v2-shell v2-impact-philosophy-grid">

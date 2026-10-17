@@ -1,0 +1,3 @@
+-- Compatibility placeholder for the previously authored, unapplied fund-only
+-- currency migration. The existing 20260917090000 financial integrity migration
+-- already enforces INR for every Donation. Do not add a redundant constraint.

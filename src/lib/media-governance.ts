@@ -1,3 +1,5 @@
+import { singleFormValue } from "./single-form-value";
+
 export type MediaPrivacyClass = "GREEN_PUBLIC" | "AMBER_RESTRICTED" | "RED_PRIVATE";
 export type MediaConsentStatus = "DOCUMENTED" | "RESTRICTED" | "NOT_APPROVED" | "NOT_APPLICABLE";
 
@@ -32,23 +34,56 @@ export function mediaPublicationIssues(review: MediaPublicationReview) {
   return issues;
 }
 
+/** Do not let an uploaded file or repeated form control override a
+ * beneficiary consent declaration. Absence is acceptable for checkboxes only. */
+function mediaReviewText(form: FormData, field: string): string | null {
+  const value = singleFormValue(form, field);
+  if (value === null) return null;
+  if (typeof value !== "string") throw new Error(`${field} must be a text field.`);
+  return value;
+}
+
+function mediaReviewChecked(form: FormData, field: string): boolean {
+  const value = mediaReviewText(form, field);
+  if (value !== null && value !== "on") {
+    throw new Error(`Invalid ${field} checkbox value.`);
+  }
+  return value === "on";
+}
+
 export function parseMediaPublicationReview(formData: FormData): MediaPublicationReview {
-  const privacyClass = String(formData.get("privacyClass") ?? "") as MediaPrivacyClass;
-  const consentStatus = String(formData.get("consentStatus") ?? "") as MediaConsentStatus;
-  const validPrivacy = new Set<MediaPrivacyClass>(["GREEN_PUBLIC", "AMBER_RESTRICTED", "RED_PRIVATE"]);
-  const validConsent = new Set<MediaConsentStatus>(["DOCUMENTED", "RESTRICTED", "NOT_APPROVED", "NOT_APPLICABLE"]);
-  if (!validPrivacy.has(privacyClass)) throw new Error("Choose a media privacy classification before publication.");
-  if (!validConsent.has(consentStatus)) throw new Error("Choose a consent status before publication.");
+  const privacyClass = mediaReviewText(formData, "privacyClass");
+  const consentStatus = mediaReviewText(formData, "consentStatus");
+  const validPrivacy = new Set<string>(["GREEN_PUBLIC", "AMBER_RESTRICTED", "RED_PRIVATE"]);
+  const validConsent = new Set<string>(["DOCUMENTED", "RESTRICTED", "NOT_APPROVED", "NOT_APPLICABLE"]);
+  if (!privacyClass || !validPrivacy.has(privacyClass)) {
+    throw new Error("Choose a media privacy classification before publication.");
+  }
+  if (!consentStatus || !validConsent.has(consentStatus)) {
+    throw new Error("Choose a consent status before publication.");
+  }
+
+  // Read every review control, including fields whose selected state would
+  // otherwise be ignored. Reject ambiguous duplicates before persisting
+  // an approval audit or writing a public media status.
+  const websiteApproved = mediaReviewChecked(formData, "websiteApproved");
+  const containsMinor = mediaReviewChecked(formData, "containsMinor");
+  const containsPatient = mediaReviewChecked(formData, "containsPatient");
+  const containsPrivateDocument = mediaReviewChecked(formData, "containsPrivateDocument");
+  const heroEligible = mediaReviewChecked(formData, "heroEligible");
+  const provenanceConfirmed = mediaReviewChecked(formData, "provenanceConfirmed");
+  const reviewNotes = mediaReviewText(formData, "reviewNotes")?.trim() ?? "";
+  if (reviewNotes.length > 2000) throw new Error("reviewNotes exceeds the 2,000-character limit.");
 
   return {
-    privacyClass,
-    consentStatus,
-    websiteApproved: formData.get("websiteApproved") === "on",
-    containsMinor: formData.get("containsMinor") === "on",
-    containsPatient: formData.get("containsPatient") === "on",
-    containsPrivateDocument: formData.get("containsPrivateDocument") === "on",
-    heroEligible: formData.get("heroEligible") === "on",
-    provenanceConfirmed: formData.get("provenanceConfirmed") === "on",
-    reviewNotes: String(formData.get("reviewNotes") ?? "").trim().slice(0, 2000) || null,
+    privacyClass: privacyClass as MediaPrivacyClass,
+    consentStatus: consentStatus as MediaConsentStatus,
+    websiteApproved,
+    containsMinor,
+    containsPatient,
+    containsPrivateDocument,
+    heroEligible,
+    provenanceConfirmed,
+    reviewNotes: reviewNotes || null,
   };
 }

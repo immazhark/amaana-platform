@@ -2,11 +2,17 @@ import { expect, test } from "@playwright/test";
 
 const protectedAdminSurfaces = [
   "/admin",
+  "/admin/allocations",
   "/admin/appeals",
   "/admin/appeals/not-a-real-id",
   "/admin/audit",
+  "/admin/giving-funds",
+  "/admin/giving-funds/not-a-real-id/preview",
   "/admin/donations",
   "/admin/donations/not-a-real-id",
+  "/admin/donations/recognition",
+  "/admin/donations/rights",
+  "/admin/follow-ups",
   "/admin/home-carousel",
   "/admin/media",
   "/admin/notifications",
@@ -19,6 +25,7 @@ const mutatingAdminApiRoutes = [
   "/api/admin/media/curated-gallery/start",
   "/api/admin/media/curated-gallery/upload",
   "/api/admin/media/curated-gallery/publish",
+  "/api/admin/assistance/not-a-real-id/documents",
 ];
 
 function expectPrivateApiHeaders(response) {

@@ -1,3 +1,211 @@
+## Legacy giving enquiries — information only, not bequest acceptance
+
+`/get-involved/legacy-giving` is a preliminary information and
+contact journey. It is **not** a reviewed legal, religious or
+financial product. It collects no will, identity, family detail,
+estate records, amount or payment credential, provides no template
+or inheritance ruling, and accepts no pledge or estate gift.
+The only contact entry points lead to Amaana's ordinary
+contact/governance pages. No new backend intake is introduced.
+
+The page is reachable through ordinary on-site Get Involved/footer
+links, but is absent from the XML sitemap and deliberately carries
+`noindex,nofollow,noarchive` in page metadata and the HTTP
+`X-Robots-Tag` header. Do not remove these protections or market
+an accepted legacy-giving facility until an appropriately qualified
+legal/religious adviser, charity-governance owner and privacy
+reviewer approve copy, acceptance terms, beneficiary-designation
+policy and the legal-document handling procedure.
+
+The Shukr consent mutation must never be reported as failed merely
+because non-critical cache revalidation throws after a committed
+transaction. In case of invalidation service failure, public
+`/shukr` is force-dynamic and no-store and reads the DB directly.
+Database transactional or append-only consent audit failures
+remain fatal, fail closed, and must not return success.
+
+## Shukr consent event history, cleanup and release gate (OFF by default)
+
+Donor Shukr recognition requires **separate affirmative opt-in** from
+the donor's private receipt. The new
+`DonorRecognitionConsentEvent` table only records donationId,
+REQUESTED/WITHDRAWN and timestamp. These donor actions are NOT
+`AuditEvent` staff actions. The public wall must never reveal
+contact details, payment amounts or hidden consent-event data.
+
+The receipt-authorized API uses one serializable transaction per
+consent mutation and atomically writes the minimal private event.
+Donor withdrawals are valid even after refunds or anonymity changes;
+stale token-authorized state cannot reverse a newer decision. The
+staff console may remove a pending ineligible request only if the
+database currently confirms refunded, anonymous or non-CAPTURED
+status, using a separate authorized and audited conditional write.
+Emergency unpublication of previously approved names remains
+available. Bounded queues MUST show when further records exist.
+
+**Do not activate** `AMAANA_DONOR_RECOGNITION_ENABLED` until all
+of the following are reviewed and proven:
+
+1. Review consent and event retention/deletion policy with a qualified
+   owner, including access requests and how donor withdrawals are
+   honored without retaining their prior public display name.
+2. Back up the real database; apply the original recognition
+   migration (`20261015000000_donor_recognition_consent`) **before**
+   `20261015040000_donor_recognition_consent_events` and regenerate
+   Prisma client on the exact checkout.
+3. Exercise parallel request/withdrawal/moderation races and
+   database uniqueness/audit rollback against a migrated isolated
+   PostgreSQL instance. Confirm errors fail closed without a
+   consent event or a partial data update.
+4. Verify valid/invalid receipt token behavior, origin/rate limiting,
+   donor anonymity/refunds, independent staff RBAC, moderated
+   publication and emergency takedown.
+5. Verify Shukr remains HTTP- and metadata-`noindex`, with
+   `no-store`, sitemap exclusion, keyboard access and 200% zoom.
+   Check withdrawn names are absent from fresh public reads and
+   any platform edge caches.
+6. Do not put contact details, receipt capabilities, chosen display
+   names or sensitive notes in the consent-event ledger or logs.
+
+For emergency takedown or privacy review, disable the feature flag.
+Disabling recognition does not alter donations or payment records.
+
+## Private giving-fund planning summary (flag OFF by default)
+
+The fund registry is viewable with `fund.view`; financial data
+additionally requires `donation.view`. Allocation planning
+summaries and the allocation sidebar link are shown only if the
+server-side `AMAANA_ALLOCATION_PLANNING_ENABLED=true` gate has
+been explicitly activated after migrations and financial review.
+
+The planner compares all **approved, unreversed internal proposals**
+with recorded captured and retained receipts using integer paise.
+Pending proposals do not reserve money. On refund conflict,
+over-allocation or invalid sum, show a finance warning instead of a
+remaining balance. "Unplanned" means only that internal plans have
+not consumed those recorded receipts; it is **not cash in bank,
+paid expenditure, verified disbursement or programme outcome**.
+
+Prior to activation, verify Prisma groupBy relation filters
+(`reversal is null`, donation captured/refunded status), SQL
+integer precision and concurrently posted allocations against an
+isolated PostgreSQL seed. Verify staff `fund.view` +
+`donation.view` RBAC, flag-off absence, admin zoom/accessibility,
+and clean rollback. Do not activate based solely on authored tests.
+
+## Shukr search privacy and allocation conflict queues
+
+The optional donor Shukr page at `/shukr` is public for a
+**voluntarily consented, moderated, withdrawable on-site name list**,
+but must remain `noindex,nofollow,noarchive` and excluded from the
+sitemap. Donor recognition consent is not consent to permanent
+third-party search indexing. Do not remove this protection without
+independently reviewed, explicit consent and removal guarantees.
+
+The private allocation page has three separately bounded queues:
+1. Oldest refund or donation-status conflicts against approved,
+   un-reversed internal allocation plans, with a total count that
+   warns when records exceed the displayed viewport.
+2. Oldest pending independent reviews.
+3. Most recently reviewed approvals and rejections.
+
+Always reconcile all underlying donation records with approved
+non-reversed allocations, not just the visible rows. A historical
+planning approval is **not bank liquidity, a verified expenditure,
+or proof that a beneficiary was served**. Disable
+`AMAANA_ALLOCATION_PLANNING_ENABLED` if the accounting projection,
+fund purpose, refund reconciliation or third-party reviewer process
+cannot be demonstrated against an isolated real PostgreSQL instance.
+
+## Internal giving-fund allocation planning (OFF by default)
+
+This feature is an **internal allocation proposal and second-reviewer
+governance workflow only**, not a disbursement, expense, receipt, provider
+payment, fund transfer or beneficiary-verified expenditure record.
+
+- Keep `AMAANA_ALLOCATION_PLANNING_ENABLED` unset or `false` until
+  a separate finance/legal approval and controlled release. It must
+  remain false on live Railway until both dedicated migrations
+  (`20261015020000_donation_allocation_proposals` and
+  `20261015030000_allocation_reversal_ledger`) have been reviewed,
+  backed up, applied and Prisma client generated in the target environment.
+- `fund.manage` may create pending proposals only for approved
+  original-purpose INR GENERAL/SADAQAH fund donations with CAPTURED
+  status and zero refunds. Another account with `fund.approve` may
+  approve or reject. A third independent fund.approve reviewer may
+  write a one-time append-only reversal. No actor may self-approve,
+  and a reversal must preserve the historical approval.
+- Pending proposals never reserve money; approval alone checks all
+  already approved and not reversed proposals atomically against
+  the original net captured donation. Verify concurrent approval
+  isolation and original designation in an isolated test DB.
+- Important release blocker: approval is *planning*, not settled
+  expenditure. Financial review must specify how later partial/full
+  refunds and disbursement voucher records will reconcile with
+  earlier approved internal allocations before activation. Never
+  treat proposal sums as available bank cash or completed impact.
+- Test maker/checker/reverser RBAC, forged form values, concurrency,
+  overflow/paise precision, fund revision/original snapshot,
+  net retained accounting, ineligible Zakat/appeal/pending claims,
+  append-only reversal uniqueness, and audit trails.
+- To disable immediately, unset the flag. Neither enabled nor
+  disabled modes should initiate any payment or expose a public API.
+
+## Private donor information rights requests (disabled until reviewed)
+
+This new receipt-scoped workflow is NOT a donor account and NOT automatic
+statutory disclosure/deletion. Its `/api/donations/data-rights` POST uses
+a verified private receipt credential, bounded request types and status
+responses; the staff queue is `/admin/donations/rights`.
+
+- Leave `AMAANA_DONOR_RIGHTS_ENABLED` unset/false. Never set it true
+  before database migration, Prisma regeneration and acceptance.
+- After an approved database backup, apply the earlier
+  `20261015000000_donor_recognition_consent` migration and then
+  `20261015010000_donor_rights_requests` only in the intended
+  environment; review and test the SQL first. Neither was applied
+  by source commits.
+- Verify synthetic donor receipt authentication and origin/rate/body
+  limits, independent donation isolation, stale/duplicate submissions,
+  staff `donation.reconcile` RBAC, audit creation, status updates and
+  non-disclosure of contact/financial fields. Check other donation
+  histories cannot be inferred from an email address.
+- Obtain owner/qualified review of data retention, review routing,
+  legal communications and closing criteria before activating. There
+  is no automatic deletion, guaranteed response time, or all-donations
+  export.
+- Monitor the private staff review queue explicitly; no email/WhatsApp
+  notification is created by this source change. A feature-disable
+  rollback must not silently drop previously received requests.
+- Run full exact-HEAD TypeScript, Prisma generate/validate, tests
+  and E2E on staging with synthetic records before explicit approval.
+
+## Donor Shukr recognition rollout (disabled by default)
+
+The optional donor recognition workflow is **NOT a donation requirement**.
+It uses donation receipt tokens for a separate opt-in request, requires staff
+`donation.reconcile` moderation, and permits donor withdrawal. Existing
+donor records have NULL recognition fields and must never be backfilled.
+
+1. Keep `AMAANA_DONOR_RECOGNITION_ENABLED` unset or `false` in every
+   environment until privacy/retention wording is reviewed and approved.
+2. Before enabling, back up the database, inspect and apply the dedicated
+   `20261015000000_donor_recognition_consent` migration to the intended
+   environment, and regenerate Prisma types. Do not apply it merely by
+   visiting the public page.
+3. Verify receipt token authorization, cross-origin/size/rate controls,
+   anonymity and refund exclusions, donor opt-in, staff-only moderation,
+   concurrent withdrawal, and names-only public projection with a synthetic
+   test donor in an isolated staging database.
+4. Confirm the `/shukr` response is not cached, that a previously approved
+   name disappears after revocation, and that a refunded/anonymous donation
+   cannot reappear. Confirm direct-transfer donors have valid private
+   receipts and that no consent fields are inferred from pre-existing data.
+5. Only after explicit owner approval, enable the server-only feature flag.
+   To disable immediately without removing a record, set the flag false.
+   Never expose receipt credentials or original private donor fields in
+   `/shukr`, analytics or logs.
+
 # Amaana Platform Operations
 
 ## Required infrastructure
@@ -103,3 +311,32 @@ Set provider spending alerts and hard limits where available. Upgrade Railway on
 - [ ] Mobile, keyboard and screen-reader checks completed
 - [ ] Domain, HTTPS, monitoring and alerting verified
 - [ ] Google indexing enabled only after final content approval
+
+## IndexNow public discovery (disabled until explicit rollout)
+
+`AMAANA_INDEXNOW_ENABLED=false` and empty `INDEXNOW_KEY` are the defaults.
+The Media review panel permits only `content.approve` staff to explicitly
+notify search engines of selected current public sitemap paths. There is no
+automatic publish hook, retry, cron or removal operation. Individual appeals,
+private URLs, query strings, Shukr and unreviewed legacy content are excluded.
+This restriction does not remove material already indexed by third parties.
+
+Before activation, review the protocol at https://www.indexnow.org/documentation
+and https://www.indexnow.org/faq. Provision an independently generated 8–128
+character alphanumeric/hyphen ownership key; never reuse receipt/payment secrets.
+The exact `/{key}.txt` response must be reachable on the official configured
+HTTPS origin, with no query parameters, plain UTF-8 text, no-store and noindex.
+Verify old keys disappear immediately after rotation. The application must have
+`APP_ENVIRONMENT=production` and explicit public indexing approval. Do not enable
+this workflow on a preview merely to test provider ownership.
+
+Prove isolated PostgreSQL concurrent audit admission, staff RBAC, stale
+publication rejection and deployed root-route behavior before release. Admission
+is committed before transmission; provider timeout means UNKNOWN and must not
+automatically trigger another request. HTTP 200 confirms receipt only; 202 leaves
+key validation pending. Outcome-audit faults preserve known provider receipt and
+require reconciliation. Audit metadata retains count/status only, not keys,
+submitted URLs or provider bodies. No automatic removal/privacy guarantee exists.
+
+Disabling the feature stops submissions and returns 404 for the ownership key.
+Do not activate while existing JS/CSS budgets or other release gates fail.

@@ -1,6 +1,7 @@
 import { DonationPaymentMethod, DonationStatus, NotificationChannel } from "@prisma/client";
 import { shouldMarkAppealFunded } from "@/lib/appeals";
 import { createReceiptNumber } from "@/lib/donations";
+import { requireDonationDestination, requireDonationFinancialDestination } from "@/lib/donation-destination";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 
 const DIRECT_METHODS: DonationPaymentMethod[] = [DonationPaymentMethod.DIRECT_UPI, DonationPaymentMethod.BANK_TRANSFER];
@@ -10,6 +11,9 @@ export async function reconcileDirectDonation(input: {
   actorId: string;
   decision: "VERIFY" | "REJECT";
   notes: string;
+  statementReference?: string;
+  statementAmount?: string;
+  statementConfirmed?: boolean;
 }) {
   const notes = input.notes.trim();
   if (!input.donationId || !input.actorId) throw new Error("Donation and reviewer are required");
@@ -23,16 +27,21 @@ export async function reconcileDirectDonation(input: {
         id: true,
         referenceNumber: true,
         appealId: true,
+        fundId: true,
         donorEmail: true,
         givingIntent: true,
+        designationSnapshot: true,
         amount: true,
+        currency: true,
         status: true,
         paymentMethod: true,
+        transferReference: true,
       },
     });
     if (!donation) throw new Error("Donation not found");
     if (!DIRECT_METHODS.includes(donation.paymentMethod)) throw new Error("Only direct transfers use manual reconciliation");
     if (donation.status !== DonationStatus.PENDING_VERIFICATION) throw new Error("Donation is no longer pending verification");
+    const destination = requireDonationDestination(donation);
 
     const now = new Date();
     if (input.decision === "REJECT") {
@@ -45,16 +54,66 @@ export async function reconcileDirectDonation(input: {
       return { status: DonationStatus.REJECTED, referenceNumber: donation.referenceNumber };
     }
 
-    const appealBefore = await tx.appeal.findUnique({ where: { id: donation.appealId }, select: { goalAmount: true, amountRaised: true, status: true } });
-    if (!appealBefore) throw new Error("Appeal not found");
+    requireDonationFinancialDestination(donation);
     const donationPaise = donation.amount.mul(100).toNumber();
-    const goalPaise = appealBefore.goalAmount.mul(100).toNumber();
-    const raisedPaise = appealBefore.amountRaised.mul(100).toNumber();
-    if (![donationPaise, goalPaise, raisedPaise].every(Number.isSafeInteger) ||
-        donationPaise <= 0 || goalPaise <= 0 || raisedPaise < 0) {
+    if (donation.currency !== "INR" || !Number.isSafeInteger(donationPaise) || donationPaise <= 0) {
       throw new Error("Invalid financial amounts for transfer reconciliation");
     }
-    if (donationPaise > Math.max(0, goalPaise - raisedPaise)) throw new Error("This transfer exceeds the appeal's remaining verified need and requires operator review");
+    // A screenshot or donor-entered UTR alone is never proof that Amaana
+    // received money. The reviewer must cross-check the bank's own statement
+    // reference and exact INR amount before authorizing a CAPTURED mutation.
+    // These are staff-entered attestations, not an automated bank feed.
+    if (input.statementConfirmed !== true) {
+      throw new Error("A bank-statement match confirmation is required");
+    }
+    const statementReference = (input.statementReference ?? "").trim().toUpperCase();
+    const claimedReference = (donation.transferReference ?? "").trim().toUpperCase();
+    if (!/^[A-Z0-9._/-]{6,100}$/.test(statementReference) ||
+        statementReference !== claimedReference) {
+      throw new Error("Bank statement reference must match the claimed transfer");
+    }
+    const statedAmount = input.statementAmount ?? "";
+    const match = /^(0|[1-9][0-9]{0,11})(?:\.([0-9]{1,2}))?$/.exec(statedAmount);
+    const statementPaise = match
+      ? Number(match[1]) * 100 + Number((match[2] ?? "").padEnd(2, "0"))
+      : NaN;
+    if (!Number.isSafeInteger(statementPaise) || statementPaise <= 0 ||
+        statementPaise !== donationPaise) {
+      throw new Error("Bank statement amount does not match the claimed INR transfer");
+    }
+
+    // Postgres SERIALIZABLE predicate reads protect against two different
+    // claims being credited for a case-variant of the same statement UTR.
+    // An existing exact-case DB unique constraint alone is insufficient.
+    // Ambiguous duplicates must go to exception review, never be captured.
+    const earlierCredit = await tx.donation.findFirst({
+      where: {
+        id: { not: donation.id },
+        paymentMethod: { in: DIRECT_METHODS },
+        status: { in: [DonationStatus.CAPTURED, DonationStatus.REFUNDED] },
+        transferReference: { equals: statementReference, mode: "insensitive" },
+      },
+      select: { id: true },
+    });
+    if (earlierCredit) {
+      throw new Error("This bank transaction reference was already reconciled; investigate duplicate credit");
+    }
+
+    if (destination.kind === "APPEAL") {
+      const appealBefore = await tx.appeal.findUnique({
+        where: { id: destination.id }, select: { goalAmount: true, amountRaised: true, status: true },
+      });
+      if (!appealBefore) throw new Error("Appeal not found");
+      const goalPaise = appealBefore.goalAmount.mul(100).toNumber();
+      const raisedPaise = appealBefore.amountRaised.mul(100).toNumber();
+      if (![goalPaise, raisedPaise].every(Number.isSafeInteger) ||
+          goalPaise <= 0 || raisedPaise < 0) {
+        throw new Error("Invalid financial amounts for transfer reconciliation");
+      }
+      if (donationPaise > Math.max(0, goalPaise - raisedPaise)) {
+        throw new Error("This transfer exceeds the appeal's remaining verified need and requires operator review");
+      }
+    }
 
     const changed = await tx.donation.updateMany({
       where: { id: donation.id, status: DonationStatus.PENDING_VERIFICATION },
@@ -69,26 +128,32 @@ export async function reconcileDirectDonation(input: {
     });
     if (changed.count !== 1) throw new Error("Donation changed during reconciliation");
 
-    const appeal = await tx.appeal.update({
-      where: { id: donation.appealId },
-      data: { amountRaised: { increment: donation.amount } },
-      select: { id: true, status: true, goalAmount: true, amountRaised: true },
-    });
-    if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) {
-      await tx.appeal.updateMany({ where: { id: appeal.id, status: "PUBLISHED" }, data: { status: "FUNDED" } });
+    if (destination.kind === "APPEAL") {
+      const appeal = await tx.appeal.update({
+        where: { id: destination.id },
+        data: { amountRaised: { increment: donation.amount } },
+        select: { id: true, status: true, goalAmount: true, amountRaised: true },
+      });
+      if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) {
+        await tx.appeal.updateMany({ where: { id: appeal.id, status: "PUBLISHED" }, data: { status: "FUNDED" } });
+      }
     }
+    // A verified fund transfer is counted directly from CAPTURED donation rows;
+    // no appeal total is touched and no public fund checkout is activated.
 
     await tx.notification.create({
       data: {
         channel: NotificationChannel.EMAIL,
         recipient: donation.donorEmail,
         templateKey: "donation-acknowledgement",
-        subject: "Thank you for supporting an Amaana Foundation appeal",
-        payload: { referenceNumber: donation.referenceNumber, givingIntent: donation.givingIntent },
+        subject: destination.kind === "FUND"
+          ? "Thank you for supporting an Amaana Foundation programme"
+          : "Thank you for supporting an Amaana Foundation appeal",
+        payload: { referenceNumber: donation.referenceNumber, givingIntent: donation.givingIntent, designationKind: destination.kind },
         donationId: donation.id,
       },
     });
-    await tx.auditEvent.create({ data: { actorId: input.actorId, action: "donation.transfer.verify", entityType: "Donation", entityId: donation.id, metadata: { paymentMethod: donation.paymentMethod } } });
+    await tx.auditEvent.create({ data: { actorId: input.actorId, action: "donation.transfer.verify", entityType: "Donation", entityId: donation.id, metadata: { paymentMethod: donation.paymentMethod, bankStatementMatched: true, statementReference, statementAmountPaise: statementPaise } } });
     return { status: DonationStatus.CAPTURED, referenceNumber: donation.referenceNumber };
   });
 }

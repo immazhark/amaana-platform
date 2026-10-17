@@ -3,7 +3,6 @@ main{min-width:0}
 .admin-content{background:#f4f6f9}
 th{background:#e9eff8}
 .admin-user small{color:#dce6f4}
-.text-button{color:#e0b318}
 .v2-skip-link{position:fixed;left:1rem;top:1rem;z-index:10000;transform:translateY(-220%);padding:.85rem 1rem;background:#fffdf8;color:var(--v2-ink);border:2px solid var(--v2-gold);font-weight:850;box-shadow:0 .75rem 2rem rgb(18 34 57 / 18%);transition:transform .18s ease}
 .v2-skip-link:focus{transform:translateY(0);outline:3px solid #fff;outline-offset:3px}
 .v2-home{overflow-x:clip;overflow-y:visible}

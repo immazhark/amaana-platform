@@ -2,6 +2,7 @@ import "server-only";
 import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { createHash, randomUUID } from "node:crypto";
+import { generatePublicImagePlaceholder } from "./public-image-placeholder";
 
 const allowedTypes = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
 const publicMediaTypes = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
@@ -9,6 +10,13 @@ export const MAX_FILE_BYTES = 5 * 1024 * 1024;
 export const MAX_FILES = 5;
 export const MAX_PUBLIC_IMAGE_PIXELS = 40_000_000;
 export const PRIVATE_OBJECT_CACHE_CONTROL = "private, no-store, max-age=0";
+
+export class PrivateDocumentValidationError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "PrivateDocumentValidationError";
+  }
+}
 
 type StorageConfig = {
   bucket: string;
@@ -198,10 +206,10 @@ export async function deleteDonationEvidenceObject(objectKey: string, donationId
   await client.send(new DeleteObjectCommand({ Bucket: bucket, Key: objectKey }));
 }
 export async function uploadPrivateDocument(file: File, requestId: string) {
-  if (!allowedTypes.has(file.type)) throw new Error("Only PDF, JPEG, PNG and WebP documents are accepted");
-  if (file.size > MAX_FILE_BYTES) throw new Error("Each document must be 5 MB or smaller");
+  if (!allowedTypes.has(file.type)) throw new PrivateDocumentValidationError("Only PDF, JPEG, PNG and WebP documents are accepted");
+  if (file.size > MAX_FILE_BYTES) throw new PrivateDocumentValidationError("Each document must be 5 MB or smaller");
   const bytes = Buffer.from(await file.arrayBuffer());
-  if (!hasValidSignature(bytes, file.type)) throw new Error("The uploaded document does not match its declared file type");
+  if (!hasValidSignature(bytes, file.type)) throw new PrivateDocumentValidationError("The uploaded document does not match its declared file type");
   const safeExtension = extensionForMimeType(file.type);
   const objectKey = `assistance/${requestId}/${randomUUID()}.${safeExtension}`;
   const { bucket, client } = getPrivateStorage();
@@ -284,39 +292,69 @@ export function isManagedPublicMediaKey(objectKey: string) {
   return /^\d{4}\/[0-9a-f-]{36}\.(?:pdf|jpg|png|webp)$/i.test(objectKey);
 }
 
+const PUBLIC_MEDIA_READ_TIMEOUT_MS = 15_000;
+
+async function withPublicMediaReadDeadline<T>(work: Promise<T>, onTimeout: () => void): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  try {
+    return await Promise.race([
+      work,
+      new Promise<T>((_resolve, reject) => {
+        timer = setTimeout(() => {
+          reject(new Error("Public media retrieval timed out"));
+          try { onTimeout(); } catch { /* Best-effort transport cleanup. */ }
+        }, PUBLIC_MEDIA_READ_TIMEOUT_MS);
+      }),
+    ]);
+  } finally {
+    if (timer !== undefined) clearTimeout(timer);
+  }
+}
+
 export async function getPublicMediaObject(objectKey: string) {
   if (!isManagedPublicMediaKey(objectKey)) throw new Error("Invalid managed public media key");
   const { bucket, client } = getPublicMediaStorage();
-  const object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: objectKey }));
-  if (!object.Body) throw new Error("Public media object has no body");
-  const body = object.Body;
-  if (object.ContentLength !== undefined &&
-      (!Number.isSafeInteger(object.ContentLength) || object.ContentLength <= 0 || object.ContentLength > MAX_FILE_BYTES)) {
-    if ("destroy" in body && typeof body.destroy === "function") body.destroy();
-    else if ("cancel" in body && typeof body.cancel === "function") await body.cancel();
-    throw new Error("Public media object exceeds the verified size boundary");
-  }
-  if (!(Symbol.asyncIterator in body)) throw new Error("Public media object body is not a readable stream");
-  const chunks: Buffer[] = [];
-  let size = 0;
-  for await (const chunk of body as AsyncIterable<unknown>) {
-    if (!(chunk instanceof Uint8Array)) throw new Error("Public media object contains invalid byte data");
-    if (chunk.byteLength > MAX_FILE_BYTES - size) {
+  const abort = new AbortController();
+  let stopBody = () => {};
+  const read = (async () => {
+    const object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: objectKey }), { abortSignal: abort.signal });
+    if (!object.Body) throw new Error("Public media object has no body");
+    const body = object.Body;
+    stopBody = () => {
+      try {
+        if ("destroy" in body && typeof body.destroy === "function") body.destroy();
+        else if ("cancel" in body && typeof body.cancel === "function") void Promise.resolve(body.cancel()).catch(() => undefined);
+      } catch {
+        // Cleanup errors must not replace an established rejection.
+      }
+    };
+    if (object.ContentLength !== undefined &&
+        (!Number.isSafeInteger(object.ContentLength) || object.ContentLength <= 0 || object.ContentLength > MAX_FILE_BYTES)) {
+      stopBody();
       throw new Error("Public media object exceeds the verified size boundary");
     }
-    size += chunk.byteLength;
-    chunks.push(Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength));
-  }
-  if (size === 0 || (object.ContentLength !== undefined && size !== object.ContentLength)) {
-    throw new Error("Public media object body is incomplete");
-  }
-  const bytes = Buffer.concat(chunks, size);
-  return {
-    bytes,
-    contentType: object.ContentType ?? "application/octet-stream",
-    etag: object.ETag ?? null,
-    lastModified: object.LastModified ?? null,
-  };
+    if (!(Symbol.asyncIterator in body)) throw new Error("Public media object body is not a readable stream");
+    const chunks: Buffer[] = [];
+    let size = 0;
+    for await (const chunk of body as AsyncIterable<unknown>) {
+      if (!(chunk instanceof Uint8Array)) throw new Error("Public media object contains invalid byte data");
+      if (chunk.byteLength > MAX_FILE_BYTES - size) {
+        throw new Error("Public media object exceeds the verified size boundary");
+      }
+      size += chunk.byteLength;
+      chunks.push(Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength));
+    }
+    if (size === 0 || (object.ContentLength !== undefined && size !== object.ContentLength)) {
+      throw new Error("Public media object body is incomplete");
+    }
+    return {
+      bytes: Buffer.concat(chunks, size),
+      contentType: object.ContentType ?? "application/octet-stream",
+      etag: object.ETag ?? null,
+      lastModified: object.LastModified ?? null,
+    };
+  })();
+  return withPublicMediaReadDeadline(read, () => { abort.abort(); stopBody(); });
 }
 
 export async function deletePublicMediaObject(objectKey: string) {
@@ -381,6 +419,7 @@ export async function uploadCuratedPublicMediaFile(
     sizeBytes: file.size,
     width: dimensions?.width ?? null,
     height: dimensions?.height ?? null,
+    blurDataURL: dimensions ? await generatePublicImagePlaceholder(bytes, MAX_PUBLIC_IMAGE_PIXELS) : null,
   };
 }
 
@@ -417,6 +456,7 @@ export async function uploadPublicMediaFile(file: File) {
     sizeBytes: file.size,
     width: dimensions?.width ?? null,
     height: dimensions?.height ?? null,
+    blurDataURL: dimensions ? await generatePublicImagePlaceholder(bytes, MAX_PUBLIC_IMAGE_PIXELS) : null,
   };
 }
 

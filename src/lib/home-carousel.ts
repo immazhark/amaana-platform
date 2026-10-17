@@ -1,3 +1,5 @@
+import { isPrivateRoute } from "./public-routing";
+
 export class HomeCarouselValidationError extends Error {}
 
 export type HomeSlide = {
@@ -26,7 +28,16 @@ export const defaultHomeConfig: HomeCarouselConfig = { slides: defaultHomeSlides
 export function safeHomeHref(value: string) {
   if (!/^\/(?!\/)[a-zA-Z0-9/_?=&%#.-]*$/.test(value) || /%(?:25|2f|5c|0[0-9a-f]|1[0-9a-f]|7f)/i.test(value)) throw new HomeCarouselValidationError('Use a safe internal website link.');
   const url = new URL(value, 'https://amaana.invalid');
-  if (url.origin !== 'https://amaana.invalid' || /^\/(?:admin|api)(?:\/|$)/i.test(decodeURIComponent(url.pathname))) throw new HomeCarouselValidationError('Choose a public website destination.');
+  const pathname = decodeURIComponent(url.pathname).toLowerCase();
+  // App Router has intentionally private paths adjacent to public giving.
+  // Keep approved /donate/[appeal] destinations public but never expose a
+  // personal donation receipt or assistance-status page in hero editorial CTAs.
+  // Only the actual public /donate/[appealSlug] page is excepted:
+  // nested payment/acknowledgement paths are not public editorial targets.
+  const publicAppealDestination = /^\/donate\/[a-z0-9]+(?:-[a-z0-9]+)*$/.test(pathname);
+  const privateDestination = isPrivateRoute(pathname) && !publicAppealDestination;
+  if (url.origin !== 'https://amaana.invalid' || privateDestination)
+    throw new HomeCarouselValidationError('Choose a public website destination.');
   return value;
 }
 export function validateHomeSlide(raw: unknown): HomeSlide {
@@ -68,8 +79,15 @@ export function visibleHomeSlides(config: HomeCarouselConfig, activeAppealSlugs:
 }
 
 /** Insert automatically sourced appeals once; custom linked slides take precedence. */
-export function composeHomeSlides(config: HomeCarouselConfig, appealSlides: HomeSlide[], now = new Date()) {
-  const visible = visibleHomeSlides(config, new Set(appealSlides.map(s => s.appealSlug)), now);
+export function composeHomeSlides(
+  config: HomeCarouselConfig,
+  appealSlides: HomeSlide[],
+  now = new Date(),
+  eligibleAppealSlugs: ReadonlySet<string> = new Set(appealSlides.map(slide => slide.appealSlug)),
+) {
+  // The active appeal set is separate from automatically injected slides:
+  // a reviewed editor-linked slide may target another eligible appeal.
+  const visible = visibleHomeSlides(config, eligibleAppealSlugs, now);
   const linked = new Set(visible.map(s => s.appealSlug).filter(Boolean));
   const automatic = appealSlides.filter(s => !linked.has(s.appealSlug));
   // Valid admin saves retain an unscheduled fallback. Protect rendering of old/corrupt empty visibility windows too.

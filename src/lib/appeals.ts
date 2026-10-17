@@ -24,11 +24,27 @@ export const amountToNumber = (amount: AmountLike) => {
   return amount.toNumber();
 };
 
+/** Display-only percentage for accessible funding meters; never changes ledger amounts. */
+export function getAppealProgressPercent(amountRaised: AmountLike, goalAmount: AmountLike): number {
+  const raised = amountToNumber(amountRaised);
+  const goal = amountToNumber(goalAmount);
+  if (!Number.isFinite(raised) || !Number.isFinite(goal) || goal <= 0) return 0;
+  // Rounding must never label a still-unfunded appeal as 100% supported.
+  // A fully met or overfunded goal is the only case that displays 100%.
+  if (raised >= goal) return 100;
+  return Math.max(0, Math.min(99, Math.round((raised / goal) * 100)));
+}
+
 export function getRemainingAppealAmount(
   amountRaised: AmountLike,
   goalAmount: AmountLike,
 ) {
-  return Math.max(0, amountToNumber(goalAmount) - amountToNumber(amountRaised));
+  const raised = amountToNumber(amountRaised);
+  const goal = amountToNumber(goalAmount);
+  // An invalid ledger is not an amount donors should be invited to cover.
+  // Return no eligible remainder instead of propagating NaN/Infinity to UI.
+  if (!Number.isFinite(raised) || raised < 0 || !Number.isFinite(goal) || goal <= 0) return 0;
+  return Math.max(0, goal - raised);
 }
 
 export function shouldMarkAppealFunded(
@@ -36,7 +52,11 @@ export function shouldMarkAppealFunded(
   amountRaised: AmountLike,
   goalAmount: AmountLike,
 ) {
-  return status === "PUBLISHED" && amountToNumber(amountRaised) >= amountToNumber(goalAmount);
+  if (status !== "PUBLISHED") return false;
+  const raised = amountToNumber(amountRaised);
+  const goal = amountToNumber(goalAmount);
+  return Number.isFinite(raised) && raised >= 0
+    && Number.isFinite(goal) && goal > 0 && raised >= goal;
 }
 
 export function isAppealOpenForDonations(
@@ -44,8 +64,20 @@ export function isAppealOpenForDonations(
   now: Date = new Date(),
 ) {
   if (appeal.status !== "PUBLISHED") return false;
-  if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) return false;
-  if (appeal.closesAt && new Date(appeal.closesAt).getTime() <= now.getTime()) return false;
+  const raised = amountToNumber(appeal.amountRaised);
+  const goal = amountToNumber(appeal.goalAmount);
+  const currentTime = now.getTime();
+
+  // Never advertise a donation route when goal, receipts or clock data cannot
+  // establish an open, bounded fundraising window. Zero-goal campaigns are not
+  // eligible for case-linked donations.
+  if (!Number.isFinite(raised) || raised < 0 || !Number.isFinite(goal) || goal <= 0) return false;
+  if (!Number.isFinite(currentTime) || raised >= goal) return false;
+
+  if (appeal.closesAt !== null && appeal.closesAt !== undefined) {
+    const closeTime = new Date(appeal.closesAt).getTime();
+    if (!Number.isFinite(closeTime) || closeTime <= currentTime) return false;
+  }
   return true;
 }
 
@@ -65,7 +97,18 @@ export function appealStatusAfterRefund(
   now: Date = new Date(),
 ) {
   if (status !== "FUNDED") return status;
-  if (amountToNumber(nextAmountRaised) >= amountToNumber(goalAmount)) return "FUNDED";
-  if (closesAt && new Date(closesAt).getTime() <= now.getTime()) return "CLOSED";
+
+  const retained = amountToNumber(nextAmountRaised);
+  const goal = amountToNumber(goalAmount);
+  const currentTime = now.getTime();
+  // A refund must not reopen fundraising when its financial state or clock
+  // cannot be trusted. Require review rather than accepting another donation.
+  if (!Number.isFinite(retained) || retained < 0 || !Number.isFinite(goal) || goal <= 0) return "CLOSED";
+  if (retained >= goal) return "FUNDED";
+  if (!Number.isFinite(currentTime)) return "CLOSED";
+  if (closesAt !== null && closesAt !== undefined) {
+    const closeTime = new Date(closesAt).getTime();
+    if (!Number.isFinite(closeTime) || closeTime <= currentTime) return "CLOSED";
+  }
   return "PUBLISHED";
 }

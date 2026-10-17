@@ -1,3 +1,5 @@
+import { syntheticFundDesignation } from "@/test/fund-designation";
+vi.mock("@/lib/donation-cache", () => ({ expireDonationViews: vi.fn() }));
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -18,17 +20,16 @@ const mocks = vi.hoisted(() => ({
   txNotificationCreate: vi.fn(),
   txRefundCreateMany: vi.fn(),
   txRefundFindUnique: vi.fn(),
+  readTextBodyWithLimit: vi.fn(),
 }));
 
 vi.mock("@/lib/bounded-request-body", () => {
   class RequestBodyTooLargeError extends Error {}
+  class RequestBodyReadTimeoutError extends Error {}
   return {
     RequestBodyTooLargeError,
-    readTextBodyWithLimit: async (request: Request, maxBytes: number) => {
-      const declared = Number(request.headers.get("content-length"));
-      if (Number.isFinite(declared) && declared > maxBytes) throw new RequestBodyTooLargeError();
-      return request.text();
-    },
+    RequestBodyReadTimeoutError,
+    readTextBodyWithLimit: mocks.readTextBodyWithLimit,
   };
 });
 
@@ -69,6 +70,7 @@ vi.mock("@/lib/prisma", () => ({
 }));
 
 import { POST } from "./route";
+import { expireDonationViews } from "@/lib/donation-cache";
 
 const decimal = (value: number) => ({
   mul: (factor: number) => ({ toNumber: () => value * factor }),
@@ -107,6 +109,14 @@ function refundPayload(amount = 2500) {
 describe("Razorpay webhook route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.readTextBodyWithLimit.mockReset().mockImplementation(async (request: Request, maxBytes: number) => {
+      const declared = Number(request.headers.get("content-length"));
+      if (Number.isFinite(declared) && declared > maxBytes) {
+        const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");
+        throw new RequestBodyTooLargeError(maxBytes);
+      }
+      return request.text();
+    });
     mocks.uniqueConstraintError.mockReturnValue(false);
     mocks.verifyWebhookSignature.mockReturnValue(true);
     mocks.paymentEventFindUnique.mockResolvedValue(null);
@@ -143,7 +153,7 @@ describe("Razorpay webhook route", () => {
     mocks.txDonationFindUnique.mockResolvedValue({
       id: "donation_1",
       appealId: "appeal_1",
-      amount: decimal(100),
+      currency: "INR", amount: decimal(100),
       refundedAmount: decimal(0),
       donorEmail: "donor@example.test",
       referenceNumber: "AFD-2026-000001",
@@ -168,6 +178,163 @@ describe("Razorpay webhook route", () => {
     });
   });
 
+  it("rejects missing or blank webhook signatures before any body read", async () => {
+    for (const supplied of ["", "  "]) {
+      const response = await POST(webhookRequest({ event: "payment.captured" }, {
+        "x-razorpay-signature": supplied,
+      }));
+      expect(response.status).toBe(401);
+    }
+    expect(mocks.readTextBodyWithLimit).not.toHaveBeenCalled();
+    expect(mocks.verifyWebhookSignature).not.toHaveBeenCalled();
+    expect(mocks.paymentEventFindUnique).not.toHaveBeenCalled();
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
+  });
+
+  it("sets a fixed 15-second webhook body read deadline", async () => {
+    await POST(webhookRequest({ event: "synthetic.audit", payload: {} }));
+    expect(mocks.readTextBodyWithLimit).toHaveBeenCalledWith(
+      expect.any(Request), 256 * 1024, { timeoutMs: 15_000 },
+    );
+  });
+
+  it("rejects stalled unsigned webhook bodies with a retryable response and no provider or DB work", async () => {
+    const { RequestBodyReadTimeoutError } = await import("@/lib/bounded-request-body");
+    mocks.readTextBodyWithLimit.mockRejectedValueOnce(new RequestBodyReadTimeoutError());
+    const response = await POST(webhookRequest({ event: "payment.captured" }));
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(await response.text()).toBe("Webhook read timed out");
+    expect(mocks.verifyWebhookSignature).not.toHaveBeenCalled();
+    expect(mocks.paymentEventFindUnique).not.toHaveBeenCalled();
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
+    expect(expireDonationViews).not.toHaveBeenCalled();
+  });
+
+  it("records committed capture event before cache refresh, so a cache outage is replayable", async () => {
+    const captured = {
+      event: "payment.captured",
+      payload: { payment: { entity: {
+        id: "pay_001", order_id: "order_001", amount: 50000,
+        currency: "INR", status: "captured", captured: true,
+      } } },
+    };
+    mocks.captureDonation.mockResolvedValue({ donationId: "donation_1" });
+    mocks.rootPaymentEventCreate.mockResolvedValue({ id: "stored_capture_event" });
+    vi.mocked(expireDonationViews).mockImplementationOnce(() => {
+      throw new Error("synthetic post-commit cache outage");
+    });
+
+    const first = await POST(webhookRequest(captured, { "x-razorpay-event-id": "evt_capture_replay" }));
+    expect(first.status).toBe(500);
+    expect(mocks.captureDonation).toHaveBeenCalledExactlyOnceWith("order_001", "pay_001", 50000);
+    expect(mocks.rootPaymentEventCreate).toHaveBeenCalledOnce();
+    expect(mocks.rootPaymentEventCreate.mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(expireDonationViews).mock.invocationCallOrder[0]!,
+    );
+
+    mocks.paymentEventFindUnique.mockResolvedValueOnce({
+      id: "stored_capture_event", eventType: "payment.captured", payload: captured,
+    });
+    const replay = await POST(webhookRequest(captured, { "x-razorpay-event-id": "evt_capture_replay" }));
+    expect(replay.status).toBe(200);
+    expect(await replay.json()).toEqual({ received: true });
+    expect(mocks.captureDonation).toHaveBeenCalledOnce();
+    expect(mocks.rootPaymentEventCreate).toHaveBeenCalledOnce();
+    expect(expireDonationViews).toHaveBeenCalledTimes(2);
+  });
+
+  it.each([
+    { appealId: "appeal_1", fundId: null },
+    { appealId: null, fundId: "approved_fund" },
+  ])("refuses INR refund accounting for foreign donation %o", async destination => {
+    const original = await mocks.txDonationFindUnique();
+    mocks.txDonationFindUnique.mockResolvedValueOnce({ ...original, ...destination, givingIntent: "GENERAL", designationSnapshot: destination.fundId ? syntheticFundDesignation(destination.fundId) : null, currency: "USD" });
+    const response = await POST(webhookRequest(refundPayload()));
+    expect(response.status).toBe(500);
+    expect(mocks.txRefundCreateMany).not.toHaveBeenCalled();
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("expires views only after a refund transaction has completed", async () => {
+    const tx = mocks.transactionRetry.getMockImplementation()!;
+    mocks.transactionRetry.mockImplementationOnce(async callback => {
+      const result = await tx(callback);
+      expect(expireDonationViews).not.toHaveBeenCalled();
+      return result;
+    });
+    expect((await POST(webhookRequest(refundPayload()))).status).toBe(200);
+    expect(expireDonationViews).toHaveBeenCalledOnce();
+  });
+  it("does not expire balances after a rolled-back refund transaction", async () => {
+    mocks.transactionRetry.mockRejectedValueOnce(new Error("transaction rolled back"));
+    expect((await POST(webhookRequest(refundPayload()))).status).toBe(500);
+    expect(expireDonationViews).not.toHaveBeenCalled();
+  });
+  it("retries view expiry on verified replay after a post-commit cache failure", async () => {
+    vi.mocked(expireDonationViews).mockImplementationOnce(() => { throw new Error("cache unavailable"); });
+    expect((await POST(webhookRequest(refundPayload()))).status).toBe(500);
+    mocks.paymentEventFindUnique.mockResolvedValueOnce({ id: "committed", eventType: "refund.processed", payload: refundPayload() });
+    expect((await POST(webhookRequest(refundPayload()))).status).toBe(200);
+    expect(expireDonationViews).toHaveBeenCalledTimes(2);
+    expect(mocks.transactionRetry).toHaveBeenCalledOnce();
+    expect(mocks.txDonationUpdate).toHaveBeenCalledOnce();
+  });
+
+  it("refunds an independently designated fund donation without touching any appeal", async () => {
+    mocks.txDonationFindUnique.mockResolvedValueOnce({
+      id: "donation_fund", appealId: null, fundId: "approved_fund", givingIntent: "GENERAL", designationSnapshot: syntheticFundDesignation("approved_fund"),
+      currency: "INR", amount: decimal(100), refundedAmount: decimal(0),
+      donorEmail: "donor@example.test", referenceNumber: "AFD-FUND",
+    });
+    const response = await POST(webhookRequest(refundPayload(2500)));
+    expect(response.status).toBe(200);
+    expect(mocks.txRefundCreateMany).toHaveBeenCalledOnce();
+    expect(mocks.txDonationUpdate).toHaveBeenCalledWith(expect.objectContaining({
+      where: { id: "donation_fund" },
+      data: expect.objectContaining({ refundedAmount: { increment: 25 } }),
+    }));
+    expect(mocks.txAppealFindUnique).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).toHaveBeenCalledOnce();
+  });
+
+  it("does not refund fund money with an unverifiable original purpose", async () => {
+    const original = await mocks.txDonationFindUnique();
+    mocks.txDonationFindUnique.mockResolvedValueOnce({ ...original, appealId: null, fundId: "fund", givingIntent: "GENERAL", designationSnapshot: null });
+    expect((await POST(webhookRequest(refundPayload()))).status).toBe(500);
+    expect(mocks.txRefundCreateMany).not.toHaveBeenCalled();
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("does not acknowledge a fund refund larger than the remaining captured amount", async () => {
+    mocks.txDonationFindUnique.mockResolvedValueOnce({
+      id: "donation_fund", appealId: null, fundId: "approved_fund", givingIntent: "GENERAL", designationSnapshot: syntheticFundDesignation("approved_fund"),
+      currency: "INR", amount: decimal(100), refundedAmount: decimal(0),
+      donorEmail: "donor@example.test", referenceNumber: "AFD-FUND",
+    });
+    const response = await POST(webhookRequest(refundPayload(15_000)));
+    expect(response.status).toBeGreaterThanOrEqual(400);
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+  });
+
+  it("rejects refund accounting with two destinations before ledger writes", async () => {
+    mocks.txDonationFindUnique.mockResolvedValueOnce({
+      id: "donation_mixed", appealId: "appeal_1", fundId: "approved_fund", givingIntent: "GENERAL", designationSnapshot: syntheticFundDesignation("approved_fund"),
+      currency: "INR", amount: decimal(100), refundedAmount: decimal(0),
+    });
+    const response = await POST(webhookRequest(refundPayload(2500)));
+    expect(response.status).toBeGreaterThanOrEqual(400);
+    expect(mocks.txRefundCreateMany).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+  });
+
   it.each([
     { id: "" },
     { id: "invalid" },
@@ -175,7 +342,12 @@ describe("Razorpay webhook route", () => {
     { order_id: "invalid" },
     { status: "authorized" },
     { status: "failed" },
+    { status: undefined },
+    { status: null },
     { captured: false },
+    { captured: undefined },
+    { captured: null },
+    { captured: "true" },
     { currency: "USD" },
     { amount: 0 },
     { amount: -10 },
@@ -192,6 +364,7 @@ describe("Razorpay webhook route", () => {
             currency: "INR",
             amount: 50_000,
             status: "captured",
+            captured: true,
             ...fields,
           },
         },
@@ -202,6 +375,39 @@ describe("Razorpay webhook route", () => {
     expect(await response.text()).toBe("Invalid captured payment entity");
     expect(mocks.captureDonation).not.toHaveBeenCalled();
     expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
+    expect(mocks.transactionRetry).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { event: "payment.captured", entity: {
+      id: "pay_123", order_id: "order_123", amount: 50000,
+      currency: "INR", status: "captured",
+      // Missing captured === true must never be considered a paid event.
+    }, expected: "Invalid captured payment entity" },
+    { event: "payment.failed", entity: {
+      id: "pay_123", order_id: "order_123", amount: 50000, currency: "INR",
+      // Missing explicit failed status must not mark an unpaid attempt failed.
+    }, expected: "Invalid payment entity" },
+    { event: "refund.processed", entity: {
+      id: "rfnd_123", payment_id: "pay_123", amount: 50000, currency: "INR",
+      // Missing processed status must not release refund ledger accounting.
+    }, expected: "Invalid refund entity" },
+  ])("validates $event before even acknowledging a stored duplicate", async ({ event, entity, expected }) => {
+    const payload = {
+      event,
+      payload: event === "refund.processed"
+        ? { refund: { entity } }
+        : { payment: { entity } },
+    };
+    mocks.paymentEventFindUnique.mockResolvedValue({
+      id: "preexisting_event", eventType: event, payload,
+    });
+    const response = await POST(webhookRequest(payload, { "x-razorpay-event-id": "evt_preexisting" }));
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe(expected);
+    expect(mocks.paymentEventFindUnique).not.toHaveBeenCalled();
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
+    expect(mocks.ensureCapturedDonationForRefund).not.toHaveBeenCalled();
     expect(mocks.transactionRetry).not.toHaveBeenCalled();
   });
 
@@ -476,8 +682,8 @@ describe("Razorpay webhook route", () => {
     expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
   });
 
-  it.each(["failed", "pending", "created"])(
-    "rejects refund.processed with contradictory provider status %s before accounting",
+  it.each(["failed", "pending", "created", undefined, null])(
+    "rejects refund.processed with contradictory or missing provider status %s before accounting",
     async status => {
       const payload = refundPayload();
       const response = await POST(webhookRequest({
@@ -509,6 +715,32 @@ describe("Razorpay webhook route", () => {
     const response = await POST(webhookRequest(refundPayload()));
     expect(response.status).toBe(500);
     expect(mocks.txRefundCreateMany).not.toHaveBeenCalled();
+  });
+
+  it("does not acknowledge an appeal refund that exceeds the remaining donation amount", async () => {
+    const original = await mocks.txDonationFindUnique();
+    mocks.txDonationFindUnique.mockResolvedValueOnce({
+      ...original, amount: decimal(100), refundedAmount: decimal(90),
+    });
+    const response = await POST(webhookRequest(refundPayload(2_500)));
+    expect(response.status).toBe(500);
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+    expect(expireDonationViews).not.toHaveBeenCalled();
+  });
+
+  it("does not silently cap the appeal counter for an unmatched provider refund", async () => {
+    mocks.txAppealFindUnique.mockResolvedValueOnce({
+      status: "PUBLISHED", amountRaised: decimal(10),
+      goalAmount: decimal(5_000), closesAt: null,
+    });
+    const response = await POST(webhookRequest(refundPayload(2_500)));
+    expect(response.status).toBe(500);
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+    expect(expireDonationViews).not.toHaveBeenCalled();
   });
 
   it("reconciles an INR refund into donation, appeal, event and notification records", async () => {

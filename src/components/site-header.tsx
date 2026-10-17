@@ -2,7 +2,7 @@
 import { UIIcon } from "./ui-icon";
 
 import Image from "next/image";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import styles from "./site-header.module.css";
@@ -30,7 +30,7 @@ function isActivePath(pathname: string, href: string) {
 
 export function SiteHeader() {
   const [openForPath, setOpenForPath] = useState<string | null>(null);
-  const pathname = usePathname();
+  const pathname = usePathname() ?? "";
   const open = openForPath === pathname;
   const toggleRef = useRef<HTMLButtonElement>(null);
   const mobileNavRef = useRef<HTMLElement>(null);
@@ -47,17 +47,25 @@ export function SiteHeader() {
     if (!nav || !toggle) return;
     const focusable = [toggle, ...nav.getElementsByTagName("a")];
     focusable[1]?.focus();
-    const mobile = window.matchMedia("(max-width: 1020px)");
+    const mobile = typeof window.matchMedia === "function"
+      ? window.matchMedia("(max-width: 1020px)") : null;
     const onBreakpoint = () => {
-      if (mobile.matches) return;
+      if (!mobile || mobile.matches) return;
       setOpenForPath(null);
       toggle.parentElement?.querySelector<HTMLElement>("a")?.focus();
     };
-    mobile.addEventListener("change", onBreakpoint);
+    if (mobile) {
+      if (typeof mobile.addEventListener === "function") {
+        mobile.addEventListener("change", onBreakpoint);
+      } else {
+        mobile.addListener(onBreakpoint);
+      }
+    }
     document.body.classList.add("af-menu-lock");
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
+        event.preventDefault();
         setOpenForPath(null);
         toggle.focus();
         return;
@@ -65,7 +73,10 @@ export function SiteHeader() {
       if (event.key !== "Tab") return;
       const last = focusable.at(-1)!;
       const active = document.activeElement;
-      if (event.shiftKey && active === toggle) {
+      if (active !== toggle && !nav.contains(active)) {
+        event.preventDefault();
+        (event.shiftKey ? last : focusable[1] ?? toggle).focus();
+      } else if (event.shiftKey && active === toggle) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && active === last) {
@@ -78,7 +89,13 @@ export function SiteHeader() {
     return () => {
       document.body.classList.remove("af-menu-lock");
       window.removeEventListener("keydown", onKeyDown);
-      mobile.removeEventListener("change", onBreakpoint);
+      if (mobile) {
+        if (typeof mobile.removeEventListener === "function") {
+          mobile.removeEventListener("change", onBreakpoint);
+        } else {
+          mobile.removeListener(onBreakpoint);
+        }
+      }
     };
   }, [open]);
 
@@ -90,6 +107,8 @@ export function SiteHeader() {
           <Image className="brand-lockup" src="/brand/amaana-mark.svg" width={108} height={108} alt="Amaana Foundation — Upholding Trust" priority />
         </Link>
 
+        <Link className={styles.mobileDonate} href="/donate" aria-current={isActivePath(pathname, "/donate") ? "page" : undefined} onClick={closeMenu}>Donate</Link>
+
         <button ref={toggleRef} className="menu-toggle" type="button" aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? "Close navigation menu" : "Open navigation menu"} onClick={() => setOpenForPath(current => current === pathname ? null : pathname)}>
           <UIIcon name={open ? "close" : "menu"} />
         </button>
@@ -99,7 +118,7 @@ export function SiteHeader() {
             const active = isActivePath(pathname, href);
             return <Link className={active ? "nav-link active" : "nav-link"} href={href} key={href} aria-current={active ? "page" : undefined}>{label}</Link>;
           })}
-          <Link className="button nav-donate af-support-cta" href="/appeals" aria-current={isActivePath(pathname, "/appeals") ? "page" : undefined}>Support a need</Link>
+          <Link className="button nav-donate af-support-cta" href="/donate" aria-current={isActivePath(pathname, "/donate") ? "page" : undefined}>Donate</Link>
         </div>
       </nav>
 
@@ -117,7 +136,7 @@ export function SiteHeader() {
               return <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMenu} aria-current={active ? "page" : undefined}>{label}</Link>;
             })}
           </div>
-          <Link className="button af-support-cta" href="/appeals" onClick={closeMenu} aria-current={isActivePath(pathname, "/appeals") ? "page" : undefined}>Support a verified need</Link>
+          <Link className="button af-support-cta" href="/donate" onClick={closeMenu} aria-current={isActivePath(pathname, "/donate") ? "page" : undefined}>Donate · Review available ways to give</Link>
         </div>
       </nav>
       </header>

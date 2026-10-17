@@ -651,3 +651,57 @@ for (const scale of [100, 200]) {
     })));
   });
 }
+
+
+for (const width of [390, 1440]) {
+  for (const scale of [100, 200]) {
+    for (const surface of [
+      { route: '/contact', selector: 'main .v2-section-title', label: 'shared and component section headings' },
+      { route: '/browser-acceptance/home-hero', selector: 'main .v3-home .v3-heading', label: 'Home section headings' },
+      { route: '/browser-acceptance/portfolio', selector: 'main .v2-initiative-row h3', label: 'programme card headings' },
+    ]) {
+      test(`R-025 ${surface.label} keep multiline spacing at ${width}px and ${scale}% text`, async ({ page }) => {
+        await page.setViewportSize({ width, height: 1000 });
+        await page.emulateMedia({ reducedMotion: 'reduce' });
+        await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+        await page.route('**/api/public/live-rail', route => route.fulfill({ json: { items: [] } }));
+        await page.addInitScript(percent => {
+          const apply = () => {
+            const style = document.createElement('style');
+            style.textContent = `html:root { font-size: ${percent}% !important; }`;
+            document.head.appendChild(style);
+          };
+          if (document.head) apply();
+          else document.addEventListener('DOMContentLoaded', apply, { once: true });
+        }, scale);
+        const response = await page.goto(surface.route, { waitUntil: 'load' });
+        expect(response?.ok()).toBe(true);
+        await page.evaluate(() => document.fonts.ready);
+        // Stable collection: opening one detail shrinks a :not([open]) locator
+        // and makes its later nth() locators skip entries or wait forever.
+        for (const detail of await page.locator('details.v2-cause-disclosure').all()) {
+          if (!await detail.evaluate(node => node.open)) await detail.locator(':scope > summary').click();
+        }
+        const headings = page.locator(surface.selector);
+        expect(await headings.count(), surface.selector).toBeGreaterThan(0);
+        await expect.poll(() => page.evaluate(() => parseFloat(getComputedStyle(document.documentElement).fontSize))).toBe(16 * scale / 100);
+        for (const heading of await headings.all()) {
+          await expect(heading).toBeVisible();
+          const metrics = await heading.evaluate(node => {
+            const style = getComputedStyle(node);
+            const range = document.createRange();
+            range.selectNodeContents(node);
+            const rect = node.getBoundingClientRect();
+            return {
+              ratio: parseFloat(style.lineHeight) / parseFloat(style.fontSize),
+              contained: [...range.getClientRects()].every(line => line.left >= rect.left - 1 && line.right <= rect.right + 1),
+            };
+          });
+          expect(metrics.ratio).toBeGreaterThanOrEqual(1.119);
+          expect(metrics.contained).toBe(true);
+        }
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+      });
+    }
+  }
+}

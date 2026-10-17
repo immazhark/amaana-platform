@@ -1,8 +1,9 @@
+import ArchiveLink from "next/link";
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { notFound } from "next/navigation";
-import { PageHero } from "@/components/page-hero";
+import { PageHero, PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
 import { PublicContentStructuredData } from "@/components/public-content-structured-data";
@@ -49,14 +50,15 @@ export default async function FaithDetailPage({ params }: Props) {
       keywords={topics}
     />
     <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Faith & Reflections", path: "/faith-and-reflections" }, { name: item.title, path: `/faith-and-reflections/${item.slug}` }]} />
-    <PageHero variant="level2" eyebrow={`${item.type.toLowerCase()}${publishedDate ? ` · ${publishedDate}` : ""}`} title={item.title} description={<><p>{item.excerpt}</p>{topics.length > 0 && <div className="v2-faith-detail-topics">{topics.map(topic => <span key={topic}>{topic}</span>)}</div>}</>} actions={[{label:"Back to Faith & Reflections",href:"/faith-and-reflections",secondary:true}]} visual={leadMedia ? <PublicMedia asset={leadMedia} priority /> : undefined} visualKicker="Editorial trust" visualTitle="Reviewed Before Publication" visualNote="Amaana shares reviewed beneficial material without presenting itself as a scholarly authority." />
+    <PageHero variant="level2" eyebrow={`${item.type.toLowerCase()}${publishedDate ? ` · ${publishedDate}` : ""}`} title={item.title} description={<><p>{item.excerpt}</p>{topics.length > 0 && <div className="v2-faith-detail-topics">{topics.map(topic => <span key={topic}>{topic}</span>)}</div>}</>} actions={[{label:"Back to Faith & Reflections",href:"/faith-and-reflections",secondary:true}]} visual={leadMedia ? <PublicMedia asset={leadMedia} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : undefined} visualKicker="Editorial trust" visualTitle="Reviewed Before Publication" visualNote="Amaana shares reviewed beneficial material without presenting itself as a scholarly authority." />
 
     <section className="v2-section paper"><div className="v2-shell v2-faith-detail-body-grid"><aside><p className="v2-section-label">Review context</p>{item.sourceCitation ? <div className="v2-faith-detail-source"><span>Source citation</span><p>{item.sourceCitation}</p></div> : <p className="v2-faith-detail-muted">No separate source citation is displayed for this item.</p>}{item.verifiedAt && <p className="v2-faith-detail-muted">Religious review verified {new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(item.verifiedAt)}.</p>}</aside><article><p className="v2-section-label">Reflection</p>{item.body ? <div className="v2-faith-detail-body">{item.body}</div> : <p className="v2-faith-detail-body">{item.excerpt}</p>}</article></div></section>
 
-    {remainingMedia.length > 0 && <section className="v2-section dark"><div className="v2-shell"><SectionHeading eyebrow={<>Reviewed media</>} title={<>Visual context, separately approved.</>} subtitle={<>Media appears here only when its own public-use and privacy checks are satisfied.</>} /><div className="v2-media-grid">{remainingMedia.map(asset => <PublicMedia asset={asset} key={asset.id} />)}</div></div></section>}
+    {remainingMedia.length > 0 && <section className="v2-section dark"><div className="v2-shell"><SectionHeading eyebrow={<>Reviewed media</>} title={<>Visual context, separately approved.</>} subtitle={<>Media appears here only when its own public-use and privacy checks are satisfied.</>} /><div className="v2-media-grid">{remainingMedia.map(asset => <PublicMedia asset={asset} key={asset.id} sizes="(max-width: 700px) 100vw, (max-width: 1100px) 48vw, 33vw" />)}</div></div></section>}
 
     <section className="v2-faith-detail-standard"><div className="v2-shell"><div><span>Religious review</span><strong>Verified before publication</strong></div><div><span>Source discipline</span><strong>Stored citations shown when available</strong></div><div><span>Authority boundary</span><strong>Amaana is not presented as a scholarly authority</strong></div></div></section>
 
-    <section className="v2-closing"><div className="v2-shell"><SectionHeading eyebrow={<>Reflection into service</>} title={<>Carry the value into action.</>} subtitle={<>Return to the reviewed library or see the real initiatives where Amaana&apos;s values are put into practice.</>} /><div className="v2-hero-actions" style={{ justifyContent: "center" }}><Link className="v2-button" href="/faith-and-reflections">Back to the library</Link>{relatedInitiative ? <Link className="v2-text-link" href={canonicalOurWorkDestination(relatedInitiative.slug)}>Related initiative →</Link> : <Link className="v2-text-link" href="/our-work">Explore our work →</Link>}</div></div></section>
+    {item.mediaAssets.length >= 48 ? <div className="v2-shell"><ArchiveLink className="v2-text-link" prefetch={false} href={`/media-archive/faith/${encodeURIComponent(item.slug)}`}>Browse the full approved media archive</ArchiveLink></div> : null}
+<section className="v2-closing"><div className="v2-shell"><SectionHeading eyebrow={<>Reflection into service</>} title={<>Carry the value into action.</>} subtitle={<>Return to the reviewed library or see the real initiatives where Amaana&apos;s values are put into practice.</>} /><div className="v2-hero-actions" style={{ justifyContent: "center" }}><Link className="v2-button" href="/faith-and-reflections">Back to the library</Link>{relatedInitiative ? <Link className="v2-text-link" href={canonicalOurWorkDestination(relatedInitiative.slug)}>Related initiative →</Link> : <Link className="v2-text-link" href="/our-work">Explore our work →</Link>}</div></div></section>
   </div>;
 }

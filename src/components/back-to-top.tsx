@@ -1,6 +1,7 @@
 "use client";
 
 import { UIIcon } from "./ui-icon";
+import styles from "./back-to-top.module.css";
 import { useEffect, useState } from "react";
 
 export function BackToTop() {
@@ -31,11 +32,12 @@ export function BackToTop() {
 
   return (
     <button
-      className="amaana-back-to-top"
+      className={`amaana-back-to-top ${styles.button}`}
       type="button"
       aria-label="Back to top"
       onClick={() => {
-        const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        const reduced = typeof window.matchMedia !== "function" ||
+          window.matchMedia("(prefers-reduced-motion: reduce)").matches;
         window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
       }}
     >

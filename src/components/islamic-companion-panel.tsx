@@ -1,13 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import styles from "./islamic-companion-panel.module.css";
 import {
-  AYAHS,
-  HADITHS,
   HYDERABAD_ZONE,
   PRAYERS,
-  dailyReading,
   estimatedHijri,
   hyderabadClock,
   nextSalah,
@@ -15,6 +12,8 @@ import {
   timeMinutes,
   type PrayerDay,
 } from "@/lib/daily-companion";
+import { AYAHS, HADITHS, dailyReading } from "@/lib/daily-companion-readings";
+import { upcomingHijriPlanningEvents } from "@/lib/hijri-event-planner";
 
 type Moon = {
   day: number;
@@ -34,6 +33,10 @@ type PrayerData = {
   eveningMoon: Moon | null;
   note: string;
 };
+
+const forecastDateFormat = new Intl.DateTimeFormat("en-IN", {
+  day: "numeric", month: "short", year: "numeric", timeZone: "UTC",
+});
 
 export type CompanionPanelKind = "readings" | "prayers";
 const panelKinds = ["readings", "prayers"] as const;
@@ -67,11 +70,36 @@ const closeIcon = (
     </svg>
 );
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === "object" && !Array.isArray(value);
+}
+
+function isText(value: unknown, maximum = 1000): value is string {
+  return typeof value === "string" && value.trim().length > 0 && value.length <= maximum;
+}
+
+function isPrayerDay(value: unknown, date: string): value is PrayerDay {
+  if (!isRecord(value) || value.date !== date || !isRecord(value.timings)) return false;
+  const timings = value.timings;
+  return PRAYERS.every(prayer => timeMinutes(timings[prayer]) !== null);
+}
+
+function isMoon(value: unknown): value is Moon | null {
+  if (value === null) return true;
+  if (!isRecord(value) || !Number.isInteger(value.day) || typeof value.day !== "number" || value.day < 1 || value.day > 30 ||
+      !Number.isInteger(value.month) || typeof value.month !== "number" || value.month < 1 || value.month > 12 ||
+      !isText(value.label, 200) || !isText(value.authority, 200) || !isText(value.sourceUrl, 2048)) return false;
+  try {
+    const source = new URL(value.sourceUrl);
+    return source.protocol === "https:" && !source.username && !source.password;
+  } catch { return false; }
+}
+
 function isPrayerData(value: unknown, date: string, school: string): value is PrayerData {
-  if (!value || typeof value !== "object") return false;
-  const candidate = value as Partial<PrayerData>;
-  if (candidate.school !== school || candidate.today?.date !== date) return false;
-  return PRAYERS.every(prayer => timeMinutes(candidate.today?.timings?.[prayer]) !== null);
+  return isRecord(value) && value.school === school && isPrayerDay(value.today, date)
+    && (value.tomorrow === null || isPrayerDay(value.tomorrow, shiftDate(date, 1)))
+    && isText(value.method, 200) && isText(value.asr, 200) && isText(value.note)
+    && isMoon(value.moon) && isMoon(value.eveningMoon);
 }
 
 export function IslamicCompanionPanel({
@@ -103,6 +131,11 @@ export function IslamicCompanionPanel({
     if (panel !== "prayers" || !date) return;
 
     const controller = new AbortController();
+    const timeout = window.setTimeout(() => {
+      controller.abort();
+      setLoading(false);
+      setError("Prayer times could not be loaded in time. Follow your local masjid timetable, or try again.");
+    }, 8_000);
 
     async function loadPrayerData() {
       setLoading(true);
@@ -115,7 +148,7 @@ export function IslamicCompanionPanel({
         const payload: unknown = await response.json();
         if (!response.ok) {
           const message = payload && typeof payload === "object" && "error" in payload && typeof payload.error === "string"
-            ? payload.error
+            ? payload.error.trim().slice(0, 500) || "Prayer times could not be loaded."
             : "Prayer times could not be loaded.";
           throw new Error(message);
         }
@@ -131,12 +164,13 @@ export function IslamicCompanionPanel({
           setError(failure instanceof Error ? failure.message : "Prayer times could not be loaded.");
         }
       } finally {
+        window.clearTimeout(timeout);
         if (!controller.signal.aborted) setLoading(false);
       }
     }
 
     void loadPrayerData();
-    return () => controller.abort();
+    return () => { window.clearTimeout(timeout); controller.abort(); };
   }, [date, onMoonChange, panel, requestVersion, school]);
 
   const currentData = data?.today.date === date && data.school === school ? data : null;
@@ -144,8 +178,9 @@ export function IslamicCompanionPanel({
   const maghrib = timeMinutes(currentData?.today.timings.Maghrib);
   const afterSunset = clock !== null && maghrib !== null && clock.minutes >= maghrib;
   const moon = currentData ? (afterSunset ? currentData.eveningMoon : currentData.moon) : null;
-  const reading = now ? dailyReading(now) : null;
+  const reading = now ? dailyReading(hyderabadClock(now)) : null;
   const upcoming = now && currentData ? nextSalah(currentData.today, currentData.tomorrow, now) : null;
+  const planningEvents = useMemo(() => date ? upcomingHijriPlanningEvents(date) : [], [date]);
 
   async function copyReading() {
     if (!reading) return;
@@ -226,6 +261,19 @@ export function IslamicCompanionPanel({
             <p>{moon ? <>Based on {moon.authority}. <a href={moon.sourceUrl} target="_blank" rel="noopener noreferrer">Moon-sighting announcement</a></> : "Calculated estimate · Hyderabad moon-sighting not yet confirmed."}</p>
             <small>{maghrib !== null ? "The Hijri day advances at Hyderabad Maghrib." : "Civil-day estimate; sunset rollover is unavailable until prayer times load."}</small>
           </div>
+          <section className={styles.planningSection} aria-labelledby="companion-planning-title">
+            <h3 id="companion-planning-title">Upcoming Hijri dates · estimates</h3>
+            <p>For planning only. Calculated using the Islamic civil calendar, not a Hyderabad moon-sighting announcement. Actual observance dates may differ; confirm with your local authority.</p>
+            <ol className={styles.planningList}>
+              {planningEvents.map(event => (
+                <li key={event.key}>
+                  <strong>{event.label}</strong>
+                  <time dateTime={event.estimatedCivilDate}>Around {forecastDateFormat.format(new Date(`${event.estimatedCivilDate}T12:00:00Z`))}</time>
+                  <small>{event.daysUntilEstimatedDate === 0 ? "Estimated for today" : `About ${event.daysUntilEstimatedDate} days until the calculated date`}</small>
+                </li>
+              ))}
+            </ol>
+          </section>
           <label className="amaana-asr-choice">
             Asr calculation
             <select value={school} onChange={event => setSchool(event.target.value)}>

@@ -4,11 +4,11 @@ import { SectionHeading } from "@/components/section-heading";
 import { ProgrammeArtwork, hasProgrammeArtwork } from "@/components/programme-artwork";
 import styles from "./programme-list.module.css";
 import type { Metadata } from 'next';
-import Link from 'next/link';
+import Link from '@/components/navigation-link';
 import { notFound, permanentRedirect } from 'next/navigation';
 import { BreadcrumbStructuredData } from '@/components/breadcrumb-structured-data';
 import { PublicContentStructuredData } from '@/components/public-content-structured-data';
-import { PageHero } from '@/components/page-hero';
+import { PageHero, PAGE_HERO_IMAGE_SIZES } from '@/components/page-hero';
 import { WorkVisualPlaceholder } from '@/components/work-visual-placeholder';
 import { programmeCardMediaSlugs, programmeCategories, programmes } from '@/lib/master-copy';
 import { legacyProgrammeRoute, programmeCategoryFromRoute, programmeCategoryPath } from '@/lib/programme-category-routing';
@@ -137,7 +137,7 @@ export default async function Page({ params }: Props) {
     />
     <BreadcrumbStructuredData items={[{ name: 'Home', path: '/' }, { name: 'Our Work', path: '/our-work' }, { name: category.title, path: canonical }]} />
     <div className="v2-shell campaign-breadcrumb"><nav aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true"> / </span><Link href="/our-work">Our Work</Link><span aria-hidden="true"> / </span><span>{category.title}</span></nav></div>
-    <PageHero variant="level2" className={hasProgrammeArtwork(category.slug)||leadPhoto?bannerStyles.photo:undefined} eyebrow="Our Work · Programme Category" title={category.title} description={<p>{category.description}</p>} actions={[{label:'Explore programmes',href:'#programme-list'},{label:'Back to Our Work',href:'/our-work',secondary:true}]} visual={hasProgrammeArtwork(category.slug) ? <ProgrammeArtwork slug={category.slug} sizes="(max-width: 900px) 90vw, 45vw" /> : leadPhoto ? <PublicMedia asset={leadPhoto} priority /> : <WorkVisualPlaceholder label={category.title} />} />
+    <PageHero variant="level2" className={hasProgrammeArtwork(category.slug)||leadPhoto?bannerStyles.photo:undefined} eyebrow="Our Work · Programme Category" title={category.title} description={<p>{category.description}</p>} actions={[{label:'Explore programmes',href:'#programme-list'},{label:'Back to Our Work',href:'/our-work',secondary:true}]} visual={hasProgrammeArtwork(category.slug) ? <ProgrammeArtwork slug={category.slug} sizes={PAGE_HERO_IMAGE_SIZES} priority /> : leadPhoto ? <PublicMedia asset={leadPhoto} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : <WorkVisualPlaceholder label={category.title} />} />
     <section className="v2-section paper" id="programme-list"><div className="v2-shell">
       <SectionHeading eyebrow="Programme pathways" title="Explore the documented work" subtitle={category.summary} />
       {items.length === 1 ? <div className={`canonical-pathways canonical-pathways--single ${styles.single}`}>{items.map(item => {

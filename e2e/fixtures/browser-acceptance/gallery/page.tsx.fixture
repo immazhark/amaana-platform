@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import type { CampaignGalleryItem } from "@/components/campaign-media-gallery";
 import { GalleryUpdateFixture } from "@/components/gallery-update-fixture";
+import sharp from "sharp";
+import { generatePublicImagePlaceholder } from "@/lib/public-image-placeholder";
 import "@/app/our-work/[slug]/campaign.css";
 
 export const dynamic = "force-dynamic";
@@ -34,8 +36,15 @@ const items: CampaignGalleryItem[] = Array.from({ length: 13 }, (_, index) => {
   };
 });
 
-export default function CampaignGalleryBrowserAcceptanceFixture() {
+export default async function CampaignGalleryBrowserAcceptanceFixture({ searchParams }: { searchParams: Promise<{ preview?: string }> }) {
   if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+  let renderedItems = items;
+  if ((await searchParams).preview === "true") {
+    const image = await sharp({ create: { width: 160, height: 100, channels: 3, background: "#466faa" } }).png().toBuffer();
+    const blurDataURL = await generatePublicImagePlaceholder(image, 40_000_000);
+    renderedItems = items.map((item, index) => index === 0
+      ? { ...item, url: "/media/2026/synthetic-preview.png", blurDataURL } : item);
+  }
 
   return (
     <div className="v2-home campaign-page">
@@ -46,7 +55,7 @@ export default function CampaignGalleryBrowserAcceptanceFixture() {
             <h1>Initiative gallery interaction</h1>
             <p>Synthetic local artwork validates gallery geometry and interaction without accessing beneficiary media.</p>
           </div>
-          <GalleryUpdateFixture items={items} />
+          <GalleryUpdateFixture items={renderedItems} />
         </div>
       </section>
     </div>

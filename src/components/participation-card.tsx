@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { ActionIcon, type ActionIconKind } from "./action-icon";
 import styles from "./participation-card.module.css";
 

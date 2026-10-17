@@ -1,4 +1,7 @@
+// High-density archive links use the framework link directly. The global
+// navigation-progress controller already handles their click feedback.
 import Link from "next/link";
+import styles from "./work-portfolio.module.css";
 import { PublicMedia } from "@/components/public-media";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { ActionIcon } from "@/components/action-icon";
@@ -45,7 +48,7 @@ export function WorkPortfolio({ causes, expanded = false, yearFiltered = false }
                         >
                           <span className="v2-initiative-index">{String(index + 1).padStart(2, "0")}</span>
                           <div className={`v2-initiative-thumb${thumbnail ? "" : " v2-initiative-thumb-fallback"}`}>
-                            {thumbnail ? <PublicMedia asset={thumbnail} /> : <WorkVisualPlaceholder label={initiative.title} />}
+                            {thumbnail ? <PublicMedia asset={thumbnail} sizes="auto, (max-width: 600px) 4rem, (max-width: 1000px) 5.5rem, 6.5rem" /> : <WorkVisualPlaceholder label={initiative.title} />}
                           </div>
                           <div className="v2-initiative-copy">
                             <small>{initiative.year ?? (initiative.startYear && initiative.endYear ? `${initiative.startYear}–${initiative.endYear}` : "Documented initiative")}</small>
@@ -63,12 +66,12 @@ export function WorkPortfolio({ causes, expanded = false, yearFiltered = false }
                   </div>
 
                   {cause.slug === "amaana-taleem" && !yearFiltered && (
-                    <div className="v2-taleem-highlights" aria-label="Amaana Taleem documented pathways">
-                      <div className="v2-taleem-highlight">
+                    <div className={styles.taleemHighlights} aria-label="Amaana Taleem documented pathways">
+                      <div className={styles.taleemHighlight}>
                         <strong>25 students</strong>
                         <span>Qur’an Nazira and Hifdh students sponsored combined, as of September 2026.</span>
                       </div>
-                      <div className="v2-taleem-highlight">
+                      <div className={styles.taleemHighlight}>
                         <strong>50 children</strong>
                         <span>Stationery kits provided to orphan children through the 2025 Taleem initiative.</span>
                       </div>

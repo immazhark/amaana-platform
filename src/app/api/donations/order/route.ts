@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
-import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
-import { createDonationReference, createReceiptToken, donationSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
+import { getPublicAppealCheckoutEligibility } from "@/lib/public-appeal-checkout";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { appealDonationDesignationSnapshot, createDonationReference, createReceiptToken, donationSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder } from "@/lib/razorpay";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
@@ -16,6 +16,7 @@ const privateHeaders = {
   "X-Robots-Tag": "noindex, nofollow, noarchive",
 };
 const MAX_PAYMENT_JSON_BYTES = 32 * 1024;
+const ORDER_BODY_TIMEOUT_MS = 15_000;
 
 export async function POST(request: Request) {
   try {
@@ -25,10 +26,22 @@ export async function POST(request: Request) {
 
     let body: unknown;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES));
+      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES, { timeoutMs: ORDER_BODY_TIMEOUT_MS }));
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ error: "Donation request payload is too large." }, { status: 413, headers: privateHeaders });
+      }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        // Parsing has not completed; no Razorpay order or local donation
+        // record was created. Return an explicit no-order outcome so only this
+        // known pre-write timeout is safely retryable by the donor UI.
+        return NextResponse.json(
+          {
+            error: "Checkout request upload timed out. No payment order was created. Please check your connection and try again.",
+            orderStarted: false,
+          },
+          { status: 408, headers: privateHeaders },
+        );
       }
       return NextResponse.json({ error: "Please check the donation information." }, { status: 400, headers: privateHeaders });
     }
@@ -68,7 +81,17 @@ export async function POST(request: Request) {
         },
       },
     });
-    if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+    // The provider API must enforce the same paise-accurate, whole-rupee
+    // checkout eligibility as the public appeal and direct-transfer forms.
+    // Otherwise malformed fractional-paise totals could create valid-looking
+    // provider orders for donations the public experience forbids.
+    if (!appeal || !canExposePublicAppeal(appeal)) {
+      return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+    }
+    const eligibility = getPublicAppealCheckoutEligibility(appeal);
+    if (!eligibility) {
+      return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+    }
 
     const zakatEligible = appeal.assistanceRequest?.verification?.zakatStatus === "ELIGIBLE";
     if (parsed.data.givingIntent === "ZAKAT" && !zakatEligible) {
@@ -78,7 +101,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
+    const remainingAmount = eligibility.progress.remaining;
     if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) {
       if (parsed.data.amount > remainingAmount) {
         return NextResponse.json(
@@ -126,6 +149,7 @@ export async function POST(request: Request) {
           donorPhone: parsed.data.donorPhone || null,
           isAnonymous: parsed.data.isAnonymous,
           givingIntent: parsed.data.givingIntent,
+          designationSnapshot: appealDonationDesignationSnapshot(appeal, parsed.data.givingIntent),
           domesticConfirmedAt: new Date(),
           amount: parsed.data.amount,
           paymentMethod: "RAZORPAY",

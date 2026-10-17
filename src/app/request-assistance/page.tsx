@@ -1,6 +1,6 @@
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { AssistanceForm } from "@/components/assistance-form";
 import { PageHero } from "@/components/page-hero";
 import styles from "./assistance-surface.module.css";

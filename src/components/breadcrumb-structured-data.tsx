@@ -1,14 +1,19 @@
+import { normalizeSiteUrl, serializeStructuredData, validateBreadcrumbStructuredDataInput } from "@/lib/structured-data";
+
 type BreadcrumbItem = {
   name: string;
   path: string;
 };
 
 export function BreadcrumbStructuredData({ items }: { items: BreadcrumbItem[] }) {
-  const siteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org").replace(/\/$/, "");
+  const safeItems = validateBreadcrumbStructuredDataInput(items);
+  if (!safeItems) return null;
+
+  const siteUrl = normalizeSiteUrl(process.env.NEXT_PUBLIC_APP_URL);
   const data = {
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
-    itemListElement: items.map((item, index) => ({
+    itemListElement: safeItems.map((item, index) => ({
       "@type": "ListItem",
       position: index + 1,
       name: item.name,
@@ -16,5 +21,5 @@ export function BreadcrumbStructuredData({ items }: { items: BreadcrumbItem[] })
     })),
   };
 
-  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(data).replace(/</g, "\\u003c") }} />;
+  return <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: serializeStructuredData(data) }} />;
 }

@@ -10,7 +10,16 @@ type AppealShareProps = {
 
 export function AppealShare({ title, summary, path }: AppealShareProps) {
   const [status, setStatus] = useState("");
-  const canonicalUrl = typeof window === "undefined" ? path : new URL(path, window.location.origin).toString();
+  // The same absolute URL is rendered on the server and during hydration.
+  // Invalid preview configuration must not crash the sharing controls.
+  let canonicalUrl: string;
+  try {
+    canonicalUrl = new URL(path, process.env.NEXT_PUBLIC_APP_URL || "https://amaanafoundation.org").toString();
+  } catch {
+    canonicalUrl = new URL(path, "https://amaanafoundation.org").toString();
+  }
+  const whatsappMessage = [title, summary, canonicalUrl].filter(Boolean).join("\n\n");
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(whatsappMessage)}`;
 
   async function share() {
     setStatus("");
@@ -26,12 +35,6 @@ export function AppealShare({ title, summary, path }: AppealShareProps) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       setStatus("Could not share automatically. Copy the page address from your browser.");
     }
-  }
-
-  function shareOnWhatsApp() {
-    const message = [title, summary, canonicalUrl].filter(Boolean).join("\n\n");
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
-    setStatus("WhatsApp share opened in a new tab.");
   }
 
   async function copy() {
@@ -51,7 +54,7 @@ export function AppealShare({ title, summary, path }: AppealShareProps) {
       </div>
       <div className="v2-appeal-share-actions">
         <button type="button" className="v2-text-link" onClick={share}>Share appeal ↗</button>
-        <button type="button" className="v2-text-link" onClick={shareOnWhatsApp}>WhatsApp ↗</button>
+        <a className="v2-text-link" href={whatsappUrl} target="_blank" rel="noopener noreferrer">WhatsApp ↗</a>
         <button type="button" className="v2-text-link" onClick={copy}>Copy link</button>
       </div>
       <p className="v2-appeal-share-status" role="status" aria-live="polite">{status}</p>

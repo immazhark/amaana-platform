@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { getTrustedClientAddress } from "./client-address";
 import { isPrismaSerializableConflict, withSerializableTransactionRetry } from "./prisma-transaction";
 
-type RateLimitPurpose = "donation" | "assistance" | "analytics";
+type RateLimitPurpose = "donation" | "assistance" | "tracking" | "analytics" | "receipt";
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 
@@ -26,7 +26,7 @@ export function isSameOrigin(request: Request) {
 }
 
 function getRateLimitPepper(purpose: RateLimitPurpose) {
-  const envName = purpose === "assistance"
+  const envName = purpose === "assistance" || purpose === "tracking"
     ? "ASSISTANCE_TOKEN_PEPPER"
     : purpose === "analytics"
       ? "AUTH_RATE_LIMIT_PEPPER"
@@ -99,7 +99,28 @@ export async function enforceAssistanceRateLimit(request: Request) {
  * allowance avoids interfering with normal navigation while still bounding the
  * database write rate from any one client. No source IP address is persisted.
  */
+/**
+ * Private case-status checks use a separate hashed, one-hour attempt bucket.
+ * Keep these reads independent of the stricter assistance-submit allowance:
+ * repeat status checks must not prevent vulnerable people submitting a case.
+ * 60 attempts per client per hour, regardless of whether the token is valid.
+ * No tracking token, reference or raw client IP is recorded in the ledger.
+ */
+export async function enforceTrackingRateLimit(request: Request) {
+  return claimRateLimitSlot(getRateLimitClientHash(request, "tracking"), 60);
+}
+
 export async function enforceAnalyticsRateLimit(request: Request) {
   return claimRateLimitSlot(getRateLimitClientHash(request, "analytics"), 300);
 }
 
+
+/**
+ * Receipt credentials are private read capabilities. Bound online guessing and
+ * repeated record retrieval independently of the real donation checkout quota.
+ * Uses the existing transaction-safe hashed attempt ledger; raw IPs and tokens
+ * are never persisted.
+ */
+export async function enforceAcknowledgementRateLimit(request: Request) {
+  return claimRateLimitSlot(getRateLimitClientHash(request, "receipt"), 60);
+}

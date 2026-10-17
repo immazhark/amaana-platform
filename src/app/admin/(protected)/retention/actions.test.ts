@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   requirePermission: vi.fn(),
+  invalidate: vi.fn(),
   findUniqueOrThrow: vi.fn(),
   findFirstAudit: vi.fn(),
   createAudit: vi.fn(),
@@ -16,6 +17,9 @@ const mocks = vi.hoisted(() => ({
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.requirePermission }));
 vi.mock("@/lib/storage", () => ({ deletePrivateDocumentObject: mocks.deletePrivateDocumentObject }));
+vi.mock("@/lib/assistance-outcome-invalidation", () => ({
+  withdrawStaleAnonymousOutcomeCopies: mocks.invalidate,
+}));
 vi.mock("@/lib/prisma-transaction", () => ({
   withSerializableTransactionRetry: mocks.serializableTransaction,
 }));
@@ -120,6 +124,18 @@ describe("private document retention deletion", () => {
     }));
   });
 
+  it("blocks object deletion when privacy withdrawal cannot be committed", async () => {
+    mocks.invalidate.mockRejectedValueOnce(new Error("PRIVACY_INVALIDATION_FAILED"));
+    await expect(reviewDocumentRetention(deletionForm()))
+      .rejects.toThrow("PRIVACY_INVALIDATION_FAILED");
+    expect(mocks.invalidate).toHaveBeenCalledWith(
+      expect.anything(), "request_123", "user_123", "DOCUMENT_DELETION", "doc_123",
+    );
+    expect(mocks.updateManyDocument).not.toHaveBeenCalled();
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+  });
+
   it("requires exact destructive confirmation before loading the document", async () => {
     await expect(reviewDocumentRetention(deletionForm("delete"))).rejects.toThrow(/Type DELETE/);
     expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
@@ -145,12 +161,15 @@ describe("private document retention deletion", () => {
       "assistance/request_123/123e4567-e89b-12d3-a456-426614174000.pdf",
       "request_123",
     );
+    const invalidateOrder = mocks.invalidate.mock.invocationCallOrder[0];
     const auditOrder = mocks.createAudit.mock.invocationCallOrder[0];
     const deleteObjectOrder = mocks.deletePrivateDocumentObject.mock.invocationCallOrder[0];
     const transactionOrder = mocks.transaction.mock.invocationCallOrder[0];
     if (auditOrder === undefined || deleteObjectOrder === undefined || transactionOrder === undefined) {
       throw new Error("Expected retention deletion call ordering.");
     }
+    expect(invalidateOrder).toBeDefined();
+    expect(invalidateOrder!).toBeLessThan(deleteObjectOrder);
     expect(auditOrder).toBeLessThan(deleteObjectOrder);
     expect(deleteObjectOrder).toBeLessThan(transactionOrder);
     expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({
@@ -234,4 +253,32 @@ describe("private document retention deletion", () => {
     await expect(reviewDocumentRetention(deletionForm())).rejects.toThrow(/Release the legal/);
     expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
   });
+  it.each(["documentId", "decision", "deleteConfirmation", "reason", "reviewAfter", "expectedHoldAction", "expectedHoldCreatedAt"])("rejects duplicate or non-text %s before any private read", async field => {
+    for (const duplicate of [false, true]) {
+      const form = deletionForm();
+      if (duplicate) { form.set(field, String(form.get(field) ?? "")); form.append(field, String(form.get(field))); }
+      else form.set(field, new File(["private"], "evidence.txt"));
+      await expect(reviewDocumentRetention(form)).rejects.toThrow();
+      expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+      expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+    }
+  });
+  it.each(["2030-02-30", "2031-02-29", "2030-13-01", "2030-1-01", "2030-01-01T00:00:00Z"])("rejects impossible or noncanonical calendar date %s before reads", async date => {
+    const form = deletionForm(); form.set("decision", "RETAIN"); form.set("reviewAfter", date);
+    await expect(reviewDocumentRetention(form)).rejects.toThrow("Invalid review date");
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+  });
+  it("accepts a genuine future leap day without converting it to March", async () => {
+    const form = deletionForm(); form.set("decision", "RETAIN"); form.set("reviewAfter", "2032-02-29");
+    await reviewDocumentRetention(form);
+    expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({ data: expect.objectContaining({ metadata: expect.objectContaining({ reviewAfter: "2032-02-29T00:00:00.000Z" }) }) }));
+    expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+  });
+  it("denies unauthorized retention before inspecting or mutating documents", async () => {
+    mocks.requirePermission.mockRejectedValueOnce(new Error("Forbidden"));
+    await expect(reviewDocumentRetention(deletionForm())).rejects.toThrow("Forbidden");
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+  });
+
 });

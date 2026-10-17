@@ -6,3 +6,15 @@
 .journey :global(.v2-journey-step span){display:block;color:var(--af-color-muted);font-size:1rem;line-height:1.65}
 @media(max-width:900px){.journey.journey{grid-template-columns:repeat(2,minmax(0,1fr))}.journey :global(.v2-journey-step){grid-column:auto}.journey :global(.v2-journey-step:nth-child(n+4)){grid-column:auto}.journey :global(.v2-journey-step:last-child){grid-column:1/-1}}
 @media(max-width:560px){.journey.journey{grid-template-columns:1fr}.journey :global(.v2-journey-step){min-height:0;padding:1.25rem}.journey :global(.v2-journey-step:last-child){grid-column:auto}}
+
+
+/* A deliberate full-width next-step surface; keep the six standardized
+   participation cards in two balanced rows of three on desktop. */
+.legacyInvitation{position:relative;isolation:isolate;overflow:hidden;display:grid;grid-template-columns:minmax(0,1.5fr) auto;gap:clamp(1.25rem,4vw,3rem);align-items:center;margin-top:clamp(1.5rem,4vw,2.5rem);padding:clamp(1.5rem,4vw,3rem);border:1px solid rgb(255 255 255 / 15%);border-radius:1.3rem;background:linear-gradient(112deg,var(--af-color-navy-950),var(--af-color-navy-800));box-shadow:0 .75rem 2.5rem rgb(18 34 57 / 12%)}
+.legacyInvitation:before{position:absolute;z-index:-1;content:"";width:20rem;aspect-ratio:1;inset:auto -9rem -11rem auto;border:1px solid rgb(240 213 107 / 18%);border-radius:50%;box-shadow:0 0 0 3rem rgb(240 213 107 / 5%),0 0 0 6rem rgb(255 255 255 / 2%)}
+.legacyEyebrow{margin:0 0 .6rem!important;color:var(--af-color-gold-soft)!important;font-size:.8rem!important;font-weight:800;letter-spacing:.1em;text-transform:uppercase}
+.legacyInvitation h3{color:var(--af-color-white);font-family:var(--af-font-display);font-weight:400;font-size:clamp(1.65rem,2.8vw,2.6rem);line-height:1.2;margin:0 0 .8rem;text-wrap:balance}
+.legacyInvitation p:not(.legacyEyebrow){max-width:48rem;color:#e1e8e6;font-size:1rem;line-height:1.7;margin:0}
+.legacyInvitation>a{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:.5rem;white-space:normal;text-align:center;min-height:3rem}
+@media(max-width:850px){.legacyInvitation{grid-template-columns:1fr}.legacyInvitation>a{justify-self:start}}
+@media(max-width:560px){.legacyInvitation{padding:1.35rem}.legacyInvitation>a{width:100%}}

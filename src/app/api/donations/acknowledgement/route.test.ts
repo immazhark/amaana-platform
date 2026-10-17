@@ -1,23 +1,24 @@
-import { describe, expect, it, vi } from "vitest";
+import { Prisma } from "@prisma/client";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   findUnique: vi.fn(),
+  allowReceiptRead: vi.fn(),
+  readTextBodyWithLimit: vi.fn(),
 }));
 
 vi.mock("@/lib/bounded-request-body", () => {
   class RequestBodyTooLargeError extends Error {}
+  class RequestBodyReadTimeoutError extends Error {}
   return {
     RequestBodyTooLargeError,
-    readTextBodyWithLimit: async (request: Request, maxBytes: number) => {
-      const declared = Number(request.headers.get("content-length"));
-      if (Number.isFinite(declared) && declared > maxBytes) throw new RequestBodyTooLargeError();
-      return request.text();
-    },
+    RequestBodyReadTimeoutError,
+    readTextBodyWithLimit: mocks.readTextBodyWithLimit,
   };
 });
 
-vi.mock("@/lib/donations", () => ({
-  getDonationAcknowledgementPresentation: vi.fn(),
+vi.mock("@/lib/donations", async importOriginal => ({
+  ...await importOriginal<typeof import("@/lib/donations")>(),
   hashReceiptToken: () => "0".repeat(64),
 }));
 
@@ -31,6 +32,7 @@ vi.mock("@/lib/prisma", () => ({
 
 vi.mock("@/lib/request-security", () => ({
   isSameOrigin: () => true,
+  enforceAcknowledgementRateLimit: mocks.allowReceiptRead,
 }));
 
 import { POST } from "./route";
@@ -47,6 +49,40 @@ function acknowledgementRequest(headers?: HeadersInit) {
 }
 
 describe("private donation acknowledgement request bounds", () => {
+  beforeEach(() => {
+    mocks.findUnique.mockReset();
+    mocks.allowReceiptRead.mockReset();
+    mocks.allowReceiptRead.mockResolvedValue(true);
+    mocks.readTextBodyWithLimit.mockReset().mockImplementation(async (request: Request, maxBytes: number) => {
+      const declared = Number(request.headers.get("content-length"));
+      if (Number.isFinite(declared) && declared > maxBytes) {
+        const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");
+        throw new RequestBodyTooLargeError(maxBytes);
+      }
+      return request.text();
+    });
+  });
+  it("enforces a body-read deadline shorter than the private browser request lifetime", async () => {
+    await POST(acknowledgementRequest());
+    expect(mocks.readTextBodyWithLimit).toHaveBeenCalledWith(
+      expect.any(Request), 8 * 1024, { timeoutMs: 5_000 },
+    );
+  });
+
+  it("treats a stalled acknowledgement read as temporary unavailability without private lookup", async () => {
+    const { RequestBodyReadTimeoutError } = await import("@/lib/bounded-request-body");
+    mocks.readTextBodyWithLimit.mockRejectedValueOnce(new RequestBodyReadTimeoutError());
+    const response = await POST(acknowledgementRequest());
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ found: false });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex/i);
+    expect(mocks.allowReceiptRead).not.toHaveBeenCalled();
+    expect(mocks.findUnique).not.toHaveBeenCalled();
+  });
+
   it("rejects an oversized acknowledgement payload before donation lookup", async () => {
     const response = await POST(acknowledgementRequest({ "Content-Length": String(8 * 1024 + 1) }));
     const body = await response.json();
@@ -58,4 +94,177 @@ describe("private donation acknowledgement request bounds", () => {
     expect(response.headers.get("x-robots-tag")).toMatch(/noindex/i);
     expect(mocks.findUnique).not.toHaveBeenCalled();
   });
+  it("blocks receipt brute-force attempts before a donation lookup", async () => {
+    mocks.allowReceiptRead.mockResolvedValue(false);
+    const response = await POST(acknowledgementRequest());
+    expect(response.status).toBe(429);
+    expect(await response.json()).toEqual({ found: false });
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/);
+    expect(mocks.findUnique).not.toHaveBeenCalled();
+  });
+
+  const original = {
+    receiptTokenHash: "0".repeat(64),
+    appealId: "appeal-1",
+    designationSnapshot: {
+      version: 1, kind: "APPEAL", appealId: "appeal-1",
+      label: "Original donor designation", givingIntent: "GENERAL",
+    },
+    status: "CAPTURED", currency: "INR",
+    amount: new Prisma.Decimal(500),
+    refundedAmount: new Prisma.Decimal(0),
+    receiptNumber: "ACK-STAGING",
+    referenceNumber: "AFD-STAGING-REFUNDED",
+    donorName: "Synthetic donor",
+    givingIntent: "GENERAL",
+    capturedAt: new Date("2026-10-12T12:00:00.000Z"),
+    refundedAt: null,
+    createdAt: new Date("2026-10-11T12:00:00.000Z"),
+    providerPaymentId: "pay_synthetic",
+    appeal: {
+      title: "Rewritten public campaign name",
+      slug: "synthetic-campaign",
+      assistanceRequest: null,
+    },
+  };
+
+  it.each([
+    { currency: "USD" },
+    { amount: new Prisma.Decimal("100.001") },
+    { amount: new Prisma.Decimal(0) },
+    { refundedAmount: new Prisma.Decimal(501) },
+    { status: "PENDING_VERIFICATION", refundedAmount: new Prisma.Decimal(1) },
+    { status: "REFUNDED", refundedAmount: new Prisma.Decimal(25) },
+  ])("does not issue a misleading receipt for inconsistent accounting %o", async patch => {
+    mocks.findUnique.mockResolvedValue({ ...original, ...patch });
+    const response = await POST(acknowledgementRequest());
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ found: false });
+    expect(response.headers.get("cache-control")).toContain("private");
+  });
+
+  it("rejects an incorrect token with the same generic 404", async () => {
+    mocks.findUnique.mockResolvedValue({ ...original, receiptTokenHash: "1".repeat(64) });
+    const response = await POST(acknowledgementRequest());
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ found: false });
+  });
+
+  it("treats a missing record as a generic private miss", async () => {
+    mocks.findUnique.mockResolvedValue(null);
+    const response = await POST(acknowledgementRequest());
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ found: false });
+  });
+
+  it("returns the original donor designation rather than a later edited campaign title", async () => {
+    mocks.findUnique.mockResolvedValue(original);
+    const response = await POST(acknowledgementRequest());
+    expect(response.status).toBe(200);
+    const body = await response.json();
+    expect(body.found).toBe(true);
+    expect(body.donation.appeal).toEqual({ title: "Original donor designation", slug: "synthetic-campaign" });
+    expect(JSON.stringify(body)).not.toContain("Rewritten public campaign name");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/);
+    expect(mocks.findUnique).toHaveBeenCalledWith(expect.objectContaining({
+      select: expect.objectContaining({
+        designationSnapshot: true, appealId: true,
+      }),
+    }));
+  });
+
+  it("keeps legacy private acknowledgement readable but denies native PDF proof without original purpose", async () => {
+    const { readVerifiedDonationAcknowledgement } = await import("@/lib/private-donation-receipt");
+    mocks.findUnique.mockResolvedValue({ ...original, designationSnapshot: null });
+    const old = await readVerifiedDonationAcknowledgement({
+      reference: "AFD-STAGING-REFUNDED", token: "receipt-token-at-least-twenty-characters",
+    });
+    expect(old?.donation.appeal.title).toBe("Rewritten public campaign name");
+    const strict = await readVerifiedDonationAcknowledgement({
+      reference: "AFD-STAGING-REFUNDED", token: "receipt-token-at-least-twenty-characters",
+    }, { requireOriginalPurpose: true });
+    expect(strict).toBeNull();
+  });
+
+  it("blocks native PDF issuance for a mismatched historic designation", async () => {
+    const { readVerifiedDonationAcknowledgement } = await import("@/lib/private-donation-receipt");
+    mocks.findUnique.mockResolvedValue({ ...original,
+      designationSnapshot: { ...original.designationSnapshot, appealId: "wrong-appeal" },
+    });
+    expect(await readVerifiedDonationAcknowledgement({
+      reference: "AFD-STAGING-REFUNDED", token: "receipt-token-at-least-twenty-characters",
+    }, { requireOriginalPurpose: true })).toBeNull();
+  });
+
+  it("permits native PDF receipt projection only with the verified original purpose", async () => {
+    const { readVerifiedDonationAcknowledgement } = await import("@/lib/private-donation-receipt");
+    mocks.findUnique.mockResolvedValue(original);
+    const result = await readVerifiedDonationAcknowledgement({
+      reference: "AFD-STAGING-REFUNDED", token: "receipt-token-at-least-twenty-characters",
+    }, { requireOriginalPurpose: true });
+    expect(result?.donation.appeal.title).toBe("Original donor designation");
+  });
+
+  it("retains legacy title lookup when a historical donation has no snapshot", async () => {
+    mocks.findUnique.mockResolvedValue({ ...original, designationSnapshot: null });
+    const response = await POST(acknowledgementRequest());
+    expect((await response.json()).donation.appeal.title).toBe("Rewritten public campaign name");
+  });
+
+  it("does not silently replace invalid snapshot history with a new campaign purpose", async () => {
+    mocks.findUnique.mockResolvedValue({
+      ...original,
+      designationSnapshot: { ...original.designationSnapshot, appealId: "another-appeal" },
+    });
+    const response = await POST(acknowledgementRequest());
+    expect((await response.json()).donation.appeal.title).toBe("Donation designation requires review");
+  });
+
+  it("redacts historical title and destination slug when the case becomes highly sensitive", async () => {
+    mocks.findUnique.mockResolvedValue({
+      ...original,
+      designationSnapshot: { ...original.designationSnapshot, label: "Highly personal original title" },
+      appeal: {
+        title: "Current private title", slug: "private-person-full-name",
+        assistanceRequest: { verification: { confidentialityLevel: "HIGHLY_SENSITIVE" } },
+      },
+    });
+    const response = await POST(acknowledgementRequest());
+    const body = await response.json();
+    expect(body.found).toBe(true);
+    expect(body.donation.appeal).toEqual({ title: "Confidential assistance appeal", slug: null });
+    expect(JSON.stringify(body)).not.toMatch(/Highly personal original title|private-person-full-name|Current private title/);
+  });
+
+  it("returns the original approved giving fund purpose without a fake appeal link", async () => {
+    const snapshot = {
+      version: 1, kind: "FUND", fundId: "approved-fund", fundRevision: 4,
+      label: "Original approved programme",
+      purpose: "Independently approved programme purpose for testing.",
+      disclosure: "Donor-facing restrictions independently approved for this giving fund.",
+      accountCode: "FUND-TEST", givingIntent: "GENERAL",
+    };
+    mocks.findUnique.mockResolvedValue({
+      ...original, appealId: null, fundId: "approved-fund", appeal: null,
+      fund: { name: "Renamed current programme" },
+      designationSnapshot: snapshot,
+    });
+    const response = await POST(acknowledgementRequest());
+    const body = await response.json();
+    expect(response.status).toBe(200);
+    expect(body.donation.designationKind).toBe("FUND");
+    expect(body.donation.appeal).toEqual({ title: "Original approved programme", slug: null });
+    expect(JSON.stringify(body)).not.toContain("Renamed current programme");
+  });
+
+  it("does not re-label a malformed fund snapshot as an approved purpose", async () => {
+    mocks.findUnique.mockResolvedValue({
+      ...original, appealId: null, fundId: "approved-fund", appeal: null,
+      fund: { name: "Renamed fund" }, designationSnapshot: null,
+    });
+    const response = await POST(acknowledgementRequest());
+    expect(response.status).toBe(200);
+    expect((await response.json()).donation.appeal.title).toBe("Fund designation requires review");
+  });
+
 });

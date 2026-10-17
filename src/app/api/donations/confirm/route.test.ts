@@ -1,3 +1,4 @@
+vi.mock("@/lib/donation-cache", () => ({ expireDonationViews: vi.fn() }));
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -6,17 +7,16 @@ const mocks = vi.hoisted(() => ({
   captureDonation: vi.fn(),
   fetchRazorpayPayment: vi.fn(),
   verifyCheckoutSignature: vi.fn(),
+  readTextBodyWithLimit: vi.fn(),
 }));
 
 vi.mock("@/lib/bounded-request-body", () => {
   class RequestBodyTooLargeError extends Error {}
+  class RequestBodyReadTimeoutError extends Error {}
   return {
     RequestBodyTooLargeError,
-    readTextBodyWithLimit: async (request: Request, maxBytes: number) => {
-      const declared = Number(request.headers.get("content-length"));
-      if (Number.isFinite(declared) && declared > maxBytes) throw new RequestBodyTooLargeError();
-      return request.text();
-    },
+    RequestBodyReadTimeoutError,
+    readTextBodyWithLimit: mocks.readTextBodyWithLimit,
   };
 });
 
@@ -51,6 +51,7 @@ vi.mock("@/lib/env", () => ({
 }));
 
 import { POST } from "./route";
+import { expireDonationViews } from "@/lib/donation-cache";
 
 function confirmationRequest(headers?: HeadersInit) {
   return new Request("https://amaana.example/api/donations/confirm", {
@@ -78,6 +79,14 @@ function storedDonation() {
 describe("donation confirmation persisted status", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mocks.readTextBodyWithLimit.mockImplementation(async (request: Request, maxBytes: number) => {
+      const declared = Number(request.headers.get("content-length"));
+      if (Number.isFinite(declared) && declared > maxBytes) {
+        const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");
+        throw new RequestBodyTooLargeError(maxBytes);
+      }
+      return request.text();
+    });
     mocks.verifyCheckoutSignature.mockReturnValue(true);
     mocks.updateMany.mockResolvedValue({ count: 0 });
     mocks.fetchRazorpayPayment.mockResolvedValue({
@@ -114,11 +123,30 @@ describe("donation confirmation persisted status", () => {
 
     const response = await POST(confirmationRequest());
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(409);
     expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
     expect(response.headers.get("referrer-policy")).toBe("no-referrer");
     expect(response.headers.get("x-robots-tag")).toMatch(/noindex.*nofollow.*noarchive/i);
   });
+
+  it.each(["CREATED", "AUTHORIZED", "FAILED", "PENDING_VERIFICATION"] as const)(
+    "does not confirm payment completion for persisted state %s",
+    async persistedStatus => {
+      mocks.findUnique
+        .mockResolvedValueOnce(storedDonation())
+        .mockResolvedValueOnce({ status: persistedStatus });
+
+      const response = await POST(confirmationRequest());
+      expect(response.status).toBe(409);
+      expect(await response.json()).toEqual({
+        error: "Payment has not been confirmed as captured. Retain your payment confirmation and do not submit another payment.",
+        status: persistedStatus,
+      });
+      expect(response.headers.get("cache-control")).toMatch(/no-store.*private/);
+      expect(mocks.captureDonation).not.toHaveBeenCalled();
+      expect(expireDonationViews).not.toHaveBeenCalled();
+    },
+  );
 
   it("rejects an oversized confirmation payload before payment verification", async () => {
     const response = await POST(confirmationRequest({ "Content-Length": String(32 * 1024 + 1) }));
@@ -128,6 +156,37 @@ describe("donation confirmation persisted status", () => {
     expect(body).toEqual({ error: "Payment confirmation payload is too large." });
     expect(mocks.verifyCheckoutSignature).not.toHaveBeenCalled();
     expect(mocks.fetchRazorpayPayment).not.toHaveBeenCalled();
+  });
+
+  it("uses a bounded deadline for a valid payment confirmation request", async () => {
+    mocks.findUnique
+      .mockResolvedValueOnce(storedDonation())
+      .mockResolvedValueOnce({ status: "AUTHORIZED" });
+
+    const response = await POST(confirmationRequest());
+
+    expect(response.status).toBe(409);
+    expect(mocks.readTextBodyWithLimit).toHaveBeenCalledWith(
+      expect.any(Request), 32 * 1024, { timeoutMs: 15_000 },
+    );
+  });
+
+  it("treats stalled payment confirmation reading as uncertain without touching the provider", async () => {
+    const { RequestBodyReadTimeoutError } = await import("@/lib/bounded-request-body");
+    mocks.readTextBodyWithLimit.mockRejectedValueOnce(new RequestBodyReadTimeoutError());
+
+    const response = await POST(confirmationRequest());
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({
+      error: "Payment confirmation is temporarily unavailable. Please retain your payment confirmation.",
+    });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toContain("no-store");
+    expect(mocks.verifyCheckoutSignature).not.toHaveBeenCalled();
+    expect(mocks.findUnique).not.toHaveBeenCalled();
+    expect(mocks.fetchRazorpayPayment).not.toHaveBeenCalled();
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
   });
 
   it("does not authorize a provider payment whose amount differs from the stored donation", async () => {
@@ -202,6 +261,25 @@ describe("donation confirmation persisted status", () => {
     expect(mocks.findUnique).toHaveBeenCalledTimes(1);
   });
 
+  it("returns the persisted captured state even if post-capture cache expiry fails", async () => {
+    mocks.findUnique
+      .mockResolvedValueOnce(storedDonation())
+      .mockResolvedValueOnce({ status: "CAPTURED" });
+    mocks.fetchRazorpayPayment.mockResolvedValueOnce({
+      id: "pay_123", order_id: "order_123", amount: 50000,
+      currency: "INR", status: "captured", captured: true,
+    });
+    vi.mocked(expireDonationViews).mockImplementationOnce(() => {
+      throw new Error("synthetic cache adapter outage");
+    });
+    const response = await POST(confirmationRequest());
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ referenceNumber: "AMN-123", status: "CAPTURED" });
+    expect(mocks.captureDonation).toHaveBeenCalledExactlyOnceWith("order_123", "pay_123", 50000);
+    expect(expireDonationViews).toHaveBeenCalledOnce();
+    expect(mocks.findUnique).toHaveBeenCalledTimes(2);
+  });
+
   it("captures a matching provider payment using the signed callback identity", async () => {
     mocks.findUnique
       .mockResolvedValueOnce(storedDonation())
@@ -220,6 +298,8 @@ describe("donation confirmation persisted status", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ referenceNumber: "AMN-123", status: "CAPTURED" });
     expect(mocks.captureDonation).toHaveBeenCalledWith("order_123", "pay_123", 50000);
+    expect(expireDonationViews).toHaveBeenCalledOnce();
+    expect(vi.mocked(expireDonationViews).mock.invocationCallOrder[0]).toBeGreaterThan(mocks.captureDonation.mock.invocationCallOrder[0] ?? Number.POSITIVE_INFINITY);
     expect(mocks.updateMany).not.toHaveBeenCalled();
   });
 });

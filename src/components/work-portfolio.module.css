@@ -1,0 +1,5 @@
+.taleemHighlights{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem;margin-top:1rem}
+.taleemHighlight{padding:1.25rem;border:1px solid var(--af-card-border);border-radius:var(--af-card-radius);background:rgb(255 253 248 / 82%);box-shadow:0 10px 28px rgb(18 34 57 / 5%)}
+.taleemHighlight strong{display:block;font:600 1.7rem var(--af-font-display);color:var(--af-color-navy-800);margin-bottom:.35rem}
+.taleemHighlight span{color:var(--af-color-muted)}
+@media(max-width:760px){.taleemHighlights{grid-template-columns:1fr}}

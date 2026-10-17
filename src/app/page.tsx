@@ -4,8 +4,10 @@ import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel } from "@/components/body-carousel";
 import "./home-showcase.css";
 import "./home-documentary.css";
+// AppealCard also renders on the homepage whenever a reviewed appeal is active.
+import "./appeal-card.css";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { AppealCard } from "@/components/appeal-card";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getHomepageAppeals } from "@/lib/public-content";
@@ -16,8 +18,9 @@ import { ScrollCarousel } from "@/components/scroll-carousel";
 import { programmeCategories, programmes } from '@/lib/master-copy';
 import { ConfiguredHomeSlide } from "@/components/home-story-slide";
 import { getHomeCarouselConfig, getHomeCarouselImages } from "@/lib/home-carousel-data";
-import { composeHomeSlides, defaultHomeSlides } from "@/lib/home-carousel";
+import { composeHomeSlides, defaultHomeSlides, visibleHomeSlides } from "@/lib/home-carousel";
 import { HomeHighlights } from "@/components/home-highlights";
+import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { programmeCategoryPath } from '@/lib/programme-category-routing';
 import { selectIdentityPublicImage } from '@/lib/public-media';
 import { openGraphShareImages, twitterShareImages } from '@/lib/social-share-media';
@@ -46,18 +49,49 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const [liveAppeals, discovery, { config }] = await Promise.all([getHomepageAppeals(20), getHomepageDiscoveryData(), getHomeCarouselConfig()]);
   const appeals = liveAppeals.slice(0, 3);
+  // The editor may link a custom slide to any currently eligible appeal.
+  // Keep that eligibility set, but automatically insert only the top-ranked
+  // live appeal instead of creating up to twenty extra full-width hero slides.
+  const eligibleAppealSlugs = new Set(liveAppeals.map(appeal => appeal.slug));
+  const featuredAppeal = liveAppeals[0];
+  const now = new Date();
+  const scheduledSlides = visibleHomeSlides(config, eligibleAppealSlugs, now);
+  // Only read images for visible editor slides and the one automatic appeal.
+  // Draft, expired and future media must not cost DB/audit reads at render.
   const [images, appealCoverMedia] = await Promise.all([
-    getHomeCarouselImages(config.slides.map(s => s.image)),
-    getAppealCoverMediaBatch(liveAppeals.map(appeal => appeal.coverImageUrl)),
+    getHomeCarouselImages(scheduledSlides.map(slide => slide.image)),
+    getAppealCoverMediaBatch(featuredAppeal?.coverImageUrl ? [featuredAppeal.coverImageUrl] : []),
   ]);
-  const appealImages = liveAppeals.map(appeal =>
-    appeal.coverImageUrl ? appealCoverMedia.get(appeal.coverImageUrl) ?? null : null,
-  );
+  const featuredImage = featuredAppeal?.coverImageUrl
+    ? appealCoverMedia.get(featuredAppeal.coverImageUrl) ?? null : null;
   const appealTemplate = defaultHomeSlides[0];
   if (!appealTemplate) throw new Error("Homepage carousel requires a default slide template");
-  const appealSlides = liveAppeals.map((appeal, index) => ({ ...appealTemplate, id: `appeal-${appeal.slug}`, eyebrow: 'Current verified appeal', title: appeal.title, description: appeal.summary, primaryLabel: 'View this appeal', primaryHref: `/appeals/${appeal.slug}`, secondaryLabel: 'Support this need', secondaryHref: `/donate/${appeal.slug}`, appealSlug: appeal.slug, image: appealImages[index] ? `asset:${appealImages[index]!.id}` : 'logo', imageAlt: appealImages[index]?.altText || '', order: index }));
-  appealImages.forEach(asset => { if (asset) images.set(asset.id, asset); });
-  const heroSlides = composeHomeSlides(config, appealSlides);
+  const appealSlides = featuredAppeal ? [{
+    ...appealTemplate,
+    id: `appeal-${featuredAppeal.slug}`,
+    eyebrow: 'Current verified appeal',
+    title: featuredAppeal.title,
+    description: featuredAppeal.summary,
+    primaryLabel: 'View this appeal',
+    primaryHref: `/appeals/${featuredAppeal.slug}`,
+    secondaryLabel: 'Support this need',
+    secondaryHref: `/donate/${featuredAppeal.slug}`,
+    appealSlug: featuredAppeal.slug,
+    image: featuredImage ? `asset:${featuredImage.id}` : 'logo',
+    imageAlt: featuredImage?.altText || '',
+    order: 0,
+  }] : [];
+  if (featuredImage) images.set(featuredImage.id, featuredImage);
+  const heroSlides = composeHomeSlides(config, appealSlides, now, eligibleAppealSlugs);
+  // These outcomes are from the already-loaded publication-gated discovery
+  // projection, not an extra public query or a fabricated fundraising total.
+  const publishedImpact = discovery.initiatives
+    .filter(item => item.primaryMetric?.trim() && item.primaryMetricLabel?.trim())
+    .slice(0, 3)
+    .map(item => ({
+      slug: item.slug, title: item.title,
+      value: item.primaryMetric!, label: item.primaryMetricLabel!,
+    }));
   const hasOpenAppeals = liveAppeals.length > 0;
   const publicProgrammeSlugs = new Set(discovery.publishedProgrammeSlugs);
   const eidProgrammePublished = publicProgrammeSlugs.has("eid-gift-kits");
@@ -140,6 +174,10 @@ export default async function HomePage() {
       <HomeGrowth eidProgrammePublished={eidProgrammePublished} />
       <HomeTrust hasOpenAppeals={hasOpenAppeals} />
 
+      {publishedImpact.length > 0 && <div className="v3-shell">
+        <VerifiedImpactStrip headingId="home-published-outcomes" items={publishedImpact} />
+      </div>}
+
       <section className="v3-section v3-appeals" aria-labelledby="appeals-title">
         <div className="v3-shell">
           <SectionHeading eyebrow={<>Current verified appeals</>} title={<>When there is a need, we share it responsibly.</>} subtitle={<>Active public appeals appear here after review. Completed work remains available even when there is no current fundraising appeal.</>} id="appeals-title" className="v3-section-head" titleClassName="v3-heading" />
@@ -151,8 +189,8 @@ export default async function HomePage() {
           ) : (
             <div className="v3-empty">
               <div>
-                <h3>No Public Appeal Is Open Right Now</h3>
-                <p>That does not mean the work has stopped. You can explore completed cases or ask about Amaana’s recurring initiatives. New urgent appeals will appear here after verification.</p>
+                <h3>No Public Appeal Checkout Is Currently Available</h3>
+                <p>Published cases may remain available to review even when they cannot accept a donation. Explore documented work or ask Amaana about currently approved programme giving routes.</p>
               </div>
               <div className="v3-actions">
                 <Link className="v3-btn" href="/our-work">Explore our work</Link>

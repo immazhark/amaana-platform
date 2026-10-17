@@ -55,7 +55,7 @@
   grid-template-columns:auto minmax(0,1fr);gap:.75rem;padding:.38rem 0 .38rem clamp(.8rem,1.5vw,1.25rem)
 }
 .amaana-rail-label,.amaana-live-badge{
-  display:inline-flex;align-items:center;gap:.42rem;margin:0;color:#8a6715;font-size:.75rem;font-weight:900;
+  display:inline-flex;align-items:center;gap:.42rem;margin:0;color:var(--af-color-gold-ink);font-size:.75rem;font-weight:900;
   letter-spacing:.12em;text-transform:uppercase;white-space:nowrap
 }
 .amaana-live-badge{color:#173e47}
@@ -83,7 +83,7 @@
   display:inline-flex;align-items:center;min-height:2rem;padding:.3rem .45rem;color:#234e67!important;
   font-size:.75rem;font-weight:800;text-decoration:none!important
 }
-.amaana-live-link:is(:hover,:focus-visible){color:#8a6715!important;text-decoration:underline!important;text-underline-offset:3px}
+.amaana-live-link:is(:hover,:focus-visible){color:var(--af-color-gold-ink)!important;text-decoration:underline!important;text-underline-offset:3px}
 .amaana-live-cta{min-height:2rem;padding:.34rem .68rem;font-size:.75rem}
 
 /* Footer */

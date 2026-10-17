@@ -32,15 +32,24 @@ export function getAppealConsentContentIssues(input: {
   return issues;
 }
 
-export function getFirstPublicationIssues(input: {
+/** A paused appeal is public again when resumed. Recheck revoked review evidence
+ * and public content, not only the initial UNDER_REVIEW publication.
+ * Unlinked, previously public legacy appeals may resume without inventing a
+ * new assistance verification record; their cover image is checked separately. */
+export function getAppealPublicationIssues(input: {
   fromStatus: string;
   toStatus: string;
   goalAmount: AmountLike;
   verification: VerificationLike;
+  hasAssistanceRequest: boolean;
   beneficiaryDisplayName?: string | null;
   coverImageUrl?: string | null;
 }) {
-  if (input.fromStatus !== "UNDER_REVIEW" || input.toStatus !== "PUBLISHED") return [];
+  if (input.toStatus !== "PUBLISHED") return [];
+  const firstPublication = input.fromStatus === "UNDER_REVIEW";
+  const resuming = input.fromStatus === "PAUSED";
+  if (!firstPublication && !resuming) return [];
+  if (resuming && !input.hasAssistanceRequest) return [];
   const issues = getPublicAppealVerificationIssues(input.verification);
   if (input.verification && !goalMatchesApprovedPublicTarget(input.goalAmount, input.verification)) {
     issues.push("Appeal goal must match the approved public fundraising target.");

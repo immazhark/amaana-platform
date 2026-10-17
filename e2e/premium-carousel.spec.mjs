@@ -34,6 +34,79 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
   });
 }
 
+for (const width of [390, 1440]) {
+  test(`R-025 single-programme heading keeps readable line spacing at ${width}px and 200% text`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/programmes/seasonal-relief', { waitUntil: 'domcontentloaded' });
+    const heading = page.locator('.canonical-pathways--single article h2');
+    await expect(heading).toHaveCount(1);
+    for (const scale of ['100%', '200%']) {
+      await page.evaluate(value => { document.documentElement.style.fontSize = value; }, scale);
+      const metrics = await heading.evaluate(node => {
+        const style = getComputedStyle(node);
+        const fontSize = parseFloat(style.fontSize);
+        const lineHeight = parseFloat(style.lineHeight);
+        return { fontSize, lineHeight, width: node.getBoundingClientRect().width };
+      });
+      expect(metrics.lineHeight / metrics.fontSize).toBeGreaterThanOrEqual(1.1);
+      expect(metrics.width).toBeGreaterThan(0);
+    }
+  });
+}
+
+for (const width of [390, 1440]) {
+  test(`R-025 trust-evidence heading retains readable multiline leading at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/transparency', { waitUntil: 'domcontentloaded' });
+    const heading = page.locator('.canonical-body [data-trust-evidence-boundary] .v2-section-title');
+    await expect(heading).toHaveCount(1);
+    for (const scale of ['100%', '200%']) {
+      await page.evaluate(value => { document.documentElement.style.fontSize = value; }, scale);
+      const ratio = await heading.evaluate(node => {
+        const style = getComputedStyle(node);
+        return parseFloat(style.lineHeight) / parseFloat(style.fontSize);
+      });
+      expect(ratio).toBeGreaterThanOrEqual(1.1);
+    }
+  });
+}
+
+for (const width of [1440, 1920]) {
+  test(`R-025 wide canonical article heading uses readable leading at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/about', { waitUntil: 'domcontentloaded' });
+    const headings = page.locator('.canonical-article .canonical-block h2');
+    await expect(headings.first()).toBeVisible();
+    const ratios = await headings.evaluateAll(nodes => nodes.map(node => {
+      const style = getComputedStyle(node);
+      return parseFloat(style.lineHeight) / parseFloat(style.fontSize);
+    }));
+    expect(ratios.length).toBeGreaterThan(0);
+    for (const ratio of ratios) expect(ratio).toBeGreaterThanOrEqual(1.1);
+  });
+}
+
+for (const width of [390, 768, 1440]) {
+  test(`R-054 above-fold category artwork preloads, below-fold artwork stays lazy at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/programmes/seasonal-relief', { waitUntil: 'domcontentloaded' });
+    const hero = page.locator('.page-hero [data-programme-artwork="seasonal-relief"]');
+    await expect(hero).toBeVisible();
+    await expect(hero).not.toHaveAttribute('loading', 'lazy');
+    await expect(hero).toHaveAttribute('sizes', '(max-width: 900px) 100vw, 50vw');
+    const preloaded = await hero.evaluate(img => [...document.querySelectorAll('link[rel="preload"][as="image"]')].some(link =>
+      (img.getAttribute('srcset') && link.getAttribute('imagesrcset') === img.getAttribute('srcset'))
+      || link.getAttribute('href') === img.getAttribute('src')
+    ));
+    expect(preloaded).toBe(true);
+    const cardArtwork = page.locator('#programme-list [data-programme-artwork]');
+    if (await cardArtwork.count()) {
+      await expect(cardArtwork.first()).not.toHaveAttribute('fetchpriority', 'high');
+      await expect(cardArtwork.first()).toHaveAttribute('loading', 'lazy');
+    }
+  });
+}
+
 test('homepage canonical fallbacks load and functional controls contain SVG rather than glyphs', async ({ page, request }) => {
   for (const name of ['origin', 'eid', 'medical', 'taleem', 'qurbani']) {
     const response = await request.get(`/hero/${name}.webp`);

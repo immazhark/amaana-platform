@@ -37,6 +37,46 @@ describe('homepage carousel publication and schedules', () => {
     expect(composeHomeSlides(config,[appeal],now).filter(s=>s.appealSlug==='live').map(s=>s.id)).toEqual(['custom']);
     expect(composeHomeSlides(config,[],now).map(s=>s.id)).toEqual(defaultHomeSlides.map(s=>s.id));
   });
+  it('retains a custom linked slide for another active appeal without injecting every active appeal', () => {
+    const automatic = {...origin, id:'appeal-first', appealSlug:'first', image:'logo'};
+    const secondLinked = {...eid, id:'editor-second', appealSlug:'second', order:8};
+    const config = {...defaultHomeConfig, slides:[...defaultHomeSlides,secondLinked]};
+    const slides = composeHomeSlides(config, [automatic], now, new Set(['first','second','third']));
+    expect(slides.filter(slide => slide.appealSlug).map(slide => slide.id))
+      .toEqual(['appeal-first', 'editor-second']);
+    expect(slides.map(slide => slide.id)).not.toContain('appeal-third');
+    expect(composeHomeSlides(config, [], now, new Set(['second']))
+      .find(slide => slide.id === 'editor-second')).toBeDefined();
+    expect(composeHomeSlides(config, [], now, new Set(['third']))
+      .find(slide => slide.id === 'editor-second')).toBeUndefined();
+  });
+  it('filters future, expired and draft editor slides before any image lookup', () => {
+    const scheduled = {...origin, id:'scheduled', image:'asset:private-draft', status:'DRAFT' as const};
+    const future = {...eid, id:'future', image:'asset:future-media', startsAt:'2026-10-04T00:00:00Z'};
+    const live = {...medical, id:'live', image:'asset:visible-media'};
+    const config = {...defaultHomeConfig, slides:[scheduled,future,live]};
+    expect(visibleHomeSlides(config,new Set(),now).map(slide => slide.image)).toEqual(['asset:visible-media']);
+  });
+  it('blocks protected receipt and assistance-status journeys from public hero CTAs', () => {
+    for (const href of [
+      '/donations/private-receipt',
+      '/donations',
+      '/request-assistance/status',
+      '/request-assistance/received',
+      '/donate/verified-appeal/receipt',
+      '/donate/verified-appeal/confirm',
+      '/%64onations/private-receipt',
+      '/%72equest-assistance/status',
+    ]) expect(() => safeHomeHref(href), href).toThrow(/public website/);
+
+    for (const href of [
+      '/donate',
+      '/donate/verified-appeal',
+      '/request-assistance',
+      '/how-we-verify',
+      '/our-work#published',
+    ]) expect(safeHomeHref(href)).toBe(href);
+  });
   it('rejects duplicate identifiers, invalid date windows and unreviewable image addresses', () => {
     expect(()=>parseHomeConfig({...defaultHomeConfig,slides:[origin,origin]})).toThrow(/unique/);
     expect(()=>validateHomeSlide({...origin,startsAt:'2026-10-04T00:00Z',endsAt:'2026-10-03T00:00Z'})).toThrow(/follow/);

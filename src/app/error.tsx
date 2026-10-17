@@ -1,6 +1,7 @@
 "use client";
 
-import Link from "next/link";
+import "./error-experience.css";
+import Link from "@/components/navigation-link";
 import { useEffect } from "react";
 
 export default function ErrorPage({ error, reset }: { error: Error & { digest?: string }; reset: () => void }) {

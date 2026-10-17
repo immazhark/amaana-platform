@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { requirePermission } from "@/lib/auth";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { prisma } from "@/lib/prisma";

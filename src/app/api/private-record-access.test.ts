@@ -1,3 +1,4 @@
+import { Prisma } from "@prisma/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { hashTrackingToken } from "@/lib/assistance";
 import { hashReceiptToken } from "@/lib/donations";
@@ -8,6 +9,14 @@ vi.mock("@/lib/prisma", () => ({
     donation: { findUnique: mocks.donation },
     assistanceRequest: { findUnique: mocks.assistance },
   },
+}));
+
+// Exercise the real origin/token/privacy boundaries without a real database
+// attempt ledger. Rate-limit denial itself is covered in the route unit tests.
+vi.mock("@/lib/request-security", async importOriginal => ({
+  ...await importOriginal<typeof import("@/lib/request-security")>(),
+  enforceAcknowledgementRateLimit: async () => true,
+  enforceTrackingRateLimit: async () => true,
 }));
 
 import { POST as acknowledgement } from "./donations/acknowledgement/route";
@@ -42,8 +51,9 @@ const endpoints = [
     denialStatus: 404,
     record: () => ({
       receiptTokenHash: hashReceiptToken(token),
-      status: "CAPTURED", amount: { toNumber: () => 100 },
-      refundedAmount: { toNumber: () => 0 },
+      appealId: "synthetic-appeal-id", fundId: null, designationSnapshot: null,
+      status: "CAPTURED", currency: "INR", amount: new Prisma.Decimal(100),
+      refundedAmount: new Prisma.Decimal(0),
       receiptNumber: "ACK-PRIVATE-TEST", referenceNumber: reference,
       donorName: "Synthetic Donor", givingIntent: "GENERAL", capturedAt: date,
       refundedAt: null, createdAt: date, providerPaymentId: "pay_synthetic",
@@ -86,10 +96,11 @@ for (const endpoint of endpoints) {
       } else {
         expect(Object.keys(body).sort()).toEqual(["donation", "found", "presentation"]);
         expect(Object.keys(body.donation).sort()).toEqual([
-          "amount", "appeal", "donorName", "givingIntent", "providerPaymentId",
+          "amount", "appeal", "designationKind", "donorName", "givingIntent", "providerPaymentId",
           "receiptNumber", "recordDate", "referenceNumber", "refundedAmount",
         ]);
         expect(body.donation.referenceNumber).toBe(reference);
+        expect(body.donation.designationKind).toBe("APPEAL");
       }
       expect(endpoint.lookup).toHaveBeenCalledExactlyOnceWith(expect.objectContaining({ where: { referenceNumber: reference } }));
       expect(mocks.donation.mock.calls.length + mocks.assistance.mock.calls.length).toBe(1);

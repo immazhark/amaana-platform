@@ -1,7 +1,7 @@
 import evidenceStyles from "@/components/evidence-pathway.module.css";
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { PageHero } from "@/components/page-hero";
 import styles from "./compliance-audit.module.css";
 

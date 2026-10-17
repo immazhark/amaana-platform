@@ -1,17 +1,15 @@
-import Link from "next/link";
-import { NotificationStatus } from "@prisma/client";
+import Link from "@/components/navigation-link";
+import { NotificationStatus, type Prisma } from "@prisma/client";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { enqueueControlledEmailAcceptance, requeueFailedNotification } from "./actions";
 import { prisma } from "@/lib/prisma";
 import {
-  NOTIFICATION_OVERDUE_MS,
-  NOTIFICATION_STALE_PROCESSING_MS,
-  TERMINAL_NOTIFICATION_SCHEDULE,
+  notificationAttentionQueries,
   notificationOperationalState,
 } from "@/lib/operational-signals";
 
-type Props = { searchParams: Promise<{ status?: string; page?: string }> };
+type Props = { searchParams: Promise<{ status?: string; page?: string; view?: string }> };
 
 const statusOrder = [
   NotificationStatus.FAILED,
@@ -22,7 +20,7 @@ const statusOrder = [
 ];
 
 function formatDateTime(value: Date | null) {
-  return value ? value.toLocaleString("en-IN") : "—";
+  return value ? value.toLocaleString("en-IN", { timeZone: "Asia/Kolkata" }) + " IST" : "—";
 }
 
 function deliveryScheduleLabel(status: NotificationStatus, scheduledFor: Date, sentAt: Date | null) {
@@ -34,46 +32,21 @@ function deliveryScheduleLabel(status: NotificationStatus, scheduledFor: Date, s
 export default async function NotificationOperationsPage({ searchParams }: Props) {
   const user = await requirePermission("notification.view");
   const canManageNotifications = hasPermission(user, "notification.manage");
-  const { status, page: pageParam } = await searchParams;
+  const { status, page: pageParam, view: viewParam } = await searchParams;
   const selected = Object.values(NotificationStatus).includes(status as NotificationStatus)
     ? status as NotificationStatus
     : undefined;
-  const where = selected ? { status: selected } : undefined;
-  const now = new Date();
-  const staleProcessingBefore = new Date(now.getTime() - NOTIFICATION_STALE_PROCESSING_MS);
-  const overdueBefore = new Date(now.getTime() - NOTIFICATION_OVERDUE_MS);
-
+  const attentionQueries = notificationAttentionQueries(new Date());
+  const view = viewParam === "staleProcessing" || viewParam === "overdueDue" || viewParam === "terminalFailures" ? viewParam : undefined;
+  const where: Prisma.NotificationWhereInput | undefined = view
+    ? { AND: [attentionQueries[view], ...(selected ? [{ status: selected }] : [])] }
+    : selected ? { status: selected } : undefined;
   const [totalItems, grouped, staleProcessing, overdueDue, terminalFailures] = await Promise.all([
     prisma.notification.count({ where }),
-    prisma.notification.groupBy({
-      by: ["status"],
-      _count: { _all: true },
-    }),
-    prisma.notification.count({
-      where: {
-        channel: "EMAIL",
-        status: NotificationStatus.PROCESSING,
-        updatedAt: { lt: staleProcessingBefore },
-      },
-    }),
-    prisma.notification.count({
-      where: {
-        channel: "EMAIL",
-        status: { in: [NotificationStatus.PENDING, NotificationStatus.FAILED] },
-        attempts: { lt: 5 },
-        scheduledFor: { lt: overdueBefore },
-      },
-    }),
-    prisma.notification.count({
-      where: {
-        channel: "EMAIL",
-        status: NotificationStatus.FAILED,
-        OR: [
-          { attempts: { gte: 5 } },
-          { scheduledFor: { gte: TERMINAL_NOTIFICATION_SCHEDULE } },
-        ],
-      },
-    }),
+    prisma.notification.groupBy({ by: ["status"], _count: { _all: true } }),
+    prisma.notification.count({ where: attentionQueries.staleProcessing }),
+    prisma.notification.count({ where: attentionQueries.overdueDue }),
+    prisma.notification.count({ where: attentionQueries.terminalFailures }),
   ]);
   const operational = notificationOperationalState({ staleProcessing, overdueDue, terminalFailures });
 
@@ -83,6 +56,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
     select: {
       id: true,
       status: true,
+      channel: true,
       recipient: true,
       templateKey: true,
       subject: true,
@@ -91,14 +65,16 @@ export default async function NotificationOperationsPage({ searchParams }: Props
       scheduledFor: true,
       sentAt: true,
       providerMessageId: true,
-      createdAt: true,
       updatedAt: true,
       assistanceRequestId: true,
       donationId: true,
       assistanceRequest: { select: { referenceNumber: true } },
       donation: { select: { referenceNumber: true } },
     },
-    orderBy: [{ status: "asc" }, { createdAt: "desc" }, { id: "desc" }],
+    orderBy: view === "staleProcessing" ? [{ updatedAt: "asc" }, { id: "asc" }]
+      : view === "overdueDue" ? [{ scheduledFor: "asc" }, { id: "asc" }]
+      : view === "terminalFailures" ? [{ updatedAt: "desc" }, { id: "desc" }]
+      : [{ status: "asc" }, { createdAt: "desc" }, { id: "desc" }],
     skip: pagination.skip,
     take: pagination.pageSize,
   });
@@ -106,9 +82,20 @@ export default async function NotificationOperationsPage({ searchParams }: Props
   const counts = new Map(grouped.map(item => [item.status, item._count._all]));
   const pageHref = (targetPage: number) => ({
     pathname: "/admin/notifications",
-    query: { ...(selected ? { status: selected } : {}), page: targetPage },
+    query: { ...(selected ? { status: selected } : {}), ...(view ? { view } : {}), page: targetPage },
   });
 
+  const statusHref = (value?: NotificationStatus) => {
+    const query = new URLSearchParams();
+    if (view) query.set("view", view);
+    if (value) query.set("status", value);
+    return `/admin/notifications${query.size ? `?${query}` : ""}`;
+  };
+  const viewLabels = {
+    staleProcessing: "Processing longer than 15 minutes",
+    overdueDue: "Due email jobs overdue by 15+ minutes",
+    terminalFailures: "Terminal failures requiring manual review",
+  };
   return <>
     <div className="admin-heading">
       <div>
@@ -130,9 +117,9 @@ export default async function NotificationOperationsPage({ searchParams }: Props
         <span className="status-badge">{operational.status === "healthy" ? "HEALTHY" : `${operational.attention} NEED ATTENTION`}</span>
       </div>
       <div className="card-grid">
-        <article className="card"><strong>{operational.staleProcessing}</strong><p>Processing longer than 15 minutes</p></article>
-        <article className="card"><strong>{operational.overdueDue}</strong><p>Due email jobs overdue by 15+ minutes</p></article>
-        <article className="card"><strong>{operational.terminalFailures}</strong><p>Terminal failures requiring manual review</p></article>
+        <article className="card"><strong>{operational.staleProcessing}</strong><p>Processing longer than 15 minutes</p><Link href="/admin/notifications?view=staleProcessing">Review stalled jobs</Link></article>
+        <article className="card"><strong>{operational.overdueDue}</strong><p>Due email jobs overdue by 15+ minutes</p><Link href="/admin/notifications?view=overdueDue">Review overdue jobs</Link></article>
+        <article className="card"><strong>{operational.terminalFailures}</strong><p>Terminal failures requiring manual review</p><Link href="/admin/notifications?view=terminalFailures">Review terminal failures</Link></article>
       </div>
     </section>
 
@@ -150,11 +137,17 @@ export default async function NotificationOperationsPage({ searchParams }: Props
       </section>
     )}
 
+    {view && <section className="admin-card" aria-label="Selected attention queue">
+      <h2>{viewLabels[view]}</h2>
+      <p>Showing {totalItems} matching records{selected ? ` with status ${selected}` : ""}. Status totals below cover all delivery records.</p>
+      {view === "staleProcessing" && <p>Processing jobs require worker recovery and provider-state review. This view does not restart an in-flight delivery.</p>}
+      <Link href="/admin/notifications">Show all delivery records</Link>
+    </section>}
     <div className="filter-row" role="group" aria-label="Notification status filter">
       <strong>Status:</strong>
-      <Link href="/admin/notifications" aria-current={!selected ? "page" : undefined}>All</Link>
+      <Link href={statusHref()} aria-current={!selected ? "page" : undefined}>All</Link>
       {statusOrder.map(item => (
-        <Link key={item} href={"/admin/notifications?status=" + item} aria-current={selected === item ? "page" : undefined}>
+        <Link key={item} href={statusHref(item)} aria-current={selected === item ? "page" : undefined}>
           {item} ({counts.get(item) ?? 0})
         </Link>
       ))}
@@ -165,6 +158,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
         <thead>
           <tr>
             <th>Status</th>
+            <th>Channel</th>
             <th>Recipient</th>
             <th>Message</th>
             <th>Related record</th>
@@ -190,6 +184,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
 
             return <tr key={notification.id}>
               <td><span className="status-badge">{notification.status}</span></td>
+              <td>{notification.channel}</td>
               <td>{notification.recipient}</td>
               <td>
                 <strong>{notification.subject ?? notification.templateKey}</strong>
@@ -201,7 +196,7 @@ export default async function NotificationOperationsPage({ searchParams }: Props
               <td><small>{notification.providerMessageId ?? "—"}</small></td>
               <td>
                 <small>{notification.failureReason ?? "—"}</small>
-                {canManageNotifications && notification.status === NotificationStatus.FAILED && (
+                {canManageNotifications && notification.channel === "EMAIL" && notification.status === NotificationStatus.FAILED && (
                   <form action={requeueFailedNotification} className="admin-inline-form">
                     <input type="hidden" name="id" value={notification.id} />
                     <input type="hidden" name="expectedUpdatedAt" value={notification.updatedAt.toISOString()} />

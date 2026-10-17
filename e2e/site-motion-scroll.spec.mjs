@@ -71,6 +71,58 @@ test('Motion feedback restores styles and responds to live preference changes', 
   await expect(action).toBeFocused();
 });
 
+test('native hover and press animations release ownership without stale effects', async ({ page }) => {
+  await open(page);
+  await page.locator('.nav-donate').evaluate(node => node.addEventListener('click', event => event.preventDefault()));
+  const action = page.locator('.nav-donate');
+  await action.hover();
+  await expect.poll(() => action.evaluate(node => node.style.translate)).toBe('0px -1px');
+  await page.mouse.down();
+  await action.focus();
+  await expect.poll(() => action.evaluate(node => node.style.scale)).toBe('0.98');
+  await page.mouse.up();
+  await expect.poll(() => action.evaluate(node => node.style.scale)).toBe('1');
+  await page.mouse.move(500, 400);
+  await expect.poll(() => action.evaluate(node => ({
+    translate: node.style.translate,
+    scale: node.style.scale,
+    active: node.getAnimations().length,
+  }))).toEqual({ translate: '', scale: '', active: 0 });
+});
+
+test('releasing a press outside the action clears its motion ownership', async ({ page }) => {
+  await open(page);
+  const action = page.locator('.nav-donate');
+  await action.hover();
+  await page.mouse.down();
+  await expect.poll(() => action.evaluate(node => node.style.scale)).toBe('0.98');
+  await page.mouse.move(500, 400);
+  await page.mouse.up();
+  await expect.poll(() => action.evaluate(node => ({
+    translate: node.style.translate,
+    scale: node.style.scale,
+    active: node.getAnimations().length,
+  }))).toEqual({ translate: '', scale: '', active: 0 });
+});
+
+test('rapid hover-to-press transition starts from the visible animation frame', async ({ page }) => {
+  await open(page);
+  const action = page.locator('.nav-donate');
+  await action.evaluate(node => node.addEventListener('click', event => event.preventDefault()));
+  await action.hover();
+  await page.waitForTimeout(50);
+  await page.mouse.down();
+  const frames = await action.evaluate(node => {
+    const keyframes = node.getAnimations().flatMap(animation => animation.effect?.getKeyframes() ?? []);
+    return keyframes.filter(frame => typeof frame.translate === 'string').map(frame => frame.translate);
+  });
+  expect(frames.length).toBeGreaterThanOrEqual(2);
+  expect(frames[0]).not.toBe('none');
+  await page.mouse.up();
+  await page.mouse.move(500, 400);
+  await expect.poll(() => action.evaluate(node => node.getAnimations().length)).toBe(0);
+});
+
 test('route navigation destroys old scrolling and leaves the new page readable', async ({ page }) => {
   await open(page);
   await page.mouse.move(700, 500);

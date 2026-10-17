@@ -30,7 +30,8 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-vi.mock("@/lib/storage", () => ({
+vi.mock("@/lib/storage", async importOriginal => ({
+  ...(await importOriginal<typeof import("@/lib/storage")>()),
   MAX_FILE_BYTES: 5 * 1024 * 1024,
   MAX_FILES: 5,
   uploadPrivateDocument: mocks.uploadPrivateDocument,
@@ -44,6 +45,7 @@ vi.mock("@/lib/request-security", () => ({
 }));
 
 import { POST } from "./route";
+import { PrivateDocumentValidationError } from "@/lib/storage";
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -105,6 +107,40 @@ describe("assistance submission request bounds", () => {
     } finally { vi.useRealTimers(); }
   });
 
+  it("uses a bounded deadline while receiving a private multipart submission", async () => {
+    const request = new Request("https://amaana.example/api/assistance", {
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=test" },
+      body: "not a valid multipart request",
+    });
+    await POST(request);
+    expect(mocks.readBodyBytesWithLimit).toHaveBeenCalledWith(
+      expect.any(Request),
+      5 * (5 * 1024 * 1024) + 512 * 1024,
+      { timeoutMs: 90_000 },
+    );
+  });
+
+  it("allows an explicit no-write retry when multipart reading times out", async () => {
+    const { RequestBodyReadTimeoutError } = await import("@/lib/bounded-request-body");
+    mocks.readBodyBytesWithLimit.mockRejectedValueOnce(new RequestBodyReadTimeoutError());
+    const response = await POST(new Request("https://amaana.example/api/assistance", {
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=test" },
+      body: "stalled upload",
+    }));
+
+    expect(response.status).toBe(408);
+    expect(await response.json()).toEqual({
+      error: "The assistance upload took too long. No request was recorded. Check your connection and try again.",
+      submissionUncertain: false,
+    });
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.staffFindMany).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
   it("rejects an oversized multipart body before parsing, storage or database work", async () => {
     mocks.enforceAssistanceRateLimit.mockResolvedValue(true);
     const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");
@@ -121,6 +157,7 @@ describe("assistance submission request bounds", () => {
 
     expect(response.status).toBe(413);
     expect(body.error).toMatch(/too large/i);
+    expect(body.fields.documents).toEqual(["Upload no more than five documents of up to 5 MB each."]);
     expect(response.headers.get("cache-control")).toMatch(/no-store/i);
     expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
     expect(mocks.staffFindMany).not.toHaveBeenCalled();
@@ -148,7 +185,9 @@ describe("assistance submission request bounds", () => {
     const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: data }));
 
     expect(response.status).toBe(400);
-    expect((await response.json()).error).toMatch(/document/i);
+    const body = await response.json();
+    expect(body.error).toMatch(/document/i);
+    expect(body.fields.documents).toHaveLength(1);
     expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
     expect(mocks.staffFindMany).not.toHaveBeenCalled();
     expect(mocks.assistanceCreate).not.toHaveBeenCalled();
@@ -168,6 +207,46 @@ describe("assistance submission request bounds", () => {
     expect(response.status).toBe(201);
     expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
     expect(mocks.assistanceCreate).toHaveBeenCalledOnce();
+  });
+
+  it("returns a linked document rejection and cleans earlier uploads when a later file is invalid", async () => {
+    mocks.uploadPrivateDocument.mockResolvedValueOnce({
+      objectKey: "assistance/request-test/11111111-1111-4111-8111-111111111111.pdf",
+      originalName: "valid.pdf", mimeType: "application/pdf", sizeBytes: 20,
+    }).mockRejectedValueOnce(new PrivateDocumentValidationError("The uploaded document does not match its declared file type"));
+    const form = new FormData();
+    form.append("documents", new File(["synthetic valid file"], "valid.pdf", { type: "application/pdf" }));
+    form.append("documents", new File(["invalid signature"], "invalid.pdf", { type: "application/pdf" }));
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "Please check the supporting documents.", fields: { documents: ["The uploaded document does not match its declared file type"] } });
+    expect(response.headers.get("cache-control")).toMatch(/no-store/i);
+    expect(mocks.deletePrivateDocumentObject).toHaveBeenCalledOnce();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+    expect(mocks.assistanceFindUnique).not.toHaveBeenCalled();
+    expect(mocks.staffFindMany).not.toHaveBeenCalled();
+  });
+
+  it("keeps failed private-upload cleanup uncertain instead of allowing another submission", async () => {
+    mocks.uploadPrivateDocument.mockResolvedValueOnce({
+      objectKey: "assistance/request-test/11111111-1111-4111-8111-111111111111.pdf",
+      originalName: "valid.pdf", mimeType: "application/pdf", sizeBytes: 20,
+    }).mockRejectedValueOnce(new PrivateDocumentValidationError("The uploaded document does not match its declared file type"));
+    mocks.deletePrivateDocumentObject.mockRejectedValueOnce(new Error("synthetic private cleanup failure"));
+    const form = new FormData();
+    form.append("documents", new File(["synthetic valid file"], "valid.pdf", { type: "application/pdf" }));
+    form.append("documents", new File(["invalid signature"], "invalid.pdf", { type: "application/pdf" }));
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({
+      error: "We could not confirm whether your request was recorded. Contact Amaana before submitting again.", submissionUncertain: true,
+    });
+    expect(response.headers.get("cache-control")).toMatch(/no-store/i);
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex/i);
+    expect(mocks.deletePrivateDocumentObject).toHaveBeenCalledOnce();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+    expect(mocks.assistanceFindUnique).not.toHaveBeenCalled();
+    expect(mocks.staffFindMany).not.toHaveBeenCalled();
   });
 
   it("persists validated private evidence metadata with the assistance request", async () => {
@@ -271,7 +350,7 @@ describe("assistance submission request bounds", () => {
     const body = await response.json();
 
     expect(response.status).toBe(500);
-    expect(body).toEqual({ error: "We could not securely submit your request. Please try again later." });
+    expect(body).toEqual({ error: "We could not confirm whether your request was recorded. Contact Amaana before submitting again.", submissionUncertain: true });
     expect(mocks.uploadPrivateDocument).toHaveBeenCalledTimes(1);
     expect(mocks.deletePrivateDocumentObject).toHaveBeenCalledTimes(1);
     expect(mocks.deletePrivateDocumentObject).toHaveBeenCalledWith(

@@ -1,7 +1,15 @@
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import sharp from "sharp";
+import { PublicMedia } from "@/components/public-media";
+import { generatePublicImagePlaceholder } from "./public-image-placeholder";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   initiativeFindMany: vi.fn(),
+  appealFindMany: vi.fn(),
+  appealFindFirst: vi.fn(),
+  mediaFindFirst: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -9,12 +17,17 @@ vi.mock("@/lib/prisma", () => ({
     initiative: {
       findMany: mocks.initiativeFindMany,
     },
+    appeal: { findMany: mocks.appealFindMany, findFirst: mocks.appealFindFirst },
+    mediaAsset: { findFirst: mocks.mediaFindFirst },
   },
 }));
 
 import {
+  getHomepageHeroMedia,
   getCompletedAidShowcaseData,
   getProgrammeChildMedia,
+  getAppealsIndexData,
+  getAppealPageData,
 } from "./public-page-data";
 
 describe("public page gallery media query contracts", () => {
@@ -40,6 +53,7 @@ describe("public page gallery media query contracts", () => {
       childArgs.select.mediaAssets,
     ]) {
       expect(mediaQuery.take).toBe(12);
+      expect(mediaQuery.select.blurDataURL).toBe(true);
       expect(mediaQuery.where).toMatchObject({
         kind: "IMAGE",
         isPublic: true,
@@ -64,5 +78,183 @@ describe("public page gallery media query contracts", () => {
       status: "PUBLISHED",
       cause: { status: "PUBLISHED" },
     });
+    // The published annual index reuses this same privacy-scoped query:
+    // metadata may be exposed only after the full publication filters.
+    expect(childArgs.select).toMatchObject({
+      year: true, startYear: true, endYear: true,
+      title: true, primaryMetric: true, primaryMetricLabel: true,
+    });
+  });
+});
+
+describe("public appeal index promotion privacy", () => {
+  it("excludes explicit HIGHLY_SENSITIVE case identities and strips verification context", async () => {
+    const standard = {
+      slug: "reviewed-standard", title: "Reviewed appeal", summary: "Public-safe summary",
+      category: "MEDICAL", beneficiaryLocation: null, status: "PUBLISHED",
+      goalAmount: 75000, amountRaised: 0, closesAt: null,
+      assistanceRequest: { verification: { confidentialityLevel: "STANDARD" } },
+    };
+    const sensitive = {
+      ...standard, slug: "restricted-private", title: "Identity must not appear",
+      summary: "Private sensitive narrative",
+      assistanceRequest: { verification: { confidentialityLevel: "HIGHLY_SENSITIVE" } },
+    };
+    mocks.appealFindMany.mockResolvedValue([sensitive, standard]);
+    const appeals = await getAppealsIndexData();
+    expect(appeals.map(appeal => appeal.slug)).toEqual(["reviewed-standard"]);
+    expect(appeals[0]?.title).toBe("Reviewed appeal");
+    expect(appeals[0]).not.toHaveProperty("assistanceRequest");
+    expect(JSON.stringify(appeals)).not.toContain("Identity must not appear");
+    expect(JSON.stringify(appeals)).not.toContain("confidentialityLevel");
+    expect(mocks.appealFindMany).toHaveBeenCalledTimes(1);
+    const query = mocks.appealFindMany.mock.calls[0]?.[0];
+    expect(query?.select?.assistanceRequest?.select?.verification?.select).toEqual({
+      confidentialityLevel: true,
+    });
+  });
+});
+
+
+describe("current public appeal detail consent projection", () => {
+  const publicAppeal = {
+    slug: "reviewed-public-case",
+    title: "Reviewed support appeal",
+    summary: "Verified public details",
+    story: "Only the approved case narrative is stored here.",
+    status: "PUBLISHED",
+    beneficiaryDisplayName: "Named beneficiary",
+    coverImageUrl: "/media/reviewed-cover.jpg",
+    assistanceRequest: {
+      id: "request-1",
+      verification: {
+        archiveConsent: "ALLOWED",
+        publicNameConsent: "ALLOWED",
+        photoConsent: "ALLOWED",
+      },
+    },
+    updates: [],
+  };
+
+  beforeEach(() => {
+    mocks.appealFindFirst.mockReset();
+  });
+
+  it("retains approved beneficiary name and photo when current linked consent permits both", async () => {
+    mocks.appealFindFirst.mockResolvedValue(publicAppeal);
+    const result = await getAppealPageData("reviewed-public-case");
+    expect(result).toMatchObject({
+      beneficiaryDisplayName: "Named beneficiary",
+      coverImageUrl: "/media/reviewed-cover.jpg",
+    });
+    expect(result).not.toHaveProperty("assistanceRequest");
+    expect(mocks.appealFindFirst).toHaveBeenCalledTimes(1);
+    expect(mocks.appealFindFirst.mock.calls[0]?.[0]?.select?.assistanceRequest?.select?.verification?.select)
+      .toMatchObject({ archiveConsent: true, publicNameConsent: true, photoConsent: true });
+  });
+
+  it("does not return revoked public name or beneficiary-cover disclosure to the renderer", async () => {
+    mocks.appealFindFirst.mockResolvedValue({
+      ...publicAppeal,
+      assistanceRequest: {
+        id: "request-1",
+        verification: {
+          archiveConsent: "ALLOWED",
+          publicNameConsent: "NOT_ALLOWED",
+          photoConsent: "NOT_ALLOWED",
+        },
+      },
+    });
+    const result = await getAppealPageData("revoked-consent");
+    expect(result).toMatchObject({ beneficiaryDisplayName: null, coverImageUrl: null });
+    expect(JSON.stringify(result)).not.toContain("Named beneficiary");
+    expect(JSON.stringify(result)).not.toContain("/media/reviewed-cover.jpg");
+  });
+
+  it.each([null, "UNCONFIRMED", "UNKNOWN"])(
+    "withholds identifiable name and image for unresolved linked consent %s", async consent => {
+      mocks.appealFindFirst.mockResolvedValue({
+        ...publicAppeal,
+        assistanceRequest: {
+          id: "request-1",
+          verification: { archiveConsent: "ALLOWED", publicNameConsent: consent, photoConsent: consent },
+        },
+      });
+      const result = await getAppealPageData("unreviewed-consent");
+      expect(result).toMatchObject({ beneficiaryDisplayName: null, coverImageUrl: null });
+    },
+  );
+
+  it("enforces each consent independently without hiding approved contextual media", async () => {
+    mocks.appealFindFirst.mockResolvedValue({
+      ...publicAppeal,
+      assistanceRequest: {
+        id: "request-1",
+        verification: {
+          archiveConsent: "ALLOWED",
+          publicNameConsent: "NOT_ALLOWED",
+          photoConsent: "NOT_APPLICABLE",
+        },
+      },
+    });
+    const result = await getAppealPageData("non-identifying-cover");
+    expect(result).toMatchObject({
+      beneficiaryDisplayName: null,
+      coverImageUrl: "/media/reviewed-cover.jpg",
+    });
+  });
+
+  it("withholds both fields when a linked case has no verification record", async () => {
+    mocks.appealFindFirst.mockResolvedValue({
+      ...publicAppeal, assistanceRequest: { id: "request-1", verification: null },
+    });
+    const result = await getAppealPageData("linked-without-review");
+    expect(result).toMatchObject({ beneficiaryDisplayName: null, coverImageUrl: null });
+  });
+
+  it("preserves existing standalone public appeals without creating an invented consent record", async () => {
+    mocks.appealFindFirst.mockResolvedValue({ ...publicAppeal, assistanceRequest: null });
+    const result = await getAppealPageData("legacy-public");
+    expect(result).toMatchObject({
+      beneficiaryDisplayName: "Named beneficiary",
+      coverImageUrl: "/media/reviewed-cover.jpg",
+    });
+  });
+
+  it("continues to withhold completed linked archives without archive consent", async () => {
+    mocks.appealFindFirst.mockResolvedValue({
+      ...publicAppeal,
+      status: "CLOSED",
+      assistanceRequest: {
+        id: "request-1",
+        verification: {
+          archiveConsent: "NOT_ALLOWED",
+          publicNameConsent: "ALLOWED",
+          photoConsent: "ALLOWED",
+        },
+      },
+    });
+    await expect(getAppealPageData("closed-no-archive-consent")).resolves.toBeNull();
+  });
+});
+
+describe("stored public preview query-to-render integration", () => {
+  it.each([
+    ["hero", "stored"], ["hero", "legacy"],
+    ["completed", "stored"], ["completed", "legacy"],
+  ])("carries %s / %s preview metadata from the lean query into PublicMedia", async (surface, mode) => {
+    const bytes = await sharp({ create: { width: 12, height: 6, channels: 3, background: "#446FAA" } }).png().toBuffer();
+    const blurDataURL = mode === "stored" ? await generatePublicImagePlaceholder(bytes, 40_000_000) : null;
+    const asset = { id: "synthetic", kind: "IMAGE" as const, title: null, publicUrl: "/media/2026/synthetic.png", externalUrl: null, altText: "Synthetic test image", caption: null, sourceYear: null, width: 240, height: 120, blurDataURL };
+    mocks.mediaFindFirst.mockImplementation(async ({ select }) => Object.fromEntries(Object.entries(asset).filter(([key]) => select[key] === true)));
+    mocks.initiativeFindMany.mockImplementation(async ({ select }) => [{ slug: "synthetic", mediaAssets: [Object.fromEntries(Object.entries(asset).filter(([key]) => select.mediaAssets.select[key] === true))] }]);
+    const media = surface === "hero" ? await getHomepageHeroMedia() : (await getCompletedAidShowcaseData())[0]!.mediaAssets[0]!;
+    expect(media?.blurDataURL).toBe(blurDataURL);
+    const query = surface === "hero" ? mocks.mediaFindFirst.mock.lastCall?.[0] : mocks.initiativeFindMany.mock.lastCall?.[0].select.mediaAssets;
+    expect(query.where).toMatchObject({ isPublic: true, privacyApprovedAt: { not: null } });
+    const html = renderToStaticMarkup(createElement(PublicMedia, { asset: media! }));
+    expect(html).toContain('data-nimg="1"');
+    if (mode === "stored") expect(html).toContain("background-image:url(");
+    else expect(html).not.toContain("background-image:url(");
   });
 });

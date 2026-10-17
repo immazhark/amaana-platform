@@ -5,24 +5,25 @@ export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const appeals = await getHomepageAppeals();
+    const appeals = await getHomepageAppeals(4);
     const items = appeals.slice(0, 4).map(appeal => ({
       id: `appeal-${appeal.slug}`,
       kind: "appeal" as const,
       eyebrow: "Live appeal",
       title: appeal.title,
-      subtitle: appeal.summary,
       detailsHref: `/appeals/${appeal.slug}`,
       supportHref: `/donate/${appeal.slug}`,
       detailsCta: "View",
       supportCta: "Donate",
     }));
 
+    // Keep the shared server projection cached, but do not let downstream
+    // caches outlive an administrator's appeal withdrawal.
     return NextResponse.json(
       { items },
-      { headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" } },
+      { headers: { "Cache-Control": "no-store" } },
     );
   } catch {
-    return NextResponse.json({ items: [] }, { status: 200 });
+    return NextResponse.json({ items: [] }, { status: 503, headers: { "Cache-Control": "no-store" } });
   }
 }

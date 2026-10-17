@@ -61,7 +61,14 @@ function amountToNumber(value: AmountLike) {
 }
 
 function isConsentResolved(value: string) {
-  return value !== "UNCONFIRMED";
+  return value === "ALLOWED" || value === "NOT_ALLOWED" || value === "NOT_APPLICABLE";
+}
+
+function hasCompletedVerificationTimestamp(value: Date | string | null | undefined) {
+  if (value instanceof Date) return Number.isFinite(value.getTime());
+  return typeof value === "string" &&
+    /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,9})?(?:Z|[+-]\d{2}:\d{2})$/.test(value) &&
+    Number.isFinite(Date.parse(value));
 }
 
 export function getPublicAppealVerificationIssues(verification: PublicAppealVerificationLike | null | undefined) {
@@ -85,14 +92,14 @@ export function getPublicAppealVerificationIssues(verification: PublicAppealVeri
   if (!isConsentResolved(verification.medicalDetailsConsent)) issues.push("Medical-detail disclosure consent must be resolved, including not applicable where irrelevant.");
   if (!isConsentResolved(verification.institutionNameConsent)) issues.push("Institution/hospital naming consent must be resolved, including not applicable where irrelevant.");
   if (!isConsentResolved(verification.archiveConsent)) issues.push("Public archive consent must be resolved.");
-  if (verification.zakatStatus === "UNREVIEWED") issues.push("Zakat review must be recorded as eligible, not eligible, or not applicable.");
-  if (!verification.completedAt) issues.push("Verification must be formally completed.");
+  if (!["ELIGIBLE", "NOT_ELIGIBLE", "NOT_APPLICABLE"].includes(verification.zakatStatus)) issues.push("Zakat review must be recorded as eligible, not eligible, or not applicable.");
+  if (!hasCompletedVerificationTimestamp(verification.completedAt)) issues.push("Verification must be formally completed.");
 
   return issues;
 }
 
 export function canApproveAssistanceRequest(verification: Pick<PublicAppealVerificationLike, "decision" | "completedAt"> | null | undefined) {
-  if (!verification?.completedAt) return false;
+  if (!verification || !hasCompletedVerificationTimestamp(verification.completedAt)) return false;
   return ["APPROVED_PUBLIC", "APPROVED_PRIVATE", "APPROVED_PARTIAL"].includes(verification.decision);
 }
 

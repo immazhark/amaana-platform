@@ -1,3 +1,5 @@
+// Archive-only callout styling no longer loads on unrelated pages.
+import "./story-archive-polish.css";
 import "../stories.css";
 import "../stories-wow.css";
 

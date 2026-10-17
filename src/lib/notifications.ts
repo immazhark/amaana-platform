@@ -1,11 +1,12 @@
 import { NotificationStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { renderNotificationEmail } from "@/lib/notification-templates";
+import { NOTIFICATION_MAX_ATTEMPTS as MAX_ATTEMPTS, NOTIFICATION_STALE_PROCESSING_MS as PROCESSING_STALE_AFTER_MS } from "@/lib/operational-signals";
 
 const MAX_BATCH_SIZE = 20;
-const MAX_ATTEMPTS = 5;
+
 const EMAIL_PROVIDER_TIMEOUT_MS = 15_000;
-const PROCESSING_STALE_AFTER_MS = 15 * 60 * 1000;
+
 const RETRY_DELAYS_MS = [5, 15, 45, 135].map(minutes => minutes * 60 * 1000);
 
 class EmailProviderError extends Error {

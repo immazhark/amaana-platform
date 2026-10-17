@@ -1,5 +1,7 @@
-import Link from "next/link";
-import { CuratedGalleryImporter } from "@/components/curated-gallery-importer";
+import { getIndexNowConfiguration } from "@/lib/indexnow";
+import { AdminIndexNowSubmission } from "@/components/admin-indexnow-submission";
+import Link from "@/components/navigation-link";
+import { isCuratedGalleryRuntime } from "@/lib/curated-gallery-server";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
@@ -19,14 +21,24 @@ type ReviewMetadata = {
   reviewNotes?: string | null;
 };
 
-type Props = { searchParams: Promise<{ visibility?: string; page?: string }> };
+type Props = { searchParams: Promise<{ visibility?: string; page?: string; saved?: string }> };
 
 export default async function AdminMediaPage({ searchParams }: Props) {
   const user = await requirePermission("content.view");
   const canEdit = hasPermission(user, "content.update");
   const canApprove = hasPermission(user, "content.approve");
   const storage = getPublicMediaStorageReadiness();
-  const { visibility, page: pageParam } = await searchParams;
+  // This 154-image intake exists only on the dedicated staging service.
+  // Keep its heavy browser-side ZIP implementation out of ordinary admin
+  // routes and hydrate it only for authorized, storage-ready operators.
+  const canImportCuratedGallery = canEdit && canApprove &&
+    storage.uploadReady && storage.separateBucketConfigured &&
+    isCuratedGalleryRuntime();
+  const CuratedGalleryImporter = process.env.AMAANA_CURATED_GALLERY_BUILD === "true" &&
+    canImportCuratedGallery
+    ? (await import("@/components/curated-gallery-importer")).CuratedGalleryImporter
+    : null;
+  const { visibility, page: pageParam, saved } = await searchParams;
   const selectedVisibility = visibility === "public" || visibility === "review" ? visibility : undefined;
   const where = selectedVisibility ? { isPublic: selectedVisibility === "public" } : undefined;
   const [totalItems, visibilityGroups, causes, initiatives, stories, faith] = await Promise.all([
@@ -64,6 +76,13 @@ export default async function AdminMediaPage({ searchParams }: Props) {
   const targetLabel = (asset: (typeof assets)[number]) => asset.initiative?.title ?? asset.story?.title ?? asset.cause?.title ?? asset.faithContent?.title ?? "Unlinked";
 
   return <>
+    {saved === "refresh-delayed" && <section className="admin-card" role="alert">
+      <h2>Media change saved — public refresh delayed</h2>
+      <p>The requested database change completed, but at least one cache refresh could not be confirmed.
+        Do not repeat the publish, unpublish or delete action. Verify the affected public URLs
+        and contact an administrator to clear any remaining cached copies before treating a
+        privacy-related takedown as complete.</p>
+    </section>}
     <div className="admin-heading"><div><p className="eyebrow">Content evidence</p><h1>Media review</h1><p className="lead">Upload and document authentic Amaana material here. Nothing appears publicly until an approver explicitly publishes it.</p></div></div>
 
     <section className="admin-card" style={{ marginBottom: "2rem" }}>
@@ -79,7 +98,14 @@ export default async function AdminMediaPage({ searchParams }: Props) {
       {!storage.deliveryReady && <p className="muted" style={{ marginTop: "1rem" }}>Managed uploads are not publication-ready until the storage and delivery checks are green. Reviewed external URLs may still be documented independently.</p>}
     </section>
 
-    {canEdit && canApprove && storage.uploadReady && <CuratedGalleryImporter />}
+    {canApprove && <section className="admin-card" style={{ marginBottom: "2rem" }}>
+      <h2>Public search discovery</h2>
+      <p className="muted">Notify participating search engines about approved public page updates. A notification is not a promise of indexing or a search-result removal.</p>
+      {getIndexNowConfiguration() ? <AdminIndexNowSubmission/> :
+        <p role="status">Search notifications are disabled until ownership configuration and release approval are complete.</p>}
+    </section>}
+
+    {CuratedGalleryImporter && <CuratedGalleryImporter />}
 
     {canEdit && <section className="admin-card" style={{ marginBottom: "2rem" }}>
       <h2>Add reviewed media</h2>
@@ -128,7 +154,12 @@ export default async function AdminMediaPage({ searchParams }: Props) {
             <div className="field full"><label>Review notes</label><textarea name="reviewNotes" maxLength={2000} placeholder="Consent source, crop restriction, provenance note or other publication context."/></div>
             <div className="field full"><button className="button" type="submit">Approve privacy gate & publish</button><small>AMBER/RED classifications, restricted consent, unconfirmed provenance, private documents, or child/patient media without documented consent will fail closed.</small></div>
           </form>}
-          {canApprove && asset.isPublic && <form action={setMediaPublication} className="admin-media-publish"><input type="hidden" name="id" value={asset.id}/><input type="hidden" name="publish" value="false"/><button className="text-button" type="submit">Unpublish</button></form>}
+          {canApprove && asset.isPublic && <form action={setMediaPublication} className="admin-media-publish">
+            <input type="hidden" name="id" value={asset.id}/>
+            <input type="hidden" name="publish" value="false"/>
+            <p className="muted">Unpublishing also withdraws any other public media records sharing this storage object or original URL, including other initiatives. Files remain in storage; externally hosted originals require removal at their source.</p>
+            <button className="text-button" type="submit">Unpublish this image and shared public references</button>
+          </form>}
           {canApprove && !asset.isPublic && <form action={deleteMediaAsset} className="form-grid admin-media-publish"><input type="hidden" name="id" value={asset.id}/><div className="field full"><label>Permanent deletion confirmation</label><input name="confirm" required pattern="DELETE" placeholder="Type DELETE"/><small>Deletes the unpublished record and its Amaana-managed storage object. External source URLs are not modified.</small></div><div className="field full"><button className="text-button" type="submit">Delete unpublished media permanently</button></div></form>}
         </article>;
       })}</div>}

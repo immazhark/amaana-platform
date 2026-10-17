@@ -9,6 +9,7 @@ describe("admin landing routing", () => {
   it("routes specialized admins to the first area they are allowed to use", () => {
     expect(adminHomePathForPermissions(["assistance.approve"])).toBe("/admin/retention");
     expect(adminHomePathForPermissions(["donation.view"])).toBe("/admin/donations");
+    expect(adminHomePathForPermissions(["fund.view"])).toBe("/admin/giving-funds");
     expect(adminHomePathForPermissions(["notification.view"])).toBe("/admin/notifications");
     expect(adminHomePathForPermissions(["content.view"])).toBe("/admin/media");
     expect(adminHomePathForPermissions(["appeal.view"])).toBe("/admin/appeals");
@@ -25,9 +26,22 @@ describe("admin navigation visibility", () => {
     expect(adminNavigationForPermissions(["assistance.view", "assistance.update", "donation.view", "notification.view"]))
       .toEqual([
         { permission: "assistance.view", path: "/admin", label: "Assistance queue" },
+        { permission: "assistance.view", path: "/admin/follow-ups", label: "Next staff actions" },
         { permission: "donation.view", path: "/admin/donations", label: "Donations" },
         { permission: "notification.view", path: "/admin/notifications", label: "Notification delivery" },
       ]);
+  });
+
+  it("hides allocation planning until it is enabled server-side and the reader holds donation.view", () => {
+    const permissions = ["fund.manage", "fund.approve", "donation.view"];
+    expect(adminNavigationForPermissions(permissions).some(item => item.path === "/admin/allocations")).toBe(false);
+    expect(adminNavigationForPermissions(permissions, { allocationEnabled: false })
+      .some(item => item.path === "/admin/allocations")).toBe(false);
+    expect(adminNavigationForPermissions(["fund.manage", "fund.approve"],
+      { allocationEnabled: true }).some(item => item.path === "/admin/allocations")).toBe(false);
+    expect(adminNavigationForPermissions(permissions, { allocationEnabled: true }))
+      .toContainEqual({ permission: "donation.view", path: "/admin/allocations",
+        label: "Allocation proposals" });
   });
 
   it("does not treat mutation-only permissions as permission to browse an area", () => {
@@ -51,6 +65,7 @@ describe("admin navigation visibility", () => {
       "notification.view",
     ]).map(item => item.label)).toEqual([
       "Assistance queue",
+      "Next staff actions",
       "Appeals",
       "Media review",
       "Retention review",
@@ -69,6 +84,11 @@ describe("admin active navigation semantics", () => {
     expect(isAdminNavigationActive("/admin/requests/req_123/evidence", "/admin")).toBe(true);
   });
 
+  it("activates the dedicated follow-up workboard without treating it as the case queue", () => {
+    expect(isAdminNavigationActive("/admin/follow-ups", "/admin/follow-ups")).toBe(true);
+    expect(isAdminNavigationActive("/admin/follow-ups", "/admin")).toBe(false);
+  });
+
   it("keeps non-assistance admin areas from activating the assistance queue", () => {
     expect(isAdminNavigationActive("/admin/appeals", "/admin")).toBe(false);
     expect(isAdminNavigationActive("/admin/retention", "/admin")).toBe(false);
@@ -80,4 +100,9 @@ describe("admin active navigation semantics", () => {
     expect(isAdminNavigationActive("/admin/donations/don_123", "/admin/donations")).toBe(true);
     expect(isAdminNavigationActive("/admin/donations-archive", "/admin/donations")).toBe(false);
   });
+});
+
+it.each([null, ""])("leaves all admin destinations inactive for missing pathname %s", pathname => {
+  expect(isAdminNavigationActive(pathname, "/admin")).toBe(false);
+  expect(isAdminNavigationActive(pathname, "/admin/donations")).toBe(false);
 });

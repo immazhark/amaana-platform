@@ -2,6 +2,7 @@
 
 import {
   Children,
+  isValidElement,
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
   useCallback,
@@ -10,6 +11,7 @@ import {
   useRef,
   useState,
 } from "react";
+import { boundedCarouselScrollLeft, closestCarouselIndex } from "@/lib/carousel-position";
 import styles from "./scroll-carousel.module.css";
 import { UIIcon } from "./ui-icon";
 
@@ -39,9 +41,11 @@ export function ScrollCarousel({
   const slides = Children.toArray(children);
   const slideCount = slides.length;
   const viewportRef = useRef<HTMLDivElement>(null);
+  const rootRef = useRef<HTMLElement>(null);
+  const isVisibleRef = useRef(true);
   const slideRefs = useRef<Array<HTMLDivElement | null>>([]);
   const frameRef = useRef<number | null>(null);
-  const navigation = useRef<number | null>(null);
+  const navigation = useRef<{ left: number; index: number } | null>(null);
   const drag = useRef<{x:number; scroll:number; moved:boolean} | null>(null);
   const suppressClick = useRef(false);
   const [activeIndex, setActiveIndex] = useState(() => Math.min(Math.max(startAt, 0), Math.max(slideCount - 1, 0)));
@@ -52,15 +56,62 @@ export function ScrollCarousel({
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
+  // Do not spend network/animation work advancing a carousel outside the viewport.
+  // Unsupported IntersectionObserver environments retain the existing behaviour.
   useEffect(() => {
+    const node = rootRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(entries => {
+      isVisibleRef.current = Boolean(entries[0]?.isIntersecting);
+    }, { threshold: 0.05 });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, []);
+
+  // If content is unpublished or removed while the user is on the last card,
+  // keep labels, focus and scrolling inside the remaining slide range.
+  useEffect(() => {
+    const lastIndex = Math.max(slideCount - 1, 0);
+    if (activeIndexRef.current <= lastIndex) return;
+    activeIndexRef.current = lastIndex;
+    navigation.current = null;
+    setActiveIndex(lastIndex);
+    const slide = slideRefs.current[lastIndex];
+    const viewport = viewportRef.current;
+    if (slide && viewport) {
+      const left = boundedCarouselScrollLeft(slide.offsetLeft, viewport.scrollWidth, viewport.clientWidth);
+      viewport.scrollTo({ left, behavior: "auto" });
+    }
+  }, [slideCount]);
+
+  // startAt configures more than the status badge: align the viewport on the
+  // first client commit rather than waiting for an optional ResizeObserver.
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    const index = activeIndexRef.current;
+    const slide = slideRefs.current[index];
+    if (!viewport || !slide || index === 0) return;
+    const left = boundedCarouselScrollLeft(slide.offsetLeft, viewport.scrollWidth, viewport.clientWidth);
+    if (Math.abs(viewport.scrollLeft - left) > 1) {
+      navigation.current = { left, index };
+      viewport.scrollTo({ left, behavior: "auto" });
+    }
+  }, []);
+
+  useEffect(() => {
+    if (typeof window.matchMedia !== "function") return;
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sync = () => {
       prefersReducedMotion.current = media.matches;
       setReducedMotion(media.matches);
     };
     sync();
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
+    if (typeof media.addEventListener === "function") {
+      media.addEventListener("change", sync);
+      return () => media.removeEventListener("change", sync);
+    }
+    media.addListener(sync);
+    return () => media.removeListener(sync);
   }, []);
 
   const updateActiveFromScroll = useCallback(() => {
@@ -68,20 +119,20 @@ export function ScrollCarousel({
     if (!viewport || slideCount < 2) return;
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
     frameRef.current = requestAnimationFrame(() => {
+      frameRef.current = null;
       const pending = navigation.current;
-      if (pending !== null && Math.abs(viewport.scrollLeft - pending) > 2) return;
+      if (pending && Math.abs(viewport.scrollLeft - pending.left) > 2) return;
+      // Several final cards can share the same maximum reachable offset.
+      // Preserve the requested slide when scrolling finishes at that edge.
+      const closestIndex = pending
+        ? pending.index
+        : closestCarouselIndex(
+            slideRefs.current.map(slide => slide?.offsetLeft ?? null),
+            viewport.scrollLeft,
+            viewport.scrollWidth,
+            viewport.clientWidth,
+          );
       navigation.current = null;
-      let closestIndex = 0;
-      let closestDistance = Number.POSITIVE_INFINITY;
-      slideRefs.current.forEach((slide, index) => {
-        if (!slide) return;
-        const target = slide.offsetLeft;
-        const distance = Math.abs(target - viewport.scrollLeft);
-        if (distance < closestDistance) {
-          closestDistance = distance;
-          closestIndex = index;
-        }
-      });
       activeIndexRef.current = closestIndex;
       setActiveIndex(closestIndex);
     });
@@ -90,10 +141,19 @@ export function ScrollCarousel({
   useEffect(() => {
     const viewport = viewportRef.current;
     if (!viewport) return;
-    const observer = new ResizeObserver(() => {
+    const alignSelected = () => {
       const slide = slideRefs.current[activeIndexRef.current];
-      if (slide) viewport.scrollTo({ left: slide.offsetLeft, behavior: "auto" });
-    });
+      if (slide) {
+        const left = boundedCarouselScrollLeft(slide.offsetLeft, viewport.scrollWidth, viewport.clientWidth);
+        navigation.current = { left, index: activeIndexRef.current };
+        viewport.scrollTo({ left, behavior: "auto" });
+      }
+    };
+    if (typeof ResizeObserver === "undefined") {
+      window.addEventListener("resize", alignSelected);
+      return () => window.removeEventListener("resize", alignSelected);
+    }
+    const observer = new ResizeObserver(alignSelected);
     observer.observe(viewport);
     return () => observer.disconnect();
   }, []);
@@ -108,22 +168,25 @@ export function ScrollCarousel({
     const viewport = viewportRef.current;
     const slide = slideRefs.current[bounded];
     if (!viewport || !slide) return;
-    navigation.current = slide.offsetLeft;
+    const left = boundedCarouselScrollLeft(slide.offsetLeft, viewport.scrollWidth, viewport.clientWidth);
+    navigation.current = { left, index: bounded };
     activeIndexRef.current = bounded;
     viewport.scrollTo({
-      left: slide.offsetLeft,
+      left,
       behavior: prefersReducedMotion.current ? "auto" : "smooth",
     });
     setActiveIndex(bounded);
   }, [slideCount]);
 
+  // The interval reads activeIndexRef, not render state. Do not restart autoplay
+  // for every native-scroll progress update.
   useEffect(() => {
     if (!autoAdvanceMs || slideCount < 2 || paused || reducedMotion) return;
     const timer = window.setInterval(() => {
-      if (!document.hidden && !drag.current && !viewportRef.current?.closest("section")?.matches(":hover, :focus-within")) goTo(activeIndexRef.current + 1);
+      if (isVisibleRef.current && !document.hidden && !drag.current && !viewportRef.current?.closest("section")?.matches(":hover, :focus-within")) goTo(activeIndexRef.current + 1);
     }, autoAdvanceMs);
     return () => window.clearInterval(timer);
-  }, [autoAdvanceMs, activeIndex, goTo, paused, reducedMotion, slideCount]);
+  }, [autoAdvanceMs, goTo, paused, reducedMotion, slideCount]);
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.currentTarget !== event.target) return;
@@ -152,6 +215,7 @@ export function ScrollCarousel({
 
   return (
     <section
+      ref={rootRef}
       className={rootClasses}
       aria-label={label}
       aria-roledescription="carousel"
@@ -198,15 +262,33 @@ export function ScrollCarousel({
         tabIndex={slideCount > 1 ? 0 : -1}
         onPointerDown={event => {
           navigation.current = null;
-          if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 || (event.target instanceof Element && event.target.closest("button,video,input"))) return;
-          drag.current = {x:event.clientX, scroll:event.currentTarget.scrollLeft, moved:false};
+          // A lost pointer-up can leave a drag pending. Every new gesture
+          // resets its state, including gestures originating on links or forms.
+          drag.current = null;
+          event.currentTarget.style.removeProperty("scroll-snap-type");
           suppressClick.current = false;
+          if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 ||
+              (event.target instanceof Element && event.target.closest(
+                'button,input,textarea,select,summary,video,[contenteditable="true"],[role="button"]',
+              ))) return;
+          drag.current = {x:event.clientX, scroll:event.currentTarget.scrollLeft, moved:false};
         }}
         onPointerMove={event => {
           const state = drag.current;
-          if (!state || !(event.buttons & 1)) return;
+          if (!state) return;
+          // A pointer-up outside the viewport can be missed before capture.
+          // Clear stale drag state so autoplay and native scrolling recover.
+          if (!(event.buttons & 1)) {
+            if (state.moved) suppressClick.current = true;
+            drag.current = null;
+            event.currentTarget.style.removeProperty("scroll-snap-type");
+            return;
+          }
           const delta = event.clientX - state.x;
-          if (Math.abs(delta) > 6) { state.moved = true; event.currentTarget.setPointerCapture(event.pointerId); }
+          if (!state.moved && Math.abs(delta) > 6) {
+            state.moved = true;
+            event.currentTarget.setPointerCapture(event.pointerId);
+          }
           if (!state.moved) return;
           event.preventDefault();
           event.currentTarget.style.scrollSnapType = "none";
@@ -217,7 +299,19 @@ export function ScrollCarousel({
           drag.current = null;
           event.currentTarget.style.removeProperty("scroll-snap-type");
         }}
-        onPointerCancel={event => { drag.current = null; event.currentTarget.style.removeProperty("scroll-snap-type"); }}
+        onPointerCancel={event => { drag.current = null; suppressClick.current = false; event.currentTarget.style.removeProperty("scroll-snap-type"); }}
+        onLostPointerCapture={event => {
+          if (drag.current?.moved) suppressClick.current = true;
+          drag.current = null;
+          event.currentTarget.style.removeProperty("scroll-snap-type");
+        }}
+        onPointerLeave={event => {
+          if (drag.current && !event.currentTarget.hasPointerCapture(event.pointerId)) {
+            if (drag.current.moved) suppressClick.current = true;
+            drag.current = null;
+            event.currentTarget.style.removeProperty("scroll-snap-type");
+          }
+        }}
         onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}
         onDragStart={event => { if (mode !== "hero") event.preventDefault(); }}
         onWheel={() => { navigation.current = null; }}
@@ -231,7 +325,7 @@ export function ScrollCarousel({
               className={`${styles.slide} ${mode === "focus" && index === activeIndex ? styles.activeSlide : ""}`}
               data-body-card={mode !== "hero" ? "" : undefined}
               data-active={index === activeIndex ? "true" : undefined}
-              key={index}
+              key={isValidElement(slide) ? slide.key : index}
               ref={node => { slideRefs.current[index] = node; }}
               role="group"
               aria-roledescription="slide"

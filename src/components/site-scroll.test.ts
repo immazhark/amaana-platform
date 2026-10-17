@@ -208,3 +208,64 @@ test.each(["Home", "End"])(
     }
   },
 );
+
+test("keeps native scrolling when media-query support is absent", async () => {
+  let cleanup: (() => void) | undefined;
+  vi.doMock("react", () => ({ useEffect: (effect: () => (() => void) | undefined) => { cleanup = effect(); } }));
+  vi.stubGlobal("window", Object.assign(new EventTarget(), {}));
+  const { useSiteScroll } = await import("./site-scroll");
+  expect(() => useSiteScroll("/about")).not.toThrow();
+  expect(cleanup).toBeUndefined();
+});
+
+test("supports legacy media-query change listeners and releases them on unmount", async () => {
+  let cleanup: (() => void) | undefined;
+  const listeners: Array<() => void> = [];
+  const removed: Array<() => void> = [];
+  const media = (matches: boolean) => ({
+    matches,
+    addListener: (callback: () => void) => listeners.push(callback),
+    removeListener: (callback: () => void) => removed.push(callback),
+  });
+  const reduced = media(false);
+  const pointer = media(true);
+  const destroyed = vi.fn();
+  vi.doMock("react", () => ({ useEffect: (effect: () => (() => void) | undefined) => { cleanup = effect(); } }));
+  vi.doMock("lenis", () => ({
+    default: class {
+      on() {}
+      destroy() { destroyed(); }
+    },
+  }));
+  const windowTarget = Object.assign(new EventTarget(), {
+    matchMedia: (query: string) => query.includes("pointer") ? pointer : reduced,
+  });
+  vi.stubGlobal("window", windowTarget);
+  vi.stubGlobal("document", Object.assign(new EventTarget(), {
+    hidden: false, body: { matches: () => false },
+  }));
+  vi.stubGlobal("Element", class {});
+  vi.stubGlobal("requestAnimationFrame", vi.fn(() => 1));
+  vi.stubGlobal("cancelAnimationFrame", vi.fn());
+  const { useSiteScroll } = await import("./site-scroll");
+  useSiteScroll("/about");
+  try {
+    expect(listeners).toHaveLength(2);
+    windowTarget.dispatchEvent(new Event("wheel"));
+    await vi.dynamicImportSettled();
+    reduced.matches = true;
+    listeners[0]?.();
+    expect(destroyed).toHaveBeenCalledOnce();
+  } finally {
+    cleanup?.();
+  }
+  expect(removed).toHaveLength(2);
+  expect(removed).toEqual(listeners);
+});
+
+test.each([null, "", "/admin/donations"])("does not initialize wheel enhancement for unavailable/private path %s", async pathname => {
+  vi.doMock("react", () => ({ useEffect: (effect: () => unknown) => effect() }));
+  const { useSiteScroll } = await import("./site-scroll");
+  // A guarded path must not require matchMedia, DOM access or Lenis.
+  expect(() => useSiteScroll(pathname)).not.toThrow();
+});

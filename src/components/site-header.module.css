@@ -14,3 +14,18 @@
   .backdrop:global(.mobile-menu-backdrop),
   .header:global(.site-header) :global(.mobile-menu.open){display:none}
 }
+
+/* A discoverable primary action even while the mobile navigation is closed.
+ * Never replace the existing Assistance / accessibility controls. */
+.mobileDonate{display:none}
+@media(max-width:1020px){
+  .mobileDonate{display:inline-flex;align-items:center;justify-content:center;
+    min-height:2.75rem;margin-inline-start:auto;padding:.45rem .9rem;
+    border:1px solid var(--af-color-gold-500);border-radius:999px;
+    background:var(--af-color-navy-950);color:var(--af-color-surface);font-size:.8125rem;font-weight:800;
+    text-decoration:none;white-space:nowrap}
+  .mobileDonate:is(:hover,:focus-visible){background:var(--af-color-navy-800);color:var(--af-color-surface)}
+  .mobileDonate:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:2px}
+}
+@media(max-width:360px){.mobileDonate{padding-inline:.65rem;font-size:.75rem}}
+@media print{.mobileDonate{display:none}}

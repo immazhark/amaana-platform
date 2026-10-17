@@ -11,10 +11,10 @@ import {
   CURATED_GALLERY_START_ACTION,
   assertCuratedGalleryRuntime,
   deriveCuratedGalleryStorage,
+  matchesCuratedGalleryAssetMetadata,
   parseCuratedGallerySessionMetadata,
 } from "@/lib/curated-gallery-server";
 import { prisma } from "@/lib/prisma";
-import { getPublishedInitiativeBySlug } from "@/lib/public-content";
 import { logServerError } from "@/lib/server-log";
 
 const privateHeaders = {
@@ -64,11 +64,45 @@ export async function GET() {
           storageKey: true,
           publicUrl: true,
           sortOrder: true,
+          altText: true,
+          caption: true,
+          sourcePath: true,
+          sourceYear: true,
+          width: true,
+          height: true,
+          title: true,
+          externalUrl: true,
+          causeId: true,
+          storyId: true,
+          faithContentId: true,
           isPublic: true,
           privacyApprovedAt: true,
         },
       }),
-      Promise.all(slugs.map(slug => getPublishedInitiativeBySlug(slug))),
+      prisma.initiative.findMany({
+        where: {
+          slug: { in: slugs },
+          status: "PUBLISHED",
+          cause: { status: "PUBLISHED" },
+        },
+        select: {
+          slug: true,
+          mediaAssets: {
+            where: { isPublic: true, privacyApprovedAt: { not: null } },
+            orderBy: { sortOrder: "asc" },
+            select: {
+              id: true,
+              kind: true,
+              publicUrl: true,
+              externalUrl: true,
+              altText: true,
+              title: true,
+              caption: true,
+              sortOrder: true,
+            },
+          },
+        },
+      }),
     ]);
 
     const assetMap = new Map(assets.map(asset => [asset.id, asset]));
@@ -88,14 +122,18 @@ export async function GET() {
           asset.storageKey !== expected.storageKey ||
           asset.publicUrl !== expected.publicUrl ||
           asset.sortOrder !== record.sortOrder ||
-          asset.sortOrder < 0) {
+          asset.sortOrder < 0 ||
+          !matchesCuratedGalleryAssetMetadata(record, asset) ||
+          asset.isPublic !== Boolean(asset.privacyApprovedAt)) {
         mismatches.push(record.id);
         continue;
       }
       validAssetIds.add(record.id);
     }
 
-    const initiatives = slugs.map((slug, index) => {
+    const publishedBySlug = new Map(publicRecords.map(record => [record.slug, record]));
+
+    const initiatives = slugs.map(slug => {
       const curatedIds = curatedIdsBySlug.get(slug) ?? new Set<string>();
       const uploaded = manifest.records.filter(record =>
         record.slug === slug && validAssetIds.has(record.id),
@@ -105,7 +143,7 @@ export async function GET() {
         asset.isPublic &&
         Boolean(asset.privacyApprovedAt),
       ).length;
-      const publicRecord = publicRecords[index];
+      const publicRecord = publishedBySlug.get(slug);
       const render = publicRecord
         ? reconcileCuratedGalleryPublicRecord(slug, publicRecord.mediaAssets, curatedIds)
         : {
@@ -145,7 +183,7 @@ export async function GET() {
         missing: missing.length,
         missingIds: missing,
         mismatches,
-        galleryOnly: assets.every(asset => asset.sortOrder >= 0),
+        galleryOnly: mismatches.length === 0 && assets.every(asset => asset.sortOrder >= 0),
         renderingReady: initiatives.every(item => item.ready),
         initiatives,
       },

@@ -53,7 +53,7 @@
 .v3-work-card-media figcaption{display:none}
 .v3-work-card-body{display:flex;min-width:0;flex:1;flex-direction:column;padding:1.35rem}
 .v3-work-card-body small{color:var(--af-color-gold-ink);font-size:.75rem;letter-spacing:.09em;text-transform:uppercase}
-.v3-work-card-body h3{margin:.6rem 0 .75rem;color:var(--af-color-navy-800);font:500 clamp(1.75rem,2.7vw,2.7rem)/1 var(--af-font-display);letter-spacing:-.035em;text-wrap:balance}
+.v3-work-card-body h3{margin:.6rem 0 .75rem;color:var(--af-color-navy-800);font:500 clamp(1.75rem,2.7vw,2.7rem)/1.12 var(--af-font-display);letter-spacing:-.035em;text-wrap:balance}
 .v3-work-card-body p{display:block;margin:0;color:var(--af-color-muted);line-height:1.6;overflow:visible}
 .v3-work-card-body>span{display:flex;align-items:center;justify-content:space-between;gap:1rem;margin-top:auto;padding-top:1.25rem;color:var(--af-color-navy-700);font-weight:800}
 .v3-work-card-body i{color:var(--af-color-gold-ink);font-style:normal;transition:transform var(--af-motion-medium) var(--af-ease-standard)}
@@ -74,7 +74,7 @@
    Preserve the locked cinematic masthead; reduce competing visual weight below it. */
 .v3-home .v3-section{padding-block:clamp(3.5rem,5.8vw,5.5rem)}
 .v3-home .v3-section-head{margin-bottom:clamp(2rem,3.8vw,3.25rem)}
-.v3-home .v3-heading{font-size:clamp(2.25rem,4vw,3.5rem);line-height:1}
+.v3-home .v3-heading{font-size:clamp(2.25rem,4vw,3.5rem);line-height:1.12}
 .v3-proof{padding-block:.45rem!important}
 .v3-proof-label{margin:0;padding:.85rem 0 .15rem;color:var(--af-color-gold-ink);font-size:.75rem;letter-spacing:.15em;text-transform:uppercase}
 .v3-proof-item{min-height:6.7rem!important;padding:1rem clamp(.9rem,2vw,1.55rem)!important;justify-content:center}

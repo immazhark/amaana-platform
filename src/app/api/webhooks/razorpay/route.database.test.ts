@@ -1,3 +1,4 @@
+vi.mock("@/lib/donation-cache", () => ({ expireDonationViews: vi.fn() }));
 import { randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -9,6 +10,7 @@ vi.mock("@/lib/razorpay", () => ({
 }));
 
 import { prisma } from "@/lib/prisma";
+import { approvedFundDesignationSnapshot } from "@/lib/giving-funds";
 import * as refundAccounting from "@/lib/refund-accounting";
 import { POST } from "./route";
 
@@ -16,6 +18,7 @@ import { POST } from "./route";
 describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("refund entity PostgreSQL invariants", () => {
   const prefix = randomUUID().replaceAll("-", "");
   const fixtures: { userId: string; appealId: string; donationId: string }[] = [];
+  const fundFixtures: { donationId: string; fundId: string; userIds: string[] }[] = [];
 
   beforeAll(() => {
     const url = new URL(process.env.DATABASE_URL!);
@@ -25,6 +28,14 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("refund entity Pos
   });
 
   afterAll(async () => {
+    for (const f of fundFixtures.reverse()) {
+      await prisma.notification.deleteMany({ where: { donationId: f.donationId } });
+      await prisma.paymentEvent.deleteMany({ where: { donationId: f.donationId } });
+      await prisma.refundLedger.deleteMany({ where: { donationId: f.donationId } });
+      await prisma.donation.delete({ where: { id: f.donationId } });
+      await prisma.givingFund.delete({ where: { id: f.fundId } });
+      for (const userId of f.userIds) await prisma.user.delete({ where: { id: userId } });
+    }
     for (const f of fixtures.reverse()) {
       await prisma.notification.deleteMany({ where: { donationId: f.donationId } });
       await prisma.paymentEvent.deleteMany({ where: { donationId: f.donationId } });
@@ -172,4 +183,53 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("refund entity Pos
     expect((await prisma.appeal.findUniqueOrThrow({ where: { id: f.appeal.id } })).amountRaised.toNumber()).toBe(0);
     expect(await prisma.notification.count({ where: { donationId: donation.id } })).toBe(0);
   });
+  it("persists an approved fund-only refund and replay without modifying appeal totals", async () => {
+    const label = prefix + "-fund";
+    const creator = await prisma.user.create({ data: { name: "Fund creator", email: label + "c@example.test" } });
+    const editor = await prisma.user.create({ data: { name: "Fund editor", email: label + "e@example.test" } });
+    const approver = await prisma.user.create({ data: { name: "Independent reviewer", email: label + "a@example.test" } });
+    const fund = await prisma.givingFund.create({ data: {
+      slug: label, name: "Independently approved giving fund",
+      purpose: "A reviewed domestic charitable programme restricted to documented support.",
+      disclosure: "Donations support independently reviewed beneficiaries and documented charitable work.",
+      accountCode: "TEST-" + prefix.slice(0, 20).toUpperCase(), currency: "INR",
+      acceptedIntents: ["GENERAL", "SADAQAH"], status: "APPROVED", revision: 4,
+      createdById: creator.id, lastEditedById: editor.id,
+      approvedById: approver.id, approvedAt: new Date(),
+    } });
+    const snapshot = approvedFundDesignationSnapshot(fund, 4, "GENERAL");
+    const paymentId = "pay_" + prefix + "fund";
+    const donation = await prisma.donation.create({ data: {
+      referenceNumber: "AFD-FUND-" + prefix, appealId: null, fundId: fund.id,
+      designationSnapshot: snapshot,
+      donorName: "Synthetic donor", donorEmail: label + "@example.test",
+      domesticConfirmedAt: new Date(), amount: 100, status: "CAPTURED",
+      providerOrderId: "order_" + prefix + "fund", providerPaymentId: paymentId,
+      receiptTokenHash: "synthetic-not-a-real-token",
+    } });
+    fundFixtures.push({ donationId: donation.id, fundId: fund.id, userIds: [creator.id, editor.id, approver.id] });
+    const refundId = "rfnd_" + prefix + "fund";
+    const f = { paymentId, refundId };
+
+    expect((await POST(request(f, "fundRefundOne", 2500))).status).toBe(200);
+    expect((await POST(request(f, "fundRefundReplay", 2500))).status).toBe(200);
+    const result = await prisma.donation.findUniqueOrThrow({ where: { id: donation.id } });
+    expect(result.appealId).toBeNull();
+    expect(result.fundId).toBe(fund.id);
+    expect(result.refundedAmount.toNumber()).toBe(25);
+    expect(result.status).toBe("CAPTURED");
+    expect(await prisma.refundLedger.count({ where: { donationId: donation.id } })).toBe(1);
+    expect(await prisma.notification.count({ where: { donationId: donation.id, templateKey: "donation-refund-processed" } })).toBe(1);
+    await expect(prisma.donation.update({
+      where: { id: donation.id }, data: { givingIntent: "SADAQAH" },
+    })).rejects.toThrow();
+    await prisma.givingFund.update({ where: { id: fund.id }, data: { status: "PAUSED" } });
+    await expect(prisma.donation.create({ data: {
+      referenceNumber: "AFD-PAUSED-" + prefix, fundId: fund.id, appealId: null,
+      designationSnapshot: snapshot, donorName: "Another synthetic donor",
+      donorEmail: label + "@example.test", domesticConfirmedAt: new Date(),
+      amount: 10, receiptTokenHash: "synthetic-not-a-real-token",
+    } })).rejects.toThrow();
+  });
+
 });

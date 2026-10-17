@@ -89,6 +89,128 @@ async function openAssistance(page) {
   await expect(page.getByRole('heading', { name: 'Tell us about the request.' })).toBeVisible();
 }
 
+test.describe('order error feedback handles untrusted field data', () => {
+  for (const [label, fieldValue] of [
+    ['nested object', [{ message: 'not a string' }]],
+    ['text instead of string list', 'invalid field'],
+    ['null instead of string list', null],
+  ]) {
+    test(`malformed ${label} does not crash donation form`, async ({ page }) => {
+      let requests = 0;
+      await page.route('**/api/donations/order', route => {
+        requests++;
+        return route.fulfill({
+          status: 400, contentType: 'application/json',
+          body: JSON.stringify({
+            error: 'Please check the highlighted donation information.',
+            fields: { donorName: fieldValue },
+          }),
+        });
+      });
+      const submit = await openDonationFixture(page, 'count-only');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('Please check');
+      await expect(page.getByLabel('Full name')).toHaveValue('Acceptance Donor');
+      await expect(submit).toBeEnabled();
+      expect(requests).toBe(1);
+    });
+  }
+  test('valid field feedback stays linked to the rejected input', async ({ page }) => {
+    await page.route('**/api/donations/order', route => route.fulfill({
+      status: 400, contentType: 'application/json',
+      body: JSON.stringify({ error: 'Check donor name', fields: { donorName: ['Name requires review'] } }),
+    }));
+    const submit = await openDonationFixture(page, 'count-only');
+    await fillDonationForm(page);
+    await submit.click();
+    await expect(page.getByLabel('Full name')).toHaveAttribute('aria-invalid', 'true');
+    await expect(page.locator('#donor-name-error')).toHaveText('Name requires review');
+    await expect(page.getByLabel('Full name')).toBeFocused();
+  });
+});
+
+test.describe('bounded payment feedback stays readable', () => {
+  test('whitespace-prefixed verification rejection preserves actionable feedback and lock', async ({ page }) => {
+    await mockDonationOrder(page, { value: null });
+    await page.route('**/api/donations/confirm', route => route.fulfill({
+      status: 503, contentType: 'application/json',
+      body: JSON.stringify({ error: ' '.repeat(550) + 'Payment needs reconciliation.' }),
+    }));
+    const submit = await openDonationFixture(page, 'success');
+    await fillDonationForm(page);
+    await submit.click();
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('Payment needs reconciliation.');
+    await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+  });
+
+  test('whitespace-prefixed pre-write rejection remains readable and correctable', async ({ page }) => {
+    await page.route('**/api/donations/order', route => route.fulfill({
+      status: 429, contentType: 'application/json',
+      body: JSON.stringify({ error: ' '.repeat(550) + 'Please wait before trying again.' }),
+    }));
+    const submit = await openDonationFixture(page, 'count-only');
+    await fillDonationForm(page);
+    await submit.click();
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('Please wait before trying again.');
+    await expect(submit).toBeEnabled();
+    await expect(page.getByLabel('Full name')).toHaveValue('Acceptance Donor');
+  });
+});
+
+test.describe('checkout rejects malformed successful order responses', () => {
+  for (const [label, patch] of [
+    ['order identity', { orderId: null }],
+    ['payment amount', { amount: 100 }],
+    ['currency', { currency: 'USD' }],
+    ['provider key', { keyId: {} }],
+    ['receipt token', { receiptToken: null }],
+    ['donor details', { donor: null }],
+  ]) {
+    test(`invalid ${label} locks checkout without duplicate requests`, async ({ page }) => {
+      let orders = 0;
+      await page.route('**/api/donations/order', route => {
+        orders++;
+        return route.fulfill({
+          status: 201,
+          contentType: 'application/json',
+          body: JSON.stringify({ ...orderPayload(), ...patch }),
+        });
+      });
+      const submit = await openDonationFixture(page, 'success');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('An order may have been recorded');
+      await expect(page.getByLabel('Full name')).toHaveValue('Acceptance Donor');
+      await expect(page.getByLabel(/Donation amount/)).toHaveValue('250');
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(orders).toBe(1);
+    });
+  }
+});
+
+test('R-041 both donation methods use whole-rupee text controls instead of number spinners', async ({ page }) => {
+  await openMethodFixture(page, 'Secure online payment');
+  const online = page.getByLabel(/Donation amount/);
+  await expect(online).toHaveAttribute('type', 'text');
+  await expect(online).toHaveAttribute('inputmode', 'numeric');
+  await expect(online).toHaveAttribute('pattern', '[0-9]+');
+  await online.fill('12.50');
+  expect(await online.evaluate(input => input.checkValidity())).toBe(false);
+  await online.fill('250');
+  expect(await online.evaluate(input => input.checkValidity())).toBe(true);
+  await page.getByRole('button', { name: 'Direct UPI / QR', exact: true }).click();
+  const transfer = page.getByLabel('Amount (INR)');
+  await expect(transfer).toHaveAttribute('type', 'text');
+  await expect(transfer).toHaveAttribute('inputmode', 'numeric');
+  await expect(transfer).toHaveAttribute('pattern', '[0-9]+');
+  await transfer.fill('12.50');
+  expect(await transfer.evaluate(input => input.checkValidity())).toBe(false);
+  await transfer.fill('250');
+  expect(await transfer.evaluate(input => input.checkValidity())).toBe(true);
+});
+
 test('assistance errors are linked before keyboard focus reaches invalid input', async ({ page }) => {
   await openAssistance(page);
   await page.evaluate(() => {
@@ -337,7 +459,6 @@ test.describe('donation journey without real payment', () => {
 
   for (const failure of [
     { name: 'rate limiting', status: 429, message: 'Please wait before starting another donation.' },
-    { name: 'server failure', status: 500, message: 'Could not start checkout safely.' },
   ]) {
     test(`order API ${failure.name} restores an editable form without opening Razorpay`, async ({ page }) => {
       let checkoutOpens = 0;
@@ -376,6 +497,76 @@ test.describe('donation journey without real payment', () => {
     });
   }
 
+  test('explicit no-order HTTP 408 permits a safe retry without clearing donor details', async ({ page }) => {
+    let orders = 0;
+    await page.route('**/api/donations/order', route => {
+      orders++;
+      return route.fulfill({
+        status: 408,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          error: 'Checkout request upload timed out. No payment order was created. Please check your connection and try again.',
+          orderStarted: false,
+        }),
+      });
+    });
+    const submit = await openDonationFixture(page, 'count-only');
+    await fillDonationForm(page);
+    await submit.click();
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('No payment order was created');
+    await expect(submit).toBeEnabled();
+    await expect(page.getByLabel('Full name')).toHaveValue('Acceptance Donor');
+    await submit.click();
+    expect(orders).toBe(2);
+  });
+
+  for (const orderStarted of [undefined, true, null, 'false']) {
+    test(`ambiguous HTTP 408 marker ${String(orderStarted)} keeps checkout locked`, async ({ page }) => {
+      let orders = 0;
+      await page.route('**/api/donations/order', route => {
+        orders++;
+        return route.fulfill({
+          status: 408,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'Gateway request expired', orderStarted }),
+        });
+      });
+      const submit = await openDonationFixture(page, 'count-only');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('An order may have been created');
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(orders).toBe(1);
+    });
+  }
+
+  for (const outcome of ['server-error', 'gateway-error', 'lost-response']) {
+    test(`uncertain checkout ${outcome} locks the form and prevents another order`, async ({ page }) => {
+      let attempts = 0;
+      await page.route('**/api/donations/order', route => {
+        attempts++;
+        if (outcome === 'lost-response') return route.abort('failed');
+        return route.fulfill({
+          status: outcome === 'gateway-error' ? 502 : 500,
+          contentType: outcome === 'gateway-error' ? 'text/html' : 'application/json',
+          body: outcome === 'gateway-error'
+            ? '<html><body>Gateway unavailable</body></html>'
+            : JSON.stringify({ error: 'Unexpected server failure' }),
+        });
+      });
+      const submit = await openDonationFixture(page, 'count-only');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('An order may have been created');
+      await expect(page.getByLabel('Full name')).toHaveValue('Acceptance Donor');
+      await expect(page.getByLabel(/Donation amount/)).toHaveValue('250');
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(attempts).toBe(1);
+    });
+  }
+
   test('controls remain locked while the order request is unresolved', async ({ page }) => {
     let releaseOrder;
     await page.route('**/api/donations/order', async route => {
@@ -411,7 +602,7 @@ test.describe('donation journey without real payment', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ referenceNumber: donationReference }),
+        body: JSON.stringify({ referenceNumber: donationReference, status: 'CAPTURED' }),
       });
     });
     await page.route('**/api/donations/acknowledgement', route => route.fulfill({
@@ -456,6 +647,81 @@ test.describe('donation journey without real payment', () => {
       receiptToken,
     }));
   });
+
+  for (const status of ['CREATED', 'AUTHORIZED', 'FAILED', 'PENDING_VERIFICATION', null, 'UNRECOGNIZED']) {
+    test(`HTTP 200 with nonterminal/unknown payment state ${String(status)} never navigates as paid`, async ({ page }) => {
+      let confirmations = 0;
+      let orders = 0;
+      await page.route('**/api/donations/order', route => {
+        orders++;
+        return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(orderPayload()) });
+      });
+      await page.route('**/api/donations/confirm', route => {
+        confirmations++;
+        return route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ referenceNumber: donationReference, status }),
+        });
+      });
+      const submit = await openDonationFixture(page, 'success');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('not complete');
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(orders).toBe(1);
+      expect(confirmations).toBe(1);
+      expect(new URL(page.url()).pathname).toBe('/browser-acceptance/donation');
+    });
+  }
+
+  for (const reference of [undefined, null, 123, '', '../admin', 'a'.repeat(81)]) {
+    test(`malformed confirmation reference ${JSON.stringify(reference)} retains payment follow-up without invalid navigation`, async ({ page }) => {
+      let orders = 0;
+      let confirmations = 0;
+      await page.route('**/api/donations/order', route => {
+        orders++;
+        return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(orderPayload()) });
+      });
+      await page.route('**/api/donations/confirm', route => {
+        confirmations++;
+        return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ referenceNumber: reference }) });
+      });
+      const submit = await openDonationFixture(page, 'success');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('retain your Razorpay payment confirmation');
+      await expect(page.getByLabel(/Donation amount/)).toBeDisabled();
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(new URL(page.url()).pathname).toBe('/browser-acceptance/donation');
+      expect(orders).toBe(1);
+      expect(confirmations).toBe(1);
+    });
+  }
+
+  for (const [label, error] of [['object', { detail: 'invalid error object' }], ['array', [{ detail: 'invalid error object' }]], ['number', 123], ['null', null], ['empty', '']]) {
+    test(`malformed ${label} verification error retains the form and follow-up guidance`, async ({ page }) => {
+      let confirmations = 0;
+      await mockDonationOrder(page, { value: null });
+      await page.route('**/api/donations/confirm', route => {
+        confirmations++;
+        return route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error }) });
+      });
+      const submit = await openDonationFixture(page, 'success');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      const alert = page.locator('.form-error[role="alert"]');
+      await expect(alert).toContainText('Payment verification is pending');
+      await expect(alert).toBeFocused();
+      await expect(page.getByLabel('Full name')).toHaveValue('Acceptance Donor');
+      await expect(page.getByLabel(/Donation amount/)).toBeDisabled();
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(confirmations).toBe(1);
+      expect(new URL(page.url()).pathname).toBe('/browser-acceptance/donation');
+    });
+  }
 
   test('mocked verification failure locks the form against duplicate payment attempts', async ({ page }) => {
     const order = { value: null };
@@ -555,7 +821,476 @@ test.describe('direct donation browser journey without real transfer', () => {
   });
 });
 
+async function openMethodFixture(page, method = 'Direct UPI / QR') {
+  await mockAnalytics(page);
+  await page.route('https://checkout.razorpay.com/v1/checkout.js', route => route.fulfill({
+    status: 200, contentType: 'application/javascript',
+    body: `window.Razorpay = class {
+      constructor(options) { this.options = options; }
+      open() { window.__checkoutOptions = this.options; }
+    };`,
+  }));
+  const response = await page.goto('/browser-acceptance/direct-donation', { waitUntil: 'domcontentloaded' });
+  expect(response?.ok()).toBeTruthy();
+  if (method === 'Secure online payment') {
+    await expect(page.getByRole('button', { name: 'Continue securely →' })).toBeEnabled();
+  } else {
+    await page.getByRole('button', { name: method, exact: true }).click();
+  }
+}
+
+async function fillTransferForm(page) {
+  await page.getByLabel('Full name').fill('Acceptance Donor');
+  await page.getByLabel('Email').fill('acceptance@example.test');
+  await page.getByLabel('Amount (INR)').fill('250');
+  await page.getByLabel('UTR / transaction reference').fill('UTRACCEPT12345');
+  await page.getByLabel('Transfer date and time').fill('2026-09-30T10:30');
+  await page.locator('input[name="domesticConfirmed"]').check();
+}
+
+async function expectMethodsLocked(page) {
+  const methods = page.getByRole('group', { name: 'Choose donation method' }).getByRole('button');
+  await expect(methods).toHaveCount(3);
+  for (const method of await methods.all()) await expect(method).toBeDisabled();
+}
+
+test('a payment callback after its checkout form unmounts confirms without stale navigation', async ({ page }) => {
+  let confirmations = 0;
+  await page.route('**/api/donations/order', route => route.fulfill({
+    status: 201, contentType: 'application/json', body: JSON.stringify(orderPayload()),
+  }));
+  await page.route('**/api/donations/confirm', route => {
+    confirmations++;
+    return route.fulfill({
+      status: 200, contentType: 'application/json',
+      body: JSON.stringify({ referenceNumber: donationReference, status: 'CAPTURED' }),
+    });
+  });
+  await openMethodFixture(page, 'Secure online payment');
+  await fillDonationForm(page);
+  await page.getByRole('button', { name: 'Continue securely →' }).click();
+  await expect.poll(() => page.evaluate(() => Boolean(window.__checkoutOptions))).toBe(true);
+  await page.evaluate(() => window.__checkoutOptions.modal.ondismiss());
+  await expect(page.getByRole('button', { name: 'Direct UPI / QR', exact: true })).toBeEnabled();
+  await page.getByRole('button', { name: 'Direct UPI / QR', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Pay Amaana directly by UPI.' })).toBeVisible();
+  await page.evaluate(async () => {
+    await window.__checkoutOptions.handler({
+      razorpay_order_id: 'order_acceptance_001',
+      razorpay_payment_id: 'pay_acceptance_001',
+      razorpay_signature: 'signature_acceptance_001',
+    });
+  });
+  expect(confirmations).toBe(1);
+  await expect(page.getByRole('heading', { name: 'Pay Amaana directly by UPI.' })).toBeVisible();
+  await expect(page).toHaveURL('/browser-acceptance/direct-donation');
+});
+
+test.describe('direct transfer pre-write timeout safety', () => {
+  test('an explicit no-write 408 preserves the UTR and safely unlocks retry', async ({ page }) => {
+    let submissions = 0;
+    await page.route('**/api/donations/direct-transfer', route => {
+      submissions++;
+      return route.fulfill({
+        status: 408, contentType: 'application/json',
+        body: JSON.stringify({
+          error: 'Transfer upload took too long. No submission was recorded. Check your connection and submit the same bank reference again.',
+          submissionUncertain: false,
+        }),
+      });
+    });
+    await openMethodFixture(page);
+    await fillTransferForm(page);
+    const submit = page.getByRole('button', { name: 'Submit transfer for verification' });
+    await submit.click();
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('No submission was recorded');
+    await expect(page.getByLabel('UTR / transaction reference')).toHaveValue('UTRACCEPT12345');
+    await expect(submit).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Bank transfer', exact: true })).toBeEnabled();
+    await submit.click();
+    await expect.poll(() => submissions).toBe(2);
+  });
+
+  test('a stalled browser upload settles into follow-up rather than spinning without a response', async ({ page }) => {
+    await page.clock.install();
+    let submissions = 0;
+    await page.route('**/api/donations/direct-transfer', async () => {
+      submissions++;
+      await new Promise(() => {}); // Simulated transport that never responds.
+    });
+    await openMethodFixture(page);
+    await fillTransferForm(page);
+    await page.getByRole('button', { name: 'Submit transfer for verification' }).click();
+    await expect.poll(() => submissions).toBe(1);
+    await expect(page.getByRole('button', { name: 'Submitting for verification…' })).toBeDisabled();
+    await page.clock.fastForward(120_100);
+    await expect(page.getByRole('button', { name: 'Transfer follow-up required' })).toBeDisabled();
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('contact Amaana before submitting again');
+    await expectMethodsLocked(page);
+    expect(submissions).toBe(1);
+  });
+
+  for (const marker of [undefined, true, 'false', null]) {
+    test(`ambiguous transfer 408 with marker ${String(marker)} retains reconciliation lock`, async ({ page }) => {
+      let submissions = 0;
+      await page.route('**/api/donations/direct-transfer', route => {
+        submissions++;
+        return route.fulfill({
+          status: 408, contentType: 'application/json',
+          body: JSON.stringify({ error: 'Ambiguous transfer request timeout',
+            ...(marker === undefined ? {} : { submissionUncertain: marker }) }),
+        });
+      });
+      await openMethodFixture(page);
+      await fillTransferForm(page);
+      await page.getByRole('button', { name: 'Submit transfer for verification' }).click();
+      await expect(page.getByRole('button', { name: 'Transfer follow-up required' })).toBeDisabled();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('contact Amaana before submitting again');
+      await expectMethodsLocked(page);
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(submissions).toBe(1);
+    });
+  }
+});
+
+test.describe('donation submission state survives method and provider callbacks', () => {
+  for (const scenario of ['server-error', 'lost-response', 'html-response', 'missing-token', 'already-submitted']) {
+    test(`direct transfer ${scenario} keeps follow-up state and prevents another submission`, async ({ page }) => {
+      let requests = 0;
+      await page.route('**/api/donations/direct-transfer', async route => {
+        requests++;
+        if (scenario === 'lost-response') return route.abort('failed');
+        if (scenario === 'html-response') return route.fulfill({ status: 502, contentType: 'text/html', body: '<h1>Gateway error</h1>' });
+        const status = scenario === 'missing-token' ? 202 : scenario === 'already-submitted' ? 409 : 500;
+        const body = scenario === 'missing-token'
+          ? { referenceNumber: donationReference, status: 'PENDING_VERIFICATION' }
+          : { error: 'Upstream response', submissionUncertain: true };
+        await route.fulfill({ status, contentType: 'application/json', body: JSON.stringify(body) });
+      });
+      await openMethodFixture(page);
+      await fillTransferForm(page);
+      await page.getByRole('button', { name: 'Submit transfer for verification' }).click();
+      const alert = page.locator('.form-error[role="alert"]');
+      await expect(alert).toContainText('contact Amaana before submitting again');
+      await expect(alert).toBeFocused();
+      await expect(alert.getByRole('link', { name: 'Contact Amaana about this transfer' })).toHaveAttribute('href', '/contact');
+      await expectMethodsLocked(page);
+      await expect(page.getByLabel('UTR / transaction reference')).toHaveValue('UTRACCEPT12345');
+      await expect(page.getByRole('button', { name: 'Transfer follow-up required' })).toBeDisabled();
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(requests).toBe(1);
+    });
+  }
+
+  test('same-event duplicate transfer submission and method change cannot discard an in-flight request', async ({ page }) => {
+    let requests = 0;
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    await page.route('**/api/donations/direct-transfer', async route => {
+      requests++;
+      await gate;
+      await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Outcome unavailable', submissionUncertain: true }) });
+    });
+    await openMethodFixture(page);
+    await fillTransferForm(page);
+    await page.locator('form').evaluate(form => {
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      document.querySelector('[aria-label="Choose donation method"] button:last-child').click();
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+    await expect.poll(() => requests).toBe(1);
+    await expectMethodsLocked(page);
+    await expect(page.getByRole('button', { name: 'Direct UPI / QR', exact: true })).toHaveAttribute('aria-pressed', 'true');
+    release();
+    await expect(page.getByRole('button', { name: 'Transfer follow-up required' })).toBeDisabled();
+    expect(requests).toBe(1);
+  });
+
+  test('explicit field rejection preserves donor data, links errors and returns focus on a repeated rejection', async ({ page }) => {
+    let requests = 0;
+    await page.route('**/api/donations/direct-transfer', async route => {
+      requests++;
+      await route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({
+        error: 'Check the bank reference', fieldErrors: { transferReference: ['Enter the bank transaction reference.'] },
+      }) });
+    });
+    await openMethodFixture(page, 'Bank transfer');
+    await fillTransferForm(page);
+    const reference = page.getByLabel('UTR / transaction reference');
+    for (let attempt = 0; attempt < 2; attempt++) {
+      await page.getByRole('button', { name: 'Submit transfer for verification' }).click();
+      await expect(reference).toBeFocused();
+      await expect(reference).toHaveAttribute('aria-invalid', 'true');
+      const errorId = await reference.getAttribute('aria-describedby');
+      await expect(page.locator(`[id="${errorId}"]`)).toHaveText('Enter the bank transaction reference.');
+      await expect(page.getByLabel('Full name')).toHaveValue('Acceptance Donor');
+      await reference.fill(`UTRCORRECT${attempt}12345`);
+      await expect(reference).not.toHaveAttribute('aria-invalid', 'true');
+      await expect(reference).toBeFocused();
+    }
+    expect(requests).toBe(2);
+    await expect(page.getByRole('button', { name: 'Direct UPI / QR', exact: true })).toBeEnabled();
+    await page.getByRole('button', { name: 'Direct UPI / QR', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Pay Amaana directly by UPI.' })).toBeVisible();
+  });
+
+  test('native invalid transfer input has persistent linked feedback and sends no request', async ({ page }) => {
+    let requests = 0;
+    await page.route('**/api/donations/direct-transfer', route => { requests++; return route.abort(); });
+    await openMethodFixture(page);
+    await page.getByRole('button', { name: 'Submit transfer for verification' }).click();
+    const name = page.getByLabel('Full name');
+    await expect(name).toBeFocused();
+    await expect(name).toHaveAttribute('aria-invalid', 'true');
+    const errorId = await name.getAttribute('aria-describedby');
+    await expect(page.locator(`[id="${errorId}"]`)).toBeVisible();
+    expect(requests).toBe(0);
+  });
+
+  test('clipboard denial provides manual-copy guidance without changing transfer state', async ({ page }) => {
+    await page.addInitScript(() => {
+      Object.defineProperty(navigator, 'clipboard', { configurable: true, value: { writeText: async () => { throw new Error('Denied'); } } });
+    });
+    await openMethodFixture(page);
+    await page.getByRole('button', { name: 'Copy UPI ID' }).click();
+    await expect(page.getByRole('status').filter({ hasText: 'Could not copy upi id' })).toContainText('copy it manually');
+    await expect(page.getByRole('button', { name: 'Submit transfer for verification' })).toBeEnabled();
+  });
+
+  test('Razorpay dismissal after payment callback cannot unlock verification or create duplicate confirmation', async ({ page }) => {
+    let orders = 0;
+    let confirmations = 0;
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    await page.route('**/api/donations/order', async route => {
+      orders++;
+      await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(orderPayload()) });
+    });
+    await page.route('**/api/donations/confirm', async route => {
+      confirmations++;
+      await gate;
+      await route.fulfill({ status: 500, contentType: 'application/json', body: JSON.stringify({ error: 'Keep your payment confirmation.' }) });
+    });
+    await openMethodFixture(page, 'Secure online payment');
+    await fillDonationForm(page);
+    await page.locator('form').evaluate(form => {
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      document.querySelector('[aria-label="Choose donation method"] button:last-child').click();
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+    });
+    await expect.poll(() => page.evaluate(() => Boolean(window.__checkoutOptions))).toBe(true);
+    await page.evaluate(() => {
+      const payment = { razorpay_order_id: 'order_acceptance_001', razorpay_payment_id: 'pay_acceptance_001', razorpay_signature: 'signature_acceptance_001' };
+      void window.__checkoutOptions.handler(payment);
+      window.__checkoutOptions.modal.ondismiss();
+      void window.__checkoutOptions.handler(payment);
+    });
+    await expect.poll(() => confirmations).toBe(1);
+    await expect(page.getByRole('button', { name: 'Verifying donation…' })).toBeDisabled();
+    await expectMethodsLocked(page);
+    release();
+    await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+    await page.evaluate(() => window.__checkoutOptions.modal.ondismiss());
+    await expectMethodsLocked(page);
+    expect(orders).toBe(1);
+    expect(confirmations).toBe(1);
+  });
+
+  test('a delayed dismissal from an earlier checkout cannot unlock a newer order request', async ({ page }) => {
+    let orders = 0;
+    let release;
+    const gate = new Promise(resolve => { release = resolve; });
+    await page.route('**/api/donations/order', async route => {
+      orders++;
+      if (orders === 2) await gate;
+      await route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(orderPayload()) });
+    });
+    await openMethodFixture(page, 'Secure online payment');
+    await fillDonationForm(page);
+    await page.getByRole('button', { name: 'Continue securely →' }).click();
+    await expect.poll(() => page.evaluate(() => Boolean(window.__checkoutOptions))).toBe(true);
+    await page.evaluate(() => {
+      window.__previousCheckout = window.__checkoutOptions;
+      window.__previousCheckout.modal.ondismiss();
+    });
+    await expect(page.getByRole('button', { name: 'Continue securely →' })).toBeEnabled();
+    await page.getByRole('button', { name: 'Continue securely →' }).click();
+    await expect.poll(() => orders).toBe(2);
+    await page.evaluate(() => window.__previousCheckout.modal.ondismiss());
+    await expectMethodsLocked(page);
+    await expect(page.getByRole('button', { name: 'Opening secure checkout…' })).toBeDisabled();
+    release();
+    await expect.poll(() => page.evaluate(() => window.__checkoutOptions !== window.__previousCheckout)).toBe(true);
+    await expectMethodsLocked(page);
+  });
+
+  for (const newerOutcome of ['accepted', 'server-error', 'malformed']) {
+    test(`an earlier payment callback supersedes a pending newer ${newerOutcome} order without opening another checkout`, async ({ page }) => {
+      let orders = 0;
+      let confirmations = 0;
+      let confirmationBody;
+      let releaseOrder;
+      let releaseConfirmation;
+      const orderGate = new Promise(resolve => { releaseOrder = resolve; });
+      const confirmationGate = new Promise(resolve => { releaseConfirmation = resolve; });
+      await page.route('**/api/donations/order', async route => {
+        orders++;
+        const second = orders === 2;
+        if (second) await orderGate;
+        await route.fulfill({ status: second && newerOutcome === 'server-error' ? 500 : 201, contentType: 'application/json',
+          body: second && newerOutcome === 'malformed' ? '{broken' : JSON.stringify(second && newerOutcome === 'server-error' ? { error: 'Newer order failed' } : second ? { ...orderPayload(), orderId: 'order_acceptance_002', receiptToken: 'receipt-token-newer-unpaid-order-abcdefghijklmnopqrstuvwxyz' } : orderPayload()) });
+      });
+      await page.route('**/api/donations/confirm', async route => {
+        confirmations++;
+        confirmationBody = route.request().postDataJSON();
+        await confirmationGate;
+        await route.fulfill({ status: 503, contentType: 'application/json', body: JSON.stringify({ error: 'Keep the earlier payment confirmation.' }) });
+      });
+      await page.addInitScript(() => {
+        window.__orderJsonCompleted = 0;
+        const nativeFetch = window.fetch;
+        window.fetch = async (...args) => {
+          const response = await nativeFetch(...args);
+          if (String(args[0]) === '/api/donations/order') {
+            const nativeJson = response.json.bind(response);
+            response.json = async () => {
+              try { return await nativeJson(); }
+              finally { window.__orderJsonCompleted++; }
+            };
+          }
+          return response;
+        };
+      });
+      await openMethodFixture(page, 'Secure online payment');
+      await fillDonationForm(page);
+      await page.getByRole('button', { name: 'Continue securely →' }).click();
+      await expect.poll(() => page.evaluate(() => Boolean(window.__checkoutOptions))).toBe(true);
+      await page.evaluate(() => {
+        window.__previousCheckout = window.__checkoutOptions;
+        window.__previousCheckout.modal.ondismiss();
+      });
+      await expect(page.getByRole('button', { name: 'Continue securely →' })).toBeEnabled();
+      await page.getByRole('button', { name: 'Continue securely →' }).click();
+      await expect.poll(() => orders).toBe(2);
+      await page.evaluate(() => {
+        void window.__previousCheckout.handler({ razorpay_order_id: 'order_acceptance_001', razorpay_payment_id: 'pay_acceptance_001', razorpay_signature: 'signature_acceptance_001' });
+      });
+      await expect.poll(() => confirmations).toBe(1);
+      await expect(page.getByRole('button', { name: 'Verifying donation…' })).toBeDisabled();
+      releaseOrder();
+      // The pending order response must finish while the paid attempt still owns
+      // verification, rather than being hidden by navigation or an unmount.
+      await expect.poll(() => page.evaluate(() => window.__orderJsonCompleted)).toBe(2);
+      expect(await page.evaluate(() => window.__checkoutOptions === window.__previousCheckout)).toBe(true);
+      await expect(page.getByRole('button', { name: 'Verifying donation…' })).toBeDisabled();
+      await expect(page.locator('.form-error')).toHaveCount(0);
+      releaseConfirmation();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      await expect(page.locator('.form-error')).toHaveText('Keep the earlier payment confirmation.');
+      await expectMethodsLocked(page);
+      expect(orders).toBe(2);
+      expect(confirmations).toBe(1);
+      expect(confirmationBody).toEqual(expect.objectContaining({ razorpay_order_id: 'order_acceptance_001', razorpay_payment_id: 'pay_acceptance_001', receiptToken }));
+      expect(await page.evaluate(() => window.__checkoutOptions === window.__previousCheckout)).toBe(true);
+    });
+  }
+
+  test('Razorpay dismissal before a payment unlocks safe method selection', async ({ page }) => {
+    await page.route('**/api/donations/order', route => route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(orderPayload()) }));
+    await openMethodFixture(page, 'Secure online payment');
+    await fillDonationForm(page);
+    await page.getByRole('button', { name: 'Continue securely →' }).click();
+    await expect.poll(() => page.evaluate(() => Boolean(window.__checkoutOptions))).toBe(true);
+    await expectMethodsLocked(page);
+    await page.evaluate(() => window.__checkoutOptions.modal.ondismiss());
+    await expect(page.getByRole('button', { name: 'Continue securely →' })).toBeEnabled();
+    await page.getByRole('button', { name: 'Bank transfer', exact: true }).click();
+    await expect(page.getByRole('heading', { name: 'Transfer directly to Amaana Foundation.' })).toBeVisible();
+  });
+});
+
 test.describe('private assistance journey', () => {
+  for (const outcome of ['network', 'server', 'malformed', 'missing-token', 'invalid-token', 'wrong-status']) {
+    test(`assistance ${outcome} outcome retains a follow-up lock without duplicating the request`, async ({ page }) => {
+      let submissions = 0;
+      await page.route('**/api/assistance', route => {
+        submissions += 1;
+        if (outcome === 'network') return route.abort('failed');
+        return route.fulfill({
+          status: outcome === 'server' ? 503 : outcome === 'wrong-status' ? 200 : 201,
+          contentType: 'application/json',
+          body: outcome === 'malformed' ? '{broken' : JSON.stringify(outcome === 'server'
+            ? { error: 'Please try again later.' }
+            : { referenceNumber: assistanceReference, trackingToken: outcome === 'missing-token' ? undefined : outcome === 'invalid-token' ? 123 : trackingToken }),
+        });
+      });
+      await openAssistance(page);
+      await fillAssistanceForm(page);
+      await page.getByRole('button', { name: 'Submit private request →' }).click();
+      const summary = page.locator('.form-error[role="alert"]');
+      await expect(summary).toBeFocused();
+      await expect(summary).toContainText('Contact Amaana before submitting again');
+      await expect(summary).not.toContainText('Please try again later');
+      await expect(page.getByRole('link', { name: 'Contact Amaana about this request' })).toHaveAttribute('href', '/contact');
+      await expect(page.getByRole('button', { name: 'Request follow-up required' })).toBeDisabled();
+      await expect(page.locator('input[name="consent"]')).toBeDisabled();
+      await expect(page.locator('input[name="applicantName"]')).toHaveValue('Acceptance Applicant');
+      await page.locator('form.v2-assistance-form').evaluate(form => {
+        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+        form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      });
+      expect(submissions).toBe(1);
+      expect(new URL(page.url()).pathname).toBe('/request-assistance');
+    });
+  }
+
+  test('assistance same-event duplicate submissions use one multipart request and lock editing', async ({ page }) => {
+    let submissions = 0;
+    let release;
+    await page.route('**/api/assistance', async route => {
+      submissions += 1;
+      await new Promise(resolve => { release = resolve; });
+      await route.fulfill({ status: 400, contentType: 'application/json', body: JSON.stringify({ error: 'Please check your phone.', fields: { phone: ['Enter a valid phone number.'] } }) });
+    });
+    await openAssistance(page);
+    await fillAssistanceForm(page);
+    await page.locator('form.v2-assistance-form').evaluate(form => {
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+      form.querySelector('input[name="consent"]').click();
+    });
+    await expect(page.getByRole('button', { name: 'Submitting securely…' })).toBeDisabled();
+    await expect(page.locator('input[name="consent"]')).toBeDisabled();
+    await expect(page.locator('input[name="applicantName"]')).toBeDisabled();
+    await expect(page.getByRole('button', { name: /Contact/ })).toBeDisabled();
+    await expect.poll(() => submissions).toBe(1);
+    release();
+    await expect(page.getByLabel('Phone number')).toBeFocused();
+    await expect(page.getByLabel('Phone number')).toBeEnabled();
+    expect(submissions).toBe(1);
+  });
+
+  for (const status of [400, 413]) {
+    test(`assistance document rejection HTTP ${status} returns to linked evidence feedback and preserves files`, async ({ page }) => {
+      await page.route('**/api/assistance', route => route.fulfill({ status, contentType: 'application/json', body: JSON.stringify({ error: 'Please review the supporting files.', fields: { documents: ['Choose a valid supporting document.'] } }) }));
+      await openAssistance(page);
+      await fillAssistanceForm(page, { stopAtEvidence: true });
+      const files = page.getByLabel(/Add private supporting files/);
+      await files.setInputFiles({ name: 'synthetic-evidence.pdf', mimeType: 'application/pdf', buffer: Buffer.from('%PDF-1.4 synthetic evidence') });
+      await finishAssistanceConfirmation(page);
+      await page.getByRole('button', { name: 'Submit private request →' }).click();
+      await expect(files).toBeFocused();
+      await expect(files).toHaveAttribute('aria-invalid', 'true');
+      await expect(files).toHaveAttribute('aria-describedby', 'documents-help documents-error');
+      await expect(page.locator('#documents-error')).toHaveText('Choose a valid supporting document.');
+      expect(await files.evaluate(input => input.files[0].name)).toBe('synthetic-evidence.pdf');
+      await files.setInputFiles([]);
+      await expect(page.locator('#documents-error')).toHaveCount(0);
+      await expect(files).not.toHaveAttribute('aria-invalid', 'true');
+      await expect(files).toBeFocused();
+    });
+  }
+
   test('guided form blocks step progression until required contact fields are complete', async ({ page }) => {
     await openAssistance(page);
 
@@ -865,3 +1600,42 @@ test('legacy query donation acknowledgement token is scrubbed from the visible U
   expect(page.url()).toBe(`http://127.0.0.1:3000/donations/${reference}/acknowledgement`);
   expect(page.url()).not.toContain(token);
 });
+
+for (const [label, payload] of [['null', null], ['incomplete found record', { found: true }], ['object-valued status', { found: true, status: {} }]]) {
+  for (const kind of ['donation', 'assistance']) {
+    test(`private ${kind} record keeps malformed ${label} response in read-only recovery`, async ({ page }) => {
+      await mockAnalytics(page);
+      const reference = 'AFD-2026-READ-RECOVERY';
+      const token = 'synthetic-read-token-1234567890';
+      const errors = [];
+      const writes = [];
+      let reads = 0;
+      page.on('pageerror', error => errors.push(error.message));
+      page.on('request', request => {
+        if (request.method() === 'POST' && /\/api\/(donations\/(order|confirm|direct-transfer)|assistance)$/.test(new URL(request.url()).pathname)) {
+          writes.push(request.url());
+        }
+      });
+      const endpoint = kind === 'donation' ? '/api/donations/acknowledgement' : '/api/assistance/status';
+      await page.route(`**${endpoint}`, async route => {
+        reads += 1;
+        await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(payload) });
+      });
+      const path = kind === 'donation' ? `/donations/${reference}/acknowledgement` : '/request-assistance/status';
+      const fragment = kind === 'donation' ? `token=${token}` : `reference=${reference}&token=${token}`;
+      const response = await page.goto(`${path}#${fragment}`);
+      expect(response?.headers()['referrer-policy']).toBe('no-referrer');
+      expect(response?.headers()['x-robots-tag']).toBe('noindex, nofollow, noarchive');
+      expect(response?.headers()['cache-control']).toContain('no-store');
+      const heading = kind === 'donation' ? 'Unable to open your acknowledgement.' : 'Unable to check your request';
+      await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+      expect(new URL(page.url()).hash).toBe('');
+      expect(new URL(page.url()).search).toBe('');
+      await page.getByRole('button', { name: kind === 'donation' ? 'Try again' : 'Try tracking again', exact: true }).click();
+      await expect.poll(() => reads).toBe(2);
+      await expect(page.getByRole('heading', { name: heading, exact: true })).toBeVisible();
+      expect(writes).toEqual([]);
+      expect(errors).toEqual([]);
+    });
+  }
+}

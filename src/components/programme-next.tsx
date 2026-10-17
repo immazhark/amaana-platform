@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { SectionHeading } from "./section-heading";
 
 /** Keep programme closing actions on the same body-heading grid as public pages. */

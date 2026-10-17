@@ -1,12 +1,68 @@
 import { createHash, randomBytes, randomInt } from "node:crypto";
 import { z } from "zod";
-import { DONATION_INTENTS } from "@/lib/donation-intent";
+import { DONATION_INTENTS, type DonationIntentValue } from "@/lib/donation-intent";
 
 export const MIN_DONATION_AMOUNT = 10;
 export const MAX_DONATION_AMOUNT = 1_000_000;
 
+// Private, write-once record of the purpose selected when a donation was made.
+// Do not substitute today's edited appeal title for the original donor intent.
+export function appealDonationDesignationSnapshot(
+  appeal: { id: string; title: string },
+  givingIntent: DonationIntentValue,
+) {
+  return {
+    version: 1,
+    kind: "APPEAL" as const,
+    appealId: appeal.id,
+    label: appeal.title,
+    givingIntent,
+  };
+}
+
+const storedAppealDesignationSchema = z.object({
+  version: z.literal(1),
+  kind: z.literal("APPEAL"),
+  appealId: z.string().min(1).max(200),
+  label: z.string().trim().min(1).max(4096),
+  givingIntent: z.enum(DONATION_INTENTS),
+}).strict();
+
+/** Resolve original donor intent for private finance surfaces only.
+ *  Legacy NULLs use the existing appeal title; malformed non-NULL history is
+ *  explicitly flagged instead of silently substituted with a new purpose.
+ */
+export function resolveAppealDonationDesignation(
+  snapshot: unknown,
+  expected: { appealId: string; givingIntent: string; currentTitle: string },
+): { label: string; provenance: "original" | "legacy" | "review" } {
+  if (snapshot == null) return { label: expected.currentTitle, provenance: "legacy" };
+  const result = storedAppealDesignationSchema.safeParse(snapshot);
+  if (!result.success || result.data.appealId !== expected.appealId ||
+      result.data.givingIntent !== expected.givingIntent) {
+    return { label: "Donation designation requires review", provenance: "review" };
+  }
+  return { label: result.data.label, provenance: "original" };
+}
+
+// Shared future designation boundary; public routes remain appeal-only until
+// capture, refund, and reconciliation all support approved funds.
+const exclusiveDonationDestinationSchema = z.union([
+  z.object({ appealId: z.string().cuid() }).strict(),
+  z.object({ fundId: z.string().cuid() }).strict(),
+]);
+
+export function parseExclusiveDonationDestination(value: unknown) {
+  const parsed = exclusiveDonationDestinationSchema.safeParse(value);
+  if (!parsed.success) throw new Error("Select exactly one valid appeal or giving fund.");
+  return parsed.data;
+}
+
 export const donationSchema = z.object({
   appealId: z.string().cuid(),
+  // Public checkout is still appeal-only. Reject an explicitly supplied fund
+  // destination instead of stripping it and silently changing donor designation.
+  fundId: z.never().optional(),
   donorName: z.string().trim().min(2).max(120),
   donorEmail: z.string().trim().email().max(254),
   donorPhone: z.union([z.literal(""), z.string().trim().regex(/^\+?[0-9][0-9\s-]{7,16}$/)]).optional(),
@@ -34,6 +90,9 @@ export const directTransferSchema = donationSchema.extend({
 
 export function isDonationAmountAllowedForRemaining(amount: number, remainingAmount: number) {
   if (!Number.isInteger(amount) || amount < 1 || amount > MAX_DONATION_AMOUNT) return false;
+  // Comparisons with NaN never succeed; without this guard an unbounded or
+  // malformed remaining need could incorrectly authorize a donation.
+  if (!Number.isFinite(remainingAmount) || remainingAmount <= 0) return false;
   if (amount > remainingAmount) return false;
   return amount >= MIN_DONATION_AMOUNT || amount === remainingAmount;
 }
@@ -49,10 +108,16 @@ export function getDonationAcknowledgementPresentation(
   status: string,
   amount: number,
   refundedAmount: number,
+  designationKind: "APPEAL" | "FUND" = "APPEAL",
 ): DonationAcknowledgementPresentation {
-  const hasPartialRefund = refundedAmount > 0 && refundedAmount < amount;
+  const validAccounting = Number.isFinite(amount) && amount > 0
+    && Number.isFinite(refundedAmount) && refundedAmount >= 0;
+  const hasPartialRefund = validAccounting && refundedAmount > 0 && refundedAmount < amount;
+  // A zero-value CREATED/PENDING record is not a completed refund. Only a
+  // captured payment may infer full refund from its financial totals.
+  const fullyRefundedCapture = status === "CAPTURED" && validAccounting && refundedAmount >= amount;
 
-  if (status === "REFUNDED" || refundedAmount >= amount) {
+  if (status === "REFUNDED" || fullyRefundedCapture) {
     return {
       tone: "refunded",
       heading: "This donation has been refunded.",
@@ -72,7 +137,9 @@ export function getDonationAcknowledgementPresentation(
       : {
           tone: "captured",
           heading: "JazakAllahu Khairan.",
-          summary: "Amaana Foundation gratefully acknowledges your contribution and the trust placed in this appeal.",
+          summary: designationKind === "FUND"
+            ? "Amaana Foundation gratefully acknowledges your contribution to the approved giving fund."
+            : "Amaana Foundation gratefully acknowledges your contribution and the trust placed in this appeal.",
           statusLabel: "Payment verified",
         };
   }
@@ -81,7 +148,7 @@ export function getDonationAcknowledgementPresentation(
     return {
       tone: "pending",
       heading: "Your transfer is awaiting verification.",
-      summary: "Amaana has recorded the transfer details you submitted. This contribution will count toward the appeal only after the UTR/reference is matched against funds received by Amaana Foundation. Keep your bank or UPI confirmation and do not submit the same transfer again.",
+      summary: `Amaana has recorded the transfer details you submitted. This contribution will count toward the ${designationKind === "FUND" ? "approved giving fund" : "appeal"} only after the UTR/reference is matched against funds received by Amaana Foundation. Keep your bank or UPI confirmation and do not submit the same transfer again.`,
       statusLabel: "Verification pending",
     };
   }

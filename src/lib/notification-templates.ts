@@ -47,8 +47,13 @@ export function renderNotificationEmail(templateKey: string, payload: TemplatePa
     const intentLabel = intent ? donationIntentLabel(intent) : "";
     const intentText = intentLabel ? ` Giving intention: ${intentLabel}.` : "";
     const intentHtml = intentLabel ? `<p><strong>Giving intention:</strong> ${escapeHtml(intentLabel)}</p>` : "";
-    const subject = configuredSubject || "Thank you for supporting an Amaana Foundation appeal";
-    return { subject, text: `Assalamu alaikum,\n\nThank you for your donation. Reference: ${reference}.${intentText} This is a normal donation acknowledgement and not an 80G tax certificate.\n\nJazakAllah khair,\nAmaana Foundation`, html: wrap(`<p>Thank you for supporting an Amaana Foundation appeal.</p><p><strong>Donation reference:</strong> ${safeReference}</p>${intentHtml}<p>This is a normal donation acknowledgement and is not an 80G tax certificate.</p>`) };
+    const isFund = payload.designationKind === "FUND";
+    const support = isFund ? "an Amaana Foundation approved giving fund" : "an Amaana Foundation appeal";
+    const thanks = isFund ? `Thank you for supporting ${support}.` : "Thank you for your donation.";
+    const subject = configuredSubject || (isFund
+      ? "Thank you for supporting an Amaana Foundation programme"
+      : "Thank you for supporting an Amaana Foundation appeal");
+    return { subject, text: `Assalamu alaikum,\n\n${thanks} Reference: ${reference}.${intentText} This is a normal donation acknowledgement and not an 80G tax certificate.\n\nJazakAllah khair,\nAmaana Foundation`, html: wrap(`<p>Thank you for supporting ${support}.</p><p><strong>Donation reference:</strong> ${safeReference}</p>${intentHtml}<p>This is a normal donation acknowledgement and is not an 80G tax certificate.</p>`) };
   }
 
   if (templateKey === "operational-email-acceptance") {

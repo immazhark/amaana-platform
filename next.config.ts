@@ -1,9 +1,11 @@
 import type { NextConfig } from "next";
+import { isApprovedCuratedGalleryTarget } from "./src/lib/curated-gallery-target.ts";
 
 const devEval = process.env.NODE_ENV === "development" ? " 'unsafe-eval'" : "";
 const browserAcceptance = process.env.AMAANA_BROWSER_ACCEPTANCE === "true";
 const allowPublicIndexing = process.env.NEXT_PUBLIC_ALLOW_INDEXING === "true";
 const upgradeInsecureRequests = browserAcceptance ? "" : "; upgrade-insecure-requests";
+const cspReportOnly = process.env.AMAANA_CSP_REPORT_ONLY === "true";
 
 function getConfiguredHttpsOrigin(value: string | undefined) {
   const raw = value?.trim();
@@ -34,6 +36,12 @@ const imageSources = [
 
 const securityHeaders = [
   { key: "Content-Security-Policy", value: `default-src 'self'; script-src 'self' 'unsafe-inline'${devEval} https://checkout.razorpay.com; script-src-attr 'none'; style-src 'self' 'unsafe-inline'; img-src ${imageSources}; font-src 'self' data:; connect-src 'self' https://api.razorpay.com; frame-src https://api.razorpay.com https://checkout.razorpay.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self'${upgradeInsecureRequests}` },
+  // Observe stricter script sources before deciding a nonce/hash rollout.
+  // No report-sample: browser diagnostics must not collect inline source text.
+  ...(cspReportOnly ? [
+    { key: "Content-Security-Policy-Report-Only", value: `script-src 'self' https://checkout.razorpay.com; script-src-attr 'none'; report-uri /api/security/csp-report${browserAcceptance ? "" : "; report-to amaana-csp"}` },
+    { key: "Reporting-Endpoints", value: 'amaana-csp="/api/security/csp-report"' },
+  ] : []),
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-Content-Type-Options", value: "nosniff" },
   { key: "X-Frame-Options", value: "DENY" },
@@ -45,14 +53,33 @@ const securityHeaders = [
   ...(!allowPublicIndexing ? [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }] : []),
 ];
 
-const noStoreHeaders = [{ key: "Cache-Control", value: "private, no-store, max-age=0" }];
+// Private documents must protect legacy query credentials before metadata/hydration.
+// Keep this policy independent of the public site's indexing switch.
+const noStoreHeaders = [
+  { key: "Cache-Control", value: "private, no-store, max-age=0" },
+  { key: "Referrer-Policy", value: "no-referrer" },
+];
+const privateRecordHeaders = [
+  ...noStoreHeaders,
+  { key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" },
+];
 
 const nextConfig: NextConfig = {
+  // Do not emit 154-image admin ZIP processing code into ordinary production
+  // artifacts. This public, build-inlined flag is NOT an authorization boundary.
+  // Every upload/publish endpoint retains independent runtime permission checks.
+  env: {
+    AMAANA_CURATED_GALLERY_BUILD: String(isApprovedCuratedGalleryTarget(
+      process.env.APP_ENVIRONMENT, process.env.RAILWAY_SERVICE_ID,
+    )),
+  },
   output: "standalone",
   poweredByHeader: false,
   reactStrictMode: true,
   compiler: { removeConsole: process.env.NODE_ENV === "production" },
   experimental: {
+    // Keep reusable client modules out of duplicated merged route chunks.
+    turbopackChunking: { maxMergeChunkSize: 10_000 },
     serverActions: {
       bodySizeLimit: "6mb",
     },
@@ -75,11 +102,16 @@ const nextConfig: NextConfig = {
       { source: "/programme-artwork/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
       { source: "/brand/:path*", headers: [{ key: "Cache-Control", value: "public, max-age=31536000, immutable" }] },
       { source: "/(.*)", headers: securityHeaders },
-      { source: "/api/:path*", headers: noStoreHeaders },
-      { source: "/admin/:path*", headers: noStoreHeaders },
+      { source: "/api/:path*", headers: privateRecordHeaders },
+      { source: "/admin/:path*", headers: privateRecordHeaders },
       { source: "/donate/:path*", headers: noStoreHeaders },
-      { source: "/donations/:path*", headers: noStoreHeaders },
+      { source: "/donations/:path*", headers: privateRecordHeaders },
+      { source: "/shukr", headers: privateRecordHeaders },
+      // Legal/religious editorial review has not approved this as an indexed giving product.
+      { source: "/get-involved/legacy-giving", headers: [{ key: "X-Robots-Tag", value: "noindex, nofollow, noarchive" }] },
       { source: "/request-assistance/:path*", headers: noStoreHeaders },
+      { source: "/request-assistance/received", headers: privateRecordHeaders },
+      { source: "/request-assistance/status", headers: privateRecordHeaders },
     ];
   },
 };

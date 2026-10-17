@@ -2,6 +2,23 @@ import { describe, expect, it } from "vitest";
 import { renderNotificationEmail } from "./notification-templates";
 
 describe("notification email templates", () => {
+  it("renders a fund acknowledgement consistently in subject and body", () => {
+    const email = renderNotificationEmail("donation-acknowledgement", {
+      referenceNumber: "AFD-FUND", givingIntent: "SADAQAH", designationKind: "FUND",
+    });
+    expect(email.subject).toContain("programme");
+    expect(email.text).toContain("approved giving fund");
+    expect(email.html).toContain("approved giving fund");
+    expect(email.html).not.toContain("Foundation appeal");
+    expect(email.text).toContain("not an 80G tax certificate");
+  });
+
+  it.each([undefined, "APPEAL", "UNKNOWN", { kind: "FUND" }])("preserves appeal wording for legacy or unsupported kind %o", designationKind => {
+    const email = renderNotificationEmail("donation-acknowledgement", { referenceNumber: "AFD-LEGACY", designationKind });
+    expect(email.subject).toContain("appeal");
+    expect(email.html).toContain("Foundation appeal");
+  });
+
   it("marks donation messages as normal acknowledgements", () => {
     const email = renderNotificationEmail("donation-acknowledgement", { referenceNumber: "AMN-123", givingIntent: "ZAKAT" });
     expect(email.text).toContain("not an 80G tax certificate");

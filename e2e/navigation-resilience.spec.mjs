@@ -19,7 +19,7 @@ for (const width of [320, 390, 768, 900, 1020]) {
       expect(await nav.evaluate(node => node.getBoundingClientRect().bottom)).toBeLessThanOrEqual(height + 1);
       const targetSizes = await nav.locator('a').evaluateAll(nodes => nodes.map(node => node.getBoundingClientRect().height));
       expect(targetSizes.every(size => size >= 44)).toBe(true);
-      const support = nav.getByRole('link', { name: 'Support a verified need', exact: true });
+      const support = nav.getByRole('link', { name: 'Donate · Review available ways to give', exact: true });
       await support.focus();
       const box = await support.boundingBox();
       expect(box.y + box.height).toBeLessThanOrEqual(height + 1);

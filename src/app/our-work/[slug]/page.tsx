@@ -1,22 +1,24 @@
+import ArchiveLink from "next/link";
 import bannerStyles from "@/components/initiative-banner.module.css";
 import { selectInitiativeBannerImage } from "@/lib/initiative-banner-media";
 import { SectionHeading } from "@/components/section-heading";
 import "./campaign.css";
 import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
-import { PageHero } from "@/components/page-hero";
+import { PageHero, PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
 import { ProgrammeDetail } from "@/components/programme-detail";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { programmeBySlug, programmeCategories } from "@/lib/master-copy";
-import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
+import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage, getConfiguredPublicImageOrigins } from "@/lib/public-media";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { notFound, permanentRedirect } from "next/navigation";
 import { PublicMedia } from "@/components/public-media";
 import { getInitiativePageData } from "@/lib/public-page-data";
 import { buildPublicRecordFallback, programmeStoryParagraphs, heroTeaser } from "@/lib/public-copy";
 import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
+import { toPublicGalleryItems } from "@/lib/public-gallery-projection";
 import { PublicContentStructuredData } from "@/components/public-content-structured-data";
-import { isAppealOpenForDonations } from "@/lib/appeals";
+import { getPublicAppealCheckoutEligibility } from "@/lib/public-appeal-checkout";
 import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 import { legacyOurWorkRoute } from "@/lib/our-work-routing";
@@ -110,7 +112,9 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
   const period = formatYears(initiative.startYear, initiative.endYear, initiative.year);
   const paragraphs = programmeStoryParagraphs(initiative.summary, initiative.story || initiative.summary);
   const fallbackStory = buildPublicRecordFallback({ metric: initiative.primaryMetric, metricLabel: initiative.primaryMetricLabel });
-  const activeAppeals = initiative.appeals.filter(appeal => canExposePublicAppeal(appeal) && isAppealOpenForDonations(appeal));
+  const activeAppeals = initiative.appeals.filter(appeal =>
+    canExposePublicAppeal(appeal) && getPublicAppealCheckoutEligibility(appeal) !== null,
+  );
   const isTaleemInitiative = initiative.slug.startsWith("taleem-");
 
   return (
@@ -127,14 +131,16 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
       />
       <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Our Work", path: "/our-work" }, { name: initiative.title, path: `/our-work/${initiative.slug}` }]} />
       <div className="v2-shell campaign-breadcrumb"><nav aria-label="Breadcrumb"><Link href="/">Home</Link><span aria-hidden="true"> / </span><Link href="/our-work">Our work</Link><span aria-hidden="true"> / </span><span>{initiative.title}</span></nav></div>
-      <PageHero variant="level2" className={leadMedia ? bannerStyles.photo : undefined} eyebrow={`${initiative.cause.title} · ${period}`} title={initiative.title} description={<p>{heroTeaser(initiative.summary)}</p>} actions={[{label:"Read about the drive",href:"#campaign-story"},...(gallery.length>0?[{label:"View media and updates",href:"#campaign-gallery",secondary:true} as const]:[])]} visual={leadMedia ? <PublicMedia asset={leadMedia} priority sizes="(max-width: 900px) 90vw, 45vw" /> : <WorkVisualPlaceholder label={initiative.title} className="campaign-lead-placeholder" />} />
+      <PageHero variant="level2" className={leadMedia ? bannerStyles.photo : undefined} eyebrow={`${initiative.cause.title} · ${period}`} title={initiative.title} description={<p>{heroTeaser(initiative.summary)}</p>} actions={[{label:"Read about the drive",href:"#campaign-story"},...(gallery.length>0?[{label:"View media and updates",href:"#campaign-gallery",secondary:true} as const]:[])]} visual={leadMedia ? <PublicMedia asset={leadMedia} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : <WorkVisualPlaceholder label={initiative.title} className="campaign-lead-placeholder" />} />
 
       <section className="campaign-story" id="campaign-story"><div className="v2-shell campaign-story-layout"><div><p className="v2-section-label">The record</p><h2>How this work unfolded</h2>{initiative.primaryMetric && <div className="campaign-outcome"><strong>{initiative.primaryMetric}</strong><p>{initiative.primaryMetricLabel}</p></div>}</div><div className="campaign-story-copy">{paragraphs.length > 0 ? paragraphs.map((paragraph, index) => <p key={index}>{paragraph}</p>) : <p>{fallbackStory}</p>}</div></div></section>
 
-      {gallery.length > 0 && <section className="campaign-gallery" id="campaign-gallery"><div className="v2-shell"><SectionHeading className="campaign-section-heading" eyebrow="Programme photographs" title="From the drive" subtitle="Original photographs, privacy-protected videos and campaign updates from this edition." /><CampaignMediaGallery items={gallery.filter(asset => asset.kind === "IMAGE").map(asset => ({ id: asset.id, url: resolvePublicMediaUrl(asset) ?? "", alt: asset.altText, caption: asset.caption })).filter(item => Boolean(item.url))} /><div className="campaign-gallery-grid">{gallery.filter(asset => asset.kind !== "IMAGE").map(asset => <PublicMedia asset={asset} key={asset.id} />)}</div></div></section>}
+      {gallery.length > 0 && <section className="campaign-gallery" id="campaign-gallery"><div className="v2-shell"><SectionHeading className="campaign-section-heading" eyebrow="Programme photographs" title="From the drive" subtitle="Original photographs, privacy-protected videos and campaign updates from this edition." /><CampaignMediaGallery approvedImageOrigins={getConfiguredPublicImageOrigins()} items={toPublicGalleryItems(gallery)} /><div className="campaign-gallery-grid">{gallery.filter(asset => asset.kind !== "IMAGE").map(asset => <PublicMedia asset={asset} key={asset.id} />)}</div></div></section>}
 
-      {initiative.stories.length > 0 && <section className="campaign-related v2-shell"><h2>Stories connected to this work</h2><div className="v2-field-grid">{initiative.stories.map(story => <Link className="v2-field-story" href={`/stories/${story.slug}`} key={story.id}><h3>{story.title}</h3><p>{story.summary}</p><span className="v2-text-link">Read the story</span></Link>)}</div></section>}
-      {initiative.faithContent.length > 0 && <section className="campaign-related v2-shell"><h2>Faith and reflections</h2>{initiative.faithContent.map(item => <article key={item.id}><h3>{item.title}</h3><p>{item.excerpt}</p><Link href={`/faith-and-reflections/${item.slug}`}>Read reflection</Link></article>)}</section>}
+      {initiative.mediaAssets.length >= 48 ? <div className="v2-shell"><ArchiveLink className="v2-text-link" prefetch={false} href={`/media-archive/initiative/${encodeURIComponent(initiative.slug)}`}>Browse the full approved media archive</ArchiveLink></div> : null}
+
+      {initiative.stories.length > 0 && <section className="campaign-related v2-shell"><h2>Stories connected to this work</h2><div className="v2-field-grid">{initiative.stories.map(story => <Link className="v2-field-story" href={`/stories/${story.slug}`} key={story.id}><h3>{story.title}</h3><p>{story.summary}</p><span className="v2-text-link">Read the story</span></Link>)}</div><Link className="v2-text-link" href="/stories">Browse all reviewed stories →</Link></section>}
+      {initiative.faithContent.length > 0 && <section className="campaign-related v2-shell"><h2>Faith and reflections</h2>{initiative.faithContent.map(item => <article key={item.id}><h3>{item.title}</h3><p>{item.excerpt}</p><Link href={`/faith-and-reflections/${item.slug}`}>Read reflection</Link></article>)}<Link className="v2-text-link" href="/faith-and-reflections">Browse all reviewed reflections →</Link></section>}
       {isTaleemInitiative && <section className="campaign-related v2-shell"><SectionHeading eyebrow="Continue the work" title="Sponsor a student through Amaana Taleem." subtitle="Explore sponsorship for Hifdh, Quran Nazira, or a child’s school or college education." /><Link className="v2-button" href="/get-involved/sponsor-education">Explore education sponsorship</Link></section>}
       <section className="campaign-next"><div className="v2-shell"><SectionHeading eyebrow="Continue exploring" title="Be part of what comes next." subtitle="Explore more of Amaana’s work or contribute your time and skills." /><div className="v2-hero-actions"><Link className="v2-button" href="/our-work">Explore all our work</Link><Link className="v2-text-link" href="/get-involved">Volunteer with Amaana</Link></div>{activeAppeals.length > 0 && <div className="campaign-appeals"><h3>Current appeals connected to this work</h3>{activeAppeals.map(appeal => <p key={appeal.id}><Link href={`/appeals/${appeal.slug}`}>{appeal.title}</Link></p>)}</div>}</div></section>
     </div>

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { expireDonationViews } from "@/lib/donation-cache";
 import { hashReceiptToken } from "@/lib/donations";
 import { captureDonation } from "@/lib/payment-processing";
 import { prisma } from "@/lib/prisma";
@@ -15,6 +16,7 @@ const privateHeaders = {
   "X-Robots-Tag": "noindex, nofollow, noarchive",
 };
 const MAX_PAYMENT_JSON_BYTES = 32 * 1024;
+const CONFIRMATION_BODY_TIMEOUT_MS = 15_000;
 
 const schema = z.object({
   razorpay_order_id: z.string().min(1),
@@ -33,10 +35,18 @@ export async function POST(request: Request) {
 
     let body: unknown;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES));
+      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES, { timeoutMs: CONFIRMATION_BODY_TIMEOUT_MS }));
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ error: "Payment confirmation payload is too large." }, { status: 413, headers: privateHeaders });
+      }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        // No provider lookup or capture was attempted; do not report this
+        // transient transport failure as a rejected payment credential.
+        return NextResponse.json(
+          { error: "Payment confirmation is temporarily unavailable. Please retain your payment confirmation." },
+          { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+        );
       }
       return NextResponse.json({ error: "Invalid payment confirmation." }, { status: 400, headers: privateHeaders });
     }
@@ -78,6 +88,14 @@ export async function POST(request: Request) {
 
     if (payment.status === "captured") {
       await captureDonation(payment.order_id, payment.id, payment.amount);
+      // Capture is a durable money-state transition. An unavailable Next.js
+      // cache adapter must not turn a verified payment into a false HTTP 500
+      // or encourage the donor to repay. Persisted status is read below.
+      try {
+        expireDonationViews();
+      } catch {
+        logServerError("donation.confirmation_cache_invalidation_failed");
+      }
     } else if (payment.status === "authorized") {
       // A Razorpay order can be retried. A later authorized attempt may follow a
       // failed attempt, but it must never regress an already captured/refunded donation.
@@ -97,6 +115,19 @@ export async function POST(request: Request) {
     });
     if (!currentDonation) {
       throw new Error("Donation disappeared during payment confirmation");
+    }
+    // The signature identifies a Razorpay checkout callback, not proof that
+    // money is captured. An authorized, created or failed local record must
+    // never be presented as a completed donor confirmation. Another webhook
+    // may settle it later; do not prompt a second payment while uncertain.
+    if (currentDonation.status !== "CAPTURED" && currentDonation.status !== "REFUNDED") {
+      return NextResponse.json(
+        {
+          error: "Payment has not been confirmed as captured. Retain your payment confirmation and do not submit another payment.",
+          status: currentDonation.status,
+        },
+        { status: 409, headers: privateHeaders },
+      );
     }
 
     return NextResponse.json(

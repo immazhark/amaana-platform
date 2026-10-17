@@ -1,8 +1,11 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   IDENTITY_MEDIA_SORT_ORDER,
+  getPublicImageOptimizationUrl,
+  getConfiguredPublicImageOrigins,
   canRenderPublicMedia,
   isCspCompatiblePublicImageUrl,
+  isPrivateAppMediaUrl,
   normalizeSafePublicMediaUrl,
   resolvePublicMediaUrl,
   selectGalleryPublicImage,
@@ -66,6 +69,105 @@ describe("public media safety", () => {
     })).toBe(false);
   });
 
+  it("derives only explicit HTTPS image origins for server-rendered gallery configuration", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org/path");
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://cdn.amaana.example/photos");
+    expect(getConfiguredPublicImageOrigins()).toEqual(["https://amaanafoundation.org", "https://cdn.amaana.example"]);
+    expect(isCspCompatiblePublicImageUrl("https://cdn.amaana.example/approved.webp")).toBe(true);
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "");
+    expect(isCspCompatiblePublicImageUrl("https://cdn.amaana.example/approved.webp")).toBe(false);
+    expect(isCspCompatiblePublicImageUrl("https://cdn.amaana.example/approved.webp", ["https://cdn.amaana.example"])).toBe(true);
+    expect(isCspCompatiblePublicImageUrl("https://unapproved.example/photo.webp", ["https://cdn.amaana.example"])).toBe(false);
+  });
+
+  it("never displays publicly published records pointing into private app paths", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const privateUrls = [
+      "/api/admin/financial-evidence",
+      "/admin/evidence",
+      "/donations/AF-PRIVATE/acknowledgement",
+      "/request-assistance/status",
+      "/request-assistance/received",
+      "/_next/image?url=%2Fadmin%2Fprivate",
+      "https://amaanafoundation.org/admin/private.jpg",
+      "https://amaanafoundation.org/api/private.pdf",
+    ];
+    for (const url of privateUrls) {
+      expect(isPrivateAppMediaUrl(url), url).toBe(true);
+      expect(canRenderPublicMedia({ kind: "IMAGE", publicUrl: url, altText: "Approved test photograph" })).toBe(false);
+      expect(canRenderPublicMedia({ kind: "DOCUMENT", publicUrl: url, title: "Private file" })).toBe(false);
+    }
+    expect(isPrivateAppMediaUrl("/media/2026/approved.webp")).toBe(false);
+    expect(canRenderPublicMedia({
+      kind: "DOCUMENT", publicUrl: "/reports/approved.pdf", title: "Published report",
+    })).toBe(true);
+  });
+
+  it("rejects private media links on Amaana www and DNS-equivalent hostnames", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://preview.amaana.example");
+
+    const aliases = [
+      "https://www.amaanafoundation.org/admin/assistance/private.jpg",
+      "https://amaanafoundation.org./api/donations/private.pdf",
+      "https://www.amaanafoundation.org./donations/AF-PRIVATE/acknowledgement",
+      "https://www.amaanafoundation.org/request-assistance/status",
+      "https://preview.amaana.example./admin/private.jpg",
+    ];
+    for (const url of aliases) {
+      expect(isPrivateAppMediaUrl(url), url).toBe(true);
+      expect(canRenderPublicMedia({ kind: "IMAGE", publicUrl: url, altText: "Staff-only file" }), url).toBe(false);
+      expect(canRenderPublicMedia({ kind: "DOCUMENT", publicUrl: url, title: "Private file" }), url).toBe(false);
+      expect(getPublicImageOptimizationUrl(url, "https://preview.amaana.example"), url).toBeNull();
+    }
+
+    // www is not a blanket block: only genuinely private app paths are denied.
+    expect(isPrivateAppMediaUrl("https://www.amaanafoundation.org/media/approved.webp")).toBe(false);
+    // A separately approved CDN is not an Amaana application routing origin.
+    expect(isPrivateAppMediaUrl("https://media.amaana.example/admin/approved.webp")).toBe(false);
+  });
+
+  it("rejects encoded or double-encoded paths to private resources", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    const paths = [
+      "/%61dmin/records/private.pdf",
+      "/%2561dmin/records/private.pdf",
+      "/%252561dmin/records/private.pdf",
+      "/%61pi/admin/private",
+      "/%64onations/receipt/private",
+      "/%5Fnext/image?url=%2Fadmin%2Fsecret",
+      "/media/%252e%252e/admin/private.webp",
+      "/media/%2fadmin/private.webp",
+      "https://amaanafoundation.org/%61dmin/records/private.webp",
+    ];
+    for (const url of paths) {
+      expect(isPrivateAppMediaUrl(url), url).toBe(true);
+      expect(canRenderPublicMedia({ kind: "IMAGE", publicUrl: url, altText: "Reviewed source" }), url).toBe(false);
+      expect(canRenderPublicMedia({ kind: "DOCUMENT", publicUrl: url, title: "Private record" }), url).toBe(false);
+      expect(getPublicImageOptimizationUrl(url), url).toBeNull();
+    }
+  });
+
+  it("keeps legitimate percent-encoded reviewed filenames visible", () => {
+    expect(isPrivateAppMediaUrl("/media/2026/Eid%20Gift%20Kits.webp")).toBe(false);
+    expect(isPrivateAppMediaUrl("/media/2026/photo%23draft.webp")).toBe(true);
+    expect(getPublicImageOptimizationUrl("/media/2026/Eid%20Gift%20Kits.webp"))
+      .toBe("/media/2026/Eid%20Gift%20Kits.webp");
+    expect(canRenderPublicMedia({
+      kind: "IMAGE", publicUrl: "/media/2026/Eid%20Gift%20Kits.webp", altText: "Approved volunteer packing photo",
+    })).toBe(true);
+  });
+
+  it("does not mistake a separately approved HTTPS media host for an app route", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://media.amaana.example");
+    expect(isPrivateAppMediaUrl("https://media.amaana.example/admin/cover.webp")).toBe(false);
+    expect(canRenderPublicMedia({
+      kind: "IMAGE",
+      publicUrl: "https://media.amaana.example/admin/cover.webp",
+      altText: "Externally approved source",
+    })).toBe(true);
+  });
+
   it("fails closed for hosted video even when descriptive text exists", () => {
     expect(canRenderPublicMedia({ kind: "VIDEO", publicUrl: "https://cdn.example.org/update.mp4" })).toBe(false);
     expect(canRenderPublicMedia({ kind: "VIDEO", publicUrl: "https://cdn.example.org/update.mp4", altText: "Packing video" })).toBe(false);
@@ -94,5 +196,30 @@ describe("public media safety", () => {
     const identity = media[0];
     if (!identity) throw new Error("Expected identity-media fixture.");
     expect(selectGalleryPublicImage([identity])?.publicUrl).toBe("/media/identity.webp");
+  });
+});
+
+
+describe("same-origin public-image optimizer boundary", () => {
+  it.each([
+    ["/media/2026/photo.webp", "/media/2026/photo.webp"],
+    ["/brand/amaana-mark.svg", "/brand/amaana-mark.svg"],
+    ["https://amaanafoundation.org/media/2026/photo.webp?version=2", "/media/2026/photo.webp?version=2"],
+    ["https://amaanafoundation.org/brand/amaana-mark.svg", "/brand/amaana-mark.svg"],
+    ["https://unapproved.example.org/media/photo.webp", null],
+    ["https://amaanafoundation.org/admin/documents/private", null],
+    ["/api/assistance/private", null],
+    ["https://amaanafoundation.org/media/../admin/private", null],
+    ["https://user:secret@amaanafoundation.org/media/photo.webp", null],
+    ["http://amaanafoundation.org/media/photo.webp", null],
+    ["//amaanafoundation.org/media/photo.webp", null],
+    ["data:image/svg+xml,synthetic", null],
+  ])("normalizes only eligible public image sources: %s", (input, expected) => {
+    expect(getPublicImageOptimizationUrl(input, "https://amaanafoundation.org")).toBe(expected);
+  });
+  it("does not infer an app origin from malformed or missing configuration", () => {
+    expect(getPublicImageOptimizationUrl("https://amaanafoundation.org/media/photo.webp", "invalid")).toBeNull();
+    expect(getPublicImageOptimizationUrl("https://amaanafoundation.org/media/photo.webp", "")).toBeNull();
+    expect(getPublicImageOptimizationUrl("/media/photo.webp", "")).toBe("/media/photo.webp");
   });
 });

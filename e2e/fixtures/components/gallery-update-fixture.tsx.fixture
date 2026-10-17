@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { CampaignMediaGallery, type CampaignGalleryItem } from "@/components/campaign-media-gallery";
 
-type GalleryFixtureUpdate = { action: "reverse" | "remove" | "empty"; id?: string };
+type GalleryFixtureUpdate = { action: "reverse" | "remove" | "empty" | "duplicate-id"; id?: string };
 
 export function GalleryUpdateFixture({ items }: { items: CampaignGalleryItem[] }) {
   const [visible, setVisible] = useState(items);
@@ -12,6 +12,12 @@ export function GalleryUpdateFixture({ items }: { items: CampaignGalleryItem[] }
       const detail = (event as CustomEvent<GalleryFixtureUpdate>).detail;
       if (detail.action === "reverse") setVisible(current => [...current].reverse());
       if (detail.action === "remove") setVisible(current => current.filter(item => item.id !== detail.id));
+      if (detail.action === "duplicate-id") setVisible(current => {
+        const [first, second] = current;
+        return first && second
+          ? [...current, { ...second, id: first.id, url: second.url + "#duplicate-id" }]
+          : current;
+      });
       if (detail.action === "empty") setVisible([]);
     }
     window.addEventListener("amaana-gallery-fixture-update", update);

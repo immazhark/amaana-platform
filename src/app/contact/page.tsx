@@ -1,7 +1,7 @@
 import { ActionIcon } from "@/components/action-icon";
 import { SectionHeading } from "@/components/section-heading";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { PageHero } from "@/components/page-hero";
 import { ParticipationCards } from "@/components/participation-card";
 import { SocialIcon } from "@/components/social-icon";
@@ -29,8 +29,9 @@ const contactPaths = [
   { marker: "02", icon: "phone", title: "Call Amaana", copy: "For a direct public contact route, call Amaana Foundation on its official phone number.", action: "+91-9908002694", href: "tel:+919908002694" },
   { marker: "02A", icon: "message", title: "WhatsApp Amaana", copy: "Prefer messaging? Start a WhatsApp conversation with Amaana Foundation on the same official public number.", action: "Open WhatsApp", href: "https://wa.me/919908002694" },
   { marker: "03", icon: "assistance", title: "Request assistance", copy: "If you or someone you know needs support, use the dedicated private intake route so the request reaches the right review process.", action: "Request assistance", href: "/request-assistance" },
-  { marker: "04", icon: "volunteer", title: "Volunteer or collaborate", copy: "If you want to contribute time, skills, resources or explore a genuine collaboration, start with our Get Involved journey.", action: "Get involved", href: "/get-involved" },
+  { marker: "04", icon: "volunteer", title: "Volunteer or collaborate", copy: "Explore a responsible volunteer enquiry; use our other contact paths for collaboration and resource offers.", action: "Explore volunteering", href: "/get-involved/volunteer" },
   { marker: "05", icon: "support", title: "Donation support", copy: "For a payment or donation query, contact the team with your Amaana reference or Razorpay payment ID only. Never share PINs, OTPs or card credentials.", action: "Email donation support", href: "mailto:amaanafoundation24@gmail.com?subject=Donation%20support" },
+  { marker: "06", icon: "message", title: "Feedback and concerns", copy: "Raise a concern or complaint, suggest improvements or send thanks privately. No review or testimonial is required to access help.", action: "Share private feedback", href: "/contact/feedback" },
 ] as const;
 
 const socialLinks = [

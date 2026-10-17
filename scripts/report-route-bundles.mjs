@@ -71,6 +71,67 @@ export function summarizeUnattributedAppAssets(appPaths, assets) {
   };
 }
 
+/** Read generated JSON without executing the client-reference JavaScript wrapper. */
+export function parseClientReferenceManifest(source) {
+  const assignment = /globalThis\.__RSC_MANIFEST\["[^"\r\n]+"\]\s*=\s*/.exec(source);
+  if (!assignment) throw new Error("Unrecognized client-reference manifest wrapper");
+  const value = JSON.parse(source.slice(assignment.index + assignment[0].length).trim().replace(/;$/, ""));
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    throw new Error("Invalid client-reference manifest");
+  }
+  return value;
+}
+
+/** Next 16 entry files attribute page/layout assets even without app-build-manifest.
+ * Do not sum clientModules: that inventory can include on-demand panel chunks.
+ * Error boundaries, metadata handlers and conditional runtime/polyfills are not
+ * interchangeable with measured first-load transfer or browser coverage.
+ */
+export function summarizeClientReferenceBundles(appPaths, manifests, runtimeFiles, byteSize) {
+  const rows = [];
+  const unattributedRoutes = [];
+  for (const [page, route] of Object.entries(appPaths)) {
+    if (!page.endsWith("/page") || typeof route !== "string") continue;
+    const manifest = manifests[page];
+    const js = manifest?.entryJSFiles;
+    const css = manifest?.entryCSSFiles;
+    const pageEntry = `/src/app${page}`;
+    if (!js || !css || !Object.keys(js).some(key => key.endsWith(pageEntry))) {
+      unattributedRoutes.push(route);
+      continue;
+    }
+    const parts = page.split("/").filter(Boolean);
+    const entries = ["/src/app/layout", pageEntry];
+    for (let index = 0; index < parts.length - 1; index += 1) {
+      entries.push(`/src/app/${parts.slice(0, index + 1).join("/")}/layout`);
+    }
+    const files = [...runtimeFiles];
+    for (const map of [js, css]) {
+      for (const [entry, assets] of Object.entries(map)) {
+        if (!entries.some(expected => entry.endsWith(expected)) || !Array.isArray(assets)) continue;
+        for (const asset of assets) files.push(typeof asset === "string" ? asset : asset?.path);
+      }
+    }
+    const assets = [...new Set(files.map(normalizedStaticAsset).filter(Boolean))];
+    let jsBytes = 0;
+    let cssBytes = 0;
+    for (const asset of assets) {
+      const bytes = byteSize(asset);
+      if (!Number.isFinite(bytes) || bytes < 0) throw new Error(`Invalid bundle size: ${asset}`);
+      if (asset.endsWith(".js")) jsBytes += bytes;
+      else cssBytes += bytes;
+    }
+    rows.push({ route, entries: assets.length, jsBytes, cssBytes, totalBytes: jsBytes + cssBytes });
+  }
+  return {
+    metric: "client-reference-entry-uncompressed-bytes",
+    routeAttributionAvailable: rows.length > 0,
+    completeRouteAttribution: unattributedRoutes.length === 0,
+    unattributedRoutes: [...new Set(unattributedRoutes)].sort(),
+    routes: rows.sort((a, b) => b.totalBytes - a.totalBytes || a.route.localeCompare(b.route)),
+  };
+}
+
 function walkBuildAssets(directory, root = directory) {
   if (!existsSync(directory)) throw new Error("Next.js static asset directory is missing");
   return readdirSync(directory, { withFileTypes: true }).flatMap(item => {
@@ -99,10 +160,25 @@ function run() {
   } else {
     const routesPath = join(buildDir, "app-path-routes-manifest.json");
     if (!existsSync(routesPath)) throw new Error("App Router route path manifest missing after build");
-    result = summarizeUnattributedAppAssets(
-      JSON.parse(readFileSync(routesPath, "utf8")),
-      walkBuildAssets(join(buildDir, "static")),
-    );
+    const appPaths = JSON.parse(readFileSync(routesPath, "utf8"));
+    const serverPathsFile = join(buildDir, "server", "app-paths-manifest.json");
+    const serverPaths = existsSync(serverPathsFile) ? JSON.parse(readFileSync(serverPathsFile, "utf8")) : {};
+    const manifests = {};
+    for (const page of Object.keys(appPaths).filter(key => key.endsWith("/page"))) {
+      const serverPath = serverPaths[page];
+      // Build-owned relative paths only; never allow traversal outside .next/server.
+      if (typeof serverPath !== "string" || !serverPath.startsWith("app/") || serverPath.split("/").includes("..")) continue;
+      const referenceFile = join(buildDir, "server", serverPath.replace(/\.js$/, "_client-reference-manifest.js"));
+      if (existsSync(referenceFile)) manifests[page] = parseClientReferenceManifest(readFileSync(referenceFile, "utf8"));
+    }
+    const runtimeFile = join(buildDir, "build-manifest.json");
+    const runtime = existsSync(runtimeFile) ? JSON.parse(readFileSync(runtimeFile, "utf8")) : {};
+    result = summarizeClientReferenceBundles(appPaths, manifests, [
+      ...(runtime.rootMainFiles ?? []), ...(runtime.polyfillFiles ?? []),
+    ], asset => statSync(join(buildDir, asset)).size);
+    if (!result.routeAttributionAvailable) {
+      result = summarizeUnattributedAppAssets(appPaths, walkBuildAssets(join(buildDir, "static")));
+    }
   }
   if (process.argv.includes("--json")) {
     process.stdout.write(JSON.stringify(result, null, 2) + "\n");
@@ -110,6 +186,8 @@ function run() {
   }
   if (result.routeAttributionAvailable) {
     process.stdout.write(`App Router manifest attribution: ${result.routes.length} pages (uncompressed bytes)\n`);
+    if (result.unattributedRoutes?.length) process.stdout.write(`Unattributed routes: ${result.unattributedRoutes.join(", ")}\n`);
+    process.stdout.write("Page/layout entry assets plus shared runtime/polyfills; on-demand chunks excluded.\n");
     for (const row of result.routes.slice(0, 20)) {
       process.stdout.write(`${row.route.padEnd(46)} JS ${String(row.jsBytes).padStart(9)}  CSS ${String(row.cssBytes).padStart(9)}  assets ${row.entries}\n`);
     }

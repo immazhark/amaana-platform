@@ -1,6 +1,7 @@
 import { NotificationChannel } from "@prisma/client";
 import { shouldMarkAppealFunded } from "@/lib/appeals";
 import { createReceiptNumber } from "@/lib/donations";
+import { requireDonationFinancialDestination } from "@/lib/donation-destination";
 import { prisma } from "@/lib/prisma";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
 import { fetchRazorpayPayment } from "@/lib/razorpay";
@@ -54,8 +55,10 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
         amount: true,
         referenceNumber: true,
         appealId: true,
+        fundId: true,
         donorEmail: true,
         givingIntent: true,
+        designationSnapshot: true,
         receiptTokenHash: true,
         status: true,
         providerPaymentId: true,
@@ -76,6 +79,7 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
       throw new Error("Payment does not match donation order");
     }
 
+    const destination = requireDonationFinancialDestination(donation);
     assertCapturedPaymentIdentity(donation.status, donation.providerPaymentId, providerPaymentId);
 
     const changed = await tx.donation.updateMany({
@@ -90,31 +94,30 @@ export async function captureDonation(providerOrderId: string, providerPaymentId
     });
 
     if (changed.count === 1) {
-      const appeal = await tx.appeal.update({
-        where: { id: donation.appealId },
-        data: { amountRaised: { increment: donation.amount } },
-        select: {
-          id: true,
-          status: true,
-          goalAmount: true,
-          amountRaised: true,
-        },
-      });
-
-      if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) {
-        await tx.appeal.updateMany({
-          where: { id: appeal.id, status: "PUBLISHED" },
-          data: { status: "FUNDED" },
+      if (destination.kind === "APPEAL") {
+        const appeal = await tx.appeal.update({
+          where: { id: destination.id },
+          data: { amountRaised: { increment: donation.amount } },
+          select: { id: true, status: true, goalAmount: true, amountRaised: true },
         });
+        if (shouldMarkAppealFunded(appeal.status, appeal.amountRaised, appeal.goalAmount)) {
+          await tx.appeal.updateMany({
+            where: { id: appeal.id, status: "PUBLISHED" },
+            data: { status: "FUNDED" },
+          });
+        }
       }
-
+      // Fund net balances derive from captured Donation rows less verified
+      // refundedAmount, not from an unprotected mutable fund counter.
       await tx.notification.create({
         data: {
           channel: NotificationChannel.EMAIL,
           recipient: donation.donorEmail,
           templateKey: "donation-acknowledgement",
-          subject: "Thank you for supporting an Amaana Foundation appeal",
-          payload: { referenceNumber: donation.referenceNumber, givingIntent: donation.givingIntent },
+          subject: destination.kind === "FUND"
+            ? "Thank you for supporting an Amaana Foundation programme"
+            : "Thank you for supporting an Amaana Foundation appeal",
+          payload: { referenceNumber: donation.referenceNumber, givingIntent: donation.givingIntent, designationKind: destination.kind },
           donationId: donation.id,
         },
       });

@@ -1,4 +1,38 @@
 import { expect, test } from '@playwright/test';
+import { createRequire } from 'node:module';
+import path from 'node:path';
+
+const appRequire = createRequire(path.join(process.env.AMAANA_APP_WORKSPACE ?? process.cwd(), 'package.json'));
+
+for (const width of [390, 1440]) {
+  test(`ingested preview remains visible while gallery media loads at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));
+    let release = () => {};
+    const loading = new Promise(resolve => { release = resolve; });
+    const sharp = appRequire('sharp');
+    const image = await sharp({ create: { width: 640, height: 400, channels: 3, background: '#466faa' } }).png().toBuffer();
+    await page.route('**/_next/image?**', async route => {
+      if (new URL(route.request().url()).searchParams.get('url') !== '/media/2026/synthetic-preview.png') return route.continue();
+      await loading;
+      await route.fulfill({ status: 200, contentType: 'image/png', body: image });
+    });
+    await page.goto('/browser-acceptance/gallery?preview=true', { waitUntil: 'domcontentloaded' });
+    const first = page.getByRole('button', { name: /^Enlarge image 1 of 13:/ });
+    const thumbnail = first.locator('img');
+    await expect(thumbnail).toHaveCSS('background-image', /data:image\/svg\+xml/);
+    await first.click();
+    const full = page.getByRole('dialog').locator('img');
+    await expect(full).toHaveCSS('background-image', /data:image\/svg\+xml/);
+    release();
+    for (const target of [thumbnail, full]) {
+      await expect.poll(() => target.evaluate(img => img.complete && img.naturalWidth > 0)).toBe(true);
+      await expect(target).toHaveCSS('background-image', 'none');
+    }
+    await page.keyboard.press('Escape');
+    await expect(first).toBeFocused();
+  });
+}
 
 async function openGallery(page, width) {
   await page.setViewportSize({ width, height: width <= 430 ? 844 : 900 });
@@ -74,6 +108,26 @@ test('initiative gallery lightbox owns the modal layer, traps focus and restores
   expect(overflow).toBe('');
 });
 
+test('moving between lightbox photographs retains keyboard focus on the chosen control', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 1 of 13:/ }).click();
+  const dialog = page.getByRole('dialog');
+  const next = dialog.getByRole('button', { name: 'Next', exact: true });
+  await next.click();
+  await expect(dialog).toHaveAccessibleName(/^Image 2 of 13:/);
+  await expect(next).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(dialog).toHaveAccessibleName(/^Image 3 of 13:/);
+  await expect(next).toBeFocused();
+  const previous = dialog.getByRole('button', { name: 'Previous', exact: true });
+  await previous.click();
+  await expect(dialog).toHaveAccessibleName(/^Image 2 of 13:/);
+  await expect(previous).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Enlarge image 1 of 13:/ })).toBeFocused();
+});
+
 test('initiative gallery lightbox remains contained at 320px and preserves usable controls', async ({ page }) => {
   await openGallery(page, 320);
   await page.getByRole('button', { name: /Enlarge image 2 of 13/ }).click();
@@ -126,6 +180,19 @@ async function updateGallery(page, update) {
   }, update);
 }
 
+test('duplicate media IDs never alias thumbnails or open the wrong photograph', async ({ page }) => {
+  await openGallery(page, 390);
+  await updateGallery(page, { action: 'duplicate-id' });
+  await expect(page.getByRole('button', { name: /Enlarge image/ })).toHaveCount(13);
+  const first = page.getByRole('button', { name: /^Enlarge image 1 of 13:/ });
+  await first.click();
+  await expect(page.getByRole('dialog')).toHaveAccessibleName(/^Image 1 of 13: Synthetic acceptance photograph 1$/);
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('dialog')).toHaveAccessibleName(/^Image 2 of 13: Synthetic acceptance photograph 2$/);
+  await page.keyboard.press('Escape');
+  await expect(first).toBeFocused();
+});
+
 test('gallery reorder preserves selected identity and restores its new thumbnail position', async ({ page }) => {
   await openGallery(page, 390);
   await page.getByRole('button', { name: /^Enlarge image 2 of 13:/ }).click();
@@ -138,10 +205,29 @@ test('gallery reorder preserves selected identity and restores its new thumbnail
   await expect(dialog).toHaveAccessibleName(/^Image 13 of 13: Synthetic acceptance photograph 1$/);
   await page.keyboard.press('ArrowLeft');
   await expect(dialog).toHaveAccessibleName(/^Image 12 of 13: Synthetic acceptance photograph 2$/);
+  await page.keyboard.press('ArrowLeft');
+  await expect(dialog).toHaveAccessibleName(/^Image 11 of 13: Synthetic acceptance photograph 3$/);
   await page.keyboard.press('Escape');
   await expect(dialog).toHaveCount(0);
   await expect(page.getByRole('button', { name: /^Enlarge image 12 of 13:/ })).toBeFocused();
   await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('');
+});
+
+test('reordering approved photos preserves next-button focus and current selection', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 2 of 13:/ }).click();
+  const dialog = page.getByRole('dialog');
+  const nextButton = dialog.getByRole('button', { name: 'Next', exact: true });
+  await nextButton.focus();
+  await updateGallery(page, { action: 'reverse' });
+  await expect(nextButton).toBeFocused();
+  await expect(dialog).toHaveAccessibleName(/^Image 12 of 13: Synthetic acceptance photograph 2$/);
+  await page.keyboard.press('Enter');
+  await expect(dialog).toHaveAccessibleName(/^Image 13 of 13: Synthetic acceptance photograph 1$/);
+  await expect(nextButton).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Enlarge image 12 of 13:/ })).toBeFocused();
 });
 
 test('removing the final selected photograph closes the dialog and releases keyboard and scroll ownership', async ({ page }) => {

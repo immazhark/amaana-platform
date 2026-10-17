@@ -109,6 +109,14 @@ enum DonationIntent {
   ZAKAT
 }
 
+enum GivingFundStatus {
+  DRAFT
+  UNDER_REVIEW
+  APPROVED
+  PAUSED
+  CLOSED
+}
+
 enum ContentStatus {
   DRAFT
   UNDER_REVIEW
@@ -143,16 +151,34 @@ model User {
   phone                   String?
   status                  UserStatus               @default(INVITED)
   roles                   UserRole[]
+  createdGivingFunds      GivingFund[]             @relation("GivingFundCreator")
+  editedGivingFunds       GivingFund[]             @relation("GivingFundEditor")
+  approvedGivingFunds     GivingFund[]             @relation("GivingFundApprover")
   createdAppeals          Appeal[]                 @relation("AppealCreator")
   reviewedAppeals         Appeal[]                 @relation("AppealReviewer")
   assistanceAssignments   AssistanceRequest[]      @relation("AssistanceAssignee")
+  assistanceFollowUpsMade AssistanceFollowUp[]       @relation("AssistanceFollowUpCreator")
+  assistanceFollowUpsAssigned AssistanceFollowUp[]   @relation("AssistanceFollowUpAssignee")
+  assistanceFollowUpsResolved AssistanceFollowUp[]   @relation("AssistanceFollowUpResolver")
   assistanceVerifications AssistanceVerification[] @relation("AssistanceVerifier")
+  reportedDeliveries AssistanceDeliveryRecord[] @relation("AssistanceDeliveryReporter")
+  reviewedDeliveries AssistanceDeliveryRecord[] @relation("AssistanceDeliveryReviewer")
+  submittedFinancialReconciliations AssistanceFinancialReconciliation[] @relation("AssistanceFinancialReconciliationMaker")
+  reviewedFinancialReconciliations  AssistanceFinancialReconciliation[] @relation("AssistanceFinancialReconciliationChecker")
+  reportedOutcomeObservations AssistanceOutcomeObservation[] @relation("AssistanceOutcomeReporter")
+  reviewedOutcomeObservations AssistanceOutcomeObservation[] @relation("AssistanceOutcomeReviewer")
+  preparedOutcomeDisclosures AssistanceOutcomeDisclosure[] @relation("AssistanceOutcomeDisclosurePreparer")
+  approvedOutcomeDisclosures AssistanceOutcomeDisclosure[] @relation("AssistanceOutcomeDisclosureApprover")
+  publishedOutcomeDisclosures AssistanceOutcomeDisclosure[] @relation("AssistanceOutcomeDisclosurePublisher")
   notifications           Notification[]
   credential              PasswordCredential?
   sessions                Session[]
   auditEvents             AuditEvent[]             @relation("AuditActor")
   appealUpdates           AppealUpdate[]
   reconciledDonations     Donation[]                 @relation("DonationReconciler")
+  proposedAllocations     DonationAllocationProposal[] @relation("AllocationMaker")
+  reviewedAllocations     DonationAllocationProposal[] @relation("AllocationChecker")
+  allocationReversals     DonationAllocationReversal[] @relation("AllocationReverser")
   createdAt               DateTime                 @default(now())
   updatedAt               DateTime                 @updatedAt
 }
@@ -356,6 +382,7 @@ model MediaAsset {
   sourceYear        Int?
   width             Int?
   height            Int?
+  blurDataURL       String?
   sortOrder         Int              @default(0)
   isPublic          Boolean          @default(false)
   privacyApprovedAt DateTime?
@@ -415,15 +442,103 @@ model Appeal {
   @@index([updatedAt])
 }
 
+enum DonorRightsRequestKind {
+  ACCESS
+  CORRECTION
+  DELETION_REVIEW
+}
+
+enum DonorRightsRequestStatus {
+  OPEN
+  IN_REVIEW
+  CLOSED
+}
+
+model DonorRightsRequest {
+  id            String                   @id @default(cuid())
+  donationId    String
+  kind          DonorRightsRequestKind
+  status        DonorRightsRequestStatus @default(OPEN)
+  createdAt     DateTime                 @default(now())
+  updatedAt     DateTime                 @updatedAt
+  reviewedAt    DateTime?
+  reviewedById  String?
+  donation      Donation                 @relation(fields: [donationId], references: [id], onDelete: Restrict)
+  @@index([donationId, kind, status, createdAt])
+  @@index([status, createdAt])
+}
+
+enum AllocationProposalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+/** Append-only reversal of an internal allocation, never a payment refund.
+ * A single reversal per approved proposal is enforced by a database unique key. */
+model DonationAllocationReversal {
+  id           String                     @id @default(cuid())
+  proposalId   String                     @unique
+  reason       String                     @db.VarChar(240)
+  reversedById String
+  createdAt    DateTime                   @default(now())
+  proposal     DonationAllocationProposal @relation(fields: [proposalId], references: [id], onDelete: Restrict)
+  reversedBy   User                       @relation("AllocationReverser", fields: [reversedById], references: [id], onDelete: Restrict)
+  @@index([createdAt])
+}
+
+model DonationAllocationProposal {
+  id             String                   @id @default(cuid())
+  donationId     String
+  fundId         String
+  amountPaise    Int
+  purposeNote    String                   @db.VarChar(240)
+  givingIntent   DonationIntent
+  status         AllocationProposalStatus @default(PENDING)
+  createdById    String
+  reviewedById   String?
+  reviewedAt     DateTime?
+  createdAt      DateTime                 @default(now())
+  updatedAt      DateTime                 @updatedAt
+  donation       Donation                 @relation(fields: [donationId], references: [id], onDelete: Restrict)
+  fund           GivingFund               @relation(fields: [fundId], references: [id], onDelete: Restrict)
+  createdBy      User                     @relation("AllocationMaker", fields: [createdById], references: [id], onDelete: Restrict)
+  reviewedBy     User?                    @relation("AllocationChecker", fields: [reviewedById], references: [id], onDelete: Restrict)
+  reversal       DonationAllocationReversal?
+  @@index([donationId, status])
+  @@index([fundId, status, createdAt])
+  @@index([status, createdAt])
+}
+
+// Minimal private history of consent changes initiated through an individual
+// receipt capability. Never persist names, email, tokens or display metadata.
+model DonorRecognitionConsentEvent {
+  id         String   @id @default(cuid())
+  donationId String
+  action     String   @db.VarChar(16)
+  createdAt  DateTime @default(now())
+  donation   Donation @relation(fields: [donationId], references: [id], onDelete: Restrict)
+  @@index([donationId, createdAt])
+}
+
 model Donation {
   id                       String                @id @default(cuid())
   referenceNumber          String                @unique
-  appealId                 String
+  appealId                 String?
+  fundId                   String?
   donorName                String
   donorEmail               String
   donorPhone               String?
   isAnonymous              Boolean               @default(false)
+  // Recognition is separate from payment anonymity and is never automatic.
+  // Only donor request + staff moderation can authorize public display.
+  recognitionDisplayName   String?               @db.VarChar(60)
+  recognitionRequestedAt   DateTime?
+  recognitionApprovedAt    DateTime?
+  recognitionRevokedAt     DateTime?
   givingIntent             DonationIntent        @default(GENERAL)
+  designationSnapshot      Json?
+  fundDisclosureConfirmedAt DateTime?
   domesticConfirmedAt      DateTime
   amount                   Decimal               @db.Decimal(12, 2)
   refundedAmount           Decimal               @default(0) @db.Decimal(12, 2)
@@ -447,20 +562,27 @@ model Donation {
   capturedAt               DateTime?
   failedAt                 DateTime?
   refundedAt               DateTime?
-  appeal                   Appeal                @relation(fields: [appealId], references: [id])
+  appeal                   Appeal?               @relation(fields: [appealId], references: [id], onDelete: Restrict)
+  fund                     GivingFund?           @relation(fields: [fundId], references: [id], onDelete: Restrict)
   reconciledBy             User?                 @relation("DonationReconciler", fields: [reconciledById], references: [id], onDelete: SetNull)
   events                   PaymentEvent[]
   refunds                  RefundLedger[]
   notifications            Notification[]
+  rightsRequests           DonorRightsRequest[]
+  recognitionConsentEvents DonorRecognitionConsentEvent[]
+  allocationProposals      DonationAllocationProposal[]
   createdAt                DateTime              @default(now())
   updatedAt                DateTime              @updatedAt
   @@index([appealId, status, createdAt])
+  @@index([fundId, status, createdAt])
   @@index([donorEmail, createdAt])
   @@index([status, createdAt])
   @@index([paymentMethod, status, createdAt])
   @@index([givingIntent, createdAt])
   @@index([reconciledById, reconciledAt])
   @@index([createdAt])
+  @@index([recognitionApprovedAt])
+
 }
 
 // Durable provider-object identity; never prune with notification/security logs.
@@ -560,6 +682,9 @@ model AssistanceRequest {
   assignedTo        User?                   @relation("AssistanceAssignee", fields: [assignedToId], references: [id])
   appeal             Appeal?                 @relation(fields: [appealId], references: [id])
   verification       AssistanceVerification?
+  followUps         AssistanceFollowUp[]
+  deliveryRecords   AssistanceDeliveryRecord[]
+  outcomeObservations AssistanceOutcomeObservation[]
   notifications     Notification[]
   documents         AssistanceDocument[]
   createdAt         DateTime                 @default(now())
@@ -567,6 +692,172 @@ model AssistanceRequest {
   @@index([status, createdAt])
   @@index([phone])
   @@index([createdAt])
+}
+
+enum AssistanceFollowUpState {
+  OPEN
+  COMPLETED
+  CANCELLED
+}
+
+model AssistanceFollowUp {
+  id                  String                   @id @default(cuid())
+  assistanceRequestId String
+  submissionId        String                   @unique
+  summary             String                   @db.VarChar(300)
+  dueOn               DateTime                 @db.Date
+  state               AssistanceFollowUpState  @default(OPEN)
+  createdById         String
+  assignedToId        String
+  resolvedById        String?
+  resolvedAt          DateTime?
+  assistanceRequest   AssistanceRequest        @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
+  createdBy           User                     @relation("AssistanceFollowUpCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  assignedTo          User                     @relation("AssistanceFollowUpAssignee", fields: [assignedToId], references: [id], onDelete: Restrict)
+  resolvedBy          User?                    @relation("AssistanceFollowUpResolver", fields: [resolvedById], references: [id], onDelete: Restrict)
+  createdAt           DateTime                 @default(now())
+  updatedAt           DateTime                 @updatedAt
+
+  @@index([assistanceRequestId, state, dueOn])
+  @@index([state, dueOn])
+  @@index([assignedToId, state, dueOn])
+  @@index([createdById, createdAt])
+}
+
+enum AssistanceDeliveryKind {
+  FINANCIAL
+  IN_KIND
+}
+enum AssistanceDeliveryReviewState {
+  REPORTED
+  CONFIRMED
+  VOIDED
+}
+
+/** Private case-level delivery evidence, never a public impact counter or donation ledger. */
+model AssistanceDeliveryRecord {
+  id                  String                        @id @default(cuid())
+  assistanceRequestId String
+  submissionId        String                        @unique
+  kind                AssistanceDeliveryKind
+  summary             String                        @db.VarChar(300)
+  occurredOn          DateTime                      @db.Date
+  amountInr           Decimal?                      @db.Decimal(12, 2)
+  evidenceDocumentId  String?
+  state               AssistanceDeliveryReviewState @default(REPORTED)
+  reportedById        String
+  reviewedById        String?
+  reviewedAt          DateTime?
+  financialReconciliation AssistanceFinancialReconciliation?
+  outcomeObservations AssistanceOutcomeObservation[]
+  assistanceRequest   AssistanceRequest             @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
+  evidenceDocument    AssistanceDocument?           @relation(fields: [evidenceDocumentId], references: [id], onDelete: SetNull)
+  reportedBy          User                          @relation("AssistanceDeliveryReporter", fields: [reportedById], references: [id], onDelete: Restrict)
+  reviewedBy          User?                         @relation("AssistanceDeliveryReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
+  createdAt           DateTime                      @default(now())
+  updatedAt           DateTime                      @updatedAt
+
+  @@index([assistanceRequestId, state, occurredOn])
+  @@index([state, createdAt])
+  @@index([reportedById, createdAt])
+}
+
+enum AssistanceFinancialReconciliationState {
+  PENDING
+  EVIDENCE_REVIEWED
+  VOIDED
+}
+
+/** A one-to-one private verification of an existing payout reference against a
+ * CONFIRMED financial delivery; not a bank integration, ledger or donor allocation. */
+model AssistanceFinancialReconciliation {
+  id                   String                                @id @default(cuid())
+  deliveryRecordId     String                                @unique
+  transactionReference String                                @unique @db.VarChar(64)
+  bankProofDocumentId  String?
+  status               AssistanceFinancialReconciliationState @default(PENDING)
+  submittedById        String
+  reviewedById         String?
+  reviewedAt           DateTime?
+  deliveryRecord       AssistanceDeliveryRecord              @relation(fields: [deliveryRecordId], references: [id], onDelete: Restrict)
+  bankProofDocument    AssistanceDocument?                   @relation(fields: [bankProofDocumentId], references: [id], onDelete: SetNull)
+  submittedBy          User                                  @relation("AssistanceFinancialReconciliationMaker", fields: [submittedById], references: [id], onDelete: Restrict)
+  reviewedBy           User?                                 @relation("AssistanceFinancialReconciliationChecker", fields: [reviewedById], references: [id], onDelete: Restrict)
+  createdAt            DateTime                              @default(now())
+  updatedAt            DateTime                              @updatedAt
+
+  @@index([status, createdAt])
+  @@index([submittedById, createdAt])
+}
+
+enum AssistanceOutcomeKind {
+  PARTIAL_SUPPORT
+  SPECIFIC_SUPPORT_COMPLETED
+  FURTHER_ACTION_REQUIRED
+}
+
+enum AssistanceOutcomeReviewState {
+  REPORTED
+  REVIEWED
+  VOIDED
+}
+
+/** Private, source-linked operational outcomes only. They are not clinical
+ * outcomes, case-wide success claims, or approved public impact. */
+model AssistanceOutcomeObservation {
+  id                  String                      @id @default(cuid())
+  assistanceRequestId String
+  deliveryRecordId    String
+  submissionId        String                      @unique
+  kind                AssistanceOutcomeKind
+  summary             String                      @db.VarChar(300)
+  state               AssistanceOutcomeReviewState @default(REPORTED)
+  reportedById        String
+  reviewedById        String?
+  reviewedAt          DateTime?
+  assistanceRequest   AssistanceRequest           @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
+  deliveryRecord      AssistanceDeliveryRecord    @relation(fields: [deliveryRecordId], references: [id], onDelete: Restrict)
+  disclosure          AssistanceOutcomeDisclosure?
+  reportedBy          User                        @relation("AssistanceOutcomeReporter", fields: [reportedById], references: [id], onDelete: Restrict)
+  reviewedBy          User?                       @relation("AssistanceOutcomeReviewer", fields: [reviewedById], references: [id], onDelete: Restrict)
+  createdAt           DateTime                    @default(now())
+  updatedAt           DateTime                    @updatedAt
+
+  @@index([assistanceRequestId, state, createdAt])
+  @@index([deliveryRecordId, state])
+  @@index([state, createdAt])
+}
+
+enum AssistanceOutcomeDisclosureState {
+  DRAFT
+  APPROVED_COPY
+  PUBLISHED
+  WITHDRAWN
+}
+
+/** Explicitly reviewed ANONYMOUS copy only. An internal approval is never
+ * a public publish event: there is deliberately no public retrieval path. */
+model AssistanceOutcomeDisclosure {
+  id                 String                            @id @default(cuid())
+  observationId      String                            @unique
+  copyText           String                            @db.VarChar(240)
+  consentDocumentId  String?                           @unique
+  state              AssistanceOutcomeDisclosureState  @default(DRAFT)
+  preparedById       String
+  approvedById       String?
+  approvedAt         DateTime?
+  publishedById      String?
+  publishedAt        DateTime?
+  observation        AssistanceOutcomeObservation      @relation(fields: [observationId], references: [id], onDelete: Restrict)
+  consentDocument    AssistanceDocument?               @relation(fields: [consentDocumentId], references: [id], onDelete: SetNull)
+  preparedBy         User                              @relation("AssistanceOutcomeDisclosurePreparer", fields: [preparedById], references: [id], onDelete: Restrict)
+  approvedBy         User?                             @relation("AssistanceOutcomeDisclosureApprover", fields: [approvedById], references: [id], onDelete: Restrict)
+  publishedBy        User?                             @relation("AssistanceOutcomeDisclosurePublisher", fields: [publishedById], references: [id], onDelete: Restrict)
+  createdAt          DateTime                          @default(now())
+  updatedAt          DateTime                          @updatedAt
+
+  @@index([state, createdAt])
+  @@index([state, publishedAt])
 }
 
 model AssistanceVerification {
@@ -608,6 +899,9 @@ model AssistanceDocument {
   assistanceRequest   AssistanceRequest @relation(fields: [assistanceRequestId], references: [id], onDelete: Cascade)
   createdAt           DateTime          @default(now())
   updatedAt           DateTime          @updatedAt
+  deliveryRecords     AssistanceDeliveryRecord[]
+  financialProofs     AssistanceFinancialReconciliation[]
+  outcomeConsentProofs AssistanceOutcomeDisclosure[]
   @@index([assistanceRequestId])
 }
 
@@ -644,4 +938,32 @@ model HomeCarousel {
   config    Json
   revision  Int      @default(1)
   updatedAt DateTime @updatedAt
+}
+
+
+// Private, reviewed fund definitions. Donation designation remains appeal-bound
+// until its separate migration and payment reconciliation work is complete.
+model GivingFund {
+  id              String           @id @default(cuid())
+  slug            String           @unique
+  name            String
+  purpose         String
+  disclosure      String
+  accountCode     String           @unique
+  currency        String           @default("INR")
+  acceptedIntents DonationIntent[]
+  donations       Donation[]
+  allocationProposals DonationAllocationProposal[]
+  status          GivingFundStatus @default(DRAFT)
+  revision        Int              @default(0)
+  createdById     String
+  lastEditedById  String
+  approvedById    String?
+  approvedAt      DateTime?
+  createdBy       User             @relation("GivingFundCreator", fields: [createdById], references: [id], onDelete: Restrict)
+  lastEditedBy    User             @relation("GivingFundEditor", fields: [lastEditedById], references: [id], onDelete: Restrict)
+  approvedBy      User?            @relation("GivingFundApprover", fields: [approvedById], references: [id], onDelete: Restrict)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  @@index([status, updatedAt])
 }

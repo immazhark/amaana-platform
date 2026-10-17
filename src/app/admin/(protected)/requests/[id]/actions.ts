@@ -1,5 +1,6 @@
 "use server";
 
+import { singleFormValue } from "@/lib/single-form-value";
 import {
   AppealCategory,
   AssistanceStatus,
@@ -9,7 +10,7 @@ import {
   NotificationChannel,
   ZakatReviewStatus,
 } from "@prisma/client";
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import {
   ASSISTANCE_CONFIDENTIALITY_LEVELS,
@@ -27,7 +28,21 @@ import {
 import { hasPermission, requirePermission } from "@/lib/auth";
 import { parsePositiveRupeeAmount } from "@/lib/amount-entry";
 import { prisma } from "@/lib/prisma";
+import { cancelOpenFollowUpsOnCaseExit } from "@/lib/assistance-follow-up";
 import { withSerializableTransactionRetry } from "@/lib/prisma-transaction";
+import { withdrawStaleAnonymousOutcomeCopies } from "@/lib/assistance-outcome-invalidation";
+
+/** Call only after the transaction resolves. Cache failures cannot undo a
+ * committed review/assignment or justify replaying it. Try both views, then
+ * navigate to the dynamic detail page for a fresh database read if needed. */
+function refreshCommittedRequest(id: string) {
+  let refreshed = true;
+  for (const path of [`/admin/requests/${id}`, "/admin", "/impact"]) {
+    try { revalidatePath(path); }
+    catch { refreshed = false; }
+  }
+  return refreshed;
+}
 
 const statuses = new Set(Object.values(AssistanceStatus));
 const verificationDecisions = new Set<string>(ASSISTANCE_VERIFICATION_DECISIONS);
@@ -69,11 +84,11 @@ function getGeneralVerificationIssues(input: {
 
 export async function saveVerification(formData: FormData) {
   const user = await requirePermission("assistance.update");
-  const id = String(formData.get("id") ?? "");
-  const expectedRequestUpdatedAtRaw = String(formData.get("expectedRequestUpdatedAt") ?? "");
+  const id = String(singleFormValue(formData, "id") ?? "");
+  const expectedRequestUpdatedAtRaw = String(singleFormValue(formData, "expectedRequestUpdatedAt") ?? "");
   const expectedRequestUpdatedAt = new Date(expectedRequestUpdatedAtRaw);
   if (!expectedRequestUpdatedAtRaw || Number.isNaN(expectedRequestUpdatedAt.getTime())) throw new Error("Request edit version is missing or invalid. Refresh before saving verification.");
-  const expectedVerificationUpdatedAtRaw = String(formData.get("expectedVerificationUpdatedAt") ?? "");
+  const expectedVerificationUpdatedAtRaw = String(singleFormValue(formData, "expectedVerificationUpdatedAt") ?? "");
   const expectedVerificationUpdatedAt = expectedVerificationUpdatedAtRaw ? new Date(expectedVerificationUpdatedAtRaw) : null;
   if (expectedVerificationUpdatedAtRaw && Number.isNaN(expectedVerificationUpdatedAt!.getTime())) throw new Error("Verification edit version is invalid. Refresh before saving.");
   const request = await prisma.assistanceRequest.findUniqueOrThrow({
@@ -82,23 +97,23 @@ export async function saveVerification(formData: FormData) {
   });
   if (request.appealId || request.status === AssistanceStatus.CONVERTED_TO_APPEAL) throw new Error("Verification is locked after conversion to an appeal");
 
-  const needConfirmed = formData.get("needConfirmed") === "on";
-  const evidenceReviewed = formData.get("evidenceReviewed") === "on";
-  const otherFundingChecked = formData.get("otherFundingChecked") === "on";
-  const verifiedNeedAmount = optionalPositiveAmount(formData.get("verifiedNeedAmount"), "Verified need amount");
-  const approvedPublicTarget = optionalPositiveAmount(formData.get("approvedPublicTarget"), "Approved public target");
-  const paymentDestination = String(formData.get("paymentDestination") ?? "").trim();
-  const otherFundingNotes = String(formData.get("otherFundingNotes") ?? "").trim();
-  const verificationSummary = String(formData.get("verificationSummary") ?? "").trim();
-  const decision = requiredEnum<AssistanceVerificationDecision>(formData.get("decision"), verificationDecisions, "verification decision");
-  const confidentialityLevel = requiredEnum<ConfidentialityLevel>(formData.get("confidentialityLevel"), confidentialityLevels, "confidentiality level");
-  const publicNameConsent = requiredEnum<ConsentDecision>(formData.get("publicNameConsent"), consentDecisions, "public-name consent");
-  const photoConsent = requiredEnum<ConsentDecision>(formData.get("photoConsent"), consentDecisions, "photo consent");
-  const medicalDetailsConsent = requiredEnum<ConsentDecision>(formData.get("medicalDetailsConsent"), consentDecisions, "medical-details consent");
-  const institutionNameConsent = requiredEnum<ConsentDecision>(formData.get("institutionNameConsent"), consentDecisions, "institution-name consent");
-  const archiveConsent = requiredEnum<ConsentDecision>(formData.get("archiveConsent"), consentDecisions, "archive consent");
-  const zakatStatus = requiredEnum<ZakatReviewStatus>(formData.get("zakatStatus"), zakatStatuses, "Zakat review status");
-  const markComplete = formData.get("markComplete") === "on";
+  const needConfirmed = singleFormValue(formData, "needConfirmed") === "on";
+  const evidenceReviewed = singleFormValue(formData, "evidenceReviewed") === "on";
+  const otherFundingChecked = singleFormValue(formData, "otherFundingChecked") === "on";
+  const verifiedNeedAmount = optionalPositiveAmount(singleFormValue(formData, "verifiedNeedAmount"), "Verified need amount");
+  const approvedPublicTarget = optionalPositiveAmount(singleFormValue(formData, "approvedPublicTarget"), "Approved public target");
+  const paymentDestination = String(singleFormValue(formData, "paymentDestination") ?? "").trim();
+  const otherFundingNotes = String(singleFormValue(formData, "otherFundingNotes") ?? "").trim();
+  const verificationSummary = String(singleFormValue(formData, "verificationSummary") ?? "").trim();
+  const decision = requiredEnum<AssistanceVerificationDecision>(singleFormValue(formData, "decision"), verificationDecisions, "verification decision");
+  const confidentialityLevel = requiredEnum<ConfidentialityLevel>(singleFormValue(formData, "confidentialityLevel"), confidentialityLevels, "confidentiality level");
+  const publicNameConsent = requiredEnum<ConsentDecision>(singleFormValue(formData, "publicNameConsent"), consentDecisions, "public-name consent");
+  const photoConsent = requiredEnum<ConsentDecision>(singleFormValue(formData, "photoConsent"), consentDecisions, "photo consent");
+  const medicalDetailsConsent = requiredEnum<ConsentDecision>(singleFormValue(formData, "medicalDetailsConsent"), consentDecisions, "medical-details consent");
+  const institutionNameConsent = requiredEnum<ConsentDecision>(singleFormValue(formData, "institutionNameConsent"), consentDecisions, "institution-name consent");
+  const archiveConsent = requiredEnum<ConsentDecision>(singleFormValue(formData, "archiveConsent"), consentDecisions, "archive consent");
+  const zakatStatus = requiredEnum<ZakatReviewStatus>(singleFormValue(formData, "zakatStatus"), zakatStatuses, "Zakat review status");
+  const markComplete = singleFormValue(formData, "markComplete") === "on";
 
   if (paymentDestination.length > ASSISTANCE_PAYMENT_DESTINATION_MAX_LENGTH) throw new Error("Payment destination is too long");
   if (otherFundingNotes.length > ASSISTANCE_OTHER_FUNDING_NOTES_MAX_LENGTH) throw new Error("Other-funding notes are too long");
@@ -199,6 +214,7 @@ export async function saveVerification(formData: FormData) {
         reviewedById,
       },
     });
+    await withdrawStaleAnonymousOutcomeCopies(tx, id, user.id, "VERIFICATION_CHANGED");
     await tx.auditEvent.create({
       data: {
         actorId: user.id,
@@ -209,18 +225,17 @@ export async function saveVerification(formData: FormData) {
       },
     });
   });
-  revalidatePath(`/admin/requests/${id}`);
-  revalidatePath("/admin");
+  if (!refreshCommittedRequest(id)) redirect(`/admin/requests/${id}`);
 }
 
 export async function updateRequest(formData: FormData) {
   const user = await requirePermission("assistance.update");
-  const id = String(formData.get("id"));
-  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "");
+  const id = String(singleFormValue(formData, "id"));
+  const expectedUpdatedAtRaw = String(singleFormValue(formData, "expectedUpdatedAt") ?? "");
   const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
   if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Request edit version is missing or invalid. Refresh before saving.");
-  const status = String(formData.get("status")) as AssistanceStatus;
-  const internalNotes = String(formData.get("internalNotes") ?? "").trim();
+  const status = String(singleFormValue(formData, "status")) as AssistanceStatus;
+  const internalNotes = String(singleFormValue(formData, "internalNotes") ?? "").trim();
   if (!statuses.has(status)) throw new Error("Invalid status");
   if (internalNotes.length > ASSISTANCE_INTERNAL_NOTES_MAX_LENGTH) throw new Error("Internal notes are too long");
   const previous = await prisma.assistanceRequest.findUniqueOrThrow({
@@ -272,20 +287,26 @@ export async function updateRequest(formData: FormData) {
     if (updated.count !== 1) {
       throw new Error("This request changed while you were reviewing it. Refresh before saving.");
     }
+    await withdrawStaleAnonymousOutcomeCopies(tx, id, user.id, "CASE_CHANGED");
+    if (previous.status !== status &&
+        (status === AssistanceStatus.CLOSED || status === AssistanceStatus.REJECTED)) {
+      await cancelOpenFollowUpsOnCaseExit(
+        tx, id, user.id, status === AssistanceStatus.CLOSED ? "CASE_CLOSED" : "CASE_REJECTED",
+      );
+    }
     await tx.auditEvent.create({ data: { actorId: user.id, action: "assistance.updated", entityType: "AssistanceRequest", entityId: id, metadata: { previousStatus: previous.status, status } } });
     if (previous.status !== status && previous.email) {
       await tx.notification.create({ data: { channel: NotificationChannel.EMAIL, recipient: previous.email, templateKey: "assistance-status-updated", subject: "Your Amaana request status was updated", payload: { referenceNumber: previous.referenceNumber, status }, assistanceRequestId: id } });
     }
   });
-  revalidatePath(`/admin/requests/${id}`);
-  revalidatePath("/admin");
+  if (!refreshCommittedRequest(id)) redirect(`/admin/requests/${id}`);
 }
 
 export async function assignRequest(formData: FormData) {
   const user = await requirePermission("assistance.assign");
-  const id = String(formData.get("id"));
-  const assignedToId = String(formData.get("assignedToId") || "");
-  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "");
+  const id = String(singleFormValue(formData, "id"));
+  const assignedToId = String(singleFormValue(formData, "assignedToId") || "");
+  const expectedUpdatedAtRaw = String(singleFormValue(formData, "expectedUpdatedAt") ?? "");
   const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
   if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Assignment version is missing or invalid. Refresh before assigning.");
   await withSerializableTransactionRetry(async tx => {
@@ -323,23 +344,22 @@ export async function assignRequest(formData: FormData) {
       },
     });
   });
-  revalidatePath(`/admin/requests/${id}`);
-  revalidatePath("/admin");
+  if (!refreshCommittedRequest(id)) redirect(`/admin/requests/${id}`);
 }
 
 export async function convertToAppeal(formData: FormData) {
   const user = await requirePermission("appeal.create");
   if (!hasPermission(user, "assistance.view") || !hasPermission(user, "assistance.update")) redirect("/admin/forbidden");
-  const id = String(formData.get("id"));
-  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "");
+  const id = String(singleFormValue(formData, "id"));
+  const expectedUpdatedAtRaw = String(singleFormValue(formData, "expectedUpdatedAt") ?? "");
   const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
   if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) throw new Error("Conversion version is missing or invalid. Refresh before creating the appeal.");
-  const expectedVerificationUpdatedAtRaw = String(formData.get("expectedVerificationUpdatedAt") ?? "");
+  const expectedVerificationUpdatedAtRaw = String(singleFormValue(formData, "expectedVerificationUpdatedAt") ?? "");
   const expectedVerificationUpdatedAt = new Date(expectedVerificationUpdatedAtRaw);
   if (!expectedVerificationUpdatedAtRaw || Number.isNaN(expectedVerificationUpdatedAt.getTime())) throw new Error("Verification version is missing or invalid. Refresh before creating the appeal.");
-  const title = String(formData.get("title") ?? "").trim();
-  const publicSummary = String(formData.get("publicSummary") ?? "").trim();
-  const publicStory = String(formData.get("publicStory") ?? "").trim();
+  const title = String(singleFormValue(formData, "title") ?? "").trim();
+  const publicSummary = String(singleFormValue(formData, "publicSummary") ?? "").trim();
+  const publicStory = String(singleFormValue(formData, "publicStory") ?? "").trim();
   if (title.length < 8 || publicSummary.length < 20 || publicStory.length < 40) throw new Error("A public title, privacy-safe summary and privacy-safe story are required");
 
   await withSerializableTransactionRetry(async tx => {
@@ -358,6 +378,8 @@ export async function convertToAppeal(formData: FormData) {
       data: { status: AssistanceStatus.CONVERTED_TO_APPEAL },
     });
     if (claimed.count !== 1) throw new Error("This request was changed or converted by another admin. Refresh before trying again.");
+    await cancelOpenFollowUpsOnCaseExit(tx, id, user.id, "APPEAL_CONVERSION");
+    await withdrawStaleAnonymousOutcomeCopies(tx, id, user.id, "CASE_CHANGED");
 
     const appeal = await tx.appeal.create({
       data: {
@@ -386,5 +408,232 @@ export async function convertToAppeal(formData: FormData) {
       await tx.notification.create({ data: { channel: NotificationChannel.EMAIL, recipient: request.email, templateKey: "assistance-status-updated", subject: "Your Amaana request status was updated", payload: { referenceNumber: request.referenceNumber, status: AssistanceStatus.CONVERTED_TO_APPEAL }, assistanceRequestId: id } });
     }
   });
+  refreshCommittedRequest(id);
   redirect(`/admin/requests/${id}`);
+}
+
+/** Match canonical and legacy absolute aliases for an approved managed cover.
+ * Public storage keys are opaque; do not interpret arbitrary external URLs. */
+function coverPublicationUrls(url: string): { urls: string[]; storageKey: string | null } {
+  const variants = new Set([url]);
+  let storageKey: string | null = null;
+  try {
+    const parsed = new URL(url, "https://amaanafoundation.org");
+    const sameOrigin = parsed.protocol === "https:" &&
+      ["amaanafoundation.org", "www.amaanafoundation.org"].includes(parsed.hostname);
+    if ((url.startsWith("/media/") || sameOrigin) &&
+        /^\/media\/\d{4}\/[0-9a-f-]{36}\.(?:pdf|jpg|png|webp)$/i.test(parsed.pathname) &&
+        !parsed.search && !parsed.hash) {
+      const path = parsed.pathname;
+      storageKey = path.slice("/media/".length);
+      variants.add(path);
+      variants.add(`https://amaanafoundation.org${path}`);
+      variants.add(`https://www.amaanafoundation.org${path}`);
+    }
+  } catch {
+    // Invalid old cover paths match only their exact stored URL, never a key.
+  }
+  return { urls: [...variants], storageKey };
+}
+
+/**
+ * Last-resort one-way privacy stop after case-to-appeal conversion.
+ * Ordinary verification stays locked. Revocation and appeal closure/pause must
+ * commit together so neither fundraising nor previously public copy outlives
+ * the withdrawal in the database.
+ */
+export async function withdrawConvertedAppealDisclosure(formData: FormData) {
+  const user = await requirePermission("assistance.approve");
+  if (!hasPermission(user, "appeal.approve")) {
+    throw new Error("Both assistance and appeal approval permission are required.");
+  }
+
+  function textField(name: string): string {
+    const value = singleFormValue(formData, name);
+    if (value !== null && typeof value !== "string") {
+      throw new Error(`${name} must be a text field.`);
+    }
+    return value ?? "";
+  }
+
+  const id = textField("id").trim();
+  const reason = textField("reason").trim();
+  const confirmation = textField("confirmWithdrawal");
+  const readVersion = (field: string) => {
+    const raw = textField(field);
+    const parsed = new Date(raw);
+    if (!raw || Number.isNaN(parsed.getTime())) {
+      throw new Error(`Invalid ${field}. Refresh the request before withdrawing disclosure.`);
+    }
+    return parsed;
+  };
+  const expectedRequestUpdatedAt = readVersion("expectedRequestUpdatedAt");
+  const expectedVerificationUpdatedAt = readVersion("expectedVerificationUpdatedAt");
+  const expectedAppealUpdatedAt = readVersion("expectedAppealUpdatedAt");
+  if (!id) throw new Error("Assistance request identity is required.");
+  if (confirmation !== "on") throw new Error("Explicit confirmation is required to withdraw public disclosure.");
+  if (reason.length < 20 || reason.length > 500) {
+    throw new Error("Record a factual private withdrawal reason between 20 and 500 characters.");
+  }
+
+  const result = await withSerializableTransactionRetry(async tx => {
+    const request = await tx.assistanceRequest.findUniqueOrThrow({
+      where: { id },
+      select: {
+        id: true, status: true, appealId: true, updatedAt: true,
+        appeal: {
+          select: {
+            id: true, slug: true, status: true, updatedAt: true, coverImageUrl: true,
+            initiative: { select: { slug: true } },
+            cause: { select: { slug: true } },
+          },
+        },
+        verification: {
+          select: {
+            id: true, updatedAt: true, decision: true, confidentialityLevel: true,
+            publicNameConsent: true, photoConsent: true,
+            medicalDetailsConsent: true, institutionNameConsent: true,
+            archiveConsent: true,
+          },
+        },
+      },
+    });
+
+    if (request.status !== AssistanceStatus.CONVERTED_TO_APPEAL ||
+        !request.appealId || !request.appeal || request.appeal.id !== request.appealId ||
+        !request.verification) {
+      throw new Error("An existing linked appeal and verification are required for emergency disclosure withdrawal.");
+    }
+    if (request.updatedAt.getTime() !== expectedRequestUpdatedAt.getTime() ||
+        request.appeal.updatedAt.getTime() !== expectedAppealUpdatedAt.getTime() ||
+        request.verification.updatedAt.getTime() !== expectedVerificationUpdatedAt.getTime()) {
+      throw new Error("This request, verification or appeal changed while you were reviewing it. Refresh before withdrawing disclosure.");
+    }
+
+    const status = request.appeal.status;
+    if (!["PUBLISHED", "FUNDED", "CLOSED", "PAUSED"].includes(status)) {
+      throw new Error("The linked appeal is not in a public or paused disclosure state.");
+    }
+    const previous = request.verification;
+    if (previous.decision === "APPROVED_PRIVATE" &&
+        previous.confidentialityLevel === "HIGHLY_SENSITIVE" &&
+        previous.publicNameConsent === "NOT_ALLOWED" &&
+        previous.photoConsent === "NOT_ALLOWED" &&
+        previous.medicalDetailsConsent === "NOT_ALLOWED" &&
+        previous.institutionNameConsent === "NOT_ALLOWED" &&
+        previous.archiveConsent === "NOT_ALLOWED" &&
+        (status === "CLOSED" || status === "PAUSED")) {
+      throw new Error("Public disclosure has already been withdrawn for this appeal.");
+    }
+
+    const nextStatus = status === "PUBLISHED" ? "PAUSED" : status === "FUNDED" ? "CLOSED" : status;
+    const verificationWrite = await tx.assistanceVerification.updateMany({
+      where: { id: previous.id, assistanceRequestId: id, updatedAt: expectedVerificationUpdatedAt },
+      data: {
+        // Remove public approval while retaining verified needs and ledger facts.
+        // This makes PAUSED→PUBLISHED fail even if name and cover are blank.
+        decision: "APPROVED_PRIVATE",
+        confidentialityLevel: "HIGHLY_SENSITIVE",
+        publicNameConsent: "NOT_ALLOWED",
+        photoConsent: "NOT_ALLOWED",
+        medicalDetailsConsent: "NOT_ALLOWED",
+        institutionNameConsent: "NOT_ALLOWED",
+        archiveConsent: "NOT_ALLOWED",
+      },
+    });
+    if (verificationWrite.count !== 1) {
+      throw new Error("Verification changed while you were reviewing it. Refresh before withdrawing disclosure.");
+    }
+    const appealWrite = await tx.appeal.updateMany({
+      where: { id: request.appeal.id, status, updatedAt: expectedAppealUpdatedAt },
+      data: { status: nextStatus, isFeatured: false, featuredOrder: null },
+    });
+    if (appealWrite.count !== 1) {
+      throw new Error("Appeal changed while you were reviewing it. Refresh before withdrawing disclosure.");
+    }
+    // A cover may be a managed storage object, an old absolute alias, or a
+    // separately hosted public URL. All matching approved library references
+    // must be unpublished atomically with the consent revocation. This can
+    // affect a programme reusing the same asset: privacy takes precedence.
+    const cover = request.appeal.coverImageUrl?.trim() ?? "";
+    const matching = cover ? coverPublicationUrls(cover) : null;
+    const coverAssets = matching
+      ? await tx.mediaAsset.findMany({
+          where: matching.storageKey
+            ? { isPublic: true, OR: [
+                { publicUrl: { in: matching.urls } },
+                { storageKey: matching.storageKey },
+              ] }
+            : { isPublic: true, publicUrl: { in: matching.urls } },
+          select: { id: true, updatedAt: true, publicUrl: true, storageKey: true },
+        })
+      : [];
+    let externalMediaReviewRequired = Boolean(cover && coverAssets.length === 0);
+    for (const asset of coverAssets) {
+      if (!asset.storageKey) externalMediaReviewRequired = true;
+      const unpublished = await tx.mediaAsset.updateMany({
+        where: { id: asset.id, isPublic: true, updatedAt: asset.updatedAt },
+        data: { isPublic: false, privacyApprovedAt: null },
+      });
+      if (unpublished.count !== 1) {
+        throw new Error("Media publication changed while withdrawing consent. Refresh and review the case.");
+      }
+      await tx.auditEvent.create({
+        data: {
+          actorId: user.id,
+          action: "media.unpublished_on_assistance_privacy_withdrawal",
+          entityType: "MediaAsset",
+          entityId: asset.id,
+          metadata: { assistanceRequestId: id, linkedAppealId: request.appeal.id },
+        },
+      });
+    }
+
+    await withdrawStaleAnonymousOutcomeCopies(tx, id, user.id, "VERIFICATION_CHANGED");
+    await tx.auditEvent.create({
+      data: {
+        actorId: user.id,
+        action: "assistance.public_disclosure_withdrawn",
+        entityType: "AssistanceRequest",
+        entityId: id,
+        metadata: {
+          linkedAppealId: request.appeal.id,
+          reason,
+          previousAppealStatus: status,
+          nextAppealStatus: nextStatus,
+          previousDecision: previous.decision,
+          previousConfidentiality: previous.confidentialityLevel,
+        },
+      },
+    });
+    return {
+      appealId: request.appeal.id,
+      slug: request.appeal.slug,
+      initiativeSlug: request.appeal.initiative?.slug,
+      causeSlug: request.appeal.cause?.slug,
+      externalMediaReviewRequired,
+      managedMediaPaths: [...new Set(
+        coverAssets.flatMap(asset =>
+          asset.storageKey && /^\d{4}\/[0-9a-f-]{36}\.(?:pdf|jpg|png|webp)$/i.test(asset.storageKey)
+            ? [`/media/${asset.storageKey}`] : []),
+      )],
+    };
+  });
+
+  // Do not replay a committed revocation if a cache adapter fails. Invalidate
+  // every public route independently and show a conspicuous staff warning.
+  let refreshDelayed = false;
+  try { updateTag("appeals"); } catch { refreshDelayed = true; }
+  const paths = [
+    `/admin/requests/${id}`, `/admin/appeals/${result.appealId}`, "/admin/appeals",
+    "/", "/appeals", `/appeals/${result.slug}`, `/donate/${result.slug}`,
+    "/our-work", "/impact",
+    ...result.managedMediaPaths,
+    ...(result.initiativeSlug ? [`/our-work/${result.initiativeSlug}`] : []),
+    ...(result.causeSlug ? [`/our-work/${result.causeSlug}`] : []),
+  ];
+  for (const path of paths) {
+    try { revalidatePath(path); } catch { refreshDelayed = true; }
+  }
+  redirect(`/admin/requests/${encodeURIComponent(id)}?privacy=${refreshDelayed ? "refresh-delayed" : "withdrawn"}${result.externalMediaReviewRequired ? "&media=review-required" : ""}`);
 }

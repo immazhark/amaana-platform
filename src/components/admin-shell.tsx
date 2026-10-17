@@ -1,4 +1,4 @@
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { adminHomePathForPermissions, adminNavigationForPermissions } from "@/lib/admin-navigation";
 import { AdminNavigation } from "@/components/admin-navigation";
 
@@ -7,14 +7,15 @@ type Props = {
   userName: string;
   roleNames: string[];
   permissions: Iterable<string>;
+  allocationEnabled?: boolean;
   logoutAction?: () => Promise<void>;
   fixtureLabel?: string;
 };
 
-export function AdminShell({ children, userName, roleNames, permissions, logoutAction, fixtureLabel }: Props) {
+export function AdminShell({ children, userName, roleNames, permissions, allocationEnabled = false, logoutAction, fixtureLabel }: Props) {
   const permissionList = [...permissions];
   const homePath = adminHomePathForPermissions(permissionList);
-  const navigation = adminNavigationForPermissions(permissionList);
+  const navigation = adminNavigationForPermissions(permissionList, { allocationEnabled });
 
   return (
     <div className="admin-shell">

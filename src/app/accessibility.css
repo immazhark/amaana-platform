@@ -102,7 +102,6 @@ html {
    small text on cream/ivory uses darker semantic ink. */
 :is(
   .v2-policy-layout>aside p,
-  .v2-assistance-promise>span,
   .v2-governance-record>span,
   .v2-governance-record dt,
   .v2-amount-field label span,
@@ -125,7 +124,6 @@ html {
 }
 
 :is(
-  .v2-assistance-promise>span,
   .v2-amount-field label span,
   .v2-form-heading>span
 ){

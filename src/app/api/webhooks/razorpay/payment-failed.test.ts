@@ -1,3 +1,4 @@
+vi.mock("@/lib/donation-cache", () => ({ expireDonationViews: vi.fn() }));
 import { createHmac } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -64,7 +65,9 @@ describe("failed payment identity before persistence", () => {
     { order_id: "invalid" }, { order_id: "order_" }, { order_id: "order_a b" },
     { amount: undefined }, { amount: null }, { amount: 0 }, { amount: -1 }, { amount: 1.5 },
     { currency: undefined }, { currency: null }, { currency: "USD" },
-    { status: "captured" }, { status: "authorized" }, { captured: true },
+    { status: "captured" }, { status: "authorized" },
+    { status: undefined }, { status: null }, { status: 123 },
+    { captured: true },
   ])("rejects a signed failure with unusable payment identity: %j", async invalid => {
     const response = await POST(signedRequest({ ...entity, ...invalid }));
 

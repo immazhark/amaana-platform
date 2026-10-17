@@ -1,15 +1,17 @@
+import ArchiveLink from "next/link";
 import { SectionHeading } from "@/components/section-heading";
 import { BodyCarousel, BodyCard } from "@/components/body-carousel";
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { notFound } from "next/navigation";
 import { BreadcrumbStructuredData } from "@/components/breadcrumb-structured-data";
-import { PageHero } from "@/components/page-hero";
+import { PageHero, PAGE_HERO_IMAGE_SIZES } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
 import { PublicContentStructuredData } from "@/components/public-content-structured-data";
 import { getStoryPageData } from "@/lib/public-page-data";
-import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage } from "@/lib/public-media";
+import { toPublicGalleryItems } from "@/lib/public-gallery-projection";
+import { canRenderPublicMedia, resolvePublicMediaUrl, selectIdentityPublicImage, getConfiguredPublicImageOrigins } from "@/lib/public-media";
 import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
 import { canonicalOurWorkDestination } from "@/lib/our-work-routing";
 
@@ -60,19 +62,20 @@ export default async function StoryPage({ params }: Props) {
         title={story.title}
         description={<p>{story.summary}</p>}
         actions={[{ label: "Back to field journal", href: "/stories", secondary: true }]}
-        visual={leadMedia ? <PublicMedia asset={leadMedia} priority /> : undefined}
+        visual={leadMedia ? <PublicMedia asset={leadMedia} priority sizes={PAGE_HERO_IMAGE_SIZES} /> : undefined}
         visualKicker="Field note · Privacy reviewed"
         visualTitle={context}
-        visualNote={story.mediaAssets.length > 0 ? `${story.mediaAssets.length} approved ${story.mediaAssets.length === 1 ? "asset" : "assets"}` : "This account does not need a person’s image to be worth documenting."}
+        visualNote={publicMedia.length > 0 ? "Selected approved supporting material" : "This account does not need a person’s image to be worth documenting."}
       />
 
       <section className="v2-story-detail-body"><div className="v2-shell v2-story-detail-body-grid"><aside><p className="v2-section-label">Documented account</p><h2>What Amaana knows and can responsibly share.</h2><div className="v2-story-detail-rule"><span>Fact</span><p>Keep the account attached to documented information.</p></div><div className="v2-story-detail-rule"><span>Dignity</span><p>Leave private proofs and unnecessary identity details outside the public story.</p></div></aside><article className="v2-story-detail-prose"><div className="v2-story-detail-dropcap" aria-hidden="true">A</div><p>{story.body}</p>{story.sourceNote && <div className="v2-story-source-note"><span>Source note</span><p>{story.sourceNote}</p></div>}</article></div></section>
 
-      {remainingMedia.length > 0 && <section className="v2-story-detail-gallery"><div className="v2-shell"><SectionHeading eyebrow={<>Approved field record</>} title={<>Only what cleared the public-use gate.</>} subtitle={<>These assets belong to the documented account and have been separately cleared for public display.</>} />{remainingImages.length > 0 ? <CampaignMediaGallery items={remainingImages.map(asset => ({ id: asset.id, url: resolvePublicMediaUrl(asset) ?? "", alt: asset.altText, caption: asset.caption })).filter(item => Boolean(item.url))} /> : null}{remainingOtherMedia.length > 0 ? <BodyCarousel label={`${story.title} supporting media`}>{remainingOtherMedia.map(asset => <BodyCard title={asset.altText ?? "Approved supporting record"} key={asset.id}><PublicMedia asset={asset} /></BodyCard>)}</BodyCarousel> : null}</div></section>}
+      {remainingMedia.length > 0 && <section className="v2-story-detail-gallery"><div className="v2-shell"><SectionHeading eyebrow={<>Approved field record</>} title={<>Only what cleared the public-use gate.</>} subtitle={<>These assets belong to the documented account and have been separately cleared for public display.</>} />{remainingImages.length > 0 ? <CampaignMediaGallery approvedImageOrigins={getConfiguredPublicImageOrigins()} items={toPublicGalleryItems(remainingImages)} /> : null}{remainingOtherMedia.length > 0 ? <BodyCarousel label={`${story.title} supporting media`}>{remainingOtherMedia.map(asset => <BodyCard title={asset.altText ?? "Approved supporting record"} key={asset.id}><PublicMedia asset={asset} sizes="(max-width: 700px) 86vw, (max-width: 1200px) 45vw, 30vw" /></BodyCard>)}</BodyCarousel> : null}</div></section>}
 
       <section className="v2-story-detail-ethic"><div className="v2-shell v2-story-detail-ethic-grid"><div><p className="v2-section-label">Editorial boundary</p><h2>Evidence without exposure.</h2></div><p>Stories can explain the work without turning vulnerability into spectacle. Private documents stay private, identity details are minimized, and public media is optional rather than assumed.</p></div></section>
 
-      <section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Continue the journey</p><h2>One account belongs to a wider body of work.</h2><div className="v2-hero-actions" style={{ justifyContent: "center" }}>{relatedInitiative && <Link className="v2-button" href={canonicalOurWorkDestination(relatedInitiative.slug)}>View this initiative</Link>}<Link className="v2-text-link" href="/stories">Return to the field journal →</Link></div></div></section>
+      {story.mediaAssets.length >= 48 ? <div className="v2-shell"><ArchiveLink className="v2-text-link" prefetch={false} href={`/media-archive/story/${encodeURIComponent(story.slug)}`}>Browse the full approved media archive</ArchiveLink></div> : null}
+<section className="v2-closing"><div className="v2-shell"><p className="v2-section-label">Continue the journey</p><h2>One account belongs to a wider body of work.</h2><div className="v2-hero-actions" style={{ justifyContent: "center" }}>{relatedInitiative && <Link className="v2-button" href={canonicalOurWorkDestination(relatedInitiative.slug)}>View this initiative</Link>}<Link className="v2-text-link" href="/stories">Return to the field journal →</Link></div></div></section>
     </div>
   );
 }

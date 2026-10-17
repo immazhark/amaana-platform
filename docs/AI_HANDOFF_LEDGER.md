@@ -1,3 +1,1040 @@
+## 2026-10-17 — Approved publication, financial regressions and gallery status recovery
+
+**Ownership: HANDOFF_PENDING.** ChatGPT completed the authorized branch batch. PR #292 remains open, targeting main; no merge or deployment. User explicitly approved commit publication. Terminal push lacked credentials; connected GitHub app published source commits `61246973e942fb10eb05af9985e388c452270f54` and `13b3eb0cd9c6655ce38514c72508baa43db704d0`. These supersede local-only source commits ea58dabb/ffc7225b/daefb2dd; do not cherry-pick duplicate implementations.
+
+### Implementation and verified evidence
+- Direct-transfer API rejects malformed anonymity text/File inputs before donation or evidence writes; missing/true/false remain compatible. Five regression cases failed against the previous source; eight invalid/control cases pass after repair.
+- Direct-transfer feedback trims messages before display-length limits. A reproduced whitespace-only displayed rejection is now readable; feedback suite 22/22 passes.
+- Repaired TypeScript compilation: correct bounded-body error constructors, explicit absent-verification narrowing, typed assistance fixtures and Vitest call histories. No compiler suppressions or relaxed production contracts.
+- Gallery status reads now show actionable generic recovery guidance and ignore obsolete failures after newer verified reads or unmount. Timeout and stale-failure cases reproduced before correction; all six real-component DOM cases pass. Uncertain publication locks and read-only recovery retained.
+- Corrected duplicate-field fixtures to actually submit two entries; included tracking-only rate-limit stub in isolated real privacy-boundary tests; reset intentional throwing cache mocks between media cases. No security assertions removed. The 137-case repaired batch passes.
+- npm dependency install and Prisma generation succeeded. Optional DOM runtime installed separately under /tmp without modifying package manifests/lockfile. Private-evidence real-component DOM suite: 15/15 pass.
+- Final full Vitest run on the published source: **3,126 passed /9 failed /11 skipped; 3,146 total**. Previous run: 3,109 passed /25 failed /11 skipped, before these repairs and the new stale-read case.
+- TypeScript, changed-file ESLint (zero warnings) and whitespace checks pass. Published source matches local tested source. No production build, Playwright/native browser, PostgreSQL concurrency, S3 or Razorpay/provider execution. Unit/DOM success is not live acceptance.
+
+### Nine outstanding test failures — next implementation checkpoint
+1. src/lib/impact-evidence-strip-regression.test.ts: old sequential-load source assertion versus current concurrent public projections.
+2. src/lib/public-contrast-addendum.test.ts: shared reminder-label contrast rule/location requires source investigation; do not add CSS merely to satisfy string matching.
+3. src/app/donate/page.test.ts: optional-fund failure fallback appeal assertion.
+4–6. src/app/admin/(protected)/page.test.tsx: queue projection, queue-age wording and missing follow-up/delivery aggregate fixture.
+7–9. src/app/admin/(protected)/requests/[id]/page.test.tsx: independent bank-proof review, historical outcome wording and private projection contract.
+Inspect actual source before deciding fixture correction versus runtime fix; preserve privacy, independent finance permission and current verified workflow.
+
+### Master149 and release
+Classification unchanged: **60 Implemented /61 Partial /26 Not started /1 Superseded /1 Not applicable; zero formally closed**. Additional scoped source/test evidence for AF-R012, AF-SETTLEMENT and media consent/publication workflows; no full settlement or live closure claim.
+Next owner: verify current branch HEAD and ownership, continue the nine named failures, then select the next high-impact Master149 item. Never replay the local commits already published as consolidated connector commits. Main merge, production deployment and real data/payment actions still require separate authorization.
+
+## 2026-10-17 — Bounded direct UPI/bank transfer evidence ingress and no-write retries
+
+Outgoing ChatGPT, PR #292 open, branch `fix/direct-transfer-feedback-20261013` -> `main`; verified starting HEAD `a9175e95a19f9fd1c97eac308ea87388dfadefd5`, sole-writer claim `d8bc52d1c837821950ec1981211674c10539d351`.
+
+**Defect:** The 5 MiB multipart direct-transfer submission accepted indefinitely stalled streams. The browser form performed unrestricted `fetch` / `response.json()`, so a lost response could leave the UI permanently submitting. `classifyDirectTransferResponse` also treated any syntactically valid 408 error as a safe field rejection, despite an arbitrary timeout potentially following a committed financial claim.
+
+**Implementation:**
+- `src/app/api/donations/direct-transfer/route.ts`: `9dea75eef3f6fee0b9a649e9d4360c35dd99bdb3`. 90s max body read, existing byte cap preserved. Explicit HTTP 408 `submissionUncertain:false` only when read failed before FormData, storage and donation writes; message instructs same UTR resubmission, not another payment.
+- `src/lib/direct-transfer-feedback.ts`: `deb3f87618e22331246530730171fafb54081ba2`. Only exact 408 boolean-false no-write marker unlocks; ambiguous 408/5xx remain locked for manual reconciliation.
+- `src/components/direct-transfer-form.tsx`: `da5ab39c5c48644e9212ef7961b2b985a54cc5cc`, `14fd6e774f580953d4bb269d7465c444e83b5f38`. Reuse `boundedPrivateRequest` for 120s whole-response bound, cancellation-on-unmount and failed-response conservative lock; preserve donor data and do not auto-resubmit.
+- Tests first: `src/lib/direct-transfer-feedback.test.ts` `d91208e9d9db8a105c894f51dd002aa0630b265d`; `src/app/api/donations/direct-transfer/route.test.ts` `82422570b69b7a9e82c511ef25272fdfa20efdc2`; `e2e/donation-assistance-journeys.spec.mjs` `9b0d4af8f435e3712372fbbfcbfba1a7e231a032`, `5cec3b2784b63a1894055ba908ca3c94d648a397`. Covers genuine stalled stream, zero DB/storage writes, explicit retry versus unknown 408 lock, response-loss timeout and donor input preservation.
+- Master register: `95796e6071b6d3c09bd99776180939e83bffc242`. Master149 unchanged: 60 Implemented / 61 Partial / 26 Not started / 1 Superseded / 1 Not applicable; zero formally closed.
+
+**Verification:** GitHub source/test readback confirmed all six changed files. Local hydrated repo/Node dependencies unavailable (prior direct git DNS failure), so authored tests are **NOT executed**; no Vitest, TS, ESLint, Playwright/clock, Razorpay, DB or S3 operations. No CI orchestration, branch merge, live deployment or real money/private data writes. No claims of production-verified completion.
+
+**Next writer:** Verify PR HEAD + `HANDOFF_PENDING`; run `npx vitest run src/app/api/donations/direct-transfer/route.test.ts src/lib/direct-transfer-feedback.test.ts src/lib/bounded-private-request.test.ts src/lib/bounded-request-body.test.ts`, scoped TS/lint, and relevant `e2e/donation-assistance-journeys.spec.mjs` tests once a hydrated checkout is available; fix demonstrated failures. Continue high-priority unique Master149 items without creating competing PRs or triggering merges/deployment without authorization.
+
+## 2026-10-17 — Fail-closed signed Razorpay financial event state
+
+Outgoing ChatGPT, next implementation owner HANDOFF_PENDING; open PR #292 on `fix/direct-transfer-feedback-20261013` -> `main`; incoming HEAD `1762b4c08d1ea6e6860b15fd634f3c891fc70bdd`, ownership claim `7bddd5f2c5910f2a63d7afcd3cdc5b60fc30e8e3`.
+
+Root cause: Financial event-type label was accepted despite missing/inconsistent provider status and missing captured=true for payment.captured, so signed-but-incomplete event bodies could change money state. The duplicate-event lookup occurred before financial entity validation, which could ACK malformed replays without exercising strict identity/status checks.
+
+Changes committed:
+- `src/app/api/webhooks/razorpay/route.ts`: `020834f7617473dd7fafb196ab151f915dbe6d60` requires explicit captured/failed/processed financial entity state; `04bb5199439656b6246ef267172ed3567765f498` validates those fields before PaymentEvent duplicate lookup. Signature, non-INR, nonpositive amounts, idempotent provider event ID, serializable/refund checks unchanged.
+- Authored-first tests: `src/app/api/webhooks/razorpay/route.test.ts` `958e02104b80e8dbc28d128197fe7c2c2b279ea2`, `44e1d35dd812c79e107d6f1e4c0fd635784920b9`; `src/app/api/webhooks/razorpay/payment-failed.test.ts` `1d0d40dc86fc2732896102b5a47be6de29d9861b`. New missing/invalid status and missing capture flag cases; matching preexisting invalid event cannot skip validation.
+- Master register `e8c236003855bb231adab4865cc6465f2ff2bab8`; counts remain 60 Implemented, 61 Partial, 26 Not started, 1 Superseded, 1 Not applicable; 0 formally closed.
+
+GitHub source readback confirmed modified code/tests. **Tests are authored, not executed**: hydrated repository and dependencies unavailable; no Vitest, tsc, ESLint, Playwright, payment-provider integration, signed webhook or PostgreSQL transaction run. No real donor/beneficiary write, live payment, CI orchestration, schema migration, merge or deployment. Do not claim regression tests pass or live fix.
+
+Next writer: verify latest PR HEAD and HANDOFF_PENDING. Run `npx vitest run src/app/api/webhooks/razorpay/route.test.ts src/app/api/webhooks/razorpay/payment-failed.test.ts src/app/api/webhooks/razorpay/event-id-fallback.test.ts` with TypeScript/lint on hydrated branch, repair failures. Continue high-impact source-backed Master149 items on the same branch; do not merge/deploy without explicit authorization.
+
+## 2026-10-17 — Terminal payment confirmation and private receipt upload reliability
+
+Outgoing ChatGPT, incoming HANDOFF_PENDING. Existing PR #292, branch `fix/direct-transfer-feedback-20261013` -> `main`; starting head `5116e7b0f951e9687acdca0b1237fac6573cc901`, single-writer claim `07e31f374e91d05a691fc663b4c6f5bc4069f41d`.
+
+**Source-backed issue:** A signed Razorpay confirmation response returned HTTP 200 with any persisted donation status, including CREATED, AUTHORIZED, FAILED and PENDING_VERIFICATION. The donor form navigated to private acknowledgement based only on response.ok and a reference, not actual settlement. Private receipt read also lacked elapsed stream deadline despite the client aborting at 8 seconds.
+
+**Implementation:**
+- `src/app/api/donations/confirm/route.ts`, commit `dc3ba6df460bb175232d788eb9c700f69ae88c29`: after provider identity/amount validation and guarded capture/authorization, fetch canonical persisted status. Return HTTP 200 only for CAPTURED or REFUNDED. All other statuses now HTTP 409/private with retain-confirmation, do-not-pay-again wording; no implied capture. Concurrent webhook updates are resolved from persisted DB.
+- `src/components/donation-form.tsx`, commit `90808b235731f44ef9e90975def4dcd9b76f234c`: reject HTTP-200 payloads without literal CAPTURED/REFUNDED and lock for reconciliation. Valid confirmed acknowledgements still navigate with private token in URL fragment.
+- `src/app/api/donations/acknowledgement/route.ts`, commit `ca7b6960a3a3e9e0b4c6e13673607e33b62de2d7`: 5s bounded 8 KiB body read; stalled request HTTP 503, private/noindex, Retry-After 60, no rate-limit or donation lookup; existing oversize/credential privacy unchanged.
+- Tests authored first: `038d6705c459d26af2723ed18ee4de2d412daa48` for four unsettled payment statuses, `df1d2dd44ca3615424bd4d81e3fcb4385c42a0e7` for six mocked HTTP-200 unsettled outcomes and amended captured success fixtures, `cce634d2b703f7cdcc2c9010821ffd7d14cf8517` for receipt timeout options and absence of downstream private reads.
+- Master register `e492e741136c7d02fc902f662a0fc6f26e75ee93`. Master149 categories unchanged: 60 Implemented, 61 Partial, 26 Not started, 1 Superseded, 1 Not applicable, 0 formally closed.
+
+**Verification:** Six source/test files read back from GitHub. Local GitHub clone/ls-remote still fails DNS lookup. Vitest, TypeScript, ESLint, Playwright, live provider, actual stream, PostgreSQL and cache tests **not run**. No CI, real donation, schema migration, merge to main, production deploy or beneficiary data mutation. These are PR-open unexecuted source/test changes, not runtime-approved production changes.
+
+**Next writer:** Verify PR HEAD and HANDOFF_PENDING. Run `npx vitest run src/app/api/donations/confirm/route.test.ts src/app/api/donations/acknowledgement/route.test.ts src/lib/bounded-request-body.test.ts`, `npm run typecheck`, scoped lint, then targeted Playwright donation journey when a hydrated checkout is available; repair actual failures before merge. Continue high-impact Master149 issues on the existing branch unless integration ownership changes; do not merge or deploy without authorization.
+
+## 2026-10-17 — Razorpay signed-webhook ingress and capture event persistence before cache refresh
+
+Outgoing agent: ChatGPT. Current PR #292, branch `fix/direct-transfer-feedback-20261013`, target `main`, no production deployment. Incoming checkpoint `18a1aaaf6ce7e7e66b085efe8c3c00180edb77ac`; single-writer claim `251fbe78e68466dcadd460a1a4509e2ef828efc6`.
+
+Confirmed root causes:
+1. Razorpay webhook read unsigned request streams up to its 256 KiB limit with no elapsed read deadline. Invalid/missing signatures still occupied the read path. A stalled body had no bounded rejection.
+2. `payment.captured` invoked `expireDonationViews` after durable `captureDonation` but before writing the `PaymentEvent` idempotency/audit row. Cache refresh failure caused an HTTP 500 and prevented the matching event row from being persisted, even though donation capture succeeded.
+
+Code:
+- `src/app/api/webhooks/razorpay/route.ts` rejects missing/blank signature immediately with HTTP 401 before body reads; nonblank signatures still require full cryptographic verification.
+- Adds 15,000 ms to the existing 256 KiB bounded signed-body reader. Distinct timeout responds HTTP 503 + Retry-After 60 before any signature verification or database operation, prompting provider retry instead of pretending a valid signed event was processed.
+- Writes/verifies event ID, event type, donor relation and audit payload following `captureDonation`, then expires caches. A cache outage still returns 500 to induce a webhook retry; the existing matching-event replay path retries cache invalidation without recapturing or double-counting. Different payload under the same event ID remains rejected.
+- Tests written first in `src/app/api/webhooks/razorpay/route.test.ts`: early rejection before reading, exact deadline, timeout/no side effects and capture-event persistence before a cache outage with safe replay.
+- Test commits `8dc7b9d2ff64d8aa969122d7bab526a75f814e34`, `f850ecd99b92c465f394537de974afa5f616a2c6`. Source commits `bc644ef21e7075921d38be1ba43cb5bd59cbf0cd`, `ea99b42689460c5b23be90bea8e45301f0dfed2b`. Master register update `0405be94175ec319830fb742e8be3f8daaf2c845`.
+
+Verification: GitHub source and tests re-read. Local git command failed DNS; repository dependencies were not hydrated. **Authored tests have NOT been executed.** No Vitest, TypeScript, lint, Playwright, live webhook, Razorpay, real DB or cache verification. No CI orchestration, production financial record/provider write, schema change, merge or production deployment performed. Master149 unchanged 60 Implemented / 61 Partial / 26 Not started / 1 Superseded / 1 Not applicable; zero formally closed. Claims limited to open PR source.
+
+Next writer: Verify current HEAD and HANDOFF_PENDING, run `npx vitest run src/app/api/webhooks/razorpay/route.test.ts src/app/api/webhooks/razorpay/event-id-fallback.test.ts src/app/api/webhooks/razorpay/payment-failed.test.ts src/lib/bounded-request-body.test.ts` plus focused type/lint in hydrated checkout; fix demonstrated failures. Continue highest-impact Master149 implementation without unnecessary branch creation. Never merge/deploy without authorization.
+
+## 2026-10-17 — Donor/assistance intake transport deadlines and strictly provable retries
+
+Outgoing ChatGPT, single writer. Incoming ownership to HANDOFF_PENDING. Existing open PR #292, branch `fix/direct-transfer-feedback-20261013`, target `main`. Incoming HEAD `e860c492d895d13142406dc4c7606538d1a007f2`, ownership claim `7bcb9a37cd27c807705ff669d6df643ba018b564`.
+
+Actual source-backed gap: appeal checkout, dormant giving-fund checkout and multipart assistance case intake used existing byte-bounded request readers without elapsed read deadlines. A malicious or broken client stream could keep a route open. Prior route behavior also interpreted read exceptions as malformed input. This batch uses the existing shared `RequestBodyReadTimeoutError` without adding dependencies or modifying unrelated payment, consent or storage code.
+
+- Appeal checkout (`src/app/api/donations/order/route.ts`): 15s read deadline; explicit pre-provider HTTP 408 `orderStarted:false` on stream timeout, no createRazorpayOrder/DB writes, retains all existing 413/validation behavior.
+- Gated fund checkout (`src/app/api/donations/fund-order/route.ts`): identical 15s no-order boundary; activation flag and fund allowlist unchanged, feature remains dormant.
+- Assistance intake (`src/app/api/assistance/route.ts`): 90s multipart deadline before private file upload or request persistence (browser limit 120s); body timeout is HTTP 408 `submissionUncertain:false`. Errors after upload/DB transaction still follow preexisting uncertain-case/cleanup rules.
+- `src/components/donation-form.tsx` permits correcting/retrying HTTP 408 only with literal `orderStarted:false`; other 408, 5xx, broken JSON and transport remain locked against double payment attempts. `src/lib/assistance-feedback.ts` similarly trusts only literal `submissionUncertain:false` with 408 to restore assistance form editing.
+- Authored-first source-focused regression coverage plus rendered browser acceptance in `src/app/api/donations/order/route.test.ts`, `src/app/api/donations/fund-order/route.test.ts`, `src/app/api/assistance/route.test.ts`, `src/lib/assistance-feedback.test.ts` and `e2e/donation-assistance-journeys.spec.mjs`. Tests cover deadlines, lack of provider/storage/DB side effects on request-body timeout, preserve full donor fields and lock against ambiguous 408 with absent/nonliteral markers.
+- Tests commits: `835c4671b1ce26043d6c123efda3da85c74d6130`, `01b1ec4ba8a3102af2962415fa34cc80d9c69bc5`, `7c12f49ba4f36da34ad4b0270f6b23f0eafc2519`, `82136f98c60b19e3a3b279f5b227afa2ac94efbd`, `5f137777758515f4bb2b4050b6f3415cb6cd360f`, `f65f54d854ec67ce1e29cc440f6522b5779387a4`, `b787ee4b18a8d97b850decf8705bc38479a58907`. Source commits: `923d8977aecaf4d1546b6eeca657160cd6c83cff`, `99c7a2e4755b1058e1474c98738b4140a5ba2b25`, `0615c5c4007e97b02fe74fd0ae78b6752d850b30`, `6dd90c6e549b99340e3940939781c9900f14d781`, `5f5b469f953f80303205eddef241141fc1687bdb`, `15efcb6b813db2c8b54692e6e9ec8ccebcf1ea62`. Master plan `197c89291926c4d13bb510c52b75e66d161dd74e`.
+
+Verification: GitHub readback of all ten affected application/regression files; confirmed newly added explicit timeout branches and test assertions. Git DNS resolution failed in this environment and no hydrated checkout is accessible: **do not claim Vitest/TS/ESLint/Playwright tests passed**, no actual API streaming/runtime/provider/PostgreSQL verification, CI, real donation/payment, external storage write, database migration, main merge or production release performed. Master 149 unchanged 60/61/26/1/1, zero formally closed. Future executor must run precise four unit test files plus previously modified tracking/confirmation tests, and the new checkout rendered cases; repair type/lint/test failures before release.
+
+Next task: verify new PR HEAD and repository HANDOFF_PENDING; complete focused runtime checks if checkout becomes available. Then choose next verified high-priority Master 149 batch. Keep the single-writer protocol. Do not merge or deploy without authorization.
+
+## 2026-10-17 — Stalled tracking/confirmation reads are bounded without false invalid-credential outcomes
+
+Outgoing: ChatGPT. Existing PR #292 / `fix/direct-transfer-feedback-20261013` -> `main`. At start, source handoff HEAD `3aaed3e88dc22eabf1e69a39c1f1b6a85e131c67`; owner claimed with commit `738c6c424f61eb0177100a44ced2e2c271f963d0`. No competing active agent identified; sole-writer protocol honored.
+
+Issue: tracking and Razorpay browser confirmation used bounded-body size limits but supplied no elapsed read deadline. A client could leave a body read unresolved. The shared reader already supported `timeoutMs` and a specific `RequestBodyReadTimeoutError`; no new reader/runtime dependency required.
+
+Test-first commits `3f4187a6002288f16ad09bfcecce342da9afccbc` and `9991b5e6ae722c111e1c16079bffcc2fe91b248d` assert 15s deadlines and private 503 availability responses, plus no private status lookup or gateway verification/capture after timeout; also fix a tracking oversize-error mock constructor mismatch.
+
+Source commits `8f9ce3774db3bf67ea5aa14ab1c62c2b1e93f696` and `91c304e28a92a7156841957217964a80bc5fe7b1`: `src/app/api/assistance/status/route.ts` and `src/app/api/donations/confirm/route.ts` now time-bound request reading (15,000 ms). Stalled requests return 503 and Retry-After 60 with private no-store headers; tracking does not misidentify tokens, and confirmation does not misidentify signatures/payments. Byte-limit, origin, rate limits, successful capture, post-capture cache recovery and idempotency are preserved. Master evidence: `8c7e9f99275fabfe37478a3bd0a2502a4d987e2d`.
+
+Verification: read back all four modified files through GitHub; checks confirmed expected imports, timeout options, error branches and test assertions. **Tests authored but NOT executed.** No local checkout/dependencies (git DNS failed); no Vitest, TypeScript, ESLint, actual stream, browser, gateway, production database or CI tests performed. No merge, deployment, live payments or sensitive record mutations. Master 149 remains **60/61/26/1/1**, zero formal closures. AF-R012 and AF-SETTLEMENT gain bounded PR-open evidence only.
+
+Next incoming writer: verify the latest PR SHA and HANDOFF_PENDING status; run the two route tests along with prior request-security/donation-cache tests and typecheck in a hydrated checkout; repair demonstrated failures. Then select the highest-impact verified next Master149 code batch. Do not merge/deploy without authorization.
+
+## 2026-10-17 — Private assistance status throttling and persisted donation confirmation
+
+Ownership: HANDOFF_PENDING after ChatGPT source batch on open PR #292 branch `fix/direct-transfer-feedback-20261013` against `main`. Starting verified HEAD `c7af4374a42fd6912698d73099a7240b310c543f`, no parallel writer.
+
+Confirmed defect 1: POST `/api/assistance/status` authenticated a tracking token with constant-time hash comparison but did not rate-limit private status attempts. Added an independent `tracking` purpose to `src/lib/request-security.ts` with hashed per-client hour-bucket (60 attempts per hour), `ASSISTANCE_TOKEN_PEPPER`, pre-existing serializable abuse ledger, and domain separation from strict 3/hour assistance submissions and receipt budgets. In the route origin validation is evaluated first; quota is checked before reading a token-bearing body or querying a private case. Limit 429 and retry interval, ledger unavailable 503, fail closed. Private headers and no token disclosure preserved.
+
+Confirmed defect 2: the browser payment confirmation route called `expireDonationViews()` after `captureDonation`, allowing a Next.js cache failure to leak into HTTP500 "Payment is being verified" despite a persisted captured state. Catch only the postcommit cache invalidation failure, log generic category (no donor/payment secrets), then query/respond with the canonical persisted donation status. Provider mismatch, signature mismatch, amount mismatch, capture failure and missing row remain hard failures. In `src/lib/donation-cache.ts` attempt tag+all page invalidations independently and throw after attempts for replay-capable callers; existing method signature preserved.
+
+Test-first coverage in `src/app/api/assistance/status/route.test.ts`, `src/lib/request-security.test.ts`, `src/app/api/donations/confirm/route.test.ts`, `src/lib/donation-cache.test.ts` covers blocking 429 before body/query, origin-first, invalid credential genericity, quota DB outage 503, distinct purpose hashing, cache failure after captured payment without false 500, all invalidation paths attempted after one failure. Test commits: `74d983c968cabfb9fc21c14c943962804ae6b5bb`, `e3bbb279e2a9f4e0962c9f123f4c6883782d10c0`, `ab4ebe352066aa6c166060fc6a2446a8b99effd3`, `138a1747116c9004cceb642d32a19f96013723f3`. Production source: `2d034ed745c3db77fece134ad6b77b2edf0c4819`, `770ba9e4f2cd8de384b41709ed3624dac1096272`, `e7610d81d7811466a8a7039b9491475f8a766052`, `6c68ddb5ef917da1a06a7a60e7df9c38c1f9f4e9`. Master: `5cf390ae004620649c6f537f2c8798cf557e9d8f`.
+
+Source and regression-file content verified through GitHub readback, not executable checkout. Vitest, TypeScript, ESLint, browser, PostgreSQL rate-limit contention, payment gateway operations and actual cache providers **NOT run**. No CI, production mutation, webhook capture, provider credentials, schema migration, PR merge, or deployment. Master149 remains 60 Implemented /61 Partial /26 Not started /1 Superseded /1 Not applicable, 0 formally closed; AF-R012/AF-SETTLEMENT receive PR-open source evidence only.
+
+Next sole writer: verify PR HEAD and ownership, run focused `npx vitest run 'src/app/api/assistance/status/route.test.ts' 'src/lib/request-security.test.ts' 'src/app/api/donations/confirm/route.test.ts' 'src/lib/donation-cache.test.ts'` and TypeScript checks in a hydrated checkout; fix any mismatch. Explore next source-backed high-priority defect without expanding CI effort. Do not repeat a committed payment on cache errors.
+
+## 2026-10-17 — Manual media unpublish aliases and fail-closed review inputs
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer source execution on existing PR #292 (`fix/direct-transfer-feedback-20261013` to `main`), verified initial HEAD `e50c08464ffb18af5624ab81e65367be6b8fab81`.
+
+Root defect: the ordinary media review Unpublish action updated only the selected asset. MediaAsset.storageKey has no uniqueness constraint and unrelated public media rows may reuse the same URL or object, leaving a second approved route able to serve a photo after the reviewer withdrew it. Additional security defect: the publish field interpreted any missing/invalid value as an unpublish operation; the media consent/classification review used first-value-wins FormData.get and coerced uploaded File controls into strings or silently ignored non-on checkbox values.
+
+Implemented: `src/app/admin/(protected)/media/actions.ts` manual unpublish uses a predicate read of all public sibling records with matching non-null storageKey or publicUrl inside the existing SERIALIZABLE transaction. Selected/sibling records are CAS-unpublished as one transaction, approved privacy flags cleared, and audits issued only once all CAS claims succeeded. Approved reuse across initiatives intentionally expires. All affected selected/sibling programme, story, faith, archive and managed-image routes are refreshed through the already guarded postcommit helper. Kept S3 objects and audit provenance. A failed sibling CAS rolls back and avoids cache operations. Publish and permanent-delete controls use unambiguous text and explicit literal true/false action validation.
+
+Implemented: `src/lib/media-governance.ts` now reads single-valued typed privacyClass, consentStatus, websiteApproved, containsMinor, containsPatient, containsPrivateDocument, heroEligible, provenanceConfirmed and reviewNotes. Only missing or literal "on" accepted for checkboxes; invalid, repeated, File controls and oversized (>2,000) notes rejected before approval. `src/app/admin/(protected)/media/page.tsx` explains cross-programme unpublication scope and external-host removal separately.
+
+Code commits: `f7b6b1e9f1409768b6613b0f905faaaa79136492`, `53370c6374e97d9e07a34141735ab0661ec4a1c6`, `c981da2e665f14ee2bcf71957fa4640cf472bf37`, UI `c76e312fb86ed1a4236f42a1ab6ff38cd355f364`. Test-first commits: `74875c3aa4cfb34c5d5a8f60a7b97fcb603e43cc`, `cd98a334d6991545d85b59967c6f6018bb12a6dd`, `22971f780ed6936084e910f2baa6e76a8b6a9d6c`, `0d298094f45d10c6191f1f18e4ac3ebdb4043ada`; master149 `f0ce533114774cc3b72d279542e8def50e196df7`.
+
+Verification: GitHub head/readbacks confirm source, form, test text and state. No hydrated local repo; direct git cannot resolve github.com, therefore no Vitest, TypeScript, ESLint, PostgreSQL, full browser, real media, S3 or CDN check. Tests written but **not executed**. No merge, production deploy, pipeline, migration, payment or live personal media change. No external host purge is implied. Master149 still 60 Implemented /61 Partial /26 Not started /2 other, zero formally closed.
+
+Next single writer: verify current PR head, read active state and run focused `npx vitest run 'src/app/admin/(protected)/media/actions.test.ts' src/lib/media-governance.test.ts`, TS and changed-file lint on a hydrated checkout. Repair failures before release. Review broader privacy fields and external media caches only with specific evidence; do not conflate PR commits with deployed outcomes.
+
+## 2026-10-17 — Admin media publication postcommit safety + shared storage deletion
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer work on existing `fix/direct-transfer-feedback-20261013` PR #292 targeting `main`; initial verified HEAD `09c8f899c71b7c974a011852cf28a8d946c443ee`.
+
+Confirmed defects: (1) media publish/unpublish/delete and draft create/edit called `revalidatePath` after committing, treating a failed cache refresh as a failed write and prematurely skipping later refresh routes. This could mislead the operator into repeating a completed publication or destructive deletion and leave gallery/detail pages stale. (2) `MediaAsset.storageKey` has no unique constraint; deleting one unpublished record unconditionally removed the shared S3 object even when another published or unpublished media asset referenced the same key.
+
+Implemented in `src/app/admin/(protected)/media/actions.ts`: one `refreshCommittedMedia` helper attempts all deduplicated refresh paths independently; only after DB commit, route to a saved-but-refresh-delayed admin warning if any cache operation fails. For publication use the existing singular media fetch with bounded cause/initiative/story/faith slugs, refresh site indexes, impacted detail pages and media archives, and exact managed route if its storage key is valid. Media creation and metadata edits keep narrow staff-only refresh. Permanent media deletion also uses helper and checks for any other `MediaAsset` referencing its managed `storageKey`, both before the deletion claim and immediately before S3 deletion. A shared key aborts without deleting storage or creating destructive audit. Second check is best-effort against races, not an enforced unique key guarantee.
+
+`src/app/admin/(protected)/media/page.tsx`: role=alert warning on `saved=refresh-delayed`, explicit success of stored mutation, staff instruction not to repeat the action, verify public URLs and escalate cache operations.
+
+Regression tests authored first in `src/app/admin/(protected)/media/actions.test.ts`: publish/unpublish affected routes, independent refresh attempt across failure, transaction-failure no refresh, successful create and metadata edit with failed cache, completed deletion with failed cache, shared published and unpublished storage keys, alias discovered between pre-check and claimed storage removal. Source/test commits: `15a1d3deaabcf4542a6abf0f8bb70a09ded5d035`, `46b433519938e0fbe3eceb097adaa812d3f2c04a`, `11c7408edcbe85bdb5fe60b7f56ffb1c211c24a1`, `01c36e77c194b1518e6d5a86978f8d6bc6b13d1d`, `e013b129e1536ebb018c077b0bfd2755050cd9b1`, `448606099b19df8bccb2f9c98d4492da4ff4d498`, `10bca6586789e35a9fba89c517b707bdde01375a`, `11ee97981602c357e388461c9aeee7acf26c49fe`; master register `1b57e14ad0774475fc70809a557d074cf652b922`.
+
+GitHub readback confirmed source code, intended target relations/route paths, shared-key double guard, accessible admin status and regression source. **No hydrated checkout or run of Vitest, TypeScript, ESLint, database, browser, S3, provider/CDN checks.** New tests are not demonstrated passing. No CI, merge, production deploy, payment/provider call, DB update or S3 object deletion executed. Master149 stays 60 Implemented /61 Partial /26 Not started /2 other, zero closed; AF-PROMOTION/AF-CONSENT gain bounded PR-open evidence only.
+
+Next owner: verify branch SHA and singleton writer. On hydrated checkout run `npx vitest run 'src/app/admin/(protected)/media/actions.test.ts'` and source TypeScript/lint, correct failures; manually verify dynamic/legacy routes and that media proxy cache honors revocation before release. Longer-term schema-safe storage-key deduplication and provider cache purging remain outside this batch.
+
+## 2026-10-17 — Revoked appeal cover media: publication and delivery boundary
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer source implementation, open PR #292 on `fix/direct-transfer-feedback-20261013` targeting `main`, initial HEAD `c70e64fbd859d2ee0f7ea10af843aec4018d2a71`.
+
+Root cause: the new post-conversion disclosure-withdrawal action already paused the appeal, denied public permission and expired page tags, but did not unpublish its `MediaAsset` cover record. An unexpired same-origin `/media/YYYY/UUID.ext` URL could continue to deliver from public S3 via `src/app/media/[year]/[filename]/route.ts` because that route checked media library approval separately from appeal status. Prisma `MediaAsset.storageKey` has no unique constraint, allowing alias records; delivery initially selected any matching storage key. Previously cached responses may remain up to 60 seconds in browsers or 300 seconds in shared caches according to existing response headers; no immediate external cache/CDN purge is guaranteed.
+
+Implementation: within the existing serializable case/verification/appeal withdrawal transaction, locate matching published cover URL(s), canonical relative/apex/www aliases and any public records with the canonical managed storage key, then CAS-unpublish every match (`isPublic=false, privacyApprovedAt=null`) and create a separate private `media.unpublished_on_assistance_privacy_withdrawal` audit event for each. A losing media CAS aborts the entire transaction rather than leaving a partial privacy stop. Files remain in storage for retention; shared programme usages of a revoked photo are deliberately removed from site visibility. After commit, independently attempt expiration of every valid managed media route alongside prior page/tag invalidations. The managed-media GET now constrains both the DB predicate and its application-level guard to exact canonical approved URL forms, rejecting legacy aliases that happen to share an object key.
+
+External hosted covers: an approved media-library record using an external URL is unpublished locally but cannot be removed from that remote host by Amaana. If no matching published media library record is found, or matching records are externally hosted, the action redirects with `media=review-required` and the private admin detail page displays an accessible urgent manual takedown warning. Even managed media may remain visible in old caches for the previously allowed TTL; operators must verify URLs and address external/CDN caches manually. Do not claim provider purge, object deletion or instant worldwide revocation.
+
+Commits: test-first `ee1179e3f5e11c468fbb2418519ee05f255463f6`, code `cb0a24b514c023dc2b52fac5d134e61a200a3467`, staff UI `2528cac5426adb8bdb36c8c1c454cf9480a91441`, storage alias regression `49418e62878e08a107ba05237c7d87324cab0753` and code `e9751cf400fb5727d16c599af74ed823f0877be3`, media route test `c717fc115b9ca3bdc2601bddd999fe64348f0a39` and source `089b27ad6f522f88d32b00350d0817a304e32bf8`, path cache test `0151737c270cc841a3bc377e38ec1e0807231bd2`, source `856ccc61a4c264a78d706fc5512e52a38a311404`, key-regex correction `bb03d5aa66781521a3b105380f383281017557b3`, master149 `1f54fa0b19555d5f690d480f3eea35d9e0febc5a`.
+
+GitHub readback confirmed action, route, UI, revised regression files and master evidence; prior action test suite now contains 15 focused withdrawal cases total, route test adds rejected alias cases. **Tests authored, not executed.** No hydrated local checkout, actual Vitest/TypeScript/ESLint/database/browser or provider/CDN cache inspection was available in this session. No production records, S3 objects, provider accounts, migrations, `main` merge, live deploy or CI pipeline altered.
+
+Master149 still 60 Implemented /61 Partial /26 Not started /1 Superseded /1 Not applicable, zero formal closures. AF-PROMOTION/AF-CONSENT source-backed evidence advanced but requires runtime and operational review. Next sole writer must verify branch HEAD and run `npx vitest run 'src/app/admin/(protected)/requests/[id]/actions.test.ts' 'src/app/media/[year]/[filename]/route.test.ts'` and focused TypeScript/ESLint in hydrated checkout; fix failures before release. Further review other media references outside the appeal-cover field and provider-level purging as a separate task.
+
+## 2026-10-17 — Emergency post-conversion disclosure withdrawal
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer source batch, existing `fix/direct-transfer-feedback-20261013`, PR #292 targeting `main`. Starting verified head `927effa29c746f7b7f0a062e9cc5f328d2ceae62`.
+
+Confirmed defect: once assistance is CONVERTED_TO_APPEAL, the normal verification editor is intentionally locked. No bounded public-consent withdrawal workflow existed, so previously published case identity/story and public fundraising could survive a later privacy objection, and homepage `appeals` cache could retain a revoked record. The prior public detail projection already filtered name/cover based on current review, but no safe way to change those decisions after conversion.
+
+Added `withdrawConvertedAppealDisclosure` in `src/app/admin/(protected)/requests/[id]/actions.ts` with both assistance.approve and appeal.approve authorization, required 20–500-character private reason, explicit confirmation, validated single text fields, and request/verification/appeal expected versions. A single serializable transaction checks linkage/version/status, uses CAS updateMany for verification and appeal, downgrades public approval to APPROVED_PRIVATE, sets confidentiality HIGHLY_SENSITIVE and five public consents NOT_ALLOWED, stops PUBLISHED→PAUSED or FUNDED→CLOSED, and clears featuring. CLOSED remains CLOSED and is hidden under the already deployed closed-archive-consent gate. Linked PAUSED cases remain nonpublic. Updates are audited and prior anonymous outcome-copy eligibility is invalidated transactionally. Financial amounts and donor ledger stay intact. Public re-publication now fails its existing verification gate even with blank beneficiary name and cover. No direct public page with earlier prose remains once the status/consent gates are evaluated from the DB.
+
+Added accessible authorized review control and saved/refresh-delayed notices in `src/app/admin/(protected)/requests/[id]/page.tsx`. After durable commit `updateTag("appeals")` and all public/admin/detail/donate/programme URL invalidations are attempted independently; a failed cache refresh produces an explicit urgent intervention warning, never claims the database mutation failed.
+
+Commits: primary tests `9b4f8bb72404370624adbd6156efed1c101a0525`; action `cbea70fdf2f892e80fcaa46c7e22d62c31792fa6`; UI `8e32747c17a9d847411c47e80f554f3ab15541bd`; outcome invalidation test `a28a5cd87683f8b3d11b6932d00336f672104ecf` and source `7460674b90dc4675e46eda2db05f9c83d28b38af`; public-approval denial test `09fc5c3fe18e3549a40b373386da4787b87870f3` and source `5b893febb2917cdd4c3b662ad5484edc8b3d9461`; resume-denial regression `b3ac8c4db5df9f61a02f9b42fb4f9488ccbc13a8`; master register `07b3064b32552f2c40f66a91c2f916663cf990a3`.
+
+Test/source readback performed on connected GitHub. **New regression cases were written, not run**; runtime checkout/project dependencies absent (prior direct git DNS unavailable), so Vitest, TypeScript, lint, browser, actual cache propagation, DB atomicity and bundle evidence remain outstanding. No live withdrawal applied to a beneficiary, no donation/payment/email/provider operation, migration, release or `main` merge. Master149 unchanged 60 Implemented /61 Partial /26 Not started /2 other and zero formally closed; AF-PROMOTION/AF-CONSENT get PR-open evidence only.
+
+Next sole writer: verify HEAD; in hydrated checkout run `npx vitest run 'src/app/admin/(protected)/requests/[id]/actions.test.ts' src/lib/appeal-publication.test.ts`, TypeScript and changed-file lint; fix any failures. Review live CDN media URLs and public archive lifecycle separately before any deployment of emergency action. One writer only.
+
+## 2026-10-17 — Current public appeal beneficiary disclosure consent
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer execution on existing `fix/direct-transfer-feedback-20261013` PR #292 against `main`; verified initial HEAD `f2ec234fc03404e3fe3c4ead36179abe1d98cf6e`.
+
+Exact defect: `src/lib/public-page-data.ts` provided stored public beneficiary display names and cover URLs without consulting current linked case name/photo consent. The homepage cached `src/lib/public-content.ts` selected/serialized covers after confidentiality eligibility but no current photo consent. Revoked or unresolved permission could thus remain exposed on approved direct public pages and in homepage RSC data.
+
+Implemented detail: query current `publicNameConsent`/`photoConsent` alongside archive consent; remove named beneficiary value unless exactly ALLOWED, withhold cover unless ALLOWED or NOT_APPLICABLE contextual image; do so before stripping private relation and returning public projection. Missing linked verification or unknown decision fails closed. Existing archive consent and direct approved URL lifecycle are unchanged; standalone appeals stay unchanged. Public promotion cached query now selects current photo consent and similarly strips unapproved cover before serialization without new database round trips.
+
+Files and commits: `src/lib/public-page-data.test.ts` `47ff70f064865d953715e3695fc52d6d6c7725f6`, `src/lib/public-page-data.ts` `4e2e1ca9deed6613645caa0a7700aec3a6241448`, new `src/lib/public-content-homepage-consent.test.ts` `19ada83860e18535e21a00b0dc92034015f39ed4`, `src/lib/public-content.ts` `94fbfe1837e9400fc53f3130a6b4c5ad31aaa7a2`, master149 `87e1bd50264c07d91298aa8c379f5ab2cdc7e4a6`.
+
+Verification: GitHub readback confirmed content, guard sites, projection selection, and test source. **New tests have not been executed** (checkout/dependencies absent and prior direct git DNS failed); no TS, ESLint, browser, production cache or consent revocation E2E run. The batch specifically protects explicit structured display-name/cover fields, **not arbitrary identifiers embedded in published title, summary, story or update prose**, which still requires separate editorial review. Cached homepage data remains subject to live expiry/invalidation, not a synchronous revoked-consent cache guarantee. No live records, providers, payments, migration, main merge or deployment modified.
+
+Master149 stays 60 Implemented /61 Partial /26 Not started /2 other, zero closed. AF-PROMOTION and AF-CONSENT gain PR-open source evidence only.
+
+Next: Verify exact head and ownership, run focused `npx vitest run src/lib/public-page-data.test.ts src/lib/public-content-homepage-consent.test.ts` plus application TS and changed-file ESLint on a hydrated checkout; correct failures. Next high-impact work: ensure revocations trigger cache invalidation and review risks of direct-public prose containing beneficiary identifiers. Use one writer only.
+
+## 2026-10-17 — Linked appeal confidentiality fail-closed on public discovery
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer continuation, PR #292, branch `fix/direct-transfer-feedback-20261013`, target `main`. Verified starting head `0955b444f6d05e0176bb7d7581bc99824f5400e8`.
+
+Source: `src/lib/appeal-promotion.ts` and `src/lib/appeal-search-privacy.ts`. A first-wins negative comparison `confidentialityLevel !== "HIGHLY_SENSITIVE"` allowed linked assistance requests with missing verification, null label, unknown value or invalid enum value to appear in public discovery, despite Prisma declaring only STANDARD/CONFIDENTIAL/HIGHLY_SENSITIVE. Search/share metadata separately defaulted missing linked review to STANDARD and could expose title/summary. Unified the public privacy classification: valid STANDARD and CONFIDENTIAL remain discoverable; HIGHLY_SENSITIVE, invalid or absent linked review are withheld from discovery and receive restricted metadata. Standalone legacy appeals without a linked assistance request preserve prior visibility. High-sensitivity direct accountability URLs and their previously approved content are unchanged. No new queries or migrations.
+
+Test-first source commits: `f5b1d432` (promotion negatives), `168eb3df` (explicit linked gate), `940f21d1` (shared metadata classification tests), `8a818445` (shared safe classifier), `daa8a63c` (new metadata DB-projection test), `3f69b907` (metadata integration). Master register evidence commit `73f39aa27e7ed51e080a1ebbc2c9438943a7bceb`.
+
+Engineering references actually used: `obra/superpowers` TDD and engineering-simplicity guidance from `DietrichGebert/ponytail`, `mattpocock/skills`, `addyosmani/agent-skills`. Unrelated video generation and routing repositories were not installed or executed; no new project dependency.
+
+GitHub readback verified helper/test source and existing `public-content` and `public-page-data` caller projections. **No hydrated checkout; new Vitest cases, typecheck, ESLint, real browser and public URL tests were not executed here**, and no production state can be claimed. No schema/DB/provider/payment/media mutation, main merge or deployment. Master149 stays 60 Implemented /61 Partial /26 Not started /2 other, zero formally closed. AF-PROMOTION and AF-CONSENT gain only PR-open evidence.
+
+Next: sole writer should verify exact PR head; execute focused tests `src/lib/appeal-promotion.test.ts`, `src/lib/appeal-search-privacy.test.ts`, TypeScript/changed-file lint in a hydrated checkout, then continue next source-ready master149 batch. Keep separate issue of actual direct accountability page content, which was not altered by the search/discovery privacy fix.
+
+## 2026-10-17 — Appeal post-commit cache refresh recovery
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer source batch. Continued existing `fix/direct-transfer-feedback-20261013` PR #292 against `main`, starting verified HEAD `408f2c06df7817600d3d4395fc2d5a86b4ea643e`.
+
+Root cause: six appeal staff mutations (draft edits, status, featuring, add/publish/unpublish updates) made successful database/audit commits and then ran potentially throwing `revalidatePath`/`updateTag`. If these post-commit cache operations failed, the UI could report a failure despite completed writes, encouraging duplicate submissions; earlier cache failures also skipped later independent invalidations.
+
+Implementation: source `84e64fbaa965a9ac45ec86edf44242551b06358b`; `finishCommittedAppeal` attempts all prior invalidations independently and uses a single saved-but-refresh-delayed redirect if any fail. Status actions add direct public detail invalidation to supplement the public `appeals` tag. `src/app/admin/(protected)/appeals/[id]/page.tsx` now displays an accessible staff warning with no-retry and urgent public privacy escalation guidance (commit `36ef8e5aa0a0184652d2edef295977757e8e56bb`). New focused cases `e916945a31110f573f2b8bcd955878e61bda2755` and `47af3a708632ecec19f4264582290deaeff545c3` cover each action, independent invalidations, saved-state warning redirect and genuine pre-commit conflict. Master149 scoped evidence `c4aeebdce36a1e040dd5703b15dfc29ead90b3e7`.
+
+GitHub readback verified exactly six call sites and no raw cache invalidation outside the helper, clear delayed-warning copy, and all new tests in source. **Tests were not executed**: current environment lacks hydrated repo dependencies and actual GitHub clone DNS. Vitest, application typecheck, lint, browser, native DB, production caching and JS/CSS bundle sizes remain unverified for this batch. New tests must not be claimed passing; no live payment, media, case mutation, migration, provider send, production configuration, main merge or release. Source counts unchanged: 60 Implemented /61 Partial /26 Not started /2 other, zero formally closed. AF-PROMOTION/AF-CONSENT evidence remains PR open.
+
+Next: incoming sole writer verify HEAD; run focused `src/app/admin/(protected)/appeals/actions.test.ts` tests, application TypeScript and changed-file lint on hydrated checkout, fix failures before release; keep public expiry behavior fail-visible if public content lingers. Continue next source-ready master149 batch and preserve consent/privacy locks.
+
+## 2026-10-17 — Strict appeal administration FormData boundary
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer continuation on `fix/direct-transfer-feedback-20261013`, PR #292 targeting `main`. Verified starting HEAD `94dedae77a40dd48daa56d20448063fdd1ea6908`.
+
+Changed `src/app/admin/(protected)/appeals/actions.ts`: all 28 scalar `FormData.get` sites across seven existing actions now use a local text-only wrapper around established `singleFormValue`. Duplicate fields are rejected even if identical; File payloads cannot be silently serialized as strings. Editable beneficiary location is read and validated before opening the content-update transaction. Preserved existing missing/blank handling and all RBAC/CAS/review/notification rules; no endpoint or API contract additions.
+
+Added focused regression cases in `src/app/admin/(protected)/appeals/actions.test.ts` for duplicated goal, beneficiary name/location, status, featured order, public flag, public-update review checkbox, and update ID, plus File-valued text/cover/content/order/ID inputs. Tests expect refusal before the first persistence read. Existing valid-flow and transactional coverage is retained.
+
+Commits: `9cad3d2eb9260c40555cd8295ee190544a2d0efc` (regressions), `82134f65bd3af049ec2ee480c0dc0e444f02038d` (source), `d5c1f9329509976a09f3aefdcd2b889b3e1bf1f2` (location preflight), `5edaf9934b23474951dd17a25f78447abce9b609` (location case/test refinement), `46849f170860a9728656f0b2baca233573773647` (master149 update).
+
+Checks: GitHub readback confirms no raw `formData.get` remains in this module; 28 guarded reads; normal appeal staff form names remain unchanged. Source regression tests were **authored, not executed**, because no hydrated local checkout was available (git DNS to GitHub failed). No TypeScript, Vitest, ESLint, browser, native DB, bundle or CI result is claimed. No live database, donor/beneficiary mutation, provider, schema, migration, main merge, deployment or production configuration change.
+
+Master149 unchanged: 60 Implemented /61 Partial /26 Not started /1 Superseded /1 Not applicable; zero formal closures. AF-PROMOTION and AF-CONSENT gain PR-open source evidence only. Next writer should verify PR head and run `npx vitest run 'src/app/admin/(protected)/appeals/actions.test.ts'`, application TypeScript, changed-file lint, then continue substantive source-ready fixes. One writer at a time.
+
+## 2026-10-17 — Paused appeal re-publication privacy guard
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer continuation of existing PR #292. Started from verified branch HEAD `8acb60dc460947c32e6e6e349b5b1a5365818618` with main still `aedae00171d2cbf585f65f93b783f66c7f003a43`.
+
+- Root cause: PAUSED→PUBLISHED skipped the UNDER_REVIEW-only verification/consent/goal gate and fresh approved-cover check, allowing prior approval to survive later changes without review.
+- `src/lib/appeal-publication.ts`: renamed the helper `getAppealPublicationIssues`; strongly requires `hasAssistanceRequest`. Rechecks linked assistance verification, public disclosure consent, approved fundraising target on both first-publication and resume. Unlinked previously published legacy appeal resumes remain allowed; no fabricated case verification is required.
+- `src/app/admin/(protected)/appeals/actions.ts`: passes linkage and fresh records both before and inside serializable transaction. Checks current approved media for both paths twice; no status, audit or public invalidation on a rejected request. Keeps previously published timestamp on success.
+- Test files: `src/lib/appeal-publication.test.ts` and `src/app/admin/(protected)/appeals/actions.test.ts`. New scenarios cover revoked disclosure, goal mismatch, absent linked verification, legacy resumes, withdrawn media, between-check media change, and successful review without republishing timestamp. Repo readback showed 13 explicitly linked helper scenarios and no stale helper imports.
+- Source/test commits in order: `7f1eb027`, `825211b2`, `3b5e47cd`, `10c8d73a`, `863cc231`, `72f3d621`, `5e224e17`, `3ea8c295`, `d49a5c37`. Master149 evidence commit: `4420f8a227ec3502f200495f545323e7a7404096`.
+- **Runtime evidence limit:** native repository checkout, project dependencies, Vitest/TypeScript, PostgreSQL, Chromium and production build were unavailable; new tests were committed but not executed in this session. Do not describe the batch as runtime tested or release-ready. No DB/provider/payment/email/storage writes, feature activation, live media publication, migration, main merge or deployment were performed.
+- Master149 still 60 Implemented /61 Partial /26 Not started /2 other; AF-PROMOTION and AF-CONSENT have scoped evidence appended, not new closures. Existing fixed JS/CSS budgets unchanged; bundle not remeasured.
+- Next: on hydrated checkout run focused `src/lib/appeal-publication.test.ts` and `src/app/admin/(protected)/appeals/actions.test.ts`, application TypeScript and changed-file lint, then continue next source-ready batch. Do not merge without independent exact-head release checks and authorization.
+
+## 2026-10-17 — Fail-closed public assistance verification
+
+Ownership: HANDOFF_PENDING. ChatGPT claimed sole implementation ownership after verifying PR #292 open at `008efa3bd3fd47c02fc08ab6b7716b568846f731` and returned it after a bounded source batch. Source `2c0509d4500ec3af1206d5845fc27f91c88704da`, regression tests `21d1610697b777dca40631b274b0b8849c1f5d40`; register reconciliation `8bfb582b3115fd6b3d3c99588556335afa185a66`.
+
+Fixed a fail-open domain boundary: unknown/empty disclosure decisions and Zakat labels previously passed review completeness, as did truthy malformed completion timestamps. Only accepted reviewed enum members and valid completed timestamps now pass the public-appeal review, and approval shares the completion-time guard. Five disclosure fields are checked independently. Valid NOT_ALLOWED/NOT_APPLICABLE remain legitimate reviewed outcomes; the fix does not grant publicity consent or substitute for field-level disclosure checks.
+
+Authored tests for every disclosure field with invalid and valid choices, Zakat status and invalid Date/string completion values, plus valid Date/ISO values. Source/test readback confirmed on GitHub. **No local repository checkout or dependencies were available, and the authored Vitest cases, TypeScript, build and browser/database tests were not executed in this session.** No test pass or runtime release acceptance is claimed. Existing historical checks do not certify this head. There was no schema, permission, provider, cache, payment, configuration or production change.
+
+Master149 remains **60 Implemented /61 Partial /26 Not started /2 other**, zero formal closures. AF-LOCAL/AF-CONSENT rows updated with scoped PR-open evidence only. Main remains at handoff baseline and PR #292 was not merged/deployed.
+
+Next: resume source-ready implementation after reading current head; verify focused `src/lib/assistance.test.ts`, application TypeScript, changed-file lint, then address any failures before release. Additional real workflow and browser acceptance remain open. Keep one implementation writer.
+
+## 2026-10-17 — Reliable private proof upload lifecycle
+
+Ownership: HANDOFF_PENDING. Sole writer continued PR #292 from `ce01bd7`; source `7a2072b26c685f08940a1a98ce48b60622717c8f`. No main merge/deployment or actual evidence upload.
+
+- Shared delivery/bank/consent proof uploader now uses the existing bounded private-request helper for a thirty-second transport AND response-body deadline. Synchronous submission lock prevents overlapping requests before React renders disabled controls; file validation stays before transport.
+- Case/purpose identity keys reset browser state immediately when the target changes. Lifetime abort on unmount/scope replacement and ignored late responses prevent an old case upload from displaying success, clearing a new file selection or refreshing the replacement case.
+- Only a valid document-ID response confirms success. Timeout, network failure, unreadable/malformed receipt or server 5xx means uncertain outcome: uploads remain blocked and a native case reload link requires document review before another attempt. Cancellation ends the browser wait; it never claims to roll back a server write. Definite 4xx validation remains manually retryable. No automatic upload retries or server deduplication claim.
+- Verified receipts remain success if router refresh throws, with manual reload guidance. Existing server permission, same-origin/body/file limits, case/role eligibility, transaction/audit and uncertain-commit/orphan safeguards are unchanged. Upload alone does not confirm delivery, corroborate finance or approve disclosure.
+- No database schema, public media role, consent activation, provider operation, client framework or project dependency added. A temporary external jsdom test runtime was used for real React component lifecycle checks; no repository dependency/lockfile change.
+
+Applied ECC trust-boundary principles, Karpathy/Ponytail minimal change and existing Impeccable conventions. Detector reported no findings. Relevant GitHub/plugin guidance is used selectively; no unrelated scanner/installer/model-router execution.
+
+Validation: **32 focused cases across real DOM component, bounded-request helper and existing upload-route suites pass**. Cases cover same-tick double submit, hung transport/body, timeout then late success, case/purpose replacement, unmount, 4xx/5xx/malformed receipts, all three proof purposes and refresh-after-success failure. Actual object storage/database/provider writes are mocked. Application-only TypeScript, changed-file zero-warning ESLint, diff checks and clean optimized compile-only build pass. No CI pipeline, full data generation, native database concurrency or authenticated browser/live upload acceptance is claimed. Earlier whole-repository assistance fixture typing limits remain separate.
+
+Emitted JS **815858/819200**, CSS **348052/348160**; JS +1632 from the earlier 814226-byte build, still 3342 below the fixed ceiling. CSS unchanged. No budget/config relaxation.
+
+Master149 remains 60 Implemented /61 Partial /26 Not started /2 other, zero formal closures; AF-MILESTONES/AF-SETTLEMENT/AF-CONSENT gain scoped private-proof lifecycle evidence only. Financial reconciliation, verified outcomes, exact consent and retention policy remain separate approval gates. Git classifications remain 58 Merged /63 PR open /28 Uncommitted.
+
+Next: continue the next concrete source-ready package. No external message, real case/donor/file mutation, public publication, migration, cron/configuration change, merge or release occurred.
+
+## 2026-10-17 — Complete fund registry traversal and truthful saves
+
+Ownership: HANDOFF_PENDING. Sole writer continued PR #292 from `3872eb6`; source `1d9b1af75dddc7b650554d7b97f2fc6bf967878c`. No main merge, public fund activation or deployment.
+
+- Replaced inaccessible first-100 registry cap with count-clamped 50-row pages, deterministic status/update/ID ordering and native status plus name/slug/account-code search. Same combined predicate drives counts and rows; links preserve filters and changing filters starts from the beginning. Invalid/repeated status/search values are ignored without reflection. Empty views are described as filtered views, not an empty registry.
+- Registry reads select only displayed/edit/revision/independent-review fields. Receipt, active approved-plan and refund-conflict aggregate queries use only displayed fund IDs; they still aggregate ALL qualifying contributions/proposals per displayed fund in SQL. Empty/view-only lists do not issue money reads; planning rollout gate remains. Exact decimal paise validation, original-purpose restrictions, independent maker/checker, refund conflicts and no-cash/no-outcome disclaimers remain.
+- Fund creation, draft editing and status review no longer report post-commit cache refresh failure as a failed write. Both view invalidations are attempted independently after persistence/audit; fixed saved+delayed feedback instructs reload before another change. Database/audit failures remain failures. No mutation is replayed to repair a view.
+- No new client boundary, stylesheet, package, schema, fund seed, public checkout/allowlist activation or provider/financial operation.
+
+Applied relevant ECC coding/security, Karpathy and Ponytail principles plus existing Impeccable UI conventions. Source detector returned no findings. Listed GitHub repos/plugins are used when relevant rather than installing unrelated runtimes.
+
+Validation: **59 focused cases in four suites pass**, including later-than-100 access, stable pages, shared filter predicates, empty/minimal reads, independent review controls, exact-paise and refund-conflict suppression, and post-commit refresh failures across create/edit/status actions. Application-only TypeScript, changed-file zero-warning ESLint and diff checks pass. Earlier broad string-based approval assertions were narrowed to the actual per-fund transition select so the new read-only APPROVED filter is not confused with self-approval authority; server maker/checker guards remain tested unchanged. No CI pipeline, real fund/donor mutation, PostgreSQL concurrency, browser acceptance, full build or bundle remeasurement is claimed; whole-repository assistance fixture typing limits remain separate.
+
+Master149 source classification remains 60 Implemented /61 Partial /26 Not started /2 other, zero formal closures. AF-FUNDS and AF-ALLOCATION gain scoped operational evidence; they remain partial pending reviewed activation/financial policy/native acceptance. Git classification remains 58 Merged /63 PR open /28 Uncommitted. Main/production and PR291 refs unchanged.
+
+Next: continue next independently source-ready implementation package, preserving the same release boundaries and implementation-first allocation.
+
+## 2026-10-17 — Actionable notification attention queues
+
+Ownership: HANDOFF_PENDING. Sole writer continued existing PR #292 from `6ce052b`; source `67755678d906bc28a67976581654695e07de3cfb`. Main and separate PR291 refs unchanged. No provider operation or release.
+
+- Existing global stale/overdue/terminal health counters now link to actual staff work queues. Shared Prisma-checked predicates govern both health counts and selected rows; status intersection and count-clamped 50-row pagination preserve attention scope. Invalid/repeated attention parameters are not reflected. Counts below the selected view remain explicitly global.
+- Stalled and overdue lists sort oldest-first by update/schedule with deterministic IDs; terminal review is newest-first. Selected empty views offer an all-records recovery link. Stalled records remain read-only rather than restarting an in-flight delivery.
+- Delivery channel is displayed; retry forms appear only for failed EMAIL records and notification.manage users. Existing independent server permission, EMAIL/FAILED guard, expected timestamp CAS, serializable audit and provider idempotency behavior retained.
+- Manual requeue rejects duplicate/File-valued ID, reviewed timestamp and operational reason before transaction entry. Timestamp must exactly match the canonical ISO snapshot rendered by the page. Worker/dashboard retry and stale thresholds share unchanged five-attempt/fifteen-minute constants; no retry budget, scheduling policy or provider behavior changed.
+- Staff dates render in IST. No dependency, stylesheet, client boundary, migration, runtime flag, worker activation, cron change or external email added/executed.
+
+Applied relevant ECC/Karpathy/Ponytail principles and existing UI conventions; Impeccable source detector returned no findings. The owner's listed GitHub references remain task-selective; none was installed or executed solely to satisfy a tool-count target.
+
+Validation: **39 focused cases across four suites pass**, covering real page filters/pagination/permission, controlled retry action boundaries, established attention thresholds and existing mocked worker recovery/send behavior. Application-only TypeScript, changed-file zero-warning ESLint and diff checks pass. No CI workflow, authenticated job invocation, real provider send, native database/concurrency, browser acceptance, full build or bundle remeasurement was performed. Earlier whole-repository assistance fixture type limitations remain separate.
+
+Master149 implementation remains 60 Implemented /61 Partial /26 Not started /2 other, zero formally closed. AF-CRM gains scoped transactional delivery operations, not marketing/suppression consent. Its new source is PR-open/not deployed; current Git classifications 58 Merged /63 PR open /28 Uncommitted. No live job/recipient records were changed.
+
+Next: next concrete source-ready development batch; keep implementation dominant and preserve the existing release boundaries.
+
+## 2026-10-17 — Correct filtered retention review and private controls
+
+Ownership: HANDOFF_PENDING. Sole writer continued PR #292 from `ec017cb`; source `b615087923fb817b6439a9c0406144ec90e99b88`. Same branch; no merge or deployment.
+
+- Fixed a verified query bug: active/eligible filters previously affected counts and pagination but were absent from the document read. Counts, rows and preserved page links now use the same predicate, with clamped 50-row pages and truthful filtered-empty wording.
+- Replaced whole-document includes with displayed-field selection. Storage object keys and unused applicant names, appeal titles and case timestamps are no longer read for this list. Audit reads match the exact displayed document/case pairs and select only rendered history fields; no global history cap can hide an active hold. Existing history retrieval is not claimed fully bounded by row count.
+- Retention decisions, dates, reasons, confirmation and hold snapshots reject repeated scalar values or File inputs before document reads. Calendar dates must be canonical real civil dates; invalid February overflow no longer rolls into March. Existing future-review rule, permission, hold rechecks, terminal-state checks, exact DELETE confirmation, document CAS, privacy withdrawal before storage deletion and audit semantics remain.
+- Visible labels are wired to unique document controls. The DELETE option appears only for terminal unheld evidence; hold release remains available and server checks remain authoritative. Staff history dates use Asia/Kolkata rather than server timezone. No policy schedule, dependency, stylesheet, client boundary, migration or automatic deletion added.
+
+Guidance: ECC security/coding standards, Karpathy and the installed Ponytail workflow were read/applied as relevant; Impeccable source detector returned no findings. Owner's newly supplied repository references remain task-selective, not an instruction to run every installer, scan or model router. No new tool installation is claimed.
+
+Validation: **33 focused cases across actual page/action suites pass**, including wrong-filter regression, permission-before-read, pagination, private projections, held/active/linked-appeal decisions, form label connections, scalar cardinality, real leap days and existing destructive ordering/hold guards. Application-only TypeScript, changed-file zero-warning ESLint and diff checks pass. Persistence/storage are mocked; no native PostgreSQL concurrency, real object deletion, browser/manual AT, full build or bundle remeasurement is claimed. Previously recorded whole-repository assistance fixture typing limitations remain separate.
+
+Master149 source classifications unchanged: 60 Implemented /61 Partial /26 Not started /2 other; no formal closure. AF-CONSENT gains actual retention queue/input evidence, while professionally reviewed retention policy and end-to-end acceptance remain open. No live evidence/donor mutation, external message, production configuration, migration, merge or release.
+
+Next: continue the next source-ready implementation batch; retain single-writer ownership and proportionate checks.
+
+## 2026-10-17 — Private donor review evidence and request filters
+
+Ownership: HANDOFF_PENDING. Sole writer continued existing PR #292 from `69780c3`; source commit `5803db150f04784fcc688f168bca9b4c7afe415b`. No merge or release.
+
+- Staff donor-rights history now shows closure time in IST and the controlled outcome from existing transactional closure audit evidence. Only fixed outcome labels render; missing/malformed latest evidence remains explicitly unavailable. No raw audit text, donor contact, actor details or receipt credentials are added. Closed reviews sort newest closure first, with missing dates last; active requests retain oldest-first processing.
+- Existing 40-row queue plus one lookahead remains bounded. One audit read selects only entity IDs and metadata for displayed closed requests, capped at 80 rows even for duplicate legacy evidence. Unknown evidence is not inferred from older duplicate entries. No additional audit read for disabled, empty or active-only queues.
+- Native request-type filter supports access/correction/deletion-review with strict whitelist. Queue switching, reset and next-page links preserve the chosen type; changing type starts from the first page. No new client boundary, styles, dependency, schema or retention policy.
+- Staff start/close decisions reject repeated scalar fields (including identical values and File mixtures) before transactions. Existing permission, disabled-feature gate, status CAS, staff attestation, controlled outcomes, transactional audit and post-commit refresh semantics remain.
+
+Applied previously reviewed ECC coding/security guidance and Karpathy minimal-change principles. Validation: 30 focused page/action tests pass; application-only TypeScript, changed-file zero-warning ESLint and diff checks pass. Persistence is mocked; no native database, browser, full build, bundle remeasurement or live workflow acceptance is claimed. Previously recorded whole-repository test-fixture typing limitations remain separate. Optional workflow activation, retention/legal decisions and deployment remain pending.
+
+Master149 classifications unchanged: 60 Implemented /61 Partial /26 Not started /2 other; no formal closure. AF-CONSENT gains scoped review-history evidence only. No external message, donor record mutation, migration, flag activation, provider operation, merge or deployment.
+
+Next: continue the next unblocked implementation package from existing source and register; keep checks proportionate.
+
+## 2026-10-17 — ECC-guided unambiguous private assistance inputs
+
+Ownership: HANDOFF_PENDING. Sole writer continued PR #292 from `871bd7c`; published source `e7dad1d17cf92288b1cb08dee586489333530bc8`. Same branch; no main merge/release.
+
+Applied the user-requested ECC guidance from the official `affaan-m/ecc` repository: [security-review](https://github.com/affaan-m/ecc/blob/76aaa77df6adc5b889e689007bf99b9a4f74af34/skills/security-review/SKILL.md) and [coding-standards](https://github.com/affaan-m/ecc/blob/76aaa77df6adc5b889e689007bf99b9a4f74af34/skills/coding-standards/SKILL.md), alongside Karpathy guidelines. Reference commit `76aaa77df6adc5b889e689007bf99b9a4f74af34`. Guidance was read and applied; no ECC installer, hosted scan, hooks, external agents or new project dependency was executed.
+
+Implementation:
+- One small scalar FormData reader rejects repeated values, including identical repeats and mixed string/File duplicates, while preserving missing/blank/File values for existing domain validation. Adopted across private follow-up scheduling/resolution/reassignment, milestones/redaction, delivery/report review, financial evidence, operational outcomes, consent-copy proposals/approval/withdrawal/publication, late proof linking and disclosure reconciliation.
+- Main staff case verification, case status/assignment and appeal-conversion scalar fields use the same boundary. Amounts, case/evidence identities, consent choices, decisions and revision snapshots cannot silently choose the first conflicting value. Existing authentication, permissions, independent reviewers, expected-version/CAS, transaction retry, audit, exact amounts and private/public evidence rules remain unchanged.
+- Voiding remains possible without a new affirmative evidence checkbox; in-kind reports retain blank amount/evidence semantics. No generic replacement of domain validators, upload-list handling, schema or financial accounting. Missing final-publication consent and missing withdrawal reasons now reach their specific corrective messages.
+- Existing post-commit tests now include the already-required /impact invalidation and prove a cache failure after commit does not replay the write. Actual source cache behavior was retained, not removed to satisfy stale tests.
+
+Validation: **82 duplicate-field cases failed against the inherited parser sources**; final **336 focused cases in 14 suites pass** across affected parsers and real action modules with mocked persistence. Application-only TypeScript, changed-file zero-warning ESLint, diff checks and clean optimized compile-only build pass. No full suite, native database/concurrency, production data generation, authenticated browser or live privacy/financial acceptance is claimed. Previously recorded whole-repository assistance fixture typing limitations remain separate from application-only type success.
+
+JS **814226/819200**, CSS **348052/348160**, unchanged. No UI, client framework, stylesheet, dependency, migration, financial/provider configuration, consent activation or budget change.
+
+Master149 implementation remains **60 Implemented /61 Partial /26 Not started /2 other**, no formal closure. AF-LOCAL/AF-MILESTONES/AF-CONSENT/AF-SETTLEMENT gain scoped input-boundary evidence. New milestone and bank-evidence source belongs to open PR, not the historical merged baseline. Consent retention, approved service-zone/SLA rules, bank settlement integration and real end-to-end acceptance remain incomplete.
+
+Next: continue the next substantive source-ready package without another broad audit. No external messages, real payment/refund, donor/beneficiary mutation, production database action, merge or deployment.
+
+## 2026-10-17 — Private moderation access, follow-up history and consent input guards
+
+Ownership: HANDOFF_PENDING; sole writer continued existing PR #292 from `8c87e93`. Published source `28942de523540d6e12413d50960a783ebae5edd9`; main unchanged. No release authorization or live writes.
+
+- Recognition staff page now exposes all later pending, approved, ineligible-cleanup and donor-consent records through independent bounded pages (30/30/30/50). Count-clamped offsets, stable order, preserved companion-page positions and anchor links replace inaccessible first-page truncation. Counts and row reads use two parallel rounds; no unbounded query or extra donor/contact/receipt fields. Approved names remain removable after refunds/anonymity changes. Feature OFF returns before database reads and never falsely declares the backlog cleared. Noncanonical/malformed names are visible as private record-review entries without echoing raw values or offering mismatched snapshot actions.
+- Recognition approve/reject and staff takedown reject repeated required FormData fields before transactions; approval requires canonical reviewed name equality. Existing reconciliation permission, consent timestamp/name CAS, captured/non-anonymous/unrefunded approval eligibility, pending-cleanup ineligibility, serializable updates and audit/cache semantics retained.
+- Follow-up workboard now supports completed/cancelled task history and explicit active/inactive/all-case scope. Default remains the operator's open due tasks on active unconverted cases. Resolved history is ordered by resolution time (missing times last), shows IST timestamps and preserves state/scope/team filters across bounded pages. Task completion is explicitly distinguished from verified aid delivery. No mutation shortcut, SLA/urgency inference, applicant names or new case permissions.
+
+Evidence: reproduced **12 failing page cases** and **10 failing ambiguous-input/canonical-name cases** against prior sources. Final **47 focused tests across six suites pass**, including read authorization/gating, pagination after removals, unreachable later records, privacy projections, task history and transactional staff guards. Replaced obsolete source-string truncation checks with actual page/action tests. Application-only TypeScript, changed-file zero-warning ESLint, diff checks and clean optimized compile-only build pass. Impeccable detector reported no findings. Browser/staff round trips, native PostgreSQL concurrency, full data generation and live withdrawal acceptance are NOT certified. Previously reported unrelated assistance-test typing limitations remain.
+
+Emitted JS **814226/819200**, CSS **348052/348160**, unchanged; no new client boundary, stylesheet, dependency, migration or budget relaxation.
+
+Master149 implementation remains **60 Implemented /61 Partial /26 Not started /2 other**, no formal closure or live promotion. AF-R091 and AF-CONSENT now record targeted test evidence for these scoped controls; AF-LOCAL gains task-history/filter evidence. Consent retention, reviewed feature activation, service-zone/urgency/SLA policy and end-to-end acceptance remain open. Current Git classifications **61 Merged /60 PR open /28 Uncommitted**, reflecting new AF-CONSENT source in PR rather than its prior merged baseline.
+
+Next: continue the next unblocked substantive source package; no broad re-audit. No main merge, deployment, production/provider/payment/email operation, consent activation or database migration occurred.
+
+## 2026-10-17 — W7 sponsorship review and manual calendar planning
+
+Ownership: HANDOFF_PENDING on `fix/direct-transfer-feedback-20261013`, PR #292. Sole writer resumed `1ea37edf`; published source `0fd4c049629fa9cd3cab9c493d4f755a7dc04043`. No main merge or production release.
+
+- Sponsorship now has a native server-rendered preference form, fixed education/support choices, optional request to keep the donor name out of public recognition, visible message review, mailto handoff and copy/contact fallback. All existing path CTAs lead into this review. Rejects unknown/repeated/personal query fields without reflecting their values. No message is sent by the website, no student identity/capacity/unit price is invented, and no placement/payment is reserved. School/college remain developing pathways; receipt identity is not confused with public anonymity.
+- Giving planner now offers one-date and one-to-ten-day inclusive calendars alongside monthly/Friday schedules. Visitors confirm local religious dates themselves; no moon-sighting forecast. Pure bounded GET download rejects unexpected/duplicate/malformed parameters, uses fixed filenames and private no-store/no-referrer/noindex headers, and redirects invalid requests to inline recovery. Monthly/Friday dates use India civil date; DTSTAMP records actual UTC creation. Calendar events can be edited/deleted and repeat-import behavior is disclosed.
+- Removed the reminder client boundary, useState, browser Blob/object-URL download and client calendar serializer. Native forms work without hydration. Reused existing form styles for sponsorship and removed reminder layout/error rules orphaned by the server conversion. No dependency, database migration, provider mandate or new client framework.
+
+Evidence: **60 focused tests across five suites pass**; application-only TypeScript and changed-file zero-warning ESLint pass; diff check and clean optimized compile-only build pass. Impeccable context/detector ran without findings; new copy reviewed using No AI Slop principles. Full repository typecheck still has the previously reproduced assistance-test diagnostics; no full-suite, full data generation, database/browser/screen-reader or external calendar-import acceptance is claimed.
+
+Clean emitted bytes versus preceding W5 build: JS **819856 →814226 (-5630)**, **4974 below819200**; CSS **347875 →348052 (+177)**, **108 below348160**. JS chunks49→48. Inherited JS excess is removed; no budget/configuration relaxation. These are emitted raw-byte figures, not transfer/CWV measurements.
+
+Master149: **60 Implemented /61 Partial /26 Not started /2 other**, no implementation promotion or formal closure. AF-SPONSOR advances only enquiry preparation; inventory/capacity/reservation/refund accounting still depends on approved operating rules. AF-GIVING-PLANNER advances user-chosen dates and mandate separation; local-date/calendar-import acceptance remains open. Updated current sponsorship Git classification from historical Merged to PR open for the new source; aggregate **62 Merged /59 PR open /28 Uncommitted**. No new source is claimed deployed/live.
+
+Next: extend an independently approved W8 operational flow or the next source-ready giving enhancement; preserve the fixed budgets. No payment, external message, migration, production configuration, merge or deployment occurred.
+
+## 2026-10-17 — W5 approved archives beyond the detail cap
+
+Ownership: HANDOFF_PENDING. Continued the authorized existing branch `fix/direct-transfer-feedback-20261013`, PR #292, from verified `d410c027172198ff156e3c045e5463f2c63dea64`; published code `4a0c65e2ef462ad6df88d9d26b93cb7a1d56569d`. Sole implementation writer. Main remains `aedae00171d2cbf585f65f93b783f66c7f003a43`.
+
+- Added fully server-rendered `/media-archive/[kind]/[slug]` for initiative/story/faith records, 24 public records per page with one lookahead. Parent eligible count rejects impossible deep offsets before reading media; the second read repeats parent publication, cause/story privacy and religious-review gates. Ordering retains sortOrder/year/createdAt plus a deterministic ID tie-break. Reuses the minimal public projection and approved media renderer; no storage keys, source paths, review metadata or client gallery state. Previous/next links work without JavaScript; paginated archive is noindex/follow. All four detail variants link at the 48-record cap, preserving heroes and bounded initial payloads.
+- Lazy gallery thumbnails use browser auto sizes with gutter-aware, 29rem-capped fallbacks; only a selected lightbox image is eager. Focus cleanup preserves the newer-dialog check while eliminating the inherited React hook lint warning.
+- Replaced readonly query assertion with `satisfies Prisma.MediaAssetFindManyArgs`, repairing inherited Prisma query-array incompatibility and public detail inference without changing selected data.
+
+Validation: **56 focused tests pass across 7 suites**, covering page-three access, public projections, private/unpublished/religious gates, invalid and huge page parameters, withdrawal between reads, static archive navigation, image policy and gallery focus. Application-only TypeScript passes; changed-file zero-warning ESLint and diff checks pass; Prisma client generation and clean optimized compile-only build pass. Full repository typecheck still reports **24 diagnostics in untouched assistance tests**, all reproduced at baseline (no new diagnostic locations). No full production generation, native PostgreSQL, real mobile/browser/screen-reader acceptance or measured network/CWV improvement is claimed. Impeccable context and initial source detector ran; no detector findings.
+
+Fixed budget evidence from two empty-output builds: baseline d410c02 JS **819760/819200**, current JS **819856/819200** (**+96**, current excess **656**); CSS **347875/348160** unchanged. Baseline already exceeds JS cap by560. Server-only archive version was retained; no budget, chunking or support target changed. CLI push lacked credentials; connected GitHub tree/commit/ref publication used an expected-head lease and code was read back.
+
+Master149 remains **60 Implemented /61 Partial /26 Not started /2 other**. AF-R052/AF-R054 evidence advanced without classification promotion; full archive/database/device acceptance, responsive transfer measurement and release requirements remain open. No item declared closed/live. No merge, deployment, migration, production record/provider/payment/email operation. Next: source reduction for the inherited JS excess and assistance fixture typing, then the next safe W7 giving/sponsorship package; avoid another broad audit.
+
+## 2026-10-16 — Bounded private consent, information requests and PDF preparation
+
+Continued existing PR #292 from verified remote `5c7688d5d742b0d7e03ed0c028552b955d26a220` and matching local tree. Reproduced **12 failing component cases** against prior sources: stalled preference/status reads, old receipt state after reference change, uncertain mutation handling, duplicate rights rows, and stalled/abandoned PDF preparation. Shared bounded-private-request primitive races the complete transport/body operation against a deadline and receipt lifetime, removes timers/listeners, and works even when mocked transport ignores abort. Cancellation does not imply rollback of a server write.
+
+Both optional donor panels now bound status reads to 8 seconds and mutations to 15 seconds. An uncertain mutation disables further changes and offers **Check status**, which sends only a read action; no mutation is automatically retried. Recognition locks synchronously against same-turn repeated clicks; selection/name controls lock while writing. Receipt-keyed state and lifetime cancellation discard old data/results. Rights status responses reject duplicate request kinds. PDF preparation has a genuine 25-second overall deadline, aborts on unmount/reference change, and cannot redeem an authorization or start a file download after abandonment/timeout. Existing POST-only credentials, server authorization/consent semantics, financial records and all feature gates remain unchanged/off.
+
+Executed final full suite **2222 passed / 11 skipped**, 228 passing suites; **21 focused cases** cover the new lifecycle/helper plus existing PDF success/failure behavior. Extended transport and body stalls, late mutation replies after status recovery, timer cleanup and already-aborted lifetimes. Full generated-route TypeScript; changed-file zero-warning ESLint; browser-test syntax; secret-boundary scanner; generated route report; clean optimized compile-only build pass. Real Chromium153 ran the new synthetic fixture at **390px and 1440px**: both status timeouts/read retries, two uncertain writes followed only by status reads, PDF timeout/fallback, receipt switch isolation, no overflow or JS exceptions. Committed equivalent Playwright cases; the local run used the same real components via a standalone Chromium driver, not the repository Playwright runner. No real donor/provider/email/database write. Impeccable detector completed without findings; new recovery copy checked with No AI Slop principles. Acceptance fixtures were removed before final production-output measurement.
+
+Clean aggregate JS **814858→818167 bytes (+3309)**, **1033 below 819200**; CSS unchanged **347588**, **572 below 348160**; 49 JS files. No budget, browser support, dependency or chunk configuration relaxation. These are emitted raw bytes, not CWV. Master149 remains **60 Implemented / 60 Partial / 27 Not started / 2 other**; AF-DONOR/AF-R091/AF-RECEIPTS remain Partial. Native PostgreSQL/concurrency, full production generation, authenticated staff browser/AT, renderer installation/CA wording, hosted exact-head CI and controlled rollout remain open. No merge/deploy/migration/feature activation.
+
+## 2026-10-16 — Server-rendered staff controls bring compiler JS below cap
+
+Continued PR #292 from verified remote `06b62b3dcda25b4c215104a91323e018a442e2d8`. Four staff form modules (direct-transfer reconciliation, allocation proposal/reversal and donor-rights review) now render static controls/copy on the server. One small client form owns action feedback and pending state; buttons obtain pending state through React form context. Existing server action references pass through the supported Server Component boundary. Action implementations, authorization, validation, hidden IDs, named decisions, required attestation, rejection formNoValidate, feedback placement, pending label and disclosure copy are preserved.
+
+Before/after rendered-markup comparison passed all 15 cases (five form variants × idle/pending/error), ignoring attribute order only. Two real-component JSDOM action tests prove both result discriminators, submitter decision/ID FormData, both buttons disabled during pending, pending label, error alert, manual second submission and success feedback. Full suite **2204 passed / 11 skipped**, 226 passing suites; full generated-route TypeScript; changed-file zero-warning ESLint; client-secret guard; generated route report; clean optimized compile-only build passed. Impeccable detector completed successfully with no reported findings. These checks do not certify authenticated browser/server-action round trips, native PostgreSQL or full production generation.
+
+Clean emitted JS **823514→814858 bytes (-8656)**, now **4342 below the unchanged 819200 cap**; CSS unchanged **347588**, **572 below 348160**. JS files **50→49**. An initial build retained stale chunks and was discarded; these totals come from an empty-output build. No chunking configuration, dependency or browser-target change. Aggregate emitted bytes are not a network/CWV claim. Full production generation, native database acceptance, authenticated browser/AT and exact-head hosted CI remain open. Master149 unchanged **60 Implemented / 60 Partial / 27 Not started / 2 other**; no source item promoted. No merge/deploy/migration/feature activation.
+
+## 2026-10-16 — Private record read deadlines, reference isolation and lean imports
+
+Continued PR #292 from `b0bf41d8faf4138909ba8ba42b78d41d71d99a4f`. Five new regressions failed against the previous sources: both acknowledgement and assistance-status reads could remain loading through stalled transport/JSON, and a newly selected donation reference could briefly display the previous donor record before its animation-frame reset. Both read effects now have an 8-second overall deadline, abort and clear their timers on completion/unmount, and ignore late results. Existing read-only retry messages and private credential capture/scrubbing remain intact; acknowledgement rendering immediately gates loaded records against the selected reference. No write/payment retry is introduced.
+
+Separated pure INR formatting from private-link helpers, and assistance response validation from donation acknowledgement validation. All callers/tests use their direct modules; validation/paise rules are preserved. This removes unused private/financial code from unrelated client graphs without new entry requests. Clean compiler JS **825345→823514 bytes (-1831)**, still **4314 above 819200**; CSS unchanged **347588/348160**. JS file count remains 50. Route entry JS: Donate534290→533882, Assistance tracking530014→528176, acknowledgement532178→532154; Home and intake unchanged. These are uncompressed emitted bytes, not CWV or transfer measurements.
+
+Executed final full Vitest **2187 passed / 11 skipped**, including 19 private-client lifecycle cases; generated-route TypeScript; changed-file zero-warning ESLint; secret-boundary guard; generated route report; clean optimized compile-only build. Actual Chromium153 with intercepted synthetic API records verified BOTH pages end stalled reads, expose manual read retry, recover on exactly one extra request, scrub tokens and produce no JS exceptions. Receipt rendering preserves 100.00 paise display and sensitive-case link omission. No provider, real record, payment or intake write. Native PostgreSQL, full production generation, AT/full-browser release and exact-head hosted CI remain unverified. Master149 stays **60 Implemented / 60 Partial / 27 Not started / 2 other**; no source item promoted to complete. No merge/deploy/migration/feature activation.
+
+## 2026-10-16 — Reusable client chunks and bounded Companion requests
+
+PR #292 continued from `f187db07653df2581f86da97e48ad0a693d7dd0b`. Configured the installed Next.js production chunker's documented `maxMergeChunkSize: 10000` raw-byte threshold to prevent shared modules being copied into merged route chunks. Clean compiler output removes the duplicate carousel/framework module groups. No budget, browser target, dependency, security header or lazy boundary changed. The 4000-byte trial saved only 444 extra bytes at two extra route requests and was discarded.
+
+Prayer-response regressions reproduced 8 failures against the original component: malformed metadata/moon/tomorrow data could reach rendering, and transport or JSON-body stalls never ended loading. The lazy panel now validates every rendered field and HTTPS announcement link, binds tomorrow to the next local date, and applies an 8-second overall deadline with abort/cleanup and late-response rejection. Clear local-masjid/retry guidance replaces indefinite loading. No new polling or religious content.
+
+Executed: full Vitest **2178 passed / 11 skipped** across 224 passing suites; subsequently expanded Companion DOM suite **11/11 passed** (includes valid nullable/full payloads, malformed details, stalled transport/body, late completion, manual retry and bounded errors); full TypeScript; changed-file zero-warning ESLint; 8 bundle-report tests; generated route attribution; client-secret guard; clean optimized compile-only build. Chromium153 verified 390px About/Contact/Assistance with one H1/no overflow, mobile menu hydration and closure after client navigation, lazy Companion malformed-response rejection and successful retry, plus 1280px Contact. Zero JS exceptions/failed static chunks. APIs were intercepted; no payment, intake write or provider request. A local Donate render could not be accepted without the isolated PostgreSQL configuration; no payment acceptance claimed. Impeccable detector returned zero findings on changed panel; copy checked for slop.
+
+Final JS **847439→825345 bytes (-22094)**; CSS **347588 unchanged**. JS remains **6145 bytes above 819200**; CSS is below 348160. 50 JS files vs 43; compiler route entries add 3–4 script requests (Home12→15, Donate/Assistance13→17), roughly 408–588 bytes; this is a cache-reuse/aggregate-output improvement, NOT proven first-load/CWV improvement. Complete generation, native DB, full browser/AT and hosted exact-head CI remain open. Master149 source totals unchanged **60 Implemented / 60 Partial / 27 Not started / 2 other**. No merge, deploy, migration or flag activation.
+
+## 2026-10-16 — Shared checkout emission and retained fund review
+
+Continued PR #292 on `fix/direct-transfer-feedback-20261013` from verified remote `54fdb84692d0c4557a28acdaefd6539a5f536cef`. Both donation server entries now use one client export boundary; actual clean Turbopack output no longer duplicates the online/direct-transfer form modules across those entries. No form is eagerly substituted for its existing lazy import.
+
+Executing previously skipped DOM tests reproduced two existing fund-refresh failures: changed definitions unmounted the original-purpose form, including an uncertain order. The form now remains mounted with the original reviewed snapshot and entered details; controls and the submit handler block new orders until explicit re-review. Re-review resets consent and fields even when policy changes without a revision increment. In-flight original-purpose responses retain their connected form and existing reconciliation locks. Withdrawn funds cannot start another order. Corrected the preset test's stale positional assumption by selecting the actual ₹1,000 button.
+
+Validation: 90 tests across 10 suites (including 8 real-component JSDOM interaction cases), full generated-route TypeScript, changed-file zero-warning ESLint, governed Stylelint, 5 public-boundary Node tests, secret-boundary guard and clean optimized compile-only build passed. Baseline JS **884,313 → 847,439 bytes (-36,874)**; CSS **347,588 → 347,588**. Unchanged JS cap 819,200 still fails by **28,239**; CSS cap 348,160 passes. Intermediate boundary-only saving was 37,128 bytes; final correctness changes add 254 bytes. Compiler entry JS /donate 533,813→533,702; /donate/[slug] 524,109→533,702 (+9,593 tradeoff). These are emitted uncompressed bytes, not network/CWV measurements. Native full generation, provider/browser/AT acceptance and hosted exact-head CI remain uncertified. No merge, deploy, migration or feature activation. Master149 unchanged: 60 Implemented / 60 Partial / 27 Not started / 2 other; AF-R047 and AF-FUNDS remain Partial.
+
+## 2026-10-16 — Exact-color CSS lint fix, no visual redesign
+
+Recovered PR #292 HEAD `437f1e6a` and protected the prior 604 commits, including interrupted live-rail/donation work. GitHub Actions 38794066399 fast job failed governed Stylelint with fourteen `color-no-hex` diagnostics in donation-landing-checkout, route-loading-skeleton, site-header and verified-impact-strip modules. Claimed source ownership `0c8f782e`; committed `d0ec5a4d3f2a19d289e389a05c0a4b70fdd5d547` with exact palette-token substitutions (2 + 9 + 2 + 1) and four new token declarations in canonical globals. Source readback verified every affected module contains no hex; token definitions were compared for original RGB equivalence and all class names/layout/visual states were retained. CI run 38797143461 was still in progress at latest inspection and is not claimed green. Source-only correction with no exact-head npm/Chromium/build, no deployment, and no master 149 status change. Handoff pending; next step verify this actual run once and resume JS bundle measured optimization or next unblocked P1 code batch.
+
+## 2026-10-16 — Interruption recovery and grouped real lint failure closure
+
+Verified existing PR #292 HEAD `4f315eea` after stream interruption. The source checkpoint had 16 newer commits than the previous known `750b609` and had HANDOFF_PENDING; newer source was preserved. Github Actions run 38777759702 fast job failed `npm run lint` (7 errors, 2 warnings), not a speculative audit. Claimed single-writer ownership in `2acf1b01` then patched all cited source lines in `ac5daac5` (recognition/donor-rights/zakat JSX escaped apostrophes; assistance/direct-transfer/volunteer in-app contact Links; gallery effect ref cleanup snapshots preserving stable opener focus). Seven committed sources plus nine independent textual contract checks verified on the remote SHA. New exact-head CI run 38793797760 was pending at last check; no native test, browser acceptance or asset measurement has been claimed. All 149 statuses remain unchanged. No main merge, prod deployment, migration, payment, funds, mail or secrets.
+
+## 2026-10-15 — Donor checkout method isolation and unavailable-bank disclosure
+
+Continued PR #292 at verified `8878ea6d`, claimed single-writer ownership, committed `08db012c` plus `11ae905c`. Bank transfer selection is disabled if server-reviewed bank instructions are missing; descriptive availability copy makes the alternative payment routes clear. Bank/UPI direct-transfer components now have distinct React keys so a switch while no submission is in progress cannot inadvertently carry input values, UTR, date, evidence or validation state into a different transfer method. Existing submission locking, fundraiser checks and disclosures were retained. Two SSR test scenarios added to the shared real checkout test; not executed locally. No production actions or master ledger status promotions. Exact-head unit, type, lint, browser, and bundle validation remain pending.
+
+## 2026-10-15 — Public appeal source guard synchronized to rollover behavior
+
+Following interrupted continuation on PR #292, confirmed newest branch head and inspected failed fast-lane job 116560151109 in Actions run 38774914375. Sole failure was a stale static-source assertion expecting `getHomepageAppealsCached(limit)`, although the previously committed source intentionally shares twenty candidate appeals and limits only after a fresh deadline check. Updated `scripts/test-public-data-boundaries.mjs` on commit `8c947644` to check `getHomepageAppealsCached()` and positively assert the correct filter-before-limit order. A readback from that exact commit verified the expected function call and source expression ordering; native Node/Vitest/TypeScript, browser and build checks were not run in this workspace. Existing feature/source/ledger status is unchanged, no release operations undertaken.
+
+## 2026-10-15 — Real admin redirect inventory failure corrected
+
+Recovered user-interrupted PR #292 HEAD at `84d17c2`, preserving schema privacy commits. Exact CI run 38773986971 had fast job 116556846696 failing `test-admin-route-inventory.mjs`: three protected admin page paths missing from the anonymous Playwright route inventory. Added all three paths in source commit `f08849b9` (allocations, recognition, rights), preserving the existing redirect-to-login assertion. Verified all 16 current protected page paths are represented using GitHub's actual recursive tree and the committed browser spec; no route or authentication implementation changed. This does not establish actual browser pass or a green current-head CI result. No master scoreboard promotion, production change or merge. Source execution returned to HANDOFF_PENDING.
+
+## 2026-10-15 — PR292 public schema canonical origins and private preview media
+
+From verified head `430d3705`, committed `515927f1` and `9676aa12` on `fix/direct-transfer-feedback-20261013`. The first fixes JSON-LD metadata accepting an absolute private image on an explicit preview origin different from process NEXT_PUBLIC_APP_URL; same-site path is now re-evaluated through the existing private-path guard. The second exports the existing verified site-origin normalizer, replacing independent unvalidated root/appeal/breadcrumb origin construction. This makes organization/site @id, breadcrumb destinations, WebPage references and conditional DonateAction targets consistent. Previously one SSR test expected a raw configured origin containing an injected query string; it now asserts canonical stripping while other component tests retain script-escaping checks. No existing publication/consent, fundraising, indexing gate or CDN allowlist is altered.
+
+Added/regressed 8 same-site private image cases and 5 valid/malformed configured origins, preserving public source/CDN controls and existing sensitive text escaping. These tests were authored, not executed locally: no checkout/dependencies/GitHub network available in the runtime. GitHub PR head lease and source content commits verified; no build/browser/prod proof. Source-only status is unchanged; AF-R080 still awaits real crawler/browser acceptance. No release or live data/provider operations.
+
+## 2026-10-15 — Cached appeal rollover and resource-conscious live-rail freshness
+
+Ownership: HANDOFF_PENDING after source batch on existing PR #292 `fix/direct-transfer-feedback-20261013` from `c3279ffc` to `21e75ac6e87b44cb86ae4b710e0711a0d4fec546`. Source changes:
+- `src/components/islamic-companion.tsx`: previously mounted a single live-appeal read for the lifetime of a tab. Visible tabs with active appeals now revalidate no more than every five minutes, clearing stale donation links before network revalidation and ignoring aborted, timed-out and late responses. Hidden tabs do not poll. Confirmed empty and unavailable rails do not make recurring requests; a tab returning to visibility after the freshness interval can recheck.
+- `src/lib/public-content.ts`: cached eligible appeal candidate projection retains 20 bounded candidates and performs the current deadline check **before** applying the caller's visible limit, so a recently expired high-ranked campaign does not consume a homepage/live-rail slot. Cache TTL remains 300 seconds, with the existing privacy/status gates and no additional database read.
+- `src/app/api/public/live-rail/route.ts`: explicitly requests four candidates, matching its four-item response contract rather than inheriting the homepage's three-item default.
+- Focused Vitest source coverage added/updated across companion effect lifecycle, cached promotional appeal projections and API response. It checks visibility/five-minute cooldown, no empty-rail polling, withdrawal, late timeout completion, time-advance cached rollover, sensitive exclusions and the four-item contract.
+
+Execution: GitHub connector source edits and exact-head branch lease verified. Repository checkout and dependency installation unavailable (GitHub DNS blocked in current container), so TypeScript, focused Vitest, lint, optimized build, asset budgets, real browser and provider/production acceptance **have not been executed in this environment**. Keep historic JS882837/819200 and CSS347365/348160 readings explicitly scoped to predecessor `a263dbee`; new head not measured. All 149 implementation states remain 60 Implemented / 60 Partial / 27 Not started / 1 Superseded / 1 Not applicable. No payment, migration, live database, mail, secrets, deployment, merge or feature activation was performed.
+
+Next: exact-head TypeScript and targeted lifecycle/expiry tests, then source-driven JS duplication investigation from clean emitted assets. Browser visibility and stale-link experience need actual hosted/Chromium acceptance before release.
+
+## 2026-10-15 — Gallery client CDN origin handoff and public metadata
+
+On existing PR #292 from `f2af1b9`, committed `70138d4` (ownership), `091fb42` (gallery/JSON-LD URLs), `615f5b7` (private schema paths) and `15f77bb` (server-to-client approved CDN origins and updated SSR tests). Server PublicMedia, gallery thumbnails/lightbox and public JSON-LD now apply consistent private-path and allowed-image-host checks. Critical browser boundary: `PUBLIC_MEDIA_BASE_URL` lacks the NEXT_PUBLIC prefix, so approved CDN origins are computed in the three server route owners and passed as plain origins into CampaignMediaGallery; no credential is passed and non-approved hosts remain omitted. This avoids accidentally removing legitimate consent-approved CDN photographs in the browser. Test source added/updated across the involved modules, but no repo test runner, browser build, hydration proof or size measurements were executed in this network-isolated handoff. Source safety/verification is not production certification. Canonical 149 statuses stay unchanged. No release/feature/data/payment operations.
+
+## 2026-10-15 — Public-media same-site alias privacy regression
+
+PR #292 source batch continues from exact verified head `a263dbee`. Public-media privacy classification now treats `www.amaanafoundation.org`, apex hosts with a DNS trailing dot, and a similarly dotted configured app hostname as application hosts before allowing a public IMAGE or DOCUMENT. Previously an absolute URL to an Amaana `/admin`, `/api`, `/donations` or private assistance route using an alias was not recognized as private for DOCUMENT media. Other separately approved HTTPS CDN hosts retain their existing handling. Focused negative and public/CDN control tests were added.
+
+Execution: GitHub connector source review and committed regression only; the old source checkout is absent and local GitHub DNS/network access was unavailable. Full Vitest, TypeScript, lint, bundling, browser and deployed/host-alias acceptance were not executed. All 149 ledger states remain unchanged. No production operations or feature gates were changed.
+
+## 2026-10-15 — Live-update rendering boundary and checkout imports
+
+Continued PR #292 from `a48d0f1a`. Public live updates now runtime-check bounded
+JSON, plain-text titles, distinct appeal identities and matching local appeal/
+donation links. Action labels are derived locally. Malformed JSON, HTTP failure
+and an 8-second deadline show unavailable state; initial loading no longer claims
+there are no public appeals. Cleanup prevents late JSON or an aborted deadline
+from replacing the current state. Fallback changes use polite announcements.
+The API now returns 503 on source failure and omits its unused summary field.
+
+Removed the duplicated outer lazy payment-method boundary while preserving the
+shared lazy online/direct-payment forms and their submission/consent guards.
+That isolated import change reduced built JS by 922 bytes (882619 to 881697).
+The complete correctness batch is 882837 bytes (+218 vs parent), still above
+the unchanged 819200 cap; CSS remains 347365/348160. No overall JS-budget success
+is claimed. No framework experiment or browser-support reduction was retained.
+
+Executed: 49 focused parser, actual-component lifecycle, API and streamed checkout
+regressions across 8 suites; full TypeScript, changed-code zero-warning ESLint,
+whitespace and clean compile-only build pass. Browser/CWV/payment-provider
+acceptance remains open. Master149 source states stay 60 Implemented / 60 Partial /
+27 Not started / 1 Superseded /1 Not applicable; no production operation.
+
+## 2026-10-15 — Assistance triage and cache-failure fallback
+
+Continued PR #292 from `cbba0d7c`. Added assignment filters (all, mine,
+unassigned), stable oldest/newest ordering, preserved combined filters through
+bounded pagination and elapsed request-age labels. Counts and status badges use
+the same assignment scope; “mine” always uses the authenticated user, never a
+query-string staff identity. Queue queries now select only displayed fields.
+Detail queries no longer retrieve full staff/authentication profiles, unused
+linked-appeal fields or unused audit metadata.
+
+Verification, review and assignment refresh both admin views independently after
+the transaction commits. If a refresh fails, a redirect opens the dynamic case
+detail instead of surfacing a cache failure as a failed database mutation.
+Draft-appeal conversion now also invalidates the queue before its redirect.
+Serializable writes, permission checks, stale-version guards, audits and
+notification atomicity remain in place.
+
+Executed: 41 targeted tests across 6 suites, full TypeScript, changed-code
+zero-warning ESLint, whitespace check and clean compile-only build passed.
+Built JS remains 882619/819200 bytes (blocked); CSS 347365/348160 passes.
+AF-LOCAL remains Partial: no service-zone/urgency vocabulary or SLA thresholds
+were invented, and median/p90 review metrics remain absent. No browser/mobile,
+native PostgreSQL or production acceptance is claimed. Master149 remains
+60 Implemented / 60 Partial / 27 Not started / 1 Superseded / 1 Not applicable.
+
+## 2026-10-15 — Navigation fallback and test discovery
+
+Continued PR #292 from `9605af89`. Vitest now discovers both `.test.ts` and
+`.test.tsx`: 19 existing component suites (56 cases) had been excluded. Their
+first execution exposed a footer null-pathname render crash. Header navigation
+now stays closed while the pathname is unavailable; footer/admin active links
+remain unset, and delegated motion/wheel scrolling waits for a real pathname.
+Five route-render and six motion/scroll/admin guard cases cover the fallback.
+Existing route-selection and permission behavior is preserved.
+
+Full-suite execution also exposed stale mocks and assertions in eight existing
+suites. Updated the new impact/appeal data mocks, private-client callback mock,
+exact two-decimal financial output, safe gallery fixtures/ref initialization,
+inline-image rejection, shared amount presets, continued recognition withdrawal
+and the existing 48px mobile dock. No publication gate or consent restriction
+was relaxed to satisfy those tests. No new visual design or promotional copy.
+
+Executed: full Vitest 2084 passed / 19 skipped (216 passed suites, 3 skipped),
+full TypeScript, changed-code zero-warning ESLint and whitespace checks pass.
+Clean compile-only build passed: aggregate JS 882619/819200 bytes (still fails)
+and CSS 347365/348160 bytes (passes). The nested-chunking experiment saved no
+bytes and was reverted. Browser rendering/AT/mobile acceptance remains open;
+compile-only mode does not establish production generation or deployment.
+Master149 implementation states remain 60 Implemented / 60 Partial /
+27 Not started / 1 Superseded / 1 Not applicable. No status promotion.
+
+## 2026-10-15 — B09 private receipt trust-boundary continuation
+
+Work resumed in ChatGPT chat against existing PR #292; source head `ce6610f9c79ec6dd28af63fbd71024d078be5f7e`, privacy fixture commit `a3b97981efdac0c4a0008c0d1693ea835bb8d3a9`, and browser-regression commit `1f2ad4e75ffec758832790fca6696954a38fcb3f`. The existing token-verified acknowledgement projection is now an isolated server-only function suitable for future PDF delivery. Its contract retains constant-time stored token-hash verification, integer-paise accounting, original appeal/fund designation snapshots and late confidentiality redaction. The same-origin route retains bounded JSON, no-store/private, no-referrer, noindex and uniform private misses. A separate hashed `receipt` request bucket (60 reads/hour per trusted client) bounds guessing without consuming the 10/hour donation-checkout budget; rate denial occurs before private donation lookup, and counter errors fail closed. Raw client IPs and receipt tokens are not persisted in rate attempts. New unit cases cover 429, wrong/missing credentials and distinct hashing. The previous actual privacy-fixture suite has a scoped rate-limit mock while preserving real origin/auth/read checks, avoiding an incomplete Prisma fixture. Three new Playwright scenarios use only synthetic donor/payment data to exercise masked-token recovery and stripping of fragment secrets, paise/partial-refund copy, responsive 390/1440 print isolation and 80G disclaimer retention.
+
+**Evidence discipline:** GitHub code publication and readback/structural preflights completed; neither full Vitest, TypeScript/ESLint, Playwright browser results, nor bundle/production builds were executed locally because no GitHub network checkout or hydrated project runtime is available. The new tests are authored but not claimed green. AF-RECEIPTS/B09 remain **Partial** pending standalone downloadable PDF (not an HTML response), expiring/reissued access, regulated tax-format separation, hosted native database integration, live verification, and controlled release. Master 149 labels remain 57 Implemented / 48 Partial / 42 Not started / 1 Superseded / 1 Not applicable. The original 95-alias history is unchanged. No runtime config change, migration, payments, donor or beneficiary record access, email, PR merge or production deploy.
+
+Next engineering development: create reviewed expiring/reissue receipt credential flow with no disclosure of PII by reference/email alone, integrate server-generated printable PDF through the *same* private projection, then execute focused auth/browser/native validation before proposing a release. Do not hand-roll a Latin-only PDF font path that breaks Urdu/Telugu donor names or mistake browser Save-as-PDF for a native PDF download.
+
+## 2026-10-14 — gated fund donation landing integration
+
+Continue existing PR292 from8df944da954b01c290b4a66dab3c6d0f0d71f952. Donation landing now integrates independently reviewed donor disclosures and in-page checkout only through exact private flag+per-ID allowlist. With controls disabled/missing, no fund DB query, form, or gateway script renders. No controls/environment changed; example config explicitly defaults off. Registry writes expire /donate only after successful transaction. Dynamic server visits reread approval; optional fund-read failures show a bounded availability notice and preserve public appeal/programme routes. Read selection omits privateNotes and returns only donor-approved DTO fields.
+
+Client selection retains original purpose across refreshed definitions; explicit revision re-review remounts fields/clears consent. In-flight/uncertain orders cannot change selection, original purpose or presets. Optional whole-INR500/1000/2500/5000 fund presets are capped by existing transaction limit, do not preselect an amount, clear invalidity and focus the amount control. Existing appeal checkout/purpose and limits remain unchanged. Checkout form uses lazy/Suspense so it is outside donation landing initial entries; disabled flows never mount it.
+
+88 focused tests across8 files pass, including5 actual React DOM cases and streaming page rendering with real activation/approval policy. Final TypeScript, zero-warning changed-file ESLint, two-file Stylelint, diff and clean compile-only build pass; client-secret/image guards pass. JS801638/819200, CSS343713/348160;17562 JS headroom. Donation landing entry JS615386, home619646, about613184; lazy checkout chunks excluded from landing entries. These are generated uncompressed sizes, not measured Web Vitals. Actual browser/AT and native multi-connection lifecycle acceptance remain pending; no real provider/DB writes, migration application, media publication, worker activation or deployment.
+
+Master149 identity/counts retained57 implemented/48 partial/42 not started/1 superseded/1 not applicable. B08/AF-FUNDS and AF-R083 updated for guarded public integration and presets; remain partial pending broader scope/controlled activation and acceptance. Next coherent development: B09 private receipt PDF/download and secure expiring recovery, preserving original purpose, financial integrity and tax disclaimer.
+
+## 2026-10-14 — client bundle and Companion load boundary
+
+Source continuation from d9e74c6898fea8ffb41ce711fe49a6406f6bee3a on existing PR292. Split checksum identity/path helpers from server manifest schemas. Browser authenticates a private byte snapshot against the pinned approved SHA-256 before UTF-8/JSON decoding; full schema and staging/auth/storage gates remain server-side. Archive/package/image checks and reviewed media publication rules remain unchanged. No import or publication executed.
+
+Moved unchanged reviewed Ayah/Hadith content into the lazy Companion panel dependency, retaining Hyderabad calendar behavior. Clean compile verifies reading-containing chunk excluded from home page/layout entries and no Zod runtime in emitted client chunks. Overall JS776483/819200 (42697 bytes saved;42717 headroom), CSS343292/348160 unchanged. Home entry JS619646 vs622879; about613184 vs616417 (3233 deferred bytes each). These are uncompressed generated assets, not measured network or Web Vitals.
+
+104 focused Vitest and15 Node calendar/API tests pass. TypeScript, changed-file zero-warning ESLint, diff, clean compile-only build, client-secret and static-image checks pass. Actual browser/AT/live CWV not rerun or certified. Master149 counts unchanged:57 implemented/48 partial/42 not started/1 superseded/1 not applicable. B03–B07 performance advanced; B08 public activation and acceptance remain partial. No deployment, provider/DB mutation, gateway activity or worker enablement. Next: integrate dormant reviewed donor flow into the public donation landing behind existing exact flag/allowlist, with disabled default preserved.
+
+## 2026-10-14 — B05 carousel expiry and B08 private fund governance
+
+Existing PR292, `fix/direct-transfer-feedback-20261013`, starting remote b62993963b81636daaf32b7813effec60662be4a. Root sole writer under explicit Bismillah/autonomous-development directive; no CI polling or release operation. Code published through guarded GitHub fast-forward refs; every remote tree matched local git. Commits: `4bdd683e3c0fbaa436f12402a54d665bd1088fcb` (carousel), `b779aeef80c377325fc180ad820b89b61bd099de` (private registry), `f7cb8b1d0e59400d6623d0b368b3ac4e9f9f0913` (definition audits).
+
+Carousel save now expires home-carousel cache immediately after committed transaction/audit instead of stale-while-revalidate max. Prior source fails the new regression; final action/helper32 cases pass. Failed persistence does not invalidate. Extends AF-PROMOTION, no duplicate root or live closure.
+
+Private GivingFund is an additive model with supported domestic INR GENERAL/SADAQAH intentions, unique slug/accounting code, draft/review/independent-approval/pause/close states and revision claims. Creator and last editor cannot approve; REVIEWER drafts only, PRIMARY/BACKUP_APPROVER may independently review. Server actions validate and authorize before DB, transact audit atomically, and expose bounded safe errors. Private admin page reuses existing CSS, has linked labels and revision-bound forms. Creation/status audits preserve the definition; edits preserve actual before/after purpose/disclosure/name/slug/code/intent values. No public API/checkout, existing Donation changes, active seeds, Zakat fund expansion or movement of money.
+
+Latest combined93 focused policy/action/server-render/navigation/carousel cases pass. TypeScript, changed-file ESLint, syntax/schema/diff checks pass. Actual prior audit implementation fails before/after regression. Additive migration applied only to isolated in-memory PostgreSQL-WASM with synthetic existing fractional capture/refund rows:14 cases pass, rows unchanged and no fund seed. Database constraints reject foreign currency, null/empty/duplicate/Zakat intentions, negative revision, absent approval, self-approval and stale draft approval; role grants checked. Optional harness `scripts/test-giving-fund-migration.mjs` uses independently installed pinned PGlite0.4.3 via PGLITE_MODULE_PATH; no project dependency added. This does not prove native multi-connection Prisma/concurrency.
+
+Registry compile-mode build and client-secret/static-image guards passed before audit-only extension: JS817078/819200B, CSS343292/348160B. Actual anonymous compiled new admin route redirects to login with no-store/noindex/no-referrer. Later audit extension has targeted runtime/type/lint evidence. No new browser/full-suite/CI/live proof; previous1187/9 suite remains historical. Chromium archive issue remains, no retry.
+
+Canonical master retains149 findings/95aliases/13historical duplicates; AF-FUNDS now partial with targeted sub-scope verification, total partial48. Next source unit is exactly-one designation/purpose snapshot and compatible legacy accounting before public funds. See master sectionF for exact blockers and continuation. No main merge/deployment, external DB migration, provider/credential configuration, real transaction/refund, record mutation, mail or outreach. Source development remains authorized; claim ownership before writing.
+
+## 2026-10-14 — R-064 retired transaction overrides removed
+
+Ownership: REVIEW_PENDING; no concurrent writer. Same PR #292 / fix/direct-transfer-feedback-20261013, parent6eb2f86ea6e0d86c9df101c2fd3f8068e1840530. User cx authorized source continuation.
+
+Confirm old donation hero/grid/context/back and assistance hero/grid/promise/before-grid classes are absent from current application components/pages, acceptance fixtures and seed content. Current routes use PageHero. Remove their rules across donation/assistance structure and polish files, plus unused branches in experience-finish/accessibility. Remove orphaned v2-donate-context-float animation and empty media blocks. Preserve active donation assurance, form/input/validation/upload controls and route layouts. Six files lose6424source bytes; root shared source127682→127593, still above60KB target. Remove48 ordinary style rules plus one animation/two keyframe-step rules (501→451 total rule nodes).
+
+Diff review caught an initial generic-pruning error that removed whole :is accessibility groups containing both retired and live selectors. Restore groups and remove only the two retired branches before testing/building. All451 retained ordered rule records preserve live selector lists, declarations/importance and media ancestry. Canonical contrast and scalable label rules remain. Extend existing global CSS audit to reject retired selector/animation reintroduction; deliberately reintroduced animation fails the actual audit, restored source passes.
+
+Validation:72 synthetic source-cascade comparisons in local Chromium across both forms,6 widths320–1920, both motion preferences and normal/focus/invalid states have zero computed-style or transition-metadata differences.16 actual compiled Chromium cases pass:12 intake artwork/all4-step checks across6 widths with Axe AA and containment,2 donation validation cases,1 mocked checkout→private acknowledgement and1 direct-UPI pending reconciliation/token-scrub case. Six existing contrast checks, full zero-warning ESLint/governed Stylelint, final focused lint, syntax/diff/ownership checks pass. No real money transfer, intake write or live provider/database/media access. CSS-only batch does not claim a new full runtime unit run; latest1095passed/9DBskipped suite belongs to3284822.
+
+Final production-only compile-mode build, guards and budget measurement run together after fixture removal. No acceptance route in manifest. JS816616/819200 unchanged. Total generated CSS347956→341893 (-6063bytes), leaving6267bytes against348160 ceiling. Uncompressed attributed CSS: /donate199596→196079 (-3517); /request-assistance185223→182594 (-2629); /about187281→187198 (-83). Root local import count remains15. These are generated asset bytes, not transferred bytes/CWV or full browser CSS coverage. Existing7 unattributed routes remain; compile mode is not hosted DB/prerender/release proof.
+
+R-064 advances to partial locally validated: an obsolete transaction override layer is removed; broader fold-and-delete reconciliation remains open. R-06760KB target remains open, R-068coverage remains unverified. Original95 classifications become10 baseline addressed,33 source implemented,25 partial,16 open,11 unverified. No new full defect/deployment closure claimed. Preview migration unapplied; CSP report stage defaults off. No main merge/deployment/live money/mail/storage/data/configuration action. Next: remaining shared CSS/cascade and original-register defects; exact-head hosted gates remain required before release.
+
+## 2026-10-14 — R-058 transaction CSS ownership validated
+
+Ownership: REVIEW_PENDING; no concurrent writer. Existing PR #292 / fix/direct-transfer-feedback-20261013, parent09045ae59305800c5bc8e2bef301a8c1ec2334fa. User cx authorized continued source remediation.
+
+Separate existing forms-experience.css into shared controls (2987source bytes), donate-structure.css (3785) and assistance-structure.css (6387), from12758 shared source bytes. Donation routes no longer inherit assistance/upload/consent layout rules; assistance routes no longer inherit donation layout/amount rules. Existing layouts retain shared-controls→owned-structure→route-polish ordering. Split mixed selector lists by ownership without rewriting declarations. All125 ordered rule records (25shared/38donation/62assistance), declaration values/importance, selector order and media ancestors match their original owner-filtered records. Root imports remain15 and127682source bytes; this does not satisfy the60KB global target.
+
+Extend existing audit to reject owner-specific rules in shared form CSS, wrong transaction import ordering and global reintroduction. A deliberately reintroduced assistance selector fails the real audit; restored source passes. Acceptance donation/direct-donation fixtures now use the actual DonateLayout instead of relying on partial root styles. Runtime form logic, validation, focus, privacy and payment contracts are unchanged.
+
+Validation: TypeScript, full zero-warning lint including governed Stylelint, syntax/diff and ownership checks pass.72 local Chromium synthetic CSS comparisons (both forms, widths320/390/768/1024/1440/1920, both motion preferences, normal/focus/invalid) have zero computed-style or transition-metadata differences; transition endpoints are stabilized before comparison. An initial comparison captured in-flight colour transitions; finish animations and wait for rendering before measuring.125 AST record comparisons independently confirm preserved source semantics.15 actual compiled Chromium cases pass:12 intake artwork/all-step checks across those6 widths with Axe AA audits and containment,2 donation constraint/linked-feedback cases,1 mocked checkout→private acknowledgement journey. No real payment or intake persistence. Direct fixture compiled/typechecked; its dedicated transfer journey was not rerun.
+
+Final clean production-only compile mode, postbuild secret/image guards and measurement run in one shell command with fixture flag false. No acceptance route in generated manifest. JS816616/819200 unchanged. Total CSS347956/348160 (+404bytes for split selector duplication,204bytes headroom). Per-route uncompressed attributed CSS: /donate205383→199596 (-5787); /request-assistance188509→185223 (-3286); /about187281 unchanged. These are generated asset bytes, not network/CWV measurements. Earlier production candidate contained fixture assets and was rejected; only the clean final output is budget evidence. Compile mode does not certify hosted database/prerender/release. Existing7 unattributed routes remain.
+
+R-058 remains partial, with stronger route ownership evidence. Original95 totals unchanged:10 baseline addressed,33 source implemented,24 partial,17 open,11 unverified. Latest full runtime unit suite1095passed/9DBskipped belongs to3284822, not a fresh run of this stylesheet batch. Nullable preview migration unapplied; report-only CSP defaults off. No main merge/deployment/live money/mail/storage/data/provider configuration operation. Next: remaining shared stylesheet/cascade reduction and original-register work; current-head hosted release gates remain required.
+
+## 2026-10-14 — Appeal stylesheet ownership validated; original95 reconciled
+
+Ownership: REVIEW_PENDING; no concurrent writer. Same PR #292 / fix/direct-transfer-feedback-20261013, parent3284822816d31ab4cc9c7bde8b7fd4a75cffeb54. User cx authorized continuation.
+
+Remove unchanged appeal-card.css from root imports; the existing appeals/layout.tsx now imports it before appeals.css and appeals-wow.css, covering listing and detail progress. Root local stylesheet imports16→15, source bytes130807→127682. Add audit guards against global reintroduction or changed subtree order; reintroduction fails the real audit. No CSS declaration, route content, architecture or accessibility authority changed.
+
+Validation:36 synthetic source-cascade comparisons in local Chromium (widths320/390/620/700/900/1440, normal/hover/focus, both motion preferences) report zero computed-style differences with transitions frozen for stable endpoint comparison. Three committed actual AppealCard/AppealsLayout compiled-browser cases pass at320/390/1440, covering layout, progress fill, focus, reduced-motion authority and containment. Initial new test incorrectly expected literal0s; corrected to existing accessibility rule0.01ms, then all3 pass. Synthetic fixture is acceptance-only, no live DB/payment/media access.
+
+TypeScript, full zero-warning ESLint and governed Stylelint, focused final lint, six existing contrast checks, syntax/diff checks and the existing two-file Prettier gate pass. Latest full runtime unit suite remains1095passed/9DBskipped on parent3284822; this stylesheet-import-only batch does not claim a new full unit run. Clean default-off fixture-free compile-mode build passes; JS816616/819200 and CSS347552/348160bytes unchanged. Client secret/static image guards pass. Generated root manifest CSS excludes canonical appeal-card-head. Uncompressed attributed CSS falls2887bytes: home196918→194031; about190168→187281; appeals204974 and appeal detail191638 unchanged. These are build bytes, not transferred bytes/CWV; existing7 unattributed routes remain. Compile mode is not hosted DB/prerender/release acceptance.
+
+Original95 rows now classify10 baseline addressed,33 implemented/source implemented,24 partial,17 open,11 unverified. R-057/R-058 reflect validated scoped progress while broad isolation remains incomplete; R-065 reflects the already-existing limited two-file formatter gate, not a new implementation. Correct stale R-066 local-lint wording and R-075 parked wording because public/llms.txt exists in current branch. No95-wide fresh production closure claim; later N findings are outside95. R-083–095 include requested feature enhancements, not13 proven regressions. Security nonce/hash hardening, CSS budgets/coverage, human/hosted acceptance, reviewed entity/content/financial facts and authorized operational work remain.
+
+R-056 nullable migration remains unapplied; R-017 reporting defaults off. No merge/main change/deployment, provider configuration or live money/mail/storage/data operation. Next: wider CSS ownership/cascade reduction and remaining actionable original-register work; exact-head hosted gates required before release.
+
+## 2026-10-14 IST — R-017 opt-in CSP diagnostic stage implemented
+
+Ownership: REVIEW_PENDING; no concurrent writer. Same PR #292 / fix/direct-transfer-feedback-20261013, parent51ed9829b103d36e2772d3191746e9f4a65c3260. Owner cx authorized continued source work.
+
+AMAANA_CSP_REPORT_ONLY=true adds a script-only report policy without unsafe-inline/eval, a first-party report-uri and modern Reporting-Endpoints/report-to. Existing enforced CSP and Razorpay origins are unchanged; reporting defaults off. No report-sample keyword is used. Production uses both report mechanisms; acceptance explicitly selects legacy transport for deterministic native delivery. Header flag must be present at build time, and the collector also requires the runtime flag.
+
+New /api/security/csp-report accepts bounded legacy/modern envelopes and derives only allowlisted script directives plus inline/eval/same-origin/razorpay/other source categories. Raw document/resource URLs, query tokens, source samples, referrers, policy text, user agents and identifiers never enter emitted records. Configured origin validation rejects missing/insecure/credentialed origins, permitting loopback HTTP only in explicit local/development modes. Foreign Origin/cross-site/wrong MIME requests drop before parsing; native missing/null Origin forms require matching configured report-document origin. Reports are untrusted diagnostics, never authenticated proof of attack.
+
+Collector reads at most4096bytes with a two-second deadline, handles at most three entries per request, and allows20 diagnostic attempts/minute per instance (at most60 coarse log rows). No database counters/rows or client identifiers. Logging is private structured stderr, retained under production console removal. Failures return an empty private/no-store/noindex204. Optional read deadlines belong to the existing bounded-body helper: default caller behavior remains unchanged; timeout and oversize cancellation cannot hold the caller hostage, and timers/reader locks are released.
+
+Validation: six actual Next-config header tests pass, including exact equality of enforced CSP with reporting on/off.52 focused CSP/body/collector cases pass, including private-token/source redaction, modern envelopes, malformed/oversized/foreign/disabled/budget/log-failure cases and stalled cancellation. Full Vitest1095passed/9database-dependent skipped. TypeScript, focused/full zero-warning lint plus governed Stylelint, syntax and diff checks pass. Two actual local Chromium cases pass with report-only enabled: native legacy reports reach the real collector204 and private coarse logs while hydration/inline script execution still work; the existing mocked checkout-to-private-acknowledgement journey passes. No real Razorpay SDK transaction or payment was executed; modern production reporting transport and staged/provider acceptance remain unverified.
+
+Clean fixture-free default-off compile-mode build passes: JS816616/819200bytes and CSS347552/348160bytes; client-secret/static-image guards pass. Compile mode is not hosted database/prerender/release proof. R-017 becomes partial; approved activation, modern transport and payment acceptance remain open. R-014 enforced nonce/hash hardening remains open. Existing R-056 nullable migration is still unapplied. No production/main merge, deployment/configuration change or live money/mail/storage/data operation occurred. Next: remaining original-register remediation and exact-head hosted evidence when available.
+
+Primary protocol references: [CSP3](https://www.w3.org/TR/CSP3/) and [Reporting API](https://www.w3.org/TR/reporting-1/).
+
+## 2026-10-14 IST — R-056 bounded ingestion previews implemented
+
+Ownership: REVIEW_PENDING; no concurrent writer. Same PR #292 / fix/direct-transfer-feedback-20261013; parent 51626ebba112ba99c7f5b9fa3020ff64c7359143. Owner cx authorized continued source implementation.
+
+Implement optional metadata-free JPEG previews from validated public-image upload bytes. Existing 40-million-pixel cap, 12x12 output limit, 1024-byte encoded cap and native two-second processing timeout bound generation. Decode failures preserve ordinary media fallback rather than retrying storage writes. No preview object is uploaded and private evidence/PDF paths do not generate previews. Add nullable MediaAsset.blurDataURL and a matching additive SQL migration; regular admin creation persists previews while retaining isPublic=false. Curated creation persists previews, and explicit re-ingestion of matching approved bytes can fill missing metadata with an audit event without changing consent/publication state.
+
+Only bounded JPEG data URLs can reach public Next Image placeholders. PublicMedia, programme/initiative gallery mappings, thumbnails and lightbox consume metadata; legacy/external delivery keeps its existing fallback. Canonical publication and privacyApprovedAt queries remain unchanged. Reclassify existing pinned sharp0.35.5 from development to production because ingestion now uses it at runtime. Lock graph and every resolved version are unchanged; preserve native-platform metadata.
+
+Validation: full Vitest1052passed/9database-dependent skipped; 93 focused generation/storage/admin authorization checks pass. Prior ingestion/rendering source fails five integration assertions; corrected three-suite56cases pass. TypeScript, Prisma schema validation, focused and full zero-warning lint including governed Stylelint, syntax and diff checks pass. Offline Prisma datamodel diff matches exactly one nullable TEXT column; migration was not applied. An isolated npm ci --omit=dev installation successfully encodes a JPEG with pinned runtime sharp. Five actual local Chromium cases pass: two delayed-image preview cases at390/1440px, responsive gallery columns/no overflow, keyboard modal/focus return and320px containment. Previews remain visible while loading and clear after decoded image readiness. Synthetic fixtures and network interception avoid live media/storage/data access.
+
+Clean fixture-free compile-mode build passes: JS816616/819200bytes, CSS347552/348160bytes; secret-boundary and static-image guards pass. Compile mode is not hosted database/prerender acceptance or live performance proof. R-056 is partial: ingestion/rendering is locally validated; hosted schema/application checks, approved migration/deployment and any owner-approved legacy re-ingestion remain outstanding. No existing live asset was backfilled, no main merge/deployment or live money/mail/storage/database/configuration action occurred. Next: remaining original-register remediation and exact-head hosted evidence when available.
+
+## 2026-10-14 IST — Private-record rendering and document privacy batch
+
+Ownership: REVIEW_PENDING; no concurrent writer. Existing PR #292 / fix/direct-transfer-feedback-20261013, parent 542a4ff8b9a40d77eb6684d76f02b772c41687b8. User handover authorized source continuation only.
+
+Confirmed N-23: acknowledgement/tracking clients asserted untrusted JSON types, allowing incomplete or object-valued found records into rendering. Validate consumed fields, dates, amounts, presentation, intent and the exact requested donation reference before state adoption; malformed reads retain read-only retry guidance. Guard tracking label/copy maps against inherited properties. Confirmed N-24: acknowledgement JSON completion could update state after effect disposal; an effect-local live flag now guards success and error continuations. Existing abort and credential preservation remain.
+
+Defense in depth: configure no-referrer alongside existing no-store on donation/intake/admin/API routes. Apply unconditional noindex/nofollow/noarchive only to private acknowledgement/tracking/received, admin and API matchers. Public donation/intake landing indexing stays unchanged. Existing page metadata and API private headers already protected private records; no production leak claimed. Enforced payment CSP unchanged; R-014/R-017 remain open. Replace CSP source regex tests with actual isolated Next configuration evaluation across production/development/acceptance and indexing on/off.
+
+Validation: 35 focused unit/effect cases pass. Restoring prior clients fails six regressions, including late completion and prototype labels; prior config fails two header regressions. Full Vitest suite 1040 passed / 9 database-dependent skipped. TypeScript and full zero-warning lint including governed Stylelint pass; final focused lint, syntax and diff checks pass. Five generated-header tests pass. Eight targeted actual Chromium cases pass (six new malformed/retry cases plus valid acknowledgement and legacy token capture); the six new cases also pass with actual HTTP referrer/index/cache assertions. Browser uses isolated local build with mocked reads/analytics; no real payment, intake write or production connection. Clean fixture-free compile-mode build passes: JS 816343/819200 bytes; CSS 347552/348160 bytes; client-secret and image-weight guards pass. Compile mode is not database prerender or hosted release proof.
+
+Current-head hosted CI and deployment acceptance remain outstanding. Original 95 totals and closure status are not inferred from these new findings. No main merge, production deployment/configuration, live money/mail/storage/data action. Next: exact-head hosted acceptance and remaining original-register security/performance/CSS work.
+
+## 2026-10-14 IST — R-066 two more Stories selector consolidations
+
+Ownership: REVIEW_PENDING. PR #292, parent 919982f3ec246979b582fe39195d3672a64e0b9a. Combined final feature H2 font-size and ethics-article padding into their respective early selector blocks, eliminating two later duplicate selector blocks. Same winning declarations, no media or DOM changes. Source checks only; browser, build and actual Stylelint execution outstanding. Scoped duplicate-selector exception retained until full route reconciliation. No merge/deployment/payment or live data action.
+
+## 2026-10-14 IST — R-066 Three Stories selector-pair consolidations
+
+Ownership: REVIEW_PENDING. PR #292 on fix/direct-transfer-feedback-20261013; parent fdd2b950e5c75628d0a954e5079e5a47e9e24359. Fold final feature-grid columns/gap, stories-grid gap/top margin, and feature-paragraph margin/line-height into their base CSS selectors, removing three later duplicate blocks. Exact source preconditions and original CSS winner values preserved; responsive declarations untouched. Browser/stylelint/build execution pending, R-066 partial, scoped temporary duplicate-selector exception remains. No merge/deploy/live operations.
+
+## 2026-10-14 IST — R-066 Stories card-copy selector consolidation
+
+Ownership: REVIEW_PENDING. Same PR #292; parent a274a7082e84db1b902d0e722a7f359db72fd300. Consolidate two duplicate unscoped Stories CSS selector pairs by moving the final card-copy padding and H3 font-size declarations into their earlier matching selectors. Remove now-empty late duplicates. All winning values and responsive rule order remain. Source preconditions checked; hosted cascade, lint, browser and build acceptance still pending. R-066 PARTIAL, no merge/deploy/payment/data changes.
+
+## 2026-10-14 IST — R-066 Stories ethics list overridden base padding
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013; parent 0d0c14be1ad4d0f32c602ba6b3166e37ac9d5879. Removed early unscoped .v2-stories-ethic-list article padding:1.6rem 0, overridden by later same-specificity unscoped padding:1.25rem 0. Preserve all other properties, responsive grid rules and source ordering. Exact winner/precondition checks performed. No full cascade/browser, lint or build execution; R-066 remains PARTIAL and scoped Stylelint duplicate-selector exception remains. No merge/deploy/payment/production data action.
+
+## 2026-10-14 IST — R-066 Stories narrow wide-card overridden min-height
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013; parent f416fa4feab12ebec2e3d18f60f2e317a0969799. Within max-width:620px, retain the shared 1fr grid-template-columns declaration for ordinary and wide cards but scope min-height:auto to ordinary .v2-stories-card only. Wide cards previously inherited min-height:auto in the media rule, but a later same-specificity unscoped .v2-stories-card.wide min-height:25rem takes precedence; removing the overwritten media declaration preserves the winner. No color, artwork, layout order or intentional responsive value changed. Browser/cascade and lint validation remain pending. R-066 partial and duplicate-selector exception retained. No merge/deploy/payment/data changes.
+
+## 2026-10-14 IST — R-066 Stories 900px redundant wide-card selector
+
+Ownership: REVIEW_PENDING. PR #292 / fix/direct-transfer-feedback-20261013; parent e11c7c0d3a9d6edc8ae14a0060ec7655a7b949d1. Removed .v2-stories-card.wide from the max-width:900px grid-column:span 12 override selector list, retaining the .v2-stories-card match there. The base .v2-stories-card.wide rule already establishes grid-column:span 12; thus at <=900px the winning wide-card column remains unchanged while ordinary cards still expand to twelve columns. Narrower 620px layout untouched. Source checks only, not actual browser/cascade equivalence. R-066 partial; Stylelint Stories duplicate-selector exemption remains. No merge, deploy, payments or live production data.
+
+## 2026-10-14 IST — R-066 Stories wide-card overridden minimum height
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013; parent 342743d028397296ff6362ea5b8ec69d1676584d. Remove only early unscoped .v2-stories-card.wide min-height:31rem, superseded by later unscoped same-specificity min-height:25rem. Preserve wide grid column and grid-template-columns plus responsive media overrides, all in original order. Source preconditions and later winning rule confirmed. R-066 remains PARTIAL, temporary Stylelint exemption retained, lint/build/browser cascade matrix not executed. No merge, deployment or production/payment actions.
+
+## 2026-10-14 IST — R-066 Stories feature dead base padding
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent a33cb5f999097039cfe938fae23047b84471c93f. Removed early .v2-stories-feature padding-block clamp(5rem,9vw,8rem), which is superseded by a later unscoped same-specificity clamp(3.75rem,6vw,5.75rem) and retains narrower responsive overrides. Base background retained. Exact source preconditions verified. No full cascade/browser or lint execution, so R-066 remains PARTIAL and duplicate-selector exception stays. No merge/deploy/payment or production data actions.
+
+## 2026-10-14 IST — R-066 Stories card dead declarations
+
+Ownership: REVIEW_PENDING. PR #292 / fix/direct-transfer-feedback-20261013; parent 8b0bd2db4ec4bea589bb79a6fb708a9f88c4e02e. Removed six superseded source declarations: card-copy padding, card H3 font-size, card min-height, border-top, border-bottom and transition. Existing later same-specificity rules supply the winning properties; selectors, responsive overrides and source order remain intact. Exact source checks performed; no actual lint/build/browser or complete cascade proof. Cumulative Stories overwritten-property removals in recent batches: thirteen including prior H2 (1) and feature/grid (6). R-066 PARTIAL; Stylelint duplicate-selector exception retained. No merge/deploy/payment or live data operations.
+
+## 2026-10-14 IST — R-066 Stories dead base declarations
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent 30ded17573cf876c344cd5701d12848b744f1e28. Removed six earlier unscoped declarations entirely superseded by later identical-specificity unscoped rules: feature grid grid-template-columns and gap; feature paragraph margin and line-height; story grid gap and margin-top. Preserved later winners and every selector and order, plus unaffected base properties. Exact before/after source preconditions verified. This is source-level cascade reasoning, not rendered browser equivalence or actual lint success. Duplicate selector exemption remains; R-066 PARTIAL. No main merge, deployment, payment or live data.
+
+## 2026-10-14 IST — R-066 Stories overwritten H2 declaration
+
+Ownership: REVIEW_PENDING. PR #292 / fix/direct-transfer-feedback-20261013; parent 80b4d7d0f5facc3eeeef88127f36477790c7303b. Source inspection found the early .v2-stories-feature-copy h2 font-size clamp(3rem,5.5vw,3.5rem) fully superseded by a later same-specificity unscoped rule clamp(2.5rem,4.3vw,3.5rem). Remove only the earlier overwritten font-size declaration; preserve the later winning declaration and all other values, selectors and relative order. Does not resolve duplicate selectors or remove the scoped Stylelint exception. Source preconditions pass; rendered browser, lint and cascade matrices have not been executed. R-066 remains partial. No merge/deploy/provider operations.
+
+## 2026-10-14 IST — R-066 Stories scoped Stylelint transition
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent ceda1d9ab78a415d739094bcf3c203b6bd0f4586. A source audit after registering stories.css in pinned Stylelint found repeated same-context selectors in base and late polish layers, including .v2-stories-feature-grid (2), .v2-stories-card (3) and .v2-stories-feature-copy h2 (2). Full no-duplicate-selectors on this route would block existing historical stylesheet, despite the source-only gate extension being reported as configured. Apply a narrow Stylelint override for this exact route disabling only no-duplicate-selectors while retaining color-no-hex for the route; both rules still apply to the pre-existing governed component modules/donation audit. This avoids falsely claiming the route has clean duplicate-selector governance; R-066 remains PARTIAL until route cascade is consolidated with rendered equivalence proof. No runtime CSS change or browser/build/lint execution; hosted gate must verify actual Stylelint behavior. No merge/deploy or production operations.
+
+## 2026-10-14 IST — R-061/R-066 Stories stylesheet token enforcement
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013; parent c8c81e62fe86f79c58d4d3a4888f741000c53db4. Replaced the final ten Stories route CSS hex occurrences with eight exact-value root palette roles: deep/dark/highlight blue, caption ink, night/artwork, prose ink and ethics night. Source preconditions counted every former literal and confirmed zero hex remain in stories.css. Extend the existing pinned stylelint:governed npm script to explicitly include src/app/stories.css alongside 17 component modules and donation audit. Existing color-no-hex and no-duplicate-selectors rules remain unchanged. This is source enforcement coverage, not proof of a successful executed lint gate or rendered cascade. R-061/R-066 remain PARTIAL because other route/global CSS, RGB/alpha colors and deployment acceptance are open. No local runtime/lint/build/browser execution available in this connected-GitHub step. No merge, deployment or production data/provider operations.
+
+## 2026-10-14 IST — R-061 repeated Stories body and warm-white text tokens
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent 323c557d3e8627883979cb02ee1984f7ca48415c. Centralize eight more exact-value route colors: four #68717a text declarations now --af-color-story-body-ink and four #fffaf1 foreground declarations now --af-color-story-warm-white. Tokens have identical RGB values, defined once in globals.css. Preserve all selectors, alpha colors, text sizing, backgrounds, and layout. Source-count checks passed. Not a rendered/cascade, lint, build or browser certification. R-061 remains PARTIAL, other route/global and RGB/alpha declarations open. No merge/deploy or provider operations.
+
+## 2026-10-14 IST — R-061 repeated Stories paper and media-stage tokens
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent d4cabf00a33cc7c244f4ade84311effab5a035be. Introduce two exact-value canonical roles in globals.css: --af-color-story-paper (#f3ecdf), --af-color-story-media-stage (#14243a). Replace all four and three matching hex occurrences respectively in Stories route CSS. Old/new declarations resolve to the same RGB; no selector, media, design, alpha, content or functional changes. Source preconditions verified. R-061 remains PARTIAL and no actual CSS cascade/browser/lint/build verification performed; deployment and production unchanged. Next: source-backed remaining route/governance gaps, with actual browser/CI acceptance required.
+
+## 2026-10-14 IST — R-061 Stories canonical exact-value tokens
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent 0d1948b712aeb6ccb396b067369cd3e64daef5c2. Replace four #fffdf8 occurrences with canonical --af-color-surface and one #1d3150 with --af-color-navy-800 in src/app/stories.css. Source checked both tokens map to exactly the former RGB hex values in globals.css. No new token, alpha change, CSS selector movement, specificity/layout change or runtime code. R-061 remains PARTIAL: other route/global and alpha literals, browser/cascade and hosted acceptance remain. No local lint/browser/full build executed. No main merge/deploy or live provider operations.
+
+## 2026-10-14 IST — R-025 Stories heading regression false-positive guard
+
+Ownership: REVIEW_PENDING. PR #292 on fix/direct-transfer-feedback-20261013; parent 0c34fc67e6ea955aab308a4cbbef906f7df70eca. Harden new Stories browser regression: a missing stylesheet could satisfy a lower-only 1.11 heading line-height threshold via browser default normal. Require computed ratio in 1.11–1.13 for five audited selectors, and reject Times New Roman fallback. Existing 390/1440 x 100/200% matrices and contrast checks preserved. This proves expected source-driven 1.12 leading rather than merely loose default. Tests authored but browser still not executed in tool context. No production app source, deployment, main merge, payments or live data changed.
+
+## 2026-10-14 IST — R-025/R-026 Stories computed-style regression coverage
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013; parent dfdfb3f8120f577b373838c592f0af20731d02c6. Add privacy-safe Playwright Stories computed-style fixture with four width/text-scale matrices (390/1440px, 100/200%). Inspect actual route stylesheet rather than static source: assert >=1.11 computed heading font-size-normalized leading for five real heading selectors; >=4.5 computed foreground contrast against explicit declared light surfaces for six small/body labels. Fixture uses no real media or beneficiary records and cleans up after assertions. Tests authored only: local Chromium/npm acceptance unavailable in connected-GitHub context, hosted execution outstanding. No runtime CSS, design, budget or external provider changes; R-025/R-026 remain PARTIAL. No merge/deploy or live data operations.
+
+## 2026-10-14 IST — R-025 Stories fallback artwork multiline leading
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent f2f3fffd9f559b05e4c0e59ed64f0d7223698806. The Stories feature artwork fallback has large display strong limited to max-width:9ch with line-height .95. Adjust just that line-height to 1.12; preserve image-fallback semantics, font sizing, position, existing CSS order, spacing, and brand illustration. Exact source precondition checked and only one declaration changed. Actual wrapping/rendered zoom and browser verification remain pending; no local lint/build/browser execution in this connected-GitHub step. R-025 still partial. No main merge/deploy or live provider/data operations.
+
+## 2026-10-14 IST — R-026 Stories feature paragraph contrast
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent b64166f9084ed86994306c07e21468e49d12948a. Exact source check: .v2-stories-feature-copy p used #68717a against declared feature background #f3ecdf, estimated WCAG contrast 4.22:1 (below 4.5:1 normal text). Reuse existing Stories ink #5f6974 for this paragraph only: estimated 4.75:1 against that declared background. No typography, spacing, layout, animations, other paragraphs or backgrounds changed. R-026 remains PARTIAL until actual rendered/composited and browser acceptance, including text zoom. Source checked; no local lint/build/browser execution. No main merge/deploy or provider operations.
+
+## 2026-10-14 IST — R-026 Stories hero metadata contrast
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent dc26de50a9fae01618749d6392e5e5e23ba9aa49. Confirmed .v2-story-detail-context small used white at 45% opacity over variable dark hero gradient. At representative background #1d3150 source-composited contrast was ~3.94:1, below the 4.5:1 normal-text threshold. Increase only this label's white opacity to 72%; preserve font/layout/content/gradient and adjacent decorative elements. Exact source declaration precondition checked. Browser/computed contrast across gradient and responsive routes unverified; R-026 PARTIAL. No build/browser suite completed for this source-only change; no merge/deploy/provider operations.
+
+## 2026-10-14 IST — R-026 Stories feature kicker contrast
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent bd72fd762848aeb88d2abd05ab68e7b77e99054d. Corrected source-level Stories feature-copy small kicker foreground #8f7450 on #f3ecdf (calculated contrast 3.74:1) to existing canonical --af-color-gold-ink, preserving typography, layout and gold accents. Exact source replacement checked; no browser/build acceptance. R-026 remains PARTIAL pending actual rendered and additional route contrast verification. No merge/deploy or live data/provider actions.
+
+## 2026-10-14 IST — R-026 Stories light-surface micro-label contrast
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent 85ce02a3c6fd3165c2b6619dbbdc6fd44e5d6fda. Four actual Stories labels used #aa8a5b, #8c7659 or #9b7d51 against white-paper #fffdf8 surfaces (calculated contrast ~3.18:1, 4.26:1 and 3.79:1). Switched only their foreground color to existing --af-color-gold-ink (#604407; source-evaluated ~8.88:1 on #fffdf8). Targets: card metadata span, card category small, detail rule label and detail source-note label. Existing font sizes, layout, hierarchy, other gold decorations and backgrounds remain. Exact source preconditions verified. R-026 PARTIAL pending rendered/cascade and mobile browser acceptance; no full build or browser validation completed in this tool environment. No merge/deploy or production/provider operations.
+
+## 2026-10-14 IST — R-025 Stories card/sidebar/ethics headings
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013; parent 6aebca94a4d7b2ea4787605f7fcff950ea7d2a18. Three actual Stories heading selectors have tight line-height with likely multiple lines: .v2-stories-card-copy h3 (.98), .v2-story-detail-body-grid>aside h2 (.95 with max-width 10ch), and .v2-story-detail-ethic h2 (.9 with max-width 9ch). Each set to 1.12, without changing font-size, spacing, selector order, content, or breakpoints. Exact selector-value source preconditions verified. Remaining decorative/non-heading display text not modified. No local runtime/browser or production build acceptance in this connected-GitHub-only step; R-025 stays PARTIAL pending 200% text/mobile rendered checks. No merge, deploy or live provider/data operations.
+
+## 2026-10-14 IST — R-025 Stories feature and detail heading leading
+
+Ownership: REVIEW_PENDING. PR #292 same branch; parent 61a4eb49e15bee109da6c655ee0b8b4c0577284e. Source-level Stories feature H2 and individual-story detail H1 had compact line-height .92 and .84 with multi-line max-width constraints. Set both to 1.12, leaving font sizes, letter spacing, selectors, responsive breakpoints and content untouched. Exact source preconditions and replacement declarations checked. These are source changes only; rendered mobile/200% zoom, cross-selector cascade, browser, compile and deployment acceptance are not certified. R-025 remains partial. Other compact Stories display rules require independent rendered evaluation rather than unverified broad replacements. No merge/deploy/payment/live data.
+
+## 2026-10-14 IST — R-025 canonical fact and governance heading leading
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent 0a255bc0fb269b15de6b17ae295bcb70d4632f9a. Two remaining source-level tight heading declarations in src/app/canonical-content.css: canonical fact display strong line-height 1.10 and governance summary strong shorthand 1.05. Adjust both to 1.12 without altering font-size, weight, colors, element semantics, layout, or cascade order. Exact-string preconditions and resulting declarations verified against remote parent; no new specificity, selectors or assets. R-025 remains PARTIAL until actual mobile/zoom/browser acceptance and broader selector coverage. No local browser or production build run in this tool environment. No merge, deploy or provider/data operations. Next: independently verify rendered multiline headings and continue original register.
+
+## 2026-10-14 IST — R-061/R-066 shared component stylesheet governance
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parentfe32bd4cf35a8a0ead239201fcc0d98576f91576. Owner cx authorized continuation; no concurrent writer.
+
+Original R-061/R-066 gap: native Stylelint checked only donate-audit.module.css, leaving all17 shared component modules outside its two existing rules. Diagnostic recorded49 hex-color occurrences and9 exact duplicate selectors. Extend the existing pinned stylelint:governed command to the component-module glob plus donation audit, with zero-warning enforcement through the existing npm run lint/CI entrypoint. No dependency or new workflow/status infrastructure.
+
+Replace46 component hex occurrences with exact-value canonical palette roles; remove three redundant literal fallbacks where the canonical token is defined. Reuse existing surface/canvas/blue roles and add16 exact legacy component colors to the canonical root. Preserve approved RGB values, including image masks, photography stages, donor/intake feedback and placeholder gradients. Consolidate9 exact repeated selectors within their own rule containers, including amount emphasis, intake step navigation and carousel witness cards; discard overwritten same-property declarations while retaining important flags. Other grouped reconciliation/route/global rules are outside this bounded batch.
+
+Validation: all17 component modules plus donation audit pass both native rules. A disposable new component module with a hex color and duplicate selector fails the expanded actual command with both diagnostics; removed before commit. Temporary PostCSS comparison across340 stylesheet/width/motion matrices preserves normalized winning property values and important flags per exact selector, with replacement tokens resolving to prior RGB. This does not prove every cross-selector/rendered cascade. Full npm run lint passes; full unit suite1005passed/9database-dependent skipped; diff and secret/static-image guards pass. Clean compile-mode build passes:JS813132/819200bytes,CSS347008/348160bytes. No runtime TS change or new permanent tests. R-061/R-066 remain partial: RGB/alpha literal governance and route/global CSS coverage remain open; hosted browser/deployment acceptance is unverified. No main merge/deploy or live provider/data changes. Next: remaining original CSS/tooling and runtime gaps.
+
+## 2026-10-14 IST — framework navigation feedback corrected
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parent402b83b43937c622674f64260ef34dc335bcd54b. Owner cx authorized continuation; no concurrent writer.
+
+Older browser run38449403934 failed both policy-loading cases and mobile-header loading twice: no overlay existed. Confirmed source cause: Next client navigation calls preventDefault, so the document click listener interpreted framework handling as user cancellation. Add one thin NavigationLink owner using native useLinkStatus in a descendant; its headless status component reports true pending and cleanup through a shared event. Update52 application Link imports to this owner; native Next props, refs, prefetch, server child content and hrefs remain. The global indicator associates pending with link identity: older completion cannot clear a newer transition, completion/cancellation/unmount releases its owner, history resets. Plain native anchors retain the existing cancelled/modifier/external/same-path exclusions, with safer Element target narrowing. No navigation monkeypatch, timer heuristic or loading.tsx boundary. Official API: https://nextjs.org/docs/app/api-reference/functions/use-link-status.
+
+Browser acceptance now blocks About before opening the initial page, preventing successful prefetch from legitimately skipping pending. Preserve full overlay geometry, logo/dots, body lock, populated page shell and post-navigation dismissal assertions. Add actual framework-link cancellation case alongside existing native-anchor cancellation; cancelled links must leave route/loading unchanged. Fully prefetched transitions correctly skip pending.
+
+Validation: six actual-component status/effect tests pass with mocked framework hook and DOM event boundaries. Restoring the old progress listener fails framework-start and overlapping-owner checks. Full suite1005passed/9database-dependent skipped; TypeScript and full repository zero-warning ESLint pass; browser syntax/diff checks pass. Clean compile-mode build passes:JS813132/819200bytes,CSS346266/348160bytes; client-secret/static-image guards pass. Existing52 imports are the only changes in their callers. Browser runtime/production prerender and rollout remain unverified. This repairs existing feedback; R-071 route skeletons remain open and the prior unsafe loading-boundary approach remains prohibited. No original95 closure inferred, main merge/deploy or live provider/data changes. Batch complete; next: exact-head browser evidence when available and independent original-register defects.
+
+## 2026-10-14 IST — R-054 lazy thumbnail sizing and acceptance corrections
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parent8990d6d687135ddb1391d566870e1cb610549d09. Owner cx authorized continuation; no concurrent writer.
+
+Older hosted browser run38449403934 failed thumbnail acceptance at390px/200% (64w candidate versus128px rendered width) and at tablet/desktop image readiness. HTML source-size rem units resolve like Media Queries against initial font size, not author CSS enlargement. WorkPortfolio now uses auto first on its existing lazy optimized images, with prior mobile/tablet/desktop rem hints as legacy fallback. Explicit CSS slot and intrinsic dimensions remain. Primary references: https://html.spec.whatwg.org/multipage/images.html#sizes-attributes and https://drafts.csswg.org/mediaqueries-4/#units. No new client hook or optimizer host allowance.
+
+Correct the synthetic fixture: prior one-pixel PNG fails strict sharp decoding; its pixel size also violates larger width descriptors and can yield zero density-corrected naturalWidth. Generate flat-color PNG at each requested candidate width and matching4:3 aspect using existing app sharp dependency, resolved with the existing browser-workspace createRequire pattern. No real media request or new dependency. Seven32–384w synthetic candidate rasters strictly decode at declared widths. Keep currentSrc candidate bounds, CSS slot dimensions, lazy loading and enlarged-text checks.
+
+R-025 acceptance-only correction: iterating nth locators over shrinking details:not([open]) skipped disclosures and waited forever; hosted log confirms nth(3) timeout twice. Iterate stable disclosure locators and click only those still closed. Actual user clicks and all heading line-height/containment assertions remain. No typography source closure added.
+
+Validation:25focused portfolio/public-media tests pass; restoring previous thumbnail hint fails the updated actual-render regression. Full suite999passed/9database-dependent skipped; TypeScript, focused zero-warning ESLint, browser syntax and diff checks pass. Clean compile-mode build passes:JS812195/819200bytes,CSS346266/348160bytes; secret/static-image guards pass. Actual browser execution and deployed transfer/CWV remain unverified; R-054 stays partial. No main merge/deploy or live provider/data changes. Next: navigation feedback failures and remaining original-register work.
+
+## 2026-10-14 IST — delegated motion press ownership corrected
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parent c48e1030737f26b35a7b3392e84a89d3d28183b6. Owner cx authorized continuation; no concurrent writer.
+
+Older hosted browser run38449403934 recorded the native press regression twice: pointer-down was followed by focus feedback which replaced pressed scale0.98 with1. Track the primary pointer owner and keyboard owners separately. Hover/focus preserve held state; pointer-up/cancel and key-up release the original control even if event target changed. Window blur releases held controls; reduced-motion reset clears ownership and inline effects. Native delegated WAAPI, existing selectors and route teardown remain. No hydration/CWV bottleneck closure inferred.
+
+Validation: five actual-effect tests pass with stub event/DOM/animation boundaries. Restoring the prior module fails three of the initial four cases. Full suite999passed/9database-dependent skipped; TypeScript, focused zero-warning ESLint, browser syntax and diff checks pass. Clean compile-mode build passes:JS812195/819200bytes,CSS346266/348160bytes; client-secret/static-image guards pass. Existing browser press case now explicitly focuses while held; an additional case releases outside the action. Browser execution remains unverified locally. This is a task-introduced motion correction, not an additional original95 closure. No main merge/deploy or live provider/data changes. Next: responsive thumbnail and remaining navigation/typography acceptance failures.
+
+## 2026-10-14 IST — N-20 gallery opener focus correction
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parent fb08de7b21bd0926e1063ddadf2661dec81e56e9. Owner cx authorized continuation; no concurrent writer.
+
+Actionable hosted evidence: older fee578a0 workflow38449403934 browser job115477111117 was cancelled after recording failures. Final verify failed because BROWSER=cancelled; fast/database/production jobs succeeded. The duplicate-ID gallery case failed twice after ArrowRight then Escape: focus returned to the last viewed photograph rather than the opening thumbnail. Preserve opener identity in a ref and resolve its current position for cleanup. Existing connected-thumbnail fallback handles removal; image selection, modal keyboard trap and overflow cleanup remain intact. Reorder browser regression now navigates away before closing and still expects the opening identity.
+
+Validation: actual-component effect regressions cover navigation, reorder and opener removal; restoring the old active-index target fails two of three. Five focused gallery tests pass. Full suite994passed/9database-dependent skipped; TypeScript, focused zero-warning ESLint, browser syntax and diff checks pass. Clean compile-mode build passes:JS811745/819200bytes,CSS346266/348160bytes; client-secret/static-image guards pass. Local effect tests use stub DOM/hook boundaries; actual browser correction is not yet certified. N-20 remains a source candidate, not deployed; no original95 closure inferred. Other old-run failures include responsive thumbnail acceptance, navigation feedback, motion press ownership and typography fixture interaction; these still require diagnosis. No main merge/deploy or live provider/data changes. Atomic gallery task complete; next: correct remaining actionable browser failures.
+
+## 2026-10-14 IST — R-069 native lint protections implemented
+
+Ownership: REVIEW_PENDING. PR #292 / fix/direct-transfer-feedback-20261013, parentaec129da47c3d37d123a09d918a3943716eedf78. Owner cx authorized continuation; no concurrent writer.
+
+Enable existing Next-supplied import/no-cycle for src TS/TSX with external packages excluded and runtime dynamic cycles still rejected. Next already supplies eslint-plugin-import2.32.0 and TypeScript resolver3.10.1; no dependency added. A360-file diagnostic passed. Disposable real two-file runtime cycle triggers both participants; the same files changed to type-only references pass.
+
+Add supplemental jsx-a11y/control-has-associated-label for button/summary/ARIA-role names with nested text depth5. Native input/select/textarea associations retain existing label checks: this supplemental rule cannot resolve external/wrapping native labels and initially produced false positives. Do not manufacture duplicate aria-labels. Actual unnamed-button probe fails and named-button probe passes. All probes removed before commit.
+
+Validation: full npm run lint passes (repository ESLint zero warnings plus existing governed Stylelint). Final post-cleanup repository ESLint and diff checks pass; tracked scope is lint configuration and existing coordination/register docs only. App unit/build suites were not rerun because runtime/source assets are unchanged from prior validated image batch. No full WCAG/strict-profile/production acceptance claim; R-069 remains partial pending broader policy acceptance and hosted execution. No main merge/deploy or live provider/data operations. Atomic lint task complete; no active writer. Next: inspect exact-head acceptance and continue remaining original requirements.
+
+## 2026-10-14 IST — R-052/R-054 public image delivery batch completed
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent5c6f6a7c17a322df54f0624a5c569368d7375020. Owner cx authorized continuation; no concurrent writer.
+
+R-054: PageHero canonical owner exports one full-mobile/half-desktop image-sizing hint. Apply to priority photographs/artwork in eight public hero surfaces: About, appeals, Get Involved, education sponsorship, Our Work index, initiative detail, programme categories and umbrella programme detail. Previously some inherited a body70vw hint at tablet widths, while others advertised90vw despite full-mobile photo layouts. Body/gallery/portfolio sizes and lazy behavior stay scoped. Category browser acceptance now includes768px and explicit hero sizes alongside existing preload/lazy checks.
+
+R-052: PublicMedia and CampaignMediaGallery optimized only root-relative paths, so an approved absolute Amaana/media URL bypassed responsive optimization. Shared getPublicImageOptimizationUrl converts only same configured HTTPS app-origin /media/ and /brand/ paths. Never grant optimizer access to external hosts, private/API paths, credentialed URLs, HTTP or malformed origins. Existing direct external/data-image delivery and public consent/cache/size guards retained. Actual-component baseline reproduces absolute-URL bypass; corrected native Image output/preload checks pass. Gallery thumbnails/lightbox share this policy.
+
+Validation:32 focused image-render/policy tests pass; full suite991passed/9database-dependent skipped,105suites passed/one skipped. TypeScript and focused zero-warning ESLint across all affected TSX/helpers/tests pass; React review retains server components, direct imports, no new hooks/request waterfalls, existing alt/intrinsic dimensions and priority scopes. Clean compile-mode build passes:JS811676/819200bytes,CSS346266/348160bytes; client-secret/static-image guards, browser syntax and diff checks pass. No production transfer/CWV, browser/current-head hosted prerender or live rollout proof claimed. R-052/R-054 remain partial until broader responsive/network and deployment acceptance. No main merge/deploy or live money/mail/storage/data/config operations. Batch complete; no active writer. Next: inspect exact-new-head acceptance and correct real failures before release.
+
+## 2026-10-14 IST — standalone global-error typography corrected
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013, parent c4e0ccc8ae46db36be9d879a15073beb2685b0ee. Owner cx authorized continuation; no concurrent writer.
+
+R-024/R-025 confirmed missed inline occurrences in global-error.tsx: label .72rem (11.52px at normal root) and heading .85 line-height. The standalone fallback replaces the normal root layout, so external accessibility CSS cannot be relied on. Set label .75rem and heading1.12 directly in the canonical fallback. Preserve approved background, text, private-error omission and reset action. No R-057 CSS relocation was performed: that investigation lacked rendered cascade/error-route proof.
+
+Two actual fallback-render typography tests fail on original source and pass after correction; a third verifies complete English document, single H1, recovery control/guidance and private-diagnostic omission. Three focused tests, TypeScript, zero-warning focused ESLint and diff checks pass. Clean compile-mode build passes: JS810842/819200bytes, CSS346266/348160bytes; secret-boundary/static-image guards pass. Full unit suite was not rerun for these two presentation values. Browser/device/global-error recovery acceptance remains unverified locally because Chromium is unavailable.
+
+Earlier fee578a0 CI38449403934 fast/production/database/readiness passed; browser remains running. Attempted running-job logs returned BlobNotFound404, not application failure evidence. Current/new-head hosted acceptance remains required. R-024/R-025 stay partial pending broader rendered and deployment acceptance. No main merge/deploy, live payment/mail/storage/data operation or original-audit closure. Atomic standalone-fallback task complete; no active writer. Next: obtain exact-head acceptance evidence, correct real failures and continue remaining authorized source work.
+
+## 2026-10-14 IST — R-026 single-story archive label corrected
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013, parent cbae8ef48d6ebf52f0dbe4b8255398e7b89a9935. Owner cx authorized implementation; no concurrent writer.
+
+Confirmed R-026 occurrence: stories.css .v2-stories-single-note span displayed the small Archive beginning label in bright --v2-gold on light archive paper, used when exactly one story is published. Replace only that foreground with existing --af-color-gold-ink. Source-token contrast on canvas #faf6ec improves1.83:1 to8.36:1; brand fills/borders unchanged. Source guard fails on old rule and passes after correction.
+
+Six source/token contrast checks and34planner tests pass. Add four loaded-/stories stylesheet regressions at390/1440px and100/200%text, creating the exact one-story note markup without depending on archive record count; assert computed composite contrast>=4.5 and scaled readable font. Browser cases not locally executed (Chromium unavailable). Browser syntax, focused zero-warning ESLint and diff checks pass. Clean compile-mode build passes: JS810840/819200bytes and CSS346266/348160bytes; client-secret/static-image guards pass. Previous968unit/API test result belongs to the prior TS-source head, not a newly rerun full unit suite for this CSS-only change.
+
+Current parent CI38450646534 pending at initial read; earlier fee578a0 fast/production/database/readiness successful with browser running. Exact-new-head acceptance remains required. R-026 stays partial until broader contrast and deployment review; no original-audit full closure inferred. No main merge/deploy or live payment/mail/storage/data operations. Atomic batch complete; no active writer. Next: inspect new-head acceptance and continue remaining register items.
+
+## 2026-10-14 IST — R-008 Breadcrumb and Appeal runtime guards completed
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013; parent a291c65fbf93ec80e0d0240e562b48767ab9c69d. Owner cx authorized continuation; no concurrent writer.
+
+R-008 uncovered source occurrences: Breadcrumb mapped unchecked items/paths and could throw for malformed runtime records; Appeal trusted TypeScript-only fields and could emit object-valued text or treat string isOpen=false as truthy. Add bounded strict Zod validation to shared structured-data library and use it in both components. Invalid optional schema returns null without preventing the main page from rendering. Breadcrumb destinations require safe root-relative paths; Appeal slugs require the existing lowercase hyphenated shape. Preserve valid text exactly, hardened escaping, sensitive-appeal redaction and real boolean donation-action gates.
+
+Nineteen new actual-component cases (ten breadcrumb/nine appeal) all fail against original source; corrected source passes all. Five prior output/privacy/escaping cases remain passing. Focused JSON-LD suites:28 passed. Full unit/API suite:968 passed, nine database-dependent skipped,102 suites passed/one skipped. TypeScript, focused zero-warning ESLint and diff checks pass. Clean compile-mode Next build passes, JS810840/819200 and CSS346256/348160 bytes; client-secret and static-image guards pass. No browser/full hosted prerender or live deployment certification inferred.
+
+Prior fee578a0 CI38449403934 fast/production/database/readiness passed; browser running at the last read. Current parent a291c65f CI38450017088 pending. This new source requires exact-head acceptance. R-008 now covers Article/WebPage, Breadcrumb and Appeal dynamic inputs; production closure remains pending. No real payment/mail/storage/data writes or main merge/deploy. Atomic batch complete; no active writer. Next: inspect new-head failures and continue original register work.
+
+## 2026-10-14 IST — R-009 remaining JSON-LD surfaces completed
+
+Ownership: REVIEW_PENDING. Same PR #292 / fix/direct-transfer-feedback-20261013; parent fee578a0c644549b6a2102946fc7079f508a6597. Owner cx authorized source continuation; no concurrent writer.
+
+R-009 source gap: Organization, Breadcrumb and Appeal JSON-LD still independently escaped only less-than, while PublicContent used the existing complete serializer. Replace all three with serializeStructuredData from src/lib/structured-data.ts. All four JSON-LD rendering components now escape less-than, greater-than, ampersand and U+2028/U+2029 consistently. Existing less-than escaping already prevented HTML script termination; this is completion of the audited broader escaping requirement, not a newly demonstrated XSS exploit.
+
+Five actual-component render regressions retain real React/server output and actual serializer. Three sensitive-character cases fail against original components; corrected output passes JSON round-trip, graph identity, canonical breadcrumb/donation targets, sensitive-appeal redaction and closed-appeal action omission. No canonical content, figures or payment execution changes.
+
+Validation: nine focused JSON-LD tests pass; full unit/API suite 949 passed, nine database-dependent skipped (102 suites passed, one skipped). TypeScript, focused zero-warning ESLint and diff checks pass. Clean compile-mode build passes; JS 810840/819200 bytes and CSS 346256/348160 bytes. Client-secret/static-image guards and actual emitted route report pass. This does not certify full prerender, hosted database/browser or production rollout. Parent CI38449403934 plan/fast/readiness passed, production/browser/database running at last check. No main merge, deployment or real money/mail/data/storage operations. R-009 source occurrences are covered, deployment closure pending. Next: inspect exact-new-head acceptance and continue remaining original register items. Atomic batch complete; no active implementation writer.
+
+## 2026-10-14 IST — R-054 Our Work thumbnail slot correction
+
+Ownership: REVIEW_PENDING. Completed atomic continuation on PR #292 / fix/direct-transfer-feedback-20261013, parent 8bb927bb86834018924abbd1371c19899deecb08. Owner cx authorized same-branch implementation. No concurrent writer.
+
+Confirmed R-054 source occurrence: WorkPortfolio identity thumbnails use CSS widths 4rem/5.5rem/6.5rem at <=600px/<=1000px/desktop, but inherited PublicMedia sizes of 100vw/70vw/900px. Original actual-component regression fails on that oversized hint; fixed markup passes and offers small responsive candidates while preserving lazy loading, alt text, intrinsic dimensions, identity selection and approved fallback. Rem-based sizes also match 200% root text.
+
+Coverage: two actual React/Next component-render tests; six Playwright cases at 390/768/1440px and 100/200% text check slot width and selected candidate, using opt-in disposable synthetic media and intercepted 1px PNG responses. No beneficiary or storage requests. The unchanged default portfolio fixture remains photo-free. Browser cases are authored, not executed locally: Chromium remains unavailable.
+
+Validation: 12 focused actual-component/media-policy tests and 34 CI-planner tests pass. Application and materialized-fixture TypeScript checks, focused ESLint, browser syntax and diff checks pass. Clean compile-mode build passes: JS 811235/819200 bytes, CSS 346256/348160 bytes. Secret-boundary and checked-in image-weight guards pass. Fixtures excluded from production route build and removed from tracked workspace. Full hosted production/database/browser acceptance remains required; parent CI was pending at the initial read. R-054 remains partial until broader hero sizing and deployed acceptance; no new original-audit closure. No production merge/deploy or live data/provider operations. Next: review exact-new-head acceptance and continue independent original defects. No active writer.
+
+## 2026-10-14 IST — R-025 shared heading and R-047 route attribution batch
+
+Ownership: REVIEW_PENDING. Existing PR #292 / fix/direct-transfer-feedback-20261013, parent 20f126bd75d0cd9bbd4de34b860805585d0e9080. User handover authorizes continuation; no concurrent implementation writer. Local checkout and dependencies restored.
+
+R-025: fix five shared/component/Home leading occurrences (1.00/1.04/1.08 -> 1.12) in experience-finish.css, section-heading.module.css and home-documentary.css. Add 12 rendered cases covering Contact shared/component headings, Home section headings and expanded programme-card titles at 390/1440px with 100/200% root text. Cases require present/visible headings, actual computed leading and text containment. Browser execution pending: local Chromium download returned invalid/truncated ZIP; no rendered pass claimed.
+
+R-047: Next 16 omits app-build-manifest but emits per-page client-reference JSON with entryJSFiles/entryCSSFiles. Parse JSON without evaluating the JS wrapper; deduplicate page, ancestor layout and shared runtime/polyfill files; exclude clientModules on-demand inventories and unrelated metadata/error entries. Report unsupported routes explicitly and retain aggregate-only fallback. Actual clean local build attributes 46 pages; seven special/server-only/redirect routes remain unattributed. Figures are uncompressed manifest-assigned entry bytes, not observed network transfers or field CWV.
+
+Validation: 942 unit/API tests passed, nine database-dependent tests skipped; TypeScript and focused ESLint passed. Eight analyzer tests plus 34 CI-planner tests pass (42 combined). Clean compile-mode Next build passes: JavaScript 810840/819200 bytes, CSS 346256/348160 bytes. Client-secret and static-image guards pass. The earlier dirty incremental build retained obsolete CSS and is not budget evidence. Full hosted prerender/database/browser verification remains required. Prior-head CI 38446049892 remained pending at the last read and does not certify this batch. No main merge/deployment, live payment/email/storage/database writes or original-audit closure claim. Next: review exact-new-head acceptance, fix confirmed failures, then continue remaining original audit items. Atomic batch complete; no active writer.
+
+## 2026-10-13 — R-054 artwork LCP priority and gallery identity correction
+
+Owner: REVIEW_PENDING on existing PR #292, user-authorized cx. Prior head 352bf40 unchanged at initial read. Continued actual fixes; CodeRabbit review intentionally excluded.
+
+R-054: ProgrammeArtwork was lazy even as above-the-fold category or umbrella hero while photographic PublicMedia heroes were prioritized. cb2f4c0 adds optional preload and fetchPriority='high' to the server-rendered artwork component. 68cdb76 and 27a8f83 pass priority only in programme-detail and category PageHero usage; body-card artwork remains default lazy. a5757d2 adds mobile/desktop real-route browser assertions and 313b595 adds the documented Eid umbrella hero assertion. Source register now partial/targeted fix pending hosted browser, complete hero audit, and deployment verification.
+
+Supplementary N-20 gallery identity collision: safeItems deduplicated by URL only, permitting distinct URLs with duplicate media IDs, duplicate React keys and misleading lightbox selection. 833f5da now deduplicates both URL and media ID. 71dcd7a injects distinct-URL duplicate-ID fixture and 3dc6c10 tests retained 13 thumbnails, correct open/navigation and focus restoration. No real beneficiary content or data writes involved.
+
+Current source/test and register commit e79728ec90187b117a9162bdaa9bbdd24787aac8. No exact-head CI success claimed; unchanged tight JS/CSS caps require hosted verification. No main merge or Railway deploy. Original 95-row audit closures unchanged until release evidence. No active implementation writer at this checkpoint.
+
+## 2026-10-13 — PR292 payment/storage implementation handoff
+
+Incoming cx continued from dc3b78f after confirming no head drift. Published ee3cc7a+6930d14 to lock repeat online orders on 5xx/network/malformed outcomes while preserving explicit pre-write correction; 248ba1d adds three rendered browser regressions and updates stale HTTP500 expectation. Published 693fe51 to trim payment error text before 500-character truncation, with e5c91da two browser regressions. Published dea63c6+568f64c for a 15s overall timeout on S3 public-media request and stream reads, including meaningful stalled-sdk/stalled-iterator tests and best-effort abort/destroy; existing size, consent and storage restrictions remain.
+
+Latest source/test head 568f64cccd17e2312794c2c967b379ece02b8a4c. CI 38431227117 pending at last source-head query, newer handoff commits initiate new CI. Local git clone failed due github.com DNS resolution, so source changes and regressions have not been locally validated. New-head hosted build, typecheck, JS/CSS budgets and browser remain mandatory. No merge/deploy/real payments/private storage writes; historical 95-item closure unreconciled. Ownership REVIEW_PENDING; next owner should correct CI-introduced failures before integration.
+
+## 2026-10-13 — online order runtime and unmount continuation
+
+Incoming owner cx resumed from 72b0d9dd, prior verified CI 38421782865 green on abe0876 only. On PR #292 (fix/direct-transfer-feedback-20261013), new commits 7d573db (suppress post-unmount checkout UI and navigation while retaining genuine payment POST), e6c270b (browser regression for paid callback after unmount), d1e6861 (sanitize malformed error field arrays and remaining-amount hint), cc879889 (three malformed field feedback regressions and one valid linked field error), and bc1ba69f (active-work record). Earlier 44aeeef and 836dbb4 added success response contract and six malformed order browser variants.
+
+Latest implementation tree at cc879889 remains unverified by hosted acceptance; after documentation, recheck new PR head CI, unchanged JS/CSS budgets and browser failures before any merge. GitHub connector publication confirmed for source and tests, local clone unavailable because github.com DNS failed in this execution environment. Do not assert a fully passing local build or original 95-item audit closure. No merge/deploy or production data write. Ownership REVIEW_PENDING, no implementation writer active.
+
+## 2026-10-13 — malformed payment feedback and media cancellation completed
+
+Ownership: REVIEW_PENDING for completed continuation of existing PR #292 / `fix/direct-transfer-feedback-20261013`, parent `c0ea335d2015f4b97a26928fc508847e38d7ea3a`. Owner `cx` authorized execution. Prior 0fd3838 full browser acceptance passed 1,424 Chromium and 24 Firefox/WebKit cases; final-parent CI 38417911131 passed fast, database and production, with browser still running. Those results do not certify this newer source.
+
+N-31 follow-up: non-string confirmation errors previously reached React rendering, where object-valued feedback could crash the payment form and discard its local follow-up state. Accept only non-empty string error feedback and bound it to 500 characters; otherwise use the existing verification-pending guidance. Preserve entered donor values, payment reconciliation and the duplicate-submission lock. Add five real-component browser cases for object/array/numeric/null/empty error payloads; hosted execution remains pending.
+
+N-28/N-18 supported media-reader occurrence: an oversized object with asynchronous stream cancellation previously stalled its known size-limit rejection or substituted a cancellation exception. Initiate best-effort cancellation without awaiting it, handle rejected cancellation, and preserve the known size error when cleanup throws. The original helper fails both stalled/rejected regression probes. Three actual-module cases now pass for stalled, rejected and synchronous-throw cancellation. Existing byte, completeness, key, private/public bucket, consent and readiness guards remain unchanged.
+
+Validation: 88 focused tests across seven relevant suites passed; final full unit/API suite 940 passed / 9 database-dependent skipped, 100 suites passed / 1 skipped. TypeScript, focused ESLint, journey syntax and whitespace passed. Clean compile-mode assets: JavaScript 819,070 / 819,200 bytes; CSS 346,217 / 348,160 bytes. Client secret-boundary and static image guards passed. Compile mode does not certify full prerender/database/browser acceptance. Fresh final-head hosted verification remains required.
+
+Same PR and branch. No main merge, deployment, real payment/email/applicant record, live storage operation or production-data write. No original-audit closure count or exhaustive security/AAA/performance claim. Publish this completed atomic batch; inspect fresh final-head acceptance before integration. No implementation writer remains active.
+
+## 2026-10-13 — cleanup and payment follow-up correction completed
+
+Ownership: REVIEW_PENDING for completed source on existing PR #292 / `fix/direct-transfer-feedback-20261013`, parent `0fd383865c72fa09404081e95d2a98fc5b3d0a09`. Owner `cx` authorized continuation. Parent CI 38413754175 passed fast/unit/type/lint, isolated database and full production build/budgets; browser remains pending at the checkpoint. That result does not certify this newer source.
+
+N-30 review correction: a failed deletion after a later document validation failure previously returned correctable 400, allowing repeated submissions despite retained private objects. Rejected cleanup now follows uncertain 500 while preserving bounded logs, private headers and the successful-cleanup 400 behavior. The new actual-route regression fails on parent source (400 instead of 500); corrected combined assistance/storage/feedback suites pass 54 tests.
+
+N-29 follow-up: after an earlier checkout reports payment, a newer pending order response could still open another checkout or overwrite verification feedback. Recheck attempt identity and opening phase before processing that response and in its error path. Continue reconciling the reported payment with its original order and receipt token. Add three rendered cases for accepted, server-error and malformed newer responses, waiting for actual JSON completion before asserting no new checkout.
+
+N-31 source finding: malformed successful confirmation responses previously navigated to a private acknowledgement with an absent/invalid reference, including `/donations/undefined/acknowledgement`. Validate the reference before navigation; malformed responses retain reconciliation and the existing payment-confirmation guidance. Add six rendered cases for absent/null/numeric/empty/path-like/oversized references. No original-audit closure count inferred.
+
+Final local full unit/API suite: 937 passed, 9 database-dependent skipped, 100 suites passed / 1 skipped. TypeScript, focused ESLint, journey syntax and whitespace pass. Clean compile-mode build: JavaScript 819,016 / 819,200 bytes; CSS 346,217 / 348,160 bytes; client secret and static image guards pass. Nine new payment browser regressions await hosted execution. Compile mode does not certify full prerender/database/browser acceptance. React checklist review preserves synchronous ref ownership, scoped render helpers, focus cleanup and existing privacy/payment boundaries.
+
+No new PR, main merge, deployment, real payment, assistance record, email, storage deletion or production-data write. Existing historical 95-row totals remain unreconciled. Publish the combined correction to this same PR; fresh final-head acceptance is mandatory before integration. This atomic source batch is complete and no implementation writer remains active.
+
+## 2026-10-13 — assistance outcome and evidence feedback continuation
+
+Ownership: REVIEW_PENDING for the completed continuation of existing PR #292 / `fix/direct-transfer-feedback-20261013`. Recovered remote head `0036228c7ea465518bb5db9c71d80c22e089b755` passed CI 38401689042; main remains `aedae00171d2cbf585f65f93b783f66c7f003a43`. This deliberately extends the current form-integrity batch; PR #291 remains independent. The user explicitly resumed interrupted implementation.
+
+N-30: assistance submission previously had no synchronous duplicate-submit guard and reopened the form after lost, malformed or server-error responses even when a case could already exist. Add a synchronous owner and distinct ready/submitting/submitted/follow-up phases. Only explicit pre-write 400/403/413/429 rejection with usable feedback allows correction; only HTTP 201 with validated private credentials allows navigation. Uncertain outcomes preserve values/files, lock resubmission and provide private contact guidance. Focus runs after committed feedback and cancels stale frames. Tracking credentials remain in fragments.
+
+Evidence feedback: return linked document errors for oversized multipart bodies, forged textual/named-empty attachments and excess files. Typed file-type/size/signature rejections return private 400 after cleaning earlier uploads, before case creation. Storage outages retain uncertain handling. Share existing contact input rendering and control feedback within assistance; retain bounded field-error filtering; validation and privacy checks remain intact.
+
+Validation: final focused form/actual route/storage suites passed 67 tests. TypeScript and focused ESLint passed. Full unit/API run: 935 passed, 9 database-dependent skipped, one unchanged password test timed out while compilation was active. A subsequent limited-worker attempt also timed out during compilation; after compilation ended, all 7 unchanged real-scrypt password/work-factor tests passed without changing thresholds or fixtures. This is not a single fully green final full-suite run. Added 9 rendered journey regressions; syntax passed, local Chromium execution unavailable. Final clean compile-mode build passed: JavaScript 818,824 / 819,200 bytes; CSS 346,217 / 348,160 bytes. Compile mode does not certify full prerender/database/browser acceptance; fresh hosted gates remain required. Five new actual-route assertions fail against the original handler; restoring the fixed handler passes all 67 focused tests.
+
+No new PR, main merge, deployment, real assistance record, payment, transfer, email or production-data write. Historical 95-entry totals remain unreconciled; N-30 is a later finding, not another original-audit closure. Publish this same PR and inspect new-head acceptance. Source, tests and continuity records are complete; no further implementation is active in this atomic batch. A green prior head does not certify this continuation.
+
+## 2026-10-13 — PR292 correction completed
+
+Ownership: REVIEW_PENDING. Existing PR292; previous published head `d2c665225e5465c9a2e5cb549f876d0fc1dd02ae`; base/main `aedae00171d2cbf585f65f93b783f66c7f003a43`. Previous exact-head CI38395402522 passed fast/database/readiness and 1,414 Chromium plus 24 Firefox/WebKit cases. Production compiled successfully but failed the unchanged JavaScript budget (823,043 vs 819,200 bytes); no merge was performed.
+
+Correction: share donor/transfer input markup; server-render verified payment instructions through DonationOptions, with a small client clipboard action. Preserve validation, linked errors, focus, fields, verified account/UPI values and submission locks. Direct-method headings now resolve the donation section's existing aria-labelledby. Checkout attempts also isolate dismissal: an earlier unpaid checkout callback cannot reopen a newer pending request. Added one rendered regression for that race (12 new cases in this PR, 42 total journey cases). Minor review spacing issues corrected.
+
+Revised local compiled assets: JavaScript 818,755 bytes; CSS 346,217 bytes, both within unchanged limits (819,200 / 348,160). JavaScript reduction 4,288 bytes. Compilation and build TypeScript succeeded; final local prerender failed because no local PostgreSQL server exists at localhost:5432. This is not a successful complete local production build. Focused payment/API tests: 127 passed across 8 suites. Explicit TypeScript/focused ESLint, client secret boundary, static image guard, whitespace and journey collection passed. Prior candidate's full unit suite had 910 passes / 9 database-dependent skips. Revised hosted build/database/browser checks must pass before guarded integration; prior browser green does not certify the refactored candidate.
+
+No new PR, main merge, deployment, live payment/transfer/email or production-data write performed by this correction. PR291 worker containment remains independent. Historical 95-entry closure totals remain unreconciled; this continues N-29/R-029–R-033/N-24 rather than inventing original-audit closures. Next: correct any revised-head failure before integration; continue independent confirmed defects while hosted validation runs.
+
+## 2026-10-13 — recovered transfer UX and payment-state candidate
+
+Ownership: REVIEW_PENDING. Branch `fix/direct-transfer-feedback-20261013`; base/main `aedae00171d2cbf585f65f93b783f66c7f003a43`. User explicitly resumed the interrupted chat; seven uncommitted source/test files recovered intact and completed. PR291 worker recovery remains independent.
+
+Implemented: direct-transfer native/server field errors with linked messages and post-commit focus; field correction preserves editing focus; unknown/5xx/malformed/duplicate-reference outcomes retain a follow-up lock and contact guidance without encouraging another payment; clipboard failures announce manual-copy guidance. Cross-method lock updates synchronously before the POST. Online checkout rejects same-event duplicate submits and duplicate provider callbacks; payment-reported dismissal and SDK callbacks cannot reopen verification/reconciliation, while genuine unpaid dismissal permits method selection.
+
+Validation: 90 focused tests passed; full unit/API suite 910 passed, 9 database-dependent skipped; TypeScript and focused ESLint passed; 34 CI-planner cases passed; journey spec syntax/collection passed. Added 11 rendered regressions covering five uncertain outcomes, pending same-event submit/method races, repeat field-focus/correction, native validation, clipboard denial, provider dismissal during verification and safe unpaid dismissal. Local Chromium binary is absent (previous installation already failed); collection is not browser execution. Hosted production-build/browser/database acceptance remains required before integration. No live transaction/email or production-data write, no main merge or deployment by this batch.
+
+Historical 95-entry audit totals remain unreconciled. R-029–R-033 receive additional direct-transfer coverage; N-24 receives conservative failure-response UX. N-29 records the newly confirmed method/provider callback state-loss source paths; implemented, browser verification pending. Do not equate source occurrences, tests, or these follow-ups with additional original-audit closures.
+
 ## 2026-10-13 — actual HTTP cancellation regressions
 
 Ownership: CODEX_ACTIVE on the preserved N-28 follow-up branch; validated release3414858b remains unchanged. Added actual assistance and direct-transfer route cases using the real body reader/error class: an oversized stream whose cancel promise never settles returns private413 and does not create a case/donation or upload evidence. Both route cases fail with rejection stalled when only awaited cancellation is restored. Fixed source:34 tests across3 suites passed; TypeScript and focused ESLint passed. Assistance test mock now retains the actual error class to verify the real classifier. No live requests, provider calls or production database writes.
@@ -224,7 +1261,7 @@ Ownership: `CODEX_ACTIVE` under the owner's explicit execution handover. Single 
 
 Verified baseline: `87aa9c613f635dc75b960a801c722f3f2f0f8ed6`. CI 38294121822 completed successfully: fast, database, production, browser and verify; Chromium 1,151 passed with no failure/flake summary; Firefox/WebKit 24 passed. Aggregate JS 818,586/819,200 B; CSS 346,363/348,160 B. These results certify the baseline only.
 
-Parked R-024 work `58c10229` was recovered through `a4e9fa78` and `fdab2ad9`. Correct two literal backslash-n sequences that invalidated intended prayer-label wrapping. Regression guard fails on original parked CSS and passes after correction (2/2 Node tests). Pin browser client date and stub synthetic prayer timings; verify 200% reading/note sizes and seven loaded prayer row wrapping/containment cases at mobile and desktop widths. Spec syntax passes; local Chromium unavailable, so hosted browser results remain required.
+Parked R-024 work `58c10229` was recovered through `a4e9fa78` and `fdab2ad9`. Correct two literal backslash-n sequences that invalidated intended prayer-label wrapping. Regression guard fails on original parked CSS and passes after correction (2/ 2 Node tests). Pin browser client date and stub synthetic prayer timings; verify 200% reading/note sizes and seven loaded prayer row wrapping/containment cases at mobile and desktop widths. Spec syntax passes; local Chromium unavailable, so hosted browser results remain required.
 
 CI policy: retain the per-ref concurrency group but set cancel-in-progress false to preserve active expensive browser runs. No tests or budgets weakened. CI planner tests: 33/33 pass locally.
 
@@ -920,3 +1957,222 @@ Delivery: application PR [#140](https://github.com/immazhark/amaana-platform/pul
 Verification limit and next action: desktop/mobile local captures inspected and seeded real-route CI passes. Live /our-work was reachable before deployment, but post-deployment reload failed because the execution environment disconnected (409 environment_offline). No post-deployment live visual confirmation is claimed. Workspace/local checkout refresh also became unavailable. Restore the workspace connection, fetch latest rebuild integration/documentation before any writes, then verify deployed Home/Our Work/Stories/Impact/Contact geometry. No application change or full-suite rerun is needed solely to resume live verification. See SECTION_HIERARCHY_AUDIT_2026-10-03.md. No whole-site defect-free claim; canonical factual/privacy/payment/media/indexing locks preserved.
 
 ---
+
+## 2026-10-14 — immediate promotion expiry and executed handover tests
+
+Recovered PR #292 at 0584c96911eb916dee4147c0630c339f565eb5b8 on fix/direct-transfer-feedback-20261013. Confirmed saveVerification rejects requests already converted to appeals, both before and within the transaction: confidentiality changes for existing appeals are not supported through that action. Do not invent an unlocked classification-change workflow.
+
+Confirmed cache defect: transitionAppeal and updateFeaturing used revalidateTag("appeals", "max"), permitting stale promotional reads after a committed withdrawal. Use Server Action updateTag("appeals") for immediate expiry after successful transaction completion, retaining homepage/listing path invalidation and the shared 300-second data cache. Set live-rail success and fail-closed responses to no-store so downstream caches do not outlive withdrawals. No additional database query is introduced. Existing responses cached before rollout are not retroactively purged by this source change; deployed CDN behavior and already-open client views are not certified.
+
+Four workflow regressions cover PAUSED/CLOSED/FUNDED success ordering after audit and failed-write non-invalidation; two actual route tests cover a withdrawn next response and uncached failure. Full runtime Vitest: 1181 passed, 9 database-dependent skipped. The prior privacy/payment helper and order-route tests were executed successfully, including restored Zakat coverage. Full lint initially found three unused private-relation destructuring bindings from the prior handover; consume the deliberately removed relation with void while preserving the public-only rest object and update the boundary guard. Post-correction affected suites: 21 passed; public-data boundary guards: 5 passed; TypeScript and full zero-warning ESLint/governed Stylelint passed.
+
+Compile-only Next build passed before the lint-only projection correction. Client-secret and static-image guards passed. Generated JS 816683/819200 bytes and CSS 342406/348160 bytes; budgets unchanged. This is compile-only evidence, not full database prerender, browser, hosted or production acceptance. Full suite result precedes the behavior-neutral void correction; affected suites were rerun afterward.
+
+Original 95 classifications remain 10 baseline addressed /33 source implemented /25 partial /16 open /11 unverified. No original-item closure inferred. No main merge, deployment, live payment, private-record mutation, email, migration or provider configuration. Continue remaining register work; staging/browser and hosted release verification remain outstanding.
+
+## 2026-10-14 — R-056 stored preview projection corrected
+
+Owner cx authorized continuation on existing PR #292 / fix/direct-transfer-feedback-20261013, parent eaeee2e1145bc09dacdfd6a535ba9796ae79adf0. Found an integration gap: the shared PUBLIC_IMAGE_SELECT used by lean discovery, Our Work, Impact, appeal cover and programme-child/completed-aid projections omitted the newly stored blurDataURL. Add the nullable field to that projection and the separate homepage hero projection. Existing publication/privacy filters, result limits and image validation remain unchanged. The typed WorkPortfolio synthetic media fixture now supplies null for legacy metadata.
+
+Four integration cases run the real getters against selection-respecting Prisma mocks, generate a tiny synthetic JPEG preview using the actual bounded helper, and render the returned media through actual PublicMedia. Hero and shared completed-aid projections both preserve stored previews; null legacy data retains ordinary image rendering. The gallery contract checks preview selection while retaining approved-only filters and 12-image limit. Removing both selections causes five actual regressions to fail; restored source passes 17/17 focused query/render/thumbnail tests. TypeScript, focused zero-warning ESLint and diff checks pass. No full-suite/build/browser rerun claimed for this batch; preceding batch evidence remains separately scoped.
+
+R-056 remains partial: query-to-render integration is now locally verified, but existing nullable migration is unapplied and hosted/deployed acceptance remains pending. Selecting this field requires the already-authored migration before application rollout. Original 95 classification totals unchanged. No database migration/write, media re-ingestion, private-record access, real payment/email, main merge or deployment occurred. Next: remaining actionable register defects and controlled schema/application acceptance.
+
+## 14 October2026 — master programme execution
+
+Owner directive authorizes autonomous reconciliation and source implementation; read-only specialists completed parallel reviews. Canonical149-row plan: docs/AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md. Parent874a79ad; existingPR292. B01 acceptance compilation regression fixed/reproduced, B02 existing graph logo/Threads enrichment, B04 exact RGB-channel parity and Stylelint gate.1187unit/APIpassed/9DBskipped;45focused,15sourceguards, full lint/type/formatter and cleancompile passes; JS816683/CSS343292 within existing ceilings. Production control-plane mainaedae001 identified, public journeys NOT VERIFIED. No merge/deploy/migration/live funds/mail. See sectionF for next action and exact gates.
+
+Published master+fixture bd912977, schema a80df913, RGB8942b93 in existingPR292. Followup actual localHTTP19guardspass; browser download blocked by truncated archives, no rendered result. See canonical mastersectionF and CI38552020358.
+
+## 2026-10-14 — B08 domestic fund currency enforced and focused tests executed
+
+Continued PR #292 from 324eaeaf7ce9b94a4cb28e9fc2d82af11218646c on fix/direct-transfer-feedback-20261013. Sole writer; no reset or new PR.
+
+- Reproduced a SQL boundary defect with real isolated PostgreSQL-WASM: an independently approved INR fund accepted a USD Donation. Added additive migration 20261014203000_fund_donation_currency with Donation_fund_currency_check. Fund-only inserts and updates must retain INR; existing appeal constraints are unchanged. Migration is unapplied outside the synthetic engine.
+- Added actual SQL insert/update regressions. Before the migration: 24 pass / 1 fail (foreign currency was accepted). After: 25 pass / 0 fail / 0 skipped, including legacy records, snapshots, exclusivity, stale revision, paused funds and immutable intent.
+- Executed repository Vitest: 133 cases across fund orders, Razorpay, approved definitions, fund ledger and payment capture; another 157 across direct reconciliation, refunds, private acknowledgements/access, confirmation, appeal order/transfer and private fund administration. Total 290 passed across 17 files. These are mocked unit/API tests, not real gateway or native multi-connection database evidence.
+- Prisma client generation, TypeScript, focused zero-warning ESLint and diff checks passed. No production build/browser/full-suite claim.
+
+B08 remains partial. Next: native isolated capture/partial-refund/full-refund/replay coverage and remaining lifecycle integration; reviewed public purpose/selection and controlled migration rollout remain release gates. Public fund checkout stays dormant; no hosted database, provider, mail, secret, merge or deployment operation. Original 95 / canonical 149 classification totals unchanged.
+
+## 2026-10-14 — B08 manual reconciliation INR capture boundary
+
+Local continuation after 5e550339. Reproduced two actual-module failures: appeal and fund USD claims were accepted as CAPTURED. Manual reconciliation now selects currency and requires INR alongside safe positive paise before any verification write, appeal lookup or notification. REJECT remains available for invalid claims, with existing audit history.
+
+66 focused cases pass across direct reconciliation, capture and direct-transfer API after the fix; TypeScript, focused zero-warning ESLint and diff checks pass. No native multi-connection DB, browser or production claim. Earlier 290-unit / 25 isolated SQL evidence remains scoped to the prior batch.
+
+Automatic approval review rejected remote publication again: it did not recognize cx as explicit approval to publish source/internal documentation to the GitHub destination. Both batches remain local, unmerged and undeployed. No workaround or indirect publication attempted. Next: explicit publication authorization, then remaining financial lifecycle integration. Public fund activation and hosted migration remain blocked separately.
+
+## 2026-10-14 — refund currency identity and authorized publication
+
+Owner explicitly authorized GitHub publication from ChatGPT Work. Shell Git lacks credentials, so the connected GitHub Git-data tools publish against the checked parent 324eaeaf7ce9b94a4cb28e9fc2d82af11218646c without force or release.
+
+Reproduced two actual webhook cases returning success for INR refunds against stored USD donations (appeal and fund). Refund reconciliation now selects currency and rejects a mismatch before the refund ledger claim and monetary writes. 87 focused webhook/accounting tests pass; TypeScript and focused zero-warning lint pass. Local predecessor commits 5e550339 and 94df5889 retain their respective 290-unit/25-SQL and 66-test scopes. No full build, native concurrency, deployed migration or live payment certification.
+
+All three fixes remain source development on PR292. No public fund activation, hosted migration, main merge, deployment, real provider or mail operation. B08 remains partial. Next: isolated native financial lifecycle integration and remaining master-plan source tasks.
+
+## 2026-10-14 — private fund aggregate precision
+
+Continuation from published 58f24b60. Private admin fund summaries previously checked finite rupees only, allowing unsafe totals and sub-paise values to appear valid. Added a bounded aggregate projection using decimal-to-safe-integer paise, positive settled count and complete sums. Invalid financial aggregates show the existing reconciliation alert; subtraction occurs in integer paise before INR formatting. Donation permission gate and settled-status query remain intact.
+
+26 focused ledger/admin rendering cases pass. The new rendered regressions fail the prior page source in three cases (unsafe total, fractional-paise gross, fractional-paise refund). Exact 100.30 minus 100.10 renders INR0.20. TypeScript, focused zero-warning lint and diff checks pass. No full build/browser, native database or deployment claim. No schema changes or live financial writes in this unit. B08 remains partial; public fund checkout disabled.
+
+## 2026-10-14 — destination-aware acknowledgement emails
+
+B08 continuation from 31487ebd. Razorpay capture and verified manual transfer notifications now carry designationKind from the validated persisted destination. Email template uses fund wording in subject/plain text/HTML only for exact FUND; legacy/malformed kinds preserve existing appeal defaults. Generic approved-fund copy exposes no fund definition or beneficiary details. Statutory certificate disclaimer unchanged. Reproduced prior template failure; 50 focused template/capture/manual-reconciliation cases pass, TypeScript/focused lint/diff checks pass. Existing queued messages are not rewritten; no worker activation/email delivery, release or live operation. B08 remains partial.
+
+## 2026-10-14 — overall donation summary fail-closed accounting
+
+Continuation from 8d8ac5db. Overall donations dashboard previously clamped refunded>gross to zero and accepted unsafe/sub-paise aggregates or missing sums on nonempty records. Reuse the renamed summarizeSettledDonationAggregate for both fund and overall summaries. Query settled count with sums; only genuine empty aggregate renders zero. Invalid totals produce an explicit reconciliation alert instead of plausible balances. Permissions and settled status scope unchanged.
+
+32 focused ledger/fund/dashboard cases pass; four rendered regressions fail prior dashboard source. TypeScript, focused zero-warning lint and diff checks pass. No full build/browser/native concurrency/deployment claim. B08 remains partial. No migration, hosted data, email, provider operation or public fund activation.
+
+## 2026-10-14 — manual reconciliation derived cache refresh
+
+From 5f33959a: successful manual capture previously refreshed donation pages only, leaving shared appeals data and private fund summary stale. Server Action now updateTag(appeals) and refreshes homepage/appeals after committed CAPTURED result; staff fund/donation views refresh after capture/rejection. Rejection does not expire public fundraising data; failed writes/unauthorized/invalid decisions do not invalidate. Prior source fails the new action regression.20 focused action/manual reconciliation cases, TypeScript, focused lint and diff pass. Scope is manual Server Action; gateway/webhook invalidation remains a separate source task. No build/browser/live cache certification or release operation.
+
+## 2026-10-14 — gateway capture/refund derived cache integration
+
+From83368f54: confirmation capture and signed capture/refund webhooks now expire the appeals tag with revalidateTag(appeals,{expire:0}) and mark homepage/appeals/private financial views for revalidation after committed writes. Exact matching financial webhook replays also retry expiry, repairing post-commit invalidation failures without repeating financial accounting. Rolled-back refund transactions do not invalidate. Route Handler expiry follows official Next guidance https://nextjs.org/docs/app/api-reference/functions/revalidateTag; open client views are not pushed refreshed.
+
+97 focused route/cache tests pass, including commit ordering and cache-failure/replay recovery. A new test assertion TypeScript error was corrected; final typecheck/changed-file zero-warning lint/diff pass and affected10 confirmation tests rerun pass. Native DB suite mocks cache boundary separately from real accounting; native DB tests not run here. No build/browser/deployed cache claim, production data/provider/email/migration/release operation. B08 remains partial.
+
+## 2026-10-14 — individual donation retained-money correctness
+
+From2a06e5ef: staff detail page counted unsettled/failed/rejected claims as retained funds and clamped over-refunds to zero. New safe-paise record projection requires INR, positive safe monetary amounts, bounded refunds, settled-state consistency and complete full refunds; unsettled claims retain zero. Detail page shows explicit reconciliation alert and avoids plausible totals for invalid accounting; original amount label no longer claims capture. Permission/evidence/reconciliation contracts unchanged.
+
+25 focused detail/ledger cases pass; nine actual rendered regressions fail prior page source. TypeScript, changed-file zero-warning lint and diff checks pass. No full build/browser/native DB/deployed acceptance claim. No financial mutation, hosted migration, email/provider/release or public fund activation. B08 remains partial; do not alter canonical historical counts from this subtask.
+
+## 2026-10-14 — consolidated B08 private financial integrity and master reconciliation
+
+Continuation from ce326d92; one larger source batch, not separate micro-publications.
+
+- Token-private acknowledgement now uses the same safe-paise/status projection as the staff detail and per-fund ledger. Client JSON contract rejects unsafe/sub-paise money and incompatible pending/captured/refunded presentations while retaining exact decimal values such as0.29. Inconsistent receipt records fail privately instead of issuing misleading acknowledgements.
+- Capture, manual verification and refund bookkeeping validate the original fund donor-purpose snapshot before financial writes. Missing/mismatched/religiously incompatible snapshots require reconciliation. Staff may still reject invalid claims; historical valid fund donations may still be reconciled after pause/closure without silently adopting current purposes.
+- New additive20261014220000 migration protects original fund donation amount, fund-only refund-state consistency, reviewed fund definitions/editor identity and immutable creator. Definition editing requires DRAFT→DRAFT with revision advancement; approval/pause/close paths remain compatible. Existing appeal histories are unaffected.
+- Important correction:20260917090000 already enforces INR globally. Earlier designation fixtures generated schema without custom SQL constraints; USD acceptance in that incomplete fixture did not prove a real fully migrated database defect. Both SQL harnesses now include the existing financial constraints. Redundant unapplied20261014203000 migration retained as a compatibility no-op; original global INR constraint remains. Earlier currency runtime guards remain valid defense boundaries.
+- Master plan current override and AF-FUNDS/AF-RECEIPTS rows updated without changing149 identities or fabricating closures. Register labels remain57Implemented/48Partial/42NotStarted/1Superseded/1NotApplicable. B08 remains partial because protected donor selection/disclosure, native multi-connection lifecycle verification, reviewed public purposes and controlled schema/application activation remain distinct.
+
+Evidence:449focused unit/API/rendering passed;10nativeDB cases explicitly skipped.42PostgreSQL-WASM SQL cases passed, including existing row preservation and partial→full refunds after closure. Prior source fails6receipt cases,4client-contract cases and one case in each capture/manual/refund mutation suite; prior SQL without new guards fails2realSQL cases. Final TypeScript/changed-file zero-warning lint/diff and Prisma schema validation pass. No full browser/build/production/native-concurrency claim. No hosted migration, live record/provider transaction, email/worker activation, main merge/deployment/public fund activation. New SQL remains unapplied outside isolated synthetic testing.
+
+Next substantial batch: protected donor-facing fund selection/revision/disclosure implementation remains dormant until reviewed purposes/activation, or independent remaining B03/B04/B05/B06 source defects where those gates block dependent work. Continue several coherent changes per publication, retaining scoped evidence.
+
+## 2026-10-14 — dormant reviewed fund donor-flow implementation
+
+Continued from ec32b9b8 in one larger batch; no activation/release.
+
+- Added a shared server-only exact-flag/per-CUID activation policy and a bounded approved donor read model returning only purpose/disclosure/revision/supported intentions. Disabled/missing allowlist causes zero fund queries; no accounting code, actor identity or private notes enters the donor projection.
+- Reused existing DonationForm payment lifecycle via an exclusive appeal-or-fund prop contract. Fund flow displays original purpose/restrictions, only approved GENERAL/SADAQAH intentions and an explicit required review confirmation. It posts fund-only destination/revision/confirmation and verifies successful response against exact fund ID, revision, name, purpose, disclosure and intention before constructing Razorpay. Existing uncertain-response/late-paid-callback protections remain in the shared code.
+- Fund selection locks synchronously via ref during opening/verifying/uncertain outcomes. Changing destination after unpaid dismissal remounts the form and clears confirmation; mismatched purpose/revision stays locked without constructing checkout. An empty choice list does not invent a destination.
+- Protected staff preview at /admin/giving-funds/[id]/preview checks fund.view before lookup and validates definition. It is server-rendered, contains no active form/gateway script and collects no donor data. Registry link allows review before independent approval. No public page mounts FundDonationFlow or links to a fund checkout.
+- fund-order now requires literal-true purpose confirmation, returns the verified definition/intention and persists fundDisclosureConfirmedAt. Additive nullable migration20261014230000 preserves historical NULLs and rejects later fund confirmation rewrites/backfills. Staff detail exposes confirmation date, with Not recorded for historical rows.
+
+Validation:208 focused unit/API/server-render and actual JSDOM component interaction tests passed, including same-turn destination switch prevention, stale revision response lock and cleared confirmation on destination change. JSDOM26.1.0 was separately installed under/tmp; invoke AMAANA_DOM_TEST_RUNTIME=/absolute/jsdom/lib/api.js for the two actual DOM cases. Without that optional runtime they explicitly skip.29 isolated PostgreSQL-WASM migration cases passed, including immutable confirmation and historical NULL preservation. Final TypeScript, focused zero-warning ESLint, diff and Prisma validation pass.
+
+Clean compile-only build/secret-boundary/image guards pass. JS819180/819200bytes; CSS343292/348160bytes. Initial interactive staff preview caused aggregate JS overrun; replaced with server-only disclosure preview and simplified shared form field definitions/copy without raising caps or changing the existing appeal messaging. Only20JSbytes remain; broader client bundle reduction is needed before mounting public fund selection. No browser responsive/AT/native concurrency/provider or full production prerender proof is claimed.
+
+B08 remains partial: donor flow source and protected preview exist, but public page integration remains intentionally absent, reviewed actual fund purposes/activation and native lifecycle/controlled migration rollout are still required. Existing public appeal/direct-transfer schemas continue refusing fundId. No flag/env changes, public active seeds, hosted DB operations, payments/refunds/email/worker activation, main merge or deployment.
+
+Next larger batch: independent client bundle/performance/source defects in B03/B04/B06 while fund activation/native/owner gates remain closed. Preserve fixed budgets and master149 classification integrity.
+
+### 2026-10-15 — Executed finance/privacy queue and typed integration batch
+
+Continued existing PR #292 from verified clean `d73947387563df1ca565942a6bdc653610a99c8f`.
+
+- AF-ALLOCATION: independent staff may reject an ineligible pending proposal while approval remains withheld and transactionally rechecked. Added bounded cursor traversal for pending, refund-conflict and historical review queues, preserving each independent cursor. Lookahead rows are not rendered. Historical reviews no longer disappear when the conflict viewport changes. Creation/review/reversal attempt all affected private view refreshes after successful operations; cache service failure returns truthful saved-success with reload guidance, while transaction/audit failure remains an error.
+- AF-DONOR: active and closed rights queues are now independently accessible, with total counts, bounded 40-row cursor pages, validated cursors and reset links. Closed rows have no review control; disabled workflows do not falsely claim an empty backlog. Completed review transactions likewise survive non-critical cache-refresh failures in their response.
+- Actual hydrated TypeScript uncovered and corrected malformed donor-review-link JSX, missing public annual-edition query metadata, nullable gallery alt projection, strict CSS module prop typing, unused imports, closed-status narrowing and unsafe test mock indexing/environment types. The published edition query still applies initiative/cause publication and approved-media gates, without another query or fabricated metrics.
+- Executed: Prisma client generation; full TypeScript (including generated Next route types); all changed TypeScript/TSX files pass zero-warning ESLint; 158 focused unit/API/SSR tests across 27 suites; Next.js optimized **compile-only** build; diff whitespace checks. Re-running the new regressions against the original source fails 7 finance and 9 donor-rights cases. These are actual module/SSR tests, not source-string-only evidence.
+- Not executed: real PostgreSQL cursor/concurrency/migration acceptance, browser/AT/zoom acceptance, complete production build/generation and deployed runtime acceptance. No flags enabled, no migration/provider/payment/email/main merge/deployment operations. Native transactional behavior is not certified by mocks.
+
+Canonical 149-row register recalculated from actual rows: **60 Implemented / 58 Partial / 29 Not started / 1 Superseded / 1 Not applicable**, unchanged. AF-ALLOCATION and AF-DONOR remain Partial; this sub-scope does not close full product or rollout requirements.
+
+### 2026-10-15 — AF-BING explicit IndexNow source workflow
+
+AF-BING **Not started → Partial** on existing PR #292 from `a656c032`.
+Implemented official-production/opt-in configuration, exact root UTF-8 ownership
+proof, and a `content.approve` staff action in Media review. Each bounded batch
+is validated against a fresh privacy-filtered sitemap. Private/query/token URLs,
+Shukr, unreviewed legacy content and individual appeals are rejected. A
+serializable per-staff one-minute admission audit precedes a fixed-endpoint,
+five-second POST; redirects and automatic retries are disabled. Received,
+ownership-pending, rejected and unknown outcomes remain distinct; a later audit
+failure cannot misreport known receipt. Audit metadata contains counts/status,
+not key values or submitted URLs. Key and rollout flag remain unconfigured/OFF.
+No real IndexNow request or production setting was changed.
+
+Executed: **103 focused tests across 9 suites**, full generated-route TypeScript,
+changed-file zero-warning ESLint, whitespace checks and clean optimized
+**compile-only** build. Provider responses, audit faults and request transport
+were mocked; no real ownership, PostgreSQL parallel admission or browser
+acceptance is claimed. Official protocol references:
+https://www.indexnow.org/documentation and https://www.indexnow.org/faq.
+
+**Release blocker found by clean builds:** preserved baseline `a656c032` has
+896,790 JS / 384,242 CSS bytes, already above unchanged 819,200 / 348,160 caps.
+This batch has 898,586 JS (+1,796) / 384,242 CSS (unchanged). The baseline was
+built independently in an isolated checkout; this is not a stale-chunk estimate.
+Do not merge/deploy until asset budgets and remaining exact-head release gates
+pass. No budget or support target was relaxed.
+
+Remaining AF-BING scope: provision and verify ownership on approved host;
+review rollout/privacy; prove real-DB admission and deployed key headers;
+qualified withdrawn-URL/removal lifecycle (not implemented by this action).
+149-row counts: **60 Implemented / 59 Partial / 28 Not started /
+1 Superseded / 1 Not applicable**. No production closure inferred.
+
+### 2026-10-15 — Shared checkout delivery boundaries
+
+PR #292 continuation from `ef9a09e1`: appeal selection and the server-rendered
+appeal checkout now share one lazy methods entry; appeal/fund online forms and
+direct-transfer forms share separate module-level lazy entries. Removed mixed
+static/lazy form imports that emitted duplicate checkout code; retained stable
+component identities, existing method locks, original-purpose properties and
+all payment/receipt state logic. Separate loader modules avoid import cycles.
+
+Executed: 69 focused tests (5 suites), including four streamed renders of the
+actual online, direct-transfer, giving-fund and server-entry forms; full
+TypeScript, zero-warning changed-file lint and clean optimized compile-only
+build. Final aggregate JS **898,586 → 882,569 bytes (-16,017)**; CSS unchanged
+**384,242**. Unchanged limits remain 819,200 JS / 348,160 CSS: both still fail.
+Manifest-assigned entry assets for /donate/[slug] changed 646,859 → 614,309 JS
+and 131,621 → 125,177 CSS; /donate JS changed 624,086 → 624,493. These exclude
+on-demand chunks and are not measured network transfer or Core Web Vitals.
+
+Impeccable performance guidance and No AI Slop copy checks applied; no approved
+styling or programme copy changed. Browser hydration, slow-chunk switching,
+keyboard/zoom and payment sandbox acceptance remain unexecuted. No production
+operations. AF-R047 remains Partial; all 149 implementation states unchanged:
+60 Implemented / 59 Partial / 28 Not started / 2 other. Next: remaining bundle
+excess and route delivery/CWV, without increasing caps or dropping support.
+
+### 2026-10-15 — Retired page-shell CSS removal; aggregate CSS cap restored
+
+Continued PR #292 from `afc25cf4`. Removed unused trust, transparency and
+initiative stylesheet imports from their route layouts. Pruned source-confirmed
+retired hero, story, timeline, media-grid, amount-wrapper and legacy layout
+selectors from active stylesheets, while leaving unimported archives intact.
+Active shared hero variants, media grids, cards, forms, accessibility policies
+and programme content remain in source. No copy or business logic changed.
+The CSS audit now checks active stories headings and the retained section label
+instead of asserting the existence of retired markup.
+
+Executed: 24 focused tests across 6 suites, full TypeScript, changed-code
+zero-warning ESLint, global CSS architecture audit, whitespace checks and clean
+optimized compile-only build. An independent CSS AST subsequence comparison
+found 238 removed selector branches in 18 edited stylesheets, with surviving
+declarations and their order unchanged. No browser visual/AT/zoom acceptance
+was executed; source absence is not a live CSS-coverage percentage.
+
+**Aggregate CSS 384,242 → 347,365 bytes (-36,877)**, now below the unchanged
+348,160 cap by 795 bytes. JS remains **882,569 / 819,200**, still a release
+blocker. Root-global source CSS separately decreased **127,193 → 124,633 bytes**;
+the 60 KB goal remains unmet. AF-R067 **Not started → Partial** reflects actual
+root stylesheet pruning only, not completion of that stricter requirement.
+AF-R057 remains Partial; AF-R068 remains unverified/Not started because no live
+coverage measurement was performed. No budget, browser support, production
+flag, migration, provider operation, deployment or main merge changed.
+
+149-row register: **60 Implemented / 60 Partial / 27 Not started /
+1 Superseded / 1 Not applicable**. Next: remaining JS excess, then bounded
+rendered visual/interaction acceptance before release.

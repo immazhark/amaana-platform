@@ -1,5 +1,6 @@
 import Image from "next/image";
-import { canRenderPublicMedia, resolvePublicMediaUrl } from "@/lib/public-media";
+import { getPublicImageDimensions } from "@/lib/public-image-dimensions";
+import { canRenderPublicMedia, getPublicImageOptimizationUrl, getPublicImagePlaceholder, resolvePublicMediaUrl } from "@/lib/public-media";
 
 type PublicMediaAsset = {
   id: string;
@@ -12,6 +13,7 @@ type PublicMediaAsset = {
   sourceYear: number | null;
   width?: number | null;
   height?: number | null;
+  blurDataURL?: string | null;
 };
 
 type PublicMediaProps = {
@@ -22,21 +24,18 @@ type PublicMediaProps = {
 
 const defaultResponsiveSizes = "(max-width: 700px) 100vw, (max-width: 1200px) 70vw, 900px";
 
-function canOptimizeLocally(url: string) {
-  return url.startsWith("/media/") || url.startsWith("/brand/");
-}
-
 export function PublicMedia({ asset, priority = false, sizes = defaultResponsiveSizes }: PublicMediaProps) {
   if (!canRenderPublicMedia(asset)) return null;
   const url = resolvePublicMediaUrl(asset);
   if (!url) return null;
 
   if (asset.kind === "IMAGE") {
-    const width = asset.width && asset.width > 0 ? asset.width : 1600;
-    const height = asset.height && asset.height > 0 ? asset.height : 1200;
-    const image = canOptimizeLocally(url) ? (
+    const { width, height } = getPublicImageDimensions(asset);
+    const optimizedUrl = getPublicImageOptimizationUrl(url);
+    const blurDataURL = getPublicImagePlaceholder(asset.blurDataURL);
+    const image = optimizedUrl ? (
       <Image
-        src={url}
+        src={optimizedUrl}
         alt={asset.altText ?? ""}
         width={width}
         height={height}
@@ -44,6 +43,8 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
         preload={priority}
         loading={priority ? undefined : "lazy"}
         decoding="async"
+        placeholder={blurDataURL ? "blur" : "empty"}
+        blurDataURL={blurDataURL ?? undefined}
       />
     ) : (
       // External approved assets may live on multiple S3-compatible/CDN hosts; keep this direct until hosts are explicitly allowlisted for Next's optimizer.
@@ -61,7 +62,7 @@ export function PublicMedia({ asset, priority = false, sizes = defaultResponsive
 
     return (
       <figure className="v2-media-item">
-        {/* Local approved campaign media uses Next's responsive optimizer. External approved HTTPS media stays direct until hosts are explicitly allowlisted. */}
+        {/* Same-origin managed campaign media uses Next's responsive optimizer. Approved external-host media retains direct delivery. */}
         {image}
         {(asset.caption || asset.sourceYear) && (
           <figcaption>{asset.caption}{asset.caption && asset.sourceYear ? " · " : ""}{asset.sourceYear ?? ""}</figcaption>

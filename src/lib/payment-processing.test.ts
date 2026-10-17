@@ -1,3 +1,4 @@
+import { syntheticFundDesignation } from "@/test/fund-designation";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
@@ -80,6 +81,7 @@ describe("captureDonation", () => {
     mocks.txDonationFindUnique
       .mockResolvedValueOnce({
         id: "donation_legacy",
+        appealId: "legacy_appeal",
         currency: "INR",
         paymentMethod: "RAZORPAY",
         provider: null,
@@ -201,6 +203,48 @@ describe("captureDonation", () => {
       .rejects.toThrow("Payment does not match donation order");
 
     expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
+  });
+  it("captures a fund-only order without updating an unrelated appeal", async () => {
+    mocks.txDonationFindUnique.mockResolvedValue({
+      id: "donation_fund", referenceNumber: "AFD-FUND-TEST",
+      appealId: null, fundId: "fund_approved", designationSnapshot: syntheticFundDesignation("fund_approved", "SADAQAH"), currency: "INR",
+      paymentMethod: "RAZORPAY", provider: "RAZORPAY",
+      amount: decimal(500), status: "CREATED", providerPaymentId: null,
+      donorEmail: "donor@example.test", givingIntent: "SADAQAH",
+      receiptTokenHash: "hash",
+    });
+    mocks.txDonationUpdateMany.mockResolvedValue({ count: 1 });
+
+    const result = await captureDonation("order_fund", "pay_fund", 50_000);
+    expect(result).toMatchObject({ donationId: "donation_fund", status: "CAPTURED" });
+    expect(mocks.txDonationUpdateMany).toHaveBeenCalledOnce();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ donationId: "donation_fund", payload: expect.objectContaining({ designationKind: "FUND" }) }),
+    }));
+  });
+
+  it("does not capture a fund order without its immutable approved purpose", async () => {
+    mocks.txDonationFindUnique.mockResolvedValue({
+      id: "invalid_fund", appealId: null, fundId: "fund", designationSnapshot: null,
+      currency: "INR", paymentMethod: "RAZORPAY", provider: "RAZORPAY",
+      givingIntent: "GENERAL", amount: decimal(500), status: "CREATED", providerPaymentId: null,
+    });
+    await expect(captureDonation("order_invalidfund", "pay_invalidfund", 50_000)).rejects.toThrow(/requires reconciliation/);
+    expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects a mixed destination before claiming provider money", async () => {
+    mocks.txDonationFindUnique.mockResolvedValue({
+      id: "donation_mixed", appealId: "appeal_1", fundId: "fund_1",
+      currency: "INR", paymentMethod: "RAZORPAY", provider: "RAZORPAY",
+      amount: decimal(500), status: "CREATED", providerPaymentId: null,
+    });
+    await expect(captureDonation("order_mixed", "pay_mixed", 50_000)).rejects.toThrow(/exactly one/);
+    expect(mocks.txDonationUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
   });
 });
 

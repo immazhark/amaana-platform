@@ -12,7 +12,8 @@ import {
 
 export const CURATED_GALLERY_ENTITY_TYPE = "CuratedGalleryBatch";
 export const CURATED_GALLERY_START_ACTION = "media.curated_import_started";
-export const CURATED_GALLERY_REQUIRED_SERVICE_ID = "fcb9d167-eba1-40c8-a4e6-ac35af470989";
+export { CURATED_GALLERY_REQUIRED_SERVICE_ID } from "./curated-gallery-target";
+import { CURATED_GALLERY_REQUIRED_SERVICE_ID, isApprovedCuratedGalleryTarget } from "./curated-gallery-target";
 
 export function sha256Hex(value: string | Uint8Array) {
   return createHash("sha256").update(value).digest("hex");
@@ -23,6 +24,10 @@ export function parseCuratedGalleryManifestText(manifestText: string) {
     throw new Error("Curated gallery manifest checksum does not match the owner-approved package");
   }
   return curatedGalleryManifestSchema.parse(JSON.parse(manifestText));
+}
+
+export function isCuratedGalleryRuntime() {
+  return isApprovedCuratedGalleryTarget(process.env.APP_ENVIRONMENT, process.env.RAILWAY_SERVICE_ID);
 }
 
 export function assertCuratedGalleryRuntime() {
@@ -73,4 +78,38 @@ export function curatedGalleryRecordById(manifest: CuratedGalleryManifest, recor
   const record = manifest.records.find(item => item.id === recordId);
   if (!record) throw new Error("Curated media ID is not part of the approved package");
   return record;
+}
+
+/** Enforce the immutable owner-approved editorial metadata on all entry points.
+ * A matching ID, object key or image hash alone does not authorize modified
+ * captions, dimensions, attribution, or external media references. */
+export type CuratedGalleryAssetMetadata = {
+  altText: string | null;
+  caption: string | null;
+  sourcePath: string | null;
+  sourceYear: number | null;
+  width: number | null;
+  height: number | null;
+  title: string | null;
+  externalUrl: string | null;
+  causeId: string | null;
+  storyId: string | null;
+  faithContentId: string | null;
+};
+
+export function matchesCuratedGalleryAssetMetadata(
+  record: CuratedGalleryRecord,
+  asset: CuratedGalleryAssetMetadata,
+): boolean {
+  return asset.altText === record.altText &&
+    asset.caption === (record.caption || null) &&
+    asset.sourcePath === `owner-curated://${CURATED_GALLERY_BATCH}/${record.sha256}` &&
+    asset.sourceYear === record.sourceYear &&
+    asset.width === record.width &&
+    asset.height === record.height &&
+    asset.title === null &&
+    asset.externalUrl === null &&
+    asset.causeId === null &&
+    asset.storyId === null &&
+    asset.faithContentId === null;
 }

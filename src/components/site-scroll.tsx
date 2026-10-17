@@ -7,9 +7,9 @@ const nested = "[data-carousel-mode], .mobile-menu, .amaana-companion-panel, [da
 const nativeKeyboardNavigation = ["Tab", "ArrowUp", "ArrowDown", "PageUp", "PageDown", "Home", "End", " "];
 
 /** Wheel-only enhancement; native touch, keyboard, anchors, focus and history retain their semantics. */
-export function useSiteScroll(pathname: string) {
+export function useSiteScroll(pathname: string | null) {
   useEffect(() => {
-    if (pathname.startsWith("/admin")) return;
+    if (!pathname || pathname.startsWith("/admin") || typeof window.matchMedia !== "function") return;
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");
     const pointer = window.matchMedia("(pointer: fine)");
     let instance: Lenis | undefined;
@@ -99,7 +99,16 @@ export function useSiteScroll(pathname: string) {
     window.addEventListener("popstate", native);
     window.addEventListener("hashchange", native);
     document.addEventListener("visibilitychange", sync);
-    preference.addEventListener("change", sync); pointer.addEventListener("change", sync);
+    const subscribe = (media: MediaQueryList) => {
+      if (typeof media.addEventListener === "function") {
+        media.addEventListener("change", sync);
+        return () => media.removeEventListener("change", sync);
+      }
+      media.addListener(sync);
+      return () => media.removeListener(sync);
+    };
+    const unsubscribePreference = subscribe(preference);
+    const unsubscribePointer = subscribe(pointer);
     return () => {
       disposed = true; destroy();
       window.removeEventListener("wheel", wheel);
@@ -107,7 +116,8 @@ export function useSiteScroll(pathname: string) {
       window.removeEventListener("click", click, true);
       window.removeEventListener("popstate", native); window.removeEventListener("hashchange", native);
       document.removeEventListener("visibilitychange", sync);
-      preference.removeEventListener("change", sync); pointer.removeEventListener("change", sync);
+      unsubscribePreference();
+      unsubscribePointer();
     };
   }, [pathname]);
 }

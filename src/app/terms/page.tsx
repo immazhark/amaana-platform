@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import Link from "@/components/navigation-link";
 import { PageHero } from "@/components/page-hero";
 import { PolicyToc } from "@/components/policy-toc";
 export const metadata: Metadata = {

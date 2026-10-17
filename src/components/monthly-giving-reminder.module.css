@@ -1,0 +1,14 @@
+.panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(14rem,.7fr);gap:clamp(1rem,3vw,2rem);padding:clamp(1.25rem,3vw,2.5rem);border:1px solid var(--af-color-border);border-radius:1.25rem;background:var(--af-color-surface);box-shadow:var(--af-shadow-card);max-width:72rem}
+.intro h3{margin:0;color:var(--af-color-navy-950);font:500 clamp(1.6rem,3vw,2.35rem)/1.2 var(--af-font-display)}
+.intro p,.action p{margin:.7rem 0 0;color:var(--af-color-muted);line-height:1.65}
+.intro strong{color:var(--af-color-navy-950)}
+.field{display:grid;align-content:start;gap:.7rem;font-weight:750;color:var(--af-color-navy-950)}
+.field :is(select,input){min-height:3rem;width:100%;padding:.7rem .85rem;border:1px solid var(--af-color-border);border-radius:.7rem;background:var(--af-color-canvas);color:var(--af-color-navy-950)}
+.field span{font-weight:400;font-size:.875rem;color:var(--af-color-muted)}
+.action{display:grid;justify-items:start;align-content:start;gap:.7rem}
+.action p{margin:0;font-size:.875rem}
+.disclosure{grid-column:1/-1;margin:0;padding:1rem;border-left:3px solid var(--af-color-gold-ink);background:var(--af-color-surface-muted);color:var(--af-color-navy-950);line-height:1.65}
+.panel :is(button,select,input,summary):focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
+@media(max-width:760px){.panel{grid-template-columns:1fr}}
+
+.action form{display:grid;gap:1rem;width:100%}.action details{width:100%}.action summary{cursor:pointer;font-weight:750;min-height:3rem}.action details form{margin-top:1rem}

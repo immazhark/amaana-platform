@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { donationAmountValidationMessage, updateDonationAmountValidity } from "./donation-amount-input";
+import { donationAmountValidationMessage, updateDonationAmountValidity, getWholeRupeeCheckoutRange } from "./donation-amount-input";
 
 describe("donation amount input validation", () => {
   const min = 10;
@@ -34,4 +34,16 @@ describe("donation amount input validation", () => {
     updateDonationAmountValidity(control as HTMLInputElement, min, max);
     expect(recorded).toBe("");
   });
+  it("derives only server-payable whole-rupee appeal ranges", () => {
+    expect(getWholeRupeeCheckoutRange(400.30)).toEqual({ minimum: 10, maximum: 400 });
+    expect(getWholeRupeeCheckoutRange(10.01)).toEqual({ minimum: 10, maximum: 10 });
+    expect(getWholeRupeeCheckoutRange(9)).toEqual({ minimum: 9, maximum: 9 });
+    expect(getWholeRupeeCheckoutRange(1)).toEqual({ minimum: 1, maximum: 1 });
+    expect(getWholeRupeeCheckoutRange(1_000_000.9)).toEqual({ minimum: 10, maximum: 1_000_000 });
+  });
+  it.each([9.99, 5.5, 0.99, 0.01, 0, -1, NaN, Infinity])(
+    "refuses to advertise a checkout for impossible balance %s", remaining => {
+      expect(getWholeRupeeCheckoutRange(remaining)).toBeNull();
+    },
+  );
 });

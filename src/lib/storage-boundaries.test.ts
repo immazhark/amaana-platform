@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import sharp from "sharp";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   deletePublicMediaObject,
@@ -8,6 +9,7 @@ import {
   uploadCuratedPublicMediaFile,
   uploadPrivateDocument,
   uploadPublicMediaFile,
+  PrivateDocumentValidationError,
 } from "./storage";
 
 const sdk = vi.hoisted(() => ({ create: vi.fn(), send: vi.fn(), sign: vi.fn() }));
@@ -49,6 +51,26 @@ beforeEach(() => {
   vi.stubEnv("MEDIA_S3_SECRET_ACCESS_KEY", "");
 });
 afterEach(() => { vi.unstubAllEnvs(); });
+
+describe("private document rejection classification", () => {
+  it.each([
+    ["unsupported type", () => new File([bytes], "synthetic.txt", { type: "text/plain" })],
+    ["oversized file", () => new File([new Uint8Array(5 * 1024 * 1024 + 1)], "synthetic.pdf", { type: "application/pdf" })],
+    ["forged PDF signature", () => new File(["not a PDF"], "synthetic.pdf", { type: "application/pdf" })],
+  ] as const)("classifies %s as a correctable rejection before storage access", async (_name, createFile) => {
+    await expect(uploadPrivateDocument(createFile(), "request-123")).rejects.toBeInstanceOf(PrivateDocumentValidationError);
+    expect(sdk.create).not.toHaveBeenCalled();
+    expect(sdk.send).not.toHaveBeenCalled();
+  });
+
+  it("does not mistake a storage outage for an invalid applicant file", async () => {
+    const outage = new Error("storage acknowledgement lost");
+    sdk.send.mockRejectedValueOnce(outage);
+    await expect(uploadPrivateDocument(file(), "request-123")).rejects.toBe(outage);
+    expect(outage).not.toBeInstanceOf(PrivateDocumentValidationError);
+    expect(sdk.send).toHaveBeenCalledOnce();
+  });
+});
 
 describe("public/private storage configuration boundary", () => {
   const operations = [
@@ -123,7 +145,87 @@ describe("delivery configuration is validated before public persistence", () => 
   });
 });
 
+describe("public preview metadata follows the validated upload boundary", () => {
+  for (const mode of ["standard", "curated"] as const) {
+    it(`returns a bounded preview for ${mode} upload without creating a derivative object`, async () => {
+      const image = await sharp({ create: { width: 120, height: 60, channels: 3, background: "#466faa" } }).png().toBuffer();
+      const input = new File([new Uint8Array(image)], "synthetic.png", { type: "image/png" });
+      const uploaded = mode === "standard" ? await uploadPublicMediaFile(input)
+        : await uploadCuratedPublicMediaFile(input, key.replace(/pdf$/, "png"), createHash("sha256").update(image).digest("hex"));
+      expect(uploaded.blurDataURL).toMatch(/^data:image\/jpeg;base64,\/9j\//);
+      expect(uploaded.blurDataURL!.length).toBeLessThanOrEqual(1400);
+      expect(sdk.send).toHaveBeenCalledOnce();
+      expect(sdk.send).toHaveBeenCalledWith(expect.objectContaining({ input: expect.objectContaining({
+        Body: image, CacheControl: "private, no-store, max-age=0", Bucket: "public-gallery",
+      }) }));
+    });
+  }
+  it("keeps document uploads outside preview generation", async () => {
+    expect(await uploadPublicMediaFile(file())).toMatchObject({ blurDataURL: null });
+    const privateFile = await uploadPrivateDocument(file(), "request-123");
+    expect(privateFile).not.toHaveProperty("blurDataURL");
+    const image = await sharp({ create: { width: 120, height: 60, channels: 3, background: "white" } }).png().toBuffer();
+    const privateImage = await uploadPrivateDocument(new File([new Uint8Array(image)], "private-synthetic.png", { type: "image/png" }), "request-123");
+    expect(privateImage).not.toHaveProperty("blurDataURL");
+    expect(sdk.send).toHaveBeenLastCalledWith(expect.objectContaining({ input: expect.objectContaining({
+      Body: image, Bucket: "private-evidence", CacheControl: "private, no-store, max-age=0",
+    }) }));
+  });
+});
+
+describe("public media transport deadline", () => {
+  it("rejects a stalled SDK response even when the transport does not settle on abort", async () => {
+    vi.useFakeTimers();
+    try {
+      let signaled: AbortSignal | undefined;
+      sdk.send.mockImplementation((_command, options) => {
+        signaled = options?.abortSignal;
+        return new Promise(() => {});
+      });
+      const result = getPublicMediaObject(key).then(() => "unexpected success", error => (error as Error).message);
+      await vi.advanceTimersByTimeAsync(15_100);
+      expect(await result).toMatch(/media retrieval timed out/i);
+      expect(signaled?.aborted).toBe(true);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("rejects a stalled body iterator and destroys its stream", async () => {
+    vi.useFakeTimers();
+    try {
+      const destroy = vi.fn();
+      sdk.send.mockResolvedValue({
+        Body: {
+          destroy,
+          async *[Symbol.asyncIterator]() {
+            yield new Uint8Array([1]);
+            await new Promise<void>(() => {});
+          },
+        },
+      });
+      const result = getPublicMediaObject(key).then(() => "unexpected success", error => (error as Error).message);
+      await vi.advanceTimersByTimeAsync(15_100);
+      expect(await result).toMatch(/media retrieval timed out/i);
+      expect(destroy).toHaveBeenCalledOnce();
+    } finally { vi.useRealTimers(); }
+  });
+});
+
 describe("public object reads enforce upload-size and completeness boundaries", () => {
+  it.each(["stalled", "rejected", "throwing"] as const)("preserves an oversized-object rejection when stream cancellation is %s", async outcome => {
+    vi.useFakeTimers();
+    try {
+      const cancel = vi.fn(() => {
+        if (outcome === "throwing") throw new Error("synthetic synchronous cancellation failure");
+        return outcome === "stalled" ? new Promise<void>(() => {}) : Promise.reject(new Error("synthetic cancellation failure"));
+      });
+      sdk.send.mockResolvedValue({ Body: { cancel }, ContentLength: 5 * 1024 * 1024 + 1 });
+      const result = getPublicMediaObject(key).then(() => "unexpected success", error => (error as Error).message);
+      await vi.advanceTimersByTimeAsync(50);
+      expect(await Promise.race([result, Promise.resolve("rejection still pending")])).toMatch(/verified size boundary/);
+      expect(cancel).toHaveBeenCalledOnce();
+    } finally { vi.useRealTimers(); }
+  });
+
   it("closes an oversized object before reading its body", async () => {
     const consumed = vi.fn();
     const closed = vi.fn();
