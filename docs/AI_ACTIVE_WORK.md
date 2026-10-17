@@ -1,3 +1,7 @@
+## 2026-10-17 — Private response policy after production transfer-proof release
+
+Ownership: CHATGPT_ACTIVE. Reconciled PR305 private no-referrer override and effective Next/HTTP header regressions with main f9d589ffc0716c06ed1444db3dadb4836d7ec4b3 (merged PR300). Preserve receipt-signature preflight and exact-paise safeguards. Changes remain scoped to global headers, security-header browser tests, effective-header unit tests, and additive coordination records. Original CI39056681474 covers prior head only; new exact-head CI required, then ready-state promotion and main merge. No provider/donor writes, secret changes, or production deployment from this branch.
+
 ## 2026-10-17 — ChatGPT private-response policy integration
 
 Ownership: CHATGPT_ACTIVE. Branch fix/private-response-referrer-policy-20261017, PR305. Reconcile already-tested private no-referrer policy and regression coverage against main #299 without changing provider or donor flows. Preserve both older coordination histories; PR300 remains a separate draft undergoing browser acceptance. No merge/deployment until fresh exact-head hosted checks and later main reconciliation. GitHub connector used because original local checkout is unavailable.
@@ -9,6 +13,10 @@ Ownership: HANDOFF_PENDING. PR305 original f0227ffe passed full hostedCI39049214
 ## 2026-10-17 — Live-confirmed private response header override
 
 Ownership: HANDOFF_PENDING after scoped header repair. Branch fix/private-response-referrer-policy-20261017 from deployed main ebc0b8e. Direct production version reports exact merged SHA and invalid synthetic receipt404 remains generic, but response Referrer-Policy is strict-origin-when-cross-origin despite route no-referrer. Repair global Next private-surface header precedence using real Next configuration resolver regression tests. Public Cloudflare request blocked403; origin behavior verified separately. RED: eight sensitive paths resolved public referrer policy through actual Next config resolver. GREEN:11 effective-policy regressions pass (plus2 optimizer tests); full908 passed/9 skipped, TypeScript/focused lint/E2E syntax/diff pass. New native HTTP browser tests pending hosted gates; independent review requested. No donor/payment/credential mutation.
+
+## 2026-10-17 — Combined transfer proof and exact-balance safeguards
+
+Ownership: HANDOFF_PENDING. Continued PR300 on fix/transfer-proof-preflight-20261017, preserving its original remote head24b381a3 and incorporating main2ee89d902cd4f03a1e3afb4f1182f19eb1286986 after PR299 merged. Both signature preflight before financial writes and exact-paise eligibility remain. Malformed-balance regressions now carry a valid PNG signature to exercise both guards together. Clarified signature checks do not prove document authenticity. Independent read-only AI review reports no important findings. Focused59 and full952 tests passed/9 skipped; TypeScript, focused ESLint and diff checks passed. Fresh exact-head hosted checks required before release; no live claim, charge, refund or email created. PR299 Railway deployment d4e77705-3ac1-420f-be25-04aa42f47adb reports SUCCESS at exact main2ee89d90; direct-origin smoke verification is separate. Next: inspect PR300 hosted acceptance, then ready/merge only after required gates pass and verify deployment. Historical PR292 remains extraction-only.
 
 ## 2026-10-17 — Exact checkout and settlement current-main verification
 
