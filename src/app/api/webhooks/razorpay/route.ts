@@ -290,11 +290,14 @@ export async function POST(request: Request) {
           requestedRefundPaise: refund.amount,
         });
 
-        // Unlike an appeal's deliberately capped public raised counter, a
-        // fund's net receipts derive directly from Donation.refundedAmount.
-        // Never acknowledge a provider refund that cannot be booked in full.
-        if (destination.kind === "FUND" && accounting.donationRefundPaise !== refund.amount) {
-          throw new Error("Fund refund exceeds the remaining captured donation amount");
+        // A signed provider refund must be booked for its full exact paise
+        // amount in BOTH the donor's net ledger and any appeal's raised counter.
+        // calculateRefundAccounting caps to prevent negative balances; silently
+        // accepting a capped provider amount here would create inconsistent
+        // durable settlement totals. Leave the entire transaction uncommitted
+        // for independent reconciliation instead of acknowledging success.
+        if (accounting.wasCapped) {
+          throw new Error("Provider refund exceeds reconcilable financial balances");
         }
 
         if (accounting.donationRefundPaise > 0) {
