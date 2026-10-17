@@ -69,6 +69,7 @@ describe("media publication review form integrity", () => {
     "heroEligible", "reviewNotes",
   ])("rejects repeated %s review controls before any publication approval", field => {
     const data = validForm();
+    if (!data.has(field)) data.set(field, "on");
     data.append(field, field === "privacyClass" ? "RED_PRIVATE" : "on");
     expect(() => parseMediaPublicationReview(data)).toThrow(/Repeated/);
   });

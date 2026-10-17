@@ -100,6 +100,17 @@ export function CuratedGalleryImporter() {
   const request = (path: string, init: RequestInit, timeout?: number) =>
     galleryRequest(path, init, lifetime.current?.signal, timeout);
 
+  async function checkStatus() {
+    const id = generation.current + 1;
+    try {
+      await refreshStatus();
+    } catch {
+      if (id === generation.current && lifetime.current && !lifetime.current.signal.aborted) {
+        setPhase("Gallery status could not be verified. Check status again before importing or publishing.");
+      }
+    }
+  }
+
   async function publishApprovedBatch() {
     if (locked.current || !window.confirm(
       "Publish all 154 owner-approved gallery images now? This will not assign any hero, banner, identity or thumbnail role.",
@@ -264,9 +275,7 @@ export function CuratedGalleryImporter() {
         Import or publication may have changed on the server. Check status before retrying.
       </p>}
       <button type="button" className="button secondary" disabled={busy}
-        onClick={() => void refreshStatus().catch(error => setPhase(
-          error instanceof Error ? error.message : "Gallery status could not be verified.",
-        ))} style={{ marginTop: ".75rem" }}>
+        onClick={() => void checkStatus()} style={{ marginTop: ".75rem" }}>
         Check import and publication status
       </button>
       {status && <>

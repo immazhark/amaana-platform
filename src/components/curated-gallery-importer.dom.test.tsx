@@ -94,6 +94,21 @@ describe.skipIf(!runtime)("curated gallery operator lifecycle", () => {
     expect(requests("POST")).toHaveLength(0);
   });
 
+  it("ignores an older failed status read after a newer read verified publication", async () => {
+    fetchMock.mockResolvedValueOnce(Response.json(stageStatus()));
+    await render();
+    let rejectOld!: (error: Error) => void;
+    fetchMock.mockReturnValueOnce(new Promise((_resolve, reject) => { rejectOld = reject; }));
+    await act(async () => button("Check import")?.click());
+    fetchMock.mockResolvedValueOnce(Response.json(stageStatus(true)));
+    await act(async () => button("Check import")?.click());
+    expect(container.textContent).toContain("rendering is verified");
+    await act(async () => rejectOld(new Error("Old status failed")));
+    expect(container.textContent).toContain("rendering is verified");
+    expect(container.textContent).not.toContain("Old status failed");
+    expect(requests("POST")).toHaveLength(0);
+  });
+
   it("never blindly repeats an uncertain publish; recovery is read-only", async () => {
     fetchMock.mockResolvedValueOnce(Response.json(stageStatus()));
     await render();

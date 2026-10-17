@@ -76,6 +76,7 @@ function updateForm(overrides: Record<string, string> = {}) {
 describe("identity media creation concurrency", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.revalidatePath.mockReset();
     mocks.requirePermission.mockResolvedValue({ id: "user_123" });
     mocks.findMany.mockResolvedValue([]);
     mocks.updateMany.mockResolvedValue({ count: 0 });
@@ -168,6 +169,7 @@ describe("identity media creation concurrency", () => {
 describe("published media editing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.revalidatePath.mockReset();
     mocks.requirePermission.mockResolvedValue({ id: "user_123" });
   });
 
@@ -230,6 +232,7 @@ describe("published media editing", () => {
 describe("media publication concurrency", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.revalidatePath.mockReset();
     mocks.findMany.mockReset();
     mocks.findMany.mockResolvedValue([]);
     mocks.requirePermission.mockResolvedValue({ id: "approver_123" });
@@ -445,6 +448,7 @@ describe("committed media publication refresh integrity", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.revalidatePath.mockReset();
     mocks.findMany.mockReset();
     mocks.findMany.mockResolvedValue([]);
     mocks.requirePermission.mockResolvedValue({ id: "reviewer_123" });
@@ -513,6 +517,7 @@ describe("committed media publication refresh integrity", () => {
 describe("committed media draft refresh integrity", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.revalidatePath.mockReset();
     mocks.requirePermission.mockResolvedValue({ id: "editor_123" });
     mocks.redirect.mockImplementation(() => { throw new Error("NEXT_REDIRECT"); });
     mocks.revalidatePath.mockImplementation(path => {
@@ -567,6 +572,7 @@ describe("committed media draft refresh integrity", () => {
 describe("admin media deletion", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.revalidatePath.mockReset();
     mocks.requirePermission.mockResolvedValue({ id: "user_123" });
     mocks.deletePublicMediaObject.mockResolvedValue(undefined);
     mocks.deleteRecord.mockResolvedValue({ id: "media_123" });

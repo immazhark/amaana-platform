@@ -83,6 +83,7 @@ describe("appeal scalar input boundary", () => {
 
   it.each(cases)("rejects a repeated %s field before any database operation", async (_label, action, fields, field) => {
     const data = form(fields);
+    if (!data.has(field)) data.set(field, "reviewed first value");
     data.append(field, "malicious second value");
     await expect(action(data)).rejects.toThrow(`Repeated ${field} fields are not accepted.`);
     expect(mocks.appealFind).not.toHaveBeenCalled();

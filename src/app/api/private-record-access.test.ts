@@ -16,6 +16,7 @@ vi.mock("@/lib/prisma", () => ({
 vi.mock("@/lib/request-security", async importOriginal => ({
   ...await importOriginal<typeof import("@/lib/request-security")>(),
   enforceAcknowledgementRateLimit: async () => true,
+  enforceTrackingRateLimit: async () => true,
 }));
 
 import { POST as acknowledgement } from "./donations/acknowledgement/route";
