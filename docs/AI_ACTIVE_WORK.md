@@ -1,3 +1,7 @@
+## 2026-10-17 — ACTIVE: bounded direct-transfer intake and safe retry classification
+
+**Ownership: CHATGPT_ACTIVE.** Verified PR #292 open, base main, branch `fix/direct-transfer-feedback-20261013`, initial HEAD `a9175e95a19f9fd1c97eac308ea87388dfadefd5`, HANDOFF_PENDING. Task: enforce pre-write deadline on direct bank/UPI receipt multipart intake; classify only authenticated explicit no-write 408 as resubmittable, preserve uncertain postcommit 5xx/dropped response locks. Add bounded browser transport fail-safe, TDD source/tests. No merge, deployment, real payment, or schema changes.
+
 ## 2026-10-17 — Financial webhook state validation; handoff
 
 **Ownership: HANDOFF_PENDING.** ChatGPT finished sole-writer source/test batch on open PR #292, branch `fix/direct-transfer-feedback-20261013` targeting `main`. Incoming verified HEAD `1762b4c08d1ea6e6860b15fd634f3c891fc70bdd`; ownership claim `7bddd5f2c5910f2a63d7afcd3cdc5b60fc30e8e3`. No competing writer observed.
