@@ -34,7 +34,7 @@ export default function VolunteerPage() {
       <div className="v2-shell">
         <SectionHeading id="volunteer-title" eyebrow="Offer what you can"
           title="Tell us where you may be able to help."
-          subtitle="Start with non-sensitive interests and general availability. This is an enquiry, not an application to access beneficiary information."/>
+          subtitle="Select an interest, then add your availability to the prepared email. This is an enquiry, not an application to access beneficiary information."/>
         <VolunteerInterestBuilder/>
       </div>
     </section>
