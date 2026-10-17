@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
-import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
+import { getPublicAppealCheckoutEligibility } from "@/lib/public-appeal-checkout";
 import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { appealDonationDesignationSnapshot, createDonationReference, createReceiptToken, directTransferSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
@@ -104,9 +104,14 @@ export async function POST(request: Request) {
       where: { id: parsed.data.appealId, status: "PUBLISHED" },
       select: { id: true, slug: true, title: true, status: true, goalAmount: true, amountRaised: true, closesAt: true, assistanceRequest: { select: { verification: { select: { zakatStatus: true } } } } },
     });
-    if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+    // Use the same paise-accurate, whole-rupee-eligible projection as the
+    // public detail and checkout. A direct POST must never bypass a disabled
+    // public donation route when the ledger has fractional-paise corruption.
+    const eligibility = appeal && canExposePublicAppeal(appeal)
+      ? getPublicAppealCheckoutEligibility(appeal) : null;
+    if (!eligibility) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
     if (parsed.data.givingIntent === "ZAKAT" && appeal.assistanceRequest?.verification?.zakatStatus !== "ELIGIBLE") return NextResponse.json({ error: "This appeal is not currently marked as Zakat-eligible.", fieldErrors: { givingIntent: ["Please choose General Charity or Sadaqah."] } }, { status: 409, headers: privateHeaders });
-    const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
+    const remainingAmount = eligibility.progress.remaining;
     if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) {
       const error = parsed.data.amount > remainingAmount ? `This appeal currently needs up to ₹${remainingAmount.toLocaleString("en-IN")} more.` : `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}, unless a smaller exact amount is all that remains.`;
       return NextResponse.json({ error, remainingAmount, fieldErrors: { amount: [error] } }, { status: parsed.data.amount > remainingAmount ? 409 : 400, headers: privateHeaders });
