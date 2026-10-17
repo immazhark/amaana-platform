@@ -717,6 +717,32 @@ describe("Razorpay webhook route", () => {
     expect(mocks.txRefundCreateMany).not.toHaveBeenCalled();
   });
 
+  it("does not acknowledge an appeal refund that exceeds the remaining donation amount", async () => {
+    const original = await mocks.txDonationFindUnique();
+    mocks.txDonationFindUnique.mockResolvedValueOnce({
+      ...original, amount: decimal(100), refundedAmount: decimal(90),
+    });
+    const response = await POST(webhookRequest(refundPayload(2_500)));
+    expect(response.status).toBe(500);
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+    expect(expireDonationViews).not.toHaveBeenCalled();
+  });
+
+  it("does not silently cap the appeal counter for an unmatched provider refund", async () => {
+    mocks.txAppealFindUnique.mockResolvedValueOnce({
+      status: "PUBLISHED", amountRaised: decimal(10),
+      goalAmount: decimal(5_000), closesAt: null,
+    });
+    const response = await POST(webhookRequest(refundPayload(2_500)));
+    expect(response.status).toBe(500);
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+    expect(expireDonationViews).not.toHaveBeenCalled();
+  });
+
   it("reconciles an INR refund into donation, appeal, event and notification records", async () => {
     const response = await POST(webhookRequest(refundPayload(2500)));
     const body = await response.json();
