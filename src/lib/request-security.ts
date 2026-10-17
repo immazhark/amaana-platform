@@ -86,7 +86,7 @@ export async function enforceDonationRateLimit(request: Request) {
 
 /**
  * Receipt lookups are deliberately separate from donor checkout attempts.
- * Use a purpose-separated HMAC-style hash input (no raw IP retention) and
+ * Use a purpose-separated peppered SHA-256 hash (no raw IP retention) and
  * an independent allowance to constrain repeated private-record lookups.
  * Share the existing donation pepper rather than adding new production
  * secret configuration. The check remains database-atomic and fail-closed.
