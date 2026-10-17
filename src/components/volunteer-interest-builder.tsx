@@ -31,7 +31,7 @@ export function VolunteerInterestBuilder({ preferences = {} }: { preferences?: P
       </p>
       <form method="get" action="/get-involved/volunteer#volunteer-review">
         <input type="hidden" name="intent" value="review" />
-        <fieldset>
+        <fieldset style={{ minWidth: 0, margin: 0, padding: 0, border: 0 }}>
           <legend>Volunteer enquiry topics</legend>
           <div className={styles.grid} role="group" aria-label="Volunteer enquiry topics">
             {VOLUNTEER_SKILLS.map((skill, index) => {
@@ -40,6 +40,7 @@ export function VolunteerInterestBuilder({ preferences = {} }: { preferences?: P
               return (
                 <label className={styles.card} data-volunteer-skill={index + 1} key={skill}>
                   <input type="checkbox" name="skill" value={skill}
+                    aria-labelledby={headingId} aria-describedby={descriptionId}
                     defaultChecked={selection?.skills.includes(skill) ?? false} />
                   <span className={styles.marker} aria-hidden="true"><ActionIcon kind="volunteer" /></span>
                   <div className={styles.copy}>
