@@ -11,6 +11,7 @@ import { MAX_FILE_BYTES, uploadDonationEvidence } from "@/lib/storage";
 import { validateProductionEnvironment } from "@/lib/env";
 import { logServerError } from "@/lib/server-log";
 import { directTransferFieldErrors, UNCERTAIN_TRANSFER_MESSAGE } from "@/lib/direct-transfer-feedback";
+import { hasValidDonationEvidenceHeader } from "@/lib/donation-evidence-header";
 
 const privateHeaders = { "Cache-Control": "no-store, private", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow, noarchive" };
 const MAX_MULTIPART_BYTES = MAX_FILE_BYTES + 256 * 1024;
@@ -92,6 +93,16 @@ export async function POST(request: Request) {
     }
     const evidence = evidenceEntry instanceof File && evidenceEntry.size > 0 ? evidenceEntry : null;
     if (evidence && evidence.size > MAX_FILE_BYTES) return NextResponse.json({ error: "Transfer evidence must be 5 MB or smaller.", fieldErrors: { evidence: ["Transfer evidence must be 5 MB or smaller."] } }, { status: 413, headers: privateHeaders });
+    // A malformed optional receipt must be correctable without recording a
+    // financial claim, orphaning evidence or locking the donor's reference.
+    // Limit this early read to the file signature; private storage rechecks
+    // the complete file before accepting it.
+    if (evidence && !(await hasValidDonationEvidenceHeader(evidence))) {
+      return NextResponse.json({
+        error: "Please attach a valid PDF, JPEG, PNG or WebP transfer receipt.",
+        fieldErrors: { evidence: ["Please attach a valid PDF, JPEG, PNG or WebP receipt."] },
+      }, { status: 400, headers: privateHeaders });
+    }
 
     const parsed = directTransferSchema.safeParse({
       appealId: form.get("appealId"), fundId: form.get("fundId") ?? undefined, donorName: form.get("donorName"), donorEmail: form.get("donorEmail"), donorPhone: form.get("donorPhone") ?? "",
