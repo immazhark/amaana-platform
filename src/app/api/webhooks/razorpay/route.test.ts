@@ -20,17 +20,16 @@ const mocks = vi.hoisted(() => ({
   txNotificationCreate: vi.fn(),
   txRefundCreateMany: vi.fn(),
   txRefundFindUnique: vi.fn(),
+  readTextBodyWithLimit: vi.fn(),
 }));
 
 vi.mock("@/lib/bounded-request-body", () => {
   class RequestBodyTooLargeError extends Error {}
+  class RequestBodyReadTimeoutError extends Error {}
   return {
     RequestBodyTooLargeError,
-    readTextBodyWithLimit: async (request: Request, maxBytes: number) => {
-      const declared = Number(request.headers.get("content-length"));
-      if (Number.isFinite(declared) && declared > maxBytes) throw new RequestBodyTooLargeError();
-      return request.text();
-    },
+    RequestBodyReadTimeoutError,
+    readTextBodyWithLimit: mocks.readTextBodyWithLimit,
   };
 });
 
@@ -110,6 +109,14 @@ function refundPayload(amount = 2500) {
 describe("Razorpay webhook route", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.readTextBodyWithLimit.mockReset().mockImplementation(async (request: Request, maxBytes: number) => {
+      const declared = Number(request.headers.get("content-length"));
+      if (Number.isFinite(declared) && declared > maxBytes) {
+        const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");
+        throw new RequestBodyTooLargeError();
+      }
+      return request.text();
+    });
     mocks.uniqueConstraintError.mockReturnValue(false);
     mocks.verifyWebhookSignature.mockReturnValue(true);
     mocks.paymentEventFindUnique.mockResolvedValue(null);
@@ -169,6 +176,61 @@ describe("Razorpay webhook route", () => {
       amount: decimal(25),
       currency: "INR",
     });
+  });
+
+  it("sets a fixed 15-second webhook body read deadline", async () => {
+    await POST(webhookRequest({ event: "synthetic.audit", payload: {} }));
+    expect(mocks.readTextBodyWithLimit).toHaveBeenCalledWith(
+      expect.any(Request), 256 * 1024, { timeoutMs: 15_000 },
+    );
+  });
+
+  it("rejects stalled unsigned webhook bodies with a retryable response and no provider or DB work", async () => {
+    const { RequestBodyReadTimeoutError } = await import("@/lib/bounded-request-body");
+    mocks.readTextBodyWithLimit.mockRejectedValueOnce(new RequestBodyReadTimeoutError());
+    const response = await POST(webhookRequest({ event: "payment.captured" }));
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(await response.text()).toBe("Webhook read timed out");
+    expect(mocks.verifyWebhookSignature).not.toHaveBeenCalled();
+    expect(mocks.paymentEventFindUnique).not.toHaveBeenCalled();
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
+    expect(expireDonationViews).not.toHaveBeenCalled();
+  });
+
+  it("records committed capture event before cache refresh, so a cache outage is replayable", async () => {
+    const captured = {
+      event: "payment.captured",
+      payload: { payment: { entity: {
+        id: "pay_001", order_id: "order_001", amount: 50000,
+        currency: "INR", status: "captured", captured: true,
+      } } },
+    };
+    mocks.captureDonation.mockResolvedValue({ donationId: "donation_1" });
+    mocks.rootPaymentEventCreate.mockResolvedValue({ id: "stored_capture_event" });
+    vi.mocked(expireDonationViews).mockImplementationOnce(() => {
+      throw new Error("synthetic post-commit cache outage");
+    });
+
+    const first = await POST(webhookRequest(captured, { "x-razorpay-event-id": "evt_capture_replay" }));
+    expect(first.status).toBe(500);
+    expect(mocks.captureDonation).toHaveBeenCalledExactlyOnceWith("order_001", "pay_001", 50000);
+    expect(mocks.rootPaymentEventCreate).toHaveBeenCalledOnce();
+    expect(mocks.rootPaymentEventCreate.mock.invocationCallOrder[0]).toBeLessThan(
+      vi.mocked(expireDonationViews).mock.invocationCallOrder[0],
+    );
+
+    mocks.paymentEventFindUnique.mockResolvedValueOnce({
+      id: "stored_capture_event", eventType: "payment.captured", payload: captured,
+    });
+    const replay = await POST(webhookRequest(captured, { "x-razorpay-event-id": "evt_capture_replay" }));
+    expect(replay.status).toBe(200);
+    expect(await replay.json()).toEqual({ received: true });
+    expect(mocks.captureDonation).toHaveBeenCalledOnce();
+    expect(mocks.rootPaymentEventCreate).toHaveBeenCalledOnce();
+    expect(expireDonationViews).toHaveBeenCalledTimes(2);
   });
 
   it.each([
