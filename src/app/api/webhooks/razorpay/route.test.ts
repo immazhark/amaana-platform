@@ -192,6 +192,7 @@ describe("Razorpay webhook route", () => {
             currency: "INR",
             amount: 50_000,
             status: "captured",
+            captured: true,
             ...fields,
           },
         },
@@ -511,6 +512,31 @@ describe("Razorpay webhook route", () => {
     expect(mocks.txRefundCreateMany).not.toHaveBeenCalled();
   });
 
+  it("does not acknowledge provider over-refund beyond the captured donation remainder", async () => {
+    mocks.txDonationFindUnique.mockResolvedValueOnce({
+      id: "donation_1", appealId: "appeal_1", amount: decimal(100),
+      refundedAmount: decimal(90), donorEmail: "donor@example.test",
+      referenceNumber: "AFD-2026-000001",
+    });
+    const response = await POST(webhookRequest(refundPayload(2_500)));
+    expect(response.status).toBe(500);
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
+  it("does not acknowledge a refund larger than the appeal's remaining collected balance", async () => {
+    mocks.txAppealFindUnique.mockResolvedValueOnce({
+      status: "PUBLISHED", amountRaised: decimal(5),
+      goalAmount: decimal(5000), closesAt: null,
+    });
+    const response = await POST(webhookRequest(refundPayload(2_500)));
+    expect(response.status).toBe(500);
+    expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
+    expect(mocks.txAppealUpdate).not.toHaveBeenCalled();
+    expect(mocks.txNotificationCreate).not.toHaveBeenCalled();
+  });
+
   it("reconciles an INR refund into donation, appeal, event and notification records", async () => {
     const response = await POST(webhookRequest(refundPayload(2500)));
     const body = await response.json();
@@ -557,3 +583,56 @@ describe("Razorpay webhook route", () => {
   });
 });
 
+
+
+describe("strict financial entity state before replay or accounting", () => {
+  const cases = [
+    ...[undefined, null, "true", 1].map(captured => ({ event: "payment.captured", entity: { id: "pay_strict001", order_id: "order_strict001", currency: "INR", amount: 1000, status: "captured", captured }, key: "payment" })),
+    ...[undefined, null, 1].map(status => ({ event: "payment.captured", entity: { id: "pay_strict001", order_id: "order_strict001", currency: "INR", amount: 1000, status, captured: true }, key: "payment" })),
+    ...[undefined, null, 1].map(status => ({ event: "payment.failed", entity: { id: "pay_strict001", order_id: "order_strict001", currency: "INR", amount: 1000, status, captured: false }, key: "payment" })),
+    ...[undefined, null, 1].map(status => ({ event: "refund.processed", entity: { id: "rfnd_strict001", payment_id: "pay_strict001", currency: "INR", amount: 1000, status }, key: "refund" })),
+  ];
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mocks.verifyWebhookSignature.mockReturnValue(true);
+    mocks.paymentEventFindUnique.mockResolvedValue(null);
+  });
+
+  it("retains a valid capture and acknowledges its matching replay without another capture", async () => {
+    const payload = { event: "payment.captured", payload: { payment: { entity: {
+      id: "pay_strict001", order_id: "order_strict001", currency: "INR", amount: 1000,
+      status: "captured", captured: true,
+    } } } };
+    mocks.captureDonation.mockResolvedValue({ donationId: "donation_1" });
+    expect((await POST(webhookRequest(payload))).status).toBe(200);
+    expect(mocks.captureDonation).toHaveBeenCalledExactlyOnceWith("order_strict001", "pay_strict001", 1000);
+    expect(mocks.rootPaymentEventCreate).toHaveBeenCalledTimes(1);
+    mocks.paymentEventFindUnique.mockResolvedValue({ id: "existing", eventType: payload.event, payload });
+    expect((await POST(webhookRequest(payload))).status).toBe(200);
+    expect(mocks.captureDonation).toHaveBeenCalledTimes(1);
+    expect(mocks.rootPaymentEventCreate).toHaveBeenCalledTimes(1);
+  });
+
+  it.each(cases)("rejects malformed $event state before reads or writes: $entity", async ({ event, entity, key }) => {
+    const response = await POST(webhookRequest({ event, payload: { [key]: { entity } } }));
+    expect(response.status).toBe(400);
+    expect(mocks.paymentEventFindUnique).not.toHaveBeenCalled();
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
+    expect(mocks.ensureCapturedDonationForRefund).not.toHaveBeenCalled();
+    expect(mocks.rootTransaction).not.toHaveBeenCalled();
+    expect(mocks.transactionRetry).not.toHaveBeenCalled();
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
+  });
+
+  it.each(["payment.captured", "payment.failed", "refund.processed"])("never accepts malformed %s as a matching replay", async event => {
+    const refund = event === "refund.processed";
+    const payload = { event, payload: { [refund ? "refund" : "payment"]: { entity: refund
+      ? { id: "rfnd_strict001", payment_id: "pay_strict001", amount: 1000, currency: "INR" }
+      : { id: "pay_strict001", order_id: "order_strict001", amount: 1000, currency: "INR" } } } };
+    mocks.paymentEventFindUnique.mockResolvedValue({ id: "existing", eventType: event, payload });
+    const response = await POST(webhookRequest(payload));
+    expect(response.status).toBe(400);
+    expect(mocks.paymentEventFindUnique).not.toHaveBeenCalled();
+  });
+});
