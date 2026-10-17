@@ -6,17 +6,16 @@ const mocks = vi.hoisted(() => ({
   createDonation: vi.fn(),
   findDonation: vi.fn(),
   order: vi.fn(),
+  readTextBodyWithLimit: vi.fn(),
 }));
 
 vi.mock("@/lib/bounded-request-body", () => {
   class RequestBodyTooLargeError extends Error {}
+  class RequestBodyReadTimeoutError extends Error {}
   return {
     RequestBodyTooLargeError,
-    readTextBodyWithLimit: async (request: Request, max: number) => {
-      const declared = Number(request.headers.get("content-length"));
-      if (Number.isFinite(declared) && declared > max) throw new RequestBodyTooLargeError();
-      return request.text();
-    },
+    RequestBodyReadTimeoutError,
+    readTextBodyWithLimit: mocks.readTextBodyWithLimit,
   };
 });
 vi.mock("@/lib/donations", async importOriginal => ({
@@ -80,6 +79,14 @@ function request(body: unknown = fields, headers?: Record<string, string>) {
 describe("reviewed giving-fund order: inactive by default", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mocks.readTextBodyWithLimit.mockImplementation(async (request: Request, maxBytes: number) => {
+      const declared = Number(request.headers.get("content-length"));
+      if (Number.isFinite(declared) && declared > maxBytes) {
+        const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");
+        throw new RequestBodyTooLargeError();
+      }
+      return request.text();
+    });
     vi.stubEnv("AMAANA_FUND_CHECKOUT_ENABLED", "true");
     vi.stubEnv("AMAANA_FUND_CHECKOUT_ALLOWLIST", validFund.id);
     mocks.rateLimit.mockResolvedValue(true);
@@ -100,6 +107,30 @@ describe("reviewed giving-fund order: inactive by default", () => {
     expect(response.status).toBe(404);
     expect(response.headers.get("cache-control")).toContain("no-store");
     expect(mocks.rateLimit).not.toHaveBeenCalled();
+    expect(mocks.findFund).not.toHaveBeenCalled();
+    expect(mocks.order).not.toHaveBeenCalled();
+    expect(mocks.createDonation).not.toHaveBeenCalled();
+  });
+
+  it("sets a bounded read deadline before fund lookup or provider order creation", async () => {
+    await POST(request(fields));
+    expect(mocks.readTextBodyWithLimit).toHaveBeenCalledWith(
+      expect.any(Request), 32 * 1024, { timeoutMs: 15_000 },
+    );
+  });
+
+  it("proves the dormant fund route did not start a provider order on upload timeout", async () => {
+    const { RequestBodyReadTimeoutError } = await import("@/lib/bounded-request-body");
+    mocks.readTextBodyWithLimit.mockRejectedValueOnce(new RequestBodyReadTimeoutError());
+
+    const response = await POST(request(fields));
+
+    expect(response.status).toBe(408);
+    expect(await response.json()).toEqual({
+      error: "Checkout request upload timed out. No payment order was created. Please check your connection and try again.",
+      orderStarted: false,
+    });
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
     expect(mocks.findFund).not.toHaveBeenCalled();
     expect(mocks.order).not.toHaveBeenCalled();
     expect(mocks.createDonation).not.toHaveBeenCalled();
