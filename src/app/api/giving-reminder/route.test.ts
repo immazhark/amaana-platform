@@ -29,6 +29,19 @@ describe("manual calendar download boundary", () => {
     expect(result.headers.get("Location")).toBe("/get-involved/monthly-giving?reminder=invalid#giving-reminder");
     expect(result.headers.get("Cache-Control")).toContain("no-store");
   });
+  it("downloads a last-day-of-month recurring reminder with one stable calendar identity", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date("2028-02-28T20:00:00.000Z")); // 29 February in India
+    const response = GET(request("frequency=monthly&day=last"));
+    expect(response.status).toBe(200);
+    const calendar = (await response.text()).replace(/\\r\\n /g, "");
+    expect(calendar).toContain("DTSTART;VALUE=DATE:20280229");
+    expect(calendar).toContain("DTEND;VALUE=DATE:20280301");
+    expect(calendar).toContain("RRULE:FREQ=MONTHLY;BYMONTHDAY=-1");
+    expect(calendar).toContain("UID:manual-giving-last-day@amaanafoundation.org");
+    expect(calendar).toContain("no automatic debit or subscription");
+  });
+
   it("uses India civil date for next occurrence but records the actual UTC creation stamp", async () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-10-16T20:00:00.000Z"));
