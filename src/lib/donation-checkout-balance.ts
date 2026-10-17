@@ -12,6 +12,7 @@ function toPaise(input: AmountLike): number | null {
         : String(input) === "[object Object]" ? String(input.toNumber()) : String(input);
     if (!/^\d+(?:\.\d{1,2})?$/.test(text)) return null;
     const [whole, fractional = ""] = text.split(".");
+    if (whole === undefined) return null; // Required under noUncheckedIndexedAccess.
     const paise = BigInt(whole) * 100n + BigInt((fractional + "00").slice(0, 2));
     return paise <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(paise) : null;
   } catch {
