@@ -306,6 +306,36 @@ describe("assistance submission request bounds", () => {
     expect(mocks.assistanceCreate).toHaveBeenCalledOnce();
   });
 
+  it("preserves multiple genuine supporting documents with a single applicant consent", async () => {
+    const form = new FormData();
+    for (const [key, value] of Object.entries({
+      applicantName: "Acceptance Applicant",
+      phone: "9000000000",
+      email: "applicant@example.test",
+      city: "Hyderabad",
+      category: "MEDICAL",
+      description: "Synthetic assistance request data used only for route acceptance coverage.",
+      consent: "on",
+    })) form.set(key, value);
+    form.append("documents", new File(["first synthetic file"], "first.pdf", { type: "application/pdf" }));
+    form.append("documents", new File(["second synthetic file"], "second.pdf", { type: "application/pdf" }));
+    mocks.uploadPrivateDocument
+      .mockResolvedValueOnce({ objectKey: "assistance/private/first.pdf", originalName: "first.pdf", mimeType: "application/pdf", sizeBytes: 20 })
+      .mockResolvedValueOnce({ objectKey: "assistance/private/second.pdf", originalName: "second.pdf", mimeType: "application/pdf", sizeBytes: 21 });
+
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
+    expect(response.status).toBe(201);
+    expect(mocks.uploadPrivateDocument).toHaveBeenCalledTimes(2);
+    expect(mocks.assistanceCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        documents: { create: [
+          expect.objectContaining({ objectKey: "assistance/private/first.pdf" }),
+          expect.objectContaining({ objectKey: "assistance/private/second.pdf" }),
+        ] },
+      }),
+    });
+  });
+
   it("persists validated private evidence metadata with the assistance request", async () => {
     const data = new FormData();
     data.set("applicantName", "Acceptance Applicant");
