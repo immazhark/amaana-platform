@@ -21,6 +21,17 @@ function toPaise(input: AmountLike): number | null {
   }
 }
 
+/** Render the remaining verified checkout limit with exact paise.
+ * Rounded impact-display currency must not imply a larger payable balance. */
+export function formatCheckoutRemainingINR(amount: number): string {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: 0,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
 /** Server-only payment eligibility. A donor must never receive a Razorpay
  * order against malformed, fully funded, expired, or non-payable balances.
  * This independently guards the provider boundary, even when a public
