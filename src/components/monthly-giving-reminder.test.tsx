@@ -9,6 +9,7 @@ describe("monthly calendar planner disclosure", () => {
     expect(html).toContain("every Friday");
     expect(html).toContain("Day of each month");
     expect(html).toContain("Day 28");
+    expect(html).toContain('<option value="last">Last day of the month</option>');
     expect(html).toContain("Download one-date reminder");
     expect(html).toContain("not a subscription");
     expect(html).toContain("does not collect donor information");
