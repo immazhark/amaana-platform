@@ -35,7 +35,7 @@ describe("non-charging monthly giving calendar", () => {
   it("exports one calendar identity with last-day recurrence and no payment mandate", () => {
     const date = new Date(2028, 1, 29);
     const ics = buildLastDayMonthlyGivingReminder(date, new Date("2028-02-28T20:00:00Z"));
-    const unfolded = ics.replace(/\\r\\n /g, "");
+    const unfolded = ics.replace(/\r\n /g, "");
     expect(unfolded).toContain("DTSTART;VALUE=DATE:20280229");
     expect(unfolded).toContain("DTEND;VALUE=DATE:20280301");
     expect(unfolded).toContain("RRULE:FREQ=MONTHLY;BYMONTHDAY=-1");
