@@ -1,6 +1,13 @@
-## 2026-10-17 — ChatGPT ownership claim: next source-backed engineering batch
+## 2026-10-17 — Bounded private reads; ownership handed back
 
-Ownership: CHATGPT_ACTIVE (user continuation request); branch `fix/direct-transfer-feedback-20261013`, open PR #292 targeting `main`. Checked PR head `3aaed3e88dc22eabf1e69a39c1f1b6a85e131c67` and recorded HANDOFF_PENDING in the preceding entry. No newer competing agent ownership was found. Scope: inspect latest tracking and payment tests, then implement one verified next priority source-backed defect with regression coverage. No authorization to merge/deploy or mutate real financial data.
+**Ownership: HANDOFF_PENDING.** ChatGPT completed a sole-writer bounded-body reliability batch on existing `fix/direct-transfer-feedback-20261013`, PR #292 to `main`, then stopped implementation. Verified incoming handoff HEAD `3aaed3e88dc22eabf1e69a39c1f1b6a85e131c67`, claimed with `738c6c424f61eb0177100a44ced2e2c271f963d0`. No other implementation agent took ownership during the batch.
+
+- Tests first: `3f4187a6002288f16ad09bfcecce342da9afccbc` (private tracking) and `9991b5e6ae722c111e1c16079bffcc2fe91b248d` (payment confirmation). Tests assert 15,000 ms deadline and transport-timeout separation from invalid tracking/payment credentials, with private 503, Retry-After, and no downstream private DB or gateway transition on stalled request reads. Tracking test error mock updated for real `maxBytes` constructor signature.
+- Source: `8f9ce3774db3bf67ea5aa14ab1c62c2b1e93f696` and `91c304e28a92a7156841957217964a80bc5fe7b1`. Existing body reader deadlines applied in status and confirmation routes without changing input limits, auth/origin, signatures, capture, or cache postcommit behavior.
+- Master checkpoint `8c7e9f99275fabfe37478a3bd0a2502a4d987e2d`; ledger `cbf831ddd1bb28bde21db74f89b4d818a22c244d`. Source+test files read back from GitHub. PR remains open, not merged or deployed. No production writes, provider calls, schema changes, or CI workflows.
+- **Verification NOT performed:** Vitest, TypeScript, ESLint, actual stream deadlines, browser, Razorpay and PostgreSQL. Git checkout via github.com failed DNS in this environment; these are unexecuted regression tests, not passed tests.
+- **Master149 unchanged:** 60 Implemented /61 Partial /26 Not started /1 Superseded /1 Not applicable; zero formally closed. AF-R012 and AF-SETTLEMENT have only further PR-open source evidence.
+- Next writer: verify PR/current HEAD and HANDOFF_PENDING; run focused Vitest for both changed routes plus `src/lib/request-security.test.ts` and `src/lib/donation-cache.test.ts` and TypeScript checks on a hydrated checkout, repair any failures, then continue a high-priority deduplicated Master149 implementation. Never merge or deploy without authorization.
 
 ## 2026-10-17 — Private tracking rate limits and captured-payment response integrity
 
