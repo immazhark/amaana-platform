@@ -62,7 +62,7 @@ test("Homepage leads directly to a six-choice volunteer experience", async ({ pa
 
 test("malformed preference URLs never generate an email or reflect private data", async ({ page }) => {
   await page.goto("/get-involved/volunteer?intent=review&skill=Event+logistics&skill=Event+logistics&email=PRIVATE_CONTACT");
-  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(page.locator('main p[role="alert"]')).toHaveText(/Those volunteer choices could not be read/);
   await expect(page.getByRole("link", { name: "Open prepared email" })).toHaveCount(0);
   await expect(page.locator("main")).not.toContainText("PRIVATE_CONTACT");
 });
