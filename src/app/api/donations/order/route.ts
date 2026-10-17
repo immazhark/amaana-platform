@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
-import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
+import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { createDonationReference, createReceiptToken, donationSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
@@ -68,7 +68,7 @@ export async function POST(request: Request) {
         },
       },
     });
-    if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+    if (!appeal || !canExposePublicAppeal(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
 
     const zakatEligible = appeal.assistanceRequest?.verification?.zakatStatus === "ELIGIBLE";
     if (parsed.data.givingIntent === "ZAKAT" && !zakatEligible) {
@@ -78,7 +78,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
+    const remainingAmount = getDonationCheckoutRemainingAmount(appeal);
+    if (remainingAmount === null) return NextResponse.json(
+      { error: "This appeal is not accepting donations." },
+      { status: 409, headers: privateHeaders },
+    );
     if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) {
       if (parsed.data.amount > remainingAmount) {
         return NextResponse.json(
