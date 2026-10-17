@@ -28,6 +28,21 @@ describe("assistance submission outcomes", () => {
     expect(classifyAssistanceResponse(status, {})).toEqual({ kind: "uncertain" });
   });
 
+  it("allows retry only for an explicitly no-write HTTP 408 upload timeout", () => {
+    const message = "The assistance upload took too long. No request was recorded. Check your connection and try again.";
+    expect(classifyAssistanceResponse(408, { error: message, submissionUncertain: false }))
+      .toEqual({ kind: "rejected", message, fields: {} });
+    expect(classifyAssistanceResponse(408, { error: message })).toEqual({ kind: "uncertain" });
+    expect(classifyAssistanceResponse(408, { error: message, submissionUncertain: "false" }))
+      .toEqual({ kind: "uncertain" });
+    expect(classifyAssistanceResponse(408, { error: message, submissionUncertain: true }))
+      .toEqual({ kind: "uncertain" });
+    expect(classifyAssistanceResponse(408, { error: "", submissionUncertain: false }))
+      .toEqual({ kind: "uncertain" });
+    expect(classifyAssistanceResponse(503, { error: message, submissionUncertain: false }))
+      .toEqual({ kind: "uncertain" });
+  });
+
   it("gives uncertainty precedence over otherwise valid credentials or rejection fields", () => {
     expect(classifyAssistanceResponse(201, { ...credentials, submissionUncertain: true })).toEqual({ kind: "uncertain" });
     expect(classifyAssistanceResponse(400, { error: "Retry", submissionUncertain: true })).toEqual({ kind: "uncertain" });
