@@ -4,14 +4,20 @@ import type { AmountLike, AppealFundraisingState } from "@/lib/appeals";
  * Reject anything that cannot be represented as a nonnegative two-decimal
  * amount; silently rounding a broken ledger could create a real payment. */
 function toPaise(input: AmountLike): number | null {
-  const value = typeof input === "number" ? input
-    : typeof input === "string" ? Number(input)
-      : input.toNumber();
-  if (!Number.isFinite(value) || value < 0) return null;
-  const paise = Math.round(value * 100);
-  if (!Number.isSafeInteger(paise) ||
-    Math.abs(value - paise / 100) > Number.EPSILON * Math.max(1, value) * 2) return null;
-  return paise;
+  try {
+    // Prisma Decimal.toString() preserves exact decimal digits. Converting it
+    // to a JS number first can conceal sub-paise values at large magnitudes.
+    const text = typeof input === "string" ? input
+      : typeof input === "number" ? String(input)
+        : String(input) === "[object Object]" ? String(input.toNumber()) : String(input);
+    if (!/^\\d+(?:\\.\\d{1,2})?$/.test(text)) return null;
+    const [whole, fractional = ""] = text.split(".");
+    const paise = BigInt(whole) * 100n + BigInt((fractional + "00").slice(0, 2));
+    return paise <= BigInt(Number.MAX_SAFE_INTEGER) ? Number(paise) : null;
+  } catch {
+    // Unexpected Decimal conversion failures must never start a payment.
+    return null;
+  }
 }
 
 /** Server-only payment eligibility. A donor must never receive a Razorpay
