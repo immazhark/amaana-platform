@@ -194,6 +194,18 @@ describe("staff-only private delivery-proof upload", () => {
     expect(result.status).toBe(409);
     expect(m.remove).toHaveBeenCalledWith(evidence.objectKey, id);
   });
+  it("keeps a private evidence cleanup failure uncertain rather than implying the upload can be retried", async () => {
+    m.documentCreate.mockRejectedValue(new Error("DB_UNAVAILABLE_AFTER_ROLLBACK"));
+    m.remove.mockRejectedValue(new Error("OBJECT_STORE_DELETE_UNAVAILABLE"));
+    const result = await POST(request(), params);
+    expect(result.status).toBe(503);
+    expect(await result.json()).toEqual({
+      error: "Private evidence cleanup is uncertain. Ask an administrator to review before uploading again.",
+    });
+    expect(m.remove).toHaveBeenCalledWith(evidence.objectKey, id);
+    expect(m.log).toHaveBeenCalledWith("assistance.delivery_proof_orphan_cleanup_failed");
+    expect(result.headers.get("Cache-Control")).toBe("private, no-store");
+  });
   it("does not delete a document when the transaction committed despite an uncertain acknowledgment", async () => {
     m.documentCreate.mockRejectedValue(new Error("ACK_LOST"));
     m.documentFind.mockResolvedValue({ id: "document-committed" });
