@@ -33,7 +33,7 @@ test("every admin API has fail-closed guards and anonymous request coverage", ()
   const routes = walk("src/app/api/admin").filter(path => path.endsWith("/route.ts"));
   assert.ok(routes.length >= 4, "unexpectedly small admin API inventory");
   for (const route of routes) {
-    const url = route.replace(/^src\/app/, "").replace(/\/route\.ts$/, "");
+    const url = route.replace(/^src\/app/, "").replace(/\/route\.ts$/, "").replace(/\[id\]/g, "not-a-real-id");
     assert.ok(browserContract.includes(JSON.stringify(url)),
       `Anonymous API browser test does not cover: ${url}`);
     const source = readFileSync(join(root, route), "utf8");
