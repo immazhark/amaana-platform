@@ -80,7 +80,10 @@ test("cached homepage appeals are rechecked against the current fundraising wind
   const wrapper = source.match(/export async function getHomepageAppeals\(limit = 3\)\s*\{([\s\S]*?)\n\}/)?.[1];
   assert.ok(wrapper, "Expected public homepage appeal wrapper");
   assert.match(wrapper, /await getHomepageAppealsCached\(\)/);
-  const filterIndex = wrapper.indexOf("cached.filter(appeal => isAppealOpenForDonations(appeal))");
+  const filterIndex = wrapper.indexOf("cached.filter(appeal => getPublicAppealCheckoutEligibility(appeal) !== null)");
+  const checkoutGate = await readFile("src/lib/public-appeal-checkout.ts", "utf8");
+  assert.match(checkoutGate, /if \(!isAppealOpenForDonations\(appeal, now\)\) return null/);
+  assert.match(checkoutGate, /getWholeRupeeCheckoutRange\(progress\.remaining\)/);
   const limitIndex = wrapper.indexOf(".slice(0, Math.min(20, Math.max(1, limit)))");
   assert.ok(filterIndex >= 0, "Current funding eligibility must be rechecked against the cached candidates");
   assert.ok(limitIndex > filterIndex, "Apply the result limit only after the current deadline check");
@@ -106,7 +109,11 @@ test("sensitive appeals cannot be promoted through homepage, directory or initia
   const index = await readFile("src/lib/public-page-data.ts", "utf8");
   const restriction = await readFile("src/lib/appeal-promotion.ts", "utf8");
 
-  assert.match(restriction, /confidentialityLevel !== "HIGHLY_SENSITIVE"/);
+  // Strict reviewed classifications only. Missing or unknown linked review
+  // states must fail closed; checking "not HIGHLY_SENSITIVE" directly is unsafe.
+  assert.match(restriction, /getAppealPublicPrivacyClass\(appeal\) !== "HIGHLY_SENSITIVE"/);
+  assert.match(restriction, /if \(level === "STANDARD" \|\| level === "CONFIDENTIAL"\) return level/);
+  assert.match(restriction, /return "HIGHLY_SENSITIVE"/);
   assert.match(home, /canPromoteAppeal\(appeal\)/);
   assert.match(home, /appeals:\s*initiative\.appeals\s*\.filter\(canPromoteAppeal\)/);
   assert.match(index, /return appeals\s*\.filter\(canPromoteAppeal\)/);
