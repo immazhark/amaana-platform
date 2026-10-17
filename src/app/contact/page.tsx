@@ -29,7 +29,7 @@ const contactPaths = [
   { marker: "02", icon: "phone", title: "Call Amaana", copy: "For a direct public contact route, call Amaana Foundation on its official phone number.", action: "+91-9908002694", href: "tel:+919908002694" },
   { marker: "02A", icon: "message", title: "WhatsApp Amaana", copy: "Prefer messaging? Start a WhatsApp conversation with Amaana Foundation on the same official public number.", action: "Open WhatsApp", href: "https://wa.me/919908002694" },
   { marker: "03", icon: "assistance", title: "Request assistance", copy: "If you or someone you know needs support, use the dedicated private intake route so the request reaches the right review process.", action: "Request assistance", href: "/request-assistance" },
-  { marker: "04", icon: "volunteer", title: "Volunteer or collaborate", copy: "If you want to contribute time, skills, resources or explore a genuine collaboration, start with our Get Involved journey.", action: "Get involved", href: "/get-involved" },
+  { marker: "04", icon: "volunteer", title: "Volunteer or collaborate", copy: "Explore a private enquiry for offering time or skills. For partnerships and resource collaboration, use the general contact options.", action: "Explore volunteering", href: "/get-involved/volunteer" },
   { marker: "05", icon: "support", title: "Donation support", copy: "For a payment or donation query, contact the team with your Amaana reference or Razorpay payment ID only. Never share PINs, OTPs or card credentials.", action: "Email donation support", href: "mailto:amaanafoundation24@gmail.com?subject=Donation%20support" },
 ] as const;
 
