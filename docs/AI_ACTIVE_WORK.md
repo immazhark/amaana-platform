@@ -1,3 +1,29 @@
+## 2026-10-17 — Approved publication, financial regressions and gallery status recovery
+
+**Ownership: HANDOFF_PENDING.** ChatGPT completed the authorized branch batch. PR #292 remains open, targeting main; no merge or deployment. User explicitly approved commit publication. Terminal push lacked credentials; connected GitHub app published source commits `61246973e942fb10eb05af9985e388c452270f54` and `13b3eb0cd9c6655ce38514c72508baa43db704d0`. These supersede local-only source commits ea58dabb/ffc7225b/daefb2dd; do not cherry-pick duplicate implementations.
+
+### Implementation and verified evidence
+- Direct-transfer API rejects malformed anonymity text/File inputs before donation or evidence writes; missing/true/false remain compatible. Five regression cases failed against the previous source; eight invalid/control cases pass after repair.
+- Direct-transfer feedback trims messages before display-length limits. A reproduced whitespace-only displayed rejection is now readable; feedback suite 22/22 passes.
+- Repaired TypeScript compilation: correct bounded-body error constructors, explicit absent-verification narrowing, typed assistance fixtures and Vitest call histories. No compiler suppressions or relaxed production contracts.
+- Gallery status reads now show actionable generic recovery guidance and ignore obsolete failures after newer verified reads or unmount. Timeout and stale-failure cases reproduced before correction; all six real-component DOM cases pass. Uncertain publication locks and read-only recovery retained.
+- Corrected duplicate-field fixtures to actually submit two entries; included tracking-only rate-limit stub in isolated real privacy-boundary tests; reset intentional throwing cache mocks between media cases. No security assertions removed. The 137-case repaired batch passes.
+- npm dependency install and Prisma generation succeeded. Optional DOM runtime installed separately under /tmp without modifying package manifests/lockfile. Private-evidence real-component DOM suite: 15/15 pass.
+- Final full Vitest run on the published source: **3,126 passed /9 failed /11 skipped; 3,146 total**. Previous run: 3,109 passed /25 failed /11 skipped, before these repairs and the new stale-read case.
+- TypeScript, changed-file ESLint (zero warnings) and whitespace checks pass. Published source matches local tested source. No production build, Playwright/native browser, PostgreSQL concurrency, S3 or Razorpay/provider execution. Unit/DOM success is not live acceptance.
+
+### Nine outstanding test failures — next implementation checkpoint
+1. src/lib/impact-evidence-strip-regression.test.ts: old sequential-load source assertion versus current concurrent public projections.
+2. src/lib/public-contrast-addendum.test.ts: shared reminder-label contrast rule/location requires source investigation; do not add CSS merely to satisfy string matching.
+3. src/app/donate/page.test.ts: optional-fund failure fallback appeal assertion.
+4–6. src/app/admin/(protected)/page.test.tsx: queue projection, queue-age wording and missing follow-up/delivery aggregate fixture.
+7–9. src/app/admin/(protected)/requests/[id]/page.test.tsx: independent bank-proof review, historical outcome wording and private projection contract.
+Inspect actual source before deciding fixture correction versus runtime fix; preserve privacy, independent finance permission and current verified workflow.
+
+### Master149 and release
+Classification unchanged: **60 Implemented /61 Partial /26 Not started /1 Superseded /1 Not applicable; zero formally closed**. Additional scoped source/test evidence for AF-R012, AF-SETTLEMENT and media consent/publication workflows; no full settlement or live closure claim.
+Next owner: verify current branch HEAD and ownership, continue the nine named failures, then select the next high-impact Master149 item. Never replay the local commits already published as consolidated connector commits. Main merge, production deployment and real data/payment actions still require separate authorization.
+
 ## 2026-10-17 — Approved publication and donor feedback correction
 
 **Ownership: CHATGPT_ACTIVE.** User approved commit publication. Incoming remote HEAD `954c277f23ae6f72ee1fa707ce37add7c9579c59`. Local regression batch restored compilation and passed 710 tests, with 25 skipped. Terminal push lacks credentials; connected GitHub app will publish matching reviewed files. Continue direct-transfer feedback correction, then return ownership. No main merge or production deployment authorized.
