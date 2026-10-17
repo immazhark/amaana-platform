@@ -50,7 +50,10 @@ const groups = [
 ];
 export function planChanges(files, { event = 'pull_request', target = 'phase-public-site-rebuild', release = false, validatedMerge = false } = {}) {
   const docsOnly = files.length > 0 && files.every(p => /^(docs\/.*\.md|README\.md|scripts\/(?:diagnose-resend-dns|ci-plan|test-ci-plan)\.mjs|\.github\/workflows\/resend-dns-diagnostic\.yml)$/.test(p));
-  const fullRelease = release || target === 'main';
+  // A PR *targeting* main is not yet a production release. Select reviewed,
+  // mapped E2E journeys for the PR, but always run full verification on main
+  // pushes and explicit/manual releases. Unknown/security diffs remain full.
+  const fullRelease = release || (target === 'main' && event !== 'pull_request');
   const tests = new Set(['public-performance.spec.mjs']);
   let mapped = files.length > 0;
   for (const file of files) {
