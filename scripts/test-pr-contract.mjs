@@ -53,10 +53,10 @@ test("flags oversized change sets unless the PR documents why one feature requir
   assert.match(validatePrContract(change({ files })).join(" "), /scope/i);
   assert.deepEqual(validatePrContract(change({
     files,
-    body: body + `\\n## Scope rationale\\nAll 26 files belong to the same single feature; the extra files are its isolated translations and tests.\\n`,
+    body: body + `\n## Scope rationale\nAll 26 files belong to the same single feature; the extra files are its isolated translations and tests.\n`,
   })), []);
   assert.match(validatePrContract(change({
-    files, body: body + "\\n## Scope rationale\\nToo big.\\n",
+    files, body: body + "\n## Scope rationale\nToo big.\n",
   })).join(" "), /scope/i);
 });
 
