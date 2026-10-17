@@ -1,5 +1,14 @@
 # Amaana Master Reconciled Execution Plan
 
+## 2026-10-17 — Fail-closed financial webhook provider state and replay validation (PR #292)
+
+- **Source-backed defect:** `src/app/api/webhooks/razorpay/route.ts` previously treated `payment.captured` with absent `captured` or absent `status`, `payment.failed` without `status`, and `refund.processed` without `status` as valid based on the signed webhook's event name alone. These routes can trigger donation capture, failed payment state changes, and refund accounting. The matching PaymentEvent duplicate check also occurred **before** financial payload validation.
+- **Implemented, same branch:** Financial event validation requires exact `status === "captured" && captured === true` for capture, `status === "failed"` for failure, and `status === "processed"` for refund. A signed payload is now validated before its persisted-event replay lookup, so a malformed duplicate is never acknowledged 200 as financially processed. Valid HMAC, INR/amount/identity rules, existing serializable DB accounting and event replay matching remain in force. Source commits: `020834f7617473dd7fafb196ab151f915dbe6d60`, `04bb5199439656b6246ef267172ed3567765f498`.
+- **Test-first regression additions:** `src/app/api/webhooks/razorpay/route.test.ts` rejects missing, null or nonboolean captured states and missing/refused capture/refund status before financial work, requires capture-positive fixture `captured:true`, and rejects malformed financial event payloads even with a matching persisted `PaymentEvent` ID. `src/app/api/webhooks/razorpay/payment-failed.test.ts` rejects missing/null/nonstring failed statuses. Test commits `958e02104b80e8dbc28d128197fe7c2c2b279ea2`, `1d0d40dc86fc2732896102b5a47be6de29d9861b`, `44e1d35dd812c79e107d6f1e4c0fd635784920b9`.
+- **Verification scope:** Read back the three modified GitHub source/test files and checked strict guards, validation order and updated test fixtures. **Not run**: Vitest/TypeScript/ESLint/browser/PostgreSQL/Razorpay replay/integration tests; the repository is not hydrated in the local runner (previous direct GitHub DNS failure). No main merge, PR closure, CI orchestration, production deployment, real payment processing or beneficiary data mutation.
+- **Master149 status remains unchanged:** 60 Implemented / 61 Partial / 26 Not started / 1 Superseded / 1 Not applicable; 0 formally closed. Adds open-PR source evidence under AF-SETTLEMENT only. No completion/deployment claim.
+
+
 ## 2026-10-17 — Payment settlement-state confirmation and bounded private acknowledgement reads (PR #292)
 
 ChatGPT continued single-writer implementation on `fix/direct-transfer-feedback-20261013` targeting `main`, open PR #292. Verified previous HEAD `5116e7b0f951e9687acdca0b1237fac6573cc901`, HANDOFF_PENDING, then claimed ownership with `07e31f374e91d05a691fc663b4c6f5bc4069f41d`.
