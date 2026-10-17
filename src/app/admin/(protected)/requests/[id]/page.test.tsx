@@ -210,22 +210,31 @@ describe("private assistance detail projections", () => {
         updatedAt: new Date("2026-10-16T00:00:00Z"),
       },
     }]);
-    m.request.mockResolvedValue({
+    const approvedRequest = {
       id: "case-synthetic", referenceNumber: "AF-SYNTHETIC",
       applicantName: "Synthetic applicant", category: "MEDICAL", city: "Hyderabad",
-      status: "SUBMITTED", createdAt: new Date(), updatedAt: new Date(),
+      status: "APPROVED", createdAt: new Date(), updatedAt: new Date(),
       phone: "synthetic-contact", email: null, description: "Private case narrative",
       documents: [
         { id: "delivery-proof", originalName: "delivery.pdf", mimeType: "application/pdf", sizeBytes: 100 },
         { id: "bank-proof", originalName: "bank.pdf", mimeType: "application/pdf", sizeBytes: 100 },
       ],
-      verification: null, appeal: null, appealId: null,
-    });
+      verification: {
+        decision: "APPROVED_PRIVATE", completedAt: new Date("2026-10-15T10:00:00Z"),
+        updatedAt: new Date("2026-10-15T10:00:00Z"), reviewedBy: { name: "Independent approver" },
+      }, appeal: null, appealId: null,
+    };
+    m.request.mockResolvedValue(approvedRequest);
     const markup = await render();
     expect(markup).toContain("ABCD12345678");
     expect(markup).toContain("Record independent bank-proof review");
     expect(markup).toContain("INR 1250.50");
     expect(markup).toContain("Void incorrect bank-proof match");
+    // Bank-proof review becomes unavailable when private-case eligibility is revoked.
+    m.request.mockResolvedValue({ ...approvedRequest, status: "REJECTED" });
+    const blocked = await render();
+    expect(blocked).not.toContain("Record independent bank-proof review");
+    expect(blocked).toContain("Void incorrect bank-proof match");
   });
 
   it("hides outcome actions from case viewers without assistance-update authority", async () => {
@@ -374,7 +383,7 @@ describe("private assistance detail projections", () => {
     }));
     expect(m.request.mock.calls[0]?.[0].include).toEqual({
       documents: { select: { id: true, originalName: true, mimeType: true, sizeBytes: true } },
-      appeal: { select: { title: true, status: true } },
+      appeal: { select: { id: true, title: true, status: true, updatedAt: true } },
       verification: { include: { reviewedBy: { select: { name: true } } } },
     });
     expect(result).toContain("Synthetic reviewer"); expect(result).toContain("Private case narrative");
