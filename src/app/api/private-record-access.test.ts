@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { hashTrackingToken } from "@/lib/assistance";
 import { hashReceiptToken } from "@/lib/donations";
 
-const mocks = vi.hoisted(() => ({ donation: vi.fn(), assistance: vi.fn(), allowReceipt: vi.fn() }));
+const mocks = vi.hoisted(() => ({ donation: vi.fn(), assistance: vi.fn(), allowTracking: vi.fn(), allowReceipt: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     donation: { findUnique: mocks.donation },
@@ -10,10 +10,10 @@ vi.mock("@/lib/prisma", () => ({
   },
 }));
 
-// Keep the real origin/privacy logic; this test suite has only mocked donor and
-// assistance tables, so the rate-limit database transaction is tested separately.
+// Exercise real origin/token/privacy logic; quota transactions have a dedicated suite.
 vi.mock("@/lib/request-security", async importOriginal => ({
   ...await importOriginal<typeof import("@/lib/request-security")>(),
+  enforceTrackingRateLimit: mocks.allowTracking,
   enforceAcknowledgementRateLimit: mocks.allowReceipt,
 }));
 
@@ -27,6 +27,7 @@ const date = new Date("2026-10-11T00:00:00Z");
 
 beforeEach(() => {
   vi.resetAllMocks();
+  mocks.allowTracking.mockResolvedValue(true);
   mocks.allowReceipt.mockResolvedValue(true);
   vi.stubEnv("NEXT_PUBLIC_APP_URL", origin);
   vi.stubEnv("DONATION_TOKEN_PEPPER", "synthetic-donation-pepper");

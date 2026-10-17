@@ -144,6 +144,59 @@ describe("direct donation transfer submission", () => {
     } finally { vi.useRealTimers(); }
   });
 
+  it("times out a stalled multipart upload without waiting for hostile cancellation", async () => {
+    const cancel = vi.fn(() => new Promise<void>(() => {}));
+    vi.useFakeTimers();
+    try {
+      const request = new Request("https://amaana.example/api/donations/direct-transfer", {
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+        body: new ReadableStream<Uint8Array>({ cancel }),
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      let response: Response | undefined;
+      void POST(request).then(value => { response = value; });
+      await vi.advanceTimersByTimeAsync(119_999);
+      expect(response).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(1);
+      expect(response?.status).toBe(503);
+      expect(await response?.json()).toEqual({ error: "Transfer upload timed out. Please try again." });
+      expect(response?.headers.get("retry-after")).toBe("60");
+      expect(response?.headers.get("cache-control")).toMatch(/no-store.*private/i);
+      expect(response?.headers.get("referrer-policy")).toBe("no-referrer");
+      expect(response?.headers.get("x-robots-tag")).toMatch(/noindex/i);
+      expect(cancel).toHaveBeenCalledOnce();
+      expect(mocks.findFirst).not.toHaveBeenCalled();
+      expect(mocks.donationCreate).not.toHaveBeenCalled();
+      expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+      expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("enforces the absolute multipart deadline even while small chunks keep arriving", async () => {
+    vi.useFakeTimers();
+    try {
+      let controller!: ReadableStreamDefaultController<Uint8Array>;
+      const request = new Request("https://amaana.example/api/donations/direct-transfer", {
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+        body: new ReadableStream<Uint8Array>({
+          start(stream) { controller = stream; },
+        }),
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      let response: Response | undefined;
+      void POST(request).then(value => { response = value; });
+      await vi.advanceTimersByTimeAsync(60_000);
+      controller.enqueue(new Uint8Array([65]));
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(response?.status).toBe(503);
+      expect(mocks.findFirst).not.toHaveBeenCalled();
+      expect(mocks.donationCreate).not.toHaveBeenCalled();
+      expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    } finally { vi.useRealTimers(); }
+  });
+
   it("rejects oversized multipart submissions before form parsing or database work", async () => {
     const response = await POST(new Request("https://amaana.example/api/donations/direct-transfer", {
       method: "POST",
@@ -400,5 +453,145 @@ describe("direct donation transfer submission", () => {
       "donation-1",
     );
     expect(mocks.donationDeleteMany).toHaveBeenCalledWith({ where: { id: "donation-1", status: "PENDING_VERIFICATION", transferEvidenceKey: null } });
+  });
+});
+
+
+describe("direct-transfer anonymity field privacy contract", () => {
+  async function withAnonymityValues(values: FormDataEntryValue[]) {
+    const original = requestWith();
+    const form = await original.formData();
+    for (const value of values) form.append("isAnonymous", value);
+    return new Request(original.url, { method: "POST", body: form });
+  }
+
+  it.each([
+    ["missing", [], false],
+    ["explicitly anonymous", ["true"], true],
+    ["explicitly named", ["false"], false],
+  ] as const)("keeps %s as an unambiguous donor choice", async (_case, values, expected) => {
+    mocks.safeParse.mockImplementationOnce(input => ({
+      success: true,
+      data: { ...validData, isAnonymous: input.isAnonymous },
+    }));
+
+    const response = await POST(await withAnonymityValues([...values]));
+
+    expect(response.status).toBe(202);
+    expect(mocks.safeParse).toHaveBeenCalledWith(expect.objectContaining({ isAnonymous: expected }));
+    expect(mocks.donationCreate).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ isAnonymous: expected }),
+    }));
+  });
+
+  it.each([
+    ["empty", [""]],
+    ["mixed case", ["TRUE"]],
+    ["checkbox-style on", ["on"]],
+    ["space padded", [" false "]],
+    ["unexpected number", ["1"]],
+    ["ambiguous true then false", ["true", "false"]],
+    ["ambiguous false then true", ["false", "true"]],
+    ["repeated true", ["true", "true"]],
+    ["repeated false", ["false", "false"]],
+    ["file instead of scalar", [new File(["true"], "anonymity.txt", { type: "text/plain" })]],
+  ] as const)("rejects %s instead of changing the donor's privacy choice", async (_case, values) => {
+    const response = await POST(await withAnonymityValues([...values]));
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/anonymous|privacy|choice/i);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("direct-transfer domestic confirmation is unambiguous", () => {
+  async function domesticRequest(values: FormDataEntryValue[]) {
+    const source = requestWith();
+    const form = await source.formData();
+    form.delete("domesticConfirmed");
+    for (const value of values) form.append("domesticConfirmed", value);
+    return new Request(source.url, { method: "POST", body: form });
+  }
+
+  it("accepts a single explicit domestic confirmation without changing persisted consent", async () => {
+    const response = await POST(await domesticRequest(["true"]));
+    expect(response.status).toBe(202);
+    expect(mocks.safeParse).toHaveBeenCalledWith(expect.objectContaining({ domesticConfirmed: true }));
+    expect(mocks.donationCreate).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ domesticConfirmedAt: expect.any(Date) }),
+    }));
+  });
+
+  it.each([
+    ["missing", []],
+    ["unchecked", ["false"]],
+    ["empty", [""]],
+    ["noncanonical", ["TRUE"]],
+    ["checkbox on", ["on"]],
+    ["conflicting true/false", ["true", "false"]],
+    ["conflicting false/true", ["false", "true"]],
+    ["repeated true", ["true", "true"]],
+    ["file value", [new File(["true"], "consent.txt", { type: "text/plain" })]],
+  ] as const)("rejects %s without treating ambiguous consent as confirmed", async (_case, values) => {
+    const response = await POST(await domesticRequest([...values]));
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/domestic|confirm/i);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("direct-transfer multipart field ambiguity", () => {
+  async function formForTest() {
+    const original = requestWith();
+    return { url: original.url, form: await original.formData() };
+  }
+
+  it.each([
+    "appealId", "donorName", "donorEmail", "donorPhone", "amount",
+    "givingIntent", "paymentMethod", "transferReference", "transferredAt",
+  ] as const)("rejects duplicate financial field %s before persistence", async field => {
+    const { url, form } = await formForTest();
+    if (field === "donorPhone") form.set("donorPhone", "");
+    form.append(field, "conflicting-value");
+    const response = await POST(new Request(url, { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/duplicate|repeated|field/i);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+  });
+
+  it("rejects an identical repeated transfer reference instead of accepting the first", async () => {
+    const { url, form } = await formForTest();
+    form.append("transferReference", validData.transferReference);
+    const response = await POST(new Request(url, { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects multiple evidence files, including when both have valid signatures", async () => {
+    const { url, form } = await formForTest();
+    form.append("evidence", syntheticPng("first synthetic transfer"));
+    form.append("evidence", syntheticPng("second synthetic transfer"));
+    const response = await POST(new Request(url, { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/duplicate|repeated|field/i);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
   });
 });

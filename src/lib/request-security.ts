@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { getTrustedClientAddress } from "./client-address";
 import { isPrismaSerializableConflict, withSerializableTransactionRetry } from "./prisma-transaction";
 
-type RateLimitPurpose = "donation" | "assistance" | "analytics" | "acknowledgement";
+type RateLimitPurpose = "donation" | "assistance" | "analytics" | "tracking" | "acknowledgement";
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 
@@ -26,7 +26,7 @@ export function isSameOrigin(request: Request) {
 }
 
 function getRateLimitPepper(purpose: RateLimitPurpose) {
-  const envName = purpose === "assistance"
+  const envName = (purpose === "assistance" || purpose === "tracking")
     ? "ASSISTANCE_TOKEN_PEPPER"
     : purpose === "analytics"
       ? "AUTH_RATE_LIMIT_PEPPER"
@@ -103,6 +103,11 @@ export async function enforceAcknowledgementRateLimit(request: Request) {
  */
 export async function enforceAssistanceRateLimit(request: Request) {
   return claimRateLimitSlot(getRateLimitClientHash(request, "assistance"), 3);
+}
+
+/** Private status reads have their own allowance and never spend submission slots. */
+export async function enforceTrackingRateLimit(request: Request) {
+  return claimRateLimitSlot(getRateLimitClientHash(request, "tracking"), 60);
 }
 
 /**
