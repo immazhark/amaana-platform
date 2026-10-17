@@ -98,21 +98,22 @@ export async function POST(request: Request) {
       !refund || typeof refund.id !== "string" || !/^rfnd_[A-Za-z0-9]+$/.test(refund.id) ||
       typeof refund.payment_id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(refund.payment_id) ||
       refund.currency !== "INR" ||
-      (refund.status !== undefined && refund.status !== "processed") ||
+      refund.status !== "processed" ||
       !Number.isSafeInteger(refund.amount) || refund.amount <= 0
     )) {
       return new NextResponse("Invalid refund entity", { status: 400 });
     }
 
-    // A signed webhook can still carry malformed provider data. Never acknowledge
-    // a capture event without a valid identity, currency and positive paise amount.
+    // A signed webhook can still carry malformed provider data. Financial
+    // transitions require explicit provider state, never just the event name.
+    // A captured payment must have status "captured" AND captured === true.
     if (payload.event === "payment.captured" && (
       !payment ||
       typeof payment.id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(payment.id) ||
       typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
       payment.currency !== "INR" ||
-      (payment.status !== undefined && payment.status !== "captured") ||
-      payment.captured === false ||
+      payment.status !== "captured" ||
+      payment.captured !== true ||
       !Number.isSafeInteger(payment.amount) || payment.amount <= 0
     )) {
       return new NextResponse("Invalid captured payment entity", { status: 400 });
@@ -125,7 +126,7 @@ export async function POST(request: Request) {
       typeof payment.id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(payment.id) ||
       typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
       payment.currency !== "INR" ||
-      (payment.status !== undefined && payment.status !== "failed") ||
+      payment.status !== "failed" ||
       payment.captured === true ||
       !Number.isSafeInteger(payment.amount) || payment.amount <= 0
     )) {
