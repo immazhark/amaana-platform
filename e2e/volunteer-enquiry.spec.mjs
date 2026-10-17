@@ -17,17 +17,24 @@ test("Get Involved opens an enquiry-only volunteer route with no client-side app
   await expect(page.getByRole("heading", { name: "Choose an area of volunteering" })).toBeVisible();
   await expect(page.getByText(/Nothing is sent to Amaana until you review and send the email/)).toBeVisible();
   expect(await page.locator('form[action^="/api/"]').count()).toBe(0);
-  expect(await page.locator('input,select,textarea').count()).toBe(0);
+  await expect(page.getByRole("button", { name: "Review my volunteer enquiry" })).toBeVisible();
+  await expect(page.getByRole("checkbox")).toHaveCount(6);
 });
 
 test("visitors can prepare an editable, topic-specific email without uploading or storing anything", async ({ page }) => {
   await page.goto("/get-involved/volunteer");
-  const action = page.getByRole("link", { name: "Technology and website support" });
+  await page.getByRole("checkbox", { name: /Technology and website support/ }).check();
+  await page.getByRole("checkbox", { name: /Event logistics/ }).check();
+  await page.getByLabel("Your availability").selectOption("Weekends");
+  await page.getByRole("button", { name: "Review my volunteer enquiry" }).click();
+  const action = page.getByRole("link", { name: "Open prepared email" });
   const href = await action.getAttribute("href");
   expect(href?.startsWith("mailto:amaanafoundation24@gmail.com?")).toBe(true);
   const url = new URL(href);
   const message = url.searchParams.get("body") || "";
   expect(message).toContain("Technology and website support");
+  expect(message).toContain("Event logistics");
+  expect(message).toContain("Weekends");
   expect(message).toContain("Availability:");
   expect(message).toContain("not a confirmed placement");
   await expect(page.getByRole("link", { name: /general volunteer enquiry/i })).toHaveAttribute("href", /^mailto:/);
@@ -38,7 +45,7 @@ test("native volunteer enquiry links remain within mobile viewport and keyboard 
   await page.setViewportSize({ width: 320, height: 720 });
   await page.goto("/get-involved/volunteer");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
-  const first = page.getByRole("link", { name: "Distribution and packing" });
+  const first = page.getByRole("checkbox", { name: /Distribution and packing/ });
   await first.focus();
   await expect(first).toBeFocused();
 });
@@ -50,6 +57,12 @@ test("Homepage leads directly to a six-choice volunteer experience", async ({ pa
   await shortcut.click();
   await expect(page.getByRole("heading", { name: "Your time and skills can matter." })).toBeVisible();
   await expect(page.locator("[data-volunteer-skill]")).toHaveCount(6);
-  const choices = page.locator("[data-volunteer-skill]");
-  await expect(choices.first()).toHaveAttribute("href", /^mailto:amaanafoundation24@gmail.com/);
+  await expect(page.getByRole("button", { name: "Review my volunteer enquiry" })).toBeVisible();
+});
+
+test("malformed preference URLs never generate an email or reflect private data", async ({ page }) => {
+  await page.goto("/get-involved/volunteer?intent=review&skill=Event+logistics&skill=Event+logistics&email=PRIVATE_CONTACT");
+  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(page.getByRole("link", { name: "Open prepared email" })).toHaveCount(0);
+  await expect(page.locator("main")).not.toContainText("PRIVATE_CONTACT");
 });
