@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { getTrustedClientAddress } from "./client-address";
 import { isPrismaSerializableConflict, withSerializableTransactionRetry } from "./prisma-transaction";
 
-type RateLimitPurpose = "donation" | "assistance" | "analytics" | "tracking";
+type RateLimitPurpose = "donation" | "assistance" | "analytics" | "tracking" | "acknowledgement";
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 
@@ -82,6 +82,17 @@ async function claimRateLimitSlot(clientHash: string, limit: number) {
 
 export async function enforceDonationRateLimit(request: Request) {
   return claimRateLimitSlot(getRateLimitClientHash(request, "donation"), 10);
+}
+
+/**
+ * Receipt lookups are deliberately separate from donor checkout attempts.
+ * Use a purpose-separated peppered SHA-256 hash (no raw IP retention) and
+ * an independent allowance to constrain repeated private-record lookups.
+ * Share the existing donation pepper rather than adding new production
+ * secret configuration. The check remains database-atomic and fail-closed.
+ */
+export async function enforceAcknowledgementRateLimit(request: Request) {
+  return claimRateLimitSlot(getRateLimitClientHash(request, "acknowledgement"), 30);
 }
 
 /**

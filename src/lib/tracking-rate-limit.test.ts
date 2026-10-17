@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({ count: vi.fn(), create: vi.fn(), transaction: vi.fn() }));
 vi.mock("./prisma", () => ({ prisma: { $transaction: mocks.transaction } }));
-import { enforceAssistanceRateLimit, enforceTrackingRateLimit, getRateLimitClientHash } from "./request-security";
+import { enforceAcknowledgementRateLimit, enforceAssistanceRateLimit, enforceTrackingRateLimit, getRateLimitClientHash } from "./request-security";
 
 const request = new Request("https://amaanafoundation.org/api/assistance/status", {
   headers: { "x-real-ip": "203.0.113.10" },
@@ -35,6 +35,8 @@ describe("independent assistance tracking allowance", () => {
     mocks.create.mockImplementation(({ data }) => counts.set(data.clientHash, (counts.get(data.clientHash) ?? 0) + 1));
     for (let i = 0; i < 60; i++) expect(await enforceTrackingRateLimit(request)).toBe(true);
     expect(await enforceTrackingRateLimit(request)).toBe(false);
+    for (let i = 0; i < 30; i++) expect(await enforceAcknowledgementRateLimit(request)).toBe(true);
+    expect(await enforceAcknowledgementRateLimit(request)).toBe(false);
     for (let i = 0; i < 3; i++) expect(await enforceAssistanceRateLimit(request)).toBe(true);
     expect(await enforceAssistanceRateLimit(request)).toBe(false);
   });
@@ -42,7 +44,7 @@ describe("independent assistance tracking allowance", () => {
   it("separates workflow hashes and follows only the assistance pepper", () => {
     const hash = getRateLimitClientHash(request, "tracking");
     expect(hash).toMatch(/^[a-f0-9]{64}$/);
-    for (const purpose of ["assistance", "donation", "analytics"] as const)
+    for (const purpose of ["assistance", "donation", "analytics", "acknowledgement"] as const)
       expect(hash).not.toBe(getRateLimitClientHash(request, purpose));
     vi.stubEnv("DONATION_TOKEN_PEPPER", "rotated-donation-pepper");
     expect(getRateLimitClientHash(request, "tracking")).toBe(hash);
