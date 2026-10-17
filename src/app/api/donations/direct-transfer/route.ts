@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
-import { RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { appealDonationDesignationSnapshot, createDonationReference, createReceiptToken, directTransferSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { canExposePublicAppeal } from "@/lib/public-environment";
@@ -14,6 +14,7 @@ import { directTransferFieldErrors, UNCERTAIN_TRANSFER_MESSAGE } from "@/lib/dir
 
 const privateHeaders = { "Cache-Control": "no-store, private", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow, noarchive" };
 const MAX_MULTIPART_BYTES = MAX_FILE_BYTES + 256 * 1024;
+const TRANSFER_BODY_TIMEOUT_MS = 90_000;
 
 export async function POST(request: Request) {
   try {
@@ -27,10 +28,22 @@ export async function POST(request: Request) {
 
     let body: Awaited<ReturnType<typeof readBodyBytesWithLimit>>;
     try {
-      body = await readBodyBytesWithLimit(request, MAX_MULTIPART_BYTES);
+      body = await readBodyBytesWithLimit(request, MAX_MULTIPART_BYTES, { timeoutMs: TRANSFER_BODY_TIMEOUT_MS });
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ error: "Transfer submission is too large." }, { status: 413, headers: privateHeaders });
+      }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        // Multipart reading precedes FormData parsing, evidence storage and the
+        // first donation write. This is the only transport deadline for which
+        // the server can prove no submission has been recorded.
+        return NextResponse.json(
+          {
+            error: "Transfer upload took too long. No submission was recorded. Check your connection and submit the same bank reference again.",
+            submissionUncertain: false,
+          },
+          { status: 408, headers: privateHeaders },
+        );
       }
       throw error;
     }
