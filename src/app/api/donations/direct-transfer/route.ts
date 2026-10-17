@@ -107,8 +107,10 @@ export async function POST(request: Request) {
     // Use the same paise-accurate, whole-rupee-eligible projection as the
     // public detail and checkout. A direct POST must never bypass a disabled
     // public donation route when the ledger has fractional-paise corruption.
-    const eligibility = appeal && canExposePublicAppeal(appeal)
-      ? getPublicAppealCheckoutEligibility(appeal) : null;
+    if (!appeal || !canExposePublicAppeal(appeal)) {
+      return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+    }
+    const eligibility = getPublicAppealCheckoutEligibility(appeal);
     if (!eligibility) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
     if (parsed.data.givingIntent === "ZAKAT" && appeal.assistanceRequest?.verification?.zakatStatus !== "ELIGIBLE") return NextResponse.json({ error: "This appeal is not currently marked as Zakat-eligible.", fieldErrors: { givingIntent: ["Please choose General Charity or Sadaqah."] } }, { status: 409, headers: privateHeaders });
     const remainingAmount = eligibility.progress.remaining;
