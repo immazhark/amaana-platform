@@ -39,6 +39,20 @@ describe("strict donation checkout balance", () => {
     expect(getDonationCheckoutRemainingAmount(active(100, 1000), new Date(NaN))).toBeNull();
   });
 
+  it("never treats a large sub-paise ledger number as a legal whole-cent amount", () => {
+    expect(getDonationCheckoutRemainingAmount(active("10000000000000.001", "10000000000020"), now)).toBeNull();
+    expect(getDonationCheckoutRemainingAmount(active(10_000_000_000_000.002, 10_000_000_000_020), now)).toBeNull();
+  });
+
+  it("parses exact Prisma decimal strings before lossy toNumber conversion", () => {
+    const raised = { toString: () => "10000000000000.001", toNumber: () => 10_000_000_000_000 };
+    const goal = { toString: () => "10000000000020", toNumber: () => 10_000_000_000_020 };
+    expect(getDonationCheckoutRemainingAmount({
+      status: "PUBLISHED", amountRaised: raised, goalAmount: goal, closesAt: null,
+    }, now)).toBeNull();
+    expect(getDonationCheckoutRemainingAmount(active("100.30", "500.01"), now)).toBe(399.71);
+  });
+
   it("supports Prisma-like decimal inputs and rejects unsafe paise conversions", () => {
     expect(getDonationCheckoutRemainingAmount({
       status: "PUBLISHED", amountRaised: {toNumber: () => 100.3},
