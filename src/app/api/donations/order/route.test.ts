@@ -185,6 +185,32 @@ describe("donation order request bounds", () => {
     expect(mocks.create).not.toHaveBeenCalled();
   });
 
+  it("returns private retryable 503 on interrupted request-body transport before any provider or database work", async () => {
+    const request = new Request("https://amaana.example/api/donations/order", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: new ReadableStream<Uint8Array>({
+        start(controller) { controller.error(new Error("synthetic connection interruption")); },
+      }),
+      duplex: "half",
+    } as RequestInit & { duplex: "half" });
+
+    const response = await POST(request);
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({
+      error: "Donation request could not be read. Please try again.",
+    });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex/i);
+    expect(mocks.enforceDonationRateLimit).toHaveBeenCalledOnce();
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.createRazorpayOrder).not.toHaveBeenCalled();
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
   it("rejects an oversized payload before appeal or Razorpay work", async () => {
     const request = new Request("https://amaana.example/api/donations/order", {
       method: "POST",
