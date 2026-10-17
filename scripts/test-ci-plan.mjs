@@ -308,3 +308,49 @@ test('production, manual release, and uncertain PR scopes still fail closed to f
     assert.equal(result.database, true, path);
   }
 });
+
+test('private volunteer and feedback PRs retain their exact journey, accessibility and page audit', () => {
+  const volunteer = planChanges([
+    'src/app/contact/page.tsx', 'src/app/get-involved/page.tsx',
+    'src/app/get-involved/volunteer/page.tsx',
+    'src/components/volunteer-interest-builder.tsx',
+    'src/components/volunteer-interest-builder.test.tsx',
+    'src/lib/volunteer-enquiry.ts', 'src/lib/volunteer-enquiry.test.ts',
+    'e2e/volunteer-enquiry.spec.mjs',
+  ], { event: 'pull_request', target: 'main' });
+  assert.equal(volunteer.mode, 'focused');
+  for (const file of ['volunteer-enquiry.spec.mjs', 'participation-contact.spec.mjs',
+    'site-regression-audit.spec.mjs', 'public-performance.spec.mjs']) {
+    assert.ok(volunteer.tests.includes(file), file);
+  }
+  const feedback = planChanges([
+    'src/app/contact/page.tsx', 'src/app/contact/feedback/page.tsx',
+    'src/components/feedback-enquiry-builder.tsx',
+    'src/components/feedback-enquiry-builder.test.tsx',
+    'src/lib/feedback-enquiry.ts', 'src/lib/feedback-enquiry.test.ts',
+    'e2e/private-feedback-enquiry.spec.mjs', 'e2e/site-regression-audit.spec.mjs',
+  ], { event: 'pull_request', target: 'main' });
+  assert.equal(feedback.mode, 'focused');
+  for (const file of ['private-feedback-enquiry.spec.mjs', 'participation-contact.spec.mjs',
+    'site-regression-audit.spec.mjs', 'public-performance.spec.mjs']) {
+    assert.ok(feedback.tests.includes(file), file);
+  }
+});
+
+test('Taleem preference review is scoped; payment and calendar API changes remain full', () => {
+  const taleem = planChanges([
+    'src/app/get-involved/sponsor-education/page.tsx',
+    'src/components/sponsorship-enquiry.tsx', 'src/components/sponsorship-enquiry.test.tsx',
+    'src/lib/sponsorship-enquiry.ts', 'src/lib/sponsorship-enquiry.test.ts',
+    'e2e/taleem-sponsorship-enquiry.spec.mjs',
+  ], { event: 'pull_request', target: 'main' });
+  assert.equal(taleem.mode, 'focused');
+  for (const file of ['taleem-sponsorship-enquiry.spec.mjs', 'donate-sponsorship-layout.spec.mjs',
+    'public-seo.spec.mjs']) assert.ok(taleem.tests.includes(file), file);
+  assert.equal(planChanges([
+    'src/lib/monthly-giving-reminder.ts', 'src/app/api/giving-reminder/route.ts',
+  ], { event: 'pull_request', target: 'main' }).mode, 'full');
+  assert.equal(planChanges([
+    'src/lib/sponsorship-enquiry.ts', 'src/app/api/donations/order/route.ts',
+  ], { event: 'pull_request', target: 'main' }).mode, 'full');
+});
