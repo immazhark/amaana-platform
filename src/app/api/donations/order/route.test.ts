@@ -10,8 +10,10 @@ const mocks = vi.hoisted(() => ({
 
 vi.mock("@/lib/bounded-request-body", () => {
   class RequestBodyTooLargeError extends Error {}
+  class RequestBodyReadTimeoutError extends Error {}
   return {
     RequestBodyTooLargeError,
+    RequestBodyReadTimeoutError,
     readTextBodyWithLimit: async (request: Request, maxBytes: number) => {
       const declared = Number(request.headers.get("content-length"));
       if (Number.isFinite(declared) && declared > maxBytes) throw new RequestBodyTooLargeError();

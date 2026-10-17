@@ -1,3 +1,11 @@
+## 2026-10-18 — Checkout read deadline after signed webhook-state release
+
+Ownership: CHATGPT_ACTIVE. PR309 5-second absolute checkout JSON ingress timeout and three actual request tests preserved on current main d5d401b84627615a0a81836559fdacac9f948e68 after PR307 merged. New main touches only financial webhook source/tests and handoff docs; no checkout code was replaced. Existing provider validation, exact paise, receipt timeout, and transfer evidence preflight preserved. Fresh exact-head CI, promotion/ready-state checks required before merge. No financial/provider writes or outgoing email.
+
+## 2026-10-18 — Razorpay checkout JSON absolute body deadline
+
+Ownership: CHATGPT_ACTIVE. New atomic branch fix/checkout-order-body-deadline-20261018 from verified production main 82a9566ad98890a1613c547a4c9fad7571ccde91. Source checkout POST previously limited JSON to 32 KiB but allowed indefinite slow request streams after quota. Tests authored first: actual never-ending body with nonsettling cancellation, trickle body whose 5-second deadline never resets, complete invalid JSON. Code now uses previously released bounded reader absolute timeout 5,000 ms, private retryable 503 Retry-After 60 before schema, appeal read, Razorpay create, or donation write; prior 413/400 and valid paid order behavior unchanged. Full hosted Vitest, typecheck, lint, database, build, browser, and ready-state checks remain required before merge. No live payment, provider call, donation write or outgoing mail was used. Avoid merging unrelated draft PRs.
+
 ## 2026-10-18 — Strict webhook-state security isolated after refund-cap production merge
 
 Ownership: CHATGPT_ACTIVE. PR301 financial over-refund cap merged to main 82a9566ad98890a1613c547a4c9fad7571ccde91. PR307 strictly validates signed captured/failed/refund-processed provider state ahead of replay acknowledgements, preserving PR301's transaction rollback on capped refund plus all #299/#300/#306 safeguards. Code differences from latest main limited to Razorpay webhook validation and its route/payment-failed tests. Fresh hosted exact-head CI, ready-state check, and only then guarded release. No real webhook, provider refunds, financial writes, secret edits, or outgoing emails.
