@@ -1,3 +1,7 @@
+## 2026-10-17 — Settled payment confirmation extraction
+
+Ownership: HANDOFF_PENDING after scoped extraction. Branch fix/settled-payment-confirmation-20261017 from main aedae001. Extract only persisted settlement confirmation and browser lock from historical #292; preserve current provider validation and webhook concurrency. New PR, independent of #299/#300/#301/#302. RED: four nonsettled status cases returned 200 instead of 409. GREEN: 14 confirmation tests pass; full local suite 898 passed/9 skipped. TypeScript, focused ESLint, E2E syntax and diff checks pass. Six browser cases authored for nonsettled HTTP-200 responses; hosted browser/build/database gates pending. No live payment, merge or deployment.
+
 ## 2026-10-13 — actual HTTP cancellation regressions
 
 Ownership: CODEX_ACTIVE on the preserved N-28 follow-up branch; validated release3414858b remains unchanged. Added actual assistance and direct-transfer route cases using the real body reader/error class: an oversized stream whose cancel promise never settles returns private413 and does not create a case/donation or upload evidence. Both route cases fail with rejection stalled when only awaited cancellation is restored. Fixed source:34 tests across3 suites passed; TypeScript and focused ESLint passed. Assistance test mock now retains the actual error class to verify the real classifier. No live requests, provider calls or production database writes.
