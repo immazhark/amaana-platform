@@ -926,7 +926,10 @@ for (const status of [429, 503]) {
       });
     });
     await page.goto(`/request-assistance/status#reference=${assistanceReference}&token=${trackingToken}`);
-    await expect(page.getByRole('heading', { name: 'Unable to check your request' })).toBeVisible();
+    await expect(page.getByRole('heading', { name: status === 429 ? 'Tracking temporarily limited' : 'Unable to check your request' })).toBeVisible();
+    if (status === 429) {
+      await expect(page.getByText(/Please wait.*hour.*trying again/i)).toBeVisible();
+    }
     expect(new URL(page.url()).hash).toBe('');
     expect(new URL(page.url()).search).toBe('');
     await expect(page.getByRole('link', { name: 'Start a new request' })).toHaveCount(0);
