@@ -160,6 +160,36 @@ describe("donation order request bounds", () => {
     expect(mocks.create).not.toHaveBeenCalled();
   });
 
+  it.each([
+    { raised: 100.001, goal: 1_000, scenario: "sub-paise captured balance" },
+    { raised: 100, goal: 1_000.001, scenario: "sub-paise target" },
+    { raised: 999.50, goal: 1_000, scenario: "unpayable remaining amount" },
+  ])("rejects a Razorpay order for an appeal with $scenario", async ({ raised, goal }) => {
+    mocks.safeParse.mockReturnValue({
+      success: true,
+      data: {
+        appealId: "clx1234567890abcdef123456",
+        donorName: "Synthetic Donor",
+        donorEmail: "synthetic@example.invalid",
+        donorPhone: "", amount: 500,
+        givingIntent: "GENERAL", isAnonymous: false, domesticConfirmed: true,
+      },
+    });
+    mocks.findFirst.mockResolvedValue({
+      id: "appeal_1", slug: "appeal-1", title: "Appeal 1",
+      status: "PUBLISHED", goalAmount: goal, amountRaised: raised, closesAt: null,
+      assistanceRequest: { verification: { zakatStatus: "NOT_ELIGIBLE" } },
+    });
+
+    const response = await POST(new Request("https://amaana.example/api/donations/order", {
+      method: "POST", headers: { "Content-Type": "application/json" }, body: "{}",
+    }));
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: "This appeal is not accepting donations." });
+    expect(mocks.createRazorpayOrder).not.toHaveBeenCalled();
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
   it.each(["UNREVIEWED", "NOT_ELIGIBLE", "NOT_APPLICABLE", null])("rejects Zakat intent when review status is %s", async zakatStatus => {
     mocks.safeParse.mockReturnValue({
       success: true,
