@@ -20,7 +20,7 @@ function section(body, heading) {
 export function validatePrContract(input) {
   if (!input || typeof input !== "object") return ["Missing PR metadata."];
   const errors = [];
-  const { title, branch, body, files } = input;
+  const { title, branch, body, files, draft } = input;
   if (typeof title !== "string" || !titlePattern.test(title))
     errors.push("PR title must use a conventional prefix, e.g. feat: precise outcome.");
   if (typeof branch !== "string" || !branchPattern.test(branch))
@@ -34,6 +34,16 @@ export function validatePrContract(input) {
       errors.push(`Section "${heading}" must explain the independently releasable change.`);
     else if (["Acceptance criteria", "Verification"].includes(heading) && !/^\s*-\s+\[[ xX]\]\s+\S.{7,}$/m.test(content))
       errors.push(`Section "${heading}" needs a concrete checklist item.`);
+  }
+  // Drafts may document pending work. Ready PRs must explicitly record
+  // completion rather than passing a blank prefilled PR template.
+  if (draft === false) {
+    for (const heading of ["Acceptance criteria", "Verification"]) {
+      const content = section(text, heading) || "";
+      if (/^\\s*-\\s+\\[ \\]/m.test(content) || !/^\\s*-\\s+\\[[xX]\\]\\s+\\S/m.test(content)) {
+        errors.push(`Ready PR has unchecked or unconfirmed "${heading}" items; keep it draft until verified.`);
+      }
+    }
   }
   if (Array.isArray(files) && files.length > 25) {
     const explanation = section(text, "Scope rationale");
@@ -65,6 +75,7 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
         title: pr?.title,
         branch: pr?.head?.ref,
         body: pr?.body,
+        draft: pr?.draft,
         files,
       });
       if (errors.length) {
