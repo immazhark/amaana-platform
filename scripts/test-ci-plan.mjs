@@ -275,3 +275,36 @@ test('donation presentation changes retain route label readability coverage', ()
     assert.equal(planChanges([file, 'src/app/api/donations/order/route.ts']).mode, 'full');
   }
 });
+
+test('atomic PRs to main run mapped responsive journeys rather than release-wide acceptance', () => {
+  const plan = planChanges(['src/app/contact/page.tsx'], {
+    event: 'pull_request', target: 'main',
+  });
+  assert.equal(plan.mode, 'focused');
+  assert.equal(plan.app, true);
+  assert.equal(plan.browser, true);
+  assert.equal(plan.database, false);
+  assert.equal(plan.crossBrowser, false);
+  for (const name of ['participation-contact.spec.mjs', 'public-seo.spec.mjs', 'public-performance.spec.mjs']) {
+    assert.ok(plan.tests.includes(name), name);
+  }
+});
+
+test('production, manual release, and uncertain PR scopes still fail closed to full acceptance', () => {
+  for (const opts of [
+    { event: 'push', target: 'main' },
+    { event: 'workflow_dispatch', target: 'main' },
+    { event: 'pull_request', target: 'main', release: true },
+  ]) {
+    const result = planChanges(['src/app/contact/page.tsx'], opts);
+    assert.equal(result.mode, 'full');
+    assert.equal(result.database, true);
+    assert.equal(result.crossBrowser, true);
+    assert.equal(result.visual, true);
+  }
+  for (const path of ['src/lib/auth.ts', 'src/app/api/donations/order/route.ts', 'prisma/schema.prisma', 'unknown-feature.tsx']) {
+    const result = planChanges(['src/app/contact/page.tsx', path], { event: 'pull_request', target: 'main' });
+    assert.equal(result.mode, 'full', path);
+    assert.equal(result.database, true, path);
+  }
+});
