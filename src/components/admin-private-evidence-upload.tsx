@@ -84,7 +84,7 @@ function EvidenceUpload({ caseId, purpose = "delivery" }: Props) {
       uncertainOutcome = true;
       setUncertain(true);
       setError(true);
-      setMessage("Upload confirmation was interrupted. The file may already be stored. Reload the case and review its documents before uploading again.");
+      setMessage("Private upload status is uncertain. Do not upload this file again until an administrator checks the case record and private storage. Reload the case to review its current documents.");
     } finally {
       if (!controller.signal.aborted) {
         locked.current = uncertainOutcome;
