@@ -19,11 +19,6 @@ vi.mock("@/lib/bounded-request-body", async importOriginal => {
   return actual;
 });
 
-vi.mock("@/lib/appeals", () => ({
-  getRemainingAppealAmount: () => 900,
-  isAppealOpenForDonations: () => true,
-}));
-
 vi.mock("@/lib/donations", () => ({
   createDonationReference: () => "AFD-2026-12345678",
   createReceiptToken: () => "receipt-token",
