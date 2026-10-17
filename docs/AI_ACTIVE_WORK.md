@@ -1,6 +1,12 @@
-## 2026-10-17 — Razorpay webhook read and postcommit reliability (in progress)
+## 2026-10-17 — Razorpay webhook ingress and capture-event durability; handoff
 
-**Ownership: CHATGPT_ACTIVE.** Sole-writer handoff claimed after verifying PR #292 open, target main, branch `fix/direct-transfer-feedback-20261013`, HEAD `18a1aaaf6ce7e7e66b085efe8c3c00180edb77ac`; prior active work was HANDOFF_PENDING. Task: reproduce and repair webhook stalled unsigned body reads and cache refresh exceptions after durable payment capture. Keep signature, idempotency, refund and replay invariants. Tests first; no merge, deployment or live provider/record writes authorized.
+**Ownership: HANDOFF_PENDING.** Sole-writer ChatGPT batch on open PR #292, `fix/direct-transfer-feedback-20261013` to `main`. Incoming verified HEAD `18a1aaaf6ce7e7e66b085efe8c3c00180edb77ac`, ownership claim `251fbe78e68466dcadd460a1a4509e2ef828efc6`. No competing writer observed.
+
+- Source `src/app/api/webhooks/razorpay/route.ts`: `bc644ef21e7075921d38be1ba43cb5bd59cbf0cd`, `ea99b42689460c5b23be90bea8e45301f0dfed2b`. No-signature 401 before body allocation; 15s signed webhook read deadline with retryable 503; persisted `PaymentEvent` written before nontransactional `expireDonationViews` after payment capture. A cache outage 500 can now be replayed against the event without a repeated capture. Existing signature, refund, failed-payment, duplicate ID and money-state guards retained.
+- Test-first coverage `src/app/api/webhooks/razorpay/route.test.ts`: `8dc7b9d2ff64d8aa969122d7bab526a75f814e34`, `f850ecd99b92c465f394537de974afa5f616a2c6`. Cases verify no body read for missing signature, 15s deadline, no DB/gateway on stalled read, and event write before cache failure with safe matching replay.
+- Master149 register `0405be94175ec319830fb742e8be3f8daaf2c845`. Handoff ledger `4fd305109cf3b03cff08460080dd05048e3aca05`. Counts unchanged: 60 Implemented, 61 Partial, 26 Not started, 1 Superseded, 1 Not applicable; zero formally closed. Changes remain in PR, not main or live.
+- GitHub readback verified source/test modifications. **No hydrated local project:** `git ls-remote` to GitHub failed DNS; Vitest, TypeScript, ESLint, Playwright, real streaming/signature, PostgreSQL, Razorpay or cache tests **not executed**. No CI orchestration, live provider transaction, financial record write, migration, merge or deploy.
+- Next owner: verify PR HEAD and handoff ownership; execute `npx vitest run src/app/api/webhooks/razorpay/route.test.ts src/app/api/webhooks/razorpay/event-id-fallback.test.ts src/app/api/webhooks/razorpay/payment-failed.test.ts src/lib/bounded-request-body.test.ts` with type/lint in hydrated checkout and repair demonstrated failures. Then continue relevant Master149 source implementation; do not merge/deploy without explicit authorization.
 
 ## 2026-10-17 — Body-read deadlines and verified no-write retry contracts; handoff
 
