@@ -886,6 +886,54 @@ test('a payment callback after its checkout form unmounts confirms without stale
   await expect(page).toHaveURL('/browser-acceptance/direct-donation');
 });
 
+test.describe('direct transfer pre-write timeout safety', () => {
+  test('an explicit no-write 408 preserves the UTR and safely unlocks retry', async ({ page }) => {
+    let submissions = 0;
+    await page.route('**/api/donations/direct-transfer', route => {
+      submissions++;
+      return route.fulfill({
+        status: 408, contentType: 'application/json',
+        body: JSON.stringify({
+          error: 'Transfer upload took too long. No submission was recorded. Check your connection and submit the same bank reference again.',
+          submissionUncertain: false,
+        }),
+      });
+    });
+    await openMethodFixture(page);
+    await fillTransferForm(page);
+    const submit = page.getByRole('button', { name: 'Submit transfer for verification' });
+    await submit.click();
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('No submission was recorded');
+    await expect(page.getByLabel('UTR / transaction reference')).toHaveValue('UTRACCEPT12345');
+    await expect(submit).toBeEnabled();
+    await expect(page.getByRole('button', { name: 'Bank transfer', exact: true })).toBeEnabled();
+    await submit.click();
+    await expect.poll(() => submissions).toBe(2);
+  });
+
+  for (const marker of [undefined, true, 'false', null]) {
+    test(`ambiguous transfer 408 with marker ${String(marker)} retains reconciliation lock`, async ({ page }) => {
+      let submissions = 0;
+      await page.route('**/api/donations/direct-transfer', route => {
+        submissions++;
+        return route.fulfill({
+          status: 408, contentType: 'application/json',
+          body: JSON.stringify({ error: 'Ambiguous transfer request timeout',
+            ...(marker === undefined ? {} : { submissionUncertain: marker }) }),
+        });
+      });
+      await openMethodFixture(page);
+      await fillTransferForm(page);
+      await page.getByRole('button', { name: 'Submit transfer for verification' }).click();
+      await expect(page.getByRole('button', { name: 'Transfer follow-up required' })).toBeDisabled();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('contact Amaana before submitting again');
+      await expectMethodsLocked(page);
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(submissions).toBe(1);
+    });
+  }
+});
+
 test.describe('donation submission state survives method and provider callbacks', () => {
   for (const scenario of ['server-error', 'lost-response', 'html-response', 'missing-token', 'already-submitted']) {
     test(`direct transfer ${scenario} keeps follow-up state and prevents another submission`, async ({ page }) => {
