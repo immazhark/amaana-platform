@@ -72,23 +72,6 @@ export async function POST(request: Request) {
       request.headers.get("x-razorpay-event-id")?.trim() ||
       createHash("sha256").update(rawBody).digest("hex");
 
-    const alreadyProcessed = await prisma.paymentEvent.findUnique({
-      where: { providerEventId },
-      select: { id: true, eventType: true, payload: true },
-    });
-    if (alreadyProcessed) {
-      if (!isMatchingPaymentEventReplay(alreadyProcessed, payload.event, auditPayload)) {
-        logServerError("razorpay.webhook_event_id_collision", {
-          hasProviderEventId: true,
-          storedEventType: alreadyProcessed.eventType,
-          receivedEventType: payload.event,
-        });
-        return new NextResponse("Webhook event id conflict", { status: 409 });
-      }
-      if (["payment.captured", "refund.processed"].includes(payload.event)) expireDonationViews();
-      return NextResponse.json({ received: true });
-    }
-
     const payment = payload.payload?.payment?.entity;
     const refund = payload.payload?.refund?.entity;
 
@@ -131,6 +114,25 @@ export async function POST(request: Request) {
       !Number.isSafeInteger(payment.amount) || payment.amount <= 0
     )) {
       return new NextResponse("Invalid payment entity", { status: 400 });
+    }
+
+    // Signature verification is necessary but not sufficient: reject malformed
+    // financial state even on a replay before acknowledging its event ID.
+    const alreadyProcessed = await prisma.paymentEvent.findUnique({
+      where: { providerEventId },
+      select: { id: true, eventType: true, payload: true },
+    });
+    if (alreadyProcessed) {
+      if (!isMatchingPaymentEventReplay(alreadyProcessed, payload.event, auditPayload)) {
+        logServerError("razorpay.webhook_event_id_collision", {
+          hasProviderEventId: true,
+          storedEventType: alreadyProcessed.eventType,
+          receivedEventType: payload.event,
+        });
+        return new NextResponse("Webhook event id conflict", { status: 409 });
+      }
+      if (["payment.captured", "refund.processed"].includes(payload.event)) expireDonationViews();
+      return NextResponse.json({ received: true });
     }
 
     if (payload.event === "payment.captured" && payment?.order_id && payment.currency === "INR") {
