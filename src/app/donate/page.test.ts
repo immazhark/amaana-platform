@@ -2,8 +2,8 @@ import { createElement, type ReactNode } from "react";
 import { PassThrough } from "node:stream";
 import { renderToPipeableStream } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-const m = vi.hoisted(() => ({ appeals: vi.fn(), funds: vi.fn(), log: vi.fn() }));
-vi.mock("@/lib/public-page-data", () => ({ getAppealsIndexData: m.appeals, getDonationImpactHighlights: async () => [], getDonationPageData: async () => null }));
+const m = vi.hoisted(() => ({ appeals: vi.fn(), funds: vi.fn(), detail: vi.fn(), log: vi.fn() }));
+vi.mock("@/lib/public-page-data", () => ({ getAppealsIndexData: m.appeals, getDonationImpactHighlights: async () => [], getDonationPageData: m.detail }));
 vi.mock("@/lib/prisma", () => ({ prisma: { givingFund: { findMany: m.funds } } }));
 vi.mock("@/lib/server-log", () => ({ logServerError: m.log }));
 vi.mock("@/components/navigation-link", () => ({ default: ({ children, ...props }: { children: ReactNode }) => createElement("a", props, children) }));
@@ -27,7 +27,7 @@ async function html() {
 }
 
 describe("donation landing with real fund release controls", () => {
-  beforeEach(() => { vi.resetAllMocks(); vi.stubEnv("AMAANA_FUND_CHECKOUT_ENABLED", "true"); vi.stubEnv("AMAANA_FUND_CHECKOUT_ALLOWLIST", id); m.appeals.mockResolvedValue([]); m.funds.mockResolvedValue([approved]); });
+  beforeEach(() => { vi.resetAllMocks(); vi.stubEnv("AMAANA_FUND_CHECKOUT_ENABLED", "true"); vi.stubEnv("AMAANA_FUND_CHECKOUT_ALLOWLIST", id); m.appeals.mockResolvedValue([]); m.funds.mockResolvedValue([approved]); m.detail.mockResolvedValue(null); });
   afterEach(() => vi.unstubAllEnvs());
   it.each(["false", "TRUE", ""])("keeps existing enquiry/appeal routes and omits all fund checkout when flag is %s", async flag => {
     vi.stubEnv("AMAANA_FUND_CHECKOUT_ENABLED", flag);
@@ -49,8 +49,13 @@ describe("donation landing with real fund release controls", () => {
     expect(await html()).not.toContain("giving-fund-choice"); expect(m.funds).toHaveBeenCalledTimes(2); expect(dynamic).toBe("force-dynamic");
   });
   it("preserves available public appeals when the optional fund read fails", async () => {
-    m.funds.mockRejectedValueOnce(new Error("private database details")); m.appeals.mockResolvedValue([appeal]);
-    const result = await html(); expect(result).toContain("See all verified appeals"); expect(result).toContain("Giving fund availability could not be checked.");
+    m.funds.mockRejectedValueOnce(new Error("private database details"));
+    m.appeals.mockResolvedValue([appeal]);
+    m.detail.mockResolvedValueOnce({ ...appeal, zakatEligible: false });
+    const result = await html(); expect(result).toContain("See all verified appeals");
+    expect(result).toContain("Choose an appeal &amp; give here");
+    expect(result).toContain("Giving fund availability could not be checked.");
+    expect(m.detail).toHaveBeenCalledWith("real-public-appeal");
     expect(result).not.toContain("private database details"); expect(result).not.toContain("giving-fund-choice");
     expect(m.log).toHaveBeenCalledWith("donation.fund_choices_unavailable", { errorName: "Error" });
   });
