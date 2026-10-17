@@ -602,7 +602,7 @@ test.describe('donation journey without real payment', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ referenceNumber: donationReference }),
+        body: JSON.stringify({ referenceNumber: donationReference, status: 'CAPTURED' }),
       });
     });
     await page.route('**/api/donations/acknowledgement', route => route.fulfill({
@@ -647,6 +647,33 @@ test.describe('donation journey without real payment', () => {
       receiptToken,
     }));
   });
+
+  for (const status of ['CREATED', 'AUTHORIZED', 'FAILED', 'PENDING_VERIFICATION', null, 'UNRECOGNIZED']) {
+    test(`HTTP 200 with nonterminal/unknown payment state ${String(status)} never navigates as paid`, async ({ page }) => {
+      let confirmations = 0;
+      let orders = 0;
+      await page.route('**/api/donations/order', route => {
+        orders++;
+        return route.fulfill({ status: 201, contentType: 'application/json', body: JSON.stringify(orderPayload()) });
+      });
+      await page.route('**/api/donations/confirm', route => {
+        confirmations++;
+        return route.fulfill({
+          status: 200, contentType: 'application/json',
+          body: JSON.stringify({ referenceNumber: donationReference, status }),
+        });
+      });
+      const submit = await openDonationFixture(page, 'success');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('not complete');
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(orders).toBe(1);
+      expect(confirmations).toBe(1);
+      expect(new URL(page.url()).pathname).toBe('/browser-acceptance/donation');
+    });
+  }
 
   for (const reference of [undefined, null, 123, '', '../admin', 'a'.repeat(81)]) {
     test(`malformed confirmation reference ${JSON.stringify(reference)} retains payment follow-up without invalid navigation`, async ({ page }) => {
@@ -836,7 +863,7 @@ test('a payment callback after its checkout form unmounts confirms without stale
     confirmations++;
     return route.fulfill({
       status: 200, contentType: 'application/json',
-      body: JSON.stringify({ referenceNumber: donationReference }),
+      body: JSON.stringify({ referenceNumber: donationReference, status: 'CAPTURED' }),
     });
   });
   await openMethodFixture(page, 'Secure online payment');
