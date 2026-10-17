@@ -58,6 +58,16 @@ export async function POST(request: Request) {
     }
     const isAnonymous = anonymityEntries[0] === "true";
 
+    // Consent must be a single explicit positive value. Reject duplicate, absent,
+    // or noncanonical fields before any donation or evidence persistence.
+    const domesticEntries = form.getAll("domesticConfirmed");
+    if (domesticEntries.length !== 1 || domesticEntries[0] !== "true") {
+      return NextResponse.json(
+        { error: "Please confirm that this donation is domestic." },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+
     const evidenceEntry = form.get("evidence");
     if (evidenceEntry !== null && evidenceEntry !== "" && !(evidenceEntry instanceof File)) {
       return NextResponse.json({ error: "Please attach a valid transfer screenshot or PDF." }, { status: 400, headers: privateHeaders });
@@ -82,7 +92,7 @@ export async function POST(request: Request) {
 
     const parsed = directTransferSchema.safeParse({
       appealId: form.get("appealId"), donorName: form.get("donorName"), donorEmail: form.get("donorEmail"), donorPhone: form.get("donorPhone") ?? "",
-      amount: form.get("amount"), givingIntent: form.get("givingIntent"), isAnonymous, domesticConfirmed: form.get("domesticConfirmed") === "true",
+      amount: form.get("amount"), givingIntent: form.get("givingIntent"), isAnonymous, domesticConfirmed: true,
       paymentMethod: form.get("paymentMethod"), transferReference: form.get("transferReference"), transferredAt: form.get("transferredAt"),
     });
     if (!parsed.success) return NextResponse.json({ error: "Please check the transfer information and reference." }, { status: 400, headers: privateHeaders });

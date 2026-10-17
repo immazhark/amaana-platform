@@ -454,3 +454,44 @@ describe("direct-transfer anonymity field privacy contract", () => {
     expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
   });
 });
+
+
+describe("direct-transfer domestic confirmation is unambiguous", () => {
+  async function domesticRequest(values: FormDataEntryValue[]) {
+    const source = requestWith();
+    const form = await source.formData();
+    form.delete("domesticConfirmed");
+    for (const value of values) form.append("domesticConfirmed", value);
+    return new Request(source.url, { method: "POST", body: form });
+  }
+
+  it("accepts a single explicit domestic confirmation without changing persisted consent", async () => {
+    const response = await POST(await domesticRequest(["true"]));
+    expect(response.status).toBe(202);
+    expect(mocks.safeParse).toHaveBeenCalledWith(expect.objectContaining({ domesticConfirmed: true }));
+    expect(mocks.donationCreate).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ domesticConfirmedAt: expect.any(Date) }),
+    }));
+  });
+
+  it.each([
+    ["missing", []],
+    ["unchecked", ["false"]],
+    ["empty", [""]],
+    ["noncanonical", ["TRUE"]],
+    ["checkbox on", ["on"]],
+    ["conflicting true/false", ["true", "false"]],
+    ["conflicting false/true", ["false", "true"]],
+    ["repeated true", ["true", "true"]],
+    ["file value", [new File(["true"], "consent.txt", { type: "text/plain" })]],
+  ] as const)("rejects %s without treating ambiguous consent as confirmed", async (_case, values) => {
+    const response = await POST(await domesticRequest([...values]));
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/domestic|confirm/i);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+  });
+});
