@@ -1,3 +1,7 @@
+## 2026-10-17 — ACTIVE: explicit Razorpay financial event-state validation
+
+**Ownership: CHATGPT_ACTIVE.** PR #292 open on `fix/direct-transfer-feedback-20261013` to `main`, prior HEAD `1762b4c08d1ea6e6860b15fd634f3c891fc70bdd`. Incoming handoff was HANDOFF_PENDING. Verified webhook financial validation accepts missing capture flag on payment.captured and missing status on financial events. Implement test-first guards; preserve idempotent event replay and donor accounting. No merge, deployment, production mutation or configuration changes.
+
 ## 2026-10-17 — Donor confirmation and acknowledgement reliability; ownership returned
 
 **Ownership: HANDOFF_PENDING.** ChatGPT finished the sole-writer batch on open PR #292 `fix/direct-transfer-feedback-20261013` targeting `main`. Verified incoming HEAD `5116e7b0f951e9687acdca0b1237fac6573cc901`, claimed with `07e31f374e91d05a691fc663b4c6f5bc4069f41d`. No other implementation owner observed during this atomic batch.
