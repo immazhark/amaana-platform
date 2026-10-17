@@ -117,7 +117,7 @@ describe("assistance submission request bounds", () => {
     expect(mocks.readBodyBytesWithLimit).toHaveBeenCalledWith(
       expect.any(Request),
       5 * (5 * 1024 * 1024) + 512 * 1024,
-      { timeoutMs: 120_000 },
+      { timeoutMs: 90_000 },
     );
   });
 
