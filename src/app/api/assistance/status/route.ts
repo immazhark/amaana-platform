@@ -2,7 +2,7 @@ import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { hashTrackingToken } from "@/lib/assistance";
-import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { prisma } from "@/lib/prisma";
 import { enforceTrackingRateLimit, isSameOrigin } from "@/lib/request-security";
 
