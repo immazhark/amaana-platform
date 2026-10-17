@@ -4,7 +4,8 @@ import { readFileSync } from "node:fs";
 describe("published-metrics evidence strip on impact", () => {
   const source = readFileSync(new URL("../app/impact/page.tsx", import.meta.url), "utf8");
   it("reuses already fetched, reviewed initiative facts, never a pooled fundraising total", () => {
-    expect(source).toContain("const rawInitiatives = await getImpactPageData()");
+    expect(source).toContain("const [rawInitiatives, anonymousNotes] = await Promise.all([");
+    expect(source).toContain("getImpactPageData(), getPublishedAnonymousOutcomeNotes(),");
     expect(source).toContain("const publishedImpact = initiatives");
     expect(source).toContain("item.primaryMetric?.trim() && item.primaryMetricLabel?.trim()");
     expect(source).toContain("value: item.primaryMetric!, label: item.primaryMetricLabel!");
