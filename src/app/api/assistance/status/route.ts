@@ -83,6 +83,10 @@ export async function POST(request: Request) {
       { headers: privateHeaders },
     );
   } catch {
-    return NextResponse.json({ found: false }, { headers: privateHeaders });
+    // Do not claim a private link is invalid when the lookup failed.
+    // Preserve non-disclosure while allowing the browser to offer safe retry.
+    return NextResponse.json({ found: false }, {
+      status: 503, headers: { ...privateHeaders, "Retry-After": "60" },
+    });
   }
 }
