@@ -1,3 +1,7 @@
+## 2026-10-17 — Receipt ingress hard read deadline against deployed transfer-proof main
+
+Ownership: CHATGPT_ACTIVE. Existing PR306 receipt JSON endpoint now has a 5-second absolute read deadline before rate-limit/donor lookup, distinct private 503 Retry-After response, and non-awaiting cancellation of stalled streams. Default bounded-reader callers remain unchanged. Integrated against released PR300 main f9d589ffc0716c06ed1444db3dadb4836d7ec4b3 preserving settlement confirmation, donation exact-paise eligibility, evidence preflight, and all other current files. Existing negative tests and HTTP browser token retry retained. Old 912-pass evidence is from earlier head; require fresh exact-head database/build/browser acceptance, ready-state gate and independent review. No real payment/refund, receipt lookup with donor credentials, secret change or notification send.
+
 ## 2026-10-17 — Settlement release retained in receipt deadline
 
 Ownership: HANDOFF_PENDING. PR303 merged main fb2d1c19 after fullCI39048295083, ready gate39050449878 and independent AI review; Railway4ecc31e9 SUCCESS; direct production origin version200 confirms exact fb2d1c19/main/production/live and synthetic empty confirmation POST returns private400/noindex without provider action. Custom-domain verification remains Cloudflare-blocked. PR306 incorporates this main, preserving both settlement and receipt retry browser cases and both handoff entries. Combined full912 passed/9 skipped, types/E2E syntax/diff pass. No production charge/refund. Fresh hosted checks required on reconciled306.
@@ -5,6 +9,18 @@ Ownership: HANDOFF_PENDING. PR303 merged main fb2d1c19 after fullCI39048295083, 
 ## 2026-10-17 — Private receipt body read deadline
 
 Ownership: HANDOFF_PENDING after receipt deadline slice. Branch fix/receipt-body-deadline-20261017 from deployed main ebc0b8e. Extract bounded elapsed reader option and five-second receipt JSON deadline from historical292; preserve default byte reader behavior, hostile cancellation safety, private503 availability recovery before quota/donor lookup. RED: stalled/trickle reads remain pending, invalid timeouts accepted and route never returns by5s. GREEN:43 focused and full908 passed/9 skipped; TypeScript/focused lint/diff/E2E syntax pass. Independent AI source review no critical/important findings; noted timer upper bound now tested and rejected. One E2E503 explicit retry/token preservation case authored, not yet executed. Hosted exact-head gates pending. No secrets/schema/payment/receipt-data mutations.
+
+## 2026-10-17 — Combined transfer proof and exact-balance safeguards
+
+Ownership: HANDOFF_PENDING. Continued PR300 on fix/transfer-proof-preflight-20261017, preserving its original remote head24b381a3 and incorporating main2ee89d902cd4f03a1e3afb4f1182f19eb1286986 after PR299 merged. Both signature preflight before financial writes and exact-paise eligibility remain. Malformed-balance regressions now carry a valid PNG signature to exercise both guards together. Clarified signature checks do not prove document authenticity. Independent read-only AI review reports no important findings. Focused59 and full952 tests passed/9 skipped; TypeScript, focused ESLint and diff checks passed. Fresh exact-head hosted checks required before release; no live claim, charge, refund or email created. PR299 Railway deployment d4e77705-3ac1-420f-be25-04aa42f47adb reports SUCCESS at exact main2ee89d90; direct-origin smoke verification is separate. Next: inspect PR300 hosted acceptance, then ready/merge only after required gates pass and verify deployment. Historical PR292 remains extraction-only.
+
+## 2026-10-17 — Exact checkout and settlement current-main verification
+
+Ownership: HANDOFF_PENDING. PR299 corrected4ef74ae5 passed full hostedCI39050147508. Reconciled deployed303 fb2d1c19 preserving exact page bounds and all settlement/browser controls; only coordination notes conflicted and both records retained. Combined full938 passed9 skipped; TypeScript/diff pass. Fresh exact-head hosted acceptance required. Preserve299-before300; no provider/financial writes or deployment.
+
+## 2026-10-17 — Exact checkout page bounds regression
+
+Ownership: HANDOFF_PENDING after exact-bound repair. Existing PR299 head045c497b passed hosted CI but independent AI review found page still passes floating subtraction to both forms. goal2.01 raised0.01 yields max1.9999999999999998 and rejects valid2. Repair page to consume exact-paise helper, with actual server-page/rendered prop regression and valid/unpayable cases. RED: actual server-page render shows max1.9999999999999998 and unpayable projection renders. GREEN: shared exact-paise helper feeds page/form with null fail-closed guard;64 focused and full combined934 passed/9 skipped, TypeScript/focused lint/diff pass. Independent AI follow-up confirms important finding resolved. Incorporated main302 additively. Fresh hosted acceptance required; preserve299-before300 order.
 
 ## 2026-10-17 — Settled payment confirmation extraction
 

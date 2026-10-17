@@ -66,6 +66,30 @@ describe("isAppealOpenForDonations", () => {
     }, now)).toBe(false);
   });
 
+  it.each([
+    ["sub-paise raised balance", "100.001", "1000"],
+    ["sub-paise fundraising target", "100", "1000.001"],
+    ["unpayable final fractional rupee", "999.50", "1000"],
+    ["invalid closing date", "100", "1000"],
+  ])("does not advertise %s as accepting donations", (reason, raised, goal) => {
+    void reason;
+    expect(isAppealOpenForDonations({
+      status: "PUBLISHED",
+      amountRaised: raised,
+      goalAmount: goal,
+      closesAt: reason === "invalid closing date" ? "not-a-date" : null,
+    }, now)).toBe(false);
+  });
+
+  it("keeps an otherwise valid appeal eligible for checkout when ledger has paise", () => {
+    expect(isAppealOpenForDonations({
+      status: "PUBLISHED",
+      amountRaised: "100.30",
+      goalAmount: "500.01",
+      closesAt: null,
+    }, now)).toBe(true);
+  });
+
   it("rejects an appeal whose close time has passed", () => {
     expect(isAppealOpenForDonations({
       status: "PUBLISHED",
