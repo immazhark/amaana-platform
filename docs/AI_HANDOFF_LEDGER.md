@@ -1,3 +1,19 @@
+## 2026-10-17 — Combined transfer proof and exact-balance safeguards
+
+Ownership: HANDOFF_PENDING. Continued PR300 on fix/transfer-proof-preflight-20261017, preserving its original remote head24b381a3 and incorporating main2ee89d902cd4f03a1e3afb4f1182f19eb1286986 after PR299 merged. Both signature preflight before financial writes and exact-paise eligibility remain. Malformed-balance regressions now carry a valid PNG signature to exercise both guards together. Clarified signature checks do not prove document authenticity. Independent read-only AI review reports no important findings. Focused59 and full952 tests passed/9 skipped; TypeScript, focused ESLint and diff checks passed. Fresh exact-head hosted checks required before release; no live claim, charge, refund or email created. PR299 Railway deployment d4e77705-3ac1-420f-be25-04aa42f47adb reports SUCCESS at exact main2ee89d90; direct-origin smoke verification is separate. Next: inspect PR300 hosted acceptance, then ready/merge only after required gates pass and verify deployment. Historical PR292 remains extraction-only.
+
+## 2026-10-17 — Exact checkout and settlement current-main verification
+
+Ownership: HANDOFF_PENDING. PR299 corrected4ef74ae5 passed full hostedCI39050147508. Reconciled deployed303 fb2d1c19 preserving exact page bounds and all settlement/browser controls; only coordination notes conflicted and both records retained. Combined full938 passed9 skipped; TypeScript/diff pass. Fresh exact-head hosted acceptance required. Preserve299-before300; no provider/financial writes or deployment.
+
+## 2026-10-17 — Exact checkout page bounds regression
+
+Ownership: HANDOFF_PENDING after exact-bound repair. Existing PR299 head045c497b passed hosted CI but independent AI review found page still passes floating subtraction to both forms. goal2.01 raised0.01 yields max1.9999999999999998 and rejects valid2. Repair page to consume exact-paise helper, with actual server-page/rendered prop regression and valid/unpayable cases. RED: actual server-page render shows max1.9999999999999998 and unpayable projection renders. GREEN: shared exact-paise helper feeds page/form with null fail-closed guard;64 focused and full combined934 passed/9 skipped, TypeScript/focused lint/diff pass. Independent AI follow-up confirms important finding resolved. Incorporated main302 additively. Fresh hosted acceptance required; preserve299-before300 order.
+
+## 2026-10-17 — Settled payment confirmation extraction
+
+Ownership: HANDOFF_PENDING after scoped extraction. Branch fix/settled-payment-confirmation-20261017 from main aedae001. Extract only persisted settlement confirmation and browser lock from historical #292; preserve current provider validation and webhook concurrency. New PR, independent of #299/#300/#301/#302. RED: four nonsettled status cases returned 200 instead of 409. GREEN: 14 confirmation tests pass; full local suite 898 passed/9 skipped. TypeScript, focused ESLint, E2E syntax and diff checks pass. Six browser cases authored for nonsettled HTTP-200 responses; hosted browser/build/database gates pending. No live payment, merge or deployment.
+
 ## 2026-10-13 — actual HTTP cancellation regressions
 
 Ownership: CODEX_ACTIVE on the preserved N-28 follow-up branch; validated release3414858b remains unchanged. Added actual assistance and direct-transfer route cases using the real body reader/error class: an oversized stream whose cancel promise never settles returns private413 and does not create a case/donation or upload evidence. Both route cases fail with rejection stalled when only awaited cancellation is restored. Fixed source:34 tests across3 suites passed; TypeScript and focused ESLint passed. Assistance test mock now retains the actual error class to verify the real classifier. No live requests, provider calls or production database writes.

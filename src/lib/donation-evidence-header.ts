@@ -1,5 +1,5 @@
 /** Fast, side-effect-free validation before creating a donor's pending bank
- * transfer claim. Private storage repeats complete-file checks on upload.
+ * transfer claim. Private storage repeats these signature checks after reading the upload.
  * Reading at most 12 bytes avoids allocating the full 5 MiB attachment here. */
 const permitted = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
 
@@ -21,7 +21,7 @@ export async function hasValidDonationEvidenceHeader(file: File): Promise<boolea
       default: return false;
     }
   } catch {
-    // Failed read cannot prove evidence authenticity; reject before writing.
+    // A failed read cannot validate the permitted signature; reject before writing.
     return false;
   }
 }

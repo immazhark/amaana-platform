@@ -84,6 +84,17 @@ describe("proxy-aware client address selection", () => {
 });
 
 describe("rate-limit client hashing", () => {
+  it("keeps receipt lookups independent of donation checkout and all other workflows", () => {
+    const request = requestFor("203.0.113.10");
+    const receiptHash = getRateLimitClientHash(request, "acknowledgement");
+    expect(receiptHash).toMatch(/^[a-f0-9]{64}$/);
+    for (const purpose of ["donation", "assistance", "analytics"] as const) {
+      expect(receiptHash).not.toBe(getRateLimitClientHash(request, purpose));
+    }
+    process.env.DONATION_TOKEN_PEPPER = "rotated-donation-value";
+    expect(getRateLimitClientHash(request, "acknowledgement")).not.toBe(receiptHash);
+  });
+
   it("keeps donation, assistance and analytics identifiers separated", () => {
     const request = requestFor("203.0.113.10");
     const hashes = new Set([

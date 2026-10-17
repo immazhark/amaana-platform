@@ -411,7 +411,7 @@ test.describe('donation journey without real payment', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ referenceNumber: donationReference }),
+        body: JSON.stringify({ referenceNumber: donationReference, status: "CAPTURED" }),
       });
     });
     await page.route('**/api/donations/acknowledgement', route => route.fulfill({
@@ -456,6 +456,24 @@ test.describe('donation journey without real payment', () => {
       receiptToken,
     }));
   });
+
+  for (const status of ['CREATED', 'AUTHORIZED', 'FAILED', 'PENDING_VERIFICATION', null, 'unexpected']) {
+    test(`HTTP 200 with unsettled status ${status} keeps checkout locked`, async ({ page }) => {
+      await mockDonationOrder(page, { value: null });
+      await page.route('**/api/donations/confirm', route => route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ referenceNumber: donationReference, status }),
+      }));
+      const submit = await openDonationFixture(page, 'success');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      await expect(page.getByLabel(/Donation amount/)).toBeDisabled();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('do not submit another payment');
+      await expect(page).not.toHaveURL(/acknowledgement/);
+    });
+  }
 
   test('mocked verification failure locks the form against duplicate payment attempts', async ({ page }) => {
     const order = { value: null };
