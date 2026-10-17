@@ -16,7 +16,7 @@ test("visitors can prepare an editable, topic-specific email without uploading o
   await page.goto("/get-involved/volunteer");
   const action = page.getByRole("link", { name: "Technology and website support" });
   const href = await action.getAttribute("href");
-  expect(href).toMatch(/^mailto:amaanafoundation24@gmail\\.com\\?/);
+  expect(href?.startsWith("mailto:amaanafoundation24@gmail.com?")).toBe(true);
   const url = new URL(href);
   const message = url.searchParams.get("body") || "";
   expect(message).toContain("Technology and website support");
