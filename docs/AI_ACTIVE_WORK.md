@@ -1,3 +1,7 @@
+## 2026-10-18 — Razorpay checkout interrupted transport versus malformed donor data
+
+Ownership: CHATGPT_ACTIVE. Narrow post-PR309 follow-up based on production main b5b12f0cf0586f909660e61ea2f9525edd49ec1f. The checkout endpoint previously combined JSON parsing and request-body stream reading in a single catch, returning 400 bad donor information when the network stream failed before the 5-second deadline. Test first: an errored actual ReadableStream must yield private retryable 503 + Retry-After 60 and must not call Zod schema, appeal lookup, Razorpay provider or donation write. Source separates bounded transport from JSON.parse. Preserve original 5-second deadline (private 503), 32 KiB maximum (413), fully received invalid JSON (400), legitimate Razorpay order and response validation. No live donation/checkout/provider operations. Exact-head fast/type/build/database/browser, final verify, ready-state and guarded release required.
+
 ## 2026-10-18 — Checkout read deadline after signed webhook-state release
 
 Ownership: CHATGPT_ACTIVE. PR309 5-second absolute checkout JSON ingress timeout and three actual request tests preserved on current main d5d401b84627615a0a81836559fdacac9f948e68 after PR307 merged. New main touches only financial webhook source/tests and handoff docs; no checkout code was replaced. Existing provider validation, exact paise, receipt timeout, and transfer evidence preflight preserved. Fresh exact-head CI, promotion/ready-state checks required before merge. No financial/provider writes or outgoing email.
