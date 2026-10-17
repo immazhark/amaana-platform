@@ -1,3 +1,7 @@
+## 2026-10-17 — ChatGPT active: stop stalled donation and assistance submissions
+
+**Ownership: CHATGPT_ACTIVE.** Incoming continuation claim after verifying PR #292 remains open on `fix/direct-transfer-feedback-20261013` -> `main`, last HEAD `e860c492d895d13142406dc4c7606538d1a007f2`, and existing handoff state HANDOFF_PENDING. Single writer: ChatGPT. Task: add test-first read deadlines to `/api/donations/order` and `/api/assistance`; distinguish stalled uploads from malformed data before storage or payment side effects. Keep pre-existing validation, idempotent persistence recovery, client contract, and privacy intact. No merge or live deployment authorized.
+
 ## 2026-10-17 — Bounded private reads; ownership handed back
 
 **Ownership: HANDOFF_PENDING.** ChatGPT completed a sole-writer bounded-body reliability batch on existing `fix/direct-transfer-feedback-20261013`, PR #292 to `main`, then stopped implementation. Verified incoming handoff HEAD `3aaed3e88dc22eabf1e69a39c1f1b6a85e131c67`, claimed with `738c6c424f61eb0177100a44ced2e2c271f963d0`. No other implementation agent took ownership during the batch.
