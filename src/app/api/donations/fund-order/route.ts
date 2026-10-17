@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { createDonationReference, createReceiptToken, donationSchema, hashReceiptToken, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { isFundCheckoutEnabled } from "@/lib/fund-checkout-policy";
 import { approvedFundDesignationSnapshot, FundValidationError } from "@/lib/giving-funds";
@@ -24,6 +24,7 @@ const fundOrderSchema = donationSchema.omit({ appealId: true, fundId: true }).ex
   fundPurposeConfirmed: z.literal(true),
 }).strict();
 const MAX_PAYMENT_JSON_BYTES = 32 * 1024;
+const ORDER_BODY_TIMEOUT_MS = 15_000;
 
 /**
  * Dormant until a separately reviewed activation decision sets the server-only
@@ -52,10 +53,21 @@ export async function POST(request: Request) {
 
     let body: unknown;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES));
+      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES, { timeoutMs: ORDER_BODY_TIMEOUT_MS }));
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ error: "Donation request payload is too large." }, { status: 413, headers: privateHeaders });
+      }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        // A stalled body never reaches fund review or Razorpay order creation.
+        // The shared donor form may retry only this explicit no-order outcome.
+        return NextResponse.json(
+          {
+            error: "Checkout request upload timed out. No payment order was created. Please check your connection and try again.",
+            orderStarted: false,
+          },
+          { status: 408, headers: privateHeaders },
+        );
       }
       return NextResponse.json({ error: "Please check the donation information." }, { status: 400, headers: privateHeaders });
     }
