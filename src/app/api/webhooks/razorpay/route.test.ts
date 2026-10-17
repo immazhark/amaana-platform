@@ -342,7 +342,12 @@ describe("Razorpay webhook route", () => {
     { order_id: "invalid" },
     { status: "authorized" },
     { status: "failed" },
+    { status: undefined },
+    { status: null },
     { captured: false },
+    { captured: undefined },
+    { captured: null },
+    { captured: "true" },
     { currency: "USD" },
     { amount: 0 },
     { amount: -10 },
@@ -359,6 +364,7 @@ describe("Razorpay webhook route", () => {
             currency: "INR",
             amount: 50_000,
             status: "captured",
+            captured: true,
             ...fields,
           },
         },
@@ -643,8 +649,8 @@ describe("Razorpay webhook route", () => {
     expect(mocks.txDonationUpdate).not.toHaveBeenCalled();
   });
 
-  it.each(["failed", "pending", "created"])(
-    "rejects refund.processed with contradictory provider status %s before accounting",
+  it.each(["failed", "pending", "created", undefined, null])(
+    "rejects refund.processed with contradictory or missing provider status %s before accounting",
     async status => {
       const payload = refundPayload();
       const response = await POST(webhookRequest({
