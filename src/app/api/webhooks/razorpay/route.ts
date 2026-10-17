@@ -258,6 +258,15 @@ export async function POST(request: Request) {
           requestedRefundPaise: refund.amount,
         });
 
+        // A signed provider refund must be reflected at its full value in
+        // BOTH the donation's refunded ledger and the appeal's raised total.
+        // calculateRefundAccounting caps amounts to prevent negative balances;
+        // silently accepting a cap here would acknowledge funds that we
+        // cannot reconcile. Roll back the entire transaction for investigation.
+        if (accounting.wasCapped) {
+          throw new Error("Provider refund exceeds reconcilable financial balances");
+        }
+
         if (accounting.donationRefundPaise > 0) {
           await tx.donation.update({
             where: { id: donation.id },
