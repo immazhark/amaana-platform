@@ -7,17 +7,16 @@ const mocks = vi.hoisted(() => ({
   captureDonation: vi.fn(),
   fetchRazorpayPayment: vi.fn(),
   verifyCheckoutSignature: vi.fn(),
+  readTextBodyWithLimit: vi.fn(),
 }));
 
 vi.mock("@/lib/bounded-request-body", () => {
   class RequestBodyTooLargeError extends Error {}
+  class RequestBodyReadTimeoutError extends Error {}
   return {
     RequestBodyTooLargeError,
-    readTextBodyWithLimit: async (request: Request, maxBytes: number) => {
-      const declared = Number(request.headers.get("content-length"));
-      if (Number.isFinite(declared) && declared > maxBytes) throw new RequestBodyTooLargeError();
-      return request.text();
-    },
+    RequestBodyReadTimeoutError,
+    readTextBodyWithLimit: mocks.readTextBodyWithLimit,
   };
 });
 
@@ -80,6 +79,14 @@ function storedDonation() {
 describe("donation confirmation persisted status", () => {
   beforeEach(() => {
     vi.resetAllMocks();
+    mocks.readTextBodyWithLimit.mockImplementation(async (request: Request, maxBytes: number) => {
+      const declared = Number(request.headers.get("content-length"));
+      if (Number.isFinite(declared) && declared > maxBytes) {
+        const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");
+        throw new RequestBodyTooLargeError();
+      }
+      return request.text();
+    });
     mocks.verifyCheckoutSignature.mockReturnValue(true);
     mocks.updateMany.mockResolvedValue({ count: 0 });
     mocks.fetchRazorpayPayment.mockResolvedValue({
@@ -130,6 +137,37 @@ describe("donation confirmation persisted status", () => {
     expect(body).toEqual({ error: "Payment confirmation payload is too large." });
     expect(mocks.verifyCheckoutSignature).not.toHaveBeenCalled();
     expect(mocks.fetchRazorpayPayment).not.toHaveBeenCalled();
+  });
+
+  it("uses a bounded deadline for a valid payment confirmation request", async () => {
+    mocks.findUnique
+      .mockResolvedValueOnce(storedDonation())
+      .mockResolvedValueOnce({ status: "AUTHORIZED" });
+
+    const response = await POST(confirmationRequest());
+
+    expect(response.status).toBe(200);
+    expect(mocks.readTextBodyWithLimit).toHaveBeenCalledWith(
+      expect.any(Request), 32 * 1024, { timeoutMs: 15_000 },
+    );
+  });
+
+  it("treats stalled payment confirmation reading as uncertain without touching the provider", async () => {
+    const { RequestBodyReadTimeoutError } = await import("@/lib/bounded-request-body");
+    mocks.readTextBodyWithLimit.mockRejectedValueOnce(new RequestBodyReadTimeoutError());
+
+    const response = await POST(confirmationRequest());
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({
+      error: "Payment confirmation is temporarily unavailable. Please retain your payment confirmation.",
+    });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toContain("no-store");
+    expect(mocks.verifyCheckoutSignature).not.toHaveBeenCalled();
+    expect(mocks.findUnique).not.toHaveBeenCalled();
+    expect(mocks.fetchRazorpayPayment).not.toHaveBeenCalled();
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
   });
 
   it("does not authorize a provider payment whose amount differs from the stored donation", async () => {
