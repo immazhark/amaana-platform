@@ -16,7 +16,7 @@ test("Taleem sponsor can select a reviewed path and prepare, but not send, an em
 
 test("bounded education preferences do not reflect private or duplicate query fields", async ({ page }) => {
   await page.goto("/get-involved/sponsor-education?path=school&path=hifdh&support=once&student=PRIVATE_STUDENT");
-  await expect(page.getByRole("alert")).toBeVisible();
+  await expect(page.locator('main p[role="alert"]')).toHaveText(/These preferences could not be read/);
   await expect(page.getByRole("link", { name: "Open email with these preferences" })).toHaveCount(0);
   await expect(page.getByText("PRIVATE_STUDENT")).toHaveCount(0);
 });
