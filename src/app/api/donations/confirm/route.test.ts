@@ -123,11 +123,30 @@ describe("donation confirmation persisted status", () => {
 
     const response = await POST(confirmationRequest());
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(409);
     expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
     expect(response.headers.get("referrer-policy")).toBe("no-referrer");
     expect(response.headers.get("x-robots-tag")).toMatch(/noindex.*nofollow.*noarchive/i);
   });
+
+  it.each(["CREATED", "AUTHORIZED", "FAILED", "PENDING_VERIFICATION"] as const)(
+    "does not confirm payment completion for persisted state %s",
+    async persistedStatus => {
+      mocks.findUnique
+        .mockResolvedValueOnce(storedDonation())
+        .mockResolvedValueOnce({ status: persistedStatus });
+
+      const response = await POST(confirmationRequest());
+      expect(response.status).toBe(409);
+      expect(await response.json()).toEqual({
+        error: "Payment has not been confirmed as captured. Retain your payment confirmation and do not submit another payment.",
+        status: persistedStatus,
+      });
+      expect(response.headers.get("cache-control")).toMatch(/no-store.*private/);
+      expect(mocks.captureDonation).not.toHaveBeenCalled();
+      expect(expireDonationViews).not.toHaveBeenCalled();
+    },
+  );
 
   it("rejects an oversized confirmation payload before payment verification", async () => {
     const response = await POST(confirmationRequest({ "Content-Length": String(32 * 1024 + 1) }));
@@ -146,7 +165,7 @@ describe("donation confirmation persisted status", () => {
 
     const response = await POST(confirmationRequest());
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(409);
     expect(mocks.readTextBodyWithLimit).toHaveBeenCalledWith(
       expect.any(Request), 32 * 1024, { timeoutMs: 15_000 },
     );
