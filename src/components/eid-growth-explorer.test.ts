@@ -13,7 +13,9 @@ describe("homepage interactive Eid growth explorer", () => {
     expect(html).toContain("2,830");
     expect(html).toContain("710");
     expect(html).toContain("60");
-    expect(html).toContain("annual distributions");
+    expect(html).toContain("families reached that year");
+    expect(html).toContain("family distributions across seven");
+    expect(html).not.toContain("documented Eid Kit distributions.");
     expect(html).toContain("not a count of distinct families");
     expect(html).not.toContain("aria-pressed");
   });

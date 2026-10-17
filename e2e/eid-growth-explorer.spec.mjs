@@ -2,7 +2,7 @@ import { expect, test } from "@playwright/test";
 
 test("visitors can inspect locked Eid distribution growth without charts requiring hydration", async ({ page }) => {
   await page.goto("/");
-  const explorer = page.getByRole("group", { name: "Eid Gift Kit distributions from 2020 through 2026" });
+  const explorer = page.getByRole("group", { name: "Eid Gift Kit family reach from 2020 through 2026" });
   const years = explorer.locator("details");
   await expect(years).toHaveCount(7);
   const first = years.first();
@@ -11,6 +11,10 @@ test("visitors can inspect locked Eid distribution growth without charts requiri
   await first.locator("summary").click();
   await expect(first).toHaveAttribute("open", "");
   await expect(first).toContainText("The first documented year in this series.");
+
+  const year2025 = years.nth(5);
+  await expect(year2025.locator("summary")).toContainText("650");
+  await expect(year2025.locator("summary")).toContainText("families reached");
 
   const latest = years.last();
   await latest.locator("summary").click();
@@ -23,7 +27,7 @@ test("visitors can inspect locked Eid distribution growth without charts requiri
 test("the Eid impact explorer stays accessible and within narrow mobile viewport", async ({ page }) => {
   await page.setViewportSize({ width: 320, height: 740 });
   await page.goto("/");
-  const explorer = page.getByRole("group", { name: "Eid Gift Kit distributions from 2020 through 2026" });
+  const explorer = page.getByRole("group", { name: "Eid Gift Kit family reach from 2020 through 2026" });
   await explorer.locator("summary").first().focus();
   await expect(explorer.locator("summary").first()).toBeFocused();
   await page.keyboard.press("Enter");

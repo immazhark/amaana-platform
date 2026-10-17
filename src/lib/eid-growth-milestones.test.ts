@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import { eidGrowth } from "@/content/amaana";
 import { buildEidGrowthMilestones } from "./eid-growth-milestones";
 
-describe("canonical Eid Kit distribution timeline", () => {
-  it("keeps all seven locked annual counts and cumulative distribution total intact", () => {
+describe("canonical Eid family reach timeline", () => {
+  it("keeps all seven locked annual counts and cumulative family-distribution total intact", () => {
     const milestones = buildEidGrowthMilestones(eidGrowth);
-    expect(milestones.map(item => [item.year, item.distributions])).toEqual([
+    expect(milestones.map(item => [item.year, item.familiesReached])).toEqual([
       ["2020", 85], ["2021", 171], ["2022", 339], ["2023", 408],
       ["2024", 467], ["2025", 650], ["2026", 710],
     ]);
-    expect(milestones.at(-1)?.cumulativeDistributions).toBe(2830);
+    expect(milestones.at(-1)?.cumulativeFamilyDistributions).toBe(2830);
     expect(milestones.at(-1)?.growthFromPrevious).toBe(60);
     expect(milestones[0]?.growthFromPrevious).toBeNull();
   });
