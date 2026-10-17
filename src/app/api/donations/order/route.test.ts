@@ -120,6 +120,37 @@ describe("donation order request bounds", () => {
     expect(mocks.createRazorpayOrder).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["sub-paise funds", 100.001, 1000],
+    ["sub-paise goal", 100, 1000.001],
+    ["unpayable fractional remainder", 999.5, 1000],
+    ["negative raised ledger", -1, 1000],
+    ["invalid goal", 100, 0],
+  ])("does not create a Razorpay order for %s", async (_case, amountRaised, goalAmount) => {
+    mocks.safeParse.mockReturnValue({
+      success: true,
+      data: {
+        appealId: "clx1234567890abcdef123456",
+        donorName: "Test Donor", donorEmail: "donor@example.com",
+        donorPhone: "", amount: 500, givingIntent: "GENERAL",
+        isAnonymous: false, domesticConfirmed: true,
+      },
+    });
+    mocks.findFirst.mockResolvedValue({
+      id: "appeal_1", slug: "appeal-1", title: "Appeal 1",
+      status: "PUBLISHED", amountRaised, goalAmount, closesAt: null,
+      assistanceRequest: { verification: { zakatStatus: "UNREVIEWED" } },
+    });
+    const response = await POST(new Request("https://amaana.example/api/donations/order", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({}),
+    }));
+    expect(response.status).toBe(409);
+    expect(response.headers.get("cache-control")).toMatch(/private/i);
+    expect(mocks.createRazorpayOrder).not.toHaveBeenCalled();
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
   it("rejects an oversized payload before appeal or Razorpay work", async () => {
     const request = new Request("https://amaana.example/api/donations/order", {
       method: "POST",
