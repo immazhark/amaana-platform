@@ -3,7 +3,7 @@ import { parseUniqueAssistanceTextFields } from "@/lib/assistance-form-input";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { assistanceSchema, createReferenceNumber, createTrackingToken, hashTrackingToken } from "@/lib/assistance";
-import { RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { prisma } from "@/lib/prisma";
 import { deletePrivateDocumentObject, MAX_FILE_BYTES, MAX_FILES, PrivateDocumentValidationError, uploadPrivateDocument } from "@/lib/storage";
 import { validateProductionEnvironment } from "@/lib/env";
@@ -18,6 +18,9 @@ const privateHeaders = {
 };
 const ASSISTANCE_MULTIPART_OVERHEAD_BYTES = 512 * 1024;
 const MAX_ASSISTANCE_MULTIPART_BYTES = MAX_FILES * MAX_FILE_BYTES + ASSISTANCE_MULTIPART_OVERHEAD_BYTES;
+// The browser has a 120-second request lifetime; allow it time to receive
+// a definitive no-write timeout response before its own deadline expires.
+const ASSISTANCE_BODY_TIMEOUT_MS = 90_000;
 
 export async function POST(request: Request) {
   try {
@@ -41,13 +44,24 @@ export async function POST(request: Request) {
 
     let formData: FormData;
     try {
-      const bodyBytes = await readBodyBytesWithLimit(request, MAX_ASSISTANCE_MULTIPART_BYTES);
+      const bodyBytes = await readBodyBytesWithLimit(request, MAX_ASSISTANCE_MULTIPART_BYTES, { timeoutMs: ASSISTANCE_BODY_TIMEOUT_MS });
       formData = await new Response(bodyBytes, { headers: { "Content-Type": contentType } }).formData();
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json(
           { error: "The assistance submission is too large. Upload no more than five documents of up to 5 MB each.", fields: { documents: ["Upload no more than five documents of up to 5 MB each."] } },
           { status: 413, headers: privateHeaders },
+        );
+      }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        // The multipart body has not finished reading: no private document
+        // was uploaded and no assistance case was created in this request.
+        return NextResponse.json(
+          {
+            error: "The assistance upload took too long. No request was recorded. Check your connection and try again.",
+            submissionUncertain: false,
+          },
+          { status: 408, headers: privateHeaders },
         );
       }
       return NextResponse.json({ error: "Invalid assistance submission format." }, { status: 400, headers: privateHeaders });
