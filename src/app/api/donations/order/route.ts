@@ -33,10 +33,14 @@ export async function POST(request: Request) {
       }
       if (error instanceof RequestBodyReadTimeoutError) {
         // Parsing has not completed; no Razorpay order or local donation
-        // record was created. Preserve conservative donor retry guidance.
+        // record was created. Return an explicit no-order outcome so only this
+        // known pre-write timeout is safely retryable by the donor UI.
         return NextResponse.json(
-          { error: "Checkout request upload timed out. Please contact Amaana before starting another payment attempt." },
-          { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+          {
+            error: "Checkout request upload timed out. No payment order was created. Please check your connection and try again.",
+            orderStarted: false,
+          },
+          { status: 408, headers: privateHeaders },
         );
       }
       return NextResponse.json({ error: "Please check the donation information." }, { status: 400, headers: privateHeaders });
