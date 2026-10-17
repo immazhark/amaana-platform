@@ -349,6 +349,24 @@ describe("direct donation transfer submission", () => {
     expect(mocks.donationUpdate).not.toHaveBeenCalled();
   });
 
+  it.each([
+    { raised: 100.001, goal: 1_000, reason: "sub-paise raised balance" },
+    { raised: 100, goal: 1_000.001, reason: "sub-paise fundraising target" },
+    { raised: 999.50, goal: 1_000, reason: "unpayable remaining balance" },
+  ])("rejects a direct transfer when the appeal has a $reason", async ({ raised, goal }) => {
+    mocks.findFirst.mockResolvedValueOnce({
+      id: "appeal-1", slug: "appeal-1", title: "Appeal 1",
+      status: "PUBLISHED", goalAmount: goal, amountRaised: raised, closesAt: null,
+      assistanceRequest: { verification: { zakatStatus: "NOT_ELIGIBLE" } },
+    });
+    const response = await POST(requestWith());
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: "This appeal is not accepting donations." });
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    expect(mocks.donationUpdate).not.toHaveBeenCalled();
+  });
+
   it("creates an explicitly pending direct-transfer claim without counting it as received", async () => {
     const response = await POST(requestWith());
     const body = await response.json();
