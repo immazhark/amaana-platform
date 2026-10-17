@@ -102,6 +102,25 @@ describe("assistance tracking privacy and request bounds", () => {
     expect(mocks.findUnique).not.toHaveBeenCalled();
   });
 
+  it("reports private temporary unavailability on case-record database failure instead of marking credentials invalid", async () => {
+    mocks.readTextBodyWithLimit.mockResolvedValue(JSON.stringify({
+      reference: "AFR-SYNTHETIC-123",
+      token: "synthetic-private-tracking-token",
+    }));
+    mocks.findUnique.mockRejectedValueOnce(new Error("synthetic database outage"));
+
+    const response = await POST(request());
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ found: false });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex/i);
+    expect(mocks.enforceTrackingRateLimit).toHaveBeenCalledOnce();
+    expect(mocks.findUnique).toHaveBeenCalledOnce();
+  });
+
   it("rejects an oversized tracking payload before database lookup", async () => {
     const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");
     mocks.readTextBodyWithLimit.mockRejectedValue(new RequestBodyTooLargeError(8192));
