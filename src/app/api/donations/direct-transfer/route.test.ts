@@ -295,6 +295,25 @@ describe("direct donation transfer submission", () => {
     expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["sub-paise raised balance", 100.001, 1000],
+    ["sub-paise target balance", 100, 1000.001],
+    ["unpayable last fraction", 999.5, 1000],
+    ["negative raised balance", -1, 1000],
+  ])("rejects %s without writing or reserving a transfer reference", async (_case, amountRaised, goalAmount) => {
+    mocks.findFirst.mockResolvedValue({
+      id: "appeal-1", slug: "appeal-1", title: "Appeal 1",
+      status: "PUBLISHED", amountRaised, goalAmount, closesAt: null,
+      assistanceRequest: { verification: { zakatStatus: "NOT_ELIGIBLE" } },
+    });
+    const response = await POST(requestWith());
+    expect(response.status).toBe(409);
+    expect(response.headers.get("cache-control")).toMatch(/private/i);
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+  });
+
   it("rejects Zakat intent unless the appeal has explicit eligibility", async () => {
     mocks.safeParse.mockReturnValue({ success: true, data: { ...validData, givingIntent: "ZAKAT" } });
 
