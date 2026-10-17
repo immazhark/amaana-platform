@@ -17,7 +17,7 @@ type CheckoutPhase = "loading" | "ready" | "opening" | "verifying" | "reconcilia
 const DONATION_FIELDS = ["amount", "donorName", "donorEmail", "donorPhone", "givingIntent", "domesticConfirmed", "fundPurposeConfirmed"] as const;
 type DonationField = typeof DONATION_FIELDS[number];
 type DonationFieldErrors = Partial<Record<DonationField, string[]>>;
-type DonationOrderError = { error?: string; remainingAmount?: number; fields?: DonationFieldErrors };
+type DonationOrderError = { error?: string; remainingAmount?: number; fields?: DonationFieldErrors; orderStarted?: boolean };
 declare global { interface Window { Razorpay: new (options: RazorpayOptions) => { open(): void } } }
 
 type DonationFormProps = {
@@ -230,8 +230,10 @@ export function DonationForm({ appealId, appealTitle, fund, maxAmount, zakatElig
       if (!isOpeningAttempt(attempt)) return;
       if (!orderResponse.ok) {
         // Only known pre-write API rejections are safe to correct and retry.
-        // A 5xx or gateway response can follow an already-created order.
-        if (![400, 403, 409, 413, 429].includes(orderResponse.status)) {
+        // A 408 requires an explicit server no-order marker: gateway-originated
+        // timeouts or other 5xx responses might follow provider order creation.
+        const confirmedNoOrderTimeout = orderResponse.status === 408 && order?.orderStarted === false;
+        if (!confirmedNoOrderTimeout && ![400, 403, 409, 413, 429].includes(orderResponse.status)) {
           showError("Checkout status is uncertain. An order may have been created. Contact Amaana before starting another payment.");
           changePhase("reconciliation");
           return;
