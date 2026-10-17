@@ -644,7 +644,7 @@ export default async function RequestDetailPage({ params, searchParams }: Props)
           <h2>Assignment</h2>
           <p className="muted">Case ownership and scheduled task responsibility are separate.
             Changing the case assignee does not silently transfer open tasks;
-            use each task's Transfer responsibility control for an audited handoff.</p>
+            use each task&apos;s Transfer responsibility control for an audited handoff.</p>
           <form action={assignRequest} className="field">
             <input type="hidden" name="id" value={id}/>
             <input type="hidden" name="expectedUpdatedAt" value={request.updatedAt.toISOString()}/>
