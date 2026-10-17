@@ -302,6 +302,22 @@ describe("direct donation transfer submission", () => {
     expect(mocks.donationCreate).not.toHaveBeenCalled();
   });
 
+  it.each([
+    { mime: "text/plain", content: "not an image", name: "notes.txt" },
+    { mime: "image/png", content: "not a PNG", name: "false.png" },
+    { mime: "application/pdf", content: "not a PDF", name: "false.pdf" },
+  ])("rejects unsupported or disguised evidence ($mime) before recording a bank transfer", async ({ mime, content, name }) => {
+    const response = await POST(requestWith(new File([content], name, { type: mime })));
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual(expect.objectContaining({
+      fieldErrors: { evidence: [expect.stringMatching(/valid PDF|JPEG|PNG|WebP/i)] },
+    }));
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+  });
+
   it("rejects an explicitly named zero-byte transfer receipt before creating a claim", async () => {
     const form = new FormData();
     form.set("appealId", validData.appealId);
