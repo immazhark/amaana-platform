@@ -1,3 +1,20 @@
+## 2026-10-17 — Bounded direct UPI/bank transfer evidence ingress and no-write retries
+
+Outgoing ChatGPT, PR #292 open, branch `fix/direct-transfer-feedback-20261013` -> `main`; verified starting HEAD `a9175e95a19f9fd1c97eac308ea87388dfadefd5`, sole-writer claim `d8bc52d1c837821950ec1981211674c10539d351`.
+
+**Defect:** The 5 MiB multipart direct-transfer submission accepted indefinitely stalled streams. The browser form performed unrestricted `fetch` / `response.json()`, so a lost response could leave the UI permanently submitting. `classifyDirectTransferResponse` also treated any syntactically valid 408 error as a safe field rejection, despite an arbitrary timeout potentially following a committed financial claim.
+
+**Implementation:**
+- `src/app/api/donations/direct-transfer/route.ts`: `9dea75eef3f6fee0b9a649e9d4360c35dd99bdb3`. 90s max body read, existing byte cap preserved. Explicit HTTP 408 `submissionUncertain:false` only when read failed before FormData, storage and donation writes; message instructs same UTR resubmission, not another payment.
+- `src/lib/direct-transfer-feedback.ts`: `deb3f87618e22331246530730171fafb54081ba2`. Only exact 408 boolean-false no-write marker unlocks; ambiguous 408/5xx remain locked for manual reconciliation.
+- `src/components/direct-transfer-form.tsx`: `da5ab39c5c48644e9212ef7961b2b985a54cc5cc`, `14fd6e774f580953d4bb269d7465c444e83b5f38`. Reuse `boundedPrivateRequest` for 120s whole-response bound, cancellation-on-unmount and failed-response conservative lock; preserve donor data and do not auto-resubmit.
+- Tests first: `src/lib/direct-transfer-feedback.test.ts` `d91208e9d9db8a105c894f51dd002aa0630b265d`; `src/app/api/donations/direct-transfer/route.test.ts` `82422570b69b7a9e82c511ef25272fdfa20efdc2`; `e2e/donation-assistance-journeys.spec.mjs` `9b0d4af8f435e3712372fbbfcbfba1a7e231a032`, `5cec3b2784b63a1894055ba908ca3c94d648a397`. Covers genuine stalled stream, zero DB/storage writes, explicit retry versus unknown 408 lock, response-loss timeout and donor input preservation.
+- Master register: `95796e6071b6d3c09bd99776180939e83bffc242`. Master149 unchanged: 60 Implemented / 61 Partial / 26 Not started / 1 Superseded / 1 Not applicable; zero formally closed.
+
+**Verification:** GitHub source/test readback confirmed all six changed files. Local hydrated repo/Node dependencies unavailable (prior direct git DNS failure), so authored tests are **NOT executed**; no Vitest, TS, ESLint, Playwright/clock, Razorpay, DB or S3 operations. No CI orchestration, branch merge, live deployment or real money/private data writes. No claims of production-verified completion.
+
+**Next writer:** Verify PR HEAD + `HANDOFF_PENDING`; run `npx vitest run src/app/api/donations/direct-transfer/route.test.ts src/lib/direct-transfer-feedback.test.ts src/lib/bounded-private-request.test.ts src/lib/bounded-request-body.test.ts`, scoped TS/lint, and relevant `e2e/donation-assistance-journeys.spec.mjs` tests once a hydrated checkout is available; fix demonstrated failures. Continue high-priority unique Master149 items without creating competing PRs or triggering merges/deployment without authorization.
+
 ## 2026-10-17 — Fail-closed signed Razorpay financial event state
 
 Outgoing ChatGPT, next implementation owner HANDOFF_PENDING; open PR #292 on `fix/direct-transfer-feedback-20261013` -> `main`; incoming HEAD `1762b4c08d1ea6e6860b15fd634f3c891fc70bdd`, ownership claim `7bddd5f2c5910f2a63d7afcd3cdc5b60fc30e8e3`.
