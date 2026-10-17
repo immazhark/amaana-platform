@@ -231,6 +231,20 @@ describe("assistance submission request bounds", () => {
     expect(mocks.assistanceCreate).not.toHaveBeenCalled();
   });
 
+  it("preserves private 400 for a complete but malformed multipart body", async () => {
+    const request = new Request("https://amaana.example/api/assistance", {
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+      body: "not a multipart payload",
+    });
+    const response = await POST(request);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "Invalid assistance submission format." });
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
   it("still accepts a request with no optional attachments", async () => {
     const data = new FormData();
     data.set("applicantName", "Acceptance Applicant");
@@ -243,6 +257,7 @@ describe("assistance submission request bounds", () => {
 
     const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: data }));
     expect(response.status).toBe(201);
+    expect(mocks.readBodyBytesWithLimit).toHaveBeenCalledWith(expect.any(Request), 5 * 5 * 1024 * 1024 + 512 * 1024, { timeoutMs: 120_000 });
     expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
     expect(mocks.assistanceCreate).toHaveBeenCalledOnce();
   });
