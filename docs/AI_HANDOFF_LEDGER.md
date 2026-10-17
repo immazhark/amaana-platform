@@ -1,3 +1,20 @@
+## 2026-10-17 — Terminal payment confirmation and private receipt upload reliability
+
+Outgoing ChatGPT, incoming HANDOFF_PENDING. Existing PR #292, branch `fix/direct-transfer-feedback-20261013` -> `main`; starting head `5116e7b0f951e9687acdca0b1237fac6573cc901`, single-writer claim `07e31f374e91d05a691fc663b4c6f5bc4069f41d`.
+
+**Source-backed issue:** A signed Razorpay confirmation response returned HTTP 200 with any persisted donation status, including CREATED, AUTHORIZED, FAILED and PENDING_VERIFICATION. The donor form navigated to private acknowledgement based only on response.ok and a reference, not actual settlement. Private receipt read also lacked elapsed stream deadline despite the client aborting at 8 seconds.
+
+**Implementation:**
+- `src/app/api/donations/confirm/route.ts`, commit `dc3ba6df460bb175232d788eb9c700f69ae88c29`: after provider identity/amount validation and guarded capture/authorization, fetch canonical persisted status. Return HTTP 200 only for CAPTURED or REFUNDED. All other statuses now HTTP 409/private with retain-confirmation, do-not-pay-again wording; no implied capture. Concurrent webhook updates are resolved from persisted DB.
+- `src/components/donation-form.tsx`, commit `90808b235731f44ef9e90975def4dcd9b76f234c`: reject HTTP-200 payloads without literal CAPTURED/REFUNDED and lock for reconciliation. Valid confirmed acknowledgements still navigate with private token in URL fragment.
+- `src/app/api/donations/acknowledgement/route.ts`, commit `ca7b6960a3a3e9e0b4c6e13673607e33b62de2d7`: 5s bounded 8 KiB body read; stalled request HTTP 503, private/noindex, Retry-After 60, no rate-limit or donation lookup; existing oversize/credential privacy unchanged.
+- Tests authored first: `038d6705c459d26af2723ed18ee4de2d412daa48` for four unsettled payment statuses, `df1d2dd44ca3615424bd4d81e3fcb4385c42a0e7` for six mocked HTTP-200 unsettled outcomes and amended captured success fixtures, `cce634d2b703f7cdcc2c9010821ffd7d14cf8517` for receipt timeout options and absence of downstream private reads.
+- Master register `e492e741136c7d02fc902f662a0fc6f26e75ee93`. Master149 categories unchanged: 60 Implemented, 61 Partial, 26 Not started, 1 Superseded, 1 Not applicable, 0 formally closed.
+
+**Verification:** Six source/test files read back from GitHub. Local GitHub clone/ls-remote still fails DNS lookup. Vitest, TypeScript, ESLint, Playwright, live provider, actual stream, PostgreSQL and cache tests **not run**. No CI, real donation, schema migration, merge to main, production deploy or beneficiary data mutation. These are PR-open unexecuted source/test changes, not runtime-approved production changes.
+
+**Next writer:** Verify PR HEAD and HANDOFF_PENDING. Run `npx vitest run src/app/api/donations/confirm/route.test.ts src/app/api/donations/acknowledgement/route.test.ts src/lib/bounded-request-body.test.ts`, `npm run typecheck`, scoped lint, then targeted Playwright donation journey when a hydrated checkout is available; repair actual failures before merge. Continue high-impact Master149 issues on the existing branch unless integration ownership changes; do not merge or deploy without authorization.
+
 ## 2026-10-17 — Razorpay signed-webhook ingress and capture event persistence before cache refresh
 
 Outgoing agent: ChatGPT. Current PR #292, branch `fix/direct-transfer-feedback-20261013`, target `main`, no production deployment. Incoming checkpoint `18a1aaaf6ce7e7e66b085efe8c3c00180edb77ac`; single-writer claim `251fbe78e68466dcadd460a1a4509e2ef828efc6`.
