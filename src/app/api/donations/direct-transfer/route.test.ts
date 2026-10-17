@@ -456,7 +456,7 @@ describe("direct donation transfer submission", () => {
     expect(mocks.donationCreate).not.toHaveBeenCalled();
   });
 
-  it("preserves a transfer and its private evidence if another worker updated the donation before cleanup", async () => {
+  it("preserves a transfer and its private evidence when the metadata acknowledgement is uncertain", async () => {
     const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
     mocks.uploadDonationEvidence.mockResolvedValue({
       objectKey: "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
@@ -465,19 +465,15 @@ describe("direct donation transfer submission", () => {
       sizeBytes: file.size,
     });
     mocks.donationUpdate.mockRejectedValueOnce(new Error("commit acknowledgement lost"));
-    // A zero-row conditional delete means the payment state or evidence key changed.
-    mocks.donationDeleteMany.mockResolvedValueOnce({ count: 0 });
-
     const response = await POST(requestWith(file));
 
     expect(response.status).toBe(500);
-    expect(mocks.donationDeleteMany).toHaveBeenCalledWith({
-      where: { id: "donation-1", status: "PENDING_VERIFICATION", transferEvidenceKey: null },
-    });
+    expect((await response.json()).submissionUncertain).toBe(true);
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
     expect(mocks.deleteDonationEvidenceObject).not.toHaveBeenCalled();
   });
 
-  it("preserves evidence on an uncertain cleanup database failure", async () => {
+  it("preserves the pending transfer and evidence when metadata storage fails", async () => {
     const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
     mocks.uploadDonationEvidence.mockResolvedValue({
       objectKey: "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
@@ -486,15 +482,29 @@ describe("direct donation transfer submission", () => {
       sizeBytes: file.size,
     });
     mocks.donationUpdate.mockRejectedValueOnce(new Error("database unavailable"));
-    mocks.donationDeleteMany.mockRejectedValueOnce(new Error("database unavailable"));
-
     const response = await POST(requestWith(file));
 
     expect(response.status).toBe(500);
+    expect(mocks.donationCreate).toHaveBeenCalledOnce();
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
     expect(mocks.deleteDonationEvidenceObject).not.toHaveBeenCalled();
   });
 
-  it("removes uploaded evidence and the draft claim if evidence metadata persistence fails", async () => {
+  it("retains a recorded transfer when optional evidence upload fails", async () => {
+    const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
+    mocks.uploadDonationEvidence.mockRejectedValueOnce(new Error("private storage unavailable"));
+    const response = await POST(requestWith(file));
+    expect(response.status).toBe(500);
+    const body = await response.json();
+    expect(body.submissionUncertain).toBe(true);
+    expect(body.receiptToken).toBeUndefined();
+    expect(mocks.donationCreate).toHaveBeenCalledOnce();
+    expect(mocks.donationUpdate).not.toHaveBeenCalled();
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+    expect(mocks.deleteDonationEvidenceObject).not.toHaveBeenCalled();
+  });
+
+  it("does not delete a donor transfer claim after evidence metadata persistence fails", async () => {
     const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
     mocks.uploadDonationEvidence.mockResolvedValue({
       objectKey: "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
@@ -508,10 +518,8 @@ describe("direct donation transfer submission", () => {
 
     expect(response.status).toBe(500);
     expect(mocks.uploadDonationEvidence).toHaveBeenCalledTimes(1);
-    expect(mocks.deleteDonationEvidenceObject).toHaveBeenCalledWith(
-      "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
-      "donation-1",
-    );
-    expect(mocks.donationDeleteMany).toHaveBeenCalledWith({ where: { id: "donation-1", status: "PENDING_VERIFICATION", transferEvidenceKey: null } });
+    expect((await response.json()).submissionUncertain).toBe(true);
+    expect(mocks.deleteDonationEvidenceObject).not.toHaveBeenCalled();
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
   });
 });
