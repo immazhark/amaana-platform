@@ -152,6 +152,41 @@ beforeEach(() => {
   mocks.deleteDonationEvidenceObject.mockResolvedValue(undefined);
 });
 
+describe("direct transfer body read deadline", () => {
+  it("rejects a stalled multipart request before appeal, evidence storage or donation creation", async () => {
+    vi.useFakeTimers();
+    try {
+      const cancel = vi.fn(() => Promise.resolve());
+      const stream = new ReadableStream<Uint8Array>({ cancel });
+      const request = new Request("https://amaana.example/api/donations/direct-transfer", {
+        method: "POST",
+        headers: { "content-type": "multipart/form-data; boundary=test-boundary" },
+        body: stream,
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      const pending = POST(request);
+      // Allow the resolved anti-abuse budget to complete before advancing the
+      // request-body timer; no transfer form or private record should be parsed.
+      await vi.advanceTimersByTimeAsync(90_100);
+      const response = await pending;
+      expect(response.status).toBe(408);
+      expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+      expect(await response.json()).toEqual({
+        error: "Transfer upload took too long. No submission was recorded. Check your connection and submit the same bank reference again.",
+        submissionUncertain: false,
+      });
+      expect(cancel).toHaveBeenCalledOnce();
+      expect(mocks.findFirst).not.toHaveBeenCalled();
+      expect(mocks.donationCreate).not.toHaveBeenCalled();
+      expect(mocks.donationFindUnique).not.toHaveBeenCalled();
+      expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+      expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
 describe("direct donation transfer submission", () => {
   it.each(["appealId", "fundId", "givingIntent", "amount", "transferReference", "domesticConfirmed", "evidence"] as const)(
     "rejects duplicate %s entries before selecting a donation destination or touching financial records",
