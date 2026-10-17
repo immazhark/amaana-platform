@@ -1,3 +1,7 @@
+## 2026-10-17 — Combined transfer proof and exact-balance safeguards
+
+Ownership: HANDOFF_PENDING. Continued PR300 on fix/transfer-proof-preflight-20261017, preserving its original remote head24b381a3 and incorporating main2ee89d902cd4f03a1e3afb4f1182f19eb1286986 after PR299 merged. Both signature preflight before financial writes and exact-paise eligibility remain. Malformed-balance regressions now carry a valid PNG signature to exercise both guards together. Clarified signature checks do not prove document authenticity. Independent read-only AI review reports no important findings. Focused59 and full952 tests passed/9 skipped; TypeScript, focused ESLint and diff checks passed. Fresh exact-head hosted checks required before release; no live claim, charge, refund or email created. PR299 Railway deployment d4e77705-3ac1-420f-be25-04aa42f47adb reports SUCCESS at exact main2ee89d90; direct-origin smoke verification is separate. Next: inspect PR300 hosted acceptance, then ready/merge only after required gates pass and verify deployment. Historical PR292 remains extraction-only.
+
 ## 2026-10-17 — Exact checkout and settlement current-main verification
 
 Ownership: HANDOFF_PENDING. PR299 corrected4ef74ae5 passed full hostedCI39050147508. Reconciled deployed303 fb2d1c19 preserving exact page bounds and all settlement/browser controls; only coordination notes conflicted and both records retained. Combined full938 passed9 skipped; TypeScript/diff pass. Fresh exact-head hosted acceptance required. Preserve299-before300; no provider/financial writes or deployment.

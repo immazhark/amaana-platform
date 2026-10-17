@@ -10,6 +10,7 @@ import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
 import { deleteDonationEvidenceObject, MAX_FILE_BYTES, uploadDonationEvidence } from "@/lib/storage";
 import { validateProductionEnvironment } from "@/lib/env";
 import { logServerError } from "@/lib/server-log";
+import { hasValidDonationEvidenceHeader } from "@/lib/donation-evidence-header";
 
 const privateHeaders = { "Cache-Control": "no-store, private", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow, noarchive" };
 const MAX_MULTIPART_BYTES = MAX_FILE_BYTES + 256 * 1024;
@@ -55,6 +56,16 @@ export async function POST(request: Request) {
     }
     const evidence = evidenceEntry instanceof File && evidenceEntry.size > 0 ? evidenceEntry : null;
     if (evidence && evidence.size > MAX_FILE_BYTES) return NextResponse.json({ error: "Transfer evidence must be 5 MB or smaller." }, { status: 413, headers: privateHeaders });
+
+    // Storage repeats these byte-signature checks during upload. Validate the small, safe header
+    // before creating a financial claim, to avoid reserving a donor's
+    // transfer reference for a receipt that is immediately unusable.
+    if (evidence && !(await hasValidDonationEvidenceHeader(evidence))) {
+      return NextResponse.json(
+        { error: "Please attach a valid PDF, JPEG, PNG or WebP receipt." },
+        { status: 400, headers: privateHeaders },
+      );
+    }
 
     const parsed = directTransferSchema.safeParse({
       appealId: form.get("appealId"), donorName: form.get("donorName"), donorEmail: form.get("donorEmail"), donorPhone: form.get("donorPhone") ?? "",
