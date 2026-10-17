@@ -497,6 +497,50 @@ test.describe('donation journey without real payment', () => {
     });
   }
 
+  test('explicit no-order HTTP 408 permits a safe retry without clearing donor details', async ({ page }) => {
+    let orders = 0;
+    await page.route('**/api/donations/order', route => {
+      orders++;
+      return route.fulfill({
+        status: 408,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          error: 'Checkout request upload timed out. No payment order was created. Please check your connection and try again.',
+          orderStarted: false,
+        }),
+      });
+    });
+    const submit = await openDonationFixture(page, 'count-only');
+    await fillDonationForm(page);
+    await submit.click();
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('No payment order was created');
+    await expect(submit).toBeEnabled();
+    await expect(page.getByLabel('Full name')).toHaveValue('Acceptance Donor');
+    await submit.click();
+    expect(orders).toBe(2);
+  });
+
+  for (const orderStarted of [undefined, true, null, 'false']) {
+    test(`ambiguous HTTP 408 marker ${String(orderStarted)} keeps checkout locked`, async ({ page }) => {
+      let orders = 0;
+      await page.route('**/api/donations/order', route => {
+        orders++;
+        return route.fulfill({
+          status: 408,
+          contentType: 'application/json',
+          body: JSON.stringify({ error: 'Gateway request expired', orderStarted }),
+        });
+      });
+      const submit = await openDonationFixture(page, 'count-only');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('An order may have been created');
+      await page.locator('form').evaluate(form => form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
+      expect(orders).toBe(1);
+    });
+  }
+
   for (const outcome of ['server-error', 'gateway-error', 'lost-response']) {
     test(`uncertain checkout ${outcome} locks the form and prevents another order`, async ({ page }) => {
       let attempts = 0;
