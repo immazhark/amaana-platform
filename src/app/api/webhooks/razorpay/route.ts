@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { appealStatusAfterRefund } from "@/lib/appeals";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { paymentEventAuditPayload } from "@/lib/payment-event-audit";
 import { captureDonation, ensureCapturedDonationForRefund } from "@/lib/payment-processing";
 import { expireDonationViews } from "@/lib/donation-cache";
@@ -15,6 +15,7 @@ import { isMatchingPaymentEventReplay, isPrismaUniqueConstraintError } from "@/l
 import { logServerError } from "@/lib/server-log";
 
 const MAX_RAZORPAY_WEBHOOK_BYTES = 256 * 1024;
+const RAZORPAY_WEBHOOK_BODY_TIMEOUT_MS = 15_000;
 
 type RazorpayEntity = {
   id: string;
@@ -50,7 +51,9 @@ export async function POST(request: Request) {
 
   try {
     validateProductionEnvironment();
-    const rawBody = await readTextBodyWithLimit(request, MAX_RAZORPAY_WEBHOOK_BYTES);
+    const rawBody = await readTextBodyWithLimit(request, MAX_RAZORPAY_WEBHOOK_BYTES, {
+      timeoutMs: RAZORPAY_WEBHOOK_BODY_TIMEOUT_MS,
+    });
 
     if (!verifyWebhookSignature(rawBody, signature)) {
       return new NextResponse("Invalid signature", { status: 401 });
@@ -126,7 +129,9 @@ export async function POST(request: Request) {
 
     if (payload.event === "payment.captured" && payment?.order_id && payment.currency === "INR") {
       const result = await captureDonation(payment.order_id, payment.id, payment.amount);
-      expireDonationViews();
+      // Store the event before attempting cache refresh. A cache adapter outage
+      // after the durable capture must not leave the provider's event untracked.
+      // On a retry, the matching-event fast path reattempts the invalidation.
       try {
         await prisma.paymentEvent.create({
           data: {
@@ -144,6 +149,7 @@ export async function POST(request: Request) {
         });
         if (!isMatchingPaymentEventReplay(existing, payload.event, auditPayload)) throw eventError;
       }
+      expireDonationViews();
     } else if (
       payload.event === "payment.failed" &&
       payment?.order_id &&
@@ -346,6 +352,14 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof RequestBodyTooLargeError) {
       return new NextResponse("Webhook payload too large", { status: 413 });
+    }
+    if (error instanceof RequestBodyReadTimeoutError) {
+      // The provider must retry a stalled body: no signature was checked and
+      // no event or financial state was persisted by this request.
+      return new NextResponse("Webhook read timed out", {
+        status: 503,
+        headers: { "Retry-After": "60" },
+      });
     }
 
     if (providerEventId && isPrismaUniqueConstraintError(error)) {
