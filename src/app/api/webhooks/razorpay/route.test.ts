@@ -178,6 +178,19 @@ describe("Razorpay webhook route", () => {
     });
   });
 
+  it("rejects missing or blank webhook signatures before any body read", async () => {
+    for (const supplied of ["", "  "]) {
+      const response = await POST(webhookRequest({ event: "payment.captured" }, {
+        "x-razorpay-signature": supplied,
+      }));
+      expect(response.status).toBe(401);
+    }
+    expect(mocks.readTextBodyWithLimit).not.toHaveBeenCalled();
+    expect(mocks.verifyWebhookSignature).not.toHaveBeenCalled();
+    expect(mocks.paymentEventFindUnique).not.toHaveBeenCalled();
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
+  });
+
   it("sets a fixed 15-second webhook body read deadline", async () => {
     await POST(webhookRequest({ event: "synthetic.audit", payload: {} }));
     expect(mocks.readTextBodyWithLimit).toHaveBeenCalledWith(
