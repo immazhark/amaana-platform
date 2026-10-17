@@ -31,6 +31,7 @@ const contactPaths = [
   { marker: "03", icon: "assistance", title: "Request assistance", copy: "If you or someone you know needs support, use the dedicated private intake route so the request reaches the right review process.", action: "Request assistance", href: "/request-assistance" },
   { marker: "04", icon: "volunteer", title: "Volunteer or collaborate", copy: "If you want to contribute time, skills, resources or explore a genuine collaboration, start with our Get Involved journey.", action: "Get involved", href: "/get-involved" },
   { marker: "05", icon: "support", title: "Donation support", copy: "For a payment or donation query, contact the team with your Amaana reference or Razorpay payment ID only. Never share PINs, OTPs or card credentials.", action: "Email donation support", href: "mailto:amaanafoundation24@gmail.com?subject=Donation%20support" },
+  { marker: "06", icon: "message", title: "Feedback and concerns", copy: "Raise a concern, suggest improvements or send thanks privately. Neither assistance nor volunteering depends on giving a positive review.", action: "Share private feedback", href: "/contact/feedback" },
 ] as const;
 
 const socialLinks = [

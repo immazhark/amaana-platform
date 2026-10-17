@@ -38,9 +38,9 @@ for (const [device, width, height] of [['mobile', 390, 844], ['desktop', 1440, 1
       }
       if (route === '/contact') {
         const markers = page.locator('.v2-intent-card > span[aria-hidden="true"]');
-        await expect(markers).toHaveCount(6);
-        expect(await markers.allTextContents()).toEqual(Array(6).fill(''));
-        await expect(markers.locator('svg')).toHaveCount(6);
+        await expect(markers).toHaveCount(7);
+        expect(await markers.allTextContents()).toEqual(Array(7).fill(''));
+        await expect(markers.locator('svg')).toHaveCount(7);
       }
       if (device === 'mobile') {
         const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa']).analyze();
