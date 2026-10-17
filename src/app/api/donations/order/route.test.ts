@@ -9,11 +9,6 @@ const mocks = vi.hoisted(() => ({
   readTextBodyWithLimit: vi.fn(),
 }));
 
-vi.mock("@/lib/appeals", () => ({
-  getRemainingAppealAmount: () => 900,
-  isAppealOpenForDonations: () => true,
-}));
-
 vi.mock("@/lib/bounded-request-body", () => {
   class RequestBodyTooLargeError extends Error {}
   class RequestBodyReadTimeoutError extends Error {}
