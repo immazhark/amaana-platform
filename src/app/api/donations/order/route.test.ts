@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   create: vi.fn(),
   createRazorpayOrder: vi.fn(),
   safeParse: vi.fn(),
+  readTextBodyWithLimit: vi.fn(),
 }));
 
 vi.mock("@/lib/appeals", () => ({
@@ -15,13 +16,11 @@ vi.mock("@/lib/appeals", () => ({
 
 vi.mock("@/lib/bounded-request-body", () => {
   class RequestBodyTooLargeError extends Error {}
+  class RequestBodyReadTimeoutError extends Error {}
   return {
     RequestBodyTooLargeError,
-    readTextBodyWithLimit: async (request: Request, maxBytes: number) => {
-      const declared = Number(request.headers.get("content-length"));
-      if (Number.isFinite(declared) && declared > maxBytes) throw new RequestBodyTooLargeError();
-      return request.text();
-    },
+    RequestBodyReadTimeoutError,
+    readTextBodyWithLimit: mocks.readTextBodyWithLimit,
   };
 });
 
@@ -64,6 +63,14 @@ import { POST } from "./route";
 describe("donation order request bounds", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    mocks.readTextBodyWithLimit.mockReset().mockImplementation(async (request: Request, maxBytes: number) => {
+      const declared = Number(request.headers.get("content-length"));
+      if (Number.isFinite(declared) && declared > maxBytes) {
+        const { RequestBodyTooLargeError } = await import("@/lib/bounded-request-body");
+        throw new RequestBodyTooLargeError();
+      }
+      return request.text();
+    });
     mocks.enforceDonationRateLimit.mockResolvedValue(true);
   });
 
@@ -123,6 +130,36 @@ describe("donation order request bounds", () => {
     expect(mocks.createRazorpayOrder).not.toHaveBeenCalled();
     expect(mocks.create).not.toHaveBeenCalled();
   });
+  it("bounds checkout order body reading before any appeal or Razorpay work", async () => {
+    mocks.safeParse.mockReturnValue({ success: false, error: { flatten: () => ({ fieldErrors: {} }) } });
+    await POST(new Request("https://amaana.example/api/donations/order", {
+      method: "POST", body: "{}",
+    }));
+    expect(mocks.readTextBodyWithLimit).toHaveBeenCalledWith(
+      expect.any(Request), 32 * 1024, { timeoutMs: 15_000 },
+    );
+  });
+
+  it("responds to a stalled checkout upload before creating a provider order", async () => {
+    const { RequestBodyReadTimeoutError } = await import("@/lib/bounded-request-body");
+    mocks.readTextBodyWithLimit.mockRejectedValueOnce(new RequestBodyReadTimeoutError());
+
+    const response = await POST(new Request("https://amaana.example/api/donations/order", {
+      method: "POST", body: "{}",
+    }));
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({
+      error: "Checkout request upload timed out. Please contact Amaana before starting another payment attempt.",
+    });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.createRazorpayOrder).not.toHaveBeenCalled();
+    expect(mocks.create).not.toHaveBeenCalled();
+  });
+
   it.each(["UNREVIEWED", "NOT_ELIGIBLE", "NOT_APPLICABLE", null])("rejects Zakat intent when review status is %s", async zakatStatus => {
     mocks.safeParse.mockReturnValue({
       success: true,
