@@ -1,5 +1,5 @@
 import {
-  buildDatedGivingReminder, buildFridayGivingReminder, buildMonthlyGivingReminder,
+  buildDatedGivingReminder, buildFridayGivingReminder, buildLastDayMonthlyGivingReminder, buildMonthlyGivingReminder,
   givingCalendarDateInIndia, MONTHLY_GIVING_DAYS, type MonthlyGivingDay,
   MONTHLY_REMINDER_FILE, FRIDAY_REMINDER_FILE,
 } from "@/lib/monthly-giving-reminder";
@@ -23,9 +23,13 @@ export function GET(request: Request) {
     let filename: string;
     if (frequency === "monthly") {
       const raw = params.get("day");
-      const day = MONTHLY_GIVING_DAYS.find(value => String(value) === raw) as MonthlyGivingDay | undefined;
-      if (day === undefined) throw new RangeError("Invalid day");
-      body = buildMonthlyGivingReminder(day, givingCalendarDateInIndia(now), now);
+      if (raw === "last") {
+        body = buildLastDayMonthlyGivingReminder(givingCalendarDateInIndia(now), now);
+      } else {
+        const day = MONTHLY_GIVING_DAYS.find(value => String(value) === raw) as MonthlyGivingDay | undefined;
+        if (day === undefined) throw new RangeError("Invalid day");
+        body = buildMonthlyGivingReminder(day, givingCalendarDateInIndia(now), now);
+      }
       filename = MONTHLY_REMINDER_FILE;
     } else if (frequency === "friday") {
       body = buildFridayGivingReminder(givingCalendarDateInIndia(now), now);
