@@ -42,3 +42,14 @@ test("native volunteer enquiry links remain within mobile viewport and keyboard 
   await first.focus();
   await expect(first).toBeFocused();
 });
+
+test("Homepage leads directly to a six-choice volunteer experience", async ({ page }) => {
+  await page.goto("/");
+  const shortcut = page.getByRole("link", { name: "Volunteer time or skills" });
+  await expect(shortcut).toHaveAttribute("href", "/get-involved/volunteer");
+  await shortcut.click();
+  await expect(page.getByRole("heading", { name: "Your time and skills can matter." })).toBeVisible();
+  await expect(page.locator("[data-volunteer-skill]")).toHaveCount(6);
+  const choices = page.locator("[data-volunteer-skill]");
+  await expect(choices.first()).toHaveAttribute("href", /^mailto:amaanafoundation24@gmail.com/);
+});
