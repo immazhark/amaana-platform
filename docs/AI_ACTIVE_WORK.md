@@ -1,6 +1,12 @@
-## 2026-10-17 — ACTIVE: explicit Razorpay financial event-state validation
+## 2026-10-17 — Financial webhook state validation; handoff
 
-**Ownership: CHATGPT_ACTIVE.** PR #292 open on `fix/direct-transfer-feedback-20261013` to `main`, prior HEAD `1762b4c08d1ea6e6860b15fd634f3c891fc70bdd`. Incoming handoff was HANDOFF_PENDING. Verified webhook financial validation accepts missing capture flag on payment.captured and missing status on financial events. Implement test-first guards; preserve idempotent event replay and donor accounting. No merge, deployment, production mutation or configuration changes.
+**Ownership: HANDOFF_PENDING.** ChatGPT finished sole-writer source/test batch on open PR #292, branch `fix/direct-transfer-feedback-20261013` targeting `main`. Incoming verified HEAD `1762b4c08d1ea6e6860b15fd634f3c891fc70bdd`; ownership claim `7bddd5f2c5910f2a63d7afcd3cdc5b60fc30e8e3`. No competing writer observed.
+
+- `src/app/api/webhooks/razorpay/route.ts`: `020834f7617473dd7fafb196ab151f915dbe6d60` requires explicit provider status `captured` plus `captured === true`, `failed` or `processed` before money-state changes. `04bb5199439656b6246ef267172ed3567765f498` moves financial entity validation before idempotent event replay lookup; malformed signed duplicates cannot return 200.
+- Tests authored first: route `958e02104b80e8dbc28d128197fe7c2c2b279ea2`, `44e1d35dd812c79e107d6f1e4c0fd635784920b9`; payment failure `1d0d40dc86fc2732896102b5a47be6de29d9861b`. Covers missing/null/invalid financial status, missing captured flag and malformed replay despite an existing event record.
+- Master149 `e8c236003855bb231adab4865cc6465f2ff2bab8`; handoff ledger `02a7760f9c49eb01571edd3b4ee82433eb6773b2`. Counts unchanged: 60 Implemented, 61 Partial, 26 Not started, 1 Superseded, 1 Not applicable; zero formally closed.
+- Source and tests read back from GitHub. **No runtime tests executed**, local checkout unavailable after GitHub DNS failure. No TypeScript, lint, Playwright, Razorpay/PostgreSQL integration, production payment/write, CI, merge or deployment. These are PR-open changes only.
+- Next owner: verify HEAD/ownership; run focused `npx vitest run src/app/api/webhooks/razorpay/route.test.ts src/app/api/webhooks/razorpay/payment-failed.test.ts src/app/api/webhooks/razorpay/event-id-fallback.test.ts`, tsc/lint; fix demonstrated regressions before release, then continue Master149. Never merge or deploy without explicit authorization.
 
 ## 2026-10-17 — Donor confirmation and acknowledgement reliability; ownership returned
 
