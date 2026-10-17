@@ -1,3 +1,19 @@
+## 2026-10-17 — Manual media unpublish aliases and fail-closed review inputs
+
+Ownership: HANDOFF_PENDING after ChatGPT sole-writer source execution on existing PR #292 (`fix/direct-transfer-feedback-20261013` to `main`), verified initial HEAD `e50c08464ffb18af5624ab81e65367be6b8fab81`.
+
+Root defect: the ordinary media review Unpublish action updated only the selected asset. MediaAsset.storageKey has no uniqueness constraint and unrelated public media rows may reuse the same URL or object, leaving a second approved route able to serve a photo after the reviewer withdrew it. Additional security defect: the publish field interpreted any missing/invalid value as an unpublish operation; the media consent/classification review used first-value-wins FormData.get and coerced uploaded File controls into strings or silently ignored non-on checkbox values.
+
+Implemented: `src/app/admin/(protected)/media/actions.ts` manual unpublish uses a predicate read of all public sibling records with matching non-null storageKey or publicUrl inside the existing SERIALIZABLE transaction. Selected/sibling records are CAS-unpublished as one transaction, approved privacy flags cleared, and audits issued only once all CAS claims succeeded. Approved reuse across initiatives intentionally expires. All affected selected/sibling programme, story, faith, archive and managed-image routes are refreshed through the already guarded postcommit helper. Kept S3 objects and audit provenance. A failed sibling CAS rolls back and avoids cache operations. Publish and permanent-delete controls use unambiguous text and explicit literal true/false action validation.
+
+Implemented: `src/lib/media-governance.ts` now reads single-valued typed privacyClass, consentStatus, websiteApproved, containsMinor, containsPatient, containsPrivateDocument, heroEligible, provenanceConfirmed and reviewNotes. Only missing or literal "on" accepted for checkboxes; invalid, repeated, File controls and oversized (>2,000) notes rejected before approval. `src/app/admin/(protected)/media/page.tsx` explains cross-programme unpublication scope and external-host removal separately.
+
+Code commits: `f7b6b1e9f1409768b6613b0f905faaaa79136492`, `53370c6374e97d9e07a34141735ab0661ec4a1c6`, `c981da2e665f14ee2bcf71957fa4640cf472bf37`, UI `c76e312fb86ed1a4236f42a1ab6ff38cd355f364`. Test-first commits: `74875c3aa4cfb34c5d5a8f60a7b97fcb603e43cc`, `cd98a334d6991545d85b59967c6f6018bb12a6dd`, `22971f780ed6936084e910f2baa6e76a8b6a9d6c`, `0d298094f45d10c6191f1f18e4ac3ebdb4043ada`; master149 `f0ce533114774cc3b72d279542e8def50e196df7`.
+
+Verification: GitHub head/readbacks confirm source, form, test text and state. No hydrated local repo; direct git cannot resolve github.com, therefore no Vitest, TypeScript, ESLint, PostgreSQL, full browser, real media, S3 or CDN check. Tests written but **not executed**. No merge, production deploy, pipeline, migration, payment or live personal media change. No external host purge is implied. Master149 still 60 Implemented /61 Partial /26 Not started /2 other, zero formally closed.
+
+Next single writer: verify current PR head, read active state and run focused `npx vitest run 'src/app/admin/(protected)/media/actions.test.ts' src/lib/media-governance.test.ts`, TS and changed-file lint on a hydrated checkout. Repair failures before release. Review broader privacy fields and external media caches only with specific evidence; do not conflate PR commits with deployed outcomes.
+
 ## 2026-10-17 — Admin media publication postcommit safety + shared storage deletion
 
 Ownership: HANDOFF_PENDING after ChatGPT sole-writer work on existing `fix/direct-transfer-feedback-20261013` PR #292 targeting `main`; initial verified HEAD `09c8f899c71b7c974a011852cf28a8d946c443ee`.
