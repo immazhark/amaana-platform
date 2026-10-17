@@ -12,9 +12,13 @@ vi.mock("@/lib/assistance", () => ({
 }));
 
 vi.mock("@/lib/bounded-request-body", () => {
-  class RequestBodyTooLargeError extends Error {}
+  class RequestBodyTooLargeError extends Error {
+    constructor(readonly maxBytes: number) { super(`Request body exceeds ${maxBytes} bytes`); }
+  }
+  class RequestBodyReadTimeoutError extends Error {}
   return {
     RequestBodyTooLargeError,
+    RequestBodyReadTimeoutError,
     readTextBodyWithLimit: mocks.readTextBodyWithLimit,
   };
 });
@@ -66,6 +70,7 @@ describe("assistance tracking privacy and request bounds", () => {
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({ found: false });
     expect(mocks.enforceTrackingRateLimit).toHaveBeenCalledOnce();
+    expect(mocks.readTextBodyWithLimit).toHaveBeenCalledWith(expect.any(Request), 8 * 1024, { timeoutMs: 15_000 });
     expect(mocks.findUnique).toHaveBeenCalledOnce();
   });
 
@@ -77,6 +82,19 @@ describe("assistance tracking privacy and request bounds", () => {
     expect(response.status).toBe(503);
     expect(response.headers.get("retry-after")).toBe("60");
     expect(mocks.readTextBodyWithLimit).not.toHaveBeenCalled();
+    expect(mocks.findUnique).not.toHaveBeenCalled();
+  });
+
+  it("reports a stalled tracking-body read as unavailable, not as an invalid credential", async () => {
+    const { RequestBodyReadTimeoutError } = await import("@/lib/bounded-request-body");
+    mocks.readTextBodyWithLimit.mockRejectedValueOnce(new RequestBodyReadTimeoutError());
+    const response = await POST(new Request("https://amaana.example/api/assistance/status", {
+      method: "POST", body: "{}",
+    }));
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "Private request tracking is temporarily unavailable." });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toContain("no-store");
     expect(mocks.findUnique).not.toHaveBeenCalled();
   });
 
