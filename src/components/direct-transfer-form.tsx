@@ -93,8 +93,6 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
     event.preventDefault();
     if (submissionLocked.current || bankUnavailable || !checkoutRange) return;
     if (!event.currentTarget.reportValidity()) return;
-    const requestLifetime = new AbortController();
-    inFlight.current = requestLifetime;
     submissionLocked.current = true;
     onSubmissionLockChange?.(true);
     setError(""); setFieldErrors({}); setPhase("submitting");
@@ -114,6 +112,8 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
     values.set("appealId", appealId); values.set("paymentMethod", method);
     values.set("isAnonymous", values.get("isAnonymous") === "on" ? "true" : "false");
     values.set("domesticConfirmed", values.get("domesticConfirmed") === "on" ? "true" : "false");
+    const requestLifetime = new AbortController();
+    inFlight.current = requestLifetime;
     try {
       // Bound upload AND response parsing; a local timeout is still an
       // uncertain outcome because the server may already have saved the claim.
