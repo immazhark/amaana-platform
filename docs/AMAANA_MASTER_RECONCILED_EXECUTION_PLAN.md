@@ -1,5 +1,17 @@
 # Amaana Master Reconciled Execution Plan
 
+## 2026-10-17 — Signed Razorpay webhook ingress and durable capture event ordering
+
+ChatGPT sole-writer implementation on existing open PR #292, `fix/direct-transfer-feedback-20261013` -> `main`. Claimed from confirmed HANDOFF_PENDING at HEAD `18a1aaaf6ce7e7e66b085efe8c3c00180edb77ac`, coordination commit `251fbe78e68466dcadd460a1a4509e2ef828efc6`.
+
+- **Unsigned ingress:** `src/app/api/webhooks/razorpay/route.ts` previously read up to 256 KiB before rejecting absent webhook signatures, allowing unsigned callers to force unnecessary body processing. Now requests with absent or blank `x-razorpay-signature` are rejected immediately (401) before body reading, signature processing or any DB lookup.
+- **Stalled body:** The same signed-webhook ingress used the size-bounded body reader but no time limit. Added `RAZORPAY_WEBHOOK_BODY_TIMEOUT_MS = 15_000` to the existing reader and explicit `RequestBodyReadTimeoutError` handling (HTTP 503, `Retry-After: 60`). No webhook signature, event audit or financial mutation occurs on this path; a valid provider may retry. Existing 256 KiB 413 and signature checks stay unchanged.
+- **Capture postcommit ordering:** The prior `payment.captured` route performed `captureDonation`, then `expireDonationViews()`, and only then wrote `PaymentEvent`. A cache adapter outage after a committed capture prevented persistence of its audit/replay marker. Now, after idempotent capture, it creates/verifies the signed `PaymentEvent` before attempting cache refresh. Cache failure deliberately remains a retryable 500; a subsequent matching signed event is validated against the stored event and can reattempt expiry without reapplying the donation. Conflicting event ID/payload remains 409. Refund and failed-payment transaction logic unchanged.
+- Test-first source coverage in `src/app/api/webhooks/razorpay/route.test.ts`: pre-body rejection for missing/blank signature, exact 15s reader options, stalled 503 with no verification/DB operations, and capture event persisted **before** a synthetic cache outage followed by safe matching replay without a second `captureDonation`. Tests `8dc7b9d2ff64d8aa969122d7bab526a75f814e34`, `f850ecd99b92c465f394537de974afa5f616a2c6`; route `bc644ef21e7075921d38be1ba43cb5bd59cbf0cd`, `ea99b42689460c5b23be90bea8e45301f0dfed2b`.
+- Source/test readback in GitHub confirmed the expected changes. A hydrated application checkout is **not available** in this execution environment; direct `git ls-remote` failed DNS lookup for github.com. Vitest, TypeScript, ESLint, browser, database, Razorpay API and actual signed streaming requests **were not executed**, so runtime completion cannot be asserted. No production financial records or payment events were written, no real provider calls, no schema migration, no branch merge or deployment.
+- Master149 remains **60 Implemented / 61 Partial / 26 Not started / 1 Superseded / 1 Not applicable (149 total); 0 formally closed**. AF-SETTLEMENT and AF-R012 have additional open-PR source evidence only, with no closure or deployment claims.
+
+
 ## 2026-10-17 — Bounded public submission ingress and provable pre-write retry (PR #292)
 
 ChatGPT continued the existing sole-writer branch `fix/direct-transfer-feedback-20261013`, open PR #292 targeting `main`, after verified handoff `e860c492d895d13142406dc4c7606538d1a007f2`; ownership claimed in `7bcb9a37cd27c807705ff669d6df643ba018b564`.
