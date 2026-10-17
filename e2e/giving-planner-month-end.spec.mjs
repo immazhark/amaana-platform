@@ -26,3 +26,13 @@ test("a visitor can download a private month-end giving reminder without payment
   expect(calendar).toContain("no automatic debit or subscription");
   expect(calendar).not.toContain("ATTENDEE:");
 });
+
+test("Get Involved offers a private giving reminder without promising automatic debits", async ({ page }) => {
+  await page.goto("/get-involved");
+  const link = page.getByRole("link", { name: /Prepare a giving reminder/i });
+  await expect(link).toHaveAttribute("href", "/get-involved/monthly-giving");
+  await link.click();
+  await expect(page.getByRole("heading", { name: "Make room for giving. Keep full control." })).toBeVisible();
+  await expect(page.getByText("No automatic debits", { exact: false })).toBeVisible();
+});
+
