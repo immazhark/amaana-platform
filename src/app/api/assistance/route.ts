@@ -74,6 +74,21 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid assistance submission format." }, { status: 400, headers: privateHeaders });
     }
 
+    // Each applicant detail and the explicit consent decision must be
+    // unambiguous. FormData -> object conversion otherwise silently keeps the
+    // final repeated value, which may override a different identity or consent.
+    // Documents are intentionally excluded because multiple files are allowed.
+    const singleValueFields = ["applicantName", "phone", "email", "city", "category", "description", "consent"] as const;
+    for (const field of singleValueFields) {
+      const values = formData.getAll(field);
+      if (values.length > 1 || values.some(value => typeof value !== "string")) {
+        return NextResponse.json(
+          { error: "Each application field must be provided as a single text value." },
+          { status: 400, headers: privateHeaders },
+        );
+      }
+    }
+
     const parsed = assistanceSchema.safeParse(Object.fromEntries(formData.entries()));
     if (!parsed.success) {
       return NextResponse.json(
