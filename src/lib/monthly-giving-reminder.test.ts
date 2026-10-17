@@ -41,7 +41,7 @@ describe("non-charging monthly giving calendar", () => {
     expect(unfolded).toContain("RRULE:FREQ=MONTHLY;BYMONTHDAY=-1");
     expect(unfolded).toContain("UID:manual-giving-last-day@amaanafoundation.org");
     expect(unfolded).toContain("no automatic debit or subscription");
-    for (const line of ics.split("\\r\\n")) {
+    for (const line of ics.split("\r\n")) {
       expect(new TextEncoder().encode(line).length).toBeLessThanOrEqual(75);
     }
   });
