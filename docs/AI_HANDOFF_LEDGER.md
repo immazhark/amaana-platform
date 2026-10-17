@@ -1,3 +1,18 @@
+## 2026-10-17 — Fail-closed signed Razorpay financial event state
+
+Outgoing ChatGPT, next implementation owner HANDOFF_PENDING; open PR #292 on `fix/direct-transfer-feedback-20261013` -> `main`; incoming HEAD `1762b4c08d1ea6e6860b15fd634f3c891fc70bdd`, ownership claim `7bddd5f2c5910f2a63d7afcd3cdc5b60fc30e8e3`.
+
+Root cause: Financial event-type label was accepted despite missing/inconsistent provider status and missing captured=true for payment.captured, so signed-but-incomplete event bodies could change money state. The duplicate-event lookup occurred before financial entity validation, which could ACK malformed replays without exercising strict identity/status checks.
+
+Changes committed:
+- `src/app/api/webhooks/razorpay/route.ts`: `020834f7617473dd7fafb196ab151f915dbe6d60` requires explicit captured/failed/processed financial entity state; `04bb5199439656b6246ef267172ed3567765f498` validates those fields before PaymentEvent duplicate lookup. Signature, non-INR, nonpositive amounts, idempotent provider event ID, serializable/refund checks unchanged.
+- Authored-first tests: `src/app/api/webhooks/razorpay/route.test.ts` `958e02104b80e8dbc28d128197fe7c2c2b279ea2`, `44e1d35dd812c79e107d6f1e4c0fd635784920b9`; `src/app/api/webhooks/razorpay/payment-failed.test.ts` `1d0d40dc86fc2732896102b5a47be6de29d9861b`. New missing/invalid status and missing capture flag cases; matching preexisting invalid event cannot skip validation.
+- Master register `e8c236003855bb231adab4865cc6465f2ff2bab8`; counts remain 60 Implemented, 61 Partial, 26 Not started, 1 Superseded, 1 Not applicable; 0 formally closed.
+
+GitHub source readback confirmed modified code/tests. **Tests are authored, not executed**: hydrated repository and dependencies unavailable; no Vitest, tsc, ESLint, Playwright, payment-provider integration, signed webhook or PostgreSQL transaction run. No real donor/beneficiary write, live payment, CI orchestration, schema migration, merge or deployment. Do not claim regression tests pass or live fix.
+
+Next writer: verify latest PR HEAD and HANDOFF_PENDING. Run `npx vitest run src/app/api/webhooks/razorpay/route.test.ts src/app/api/webhooks/razorpay/payment-failed.test.ts src/app/api/webhooks/razorpay/event-id-fallback.test.ts` with TypeScript/lint on hydrated branch, repair failures. Continue high-impact source-backed Master149 items on the same branch; do not merge/deploy without explicit authorization.
+
 ## 2026-10-17 — Terminal payment confirmation and private receipt upload reliability
 
 Outgoing ChatGPT, incoming HANDOFF_PENDING. Existing PR #292, branch `fix/direct-transfer-feedback-20261013` -> `main`; starting head `5116e7b0f951e9687acdca0b1237fac6573cc901`, single-writer claim `07e31f374e91d05a691fc663b4c6f5bc4069f41d`.
