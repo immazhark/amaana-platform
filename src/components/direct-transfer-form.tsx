@@ -7,6 +7,7 @@ import { type FormEvent, type InputHTMLAttributes, type ReactNode, useEffect, us
 import { useRouter } from "next/navigation";
 import Link from "@/components/navigation-link";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
+import { boundedPrivateRequest } from "@/lib/bounded-private-request";
 import { DONATION_INTENT_DESCRIPTIONS, DONATION_INTENT_LABELS, type DonationIntentValue } from "@/lib/donation-intent";
 import { classifyDirectTransferResponse, isDirectTransferField, UNCERTAIN_TRANSFER_MESSAGE, type DirectTransferField, type DirectTransferFieldErrors } from "@/lib/direct-transfer-feedback";
 
@@ -20,6 +21,8 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
   const formRef = useRef<HTMLFormElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
   const submissionLocked = useRef(false);
+  const inFlight = useRef<AbortController | null>(null);
+  useEffect(() => () => { inFlight.current?.abort(); }, []);
   const focusRequest = useRef(0);
   const focusedRequest = useRef(0);
   const busy = phase === "submitting";
@@ -90,6 +93,8 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
     event.preventDefault();
     if (submissionLocked.current || bankUnavailable || !checkoutRange) return;
     if (!event.currentTarget.reportValidity()) return;
+    const requestLifetime = new AbortController();
+    inFlight.current = requestLifetime;
     submissionLocked.current = true;
     onSubmissionLockChange?.(true);
     setError(""); setFieldErrors({}); setPhase("submitting");
@@ -110,9 +115,17 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
     values.set("isAnonymous", values.get("isAnonymous") === "on" ? "true" : "false");
     values.set("domesticConfirmed", values.get("domesticConfirmed") === "on" ? "true" : "false");
     try {
-      const response = await fetch("/api/donations/direct-transfer", { method: "POST", body: values });
-      const body: unknown = await response.json();
-      const result = classifyDirectTransferResponse(response.status, body);
+      // Bound upload AND response parsing; a local timeout is still an
+      // uncertain outcome because the server may already have saved the claim.
+      // Only the explicit server pre-write 408 may unlock a corrective retry.
+      const response = await boundedPrivateRequest(async signal => {
+        const result = await fetch("/api/donations/direct-transfer", {
+          method: "POST", body: values, signal,
+        });
+        return { status: result.status, body: await result.json() as unknown };
+      }, 120_000, requestLifetime.signal);
+      if (requestLifetime.signal.aborted) return;
+      const result = classifyDirectTransferResponse(response.status, response.body);
       if (result.kind === "accepted") {
         setPhase("submitted");
         router.push(privateDonationAcknowledgementPath(result.referenceNumber, result.receiptToken));
@@ -126,8 +139,12 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
         showError(UNCERTAIN_TRANSFER_MESSAGE);
       }
     } catch {
-      setPhase("reconciliation");
-      showError(UNCERTAIN_TRANSFER_MESSAGE);
+      if (!requestLifetime.signal.aborted) {
+        setPhase("reconciliation");
+        showError(UNCERTAIN_TRANSFER_MESSAGE);
+      }
+    } finally {
+      if (inFlight.current === requestLifetime) inFlight.current = null;
     }
   }
 
