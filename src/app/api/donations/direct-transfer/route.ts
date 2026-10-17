@@ -7,7 +7,7 @@ import { appealDonationDesignationSnapshot, createDonationReference, createRecei
 import { prisma } from "@/lib/prisma";
 import { canExposePublicAppeal } from "@/lib/public-environment";
 import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
-import { deleteDonationEvidenceObject, MAX_FILE_BYTES, uploadDonationEvidence } from "@/lib/storage";
+import { MAX_FILE_BYTES, uploadDonationEvidence } from "@/lib/storage";
 import { validateProductionEnvironment } from "@/lib/env";
 import { logServerError } from "@/lib/server-log";
 import { directTransferFieldErrors, UNCERTAIN_TRANSFER_MESSAGE } from "@/lib/direct-transfer-feedback";
@@ -149,37 +149,20 @@ export async function POST(request: Request) {
       donation = recovered;
     }
 
-    let uploadedKey: string | null = null;
     try {
       if (evidence) {
         const uploaded = await uploadDonationEvidence(evidence, donation.id);
-        uploadedKey = uploaded.objectKey;
         await prisma.donation.update({ where: { id: donation.id }, data: { transferEvidenceKey: uploaded.objectKey, transferEvidenceName: uploaded.originalName, transferEvidenceMimeType: uploaded.mimeType, transferEvidenceSize: uploaded.sizeBytes } });
       }
     } catch (error) {
-      // A storage-metadata write can commit even when its acknowledgement is lost,
-      // or an administrator may have verified the transfer concurrently.
-      // Never remove an already-updated or verified financial record.
-      let removed = false;
-      try {
-        const cleanup = await prisma.donation.deleteMany({
-          where: {
-            id: donation.id,
-            status: "PENDING_VERIFICATION",
-            transferEvidenceKey: null,
-          },
-        });
-        removed = cleanup.count === 1;
-      } catch {
-        logServerError("donation.direct_transfer_cleanup_failed");
-      }
-
-      // Delete the private object only if the unused draft was actually removed.
-      // On uncertain database outcomes, preserve both for manual reconciliation.
-      if (removed && uploadedKey) {
-        await deleteDonationEvidenceObject(uploadedKey, donation.id)
-          .catch(() => logServerError("donation.direct_transfer_evidence_cleanup_failed"));
-      }
+      // The donor may already have transferred the money. Never erase an
+      // accepted, UTR-identified pending claim solely because optional proof
+      // storage or its metadata write failed. Metadata acknowledgement can also
+      // be lost AFTER a successful DB commit, so deleting the private object
+      // here could destroy evidence needed for independent reconciliation.
+      // The uncertain 500 response locks donor retries; staff must inspect
+      // the pending claim and private storage before any corrective action.
+      logServerError("donation.direct_transfer_evidence_reconciliation_required");
       throw error;
     }
 
