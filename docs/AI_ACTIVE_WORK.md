@@ -1,3 +1,7 @@
+## 2026-10-17 — Razorpay webhook read and postcommit reliability (in progress)
+
+**Ownership: CHATGPT_ACTIVE.** Sole-writer handoff claimed after verifying PR #292 open, target main, branch `fix/direct-transfer-feedback-20261013`, HEAD `18a1aaaf6ce7e7e66b085efe8c3c00180edb77ac`; prior active work was HANDOFF_PENDING. Task: reproduce and repair webhook stalled unsigned body reads and cache refresh exceptions after durable payment capture. Keep signature, idempotency, refund and replay invariants. Tests first; no merge, deployment or live provider/record writes authorized.
+
 ## 2026-10-17 — Body-read deadlines and verified no-write retry contracts; handoff
 
 **Ownership: HANDOFF_PENDING.** Outgoing ChatGPT sole-writer implementation on PR #292 `fix/direct-transfer-feedback-20261013` targeting `main`. Incoming verified HEAD `e860c492d895d13142406dc4c7606538d1a007f2`; ownership claim `7bcb9a37cd27c807705ff669d6df643ba018b564`. No observed competing writer. This batch is committed to the open PR, not merged or deployed.
