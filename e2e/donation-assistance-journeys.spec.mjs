@@ -911,6 +911,25 @@ test.describe('direct transfer pre-write timeout safety', () => {
     await expect.poll(() => submissions).toBe(2);
   });
 
+  test('a stalled browser upload settles into follow-up rather than spinning without a response', async ({ page }) => {
+    await page.clock.install();
+    let submissions = 0;
+    await page.route('**/api/donations/direct-transfer', async () => {
+      submissions++;
+      await new Promise(() => {}); // Simulated transport that never responds.
+    });
+    await openMethodFixture(page);
+    await fillTransferForm(page);
+    await page.getByRole('button', { name: 'Submit transfer for verification' }).click();
+    await expect.poll(() => submissions).toBe(1);
+    await expect(page.getByRole('button', { name: 'Submitting for verification…' })).toBeDisabled();
+    await page.clock.fastForward(120_100);
+    await expect(page.getByRole('button', { name: 'Transfer follow-up required' })).toBeDisabled();
+    await expect(page.locator('.form-error[role="alert"]')).toContainText('contact Amaana before submitting again');
+    await expectMethodsLocked(page);
+    expect(submissions).toBe(1);
+  });
+
   for (const marker of [undefined, true, 'false', null]) {
     test(`ambiguous transfer 408 with marker ${String(marker)} retains reconciliation lock`, async ({ page }) => {
       let submissions = 0;
