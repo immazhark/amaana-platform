@@ -69,6 +69,14 @@ const waysToHelp = [
     href: "/request-assistance",
     action: "Request assistance",
   },
+  {
+    number: "06",
+    icon: "support" as const,
+    title: "Set a private giving reminder",
+    copy: "Plan an optional calendar check-in each month, every Friday or on chosen dates. No automatic debit or donor profile.",
+    href: "/get-involved/monthly-giving",
+    action: "Prepare a giving reminder",
+  },
 ] as const;
 
 export default async function GetInvolvedPage() {
@@ -86,7 +94,7 @@ export default async function GetInvolvedPage() {
           { label: "Connect with Amaana", href: "/contact", secondary: true },
         ]}
         visual={heroMedia ? <PublicMedia asset={heroMedia} priority /> : undefined}
-        visualKicker="Five ways to take part"
+        visualKicker="Six ways to take part"
         visualTitle="Time. Skills. Support. Care."
         visualNote="Choose a path that matches what you can offer and what the work needs now."
       />
