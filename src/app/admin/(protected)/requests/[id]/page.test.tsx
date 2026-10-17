@@ -264,7 +264,8 @@ describe("private assistance detail projections", () => {
     }]);
     const markup = await render();
     expect(markup).toContain("historical internal review");
-    expect(markup).toContain("no longer");
+    expect(markup).toContain("Supporting delivery evidence or case eligibility has changed.");
+    expect(markup).toContain("not a current verified outcome");
     expect(markup).not.toContain("Review private operational outcome");
     expect(markup).not.toContain("Submit private outcome for independent review");
   });
