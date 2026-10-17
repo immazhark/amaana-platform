@@ -1,9 +1,15 @@
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-const m = vi.hoisted(() => ({ user: vi.fn(), has: vi.fn(), permissions: vi.fn(), redirect: vi.fn(), count: vi.fn(), group: vi.fn(), find: vi.fn() }));
+const m = vi.hoisted(() => ({ user: vi.fn(), has: vi.fn(), permissions: vi.fn(), redirect: vi.fn(), count: vi.fn(), group: vi.fn(), find: vi.fn(), followUps: vi.fn(), deliveryGroups: vi.fn(), outcomeGroups: vi.fn(), auditGroups: vi.fn() }));
 vi.mock("@/lib/auth", () => ({ requireAuthenticatedUser: m.user, hasPermission: m.has, permissionKeys: m.permissions }));
 vi.mock("next/navigation", () => ({ redirect: m.redirect }));
-vi.mock("@/lib/prisma", () => ({ prisma: { assistanceRequest: { count: m.count, groupBy: m.group, findMany: m.find } } }));
+vi.mock("@/lib/prisma", () => ({ prisma: {
+  assistanceRequest: { count: m.count, groupBy: m.group, findMany: m.find },
+  assistanceFollowUp: { groupBy: m.followUps },
+  assistanceDeliveryRecord: { groupBy: m.deliveryGroups },
+  assistanceOutcomeObservation: { groupBy: m.outcomeGroups },
+  auditEvent: { groupBy: m.auditGroups },
+} }));
 import AdminQueuePage from "./page";
 const html = async (params: Record<string, string | string[]> = {}) => renderToStaticMarkup(await AdminQueuePage({ searchParams: Promise.resolve(params) }));
 
@@ -13,6 +19,8 @@ beforeEach(() => {
   m.permissions.mockReturnValue(["donation.view"]);
   m.redirect.mockImplementation(() => { throw new Error("redirect"); });
   m.count.mockResolvedValue(0); m.group.mockResolvedValue([]); m.find.mockResolvedValue([]);
+  m.followUps.mockResolvedValue([]); m.deliveryGroups.mockResolvedValue([]);
+  m.outcomeGroups.mockResolvedValue([]); m.auditGroups.mockResolvedValue([]);
 });
 
 describe("authorized assistance queue", () => {
@@ -42,7 +50,9 @@ describe("authorized assistance queue", () => {
     expect(query).not.toHaveProperty("include");
     expect(query.select).toEqual({
       id: true, referenceNumber: true, applicantName: true, city: true, category: true,
-      status: true, createdAt: true, assignedTo: { select: { name: true } }, _count: { select: { documents: true } },
+      status: true, createdAt: true, assignedTo: { select: { name: true } },
+      verification: { select: { decision: true, completedAt: true } },
+      _count: { select: { documents: true } },
     });
     expect(query.orderBy).toEqual([{ createdAt: "desc" }, { id: "desc" }]);
   });
@@ -52,7 +62,7 @@ describe("authorized assistance queue", () => {
     expect(m.find).toHaveBeenCalledWith(expect.objectContaining({ skip: 50, take: 50, where: { status: "SUBMITTED", assignedToId: null } }));
     expect(result).toContain("status=SUBMITTED&amp;assignment=unassigned&amp;order=oldest&amp;page=3");
     expect(result).toContain("Page 2 of 3 · 101 records");
-    expect(result).toContain("not a response deadline or urgency assessment");
+    expect(result).toContain("Age is time since receipt, not a response deadline, verified urgency, or SLA breach.");
   });
   it("clamps an excessive page and resets page when switching filters", async () => {
     m.count.mockResolvedValue(51);
@@ -65,11 +75,26 @@ describe("authorized assistance queue", () => {
     m.count.mockResolvedValue(1);
     m.find.mockResolvedValue([{
       id: "case-synthetic", referenceNumber: "AF-SYNTHETIC", applicantName: "Synthetic applicant", city: "Hyderabad",
-      category: "MEDICAL", status: "SUBMITTED", createdAt: new Date(0), assignedTo: null, _count: { documents: 2 },
+      category: "MEDICAL", status: "SUBMITTED", createdAt: new Date(0), assignedTo: null,
+      verification: null, _count: { documents: 2 },
     }]);
     const result = await html();
     expect(result).toContain('href="/admin/requests/case-synthetic"');
     expect(result).toContain("Unassigned"); expect(result).toContain("Request age"); expect(result).toMatch(/\d+ days/);
     expect(result).not.toContain('href="tel:'); expect(result).not.toContain('href="mailto:');
+    // Summaries are scoped to IDs already loaded in this page, never private narratives.
+    const scopedIds = { in: ["case-synthetic"] };
+    expect(m.followUps).toHaveBeenCalledWith(expect.objectContaining({
+      by: ["assistanceRequestId"], where: expect.objectContaining({ assistanceRequestId: scopedIds }),
+    }));
+    expect(m.deliveryGroups).toHaveBeenCalledWith(expect.objectContaining({
+      by: ["assistanceRequestId", "state"], where: expect.objectContaining({ assistanceRequestId: scopedIds }),
+    }));
+    expect(m.outcomeGroups).toHaveBeenCalledWith(expect.objectContaining({
+      by: ["assistanceRequestId", "state"], where: expect.objectContaining({ assistanceRequestId: scopedIds }),
+    }));
+    expect(m.auditGroups).toHaveBeenCalledWith(expect.objectContaining({
+      by: ["entityId"], where: expect.objectContaining({ entityId: scopedIds }),
+    }));
   });
 });
