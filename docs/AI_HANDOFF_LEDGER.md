@@ -1,3 +1,7 @@
+## 2026-10-17 — Giving Planner calendar compatibility
+
+Ownership: HANDOFF_PENDING after calendar repair. Existing PR293 branch feat/manual-giving-planner-20261017 at a9acb5e4. Independent AI review identified unescaped semicolon in ICS DESCRIPTION; correct only calendar TEXT encoding with regression coverage. RED: calendar TEXT delimiter regression failed on unescaped semicolon. GREEN: escaped semicolon in shared DESCRIPTION; all four calendar variants covered. Combined main receipt safeguard retained; 43 focused tests and full940 passed/9 skipped, type/lint/diff checks pass. No mandates, payments or extra data collection. Fresh hosted acceptance required. PR302 deployed by Railway SUCCESS ebc0b8e, public HTTP verification blocked403 in this environment; do not assert live journey verified.
+
 ## 2026-10-13 — actual HTTP cancellation regressions
 
 Ownership: CODEX_ACTIVE on the preserved N-28 follow-up branch; validated release3414858b remains unchanged. Added actual assistance and direct-transfer route cases using the real body reader/error class: an oversized stream whose cancel promise never settles returns private413 and does not create a case/donation or upload evidence. Both route cases fail with rejection stalled when only awaited cancellation is restored. Fixed source:34 tests across3 suites passed; TypeScript and focused ESLint passed. Assistance test mock now retains the actual error class to verify the real classifier. No live requests, provider calls or production database writes.

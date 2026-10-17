@@ -78,7 +78,7 @@ function calendar(start: string, recurrence: string | null, uid: string, stamp: 
     `DTSTART;VALUE=DATE:${start}`, `DTEND;VALUE=DATE:${nextCalendarDate(start)}`,
     ...(recurrence ? [`RRULE:${recurrence}`] : []),
     "SUMMARY:Review approved Amaana giving options",
-    "DESCRIPTION:Optional personal reminder only; no automatic debit or subscription.\\nReview currently approved domestic giving routes before every decision.\\nYou may change or remove this reminder in your own calendar.",
+    "DESCRIPTION:Optional personal reminder only\\; no automatic debit or subscription.\\nReview currently approved domestic giving routes before every decision.\\nYou may change or remove this reminder in your own calendar.",
     "URL:https://amaanafoundation.org/donate",
     "TRANSP:TRANSPARENT", "END:VEVENT", "END:VCALENDAR",
   ].map(foldLine).join("\r\n") + "\r\n";

@@ -95,3 +95,18 @@ describe("visitor-selected dated reminders", () => {
     expect(() => buildDatedGivingReminder("2027-03-01", undefined, new Date(NaN))).toThrow(RangeError);
   });
 });
+
+
+it("escapes calendar TEXT delimiters in every reminder description", () => {
+  const now = new Date(2026, 9, 17);
+  const calendars = [
+    buildMonthlyGivingReminder(15, now), buildLastDayMonthlyGivingReminder(now),
+    buildFridayGivingReminder(now), buildDatedGivingReminder("2026-10-20", undefined, now),
+  ];
+  for (const ics of calendars) {
+    const description = ics.replace(/\r\n /g, "").split("\r\n").find(line => line.startsWith("DESCRIPTION:"));
+    expect(description).toBeDefined();
+    expect(description).not.toMatch(/(?<!\\)[;,]/);
+    expect(description).toContain("reminder only\\; no automatic debit");
+  }
+});
