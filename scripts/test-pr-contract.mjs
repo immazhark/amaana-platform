@@ -74,3 +74,11 @@ test("never accepts invalid PR metadata or non-string descriptions", () => {
   assert.match(validatePrContract(change({ body: null })).join(" "), /Purpose/i);
   assert.match(validatePrContract(change({ files: "not-files" })).join(" "), /changed files/i);
 });
+
+test("ready-to-review PR requires recorded acceptance and verification completion", () => {
+  const notReady = validatePrContract(change({ draft: false }));
+  assert.match(notReady.join(" "), /unchecked|complete/i);
+  const checked = body.replaceAll("- [ ]", "- [x]");
+  assert.deepEqual(validatePrContract(change({ draft: false, body: checked })), []);
+  assert.deepEqual(validatePrContract(change({ draft: true })), []);
+});
