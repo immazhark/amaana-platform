@@ -204,6 +204,25 @@ describe("donation confirmation persisted status", () => {
     expect(mocks.findUnique).toHaveBeenCalledTimes(1);
   });
 
+  it("returns the persisted captured state even if post-capture cache expiry fails", async () => {
+    mocks.findUnique
+      .mockResolvedValueOnce(storedDonation())
+      .mockResolvedValueOnce({ status: "CAPTURED" });
+    mocks.fetchRazorpayPayment.mockResolvedValueOnce({
+      id: "pay_123", order_id: "order_123", amount: 50000,
+      currency: "INR", status: "captured", captured: true,
+    });
+    vi.mocked(expireDonationViews).mockImplementationOnce(() => {
+      throw new Error("synthetic cache adapter outage");
+    });
+    const response = await POST(confirmationRequest());
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ referenceNumber: "AMN-123", status: "CAPTURED" });
+    expect(mocks.captureDonation).toHaveBeenCalledExactlyOnceWith("order_123", "pay_123", 50000);
+    expect(expireDonationViews).toHaveBeenCalledOnce();
+    expect(mocks.findUnique).toHaveBeenCalledTimes(2);
+  });
+
   it("captures a matching provider payment using the signed callback identity", async () => {
     mocks.findUnique
       .mockResolvedValueOnce(storedDonation())
