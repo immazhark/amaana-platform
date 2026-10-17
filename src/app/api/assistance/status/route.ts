@@ -4,7 +4,7 @@ import { z } from "zod";
 import { hashTrackingToken } from "@/lib/assistance";
 import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { prisma } from "@/lib/prisma";
-import { isSameOrigin } from "@/lib/request-security";
+import { enforceTrackingRateLimit, isSameOrigin } from "@/lib/request-security";
 
 const privateHeaders = {
   "Cache-Control": "no-store, private",
@@ -23,13 +23,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ found: false }, { status: 403, headers: privateHeaders });
     }
 
-    let body: unknown;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_TRACKING_JSON_BYTES));
+      if (!(await enforceTrackingRateLimit(request))) {
+        return NextResponse.json({ found: false }, {
+          status: 429, headers: { ...privateHeaders, "Retry-After": "3600" },
+        });
+      }
+    } catch {
+      return NextResponse.json({ found: false }, {
+        status: 503, headers: { ...privateHeaders, "Retry-After": "60" },
+      });
+    }
+
+    let rawBody: string;
+    try {
+      rawBody = await readTextBodyWithLimit(request, MAX_TRACKING_JSON_BYTES, { timeoutMs: 5_000 });
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ found: false }, { status: 413, headers: privateHeaders });
       }
+      // Includes stalled or interrupted transport reads. Never turn an
+      // unreadable request into a false claim that the private link is invalid.
+      return NextResponse.json({ found: false }, {
+        status: 503, headers: { ...privateHeaders, "Retry-After": "60" },
+      });
+    }
+
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      // Complete but malformed credentials are indistinguishable from missing records.
       return NextResponse.json({ found: false }, { headers: privateHeaders });
     }
 
@@ -66,6 +90,10 @@ export async function POST(request: Request) {
       { headers: privateHeaders },
     );
   } catch {
-    return NextResponse.json({ found: false }, { headers: privateHeaders });
+    // Do not claim a private link is invalid when the lookup failed.
+    // Preserve non-disclosure while allowing the browser to offer safe retry.
+    return NextResponse.json({ found: false }, {
+      status: 503, headers: { ...privateHeaders, "Retry-After": "60" },
+    });
   }
 }

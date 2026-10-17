@@ -1,10 +1,11 @@
+import { createElement } from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { FeedbackEnquiryBuilder } from "./feedback-enquiry-builder";
 
 describe("private feedback enquiry", () => {
   it("offers the three consent-safe enquiry types without storing a report", () => {
-    const markup = renderToStaticMarkup(<FeedbackEnquiryBuilder />);
+    const markup = renderToStaticMarkup(createElement(FeedbackEnquiryBuilder));
     for (const label of ["Concern or complaint", "Suggestion or improvement", "Private appreciation"]) {
       expect(markup).toContain(label);
     }
