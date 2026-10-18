@@ -1,5 +1,7 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 import { runNotificationJob } from "../ops/notification-cron/run.mjs";
 
@@ -84,4 +86,24 @@ test("failed body cancellation never masks the HTTP success or leaks diagnostics
     cancel() { throw new Error("private cancellation diagnostic"); },
   }));
   assert.equal(await runNotificationJob(env, async () => response), 200);
+});
+
+
+test("contained worker config cannot process queued notifications even if manually started", async () => {
+  const active = JSON.parse(await readFile(new URL("../ops/notification-cron/railway.json", import.meta.url), "utf8"));
+  const contained = JSON.parse(await readFile(new URL("../ops/notification-cron/railway.contained.json", import.meta.url), "utf8"));
+  assert.deepEqual(contained, { ...active, deploy: { ...active.deploy, startCommand: "node --check run.mjs", cronSchedule: "0 0 1 1 *" } });
+  const result = spawnSync(process.execPath, [
+    "--import=data:text/javascript,globalThis.fetch=()=>{throw new Error('Unexpected real network call')}",
+    "--check", "run.mjs",
+  ], {
+    cwd: fileURLToPath(new URL("../ops/notification-cron/", import.meta.url)),
+    env: {},
+    encoding: "utf8",
+    timeout: 3000,
+  });
+  assert.equal(result.error, undefined);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "");
 });
