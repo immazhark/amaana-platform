@@ -208,6 +208,38 @@ describe("Razorpay webhook route", () => {
     expect(mocks.transactionRetry).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["null envelope", null],
+    ["array envelope", []],
+    ["missing event", { payload: {} }],
+    ["numeric event", { event: 7 }],
+    ["blank event", { event: "  " }],
+    ["non-string event", { event: { type: "payment.captured" } }],
+  ])("rejects a signed webhook with %s before ledger or financial writes", async (_case, payload) => {
+    const response = await POST(webhookRequest(payload));
+
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe("Invalid webhook event envelope");
+    expect(mocks.paymentEventFindUnique).not.toHaveBeenCalled();
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
+    expect(mocks.ensureCapturedDonationForRefund).not.toHaveBeenCalled();
+    expect(mocks.transactionRetry).not.toHaveBeenCalled();
+  });
+
+  it("rejects a signed malformed JSON webhook instead of requesting repeated server retries", async () => {
+    const response = await POST(new Request("https://amaana.example/api/webhooks/razorpay", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-razorpay-signature": "signature" },
+      body: "{ invalid-json",
+    }));
+
+    expect(response.status).toBe(400);
+    expect(await response.text()).toBe("Invalid webhook JSON");
+    expect(mocks.paymentEventFindUnique).not.toHaveBeenCalled();
+    expect(mocks.rootPaymentEventCreate).not.toHaveBeenCalled();
+  });
+
   it("rejects an invalid signature before any event lookup or accounting", async () => {
     mocks.verifyWebhookSignature.mockReturnValue(false);
 
