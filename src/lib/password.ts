@@ -65,9 +65,10 @@ export function passwordNeedsRehash(stored: string) {
   return Number(nRaw) !== CURRENT_SCRYPT.N
     || Number(rRaw) !== CURRENT_SCRYPT.r
     || Number(pRaw) !== CURRENT_SCRYPT.p
+    || saltHex?.length !== 32
+    || hashHex?.length !== CURRENT_SCRYPT.keyLength * 2
     || !isHex(saltHex)
-    || !isHex(hashHex)
-    || Buffer.from(hashHex ?? "", "hex").length !== CURRENT_SCRYPT.keyLength;
+    || !isHex(hashHex);
 }
 
 export async function verifyPassword(password: string, stored: string) {
@@ -84,6 +85,10 @@ export async function verifyPassword(password: string, stored: string) {
       && (N & (N - 1)) === 0
       && r > 0
       && p > 0
+      // Bound both input sizes before hex decoding or invoking scrypt. A
+      // corrupt stored credential must not control the crypto allocation.
+      && saltHex?.length === 32
+      && hashHex?.length === CURRENT_SCRYPT.keyLength * 2
       && isHex(saltHex)
       && isHex(hashHex);
 
@@ -109,17 +114,20 @@ export async function verifyPassword(password: string, stored: string) {
   }
 
   const [algorithm, saltHex, hashHex] = stored.split(":");
+  // Historical Amaana credentials used a 16-byte random salt and a 64-byte
+  // scrypt digest. Validate their exact lengths before decoding either value:
+  // corrupted database rows must never choose the crypto allocation size.
   const validLegacy = algorithm === "scrypt"
+    && saltHex?.length === DUMMY_SALT.length * 2
+    && hashHex?.length === DUMMY_HASH.length * 2
     && isHex(saltHex)
     && isHex(hashHex);
 
   if (validLegacy) {
     const salt = Buffer.from(saltHex!, "hex");
     const expected = Buffer.from(hashHex!, "hex");
-    if (expected.length > 0 && expected.length <= 128) {
-      const supplied = await derivePassword(password, salt, expected.length);
-      return supplied.length === expected.length && timingSafeEqual(supplied, expected);
-    }
+    const supplied = await derivePassword(password, salt, expected.length);
+    return supplied.length === expected.length && timingSafeEqual(supplied, expected);
   }
 
   const supplied = await derivePassword(password, DUMMY_SALT, DUMMY_HASH.length, CURRENT_SCRYPT);
