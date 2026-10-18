@@ -59,13 +59,13 @@ export default async function ImpactComparisonPage({
           />
           <form method="get" action="/impact/compare#comparison" aria-label="Compare two published initiatives" className={styles.form}>
             <label className={styles.field} htmlFor="compare-left">First initiative
-              <select className={styles.select} name="left" id="compare-left" required defaultValue={choice.selected?.[0].slug ?? ""}>
+              <select className={styles.select} name="left" id="compare-left" required aria-invalid={choice.invalid || undefined} aria-describedby={choice.invalid ? "comparison-error" : undefined} defaultValue={choice.selected?.[0].slug ?? ""}>
                 <option value="" disabled>Choose an initiative</option>
                 {choice.options.map(item => <option key={item.slug} value={item.slug}>{item.title}</option>)}
               </select>
             </label>
             <label className={styles.field} htmlFor="compare-right">Second initiative
-              <select className={styles.select} name="right" id="compare-right" required defaultValue={choice.selected?.[1].slug ?? ""}>
+              <select className={styles.select} name="right" id="compare-right" required aria-invalid={choice.invalid || undefined} aria-describedby={choice.invalid ? "comparison-error" : undefined} defaultValue={choice.selected?.[1].slug ?? ""}>
                 <option value="" disabled>Choose another initiative</option>
                 {choice.options.map(item => <option key={item.slug} value={item.slug}>{item.title}</option>)}
               </select>
@@ -73,7 +73,7 @@ export default async function ImpactComparisonPage({
             <button type="submit" className={`v2-button ${styles.submit}`}>Compare published outcomes</button>
           </form>
 
-          {choice.invalid && <p role="alert">These comparison choices could not be read. Please select two different published initiatives.</p>}
+          {choice.invalid && <p id="comparison-error" role="alert">These comparison choices could not be read. Please select two different published initiatives.</p>}
           {choice.requested && <p><Link href="/impact/compare#comparison" className="v2-text-link">Clear comparison</Link></p>}
           {choice.selected ? (
             <section aria-label="Side-by-side published outcomes">
