@@ -15,7 +15,8 @@ export function filterWork<T extends Programme>(programmes: T[], search: WorkSea
   const programme = typeof search.programme === "string" ? search.programme : "";
   const year = typeof search.year === "string" ? search.year : "";
   const years = [...new Set(programmes.flatMap(p => p.initiatives.flatMap(yearsFor)))].sort((a, b) => b - a);
-  const invalid = Array.isArray(search.programme) || Array.isArray(search.year)
+  const invalid = Object.keys(search).some(key => key !== "programme" && key !== "year")
+    || Array.isArray(search.programme) || Array.isArray(search.year)
     || Boolean(programme && !programmes.some(p => p.slug === programme))
     || Boolean(year && !years.some(value => String(value) === year));
   const active = Boolean(programme || year || invalid);
@@ -23,5 +24,11 @@ export function filterWork<T extends Programme>(programmes: T[], search: WorkSea
     .filter(p => !programme || p.slug === programme)
     .map(p => ({ ...p, initiatives: p.initiatives.filter(item => !year || yearsFor(item).includes(Number(year))) } as T))
     .filter(p => p.initiatives.length > 0);
-  return { programme, year, years, invalid, active, results, count: results.reduce((total, p) => total + p.initiatives.length, 0) };
+  // A rejected query must not be serialized back into public select values.
+  return {
+    programme: invalid ? "" : programme,
+    year: invalid ? "" : year,
+    years, invalid, active, results,
+    count: results.reduce((total, p) => total + p.initiatives.length, 0),
+  };
 }
