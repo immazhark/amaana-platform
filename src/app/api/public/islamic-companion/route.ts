@@ -1,22 +1,44 @@
 import { NextResponse } from "next/server";
+import { readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { HYDERABAD_ZONE, PRAYERS, hyderabadClock, observedHijri, shiftDate, timeMinutes, type PrayerDay } from "@/lib/daily-companion";
 import sightings from "@/data/hyderabad-moonsighting.json";
 
 export const dynamic = "force-dynamic";
 
+// Prayer-provider JSON is small. Reject outlier bodies before parsing to keep
+// this unauthenticated endpoint bounded when the external service misbehaves.
+const MAX_PRAYER_PROVIDER_RESPONSE_BYTES = 32 * 1024;
+const PRAYER_PROVIDER_READ_TIMEOUT_MS = 8_000;
+
 async function loadPrayerDay(date: string, school: string): Promise<PrayerDay> {
   const providerDate = date.split("-").reverse().join("-");
   const params = new URLSearchParams({ latitude: "17.3850", longitude: "78.4867", method: "1", school, timezonestring: HYDERABAD_ZONE });
   const response = await fetch(`https://api.aladhan.com/v1/timings/${providerDate}?${params}`, {
-    next: { revalidate: 3600 }, signal: AbortSignal.timeout(8000),
+    next: { revalidate: 3600 },
+    signal: AbortSignal.timeout(PRAYER_PROVIDER_READ_TIMEOUT_MS),
+    redirect: "error",
   });
   if (!response.ok) throw new Error("Prayer provider unavailable");
-  const payload = await response.json();
-  if (payload.code !== 200 || payload.data?.date?.gregorian?.date !== providerDate ||
-      payload.data?.meta?.timezone !== HYDERABAD_ZONE) throw new Error("Prayer provider returned a different day or timezone");
+  const rawBody = await readTextBodyWithLimit(response, MAX_PRAYER_PROVIDER_RESPONSE_BYTES, {
+    timeoutMs: PRAYER_PROVIDER_READ_TIMEOUT_MS,
+  });
+  const payload: unknown = JSON.parse(rawBody);
+  if (!payload || typeof payload !== "object" || Array.isArray(payload)) {
+    throw new Error("Prayer provider returned invalid data");
+  }
+  const data = payload as {
+    code?: unknown;
+    data?: {
+      date?: { gregorian?: { date?: unknown } };
+      meta?: { timezone?: unknown };
+      timings?: Record<string, unknown>;
+    };
+  };
+  if (data.code !== 200 || data.data?.date?.gregorian?.date !== providerDate ||
+      data.data?.meta?.timezone !== HYDERABAD_ZONE) throw new Error("Prayer provider returned a different day or timezone");
   const timings = {} as PrayerDay["timings"];
   for (const prayer of PRAYERS) {
-    const raw = payload.data.timings?.[prayer];
+    const raw = data.data.timings?.[prayer];
     const value = typeof raw === "string" ? raw.split(" ")[0] : null;
     if (timeMinutes(value) === null) throw new Error("Incomplete prayer times");
     timings[prayer] = value as string;

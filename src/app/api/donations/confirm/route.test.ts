@@ -6,13 +6,19 @@ const mocks = vi.hoisted(() => ({
   captureDonation: vi.fn(),
   fetchRazorpayPayment: vi.fn(),
   verifyCheckoutSignature: vi.fn(),
+  simulateReadTimeout: false,
+  observedReadDeadline: undefined as number | undefined,
 }));
 
 vi.mock("@/lib/bounded-request-body", () => {
   class RequestBodyTooLargeError extends Error {}
+  class RequestBodyReadTimeoutError extends Error {}
   return {
     RequestBodyTooLargeError,
-    readTextBodyWithLimit: async (request: Request, maxBytes: number) => {
+    RequestBodyReadTimeoutError,
+    readTextBodyWithLimit: async (request: Request, maxBytes: number, options?: { timeoutMs?: number }) => {
+      mocks.observedReadDeadline = options?.timeoutMs;
+      if (mocks.simulateReadTimeout) throw new RequestBodyReadTimeoutError();
       const declared = Number(request.headers.get("content-length"));
       if (Number.isFinite(declared) && declared > maxBytes) throw new RequestBodyTooLargeError();
       return request.text();
@@ -76,8 +82,31 @@ function storedDonation() {
 }
 
 describe("donation confirmation persisted status", () => {
+  it("bounds a signed payment confirmation body read to five seconds", async () => {
+    const response = await POST(confirmationRequest());
+    expect(mocks.observedReadDeadline).toBe(5_000);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+  });
+
+  it("returns a private retryable timeout without signature or provider calls", async () => {
+    mocks.simulateReadTimeout = true;
+    const response = await POST(confirmationRequest());
+    expect(response.status).toBe(503);
+    expect(response.headers.get("Retry-After")).toBe("60");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(await response.json()).toEqual({
+      error: "Payment confirmation timed out. Please retain your payment confirmation and do not submit another payment.",
+    });
+    expect(mocks.verifyCheckoutSignature).not.toHaveBeenCalled();
+    expect(mocks.findUnique).not.toHaveBeenCalled();
+    expect(mocks.fetchRazorpayPayment).not.toHaveBeenCalled();
+    expect(mocks.captureDonation).not.toHaveBeenCalled();
+  });
+
   beforeEach(() => {
     vi.resetAllMocks();
+    mocks.simulateReadTimeout = false;
+    mocks.observedReadDeadline = undefined;
     mocks.verifyCheckoutSignature.mockReturnValue(true);
     mocks.updateMany.mockResolvedValue({ count: 0 });
     mocks.fetchRazorpayPayment.mockResolvedValue({
@@ -107,10 +136,25 @@ describe("donation confirmation persisted status", () => {
     },
   );
 
+  it.each(["CREATED", "AUTHORIZED", "FAILED", "PENDING_VERIFICATION"])(
+    "does not report successful confirmation for persisted %s",
+    async status => {
+      mocks.findUnique.mockResolvedValueOnce(storedDonation()).mockResolvedValueOnce({ status });
+      const response = await POST(confirmationRequest());
+      expect(response.status).toBe(409);
+      expect(await response.json()).toEqual({
+        status,
+        error: "Payment verification is pending. Please retain your payment confirmation and do not submit another payment.",
+      });
+      expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+      expect(mocks.captureDonation).not.toHaveBeenCalled();
+    },
+  );
+
   it("keeps payment confirmation responses private and non-indexable", async () => {
     mocks.findUnique
       .mockResolvedValueOnce(storedDonation())
-      .mockResolvedValueOnce({ status: "AUTHORIZED" });
+      .mockResolvedValueOnce({ status: "CAPTURED" });
 
     const response = await POST(confirmationRequest());
 

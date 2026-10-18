@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
-import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { createDonationReference, createReceiptToken, donationSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { createRazorpayOrder } from "@/lib/razorpay";
@@ -18,18 +18,37 @@ const privateHeaders = {
 const MAX_PAYMENT_JSON_BYTES = 32 * 1024;
 
 export async function POST(request: Request) {
+  let providerAttempted = false;
   try {
     validateProductionEnvironment();
     if (!isSameOrigin(request)) return NextResponse.json({ error: "Invalid request origin." }, { status: 403, headers: privateHeaders });
     if (!(await enforceDonationRateLimit(request))) return NextResponse.json({ error: "Too many checkout attempts. Please try again later." }, { status: 429, headers: { ...privateHeaders, "Retry-After": "3600" } });
 
-    let body: unknown;
+    let rawBody: string;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES));
+      rawBody = await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES, { timeoutMs: 5_000 });
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ error: "Donation request payload is too large." }, { status: 413, headers: privateHeaders });
       }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        return NextResponse.json(
+          { error: "Donation request timed out. Please try again." },
+          { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+        );
+      }
+      // An interrupted transport is not a donor validation error. No payment
+      // order or database write has started, so explicit retry is safe.
+      return NextResponse.json(
+        { error: "Donation request could not be read. Please try again." },
+        { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+      );
+    }
+
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
       return NextResponse.json({ error: "Please check the donation information." }, { status: 400, headers: privateHeaders });
     }
 
@@ -68,7 +87,7 @@ export async function POST(request: Request) {
         },
       },
     });
-    if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+    if (!appeal || !canExposePublicAppeal(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
 
     const zakatEligible = appeal.assistanceRequest?.verification?.zakatStatus === "ELIGIBLE";
     if (parsed.data.givingIntent === "ZAKAT" && !zakatEligible) {
@@ -78,7 +97,11 @@ export async function POST(request: Request) {
       );
     }
 
-    const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
+    const remainingAmount = getDonationCheckoutRemainingAmount(appeal);
+    if (remainingAmount === null) return NextResponse.json(
+      { error: "This appeal is not accepting donations." },
+      { status: 409, headers: privateHeaders },
+    );
     if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) {
       if (parsed.data.amount > remainingAmount) {
         return NextResponse.json(
@@ -101,6 +124,9 @@ export async function POST(request: Request) {
 
     const referenceNumber = createDonationReference(); const receiptToken = createReceiptToken(); const amountPaise = parsed.data.amount * 100;
     if (!Number.isSafeInteger(amountPaise) || amountPaise <= 0) throw new Error("Donation amount cannot be represented safely in paise");
+    // Once the provider request starts, transport errors or failed persistence
+    // cannot prove that no Razorpay order was created. Never invite a replay.
+    providerAttempted = true;
     const order = await createRazorpayOrder({ amountPaise, receipt: referenceNumber, appealId: appeal.id, givingIntent: parsed.data.givingIntent });
     // Never persist a fabricated or unusable provider identity or a non-created order.
     if (
@@ -149,6 +175,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ donationId: donation.id, orderId: order.id, amount: amountPaise, currency: "INR", keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, appealTitle: appeal.title, donor: { name: donation.donorName, email: donation.donorEmail, contact: donation.donorPhone }, receiptToken }, { status: 201, headers: privateHeaders });
   } catch {
     logServerError("donation.order_creation_failed");
-    return NextResponse.json({ error: "We could not start the secure payment. Please try again." }, { status: 500, headers: privateHeaders });
+    if (providerAttempted) {
+      return NextResponse.json(
+        { error: "Checkout status is uncertain. An order may have been created. Contact Amaana before starting another payment." },
+        { status: 503, headers: privateHeaders },
+      );
+    }
+    return NextResponse.json(
+      { error: "We could not start the secure payment. Please try again." },
+      { status: 500, headers: privateHeaders },
+    );
   }
 }

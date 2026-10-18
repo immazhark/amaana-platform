@@ -337,7 +337,6 @@ test.describe('donation journey without real payment', () => {
 
   for (const failure of [
     { name: 'rate limiting', status: 429, message: 'Please wait before starting another donation.' },
-    { name: 'server failure', status: 500, message: 'Could not start checkout safely.' },
   ]) {
     test(`order API ${failure.name} restores an editable form without opening Razorpay`, async ({ page }) => {
       let checkoutOpens = 0;
@@ -411,7 +410,7 @@ test.describe('donation journey without real payment', () => {
       await route.fulfill({
         status: 200,
         contentType: 'application/json',
-        body: JSON.stringify({ referenceNumber: donationReference }),
+        body: JSON.stringify({ referenceNumber: donationReference, status: "CAPTURED" }),
       });
     });
     await page.route('**/api/donations/acknowledgement', route => route.fulfill({
@@ -456,6 +455,24 @@ test.describe('donation journey without real payment', () => {
       receiptToken,
     }));
   });
+
+  for (const status of ['CREATED', 'AUTHORIZED', 'FAILED', 'PENDING_VERIFICATION', null, 'unexpected']) {
+    test(`HTTP 200 with unsettled status ${status} keeps checkout locked`, async ({ page }) => {
+      await mockDonationOrder(page, { value: null });
+      await page.route('**/api/donations/confirm', route => route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({ referenceNumber: donationReference, status }),
+      }));
+      const submit = await openDonationFixture(page, 'success');
+      await fillDonationForm(page);
+      await submit.click();
+      await expect(page.getByRole('button', { name: 'Verification follow-up required' })).toBeDisabled();
+      await expect(page.getByLabel(/Donation amount/)).toBeDisabled();
+      await expect(page.locator('.form-error[role="alert"]')).toContainText('do not submit another payment');
+      await expect(page).not.toHaveURL(/acknowledgement/);
+    });
+  }
 
   test('mocked verification failure locks the form against duplicate payment attempts', async ({ page }) => {
     const order = { value: null };
@@ -865,3 +882,62 @@ test('legacy query donation acknowledgement token is scrubbed from the visible U
   expect(page.url()).toBe(`http://127.0.0.1:3000/donations/${reference}/acknowledgement`);
   expect(page.url()).not.toContain(token);
 });
+
+test('receipt availability failure preserves the private token for explicit retry', async ({ page }) => {
+  await mockAnalytics(page);
+  const reference = 'AFD-DEADLINE-RETRY';
+  const token = 'synthetic-private-receipt-retry-token';
+  const requests = [];
+  let unavailable = true;
+  await page.route('**/api/donations/acknowledgement', async route => {
+    requests.push(route.request().postDataJSON());
+    await route.fulfill({
+      status: unavailable ? 503 : 404,
+      contentType: 'application/json',
+      body: JSON.stringify({ found: false }),
+    });
+  });
+  await page.goto(`/donations/${reference}/acknowledgement#token=${token}`);
+  await expect(page.getByRole('heading', { name: 'Unable to open your acknowledgement.' })).toBeVisible();
+  await expect(page.getByText(/Retry without paying again/)).toBeVisible();
+  expect(new URL(page.url()).hash).toBe('');
+  expect(new URL(page.url()).search).toBe('');
+  unavailable = false;
+  await page.getByRole('button', { name: 'Try again', exact: true }).click();
+  await expect(page.getByRole('heading', { name: 'Private acknowledgement unavailable.' })).toBeVisible();
+  expect(requests).toEqual([{ reference, token }, { reference, token }]);
+});
+
+for (const status of [429, 503]) {
+  test(`tracking HTTP ${status} preserves private credentials for explicit retry`, async ({ page }) => {
+    await mockAnalytics(page);
+    const bodies = [];
+    let unavailable = true;
+    await page.route('**/api/assistance/status', async route => {
+      bodies.push(route.request().postDataJSON());
+      await route.fulfill({
+        status: unavailable ? status : 200,
+        contentType: 'application/json',
+        body: JSON.stringify(unavailable ? { found: false } : {
+          found: true, status: 'UNDER_VERIFICATION',
+          createdAt: '2026-09-16T00:00:00.000Z', updatedAt: '2026-09-16T01:00:00.000Z',
+        }),
+      });
+    });
+    await page.goto(`/request-assistance/status#reference=${assistanceReference}&token=${trackingToken}`);
+    await expect(page.getByRole('heading', { name: status === 429 ? 'Tracking temporarily limited' : 'Unable to check your request' })).toBeVisible();
+    if (status === 429) {
+      await expect(page.getByText(/Please wait.*hour.*trying again/i)).toBeVisible();
+    }
+    expect(new URL(page.url()).hash).toBe('');
+    expect(new URL(page.url()).search).toBe('');
+    await expect(page.getByRole('link', { name: 'Start a new request' })).toHaveCount(0);
+    unavailable = false;
+    await page.getByRole('button', { name: 'Try tracking again' }).click();
+    await expect(page.getByRole('heading', { name: 'Under verification' })).toBeVisible();
+    expect(bodies).toEqual([
+      { reference: assistanceReference, token: trackingToken },
+      { reference: assistanceReference, token: trackingToken },
+    ]);
+  });
+}

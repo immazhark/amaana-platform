@@ -123,6 +123,34 @@ describe("delivery configuration is validated before public persistence", () => 
   });
 });
 
+describe("bounded public-media S3 acquisition", () => {
+  it("rejects a stuck GetObject before stream acquisition and aborts the transport", async () => {
+    let acquisitionSignal: AbortSignal | undefined;
+    sdk.send.mockImplementation((_command: unknown, options?: { abortSignal?: AbortSignal }) => {
+      acquisitionSignal = options?.abortSignal;
+      return new Promise(() => {});
+    });
+    vi.useFakeTimers();
+    try {
+      let fallback: ReturnType<typeof setTimeout> | undefined;
+      const result = Promise.race([
+        getPublicMediaObject(key),
+        new Promise<never>((_resolve, reject) => {
+          fallback = setTimeout(() => reject(new Error("S3 acquisition stalled without a bounded deadline")), 15_100);
+        }),
+      ]);
+      const assertion = expect(result).rejects.toThrow("Public media object request timed out");
+      await vi.advanceTimersByTimeAsync(15_101);
+      await assertion;
+      expect(acquisitionSignal).toBeDefined();
+      expect(acquisitionSignal?.aborted).toBe(true);
+      if (fallback !== undefined) clearTimeout(fallback);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
 describe("public object reads enforce upload-size and completeness boundaries", () => {
   it("closes an oversized object before reading its body", async () => {
     const consumed = vi.fn();
@@ -135,6 +163,49 @@ describe("public object reads enforce upload-size and completeness boundaries", 
     await expect(getPublicMediaObject(key)).rejects.toThrow(/size boundary/);
     expect(consumed).not.toHaveBeenCalled();
     expect(closed).toHaveBeenCalledTimes(1);
+  });
+
+  it("rejects a declared oversized object even if cancellation never settles", async () => {
+    const cancel = vi.fn(() => new Promise<void>(() => {}));
+    const consumed = vi.fn();
+    sdk.send.mockResolvedValue({
+      ContentLength: 5 * 1024 * 1024 + 1,
+      Body: { cancel, async *[Symbol.asyncIterator]() { consumed(); yield new Uint8Array([1]); } },
+    });
+
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await expect(Promise.race([
+        getPublicMediaObject(key),
+        new Promise<never>((_resolve, reject) => {
+          timeout = setTimeout(() => reject(new Error("S3 cleanup stalled media response")), 150);
+        }),
+      ])).rejects.toThrow(/size boundary/);
+      expect(cancel).toHaveBeenCalledOnce();
+      expect(consumed).not.toHaveBeenCalled();
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  });
+
+  it("preserves the size error when cleanup rejects asynchronously", async () => {
+    const cancel = vi.fn(async () => { throw new Error("synthetic private cleanup error"); });
+    sdk.send.mockResolvedValue({
+      ContentLength: 5 * 1024 * 1024 + 1,
+      Body: { cancel, async *[Symbol.asyncIterator]() { yield new Uint8Array([1]); } },
+    });
+    await expect(getPublicMediaObject(key)).rejects.toThrow(/size boundary/);
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
+  it("preserves the size error when cleanup throws synchronously", async () => {
+    const cancel = vi.fn(() => { throw new Error("synthetic synchronous cleanup error"); });
+    sdk.send.mockResolvedValue({
+      ContentLength: 5 * 1024 * 1024 + 1,
+      Body: { cancel, async *[Symbol.asyncIterator]() { yield new Uint8Array([1]); } },
+    });
+    await expect(getPublicMediaObject(key)).rejects.toThrow(/size boundary/);
+    expect(cancel).toHaveBeenCalledOnce();
   });
 
   it("bounds unknown-length bodies and closes the iterator on overflow", async () => {
@@ -156,12 +227,94 @@ describe("public object reads enforce upload-size and completeness boundaries", 
     expect(closed).toHaveBeenCalledTimes(1);
   });
 
+  it("rejects unknown-length overflow without awaiting an iterator that refuses to close", async () => {
+    const iterator = {
+      next: vi.fn(async () => ({ done: false as const, value: new Uint8Array(1024 * 1024) })),
+      return: vi.fn(() => new Promise<IteratorResult<Uint8Array>>(() => {})),
+    };
+    sdk.send.mockResolvedValue({
+      Body: { [Symbol.asyncIterator]: () => iterator },
+    });
+
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await expect(Promise.race([
+        getPublicMediaObject(key),
+        new Promise<never>((_resolve, reject) => {
+          timeout = setTimeout(() => reject(new Error("iterator cleanup stalled the response")), 200);
+        }),
+      ])).rejects.toThrow(/size boundary/);
+      expect(iterator.next).toHaveBeenCalledTimes(6);
+      expect(iterator.return).toHaveBeenCalledOnce();
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  });
+
+  it("preserves invalid stream data errors when iterator cleanup throws", async () => {
+    const iterator = {
+      next: vi.fn(async () => ({ done: false as const, value: "synthetic bad bytes" })),
+      return: vi.fn(() => { throw new Error("synthetic iterator cleanup failure"); }),
+    };
+    sdk.send.mockResolvedValue({ Body: { [Symbol.asyncIterator]: () => iterator } });
+    await expect(getPublicMediaObject(key)).rejects.toThrow(/invalid byte data/);
+    expect(iterator.return).toHaveBeenCalledOnce();
+  });
+
   it("rejects truncated bodies instead of caching incomplete media", async () => {
     sdk.send.mockResolvedValue({
       ContentLength: 3,
       Body: { async *[Symbol.asyncIterator]() { yield new Uint8Array([1, 2]); } },
     });
     await expect(getPublicMediaObject(key)).rejects.toThrow(/incomplete/);
+  });
+
+  it("bounds a stalled S3 iterator and aborts its underlying body", async () => {
+    const destroy = vi.fn();
+    const next = vi.fn(() => new Promise<IteratorResult<Uint8Array>>(() => {}));
+    const body = {
+      destroy,
+      [Symbol.asyncIterator]: () => ({ next }),
+    };
+    sdk.send.mockResolvedValue({ Body: body });
+
+    vi.useFakeTimers();
+    try {
+      let outcome: string | null = null;
+      void getPublicMediaObject(key).then(
+        () => { outcome = "unexpected-success"; },
+        (error: unknown) => { outcome = error instanceof Error ? error.message : "invalid-error"; },
+      );
+
+      await vi.advanceTimersByTimeAsync(15_001);
+      expect(outcome).toMatch(/Public media object read timed out/);
+      expect(next).toHaveBeenCalledOnce();
+      expect(destroy).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("copies S3 stream chunks before a producer reuses the backing buffer", async () => {
+    // Some async iterators reuse a staging buffer between pulls. Holding a
+    // zero-copy Buffer view can corrupt already-accepted image/document bytes.
+    const shared = new Uint8Array([1, 2, 3]);
+    const body = {
+      async *[Symbol.asyncIterator]() {
+        yield shared;
+        shared.set([4, 5, 6]);
+        yield shared;
+      },
+    };
+    sdk.send.mockResolvedValue({
+      ContentLength: 6,
+      ContentType: "application/pdf",
+      Body: body,
+    });
+
+    const result = await getPublicMediaObject(key);
+    expect([...result.bytes]).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(result.bytes.byteLength).toBe(6);
   });
 
   it("preserves valid streamed bytes and delivery metadata", async () => {

@@ -1,8 +1,10 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { z } from "zod";
 
 const apiBase = "https://api.razorpay.com/v1";
 const RAZORPAY_REQUEST_TIMEOUT_MS = 15_000;
+const MAX_RAZORPAY_RESPONSE_BYTES = 64 * 1024;
 const paymentResponseSchema = z.object({
   id: z.string().min(1),
   order_id: z.string().min(1).nullable(),
@@ -29,6 +31,10 @@ async function requestRazorpay(path: string, init?: RequestInit) {
   const { keyId, secret } = credentials();
   const response = await fetch(`${apiBase}${path}`, {
     ...init,
+    // Never follow a redirect while making an authenticated payment request.
+    // Reject both cross-origin and same-origin redirects rather than trusting
+    // any redirected response as authoritative financial provider evidence.
+    redirect: "error",
     signal: init?.signal ?? AbortSignal.timeout(RAZORPAY_REQUEST_TIMEOUT_MS),
     headers: {
       Authorization: `Basic ${Buffer.from(`${keyId}:${secret}`).toString("base64")}`,
@@ -42,7 +48,24 @@ async function requestRazorpay(path: string, init?: RequestInit) {
     throw new Error(`Razorpay request failed with status ${response.status}`);
   }
 
-  return response.json();
+  // Bound both declared-length and streamed provider replies before parsing.
+  // The provider's authenticated status is not a guarantee of bounded JSON.
+  let raw: string;
+  try {
+    raw = await readTextBodyWithLimit(response, MAX_RAZORPAY_RESPONSE_BYTES, {
+      timeoutMs: RAZORPAY_REQUEST_TIMEOUT_MS,
+    });
+  } catch (error) {
+    if (error instanceof RequestBodyTooLargeError) throw new Error("Razorpay response too large");
+    if (error instanceof RequestBodyReadTimeoutError) throw new Error("Razorpay response read timed out");
+    throw new Error("Razorpay response could not be read");
+  }
+
+  try {
+    return JSON.parse(raw) as unknown;
+  } catch {
+    throw new Error("Invalid Razorpay response JSON");
+  }
 }
 
 export async function createRazorpayOrder(input: {

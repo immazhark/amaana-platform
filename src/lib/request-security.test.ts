@@ -36,7 +36,7 @@ function prismaError(code: string) {
 }
 
 describe("proxy-aware client address selection", () => {
-  it("uses Cloudflare's single-value visitor header on the configured custom domain", () => {
+  it("uses the Railway-sanitized client IP instead of a forgeable Cloudflare header on the custom host", () => {
     process.env.NEXT_PUBLIC_APP_URL = "https://amaanafoundation.org";
     const request = new Request("https://amaanafoundation.org/", {
       headers: {
@@ -46,7 +46,7 @@ describe("proxy-aware client address selection", () => {
         "x-forwarded-for": "192.0.2.9, 198.51.100.20",
       },
     });
-    expect(getRateLimitClientAddress(request)).toBe("203.0.113.10");
+    expect(getRateLimitClientAddress(request)).toBe("198.51.100.20");
   });
 
   it("prefers Railway X-Real-IP for the direct staging host", () => {
@@ -62,14 +62,53 @@ describe("proxy-aware client address selection", () => {
     expect(getRateLimitClientAddress(request)).toBe("198.51.100.20");
   });
 
-  it("does not trust the first X-Forwarded-For hop when stronger proxy headers are absent", () => {
+  it("does not accept a forged forwarding chain when the trusted ingress identity is missing", () => {
     delete process.env.NEXT_PUBLIC_APP_URL;
     const request = new Request("https://example.test/", {
       headers: {
         "x-forwarded-for": "203.0.113.250, 198.51.100.20",
       },
     });
-    expect(getRateLimitClientAddress(request)).toBe("198.51.100.20");
+    expect(getRateLimitClientAddress(request)).toBe("unknown");
+  });
+
+  it("refuses forged Cloudflare and forwarded addresses even when the host matches production", () => {
+    process.env.NEXT_PUBLIC_APP_URL = "https://amaanafoundation.org";
+    const request = (spoof: string) => new Request("https://amaanafoundation.org/api/donations/order", {
+      headers: {
+        host: "amaanafoundation.org",
+        "x-forwarded-host": "amaanafoundation.org",
+        "x-real-ip": "198.51.100.20",
+        "cf-connecting-ip": spoof,
+        "x-forwarded-for": `${spoof}, ${spoof}`,
+      },
+    });
+
+    const first = request("203.0.113.10");
+    const second = request("203.0.113.99");
+    expect(getRateLimitClientAddress(first)).toBe("198.51.100.20");
+    expect(getRateLimitClientAddress(second)).toBe("198.51.100.20");
+    for (const purpose of ["donation", "assistance", "analytics", "tracking", "acknowledgement"] as const) {
+      expect(getRateLimitClientHash(first, purpose)).toBe(getRateLimitClientHash(second, purpose));
+    }
+  });
+
+  it("fails closed without a sanitized ingress address even when other headers look legitimate", () => {
+    const request = new Request("https://amaanafoundation.org/", {
+      headers: {
+        host: "amaanafoundation.org",
+        "cf-connecting-ip": "203.0.113.7",
+        "x-forwarded-for": "203.0.113.7",
+      },
+    });
+    expect(getRateLimitClientAddress(request)).toBe("unknown");
+  });
+
+  it("accepts a single IPv6 address supplied by the trusted ingress", () => {
+    const request = new Request("https://amaanafoundation.org/", {
+      headers: { "x-real-ip": "2001:db8::9" },
+    });
+    expect(getRateLimitClientAddress(request)).toBe("2001:db8::9");
   });
 
   it("rejects malformed proxy-address headers", () => {
@@ -84,6 +123,17 @@ describe("proxy-aware client address selection", () => {
 });
 
 describe("rate-limit client hashing", () => {
+  it("keeps receipt lookups independent of donation checkout and all other workflows", () => {
+    const request = requestFor("203.0.113.10");
+    const receiptHash = getRateLimitClientHash(request, "acknowledgement");
+    expect(receiptHash).toMatch(/^[a-f0-9]{64}$/);
+    for (const purpose of ["donation", "assistance", "analytics"] as const) {
+      expect(receiptHash).not.toBe(getRateLimitClientHash(request, purpose));
+    }
+    process.env.DONATION_TOKEN_PEPPER = "rotated-donation-value";
+    expect(getRateLimitClientHash(request, "acknowledgement")).not.toBe(receiptHash);
+  });
+
   it("keeps donation, assistance and analytics identifiers separated", () => {
     const request = requestFor("203.0.113.10");
     const hashes = new Set([

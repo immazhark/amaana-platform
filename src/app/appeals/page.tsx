@@ -4,12 +4,13 @@ import "@/app/canonical-content.css";
 import Link from "next/link";
 import { programmes } from "@/lib/master-copy";
 import { AppealCard } from "@/components/appeal-card";
+import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { BodyCarousel, BodyCard } from "@/components/body-carousel";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { isAppealOpenForDonations } from "@/lib/appeals";
-import { getAppealsIndexData, getCompletedAidShowcaseData } from "@/lib/public-page-data";
+import { getAppealsIndexData, getCompletedAidShowcaseData, getDonationImpactHighlights } from "@/lib/public-page-data";
 import styles from "./appeals-audit.module.css";
 import { canExposeSyntheticStagingContent, isSyntheticStagingAppeal } from "@/lib/public-environment";
 import { selectGalleryPublicImage } from "@/lib/public-media";
@@ -25,9 +26,10 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function AppealsPage() {
-  const [appealRecords, completedAid] = await Promise.all([
+  const [appealRecords, completedAid, publishedOutcomes] = await Promise.all([
     getAppealsIndexData(),
     getCompletedAidShowcaseData(),
+    getDonationImpactHighlights().catch(() => []),
   ]);
   const isStaging = canExposeSyntheticStagingContent();
   const appeals = appealRecords.filter(appeal => isAppealOpenForDonations(appeal) && (isStaging || !isSyntheticStagingAppeal(appeal)));
@@ -52,6 +54,9 @@ export default async function AppealsPage() {
 
       <section className={`v2-appeals-trustline ${styles.lifecycle}`} aria-label="Appeal review journey"><div className={`v2-shell ${styles.lifecycleTrack}`}><span>Need received</span><b aria-hidden="true">→</b><span>Information reviewed</span><b aria-hidden="true">→</b><span>Decision made</span><b aria-hidden="true">→</b><span>Public-safe appeal</span><b aria-hidden="true">→</b><span>Known outcome recorded</span></div></section>
 
+      <div className="v2-shell"><VerifiedImpactStrip headingId="appeals-published-outcomes" items={publishedOutcomes.flatMap(item =>
+        item.primaryMetric && item.primaryMetricLabel ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }] : [],
+      )} /></div>
       <section className="v2-section paper" id="current-appeals" aria-labelledby="current-appeals-title"><div className="v2-shell"><SectionHeading eyebrow={<>Current appeals</>} title={<>Give where a reviewed need is active.</>} subtitle={<>Donations are currently limited to India. Amaana does not accept foreign contributions because the Foundation is not FCRA-registered.</>} id="current-appeals-title" />{appeals.length ? <div className="v2-appeals-grid">{appeals.map(appeal => <div className={styles.appealItem} key={appeal.slug}>{isStaging && isSyntheticStagingAppeal(appeal) && <span className={styles.stagingBadge}>Staging test</span>}<AppealCard appeal={appeal} /></div>)}</div> : <div className="v2-appeals-empty"><span className="v2-section-label">No active public appeal right now</span><h3>No Public Appeal Is Open Right Now</h3><p>That does not mean the work has stopped. You can explore completed cases or enquire about Amaana’s recurring initiatives. New urgent appeals will appear here after verification.</p><div className="v2-hero-actions"><Link className="v2-button" href="/our-work">Explore completed work</Link><Link className="v2-text-link" href="/stories">Read Stories of Amanah →</Link></div></div>}</div></section>
 
       {publishedCompletedProgrammes.length > 0 && <section className="v2-section amaana-bg-body" id="completed-causes"><div className="v2-shell"><SectionHeading eyebrow="Completed support" title="See What Support Made Possible" subtitle="Completed appeals should not disappear when fundraising closes. Keeping the verified need, amount raised and documented outcome visible helps donors see how community support translated into action." /><BodyCarousel label="Completed support outcomes" variant="content-deck">{publishedCompletedProgrammes.map(p=>{const media=completedAidMedia.get(p.slug)??null;return <BodyCard key={p.slug} title={p.title} visual={media?<PublicMedia asset={media}/>:<WorkVisualPlaceholder label={p.title}/> }><p>{p.primaryMetric} · {p.primaryMetricLabel}</p><Link className="v2-text-link" href={`/our-work/${p.slug}`}>View the documented outcome →</Link></BodyCard>;})}</BodyCarousel></div></section>}

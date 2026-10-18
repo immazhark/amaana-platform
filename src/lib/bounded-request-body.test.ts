@@ -22,6 +22,40 @@ describe("bounded request bodies", () => {
     expect(new TextDecoder().decode(bytes)).toBe("abc₹");
   });
 
+  it("preserves raw bytes when a streaming producer reuses its chunk buffer", async () => {
+    const shared = new Uint8Array([1, 2, 3]);
+    const response = new Response(new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(shared);
+        setTimeout(() => {
+          shared.set([4, 5, 6]);
+          controller.enqueue(shared);
+          controller.close();
+        }, 0);
+      },
+    }));
+
+    await expect(readBodyBytesWithLimit(response, 6)).resolves.toEqual(
+      new Uint8Array([1, 2, 3, 4, 5, 6]),
+    );
+  });
+
+  it("preserves UTF-8 text while the streaming source reuses its staging buffer", async () => {
+    const shared = new TextEncoder().encode("abc");
+    const response = new Response(new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(shared);
+        setTimeout(() => {
+          shared.set(new TextEncoder().encode("def"));
+          controller.enqueue(shared);
+          controller.close();
+        }, 0);
+      },
+    }));
+
+    await expect(readTextBodyWithLimit(response, 6)).resolves.toBe("abcdef");
+  });
+
   it("reads a text body smaller than the byte limit", async () => {
     const request = new Request("https://amaanafoundation.org/", {
       method: "POST",
@@ -105,5 +139,55 @@ describe("bounded request bodies", () => {
     const request = streamedRequest([encoder.encode("12345678")], { "content-length": "not-a-number" });
 
     await expect(readBodyBytesWithLimit(request, 7)).rejects.toBeInstanceOf(RequestBodyTooLargeError);
+  });
+});
+
+
+describe("absolute request body deadlines", () => {
+  it("rejects a stalled stream even if cancellation never settles", async () => {
+    vi.useFakeTimers();
+    try {
+      const request = new Request("https://amaanafoundation.org/api/synthetic", {
+        method: "POST", body: new ReadableStream({ cancel: () => new Promise<void>(() => {}) }), duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      let outcome: unknown = "pending";
+      void readTextBodyWithLimit(request, 1024, { timeoutMs: 50 }).then(value => { outcome = value; }, error => { outcome = error; });
+      await vi.advanceTimersByTimeAsync(50);
+      expect(outcome).toMatchObject({ name: "RequestBodyReadTimeoutError" });
+      expect(request.body?.locked).toBe(false);
+      expect(vi.getTimerCount()).toBe(0);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("does not extend the total deadline when chunks keep arriving", async () => {
+    vi.useFakeTimers();
+    try {
+      let controller!: ReadableStreamDefaultController<Uint8Array>;
+      const request = new Request("https://amaanafoundation.org/api/synthetic", {
+        method: "POST", body: new ReadableStream<Uint8Array>({ start(value) { controller = value; } }), duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      let outcome: unknown = "pending";
+      void readBodyBytesWithLimit(request, 1024, { timeoutMs: 50 }).then(value => { outcome = value; }, error => { outcome = error; });
+      for (let i = 0; i < 4; i++) {
+        await vi.advanceTimersByTimeAsync(10);
+        controller.enqueue(new Uint8Array([65]));
+      }
+      await vi.advanceTimersByTimeAsync(10);
+      expect(outcome).toMatchObject({ name: "RequestBodyReadTimeoutError" });
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("clears its timer after a normal read", async () => {
+    vi.useFakeTimers();
+    try {
+      const request = new Request("https://amaanafoundation.org/", { method: "POST", body: "abc₹" });
+      await expect(readTextBodyWithLimit(request, 6, { timeoutMs: 50 })).resolves.toBe("abc₹");
+      expect(vi.getTimerCount()).toBe(0);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it.each([0, -1, NaN, Infinity, 1.5, 2_147_483_648])("rejects invalid timeout %s", async timeoutMs => {
+    const request = new Request("https://amaanafoundation.org/", { method: "POST", body: "abc" });
+    await expect(readTextBodyWithLimit(request, 1024, { timeoutMs })).rejects.toThrow(RangeError);
   });
 });

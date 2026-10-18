@@ -16,7 +16,8 @@ on:
 
 concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: false
+  # A new PR head supersedes stale browser runs; main and manual release runs remain protected.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 permissions:
   contents: read
@@ -50,7 +51,7 @@ jobs:
           CI_RELEASE: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           node --check scripts/diagnose-resend-dns.mjs
-          node --test scripts/test-ci-plan.mjs
+          node --test scripts/test-ci-plan.mjs scripts/test-ci-concurrency.mjs
           node scripts/ci-plan.mjs
 
   fast:
@@ -213,7 +214,7 @@ jobs:
           node scripts/test-home-carousel-migration.mjs
           node scripts/test-historical-pageview-migration.mjs
           node --test scripts/test-master-content-assets.mjs
-          npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts
+          npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts src/lib/auth-rate-limit.database.test.ts src/lib/auth-session.database.test.ts
 
 
   production:

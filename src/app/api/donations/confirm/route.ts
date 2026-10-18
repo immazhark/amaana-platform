@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { hashReceiptToken } from "@/lib/donations";
 import { captureDonation } from "@/lib/payment-processing";
 import { prisma } from "@/lib/prisma";
@@ -33,10 +33,16 @@ export async function POST(request: Request) {
 
     let body: unknown;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES));
+      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES, { timeoutMs: 5_000 }));
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ error: "Payment confirmation payload is too large." }, { status: 413, headers: privateHeaders });
+      }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        return NextResponse.json(
+          { error: "Payment confirmation timed out. Please retain your payment confirmation and do not submit another payment." },
+          { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+        );
       }
       return NextResponse.json({ error: "Invalid payment confirmation." }, { status: 400, headers: privateHeaders });
     }
@@ -97,6 +103,16 @@ export async function POST(request: Request) {
     });
     if (!currentDonation) {
       throw new Error("Donation disappeared during payment confirmation");
+    }
+
+    if (currentDonation.status !== "CAPTURED" && currentDonation.status !== "REFUNDED") {
+      return NextResponse.json(
+        {
+          status: currentDonation.status,
+          error: "Payment verification is pending. Please retain your payment confirmation and do not submit another payment.",
+        },
+        { status: 409, headers: privateHeaders },
+      );
     }
 
     return NextResponse.json(

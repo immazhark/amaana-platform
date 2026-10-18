@@ -13,7 +13,7 @@ for (const width of [320, 390, 768, 1024, 1440, 1920]) {
         const copy = card.querySelector('p').getBoundingClientRect();
         return { gap: copy.top - heading.bottom, decoration: getComputedStyle(card, '::before').content };
       }));
-      expect(geometry.length).toBe(route === '/contact' ? 6 : 5);
+      expect(geometry.length).toBe(route === '/contact' ? 7 : 6);
       expect(geometry.every(card => card.gap >= 8 && card.decoration === 'none')).toBe(true);
       await first.hover();
       await first.focus();

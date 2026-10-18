@@ -23,6 +23,37 @@ describe("public page gallery media query contracts", () => {
     mocks.initiativeFindMany.mockResolvedValue([]);
   });
 
+  it("projects at most eight published initiative outcomes with no financial or private records", async () => {
+    mocks.initiativeFindMany.mockResolvedValueOnce([
+      { slug: "eid-kits-2026", title: "Eid Kits", primaryMetric: "710", primaryMetricLabel: "kits distributed" },
+      { slug: "unverified-metric", title: "Unverified metric", primaryMetric: " ", primaryMetricLabel: "kits" },
+      { slug: "winter-relief", title: "Winter Relief", primaryMetric: "234", primaryMetricLabel: "kits" },
+    ]);
+    const { getDonationImpactHighlights } = await import("./public-page-data");
+    const items = await getDonationImpactHighlights();
+    expect(items).toHaveLength(2);
+    expect(items.map(item => item.slug)).toEqual(["eid-kits-2026", "winter-relief"]);
+    const query = mocks.initiativeFindMany.mock.calls.at(-1)?.[0];
+    expect(query).toMatchObject({
+      where: {
+        status: "PUBLISHED", cause: { status: "PUBLISHED" },
+        primaryMetric: { not: null }, primaryMetricLabel: { not: null },
+      },
+      take: 8,
+      select: {
+        slug: true, title: true, primaryMetric: true, primaryMetricLabel: true,
+      },
+    });
+    expect(query.select).not.toHaveProperty("financialSummary");
+    expect(query.select).not.toHaveProperty("assistanceRequest");
+    expect(query.select).not.toHaveProperty("mediaAssets");
+  });
+
+  it("shows no donor proof on an empty reviewed metric projection", async () => {
+    const { getDonationImpactHighlights } = await import("./public-page-data");
+    await expect(getDonationImpactHighlights()).resolves.toEqual([]);
+  });
+
   it("uses bounded approved image sets for completed support and programme child cards", async () => {
     await getCompletedAidShowcaseData();
     await getProgrammeChildMedia(["eid-gift-kits-2025"]);

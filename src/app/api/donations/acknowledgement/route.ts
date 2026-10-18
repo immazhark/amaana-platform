@@ -1,10 +1,10 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { getDonationAcknowledgementPresentation, hashReceiptToken } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
-import { isSameOrigin } from "@/lib/request-security";
+import { enforceAcknowledgementRateLimit, isSameOrigin } from "@/lib/request-security";
 
 const schema = z.object({
   reference: z.string().trim().min(8).max(80),
@@ -24,19 +24,41 @@ export async function POST(request: Request) {
       return NextResponse.json({ found: false }, { status: 403, headers: privateHeaders });
     }
 
-    let body: unknown;
+    let rawBody: string;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_ACKNOWLEDGEMENT_JSON_BYTES));
+      rawBody = await readTextBodyWithLimit(request, MAX_ACKNOWLEDGEMENT_JSON_BYTES, { timeoutMs: 5_000 });
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ found: false }, { status: 413, headers: privateHeaders });
       }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        return NextResponse.json({ found: false }, { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } });
+      }
+      // Incomplete or interrupted transport is an infrastructure failure,
+      // not proof that the private receipt reference is invalid.
+      return NextResponse.json({ found: false }, {
+        status: 503, headers: { ...privateHeaders, "Retry-After": "60" },
+      });
+    }
+
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      // A completely read but malformed payload remains indistinguishable
+      // from an invalid private acknowledgement credential.
       return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
     }
 
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
+    }
+
+    // Rate-limit only structurally valid private lookups, before reading donor
+    // records. A receipt view must not exhaust the separate checkout quota.
+    if (!(await enforceAcknowledgementRateLimit(request))) {
+      return NextResponse.json({ found: false }, { status: 429, headers: privateHeaders });
     }
 
     const donation = await prisma.donation.findUnique({
@@ -88,6 +110,10 @@ export async function POST(request: Request) {
       { headers: privateHeaders },
     );
   } catch {
-    return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
+    // Database or rate-limit outages cannot invalidate a real receipt.
+    // Preserve non-disclosure while allowing safe retry without a new payment.
+    return NextResponse.json({ found: false }, {
+      status: 503, headers: { ...privateHeaders, "Retry-After": "60" },
+    });
   }
 }

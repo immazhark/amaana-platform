@@ -50,8 +50,8 @@ const waysToHelp = [
     icon: "volunteer" as const,
     title: "Offer your time or skills",
     copy: "Packing, documentation, creative work, technology and field support can all matter. Availability depends on the needs of each initiative.",
-    href: "/contact",
-    action: "Talk to the team",
+    href: "/get-involved/volunteer",
+    action: "Explore volunteering",
   },
   {
     number: "04",
@@ -68,6 +68,14 @@ const waysToHelp = [
     copy: "If you know a person or family facing genuine hardship, guide them to the private assistance-request process rather than sharing their documents publicly.",
     href: "/request-assistance",
     action: "Request assistance",
+  },
+  {
+    number: "06",
+    icon: "support" as const,
+    title: "Set a private giving reminder",
+    copy: "Plan an optional calendar check-in each month, every Friday or on chosen dates. No automatic debit or donor profile.",
+    href: "/get-involved/monthly-giving",
+    action: "Prepare a giving reminder",
   },
 ] as const;
 
@@ -86,7 +94,7 @@ export default async function GetInvolvedPage() {
           { label: "Connect with Amaana", href: "/contact", secondary: true },
         ]}
         visual={heroMedia ? <PublicMedia asset={heroMedia} priority /> : undefined}
-        visualKicker="Five ways to take part"
+        visualKicker="Six ways to take part"
         visualTitle="Time. Skills. Support. Care."
         visualNote="Choose a path that matches what you can offer and what the work needs now."
       />

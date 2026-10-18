@@ -9,7 +9,7 @@ const analyticsPayloadSchema = z.object({
 }).strict();
 
 export async function parseAnalyticsPayload(request: Request) {
-  const body = JSON.parse(await readTextBodyWithLimit(request, MAX_ANALYTICS_JSON_BYTES));
+  const body = JSON.parse(await readTextBodyWithLimit(request, MAX_ANALYTICS_JSON_BYTES, { timeoutMs: 5_000 }));
   const parsed = analyticsPayloadSchema.safeParse(body);
   if (!parsed.success) return null;
   const path = normalizePublicAnalyticsPath(parsed.data.path);

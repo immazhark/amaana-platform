@@ -42,6 +42,50 @@ describe("notification provider transport deadline", () => {
     }
   });
 
+  it("rejects oversized 2xx provider receipts without recording email as SENT", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(JSON.stringify({
+      id: "email_valid", ignored: "x".repeat(20_000),
+    }), { status: 200, headers: { "content-type": "application/json" } }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(processPendingEmailNotifications()).resolves.toEqual({
+      selected: 1, sent: 0, failed: 1,
+    });
+    expect(fetchMock).toHaveBeenCalledWith("https://api.resend.com/emails", expect.objectContaining({
+      method: "POST",
+      redirect: "error",
+      headers: expect.objectContaining({ "Idempotency-Key": "amaana-notification/queued-timeout" }),
+    }));
+    expect(db.updateMany).toHaveBeenLastCalledWith({
+      where: { id: "queued-timeout", status: "PROCESSING", attempts: 1 },
+      data: {
+        status: "FAILED",
+        failureReason: expect.stringMatching(/unreadable receipt/),
+        scheduledFor: expect.any(Date),
+      },
+    });
+  });
+
+  it("rejects oversized 429 error bodies while retaining status-based retry", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(new Response(
+      JSON.stringify({ name: "rate_limit_exceeded", details: "x".repeat(20_000) }),
+      { status: 429, headers: { "content-type": "application/json" } },
+    ));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(processPendingEmailNotifications()).resolves.toEqual({
+      selected: 1, sent: 0, failed: 1,
+    });
+    expect(db.updateMany).toHaveBeenLastCalledWith({
+      where: { id: "queued-timeout", status: "PROCESSING", attempts: 1 },
+      data: {
+        status: "FAILED",
+        failureReason: "Email provider returned 429",
+        scheduledFor: expect.any(Date),
+      },
+    });
+  });
+
   it("aborts an unresponsive Resend request and schedules retry", async () => {
     const controller = new AbortController();
     const timeout = vi.spyOn(AbortSignal, "timeout").mockReturnValue(controller.signal);

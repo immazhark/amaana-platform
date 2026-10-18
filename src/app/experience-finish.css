@@ -596,6 +596,7 @@ body{font-weight:var(--af-weight-body)}
   .v2-story-source-note span,.v2-story-detail-rule span,.v2-story-detail-context>span,
   .governance-summary span,.canonical-pathway span
 ){font-weight:var(--af-weight-label)}
+.v2-initiative-copy small{font-size:.75rem}
 
 
 /* L2 editorial detail reconciliation: Story/Faith metadata must remain subordinate to prose. */

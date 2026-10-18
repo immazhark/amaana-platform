@@ -6,7 +6,9 @@ import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { TrustEvidenceBoundary } from "@/components/trust-evidence-boundary";
-import { programmeBySlug } from "@/lib/master-copy";
+import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
+import { programmeBySlug, programmeCategories } from "@/lib/master-copy";
+import { filterImpactByProgramme, type ImpactProgrammeSearch } from "@/lib/impact-programme-filter";
 import { getImpactPageData } from "@/lib/public-page-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import "./impact-refinement.module.css";
@@ -30,13 +32,20 @@ export const metadata: Metadata = {
   },
 };
 
-export default async function ImpactPage() {
-  const rawInitiatives = await getImpactPageData();
+export default async function ImpactPage({ searchParams }: { searchParams: Promise<ImpactProgrammeSearch> }) {
+  const [rawInitiatives, search] = await Promise.all([getImpactPageData(), searchParams]);
   const initiatives = rawInitiatives.filter(item => {
     const canonical = programmeBySlug(item.slug);
     return Boolean(canonical) && !(canonical && "parentSlug" in canonical && canonical.parentSlug);
   });
+  const filtered = filterImpactByProgramme(
+    initiatives,
+    search,
+    programmeCategories,
+    item => programmeBySlug(item.slug)?.causeSlug,
+  );
   const initiativesWithMedia = initiatives.filter(item => item.mediaAssets.length > 0);
+  const visibleMedia = filtered.results.filter(item => item.mediaAssets.length > 0);
   const heroSource = initiativesWithMedia.find(item => selectIdentityPublicImage(item.mediaAssets)) ?? initiativesWithMedia[0];
   const heroMedia = heroSource ? selectIdentityPublicImage(heroSource.mediaAssets) ?? null : null;
 
@@ -61,11 +70,29 @@ export default async function ImpactPage() {
         )}
       />
 
+      <div className="v2-shell"><VerifiedImpactStrip headingId="impact-published-outcomes" items={rawInitiatives.flatMap(item =>
+        item.primaryMetric && item.primaryMetricLabel ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }] : [],
+      )} /></div>
       <section className="v2-section paper v2-impact-wall-section" id="evidence" aria-labelledby="impact-wall-title">
         <div className="v2-shell">
           <TrustEvidenceBoundary context="impact" className={evidenceStyles.boundary} />
           <SectionHeading eyebrow={<>Wall of impact</>} title={<>See what each initiative achieved.</>} subtitle={<>Explore an outcome, then open the initiative to understand the work behind it.</>} id="impact-wall-title" />
-          {initiatives.length > 0 ? <div className="v2-impact-wall">{initiatives.map((item, index) => {
+          <form key={filtered.programme} action="/impact#evidence" method="get" aria-label="Filter documented impact by programme" className="v2-hero-actions">
+            <label htmlFor="impact-programme">Programme
+              <select id="impact-programme" name="programme" defaultValue={filtered.programme}>
+                <option value="">All programmes</option>
+                {filtered.options.map(area => (
+                  <option value={area.slug} key={area.slug}>{area.title} ({area.count})</option>
+                ))}
+              </select>
+            </label>
+            <button type="submit" className="v2-button">Explore impact</button>
+            {filtered.active && <Link href="/impact#evidence" className="v2-text-link">Clear impact filter</Link>}
+          </form>
+          {filtered.invalid && <p role="status">These filters could not be read. Select a published programme or clear the impact filter.</p>}
+          <p role="status" aria-live="polite">{filtered.count} published {filtered.count === 1 ? "initiative" : "initiatives"}{filtered.active && !filtered.invalid ? " in this programme" : " available to explore"}.</p>
+          <p><Link href="/impact/compare" className="v2-text-link">Compare two initiatives</Link></p>
+          {filtered.results.length > 0 ? <div className="v2-impact-wall">{filtered.results.map((item, index) => {
             const thumbnail = selectIdentityPublicImage(item.mediaAssets) ?? null;
             return <Link href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id} aria-label={`Explore impact: ${item.title}`}>
               {thumbnail ? <div className="v2-impact-tile-media" aria-hidden="true"><PublicMedia asset={thumbnail} /></div> : null}
@@ -74,11 +101,11 @@ export default async function ImpactPage() {
               <div className="v2-impact-tile-copy"><small>{item.cause.title}</small>{item.primaryMetric ? <strong>{item.primaryMetric}</strong> : null}<span>{item.primaryMetricLabel ?? item.title}</span><h3>{item.title}</h3></div>
               <span className="v2-impact-tile-action" aria-hidden="true">Explore impact ↗</span>
             </Link>;
-          })}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Impact updates</span><h3>No initiative outcomes are published here yet.</h3><p>Outcomes will appear here when they are ready to share.</p></div>}
+          })}</div> : <div className="v2-reminder v2-light-reminder"><span className="v2-reminder-label">Impact updates</span><h3>{filtered.active ? "No published initiative outcomes match these filters." : "No initiative outcomes are published here yet."}</h3><p>{filtered.active ? "Choose a published programme or clear the filter to explore all documented outcomes." : "Outcomes will appear here when they are ready to share."}</p></div>}
         </div>
       </section>
 
-      {initiativesWithMedia.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p></div><p className="v2-section-intro">Only photographs suitable for public sharing appear here. Personal documents and sensitive verification material remain private.</p></div><BodyCarousel heading={<h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2>} label="Documented impact photographs" className="v2-impact-witness-carousel">{initiativesWithMedia.slice(0, 6).map(item => { const media=selectIdentityPublicImage(item.mediaAssets); if(!media) return null; return <Link href={`/our-work/${item.slug}`} className="v2-impact-witness-item" key={item.id} aria-label={`Open ${item.title}`}><PublicMedia asset={media} /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Explore this work →</span></div></Link>; })}</BodyCarousel></div></section>}
+      {visibleMedia.length > 0 && <section className="v2-section dark v2-impact-witness" aria-labelledby="witness-title"><div className="v2-shell"><div className="v2-section-head"><div><p className="v2-section-label">Witness the work</p></div><p className="v2-section-intro">Only photographs suitable for public sharing appear here. Personal documents and sensitive verification material remain private.</p></div><BodyCarousel heading={<h2 className="v2-section-title" id="witness-title">Evidence can be seen, not just counted.</h2>} label="Documented impact photographs" className="v2-impact-witness-carousel">{visibleMedia.slice(0, 6).map(item => { const media=selectIdentityPublicImage(item.mediaAssets); if(!media) return null; return <Link href={`/our-work/${item.slug}`} className="v2-impact-witness-item" key={item.id} aria-label={`Open ${item.title}`}><PublicMedia asset={media} /><div><small>{item.cause.title}</small><h3>{item.title}</h3><span>Explore this work →</span></div></Link>; })}</BodyCarousel></div></section>}
 
       <section className="v2-section v2-impact-philosophy">
         <div className="v2-shell v2-impact-philosophy-grid">

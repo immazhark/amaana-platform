@@ -74,6 +74,83 @@ beforeEach(() => {
 });
 
 describe("assistance submission request bounds", () => {
+  it("returns a retryable private response when an assistance upload exceeds its absolute deadline", async () => {
+    const { RequestBodyReadTimeoutError } = await import("@/lib/bounded-request-body");
+    mocks.readBodyBytesWithLimit.mockRejectedValueOnce(new RequestBodyReadTimeoutError());
+    const request = new Request("https://amaana.example/api/assistance", {
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+      body: "synthetic upload",
+    });
+
+    const response = await POST(request);
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "The assistance upload timed out. Please try again." });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(mocks.assistanceSafeParse).not.toHaveBeenCalled();
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.staffFindMany).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
+  it("returns retryable 503 for interrupted multipart transport, not malformed applicant information", async () => {
+    const request = new Request("https://amaana.example/api/assistance", {
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+      body: new ReadableStream<Uint8Array>({
+        start(controller) { controller.error(new Error("synthetic network interruption")); },
+      }),
+      duplex: "half",
+    } as RequestInit & { duplex: "half" });
+    const response = await POST(request);
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "The assistance upload could not be read. Please try again." });
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.staffFindMany).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
+  it("enforces one absolute upload deadline even while body chunks keep arriving", async () => {
+    const actual = await vi.importActual<typeof import("@/lib/bounded-request-body")>("@/lib/bounded-request-body");
+    mocks.readBodyBytesWithLimit.mockImplementation(actual.readBodyBytesWithLimit);
+    vi.useFakeTimers();
+    try {
+      let controller!: ReadableStreamDefaultController<Uint8Array>;
+      const request = new Request("https://amaana.example/api/assistance", {
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+        body: new ReadableStream<Uint8Array>({
+          start(streamController) { controller = streamController; },
+          cancel() { return new Promise<void>(() => {}); },
+        }),
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+
+      const result = Promise.race([
+        POST(request),
+        new Promise<"stalled">(resolve => setTimeout(() => resolve("stalled"), 120_001)),
+      ]);
+      await vi.advanceTimersByTimeAsync(0);
+      for (let index = 0; index < 3; index++) {
+        await vi.advanceTimersByTimeAsync(30_000);
+        controller.enqueue(new Uint8Array([65]));
+      }
+      await vi.advanceTimersByTimeAsync(30_001);
+      const outcome = await result;
+      if (outcome === "stalled") throw new Error("Assistance upload had no absolute deadline");
+      expect(outcome.status).toBe(503);
+      expect(outcome.headers.get("retry-after")).toBe("60");
+      expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+      expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("returns a private 413 without persistence when oversized stream cancellation stalls", async () => {
     const actual = await vi.importActual<typeof import("@/lib/bounded-request-body")>("@/lib/bounded-request-body");
     mocks.readBodyBytesWithLimit.mockImplementation(actual.readBodyBytesWithLimit);
@@ -154,6 +231,64 @@ describe("assistance submission request bounds", () => {
     expect(mocks.assistanceCreate).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["applicantName", "Different applicant"],
+    ["category", "EMERGENCY"],
+    ["consent", "on"],
+  ])("rejects duplicate %s before interpreting private assistance data", async (field, repeatedValue) => {
+    const form = new FormData();
+    for (const [key, value] of Object.entries({
+      applicantName: "Acceptance Applicant",
+      phone: "9000000000",
+      email: "applicant@example.test",
+      city: "Hyderabad",
+      category: "MEDICAL",
+      description: "Synthetic assistance request data used only for route acceptance coverage.",
+      consent: "on",
+    })) form.set(key, value);
+    form.append(field, repeatedValue);
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/single text value/i);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.assistanceSafeParse).not.toHaveBeenCalled();
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.staffFindMany).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects a file-valued identity field before interpreting applicant data", async () => {
+    const form = new FormData();
+    form.set("applicantName", new File(["unexpected binary identity"], "identity.txt", { type: "text/plain" }));
+    for (const [key, value] of Object.entries({
+      phone: "9000000000",
+      city: "Hyderabad",
+      category: "MEDICAL",
+      description: "Synthetic assistance request data used only for route acceptance coverage.",
+      consent: "on",
+    })) form.set(key, value);
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/single text value/i);
+    expect(mocks.assistanceSafeParse).not.toHaveBeenCalled();
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
+  it("preserves private 400 for a complete but malformed multipart body", async () => {
+    const request = new Request("https://amaana.example/api/assistance", {
+      method: "POST",
+      headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+      body: "not a multipart payload",
+    });
+    const response = await POST(request);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: "Invalid assistance submission format." });
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
+    expect(mocks.assistanceCreate).not.toHaveBeenCalled();
+  });
+
   it("still accepts a request with no optional attachments", async () => {
     const data = new FormData();
     data.set("applicantName", "Acceptance Applicant");
@@ -166,8 +301,39 @@ describe("assistance submission request bounds", () => {
 
     const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: data }));
     expect(response.status).toBe(201);
+    expect(mocks.readBodyBytesWithLimit).toHaveBeenCalledWith(expect.any(Request), 5 * 5 * 1024 * 1024 + 512 * 1024, { timeoutMs: 120_000 });
     expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
     expect(mocks.assistanceCreate).toHaveBeenCalledOnce();
+  });
+
+  it("preserves multiple genuine supporting documents with a single applicant consent", async () => {
+    const form = new FormData();
+    for (const [key, value] of Object.entries({
+      applicantName: "Acceptance Applicant",
+      phone: "9000000000",
+      email: "applicant@example.test",
+      city: "Hyderabad",
+      category: "MEDICAL",
+      description: "Synthetic assistance request data used only for route acceptance coverage.",
+      consent: "on",
+    })) form.set(key, value);
+    form.append("documents", new File(["first synthetic file"], "first.pdf", { type: "application/pdf" }));
+    form.append("documents", new File(["second synthetic file"], "second.pdf", { type: "application/pdf" }));
+    mocks.uploadPrivateDocument
+      .mockResolvedValueOnce({ objectKey: "assistance/private/first.pdf", originalName: "first.pdf", mimeType: "application/pdf", sizeBytes: 20 })
+      .mockResolvedValueOnce({ objectKey: "assistance/private/second.pdf", originalName: "second.pdf", mimeType: "application/pdf", sizeBytes: 21 });
+
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
+    expect(response.status).toBe(201);
+    expect(mocks.uploadPrivateDocument).toHaveBeenCalledTimes(2);
+    expect(mocks.assistanceCreate).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        documents: { create: [
+          expect.objectContaining({ objectKey: "assistance/private/first.pdf" }),
+          expect.objectContaining({ objectKey: "assistance/private/second.pdf" }),
+        ] },
+      }),
+    });
   });
 
   it("persists validated private evidence metadata with the assistance request", async () => {
@@ -246,9 +412,39 @@ describe("assistance submission request bounds", () => {
 
     const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({
+      error: "Assistance request status is uncertain. Your application may have been received. Do not submit it again; contact Amaana with your details for reconciliation.",
+    });
+    expect(response.headers.get("retry-after")).toBeNull();
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex/i);
     expect(mocks.assistanceFindUnique).toHaveBeenCalledOnce();
     expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+  });
+
+  it("does not advise duplicate submission when persistence cannot be checked even without attachments", async () => {
+    mocks.assistanceCreate.mockRejectedValueOnce(new Error("synthetic lost create acknowledgement"));
+    mocks.assistanceFindUnique.mockRejectedValueOnce(new Error("synthetic database unreachable"));
+    const form = new FormData();
+    for (const [key, value] of Object.entries({
+      applicantName: "Acceptance Applicant",
+      phone: "9000000000",
+      email: "applicant@example.test",
+      city: "Hyderabad",
+      category: "MEDICAL",
+      description: "Synthetic assistance request data used only for route acceptance coverage.",
+      consent: "on",
+    })) form.set(key, value);
+
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
+
+    expect(response.status).toBe(503);
+    expect((await response.json()).error).toMatch(/Do not submit it again; contact Amaana/i);
+    expect(response.headers.get("retry-after")).toBeNull();
+    expect(mocks.assistanceFindUnique).toHaveBeenCalledOnce();
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
   });
 
   it("compensates a stored private document when the later database write fails", async () => {

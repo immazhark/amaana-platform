@@ -4,37 +4,30 @@ type HeaderReader = {
   get(name: string): string | null;
 };
 
+/**
+ * Trust only the client IP sanitized by Railway's public HTTP ingress.
+ *
+ * Railway overwrites X-Real-IP and, for trusted Cloudflare IPv4 ingress,
+ * resolves it from CF-Connecting-IP. The raw CF-Connecting-IP header can
+ * reach the app unchanged and must never control security/abuse counters.
+ *
+ * Do not fall back to request Host, CF-Connecting-IP, or X-Forwarded-For:
+ * those values are not independent proof of client identity. Missing or
+ * malformed ingress evidence shares the "unknown" quota instead.
+ *
+ * Keep the existing signature for both admin login and public workflows.
+ * The URL/configuration arguments must not influence proxy trust.
+ */
 export function getTrustedClientAddress(
   headers: HeaderReader,
-  requestUrl: string,
-  configuredAppUrl = process.env.NEXT_PUBLIC_APP_URL,
+  _requestUrl: string,
+  _configuredAppUrl?: string,
 ) {
-  const configuredHost = configuredAppUrl ? new URL(configuredAppUrl).host.toLowerCase() : null;
-  const requestHost = (
-    headers.get("x-forwarded-host")
-    ?? headers.get("host")
-    ?? new URL(requestUrl).host
-  ).toLowerCase();
+  // Preserve the positional API used by existing callers without consulting
+  // host-derived arguments for security identity.
+  void _requestUrl;
+  void _configuredAppUrl;
 
-  const cloudflareAddress = headers.get("cf-connecting-ip")?.trim() ?? "";
-  const railwayAddress = headers.get("x-real-ip")?.trim() ?? "";
-  const forwardedChain = headers.get("x-forwarded-for")
-    ?.split(",")
-    .map(value => value.trim())
-    .filter(Boolean) ?? [];
-  const nearestForwardedAddress = forwardedChain.at(-1) ?? "";
-
-  const configuredIsRailwayHost = configuredHost?.endsWith(".up.railway.app") ?? false;
-  if (
-    configuredHost
-    && !configuredIsRailwayHost
-    && requestHost === configuredHost
-    && isIP(cloudflareAddress)
-  ) {
-    return cloudflareAddress;
-  }
-
-  if (isIP(railwayAddress)) return railwayAddress;
-  if (isIP(nearestForwardedAddress)) return nearestForwardedAddress;
-  return "unknown";
+  const ingressAddress = headers.get("x-real-ip")?.trim() ?? "";
+  return isIP(ingressAddress) ? ingressAddress : "unknown";
 }
