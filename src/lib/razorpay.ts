@@ -29,6 +29,10 @@ async function requestRazorpay(path: string, init?: RequestInit) {
   const { keyId, secret } = credentials();
   const response = await fetch(`${apiBase}${path}`, {
     ...init,
+    // Never follow a redirect while making an authenticated payment request.
+    // Reject both cross-origin and same-origin redirects rather than trusting
+    // any redirected response as authoritative financial provider evidence.
+    redirect: "error",
     signal: init?.signal ?? AbortSignal.timeout(RAZORPAY_REQUEST_TIMEOUT_MS),
     headers: {
       Authorization: `Basic ${Buffer.from(`${keyId}:${secret}`).toString("base64")}`,
