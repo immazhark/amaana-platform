@@ -119,6 +119,18 @@ describe("admin login admission", () => {
     expect(mocks.createSession).not.toHaveBeenCalled();
   });
 
+  it("keeps a failed reservation when session persistence fails", async () => {
+    mocks.verifyPassword.mockResolvedValue(true);
+    mocks.createSession.mockRejectedValueOnce(new Error("Synthetic session persistence failure"));
+
+    await expect(login(form())).rejects.toThrow("Synthetic session persistence failure");
+
+    expect(attempts).toHaveLength(1);
+    expect(attempts[0]?.succeeded).toBe(false);
+    expect(mocks.attemptUpdate).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+  });
+
   it("marks only its successful reservation without erasing earlier failures", async () => {
     await expect(login(form())).rejects.toThrow("redirect:/admin/login?error=invalid");
     mocks.verifyPassword.mockResolvedValueOnce(true);
