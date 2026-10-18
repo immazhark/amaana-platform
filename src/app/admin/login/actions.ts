@@ -72,14 +72,7 @@ export async function login(formData: FormData) {
   // Session persistence and this attempt's successful release share one
   // database transaction. No cookie is issued if either write fails.
   await createSession(user.id, attemptId);
-  await prisma.auditEvent.create({
-    data: {
-      actorId: user.id,
-      action: "session.login",
-      entityType: "User",
-      entityId: user.id,
-    },
-  });
+  // session.login auditing is committed with session creation.
   redirect("/admin");
 }
 

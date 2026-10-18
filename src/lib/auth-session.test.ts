@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
   expiredSessions: vi.fn(),
   newSession: vi.fn(),
   updateLoginAttempt: vi.fn(),
+  auditCreate: vi.fn(),
   transaction: vi.fn(),
 }));
 
@@ -16,6 +17,7 @@ vi.mock("@/lib/prisma", () => ({
   prisma: {
     session: { deleteMany: mocks.expiredSessions, create: mocks.newSession },
     loginAttempt: { update: mocks.updateLoginAttempt },
+    auditEvent: { create: mocks.auditCreate },
     $transaction: mocks.transaction,
   },
 }));
@@ -28,6 +30,7 @@ beforeEach(() => {
   mocks.expiredSessions.mockReturnValue({ op: "delete-expired" });
   mocks.newSession.mockReturnValue({ op: "create-session" });
   mocks.updateLoginAttempt.mockReturnValue({ op: "release-login-reservation" });
+  mocks.auditCreate.mockReturnValue({ op: "record-login-audit" });
   mocks.transaction.mockResolvedValue([]);
 });
 
@@ -39,11 +42,20 @@ describe("atomic admin session admission", () => {
       where: { id: "synthetic-attempt" },
       data: { succeeded: true },
     });
+    expect(mocks.auditCreate).toHaveBeenCalledWith({
+      data: {
+        actorId: "synthetic-admin",
+        action: "session.login",
+        entityType: "User",
+        entityId: "synthetic-admin",
+      },
+    });
     expect(mocks.transaction).toHaveBeenCalledOnce();
     expect(mocks.transaction.mock.calls[0]?.[0]).toEqual([
       { op: "delete-expired" },
       { op: "create-session" },
       { op: "release-login-reservation" },
+      { op: "record-login-audit" },
     ]);
     expect(mocks.cookieSet).toHaveBeenCalledOnce();
     expect(mocks.cookieSet.mock.calls[0]?.[2]).toEqual(expect.objectContaining({
@@ -53,13 +65,13 @@ describe("atomic admin session admission", () => {
     }));
   });
 
-  it("does not issue a valid session cookie if the atomic persistence operation fails", async () => {
+  it("does not issue a session cookie if the session or audit transaction fails", async () => {
     mocks.transaction.mockRejectedValueOnce(new Error("Synthetic session or admission ledger failure"));
 
     await expect(createSession("synthetic-admin", "synthetic-attempt"))
       .rejects.toThrow("Synthetic session or admission ledger failure");
 
-    expect(mocks.transaction.mock.calls[0]?.[0]).toHaveLength(3);
+    expect(mocks.transaction.mock.calls[0]?.[0]).toHaveLength(4);
     expect(mocks.cookieSet).not.toHaveBeenCalled();
   });
 
@@ -68,6 +80,7 @@ describe("atomic admin session admission", () => {
 
     expect(mocks.transaction.mock.calls[0]?.[0]).toHaveLength(2);
     expect(mocks.updateLoginAttempt).not.toHaveBeenCalled();
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
     expect(mocks.cookieSet).toHaveBeenCalledOnce();
   });
 });

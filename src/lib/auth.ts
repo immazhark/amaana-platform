@@ -22,7 +22,17 @@ export async function createSession(userId: string, loginAttemptId?: string) {
     prisma.session.deleteMany({ where: { expiresAt: { lte: now } } }),
     prisma.session.create({ data: { userId, tokenHash: tokenHash(token), expiresAt } }),
     ...(loginAttemptId
-      ? [prisma.loginAttempt.update({ where: { id: loginAttemptId }, data: { succeeded: true } })]
+      ? [
+          prisma.loginAttempt.update({ where: { id: loginAttemptId }, data: { succeeded: true } }),
+          prisma.auditEvent.create({
+            data: {
+              actorId: userId,
+              action: "session.login",
+              entityType: "User",
+              entityId: userId,
+            },
+          }),
+        ]
       : []),
   ]);
   (await cookies()).set(COOKIE_NAME, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict", path: "/", expires: expiresAt });

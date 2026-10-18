@@ -73,8 +73,11 @@ beforeEach(() => {
   // The production createSession performs the session and reservation write
   // atomically. Reproduce only its successful committed outcome at this mock
   // boundary; a rejected session creation must leave the reservation charged.
-  mocks.createSession.mockImplementation(async (_userId: string, attemptId: string) => {
+  mocks.createSession.mockImplementation(async (userId: string, attemptId: string) => {
     await mocks.attemptUpdate({ where: { id: attemptId }, data: { succeeded: true } });
+    await mocks.auditCreate({
+      data: { actorId: userId, action: "session.login", entityType: "User", entityId: userId },
+    });
   });
   // Serialize only the fake database boundary. The action, limiter and retry
   // wrapper are real; password work deliberately remains outside the transaction.
