@@ -12,7 +12,7 @@ export function NavigationProgress() {
   const pathname = usePathname();
   const [pending, setPending] = useState<PendingNavigation | null>(null);
   const visible = pending?.fromPath === pathname;
-  const loadingView = visible ? getNavigationLoadingView(pending.destination) : null;
+  const loadingView = visible && pending ? getNavigationLoadingView(pending.destination) : null;
 
   useEffect(() => {
     if (!visible) return;
