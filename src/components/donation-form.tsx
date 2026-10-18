@@ -14,7 +14,9 @@ type RazorpayOptions = { key: string; amount: number; currency: string; name: st
 type CheckoutPhase = "loading" | "ready" | "opening" | "verifying" | "reconciliation";
 type DonationField = "donorName" | "donorEmail" | "donorPhone" | "amount" | "givingIntent" | "domesticConfirmed";
 type DonationFieldErrors = Partial<Record<DonationField, string[]>>;
-type DonationOrderError = { error?: string; remainingAmount?: number; fields?: DonationFieldErrors };
+const ORDER_FIELDS = ["donorName", "donorEmail", "donorPhone", "amount", "givingIntent", "domesticConfirmed"] as const;
+const ORDER_UNCERTAIN = "Checkout status is uncertain. An order may have been created. Contact Amaana before starting another payment.";
+
 declare global { interface Window { Razorpay: new (options: RazorpayOptions) => { open(): void } } }
 
 export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible = false }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean }) {
@@ -22,6 +24,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
   const errorRef = useRef<HTMLDivElement>(null);
   const focusedErrorRef = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const orderLocked = useRef(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<DonationFieldErrors>({});
   const [remainingHint, setRemainingHint] = useState<number | null>(null);
@@ -117,6 +120,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (orderLocked.current || submissionLocked) return;
     setError("");
     setFieldErrors({});
     setRemainingHint(null);
@@ -129,6 +133,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
       return;
     }
 
+    orderLocked.current = true;
     setPhase("opening");
     const values = new FormData(event.currentTarget);
 
@@ -147,20 +152,51 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
           domesticConfirmed: values.get("domesticConfirmed") === "on",
         }),
       });
-      const order = await orderResponse.json() as DonationOrderError & {
-        keyId: string;
-        amount: number;
-        currency: string;
-        orderId: string;
-        donor: { name: string; email: string; contact?: string };
-        receiptToken: string;
-      };
+      const payload: unknown = await orderResponse.json();
+      const order = payload && typeof payload === "object" && !Array.isArray(payload)
+        ? payload as Record<string, unknown> : {};
       if (!orderResponse.ok) {
-        if (typeof order.remainingAmount === "number") setRemainingHint(order.remainingAmount);
-        if (order.fields) setFieldErrors(order.fields);
-        throw new Error(order.error ?? "Could not start checkout");
+        // Only these documented API outcomes are known to occur before order creation.
+        if (![400, 403, 409, 413, 429].includes(orderResponse.status) ||
+            typeof order.error !== "string" || !order.error.trim()) {
+          throw new Error(ORDER_UNCERTAIN);
+        }
+        const fields: DonationFieldErrors = {};
+        if (order.fields && typeof order.fields === "object" && !Array.isArray(order.fields)) {
+          const source = order.fields as Record<string, unknown>;
+          for (const field of ORDER_FIELDS) {
+            const messages = source[field];
+            const first = Array.isArray(messages)
+              ? messages.find((item): item is string => typeof item === "string" && Boolean(item.trim()))
+              : undefined;
+            if (first) fields[field] = [first.trim().slice(0, 300)];
+          }
+        }
+        setFieldErrors(fields);
+        if (typeof order.remainingAmount === "number" && Number.isSafeInteger(order.remainingAmount) &&
+            order.remainingAmount > 0 && order.remainingAmount <= 1_000_000) {
+          setRemainingHint(order.remainingAmount);
+        }
+        showError(order.error.trim().slice(0, 500));
+        orderLocked.current = false;
+        setPhase("ready");
+        return;
       }
-
+      const donor = order.donor && typeof order.donor === "object" && !Array.isArray(order.donor)
+        ? order.donor as Record<string, unknown> : {};
+      // Malformed success is ambiguous: never open checkout or issue a new order.
+      if (orderResponse.status !== 201 ||
+          typeof order.orderId !== "string" || !/^order_[A-Za-z0-9_]{1,120}$/.test(order.orderId) ||
+          !Number.isSafeInteger(order.amount) || order.amount !== Number(values.get("amount")) * 100 ||
+          order.currency !== "INR" ||
+          typeof order.keyId !== "string" || !/^rzp_(test|live)_[A-Za-z0-9_]{1,120}$/.test(order.keyId) ||
+          typeof order.receiptToken !== "string" || !/^[A-Za-z0-9_-]{20,512}$/.test(order.receiptToken) ||
+          typeof donor.name !== "string" || !donor.name.trim() ||
+          typeof donor.email !== "string" || !donor.email.trim() ||
+          (donor.contact != null && typeof donor.contact !== "string")) {
+        throw new Error(ORDER_UNCERTAIN);
+      }
+      let paymentReported = false;
       const checkout = new window.Razorpay({
         key: order.keyId,
         amount: order.amount,
@@ -168,10 +204,17 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         name: "Amaana Foundation",
         description: appealTitle,
         order_id: order.orderId,
-        prefill: order.donor,
+        prefill: { name: donor.name, email: donor.email, ...(typeof donor.contact === "string" ? { contact: donor.contact } : {}) },
         theme: { color: "#466FAA" },
-        modal: { ondismiss: () => setPhase("ready") },
+        modal: { ondismiss: () => {
+          if (!paymentReported) {
+            orderLocked.current = false;
+            setPhase("ready");
+          }
+        } },
         handler: async payment => {
+          if (paymentReported) return;
+          paymentReported = true;
           setPhase("verifying");
           try {
             const confirmation = await fetch("/api/donations/confirm", {
@@ -179,13 +222,19 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ ...payment, receiptToken: order.receiptToken }),
             });
-            const result = await confirmation.json();
-            if (!confirmation.ok || (result.status !== "CAPTURED" && result.status !== "REFUNDED")) {
-              showError(result.error ?? "Payment verification is pending. Please retain your Razorpay payment confirmation and do not submit another payment.");
+            const result: unknown = await confirmation.json();
+            const confirmed = result && typeof result === "object" && !Array.isArray(result)
+              ? result as Record<string, unknown> : {};
+            if (!confirmation.ok || (confirmed.status !== "CAPTURED" && confirmed.status !== "REFUNDED") ||
+                typeof confirmed.referenceNumber !== "string" ||
+                !/^[A-Za-z0-9-]{1,80}$/.test(confirmed.referenceNumber)) {
+              showError(typeof confirmed.error === "string" && confirmed.error.trim()
+                ? confirmed.error.trim().slice(0, 500)
+                : "Payment verification is pending. Please retain your Razorpay payment confirmation and do not submit another payment.");
               setPhase("reconciliation");
               return;
             }
-            router.push(privateDonationAcknowledgementPath(result.referenceNumber, order.receiptToken));
+            if (formRef.current?.isConnected) router.push(privateDonationAcknowledgementPath(confirmed.referenceNumber, order.receiptToken));
           } catch {
             showError("We could not complete payment verification in this browser. Please retain your Razorpay payment confirmation and do not submit another payment. Amaana can reconcile the payment without asking for your OTP, UPI PIN or card credentials.");
             setPhase("reconciliation");
@@ -193,9 +242,9 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         },
       });
       checkout.open();
-    } catch (caught) {
-      showError(caught instanceof Error ? caught.message : "Could not start checkout");
-      setPhase("ready");
+    } catch {
+      showError(ORDER_UNCERTAIN);
+      setPhase("reconciliation");
     }
   }
 
@@ -203,9 +252,9 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
     <Script
       src="https://checkout.razorpay.com/v1/checkout.js"
       strategy="lazyOnload"
-      onReady={() => setPhase(current => current === "reconciliation" ? current : "ready")}
+      onReady={() => setPhase(current => current === "loading" ? "ready" : current)}
       onError={() => {
-        setPhase(current => current === "reconciliation" ? current : "loading");
+        setPhase(current => current === "ready" ? "loading" : current);
         showError("Secure checkout could not load. Please refresh and try again.");
       }}
     />
