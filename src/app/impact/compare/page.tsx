@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import styles from "./comparison.module.css";
 import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { SectionHeading } from "@/components/section-heading";
@@ -57,36 +56,36 @@ export default async function ImpactComparisonPage({
             title={<>Choose two published initiatives.</>}
             subtitle={<>Each published figure stays attached to the initiative that reported it. This does not compare people&apos;s needs or the value of different kinds of support.</>}
           />
-          <form method="get" action="/impact/compare#comparison" aria-label="Compare two published initiatives" className={styles.form}>
-            <label className={styles.field} htmlFor="compare-left">First initiative
-              <select className={styles.select} name="left" id="compare-left" required aria-invalid={choice.invalid || undefined} aria-describedby={choice.invalid ? "comparison-error" : undefined} defaultValue={choice.selected?.[0].slug ?? ""}>
+          <form method="get" action="/impact/compare#comparison" aria-label="Compare two published initiatives" className="form-grid" style={{ marginBlock: "1.5rem" }}>
+            <label className="field" style={{ minWidth: 0 }} htmlFor="compare-left">First initiative
+              <select style={{ minWidth: 0, minHeight: "3.125rem", fontSize: "1rem" }} name="left" id="compare-left" required aria-invalid={choice.invalid || undefined} aria-describedby={choice.invalid ? "comparison-error" : undefined} defaultValue={choice.selected?.[0].slug ?? ""}>
                 <option value="" disabled>Choose an initiative</option>
                 {choice.options.map(item => <option key={item.slug} value={item.slug}>{item.title}</option>)}
               </select>
             </label>
-            <label className={styles.field} htmlFor="compare-right">Second initiative
-              <select className={styles.select} name="right" id="compare-right" required aria-invalid={choice.invalid || undefined} aria-describedby={choice.invalid ? "comparison-error" : undefined} defaultValue={choice.selected?.[1].slug ?? ""}>
+            <label className="field" style={{ minWidth: 0 }} htmlFor="compare-right">Second initiative
+              <select style={{ minWidth: 0, minHeight: "3.125rem", fontSize: "1rem" }} name="right" id="compare-right" required aria-invalid={choice.invalid || undefined} aria-describedby={choice.invalid ? "comparison-error" : undefined} defaultValue={choice.selected?.[1].slug ?? ""}>
                 <option value="" disabled>Choose another initiative</option>
                 {choice.options.map(item => <option key={item.slug} value={item.slug}>{item.title}</option>)}
               </select>
             </label>
-            <button type="submit" className={`v2-button ${styles.submit}`}>Compare published outcomes</button>
+            <button type="submit" className="v2-button" style={{ gridColumn: "1 / -1", justifySelf: "start", maxWidth: "100%", whiteSpace: "normal" }}>Compare published outcomes</button>
           </form>
 
           {choice.invalid && <p id="comparison-error" role="alert">These comparison choices could not be read. Please select two different published initiatives.</p>}
           {choice.requested && <p><Link href="/impact/compare#comparison" className="v2-text-link">Clear comparison</Link></p>}
           {choice.selected ? (
             <section aria-label="Side-by-side published outcomes">
-              <div className={styles.outcomes}>
+              <div className="form-grid">
               {choice.selected.map((item, index) => (
-                <article className={`v2-reminder ${styles.outcome}`} key={item.slug}>
+                <article className="v2-reminder" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start", minWidth: 0, overflowWrap: "anywhere" }} key={item.slug}>
                   <span className="v2-reminder-label">Published initiative {index + 1} · {item.cause.title}</span>
                   <h2>{item.title}</h2>
                   {item.primaryMetric ? (
                     <p><strong>{item.primaryMetric}</strong> — {item.primaryMetricLabel || "Documented outcome"}</p>
                   ) : <p>No headline quantity has been published for this initiative.</p>}
                   <p>{item.summary}</p>
-                  <Link className="v2-button" href={`/our-work/${item.slug}`}>Read the full initiative</Link>
+                  <Link className="v2-button" style={{ marginTop: "auto", maxWidth: "100%", whiteSpace: "normal" }} href={`/our-work/${item.slug}`}>Read the full initiative</Link>
                 </article>
               ))}
               </div>
