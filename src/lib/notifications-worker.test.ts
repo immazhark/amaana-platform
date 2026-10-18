@@ -24,6 +24,30 @@ vi.mock("@/lib/notification-templates", () => ({
 
 import { processPendingEmailNotifications } from "./notifications";
 
+// Exercise the actual bounded provider response stream while retaining the
+// existing independent outbound-request spies and deterministic fixtures.
+function stubProvider(fetchMock: unknown) {
+  if (typeof fetchMock !== "function") throw new TypeError("Synthetic email provider fixture is not callable");
+  vi.stubGlobal("fetch", async (...args: Parameters<typeof fetch>) => {
+    const result: unknown = await fetchMock(...args);
+    if (result instanceof Response) return result;
+    const fixture = result as { ok: boolean; status?: number; json: () => Promise<unknown> };
+    let body: string;
+    try {
+      body = JSON.stringify(await fixture.json());
+    } catch {
+      // Mirror malformed provider wire JSON, rather than throwing from the
+      // fetch transport and disguising a receipt parse error as network loss.
+      body = "{invalid-json";
+    }
+    return new Response(body, {
+      status: fixture.status ?? (fixture.ok ? 200 : 502),
+      headers: { "content-type": "application/json" },
+    });
+  });
+}
+
+
 const originalApiKey = process.env.RESEND_API_KEY;
 const originalFrom = process.env.EMAIL_FROM;
 
@@ -78,7 +102,7 @@ describe("notification worker flow", () => {
     ["unreadable JSON", async () => { throw new SyntaxError("invalid JSON"); }],
   ])("retries a 2xx Resend response with %s instead of marking it SENT", async (_case, json) => {
     const sender = vi.fn().mockResolvedValue({ ok: true, status: 200, json });
-    vi.stubGlobal("fetch", sender);
+    stubProvider(sender);
 
     expect(await processPendingEmailNotifications()).toEqual({
       selected: 1,
@@ -106,7 +130,7 @@ describe("notification worker flow", () => {
       status: 200,
       json: async () => ({ id: "email_1" }),
     });
-    vi.stubGlobal("fetch", fetchMock);
+    stubProvider(fetchMock);
 
     const result = await processPendingEmailNotifications();
 
@@ -150,7 +174,7 @@ describe("notification worker flow", () => {
 
   it("reschedules a transient provider failure instead of losing the notification", async () => {
     const before = Date.now();
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+    stubProvider(vi.fn().mockResolvedValue({
       ok: false,
       status: 429,
       json: async () => ({ name: "rate_limit_exceeded" }),
@@ -197,7 +221,7 @@ describe("notification worker flow", () => {
       .mockResolvedValueOnce({ count: 0 })
       .mockResolvedValueOnce({ count: 1 })
       .mockResolvedValueOnce({ count: 0 });
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+    stubProvider(vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
       json: async () => ({ id: "email_1" }),
@@ -250,7 +274,7 @@ describe("notification worker flow", () => {
       .mockResolvedValueOnce({ count: 0 })
       .mockResolvedValueOnce({ count: 0 });
     const fetchMock = vi.fn();
-    vi.stubGlobal("fetch", fetchMock);
+    stubProvider(fetchMock);
 
     const result = await processPendingEmailNotifications();
 
