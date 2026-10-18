@@ -26,14 +26,16 @@ describe("anonymous telemetry ingress resource bounds", () => {
     reader.read.mockResolvedValueOnce(JSON.stringify({ path: "/appeals/synthetic-medical-case" }));
     await expect(parseAnalyticsPayload(request("page-view")))
       .resolves.toEqual({ path: "/appeals/:slug" });
-    expect(reader.read).toHaveBeenCalledExactlyOnceWith(expect.any(Request), MAX_ANALYTICS_JSON_BYTES, { timeoutMs: 5_000 });
+    expect(reader.read).toHaveBeenCalledOnce();
+    expect(reader.read).toHaveBeenCalledWith(expect.any(Request), MAX_ANALYTICS_JSON_BYTES, { timeoutMs: 5_000 });
   });
 
   it("limits Core Web Vitals body reads to five seconds without changing grouping", async () => {
     reader.read.mockResolvedValueOnce(JSON.stringify({ path: "/appeals/synthetic-medical-case", name: "LCP", value: 1200 }));
     await expect(parseWebVitalPayload(request("web-vitals")))
       .resolves.toEqual({ path: "/appeals/:slug", name: "LCP", bucket: "excellent" });
-    expect(reader.read).toHaveBeenCalledExactlyOnceWith(expect.any(Request), MAX_WEB_VITAL_JSON_BYTES, { timeoutMs: 5_000 });
+    expect(reader.read).toHaveBeenCalledOnce();
+    expect(reader.read).toHaveBeenCalledWith(expect.any(Request), MAX_WEB_VITAL_JSON_BYTES, { timeoutMs: 5_000 });
   });
 
   it.each([
