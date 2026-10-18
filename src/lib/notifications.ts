@@ -1,10 +1,12 @@
 import { NotificationStatus } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
+import { readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { renderNotificationEmail } from "@/lib/notification-templates";
 
 const MAX_BATCH_SIZE = 20;
 const MAX_ATTEMPTS = 5;
 const EMAIL_PROVIDER_TIMEOUT_MS = 15_000;
+const MAX_EMAIL_PROVIDER_RESPONSE_BYTES = 16 * 1024;
 const PROCESSING_STALE_AFTER_MS = 15 * 60 * 1000;
 const RETRY_DELAYS_MS = [5, 15, 45, 135].map(minutes => minutes * 60 * 1000);
 
@@ -36,6 +38,15 @@ export function isRetryableEmailProviderResponse(status: number, providerCode?: 
   return status === 408 || status === 425 || status === 429 || status >= 500;
 }
 
+async function parseResendResponse(response: Response): Promise<unknown> {
+  // Provider receipts and error bodies are external input. Do not parse
+  // unrestricted JSON, even when the HTTP status is successful.
+  const raw = await readTextBodyWithLimit(response, MAX_EMAIL_PROVIDER_RESPONSE_BYTES, {
+    timeoutMs: EMAIL_PROVIDER_TIMEOUT_MS,
+  });
+  return JSON.parse(raw) as unknown;
+}
+
 async function sendWithResend(
   notificationId: string,
   recipient: string,
@@ -49,6 +60,7 @@ async function sendWithResend(
 
   const response = await fetch("https://api.resend.com/emails", {
     method: "POST",
+    redirect: "error",
     signal: AbortSignal.timeout(EMAIL_PROVIDER_TIMEOUT_MS),
     headers: {
       Authorization: `Bearer ${apiKey}`,
@@ -61,7 +73,7 @@ async function sendWithResend(
   if (!response.ok) {
     let providerCode: string | null = null;
     try {
-      const payload = await response.json() as { name?: unknown; code?: unknown };
+      const payload = await parseResendResponse(response) as { name?: unknown; code?: unknown };
       providerCode = typeof payload.name === "string"
         ? payload.name
         : typeof payload.code === "string"
@@ -79,7 +91,7 @@ async function sendWithResend(
 
   let providerMessageId: unknown;
   try {
-    const payload = await response.json() as { id?: unknown };
+    const payload = await parseResendResponse(response) as { id?: unknown };
     providerMessageId = payload?.id;
   } catch {
     // A 2xx response without a parseable provider receipt is not evidence
