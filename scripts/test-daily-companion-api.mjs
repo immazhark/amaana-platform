@@ -95,6 +95,20 @@ test("chunked oversized prayer-provider replies fail closed without Content-Leng
   assert.equal(result.body.today, undefined);
 });
 
+test("oversized tomorrow response preserves verified today without inventing tomorrow", async () => {
+  const get = handler(async url => {
+    const date = new URL(url).pathname.split("/").at(-1);
+    const data = validData(date);
+    if (date === "14-09-2026") return response({ ...data, extra: "x".repeat(70_000) });
+    return response(data);
+  });
+  const result = await get(request(""));
+  assert.equal(result.status, 200);
+  assert.equal(result.body.today.date, "2026-09-13");
+  assert.equal(result.body.today.timings.Fajr, "04:51");
+  assert.equal(result.body.tomorrow, null);
+});
+
 test("provider outage yields an actionable no-store error, not fake timings", async () => {
   const get = handler(async () => { throw new Error("Offline"); });
   const result = await get(request(""));
