@@ -70,6 +70,12 @@ beforeEach(() => {
     Object.assign(row, data);
     return row;
   });
+  // The production createSession performs the session and reservation write
+  // atomically. Reproduce only its successful committed outcome at this mock
+  // boundary; a rejected session creation must leave the reservation charged.
+  mocks.createSession.mockImplementation(async (_userId: string, attemptId: string) => {
+    await mocks.attemptUpdate({ where: { id: attemptId }, data: { succeeded: true } });
+  });
   // Serialize only the fake database boundary. The action, limiter and retry
   // wrapper are real; password work deliberately remains outside the transaction.
   let tail: Promise<unknown> = Promise.resolve();
@@ -137,7 +143,7 @@ describe("admin login admission", () => {
     await expect(login(form())).rejects.toThrow("redirect:/admin");
     expect(attempts.map(row => row.succeeded)).toEqual([false, true]);
     expect(mocks.attemptUpdate).toHaveBeenCalledWith({ where: { id: "attempt-2" }, data: { succeeded: true } });
-    expect(mocks.createSession).toHaveBeenCalledWith("admin");
+    expect(mocks.createSession).toHaveBeenCalledWith("admin", "attempt-2");
   });
 
   it("rechecks admission after a serialization conflict before password work", async () => {
