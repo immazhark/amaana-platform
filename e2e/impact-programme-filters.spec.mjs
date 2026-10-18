@@ -15,6 +15,11 @@ test("impact visitors can narrow public evidence by published programme and clea
     await expect(page.locator("#evidence")).toContainText(/published (initiative|initiatives)/);
     await page.getByRole("link", { name: "Clear impact filter" }).click();
     await expect(page).not.toHaveURL(/programme=/);
+    await expect(category).toHaveValue("");
+    await page.goBack();
+    await expect(category).toHaveValue(first);
+    await page.goForward();
+    await expect(category).toHaveValue("");
   } else {
     await expect(page.locator("#evidence")).toContainText("No initiative outcomes are published here yet.");
   }
