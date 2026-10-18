@@ -18,6 +18,7 @@ const privateHeaders = {
 const MAX_PAYMENT_JSON_BYTES = 32 * 1024;
 
 export async function POST(request: Request) {
+  let providerAttempted = false;
   try {
     validateProductionEnvironment();
     if (!isSameOrigin(request)) return NextResponse.json({ error: "Invalid request origin." }, { status: 403, headers: privateHeaders });
@@ -123,6 +124,9 @@ export async function POST(request: Request) {
 
     const referenceNumber = createDonationReference(); const receiptToken = createReceiptToken(); const amountPaise = parsed.data.amount * 100;
     if (!Number.isSafeInteger(amountPaise) || amountPaise <= 0) throw new Error("Donation amount cannot be represented safely in paise");
+    // Once the provider request starts, transport errors or failed persistence
+    // cannot prove that no Razorpay order was created. Never invite a replay.
+    providerAttempted = true;
     const order = await createRazorpayOrder({ amountPaise, receipt: referenceNumber, appealId: appeal.id, givingIntent: parsed.data.givingIntent });
     // Never persist a fabricated or unusable provider identity or a non-created order.
     if (
@@ -171,6 +175,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ donationId: donation.id, orderId: order.id, amount: amountPaise, currency: "INR", keyId: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID, appealTitle: appeal.title, donor: { name: donation.donorName, email: donation.donorEmail, contact: donation.donorPhone }, receiptToken }, { status: 201, headers: privateHeaders });
   } catch {
     logServerError("donation.order_creation_failed");
-    return NextResponse.json({ error: "We could not start the secure payment. Please try again." }, { status: 500, headers: privateHeaders });
+    if (providerAttempted) {
+      return NextResponse.json(
+        { error: "Checkout status is uncertain. An order may have been created. Contact Amaana before starting another payment." },
+        { status: 503, headers: privateHeaders },
+      );
+    }
+    return NextResponse.json(
+      { error: "We could not start the secure payment. Please try again." },
+      { status: 500, headers: privateHeaders },
+    );
   }
 }

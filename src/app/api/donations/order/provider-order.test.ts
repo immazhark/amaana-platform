@@ -70,8 +70,9 @@ describe("provider order boundary before donation persistence", () => {
 
     const response = await POST(checkoutRequest());
 
-    expect(response.status).toBe(500);
-    expect(await response.json()).toEqual({ error: "We could not start the secure payment. Please try again." });
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "Checkout status is uncertain. An order may have been created. Contact Amaana before starting another payment." });
+    expect(response.headers.get("retry-after")).toBeNull();
     expect(mocks.createRazorpayOrder).toHaveBeenCalledOnce();
     expect(mocks.create).not.toHaveBeenCalled();
     expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
@@ -130,8 +131,9 @@ describe("provider order boundary before donation persistence", () => {
 
     const response = await POST(checkoutRequest());
 
-    expect(response.status).toBe(500);
-    expect(await response.json()).toEqual({ error: "We could not start the secure payment. Please try again." });
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: "Checkout status is uncertain. An order may have been created. Contact Amaana before starting another payment." });
+    expect(response.headers.get("retry-after")).toBeNull();
     expect(mocks.createRazorpayOrder).toHaveBeenCalledOnce();
     expect(mocks.create).toHaveBeenCalledOnce();
     expect(mocks.findUnique).toHaveBeenCalledOnce();
