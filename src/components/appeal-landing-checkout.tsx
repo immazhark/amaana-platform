@@ -1,12 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useRef, useState, type CSSProperties } from "react";
+import { lazy, Suspense, useCallback, useRef, useState, type CSSProperties } from "react";
 import { getWholeRupeeCheckoutRange } from "@/lib/donation-amount-input";
 import { formatCheckoutRemainingINR } from "@/lib/donation-checkout-balance";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import { donationFormCopy } from "./donation-form-copy";
-import { DonationMethods } from "./donation-methods";
+// Only load the checkout implementation after the donor confirms a destination.
+// Reuse the code-split payment method module already used by appeal detail pages.
+const DonationMethods = lazy(async () => ({ default: (await import("./donation-methods")).DonationMethods }));
 
 export type ReviewedAppealChoice = {
   id: string;
@@ -56,6 +58,7 @@ export function AppealLandingCheckout({ appeals, paymentDetails }: {
   ).slice(0, 4);
   const [selectedId, setSelectedId] = useState(eligible[0]?.id ?? "");
   const [locked, setLocked] = useState(false);
+  const [checkoutRequested, setCheckoutRequested] = useState(false);
   const lockRef = useRef(false);
   const handleLockChange = useCallback((value: boolean) => {
     lockRef.current = value;
@@ -77,7 +80,7 @@ export function AppealLandingCheckout({ appeals, paymentDetails }: {
           aria-pressed={appeal.id === selected.id}
           aria-label={`Select ${appeal.title}, with ${formatCheckoutRemainingINR(appeal.maxAmount)} remaining`}
           disabled={locked}
-          onClick={() => { if (!lockRef.current) setSelectedId(appeal.id); }}
+          onClick={() => { if (!lockRef.current) { setSelectedId(appeal.id); setCheckoutRequested(false); } }}
         >
           <strong>{appeal.title}</strong>
           <span>{formatCheckoutRemainingINR(appeal.maxAmount)} remaining</span>
@@ -87,9 +90,18 @@ export function AppealLandingCheckout({ appeals, paymentDetails }: {
     </div>
     <p role="status" aria-live="polite">Selected destination: <strong>{selected.title}</strong>.
       {locked ? " Payment or verification in progress; destination changes are disabled." : " You can change your selection before submitting."}</p>
-    <DonationMethods key={selected.id} appealId={selected.id} appealTitle={selected.title}
-      maxAmount={selected.maxAmount} zakatEligible={selected.zakatEligible}
-      paymentDetails={paymentDetails} copy={donationFormCopy(selected.zakatEligible)}
-      onLockChange={handleLockChange} />
+    <button type="button" className="v2-button" aria-expanded={checkoutRequested}
+      aria-controls="reviewed-appeal-payment-methods" disabled={locked}
+      onClick={() => { if (!lockRef.current) setCheckoutRequested(true); }}>
+      {checkoutRequested ? "Payment methods ready below" : "Continue to payment methods"}
+    </button>
+    {checkoutRequested && <div id="reviewed-appeal-payment-methods">
+      <Suspense fallback={<p role="status" aria-live="polite">Preparing secure donation options…</p>}>
+        <DonationMethods key={selected.id} appealId={selected.id} appealTitle={selected.title}
+          maxAmount={selected.maxAmount} zakatEligible={selected.zakatEligible}
+          paymentDetails={paymentDetails} copy={donationFormCopy(selected.zakatEligible)}
+          onLockChange={handleLockChange} />
+      </Suspense>
+    </div>}
   </section>;
 }
