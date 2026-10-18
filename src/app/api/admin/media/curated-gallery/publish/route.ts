@@ -22,6 +22,7 @@ import { logServerError } from "@/lib/server-log";
 const privateHeaders = {
   "Cache-Control": "no-store, private",
   "X-Robots-Tag": "noindex, nofollow, noarchive",
+  "Referrer-Policy": "no-referrer",
 };
 
 const inputSchema = z.object({
@@ -56,9 +57,11 @@ export async function POST(request: Request) {
     }
     assertCuratedGalleryRuntime();
 
-    let body: unknown;
+    // A stalled authenticated request must never occupy the publication gate
+    // indefinitely. Keep transport failures distinct from complete malformed JSON.
+    let rawBody: string;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PUBLISH_BODY_BYTES));
+      rawBody = await readTextBodyWithLimit(request, MAX_PUBLISH_BODY_BYTES, { timeoutMs: 5000 });
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json(
@@ -66,6 +69,18 @@ export async function POST(request: Request) {
           { status: 413, headers: privateHeaders },
         );
       }
+      // A broken or timed-out stream is retryable; no manifest/session/database
+      // operations have occurred, and no internal diagnostic is returned.
+      return NextResponse.json(
+        { error: "Curated gallery publication request was interrupted. Please retry." },
+        { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+      );
+    }
+
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
       return NextResponse.json(
         { error: "Exact curated gallery publication confirmation is required." },
         { status: 400, headers: privateHeaders },
