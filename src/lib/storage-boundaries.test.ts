@@ -199,6 +199,40 @@ describe("public object reads enforce upload-size and completeness boundaries", 
     expect(closed).toHaveBeenCalledTimes(1);
   });
 
+  it("rejects unknown-length overflow without awaiting an iterator that refuses to close", async () => {
+    const iterator = {
+      next: vi.fn(async () => ({ done: false as const, value: new Uint8Array(1024 * 1024) })),
+      return: vi.fn(() => new Promise<IteratorResult<Uint8Array>>(() => {})),
+    };
+    sdk.send.mockResolvedValue({
+      Body: { [Symbol.asyncIterator]: () => iterator },
+    });
+
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await expect(Promise.race([
+        getPublicMediaObject(key),
+        new Promise<never>((_resolve, reject) => {
+          timeout = setTimeout(() => reject(new Error("iterator cleanup stalled the response")), 200);
+        }),
+      ])).rejects.toThrow(/size boundary/);
+      expect(iterator.next).toHaveBeenCalledTimes(6);
+      expect(iterator.return).toHaveBeenCalledOnce();
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  });
+
+  it("preserves invalid stream data errors when iterator cleanup throws", async () => {
+    const iterator = {
+      next: vi.fn(async () => ({ done: false as const, value: "synthetic bad bytes" })),
+      return: vi.fn(() => { throw new Error("synthetic iterator cleanup failure"); }),
+    };
+    sdk.send.mockResolvedValue({ Body: { [Symbol.asyncIterator]: () => iterator } });
+    await expect(getPublicMediaObject(key)).rejects.toThrow(/invalid byte data/);
+    expect(iterator.return).toHaveBeenCalledOnce();
+  });
+
   it("rejects truncated bodies instead of caching incomplete media", async () => {
     sdk.send.mockResolvedValue({
       ContentLength: 3,
