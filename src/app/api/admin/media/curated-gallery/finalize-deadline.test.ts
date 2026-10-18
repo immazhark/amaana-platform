@@ -36,7 +36,7 @@ function request(path: "start" | "publish", body: ReadableStream<Uint8Array> | s
     duplex: "half",
   } as RequestInit & { duplex: "half" });
 }
-function neverEnding(cancel: ReturnType<typeof vi.fn>) {
+function neverEnding(cancel: () => Promise<void>) {
   return new ReadableStream<Uint8Array>({ cancel });
 }
 function privateRetry(response: Response) {
