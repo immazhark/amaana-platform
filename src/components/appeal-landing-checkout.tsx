@@ -95,13 +95,13 @@ export function AppealLandingCheckout({ appeals, paymentDetails }: {
       onClick={() => { if (!lockRef.current) setCheckoutRequested(true); }}>
       {checkoutRequested ? "Payment methods ready below" : "Continue to payment methods"}
     </button>
-    {checkoutRequested && <div id="reviewed-appeal-payment-methods">
-      <Suspense fallback={<p role="status" aria-live="polite">Preparing secure donation options…</p>}>
+    <div id="reviewed-appeal-payment-methods">
+      {checkoutRequested && <Suspense fallback={<p role="status" aria-live="polite">Preparing secure donation options…</p>}>
         <DonationMethods key={selected.id} appealId={selected.id} appealTitle={selected.title}
           maxAmount={selected.maxAmount} zakatEligible={selected.zakatEligible}
           paymentDetails={paymentDetails} copy={donationFormCopy(selected.zakatEligible)}
           onLockChange={handleLockChange} />
-      </Suspense>
-    </div>}
+      </Suspense>}
+    </div>
   </section>;
 }
