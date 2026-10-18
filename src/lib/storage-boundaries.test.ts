@@ -137,6 +137,49 @@ describe("public object reads enforce upload-size and completeness boundaries", 
     expect(closed).toHaveBeenCalledTimes(1);
   });
 
+  it("rejects a declared oversized object even if cancellation never settles", async () => {
+    const cancel = vi.fn(() => new Promise<void>(() => {}));
+    const consumed = vi.fn();
+    sdk.send.mockResolvedValue({
+      ContentLength: 5 * 1024 * 1024 + 1,
+      Body: { cancel, async *[Symbol.asyncIterator]() { consumed(); yield new Uint8Array([1]); } },
+    });
+
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await expect(Promise.race([
+        getPublicMediaObject(key),
+        new Promise<never>((_resolve, reject) => {
+          timeout = setTimeout(() => reject(new Error("S3 cleanup stalled media response")), 150);
+        }),
+      ])).rejects.toThrow(/size boundary/);
+      expect(cancel).toHaveBeenCalledOnce();
+      expect(consumed).not.toHaveBeenCalled();
+    } finally {
+      if (timeout) clearTimeout(timeout);
+    }
+  });
+
+  it("preserves the size error when cleanup rejects asynchronously", async () => {
+    const cancel = vi.fn(async () => { throw new Error("synthetic private cleanup error"); });
+    sdk.send.mockResolvedValue({
+      ContentLength: 5 * 1024 * 1024 + 1,
+      Body: { cancel, async *[Symbol.asyncIterator]() { yield new Uint8Array([1]); } },
+    });
+    await expect(getPublicMediaObject(key)).rejects.toThrow(/size boundary/);
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
+  it("preserves the size error when cleanup throws synchronously", async () => {
+    const cancel = vi.fn(() => { throw new Error("synthetic synchronous cleanup error"); });
+    sdk.send.mockResolvedValue({
+      ContentLength: 5 * 1024 * 1024 + 1,
+      Body: { cancel, async *[Symbol.asyncIterator]() { yield new Uint8Array([1]); } },
+    });
+    await expect(getPublicMediaObject(key)).rejects.toThrow(/size boundary/);
+    expect(cancel).toHaveBeenCalledOnce();
+  });
+
   it("bounds unknown-length bodies and closes the iterator on overflow", async () => {
     const consumed = vi.fn();
     const closed = vi.fn();
