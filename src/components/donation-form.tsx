@@ -6,7 +6,7 @@ import Script from "next/script";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
-import { DONATION_INTENT_DESCRIPTIONS, DONATION_INTENT_LABELS, type DonationIntentValue } from "@/lib/donation-intent";
+import type { DonationFormCopy } from "./donation-form-copy";
 import styles from "./donation-form.module.css";
 
 type RazorpayResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
@@ -19,7 +19,7 @@ const ORDER_UNCERTAIN = "Checkout status is uncertain. An order may have been cr
 
 declare global { interface Window { Razorpay: new (options: RazorpayOptions) => { open(): void } } }
 
-export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible = false }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean }) {
+export function DonationForm({ appealId, appealTitle, maxAmount, copy }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean; copy: DonationFormCopy }) {
   const router = useRouter();
   const errorRef = useRef<HTMLDivElement>(null);
   const focusedErrorRef = useRef<string | null>(null);
@@ -260,7 +260,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
       }}
     />
     <form ref={formRef} className="v2-premium-form v2-donation-form" onSubmit={submit} onInvalid={handleInvalid} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
-      <div className="v2-form-heading"><span>Secure contribution</span><h2 id="donation-form-heading">Choose how you would like to support.</h2><p id="donation-form-description">Only the information needed to process and acknowledge your contribution is requested.</p></div>
+      {copy.heading}
       <p id="donation-checkout-status" className={styles.status} role="status" aria-live="polite">{statusText}</p>
       {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{remainingHint !== null ? <p><button type="button" className="v2-text-link" onClick={() => { const input = formRef.current?.elements.namedItem("amount"); if (input instanceof HTMLInputElement) { input.value = String(remainingHint); updateDonationAmountValidity(input, transactionMin, transactionMax); clearFieldError("amount"); input.focus(); } }}>Use the current remaining amount: ₹{remainingHint.toLocaleString("en-IN")}</button></p> : null}</div>}
       <div className="form-grid">
@@ -270,21 +270,16 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         <div className={`field full ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorPhone">Phone <span className="muted">optional</span></label><div className={styles.checkoutControl}><input id="donorPhone" name="donorPhone" type="tel" autoComplete="tel" disabled={submissionLocked} aria-invalid={Boolean(fieldError("donorPhone")) || undefined} aria-describedby={fieldError("donorPhone") ? "donor-phone-error" : undefined} onChange={() => clearFieldError("donorPhone")}/></div>{fieldError("donorPhone") && <small id="donor-phone-error" className="v2-field-error">{fieldError("donorPhone")}</small>}</div>
         <fieldset className={`field full ${styles.intentGroup}`} disabled={submissionLocked} aria-invalid={Boolean(fieldError("givingIntent")) || undefined} aria-describedby={fieldError("givingIntent") ? "giving-intent-error" : undefined}>
           <legend>Giving intention</legend>
-          <p className={styles.intentIntro}>Choose how you want this contribution recorded. The selected appeal remains the designated destination in every case.</p>
+          {copy.intentIntroduction}
           <div className={styles.intentGrid}>
-            {(["GENERAL", "SADAQAH", ...(zakatEligible ? ["ZAKAT"] : [])] as DonationIntentValue[]).map((intent, index) => (
-              <label className={styles.intentOption} key={intent}>
-                <input type="radio" name="givingIntent" value={intent} defaultChecked={index === 0} required />
-                <span><strong>{DONATION_INTENT_LABELS[intent]}</strong><small>{DONATION_INTENT_DESCRIPTIONS[intent]}</small></span>
-              </label>
-            ))}
+            {copy.intentionOptions}
           </div>
           {fieldError("givingIntent") && <small id="giving-intent-error" className="v2-field-error">{fieldError("givingIntent")}</small>}
-          <small className={styles.intentNote}>{zakatEligible ? "Amaana has explicitly reviewed this appeal as Zakat-eligible. Your selection records your giving intention; it does not alter the underlying verification record." : "Zakat is shown only on appeals that Amaana has explicitly reviewed as Zakat-eligible."}</small>
+          {copy.intentionNote}
         </fieldset>
-        <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="isAnonymous" type="checkbox" disabled={submissionLocked}/><span><strong>Keep my public identity private</strong><small>Do not show my name in any public donor listing.</small></span></label></div>
-        <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="domesticConfirmed" type="checkbox" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("domesticConfirmed")) || undefined} aria-describedby={fieldError("domesticConfirmed") ? "domestic-confirmation-error" : undefined} onChange={() => clearFieldError("domesticConfirmed")}/><span><strong>Domestic contribution confirmation</strong><small>I confirm this donation is from an Indian source using a domestic payment method.</small></span></label>{fieldError("domesticConfirmed") && <small id="domestic-confirmation-error" className="v2-field-error">{fieldError("domesticConfirmed")}</small>}</div>
-        <div className="field full v2-form-submit"><button className="v2-button" type="submit" disabled={busy || !scriptReady || lockedForReconciliation}>{phase === "opening" ? "Opening secure checkout…" : phase === "verifying" ? "Verifying donation…" : phase === "reconciliation" ? "Verification follow-up required" : scriptReady ? "Continue securely →" : "Preparing secure checkout…"}</button><small>{lockedForReconciliation ? "Do not submit another payment for this donation. Keep your Razorpay confirmation so the payment can be reconciled safely." : "Next: Razorpay secure checkout. Your Amaana acknowledgement follows successful payment verification and is not an 80G tax-deduction certificate."}</small></div>
+        <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="isAnonymous" type="checkbox" disabled={submissionLocked}/>{copy.anonymityText}</label></div>
+        <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="domesticConfirmed" type="checkbox" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("domesticConfirmed")) || undefined} aria-describedby={fieldError("domesticConfirmed") ? "domestic-confirmation-error" : undefined} onChange={() => clearFieldError("domesticConfirmed")}/>{copy.domesticText}</label>{fieldError("domesticConfirmed") && <small id="domestic-confirmation-error" className="v2-field-error">{fieldError("domesticConfirmed")}</small>}</div>
+        <div className="field full v2-form-submit"><button className="v2-button" type="submit" disabled={busy || !scriptReady || lockedForReconciliation}>{phase === "opening" ? "Opening secure checkout…" : phase === "verifying" ? "Verifying donation…" : phase === "reconciliation" ? "Verification follow-up required" : scriptReady ? "Continue securely →" : "Preparing secure checkout…"}</button>{lockedForReconciliation ? <small>Do not submit another payment for this donation. Keep your Razorpay confirmation so the payment can be reconciled safely.</small> : copy.readyHelp}</div>
       </div>
     </form>
   </>;
