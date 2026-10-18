@@ -65,9 +65,10 @@ export function passwordNeedsRehash(stored: string) {
   return Number(nRaw) !== CURRENT_SCRYPT.N
     || Number(rRaw) !== CURRENT_SCRYPT.r
     || Number(pRaw) !== CURRENT_SCRYPT.p
+    || saltHex?.length !== 32
+    || hashHex?.length !== CURRENT_SCRYPT.keyLength * 2
     || !isHex(saltHex)
-    || !isHex(hashHex)
-    || Buffer.from(hashHex ?? "", "hex").length !== CURRENT_SCRYPT.keyLength;
+    || !isHex(hashHex);
 }
 
 export async function verifyPassword(password: string, stored: string) {
@@ -84,6 +85,10 @@ export async function verifyPassword(password: string, stored: string) {
       && (N & (N - 1)) === 0
       && r > 0
       && p > 0
+      // Bound both input sizes before hex decoding or invoking scrypt. A
+      // corrupt stored credential must not control the crypto allocation.
+      && saltHex?.length === 32
+      && hashHex?.length === CURRENT_SCRYPT.keyLength * 2
       && isHex(saltHex)
       && isHex(hashHex);
 
