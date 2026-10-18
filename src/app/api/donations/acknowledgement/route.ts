@@ -24,9 +24,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ found: false }, { status: 403, headers: privateHeaders });
     }
 
-    let body: unknown;
+    let rawBody: string;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_ACKNOWLEDGEMENT_JSON_BYTES, { timeoutMs: 5_000 }));
+      rawBody = await readTextBodyWithLimit(request, MAX_ACKNOWLEDGEMENT_JSON_BYTES, { timeoutMs: 5_000 });
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ found: false }, { status: 413, headers: privateHeaders });
@@ -34,6 +34,19 @@ export async function POST(request: Request) {
       if (error instanceof RequestBodyReadTimeoutError) {
         return NextResponse.json({ found: false }, { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } });
       }
+      // Incomplete or interrupted transport is an infrastructure failure,
+      // not proof that the private receipt reference is invalid.
+      return NextResponse.json({ found: false }, {
+        status: 503, headers: { ...privateHeaders, "Retry-After": "60" },
+      });
+    }
+
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      // A completely read but malformed payload remains indistinguishable
+      // from an invalid private acknowledgement credential.
       return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
     }
 
@@ -97,6 +110,10 @@ export async function POST(request: Request) {
       { headers: privateHeaders },
     );
   } catch {
-    return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
+    // Database or rate-limit outages cannot invalidate a real receipt.
+    // Preserve non-disclosure while allowing safe retry without a new payment.
+    return NextResponse.json({ found: false }, {
+      status: 503, headers: { ...privateHeaders, "Retry-After": "60" },
+    });
   }
 }
