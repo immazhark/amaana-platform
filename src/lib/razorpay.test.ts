@@ -2,6 +2,23 @@ import { createHmac } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createRazorpayOrder, fetchRazorpayPayment, verifyCheckoutSignature, verifyWebhookSignature } from "./razorpay";
 
+// Older fixtures declare only status and JSON; wrap them in real Fetch
+// responses so provider streaming limits run under test as in production.
+function stubFetch(fetchMock: unknown) {
+  if (typeof fetchMock !== "function") throw new TypeError("Test fetch fixture must be callable");
+  vi.stubGlobal("fetch", async (...args: Parameters<typeof fetch>) => {
+    const fixture: unknown = await fetchMock(...args);
+    if (fixture instanceof Response) return fixture;
+    const legacy = fixture as { ok: boolean; status?: number; json: () => Promise<unknown> };
+    if (!legacy.ok) return new Response(null, { status: legacy.status ?? 502 });
+    return new Response(JSON.stringify(await legacy.json()), {
+      status: legacy.status ?? 200,
+      headers: { "content-type": "application/json" },
+    });
+  });
+}
+
+
 describe("Razorpay signatures", () => {
   beforeEach(() => {
     process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID = "rzp_test_key";
@@ -31,6 +48,34 @@ describe("Razorpay signatures", () => {
     expect(verifyWebhookSignature(`${body} `, signature)).toBe(false);
   });
 
+  it("rejects a response with an oversized declared length before parsing it", async () => {
+    const huge = "x".repeat(65_537);
+    const fetchMock = vi.fn().mockResolvedValue(new Response(
+      JSON.stringify({ id: "order_valid", amount: 50_000, currency: "INR", receipt: "AFD-1", status: "created", notes: huge }),
+      { status: 200, headers: { "content-length": String(70_000) } },
+    ));
+    stubFetch( fetchMock);
+
+    await expect(createRazorpayOrder({
+      amountPaise: 50_000, receipt: "AFD-1", appealId: "appeal_1", givingIntent: "GENERAL",
+    })).rejects.toThrow(/Razorpay response.*large/i);
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("rejects streamed provider JSON beyond the limit without trusting Content-Length", async () => {
+    const huge = JSON.stringify({
+      id: "pay_1", order_id: "order_1", amount: 50_000, currency: "INR",
+      status: "captured", captured: true, extra: "x".repeat(70_000),
+    });
+    stubFetch( vi.fn().mockResolvedValue(new Response(huge, {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    })));
+
+    await expect(fetchRazorpayPayment("pay_1"))
+      .rejects.toThrow(/Razorpay response.*large/i);
+  });
+
   it("creates INR orders through the authenticated server API", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
@@ -42,7 +87,7 @@ describe("Razorpay signatures", () => {
         status: "created",
       }),
     });
-    vi.stubGlobal("fetch", fetchMock);
+    stubFetch( fetchMock);
 
     const order = await createRazorpayOrder({
       amountPaise: 50000,
@@ -80,7 +125,7 @@ describe("Razorpay signatures", () => {
         captured: true,
       }),
     });
-    vi.stubGlobal("fetch", fetchMock);
+    stubFetch( fetchMock);
 
     const payment = await fetchRazorpayPayment("pay_1");
 
@@ -99,7 +144,7 @@ describe("Razorpay signatures", () => {
         init.signal?.addEventListener("abort", () => reject(new Error("provider request aborted")), { once: true });
       });
     });
-    vi.stubGlobal("fetch", fetchMock);
+    stubFetch( fetchMock);
 
     const result = fetchRazorpayPayment("pay_timeout");
     expect(deadlineSpy).toHaveBeenCalledWith(15_000);
@@ -118,7 +163,7 @@ describe("Razorpay signatures", () => {
       status: 504,
       json: async () => ({ error: "gateway timeout" }),
     });
-    vi.stubGlobal("fetch", fetchMock);
+    stubFetch( fetchMock);
 
     await expect(
       createRazorpayOrder({
@@ -132,7 +177,7 @@ describe("Razorpay signatures", () => {
 
   it("propagates provider network failures instead of fabricating a payment result", async () => {
     const fetchMock = vi.fn().mockRejectedValue(new Error("network unavailable"));
-    vi.stubGlobal("fetch", fetchMock);
+    stubFetch( fetchMock);
 
     await expect(fetchRazorpayPayment("pay_network_failure"))
       .rejects.toThrow("network unavailable");
@@ -150,7 +195,7 @@ describe("Razorpay signatures", () => {
         captured: true,
       }),
     });
-    vi.stubGlobal("fetch", fetchMock);
+    stubFetch( fetchMock);
 
     await fetchRazorpayPayment("pay/special");
 
@@ -181,7 +226,7 @@ describe("Razorpay signatures", () => {
       id: "pay_1", order_id: "order_1", amount: 50000,
       currency: "INR", status: "authorized", captured: false,
     };
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+    stubFetch( vi.fn().mockResolvedValue({
       ok: true,
       json: async () => invalid === null || Array.isArray(invalid)
         ? invalid : { ...payment, ...invalid },
@@ -198,13 +243,13 @@ describe("Razorpay signatures", () => {
         id: "pay_1", order_id: null, amount: 50000, currency: "INR",
         status, captured: status === "captured", email: null, contact: null,
       };
-      vi.stubGlobal("fetch", vi.fn().mockResolvedValue({ ok: true, json: async () => payment }));
+      stubFetch( vi.fn().mockResolvedValue({ ok: true, json: async () => payment }));
       await expect(fetchRazorpayPayment("pay_1")).resolves.toEqual(payment);
     },
   );
 
   it("does not disclose malformed provider data in validation errors", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue({
+    stubFetch( vi.fn().mockResolvedValue({
       ok: true,
       json: async () => ({ captured: "private-provider-data" }),
     }));
