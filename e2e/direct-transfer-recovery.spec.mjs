@@ -30,6 +30,8 @@ for (const outcome of [
     const alert = page.locator(".v2-donation-form .form-error[role='alert']");
     await expect(alert).toContainText(/do not submit the same UTR again|do not submit this transfer again/i);
     await expect(page.getByRole("button", { name: "Verification follow-up required" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Secure online payment" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Bank transfer" })).toBeDisabled();
     await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("UTRTEST9000123");
     await expect(page.getByLabel("Email")).toHaveValue("synthetic@example.test");
     await page.locator(".v2-donation-form form").evaluate(form => form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })));
@@ -78,5 +80,25 @@ test("lost response after direct transfer keeps identity and prevents automatic 
   await page.getByRole("button", { name: "Submit transfer for verification" }).click();
   await expect(page.getByRole("button", { name: "Verification follow-up required" })).toBeDisabled();
   await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("UTRTEST9000123");
+  expect(calls).toBe(1);
+});
+
+
+test("direct transfer prevents method switching while an acknowledgement is pending, then unlocks after prewrite validation", async ({ page }) => {
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  let calls = 0;
+  await page.route("**/api/donations/direct-transfer", async route => {
+    calls++;
+    await gate;
+    await route.fulfill({ status: 400, contentType: "application/json", body: '{"error":"Check the transfer reference."}' });
+  });
+  await prepareDirectTransfer(page);
+  await page.getByRole("button", { name: "Submit transfer for verification" }).click();
+  await expect(page.getByRole("button", { name: "Secure online payment" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Bank transfer" })).toBeDisabled();
+  release();
+  await expect(page.getByRole("button", { name: "Submit transfer for verification" })).toBeEnabled();
+  await expect(page.getByRole("button", { name: "Bank transfer" })).toBeEnabled();
   expect(calls).toBe(1);
 });
