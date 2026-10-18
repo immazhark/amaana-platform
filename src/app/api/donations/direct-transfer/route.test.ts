@@ -337,7 +337,7 @@ describe("direct donation transfer submission", () => {
     const response = await POST(requestWith());
     expect(response.status).toBe(503);
     expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
-    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("retry-after")).toBeNull();
     expect(response.headers.get("referrer-policy")).toBe("no-referrer");
     expect(response.headers.get("x-robots-tag")).toMatch(/noindex.*nofollow/i);
     const result = await response.json();
@@ -359,7 +359,7 @@ describe("direct donation transfer submission", () => {
     mocks.donationDeleteMany.mockResolvedValueOnce({ count: 0 });
     const response = await POST(requestWith(file));
     expect(response.status).toBe(503);
-    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("retry-after")).toBeNull();
     expect((await response.json()).error).toMatch(/Do not submit the same UTR again/i);
     expect(mocks.deleteDonationEvidenceObject).not.toHaveBeenCalled();
   });
