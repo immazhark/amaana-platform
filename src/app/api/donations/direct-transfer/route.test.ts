@@ -330,6 +330,40 @@ describe("direct donation transfer submission", () => {
     expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
   });
 
+
+  it("returns a reconciliation-safe private response when persistence outcome is unknown", async () => {
+    mocks.donationCreate.mockRejectedValueOnce(new Error("synthetic connection lost after commit"));
+    mocks.donationFindUnique.mockRejectedValueOnce(new Error("database read unavailable"));
+    const response = await POST(requestWith());
+    expect(response.status).toBe(503);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex.*nofollow/i);
+    const result = await response.json();
+    expect(result).toEqual({
+      error: "Transfer reporting status is uncertain. Your reference may have been recorded. Do not submit the same UTR again; contact Amaana for reconciliation.",
+    });
+    expect(result).not.toHaveProperty("receiptToken");
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+  });
+
+  it("does not suggest retrying a transfer whose evidence metadata might already have been written", async () => {
+    const file = syntheticPng("synthetic evidence");
+    mocks.uploadDonationEvidence.mockResolvedValueOnce({
+      objectKey: "private-key", originalName: "transfer.png", mimeType: "image/png", sizeBytes: file.size,
+    });
+    mocks.donationUpdate.mockRejectedValueOnce(new Error("synthetic update acknowledgement lost"));
+    // If we cannot prove the draft was removed, we must not delete evidence.
+    mocks.donationDeleteMany.mockResolvedValueOnce({ count: 0 });
+    const response = await POST(requestWith(file));
+    expect(response.status).toBe(503);
+    expect(response.headers.get("retry-after")).toBe("60");
+    expect((await response.json()).error).toMatch(/Do not submit the same UTR again/i);
+    expect(mocks.deleteDonationEvidenceObject).not.toHaveBeenCalled();
+  });
+
   it.each(["missing", "unavailable"])("fails safely when the create outcome is %s", async outcome => {
     mocks.donationCreate.mockRejectedValueOnce(new Error("connection dropped"));
     if (outcome === "unavailable") mocks.donationFindUnique.mockRejectedValueOnce(new Error("database unavailable"));
