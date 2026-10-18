@@ -1,38 +1,27 @@
 import type { CSSProperties } from "react";
 
-type LoadingLayout = "cards" | "form" | "editorial";
-
-const shape: CSSProperties = {
-  borderRadius: ".4rem",
-  background: "var(--af-color-blue-note)",
-  border: "1px solid rgb(18 34 57 / 8%)",
+type Layout = "cards" | "form" | "editorial";
+const bar: CSSProperties = { background: "var(--af-color-blue-note)", height: "1rem", borderRadius: ".4rem" };
+const grid: CSSProperties = {
+  display: "grid", gap: "1rem",
+  gridTemplateColumns: "repeat(auto-fit,minmax(min(100%,16rem),1fr))",
 };
 
-/** Accessible shape-only client navigation fallback; never imitates financial
- * settlement, live impact metrics, beneficiary evidence or private documents. */
+/** Shape-only, nonanimated client-navigation feedback; never represents
+ * real funds, donor records or private beneficiary evidence. */
 export function RouteLoadingSkeleton({ label, layout = "cards" }: {
-  label: string;
-  layout?: LoadingLayout;
+  label: string; layout?: Layout;
 }) {
-  return <section role="status" aria-live="polite" aria-busy="true"
-    data-loading-view={layout}
-    style={{ width: "min(100%, 78rem)", margin: "auto", padding: "clamp(1rem, 3vw, 2.5rem)", color: "var(--af-color-navy-950)" }}
-  >
+  return <section className="v2-shell" role="status" aria-live="polite"
+    aria-busy="true" data-loading-view={layout}>
     <p className="v2-section-label">Amaana Foundation</p>
     <h2 className="v2-section-title">{label}</h2>
-    <div aria-hidden="true" style={{
-      display: "grid", gap: ".8rem",
-      gridTemplateColumns: "repeat(auto-fit, minmax(min(100%, 16rem), 1fr))",
-    }}>
+    <div style={grid} aria-hidden="true">
       {Array.from({ length: layout === "cards" ? 3 : 2 }, (_, index) =>
-        <div key={index} style={{
-          padding: "1rem", border: "1px solid rgb(18 34 57 / 12%)",
-          borderRadius: ".8rem", background: "var(--af-color-surface)",
-        }}>
-          <div style={{ ...shape, height: layout === "cards" ? "5rem" : "2rem", marginBottom: ".8rem" }} />
-          <div style={{ ...shape, height: ".9rem", width: "75%" }} />
-        </div>,
-      )}
+        <div key={index} className="v2-appeal-card" style={{ padding: "1rem", minHeight: "8rem" }}>
+          <div style={{ ...bar, height: layout === "cards" ? "4rem" : "2rem", marginBottom: ".8rem" }} />
+          <div style={{ ...bar, width: "75%" }} />
+        </div>)}
     </div>
   </section>;
 }
