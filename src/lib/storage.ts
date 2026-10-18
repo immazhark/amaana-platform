@@ -288,7 +288,25 @@ export function isManagedPublicMediaKey(objectKey: string) {
 export async function getPublicMediaObject(objectKey: string) {
   if (!isManagedPublicMediaKey(objectKey)) throw new Error("Invalid managed public media key");
   const { bucket, client } = getPublicMediaStorage();
-  const object = await client.send(new GetObjectCommand({ Bucket: bucket, Key: objectKey }));
+  // The stream deadline starts only after GetObject resolves. Also bound
+  // acquisition (connection, headers, provider response) so a stalled S3
+  // request cannot occupy a public route indefinitely.
+  const acquisitionController = new AbortController();
+  let acquisitionDeadline: ReturnType<typeof setTimeout> | undefined;
+  const object = await Promise.race([
+    client.send(
+      new GetObjectCommand({ Bucket: bucket, Key: objectKey }),
+      { abortSignal: acquisitionController.signal },
+    ),
+    new Promise<never>((_resolve, reject) => {
+      acquisitionDeadline = setTimeout(() => {
+        reject(new Error("Public media object request timed out"));
+        acquisitionController.abort();
+      }, PUBLIC_MEDIA_READ_TIMEOUT_MS);
+    }),
+  ]).finally(() => {
+    if (acquisitionDeadline !== undefined) clearTimeout(acquisitionDeadline);
+  });
   if (!object.Body) throw new Error("Public media object has no body");
   const body = object.Body;
   if (object.ContentLength !== undefined &&
