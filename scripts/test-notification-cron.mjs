@@ -1,6 +1,8 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
+import { spawnSync } from "node:child_process";
+import { fileURLToPath } from "node:url";
 import { runNotificationJob } from "../ops/notification-cron/run.mjs";
 
 const env = { CRON_SECRET: "synthetic-test-credential" };
@@ -78,7 +80,7 @@ test("contained deployment uses the isolated image without restoring five-minute
   const contained = await readConfig("railway.contained.json");
   assert.equal(contained.deploy.cronSchedule, "0 0 1 1 *");
   assert.equal(active.deploy.cronSchedule, "*/5 * * * *");
-  assert.deepEqual(contained, { ...active, deploy: { ...active.deploy, cronSchedule: "0 0 1 1 *" } });
+  assert.deepEqual(contained, { ...active, deploy: { ...active.deploy, startCommand: "node --check run.mjs", cronSchedule: "0 0 1 1 *" } });
 });
 
 test("worker image/config do not inherit the website build or healthcheck", async () => {
@@ -90,4 +92,23 @@ test("worker image/config do not inherit the website build or healthcheck", asyn
   assert.equal(config.deploy.restartPolicyType, "NEVER");
   assert.equal(config.deploy.startCommand, "node run.mjs");
   assert.equal(config.deploy.healthcheckPath, undefined);
+});
+
+test("contained start command exits without credentials or network access", async () => {
+  const config = JSON.parse(await readFile(new URL("../ops/notification-cron/railway.contained.json", import.meta.url), "utf8"));
+  const [runtime, ...args] = config.deploy.startCommand.split(" ");
+  assert.equal(runtime, "node");
+  const result = spawnSync(process.execPath, [
+    "--import=data:text/javascript,globalThis.fetch=()=>{throw new Error('unexpected network access')}",
+    ...args,
+  ], {
+    cwd: fileURLToPath(new URL("../ops/notification-cron/", import.meta.url)),
+    env: {},
+    encoding: "utf8",
+    timeout: 3000,
+  });
+  assert.equal(result.error, undefined);
+  assert.equal(result.status, 0, result.stderr);
+  assert.equal(result.stdout, "");
+  assert.equal(result.stderr, "");
 });

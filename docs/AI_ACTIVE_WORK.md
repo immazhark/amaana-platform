@@ -1,6 +1,14 @@
+## 2026-10-18 — Notification containment executes no delivery code
+
+Owner: CHATGPT_ACTIVE on existing PR291. Predecessor c063d201 passed full CI39120789120 and image39120789122, but contained config still executed node run.mjs: annual scheduling alone does not prevent queued mail delivery. RED: two offline checks fail for this config, including actual configured-command execution with empty credentials and fetch replaced by a throwing stub. Change contained start command only to node --check run.mjs; GREEN: all16 offline worker tests pass. Delivery config and Docker default remain unchanged and explicitly documented. Reconcile current production mainb6f26346, preserve released programme evidence and both histories. Fresh exact-head normal/image CI required. Actual Railway config is not changed; do not claim worker deployed or activate normal delivery. Queued mail and production endpoints untouched.
+
 ## 2026-10-18 — Offline notification-worker repair reconciled with production
 
 Owner: CHATGPT_ACTIVE. Existing PR291 returned to draft, prior headbe24a6d. Reconcile against main7075e1f, preserving all current security/visitor features. SHA checks confirm all four pre-existing touched source/test/doc paths are unchanged in main since PR291 baseaedae001; contained config is still absent on main. Retain reviewed five-file patch exactly, including no-await response cancellation and isolated year-only config plus enlarged-label browser regression. Fifteen offline synthetic worker tests passed with injected responses and no production endpoint call. Fresh combined-head normal/image CI and final verification required. DO NOT merge/deploy worker or mutate Railway root/config/schedule until its actual execution containment and queued-mail safety have been established. No cron activation, provider action, secrets or outgoing notifications. Priority UI releases320/321/322/293 remain independent and retain their heads.
+
+## 2026-10-18 — Continue existing programme-to-impact journey PR322
+
+Owner: CHATGPT_ACTIVE under explicit owner continuation. Existing branch feat/work-to-impact-journey-20261018 at 7529d83f9af6fff70413cc877e4045fd36067126; main 7075e1f. CI39093779608 fast/database/production PASS; browser 1439 PASS, 1 FAIL: filtered Our Work is intentionally expanded, but test clicks summary closed before locating its evidence link. Preserve runtime component. Fix assertion to require open state and navigate actual filtered evidence link. Re-run exact-head release gates before promotion or merge. PR320/321 remain separate; no live provider actions or notification execution.
 
 ## 2026-10-18 — Financial ingress safety: transfer consent and signed webhook deadline
 

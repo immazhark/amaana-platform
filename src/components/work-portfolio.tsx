@@ -33,6 +33,15 @@ export function WorkPortfolio({ causes, expanded = false, yearFiltered = false }
 
                 <div className="v2-cause-panel">
                   <p className="v2-cause-description">{cause.summary}</p>
+                  <p>
+                    <Link
+                      className="v2-text-link"
+                      href={`/impact?programme=${encodeURIComponent(cause.slug)}#evidence`}
+                      aria-label={`View documented impact for ${cause.title}`}
+                    >
+                      View documented impact for {cause.title} →
+                    </Link>
+                  </p>
                   <div className="v2-initiative-list">
                     {cause.initiatives.map((initiative, index) => {
                       const thumbnail = selectIdentityPublicImage(initiative.mediaAssets) ?? null;
