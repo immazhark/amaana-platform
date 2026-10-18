@@ -8,10 +8,7 @@ test("visitor compares two distinct published outcomes without making an aggrega
   const first = form.getByRole("combobox", { name: "First initiative" });
   const second = form.getByRole("combobox", { name: "Second initiative" });
   const options = await first.locator("option[value]:not([value=''])").evaluateAll(nodes => nodes.map(n => n.value));
-  if (options.length < 2) {
-    await expect(page.getByText("Select two published initiatives")).toBeVisible();
-    return;
-  }
+  expect(options.length, "Browser fixture must publish two initiatives to exercise comparison").toBeGreaterThanOrEqual(2);
   await first.selectOption(options[0]);
   await second.selectOption(options[1]);
   await form.getByRole("button", { name: "Compare published outcomes" }).click();
@@ -26,6 +23,11 @@ test("visitor compares two distinct published outcomes without making an aggrega
 test("unknown or repeated compare inputs are rejected without leaking personal query strings", async ({ page }) => {
   await page.goto("/impact/compare?left=eid-gift-kits&left=eid-gift-kits&right=amaana-taleem&private=PRIVATE_PERSON");
   await expect(page.getByRole("main").getByRole("alert")).toContainText("could not be read");
+  for (const name of ["First initiative", "Second initiative"]) {
+    const control = page.getByRole("combobox", { name });
+    await expect(control).toHaveAttribute("aria-invalid", "true");
+    await expect(control).toHaveAccessibleDescription(/could not be read/);
+  }
   await expect(page.getByRole("region", { name: "Side-by-side published outcomes" })).toHaveCount(0);
   await expect(page.locator("main")).not.toContainText("PRIVATE_PERSON");
 });
