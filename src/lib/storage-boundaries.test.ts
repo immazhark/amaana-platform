@@ -123,6 +123,34 @@ describe("delivery configuration is validated before public persistence", () => 
   });
 });
 
+describe("bounded public-media S3 acquisition", () => {
+  it("rejects a stuck GetObject before stream acquisition and aborts the transport", async () => {
+    let acquisitionSignal: AbortSignal | undefined;
+    sdk.send.mockImplementation((_command: unknown, options?: { abortSignal?: AbortSignal }) => {
+      acquisitionSignal = options?.abortSignal;
+      return new Promise(() => {});
+    });
+    vi.useFakeTimers();
+    try {
+      let fallback: ReturnType<typeof setTimeout> | undefined;
+      const result = Promise.race([
+        getPublicMediaObject(key),
+        new Promise<never>((_resolve, reject) => {
+          fallback = setTimeout(() => reject(new Error("S3 acquisition stalled without a bounded deadline")), 15_100);
+        }),
+      ]);
+      const assertion = expect(result).rejects.toThrow("Public media object request timed out");
+      await vi.advanceTimersByTimeAsync(15_101);
+      await assertion;
+      expect(acquisitionSignal).toBeDefined();
+      expect(acquisitionSignal?.aborted).toBe(true);
+      if (fallback !== undefined) clearTimeout(fallback);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
 describe("public object reads enforce upload-size and completeness boundaries", () => {
   it("closes an oversized object before reading its body", async () => {
     const consumed = vi.fn();
