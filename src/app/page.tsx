@@ -10,6 +10,7 @@ import { AppealCard } from "@/components/appeal-card";
 import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getHomepageAppeals } from "@/lib/public-content";
 import { HomeGrowth, HomeTrust } from "@/components/home-evidence";
+import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { getHomepageDiscoveryData, getAppealCoverMediaBatch } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
 import { ScrollCarousel } from "@/components/scroll-carousel";
@@ -139,6 +140,9 @@ export default async function HomePage() {
 
       <HomeGrowth eidProgrammePublished={eidProgrammePublished} />
       <HomeTrust hasOpenAppeals={hasOpenAppeals} />
+      <div className="v3-shell"><VerifiedImpactStrip headingId="home-published-outcomes" items={discovery.initiatives.flatMap(item =>
+        item.primaryMetric && item.primaryMetricLabel ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }] : [],
+      )} /></div>
 
       <section className="v3-section v3-appeals" aria-labelledby="appeals-title">
         <div className="v3-shell">

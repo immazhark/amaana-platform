@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { PublicMedia } from "@/components/public-media";
 import { WorkPortfolio } from "@/components/work-portfolio";
+import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
 import { getOurWorkIndexData } from "@/lib/public-page-data";
 import { selectIdentityPublicImage } from "@/lib/public-media";
 import { filterWork, type WorkSearch } from "@/lib/work-filters";
@@ -55,6 +56,9 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
         visual={heroMedia ? <PublicMedia asset={heroMedia} priority sizes="(max-width: 900px) calc(100vw - 2rem), 42vw" /> : <div className="page-hero__visual-fallback page-hero__visual-fallback--stats"><span>Documented public portfolio</span><strong>{initiativeCount} published programmes</strong><div className="page-hero__stat-row"><b>{causeCount}</b><small>programme areas</small></div><i /></div>}
       />
 
+      <div className="v2-shell"><VerifiedImpactStrip headingId="work-published-outcomes" items={allInitiatives.flatMap(item =>
+        item.primaryMetric && item.primaryMetricLabel ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }] : [],
+      )} /></div>
       <section className="v2-section paper" id="work-results"><div className="v2-shell"><SectionHeading eyebrow={<>Explore by need</>} title={<>A living portfolio of service.</>} subtitle={<>Start with a programme area, then use the year filter to explore a specific annual edition.</>} />
         <form key={`${filters.programme}:${filters.year}`} className={`work-filters ${auditStyles.toolbar}`} action="/our-work#work-results" method="get" aria-label="Filter published initiatives"><label className={auditStyles.filterLabel} htmlFor="work-programme">Programme<select className={auditStyles.filterSelect} id="work-programme" name="programme" defaultValue={filters.programme}><option value="">All programmes</option>{visibleCauses.map(cause => <option key={cause.slug} value={cause.slug}>{cause.title}</option>)}</select></label><label className={auditStyles.filterLabel} htmlFor="work-year">Year<select className={auditStyles.filterSelect} id="work-year" name="year" defaultValue={filters.year}><option value="">All years</option>{filters.years.map(year => <option key={year} value={year}>{year}</option>)}</select></label><button className="v2-button" type="submit">Apply filters</button>{filters.active && <Link className={auditStyles.clear} href="/our-work#work-results">Clear filters</Link>}</form>
         {filters.invalid && <p role="status">These filters could not be read. Choose a published programme and year, or clear the filters.</p>}
