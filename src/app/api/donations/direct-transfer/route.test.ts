@@ -370,7 +370,7 @@ describe("direct donation transfer submission", () => {
 
     const response = await POST(requestWith());
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(503);
     expect(await response.json()).not.toHaveProperty("receiptToken");
     expect(mocks.donationFindUnique).toHaveBeenCalledOnce();
     expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
@@ -383,7 +383,7 @@ describe("direct donation transfer submission", () => {
 
     const response = await POST(requestWith());
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(503);
     expect(await response.json()).not.toHaveProperty("receiptToken");
     expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
     expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
@@ -444,7 +444,7 @@ describe("direct donation transfer submission", () => {
 
     const response = await POST(requestWith(file));
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(503);
     expect(mocks.donationDeleteMany).toHaveBeenCalledWith({
       where: { id: "donation-1", status: "PENDING_VERIFICATION", transferEvidenceKey: null },
     });
@@ -464,7 +464,7 @@ describe("direct donation transfer submission", () => {
 
     const response = await POST(requestWith(file));
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(503);
     expect(mocks.deleteDonationEvidenceObject).not.toHaveBeenCalled();
   });
 
