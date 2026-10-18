@@ -83,3 +83,34 @@ test("known pre-write validation response remains editable and filters unsafe er
   await page.getByRole("button", { name: "Continue securely →" }).click();
   await expect.poll(() => calls).toBe(2);
 });
+
+
+test("late successful donation order response cannot open checkout after the form unmounts", async ({ page }) => {
+  let releaseOrder;
+  const gate = new Promise(resolve => { releaseOrder = resolve; });
+  const errors = [];
+  page.on("pageerror", error => errors.push(error.message));
+  await page.route("**/api/donations/order", async route => {
+    await gate;
+    await route.fulfill({ status: 201, contentType: "application/json", body: JSON.stringify({
+      donationId: "donation-acceptance-001",
+      orderId: "order_acceptance_001",
+      amount: 25000,
+      currency: "INR",
+      keyId: "rzp_test_browser_acceptance",
+      donor: { name: "Synthetic Donor", email: "synthetic@example.test" },
+      receiptToken: "a".repeat(32),
+    }) });
+  });
+  await openCheckout(page);
+  await page.getByRole("button", { name: "Continue securely →" }).click();
+  await expect(page.getByText("Opening Razorpay secure checkout.")).toBeVisible();
+  await page.getByRole("button", { name: "Unmount donation form" }).click();
+  await expect(page.getByText("Donation form unmounted for remount acceptance.")).toBeVisible();
+  const response = page.waitForResponse(result => result.url().includes("/api/donations/order"));
+  releaseOrder();
+  await response;
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+  expect(await page.evaluate(() => window.__checkoutOpens)).toBe(0);
+  expect(errors).toEqual([]);
+});
