@@ -1,0 +1,82 @@
+import { expect, test } from "@playwright/test";
+
+async function prepareDirectTransfer(page) {
+  await page.goto("/browser-acceptance/direct-donation");
+  await page.getByRole("button", { name: "Direct UPI / QR" }).click();
+  await page.getByLabel("Full name").fill("Synthetic Direct Donor");
+  await page.getByLabel("Email").fill("synthetic@example.test");
+  await page.getByLabel("Amount (INR)").fill("250");
+  await page.getByLabel("UTR / transaction reference").fill("UTRTEST9000123");
+  await page.getByLabel("Transfer date and time").fill("2026-09-30T10:30");
+  await page.locator('input[name="domesticConfirmed"]').check();
+}
+
+for (const outcome of [
+  { name: "unknown database write", status: 503, body: { error: "Transfer reporting status is uncertain. Do not submit the same UTR again." } },
+  { name: "server error after possible write", status: 500, body: { error: "Try again" } },
+  { name: "already recorded UTR", status: 409, body: { error: "This transfer reference has already been submitted." } },
+  { name: "malformed accepted receipt", status: 202, body: { referenceNumber: {}, receiptToken: [], status: "PENDING_VERIFICATION" } },
+]) {
+  test(`direct transfer ${outcome.name} locks repeat reporting and retains UTR`, async ({ page }) => {
+    let calls = 0;
+    const errors = [];
+    page.on("pageerror", e => errors.push(e.message));
+    await page.route("**/api/donations/direct-transfer", route => {
+      calls++;
+      return route.fulfill({ status: outcome.status, contentType: "application/json", body: JSON.stringify(outcome.body) });
+    });
+    await prepareDirectTransfer(page);
+    await page.getByRole("button", { name: "Submit transfer for verification" }).click();
+    const alert = page.locator(".v2-donation-form .form-error[role='alert']");
+    await expect(alert).toContainText(/do not submit the same UTR again|do not submit this transfer again/i);
+    await expect(page.getByRole("button", { name: "Verification follow-up required" })).toBeDisabled();
+    await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("UTRTEST9000123");
+    await expect(page.getByLabel("Email")).toHaveValue("synthetic@example.test");
+    await page.locator(".v2-donation-form form").evaluate(form => form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })));
+    expect(calls).toBe(1);
+    expect(errors).toEqual([]);
+  });
+}
+
+test("two same-tick native direct-transfer submissions create one claim request", async ({ page }) => {
+  let calls = 0;
+  await page.route("**/api/donations/direct-transfer", route => {
+    calls++;
+    return route.fulfill({ status: 503, contentType: "application/json", body: '{"error":"uncertain"}' });
+  });
+  await prepareDirectTransfer(page);
+  await page.locator(".v2-donation-form form").evaluate(form => {
+    form.requestSubmit();
+    form.requestSubmit();
+  });
+  await expect(page.getByRole("button", { name: "Verification follow-up required" })).toBeDisabled();
+  expect(calls).toBe(1);
+});
+
+test("known prewrite invalid direct-transfer data permits correction without losing donor details", async ({ page }) => {
+  let calls = 0;
+  await page.route("**/api/donations/direct-transfer", route => {
+    calls++;
+    return route.fulfill({ status: 400, contentType: "application/json", body: '{"error":"Please check the transfer information and reference."}' });
+  });
+  await prepareDirectTransfer(page);
+  await page.getByRole("button", { name: "Submit transfer for verification" }).click();
+  await expect(page.getByRole("button", { name: "Submit transfer for verification" })).toBeEnabled();
+  await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("UTRTEST9000123");
+  await page.getByLabel("UTR / transaction reference").fill("UTRCORRECTED456");
+  await page.getByRole("button", { name: "Submit transfer for verification" }).click();
+  await expect.poll(() => calls).toBe(2);
+});
+
+test("lost response after direct transfer keeps identity and prevents automatic replay", async ({ page }) => {
+  let calls = 0;
+  await page.route("**/api/donations/direct-transfer", route => {
+    calls++;
+    return route.abort("failed");
+  });
+  await prepareDirectTransfer(page);
+  await page.getByRole("button", { name: "Submit transfer for verification" }).click();
+  await expect(page.getByRole("button", { name: "Verification follow-up required" })).toBeDisabled();
+  await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("UTRTEST9000123");
+  expect(calls).toBe(1);
+});
