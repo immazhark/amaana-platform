@@ -214,7 +214,7 @@ jobs:
           node scripts/test-home-carousel-migration.mjs
           node scripts/test-historical-pageview-migration.mjs
           node --test scripts/test-master-content-assets.mjs
-          npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts
+          npx vitest run src/app/api/webhooks/razorpay/route.database.test.ts src/lib/auth-rate-limit.database.test.ts src/lib/auth-session.database.test.ts
 
 
   production:

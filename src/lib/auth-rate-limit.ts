@@ -1,4 +1,3 @@
-import { prisma } from "./prisma";
 import { withSerializableTransactionRetry } from "./prisma-transaction";
 
 export const AUTH_FAILURE_LIMIT = 10;
@@ -12,25 +11,12 @@ export function isAuthFailureCountLocked(recentFailures: number) {
   return recentFailures >= AUTH_FAILURE_LIMIT;
 }
 
-export async function isLoginSubjectLocked(subjectHash: string, now = new Date()) {
-  const recentFailures = await prisma.loginAttempt.count({
-    where: {
-      subjectHash,
-      succeeded: false,
-      createdAt: { gte: authFailureWindowStart(now) },
-    },
-  });
-
-  return isAuthFailureCountLocked(recentFailures);
-}
-
 /**
- * Records one failed authentication attempt without allowing concurrent bad
- * password requests to race past the configured threshold. Serializable
- * isolation ensures that if multiple requests observe the same count, only one
- * can commit before the others retry against the updated ledger.
+ * Reserves quota before credential lookup or password verification. Pending and
+ * interrupted attempts count as failures until this exact attempt succeeds.
+ * Serializable retries prevent concurrent requests from sharing the last slot.
  */
-export async function recordFailedLoginAttempt(subjectHash: string, now = new Date()) {
+export async function reserveLoginAttempt(subjectHash: string, now = new Date()) {
   return withSerializableTransactionRetry(async tx => {
     const recentFailures = await tx.loginAttempt.count({
       where: {
@@ -40,9 +26,9 @@ export async function recordFailedLoginAttempt(subjectHash: string, now = new Da
       },
     });
 
-    if (isAuthFailureCountLocked(recentFailures)) return false;
+    if (isAuthFailureCountLocked(recentFailures)) return null;
 
-    await tx.loginAttempt.create({ data: { subjectHash } });
-    return true;
+    const attempt = await tx.loginAttempt.create({ data: { subjectHash }, select: { id: true } });
+    return attempt.id;
   });
 }

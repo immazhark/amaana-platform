@@ -1,3 +1,9 @@
+## 2026-10-19 — LOGIN-ADMISSION-20261019
+
+Confirmed security defect: concurrent admin login requests can all pass a read-only failure-count check before any password result is recorded. Existing serializable failure insertion limits ledger rows but does not limit credential attempts. Scope: `src/app/admin/login/actions.ts` and `src/lib/auth-rate-limit.ts`. Reserve the existing failure-ledger slot transactionally before credential lookup/password verification; mark only the successful reservation as succeeded. No schema, password, session or policy-limit changes.
+
+Status: fixed locally, not merged or deployed. RED: 15 pending password verifications admitted despite a limit of 10; four expected regression failures. GREEN: 1,290 local tests pass, 12 opt-in database cases skipped locally; TypeScript/focused lint/diff checks pass. Added three real PostgreSQL cases to the existing isolated database job; hosted checks pending. Branch: `fix/admin-login-admission-20261019`, based on production `73489ac`. The historical 95-row totals remain unreconciled and are not increased or certified by this entry.
+
 ## 2026-10-13 — actual HTTP cancellation regressions
 
 Ownership: CODEX_ACTIVE on the preserved N-28 follow-up branch; validated release3414858b remains unchanged. Added actual assistance and direct-transfer route cases using the real body reader/error class: an oversized stream whose cancel promise never settles returns private413 and does not create a case/donation or upload evidence. Both route cases fail with rejection stalled when only awaited cancellation is restored. Fixed source:34 tests across3 suites passed; TypeScript and focused ESLint passed. Assistance test mock now retains the actual error class to verify the real classifier. No live requests, provider calls or production database writes.

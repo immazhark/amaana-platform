@@ -5,7 +5,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createSession, destroySession, getCurrentUser } from "@/lib/auth";
 import { parseAdminLoginInput } from "@/lib/admin-login-input";
-import { isLoginSubjectLocked, recordFailedLoginAttempt } from "@/lib/auth-rate-limit";
+import { reserveLoginAttempt } from "@/lib/auth-rate-limit";
 import { getTrustedClientAddress } from "@/lib/client-address";
 import { hashPassword, passwordNeedsRehash, verifyPassword } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
@@ -34,13 +34,13 @@ export async function login(formData: FormData) {
   );
   const subjectHash = authenticationSubjectHash(input.rateLimitSubject, address);
 
-  if (await isLoginSubjectLocked(subjectHash)) {
+  const attemptId = await reserveLoginAttempt(subjectHash);
+  if (!attemptId) {
     redirect("/admin/login?error=locked");
   }
 
   if (!input.valid) {
-    const recorded = await recordFailedLoginAttempt(subjectHash);
-    redirect(recorded ? "/admin/login?error=invalid" : "/admin/login?error=locked");
+    redirect("/admin/login?error=invalid");
   }
 
   const user = await prisma.user.findUnique({
@@ -50,8 +50,7 @@ export async function login(formData: FormData) {
   const passwordMatches = await verifyPassword(password, user?.credential?.passwordHash ?? "");
 
   if (!user || user.status !== "ACTIVE" || !passwordMatches) {
-    const recorded = await recordFailedLoginAttempt(subjectHash);
-    redirect(recorded ? "/admin/login?error=invalid" : "/admin/login?error=locked");
+    redirect("/admin/login?error=invalid");
   }
 
   if (user.credential && passwordNeedsRehash(user.credential.passwordHash)) {
@@ -70,16 +69,10 @@ export async function login(formData: FormData) {
     });
   }
 
-  await prisma.loginAttempt.create({ data: { subjectHash, succeeded: true } });
-  await createSession(user.id);
-  await prisma.auditEvent.create({
-    data: {
-      actorId: user.id,
-      action: "session.login",
-      entityType: "User",
-      entityId: user.id,
-    },
-  });
+  // Session persistence and this attempt's successful release share one
+  // database transaction. No cookie is issued if either write fails.
+  await createSession(user.id, attemptId);
+  // session.login auditing is committed with session creation.
   redirect("/admin");
 }
 

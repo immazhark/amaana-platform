@@ -9,13 +9,31 @@ const SESSION_DAYS = 7;
 const SESSION_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
 const tokenHash = (token: string) => createHash("sha256").update(token).digest("hex");
 
-export async function createSession(userId: string) {
+/**
+ * Commit the session and its successful login reservation atomically.
+ * Never send a session cookie for an incomplete database transaction.
+ * The optional reservation keeps other session callers backward-compatible.
+ */
+export async function createSession(userId: string, loginAttemptId?: string) {
   const token = randomBytes(32).toString("base64url");
   const now = new Date();
   const expiresAt = new Date(now.getTime() + SESSION_DAYS * 86400000);
   await prisma.$transaction([
     prisma.session.deleteMany({ where: { expiresAt: { lte: now } } }),
     prisma.session.create({ data: { userId, tokenHash: tokenHash(token), expiresAt } }),
+    ...(loginAttemptId
+      ? [
+          prisma.loginAttempt.update({ where: { id: loginAttemptId }, data: { succeeded: true } }),
+          prisma.auditEvent.create({
+            data: {
+              actorId: userId,
+              action: "session.login",
+              entityType: "User",
+              entityId: userId,
+            },
+          }),
+        ]
+      : []),
   ]);
   (await cookies()).set(COOKIE_NAME, token, { httpOnly: true, secure: process.env.NODE_ENV === "production", sameSite: "strict", path: "/", expires: expiresAt });
 }
