@@ -6,6 +6,7 @@ import { createHash, randomUUID } from "node:crypto";
 const allowedTypes = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
 const publicMediaTypes = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
 export const MAX_FILE_BYTES = 5 * 1024 * 1024;
+const PUBLIC_MEDIA_READ_TIMEOUT_MS = 15_000;
 export const MAX_FILES = 5;
 export const MAX_PUBLIC_IMAGE_PIXELS = 40_000_000;
 export const PRIVATE_OBJECT_CACHE_CONTROL = "private, no-store, max-age=0";
@@ -292,20 +293,67 @@ export async function getPublicMediaObject(objectKey: string) {
   const body = object.Body;
   if (object.ContentLength !== undefined &&
       (!Number.isSafeInteger(object.ContentLength) || object.ContentLength <= 0 || object.ContentLength > MAX_FILE_BYTES)) {
-    if ("destroy" in body && typeof body.destroy === "function") body.destroy();
-    else if ("cancel" in body && typeof body.cancel === "function") await body.cancel();
+    // Cleanup is best-effort: a stalled or broken S3 body must not hold the
+    // response open or mask a size-boundary failure.
+    try {
+      if ("destroy" in body && typeof body.destroy === "function") body.destroy();
+      else if ("cancel" in body && typeof body.cancel === "function") {
+        void Promise.resolve(body.cancel()).catch(() => undefined);
+      }
+    } catch {
+      // Preserve the original size error even if closing the stream throws.
+    }
     throw new Error("Public media object exceeds the verified size boundary");
   }
   if (!(Symbol.asyncIterator in body)) throw new Error("Public media object body is not a readable stream");
   const chunks: Buffer[] = [];
   let size = 0;
-  for await (const chunk of body as AsyncIterable<unknown>) {
-    if (!(chunk instanceof Uint8Array)) throw new Error("Public media object contains invalid byte data");
-    if (chunk.byteLength > MAX_FILE_BYTES - size) {
-      throw new Error("Public media object exceeds the verified size boundary");
+  // Explicit iterator management prevents for-await's implicit IteratorClose
+  // from waiting indefinitely when a broken S3 stream rejects or stalls during
+  // cleanup after an overflow. Preserve the real byte/size error for the route.
+  const iterator = (body as AsyncIterable<unknown>)[Symbol.asyncIterator]();
+  let readDeadline: ReturnType<typeof setTimeout> | undefined;
+  try {
+    await Promise.race([
+      (async () => {
+        while (true) {
+          const { done, value: chunk } = await iterator.next();
+          if (done) break;
+          if (!(chunk instanceof Uint8Array)) throw new Error("Public media object contains invalid byte data");
+          if (chunk.byteLength > MAX_FILE_BYTES - size) {
+            throw new Error("Public media object exceeds the verified size boundary");
+          }
+          size += chunk.byteLength;
+          // Own the bytes immediately: S3-compatible streams may reuse the
+          // producer's backing buffer on the next iteration.
+          chunks.push(Buffer.from(chunk));
+        }
+      })(),
+      new Promise<never>((_resolve, reject) => {
+        // A stalled stream must not indefinitely occupy a public route.
+        // One overall deadline prevents a producer extending the request by
+        // sending a byte before each individual read timeout.
+        readDeadline = setTimeout(
+          () => reject(new Error("Public media object read timed out")),
+          PUBLIC_MEDIA_READ_TIMEOUT_MS,
+        );
+      }),
+    ]);
+  } catch (error) {
+    try {
+      // Prefer destruction, which can abort a pending iterator.next().
+      // Neither this cleanup nor iterator.return() may hold the response open.
+      if ("destroy" in body && typeof body.destroy === "function") {
+        body.destroy();
+      } else if (typeof iterator.return === "function") {
+        void Promise.resolve(iterator.return()).catch(() => undefined);
+      }
+    } catch {
+      // Preserve the actual size, byte-integrity or deadline error.
     }
-    size += chunk.byteLength;
-    chunks.push(Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength));
+    throw error;
+  } finally {
+    if (readDeadline !== undefined) clearTimeout(readDeadline);
   }
   if (size === 0 || (object.ContentLength !== undefined && size !== object.ContentLength)) {
     throw new Error("Public media object body is incomplete");
