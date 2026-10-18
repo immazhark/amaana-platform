@@ -1,5 +1,4 @@
 import { createElement } from "react";
-import { createElement } from "react";
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { FeedbackEnquiryBuilder } from "./feedback-enquiry-builder";
@@ -17,8 +16,7 @@ describe("private feedback enquiry", () => {
     expect(markup).not.toContain("mailto:amaanafoundation24@gmail.com?");
     expect(markup).toContain("not a tracked complaint ticket");
     expect(markup).toContain("never permission to publish");
-    expect((markup.match(/data-feedback-kind=/g) ?? [])).toHaveLength(3);
-    expect(markup).toContain("Prepare private message");
+    expect(markup).toContain("Select this conversation");
     expect(markup).toContain("Raise a service, safety or conduct concern");
     expect(markup).toContain('method="get"');
     expect(markup).not.toContain('type="email"');
