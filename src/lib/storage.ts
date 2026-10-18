@@ -307,13 +307,32 @@ export async function getPublicMediaObject(objectKey: string) {
   if (!(Symbol.asyncIterator in body)) throw new Error("Public media object body is not a readable stream");
   const chunks: Buffer[] = [];
   let size = 0;
-  for await (const chunk of body as AsyncIterable<unknown>) {
-    if (!(chunk instanceof Uint8Array)) throw new Error("Public media object contains invalid byte data");
-    if (chunk.byteLength > MAX_FILE_BYTES - size) {
-      throw new Error("Public media object exceeds the verified size boundary");
+  // Explicit iterator management prevents for-await's implicit IteratorClose
+  // from waiting indefinitely when a broken S3 stream rejects or stalls during
+  // cleanup after an overflow. Preserve the real byte/size error for the route.
+  const iterator = (body as AsyncIterable<unknown>)[Symbol.asyncIterator]();
+  try {
+    while (true) {
+      const { done, value: chunk } = await iterator.next();
+      if (done) break;
+      if (!(chunk instanceof Uint8Array)) throw new Error("Public media object contains invalid byte data");
+      if (chunk.byteLength > MAX_FILE_BYTES - size) {
+        throw new Error("Public media object exceeds the verified size boundary");
+      }
+      size += chunk.byteLength;
+      chunks.push(Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength));
     }
-    size += chunk.byteLength;
-    chunks.push(Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength));
+  } catch (error) {
+    try {
+      if (typeof iterator.return === "function") {
+        void Promise.resolve(iterator.return()).catch(() => undefined);
+      } else if ("destroy" in body && typeof body.destroy === "function") {
+        body.destroy();
+      }
+    } catch {
+      // Cleanup may throw synchronously. The original read error takes priority.
+    }
+    throw error;
   }
   if (size === 0 || (object.ContentLength !== undefined && size !== object.ContentLength)) {
     throw new Error("Public media object body is incomplete");
