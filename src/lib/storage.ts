@@ -320,7 +320,10 @@ export async function getPublicMediaObject(objectKey: string) {
         throw new Error("Public media object exceeds the verified size boundary");
       }
       size += chunk.byteLength;
-      chunks.push(Buffer.from(chunk.buffer, chunk.byteOffset, chunk.byteLength));
+      // Copy accepted bytes immediately. S3-compatible iterators may reuse
+      // the same backing buffer for subsequent chunks; retaining a view would
+      // silently corrupt previously collected media.
+      chunks.push(Buffer.from(chunk));
     }
   } catch (error) {
     try {
