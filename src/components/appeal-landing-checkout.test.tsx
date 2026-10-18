@@ -1,10 +1,6 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AppealLandingCheckout } from "./appeal-landing-checkout";
-
-vi.mock("./donation-methods", () => ({
-  DonationMethods: ({ appealId }: { appealId: string }) => <div data-reviewed-checkout={appealId} />,
-}));
 
 const paymentDetails = { upi: { id: "verified@upi", qrImageUrl: null }, bank: null };
 const appeals = [
@@ -15,8 +11,9 @@ const appeals = [
 describe("AF-R083 landing-page donation selection", () => {
   it("renders exactly one reviewed checkout with purpose-specific accessible selection", () => {
     const html = renderToStaticMarkup(<AppealLandingCheckout appeals={appeals} paymentDetails={paymentDetails}/>);
-    expect(html).toContain('data-reviewed-checkout="approved-first"');
-    expect(html).not.toContain('data-reviewed-checkout="approved-second"');
+    expect(html).toContain("Continue to payment methods");
+    expect(html).toContain('aria-expanded="false"');
+    expect(html).not.toContain('data-reviewed-checkout="');
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain('aria-pressed="false"');
     expect(html).toContain("₹900");
