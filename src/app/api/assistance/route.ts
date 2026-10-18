@@ -20,6 +20,7 @@ const MAX_ASSISTANCE_MULTIPART_BYTES = MAX_FILES * MAX_FILE_BYTES + ASSISTANCE_M
 const ASSISTANCE_UPLOAD_TIMEOUT_MS = 120_000;
 
 export async function POST(request: Request) {
+  let persistenceOutcomeUnknown = false;
   try {
     validateProductionEnvironment();
 
@@ -211,6 +212,7 @@ export async function POST(request: Request) {
           // An unavailable database cannot prove the write failed. Retain the
           // documents for reconciliation instead of risking irreversible loss.
           logServerError("assistance.persistence_outcome_unknown");
+          persistenceOutcomeUnknown = true;
           throw submissionError;
         }
       }
@@ -227,6 +229,12 @@ export async function POST(request: Request) {
     }
   } catch {
     logServerError("assistance.submission_failed");
+    if (persistenceOutcomeUnknown) {
+      return NextResponse.json(
+        { error: "Assistance request status is uncertain. Your application may have been received. Do not submit it again; contact Amaana with your details for reconciliation." },
+        { status: 503, headers: privateHeaders },
+      );
+    }
     return NextResponse.json(
       { error: "We could not securely submit your request. Please try again later." },
       { status: 500, headers: privateHeaders },
