@@ -54,7 +54,19 @@ export async function POST(request: Request) {
       return new NextResponse("Invalid signature", { status: 401 });
     }
 
-    const payload = JSON.parse(rawBody) as RazorpayWebhook;
+    // A valid HMAC authenticates bytes, not the schema of the provider event.
+    // Reject invalid signed JSON without acknowledging it or storing a
+    // misleading "unknown" payment event.
+    let payload: RazorpayWebhook;
+    try {
+      payload = JSON.parse(rawBody) as RazorpayWebhook;
+    } catch {
+      return new NextResponse("Invalid webhook JSON", { status: 400 });
+    }
+    if (!payload || typeof payload !== "object" || Array.isArray(payload) ||
+        typeof payload.event !== "string" || !payload.event.trim()) {
+      return new NextResponse("Invalid webhook event envelope", { status: 400 });
+    }
     receivedEventType = payload.event;
     const auditPayload = paymentEventAuditPayload(payload);
     receivedAuditPayload = auditPayload;
