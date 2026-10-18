@@ -5,6 +5,8 @@ import { prisma } from "@/lib/prisma";
 
 const COOKIE_NAME = "amaana_admin_session";
 const SESSION_DAYS = 7;
+// Issued tokens are exactly 32 random bytes encoded as unpadded base64url.
+const SESSION_TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
 const tokenHash = (token: string) => createHash("sha256").update(token).digest("hex");
 
 export async function createSession(userId: string) {
@@ -20,13 +22,15 @@ export async function createSession(userId: string) {
 
 export async function destroySession() {
   const jar = await cookies(); const token = jar.get(COOKIE_NAME)?.value;
-  if (token) await prisma.session.deleteMany({ where: { tokenHash: tokenHash(token) } });
+  if (token && SESSION_TOKEN_PATTERN.test(token)) {
+    await prisma.session.deleteMany({ where: { tokenHash: tokenHash(token) } });
+  }
   jar.delete(COOKIE_NAME);
 }
 
 export async function getCurrentUser() {
   const token = (await cookies()).get(COOKIE_NAME)?.value;
-  if (!token) return null;
+  if (!token || !SESSION_TOKEN_PATTERN.test(token)) return null;
   return prisma.user.findFirst({ where: { status: "ACTIVE", sessions: { some: { tokenHash: tokenHash(token), expiresAt: { gt: new Date() } } } }, include: { roles: { include: { role: { include: { permissions: { include: { permission: true } } } } } } } });
 }
 

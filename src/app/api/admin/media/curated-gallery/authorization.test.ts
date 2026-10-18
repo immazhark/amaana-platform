@@ -30,7 +30,8 @@ import { POST as upload } from "./upload/route";
 import { POST as publish } from "./publish/route";
 import { GET as status } from "./status/route";
 
-const token = "synthetic-session-token-for-boundary-tests";
+const token = Buffer.alloc(32, 0xa5).toString("base64url");
+// Production sessions are 32 random bytes encoded without base64 padding.
 const tokenHash = createHash("sha256").update(token).digest("hex");
 type AuthorizedRoute = {
   name: string;
@@ -87,6 +88,15 @@ for (const route of routes) {
   describe(route.name + " actual-helper authorization boundaries", () => {
     it("rejects an absent session before lookup or privileged work", async () => {
       mocks.cookieGet.mockReturnValue(undefined);
+      const response = await route.run(request(route.method));
+      expect(response.status).toBe(401);
+      assertPrivate(response);
+      expect(mocks.userFindFirst).not.toHaveBeenCalled();
+      assertStopped();
+    });
+
+    it("rejects malformed cookie input before session lookup or privileged work", async () => {
+      mocks.cookieGet.mockReturnValue({ value: "forged-session" });
       const response = await route.run(request(route.method));
       expect(response.status).toBe(401);
       assertPrivate(response);
