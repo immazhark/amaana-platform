@@ -25,7 +25,7 @@ test("visitor compares two distinct published outcomes without making an aggrega
 
 test("unknown or repeated compare inputs are rejected without leaking personal query strings", async ({ page }) => {
   await page.goto("/impact/compare?left=eid-gift-kits&left=eid-gift-kits&right=amaana-taleem&private=PRIVATE_PERSON");
-  await expect(page.getByRole("alert")).toContainText("could not be read");
+  await expect(page.getByRole("main").getByRole("alert")).toContainText("could not be read");
   await expect(page.getByRole("region", { name: "Side-by-side published outcomes" })).toHaveCount(0);
   await expect(page.locator("main")).not.toContainText("PRIVATE_PERSON");
 });
