@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { DonationForm } from "@/components/donation-form";
+import type { DonationFormCopy } from "@/components/donation-form-copy";
 
-export function DonationRemountFixture() {
+export function DonationRemountFixture({ copy }: { copy: DonationFormCopy }) {
   const [mounted, setMounted] = useState(true);
 
   return (
@@ -22,6 +23,7 @@ export function DonationRemountFixture() {
           appealTitle="Browser Acceptance Appeal"
           maxAmount={5000}
           zakatEligible
+          copy={copy}
         />
       ) : (
         <p role="status">Donation form unmounted for remount acceptance.</p>
