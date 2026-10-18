@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AppealLandingCheckout } from "./appeal-landing-checkout";
+import { donationFormCopy } from "./donation-form-copy";
 
 const paymentDetails = { upi: { id: "verified@upi", qrImageUrl: null }, bank: null };
 const appeals = [
-  { id: "approved-first", slug: "approved-first", title: "Approved education", maxAmount: 900, zakatEligible: false },
-  { id: "approved-second", slug: "approved-second", title: "Approved healthcare", maxAmount: 2_500, zakatEligible: true },
+  { id: "approved-first", slug: "approved-first", title: "Approved education", maxAmount: 900, zakatEligible: false, copy: donationFormCopy(false) },
+  { id: "approved-second", slug: "approved-second", title: "Approved healthcare", maxAmount: 2_500, zakatEligible: true, copy: donationFormCopy(true) },
 ];
 
 describe("AF-R083 landing-page donation selection", () => {
