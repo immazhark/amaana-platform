@@ -9,7 +9,8 @@ vi.mock("@/lib/storage", () => ({ getPublicMediaStorageReadiness: mocks.storage 
 vi.mock("@/lib/prisma", () => ({
   prisma: { auditEvent: { findFirst: mocks.session, create: mocks.createSession } },
 }));
-vi.mock("@/lib/prisma-transaction", () => ({
+vi.mock("@/lib/prisma-transaction", async importOriginal => ({
+  ...await importOriginal<typeof import("@/lib/prisma-transaction")>(),
   withSerializableTransactionRetry: mocks.transaction,
 }));
 vi.mock("@/lib/curated-gallery-server", () => ({
