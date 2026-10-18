@@ -55,18 +55,30 @@ export async function login(formData: FormData) {
 
   if (user.credential && passwordNeedsRehash(user.credential.passwordHash)) {
     const upgradedHash = await hashPassword(password);
-    await prisma.passwordCredential.update({
-      where: { userId: user.id },
-      data: { passwordHash: upgradedHash },
+    // A concurrent password reset can replace the digest after verification.
+    // Only upgrade the exact credential that was successfully verified, and
+    // audit the upgrade in the same transaction as the compare-and-swap.
+    const upgraded = await prisma.$transaction(async tx => {
+      const result = await tx.passwordCredential.updateMany({
+        where: { userId: user.id, passwordHash: user.credential!.passwordHash },
+        data: { passwordHash: upgradedHash },
+      });
+      if (result.count === 1) {
+        await tx.auditEvent.create({
+          data: {
+            actorId: user.id,
+            action: "credential.password_rehashed",
+            entityType: "User",
+            entityId: user.id,
+          },
+        });
+      }
+      return result.count === 1;
     });
-    await prisma.auditEvent.create({
-      data: {
-        actorId: user.id,
-        action: "credential.password_rehashed",
-        entityType: "User",
-        entityId: user.id,
-      },
-    });
+    if (!upgraded) {
+      // Do not start a session using a password that may have been revoked.
+      redirect("/admin/login?error=invalid");
+    }
   }
 
   // Session persistence and this attempt's successful release share one
