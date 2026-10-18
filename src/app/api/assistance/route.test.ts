@@ -412,9 +412,39 @@ describe("assistance submission request bounds", () => {
 
     const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
 
-    expect(response.status).toBe(500);
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({
+      error: "Assistance request status is uncertain. Your application may have been received. Do not submit it again; contact Amaana with your details for reconciliation.",
+    });
+    expect(response.headers.get("retry-after")).toBeNull();
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(response.headers.get("referrer-policy")).toBe("no-referrer");
+    expect(response.headers.get("x-robots-tag")).toMatch(/noindex/i);
     expect(mocks.assistanceFindUnique).toHaveBeenCalledOnce();
     expect(mocks.deletePrivateDocumentObject).not.toHaveBeenCalled();
+  });
+
+  it("does not advise duplicate submission when persistence cannot be checked even without attachments", async () => {
+    mocks.assistanceCreate.mockRejectedValueOnce(new Error("synthetic lost create acknowledgement"));
+    mocks.assistanceFindUnique.mockRejectedValueOnce(new Error("synthetic database unreachable"));
+    const form = new FormData();
+    for (const [key, value] of Object.entries({
+      applicantName: "Acceptance Applicant",
+      phone: "9000000000",
+      email: "applicant@example.test",
+      city: "Hyderabad",
+      category: "MEDICAL",
+      description: "Synthetic assistance request data used only for route acceptance coverage.",
+      consent: "on",
+    })) form.set(key, value);
+
+    const response = await POST(new Request("https://amaana.example/api/assistance", { method: "POST", body: form }));
+
+    expect(response.status).toBe(503);
+    expect((await response.json()).error).toMatch(/Do not submit it again; contact Amaana/i);
+    expect(response.headers.get("retry-after")).toBeNull();
+    expect(mocks.assistanceFindUnique).toHaveBeenCalledOnce();
+    expect(mocks.uploadPrivateDocument).not.toHaveBeenCalled();
   });
 
   it("compensates a stored private document when the later database write fails", async () => {
