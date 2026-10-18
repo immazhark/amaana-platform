@@ -73,7 +73,7 @@ export default async function ImpactPage({ searchParams }: { searchParams: Promi
         <div className="v2-shell">
           <TrustEvidenceBoundary context="impact" className={evidenceStyles.boundary} />
           <SectionHeading eyebrow={<>Wall of impact</>} title={<>See what each initiative achieved.</>} subtitle={<>Explore an outcome, then open the initiative to understand the work behind it.</>} id="impact-wall-title" />
-          <form action="/impact#evidence" method="get" aria-label="Filter documented impact by programme" className="v2-hero-actions">
+          <form key={filtered.programme} action="/impact#evidence" method="get" aria-label="Filter documented impact by programme" className="v2-hero-actions">
             <label htmlFor="impact-programme">Programme
               <select id="impact-programme" name="programme" defaultValue={filtered.programme}>
                 <option value="">All programmes</option>
