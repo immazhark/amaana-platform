@@ -51,6 +51,14 @@ describe("public route publication policy", () => {
     expect(isPrivateRoute("/impact/compare")).toBe(false);
   });
 
+  it("publishes the planner landing without publishing calendar downloads", () => {
+    const paths = PUBLIC_STATIC_ROUTES.map(route => route.path);
+    expect(paths).toContain("/get-involved/monthly-giving");
+    expect(isPrivateRoute("/get-involved/monthly-giving")).toBe(false);
+    expect(paths).not.toContain("/api/giving-reminder");
+    expect(isPrivateRoute("/api/giving-reminder")).toBe(true);
+  });
+
   it("does not allow duplicate publication rules", () => {
     const publicPaths = PUBLIC_STATIC_ROUTES.map(route => route.path);
     expect(new Set(publicPaths).size).toBe(publicPaths.length);

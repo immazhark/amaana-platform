@@ -14,6 +14,7 @@ export const PUBLIC_STATIC_ROUTES = [
   { path: "/partner", changeFrequency: "monthly", priority: 0.65 },
   { path: "/get-involved/sponsor-education", changeFrequency: "monthly", priority: 0.75 },
   { path: "/get-involved/volunteer", changeFrequency: "monthly", priority: 0.7 },
+  { path: "/get-involved/monthly-giving", changeFrequency: "monthly", priority: 0.65 },
   { path: "/programmes/medical-financial-relief", changeFrequency: "monthly", priority: 0.8 },
   { path: "/programmes/emergency-relief", changeFrequency: "monthly", priority: 0.8 },
   { path: "/programmes/ramadan-eid", changeFrequency: "monthly", priority: 0.8 },
