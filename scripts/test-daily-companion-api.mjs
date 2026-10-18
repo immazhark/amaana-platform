@@ -4,7 +4,20 @@ import { readFileSync } from "node:fs";
 import { runInNewContext } from "node:vm";
 import ts from "typescript";
 import * as helpers from "../src/lib/daily-companion.ts";
-import { readTextBodyWithLimit } from "../src/lib/bounded-request-body.ts";
+
+// Load the shared streaming implementation via TypeScript transpilation. The
+// pinned Node strip-types runner does not support parameter properties in its
+// error classes; the existing companion route is transpiled for this reason.
+const boundedSource = readFileSync(new URL("../src/lib/bounded-request-body.ts", import.meta.url), "utf8");
+const boundedCompiled = ts.transpileModule(boundedSource, {
+  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+}).outputText;
+const boundedExports = {};
+runInNewContext(boundedCompiled, {
+  exports: boundedExports, TextDecoder, Uint8Array, setTimeout, clearTimeout,
+});
+const { readTextBodyWithLimit } = boundedExports;
+
 
 const source = readFileSync(new URL("../src/app/api/public/islamic-companion/route.ts", import.meta.url), "utf8");
 const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, esModuleInterop: true } }).outputText;
