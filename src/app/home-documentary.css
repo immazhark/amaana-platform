@@ -125,3 +125,21 @@
 @media(prefers-reduced-motion:reduce){.v3-proof-item strong{animation:none}}
 
 [data-cinematic] .hero-controls button svg{width:1.4rem;height:1.4rem;stroke-width:1.75}
+
+/* Native Eid disclosures, CSS-only. */
+.v3-eid-explorer{margin:0}
+.v3-timeline.v3-timeline--explorer{grid-template-columns:none;grid-auto-flow:column;grid-auto-columns:minmax(10rem,1fr);gap:.75rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:0 0 .75rem}
+.v3-timeline--explorer:before,.v3-timeline--explorer .v3-year:before{display:none}
+.v3-timeline--explorer .v3-year{min-width:0;padding:0;scroll-snap-align:start}
+.v3-year--explorer summary{position:relative;display:flex;flex-direction:column;gap:.4rem;min-height:10rem;padding:1rem;border:1px solid #f1cf5266;border-radius:1rem;background:#ffffff12;cursor:pointer;list-style:none}
+.v3-year--explorer summary::-webkit-details-marker{display:none}
+.v3-year--explorer[open] summary{background:#f1cf5220;border-color:#f1cf52}
+.v3-year--explorer summary:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
+.v3-year--explorer summary>span:first-of-type{font-size:2.7rem;color:#fff}
+.v3-year--explorer .v3-eid-year-bar{height:.4rem;margin-top:auto;border-radius:1rem;background:#fff2}
+.v3-eid-year-bar i{display:block;height:100%;border-radius:inherit;background:#f1cf52}
+.v3-eid-year-expand{position:absolute;right:1rem;top:.7rem;color:#f1cf52}
+.v3-eid-year-detail{padding:.75rem;font-size:.84rem}
+.v3-eid-total{display:flex;justify-content:space-between;gap:1rem;align-items:center;margin-top:1rem;border-top:1px solid #fff3;padding-top:1rem}
+.v3-eid-total strong{font:500 3rem/1 var(--af-font-display);color:#f1cf52}
+@media(max-width:720px){.v3-timeline--explorer{grid-auto-columns:65vw}.v3-eid-total{flex-direction:column;align-items:start}}

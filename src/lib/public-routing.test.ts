@@ -37,6 +37,15 @@ describe("public route publication policy", () => {
     expect(PUBLIC_STATIC_ROUTES.some(route => route.path === "/donate")).toBe(true);
   });
 
+  it("publishes the new volunteer and private-feedback landing pages without exposing a case-status route", () => {
+    const paths = PUBLIC_STATIC_ROUTES.map(route => route.path);
+    expect(paths).toContain("/get-involved/volunteer");
+    expect(paths).toContain("/contact/feedback");
+    expect(isPrivateRoute("/get-involved/volunteer")).toBe(false);
+    expect(isPrivateRoute("/contact/feedback")).toBe(false);
+    expect(paths).not.toContain("/request-assistance/status");
+  });
+
   it("does not allow duplicate publication rules", () => {
     const publicPaths = PUBLIC_STATIC_ROUTES.map(route => route.path);
     expect(new Set(publicPaths).size).toBe(publicPaths.length);
