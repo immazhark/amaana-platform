@@ -5,7 +5,7 @@ import { lazy, Suspense, useCallback, useRef, useState, type CSSProperties } fro
 import { getWholeRupeeCheckoutRange } from "@/lib/donation-amount-input";
 import { formatCheckoutRemainingINR } from "@/lib/donation-checkout-balance";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
-import { donationFormCopy } from "./donation-form-copy";
+import type { DonationFormCopy } from "./donation-form-copy";
 // Only load the checkout implementation after the donor confirms a destination.
 // Reuse the code-split payment method module already used by appeal detail pages.
 const DonationMethods = lazy(async () => ({ default: (await import("./donation-methods")).DonationMethods }));
@@ -16,6 +16,7 @@ export type ReviewedAppealChoice = {
   title: string;
   maxAmount: number;
   zakatEligible: boolean;
+  copy: DonationFormCopy;
 };
 
 const selectionGrid: CSSProperties = {
@@ -99,7 +100,7 @@ export function AppealLandingCheckout({ appeals, paymentDetails }: {
       {checkoutRequested && <Suspense fallback={<p role="status" aria-live="polite">Preparing secure donation options…</p>}>
         <DonationMethods key={selected.id} appealId={selected.id} appealTitle={selected.title}
           maxAmount={selected.maxAmount} zakatEligible={selected.zakatEligible}
-          paymentDetails={paymentDetails} copy={donationFormCopy(selected.zakatEligible)}
+          paymentDetails={paymentDetails} copy={selected.copy}
           onLockChange={handleLockChange} />
       </Suspense>}
     </div>
