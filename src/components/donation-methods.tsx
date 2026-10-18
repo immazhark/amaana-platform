@@ -18,7 +18,7 @@ export function DonationMethods(props: { appealId: string; appealTitle: string; 
       <button type="button" aria-pressed={method==="BANK_TRANSFER"} disabled={transferLocked} onClick={()=>setMethod("BANK_TRANSFER")}>Bank transfer</button>
     </div>
     <div>
-      {method==="RAZORPAY" ? <DonationForm appealId={props.appealId} appealTitle={props.appealTitle} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} copy={props.copy}/> : <DirectTransferForm appealId={props.appealId} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} method={method} paymentDetails={props.paymentDetails} onLockChange={setTransferLocked}/>} 
+      {method==="RAZORPAY" ? <DonationForm appealId={props.appealId} appealTitle={props.appealTitle} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} copy={props.copy}/> : <DirectTransferForm appealId={props.appealId} maxAmount={props.maxAmount} method={method} paymentDetails={props.paymentDetails} onLockChange={setTransferLocked} copy={props.copy.direct}/>} 
     </div>
   </div>;
 }
