@@ -47,6 +47,15 @@ afterEach(() => {
 });
 
 describe("notification maintenance job", () => {
+  it("requires the Bearer scheme and rejects a raw cron secret without running maintenance", async () => {
+    const response = await POST(new Request("https://amaanafoundation.org/api/jobs/notifications", {
+      method: "POST", headers: { authorization: "s".repeat(32) },
+    }));
+    expect(response.status).toBe(401);
+    expect(mocks.pruneEphemeralSecurityLedgers).not.toHaveBeenCalled();
+    expect(mocks.processPendingEmailNotifications).not.toHaveBeenCalled();
+  });
+
   it("rejects unauthorized callers before running maintenance or delivery", async () => {
     const response = await POST(request("x".repeat(32)));
     expect(response.status).toBe(401);
