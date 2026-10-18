@@ -19,7 +19,7 @@ const ORDER_UNCERTAIN = "Checkout status is uncertain. An order may have been cr
 
 declare global { interface Window { Razorpay: new (options: RazorpayOptions) => { open(): void } } }
 
-export function DonationForm({ appealId, appealTitle, maxAmount, copy }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean; copy: DonationFormCopy }) {
+export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockChange }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean; copy: DonationFormCopy; onLockChange?: (locked: boolean) => void }) {
   const router = useRouter();
   const errorRef = useRef<HTMLDivElement>(null);
   const focusedErrorRef = useRef<string | null>(null);
@@ -134,6 +134,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy }: { appea
     }
 
     orderLocked.current = true;
+    onLockChange?.(true);
     setPhase("opening");
     const values = new FormData(event.currentTarget);
 
@@ -181,6 +182,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy }: { appea
         }
         showError(order.error.trim().slice(0, 500));
         orderLocked.current = false;
+        onLockChange?.(false);
         setPhase("ready");
         return;
       }
@@ -212,6 +214,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy }: { appea
         modal: { ondismiss: () => {
           if (!paymentReported) {
             orderLocked.current = false;
+            onLockChange?.(false);
             setPhase("ready");
           }
         } },

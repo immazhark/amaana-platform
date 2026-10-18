@@ -12,6 +12,16 @@ export type DonationFormCopy = {
   anonymityText: ReactNode;
   domesticText: ReactNode;
   readyHelp: ReactNode;
+  direct: {
+    upiHeading: ReactNode;
+    bankHeading: ReactNode;
+    qrMissing: ReactNode;
+    bankMissing: ReactNode;
+    intentOptions: ReactNode;
+    privacy: ReactNode;
+    domestic: ReactNode;
+    next: ReactNode;
+  };
 };
 
 export function donationFormCopy(zakatEligible: boolean): DonationFormCopy {
@@ -29,5 +39,15 @@ export function donationFormCopy(zakatEligible: boolean): DonationFormCopy {
     anonymityText: <span><strong>Keep my public identity private</strong><small>Do not show my name in any public donor listing.</small></span>,
     domesticText: <span><strong>Domestic contribution confirmation</strong><small>I confirm this donation is from an Indian source using a domestic payment method.</small></span>,
     readyHelp: <small>Next: Razorpay secure checkout. Your Amaana acknowledgement follows successful payment verification and is not an 80G tax-deduction certificate.</small>,
+    direct: {
+      upiHeading: <div className="v2-form-heading"><span>Direct UPI</span><h2>Pay Amaana directly by UPI.</h2><p>Complete the transfer using the verified details below, then submit the UTR/reference so Amaana can reconcile it. Your appeal total changes only after verification.</p></div>,
+      bankHeading: <div className="v2-form-heading"><span>Bank transfer</span><h2>Transfer directly to Amaana Foundation.</h2><p>Complete the transfer using the verified details below, then submit the UTR/reference so Amaana can reconcile it. Your appeal total changes only after verification.</p></div>,
+      qrMissing: <p className="form-error">Verified QR image is not configured yet. Use the UPI ID above; the site will not display an unverified QR.</p>,
+      bankMissing: <div className="form-error" role="alert">Official bank-transfer details are not configured. Amaana will not display guessed or incomplete banking information.</div>,
+      intentOptions: <>{intentions.map((intent, index) => <label className="checkbox" key={intent}><input type="radio" name="givingIntent" value={intent} defaultChecked={index === 0}/><span><strong>{DONATION_INTENT_LABELS[intent]}</strong><small>{DONATION_INTENT_DESCRIPTIONS[intent]}</small></span></label>)}</>,
+      privacy: <span><strong>Keep my public identity private</strong></span>,
+      domestic: <span><strong>Domestic contribution confirmation</strong><small>I confirm this contribution is from an Indian source using a domestic account/payment method.</small></span>,
+      next: <small>This submission remains Pending Verification until Amaana matches it to the Foundation&apos;s received funds.</small>,
+    },
   };
 }
