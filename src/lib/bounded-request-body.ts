@@ -58,7 +58,10 @@ export async function readBodyBytesWithLimit(request: BoundedBodySource, maxByte
         }
         throw new RequestBodyTooLargeError(maxBytes);
       }
-      chunks.push(value);
+      // ReadableStream producers may reuse their Uint8Array backing storage
+      // between reads. Own every accepted chunk before the next read so raw
+      // evidence and authenticated provider JSON cannot be silently altered.
+      chunks.push(value.slice());
     }
 
     const body = new Uint8Array(totalBytes);
