@@ -13,6 +13,7 @@ export class RequestBodyReadTimeoutError extends Error {
 }
 
 type BodyReadOptions = { timeoutMs?: number };
+type BoundedBodySource = Pick<Request, "headers" | "body">;
 
 function validateMaxBytes(maxBytes: number) {
   if (!Number.isSafeInteger(maxBytes) || maxBytes <= 0) {
@@ -20,7 +21,7 @@ function validateMaxBytes(maxBytes: number) {
   }
 }
 
-export async function readBodyBytesWithLimit(request: Request, maxBytes: number, options: BodyReadOptions = {}) {
+export async function readBodyBytesWithLimit(request: BoundedBodySource, maxBytes: number, options: BodyReadOptions = {}) {
   validateMaxBytes(maxBytes);
   if (options.timeoutMs !== undefined && (!Number.isSafeInteger(options.timeoutMs) || options.timeoutMs <= 0 || options.timeoutMs > 2_147_483_647)) {
     throw new RangeError("timeoutMs must be an integer between 1 and 2147483647");
@@ -89,6 +90,6 @@ export async function readBodyBytesWithLimit(request: Request, maxBytes: number,
   }
 }
 
-export async function readTextBodyWithLimit(request: Request, maxBytes: number, options: BodyReadOptions = {}) {
+export async function readTextBodyWithLimit(request: BoundedBodySource, maxBytes: number, options: BodyReadOptions = {}) {
   return new TextDecoder().decode(await readBodyBytesWithLimit(request, maxBytes, options));
 }
