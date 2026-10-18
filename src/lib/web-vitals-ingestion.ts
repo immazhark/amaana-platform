@@ -36,7 +36,7 @@ export function classifyWebVital(name: CoreWebVital, value: number): WebVitalBuc
 }
 
 export async function parseWebVitalPayload(request: Request) {
-  const raw = JSON.parse(await readTextBodyWithLimit(request, MAX_WEB_VITAL_JSON_BYTES));
+  const raw = JSON.parse(await readTextBodyWithLimit(request, MAX_WEB_VITAL_JSON_BYTES, { timeoutMs: 5_000 }));
   const parsed = payloadSchema.safeParse(raw);
   if (!parsed.success) return null;
   const path = normalizePublicWebVitalPath(parsed.data.path);
