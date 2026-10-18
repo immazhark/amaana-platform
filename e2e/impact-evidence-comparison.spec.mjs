@@ -29,3 +29,25 @@ test("unknown or repeated compare inputs are rejected without leaking personal q
   await expect(page.getByRole("region", { name: "Side-by-side published outcomes" })).toHaveCount(0);
   await expect(page.locator("main")).not.toContainText("PRIVATE_PERSON");
 });
+
+for (const width of [320, 720, 1440]) {
+  test(`comparison controls remain readable and contained at ${width}px with enlarged text`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto("/impact/compare");
+    await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
+    const form = page.getByRole("form", { name: "Compare two published initiatives" });
+    for (const name of ["First initiative", "Second initiative"]) {
+      const control = form.getByRole("combobox", { name });
+      const bounds = await control.boundingBox();
+      expect(bounds).not.toBeNull();
+      expect(bounds.height).toBeGreaterThanOrEqual(44);
+      expect(bounds.x).toBeGreaterThanOrEqual(0);
+      expect(bounds.x + bounds.width).toBeLessThanOrEqual(width);
+      const fontSize = await control.evaluate(node => parseFloat(getComputedStyle(node).fontSize));
+      expect(fontSize).toBeGreaterThanOrEqual(32);
+    }
+    await expect(form.getByRole("button", { name: "Compare published outcomes" })).toBeVisible();
+    await page.getByRole("combobox", { name: "First initiative" }).focus();
+    await expect(page.getByRole("combobox", { name: "First initiative" })).toBeFocused();
+  });
+}
