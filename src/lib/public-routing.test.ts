@@ -46,6 +46,11 @@ describe("public route publication policy", () => {
     expect(paths).not.toContain("/request-assistance/status");
   });
 
+  it("publishes comparison as a public evidence route without opening transactional paths", () => {
+    expect(PUBLIC_STATIC_ROUTES.map(route => route.path)).toContain("/impact/compare");
+    expect(isPrivateRoute("/impact/compare")).toBe(false);
+  });
+
   it("does not allow duplicate publication rules", () => {
     const publicPaths = PUBLIC_STATIC_ROUTES.map(route => route.path);
     expect(new Set(publicPaths).size).toBe(publicPaths.length);

@@ -19,6 +19,7 @@ export const PUBLIC_STATIC_ROUTES = [
   { path: "/programmes/ramadan-eid", changeFrequency: "monthly", priority: 0.8 },
   { path: "/programmes/seasonal-relief", changeFrequency: "monthly", priority: 0.8 },
   { path: "/impact", changeFrequency: "weekly", priority: 0.9 },
+  { path: "/impact/compare", changeFrequency: "monthly", priority: 0.7 },
   { path: "/stories", changeFrequency: "weekly", priority: 0.85 },
   { path: "/faith-and-reflections", changeFrequency: "weekly", priority: 0.8 },
   { path: "/appeals", changeFrequency: "daily", priority: 0.95 },

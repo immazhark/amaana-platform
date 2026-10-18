@@ -87,6 +87,7 @@ export default async function ImpactPage({ searchParams }: { searchParams: Promi
           </form>
           {filtered.invalid && <p role="status">These filters could not be read. Select a published programme or clear the impact filter.</p>}
           <p role="status" aria-live="polite">{filtered.count} published {filtered.count === 1 ? "initiative" : "initiatives"}{filtered.active && !filtered.invalid ? " in this programme" : " available to explore"}.</p>
+          <p><Link href="/impact/compare" className="v2-text-link">Compare two initiatives</Link></p>
           {filtered.results.length > 0 ? <div className="v2-impact-wall">{filtered.results.map((item, index) => {
             const thumbnail = selectIdentityPublicImage(item.mediaAssets) ?? null;
             return <Link href={`/our-work/${item.slug}`} className={`v2-impact-tile ${thumbnail ? "has-media" : ""}`} key={item.id} aria-label={`Explore impact: ${item.title}`}>

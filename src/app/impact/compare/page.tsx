@@ -75,7 +75,8 @@ export default async function ImpactComparisonPage({
           {choice.invalid && <p role="alert">These comparison choices could not be read. Please select two different published initiatives.</p>}
           {choice.requested && <p><Link href="/impact/compare#comparison" className="v2-text-link">Clear comparison</Link></p>}
           {choice.selected ? (
-            <section aria-label="Side-by-side published outcomes" className="v2-impact-philosophy-grid">
+            <section aria-label="Side-by-side published outcomes">
+              <div className="v2-impact-philosophy-grid">
               {choice.selected.map((item, index) => (
                 <article className="v2-reminder" key={item.slug}>
                   <span className="v2-reminder-label">Published initiative {index + 1} · {item.cause.title}</span>
@@ -87,6 +88,7 @@ export default async function ImpactComparisonPage({
                   <Link className="v2-button" href={`/our-work/${item.slug}`}>Read the full initiative</Link>
                 </article>
               ))}
+              </div>
               <p>This view is not a ranking or a combined total. Outcomes describe different activities, periods and recipients; follow the full initiative records for their limitations and evidence.</p>
             </section>
           ) : (
