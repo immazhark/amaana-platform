@@ -20,7 +20,8 @@ import { POST } from "./route";
 
 const originalSecret = process.env.CRON_SECRET;
 function request(token: string | null = "s".repeat(32)) {
-  const headers = token === null ? {} : { authorization: `Bearer ${token}` };
+  const headers = new Headers();
+  if (token !== null) headers.set("authorization", `Bearer ${token}`);
   return new Request("https://amaanafoundation.org/api/jobs/retention", { method: "POST", headers });
 }
 
