@@ -53,3 +53,35 @@ test("worker image/config do not inherit the website build or healthcheck", asyn
   assert.equal(config.deploy.startCommand, "node run.mjs");
   assert.equal(config.deploy.healthcheckPath, undefined);
 });
+
+
+for (const status of [200, 401]) {
+  test(`HTTP ${status} completes even when best-effort response cancellation stalls`, async () => {
+    let cancelled = false;
+    const response = new Response(new ReadableStream({
+      cancel() {
+        cancelled = true;
+        return new Promise(() => {});
+      },
+    }), { status });
+    let timeout;
+    try {
+      const outcome = Promise.race([
+        runNotificationJob(env, async () => response),
+        new Promise((_, reject) => { timeout = setTimeout(() => reject(new Error("Cancellation stalled the worker")), 250); }),
+      ]);
+      if (status === 200) assert.equal(await outcome, 200);
+      else await assert.rejects(outcome, { message: "Notification job HTTP 401" });
+      assert.equal(cancelled, true);
+    } finally {
+      clearTimeout(timeout);
+    }
+  });
+}
+
+test("failed body cancellation never masks the HTTP success or leaks diagnostics", async () => {
+  const response = new Response(new ReadableStream({
+    cancel() { throw new Error("private cancellation diagnostic"); },
+  }));
+  assert.equal(await runNotificationJob(env, async () => response), 200);
+});
