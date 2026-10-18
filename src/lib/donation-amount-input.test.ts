@@ -35,3 +35,29 @@ describe("donation amount input validation", () => {
     expect(recorded).toBe("");
   });
 });
+
+
+describe("AF-R083 reviewed checkout amount presets", () => {
+  it("never suggests more than the verified remaining appeal balance", async () => {
+    const { getDonationAmountPresets } = await import("./donation-amount-input");
+    expect(getDonationAmountPresets(900)).toEqual([500, 900]);
+    expect(getDonationAmountPresets(2_500)).toEqual([500, 1_000, 2_500]);
+    expect(getDonationAmountPresets(3_750)).toEqual([500, 1_000, 2_500, 3_750]);
+    expect(getDonationAmountPresets(100_000)).toEqual([500, 1_000, 2_500]);
+  });
+
+  it("uses only the exact payable amount for a fully-rupee balance below ₹10", async () => {
+    const { getDonationAmountPresets } = await import("./donation-amount-input");
+    expect(getDonationAmountPresets(7)).toEqual([7]);
+    expect(getDonationAmountPresets(9.5)).toEqual([]);
+  });
+
+  it("does not offer checkout shortcuts for invalid or exhausted balances", async () => {
+    const { getDonationAmountPresets } = await import("./donation-amount-input");
+    for (const invalid of [0, -1, NaN, Infinity, -Infinity]) {
+      expect(getDonationAmountPresets(invalid)).toEqual([]);
+    }
+    expect(getDonationAmountPresets(500.75)).toEqual([500]);
+    expect(getDonationAmountPresets(1_500_000)).toEqual([500, 1_000, 2_500]);
+  });
+});
