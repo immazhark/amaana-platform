@@ -57,6 +57,7 @@ describe("Razorpay signatures", () => {
       expect.objectContaining({
         method: "POST",
         cache: "no-store",
+        redirect: "error",
         body: JSON.stringify({
           amount: 50000,
           currency: "INR",
@@ -86,7 +87,7 @@ describe("Razorpay signatures", () => {
     expect(payment.captured).toBe(true);
     expect(fetchMock).toHaveBeenCalledWith(
       "https://api.razorpay.com/v1/payments/pay_1",
-      expect.objectContaining({ cache: "no-store" }),
+      expect.objectContaining({ cache: "no-store", redirect: "error" }),
     );
   });
 
