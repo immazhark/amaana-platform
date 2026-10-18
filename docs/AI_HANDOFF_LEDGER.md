@@ -1,3 +1,7 @@
+## 2026-10-18 — Reconciled with merged programme evidence links
+
+Owner: CHATGPT_ACTIVE. PR321 reconciled with main b6f26346e670dd7061fe6aa14adffa1a6770494a after PR322 passed1440 Chromium/24 cross-browser cases plus fullCI39119494709 and ready-state39121687820, then expected-head merge. Railway deploymentdc3fa7e9 was BUILDING at this checkpoint; do not claim live verification yet. Only four main paths changed since7075e1f; all runtime/test paths for this PR are disjoint from new WorkPortfolio/evidence-journey files. Preserve this PR's exact source/test blobs unchanged from 3528b797dba10a0838cfed97a5e7e2706056aa71 and preserve both complete continuity histories. Fresh combined-head CI, browser/final and readiness required before release. Filter reset fixes retained; no finance/privacy safeguards overwritten. No payments, private records or outgoing notifications.
+
 ## 2026-10-18 — Native filter controls reset with validated navigation state
 
 Owner: CHATGPT_ACTIVE, existing PR321. PR321 exact-head browser39118689374 passed1439 and failed1 reproducibly: Clear filters removes URL query but uncontrolled programme select retains ramadan-eid. React preserves the DOM/select across client navigation while defaultValue changes. Key the form by validated selection state so controls remount on clear/change/history; no raw URL or personal data enters the key. The comparison form shares this lifecycle and receives the same correction on its own PR. Strengthen browser checks for both controls after clear plus back/forward restoration. Retain failing reset assertion; both edited browser specs pass Node syntax. No new CSS/client JavaScript, budget change or dependencies. Fresh full exact-head tests/build/budgets/browser/final/ready required; prior successes do not certify the correction. No real payments, private records, notifications or main merge.
@@ -5,6 +9,10 @@ Owner: CHATGPT_ACTIVE, existing PR321. PR321 exact-head browser39118689374 passe
 ## 2026-10-18 — Browser assertion recovery after financial release
 
 Ownership: CHATGPT_ACTIVE, explicit owner continuation handover. Current production main/Railway SUCCESS: 7075e1f8b72785b85509be228ffe43bb2d3a1369 (PR317). Continue existing PR320 and PR321; no new feature branches. Their prior exact-head browser suites each failed one test: comparison alert locator also matched Next route announcer; valid work-filter assertion required an absent error status. Scope comparison alert to main; assert zero error statuses plus matching-results copy for valid work filters. Preserve all privacy assertions and runtime protections. Fresh exact-head CI including browser/final and ready-state required before merge. No live payments, private data or notifications touched.
+
+## 2026-10-18 — Programme evidence browser recovery
+
+Owner: CHATGPT_ACTIVE. Existing PR322 source unchanged. Prior browser run39093779608 passed1439 with one task-introduced test failure: summary click collapsed already-expanded filtered portfolio. Commit e899c5c14d56bd6a9d699eec871d78fd5ea5720a now asserts native open state, requires the evidence link visible, follows it and checks matching Impact programme selection. Node syntax check PASS. Fresh exact-head CI required; no browser success or merge/deployment claimed. Production remains PR317 merge7075e1f. Preserve #320/#321 and all finance/privacy protections. No private records, live payment or outgoing notifications.
 
 ## 2026-10-18 — Financial ingress safety: transfer consent and signed webhook deadline
 
