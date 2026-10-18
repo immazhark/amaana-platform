@@ -28,17 +28,12 @@ export function NavigationProgress() {
       if (!anchor || anchor.target && anchor.target !== "_self" ||
           anchor.hasAttribute("download") || anchor.getAttribute("aria-disabled") === "true") return;
       if (anchor.getClientRects().length === 0) return;
-      let next: URL;
-      try {
-        next = new URL(anchor.href);
-      } catch {
-        return;
-      }
-      if (next.origin !== location.origin) return;
-      // Hash-only links and the same URL are not route transitions.
-      if (next.pathname === location.pathname && next.search === location.search) return;
+      // Anchor URL properties are browser-normalized, avoiding duplicate URL
+      // parsing on every navigation and rejecting external/unsafe schemes.
+      if (anchor.origin !== location.origin) return;
+      if (anchor.pathname === location.pathname && anchor.search === location.search) return;
       const expectedFrom = location.pathname;
-      const destination = next.pathname;
+      const destination = anchor.pathname;
       setPending({ fromPath: expectedFrom, destination });
 
       // The site can prevent navigation in a later bubble listener (such as
