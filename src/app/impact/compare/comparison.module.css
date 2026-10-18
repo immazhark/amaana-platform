@@ -1,0 +1,83 @@
+.form {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-items: end;
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+
+.field {
+  display: grid;
+  gap: .5rem;
+  min-width: 0;
+  color: var(--v2-ink);
+  font: 600 1rem/1.5 var(--af-font-body);
+}
+
+.field .select {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  min-height: 3.125rem;
+  padding: .75rem;
+  border: 1px solid rgb(18 34 57 / 28%);
+  border-radius: .85rem;
+  background: #fffdf8;
+  color: var(--v2-ink);
+  font: 400 1rem/1.5 var(--af-font-body);
+}
+
+.select:focus-visible {
+  outline: 3px solid var(--af-color-focus);
+  outline-offset: 3px;
+}
+
+.form .submit {
+  width: 100%;
+  min-width: 0;
+  min-height: 3.125rem;
+  white-space: normal;
+  text-align: center;
+}
+
+.outcomes {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 1.5rem;
+  margin-block: 1.5rem;
+}
+
+.outcomes .outcome {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1rem;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.outcome > :is(h2, p) {
+  margin-block: 0;
+}
+
+.outcome > a {
+  margin-top: auto;
+  max-width: 100%;
+  white-space: normal;
+}
+
+@media (min-width: 56rem) {
+  .form {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .form .submit {
+    grid-column: 1 / -1;
+    width: fit-content;
+    max-width: 100%;
+  }
+
+  .outcomes {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
