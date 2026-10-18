@@ -136,8 +136,7 @@
 .v3-year--explorer[open] summary{background:#f1cf5220;border-color:#f1cf52}
 .v3-year--explorer summary:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
 .v3-year--explorer summary>span:first-of-type{font-size:2.7rem;color:#fff}
-.v3-year--explorer summary>small{font-size:.78rem}
-.v3-year--explorer .v3-eid-year-bar{height:.4rem;margin-top:auto;border-radius:1rem;background:#fff2;font-size:0!important}
+.v3-year--explorer .v3-eid-year-bar{height:.4rem;margin-top:auto;border-radius:1rem;background:#fff2}
 .v3-eid-year-bar i{display:block;height:100%;border-radius:inherit;background:#f1cf52}
 .v3-eid-year-expand{position:absolute;right:1rem;top:.7rem;color:#f1cf52}
 .v3-eid-year-detail{padding:.75rem;font-size:.84rem}
