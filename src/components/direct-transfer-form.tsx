@@ -11,7 +11,7 @@ import { DONATION_INTENT_DESCRIPTIONS, DONATION_INTENT_LABELS, type DonationInte
 
 type Method = "DIRECT_UPI" | "BANK_TRANSFER";
 
-export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method, paymentDetails }: { appealId: string; maxAmount: number; zakatEligible: boolean; method: Method; paymentDetails: DonationPaymentDetails }) {
+export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method, paymentDetails, onLockChange }: { appealId: string; maxAmount: number; zakatEligible: boolean; method: Method; paymentDetails: DonationPaymentDetails; onLockChange: (locked: boolean) => void }) {
   const router = useRouter();
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -27,6 +27,7 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
     event.preventDefault();
     if (submissionRef.current) return;
     submissionRef.current = true;
+    onLockChange(true);
     setError(""); setBusy(true);
     let posted = false;
     try {
@@ -50,6 +51,7 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
         setError(result.error.trim().slice(0, 500));
         setBusy(false);
         submissionRef.current = false;
+        onLockChange(false);
         return;
       }
       if (response.status !== 202 || !response.ok ||
@@ -65,6 +67,7 @@ export function DirectTransferForm({ appealId, maxAmount, zakatEligible, method,
         setError("Transfer reporting status is uncertain. Your reference may have been recorded. Do not submit the same UTR again; contact Amaana for reconciliation.");
       } else {
         submissionRef.current = false;
+        onLockChange(false);
         setError(caught instanceof Error ? caught.message : "Please check the transfer details.");
       }
       setBusy(false);
