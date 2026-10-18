@@ -10,7 +10,7 @@ const mocks = vi.hoisted(() => ({
   verifyPassword: vi.fn(),
   passwordNeedsRehash: vi.fn(),
   hashPassword: vi.fn(),
-  credentialUpdate: vi.fn(),
+  credentialUpdateMany: vi.fn(),
   createSession: vi.fn(),
   auditCreate: vi.fn(),
 }));
@@ -26,7 +26,7 @@ vi.mock("@/lib/password", () => ({
 vi.mock("@/lib/prisma", () => ({ prisma: {
   user: { findUnique: mocks.userFind },
   loginAttempt: { count: mocks.attemptCount, create: mocks.attemptCreate, update: mocks.attemptUpdate },
-  passwordCredential: { update: mocks.credentialUpdate },
+  passwordCredential: { updateMany: mocks.credentialUpdateMany },
   auditEvent: { create: mocks.auditCreate },
   $transaction: mocks.transaction,
 } }));
@@ -36,7 +36,11 @@ import { AUTH_FAILURE_LIMIT, AUTH_FAILURE_WINDOW_MS } from "@/lib/auth-rate-limi
 
 type Attempt = { id: string; subjectHash: string; succeeded: boolean; createdAt: Date };
 const attempts: Attempt[] = [];
-const tx = { loginAttempt: { count: mocks.attemptCount, create: mocks.attemptCreate } };
+const tx = {
+  loginAttempt: { count: mocks.attemptCount, create: mocks.attemptCreate },
+  passwordCredential: { updateMany: mocks.credentialUpdateMany },
+  auditEvent: { create: mocks.auditCreate },
+};
 
 function form(email = "admin@example.invalid", password = "synthetic-password") {
   const data = new FormData();
@@ -52,6 +56,7 @@ beforeEach(() => {
   vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
   mocks.userFind.mockResolvedValue({ id: "admin", status: "ACTIVE", credential: { passwordHash: "synthetic-hash" } });
   mocks.verifyPassword.mockResolvedValue(false);
+  mocks.credentialUpdateMany.mockResolvedValue({ count: 1 });
   mocks.attemptCount.mockImplementation(async ({ where }: {
     where: { subjectHash: string; succeeded: boolean; createdAt: { gte: Date } };
   }) => attempts.filter(row => row.subjectHash === where.subjectHash && row.succeeded === where.succeeded && row.createdAt >= where.createdAt.gte).length);
@@ -176,11 +181,45 @@ describe("admin login admission", () => {
     mocks.passwordNeedsRehash.mockReturnValue(true);
     mocks.hashPassword.mockResolvedValue("upgraded-synthetic-hash");
     await expect(login(form())).rejects.toThrow("redirect:/admin");
-    expect(mocks.credentialUpdate).toHaveBeenCalledWith({
-      where: { userId: "admin" }, data: { passwordHash: "upgraded-synthetic-hash" },
+    expect(mocks.credentialUpdateMany).toHaveBeenCalledWith({
+      where: { userId: "admin", passwordHash: "synthetic-hash" },
+      data: { passwordHash: "upgraded-synthetic-hash" },
     });
     expect(mocks.auditCreate.mock.calls.map(([input]) => input.data.action)).toEqual(["credential.password_rehashed", "session.login"]);
     expect(attempts.map(row => row.succeeded)).toEqual([true]);
+  });
+
+  it("does not restore an old password after a concurrent credential change", async () => {
+    mocks.verifyPassword.mockResolvedValue(true);
+    mocks.passwordNeedsRehash.mockReturnValue(true);
+    mocks.hashPassword.mockResolvedValue("upgraded-synthetic-hash");
+    // A concurrent password reset or different login has changed the
+    // credential since the old digest was fetched and verified.
+    mocks.credentialUpdateMany.mockResolvedValueOnce({ count: 0 });
+
+    await expect(login(form())).rejects.toThrow("redirect:/admin/login?error=invalid");
+    expect(mocks.credentialUpdateMany).toHaveBeenCalledWith({
+      where: { userId: "admin", passwordHash: "synthetic-hash" },
+      data: { passwordHash: "upgraded-synthetic-hash" },
+    });
+    expect(mocks.auditCreate).not.toHaveBeenCalled();
+    expect(mocks.createSession).not.toHaveBeenCalled();
+    expect(attempts.map(attempt => attempt.succeeded)).toEqual([false]);
+  });
+
+  it("does not issue a session when the password-upgrade audit transaction fails", async () => {
+    mocks.verifyPassword.mockResolvedValue(true);
+    mocks.passwordNeedsRehash.mockReturnValue(true);
+    mocks.hashPassword.mockResolvedValue("upgraded-synthetic-hash");
+    mocks.auditCreate.mockRejectedValueOnce(new Error("synthetic credential audit failure"));
+
+    await expect(login(form())).rejects.toThrow("synthetic credential audit failure");
+    expect(mocks.credentialUpdateMany).toHaveBeenCalledWith({
+      where: { userId: "admin", passwordHash: "synthetic-hash" },
+      data: { passwordHash: "upgraded-synthetic-hash" },
+    });
+    expect(mocks.createSession).not.toHaveBeenCalled();
+    expect(attempts.map(attempt => attempt.succeeded)).toEqual([false]);
   });
 
   it("keeps malformed input within the quota without password work", async () => {
