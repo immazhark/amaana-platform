@@ -15,3 +15,7 @@
 @media(max-width:900px){.grid.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.grid.grid .card.card:nth-child(n){grid-column:auto;min-height:18rem}.grid.grid .card:last-child:nth-child(odd){grid-column:1/-1}}
 @media(max-width:620px){.grid.grid{grid-template-columns:1fr}.grid.grid .card.card:nth-child(n){grid-column:auto;min-height:0;padding:1.25rem}}
 @media(prefers-reduced-motion:reduce){.action svg{transition:none}.card:is(:hover,:focus-visible) .action svg{transform:none}}
+
+/* Native volunteer multi-selection stays visible at 200% zoom and keyboard focus. */
+.card.card:has(input:checked){border-color:var(--af-color-gold-ink);background:var(--af-color-surface)}
+.card.card:focus-within{outline:3px solid var(--af-color-focus);outline-offset:4px}
