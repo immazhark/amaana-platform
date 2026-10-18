@@ -6,6 +6,7 @@ import { getAppealsIndexData, getDonationPageData, getDonationImpactHighlights }
 import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { AppealLandingCheckout, type ReviewedAppealChoice } from "@/components/appeal-landing-checkout";
+import { donationFormCopy } from "@/components/donation-form-copy";
 import { VerifiedImpactStrip, type VerifiedImpactItem } from "@/components/verified-impact-strip";
 import { logServerError } from "@/lib/server-log";
 import { isAppealOpenForDonations } from "@/lib/appeals";
@@ -66,6 +67,7 @@ export default async function Page() {
       title: appeal.title,
       maxAmount: remaining,
       zakatEligible: appeal.zakatEligible,
+      copy: donationFormCopy(appeal.zakatEligible),
     } satisfies ReviewedAppealChoice;
   }));
   const eligibleChoices: ReviewedAppealChoice[] = verifiedCandidates.filter(
