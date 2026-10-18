@@ -71,3 +71,18 @@ test("explicit assistance validation stays correctable and ignores malformed fie
   await expect.poll(() => calls).toBe(2);
   expect(errors).toEqual([]);
 });
+
+test("rapid assistance submit events issue only one request", async ({ page }) => {
+  let calls = 0;
+  await page.route("**/api/assistance", route => {
+    calls++;
+    return route.fulfill({ status: 503, contentType: "application/json", body: JSON.stringify({ error: "Synthetic uncertain outcome" }) });
+  });
+  await prepare(page);
+  await page.locator("form.v2-assistance-form").evaluate(form => {
+    form.requestSubmit();
+    form.requestSubmit();
+  });
+  await expect(page.getByRole("button", { name: "Follow-up required", exact: true })).toBeDisabled();
+  expect(calls).toBe(1);
+});
