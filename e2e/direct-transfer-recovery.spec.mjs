@@ -102,3 +102,13 @@ test("direct transfer prevents method switching while an acknowledgement is pend
   await expect(page.getByRole("button", { name: "Bank transfer" })).toBeEnabled();
   expect(calls).toBe(1);
 });
+
+
+test("direct transfer guidance remains present across UPI and bank methods after static copy extraction", async ({ page }) => {
+  await prepareDirectTransfer(page);
+  await expect(page.getByText("Complete the transfer using the verified details below, then submit the UTR/reference so Amaana can reconcile it. Your appeal total changes only after verification.")).toBeVisible();
+  await expect(page.getByText("Record this contribution as Sadaqah for this verified appeal.")).toBeVisible();
+  await expect(page.getByText("I confirm this contribution is from an Indian source using a domestic account/payment method.")).toBeVisible();
+  await page.getByRole("button", { name: "Bank transfer" }).click();
+  await expect(page.getByRole("heading", { name: "Transfer directly to Amaana Foundation." })).toBeVisible();
+});
