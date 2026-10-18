@@ -9,12 +9,30 @@ credential. `NOTIFICATION_JOB_URL` defaults to
 rejected. Requests time out after 30 seconds and do not follow redirects or log
 response bodies. No automatic retry is performed inside the worker.
 
-## Current containment
+## Current containment and recovery gate
 
-On 12 October 2026 the failing Railway worker's five-minute schedule was removed
-and its job URL was corrected with deployment skipped. Scheduled notification
-processing is suspended until the isolated worker is deployed. Do not add the
-website's database credentials to this service to make the root website build.
+As inspected on 18 October 2026, Railway's `amaana-notification-cron` has a
+`0 0 1 1 *` annual schedule, a failed last deployment, and an **inline**
+`node -e ... fetch(...)` start command. The five-minute schedule was disabled,
+but an annual trigger or manual run of that existing inline command is **not**
+equivalent to safe code-only containment. This repository change alone does not
+alter Railway configuration or send/clear any queued notifications.
+
+The reviewed `railway.contained.json` specifies an isolated worker image and
+`node --check run.mjs`. A scheduled or manual invocation with this exact
+start-command override parses the file without calling the notification API.
+It retains the annual dormant schedule and NEVER restart policy; syntax checks
+are **not evidence of email delivery readiness**. Do not use `railway.json`,
+whose schedule is every five minutes, while delivery remains unapproved.
+
+After this branch is merged, configure only the worker service with root
+`/ops/notification-cron` and config file
+`/ops/notification-cron/railway.contained.json`. Before committing any
+Railway staged changes, verify the effective worker start command is
+`node --check run.mjs`, the annual schedule and the isolated Dockerfile;
+leave the website service untouched. Never run delivery, drain a queue or
+set a five-minute schedule as part of containment. Separate authorization
+and verification are required to activate the normal worker later.
 
 ## Activate only after an approved main merge
 
