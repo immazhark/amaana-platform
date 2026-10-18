@@ -18,7 +18,9 @@ for (const path of ["/", "/about", "/donate", "/request-assistance", "/admin/log
     expect(response.ok(), `${path} should render successfully`).toBeTruthy();
 
     for (const [header, pattern] of globalHeaders) {
-      expect(response.headers()[header], `${path} missing/invalid ${header}`).toMatch(pattern);
+      const expected = header === "referrer-policy" && ["/donate", "/request-assistance", "/admin/login"].includes(path)
+        ? /^no-referrer$/i : pattern;
+      expect(response.headers()[header], `${path} missing/invalid ${header}`).toMatch(expected);
     }
 
     const csp = response.headers()["content-security-policy"];
@@ -121,3 +123,16 @@ test("anonymous performance reporting is private and rejects foreign origins wit
   expect(response.headers()["x-robots-tag"] ?? "").toMatch(/noindex.*nofollow/i);
   expect(await response.text()).toBe("");
 });
+
+
+for (const path of ["/api/donations/acknowledgement", "/api/assistance/status"]) {
+  test(`private API ${path} keeps no-referrer on early origin rejection`, async ({ request }) => {
+    const response = await request.post(path, {
+      headers: { Origin: "https://not-amaana.invalid" }, data: {},
+    });
+    expect(response.status()).toBe(403);
+    expect(response.headers()["referrer-policy"]).toBe("no-referrer");
+    expect(response.headers()["cache-control"]).toMatch(/private.*no-store/i);
+    expect(await response.json()).toEqual({ found: false });
+  });
+}

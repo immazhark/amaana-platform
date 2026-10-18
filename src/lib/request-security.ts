@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { getTrustedClientAddress } from "./client-address";
 import { isPrismaSerializableConflict, withSerializableTransactionRetry } from "./prisma-transaction";
 
-type RateLimitPurpose = "donation" | "assistance" | "analytics";
+type RateLimitPurpose = "donation" | "assistance" | "analytics" | "tracking" | "acknowledgement";
 
 const RATE_LIMIT_WINDOW_MS = 60 * 60 * 1000;
 
@@ -26,7 +26,7 @@ export function isSameOrigin(request: Request) {
 }
 
 function getRateLimitPepper(purpose: RateLimitPurpose) {
-  const envName = purpose === "assistance"
+  const envName = (purpose === "assistance" || purpose === "tracking")
     ? "ASSISTANCE_TOKEN_PEPPER"
     : purpose === "analytics"
       ? "AUTH_RATE_LIMIT_PEPPER"
@@ -85,6 +85,17 @@ export async function enforceDonationRateLimit(request: Request) {
 }
 
 /**
+ * Receipt lookups are deliberately separate from donor checkout attempts.
+ * Use a purpose-separated peppered SHA-256 hash (no raw IP retention) and
+ * an independent allowance to constrain repeated private-record lookups.
+ * Share the existing donation pepper rather than adding new production
+ * secret configuration. The check remains database-atomic and fail-closed.
+ */
+export async function enforceAcknowledgementRateLimit(request: Request) {
+  return claimRateLimitSlot(getRateLimitClientHash(request, "acknowledgement"), 30);
+}
+
+/**
  * Assistance submissions can contain sensitive documents, so this endpoint is
  * intentionally stricter than donations. We reuse DonationAttempt as a generic
  * hashed request-attempt ledger while keeping purpose and secret-key separation
@@ -92,6 +103,11 @@ export async function enforceDonationRateLimit(request: Request) {
  */
 export async function enforceAssistanceRateLimit(request: Request) {
   return claimRateLimitSlot(getRateLimitClientHash(request, "assistance"), 3);
+}
+
+/** Private status reads have their own allowance and never spend submission slots. */
+export async function enforceTrackingRateLimit(request: Request) {
+  return claimRateLimitSlot(getRateLimitClientHash(request, "tracking"), 60);
 }
 
 /**

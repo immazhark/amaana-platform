@@ -1,10 +1,10 @@
 import { timingSafeEqual } from "node:crypto";
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { getDonationAcknowledgementPresentation, hashReceiptToken } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
-import { isSameOrigin } from "@/lib/request-security";
+import { enforceAcknowledgementRateLimit, isSameOrigin } from "@/lib/request-security";
 
 const schema = z.object({
   reference: z.string().trim().min(8).max(80),
@@ -26,10 +26,13 @@ export async function POST(request: Request) {
 
     let body: unknown;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_ACKNOWLEDGEMENT_JSON_BYTES));
+      body = JSON.parse(await readTextBodyWithLimit(request, MAX_ACKNOWLEDGEMENT_JSON_BYTES, { timeoutMs: 5_000 }));
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ found: false }, { status: 413, headers: privateHeaders });
+      }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        return NextResponse.json({ found: false }, { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } });
       }
       return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
     }
@@ -37,6 +40,12 @@ export async function POST(request: Request) {
     const parsed = schema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ found: false }, { status: 404, headers: privateHeaders });
+    }
+
+    // Rate-limit only structurally valid private lookups, before reading donor
+    // records. A receipt view must not exhaust the separate checkout quota.
+    if (!(await enforceAcknowledgementRateLimit(request))) {
+      return NextResponse.json({ found: false }, { status: 429, headers: privateHeaders });
     }
 
     const donation = await prisma.donation.findUnique({

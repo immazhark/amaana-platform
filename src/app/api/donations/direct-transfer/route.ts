@@ -1,8 +1,8 @@
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
-import { getRemainingAppealAmount, isAppealOpenForDonations } from "@/lib/appeals";
-import { RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
+import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { createDonationReference, createReceiptToken, directTransferSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { canExposePublicAppeal } from "@/lib/public-environment";
@@ -10,6 +10,7 @@ import { enforceDonationRateLimit, isSameOrigin } from "@/lib/request-security";
 import { deleteDonationEvidenceObject, MAX_FILE_BYTES, uploadDonationEvidence } from "@/lib/storage";
 import { validateProductionEnvironment } from "@/lib/env";
 import { logServerError } from "@/lib/server-log";
+import { hasValidDonationEvidenceHeader } from "@/lib/donation-evidence-header";
 
 const privateHeaders = { "Cache-Control": "no-store, private", "Referrer-Policy": "no-referrer", "X-Robots-Tag": "noindex, nofollow, noarchive" };
 const MAX_MULTIPART_BYTES = MAX_FILE_BYTES + 256 * 1024;
@@ -26,10 +27,16 @@ export async function POST(request: Request) {
 
     let body: Awaited<ReturnType<typeof readBodyBytesWithLimit>>;
     try {
-      body = await readBodyBytesWithLimit(request, MAX_MULTIPART_BYTES);
+      body = await readBodyBytesWithLimit(request, MAX_MULTIPART_BYTES, { timeoutMs: 120_000 });
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ error: "Transfer submission is too large." }, { status: 413, headers: privateHeaders });
+      }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        return NextResponse.json(
+          { error: "Transfer upload timed out. Please try again." },
+          { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+        );
       }
       throw error;
     }
@@ -44,6 +51,43 @@ export async function POST(request: Request) {
     } catch {
       return NextResponse.json({ error: "Transfer submission could not be parsed." }, { status: 400, headers: privateHeaders });
     }
+    // FormData.get() silently takes the first value. Do not let duplicated
+    // donation amount, payment identity, donor fields or evidence alter a
+    // financial claim through HTTP multipart parameter pollution.
+    const scalarFields = [
+      "appealId", "donorName", "donorEmail", "donorPhone", "amount",
+      "givingIntent", "paymentMethod", "transferReference", "transferredAt",
+    ] as const;
+    if (scalarFields.some(field => form.getAll(field).length > 1) || form.getAll("evidence").length > 1) {
+      return NextResponse.json(
+        { error: "Duplicate transfer fields are not allowed. Please submit one value per field." },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+
+    // Never silently convert malformed or duplicate privacy fields to a named donation.
+    // An absent checkbox is legitimate and retains the existing named default.
+    const anonymityEntries = form.getAll("isAnonymous");
+    if (anonymityEntries.length > 1 || (
+      anonymityEntries.length === 1 && anonymityEntries[0] !== "true" && anonymityEntries[0] !== "false"
+    )) {
+      return NextResponse.json(
+        { error: "Please check your privacy choice and submit again." },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+    const isAnonymous = anonymityEntries[0] === "true";
+
+    // Consent must be a single explicit positive value. Reject duplicate, absent,
+    // or noncanonical fields before any donation or evidence persistence.
+    const domesticEntries = form.getAll("domesticConfirmed");
+    if (domesticEntries.length !== 1 || domesticEntries[0] !== "true") {
+      return NextResponse.json(
+        { error: "Please confirm that this donation is domestic." },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+
     const evidenceEntry = form.get("evidence");
     if (evidenceEntry !== null && evidenceEntry !== "" && !(evidenceEntry instanceof File)) {
       return NextResponse.json({ error: "Please attach a valid transfer screenshot or PDF." }, { status: 400, headers: privateHeaders });
@@ -56,9 +100,19 @@ export async function POST(request: Request) {
     const evidence = evidenceEntry instanceof File && evidenceEntry.size > 0 ? evidenceEntry : null;
     if (evidence && evidence.size > MAX_FILE_BYTES) return NextResponse.json({ error: "Transfer evidence must be 5 MB or smaller." }, { status: 413, headers: privateHeaders });
 
+    // Storage repeats these byte-signature checks during upload. Validate the small, safe header
+    // before creating a financial claim, to avoid reserving a donor's
+    // transfer reference for a receipt that is immediately unusable.
+    if (evidence && !(await hasValidDonationEvidenceHeader(evidence))) {
+      return NextResponse.json(
+        { error: "Please attach a valid PDF, JPEG, PNG or WebP receipt." },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+
     const parsed = directTransferSchema.safeParse({
       appealId: form.get("appealId"), donorName: form.get("donorName"), donorEmail: form.get("donorEmail"), donorPhone: form.get("donorPhone") ?? "",
-      amount: form.get("amount"), givingIntent: form.get("givingIntent"), isAnonymous: form.get("isAnonymous") === "true", domesticConfirmed: form.get("domesticConfirmed") === "true",
+      amount: form.get("amount"), givingIntent: form.get("givingIntent"), isAnonymous, domesticConfirmed: true,
       paymentMethod: form.get("paymentMethod"), transferReference: form.get("transferReference"), transferredAt: form.get("transferredAt"),
     });
     if (!parsed.success) return NextResponse.json({ error: "Please check the transfer information and reference." }, { status: 400, headers: privateHeaders });
@@ -67,9 +121,13 @@ export async function POST(request: Request) {
       where: { id: parsed.data.appealId, status: "PUBLISHED" },
       select: { id: true, slug: true, title: true, status: true, goalAmount: true, amountRaised: true, closesAt: true, assistanceRequest: { select: { verification: { select: { zakatStatus: true } } } } },
     });
-    if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
+    if (!appeal || !canExposePublicAppeal(appeal)) return NextResponse.json({ error: "This appeal is not accepting donations." }, { status: 409, headers: privateHeaders });
     if (parsed.data.givingIntent === "ZAKAT" && appeal.assistanceRequest?.verification?.zakatStatus !== "ELIGIBLE") return NextResponse.json({ error: "This appeal is not currently marked as Zakat-eligible." }, { status: 409, headers: privateHeaders });
-    const remainingAmount = getRemainingAppealAmount(appeal.amountRaised, appeal.goalAmount);
+    const remainingAmount = getDonationCheckoutRemainingAmount(appeal);
+    if (remainingAmount === null) return NextResponse.json(
+      { error: "This appeal is not accepting donations." },
+      { status: 409, headers: privateHeaders },
+    );
     if (!isDonationAmountAllowedForRemaining(parsed.data.amount, remainingAmount)) return NextResponse.json({ error: parsed.data.amount > remainingAmount ? `This appeal currently needs up to ₹${remainingAmount.toLocaleString("en-IN")} more.` : `The minimum donation is ₹${MIN_DONATION_AMOUNT.toLocaleString("en-IN")}, unless a smaller exact amount is all that remains.`, remainingAmount }, { status: parsed.data.amount > remainingAmount ? 409 : 400, headers: privateHeaders });
 
     const donationId = randomUUID();

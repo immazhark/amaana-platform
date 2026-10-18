@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { appealStatusAfterRefund } from "@/lib/appeals";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { paymentEventAuditPayload } from "@/lib/payment-event-audit";
 import { captureDonation, ensureCapturedDonationForRefund } from "@/lib/payment-processing";
 import { prisma } from "@/lib/prisma";
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
   try {
     validateProductionEnvironment();
-    const rawBody = await readTextBodyWithLimit(request, MAX_RAZORPAY_WEBHOOK_BYTES);
+    const rawBody = await readTextBodyWithLimit(request, MAX_RAZORPAY_WEBHOOK_BYTES, { timeoutMs: 5_000 });
 
     if (!verifyWebhookSignature(rawBody, signature)) {
       return new NextResponse("Invalid signature", { status: 401 });
@@ -62,6 +62,50 @@ export async function POST(request: Request) {
       request.headers.get("x-razorpay-event-id")?.trim() ||
       createHash("sha256").update(rawBody).digest("hex");
 
+    const payment = payload.payload?.payment?.entity;
+    const refund = payload.payload?.refund?.entity;
+
+    // A financial refund must have a stable provider identity. Never acknowledge
+    // malformed refunds as processed, since doing so would hide reconciliation.
+    if (payload.event === "refund.processed" && (
+      !refund || typeof refund.id !== "string" || !/^rfnd_[A-Za-z0-9]+$/.test(refund.id) ||
+      typeof refund.payment_id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(refund.payment_id) ||
+      refund.currency !== "INR" ||
+      refund.status !== "processed" ||
+      !Number.isSafeInteger(refund.amount) || refund.amount <= 0
+    )) {
+      return new NextResponse("Invalid refund entity", { status: 400 });
+    }
+
+    // A signed webhook can still carry malformed provider data. Never acknowledge
+    // a capture event without a valid identity, currency and positive paise amount.
+    if (payload.event === "payment.captured" && (
+      !payment ||
+      typeof payment.id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(payment.id) ||
+      typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
+      payment.currency !== "INR" ||
+      payment.status !== "captured" ||
+      payment.captured !== true ||
+      !Number.isSafeInteger(payment.amount) || payment.amount <= 0
+    )) {
+      return new NextResponse("Invalid captured payment entity", { status: 400 });
+    }
+
+    // Financial failure events must never fall through to the generic 200
+    // acknowledgement when the provider identity or amount is malformed.
+    if (payload.event === "payment.failed" && (
+      !payment ||
+      typeof payment.id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(payment.id) ||
+      typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
+      payment.currency !== "INR" ||
+      payment.status !== "failed" ||
+      payment.captured === true ||
+      !Number.isSafeInteger(payment.amount) || payment.amount <= 0
+    )) {
+      return new NextResponse("Invalid payment entity", { status: 400 });
+    }
+
+    // Validate financial payloads even when their event id was seen before.
     const alreadyProcessed = await prisma.paymentEvent.findUnique({
       where: { providerEventId },
       select: { id: true, eventType: true, payload: true },
@@ -76,49 +120,6 @@ export async function POST(request: Request) {
         return new NextResponse("Webhook event id conflict", { status: 409 });
       }
       return NextResponse.json({ received: true });
-    }
-
-    const payment = payload.payload?.payment?.entity;
-    const refund = payload.payload?.refund?.entity;
-
-    // A financial refund must have a stable provider identity. Never acknowledge
-    // malformed refunds as processed, since doing so would hide reconciliation.
-    if (payload.event === "refund.processed" && (
-      !refund || typeof refund.id !== "string" || !/^rfnd_[A-Za-z0-9]+$/.test(refund.id) ||
-      typeof refund.payment_id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(refund.payment_id) ||
-      refund.currency !== "INR" ||
-      (refund.status !== undefined && refund.status !== "processed") ||
-      !Number.isSafeInteger(refund.amount) || refund.amount <= 0
-    )) {
-      return new NextResponse("Invalid refund entity", { status: 400 });
-    }
-
-    // A signed webhook can still carry malformed provider data. Never acknowledge
-    // a capture event without a valid identity, currency and positive paise amount.
-    if (payload.event === "payment.captured" && (
-      !payment ||
-      typeof payment.id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(payment.id) ||
-      typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
-      payment.currency !== "INR" ||
-      (payment.status !== undefined && payment.status !== "captured") ||
-      payment.captured === false ||
-      !Number.isSafeInteger(payment.amount) || payment.amount <= 0
-    )) {
-      return new NextResponse("Invalid captured payment entity", { status: 400 });
-    }
-
-    // Financial failure events must never fall through to the generic 200
-    // acknowledgement when the provider identity or amount is malformed.
-    if (payload.event === "payment.failed" && (
-      !payment ||
-      typeof payment.id !== "string" || !/^pay_[A-Za-z0-9]+$/.test(payment.id) ||
-      typeof payment.order_id !== "string" || !/^order_[A-Za-z0-9]+$/.test(payment.order_id) ||
-      payment.currency !== "INR" ||
-      (payment.status !== undefined && payment.status !== "failed") ||
-      payment.captured === true ||
-      !Number.isSafeInteger(payment.amount) || payment.amount <= 0
-    )) {
-      return new NextResponse("Invalid payment entity", { status: 400 });
     }
 
     if (payload.event === "payment.captured" && payment?.order_id && payment.currency === "INR") {
@@ -258,6 +259,15 @@ export async function POST(request: Request) {
           requestedRefundPaise: refund.amount,
         });
 
+        // A signed provider refund must be reflected at its full value in
+        // BOTH the donation's refunded ledger and the appeal's raised total.
+        // calculateRefundAccounting caps amounts to prevent negative balances;
+        // silently accepting a cap here would acknowledge funds that we
+        // cannot reconcile. Roll back the entire transaction for investigation.
+        if (accounting.wasCapped) {
+          throw new Error("Provider refund exceeds reconcilable financial balances");
+        }
+
         if (accounting.donationRefundPaise > 0) {
           await tx.donation.update({
             where: { id: donation.id },
@@ -320,6 +330,13 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof RequestBodyTooLargeError) {
       return new NextResponse("Webhook payload too large", { status: 413 });
+    }
+    if (error instanceof RequestBodyReadTimeoutError) {
+      // Do not acknowledge an incomplete signed event: Razorpay must retry it.
+      return new NextResponse("Webhook body timed out", {
+        status: 503,
+        headers: { "Retry-After": "60", "Cache-Control": "private, no-store, max-age=0" },
+      });
     }
 
     if (providerEventId && isPrismaUniqueConstraintError(error)) {
