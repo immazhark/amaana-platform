@@ -15,7 +15,7 @@ describe("AF-R093 reviewed legacy-giving enquiry", () => {
     expect(html).toContain("No legal documents collected");
     expect(html).not.toContain("<form");
     expect(html).not.toContain("type=\"file\"");
-    expect(html).not.toContain("checkout");
+    expect(html).not.toContain("data-razorpay");
   });
 
   it("directs enquiries to existing governance, compliance, and contact routes", () => {

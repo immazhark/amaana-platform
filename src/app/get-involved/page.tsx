@@ -108,6 +108,18 @@ export default async function GetInvolvedPage() {
 
       <section className="v2-section paper"><div className="v2-shell"><SectionHeading eyebrow={<>A responsible way to participate</>} title={<>Dignity comes before visibility.</>} subtitle={<>Amaana does not ask volunteers or supporters to circulate private records, identity documents, phone numbers or beneficiary details. Public stories and evidence should be shared only after the appropriate privacy review.</>} /><div className={`v2-journey ${styles.journey}`}><div className="v2-journey-step"><b>Understand</b><span>Read about the initiative or need before acting.</span></div><div className="v2-journey-step"><b>Ask</b><span>Check what help is actually useful at that moment.</span></div><div className="v2-journey-step"><b>Contribute</b><span>Offer time, skills, resources or financial support where appropriate.</span></div><div className="v2-journey-step"><b>Protect</b><span>Respect beneficiary privacy and avoid forwarding sensitive material.</span></div><div className="v2-journey-step"><b>Stay connected</b><span>Follow published updates and known outcomes.</span></div></div></div></section>
 
+      <section className="v2-section amaana-bg-body" aria-labelledby="legacy-enquiry-prompt">
+        <div className="v2-shell">
+          <SectionHeading id="legacy-enquiry-prompt" eyebrow="Future intentions"
+            title="Thinking about leaving a charitable legacy?"
+            subtitle="Explore an optional, no-obligation conversation. Estate planning belongs with independent qualified advisers; no will, identity document or payment is collected here."/>
+          <div className="v2-hero-actions">
+            <Link className="v2-button" href="/get-involved/legacy-giving">Understand legacy-giving enquiries</Link>
+            <Link className="v2-text-link" href="/governance">Review Amaana governance →</Link>
+          </div>
+        </div>
+      </section>
+
       <section className="v2-closing"><div className="v2-shell"><SectionHeading eyebrow={<>Start a conversation</>} title={<>Tell us how you would like to help.</>} subtitle={<>Amaana can guide you toward what is useful, appropriate and currently needed.</>} /><div className="v2-hero-actions v2-actions-center"><Link className="v2-button" href="/contact">Contact Amaana</Link><Link className="v2-text-link" href="/our-work">Explore the work →</Link></div></div></section>
     </div>
   );
