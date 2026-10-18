@@ -34,7 +34,11 @@ test("a filtered Our Work portfolio links to exactly that published programme's 
   await expect(groups).toHaveCount(1);
   const group = groups.first();
   await expect(group).toHaveAttribute("data-work-category", "ramadan-eid");
-  await group.locator("summary").click();
+  await expect(group).toHaveAttribute("open", "");
   const evidence = group.getByRole("link", { name: /^View documented impact for / });
   await expect(evidence).toHaveAttribute("href", "/impact?programme=ramadan-eid#evidence");
+  await expect(evidence).toBeVisible();
+  await evidence.click();
+  await expect(page).toHaveURL(/\/impact\?programme=ramadan-eid#evidence$/);
+  await expect(page.getByRole("combobox", { name: "Programme" })).toHaveValue("ramadan-eid");
 });
