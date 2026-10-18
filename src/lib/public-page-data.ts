@@ -377,6 +377,26 @@ export const getDonationPageData = cache(async (slug: string) => {
 });
 
 /**
+ * A bounded, reviewed projection for donor-facing published programme outcomes.
+ * No donor identities, private assistance information or payment totals leave
+ * this select. Public visibility is controlled by both initiative and cause.
+ */
+export const getDonationImpactHighlights = cache(async () => {
+  const rows = await prisma.initiative.findMany({
+    where: {
+      status: "PUBLISHED",
+      cause: { status: "PUBLISHED" },
+      primaryMetric: { not: null },
+      primaryMetricLabel: { not: null },
+    },
+    orderBy: [{ isFeatured: "desc" }, { publishedAt: "desc" }, { id: "asc" }],
+    take: 8,
+    select: { slug: true, title: true, primaryMetric: true, primaryMetricLabel: true },
+  });
+  return rows.filter(item => item.primaryMetric?.trim() && item.primaryMetricLabel?.trim()).slice(0, 3);
+});
+
+/**
  * Transparency needs initiative identity, cause context and published metrics,
  * but not galleries, appeals, stories or financial-summary relations.
  */
