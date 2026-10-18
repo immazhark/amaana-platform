@@ -1,4 +1,4 @@
-import { timingSafeEqual } from "node:crypto";
+import { isAuthorizedCronRequest } from "@/lib/cron-authorization";
 import { NextResponse } from "next/server";
 import { isEmailDeliveryEnabled } from "@/lib/env";
 import { processPendingEmailNotifications } from "@/lib/notifications";
@@ -14,16 +14,6 @@ const privateHeaders = {
   "X-Robots-Tag": "noindex, nofollow, noarchive",
 };
 
-function isAuthorized(request: Request) {
-  const secret = process.env.CRON_SECRET;
-  const supplied = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "") || "";
-  if (!secret || !supplied) return false;
-  const expectedBytes = Buffer.from(secret);
-  const suppliedBytes = Buffer.from(supplied);
-  if (expectedBytes.length !== suppliedBytes.length) return false;
-  return timingSafeEqual(expectedBytes, suppliedBytes);
-}
-
 async function runRetentionMaintenance() {
   try {
     const result = await pruneEphemeralSecurityLedgers();
@@ -35,7 +25,7 @@ async function runRetentionMaintenance() {
 }
 
 export async function POST(request: Request) {
-  if (!isAuthorized(request)) {
+  if (!isAuthorizedCronRequest(request)) {
     return NextResponse.json(
       { error: "Unauthorized" },
       { status: 401, headers: privateHeaders },
