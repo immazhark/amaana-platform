@@ -45,6 +45,31 @@ describe("modern password work-factor ceilings", () => {
   });
 
   it.each([
+    ["short legacy salt", "ab".repeat(8), "cd".repeat(64)],
+    ["oversized legacy salt", "ab".repeat(256), "cd".repeat(64)],
+    ["short legacy digest", "ab".repeat(16), "cd".repeat(32)],
+    ["oversized legacy digest", "ab".repeat(16), "cd".repeat(128)],
+  ])("rejects malformed legacy credential sizes without attacker-sized crypto inputs: %s", async (_case, salt, hash) => {
+    cryptoCalls.scrypt.mockImplementationOnce((
+      _password: string,
+      _salt: Buffer,
+      keyLength: number,
+      _options: object,
+      callback: (error: Error | null, derived: Buffer) => void,
+    ) => callback(null, Buffer.alloc(keyLength)));
+
+    await expect(verifyPassword("synthetic-password", ["scrypt", salt, hash].join(":"))).resolves.toBe(false);
+    expect(cryptoCalls.scrypt).toHaveBeenCalledOnce();
+    expect(cryptoCalls.scrypt).toHaveBeenCalledWith(
+      "synthetic-password",
+      Buffer.alloc(16),
+      64,
+      expect.objectContaining({ N: 131072, r: 8, p: 1, maxmem: 256 * 1024 * 1024 }),
+      expect.any(Function),
+    );
+  });
+
+  it.each([
     { N: 262144, r: 8, p: 1 },
     { N: 131072, r: 16, p: 1 },
     { N: 131072, r: 8, p: 2 },
