@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import styles from "./comparison.module.css";
 import Link from "next/link";
 import { PageHero } from "@/components/page-hero";
 import { SectionHeading } from "@/components/section-heading";
@@ -56,29 +57,29 @@ export default async function ImpactComparisonPage({
             title={<>Choose two published initiatives.</>}
             subtitle={<>Each published figure stays attached to the initiative that reported it. This does not compare people&apos;s needs or the value of different kinds of support.</>}
           />
-          <form method="get" action="/impact/compare#comparison" aria-label="Compare two published initiatives" className="v2-hero-actions">
-            <label htmlFor="compare-left">First initiative
-              <select name="left" id="compare-left" required defaultValue={choice.selected?.[0].slug ?? ""}>
+          <form method="get" action="/impact/compare#comparison" aria-label="Compare two published initiatives" className={styles.form}>
+            <label className={styles.field} htmlFor="compare-left">First initiative
+              <select className={styles.select} name="left" id="compare-left" required defaultValue={choice.selected?.[0].slug ?? ""}>
                 <option value="" disabled>Choose an initiative</option>
                 {choice.options.map(item => <option key={item.slug} value={item.slug}>{item.title}</option>)}
               </select>
             </label>
-            <label htmlFor="compare-right">Second initiative
-              <select name="right" id="compare-right" required defaultValue={choice.selected?.[1].slug ?? ""}>
+            <label className={styles.field} htmlFor="compare-right">Second initiative
+              <select className={styles.select} name="right" id="compare-right" required defaultValue={choice.selected?.[1].slug ?? ""}>
                 <option value="" disabled>Choose another initiative</option>
                 {choice.options.map(item => <option key={item.slug} value={item.slug}>{item.title}</option>)}
               </select>
             </label>
-            <button type="submit" className="v2-button">Compare published outcomes</button>
+            <button type="submit" className={`v2-button ${styles.submit}`}>Compare published outcomes</button>
           </form>
 
           {choice.invalid && <p role="alert">These comparison choices could not be read. Please select two different published initiatives.</p>}
           {choice.requested && <p><Link href="/impact/compare#comparison" className="v2-text-link">Clear comparison</Link></p>}
           {choice.selected ? (
             <section aria-label="Side-by-side published outcomes">
-              <div className="v2-impact-philosophy-grid">
+              <div className={styles.outcomes}>
               {choice.selected.map((item, index) => (
-                <article className="v2-reminder" key={item.slug}>
+                <article className={`v2-reminder ${styles.outcome}`} key={item.slug}>
                   <span className="v2-reminder-label">Published initiative {index + 1} · {item.cause.title}</span>
                   <h2>{item.title}</h2>
                   {item.primaryMetric ? (
