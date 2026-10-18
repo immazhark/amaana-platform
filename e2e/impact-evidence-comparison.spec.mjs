@@ -18,6 +18,14 @@ test("visitor compares two distinct published outcomes without making an aggrega
   await expect(comparison).toContainText("not a ranking or a combined total");
   await page.getByRole("link", { name: "Clear comparison" }).click();
   await expect(page).not.toHaveURL(/[?&](left|right)=/);
+  await expect(first).toHaveValue("");
+  await expect(second).toHaveValue("");
+  await page.goBack();
+  await expect(first).toHaveValue(options[0]);
+  await expect(second).toHaveValue(options[1]);
+  await page.goForward();
+  await expect(first).toHaveValue("");
+  await expect(second).toHaveValue("");
 });
 
 test("unknown or repeated compare inputs are rejected without leaking personal query strings", async ({ page }) => {

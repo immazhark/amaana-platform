@@ -56,7 +56,7 @@ export default async function ImpactComparisonPage({
             title={<>Choose two published initiatives.</>}
             subtitle={<>Each published figure stays attached to the initiative that reported it. This does not compare people&apos;s needs or the value of different kinds of support.</>}
           />
-          <form method="get" action="/impact/compare#comparison" aria-label="Compare two published initiatives" className="form-grid" style={{ marginBlock: "1.5rem" }}>
+          <form key={choice.selected?.map(item => item.slug).join(":") ?? "empty"} method="get" action="/impact/compare#comparison" aria-label="Compare two published initiatives" className="form-grid" style={{ marginBlock: "1.5rem" }}>
             <label className="field" style={{ minWidth: 0 }} htmlFor="compare-left">First initiative
               <select style={{ minWidth: 0, minHeight: "3.125rem", fontSize: "1rem" }} name="left" id="compare-left" required aria-invalid={choice.invalid || undefined} aria-describedby={choice.invalid ? "comparison-error" : undefined} defaultValue={choice.selected?.[0].slug ?? ""}>
                 <option value="" disabled>Choose an initiative</option>
