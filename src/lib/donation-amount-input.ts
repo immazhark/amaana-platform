@@ -16,3 +16,18 @@ export function donationAmountValidationMessage(value: string, minimum: number, 
 export function updateDonationAmountValidity(input: HTMLInputElement, minimum: number, maximum: number): void {
   input.setCustomValidity(donationAmountValidationMessage(input.value, minimum, maximum));
 }
+
+/**
+ * Optional shortcuts are derived from the same current payable range used by
+ * the checkout. They never pre-authorise a charge: the order endpoint must
+ * validate the selected amount and appeal again on submission.
+ */
+export function getDonationAmountPresets(remaining: number): number[] {
+  const range = getWholeRupeeCheckoutRange(remaining);
+  if (!range) return [];
+  const presets = [500, 1_000, 2_500].filter(amount => amount <= range.maximum);
+  if (range.maximum <= 5_000 && !presets.includes(range.maximum)) {
+    presets.push(range.maximum);
+  }
+  return presets;
+}
