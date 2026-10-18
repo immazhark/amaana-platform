@@ -1,5 +1,55 @@
 import { expect, test } from "@playwright/test";
 
+
+async function openWithSyntheticClipboard(page, rejectsWrites = false) {
+  await page.addInitScript(({ reject }) => {
+    Object.defineProperty(navigator, "clipboard", {
+      configurable: true,
+      value: {
+        writeText: async value => {
+          window.__amaanaCopiedValue = value;
+          if (reject) throw new Error("Synthetic clipboard permission denied");
+        },
+      },
+    });
+  }, { reject: rejectsWrites });
+  await page.goto("/browser-acceptance/direct-donation");
+}
+
+test("direct UPI copy confirms the exact payment destination through an accessible status", async ({ page }) => {
+  await openWithSyntheticClipboard(page);
+  await page.getByRole("button", { name: "Direct UPI / QR" }).click();
+  const details = page.getByRole("region", { name: "Verified UPI details" });
+  const destination = await details.locator("code").innerText();
+  await details.getByRole("button", { name: "Copy UPI ID" }).click();
+  await expect(page.locator("#direct-copy-status-DIRECT_UPI")).toHaveText("UPI ID copied.");
+  expect(await page.evaluate(() => window.__amaanaCopiedValue)).toBe(destination);
+});
+
+test("bank details provide distinct accessible copy actions and success feedback", async ({ page }) => {
+  await openWithSyntheticClipboard(page);
+  await page.getByRole("button", { name: "Bank transfer" }).click();
+  const details = page.getByRole("region", { name: "Verified bank transfer details" });
+  await details.getByRole("button", { name: "Copy account number" }).click();
+  await expect(page.locator("#direct-copy-status-BANK_TRANSFER")).toHaveText("Account number copied.");
+  expect(await page.evaluate(() => window.__amaanaCopiedValue)).toMatch(/^[0-9]+$/);
+  await details.getByRole("button", { name: "Copy IFSC" }).click();
+  await expect(page.locator("#direct-copy-status-BANK_TRANSFER")).toHaveText("IFSC copied.");
+  expect(await page.evaluate(() => window.__amaanaCopiedValue)).toMatch(/^[A-Z]{4}0[A-Z0-9]{6}$/);
+});
+
+test("denied clipboard access gives manual-copy guidance without an unhandled error", async ({ page }) => {
+  const pageErrors = [];
+  page.on("pageerror", error => pageErrors.push(error.message));
+  await openWithSyntheticClipboard(page, true);
+  await page.getByRole("button", { name: "Direct UPI / QR" }).click();
+  await page.getByRole("button", { name: "Copy UPI ID" }).click();
+  await expect(page.locator("#direct-copy-status-DIRECT_UPI")).toContainText(
+    "Could not copy UPI ID. Select the value above and copy it manually.",
+  );
+  expect(pageErrors).toEqual([]);
+});
+
 async function prepareDirectTransfer(page) {
   await page.goto("/browser-acceptance/direct-donation");
   await page.getByRole("button", { name: "Direct UPI / QR" }).click();

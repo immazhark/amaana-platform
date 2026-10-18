@@ -14,6 +14,7 @@ type Method = "DIRECT_UPI" | "BANK_TRANSFER";
 export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails, onLockChange, copy }: { appealId: string; maxAmount: number; method: Method; paymentDetails: DonationPaymentDetails; onLockChange: (locked: boolean) => void; copy: DonationFormCopy["direct"] }) {
   const router = useRouter();
   const [error, setError] = useState("");
+  const [copyFeedback, setCopyFeedback] = useState<{ method: Method; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
   const [uncertain, setUncertain] = useState(false);
   const submissionRef = useRef(false);
@@ -22,7 +23,16 @@ export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails
   const bankUnavailable = method === "BANK_TRANSFER" && !paymentDetails.bank;
   const upiUri = `upi://pay?pa=${encodeURIComponent(paymentDetails.upi.id)}&pn=${encodeURIComponent("AMAANA FOUNDATION")}&cu=INR`;
 
-  async function copyPaymentDetail(value: string) { await navigator.clipboard.writeText(value); }
+  async function copyPaymentDetail(value: string, label: string) {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopyFeedback({ method, text: `${label} copied.` });
+    } catch {
+      // Clipboard access can be unavailable or explicitly denied. Keep the
+      // donor on the verified payment details and offer an actionable fallback.
+      setCopyFeedback({ method, text: `Could not copy ${label}. Select the value above and copy it manually.` });
+    }
+  }
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (submissionRef.current) return;
@@ -77,7 +87,10 @@ export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails
   const locked = busy || uncertain || bankUnavailable;
   return <div className="v2-premium-form v2-donation-form">
     {method === "DIRECT_UPI" ? copy.upiHeading : copy.bankHeading}
-    {method === "DIRECT_UPI" ? <section className="card" aria-label="Verified UPI details"><p><strong>UPI ID</strong><br/><code>{paymentDetails.upi.id}</code></p><p><button type="button" className="v2-text-link" onClick={() => copyPaymentDetail(paymentDetails.upi.id)}>Copy UPI ID</button> · <a className="v2-text-link" href={upiUri}>Open UPI app</a></p>{paymentDetails.upi.qrImageUrl ? <Image src={paymentDetails.upi.qrImageUrl} alt="Amaana Foundation verified UPI payment QR code" width={240} height={240} priority={false}/> : copy.qrMissing}</section> : paymentDetails.bank ? <section className="card" aria-label="Verified bank transfer details"><dl className="details"><div><dt>Account name</dt><dd>{paymentDetails.bank.accountName}</dd></div><div><dt>Account number</dt><dd>{paymentDetails.bank.accountNumber} <button type="button" className="v2-text-link" onClick={() => copyPaymentDetail(paymentDetails.bank!.accountNumber)}>Copy</button></dd></div><div><dt>IFSC</dt><dd>{paymentDetails.bank.ifsc} <button type="button" className="v2-text-link" onClick={() => copyPaymentDetail(paymentDetails.bank!.ifsc)}>Copy</button></dd></div><div><dt>Bank</dt><dd>{paymentDetails.bank.bankName}</dd></div><div><dt>Branch</dt><dd>{paymentDetails.bank.branch}</dd></div></dl></section> : copy.bankMissing}
+    {method === "DIRECT_UPI" ? <section className="card" aria-label="Verified UPI details"><p><strong>UPI ID</strong><br/><code>{paymentDetails.upi.id}</code></p><p><button type="button" className="v2-text-link" onClick={() => copyPaymentDetail(paymentDetails.upi.id, "UPI ID")}>Copy UPI ID</button> · <a className="v2-text-link" href={upiUri}>Open UPI app</a></p>{paymentDetails.upi.qrImageUrl ? <Image src={paymentDetails.upi.qrImageUrl} alt="Amaana Foundation verified UPI payment QR code" width={240} height={240} priority={false}/> : copy.qrMissing}</section> : paymentDetails.bank ? <section className="card" aria-label="Verified bank transfer details"><dl className="details"><div><dt>Account name</dt><dd>{paymentDetails.bank.accountName}</dd></div><div><dt>Account number</dt><dd>{paymentDetails.bank.accountNumber} <button type="button" className="v2-text-link" onClick={() => copyPaymentDetail(paymentDetails.bank!.accountNumber, "Account number")} aria-label="Copy account number">Copy</button></dd></div><div><dt>IFSC</dt><dd>{paymentDetails.bank.ifsc} <button type="button" className="v2-text-link" onClick={() => copyPaymentDetail(paymentDetails.bank!.ifsc, "IFSC")} aria-label="Copy IFSC">Copy</button></dd></div><div><dt>Bank</dt><dd>{paymentDetails.bank.bankName}</dd></div><div><dt>Branch</dt><dd>{paymentDetails.bank.branch}</dd></div></dl></section> : copy.bankMissing}
+    <p id={`direct-copy-status-${method}`} role="status" aria-live="polite" aria-atomic="true" className="muted">
+      {copyFeedback?.method === method ? copyFeedback.text : ""}
+    </p>
     <form onSubmit={submit} className="form-grid" aria-busy={busy}>
       {error && <div className="form-error field full" role="alert">{error}</div>}
       <div className="field"><label htmlFor={`direct-name-${method}`}>Full name</label><input id={`direct-name-${method}`} name="donorName" autoComplete="name" minLength={2} required disabled={locked}/></div>
