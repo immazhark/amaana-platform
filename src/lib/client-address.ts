@@ -23,6 +23,11 @@ export function getTrustedClientAddress(
   _requestUrl: string,
   _configuredAppUrl?: string,
 ) {
+  // Preserve the positional API used by existing callers without consulting
+  // host-derived arguments for security identity.
+  void _requestUrl;
+  void _configuredAppUrl;
+
   const ingressAddress = headers.get("x-real-ip")?.trim() ?? "";
   return isIP(ingressAddress) ? ingressAddress : "unknown";
 }
