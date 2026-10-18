@@ -8,20 +8,21 @@ const harmfulText = "</script><script>alert('x')</script>&>\u2028\u2029";
 
 function extractJsonLd(markup: string) {
   const match = markup.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
-  if (!match) throw new Error("Expected JSON-LD script tag");
+  const serialized = match?.[1];
+  if (serialized === undefined) throw new Error("Expected JSON-LD script tag");
   expect(markup.match(/<script/g)).toHaveLength(1);
   expect(markup).not.toContain("</script><script>");
-  expect(match[1]).not.toContain("<");
-  expect(match[1]).not.toContain(">");
-  expect(match[1]).not.toContain("&");
-  expect(match[1]).not.toContain("\u2028");
-  expect(match[1]).not.toContain("\u2029");
-  expect(match[1]).toContain("\\u003c");
-  expect(match[1]).toContain("\\u003e");
-  expect(match[1]).toContain("\\u0026");
-  expect(match[1]).toContain("\\u2028");
-  expect(match[1]).toContain("\\u2029");
-  return JSON.parse(match[1]) as Record<string, unknown>;
+  expect(serialized).not.toContain("<");
+  expect(serialized).not.toContain(">");
+  expect(serialized).not.toContain("&");
+  expect(serialized).not.toContain("\u2028");
+  expect(serialized).not.toContain("\u2029");
+  expect(serialized).toContain("\\u003c");
+  expect(serialized).toContain("\\u003e");
+  expect(serialized).toContain("\\u0026");
+  expect(serialized).toContain("\\u2028");
+  expect(serialized).toContain("\\u2029");
+  return JSON.parse(serialized) as Record<string, unknown>;
 }
 
 describe("all public JSON-LD entry points use the reviewed serializer", () => {
@@ -34,9 +35,12 @@ describe("all public JSON-LD entry points use the reviewed serializer", () => {
     />);
     const data = extractJsonLd(markup);
     const graph = data["@graph"] as Array<Record<string, unknown>>;
-    expect(graph[0].name).toBe(harmfulText);
-    expect(graph[0].description).toBe(harmfulText);
-    expect(graph[1]["@type"]).toBe("DonateAction");
+    const page = graph.at(0);
+    const action = graph.at(1);
+    if (!page || !action) throw new Error("Expected page and donation action nodes");
+    expect(page.name).toBe(harmfulText);
+    expect(page.description).toBe(harmfulText);
+    expect(action["@type"]).toBe("DonateAction");
   });
 
   it("escapes supplied breadcrumb labels and round-trips the original name", () => {
@@ -45,8 +49,10 @@ describe("all public JSON-LD entry points use the reviewed serializer", () => {
     ]} />);
     const data = extractJsonLd(markup);
     const elements = data.itemListElement as Array<Record<string, unknown>>;
-    expect(elements[0].name).toBe(harmfulText);
-    expect(elements[0].position).toBe(1);
+    const crumb = elements.at(0);
+    if (!crumb) throw new Error("Expected breadcrumb node");
+    expect(crumb.name).toBe(harmfulText);
+    expect(crumb.position).toBe(1);
   });
 
   it("retains the organization and website schema nodes", () => {
