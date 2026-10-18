@@ -153,6 +153,8 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy }: { appea
         }),
       });
       const payload: unknown = await orderResponse.json();
+      // The user may have left while the provider order was being prepared.
+      if (!formRef.current?.isConnected) return;
       const order = payload && typeof payload === "object" && !Array.isArray(payload)
         ? payload as Record<string, unknown> : {};
       if (!orderResponse.ok) {
