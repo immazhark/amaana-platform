@@ -36,3 +36,23 @@ test("Get Involved offers a private giving reminder without promising automatic 
   await expect(page.getByText("No automatic debits", { exact: false })).toBeVisible();
 });
 
+
+for (const width of [320, 720, 1440]) {
+  test(`calendar controls remain contained at ${width}px with enlarged text`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 1000 });
+    await page.goto("/get-involved/monthly-giving");
+    await page.evaluate(() => { document.documentElement.style.fontSize = "200%"; });
+    const planner = page.locator("#giving-reminder");
+    await planner.locator("summary").click();
+    for (const control of await planner.locator("select, input[type=date], button, summary").all()) {
+      const box = await control.boundingBox();
+      expect(box).not.toBeNull();
+      expect(box.x).toBeGreaterThanOrEqual(0);
+      expect(box.x + box.width).toBeLessThanOrEqual(width + 1);
+      expect(box.height).toBeGreaterThanOrEqual(44);
+    }
+    const month = planner.getByRole("combobox", { name: "Day of each month" });
+    await month.focus();
+    await expect(month).toBeFocused();
+  });
+}
