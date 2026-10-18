@@ -2,7 +2,7 @@ import { AppealCategory, NotificationChannel } from "@prisma/client";
 import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { assistanceSchema, createReferenceNumber, createTrackingToken, hashTrackingToken } from "@/lib/assistance";
-import { RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { prisma } from "@/lib/prisma";
 import { deletePrivateDocumentObject, MAX_FILE_BYTES, MAX_FILES, uploadPrivateDocument } from "@/lib/storage";
 import { validateProductionEnvironment } from "@/lib/env";
@@ -17,6 +17,7 @@ const privateHeaders = {
 };
 const ASSISTANCE_MULTIPART_OVERHEAD_BYTES = 512 * 1024;
 const MAX_ASSISTANCE_MULTIPART_BYTES = MAX_FILES * MAX_FILE_BYTES + ASSISTANCE_MULTIPART_OVERHEAD_BYTES;
+const ASSISTANCE_UPLOAD_TIMEOUT_MS = 120_000;
 
 export async function POST(request: Request) {
   try {
@@ -38,10 +39,13 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid assistance submission format." }, { status: 400, headers: privateHeaders });
     }
 
-    let formData: FormData;
+    let bodyBytes: Uint8Array<ArrayBuffer>;
     try {
-      const bodyBytes = await readBodyBytesWithLimit(request, MAX_ASSISTANCE_MULTIPART_BYTES);
-      formData = await new Response(bodyBytes, { headers: { "Content-Type": contentType } }).formData();
+      // An absolute deadline prevents stalled or trickling multipart requests
+      // from tying up the assistance submission handler indefinitely.
+      bodyBytes = await readBodyBytesWithLimit(request, MAX_ASSISTANCE_MULTIPART_BYTES, {
+        timeoutMs: ASSISTANCE_UPLOAD_TIMEOUT_MS,
+      });
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json(
@@ -49,7 +53,40 @@ export async function POST(request: Request) {
           { status: 413, headers: privateHeaders },
         );
       }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        return NextResponse.json(
+          { error: "The assistance upload timed out. Please try again." },
+          { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+        );
+      }
+      // Network interruption is transport failure, not invalid application data.
+      // Parsing, file storage, and case creation have not begun.
+      return NextResponse.json(
+        { error: "The assistance upload could not be read. Please try again." },
+        { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+      );
+    }
+
+    let formData: FormData;
+    try {
+      formData = await new Response(bodyBytes, { headers: { "Content-Type": contentType } }).formData();
+    } catch {
       return NextResponse.json({ error: "Invalid assistance submission format." }, { status: 400, headers: privateHeaders });
+    }
+
+    // Each applicant detail and the explicit consent decision must be
+    // unambiguous. FormData -> object conversion otherwise silently keeps the
+    // final repeated value, which may override a different identity or consent.
+    // Documents are intentionally excluded because multiple files are allowed.
+    const singleValueFields = ["applicantName", "phone", "email", "city", "category", "description", "consent"] as const;
+    for (const field of singleValueFields) {
+      const values = formData.getAll(field);
+      if (values.length > 1 || values.some(value => typeof value !== "string")) {
+        return NextResponse.json(
+          { error: "Each application field must be provided as a single text value." },
+          { status: 400, headers: privateHeaders },
+        );
+      }
     }
 
     const parsed = assistanceSchema.safeParse(Object.fromEntries(formData.entries()));

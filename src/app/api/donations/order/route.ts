@@ -23,9 +23,9 @@ export async function POST(request: Request) {
     if (!isSameOrigin(request)) return NextResponse.json({ error: "Invalid request origin." }, { status: 403, headers: privateHeaders });
     if (!(await enforceDonationRateLimit(request))) return NextResponse.json({ error: "Too many checkout attempts. Please try again later." }, { status: 429, headers: { ...privateHeaders, "Retry-After": "3600" } });
 
-    let body: unknown;
+    let rawBody: string;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES, { timeoutMs: 5_000 }));
+      rawBody = await readTextBodyWithLimit(request, MAX_PAYMENT_JSON_BYTES, { timeoutMs: 5_000 });
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ error: "Donation request payload is too large." }, { status: 413, headers: privateHeaders });
@@ -36,6 +36,18 @@ export async function POST(request: Request) {
           { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
         );
       }
+      // An interrupted transport is not a donor validation error. No payment
+      // order or database write has started, so explicit retry is safe.
+      return NextResponse.json(
+        { error: "Donation request could not be read. Please try again." },
+        { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+      );
+    }
+
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
       return NextResponse.json({ error: "Please check the donation information." }, { status: 400, headers: privateHeaders });
     }
 
