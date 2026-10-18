@@ -31,6 +31,34 @@ describe("Razorpay signatures", () => {
     expect(verifyWebhookSignature(`${body} `, signature)).toBe(false);
   });
 
+  it("rejects a response with an oversized declared length before parsing it", async () => {
+    const huge = "x".repeat(65_537);
+    const fetchMock = vi.fn().mockResolvedValue(new Response(
+      JSON.stringify({ id: "order_valid", amount: 50_000, currency: "INR", receipt: "AFD-1", status: "created", notes: huge }),
+      { status: 200, headers: { "content-length": String(70_000) } },
+    ));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(createRazorpayOrder({
+      amountPaise: 50_000, receipt: "AFD-1", appealId: "appeal_1", givingIntent: "GENERAL",
+    })).rejects.toThrow(/Razorpay response.*large/i);
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
+  it("rejects streamed provider JSON beyond the limit without trusting Content-Length", async () => {
+    const huge = JSON.stringify({
+      id: "pay_1", order_id: "order_1", amount: 50_000, currency: "INR",
+      status: "captured", captured: true, extra: "x".repeat(70_000),
+    });
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(huge, {
+      status: 200,
+      headers: { "content-type": "application/json" },
+    })));
+
+    await expect(fetchRazorpayPayment("pay_1"))
+      .rejects.toThrow(/Razorpay response.*large/i);
+  });
+
   it("creates INR orders through the authenticated server API", async () => {
     const fetchMock = vi.fn().mockResolvedValue({
       ok: true,
