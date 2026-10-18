@@ -1,3 +1,7 @@
+## 2026-10-18 — Reconciled with merged programme evidence links
+
+Owner: CHATGPT_ACTIVE. PR320 reconciled with main b6f26346e670dd7061fe6aa14adffa1a6770494a after PR322 passed1440 Chromium/24 cross-browser cases plus fullCI39119494709 and ready-state39121687820, then expected-head merge. Railway deploymentdc3fa7e9 was BUILDING at this checkpoint; do not claim live verification yet. Only four main paths changed since7075e1f; all runtime/test paths for this PR are disjoint from new WorkPortfolio/evidence-journey files. Preserve this PR's exact source/test blobs unchanged from 4be67f68a1a1006d2d7e078109ca710705ff014c and preserve both complete continuity histories. Fresh combined-head CI, browser/final and readiness required before release. Filter reset fixes retained; no finance/privacy safeguards overwritten. No payments, private records or outgoing notifications.
+
 ## 2026-10-18 — Complete Impact filter reset consistency
 
 Owner: CHATGPT_ACTIVE, existing PR320. Extend the validated-state remount correction to the parent /impact programme form, which uses the same uncontrolled defaultValue plus client Clear Link lifecycle as the browser-confirmed Our Work defect. Key only by validated filtered.programme; no raw URL data or new client code. Strengthen existing Impact programme browser test to assert dropdown blank after Clear and selected/blank after Back/Forward, retaining existing filtering and private-query checks. Browser spec syntax PASS; rendered current-head verification pending. This completes the reset path for both programme discovery and initiative comparison in this PR. No new CSS, dependencies, finance/media changes or production release.
@@ -21,6 +25,10 @@ Owner: CHATGPT_ACTIVE. Existing PR320, branch feat/impact-evidence-comparison-20
 ## 2026-10-18 — Browser assertion recovery after financial release
 
 Ownership: CHATGPT_ACTIVE, explicit owner continuation handover. Current production main/Railway SUCCESS: 7075e1f8b72785b85509be228ffe43bb2d3a1369 (PR317). Continue existing PR320 and PR321; no new feature branches. Their prior exact-head browser suites each failed one test: comparison alert locator also matched Next route announcer; valid work-filter assertion required an absent error status. Scope comparison alert to main; assert zero error statuses plus matching-results copy for valid work filters. Preserve all privacy assertions and runtime protections. Fresh exact-head CI including browser/final and ready-state required before merge. No live payments, private data or notifications touched.
+
+## 2026-10-18 — Continue existing programme-to-impact journey PR322
+
+Owner: CHATGPT_ACTIVE under explicit owner continuation. Existing branch feat/work-to-impact-journey-20261018 at 7529d83f9af6fff70413cc877e4045fd36067126; main 7075e1f. CI39093779608 fast/database/production PASS; browser 1439 PASS, 1 FAIL: filtered Our Work is intentionally expanded, but test clicks summary closed before locating its evidence link. Preserve runtime component. Fix assertion to require open state and navigate actual filtered evidence link. Re-run exact-head release gates before promotion or merge. PR320/321 remain separate; no live provider actions or notification execution.
 
 ## 2026-10-18 — Financial ingress safety: transfer consent and signed webhook deadline
 
