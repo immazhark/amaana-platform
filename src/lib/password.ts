@@ -114,17 +114,20 @@ export async function verifyPassword(password: string, stored: string) {
   }
 
   const [algorithm, saltHex, hashHex] = stored.split(":");
+  // Historical Amaana credentials used a 16-byte random salt and a 64-byte
+  // scrypt digest. Validate their exact lengths before decoding either value:
+  // corrupted database rows must never choose the crypto allocation size.
   const validLegacy = algorithm === "scrypt"
+    && saltHex?.length === DUMMY_SALT.length * 2
+    && hashHex?.length === DUMMY_HASH.length * 2
     && isHex(saltHex)
     && isHex(hashHex);
 
   if (validLegacy) {
     const salt = Buffer.from(saltHex!, "hex");
     const expected = Buffer.from(hashHex!, "hex");
-    if (expected.length > 0 && expected.length <= 128) {
-      const supplied = await derivePassword(password, salt, expected.length);
-      return supplied.length === expected.length && timingSafeEqual(supplied, expected);
-    }
+    const supplied = await derivePassword(password, salt, expected.length);
+    return supplied.length === expected.length && timingSafeEqual(supplied, expected);
   }
 
   const supplied = await derivePassword(password, DUMMY_SALT, DUMMY_HASH.length, CURRENT_SCRYPT);
