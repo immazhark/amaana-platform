@@ -8,11 +8,13 @@ import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import styles from "./donation-methods.module.css";
 
 type Method = "RAZORPAY" | "DIRECT_UPI" | "BANK_TRANSFER";
-export function DonationMethods(props: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible: boolean; paymentDetails: DonationPaymentDetails; copy: DonationFormCopy }) {
+export function DonationMethods(props: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible: boolean; paymentDetails: DonationPaymentDetails; copy: DonationFormCopy; onLockChange?: (locked: boolean) => void }) {
   const [method,setMethod]=useState<Method>("RAZORPAY");
   const [transferLocked,setTransferLocked]=useState(false);
   const [onlineLocked,setOnlineLocked]=useState(false);
   const methodLocked = transferLocked || onlineLocked;
+  const onTransferLockChange = (next: boolean) => { setTransferLocked(next); props.onLockChange?.(next); };
+  const onOnlineLockChange = (next: boolean) => { setOnlineLocked(next); props.onLockChange?.(next); };
   return <div>
     <div className={styles.methods} role="group" aria-label="Choose donation method">
       <button type="button" aria-pressed={method==="RAZORPAY"} disabled={methodLocked} onClick={()=>setMethod("RAZORPAY")}>Secure online payment</button>
@@ -20,7 +22,7 @@ export function DonationMethods(props: { appealId: string; appealTitle: string; 
       <button type="button" aria-pressed={method==="BANK_TRANSFER"} disabled={methodLocked} onClick={()=>setMethod("BANK_TRANSFER")}>Bank transfer</button>
     </div>
     <div>
-      {method==="RAZORPAY" ? <DonationForm appealId={props.appealId} appealTitle={props.appealTitle} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} copy={props.copy} onLockChange={setOnlineLocked}/> : <DirectTransferForm appealId={props.appealId} maxAmount={props.maxAmount} method={method} paymentDetails={props.paymentDetails} onLockChange={setTransferLocked} copy={props.copy.direct}/>} 
+      {method==="RAZORPAY" ? <DonationForm appealId={props.appealId} appealTitle={props.appealTitle} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} copy={props.copy} onLockChange={onOnlineLockChange}/> : <DirectTransferForm appealId={props.appealId} maxAmount={props.maxAmount} method={method} paymentDetails={props.paymentDetails} onLockChange={onTransferLockChange} copy={props.copy.direct}/>} 
     </div>
   </div>;
 }
