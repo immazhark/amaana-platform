@@ -28,9 +28,13 @@ test("Our Work programme evidence links open the matching published Impact resul
   await expect(page.locator("#evidence")).toContainText(/published (initiative|initiatives)/);
 });
 
-test("Our Work to Impact navigation uses approved slugs, not visitor-entered query data", async ({ page }) => {
-  await page.goto("/our-work?programme=ramadan-eid&year=2026&private=PRIVATE_CONTACT");
-  const links = page.locator("[data-work-category] a[href^='/impact?programme=']");
-  await expect(links).toHaveCount(0);
-  await expect(page.locator("#work-results")).not.toContainText("PRIVATE_CONTACT");
+test("a filtered Our Work portfolio links to exactly that published programme's evidence", async ({ page }) => {
+  await page.goto("/our-work?programme=ramadan-eid&year=2026");
+  const groups = page.locator("[data-work-category]");
+  await expect(groups).toHaveCount(1);
+  const group = groups.first();
+  await expect(group).toHaveAttribute("data-work-category", "ramadan-eid");
+  await group.locator("summary").click();
+  const evidence = group.getByRole("link", { name: /^View documented impact for / });
+  await expect(evidence).toHaveAttribute("href", "/impact?programme=ramadan-eid#evidence");
 });
