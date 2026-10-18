@@ -241,6 +241,32 @@ describe("public object reads enforce upload-size and completeness boundaries", 
     await expect(getPublicMediaObject(key)).rejects.toThrow(/incomplete/);
   });
 
+  it("bounds a stalled S3 iterator and aborts its underlying body", async () => {
+    const destroy = vi.fn();
+    const next = vi.fn(() => new Promise<IteratorResult<Uint8Array>>(() => {}));
+    const body = {
+      destroy,
+      [Symbol.asyncIterator]: () => ({ next }),
+    };
+    sdk.send.mockResolvedValue({ Body: body });
+
+    vi.useFakeTimers();
+    try {
+      let outcome: string | null = null;
+      void getPublicMediaObject(key).then(
+        () => { outcome = "unexpected-success"; },
+        (error: unknown) => { outcome = error instanceof Error ? error.message : "invalid-error"; },
+      );
+
+      await vi.advanceTimersByTimeAsync(15_001);
+      expect(outcome).toMatch(/Public media object read timed out/);
+      expect(next).toHaveBeenCalledOnce();
+      expect(destroy).toHaveBeenCalledOnce();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("copies S3 stream chunks before a producer reuses the backing buffer", async () => {
     // Some async iterators reuse a staging buffer between pulls. Holding a
     // zero-copy Buffer view can corrupt already-accepted image/document bytes.
