@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DonationMethods } from "@/components/donation-methods";
+import { donationFormCopy } from "@/components/donation-form-copy";
 
 export const dynamic = "force-dynamic";
 
@@ -31,6 +32,7 @@ export default function DirectDonationAcceptanceFixture() {
               appealTitle="Browser Acceptance Appeal"
               maxAmount={5000}
               zakatEligible
+              copy={donationFormCopy(true)}
               paymentDetails={{
                 upi: { id: "mab.037347029220157@axisbank", qrImageUrl: null },
                 bank: {

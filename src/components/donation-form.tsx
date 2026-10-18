@@ -6,7 +6,7 @@ import Script from "next/script";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { privateDonationAcknowledgementPath } from "@/lib/private-donation-ack";
-import { DONATION_INTENT_DESCRIPTIONS, DONATION_INTENT_LABELS, type DonationIntentValue } from "@/lib/donation-intent";
+import type { DonationFormCopy } from "./donation-form-copy";
 import styles from "./donation-form.module.css";
 
 type RazorpayResponse = { razorpay_order_id: string; razorpay_payment_id: string; razorpay_signature: string };
@@ -14,14 +14,17 @@ type RazorpayOptions = { key: string; amount: number; currency: string; name: st
 type CheckoutPhase = "loading" | "ready" | "opening" | "verifying" | "reconciliation";
 type DonationField = "donorName" | "donorEmail" | "donorPhone" | "amount" | "givingIntent" | "domesticConfirmed";
 type DonationFieldErrors = Partial<Record<DonationField, string[]>>;
-type DonationOrderError = { error?: string; remainingAmount?: number; fields?: DonationFieldErrors };
+const ORDER_FIELDS = ["donorName", "donorEmail", "donorPhone", "amount", "givingIntent", "domesticConfirmed"] as const;
+const ORDER_UNCERTAIN = "Checkout status is uncertain. An order may have been created. Contact Amaana before starting another payment.";
+
 declare global { interface Window { Razorpay: new (options: RazorpayOptions) => { open(): void } } }
 
-export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible = false }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean }) {
+export function DonationForm({ appealId, appealTitle, maxAmount, copy }: { appealId: string; appealTitle: string; maxAmount: number; zakatEligible?: boolean; copy: DonationFormCopy }) {
   const router = useRouter();
   const errorRef = useRef<HTMLDivElement>(null);
   const focusedErrorRef = useRef<string | null>(null);
   const formRef = useRef<HTMLFormElement>(null);
+  const orderLocked = useRef(false);
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<DonationFieldErrors>({});
   const [remainingHint, setRemainingHint] = useState<number | null>(null);
@@ -117,6 +120,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (orderLocked.current || submissionLocked) return;
     setError("");
     setFieldErrors({});
     setRemainingHint(null);
@@ -129,6 +133,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
       return;
     }
 
+    orderLocked.current = true;
     setPhase("opening");
     const values = new FormData(event.currentTarget);
 
@@ -147,20 +152,54 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
           domesticConfirmed: values.get("domesticConfirmed") === "on",
         }),
       });
-      const order = await orderResponse.json() as DonationOrderError & {
-        keyId: string;
-        amount: number;
-        currency: string;
-        orderId: string;
-        donor: { name: string; email: string; contact?: string };
-        receiptToken: string;
-      };
+      const payload: unknown = await orderResponse.json();
+      // The user may have left while the provider order was being prepared.
+      if (!formRef.current?.isConnected) return;
+      const order = payload && typeof payload === "object" && !Array.isArray(payload)
+        ? payload as Record<string, unknown> : {};
       if (!orderResponse.ok) {
-        if (typeof order.remainingAmount === "number") setRemainingHint(order.remainingAmount);
-        if (order.fields) setFieldErrors(order.fields);
-        throw new Error(order.error ?? "Could not start checkout");
+        // Only these documented API outcomes are known to occur before order creation.
+        if (![400, 403, 409, 413, 429].includes(orderResponse.status) ||
+            typeof order.error !== "string" || !order.error.trim()) {
+          throw new Error(ORDER_UNCERTAIN);
+        }
+        const fields: DonationFieldErrors = {};
+        if (order.fields && typeof order.fields === "object" && !Array.isArray(order.fields)) {
+          const source = order.fields as Record<string, unknown>;
+          for (const field of ORDER_FIELDS) {
+            const messages = source[field];
+            const first = Array.isArray(messages)
+              ? messages.find((item): item is string => typeof item === "string" && Boolean(item.trim()))
+              : undefined;
+            if (first) fields[field] = [first.trim().slice(0, 300)];
+          }
+        }
+        setFieldErrors(fields);
+        if (typeof order.remainingAmount === "number" && Number.isSafeInteger(order.remainingAmount) &&
+            order.remainingAmount > 0 && order.remainingAmount <= 1_000_000) {
+          setRemainingHint(order.remainingAmount);
+        }
+        showError(order.error.trim().slice(0, 500));
+        orderLocked.current = false;
+        setPhase("ready");
+        return;
       }
-
+      const donor = order.donor && typeof order.donor === "object" && !Array.isArray(order.donor)
+        ? order.donor as Record<string, unknown> : {};
+      // Malformed success is ambiguous: never open checkout or issue a new order.
+      if (orderResponse.status !== 201 ||
+          typeof order.orderId !== "string" || !/^order_[A-Za-z0-9_]{1,120}$/.test(order.orderId) ||
+          !Number.isSafeInteger(order.amount) || order.amount !== Number(values.get("amount")) * 100 ||
+          order.currency !== "INR" ||
+          typeof order.keyId !== "string" || !/^rzp_(test|live)_[A-Za-z0-9_]{1,120}$/.test(order.keyId) ||
+          typeof order.receiptToken !== "string" || !/^[A-Za-z0-9_-]{20,512}$/.test(order.receiptToken) ||
+          typeof donor.name !== "string" || !donor.name.trim() ||
+          typeof donor.email !== "string" || !donor.email.trim() ||
+          (donor.contact != null && typeof donor.contact !== "string")) {
+        throw new Error(ORDER_UNCERTAIN);
+      }
+      const receiptToken = order.receiptToken as string;
+      let paymentReported = false;
       const checkout = new window.Razorpay({
         key: order.keyId,
         amount: order.amount,
@@ -168,24 +207,37 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         name: "Amaana Foundation",
         description: appealTitle,
         order_id: order.orderId,
-        prefill: order.donor,
+        prefill: { name: donor.name, email: donor.email, ...(typeof donor.contact === "string" ? { contact: donor.contact } : {}) },
         theme: { color: "#466FAA" },
-        modal: { ondismiss: () => setPhase("ready") },
+        modal: { ondismiss: () => {
+          if (!paymentReported) {
+            orderLocked.current = false;
+            setPhase("ready");
+          }
+        } },
         handler: async payment => {
+          if (paymentReported) return;
+          paymentReported = true;
           setPhase("verifying");
           try {
             const confirmation = await fetch("/api/donations/confirm", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ ...payment, receiptToken: order.receiptToken }),
+              body: JSON.stringify({ ...payment, receiptToken }),
             });
-            const result = await confirmation.json();
-            if (!confirmation.ok || (result.status !== "CAPTURED" && result.status !== "REFUNDED")) {
-              showError(result.error ?? "Payment verification is pending. Please retain your Razorpay payment confirmation and do not submit another payment.");
+            const result: unknown = await confirmation.json();
+            const confirmed = result && typeof result === "object" && !Array.isArray(result)
+              ? result as Record<string, unknown> : {};
+            if (!confirmation.ok || (confirmed.status !== "CAPTURED" && confirmed.status !== "REFUNDED") ||
+                typeof confirmed.referenceNumber !== "string" ||
+                !/^[A-Za-z0-9-]{1,80}$/.test(confirmed.referenceNumber)) {
+              showError(typeof confirmed.error === "string" && confirmed.error.trim()
+                ? confirmed.error.trim().slice(0, 500)
+                : "Payment verification is pending. Please retain your Razorpay payment confirmation and do not submit another payment.");
               setPhase("reconciliation");
               return;
             }
-            router.push(privateDonationAcknowledgementPath(result.referenceNumber, order.receiptToken));
+            if (formRef.current?.isConnected) router.push(privateDonationAcknowledgementPath(confirmed.referenceNumber, receiptToken));
           } catch {
             showError("We could not complete payment verification in this browser. Please retain your Razorpay payment confirmation and do not submit another payment. Amaana can reconcile the payment without asking for your OTP, UPI PIN or card credentials.");
             setPhase("reconciliation");
@@ -193,9 +245,9 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         },
       });
       checkout.open();
-    } catch (caught) {
-      showError(caught instanceof Error ? caught.message : "Could not start checkout");
-      setPhase("ready");
+    } catch {
+      showError(ORDER_UNCERTAIN);
+      setPhase("reconciliation");
     }
   }
 
@@ -203,14 +255,14 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
     <Script
       src="https://checkout.razorpay.com/v1/checkout.js"
       strategy="lazyOnload"
-      onReady={() => setPhase(current => current === "reconciliation" ? current : "ready")}
+      onReady={() => setPhase(current => current === "loading" ? "ready" : current)}
       onError={() => {
-        setPhase(current => current === "reconciliation" ? current : "loading");
+        setPhase(current => current === "ready" ? "loading" : current);
         showError("Secure checkout could not load. Please refresh and try again.");
       }}
     />
     <form ref={formRef} className="v2-premium-form v2-donation-form" onSubmit={submit} onInvalid={handleInvalid} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
-      <div className="v2-form-heading"><span>Secure contribution</span><h2 id="donation-form-heading">Choose how you would like to support.</h2><p id="donation-form-description">Only the information needed to process and acknowledge your contribution is requested.</p></div>
+      {copy.heading}
       <p id="donation-checkout-status" className={styles.status} role="status" aria-live="polite">{statusText}</p>
       {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{remainingHint !== null ? <p><button type="button" className="v2-text-link" onClick={() => { const input = formRef.current?.elements.namedItem("amount"); if (input instanceof HTMLInputElement) { input.value = String(remainingHint); updateDonationAmountValidity(input, transactionMin, transactionMax); clearFieldError("amount"); input.focus(); } }}>Use the current remaining amount: ₹{remainingHint.toLocaleString("en-IN")}</button></p> : null}</div>}
       <div className="form-grid">
@@ -220,21 +272,16 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
         <div className={`field full ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorPhone">Phone <span className="muted">optional</span></label><div className={styles.checkoutControl}><input id="donorPhone" name="donorPhone" type="tel" autoComplete="tel" disabled={submissionLocked} aria-invalid={Boolean(fieldError("donorPhone")) || undefined} aria-describedby={fieldError("donorPhone") ? "donor-phone-error" : undefined} onChange={() => clearFieldError("donorPhone")}/></div>{fieldError("donorPhone") && <small id="donor-phone-error" className="v2-field-error">{fieldError("donorPhone")}</small>}</div>
         <fieldset className={`field full ${styles.intentGroup}`} disabled={submissionLocked} aria-invalid={Boolean(fieldError("givingIntent")) || undefined} aria-describedby={fieldError("givingIntent") ? "giving-intent-error" : undefined}>
           <legend>Giving intention</legend>
-          <p className={styles.intentIntro}>Choose how you want this contribution recorded. The selected appeal remains the designated destination in every case.</p>
+          {copy.intentIntroduction}
           <div className={styles.intentGrid}>
-            {(["GENERAL", "SADAQAH", ...(zakatEligible ? ["ZAKAT"] : [])] as DonationIntentValue[]).map((intent, index) => (
-              <label className={styles.intentOption} key={intent}>
-                <input type="radio" name="givingIntent" value={intent} defaultChecked={index === 0} required />
-                <span><strong>{DONATION_INTENT_LABELS[intent]}</strong><small>{DONATION_INTENT_DESCRIPTIONS[intent]}</small></span>
-              </label>
-            ))}
+            {copy.intentionOptions}
           </div>
           {fieldError("givingIntent") && <small id="giving-intent-error" className="v2-field-error">{fieldError("givingIntent")}</small>}
-          <small className={styles.intentNote}>{zakatEligible ? "Amaana has explicitly reviewed this appeal as Zakat-eligible. Your selection records your giving intention; it does not alter the underlying verification record." : "Zakat is shown only on appeals that Amaana has explicitly reviewed as Zakat-eligible."}</small>
+          {copy.intentionNote}
         </fieldset>
-        <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="isAnonymous" type="checkbox" disabled={submissionLocked}/><span><strong>Keep my public identity private</strong><small>Do not show my name in any public donor listing.</small></span></label></div>
-        <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="domesticConfirmed" type="checkbox" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("domesticConfirmed")) || undefined} aria-describedby={fieldError("domesticConfirmed") ? "domestic-confirmation-error" : undefined} onChange={() => clearFieldError("domesticConfirmed")}/><span><strong>Domestic contribution confirmation</strong><small>I confirm this donation is from an Indian source using a domestic payment method.</small></span></label>{fieldError("domesticConfirmed") && <small id="domestic-confirmation-error" className="v2-field-error">{fieldError("domesticConfirmed")}</small>}</div>
-        <div className="field full v2-form-submit"><button className="v2-button" type="submit" disabled={busy || !scriptReady || lockedForReconciliation}>{phase === "opening" ? "Opening secure checkout…" : phase === "verifying" ? "Verifying donation…" : phase === "reconciliation" ? "Verification follow-up required" : scriptReady ? "Continue securely →" : "Preparing secure checkout…"}</button><small>{lockedForReconciliation ? "Do not submit another payment for this donation. Keep your Razorpay confirmation so the payment can be reconciled safely." : "Next: Razorpay secure checkout. Your Amaana acknowledgement follows successful payment verification and is not an 80G tax-deduction certificate."}</small></div>
+        <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="isAnonymous" type="checkbox" disabled={submissionLocked}/>{copy.anonymityText}</label></div>
+        <div className={`field full v2-form-choice ${styles.choice}`}><label className="checkbox"><input name="domesticConfirmed" type="checkbox" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("domesticConfirmed")) || undefined} aria-describedby={fieldError("domesticConfirmed") ? "domestic-confirmation-error" : undefined} onChange={() => clearFieldError("domesticConfirmed")}/>{copy.domesticText}</label>{fieldError("domesticConfirmed") && <small id="domestic-confirmation-error" className="v2-field-error">{fieldError("domesticConfirmed")}</small>}</div>
+        <div className="field full v2-form-submit"><button className="v2-button" type="submit" disabled={busy || !scriptReady || lockedForReconciliation}>{phase === "opening" ? "Opening secure checkout…" : phase === "verifying" ? "Verifying donation…" : phase === "reconciliation" ? "Verification follow-up required" : scriptReady ? "Continue securely →" : "Preparing secure checkout…"}</button>{lockedForReconciliation ? <small>Do not submit another payment for this donation. Keep your Razorpay confirmation so the payment can be reconciled safely.</small> : copy.readyHelp}</div>
       </div>
     </form>
   </>;

@@ -337,7 +337,6 @@ test.describe('donation journey without real payment', () => {
 
   for (const failure of [
     { name: 'rate limiting', status: 429, message: 'Please wait before starting another donation.' },
-    { name: 'server failure', status: 500, message: 'Could not start checkout safely.' },
   ]) {
     test(`order API ${failure.name} restores an editable form without opening Razorpay`, async ({ page }) => {
       let checkoutOpens = 0;
