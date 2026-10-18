@@ -19,11 +19,6 @@ vi.mock("@/lib/bounded-request-body", async importOriginal => {
   return actual;
 });
 
-vi.mock("@/lib/appeals", () => ({
-  getRemainingAppealAmount: () => 900,
-  isAppealOpenForDonations: () => true,
-}));
-
 vi.mock("@/lib/donations", () => ({
   createDonationReference: () => "AFD-2026-12345678",
   createReceiptToken: () => "receipt-token",
@@ -74,6 +69,13 @@ const validData = {
   transferReference: "UTR123456789",
   transferredAt: new Date("2026-09-30T05:00:00.000Z"),
 };
+
+function syntheticPng(content: string): File {
+  return new File([
+    new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]).buffer,
+    content,
+  ], "transfer.png", { type: "image/png" });
+}
 
 function requestWith(file?: File) {
   const form = new FormData();
@@ -142,6 +144,59 @@ describe("direct donation transfer submission", () => {
     } finally { vi.useRealTimers(); }
   });
 
+  it("times out a stalled multipart upload without waiting for hostile cancellation", async () => {
+    const cancel = vi.fn(() => new Promise<void>(() => {}));
+    vi.useFakeTimers();
+    try {
+      const request = new Request("https://amaana.example/api/donations/direct-transfer", {
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+        body: new ReadableStream<Uint8Array>({ cancel }),
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      let response: Response | undefined;
+      void POST(request).then(value => { response = value; });
+      await vi.advanceTimersByTimeAsync(119_999);
+      expect(response).toBeUndefined();
+      await vi.advanceTimersByTimeAsync(1);
+      expect(response?.status).toBe(503);
+      expect(await response?.json()).toEqual({ error: "Transfer upload timed out. Please try again." });
+      expect(response?.headers.get("retry-after")).toBe("60");
+      expect(response?.headers.get("cache-control")).toMatch(/no-store.*private/i);
+      expect(response?.headers.get("referrer-policy")).toBe("no-referrer");
+      expect(response?.headers.get("x-robots-tag")).toMatch(/noindex/i);
+      expect(cancel).toHaveBeenCalledOnce();
+      expect(mocks.findFirst).not.toHaveBeenCalled();
+      expect(mocks.donationCreate).not.toHaveBeenCalled();
+      expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+      expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("enforces the absolute multipart deadline even while small chunks keep arriving", async () => {
+    vi.useFakeTimers();
+    try {
+      let controller!: ReadableStreamDefaultController<Uint8Array>;
+      const request = new Request("https://amaana.example/api/donations/direct-transfer", {
+        method: "POST",
+        headers: { "Content-Type": "multipart/form-data; boundary=synthetic" },
+        body: new ReadableStream<Uint8Array>({
+          start(stream) { controller = stream; },
+        }),
+        duplex: "half",
+      } as RequestInit & { duplex: "half" });
+      let response: Response | undefined;
+      void POST(request).then(value => { response = value; });
+      await vi.advanceTimersByTimeAsync(60_000);
+      controller.enqueue(new Uint8Array([65]));
+      await vi.advanceTimersByTimeAsync(60_000);
+      expect(response?.status).toBe(503);
+      expect(mocks.findFirst).not.toHaveBeenCalled();
+      expect(mocks.donationCreate).not.toHaveBeenCalled();
+      expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    } finally { vi.useRealTimers(); }
+  });
+
   it("rejects oversized multipart submissions before form parsing or database work", async () => {
     const response = await POST(new Request("https://amaana.example/api/donations/direct-transfer", {
       method: "POST",
@@ -193,6 +248,22 @@ describe("direct donation transfer submission", () => {
     expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["forbidden text attachment", "text/plain", "fake PDF", "receipt.txt"],
+    ["spoofed PNG", "image/png", "plain-text-without-signature", "receipt.png"],
+    ["spoofed PDF", "application/pdf", "this-is-not-a-pdf", "receipt.pdf"],
+  ])("rejects %s before creating a financial claim", async (_case, mime, content, filename) => {
+    const response = await POST(requestWith(new File([content], filename, { type: mime })));
+    expect(response.status).toBe(400);
+    const body = await response.json();
+    expect(body.error).toMatch(/valid PDF|JPEG|PNG|WebP/i);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+  });
+
   it("treats an empty optional evidence file as no evidence", async () => {
     const form = new FormData();
     form.set("appealId", validData.appealId);
@@ -240,7 +311,7 @@ describe("direct donation transfer submission", () => {
   it("recovers the original receipt credentials when claim creation committed without acknowledgement", async () => {
     mocks.donationCreate.mockRejectedValueOnce(new Error("commit acknowledgement lost"));
     mocks.donationFindUnique.mockImplementationOnce(async ({ where }) => ({ id: where.id, referenceNumber: "AFD-2026-12345678", receiptTokenHash: "hashed-token" }));
-    const file = new File(["synthetic evidence"], "transfer.png", { type: "image/png" });
+    const file = syntheticPng("synthetic evidence");
     mocks.uploadDonationEvidence.mockResolvedValueOnce({ objectKey: "private-key", originalName: "transfer.png", mimeType: "image/png", sizeBytes: file.size });
 
     const response = await POST(requestWith(file));
@@ -254,7 +325,7 @@ describe("direct donation transfer submission", () => {
     expect(id).toMatch(/^[0-9a-f-]{36}$/);
     expect(mocks.donationFindUnique).toHaveBeenCalledWith({ where: { id }, select: { id: true, referenceNumber: true, receiptTokenHash: true } });
     expect(mocks.uploadDonationEvidence).toHaveBeenCalledWith(expect.objectContaining({ name: file.name, size: file.size, type: file.type }), id);
-    expect(await uploadCall[0].text()).toBe("synthetic evidence");
+    expect(await uploadCall[0].text()).toContain("synthetic evidence");
     expect(mocks.donationUpdate).toHaveBeenCalledWith(expect.objectContaining({ where: { id } }));
     expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
   });
@@ -295,6 +366,25 @@ describe("direct donation transfer submission", () => {
     expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
   });
 
+  it.each([
+    ["sub-paise raised balance", 100.001, 1000],
+    ["sub-paise target balance", 100, 1000.001],
+    ["unpayable last fraction", 999.5, 1000],
+    ["negative raised balance", -1, 1000],
+  ])("rejects %s without writing or reserving a transfer reference", async (_case, amountRaised, goalAmount) => {
+    mocks.findFirst.mockResolvedValue({
+      id: "appeal-1", slug: "appeal-1", title: "Appeal 1",
+      status: "PUBLISHED", amountRaised, goalAmount, closesAt: null,
+      assistanceRequest: { verification: { zakatStatus: "NOT_ELIGIBLE" } },
+    });
+    const response = await POST(requestWith(syntheticPng("synthetic balance guard proof")));
+    expect(response.status).toBe(409);
+    expect(response.headers.get("cache-control")).toMatch(/private/i);
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+    expect(mocks.donationDeleteMany).not.toHaveBeenCalled();
+  });
+
   it("rejects Zakat intent unless the appeal has explicit eligibility", async () => {
     mocks.safeParse.mockReturnValue({ success: true, data: { ...validData, givingIntent: "ZAKAT" } });
 
@@ -307,7 +397,7 @@ describe("direct donation transfer submission", () => {
   });
 
   it("preserves a transfer and its private evidence if another worker updated the donation before cleanup", async () => {
-    const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
+    const file = syntheticPng("synthetic transfer evidence");
     mocks.uploadDonationEvidence.mockResolvedValue({
       objectKey: "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
       originalName: "transfer.png",
@@ -328,7 +418,7 @@ describe("direct donation transfer submission", () => {
   });
 
   it("preserves evidence on an uncertain cleanup database failure", async () => {
-    const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
+    const file = syntheticPng("synthetic transfer evidence");
     mocks.uploadDonationEvidence.mockResolvedValue({
       objectKey: "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
       originalName: "transfer.png",
@@ -345,7 +435,7 @@ describe("direct donation transfer submission", () => {
   });
 
   it("removes uploaded evidence and the draft claim if evidence metadata persistence fails", async () => {
-    const file = new File(["synthetic transfer evidence"], "transfer.png", { type: "image/png" });
+    const file = syntheticPng("synthetic transfer evidence");
     mocks.uploadDonationEvidence.mockResolvedValue({
       objectKey: "donations/donation-1/11111111-1111-4111-8111-111111111111.png",
       originalName: "transfer.png",
@@ -363,5 +453,145 @@ describe("direct donation transfer submission", () => {
       "donation-1",
     );
     expect(mocks.donationDeleteMany).toHaveBeenCalledWith({ where: { id: "donation-1", status: "PENDING_VERIFICATION", transferEvidenceKey: null } });
+  });
+});
+
+
+describe("direct-transfer anonymity field privacy contract", () => {
+  async function withAnonymityValues(values: FormDataEntryValue[]) {
+    const original = requestWith();
+    const form = await original.formData();
+    for (const value of values) form.append("isAnonymous", value);
+    return new Request(original.url, { method: "POST", body: form });
+  }
+
+  it.each([
+    ["missing", [], false],
+    ["explicitly anonymous", ["true"], true],
+    ["explicitly named", ["false"], false],
+  ] as const)("keeps %s as an unambiguous donor choice", async (_case, values, expected) => {
+    mocks.safeParse.mockImplementationOnce(input => ({
+      success: true,
+      data: { ...validData, isAnonymous: input.isAnonymous },
+    }));
+
+    const response = await POST(await withAnonymityValues([...values]));
+
+    expect(response.status).toBe(202);
+    expect(mocks.safeParse).toHaveBeenCalledWith(expect.objectContaining({ isAnonymous: expected }));
+    expect(mocks.donationCreate).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ isAnonymous: expected }),
+    }));
+  });
+
+  it.each([
+    ["empty", [""]],
+    ["mixed case", ["TRUE"]],
+    ["checkbox-style on", ["on"]],
+    ["space padded", [" false "]],
+    ["unexpected number", ["1"]],
+    ["ambiguous true then false", ["true", "false"]],
+    ["ambiguous false then true", ["false", "true"]],
+    ["repeated true", ["true", "true"]],
+    ["repeated false", ["false", "false"]],
+    ["file instead of scalar", [new File(["true"], "anonymity.txt", { type: "text/plain" })]],
+  ] as const)("rejects %s instead of changing the donor's privacy choice", async (_case, values) => {
+    const response = await POST(await withAnonymityValues([...values]));
+
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/anonymous|privacy|choice/i);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("direct-transfer domestic confirmation is unambiguous", () => {
+  async function domesticRequest(values: FormDataEntryValue[]) {
+    const source = requestWith();
+    const form = await source.formData();
+    form.delete("domesticConfirmed");
+    for (const value of values) form.append("domesticConfirmed", value);
+    return new Request(source.url, { method: "POST", body: form });
+  }
+
+  it("accepts a single explicit domestic confirmation without changing persisted consent", async () => {
+    const response = await POST(await domesticRequest(["true"]));
+    expect(response.status).toBe(202);
+    expect(mocks.safeParse).toHaveBeenCalledWith(expect.objectContaining({ domesticConfirmed: true }));
+    expect(mocks.donationCreate).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ domesticConfirmedAt: expect.any(Date) }),
+    }));
+  });
+
+  it.each([
+    ["missing", []],
+    ["unchecked", ["false"]],
+    ["empty", [""]],
+    ["noncanonical", ["TRUE"]],
+    ["checkbox on", ["on"]],
+    ["conflicting true/false", ["true", "false"]],
+    ["conflicting false/true", ["false", "true"]],
+    ["repeated true", ["true", "true"]],
+    ["file value", [new File(["true"], "consent.txt", { type: "text/plain" })]],
+  ] as const)("rejects %s without treating ambiguous consent as confirmed", async (_case, values) => {
+    const response = await POST(await domesticRequest([...values]));
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/domestic|confirm/i);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("direct-transfer multipart field ambiguity", () => {
+  async function formForTest() {
+    const original = requestWith();
+    return { url: original.url, form: await original.formData() };
+  }
+
+  it.each([
+    "appealId", "donorName", "donorEmail", "donorPhone", "amount",
+    "givingIntent", "paymentMethod", "transferReference", "transferredAt",
+  ] as const)("rejects duplicate financial field %s before persistence", async field => {
+    const { url, form } = await formForTest();
+    if (field === "donorPhone") form.set("donorPhone", "");
+    form.append(field, "conflicting-value");
+    const response = await POST(new Request(url, { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/duplicate|repeated|field/i);
+    expect(response.headers.get("cache-control")).toMatch(/no-store.*private/i);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
+  });
+
+  it("rejects an identical repeated transfer reference instead of accepting the first", async () => {
+    const { url, form } = await formForTest();
+    form.append("transferReference", validData.transferReference);
+    const response = await POST(new Request(url, { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+  });
+
+  it("rejects multiple evidence files, including when both have valid signatures", async () => {
+    const { url, form } = await formForTest();
+    form.append("evidence", syntheticPng("first synthetic transfer"));
+    form.append("evidence", syntheticPng("second synthetic transfer"));
+    const response = await POST(new Request(url, { method: "POST", body: form }));
+    expect(response.status).toBe(400);
+    expect((await response.json()).error).toMatch(/duplicate|repeated|field/i);
+    expect(mocks.safeParse).not.toHaveBeenCalled();
+    expect(mocks.findFirst).not.toHaveBeenCalled();
+    expect(mocks.donationCreate).not.toHaveBeenCalled();
+    expect(mocks.uploadDonationEvidence).not.toHaveBeenCalled();
   });
 });

@@ -50,8 +50,8 @@ const waysToHelp = [
     icon: "volunteer" as const,
     title: "Offer your time or skills",
     copy: "Packing, documentation, creative work, technology and field support can all matter. Availability depends on the needs of each initiative.",
-    href: "/contact",
-    action: "Talk to the team",
+    href: "/get-involved/volunteer",
+    action: "Explore volunteering",
   },
   {
     number: "04",
