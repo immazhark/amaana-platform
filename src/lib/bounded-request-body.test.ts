@@ -22,6 +22,40 @@ describe("bounded request bodies", () => {
     expect(new TextDecoder().decode(bytes)).toBe("abc₹");
   });
 
+  it("preserves raw bytes when a streaming producer reuses its chunk buffer", async () => {
+    const shared = new Uint8Array([1, 2, 3]);
+    const response = new Response(new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(shared);
+        setTimeout(() => {
+          shared.set([4, 5, 6]);
+          controller.enqueue(shared);
+          controller.close();
+        }, 0);
+      },
+    }));
+
+    await expect(readBodyBytesWithLimit(response, 6)).resolves.toEqual(
+      new Uint8Array([1, 2, 3, 4, 5, 6]),
+    );
+  });
+
+  it("preserves UTF-8 text while the streaming source reuses its staging buffer", async () => {
+    const shared = new TextEncoder().encode("abc");
+    const response = new Response(new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(shared);
+        setTimeout(() => {
+          shared.set(new TextEncoder().encode("def"));
+          controller.enqueue(shared);
+          controller.close();
+        }, 0);
+      },
+    }));
+
+    await expect(readTextBodyWithLimit(response, 6)).resolves.toBe("abcdef");
+  });
+
   it("reads a text body smaller than the byte limit", async () => {
     const request = new Request("https://amaanafoundation.org/", {
       method: "POST",
