@@ -17,6 +17,16 @@ export function updateDonationAmountValidity(input: HTMLInputElement, minimum: n
   input.setCustomValidity(donationAmountValidationMessage(input.value, minimum, maximum));
 }
 
+/** Return only amounts accepted by the server's whole-INR order contract.
+ * Fractional balances below ₹10 cannot be paid and are not rounded up. */
+export function getWholeRupeeCheckoutRange(remaining: number): { minimum: number; maximum: number } | null {
+  if (!Number.isFinite(remaining) || remaining <= 0 ||
+      (remaining < 10 && !Number.isInteger(remaining))) return null;
+  const maximum = Math.min(1_000_000, Math.floor(remaining));
+  if (!Number.isSafeInteger(maximum) || maximum < 1) return null;
+  return { minimum: maximum < 10 ? maximum : 10, maximum };
+}
+
 /**
  * Optional shortcuts are derived from the same current payable range used by
  * the checkout. They never pre-authorise a charge: the order endpoint must
