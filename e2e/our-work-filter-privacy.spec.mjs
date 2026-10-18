@@ -24,4 +24,11 @@ test("valid Our Work selections remain bookmarkable and resettable", async ({ pa
   await section.getByRole("link", { name: "Clear filters" }).click();
   await expect(page).not.toHaveURL(/programme=|year=/);
   await expect(section.locator("select[name=programme]")).toHaveValue("");
+  await expect(section.locator("select[name=year]")).toHaveValue("");
+  await page.goBack();
+  await expect(section.locator("select[name=programme]")).toHaveValue("ramadan-eid");
+  await expect(section.locator("select[name=year]")).toHaveValue("2026");
+  await page.goForward();
+  await expect(section.locator("select[name=programme]")).toHaveValue("");
+  await expect(section.locator("select[name=year]")).toHaveValue("");
 });
