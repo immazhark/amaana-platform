@@ -4,7 +4,8 @@ import { createRazorpayOrder, fetchRazorpayPayment, verifyCheckoutSignature, ver
 
 // Older fixtures declare only status and JSON; wrap them in real Fetch
 // responses so provider streaming limits run under test as in production.
-function stubFetch(fetchMock: ReturnType<typeof vi.fn>) {
+function stubFetch(fetchMock: unknown) {
+  if (typeof fetchMock !== "function") throw new TypeError("Test fetch fixture must be callable");
   vi.stubGlobal("fetch", async (...args: Parameters<typeof fetch>) => {
     const fixture: unknown = await fetchMock(...args);
     if (fixture instanceof Response) return fixture;
