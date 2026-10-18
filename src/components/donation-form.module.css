@@ -42,3 +42,10 @@
 .amountControl input{font-weight:700!important}
 .checkoutControl,.choice label,.intentOption{border-radius:.75rem;transition-duration:var(--af-motion-medium)}
 .status,.hint,.intentIntro,.intentNote,.choice small,.intentOption small{line-height:1.55}
+
+/* Reviewed INR shortcuts are secondary to the editable amount field. */
+.presets{display:flex;flex-wrap:wrap;gap:.55rem;margin:.25rem 0 .1rem}
+.presetButton{padding:.55rem .9rem;border:1px solid var(--af-color-blue-600);border-radius:.65rem;background:var(--af-color-white);color:var(--af-color-navy-950);font:inherit;font-size:.875rem;font-weight:700;cursor:pointer;font-variant-numeric:tabular-nums}
+.presetButton:hover{background:var(--af-color-blue-note)}
+.presetButton:focus-visible{outline:3px solid var(--af-color-focus);outline-offset:3px}
+.presetButton:disabled{cursor:not-allowed;opacity:.6}
