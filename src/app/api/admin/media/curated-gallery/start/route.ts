@@ -24,6 +24,7 @@ import { logServerError } from "@/lib/server-log";
 const privateHeaders = {
   "Cache-Control": "no-store, private",
   "X-Robots-Tag": "noindex, nofollow, noarchive",
+  "Referrer-Policy": "no-referrer",
 };
 
 const inputSchema = z.object({
@@ -48,15 +49,36 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Dedicated public-media storage is not ready." }, { status: 503, headers: privateHeaders });
     }
 
-    let body: unknown;
+    // A stalled authenticated request must never occupy the publication gate
+    // indefinitely. Keep transport failures distinct from complete malformed JSON.
+    let rawBody: string;
     try {
-      body = JSON.parse(await readTextBodyWithLimit(request, 256 * 1024));
+      rawBody = await readTextBodyWithLimit(request, 256 * 1024, { timeoutMs: 15000 });
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
-        return NextResponse.json({ error: "Curated gallery manifest request is too large." }, { status: 413, headers: privateHeaders });
+        return NextResponse.json(
+          { error: "Curated gallery manifest request is too large." },
+          { status: 413, headers: privateHeaders },
+        );
       }
-      return NextResponse.json({ error: "Invalid curated gallery manifest request." }, { status: 400, headers: privateHeaders });
+      // A broken or timed-out stream is retryable; no manifest/session/database
+      // operations have occurred, and no internal diagnostic is returned.
+      return NextResponse.json(
+        { error: "Curated gallery manifest upload was interrupted. Please retry." },
+        { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+      );
     }
+
+    let body: unknown;
+    try {
+      body = JSON.parse(rawBody);
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid curated gallery manifest request." },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+
     const parsed = inputSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json({ error: "Curated gallery package identity is invalid." }, { status: 400, headers: privateHeaders });
