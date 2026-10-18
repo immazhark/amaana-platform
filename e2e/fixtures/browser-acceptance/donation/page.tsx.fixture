@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DonationRemountFixture } from "@/components/donation-remount-fixture";
+import { donationFormCopy } from "@/components/donation-form-copy";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +27,7 @@ export default function BrowserDonationAcceptanceFixture() {
             </p>
           </aside>
           <div>
-            <DonationRemountFixture />
+            <DonationRemountFixture copy={donationFormCopy(true)} />
           </div>
         </div>
       </section>
