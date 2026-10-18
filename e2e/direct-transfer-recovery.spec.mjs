@@ -112,3 +112,60 @@ test("direct transfer guidance remains present across UPI and bank methods after
   await page.getByRole("button", { name: "Bank transfer" }).click();
   await expect(page.getByRole("heading", { name: "Transfer directly to Amaana Foundation." })).toBeVisible();
 });
+
+
+test("online checkout cannot be replaced by a direct transfer during an unresolved order", async ({ page }) => {
+  await page.route("https://checkout.razorpay.com/v1/checkout.js", route => route.fulfill({
+    status: 200, contentType: "application/javascript",
+    body: "window.Razorpay=class { constructor(options) {this.options=options} open(){} }",
+  }));
+  let releaseOrder;
+  const wait = new Promise(resolve => { releaseOrder = resolve; });
+  let calls = 0;
+  await page.route("**/api/donations/order", async route => {
+    calls++;
+    await wait;
+    await route.fulfill({ status: 500, contentType: "application/json", body: '{"error":"synthetic uncertain provider outcome"}' });
+  });
+  await page.goto("/browser-acceptance/direct-donation");
+  await expect(page.getByRole("button", { name: "Continue securely →" })).toBeEnabled();
+  await page.getByLabel("Donation amount").fill("250");
+  await page.getByLabel("Full name").fill("Synthetic Online Donor");
+  await page.getByLabel("Email").fill("synthetic@example.test");
+  await page.locator('input[name="domesticConfirmed"]').check();
+  await page.getByRole("button", { name: "Continue securely →" }).click();
+  await expect(page.getByRole("button", { name: "Direct UPI / QR" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Bank transfer" })).toBeDisabled();
+  releaseOrder();
+  await expect(page.getByRole("button", { name: "Verification follow-up required" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Direct UPI / QR" })).toBeDisabled();
+  expect(calls).toBe(1);
+});
+
+test("online pre-write validation permits donor to switch to direct UPI without creating another order", async ({ page }) => {
+  await page.route("https://checkout.razorpay.com/v1/checkout.js", route => route.fulfill({
+    status: 200, contentType: "application/javascript",
+    body: "window.Razorpay=class { constructor(options) {this.options=options} open(){} }",
+  }));
+  let releaseOrder;
+  const wait = new Promise(resolve => { releaseOrder = resolve; });
+  let calls = 0;
+  await page.route("**/api/donations/order", async route => {
+    calls++;
+    await wait;
+    await route.fulfill({ status: 400, contentType: "application/json", body: '{"error":"Check donor information."}' });
+  });
+  await page.goto("/browser-acceptance/direct-donation");
+  await expect(page.getByRole("button", { name: "Continue securely →" })).toBeEnabled();
+  await page.getByLabel("Donation amount").fill("250");
+  await page.getByLabel("Full name").fill("Synthetic Online Donor");
+  await page.getByLabel("Email").fill("synthetic@example.test");
+  await page.locator('input[name="domesticConfirmed"]').check();
+  await page.getByRole("button", { name: "Continue securely →" }).click();
+  await expect(page.getByRole("button", { name: "Direct UPI / QR" })).toBeDisabled();
+  releaseOrder();
+  await expect(page.getByRole("button", { name: "Direct UPI / QR" })).toBeEnabled();
+  await page.getByRole("button", { name: "Direct UPI / QR" }).click();
+  await expect(page.getByRole("heading", { name: "Pay Amaana directly by UPI." })).toBeVisible();
+  expect(calls).toBe(1);
+});
