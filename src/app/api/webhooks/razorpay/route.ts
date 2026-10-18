@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
 import { appealStatusAfterRefund } from "@/lib/appeals";
-import { RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readTextBodyWithLimit } from "@/lib/bounded-request-body";
 import { paymentEventAuditPayload } from "@/lib/payment-event-audit";
 import { captureDonation, ensureCapturedDonationForRefund } from "@/lib/payment-processing";
 import { prisma } from "@/lib/prisma";
@@ -48,7 +48,7 @@ export async function POST(request: Request) {
 
   try {
     validateProductionEnvironment();
-    const rawBody = await readTextBodyWithLimit(request, MAX_RAZORPAY_WEBHOOK_BYTES);
+    const rawBody = await readTextBodyWithLimit(request, MAX_RAZORPAY_WEBHOOK_BYTES, { timeoutMs: 5_000 });
 
     if (!verifyWebhookSignature(rawBody, signature)) {
       return new NextResponse("Invalid signature", { status: 401 });
@@ -330,6 +330,13 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof RequestBodyTooLargeError) {
       return new NextResponse("Webhook payload too large", { status: 413 });
+    }
+    if (error instanceof RequestBodyReadTimeoutError) {
+      // Do not acknowledge an incomplete signed event: Razorpay must retry it.
+      return new NextResponse("Webhook body timed out", {
+        status: 503,
+        headers: { "Retry-After": "60", "Cache-Control": "private, no-store, max-age=0" },
+      });
     }
 
     if (providerEventId && isPrismaUniqueConstraintError(error)) {
