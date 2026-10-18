@@ -12,8 +12,13 @@ export async function runNotificationJob(env = process.env, request = fetch) {
     redirect: "error",
     signal: AbortSignal.timeout(30_000),
   });
-  // Avoid logging response bodies or provider/database diagnostics.
-  await response.body?.cancel();
+  // Disposal is best-effort; a broken or stalled stream must never block the
+  // authenticated HTTP outcome, retry implicitly, or expose private diagnostics.
+  try {
+    void response.body?.cancel().catch(() => undefined);
+  } catch {
+    // A locked body can also reject cancellation synchronously.
+  }
   if (!response.ok) throw new Error(`Notification job HTTP ${response.status}`);
   return response.status;
 }
