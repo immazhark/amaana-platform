@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { complianceCopy } from "@/lib/master-copy";
-import { getAppealsIndexData } from "@/lib/public-page-data";
+import { getAppealsIndexData, getDonationImpactHighlights } from "@/lib/public-page-data";
+import { VerifiedImpactStrip, type VerifiedImpactItem } from "@/components/verified-impact-strip";
+import { logServerError } from "@/lib/server-log";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { canExposeSyntheticStagingContent, isSyntheticStagingAppeal } from "@/lib/public-environment";
 import styles from "./donate-audit.module.css";
@@ -31,7 +33,20 @@ export const metadata: Metadata = {
 export const revalidate = 300;
 
 export default async function Page() {
-  const appealRecords = await getAppealsIndexData();
+  const [appealRecords, publishedInitiatives] = await Promise.all([
+    getAppealsIndexData(),
+    getDonationImpactHighlights().catch(error => {
+      logServerError("donation.published_impact_unavailable", {
+        errorName: error instanceof Error ? error.name : "unknown",
+      });
+      return [];
+    }),
+  ]);
+  const impactItems: VerifiedImpactItem[] = publishedInitiatives.flatMap(item =>
+    item.primaryMetric && item.primaryMetricLabel
+      ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }]
+      : [],
+  );
   const isStaging = canExposeSyntheticStagingContent();
   const openAppeals = appealRecords.filter(appeal => isAppealOpenForDonations(appeal) && (isStaging || !isSyntheticStagingAppeal(appeal)));
   const hasOpenAppeals = openAppeals.length > 0;
@@ -61,6 +76,7 @@ export default async function Page() {
         <article className={styles.route}><span>Route 01</span><h3>{hasOpenAppeals ? "Support a verified public appeal" : "Public appeals"}</h3><p>{hasOpenAppeals ? `There ${openAppeals.length === 1 ? "is" : "are"} currently ${openAppeals.length} reviewed public ${openAppeals.length === 1 ? "appeal" : "appeals"} accepting support. Review the context and remaining verified target before continuing to secure domestic INR checkout.` : "No public appeal is accepting donations right now. Completed cases remain visible for accountability, and new urgent appeals appear only after review."}</p><Link className="v2-button" href="/appeals">{hasOpenAppeals ? "See verified appeals" : "View appeals and completed cases"}</Link></article>
         <article className={styles.route}><span>Route 02</span><h3>Support education or another approved programme</h3><p>Taleem sponsorship and programme giving begin with the currently available programme route or a conversation with Amaana about an approved destination.</p><Link className="v2-button v2-button--paper-secondary" href="/get-involved/sponsor-education">Explore Taleem sponsorship</Link><Link className="v2-text-link" href="/contact">Ask about programme giving →</Link></article>
       </div>
+      <VerifiedImpactStrip items={impactItems} headingId="donate-published-outcomes" />
       <p className={styles.note}>Choose the route that matches your intention: an open appeal supports that specific published need, while programme support is available only when Amaana has confirmed an approved destination.</p>
     </CanonicalArticle>
   );
