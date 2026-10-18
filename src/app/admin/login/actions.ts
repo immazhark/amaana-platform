@@ -69,10 +69,9 @@ export async function login(formData: FormData) {
     });
   }
 
-  // Do not release the failure quota until session persistence succeeds.
-  // A verified password is not yet a completed login.
-  await createSession(user.id);
-  await prisma.loginAttempt.update({ where: { id: attemptId }, data: { succeeded: true } });
+  // Session persistence and this attempt's successful release share one
+  // database transaction. No cookie is issued if either write fails.
+  await createSession(user.id, attemptId);
   await prisma.auditEvent.create({
     data: {
       actorId: user.id,
