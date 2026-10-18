@@ -1,7 +1,7 @@
 import type { Prisma } from "@prisma/client";
 import { NextResponse } from "next/server";
 import { getCurrentUser, hasPermission } from "@/lib/auth";
-import { RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { CURATED_GALLERY_BATCH } from "@/lib/curated-gallery-contract";
 import {
   CURATED_GALLERY_ENTITY_TYPE,
@@ -19,9 +19,11 @@ import { logServerError } from "@/lib/server-log";
 
 const privateHeaders = {
   "Cache-Control": "no-store, private",
+  "Referrer-Policy": "no-referrer",
   "X-Robots-Tag": "noindex, nofollow, noarchive",
 };
 const MAX_MULTIPART_BYTES = MAX_FILE_BYTES + 512 * 1024;
+const CURATED_UPLOAD_TIMEOUT_MS = 120_000;
 
 export async function POST(request: Request) {
   try {
@@ -47,12 +49,27 @@ export async function POST(request: Request) {
 
     let body: Uint8Array;
     try {
-      body = await readBodyBytesWithLimit(request, MAX_MULTIPART_BYTES);
+      // One absolute deadline covers the full multipart transport, even when
+      // the client periodically sends more bytes to keep the connection alive.
+      body = await readBodyBytesWithLimit(request, MAX_MULTIPART_BYTES, {
+        timeoutMs: CURATED_UPLOAD_TIMEOUT_MS,
+      });
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ error: "Curated image upload is too large." }, { status: 413, headers: privateHeaders });
       }
-      throw error;
+      if (error instanceof RequestBodyReadTimeoutError) {
+        return NextResponse.json(
+          { error: "Curated image upload timed out. Please try again." },
+          { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+        );
+      }
+      // Transport failure is distinct from a complete malformed multipart.
+      // No gallery session, object storage, or database work has started.
+      return NextResponse.json(
+        { error: "Curated image upload could not be read. Please try again." },
+        { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+      );
     }
     const boundedBody = new ArrayBuffer(body.byteLength);
     new Uint8Array(boundedBody).set(body);
@@ -69,11 +86,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Curated image upload could not be parsed." }, { status: 400, headers: privateHeaders });
     }
 
-    if (String(form.get("batch") ?? "") !== CURATED_GALLERY_BATCH) {
+    const batchFields = form.getAll("batch");
+    const recordIdFields = form.getAll("recordId");
+    const fileFields = form.getAll("file");
+    // Do not silently accept the first of contradictory approved-batch,
+    // record-identity or evidence-file entries.
+    if (
+      batchFields.length !== 1 || typeof batchFields[0] !== "string" ||
+      recordIdFields.length !== 1 || typeof recordIdFields[0] !== "string" ||
+      fileFields.length > 1 || (fileFields.length === 1 && !(fileFields[0] instanceof File))
+    ) {
+      return NextResponse.json({ error: "Curated image upload contains ambiguous fields." }, { status: 400, headers: privateHeaders });
+    }
+    if (batchFields[0] !== CURATED_GALLERY_BATCH) {
       return NextResponse.json({ error: "Curated gallery batch is invalid." }, { status: 400, headers: privateHeaders });
     }
-    const recordId = String(form.get("recordId") ?? "").trim();
-    const fileEntry = form.get("file");
+    const recordId = recordIdFields[0].trim();
+    const fileEntry = fileFields[0];
     if (!(fileEntry instanceof File) || fileEntry.size <= 0) {
       return NextResponse.json({ error: "Curated image file is required." }, { status: 400, headers: privateHeaders });
     }
