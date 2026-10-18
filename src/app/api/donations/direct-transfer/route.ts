@@ -16,6 +16,7 @@ const privateHeaders = { "Cache-Control": "no-store, private", "Referrer-Policy"
 const MAX_MULTIPART_BYTES = MAX_FILE_BYTES + 256 * 1024;
 
 export async function POST(request: Request) {
+  let claimOutcomeUnknown = false;
   try {
     validateProductionEnvironment();
     if (!isSameOrigin(request)) return NextResponse.json({ error: "Invalid request origin." }, { status: 403, headers: privateHeaders });
@@ -135,6 +136,7 @@ export async function POST(request: Request) {
     const receiptToken = createReceiptToken();
     let donation;
     try {
+      claimOutcomeUnknown = true;
       donation = await prisma.donation.create({
         data: {
           id: donationId, referenceNumber, appealId: appeal.id, donorName: parsed.data.donorName, donorEmail: parsed.data.donorEmail.toLowerCase(), donorPhone: parsed.data.donorPhone || null,
@@ -189,9 +191,19 @@ export async function POST(request: Request) {
 
       // Delete the private object only if the unused draft was actually removed.
       // On uncertain database outcomes, preserve both for manual reconciliation.
-      if (removed && uploadedKey) {
-        await deleteDonationEvidenceObject(uploadedKey, donation.id)
-          .catch(() => logServerError("donation.direct_transfer_evidence_cleanup_failed"));
+      if (removed) {
+        if (uploadedKey) {
+          try {
+            await deleteDonationEvidenceObject(uploadedKey, donation.id);
+            claimOutcomeUnknown = false;
+          } catch {
+            logServerError("donation.direct_transfer_evidence_cleanup_failed");
+          }
+        } else {
+          // This claim was deleted and no evidence object was successfully
+          // acknowledged, so an identical submission is safe to retry.
+          claimOutcomeUnknown = false;
+        }
       }
       throw error;
     }
@@ -199,6 +211,15 @@ export async function POST(request: Request) {
     return NextResponse.json({ referenceNumber: donation.referenceNumber, receiptToken, status: "PENDING_VERIFICATION" }, { status: 202, headers: privateHeaders });
   } catch {
     logServerError("donation.direct_transfer_submission_failed");
+    if (claimOutcomeUnknown) {
+      // Once a claim write has been attempted, a lost acknowledgement or
+      // incomplete compensation must not invite the same UTR to be submitted
+      // again. Do not return any private receipt credential on uncertainty.
+      return NextResponse.json(
+        { error: "Transfer reporting status is uncertain. Your reference may have been recorded. Do not submit the same UTR again; contact Amaana for reconciliation." },
+        { status: 503, headers: privateHeaders },
+      );
+    }
     return NextResponse.json({ error: "We could not submit this transfer for verification. Please try again." }, { status: 500, headers: privateHeaders });
   }
 }
