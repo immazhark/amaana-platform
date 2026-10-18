@@ -241,6 +241,28 @@ describe("public object reads enforce upload-size and completeness boundaries", 
     await expect(getPublicMediaObject(key)).rejects.toThrow(/incomplete/);
   });
 
+  it("copies S3 stream chunks before a producer reuses the backing buffer", async () => {
+    // Some async iterators reuse a staging buffer between pulls. Holding a
+    // zero-copy Buffer view can corrupt already-accepted image/document bytes.
+    const shared = new Uint8Array([1, 2, 3]);
+    const body = {
+      async *[Symbol.asyncIterator]() {
+        yield shared;
+        shared.set([4, 5, 6]);
+        yield shared;
+      },
+    };
+    sdk.send.mockResolvedValue({
+      ContentLength: 6,
+      ContentType: "application/pdf",
+      Body: body,
+    });
+
+    const result = await getPublicMediaObject(key);
+    expect([...result.bytes]).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(result.bytes.byteLength).toBe(6);
+  });
+
   it("preserves valid streamed bytes and delivery metadata", async () => {
     const lastModified = new Date("2026-10-12T00:00:00Z");
     sdk.send.mockResolvedValue({
