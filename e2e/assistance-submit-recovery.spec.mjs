@@ -3,6 +3,10 @@ import { expect, test } from "@playwright/test";
 async function prepare(page) {
   await page.route("**/api/analytics/page-view", route => route.fulfill({ status: 204, body: "" }));
   await page.goto("/request-assistance");
+  await expect(page.locator("#assistance-form-heading")).toHaveText("Tell us about the request.");
+  await expect(page.locator("#description-help")).toHaveCount(1);
+  await expect(page.locator("#documents-help")).toHaveCount(1);
+  await expect(page.locator("#assistance-consent-help")).toHaveCount(1);
   await page.getByLabel("Applicant name").fill("Synthetic Recovery Applicant");
   await page.getByLabel("Phone number").fill("9000000000");
   await page.getByLabel("City").fill("Hyderabad");
