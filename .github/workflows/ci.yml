@@ -51,7 +51,7 @@ jobs:
           CI_RELEASE: ${{ github.event_name == 'workflow_dispatch' }}
         run: |
           node --check scripts/diagnose-resend-dns.mjs
-          node --test scripts/test-ci-plan.mjs
+          node --test scripts/test-ci-plan.mjs scripts/test-ci-concurrency.mjs
           node scripts/ci-plan.mjs
 
   fast:
