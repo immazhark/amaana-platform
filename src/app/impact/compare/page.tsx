@@ -54,7 +54,7 @@ export default async function ImpactComparisonPage({
             id="comparison-title"
             eyebrow={<>Explore the public record</>}
             title={<>Choose two published initiatives.</>}
-            subtitle={<>Each published figure stays attached to the initiative that reported it. This does not compare people's needs or the value of different kinds of support.</>}
+            subtitle={<>Each published figure stays attached to the initiative that reported it. This does not compare people&apos;s needs or the value of different kinds of support.</>}
           />
           <form method="get" action="/impact/compare#comparison" aria-label="Compare two published initiatives" className="v2-hero-actions">
             <label htmlFor="compare-left">First initiative
