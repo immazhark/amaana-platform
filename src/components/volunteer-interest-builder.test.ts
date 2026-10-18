@@ -12,7 +12,7 @@ describe("volunteer interest experience", () => {
     expect(html).toContain("Distribution and packing");
     expect(html.match(/data-volunteer-skill="/g)).toHaveLength(6);
     expect(html).toContain('aria-labelledby="volunteer-interest-1"');
-    expect(html).toContain("Prepare private enquiry");
+    expect(html).toContain("Add to my enquiry");
     expect(html).toContain('name="skill"');
     expect(html).toContain('name="availability"');
     expect(html).toContain('name="intent"');
