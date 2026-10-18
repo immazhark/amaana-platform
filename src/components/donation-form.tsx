@@ -196,6 +196,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
           (donor.contact != null && typeof donor.contact !== "string")) {
         throw new Error(ORDER_UNCERTAIN);
       }
+      const receiptToken = order.receiptToken as string;
       let paymentReported = false;
       const checkout = new window.Razorpay({
         key: order.keyId,
@@ -220,7 +221,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
             const confirmation = await fetch("/api/donations/confirm", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ ...payment, receiptToken: order.receiptToken }),
+              body: JSON.stringify({ ...payment, receiptToken }),
             });
             const result: unknown = await confirmation.json();
             const confirmed = result && typeof result === "object" && !Array.isArray(result)
@@ -234,7 +235,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, zakatEligible =
               setPhase("reconciliation");
               return;
             }
-            if (formRef.current?.isConnected) router.push(privateDonationAcknowledgementPath(confirmed.referenceNumber, order.receiptToken));
+            if (formRef.current?.isConnected) router.push(privateDonationAcknowledgementPath(confirmed.referenceNumber, receiptToken));
           } catch {
             showError("We could not complete payment verification in this browser. Please retain your Razorpay payment confirmation and do not submit another payment. Amaana can reconcile the payment without asking for your OTP, UPI PIN or card credentials.");
             setPhase("reconciliation");
