@@ -48,7 +48,8 @@ for (const width of [320, 720, 1440]) {
       const box = await control.boundingBox();
       expect(box).not.toBeNull();
       expect(box.x).toBeGreaterThanOrEqual(0);
-      expect(box.x + box.width).toBeLessThanOrEqual(width + 1);
+      const name = await control.evaluate(element => element.getAttribute("name") || element.textContent?.trim() || element.tagName);
+      expect(box.x + box.width, `${name} must fit the ${width}px viewport`).toBeLessThanOrEqual(width + 1);
       expect(box.height).toBeGreaterThanOrEqual(44);
     }
     const month = planner.getByRole("combobox", { name: "Day of each month" });

@@ -1,3 +1,7 @@
+## 2026-10-18 — Giving planner enlarged-text containment repair
+
+Owner: CHATGPT_ACTIVE, existing PR293. Exact head7eb1657 full CI39120018931 passed fast/database/production and fixed budgets (JS819180/819200; CSS348112/348160); browser1444 passed, one reproducible320px/200%-text control overflow (right329 >321), including retry. Constrain nested grid tracks with minmax(0,1fr), allow button shrink/wrap and explicitly bound native controls without reducing text or relaxing bounds/minimum44px tests. Add control names to failure diagnostics. Reconcile verified production mainb6f26346, retaining programme evidence release322 and both coordination histories. Calendar/API blobs unchanged. Fresh combined-head hosted/browser verification remains required; not released.
+
 ## 2026-10-18 — Giving planner production CSS budget recovery
 
 Owner: CHATGPT_ACTIVE, existing PR293. Reconciled head377085cb passed fast/database, but production CSS349944 exceeded348160 by1784 bytes; JS819180 remained within819200. Remove feature-only stylesheet; reuse global form-grid/grid/field/button primitives with server-rendered element sizing and surface styles, preserving four calendar forms and all underlying calendar/API blobs. Add explicit 320/720/1440px enlarged-text bounds/minimum-control/focus browser cases. Static design detector returned no findings; calendar invariant checks passed before this style-only correction. Fresh exact-head production bytes and browser acceptance required. No budget increases, new dependencies, client JS, main merge, live payment or notifications.
@@ -17,6 +21,10 @@ Ownership: HANDOFF_PENDING. PR293 original93594f41 fullCI39049069983 passed. Rec
 ## 2026-10-17 — Giving Planner calendar compatibility
 
 Ownership: HANDOFF_PENDING after calendar repair. Existing PR293 branch feat/manual-giving-planner-20261017 at a9acb5e4. Independent AI review identified unescaped semicolon in ICS DESCRIPTION; correct only calendar TEXT encoding with regression coverage. RED: calendar TEXT delimiter regression failed on unescaped semicolon. GREEN: escaped semicolon in shared DESCRIPTION; all four calendar variants covered. Combined main receipt safeguard retained; 43 focused tests and full940 passed/9 skipped, type/lint/diff checks pass. No mandates, payments or extra data collection. Fresh hosted acceptance required. PR302 deployed by Railway SUCCESS ebc0b8e, public HTTP verification blocked403 in this environment; do not assert live journey verified.
+
+## 2026-10-18 — Programme evidence browser recovery
+
+Owner: CHATGPT_ACTIVE. Existing PR322 source unchanged. Prior browser run39093779608 passed1439 with one task-introduced test failure: summary click collapsed already-expanded filtered portfolio. Commit e899c5c14d56bd6a9d699eec871d78fd5ea5720a now asserts native open state, requires the evidence link visible, follows it and checks matching Impact programme selection. Node syntax check PASS. Fresh exact-head CI required; no browser success or merge/deployment claimed. Production remains PR317 merge7075e1f. Preserve #320/#321 and all finance/privacy protections. No private records, live payment or outgoing notifications.
 
 ## 2026-10-18 — Financial ingress safety: transfer consent and signed webhook deadline
 
