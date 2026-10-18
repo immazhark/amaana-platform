@@ -19,7 +19,7 @@ describe("published work filter validation", () => {
     const result = filterWork(categories, { programme: "ramadan-eid", year: "2026" });
     expect(result).toMatchObject({ programme: "ramadan-eid", year: "2026", count: 1, active: true, invalid: false });
     expect(result.results.map(x => x.slug)).toEqual(["ramadan-eid"]);
-    expect(result.results[0].initiatives).toHaveLength(1);
+    expect(result.results[0]?.initiatives).toHaveLength(1);
   });
 
   it.each([
