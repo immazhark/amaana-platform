@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { NextResponse } from "next/server";
 import { Prisma } from "@prisma/client";
 import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
-import { RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
+import { RequestBodyReadTimeoutError, RequestBodyTooLargeError, readBodyBytesWithLimit } from "@/lib/bounded-request-body";
 import { createDonationReference, createReceiptToken, directTransferSchema, hashReceiptToken, isDonationAmountAllowedForRemaining, MIN_DONATION_AMOUNT } from "@/lib/donations";
 import { prisma } from "@/lib/prisma";
 import { canExposePublicAppeal } from "@/lib/public-environment";
@@ -27,10 +27,16 @@ export async function POST(request: Request) {
 
     let body: Awaited<ReturnType<typeof readBodyBytesWithLimit>>;
     try {
-      body = await readBodyBytesWithLimit(request, MAX_MULTIPART_BYTES);
+      body = await readBodyBytesWithLimit(request, MAX_MULTIPART_BYTES, { timeoutMs: 120_000 });
     } catch (error) {
       if (error instanceof RequestBodyTooLargeError) {
         return NextResponse.json({ error: "Transfer submission is too large." }, { status: 413, headers: privateHeaders });
+      }
+      if (error instanceof RequestBodyReadTimeoutError) {
+        return NextResponse.json(
+          { error: "Transfer upload timed out. Please try again." },
+          { status: 503, headers: { ...privateHeaders, "Retry-After": "60" } },
+        );
       }
       throw error;
     }
@@ -45,6 +51,43 @@ export async function POST(request: Request) {
     } catch {
       return NextResponse.json({ error: "Transfer submission could not be parsed." }, { status: 400, headers: privateHeaders });
     }
+    // FormData.get() silently takes the first value. Do not let duplicated
+    // donation amount, payment identity, donor fields or evidence alter a
+    // financial claim through HTTP multipart parameter pollution.
+    const scalarFields = [
+      "appealId", "donorName", "donorEmail", "donorPhone", "amount",
+      "givingIntent", "paymentMethod", "transferReference", "transferredAt",
+    ] as const;
+    if (scalarFields.some(field => form.getAll(field).length > 1) || form.getAll("evidence").length > 1) {
+      return NextResponse.json(
+        { error: "Duplicate transfer fields are not allowed. Please submit one value per field." },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+
+    // Never silently convert malformed or duplicate privacy fields to a named donation.
+    // An absent checkbox is legitimate and retains the existing named default.
+    const anonymityEntries = form.getAll("isAnonymous");
+    if (anonymityEntries.length > 1 || (
+      anonymityEntries.length === 1 && anonymityEntries[0] !== "true" && anonymityEntries[0] !== "false"
+    )) {
+      return NextResponse.json(
+        { error: "Please check your privacy choice and submit again." },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+    const isAnonymous = anonymityEntries[0] === "true";
+
+    // Consent must be a single explicit positive value. Reject duplicate, absent,
+    // or noncanonical fields before any donation or evidence persistence.
+    const domesticEntries = form.getAll("domesticConfirmed");
+    if (domesticEntries.length !== 1 || domesticEntries[0] !== "true") {
+      return NextResponse.json(
+        { error: "Please confirm that this donation is domestic." },
+        { status: 400, headers: privateHeaders },
+      );
+    }
+
     const evidenceEntry = form.get("evidence");
     if (evidenceEntry !== null && evidenceEntry !== "" && !(evidenceEntry instanceof File)) {
       return NextResponse.json({ error: "Please attach a valid transfer screenshot or PDF." }, { status: 400, headers: privateHeaders });
@@ -69,7 +112,7 @@ export async function POST(request: Request) {
 
     const parsed = directTransferSchema.safeParse({
       appealId: form.get("appealId"), donorName: form.get("donorName"), donorEmail: form.get("donorEmail"), donorPhone: form.get("donorPhone") ?? "",
-      amount: form.get("amount"), givingIntent: form.get("givingIntent"), isAnonymous: form.get("isAnonymous") === "true", domesticConfirmed: form.get("domesticConfirmed") === "true",
+      amount: form.get("amount"), givingIntent: form.get("givingIntent"), isAnonymous, domesticConfirmed: true,
       paymentMethod: form.get("paymentMethod"), transferReference: form.get("transferReference"), transferredAt: form.get("transferredAt"),
     });
     if (!parsed.success) return NextResponse.json({ error: "Please check the transfer information and reference." }, { status: 400, headers: privateHeaders });
