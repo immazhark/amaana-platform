@@ -176,32 +176,33 @@ export async function createMediaAsset(formData: FormData) {
 
 export async function updateMediaAsset(formData: FormData) {
   const user = await requirePermission("content.update");
-  const id = String(formData.get("id") ?? "");
-  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "");
-  const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
-  if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) {
-    throw new Error("Media edit version is missing or invalid. Refresh before editing.");
+  const id = singleCreateText(formData, "id");
+  if (!id?.trim()) throw new Error("Media record is required.");
+  const expectedUpdatedAt = mediaReviewVersion(formData);
+  const publicUrl = safePublicUrl(singleCreateText(formData, "publicUrl"));
+  const altText = optionalText(singleCreateText(formData, "altText"), 300);
+  const title = optionalText(singleCreateText(formData, "title"), 160);
+  const caption = optionalText(singleCreateText(formData, "caption"), 1000);
+  const sourcePath = optionalText(singleCreateText(formData, "sourcePath"), 500);
+  const sourceYear = optionalCreateInteger(formData, "sourceYear", 2000, 2100);
+  const sortOrder = optionalCreateInteger(formData, "sortOrder", 0, 2147483647) ?? 0;
+  const identityValue = singleCreateText(formData, "identityImage");
+  if (identityValue !== null && identityValue !== "on") {
+    throw new Error("Choose a valid identity-image checkbox value.");
   }
+
   const asset = await prisma.mediaAsset.findUniqueOrThrow({ where: { id } });
   if (asset.isPublic && !hasPermission(user, "content.approve")) throw new Error("Published media requires approval permission to edit");
-
-  const publicUrl = safePublicUrl(formData.get("publicUrl"));
   if (!publicUrl && !asset.storageKey) throw new Error("Media must retain an approved public URL");
-  const altText = optionalText(formData.get("altText"), 300);
   if (asset.kind === "IMAGE" && !altText) throw new Error("Image alt text is required");
-  const sourceYearRaw = Number(formData.get("sourceYear"));
-  const sortOrderRaw = Number(formData.get("sortOrder"));
-  const identityImage = asset.kind === "IMAGE" && formData.get("identityImage") === "on";
-  const displayOrder = identityImage
-    ? IDENTITY_MEDIA_SORT_ORDER
-    : Number.isInteger(sortOrderRaw) && sortOrderRaw >= 0 ? sortOrderRaw : 0;
+  if (asset.kind !== "IMAGE" && identityValue === "on") {
+    throw new Error("An identity image must use the IMAGE media type.");
+  }
+  const identityImage = asset.kind === "IMAGE" && identityValue === "on";
+  const displayOrder = identityImage ? IDENTITY_MEDIA_SORT_ORDER : sortOrder;
   const wasIdentityImage = asset.kind === "IMAGE" && asset.sortOrder === IDENTITY_MEDIA_SORT_ORDER;
   const deliveryUrlChanged = publicUrl !== asset.publicUrl;
   const identityStateChanged = identityImage !== wasIdentityImage;
-  const title = optionalText(formData.get("title"), 160);
-  const caption = optionalText(formData.get("caption"), 1000);
-  const sourcePath = optionalText(formData.get("sourcePath"), 500);
-  const sourceYear = Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null;
   const privacyMetadataChanged =
     title !== asset.title ||
     altText !== asset.altText ||
