@@ -165,6 +165,17 @@ describe("identity media creation concurrency", () => {
     expect(mocks.createRecord).not.toHaveBeenCalled();
   });
 
+  it("does not silently reinterpret an uploaded PDF as a document when Image was selected", async () => {
+    const form = new FormData();
+    form.set("target", "initiative:initiative_1");
+    form.set("kind", "IMAGE");
+    form.set("file", new File(["synthetic"], "private.pdf", { type: "application/pdf" }));
+    form.set("altText", "Documentary photograph");
+    await expect(createMediaAsset(form)).rejects.toThrow(/image media must use JPEG, PNG or WebP/i);
+    expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+  });
+
   it("rejects an ambiguous hero checkbox instead of silently applying a hero change", async () => {
     const form = new FormData();
     form.set("target", "initiative:initiative_1");
