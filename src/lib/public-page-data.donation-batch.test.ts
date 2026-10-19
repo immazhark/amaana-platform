@@ -60,6 +60,21 @@ describe("bounded reviewed donation query", () => {
     expect(result[0]?.zakatEligible).toBe(false);
   });
 
+  it("finds payable appeals after earlier funded or expired candidates", async () => {
+    mocks.findMany.mockResolvedValueOnce([
+      appeal("stale-1", { amountRaised: "1000.00" }),
+      appeal("stale-2", { amountRaised: "1000.00" }),
+      appeal("stale-3", { closesAt: new Date("2020-01-01T00:00:00Z") }),
+      appeal("stale-4", { amountRaised: "1000.00" }),
+      appeal("live-5"),
+    ]);
+    const selected = await getReviewedDonationPageData([
+      "stale-1", "stale-2", "stale-3", "stale-4", "live-5",
+    ]);
+    expect(selected.map(item => item.slug)).toEqual(["live-5"]);
+    expect(mocks.findMany).toHaveBeenCalledOnce();
+  });
+
   it("deduplicates input and never retrieves more than twelve candidates", async () => {
     const input = ["first", "first", ...Array.from({ length: 20 }, (_, i) => `slug-${i}`)];
     await getReviewedDonationPageData(input);

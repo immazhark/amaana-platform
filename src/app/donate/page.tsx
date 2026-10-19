@@ -7,7 +7,6 @@ import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-bala
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { AppealLandingCheckout, type ReviewedAppealChoice } from "@/components/donation-methods";
 import { donationFormCopy } from "@/components/donation-form-copy";
-import { selectReviewedDonationCandidates } from "@/lib/reviewed-donation-candidates";
 import { VerifiedImpactStrip, type VerifiedImpactItem } from "@/components/verified-impact-strip";
 import { logServerError } from "@/lib/server-log";
 import { isAppealOpenForDonations } from "@/lib/appeals";
@@ -60,21 +59,20 @@ export default async function Page() {
   // One publication-checked read for at most twelve candidates; the final
   // payment endpoints independently recheck state and exact balances.
   const reviewedAppeals = await getReviewedDonationPageData(openAppeals.slice(0, 12).map(record => record.slug));
-  const reviewedBySlug = new Map(reviewedAppeals.map(appeal => [appeal.slug, appeal] as const));
-  const eligibleChoices = await selectReviewedDonationCandidates(openAppeals, async record => {
-    const appeal = reviewedBySlug.get(record.slug);
-    if (!appeal) return null;
+  // The reviewed projection already preserves priority and excludes unpayable
+  // records. Keep the live amount guard and display only four destinations.
+  const eligibleChoices = reviewedAppeals.flatMap(appeal => {
     const remaining = getDonationCheckoutRemainingAmount(appeal);
-    if (remaining === null) return null;
-    return {
+    if (remaining === null) return [];
+    return [{
       id: appeal.id,
       slug: appeal.slug,
       title: appeal.title,
       maxAmount: remaining,
       zakatEligible: appeal.zakatEligible,
       copy: donationFormCopy(appeal.zakatEligible),
-    } satisfies ReviewedAppealChoice;
-  });
+    } satisfies ReviewedAppealChoice];
+  }).slice(0, 4);
   const hasOpenAppeals = eligibleChoices.length > 0;
   return (
     <CanonicalArticle
