@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
-import { AppealLandingCheckout } from "./appeal-landing-checkout";
+import { AppealLandingCheckout } from "./donation-methods";
 import { donationFormCopy } from "./donation-form-copy";
 
 const paymentDetails = { upi: { id: "verified@upi", qrImageUrl: null }, bank: null };

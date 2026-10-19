@@ -5,7 +5,7 @@ import { complianceCopy } from "@/lib/master-copy";
 import { getAppealsIndexData, getDonationPageData, getDonationImpactHighlights } from "@/lib/public-page-data";
 import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
-import { AppealLandingCheckout, type ReviewedAppealChoice } from "@/components/appeal-landing-checkout";
+import { AppealLandingCheckout, type ReviewedAppealChoice } from "@/components/donation-methods";
 import { donationFormCopy } from "@/components/donation-form-copy";
 import { selectReviewedDonationCandidates } from "@/lib/reviewed-donation-candidates";
 import { VerifiedImpactStrip, type VerifiedImpactItem } from "@/components/verified-impact-strip";
