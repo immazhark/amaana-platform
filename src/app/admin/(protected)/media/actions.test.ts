@@ -253,6 +253,19 @@ describe("identity media creation concurrency", () => {
     }));
   });
 
+  it("rejects a document marked as an identity image instead of silently ignoring the request", async () => {
+    const form = new FormData();
+    form.set("target", "initiative:initiative_1");
+    form.set("kind", "DOCUMENT");
+    form.set("publicUrl", "https://cdn.example/archive.pdf");
+    form.set("identityImage", "on");
+
+    await expect(createMediaAsset(form)).rejects.toThrow(/identity image.*IMAGE/i);
+    expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+  });
+
   it("rejects a manual URL that could override an uploaded managed file", async () => {
     const form = new FormData();
     form.set("target", "initiative:initiative_1");
