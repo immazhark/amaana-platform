@@ -1,3 +1,7 @@
+## 2026-10-19 — Gallery dimension recovery
+
+Owner: CODEX_ACTIVE under the uploaded handover and explicit implementation continuation. Release target: main. Task branch: fix/public-gallery-dimensions-20261019 from 5cf9e7066f81c2715787e9fcf80e7158cc8acb5e. Recover only approved public gallery dimensions on initiative/story pages; preserve current database privacy filters and image-origin rules. PR367 is unchanged at 7ce2477d91702e071e60509690a8aeb96a0f56b8, browser acceptance still running. Prepare the complete gallery implementation without opening a second PR before PR367 closes. No schema, payment, provider or private-record changes. Older ownership records below are historical.
+
 ## 2026-10-19 — ChatGPT Work takeover: AF-R071 acceptance repair
 
 Owner: CHATGPT_ACTIVE under the explicit uploaded takeover directive. Integration/release target: main. Sole active feature: AF-R071 on existing branch feat/af-r071-route-loading-experience-20261019 / PR358, inspected head 62cbaa01de95642809a9e1e467d9cbba489e8eeb. Current main c78a06e45d9e490f984fd8c64bf3295700906b9e. Preserve parked AF-R083 PR360 and historical PR292 without merging them.
