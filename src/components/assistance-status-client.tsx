@@ -4,15 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import type { PrivateTrackingCredentials } from "@/lib/private-tracking";
 import { usePrivateTrackingCredentials } from "@/lib/use-private-tracking-credentials";
-
-type TrackingRecord = {
-  found: true;
-  status: string;
-  createdAt: string;
-  updatedAt: string;
-};
-
-type TrackingResponse = TrackingRecord | { found: false };
+import { isTrackingResponse, type TrackingRecord } from "@/lib/private-tracking-response";
 
 class TrackingRateLimitedError extends Error {}
 
@@ -61,7 +53,9 @@ export function AssistanceStatusClient() {
       .then(async response => {
         if (response.status === 429) throw new TrackingRateLimitedError("Tracking quota exhausted");
         if (!response.ok) throw new Error("Tracking service unavailable");
-        return await response.json() as TrackingResponse;
+        const body: unknown = await response.json();
+        if (!isTrackingResponse(body)) throw new Error("Invalid tracking response");
+        return body;
       })
       .then(response => { if (!controller.signal.aborted) setResult({ credentials, record: response.found ? response : null, failed: false, rateLimited: false }); })
       .catch(error => {

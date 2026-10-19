@@ -329,7 +329,7 @@ for (const width of [390, 1280]) {
       const reference = 'SYNTHETIC-READABILITY-ONLY';
       const token = 'synthetic-readability-token-no-real-record';
       await page.route('**/api/assistance/status', route => route.fulfill({
-        status: 200, json: { found: true, status: 'SUBMITTED', createdAt: '2026-10-01T00:00:00Z', updatedAt: '2026-10-02T00:00:00Z' },
+        status: 200, json: { found: true, status: 'SUBMITTED', createdAt: '2026-10-01T00:00:00.000Z', updatedAt: '2026-10-02T00:00:00.000Z' },
       }));
       await page.route('**/api/donations/acknowledgement', route => route.fulfill({
         status: 200, json: {
