@@ -28,10 +28,18 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<DonationFieldErrors>({});
   const [remainingHint, setRemainingHint] = useState<number | null>(null);
+  const [liveRange, setLiveRange] = useState<{ minimum: number; maximum: number } | null>(null);
   const [phase, setPhase] = useState<CheckoutPhase>("loading");
-  const transactionMax = Math.min(maxAmount, 1_000_000);
-  const transactionMin = transactionMax < 10 ? transactionMax : 10;
-  const presetAmounts = getDonationAmountPresets(maxAmount);
+  const transactionMax = liveRange?.maximum ?? Math.min(maxAmount, 1_000_000);
+  const transactionMin = liveRange?.minimum ?? (transactionMax < 10 ? transactionMax : 10);
+  const presetAmounts = getDonationAmountPresets(transactionMax);
+
+  useEffect(() => {
+    const amount = formRef.current?.elements.namedItem("amount");
+    if (amount instanceof HTMLInputElement) {
+      updateDonationAmountValidity(amount, transactionMin, transactionMax);
+    }
+  }, [transactionMin, transactionMax]);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -178,8 +186,11 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
         }
         setFieldErrors(fields);
         if (typeof order.remainingAmount === "number") {
-          const payable = getWholeRupeeCheckoutRange(Math.min(order.remainingAmount, transactionMax));
-          if (payable) setRemainingHint(payable.maximum);
+          const payable = getWholeRupeeCheckoutRange(Math.min(order.remainingAmount, maxAmount));
+          if (payable) {
+            setLiveRange(payable);
+            setRemainingHint(payable.maximum);
+          }
         }
         showError(order.error.trim().slice(0, 500));
         orderLocked.current = false;
