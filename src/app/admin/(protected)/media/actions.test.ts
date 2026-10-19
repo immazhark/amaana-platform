@@ -165,6 +165,23 @@ describe("identity media creation concurrency", () => {
     expect(mocks.createRecord).not.toHaveBeenCalled();
   });
 
+  it.each(["title", "caption", "sourcePath", "sourceYear", "sortOrder"])(
+    "rejects ambiguous managed-upload %s metadata before uploading",
+    async field => {
+      const form = new FormData();
+      form.set("target", "initiative:initiative_1");
+      form.set("kind", "IMAGE");
+      form.set("file", new File(["synthetic"], "image.png", { type: "image/png" }));
+      form.set("altText", "Documentary photograph");
+      form.set(field, "original");
+      form.append(field, "altered");
+      await expect(createMediaAsset(form)).rejects.toThrow(new RegExp(`single text ${field}`, "i"));
+      expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+      expect(mocks.createRecord).not.toHaveBeenCalled();
+    },
+  );
+
   it("does not silently reinterpret an uploaded PDF as a document when Image was selected", async () => {
     const form = new FormData();
     form.set("target", "initiative:initiative_1");
