@@ -20,6 +20,7 @@ CREATE TABLE "TeamMember" (
   "photoWidth" INTEGER,
   "photoHeight" INTEGER,
   "photoConsentAt" TIMESTAMP(3),
+  "deletedAt" TIMESTAMP(3),
   "linkedinUrl" TEXT,
   "email" TEXT,
   "groupId" TEXT NOT NULL,

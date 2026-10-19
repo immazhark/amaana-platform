@@ -91,7 +91,7 @@ export async function updateTeamMember(formData: FormData) {
     const input = parseTeamMemberForm(formData);
     const { file, removePhoto } = teamPhotoInput(formData);
     const previous = await prisma.teamMember.findUnique({ where: { id } });
-    if (!previous) throw new Error("No such team member.");
+    if (!previous || previous.deletedAt) throw new Error("No such team member.");
     if (previous.updatedAt.getTime() !== version.getTime()) {
       throw new Error("This team member changed. Refresh before editing.");
     }
@@ -99,7 +99,7 @@ export async function updateTeamMember(formData: FormData) {
     try {
       await withSerializableTransactionRetry(async tx => {
         const claimed = await tx.teamMember.updateMany({
-          where: { id, updatedAt: version },
+          where: { id, updatedAt: version, deletedAt: null },
           data: {
             ...input,
             ...(uploaded
@@ -134,10 +134,26 @@ export async function deleteTeamMember(formData: FormData) {
     }
     const formerKey = await withSerializableTransactionRetry(async tx => {
       const member = await tx.teamMember.findUnique({ where: { id } });
-      if (!member || member.updatedAt.getTime() !== version.getTime()) {
+      if (!member || member.deletedAt || member.updatedAt.getTime() !== version.getTime()) {
         throw new Error("This team member changed. Refresh before removal.");
       }
-      const removed = await tx.teamMember.deleteMany({ where: { id, updatedAt: version } });
+      const removed = await tx.teamMember.updateMany({
+        where: { id, updatedAt: version, deletedAt: null },
+        data: {
+          deletedAt: new Date(),
+          isPublished: false,
+          fullName: "Removed team member",
+          designation: "Removed",
+          bio: null,
+          linkedinUrl: null,
+          email: null,
+          photoStorageKey: null,
+          photoConsentAt: null,
+          photoAlt: null,
+          photoWidth: null,
+          photoHeight: null,
+        },
+      });
       if (removed.count !== 1) throw new Error("This team member changed. Refresh before removal.");
       await tx.auditEvent.create({
         data: { actorId: user.id, action: "team.member_deleted", entityType: "TeamMember", entityId: id },
@@ -154,9 +170,9 @@ export async function reorderTeamMember(formData: FormData) {
     const { id, direction } = parseTeamCommand(formData);
     await withSerializableTransactionRetry(async tx => {
       const selected = await tx.teamMember.findUnique({ where: { id } });
-      if (!selected) throw new Error("No such team member.");
+      if (!selected || selected.deletedAt) throw new Error("No such team member.");
       const siblings = await tx.teamMember.findMany({
-        where: { groupId: selected.groupId },
+        where: { groupId: selected.groupId, deletedAt: null },
         orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
         select: { id: true },
       });

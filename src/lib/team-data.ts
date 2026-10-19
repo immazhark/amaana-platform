@@ -3,11 +3,11 @@ import { prisma } from "@/lib/prisma";
 
 export async function getPublishedTeam() {
   const groups = await prisma.teamGroup.findMany({
-    where: { members: { some: { isPublished: true } } },
+    where: { members: { some: { isPublished: true, deletedAt: null } } },
     orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
     include: {
       members: {
-        where: { isPublished: true },
+        where: { isPublished: true, deletedAt: null },
         orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
         select: {
           id: true, slug: true, fullName: true, designation: true, bio: true,
@@ -25,7 +25,7 @@ export async function getPublishedTrustees() {
     where: { key: "TRUSTEES" },
     select: {
       members: {
-        where: { isPublished: true },
+        where: { isPublished: true, deletedAt: null },
         orderBy: [{ sortOrder: "asc" }, { id: "asc" }],
         select: { id: true, slug: true, fullName: true, designation: true },
       },

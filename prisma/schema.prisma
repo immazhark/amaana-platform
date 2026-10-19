@@ -670,6 +670,7 @@ model TeamMember {
   photoWidth     Int?
   photoHeight    Int?
   photoConsentAt DateTime?
+  deletedAt      DateTime?
   linkedinUrl    String?
   email          String?
   groupId        String
