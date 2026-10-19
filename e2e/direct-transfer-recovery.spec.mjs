@@ -237,3 +237,21 @@ test("switching direct transfer method clears stale UTR, amount and donor claim 
   await page.getByRole("button", { name: "Direct UPI / QR" }).click();
   await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("");
 });
+
+test("oversized direct-transfer evidence is rejected before a claim request", async ({ page }) => {
+  let requests = 0;
+  await page.route("**/api/donations/direct-transfer", route => {
+    requests++;
+    return route.fulfill({ status: 202, contentType: "application/json", body: "{}" });
+  });
+  await prepareDirectTransfer(page);
+  await page.getByLabel("Screenshot / receipt").setInputFiles({
+    name: "oversized.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.alloc(5 * 1024 * 1024 + 1),
+  });
+  await page.getByRole("button", { name: "Submit transfer for verification" }).click();
+  await expect(page.getByRole("alert")).toContainText("5 MB or smaller");
+  await expect(page.getByRole("button", { name: "Submit transfer for verification" })).toBeEnabled();
+  expect(requests).toBe(0);
+});

@@ -2,9 +2,20 @@
  * transfer claim. Private storage repeats these signature checks after reading the upload.
  * Reading at most 12 bytes avoids allocating the full 5 MiB attachment here. */
 const permitted = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
+export const MAX_DONATION_EVIDENCE_BYTES = 5 * 1024 * 1024;
+
+export function donationEvidenceUploadIssue(
+  file: Pick<File, "size" | "type" | "name"> | null,
+): string | null {
+  if (!file || (!file.name && file.size === 0)) return null;
+  if (file.size === 0) return "Transfer evidence is empty. Please choose a valid file.";
+  if (file.size > MAX_DONATION_EVIDENCE_BYTES) return "Transfer evidence must be 5 MB or smaller.";
+  if (!permitted.has(file.type)) return "Please attach a PDF, JPEG, PNG or WebP receipt.";
+  return null;
+}
 
 export async function hasValidDonationEvidenceHeader(file: File): Promise<boolean> {
-  if (!permitted.has(file.type) || file.size === 0) return false;
+  if (donationEvidenceUploadIssue(file) !== null || file.size === 0) return false;
   try {
     const bytes = new Uint8Array(await file.slice(0, 12).arrayBuffer());
     const starts = (...expected: number[]) =>

@@ -1,6 +1,7 @@
 "use client";
 
 import { getUpiPaymentUri, updateDonationAmountValidity } from "@/lib/donation-amount-input";
+import { donationEvidenceUploadIssue } from "@/lib/donation-evidence-header";
 
 import Image from "next/image";
 import { type FormEvent, useRef, useState } from "react";
@@ -43,6 +44,9 @@ export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails
     let posted = false;
     try {
       const values = new FormData(event.currentTarget);
+      const evidence = values.get("evidence");
+      const evidenceIssue = donationEvidenceUploadIssue(evidence instanceof File ? evidence : null);
+      if (evidenceIssue) throw new Error(evidenceIssue);
       const localTransferredAt = String(values.get("transferredAt") ?? "").trim();
       if (localTransferredAt) {
         const transferredAt = new Date(localTransferredAt);
