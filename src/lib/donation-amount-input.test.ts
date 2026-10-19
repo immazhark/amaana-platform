@@ -71,6 +71,16 @@ describe("verified amount-prefilled direct UPI links", () => {
     expect(getUpiPaymentUri(id, "7", 7, 7)).toContain("&am=7.00&cu=INR");
   });
 
+  it("never generates an external payment URI when checkout bounds are malformed", () => {
+    for (const [minimum, maximum] of [
+      [NaN, 500], [10, NaN], [10, Infinity], [-1, 500],
+      [0, 500], [250, 100], [10, 1_000_001],
+    ]) {
+      expect(getUpiPaymentUri("verified@upi", "250", minimum, maximum)).toBeNull();
+    }
+    expect(getUpiPaymentUri("verified@upi", "250", 10, 399.71)).toContain("&am=250.00&cu=INR");
+  });
+
   it("does not create a payment intent for an unset or invalid amount", () => {
     const id = "verified@upi";
     for (const value of ["", "0", "9", "501", "250.75", "1e2", "-1", "Infinity"]) {
