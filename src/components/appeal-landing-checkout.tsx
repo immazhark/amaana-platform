@@ -1,14 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { lazy, Suspense, useCallback, useRef, useState, type CSSProperties } from "react";
+import { useCallback, useRef, useState, type CSSProperties } from "react";
 import { getWholeRupeeCheckoutRange } from "@/lib/donation-amount-input";
 import { formatCheckoutRemainingINR } from "@/lib/donation-checkout-balance";
 import type { DonationPaymentDetails } from "@/lib/donation-payment-details";
 import type { DonationFormCopy } from "./donation-form-copy";
-// Only load the checkout implementation after the donor confirms a destination.
-// Reuse the code-split payment method module already used by appeal detail pages.
-const DonationMethods = lazy(async () => ({ default: (await import("./donation-methods")).DonationMethods }));
+import { DonationMethods } from "./donation-methods";
+// Reuse the same client module boundary as the canonical appeal checkout.
+// The actual payment form stays unmounted until the donor requests methods.
 
 export type ReviewedAppealChoice = {
   id: string;
@@ -97,12 +97,12 @@ export function AppealLandingCheckout({ appeals, paymentDetails }: {
       {checkoutRequested ? "Payment methods ready below" : "Continue to payment methods"}
     </button>
     <div id="reviewed-appeal-payment-methods">
-      {checkoutRequested && <Suspense fallback={<p role="status" aria-live="polite">Preparing secure donation options…</p>}>
+      {checkoutRequested && <>
         <DonationMethods key={selected.id} appealId={selected.id} appealTitle={selected.title}
           maxAmount={selected.maxAmount} zakatEligible={selected.zakatEligible}
           paymentDetails={paymentDetails} copy={selected.copy}
           onLockChange={handleLockChange} />
-      </Suspense>}
+      </>}
     </div>
   </section>;
 }
