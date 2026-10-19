@@ -4,6 +4,7 @@ import { Prisma } from "@prisma/client";
 const mocks = vi.hoisted(() => ({
   userFind: vi.fn(),
   attemptCount: vi.fn(),
+  advisoryLock: vi.fn(),
   attemptCreate: vi.fn(),
   attemptUpdate: vi.fn(),
   transaction: vi.fn(),
@@ -37,6 +38,7 @@ import { AUTH_FAILURE_LIMIT, AUTH_FAILURE_WINDOW_MS } from "@/lib/auth-rate-limi
 type Attempt = { id: string; subjectHash: string; succeeded: boolean; createdAt: Date };
 const attempts: Attempt[] = [];
 const tx = {
+  $queryRaw: mocks.advisoryLock,
   loginAttempt: { count: mocks.attemptCount, create: mocks.attemptCreate },
   passwordCredential: { updateMany: mocks.credentialUpdateMany },
   auditEvent: { create: mocks.auditCreate },
@@ -57,6 +59,7 @@ beforeEach(() => {
   mocks.userFind.mockResolvedValue({ id: "admin", status: "ACTIVE", credential: { passwordHash: "synthetic-hash" } });
   mocks.verifyPassword.mockResolvedValue(false);
   mocks.credentialUpdateMany.mockResolvedValue({ count: 1 });
+  mocks.advisoryLock.mockResolvedValue([{ acquired: "" }]);
   mocks.attemptCount.mockImplementation(async ({ where }: {
     where: { subjectHash: string; succeeded: boolean; createdAt: { gte: Date } };
   }) => attempts.filter(row => row.subjectHash === where.subjectHash && row.succeeded === where.succeeded && row.createdAt >= where.createdAt.gte).length);
@@ -84,8 +87,8 @@ beforeEach(() => {
       data: { actorId: userId, action: "session.login", entityType: "User", entityId: userId },
     });
   });
-  // Serialize only the fake database boundary. The action, limiter and retry
-  // wrapper are real; password work deliberately remains outside the transaction.
+  // Serialize the fake database boundary to model advisory-lock admission.
+  // Password work deliberately remains outside the transaction.
   let tail: Promise<unknown> = Promise.resolve();
   mocks.transaction.mockImplementation((operation: (db: typeof tx) => Promise<unknown>) => {
     const result = tail.then(() => operation(tx));
@@ -154,23 +157,37 @@ describe("admin login admission", () => {
     expect(mocks.createSession).toHaveBeenCalledWith("admin", "attempt-2");
   });
 
-  it("rechecks admission after a serialization conflict before password work", async () => {
-    mocks.transaction.mockRejectedValueOnce(new Prisma.PrismaClientKnownRequestError("Synthetic conflict", {
-      code: "P2034", clientVersion: "test",
-    }));
-    await expect(login(form())).rejects.toThrow("redirect:/admin/login?error=invalid");
-    expect(mocks.transaction).toHaveBeenCalledTimes(2);
-    expect(mocks.transaction).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: "Serializable" });
+  it("waits for the per-subject lock before reading the admission ledger", async () => {
+    let releaseLock!: (value: { acquired: string }[]) => void;
+    mocks.advisoryLock.mockReturnValueOnce(new Promise(resolve => { releaseLock = resolve; }));
+    const pending = login(form());
+    await new Promise(resolve => setImmediate(resolve));
+    expect(mocks.advisoryLock).toHaveBeenCalledOnce();
+    expect(mocks.attemptCount).not.toHaveBeenCalled();
+    expect(mocks.userFind).not.toHaveBeenCalled();
+
+    releaseLock([{ acquired: "" }]);
+    await expect(pending).rejects.toThrow("redirect:/admin/login?error=invalid");
     expect(attempts).toHaveLength(1);
+    expect(mocks.transaction).toHaveBeenCalledWith(expect.any(Function), { isolationLevel: "ReadCommitted" });
     expect(mocks.verifyPassword).toHaveBeenCalledOnce();
   });
 
-  it("does not verify credentials when serialization retries are exhausted", async () => {
-    mocks.transaction.mockRejectedValue(new Prisma.PrismaClientKnownRequestError("Synthetic conflict", {
+  it("fails closed without password work when the per-subject lock is unavailable", async () => {
+    mocks.advisoryLock.mockRejectedValueOnce(new Error("Synthetic advisory lock failure"));
+    await expect(login(form())).rejects.toThrow("Synthetic advisory lock failure");
+    expect(mocks.attemptCount).not.toHaveBeenCalled();
+    expect(mocks.userFind).not.toHaveBeenCalled();
+    expect(mocks.verifyPassword).not.toHaveBeenCalled();
+    expect(attempts).toHaveLength(0);
+  });
+
+  it("does not authenticate or retry blindly when the admission transaction conflicts", async () => {
+    mocks.transaction.mockRejectedValueOnce(new Prisma.PrismaClientKnownRequestError("Synthetic conflict", {
       code: "P2034", clientVersion: "test",
     }));
     await expect(login(form())).rejects.toThrow("Synthetic conflict");
-    expect(mocks.transaction).toHaveBeenCalledTimes(3);
+    expect(mocks.transaction).toHaveBeenCalledTimes(1);
     expect(mocks.userFind).not.toHaveBeenCalled();
     expect(mocks.verifyPassword).not.toHaveBeenCalled();
     expect(mocks.createSession).not.toHaveBeenCalled();
