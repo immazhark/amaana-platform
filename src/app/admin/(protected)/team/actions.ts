@@ -164,7 +164,9 @@ export async function reorderTeamMember(formData: FormData) {
       if (at < 0) throw new Error("No such team member.");
       const next = at + (direction === "up" ? -1 : 1);
       if (next < 0 || next >= siblings.length) return;
-      [siblings[at], siblings[next]] = [siblings[next], siblings[at]];
+      const currentMember = siblings[at]!;
+      siblings[at] = siblings[next]!;
+      siblings[next] = currentMember;
       for (let index = 0; index < siblings.length; index++) {
         await tx.teamMember.update({ where: { id: siblings[index]!.id }, data: { sortOrder: (index + 1) * 10 } });
       }
@@ -215,7 +217,9 @@ export async function reorderTeamGroup(formData: FormData) {
       if (at < 0) throw new Error("No such team group.");
       const next = at + (direction === "up" ? -1 : 1);
       if (next < 0 || next >= groups.length) return;
-      [groups[at], groups[next]] = [groups[next], groups[at]];
+      const currentGroup = groups[at]!;
+      groups[at] = groups[next]!;
+      groups[next] = currentGroup;
       for (let index = 0; index < groups.length; index++) {
         await tx.teamGroup.update({ where: { id: groups[index]!.id }, data: { sortOrder: (index + 1) * 10 } });
       }
