@@ -3,6 +3,7 @@ import { CanonicalArticle } from "@/components/canonical-article";
 import { PublicMedia } from "@/components/public-media";
 import { getAboutOriginMedia } from "@/lib/about-media";
 import { aboutCopy } from "@/lib/organization-copy";
+import { getPublishedTrustees } from "@/lib/team-data";
 
 export const metadata = {
   title: aboutCopy.title,
@@ -24,7 +25,7 @@ export const metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function AboutPage() {
-  const originMedia = await getAboutOriginMedia();
+  const [originMedia, trustees] = await Promise.all([getAboutOriginMedia(), getPublishedTrustees()]);
 
   return (
     <CanonicalArticle
@@ -46,6 +47,18 @@ export default async function AboutPage() {
           <Link href="/recognition">View the Certificate of Excellence →</Link>
         </div>
       </section>
+      {trustees.length > 0 ? (
+        <section className="canonical-block canonical-block--about-team">
+          <h2>Our Trustees</h2>
+          <div>
+            <p>Legal responsibility and governance rest with these trustees.</p>
+            <ul>
+              {trustees.map(trustee => <li key={trustee.id}><strong>{trustee.fullName}</strong> — {trustee.designation}</li>)}
+            </ul>
+            <p><Link href="/team">Meet the full team →</Link></p>
+          </div>
+        </section>
+      ) : null}
       <section className="canonical-block canonical-block--about-record">
         <h2>Learn more about how Amaana works</h2>
         <div>

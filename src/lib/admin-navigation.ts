@@ -2,6 +2,7 @@ export const ADMIN_NAV_ITEMS = [
   { permission: "assistance.view", path: "/admin", label: "Assistance queue" },
   { permission: "appeal.view", path: "/admin/appeals", label: "Appeals" },
   { permission: "content.view", path: "/admin/media", label: "Media review" },
+  { permission: "content.update", path: "/admin/team", label: "Team" },
   { permission: "content.update", path: "/admin/home-carousel", label: "Home carousel" },
   { permission: "assistance.approve", path: "/admin/retention", label: "Retention review" },
   { permission: "donation.view", path: "/admin/donations", label: "Donations" },

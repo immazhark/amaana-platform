@@ -11,6 +11,7 @@ const primaryLinks = [
   ["Our Work", "/our-work"],
   ["Impact", "/impact"],
   ["About", "/about"],
+  ["Team", "/team"],
   ["Get Involved", "/get-involved"],
 ] as const;
 
