@@ -346,35 +346,65 @@ export const getAppealsIndexData = cache(async () => {
  * Donation page projection. Checkout is available only while the appeal is
  * published, below target and inside any configured fundraising window.
  */
-export const getDonationPageData = cache(async (slug: string) => {
-  const appeal = await prisma.appeal.findFirst({
-    where: { slug, status: "PUBLISHED" },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      summary: true,
-      beneficiaryLocation: true,
-      category: true,
-      status: true,
-      goalAmount: true,
-      amountRaised: true,
-      closesAt: true,
-      assistanceRequest: {
-        select: {
-          verification: { select: { zakatStatus: true } },
-        },
-      },
-    },
-  });
+const DONATION_PAGE_SELECT = {
+  id: true,
+  slug: true,
+  title: true,
+  summary: true,
+  beneficiaryLocation: true,
+  category: true,
+  status: true,
+  goalAmount: true,
+  amountRaised: true,
+  closesAt: true,
+  assistanceRequest: {
+    select: { verification: { select: { zakatStatus: true } } },
+  },
+} as const satisfies Prisma.AppealSelect;
 
+type DonationAppealRecord = Prisma.AppealGetPayload<{ select: typeof DONATION_PAGE_SELECT }>;
+
+/** One disclosure boundary for both detail and batch donation projections. */
+function projectPublicDonationAppeal(appeal: DonationAppealRecord | null) {
   if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return null;
   const { assistanceRequest, ...publicAppeal } = appeal;
   return {
     ...publicAppeal,
     zakatEligible: assistanceRequest?.verification?.zakatStatus === "ELIGIBLE",
   };
+}
+
+export const getDonationPageData = cache(async (slug: string) => {
+  const appeal = await prisma.appeal.findFirst({
+    where: { slug, status: "PUBLISHED" },
+    select: DONATION_PAGE_SELECT,
+  });
+  return projectPublicDonationAppeal(appeal);
 });
+
+/**
+ * Read donation-eligible candidate records in ONE bounded query, rather than
+ * issuing up to twelve separate queries on every visit to dynamic /donate.
+ * DB results are not guaranteed to preserve IN (...) input ordering.
+ * Reapply visibility, expiry and exact-balance checks after the read.
+ */
+export async function getReviewedDonationPageData(slugs: readonly string[]) {
+  const requested = [...new Set(slugs)].slice(0, 12);
+  if (requested.length === 0) return [];
+
+  const records = await prisma.appeal.findMany({
+    where: { slug: { in: requested }, status: "PUBLISHED" },
+    select: DONATION_PAGE_SELECT,
+  });
+  const payableBySlug = new Map(records.flatMap(record => {
+    const safe = projectPublicDonationAppeal(record);
+    return safe ? [[safe.slug, safe] as const] : [];
+  }));
+  return requested.flatMap(slug => {
+    const appeal = payableBySlug.get(slug);
+    return appeal ? [appeal] : [];
+  });
+}
 
 /**
  * A bounded, reviewed projection for donor-facing published programme outcomes.

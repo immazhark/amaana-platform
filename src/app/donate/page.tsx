@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { complianceCopy } from "@/lib/master-copy";
-import { getAppealsIndexData, getDonationPageData, getDonationImpactHighlights } from "@/lib/public-page-data";
+import { getAppealsIndexData, getReviewedDonationPageData, getDonationImpactHighlights } from "@/lib/public-page-data";
 import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { AppealLandingCheckout, type ReviewedAppealChoice } from "@/components/donation-methods";
@@ -57,8 +57,12 @@ export default async function Page() {
   const openAppeals = appealRecords.filter(appeal => isAppealOpenForDonations(appeal) && (isStaging || !isSyntheticStagingAppeal(appeal)));
   // The public listing is not permission to process a payment.
   // Verify the approved appeal and exact balance again for a bounded set.
+  // One publication-checked read for at most twelve candidates; the final
+  // payment endpoints independently recheck state and exact balances.
+  const reviewedAppeals = await getReviewedDonationPageData(openAppeals.slice(0, 12).map(record => record.slug));
+  const reviewedBySlug = new Map(reviewedAppeals.map(appeal => [appeal.slug, appeal] as const));
   const eligibleChoices = await selectReviewedDonationCandidates(openAppeals, async record => {
-    const appeal = await getDonationPageData(record.slug);
+    const appeal = reviewedBySlug.get(record.slug);
     if (!appeal) return null;
     const remaining = getDonationCheckoutRemainingAmount(appeal);
     if (remaining === null) return null;
