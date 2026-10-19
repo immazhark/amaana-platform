@@ -1,4 +1,5 @@
 import { SectionHeading } from "@/components/section-heading";
+import { PUBLIC_DETAIL_MEDIA_LIMIT } from "@/lib/public-content";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -54,6 +55,8 @@ export default async function FaithDetailPage({ params }: Props) {
     <section className="v2-section paper"><div className="v2-shell v2-faith-detail-body-grid"><aside><p className="v2-section-label">Review context</p>{item.sourceCitation ? <div className="v2-faith-detail-source"><span>Source citation</span><p>{item.sourceCitation}</p></div> : <p className="v2-faith-detail-muted">No separate source citation is displayed for this item.</p>}{item.verifiedAt && <p className="v2-faith-detail-muted">Religious review verified {new Intl.DateTimeFormat("en-IN", { day: "numeric", month: "long", year: "numeric" }).format(item.verifiedAt)}.</p>}</aside><article><p className="v2-section-label">Reflection</p>{item.body ? <div className="v2-faith-detail-body">{item.body}</div> : <p className="v2-faith-detail-body">{item.excerpt}</p>}</article></div></section>
 
     {remainingMedia.length > 0 && <section className="v2-section dark"><div className="v2-shell"><SectionHeading eyebrow={<>Reviewed media</>} title={<>Visual context, separately approved.</>} subtitle={<>Media appears here only when its own public-use and privacy checks are satisfied.</>} /><div className="v2-media-grid">{remainingMedia.map(asset => <PublicMedia asset={asset} key={asset.id} />)}</div></div></section>}
+
+    {item.mediaAssets.length >= PUBLIC_DETAIL_MEDIA_LIMIT ? <div className="v2-shell"><Link className="v2-text-link" prefetch={false} href={`/media-archive/faith/${encodeURIComponent(item.slug)}`}>Browse all reviewed media from this reflection</Link></div> : null}
 
     <section className="v2-faith-detail-standard"><div className="v2-shell"><div><span>Religious review</span><strong>Verified before publication</strong></div><div><span>Source discipline</span><strong>Stored citations shown when available</strong></div><div><span>Authority boundary</span><strong>Amaana is not presented as a scholarly authority</strong></div></div></section>
 
