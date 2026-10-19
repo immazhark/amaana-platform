@@ -41,7 +41,7 @@ export async function getPublicMediaArchive(kind: string, slug: string, page: nu
   const media = await prisma.mediaAsset.findMany({
     where: { ...mediaWhere, ...relation },
     select: PUBLIC_DETAIL_MEDIA_PROJECTION.select,
-    orderBy: [...PUBLIC_DETAIL_MEDIA_PROJECTION.orderBy, { id: "asc" }],
+    orderBy: PUBLIC_DETAIL_MEDIA_PROJECTION.orderBy,
     skip: (page - 1) * PUBLIC_ARCHIVE_PAGE_SIZE,
     take: PUBLIC_ARCHIVE_PAGE_SIZE + 1,
   });
