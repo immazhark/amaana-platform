@@ -348,7 +348,10 @@ describe("media metadata edit input boundary", () => {
     "rejects repeated edit %s fields before database lookup",
     async field => {
       const form = updateForm();
-      form.append(field, String(form.get(field) ?? "on"));
+      if (!form.has(field)) {
+        form.set(field, field === "sourceYear" ? "2026" : "on");
+      }
+      form.append(field, String(form.get(field)));
       await expect(updateMediaAsset(form)).rejects.toThrow(/single text|review version/i);
       expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
       expect(mocks.serializableTransaction).not.toHaveBeenCalled();
