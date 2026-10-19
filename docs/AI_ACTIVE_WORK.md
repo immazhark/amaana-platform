@@ -1,3 +1,17 @@
+## 2026-10-19 — Gallery repository-native verification
+
+State: HANDOFF_PENDING. Branch: fix/public-gallery-dimensions-20261019; runtime code commit d88162712ff4d89fa9b0e0d056b22381526b2db6. Direct GitHub clone and dependency installation succeeded. Repository-native Vitest: 19 tests pass across public-gallery-projection.test.ts and public-image-dimensions.test.tsx; npm run typecheck and focused ESLint on all four runtime/test changes pass. Prisma Client generated locally; no database connection or migration. Initial typecheck ran before generation completed and was rerun successfully after generation. Working tree clean. This supersedes the earlier local-checkout/dependency limitation below. Hosted acceptance, PR and merge remain pending behind PR367; no deployment claimed. Existing hourly guarded integration task now includes this prepared branch after PR367 merges; no duplicate task or extra PR created.
+
+## 2026-10-19 — Gallery dimension implementation checkpoint
+
+State: HANDOFF_PENDING; no concurrent writer. Release target: main. Branch: fix/public-gallery-dimensions-20261019; implementation commit contains this note. Restored reviewed intrinsic dimensions on the database-backed initiative and story galleries through one server-side projection. Current canRenderPublicMedia/origin checks and database privacy/publication queries are unchanged. Existing bounded dimension fallback reused; duplicate URL/ID records removed; private source/storage fields excluded.
+
+Verification: six regression cases run locally with Node's native test runner using the same assertion bodies and source imports (temporary import substitutions only); all pass after baseline mapping reproduced dimension/dedup failures. Durable tests use the repository Vitest interface. Full repository typecheck/Vitest/build not run locally: authenticated Git clone unavailable and dependencies absent. No hosted validation or deployment claimed. PR367 remains the only open PR at 7ce2477d91702e071e60509690a8aeb96a0f56b8 with browser acceptance running at checkpoint. Next: finish guarded PR367 merge on green exact-head gates, rebase this scoped change onto resulting main, open one gallery PR, run required hosted checks, merge, and record issue361 evidence. No CI configuration or production data changes. Backlog totals unchanged.
+
+## 2026-10-19 — Gallery dimension recovery
+
+Owner: CODEX_ACTIVE under the uploaded handover and explicit implementation continuation. Release target: main. Task branch: fix/public-gallery-dimensions-20261019 from 5cf9e7066f81c2715787e9fcf80e7158cc8acb5e. Recover only approved public gallery dimensions on initiative/story pages; preserve current database privacy filters and image-origin rules. PR367 is unchanged at 7ce2477d91702e071e60509690a8aeb96a0f56b8, browser acceptance still running. Prepare the complete gallery implementation without opening a second PR before PR367 closes. No schema, payment, provider or private-record changes. Older ownership records below are historical.
+
 ## 2026-10-19 — ChatGPT Work takeover: AF-R071 acceptance repair
 
 Owner: CHATGPT_ACTIVE under the explicit uploaded takeover directive. Integration/release target: main. Sole active feature: AF-R071 on existing branch feat/af-r071-route-loading-experience-20261019 / PR358, inspected head 62cbaa01de95642809a9e1e467d9cbba489e8eeb. Current main c78a06e45d9e490f984fd8c64bf3295700906b9e. Preserve parked AF-R083 PR360 and historical PR292 without merging them.
