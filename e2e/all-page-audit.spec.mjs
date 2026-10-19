@@ -147,7 +147,7 @@ const acknowledgementStates = [
 for(const [device,width,height] of [['mobile',390,844],['desktop',1440,1000]])for(const presentation of acknowledgementStates)test(`private acknowledgement UI ${presentation.tone} ${device}`,async({page})=>{
  const reference='AFD-SYNTHETIC-UI-ACK';
  await page.setViewportSize({width,height});await page.emulateMedia({reducedMotion:'reduce'});
- await page.route('**/api/donations/acknowledgement',r=>r.fulfill({status:200,json:{found:true,presentation,donation:{referenceNumber:reference,receiptNumber:'ACK-SYNTHETIC',donorName:'Synthetic donor',givingIntent:'GENERAL',amount:100,refundedAmount:presentation.tone==='refunded'?100:0,recordDate:'2026-10-01T00:00:00Z',providerPaymentId:null,appeal:{title:'Synthetic UI audit appeal',slug:'synthetic-ui-audit'}}}}));
+ await page.route('**/api/donations/acknowledgement',r=>r.fulfill({status:200,json:{found:true,presentation,donation:{referenceNumber:reference,receiptNumber:'ACK-SYNTHETIC',donorName:'Synthetic donor',givingIntent:'GENERAL',amount:100,refundedAmount:presentation.tone==='refunded'?100:0,recordDate:'2026-10-01T00:00:00.000Z',providerPaymentId:null,appeal:{title:'Synthetic UI audit appeal',slug:'synthetic-ui-audit'}}}}));
  const errors=[];page.on('pageerror',e=>errors.push(e.message));
  await page.goto(`/donations/${reference}/acknowledgement#token=synthetic-private-acknowledgement-token`);
  await expect(page.getByRole('heading',{name:presentation.heading,exact:true})).toBeVisible();
@@ -165,7 +165,7 @@ for(const status of [429,503])test(`temporary acknowledgement failure ${status} 
  await page.route('**/api/donations/acknowledgement',r=>{
   requests.push(r.request().postDataJSON());
   if(requests.length===1)return r.fulfill({status,json:{error:'Temporarily unavailable'}});
-  return r.fulfill({status:200,json:{found:true,presentation:acknowledgementStates[0],donation:{referenceNumber:credentials.reference,receiptNumber:'ACK-SYNTHETIC',donorName:'Synthetic donor',givingIntent:'GENERAL',amount:100,refundedAmount:0,recordDate:'2026-10-01T00:00:00Z',providerPaymentId:null,appeal:{title:'Synthetic UI audit appeal',slug:'synthetic-ui-audit'}}}});
+  return r.fulfill({status:200,json:{found:true,presentation:acknowledgementStates[0],donation:{referenceNumber:credentials.reference,receiptNumber:'ACK-SYNTHETIC',donorName:'Synthetic donor',givingIntent:'GENERAL',amount:100,refundedAmount:0,recordDate:'2026-10-01T00:00:00.000Z',providerPaymentId:null,appeal:{title:'Synthetic UI audit appeal',slug:'synthetic-ui-audit'}}}});
  });
  await page.goto(`/donations/${credentials.reference}/acknowledgement#token=${credentials.token}`);
  await expect(page.getByRole('heading',{name:'Unable to open your acknowledgement.',exact:true})).toBeVisible();
