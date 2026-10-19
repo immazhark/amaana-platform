@@ -1,3 +1,9 @@
+## 2026-10-19 — Media publication command validation
+
+State: HANDOFF_PENDING. Branch: fix/media-publication-input-20261019 from main ce54660dc940bb042ee65eeeb16c177553390a0a. PR367 is merged at that SHA. Completed gallery change is in PR368 / head4760f4ec3b9544cbe69d7a1d3eddbcf3e36392da; preserve its independent release acceptance.
+
+Confirmed media action defect: repeated/file/missing id or publish fields were implicitly accepted, and all values except exact true selected unpublication. The action now requires one nonempty string ID and one exact true/false decision after authorization and before database lookup. Existing consent review, managed delivery, serializable transitions, audit records and invalidation are unchanged. RED: all16 new action regressions failed on original code (18 existing cases passed). GREEN:38 tests pass across media actions/governance; full TypeScript and focused ESLint pass. No schema, provider, live-record or CI change. Source implementation complete; no second PR opened, no hosted acceptance or deployment claimed. Open this bounded PR only after PR368 integration; finish exact-head gates and guarded merge. Backlog totals unchanged.
+
 ## 2026-10-19 — ChatGPT Work takeover: AF-R071 acceptance repair
 
 Owner: CHATGPT_ACTIVE under the explicit uploaded takeover directive. Integration/release target: main. Sole active feature: AF-R071 on existing branch feat/af-r071-route-loading-experience-20261019 / PR358, inspected head 62cbaa01de95642809a9e1e467d9cbba489e8eeb. Current main c78a06e45d9e490f984fd8c64bf3295700906b9e. Preserve parked AF-R083 PR360 and historical PR292 without merging them.

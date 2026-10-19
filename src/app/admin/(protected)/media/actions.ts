@@ -213,8 +213,15 @@ export async function updateMediaAsset(formData: FormData) {
 
 export async function setMediaPublication(formData: FormData) {
   const user = await requirePermission("content.approve");
-  const id = String(formData.get("id") ?? "");
-  const publish = formData.get("publish") === "true";
+  const ids = formData.getAll("id");
+  const decisions = formData.getAll("publish");
+  const id = ids[0];
+  const decision = decisions[0];
+  if (ids.length !== 1 || typeof id !== "string" || !id.trim() ||
+      decisions.length !== 1 || (decision !== "true" && decision !== "false")) {
+    throw new Error("Use a single media ID and an explicit publication decision.");
+  }
+  const publish = decision === "true";
   const asset = await prisma.mediaAsset.findUniqueOrThrow({ where: { id } });
 
   if (publish && !usesApprovedManagedDelivery(asset)) {

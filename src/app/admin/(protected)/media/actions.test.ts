@@ -222,6 +222,78 @@ describe("published media editing", () => {
   });
 });
 
+describe("media publication command input", () => {
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "approver_123" });
+    mocks.findUniqueOrThrow.mockResolvedValue({
+      id: "media_123", kind: "IMAGE", isPublic: true,
+      publicUrl: "/media/photo.jpg", altText: "Reviewed photograph", sortOrder: 0,
+      updatedAt: new Date("2026-10-19T00:00:00.000Z"),
+    });
+    mocks.updateMany.mockResolvedValue({ count: 1 });
+    mocks.serializableTransaction.mockImplementation(async callback => callback({
+      mediaAsset: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateMany },
+      auditEvent: { create: mocks.createAudit },
+    }));
+  });
+
+  function publicationForm() {
+    const form = new FormData();
+    form.set("id", "media_123");
+    form.set("publish", "false");
+    return form;
+  }
+
+  async function expectRejected(form: FormData) {
+    await expect(setMediaPublication(form)).rejects.toThrow(/single.*media ID.*publication decision/i);
+    expect(mocks.requirePermission).toHaveBeenCalledWith("content.approve");
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  }
+
+  it.each(["id", "publish"])("rejects repeated %s even when values agree", async field => {
+    const form = publicationForm();
+    form.append(field, field === "id" ? "media_123" : "false");
+    await expectRejected(form);
+  });
+
+  it.each(["id", "publish"])("rejects conflicting %s values", async field => {
+    const form = publicationForm();
+    form.append(field, field === "id" ? "another_media" : "true");
+    await expectRejected(form);
+  });
+
+  it.each(["id", "publish"])("rejects a file-valued %s", async field => {
+    const form = publicationForm();
+    form.set(field, new File(["invalid"], "command.txt"));
+    await expectRejected(form);
+  });
+
+  it.each(["id", "publish"])("rejects missing %s", async field => {
+    const form = publicationForm();
+    form.delete(field);
+    await expectRejected(form);
+  });
+
+  it.each(["", " ", "TRUE", " false ", "yes", "0"])(
+    "rejects unsupported decision %j instead of unpublishing", async decision => {
+      const form = publicationForm();
+      form.set("publish", decision);
+      await expectRejected(form);
+    },
+  );
+
+  it.each(["", "   "])("rejects an empty media ID %j", async id => {
+    const form = publicationForm();
+    form.set("id", id);
+    await expectRejected(form);
+  });
+});
+
 describe("media publication concurrency", () => {
   beforeEach(() => {
     vi.clearAllMocks();
