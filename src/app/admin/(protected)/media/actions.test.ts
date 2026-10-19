@@ -205,6 +205,54 @@ describe("identity media creation concurrency", () => {
     expect(mocks.createRecord).not.toHaveBeenCalled();
   });
 
+  it.each(["1999", "2101", "-1", "2026.5", "NaN", "2026junk"])(
+    "rejects invalid source year %s before managed storage or database effects",
+    async sourceYear => {
+      const form = new FormData();
+      form.set("target", "initiative:initiative_1");
+      form.set("kind", "IMAGE");
+      form.set("file", new File(["synthetic"], "image.png", { type: "image/png" }));
+      form.set("altText", "Reviewed photograph");
+      form.set("sourceYear", sourceYear);
+
+      await expect(createMediaAsset(form)).rejects.toThrow(/valid sourceYear/i);
+      expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+      expect(mocks.createRecord).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["-1", "1.5", "2147483648", "Infinity", "invalid"])(
+    "rejects invalid supporting image order %s instead of silently resetting it",
+    async sortOrder => {
+      const form = new FormData();
+      form.set("target", "story:story_1");
+      form.set("publicUrl", "https://cdn.example/record.jpg");
+      form.set("altText", "Reviewed documentary photograph");
+      form.set("sortOrder", sortOrder);
+
+      await expect(createMediaAsset(form)).rejects.toThrow(/valid sortOrder/i);
+      expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+      expect(mocks.createRecord).not.toHaveBeenCalled();
+    },
+  );
+
+  it("preserves valid source year and sort order at their supported boundaries", async () => {
+    const form = new FormData();
+    form.set("target", "story:story_1");
+    form.set("publicUrl", "https://cdn.example/record.jpg");
+    form.set("altText", "Reviewed documentary photograph");
+    form.set("sourceYear", "2100");
+    form.set("sortOrder", "2147483647");
+
+    await createMediaAsset(form);
+
+    expect(mocks.createRecord).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ sourceYear: 2100, sortOrder: 2147483647, isPublic: false }),
+    }));
+  });
+
   it("rejects a manual URL that could override an uploaded managed file", async () => {
     const form = new FormData();
     form.set("target", "initiative:initiative_1");
