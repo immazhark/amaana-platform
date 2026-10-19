@@ -24,20 +24,19 @@ export function parseAdminLoginInput(emailValue: FormDataEntryValue | null, pass
   };
 }
 
-/** Invalid or ambiguous credentials still count toward login admission. */
+/** Invalid or repeated credentials must still count toward login admission. */
 export function parseAdminLoginForm(form: FormData) {
   const emails = form.getAll("email");
   const passwords = form.getAll("password");
-  const email = emails.length === 1 && typeof emails[0] === "string" ? emails[0] : null;
-  const password = passwords.length === 1 && typeof passwords[0] === "string" ? passwords[0] : null;
-  const input = parseAdminLoginInput(email, password);
+  const input = parseAdminLoginInput(
+    typeof emails[0] === "string" ? emails[0] : null,
+    typeof passwords[0] === "string" ? passwords[0] : null,
+  );
 
-  // Keep the first valid email as the rate-limit subject when a request
-  // repeats the email field. Never use a duplicated value to authenticate.
-  if (emails.length > 1 && typeof emails[0] === "string") {
-    const first = parseAdminLoginInput(emails[0], password);
-    return { ...input, valid: false, rateLimitSubject: first.rateLimitSubject };
-  }
-
-  return input;
+  // Preserve the first email as the rate-limit subject, but never
+  // authenticate using duplicated or file-valued credentials.
+  return {
+    ...input,
+    valid: input.valid && emails.length === 1 && passwords.length === 1,
+  };
 }
