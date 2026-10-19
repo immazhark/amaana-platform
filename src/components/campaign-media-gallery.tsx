@@ -26,12 +26,12 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
   const safeItems = useMemo(() => {
     const seenUrls = new Set<string>();
     const seenIds = new Set<string>();
-    return items.filter(item => {
+    return items.flatMap(item => {
       const url = item.url.trim();
-      if (!url || seenUrls.has(url) || seenIds.has(item.id)) return false;
+      if (!url || seenUrls.has(url) || seenIds.has(item.id)) return [];
       seenUrls.add(url);
       seenIds.add(item.id);
-      return true;
+      return [{ ...item, url }];
     });
   }, [items]);
   const [activeId, setActiveId] = useState<string | null>(null);
