@@ -3,6 +3,8 @@ import { getDonationPaymentDetails } from "./donation-payment-details";
 
 const names = [
   "NEXT_PUBLIC_DONATION_UPI_QR_URL",
+  "NEXT_PUBLIC_APP_URL",
+  "PUBLIC_MEDIA_BASE_URL",
   "DONATION_BANK_ACCOUNT_NAME",
   "DONATION_BANK_ACCOUNT_NUMBER",
   "DONATION_BANK_IFSC",
@@ -30,6 +32,32 @@ describe("donation payment details", () => {
 
     process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL = "javascript:alert(1)";
     expect(getDonationPaymentDetails().upi.qrImageUrl).toBeNull();
+  });
+
+  it("never describes a third-party QR image as a verified UPI destination", () => {
+    process.env.NEXT_PUBLIC_APP_URL = "https://amaanafoundation.org";
+    process.env.PUBLIC_MEDIA_BASE_URL = "https://media.amaanafoundation.org";
+    process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL = "https://unknown-payment.example/donor-qr.png";
+    expect(getDonationPaymentDetails().upi.qrImageUrl).toBeNull();
+
+    process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL = "https://media.amaanafoundation.org/reviewed/qr.png";
+    expect(getDonationPaymentDetails().upi.qrImageUrl).toBe("https://media.amaanafoundation.org/reviewed/qr.png");
+
+    process.env.NEXT_PUBLIC_DONATION_UPI_QR_URL = "https://amaanafoundation.org/media/2026/qr.png";
+    expect(getDonationPaymentDetails().upi.qrImageUrl).toBe("https://amaanafoundation.org/media/2026/qr.png");
+  });
+
+  it("rejects malformed bank overrides, keeping the verified canonical fallback", () => {
+    process.env.DONATION_BANK_ACCOUNT_NAME = "Amaana Foundation";
+    process.env.DONATION_BANK_ACCOUNT_NUMBER = "123456789";
+    process.env.DONATION_BANK_IFSC = "INVALIDBANK";
+    process.env.DONATION_BANK_NAME = "Axis Bank";
+    process.env.DONATION_BANK_BRANCH = "Mehdipatnam";
+    expect(getDonationPaymentDetails().bank?.accountNumber).toBe("925020008040264");
+
+    process.env.DONATION_BANK_IFSC = "UTIB0002922";
+    process.env.DONATION_BANK_ACCOUNT_NUMBER = "1234<span>";
+    expect(getDonationPaymentDetails().bank?.accountNumber).toBe("925020008040264");
   });
 
   it("uses a complete configured bank identity and normalizes IFSC", () => {
