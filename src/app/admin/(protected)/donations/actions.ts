@@ -7,10 +7,11 @@ import { reconcileDirectDonation } from "@/lib/direct-donation-reconciliation";
 function singleTextField(formData: FormData, name: string): string | null {
   const values = formData.getAll(name);
   if (values.length > 1) throw new Error(`Repeated ${name} fields are not accepted.`);
-  if (values.length === 1 && typeof values[0] !== "string") {
+  const value = values[0];
+  if (value !== undefined && typeof value !== "string") {
     throw new Error(`Use a single text ${name} field.`);
   }
-  return values[0] ?? null;
+  return value ?? null;
 }
 
 export async function reconcileDonationAction(formData: FormData) {
