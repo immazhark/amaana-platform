@@ -113,6 +113,24 @@ test('gallery announces the newly selected photograph without moving keyboard fo
   await expect(dialog).toHaveCount(0);
 });
 
+test('gallery exposes approved captions as dialog descriptions only when present', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 1 of 13:/ }).click();
+
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toHaveAccessibleDescription(/^Synthetic caption 1 used to verify wrapping/);
+  const describedBy = await dialog.getAttribute('aria-describedby');
+  expect(describedBy).toBeTruthy();
+  await expect(page.locator(`#${describedBy}`)).toBeVisible();
+
+  await dialog.getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(dialog).not.toHaveAttribute('aria-describedby');
+  await expect(dialog).toHaveAccessibleDescription('');
+
+  await dialog.getByRole('button', { name: 'Previous', exact: true }).click();
+  await expect(dialog).toHaveAccessibleDescription(/^Synthetic caption 1 used to verify wrapping/);
+});
+
 test('initiative gallery lightbox remains contained at 320px and preserves usable controls', async ({ page }) => {
   await openGallery(page, 320);
   await page.getByRole('button', { name: /Enlarge image 2 of 13/ }).click();
