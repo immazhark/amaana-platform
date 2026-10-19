@@ -20,6 +20,7 @@ export async function reconcileDonationAction(formData: FormData) {
   const decision = String(singleTextField(formData, "decision") ?? "");
   const notes = String(singleTextField(formData, "notes") ?? "").trim();
   if (!donationId || !["VERIFY", "REJECT"].includes(decision)) throw new Error("Invalid reconciliation request");
+  if (notes.length < 3 || notes.length > 1000) throw new Error("Reconciliation notes must be between 3 and 1000 characters");
   await reconcileDirectDonation({ donationId, actorId: user.id, decision: decision as "VERIFY" | "REJECT", notes });
   revalidatePath("/admin/donations");
   revalidatePath(`/admin/donations/${donationId}`);
