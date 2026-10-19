@@ -941,3 +941,23 @@ for (const status of [429, 503]) {
     ]);
   });
 }
+
+test('fractional remaining balance offers the largest payable whole INR amount', async ({ page }) => {
+  await page.route('**/api/donations/order', route => route.fulfill({
+    status: 409,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      error: 'This appeal currently needs up to ₹399.71 more. Please reduce the donation amount.',
+      remainingAmount: 399.71,
+    }),
+  }));
+  await openDonationFixture(page);
+  await fillDonationForm(page, '400');
+  await page.getByRole('button', { name: 'Continue securely →' }).click();
+
+  const correction = page.getByRole('button', { name: 'Use the payable amount: ₹399' });
+  await expect(correction).toBeVisible();
+  await correction.click();
+  await expect(page.getByLabel(/Donation amount/)).toHaveValue('399');
+  await expect(page.getByLabel(/Donation amount/)).toBeFocused();
+});
