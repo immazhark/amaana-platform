@@ -1,3 +1,4 @@
+import { PUBLIC_DETAIL_MEDIA_LIMIT } from "@/lib/public-content";
 import { toPublicGalleryItems } from "@/lib/public-gallery-projection";
 import bannerStyles from "@/components/initiative-banner.module.css";
 import { selectInitiativeBannerImage } from "@/lib/initiative-banner-media";
@@ -134,6 +135,7 @@ export default async function InitiativePage({ params }: { params: Promise<{ slu
 
       {gallery.length > 0 && <section className="campaign-gallery" id="campaign-gallery"><div className="v2-shell"><SectionHeading className="campaign-section-heading" eyebrow="Programme photographs" title="From the drive" subtitle="Original photographs, privacy-protected videos and campaign updates from this edition." /><CampaignMediaGallery items={toPublicGalleryItems(gallery)} /><div className="campaign-gallery-grid">{gallery.filter(asset => asset.kind !== "IMAGE").map(asset => <PublicMedia asset={asset} key={asset.id} />)}</div></div></section>}
 
+      {initiative.mediaAssets.length >= PUBLIC_DETAIL_MEDIA_LIMIT && <div className="v2-shell"><Link prefetch={false} className="v2-text-link" href={`/media-archive/initiative/${encodeURIComponent(initiative.slug)}`}>Browse the complete approved media archive</Link></div>}
       {initiative.stories.length > 0 && <section className="campaign-related v2-shell"><h2>Stories connected to this work</h2><div className="v2-field-grid">{initiative.stories.map(story => <Link className="v2-field-story" href={`/stories/${story.slug}`} key={story.id}><h3>{story.title}</h3><p>{story.summary}</p><span className="v2-text-link">Read the story</span></Link>)}</div></section>}
       {initiative.faithContent.length > 0 && <section className="campaign-related v2-shell"><h2>Faith and reflections</h2>{initiative.faithContent.map(item => <article key={item.id}><h3>{item.title}</h3><p>{item.excerpt}</p><Link href={`/faith-and-reflections/${item.slug}`}>Read reflection</Link></article>)}</section>}
       {isTaleemInitiative && <section className="campaign-related v2-shell"><SectionHeading eyebrow="Continue the work" title="Sponsor a student through Amaana Taleem." subtitle="Explore sponsorship for Hifdh, Quran Nazira, or a child’s school or college education." /><Link className="v2-button" href="/get-involved/sponsor-education">Explore education sponsorship</Link></section>}

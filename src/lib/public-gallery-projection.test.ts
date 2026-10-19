@@ -1,4 +1,4 @@
-import { describe, it } from "vitest";
+import { afterEach, describe, it, vi } from "vitest";
 import assert from "node:assert/strict";
 import { toPublicGalleryItems } from "./public-gallery-projection";
 import type { PublicMediaCandidate } from "./public-media";
@@ -10,6 +10,7 @@ const image = {
 } as const;
 
 describe("public gallery projection", () => {
+  afterEach(() => vi.unstubAllEnvs());
   it("preserves landscape and portrait dimensions and reviewed copy", () => {
     const items = toPublicGalleryItems([image, {
       ...image, id: "portrait", publicUrl: "/media/portrait.jpg", width: 900, height: 1600,
@@ -57,6 +58,20 @@ describe("public gallery projection", () => {
       { ...image, id: "second", publicUrl: "/media/second.jpg" },
     ]);
     assert.deepEqual(items.map(item => item.id), ["landscape", "second"]);
+  });
+
+  it("normalizes first-party managed image URLs before they reach the client bundle", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://cdn.amaana.example");
+    const items = toPublicGalleryItems([
+      { ...image, id: "first-party", publicUrl: "https://amaanafoundation.org/media/2026/approved.webp" },
+      { ...image, id: "duplicate", publicUrl: "/media/2026/approved.webp" },
+      { ...image, id: "external", publicUrl: "https://cdn.amaana.example/2026/approved.webp" },
+    ]);
+    assert.deepEqual(items.map(item => [item.id, item.url]), [
+      ["first-party", "/media/2026/approved.webp"],
+      ["external", "https://cdn.amaana.example/2026/approved.webp"],
+    ]);
   });
 
   it("does not forward private server fields", () => {

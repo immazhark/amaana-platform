@@ -1,5 +1,5 @@
 import { getPublicImageDimensions } from "./public-image-dimensions";
-import { canRenderPublicMedia, resolvePublicMediaUrl, type PublicMediaCandidate } from "./public-media";
+import { canRenderPublicMedia, getPublicImageOptimizationUrl, resolvePublicMediaUrl, type PublicMediaCandidate } from "./public-media";
 
 /** Project already publication/privacy-approved records into public image cards. */
 export function toPublicGalleryItems<T extends PublicMediaCandidate & {
@@ -12,12 +12,14 @@ export function toPublicGalleryItems<T extends PublicMediaCandidate & {
   return assets.flatMap(asset => {
     if (asset.kind !== "IMAGE" || !canRenderPublicMedia(asset)) return [];
     const url = resolvePublicMediaUrl(asset);
-    if (!url || urls.has(url) || ids.has(asset.id)) return [];
-    urls.add(url);
+    if (!url) return [];
+    const displayUrl = getPublicImageOptimizationUrl(url) ?? url;
+    if (urls.has(displayUrl) || ids.has(asset.id)) return [];
+    urls.add(displayUrl);
     ids.add(asset.id);
     return [{
       id: asset.id,
-      url,
+      url: displayUrl,
       alt: asset.altText ?? null,
       caption: asset.caption,
       ...getPublicImageDimensions(asset),

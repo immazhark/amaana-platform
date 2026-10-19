@@ -119,7 +119,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
           const privacyProtected = /(privacy|blurred|identit(?:y|ies) protected)/i.test(descriptor);
           const graphicAsset = /(graphic|announcement|campaign cover|results update|infographic|carousel)/i.test(descriptor);
           const { width, height } = getPublicImageDimensions(item);
-          return (
+                    return (
           <figure className={`${styles.card} ${graphicAsset ? styles.graphicCard : ""}`} key={item.id}>
             <button
               ref={node => { triggerRefs.current[index] = node; }}
@@ -140,7 +140,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
 
       {active ? (() => {
         const { width, height } = getPublicImageDimensions(active);
-        return (
+                return (
         <div className={styles.backdrop} role="presentation" onPointerDown={event => {
           if (event.currentTarget === event.target) close();
         }}>
