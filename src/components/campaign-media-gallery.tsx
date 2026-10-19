@@ -38,6 +38,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const dialogTitleId = `gallery-dialog-${useId().replaceAll(":", "")}`;
+  const dialogCaptionId = `${dialogTitleId}-caption`;
   const triggerRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const activeIndex = safeItems.findIndex(item => item.id === activeId);
@@ -150,6 +151,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
             role="dialog"
             aria-modal="true"
             aria-labelledby={dialogTitleId}
+            aria-describedby={active.caption ? dialogCaptionId : undefined}
             tabIndex={-1}
           >
             <div className={styles.dialogTop}>
@@ -157,7 +159,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
             {canOptimizeLocally(active.url) ? <Image className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}
-            {active.caption ? <p className={styles.caption}>{active.caption}</p> : null}
+            {active.caption ? <p id={dialogCaptionId} className={styles.caption}>{active.caption}</p> : null}
             {safeItems.length > 1 ? (
               <div className={styles.controls}>
                 <button type="button" onClick={previous}><UIIcon name="previous" />Previous</button>
