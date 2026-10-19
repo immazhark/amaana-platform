@@ -73,7 +73,7 @@ export async function createMediaAsset(formData: FormData) {
   if (requestedKind !== "IMAGE" && requestedKind !== "DOCUMENT") {
     throw new Error("Choose an IMAGE or DOCUMENT media type.");
   }
-  const inferredKind: MediaKind = file?.type === "application/pdf" ? "DOCUMENT" : requestedKind;
+  const inferredKind: MediaKind = requestedKind;
   const altText = optionalText(singleCreateText(formData, "altText"), 300);
   const title = optionalText(singleCreateText(formData, "title"), 160);
   const caption = optionalText(singleCreateText(formData, "caption"), 1000);
