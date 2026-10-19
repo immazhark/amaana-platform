@@ -37,6 +37,7 @@ vi.mock("@/lib/public-copy", () => ({
 vi.mock("@/lib/public-media", () => ({
   canRenderPublicMedia: () => true,
   resolvePublicMediaUrl: (asset: { publicUrl: string }) => asset.publicUrl,
+  getPublicImageOptimizationUrl: (url: string) => url,
   selectGalleryPublicImage: () => null,
   selectIdentityPublicImage: () => null,
 }));
