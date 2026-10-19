@@ -17,6 +17,10 @@ describe("AF-R083 landing-page donation selection", () => {
     expect(html).not.toContain('data-reviewed-checkout="');
     expect(html).toContain('aria-pressed="true"');
     expect(html).toContain('aria-pressed="false"');
+    // The selected card must be visually distinguishable, not only ARIA-labelled.
+    expect(html).toContain("box-shadow:inset 0 0 0 1px var(--af-color-gold-ink)");
+    expect(html).toMatch(/<button[^>]*box-shadow:[^>]*aria-pressed="true"/);
+    expect(html).toMatch(/<button[^>]*aria-pressed="false"/);
     expect(html).toContain("₹900");
     expect(html).toContain("₹2,500");
     expect(html).toContain("/appeals/approved-first");

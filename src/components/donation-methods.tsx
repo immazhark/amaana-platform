@@ -97,7 +97,17 @@ export function AppealLandingCheckout({ appeals, paymentDetails }: {
       {eligible.map(appeal => <div key={appeal.id} style={{ minWidth: 0 }}>
         <button
           type="button"
-          style={{ ...choiceCard, width: "100%", outlineOffset: "3px", opacity: locked ? .7 : 1 }}
+          style={{
+            ...choiceCard,
+            width: "100%",
+            outlineOffset: "3px",
+            opacity: locked ? .7 : 1,
+            ...(appeal.id === selected.id ? {
+              borderColor: "var(--af-color-gold-ink)",
+              background: "var(--af-color-blue-note)",
+              boxShadow: "inset 0 0 0 1px var(--af-color-gold-ink)",
+            } : {}),
+          }}
           aria-pressed={appeal.id === selected.id}
           aria-label={`Select ${appeal.title}, with ${formatCheckoutRemainingINR(appeal.maxAmount)} remaining`}
           disabled={locked}
