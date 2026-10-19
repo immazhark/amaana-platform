@@ -62,7 +62,7 @@ export default async function TeamAdminPage({ searchParams }: Props) {
             <form action={updateTeamGroup} className="form-grid">
               <input type="hidden" name="id" value={group.id} />
               <input type="hidden" name="expectedUpdatedAt" value={group.updatedAt.toISOString()} />
-              <div className="field"><label htmlFor={`group-key-${group.id}`}>Unique key{group.key === "TRUSTEES" ? " (fixed for governance)" : ""}</label><input id={`group-key-${group.id}`} name="key" defaultValue={group.key} readOnly={group.key === "TRUSTEES"} required maxLength={64} /></div>
+              <div className="field"><label htmlFor={`group-key-${group.id}`}>Group key (fixed after creation)</label><input id={`group-key-${group.id}`} name="key" defaultValue={group.key} readOnly required maxLength={64} /></div>
               <div className="field"><label htmlFor={`group-title-${group.id}`}>Title</label><input id={`group-title-${group.id}`} name="title" defaultValue={group.title} required maxLength={100} /></div>
               <div className="field full"><label htmlFor={`group-description-${group.id}`}>Description</label><textarea id={`group-description-${group.id}`} name="description" defaultValue={group.description ?? ""} maxLength={240} rows={2} /></div>
               <button className="button" type="submit">Save group</button>
