@@ -69,7 +69,7 @@ export default async function TeamPage() {
                       {hasPhoto ? <Image
                         src={`/team/photo/${encodeURIComponent(member.slug)}?v=${member.updatedAt.getTime()}`}
                         width={480} height={600} sizes="(max-width: 679px) 104px, (max-width: 1099px) 44vw, 24vw"
-                        alt={`${member.fullName}, ${member.designation}`} loading="lazy" unoptimized
+                        alt={`${member.fullName}, ${member.designation}${member.photoAlt ? ` — ${member.photoAlt}` : ""}`} loading="lazy" unoptimized
                       /> : <span aria-hidden="true">{initials(member.fullName)}</span>}
                     </div>
                     <div className="team-member-copy">

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseTeamMemberForm, parseTeamGroupForm, assertTeamPhoto } from "./team-validation";
+import { parseTeamMemberForm, parseTeamGroupForm, assertTeamPhoto, teamPhotoInput } from "./team-validation";
 
 function memberForm() {
   const form = new FormData();
@@ -59,6 +59,14 @@ describe("team member form boundary", () => {
     expect(parsed.isPublished).toBe(false);
     expect(parsed.bio).toBeNull();
     expect(parsed.email).toBeNull();
+  });
+
+  it("fails closed on photo uploads without member consent", () => {
+    const form = new FormData();
+    form.set("photo", new File(["sample"], "member.jpg", { type: "image/jpeg" }));
+    expect(() => teamPhotoInput(form)).toThrow(/consent/i);
+    form.set("photoConsent", "on");
+    expect(teamPhotoInput(form).file).toBeInstanceOf(File);
   });
 
   it("accepts only JPEG, PNG, WebP and at most two megabytes for photographs", () => {
