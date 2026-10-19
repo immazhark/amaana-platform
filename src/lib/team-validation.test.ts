@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseTeamMemberForm, parseTeamGroupForm, assertTeamPhoto, teamPhotoInput } from "./team-validation";
+import { parseTeamMemberForm, parseTeamGroupForm, assertTeamPhoto, assertTeamPhotoContent, teamPhotoInput } from "./team-validation";
 
 function memberForm() {
   const form = new FormData();
@@ -76,6 +76,20 @@ describe("team member form boundary", () => {
     expect(() => assertTeamPhoto(big)).toThrow(/2 MB/);
     expect(() => assertTeamPhoto(new File(["small"], "portrait.webp", { type: "image/webp" }))).not.toThrow();
   });
+  it("rejects spoofed portrait bytes even when the declared MIME type is allowed", () => {
+    const fakeJpeg = new TextEncoder().encode("<svg xmlns='http://www.w3.org/2000/svg'></svg>");
+    expect(() => assertTeamPhotoContent(fakeJpeg, "image/jpeg")).toThrow(/signature/i);
+    const pngSignature = Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10]);
+    expect(() => assertTeamPhotoContent(pngSignature, "image/jpeg")).toThrow(/signature/i);
+    expect(() => assertTeamPhotoContent(new Uint8Array([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x4e, 0x4f, 0x50, 0x45]), "image/webp")).toThrow(/signature/i);
+  });
+
+  it("accepts valid JPEG, PNG and WebP file signatures for further decoding", () => {
+    expect(() => assertTeamPhotoContent(Uint8Array.from([0xff, 0xd8, 0xff]), "image/jpeg")).not.toThrow();
+    expect(() => assertTeamPhotoContent(Uint8Array.from([137, 80, 78, 71, 13, 10, 26, 10]), "image/png")).not.toThrow();
+    expect(() => assertTeamPhotoContent(Uint8Array.from([0x52, 0x49, 0x46, 0x46, 0, 0, 0, 0, 0x57, 0x45, 0x42, 0x50]), "image/webp")).not.toThrow();
+  });
+
 });
 
 describe("team group form boundary", () => {
