@@ -32,7 +32,7 @@ test("malformed private acknowledgement remains retryable without a new payment"
   malformed = false;
   await page.getByRole("button", { name: "Try again" }).click();
   await expect(page.getByRole("heading", { name: "Donation received" })).toBeVisible();
-  await expect(page.getByText("Payment verified")).toBeVisible();
+  await expect(page.locator(".v2-receipt-status > span")).toHaveText("Payment verified");
   expect(requests).toEqual([{ reference, token }, { reference, token }]);
   expect(page.url()).not.toContain(token);
 });
