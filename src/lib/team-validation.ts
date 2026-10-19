@@ -138,3 +138,18 @@ export function assertTeamPhoto(file: File) {
     throw new Error("Team photographs must be between 1 byte and 2 MB.");
   }
 }
+
+
+export function assertTeamPhotoContent(bytes: Uint8Array, mime: string) {
+  const jpeg = mime === "image/jpeg" && bytes.length >= 3 &&
+    bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
+  const png = mime === "image/png" && bytes.length >= 8 &&
+    [137, 80, 78, 71, 13, 10, 26, 10].every((value, index) => bytes[index] === value);
+  const webp = mime === "image/webp" && bytes.length >= 12 &&
+    [82, 73, 70, 70].every((value, index) => bytes[index] === value) &&
+    [87, 69, 66, 80].every((value, index) => bytes[index + 8] === value);
+
+  if (!jpeg && !png && !webp) {
+    throw new Error("Photograph file signature does not match the declared image type.");
+  }
+}
