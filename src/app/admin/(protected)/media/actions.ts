@@ -211,15 +211,15 @@ export async function updateMediaAsset(formData: FormData) {
   revalidatePath("/admin/media");
 }
 
-function publicationReviewVersion(formData: FormData) {
+function mediaReviewVersion(formData: FormData) {
   const values = formData.getAll("expectedUpdatedAt");
   const value = values[0];
   if (values.length !== 1 || typeof value !== "string") {
-    throw new Error("Media review version is missing or invalid. Refresh before publishing.");
+    throw new Error("Media review version is missing or invalid. Refresh before changing media.");
   }
   const version = new Date(value);
   if (Number.isNaN(version.getTime()) || version.toISOString() !== value) {
-    throw new Error("Media review version is missing or invalid. Refresh before publishing.");
+    throw new Error("Media review version is missing or invalid. Refresh before changing media.");
   }
   return version;
 }
@@ -235,7 +235,7 @@ export async function setMediaPublication(formData: FormData) {
     throw new Error("Use a single media ID and an explicit publication decision.");
   }
   const publish = decision === "true";
-  const reviewedVersion = publish ? publicationReviewVersion(formData) : undefined;
+  const reviewedVersion = publish ? mediaReviewVersion(formData) : undefined;
   const asset = await prisma.mediaAsset.findUniqueOrThrow({ where: { id } });
   if (reviewedVersion && asset.updatedAt.getTime() !== reviewedVersion.getTime()) {
     throw new Error("Media changed since this review was opened. Refresh and review it again before publishing.");
@@ -312,10 +312,19 @@ export async function setMediaPublication(formData: FormData) {
 
 export async function deleteMediaAsset(formData: FormData) {
   const user = await requirePermission("content.approve");
-  const id = String(formData.get("id") ?? "").trim();
-  const confirmation = String(formData.get("confirm") ?? "").trim();
+  const ids = formData.getAll("id");
+  const confirmations = formData.getAll("confirm");
+  const idValue = ids[0];
+  const confirmationValue = confirmations[0];
+  if (ids.length !== 1 || typeof idValue !== "string" ||
+      confirmations.length !== 1 || typeof confirmationValue !== "string") {
+    throw new Error("Use a single text media ID and DELETE confirmation.");
+  }
+  const id = idValue.trim();
+  const confirmation = confirmationValue.trim();
   if (!id) throw new Error("Media record is required");
   if (confirmation !== "DELETE") throw new Error("Type DELETE to confirm permanent media deletion");
+  const reviewedVersion = mediaReviewVersion(formData);
 
   const asset = await prisma.mediaAsset.findUniqueOrThrow({
     where: { id },
@@ -329,6 +338,9 @@ export async function deleteMediaAsset(formData: FormData) {
   });
 
   if (asset.isPublic) throw new Error("Unpublish this media before permanent deletion");
+  if (asset.updatedAt.getTime() !== reviewedVersion.getTime()) {
+    throw new Error("Media changed since this review was opened. Refresh before deleting.");
+  }
 
   // Re-read the destructive invariants immediately before touching storage.
   // An earlier admin view must never authorize deletion after another operator

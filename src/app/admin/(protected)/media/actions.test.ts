@@ -57,6 +57,7 @@ function deletionForm(confirm = "DELETE") {
   const formData = new FormData();
   formData.set("id", "media_123");
   formData.set("confirm", confirm);
+  formData.set("expectedUpdatedAt", "2026-09-23T00:00:00.000Z");
   return formData;
 }
 
@@ -520,6 +521,53 @@ describe("admin media deletion", () => {
     await expect(deleteMediaAsset(deletionForm("delete"))).rejects.toThrow(/type DELETE/i);
     expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
     expect(mocks.deletePublicMediaObject).not.toHaveBeenCalled();
+  });
+
+  it("requires the delete review version before reading or deleting", async () => {
+    const data = deletionForm();
+    data.delete("expectedUpdatedAt");
+    await expect(deleteMediaAsset(data)).rejects.toThrow(/review version/i);
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.deletePublicMediaObject).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+  });
+
+  it("rejects a stale delete review version after the displayed image was replaced", async () => {
+    mocks.findUniqueOrThrow.mockResolvedValue({
+      id: "media_123", isPublic: false, storageKey: "2026/replacement.jpg",
+      publicUrl: "/media/2026/replacement.jpg", updatedAt: new Date("2026-09-23T00:01:00.000Z"),
+    });
+    await expect(deleteMediaAsset(deletionForm())).rejects.toThrow(/changed.*review/i);
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.deletePublicMediaObject).not.toHaveBeenCalled();
+    expect(mocks.deleteRecord).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+  });
+
+  it.each(["id", "confirm"])("rejects repeated deletion %s fields before touching records or storage", async field => {
+    for (const alternative of [field === "id" ? "media_123" : "DELETE", "different-instruction"]) {
+      const data = deletionForm();
+      data.append(field, alternative);
+      await expect(deleteMediaAsset(data)).rejects.toThrow(/single text.*media ID.*DELETE confirmation/i);
+    }
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.deletePublicMediaObject).not.toHaveBeenCalled();
+    expect(mocks.deleteRecord).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it.each(["id", "confirm"])("rejects a file-valued deletion %s field", async field => {
+    const data = deletionForm();
+    data.set(field, new File(["not-a-command"], "delete.txt"));
+    await expect(deleteMediaAsset(data)).rejects.toThrow(/single text.*media ID.*DELETE confirmation/i);
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.deletePublicMediaObject).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+    expect(mocks.transaction).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
   });
 
   it("refuses permanent deletion while media is published", async () => {
