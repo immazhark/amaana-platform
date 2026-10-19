@@ -1,3 +1,7 @@
+## 2026-10-20 — AF-R052 bounded, approved media archive
+
+Owner: CHATGPT_ACTIVE by explicit user continuation. Base main 572c2fd76a9b677d20c23c9ac783eb330b67812b. Task branch: fix/af-r052-reviewed-media-archive-20261020. Previous PRs #369, #370 and #371 are merged and deployed; no other open PRs at claim. Scope: bounded public detail media and paginated archive for approved initiative/story/faith media, reusing preserved PR #292 source/test patterns. Protect consent/publication/faith gates, avoid internal storage fields, keep main deployment only on merge. Canonical AF-R052 remains Partial until exact-head acceptance, merge and live verification. No finance, donation, provider or production data actions.
+
 ## 2026-10-19 — Priority Team directory and content-managed admin
 
 Owner: CHATGPT_ACTIVE by explicit user priority handover. Integration target: main; task branch: feat/public-team-directory-admin-20261019, based on 3e32e8df58f52270b80b7e851d09ad5c7226d0c4. Scope: public /team, exact ten-person five-group slug-based seed, /admin/team content-management actions and upload consent, About trustees preview, header/footer/sitemap/JSON-LD. Preserve PR369 and prepared media branch without code overlap. No donations, appeals or payment edits. Team PR requires database migration safety, focused test, typecheck/build and release acceptance before merge; not deployed. Existing hourly integration automation paused to prevent parallel repo writers.
