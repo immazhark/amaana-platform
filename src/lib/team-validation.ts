@@ -73,6 +73,7 @@ export function parseTeamMemberForm(formData: FormData) {
   const result = memberSchema.safeParse(raw);
   if (!result.success) {
     const issue = result.error.issues[0];
+    if (!issue) throw new Error("Invalid team input.");
     throw new Error(`Invalid ${issue.path.join(".")}: ${issue.message}`);
   }
   return result.data;
@@ -93,6 +94,7 @@ export function parseTeamGroupForm(formData: FormData) {
   const result = groupSchema.safeParse(raw);
   if (!result.success) {
     const issue = result.error.issues[0];
+    if (!issue) throw new Error("Invalid team input.");
     throw new Error(`Invalid ${issue.path.join(".")}: ${issue.message}`);
   }
   return result.data;
