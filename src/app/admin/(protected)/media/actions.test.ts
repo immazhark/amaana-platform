@@ -396,6 +396,41 @@ describe("media metadata edit input boundary", () => {
   );
 });
 
+describe("media metadata edit valid submissions", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "user_123" });
+    mocks.findUniqueOrThrow.mockResolvedValue({
+      id: "media_123", kind: "IMAGE", isPublic: false,
+      title: null, altText: "Documentary photograph", caption: null, sourcePath: null, sourceYear: null,
+      publicUrl: "https://cdn.example/original.jpg", storageKey: null,
+      sortOrder: 0, causeId: "cause_1", initiativeId: null, storyId: null, faithContentId: null,
+      updatedAt: new Date("2026-09-23T00:00:00.000Z"),
+    });
+    mocks.updateMany.mockResolvedValue({ count: 1 });
+    mocks.createAudit.mockResolvedValue({ id: "audit_123" });
+    mocks.serializableTransaction.mockImplementation(async callback => callback({
+      mediaAsset: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateMany },
+      auditEvent: { create: mocks.createAudit },
+    }));
+  });
+
+  it.each([
+    { year: "2026", order: "7", expectedYear: 2026, expectedOrder: 7 },
+    { year: "", order: "", expectedYear: null, expectedOrder: 0 },
+  ])("preserves valid metadata edits with year '$year' and order '$order'", async ({ year, order, expectedYear, expectedOrder }) => {
+    await updateMediaAsset(updateForm({ title: "Reviewed image", sourceYear: year, sortOrder: order }));
+    expect(mocks.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ id: "media_123", isPublic: false }),
+      data: expect.objectContaining({ title: "Reviewed image", sourceYear: expectedYear, sortOrder: expectedOrder }),
+    }));
+    expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ action: "media.metadata_updated", entityId: "media_123" }),
+    }));
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/media");
+  });
+});
+
 describe("published media editing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
