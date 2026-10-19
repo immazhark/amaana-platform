@@ -59,15 +59,27 @@ describe("admin transfer reconciliation form boundary", () => {
     },
   );
 
-  it("keeps notes optional while denying invalid decisions", async () => {
-    const form = validForm();
-    form.delete("notes");
-    await reconcileDonationAction(form);
-    expect(mocks.reconcile).toHaveBeenCalledWith(expect.objectContaining({ notes: "" }));
+  it.each(["", "  ", "no", "a".repeat(1001)])(
+    "rejects missing or invalid reconciliation notes before financial mutation", async notes => {
+      const form = validForm();
+      if (!notes) form.delete("notes");
+      else form.set("notes", notes);
+      await expect(reconcileDonationAction(form)).rejects.toThrow(/notes.*3.*1000/i);
+      expect(mocks.reconcile).not.toHaveBeenCalled();
+    },
+  );
 
+  it("rejects unsupported decisions without financial mutation", async () => {
     const invalid = validForm();
     invalid.set("decision", "APPROVE_WITHOUT_REVIEW");
     await expect(reconcileDonationAction(invalid)).rejects.toThrow("Invalid reconciliation request");
-    expect(mocks.reconcile).toHaveBeenCalledTimes(1);
+    expect(mocks.reconcile).not.toHaveBeenCalled();
+  });
+
+  it("accepts the minimum valid note length", async () => {
+    const form = validForm();
+    form.set("notes", "yes");
+    await reconcileDonationAction(form);
+    expect(mocks.reconcile).toHaveBeenCalledWith(expect.objectContaining({ notes: "yes" }));
   });
 });
