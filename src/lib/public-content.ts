@@ -17,7 +17,6 @@ export const PUBLIC_DETAIL_MEDIA_PROJECTION = {
     privacyApprovedAt: { not: null },
     OR: [
       { kind: "IMAGE" as const, publicUrl: { not: null }, altText: { not: "" } },
-      { kind: "VIDEO" as const, publicUrl: { not: null } },
       { kind: "DOCUMENT" as const, publicUrl: { not: null } },
       { kind: "EXTERNAL_VIDEO" as const, externalUrl: { not: null } },
     ],
