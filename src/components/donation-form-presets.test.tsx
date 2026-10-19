@@ -14,10 +14,12 @@ describe("AF-R083 secure donation amount shortcuts", () => {
       appealId="approved-appeal" appealTitle="Reviewed appeal"
       maxAmount={900} copy={copy}
     />);
-    expect(markup).toContain('aria-label="Suggested donation amounts"');
-    expect(markup).toContain("Set donation amount to ₹500");
-    expect(markup).toContain("Set donation amount to ₹900");
-    expect(markup).not.toContain("Set donation amount to ₹1,000");
+    expect(markup).toContain('aria-label="Suggested amounts in INR"');
+    // Preserve unambiguous label-based access to the actual amount input.
+    expect(markup).not.toMatch(/aria-label="[^"]*donation amount/i);
+    expect(markup).toContain("Use ₹500 for this donation");
+    expect(markup).toContain("Use ₹900 for this donation");
+    expect(markup).not.toContain("Use ₹1,000 for this donation");
     expect(markup).toContain('name="amount"');
     expect(markup).toContain('type="button"');
   });
@@ -27,7 +29,7 @@ describe("AF-R083 secure donation amount shortcuts", () => {
       appealId="closed-appeal" appealTitle="Not payable"
       maxAmount={9.5} copy={copy}
     />);
-    expect(markup).not.toContain('aria-label="Suggested donation amounts"');
-    expect(markup).not.toContain("Set donation amount to");
+    expect(markup).not.toContain('aria-label="Suggested amounts in INR"');
+    expect(markup).not.toContain("Use ₹");
   });
 });
