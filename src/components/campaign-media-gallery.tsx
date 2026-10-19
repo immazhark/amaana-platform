@@ -62,7 +62,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     const trigger = triggers[activeIndex];
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    closeRef.current?.focus();
+    if (!dialog?.contains(document.activeElement)) closeRef.current?.focus();
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
