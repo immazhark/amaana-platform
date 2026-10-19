@@ -24,11 +24,13 @@ function canOptimizeLocally(url: string) {
 
 export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }) {
   const safeItems = useMemo(() => {
-    const seen = new Set<string>();
+    const seenUrls = new Set<string>();
+    const seenIds = new Set<string>();
     return items.filter(item => {
       const url = item.url.trim();
-      if (!url || seen.has(url)) return false;
-      seen.add(url);
+      if (!url || seenUrls.has(url) || seenIds.has(item.id)) return false;
+      seenUrls.add(url);
+      seenIds.add(item.id);
       return true;
     });
   }, [items]);
