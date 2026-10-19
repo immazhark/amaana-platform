@@ -4,6 +4,7 @@ import { UIIcon } from "./ui-icon";
 /* eslint-disable @next/next/no-img-element */
 
 import Image from "next/image";
+import { getPublicImageDimensions } from "@/lib/public-image-dimensions";
 import { adjacentGalleryId } from "@/lib/gallery-selection";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
@@ -117,8 +118,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
           const descriptor = `${item.alt ?? ""} ${item.caption ?? ""}`;
           const privacyProtected = /(privacy|blurred|identit(?:y|ies) protected)/i.test(descriptor);
           const graphicAsset = /(graphic|announcement|campaign cover|results update|infographic|carousel)/i.test(descriptor);
-          const width = item.width && item.width > 0 ? item.width : 1600;
-          const height = item.height && item.height > 0 ? item.height : 1200;
+          const { width, height } = getPublicImageDimensions(item);
           return (
           <figure className={`${styles.card} ${graphicAsset ? styles.graphicCard : ""}`} key={item.id}>
             <button
@@ -139,8 +139,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
       </div>
 
       {active ? (() => {
-        const width = active.width && active.width > 0 ? active.width : 1600;
-        const height = active.height && active.height > 0 ? active.height : 1200;
+        const { width, height } = getPublicImageDimensions(active);
         return (
         <div className={styles.backdrop} role="presentation" onPointerDown={event => {
           if (event.currentTarget === event.target) close();
