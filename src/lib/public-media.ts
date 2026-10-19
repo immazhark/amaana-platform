@@ -118,6 +118,29 @@ export function isPrivateAppMediaUrl(value: string): boolean {
   return isPrivateAppPath(path);
 }
 
+/** Convert managed same-origin media to relative URLs for Next/Image.
+ * Other reviewed HTTPS origins stay direct until explicitly allowlisted. */
+export function getPublicImageOptimizationUrl(
+  value: string,
+  appUrl = process.env.NEXT_PUBLIC_APP_URL,
+): string | null {
+  const normalized = normalizeSafePublicMediaUrl(value);
+  if (!normalized || isPrivateAppMediaUrl(normalized)) return null;
+
+  const isManaged = (pathname: string) =>
+    pathname.startsWith("/media/") || pathname.startsWith("/brand/");
+
+  if (normalized.startsWith("/")) {
+    return isManaged(normalized.split(/[?#]/, 1)[0] ?? "") ? normalized : null;
+  }
+
+  const origin = configuredHttpsOrigin(appUrl);
+  if (!origin) return null;
+  const url = new URL(normalized);
+  if (url.origin !== origin || !isManaged(url.pathname)) return null;
+  return `${url.pathname}${url.search}${url.hash}`;
+}
+
 export function isCspCompatiblePublicImageUrl(value: string | null | undefined) {
   const normalized = normalizeSafePublicMediaUrl(value);
   if (!normalized || isPrivateAppMediaUrl(normalized)) return false;
