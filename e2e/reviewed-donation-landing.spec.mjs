@@ -25,6 +25,7 @@ test("changing reviewed appeal resets payment fields, amount limits and intent",
   await amount.fill("750");
   await expect(page.getByRole("button", { name: "Use ₹900 for this donation" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Use ₹1,000 for this donation" })).toHaveCount(0);
+  await expect(page.locator('input[name="givingIntent"][value="ZAKAT"]')).toHaveCount(0);
 
   await second.click();
   await expect(second).toHaveAttribute("aria-pressed", "true");
@@ -36,6 +37,7 @@ test("changing reviewed appeal resets payment fields, amount limits and intent",
   await expect(page.getByLabel("Donation amount")).toHaveValue("");
   await expect(page.getByRole("button", { name: "Use ₹2,500 for this donation" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Use ₹1,000 for this donation" })).toBeVisible();
+  await expect(page.locator('input[name="givingIntent"][value="ZAKAT"]')).toHaveCount(1);
   await expect(page.getByText("Maximum available for this transaction: ₹2,500.")).toBeVisible();
   expect(errors).toEqual([]);
 });
