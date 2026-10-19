@@ -4,7 +4,7 @@ export const MAX_ASSISTANCE_DOCUMENTS = 5;
 export const MAX_ASSISTANCE_DOCUMENT_BYTES = 5 * 1024 * 1024;
 const SUPPORTED_TYPES = new Set(["application/pdf", "image/jpeg", "image/png", "image/webp"]);
 
-type EvidenceCandidate = { size: number; type: string };
+type EvidenceCandidate = Pick<File, "name" | "size" | "type">;
 
 export function assistanceDocumentSelectionIssue(files: readonly EvidenceCandidate[]): string | null {
   if (files.length > MAX_ASSISTANCE_DOCUMENTS) return "Choose no more than five supporting documents.";
