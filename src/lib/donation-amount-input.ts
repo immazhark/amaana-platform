@@ -50,6 +50,8 @@ export function getUpiPaymentUri(
   minimum: number,
   maximum: number,
 ): string | null {
+  if (!Number.isSafeInteger(minimum) || minimum < 1 ||
+      !Number.isFinite(maximum) || maximum < minimum || maximum > 1_000_000) return null;
   if (!/^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+$/.test(upiId) ||
       !amountText || donationAmountValidationMessage(amountText, minimum, maximum)) return null;
   const amount = Number(amountText);
