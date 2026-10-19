@@ -400,8 +400,10 @@ test('navigation marks current primary, support and secondary routes consistentl
   await expect(primaryNav.getByRole('link', { name: 'Our Work' })).toHaveAttribute('aria-current', 'page');
   await expect(primaryNav.getByRole('link', { name: 'Impact' })).not.toHaveAttribute('aria-current', 'page');
 
-  await openPublicPage(page, '/appeals');
-  await expect(primaryNav.getByRole('link', { name: 'Support a need' })).toHaveAttribute('aria-current', 'page');
+  await openPublicPage(page, '/donate');
+  const donate = primaryNav.getByRole('link', { name: 'Donate', exact: true });
+  await expect(donate).toHaveAttribute('href', '/donate');
+  await expect(donate).toHaveAttribute('aria-current', 'page');
 
   await page.setViewportSize({ width: 390, height: 844 });
   await openPublicPage(page, '/transparency');
