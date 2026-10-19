@@ -48,3 +48,26 @@ for (const width of [320, 390, 768, 1020]) {
     await expect(page.getByRole("heading", { name: "Domestic donations only" })).toBeVisible();
   });
 }
+
+for (const width of [320, 390]) {
+  test(`mobile Donate and menu fit at 200% text size on ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 844 });
+    await page.emulateMedia({ reducedMotion: "reduce" });
+    await page.goto("/about", { waitUntil: "load" });
+    await page.addStyleTag({ content: "html { font-size: 200% !important; }" });
+    const nav = page.getByRole("navigation", { name: "Primary navigation" });
+    const donate = nav.getByRole("link", { name: "Donate", exact: true });
+    const toggle = page.getByRole("button", { name: "Open navigation menu" });
+    for (const item of [donate, toggle]) {
+      await expect(item).toBeVisible();
+      const bounds = await item.boundingBox();
+      expect(bounds).not.toBeNull();
+      expect(bounds.x, "Action starts inside viewport").toBeGreaterThanOrEqual(0);
+      expect(bounds.x + bounds.width, "Action remains inside viewport").toBeLessThanOrEqual(width + 1);
+      expect(bounds.height, "Action remains touch accessible").toBeGreaterThanOrEqual(44);
+    }
+    expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(width + 1);
+    await donate.click();
+    await expect(page).toHaveURL(url => url.pathname === "/donate");
+  });
+}
