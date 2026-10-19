@@ -48,7 +48,6 @@ export const PUBLIC_DETAIL_MEDIA_PROJECTION = {
     sortOrder: true,
     width: true,
     height: true,
-    blurDataURL: true,
   },
 } satisfies Prisma.MediaAssetFindManyArgs;
 
