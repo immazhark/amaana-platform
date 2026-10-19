@@ -1,3 +1,7 @@
+## 2026-10-19 — Media consent-review scalar validation
+
+State: HANDOFF_PENDING. Same branch fix/media-publication-input-20261019; complete the entire publication input boundary before its scoped PR. Review parser now rejects duplicate/file-valued classification, consent, sensitivity/usage flags and notes; checkbox values must be absent or exact on. Normal unchecked fields, enum validation, notes trimming/bounds and publication eligibility rules remain intact. The previous parser reproduced24 expected failures, including file-valued private-document flags silently becoming false. Three action regressions use the real parser and prove rejection before transaction/audit/invalidation. GREEN:67 tests across media action/governance suites; full TypeScript, focused ESLint and diff check pass. Corrected mock signature after typecheck identified a zero-argument test double. Actual admin form uses native on/absent checkboxes and remains compatible. No second PR; gallery PR368 is still independent at4760f4ec. No hosted acceptance, main merge, deployment or new closure count claimed for this branch.
+
 ## 2026-10-19 — Media publication command validation
 
 State: HANDOFF_PENDING. Branch: fix/media-publication-input-20261019 from main ce54660dc940bb042ee65eeeb16c177553390a0a. PR367 is merged at that SHA. Completed gallery change is in PR368 / head4760f4ec3b9544cbe69d7a1d3eddbcf3e36392da; preserve its independent release acceptance.

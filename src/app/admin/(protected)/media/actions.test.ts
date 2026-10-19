@@ -14,6 +14,7 @@ const mocks = vi.hoisted(() => ({
   deletePublicMediaObject: vi.fn(),
   uploadPublicMediaFile: vi.fn(),
   revalidatePath: vi.fn(),
+  parseReview: vi.fn<(formData: FormData) => unknown>(() => ({})),
 }));
 
 vi.mock("next/cache", () => ({ revalidatePath: mocks.revalidatePath }));
@@ -24,7 +25,7 @@ vi.mock("@/lib/auth", () => ({
 vi.mock("@/lib/prisma-transaction", () => ({ withSerializableTransactionRetry: mocks.serializableTransaction }));
 vi.mock("@/lib/media-governance", () => ({
   mediaPublicationIssues: () => [],
-  parseMediaPublicationReview: () => ({}),
+  parseMediaPublicationReview: mocks.parseReview,
 }));
 vi.mock("@/lib/public-media", () => ({
   canRenderPublicMedia: () => true,
@@ -292,6 +293,28 @@ describe("media publication command input", () => {
     form.set("id", id);
     await expectRejected(form);
   });
+
+  it.each(["duplicate consent", "file sensitivity", "invalid checkbox"])(
+    "rejects %s through the real review parser before publication", async scenario => {
+      const actual = await vi.importActual<typeof import("@/lib/media-governance")>("@/lib/media-governance");
+      mocks.parseReview.mockImplementationOnce(actual.parseMediaPublicationReview);
+      const form = publicationForm();
+      form.set("publish", "true");
+      form.set("privacyClass", "GREEN_PUBLIC");
+      form.set("consentStatus", "DOCUMENTED");
+      form.set("websiteApproved", "on");
+      form.set("provenanceConfirmed", "on");
+      if (scenario === "duplicate consent") form.append("consentStatus", "NOT_APPROVED");
+      else if (scenario === "file sensitivity") form.set("containsPrivateDocument", new File(["invalid"], "review.txt"));
+      else form.set("containsMinor", "false");
+
+      await expect(setMediaPublication(form)).rejects.toThrow(/single text|checkbox/i);
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+      expect(mocks.updateMany).not.toHaveBeenCalled();
+      expect(mocks.createAudit).not.toHaveBeenCalled();
+      expect(mocks.revalidatePath).not.toHaveBeenCalled();
+    },
+  );
 });
 
 describe("media publication concurrency", () => {
