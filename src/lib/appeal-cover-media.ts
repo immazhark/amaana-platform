@@ -13,6 +13,8 @@ type ReviewMetadata = {
   websiteApproved?: unknown;
   provenanceConfirmed?: unknown;
   containsPrivateDocument?: unknown;
+  containsMinor?: unknown;
+  containsPatient?: unknown;
   heroEligible?: unknown;
 };
 
@@ -39,8 +41,14 @@ export function getAppealCoverMediaIssues(media: CoverMediaLike | null, reviewMe
   if (review.privacyClass !== "GREEN_PUBLIC") issues.push("Appeal cover media must have GREEN public-use classification.");
   if (review.websiteApproved !== true) issues.push("Appeal cover media must be approved for website use.");
   if (review.provenanceConfirmed !== true) issues.push("Appeal cover media must have confirmed provenance.");
-  if (review.containsPrivateDocument === true) issues.push("Appeal cover media cannot contain private documents or private data.");
-  if (!["DOCUMENTED", "NOT_APPLICABLE"].includes(String(review.consentStatus ?? ""))) {
+  if (review.containsPrivateDocument !== false) issues.push("Appeal cover media cannot contain private documents or private data.");
+  if (typeof review.containsMinor !== "boolean" || typeof review.containsPatient !== "boolean") {
+    issues.push("Appeal cover media needs recorded child and patient privacy checks.");
+  }
+  if ((review.containsMinor === true || review.containsPatient === true) && review.consentStatus !== "DOCUMENTED") {
+    issues.push("Identifiable child or patient cover media requires documented publication consent.");
+  }
+  if (review.consentStatus !== "DOCUMENTED" && review.consentStatus !== "NOT_APPLICABLE") {
     issues.push("Appeal cover media consent does not permit general website use.");
   }
   if (review.heroEligible !== true) issues.push("Appeal cover media requires explicit Hero use approved review.");

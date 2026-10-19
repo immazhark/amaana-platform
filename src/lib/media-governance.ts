@@ -32,9 +32,26 @@ export function mediaPublicationIssues(review: MediaPublicationReview) {
   return issues;
 }
 
+function reviewText(formData: FormData, name: string) {
+  const values = formData.getAll(name);
+  const value = values[0];
+  if (values.length > 1 || (value !== undefined && typeof value !== "string")) {
+    throw new Error(`Use a single text ${name} field in the publication review.`);
+  }
+  return value;
+}
+
+function reviewCheckbox(formData: FormData, name: string) {
+  const value = reviewText(formData, name);
+  if (value !== undefined && value !== "on") {
+    throw new Error(`Use a valid ${name} checkbox in the publication review.`);
+  }
+  return value === "on";
+}
+
 export function parseMediaPublicationReview(formData: FormData): MediaPublicationReview {
-  const privacyClass = String(formData.get("privacyClass") ?? "") as MediaPrivacyClass;
-  const consentStatus = String(formData.get("consentStatus") ?? "") as MediaConsentStatus;
+  const privacyClass = (reviewText(formData, "privacyClass") ?? "") as MediaPrivacyClass;
+  const consentStatus = (reviewText(formData, "consentStatus") ?? "") as MediaConsentStatus;
   const validPrivacy = new Set<MediaPrivacyClass>(["GREEN_PUBLIC", "AMBER_RESTRICTED", "RED_PRIVATE"]);
   const validConsent = new Set<MediaConsentStatus>(["DOCUMENTED", "RESTRICTED", "NOT_APPROVED", "NOT_APPLICABLE"]);
   if (!validPrivacy.has(privacyClass)) throw new Error("Choose a media privacy classification before publication.");
@@ -43,12 +60,12 @@ export function parseMediaPublicationReview(formData: FormData): MediaPublicatio
   return {
     privacyClass,
     consentStatus,
-    websiteApproved: formData.get("websiteApproved") === "on",
-    containsMinor: formData.get("containsMinor") === "on",
-    containsPatient: formData.get("containsPatient") === "on",
-    containsPrivateDocument: formData.get("containsPrivateDocument") === "on",
-    heroEligible: formData.get("heroEligible") === "on",
-    provenanceConfirmed: formData.get("provenanceConfirmed") === "on",
-    reviewNotes: String(formData.get("reviewNotes") ?? "").trim().slice(0, 2000) || null,
+    websiteApproved: reviewCheckbox(formData, "websiteApproved"),
+    containsMinor: reviewCheckbox(formData, "containsMinor"),
+    containsPatient: reviewCheckbox(formData, "containsPatient"),
+    containsPrivateDocument: reviewCheckbox(formData, "containsPrivateDocument"),
+    heroEligible: reviewCheckbox(formData, "heroEligible"),
+    provenanceConfirmed: reviewCheckbox(formData, "provenanceConfirmed"),
+    reviewNotes: reviewText(formData, "reviewNotes")?.trim().slice(0, 2000) || null,
   };
 }
