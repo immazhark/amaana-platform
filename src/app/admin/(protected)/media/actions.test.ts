@@ -243,6 +243,7 @@ describe("media publication command input", () => {
     const form = new FormData();
     form.set("id", "media_123");
     form.set("publish", "false");
+    form.set("expectedUpdatedAt", "2026-10-19T00:00:00.000Z");
     return form;
   }
 
@@ -317,6 +318,76 @@ describe("media publication command input", () => {
   );
 });
 
+describe("media publication review version", () => {
+  const reviewedAt = new Date("2026-10-19T00:00:00.000Z");
+  const reviewedAsset = {
+    id: "media_123", kind: "IMAGE", isPublic: false,
+    publicUrl: "/media/reviewed.jpg", altText: "Reviewed photograph",
+    sortOrder: 0, updatedAt: reviewedAt,
+  };
+
+  function form() {
+    const data = new FormData();
+    data.set("id", reviewedAsset.id);
+    data.set("publish", "true");
+    data.set("expectedUpdatedAt", reviewedAt.toISOString());
+    return data;
+  }
+
+  beforeEach(() => {
+    vi.resetAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "approver_123" });
+    mocks.findUniqueOrThrow.mockResolvedValue(reviewedAsset);
+    mocks.updateMany.mockResolvedValue({ count: 1 });
+    mocks.serializableTransaction.mockImplementation(async callback => callback({
+      mediaAsset: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateMany },
+      auditEvent: { create: mocks.createAudit },
+    }));
+  });
+
+  it.each(["missing", "duplicate", "file", "invalid", "noncanonical"])(
+    "rejects a %s review version before asset lookup", async scenario => {
+      const data = form();
+      if (scenario === "missing") data.delete("expectedUpdatedAt");
+      else if (scenario === "duplicate") data.append("expectedUpdatedAt", reviewedAt.toISOString());
+      else if (scenario === "file") data.set("expectedUpdatedAt", new File(["invalid"], "version.txt"));
+      else data.set("expectedUpdatedAt", scenario === "invalid" ? "not-a-date" : "2026-10-19");
+      await expect(setMediaPublication(data)).rejects.toThrow(/review version/i);
+      expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+      expect(mocks.createAudit).not.toHaveBeenCalled();
+      expect(mocks.revalidatePath).not.toHaveBeenCalled();
+    },
+  );
+
+  it("rejects metadata changed since the review form was rendered", async () => {
+    mocks.findUniqueOrThrow.mockResolvedValue({ ...reviewedAsset, updatedAt: new Date(reviewedAt.getTime() + 1000) });
+    await expect(setMediaPublication(form())).rejects.toThrow(/changed.*review/i);
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+  });
+
+  it("rejects a safe-looking image swap between lookup and transaction", async () => {
+    mocks.findUniqueOrThrow.mockResolvedValueOnce(reviewedAsset).mockResolvedValueOnce({
+      ...reviewedAsset, publicUrl: "/media/replacement.jpg", updatedAt: new Date(reviewedAt.getTime() + 1000),
+    });
+    await expect(setMediaPublication(form())).rejects.toThrow(/changed.*review/i);
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.createAudit).not.toHaveBeenCalled();
+    expect(mocks.revalidatePath).not.toHaveBeenCalled();
+  });
+
+  it("publishes and audits an unchanged reviewed version", async () => {
+    await setMediaPublication(form());
+    expect(mocks.updateMany).toHaveBeenCalledWith({
+      where: { id: reviewedAsset.id, isPublic: false, updatedAt: reviewedAt },
+      data: { isPublic: true, privacyApprovedAt: expect.any(Date) },
+    });
+    expect(mocks.createAudit).toHaveBeenCalledWith({ data: expect.objectContaining({ action: "media.published" }) });
+  });
+});
+
 describe("media publication concurrency", () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -337,11 +408,12 @@ describe("media publication concurrency", () => {
       storageKey: "2026/123e4567-e89b-12d3-a456-426614174000.webp",
       publicUrl: "https://cdn.example.org/123e4567-e89b-12d3-a456-426614174000.webp",
       altText: "Synthetic documentary photo",
-      sortOrder: 0,
+      sortOrder: 0, updatedAt: new Date("2026-09-23T00:00:00.000Z"),
     });
     const form = new FormData();
     form.set("id", "media_123");
     form.set("publish", "true");
+    form.set("expectedUpdatedAt", "2026-09-23T00:00:00.000Z");
 
     await expect(setMediaPublication(form)).rejects.toThrow(/consent-gated \/media\/ route/i);
     expect(mocks.serializableTransaction).not.toHaveBeenCalled();
@@ -354,16 +426,17 @@ describe("media publication concurrency", () => {
       .mockResolvedValueOnce({
         id: "media_123", kind: "IMAGE", isPublic: false,
         storageKey: key, publicUrl: "/media/" + key,
-        altText: "Synthetic documentary photo", sortOrder: 0,
+        altText: "Synthetic documentary photo", sortOrder: 0, updatedAt: new Date("2026-09-23T00:00:00.000Z"),
       })
       .mockResolvedValueOnce({
         id: "media_123", kind: "IMAGE", isPublic: false,
         storageKey: key, publicUrl: "https://cdn.example.org/photo.webp",
-        altText: "Synthetic documentary photo", sortOrder: 0,
+        altText: "Synthetic documentary photo", sortOrder: 0, updatedAt: new Date("2026-09-23T00:00:00.000Z"),
       });
     const form = new FormData();
     form.set("id", "media_123");
     form.set("publish", "true");
+    form.set("expectedUpdatedAt", "2026-09-23T00:00:00.000Z");
 
     await expect(setMediaPublication(form)).rejects.toThrow(/delivery changed.*consent-gated/i);
     expect(mocks.updateMany).not.toHaveBeenCalled();
@@ -372,11 +445,12 @@ describe("media publication concurrency", () => {
 
   it("revalidates the asset inside the serialized privacy-publication boundary", async () => {
     mocks.findUniqueOrThrow
-      .mockResolvedValueOnce({ id: "media_123", kind: "IMAGE", isPublic: false, publicUrl: "https://cdn.example/media.jpg", altText: "Documentary image", sortOrder: 0 })
+      .mockResolvedValueOnce({ id: "media_123", kind: "IMAGE", isPublic: false, publicUrl: "https://cdn.example/media.jpg", altText: "Documentary image", sortOrder: 0, updatedAt: new Date("2026-09-23T00:00:00.000Z") })
       .mockResolvedValueOnce({ id: "media_123", kind: "IMAGE", isPublic: true, publicUrl: "https://cdn.example/media.jpg", altText: "Documentary image", sortOrder: 0, updatedAt: new Date() });
     const formData = new FormData();
     formData.set("id", "media_123");
     formData.set("publish", "true");
+    formData.set("expectedUpdatedAt", "2026-09-23T00:00:00.000Z");
 
     await expect(setMediaPublication(formData)).rejects.toThrow(/already published/i);
     expect(mocks.updateMany).not.toHaveBeenCalled();
@@ -386,7 +460,7 @@ describe("media publication concurrency", () => {
   it("atomically unpublishes and audits a currently public asset", async () => {
     const updatedAt = new Date("2026-09-23T00:00:00.000Z");
     mocks.findUniqueOrThrow
-      .mockResolvedValueOnce({ id: "media_123", kind: "IMAGE", isPublic: true, publicUrl: "https://cdn.example/media.jpg", altText: "Documentary image", sortOrder: 0 })
+      .mockResolvedValueOnce({ id: "media_123", kind: "IMAGE", isPublic: true, publicUrl: "https://cdn.example/media.jpg", altText: "Documentary image", sortOrder: 0, updatedAt: new Date("2026-09-23T00:00:00.000Z") })
       .mockResolvedValueOnce({ isPublic: true, updatedAt });
     const formData = new FormData();
     formData.set("id", "media_123");
@@ -404,7 +478,7 @@ describe("media publication concurrency", () => {
   it("does not duplicate an unpublication audit when another admin wins the race", async () => {
     const updatedAt = new Date("2026-09-23T00:00:00.000Z");
     mocks.findUniqueOrThrow
-      .mockResolvedValueOnce({ id: "media_123", kind: "IMAGE", isPublic: true, publicUrl: "https://cdn.example/media.jpg", altText: "Documentary image", sortOrder: 0 })
+      .mockResolvedValueOnce({ id: "media_123", kind: "IMAGE", isPublic: true, publicUrl: "https://cdn.example/media.jpg", altText: "Documentary image", sortOrder: 0, updatedAt: new Date("2026-09-23T00:00:00.000Z") })
       .mockResolvedValueOnce({ isPublic: true, updatedAt });
     mocks.updateMany.mockResolvedValueOnce({ count: 0 });
     const formData = new FormData();
@@ -418,12 +492,13 @@ describe("media publication concurrency", () => {
   it("fails closed when the reviewed media changes before the publication claim", async () => {
     const updatedAt = new Date("2026-09-23T00:00:00.000Z");
     mocks.findUniqueOrThrow
-      .mockResolvedValueOnce({ id: "media_123", kind: "IMAGE", isPublic: false, publicUrl: "https://cdn.example/media.jpg", altText: "Documentary image", sortOrder: 0 })
+      .mockResolvedValueOnce({ id: "media_123", kind: "IMAGE", isPublic: false, publicUrl: "https://cdn.example/media.jpg", altText: "Documentary image", sortOrder: 0, updatedAt: new Date("2026-09-23T00:00:00.000Z") })
       .mockResolvedValueOnce({ id: "media_123", kind: "IMAGE", isPublic: false, publicUrl: "https://cdn.example/media.jpg", altText: "Documentary image", sortOrder: 0, updatedAt });
     mocks.updateMany.mockResolvedValueOnce({ count: 0 });
     const formData = new FormData();
     formData.set("id", "media_123");
     formData.set("publish", "true");
+    formData.set("expectedUpdatedAt", "2026-09-23T00:00:00.000Z");
 
     await expect(setMediaPublication(formData)).rejects.toThrow(/changed while you were reviewing/i);
     expect(mocks.createAudit).not.toHaveBeenCalled();

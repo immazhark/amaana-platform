@@ -211,6 +211,19 @@ export async function updateMediaAsset(formData: FormData) {
   revalidatePath("/admin/media");
 }
 
+function publicationReviewVersion(formData: FormData) {
+  const values = formData.getAll("expectedUpdatedAt");
+  const value = values[0];
+  if (values.length !== 1 || typeof value !== "string") {
+    throw new Error("Media review version is missing or invalid. Refresh before publishing.");
+  }
+  const version = new Date(value);
+  if (Number.isNaN(version.getTime()) || version.toISOString() !== value) {
+    throw new Error("Media review version is missing or invalid. Refresh before publishing.");
+  }
+  return version;
+}
+
 export async function setMediaPublication(formData: FormData) {
   const user = await requirePermission("content.approve");
   const ids = formData.getAll("id");
@@ -222,7 +235,11 @@ export async function setMediaPublication(formData: FormData) {
     throw new Error("Use a single media ID and an explicit publication decision.");
   }
   const publish = decision === "true";
+  const reviewedVersion = publish ? publicationReviewVersion(formData) : undefined;
   const asset = await prisma.mediaAsset.findUniqueOrThrow({ where: { id } });
+  if (reviewedVersion && asset.updatedAt.getTime() !== reviewedVersion.getTime()) {
+    throw new Error("Media changed since this review was opened. Refresh and review it again before publishing.");
+  }
 
   if (publish && !usesApprovedManagedDelivery(asset)) {
     throw new Error("Managed media must use Amaana's consent-gated /media/ route before publication.");
@@ -244,6 +261,9 @@ export async function setMediaPublication(formData: FormData) {
     await withSerializableTransactionRetry(async tx => {
       const freshAsset = await tx.mediaAsset.findUniqueOrThrow({ where: { id } });
       if (freshAsset.isPublic) throw new Error("This media is already published. Refresh before changing publication state.");
+      if (!reviewedVersion || freshAsset.updatedAt.getTime() !== reviewedVersion.getTime()) {
+        throw new Error("Media changed during this review. Refresh and review it again before publishing.");
+      }
       if (!usesApprovedManagedDelivery(freshAsset)) {
         throw new Error("Managed media delivery changed while being reviewed. Use the consent-gated /media/ route.");
       }
@@ -256,7 +276,7 @@ export async function setMediaPublication(formData: FormData) {
         throw new Error("The designated identity image requires explicit Hero use approved confirmation before publication.");
       }
       const claimed = await tx.mediaAsset.updateMany({
-        where: { id, isPublic: false, updatedAt: freshAsset.updatedAt },
+        where: { id, isPublic: false, updatedAt: reviewedVersion },
         data: { isPublic: true, privacyApprovedAt: new Date() },
       });
       if (claimed.count !== 1) throw new Error("This media changed while you were reviewing it. Refresh before publishing.");
