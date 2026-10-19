@@ -47,6 +47,17 @@ describe("campaign gallery managed image optimization", () => {
     expect(html).not.toContain("Different image with duplicate ID");
   });
 
+  it("normalizes padded media URLs before selecting the image renderer", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[
+      { id: "padded", url: "  /media/approved.webp  ", alt: "Reviewed programme photo" },
+      { id: "duplicate", url: "/media/approved.webp", alt: "Repeated URL" },
+    ]} />);
+    expect(html).toContain("/_next/image?url=%2Fmedia%2Fapproved.webp");
+    expect(html).toContain("Enlarge image 1 of 1");
+    expect(html).not.toContain("Repeated URL");
+    expect(html).not.toContain('src="  /media/approved.webp  "');
+  });
+
   it("keeps approved external CDN photographs direct, without remote optimizer allowlisting", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://cdn.amaana.example");
