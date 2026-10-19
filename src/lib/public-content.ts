@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
@@ -7,6 +8,39 @@ import { canExposePublicAppeal, isSyntheticStagingAppeal } from "@/lib/public-en
 const publishedWhere = {
   status: "PUBLISHED" as const,
 };
+
+/** Bounded, publication-approved media only. Archives page the same projection. */
+export const PUBLIC_DETAIL_MEDIA_LIMIT = 48;
+export const PUBLIC_DETAIL_MEDIA_PROJECTION = {
+  where: {
+    isPublic: true,
+    privacyApprovedAt: { not: null },
+    OR: [
+      { kind: "IMAGE" as const, publicUrl: { not: null }, altText: { not: "" } },
+      { kind: "DOCUMENT" as const, publicUrl: { not: null } },
+      { kind: "EXTERNAL_VIDEO" as const, externalUrl: { not: null } },
+    ],
+  },
+  orderBy: [
+    { sortOrder: "asc" as const },
+    { sourceYear: "desc" as const },
+    { createdAt: "desc" as const },
+  ],
+  take: PUBLIC_DETAIL_MEDIA_LIMIT,
+  select: {
+    id: true,
+    kind: true,
+    title: true,
+    publicUrl: true,
+    externalUrl: true,
+    altText: true,
+    caption: true,
+    sourceYear: true,
+    sortOrder: true,
+    width: true,
+    height: true,
+  },
+} satisfies Prisma.MediaAssetFindManyArgs;
 
 export async function getPublishedCauses() {
   return prisma.cause.findMany({
@@ -44,10 +78,7 @@ export async function getPublishedInitiativeBySlug(slug: string) {
     where: { slug, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     include: {
       cause: true,
-      mediaAssets: {
-        where: { isPublic: true, privacyApprovedAt: { not: null } },
-        orderBy: { sortOrder: "asc" },
-      },
+      mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
       stories: {
         where: { status: "PUBLISHED", privacyApprovedAt: { not: null } },
         orderBy: { publishedAt: "desc" },
@@ -89,10 +120,7 @@ export async function getPublishedStoryBySlug(slug: string) {
     include: {
       cause: true,
       initiative: { include: { cause: true } },
-      mediaAssets: {
-        where: { isPublic: true, privacyApprovedAt: { not: null } },
-        orderBy: { sortOrder: "asc" },
-      },
+      mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
     },
   });
 }
@@ -123,10 +151,7 @@ export async function getPublishedFaithContentBySlug(slug: string) {
       topics: { include: { topic: true } },
       cause: true,
       initiative: { include: { cause: true } },
-      mediaAssets: {
-        where: { isPublic: true, privacyApprovedAt: { not: null } },
-        orderBy: { sortOrder: "asc" },
-      },
+      mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
     },
   });
 }
