@@ -1,3 +1,7 @@
+## 2026-10-19 — Media creation input boundary
+
+Owner: CHATGPT_ACTIVE by explicit continuation. Prepared task branch: fix/media-create-input-boundary-20261019, based on PR369 head cee1bfe. Scope: reject ambiguous/file-valued media creation fields and malformed targets before uploading or writing records; preserve valid HTML form behavior. PR369 remains the only open PR and retains independent hosted release gates. No provider, database, schema or live file operations. Stage this branch only; do not open a competing PR until #369 is integrated. Tests first; current container lacks repository dependencies and cannot fetch GitHub directly, so repository-native execution requires hosted verification.
+
 ## 2026-10-19 — ChatGPT ownership and gallery/media merge reconciliation
 
 Owner: CHATGPT_ACTIVE via explicit October 19 uploaded continuation handover. Release target: main. Active PR: #369, existing branch fix/media-publication-input-20261019. PR #368 gallery dimensions merged into main as 3e32e8df58f52270b80b7e851d09ad5c7226d0c4. Reconcile only the two coordination files while preserving both independent runtime/test changes and their history; no old migration, payment, provider or live-record work. Merge parent: prepared media head 7afad8e1f7ae3e6a73c37aa2151de103e9ff24ef. Require fresh exact-head hosted fast/database/production/browser/verify gates and guarded merge. No production deployment claimed.
