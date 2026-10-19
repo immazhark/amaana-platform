@@ -37,6 +37,23 @@ describe.skipIf(process.env.AMAANA_DATABASE_TESTS !== "true")("login admission P
     expect(await reserveLoginAttempt(subjectHash)).toBeNull();
   });
 
+  it("reserves the final slot independently for different subjects during a burst", async () => {
+    const first = subject();
+    const second = subject();
+    await prisma.loginAttempt.createMany({
+      data: [
+        ...Array.from({ length: AUTH_FAILURE_LIMIT - 1 }, () => ({ subjectHash: first })),
+        ...Array.from({ length: AUTH_FAILURE_LIMIT - 1 }, () => ({ subjectHash: second })),
+      ],
+    });
+    const attempts = await Promise.all(
+      Array.from({ length: 16 }, (_, i) => reserveLoginAttempt(i % 2 === 0 ? first : second)),
+    );
+    expect(attempts.filter(Boolean)).toHaveLength(2);
+    expect(await prisma.loginAttempt.count({ where: { subjectHash: first, succeeded: false } })).toBe(AUTH_FAILURE_LIMIT);
+    expect(await prisma.loginAttempt.count({ where: { subjectHash: second, succeeded: false } })).toBe(AUTH_FAILURE_LIMIT);
+  });
+
   it("releases only a successful reservation while preserving previous failures", async () => {
     const subjectHash = subject();
     await prisma.loginAttempt.createMany({
