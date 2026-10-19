@@ -55,7 +55,7 @@ export function isAcknowledgementResponse(value: unknown, expectedReference: str
   const p = value.presentation;
   const d = value.donation;
   if (
-    !["captured", "pending", "failed", "refunded"].includes(String(p.tone)) ||
+    (typeof p.tone !== "string" || !["captured", "pending", "failed", "refunded"].includes(p.tone)) ||
     !text(p.heading) || !text(p.summary) || !text(p.statusLabel) ||
     !text(d.referenceNumber) || d.referenceNumber !== expectedReference ||
     !nullableText(d.receiptNumber) || !text(d.donorName) ||
