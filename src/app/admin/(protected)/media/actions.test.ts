@@ -338,6 +338,64 @@ describe("identity media creation concurrency", () => {
   });
 });
 
+describe("media metadata edit input boundary", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "user_123" });
+  });
+
+  it.each(["id", "expectedUpdatedAt", "publicUrl", "altText", "title", "caption", "sourcePath", "sourceYear", "sortOrder", "identityImage"])(
+    "rejects repeated edit %s fields before database lookup",
+    async field => {
+      const form = updateForm();
+      form.append(field, String(form.get(field) ?? "on"));
+      await expect(updateMediaAsset(form)).rejects.toThrow(/single text|review version/i);
+      expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+      expect(mocks.createAudit).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["id", "expectedUpdatedAt", "publicUrl", "altText", "title", "caption", "sourcePath", "sourceYear", "sortOrder", "identityImage"])(
+    "rejects file-valued edit %s fields before database lookup",
+    async field => {
+      const form = updateForm();
+      form.set(field, new File(["not text"], "field.txt"));
+      await expect(updateMediaAsset(form)).rejects.toThrow(/single text|review version/i);
+      expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+      expect(mocks.createAudit).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    ["sourceYear", "1999"], ["sourceYear", "2101"], ["sourceYear", "2026.5"],
+    ["sourceYear", "Infinity"], ["sourceYear", "not-a-year"],
+    ["sortOrder", "-1"], ["sortOrder", "2.5"], ["sortOrder", "2147483648"],
+    ["sortOrder", "NaN"], ["sortOrder", "not-an-order"],
+  ])("rejects invalid edit %s = %s rather than silently resetting the value", async (field, value) => {
+    const form = updateForm({ [field]: value });
+    await expect(updateMediaAsset(form)).rejects.toThrow(new RegExp(`valid ${field}`));
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+  });
+
+  it.each(["wrong", "false", "", "1"])("rejects invalid edit identity flag %s", async value => {
+    await expect(updateMediaAsset(updateForm({ identityImage: value }))).rejects.toThrow(/identity-image checkbox/i);
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+  });
+
+  it.each(["2026-09-23", "September 23, 2026", "2026-09-23T00:00:00Z", ""])(
+    "rejects noncanonical edit review version %s before lookup",
+    async expectedUpdatedAt => {
+      await expect(updateMediaAsset(updateForm({ expectedUpdatedAt }))).rejects.toThrow(/review version/i);
+      expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+    },
+  );
+});
+
 describe("published media editing", () => {
   beforeEach(() => {
     vi.clearAllMocks();
