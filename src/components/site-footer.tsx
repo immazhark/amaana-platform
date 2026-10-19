@@ -46,7 +46,7 @@ export function SiteFooter() {
           </div>
 
           <FooterNavGroup label="Explore">
-            <Link href="/our-work">Our Work</Link><Link href="/impact">Impact</Link><Link href="/stories">Stories of Amanah</Link><Link href="/faith-and-reflections">Faith & Reflections</Link><Link href="/about">Our Story</Link>
+            <Link href="/our-work">Our Work</Link><Link href="/impact">Impact</Link><Link href="/stories">Stories of Amanah</Link><Link href="/faith-and-reflections">Faith & Reflections</Link><Link href="/about">Our Story</Link><Link href="/team">Team</Link>
           </FooterNavGroup>
           <FooterNavGroup label="Take part">
             <Link href="/appeals">Current Appeals</Link><Link href="/get-involved">Get Involved</Link><Link href="/donate">Donate</Link><Link href="/get-involved/sponsor-education">Sponsor Education</Link><Link href="/partner">Partner With Amaana</Link><Link href="/request-assistance">Request Assistance</Link><Link href="/how-we-verify">How Amaana Works</Link><Link href="/contact">Contact</Link>

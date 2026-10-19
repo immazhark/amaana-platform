@@ -14,6 +14,7 @@ function run(command, args) {
 
 run(process.execPath, ["prisma/migrate-deploy-with-retry.mjs"]);
 run(process.execPath, ["prisma/run-db-script-with-retry.mjs", "prisma/import-reviewed-campaigns.mjs"]);
+run(process.execPath, ["prisma/run-db-script-with-retry.mjs", "prisma/seed-team.mjs"]);
 
 if (process.env.APP_ENVIRONMENT === "staging") {
   run(process.execPath, ["prisma/run-db-script-with-retry.mjs", "prisma/seed.mjs"]);

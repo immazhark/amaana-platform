@@ -1,3 +1,7 @@
+## 2026-10-19 — Priority Team directory and content-managed admin
+
+Owner: CHATGPT_ACTIVE by explicit user priority handover. Integration target: main; task branch: feat/public-team-directory-admin-20261019, based on 3e32e8df58f52270b80b7e851d09ad5c7226d0c4. Scope: public /team, exact ten-person five-group slug-based seed, /admin/team content-management actions and upload consent, About trustees preview, header/footer/sitemap/JSON-LD. Preserve PR369 and prepared media branch without code overlap. No donations, appeals or payment edits. Team PR requires database migration safety, focused test, typecheck/build and release acceptance before merge; not deployed. Existing hourly integration automation paused to prevent parallel repo writers.
+
 ## 2026-10-19 — ChatGPT ownership and gallery/media merge reconciliation
 
 Owner: CHATGPT_ACTIVE via explicit October 19 uploaded continuation handover. Release target: main. Active PR: #369, existing branch fix/media-publication-input-20261019. PR #368 gallery dimensions merged into main as 3e32e8df58f52270b80b7e851d09ad5c7226d0c4. Reconcile only the two coordination files while preserving both independent runtime/test changes and their history; no old migration, payment, provider or live-record work. Merge parent: prepared media head 7afad8e1f7ae3e6a73c37aa2151de103e9ff24ef. Require fresh exact-head hosted fast/database/production/browser/verify gates and guarded merge. No production deployment claimed.

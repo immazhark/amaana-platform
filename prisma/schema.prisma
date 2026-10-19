@@ -645,3 +645,39 @@ model HomeCarousel {
   revision  Int      @default(1)
   updatedAt DateTime @updatedAt
 }
+
+
+model TeamGroup {
+  id          String       @id @default(cuid())
+  key         String       @unique
+  title       String
+  description String?
+  sortOrder   Int          @default(0)
+  members     TeamMember[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  @@index([sortOrder, id])
+}
+
+model TeamMember {
+  id             String    @id @default(cuid())
+  slug           String    @unique
+  fullName       String
+  designation    String
+  bio            String?   @db.Text
+  photoStorageKey String?
+  photoAlt       String?
+  photoWidth     Int?
+  photoHeight    Int?
+  photoConsentAt DateTime?
+  deletedAt      DateTime?
+  linkedinUrl    String?
+  email          String?
+  groupId        String
+  group          TeamGroup @relation(fields: [groupId], references: [id], onDelete: Restrict)
+  sortOrder      Int       @default(0)
+  isPublished    Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  @@index([groupId, isPublished, sortOrder])
+}
