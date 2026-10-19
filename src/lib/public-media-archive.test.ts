@@ -17,10 +17,14 @@ beforeEach(() => {
 });
 
 describe("bounded published media archives", () => {
-  it("preserves public hosted videos in the bounded detail projection", async () => {
+  it("excludes hosted videos until verified synchronized captions are supported", async () => {
     const { PUBLIC_DETAIL_MEDIA_PROJECTION } = await import("@/lib/public-content");
-    expect(PUBLIC_DETAIL_MEDIA_PROJECTION.where.OR).toContainEqual({
+    // PublicMedia deliberately rejects VIDEO; it must not consume a page slot.
+    expect(PUBLIC_DETAIL_MEDIA_PROJECTION.where.OR).not.toContainEqual({
       kind: "VIDEO", publicUrl: { not: null },
+    });
+    expect(PUBLIC_DETAIL_MEDIA_PROJECTION.where.OR).toContainEqual({
+      kind: "EXTERNAL_VIDEO", externalUrl: { not: null },
     });
   });
   it("limits public detail media before serialization", async () => {
