@@ -14,7 +14,7 @@ export function TeamDeleteControl({ member, action }: Props) {
       <button type="button" className="text-button" onClick={() => dialog.current?.showModal()}>Remove member</button>
       <dialog ref={dialog} aria-labelledby={`team-delete-${member.id}`} onClose={() => undefined}>
         <h3 id={`team-delete-${member.id}`}>Remove {member.fullName}?</h3>
-        <p>This permanently removes this person's directory record. Type DELETE to confirm.</p>
+        <p>This permanently removes the member’s directory record. Type DELETE to confirm.</p>
         <form action={action} className="form-grid">
           <input type="hidden" name="id" value={member.id} />
           <input type="hidden" name="expectedUpdatedAt" value={member.updatedAt.toISOString()} />
