@@ -71,40 +71,47 @@ test('menu route navigation closes the overlay and releases scrolling', async ({
 // Keep a real Next Link transition pending; a final-page assertion alone cannot
 // detect a loading indicator that disappears immediately after preventDefault.
 for (const width of [320, 1440]) {
-  test(`route loading persists throughout a delayed Next Link transition at ${width}px`, async ({ page }) => {
-    await page.setViewportSize({ width, height: 900 });
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    // All routes, including prefetch, are held until assertions have finished.
-    let release;
-    const gate = new Promise(resolve => { release = resolve; });
-    await page.route('**/our-work*', async route => {
-      await gate;
-      await route.continue();
-    });
-    await page.goto('/about');
-    await expect(page.locator('main h1')).toBeVisible();
-    try {
-      if (width < 1024) {
-        await page.getByRole('button', { name: 'Open navigation menu', exact: true }).click();
-        await page.getByRole('navigation', { name: 'Mobile navigation', exact: true })
-          .getByRole('link', { name: 'Our Work', exact: true }).click();
-      } else {
-        await page.locator('.nav-links').getByRole('link', { name: 'Our Work', exact: true }).click();
+  for (const destination of [
+    { label: 'Our Work', path: 'our-work' },
+    { label: 'Impact', path: 'impact' },
+  ]) {
+    test(`branded indicator replaces skeletons for ${destination.label} at ${width}px`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 900 });
+      await page.emulateMedia({ reducedMotion: 'reduce' });
+      // All routes, including prefetch, are held until assertions have finished.
+      let release;
+      const gate = new Promise(resolve => { release = resolve; });
+      await page.route(`**/${destination.path}*`, async route => {
+        await gate;
+        await route.continue();
+      });
+      await page.goto('/about');
+      await expect(page.locator('main h1')).toBeVisible();
+      try {
+        if (width < 1024) {
+          await page.getByRole('button', { name: 'Open navigation menu', exact: true }).click();
+          await page.getByRole('navigation', { name: 'Mobile navigation', exact: true })
+            .getByRole('link', { name: destination.label, exact: true }).click();
+        } else {
+          await page.locator('.nav-links').getByRole('link', { name: destination.label, exact: true }).click();
+        }
+        const indicator = page.locator('.amaana-navigation-loading');
+        await expect(indicator).toBeVisible();
+        await expect(indicator.locator('.amaana-loading-logo')).toBeVisible();
+        await expect(indicator.locator('.amaana-loading-dots i')).toHaveCount(3);
+        await expect(indicator.locator('[data-loading-view]')).toHaveCount(0);
+        // Two frames run the former cancellation callback without relying on
+        // network timing or assuming that a status visible for one frame is useful.
+        await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
+        await expect(indicator).toBeVisible();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
+      } finally {
+        release();
       }
-      const status = page.locator('[data-loading-view="cards"]');
-      await expect(status).toBeVisible();
-      await expect(status).toContainText('Loading programmes');
-      // Two frames run the former cancellation callback without relying on
-      // network timing or assuming that a status visible for one frame is useful.
-      await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
-      await expect(status).toBeVisible();
-      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
-    } finally {
-      release();
-    }
-    await expect(page).toHaveURL(/\/our-work$/);
-    await expect(page.locator('main h1')).toBeVisible();
-    await expect(page.locator('.amaana-navigation-loading')).toHaveCount(0);
-    await expect(page.locator('body')).not.toHaveClass(/af-navigation-lock/);
-  });
+      await expect(page).toHaveURL(new RegExp(`/${destination.path}$`));
+      await expect(page.locator('main h1')).toBeVisible();
+      await expect(page.locator('.amaana-navigation-loading')).toHaveCount(0);
+      await expect(page.locator('body')).not.toHaveClass(/af-navigation-lock/);
+    });
+  }
 }

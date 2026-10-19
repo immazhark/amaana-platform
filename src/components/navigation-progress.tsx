@@ -3,16 +3,13 @@
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { RouteLoadingSkeleton } from "./route-loading-skeleton";
-import { getNavigationLoadingView } from "@/lib/navigation-route-loading";
 
-type PendingNavigation = { fromPath: string; destination: string };
+type PendingNavigation = { fromPath: string };
 
 export function NavigationProgress() {
   const pathname = usePathname();
   const [pending, setPending] = useState<PendingNavigation | null>(null);
   const visible = pending?.fromPath === pathname;
-  const loadingView = visible && pending ? getNavigationLoadingView(pending.destination) : null;
 
   useEffect(() => {
     if (!visible) return;
@@ -35,8 +32,7 @@ export function NavigationProgress() {
       // Query-only navigation must never lock the page: usePathname does not change.
       if (anchor.pathname === location.pathname) return;
       const expectedFrom = location.pathname;
-      const destination = anchor.pathname;
-      setPending({ fromPath: expectedFrom, destination });
+      setPending({ fromPath: expectedFrom });
 
       // Next Link calls preventDefault in its own bubble handler to perform
       // an actual client transition. Checking defaultPrevented next frame
@@ -56,17 +52,13 @@ export function NavigationProgress() {
   if (!visible) return null;
 
   return <div className="amaana-loading-overlay amaana-navigation-loading"
-    role={loadingView ? undefined : "status"}
-    aria-live={loadingView ? undefined : "polite"}
-    aria-label={loadingView ? undefined : "Loading page"}
+    role="status" aria-live="polite" aria-label="Loading page"
   >
-    {loadingView
-      ? <RouteLoadingSkeleton label={loadingView.label} layout={loadingView.layout} />
-      : <div className="amaana-loading-indicator">
-          <Image className="amaana-loading-logo" src="/brand/amaana-mark.svg" alt=""
-            aria-hidden="true" width={96} height={96} priority />
-          <span className="amaana-loading-dots" aria-hidden="true"><i /><i /><i /></span>
-          <span className="sr-only">Loading page</span>
-        </div>}
+    <div className="amaana-loading-indicator">
+      <Image className="amaana-loading-logo" src="/brand/amaana-mark.svg" alt=""
+        aria-hidden="true" width={96} height={96} priority />
+      <span className="amaana-loading-dots" aria-hidden="true"><i /><i /><i /></span>
+      <span className="sr-only">Loading page</span>
+    </div>
   </div>;
 }
