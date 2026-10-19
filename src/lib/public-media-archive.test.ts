@@ -17,6 +17,12 @@ beforeEach(() => {
 });
 
 describe("bounded published media archives", () => {
+  it("preserves public hosted videos in the bounded detail projection", async () => {
+    const { PUBLIC_DETAIL_MEDIA_PROJECTION } = await import("@/lib/public-content");
+    expect(PUBLIC_DETAIL_MEDIA_PROJECTION.where.OR).toContainEqual({
+      kind: "VIDEO", publicUrl: { not: null },
+    });
+  });
   it("limits public detail media before serialization", async () => {
     const { PUBLIC_DETAIL_MEDIA_PROJECTION } = await import("@/lib/public-content");
     expect(PUBLIC_DETAIL_MEDIA_PROJECTION.take).toBe(48);
