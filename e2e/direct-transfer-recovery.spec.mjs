@@ -255,3 +255,25 @@ test("oversized direct-transfer evidence is rejected before a claim request", as
   await expect(page.getByRole("button", { name: "Submit transfer for verification" })).toBeEnabled();
   expect(requests).toBe(0);
 });
+
+test("same-tick method clicks cannot replace a direct-transfer claim already being submitted", async ({ page }) => {
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  let calls = 0;
+  await page.route("**/api/donations/direct-transfer", async route => {
+    calls++;
+    await gate;
+    await route.fulfill({ status: 503, contentType: "application/json", body: '{"error":"Transfer status uncertain"}' });
+  });
+  await prepareDirectTransfer(page);
+  await page.locator(".v2-donation-form form").evaluate(form => {
+    form.requestSubmit();
+    document.querySelector('[aria-label="Choose donation method"] button:first-child')?.click();
+  });
+  await expect(page.getByRole("button", { name: "Direct UPI / QR" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("UTRTEST9000123");
+  await expect(page.getByRole("button", { name: "Secure online payment" })).toBeDisabled();
+  release();
+  await expect(page.getByRole("button", { name: "Verification follow-up required" })).toBeDisabled();
+  expect(calls).toBe(1);
+});
