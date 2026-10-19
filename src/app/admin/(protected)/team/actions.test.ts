@@ -134,6 +134,23 @@ describe("team governance group identity", () => {
     expect(mocks.audit).not.toHaveBeenCalled();
   });
 
+
+  it("protects all seeded group identities from duplicate recreation on the next seed run", async () => {
+    mocks.groupFindUnique.mockResolvedValue({ key: "FINANCE_COMPLIANCE" });
+    await expect(updateTeamGroup(groupForm("FINANCE_ADVISORY"))).rejects.toThrow(/MOCK_REDIRECT/);
+    expect(mocks.groupUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.audit).not.toHaveBeenCalled();
+  });
+
+  it("allows editing custom group details while preserving its original key", async () => {
+    mocks.groupFindUnique.mockResolvedValue({ key: "COMMUNITY_PARTNERS" });
+    await expect(updateTeamGroup(groupForm("COMMUNITY_PARTNERS"))).rejects.toThrow(/MOCK_REDIRECT/);
+    expect(mocks.groupUpdateMany).toHaveBeenCalledWith({
+      where: { id: "group_trustees", updatedAt: new Date(originalVersion) },
+      data: expect.objectContaining({ key: "COMMUNITY_PARTNERS" }),
+    });
+  });
+
   it("allows editing the trustee group title and description without changing its identity", async () => {
     await expect(updateTeamGroup(groupForm("TRUSTEES"))).rejects.toThrow(/MOCK_REDIRECT/);
     expect(mocks.groupUpdateMany).toHaveBeenCalledWith({
