@@ -153,7 +153,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
             tabIndex={-1}
           >
             <div className={styles.dialogTop}>
-              <span id={dialogTitleId}>Image {activeIndex + 1} of {safeItems.length}: {active.alt ?? "programme photograph"}</span>
+              <span id={dialogTitleId} aria-live="polite" aria-atomic="true">Image {activeIndex + 1} of {safeItems.length}: {active.alt ?? "programme photograph"}</span>
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
             {canOptimizeLocally(active.url) ? <Image className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}
