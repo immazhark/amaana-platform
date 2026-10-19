@@ -1,4 +1,14 @@
 import { DONATION_INTENTS } from "./donation-intent";
+/** Private financial records must preserve the ledger's paise precision. */
+export function formatAcknowledgementINR(amount: number): string {
+  return new Intl.NumberFormat("en-IN", {
+    style: "currency",
+    currency: "INR",
+    minimumFractionDigits: Number.isInteger(amount) ? 0 : 2,
+    maximumFractionDigits: 2,
+  }).format(amount);
+}
+
 
 export type AcknowledgementRecord = {
   found: true;
