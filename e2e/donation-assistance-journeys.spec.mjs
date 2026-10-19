@@ -961,3 +961,25 @@ test('fractional remaining balance offers the largest payable whole INR amount',
   await expect(page.getByLabel(/Donation amount/)).toHaveValue('399');
   await expect(page.getByLabel(/Donation amount/)).toBeFocused();
 });
+
+test('server-reduced exact ₹7 final balance resets the browser minimum and maximum', async ({ page }) => {
+  await page.route('**/api/donations/order', route => route.fulfill({
+    status: 409,
+    contentType: 'application/json',
+    body: JSON.stringify({
+      error: 'Only ₹7 remains in the published appeal.',
+      remainingAmount: 7,
+    }),
+  }));
+  await openDonationFixture(page);
+  await fillDonationForm(page, '250');
+  await page.getByRole('button', { name: 'Continue securely →' }).click();
+
+  const correction = page.getByRole('button', { name: 'Use the payable amount: ₹7' });
+  await expect(correction).toBeVisible();
+  await correction.click();
+  const input = page.getByLabel(/Donation amount/);
+  await expect(input).toHaveValue('7');
+  await expect.poll(() => input.evaluate(element => element.checkValidity())).toBe(true);
+  await expect(page.getByText('₹7 is the exact amount remaining to complete this appeal.')).toBeVisible();
+});
