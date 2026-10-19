@@ -14,10 +14,43 @@ const approvedReview = {
   websiteApproved: true,
   provenanceConfirmed: true,
   containsPrivateDocument: false,
+  containsMinor: false,
+  containsPatient: false,
   heroEligible: true,
 };
 
 describe("appeal cover media gate", () => {
+  it.each([undefined, null, "false", 0, true])("requires an explicit false private-document flag, rejecting %j", value => {
+    expect(getAppealCoverMediaIssues(approvedMedia, { ...approvedReview, containsPrivateDocument: value })).toContain(
+      "Appeal cover media cannot contain private documents or private data.",
+    );
+  });
+
+  it.each(["containsMinor", "containsPatient"])("requires recorded boolean %s checks", field => {
+    for (const value of [undefined, null, "false", 0]) {
+      expect(getAppealCoverMediaIssues(approvedMedia, { ...approvedReview, [field]: value })).toContain(
+        "Appeal cover media needs recorded child and patient privacy checks.",
+      );
+    }
+  });
+
+  it.each(["containsMinor", "containsPatient"])("requires documented consent when %s is true", field => {
+    expect(getAppealCoverMediaIssues(approvedMedia, {
+      ...approvedReview, [field]: true, consentStatus: "NOT_APPLICABLE",
+    })).toContain("Identifiable child or patient cover media requires documented publication consent.");
+    expect(getAppealCoverMediaIssues(approvedMedia, { ...approvedReview, [field]: true })).toEqual([]);
+  });
+
+  it.each([{ consentStatus: ["DOCUMENTED"] }, { consentStatus: { toString: null, valueOf: null } }])("rejects non-string consent metadata %j without coercion", ({ consentStatus }) => {
+    expect(getAppealCoverMediaIssues(approvedMedia, { ...approvedReview, consentStatus })).toContain(
+      "Appeal cover media consent does not permit general website use.",
+    );
+  });
+
+  it("accepts not-applicable consent only for recorded non-identifying media", () => {
+    expect(getAppealCoverMediaIssues(approvedMedia, { ...approvedReview, consentStatus: "NOT_APPLICABLE" })).toEqual([]);
+  });
+
   it("accepts only currently public, privacy-approved, hero-approved image media", () => {
     expect(getAppealCoverMediaIssues(approvedMedia, approvedReview)).toEqual([]);
   });
