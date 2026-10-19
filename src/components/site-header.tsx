@@ -99,7 +99,7 @@ export function SiteHeader() {
             const active = isActivePath(pathname, href);
             return <Link className={active ? "nav-link active" : "nav-link"} href={href} key={href} aria-current={active ? "page" : undefined}>{label}</Link>;
           })}
-          <Link className="button nav-donate af-support-cta" href="/appeals" aria-current={isActivePath(pathname, "/appeals") ? "page" : undefined}>Support a need</Link>
+          <Link className="button nav-donate af-support-cta" href="/donate" aria-current={isActivePath(pathname, "/donate") ? "page" : undefined}>Donate</Link>
         </div>
       </nav>
 
@@ -117,7 +117,7 @@ export function SiteHeader() {
               return <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMenu} aria-current={active ? "page" : undefined}>{label}</Link>;
             })}
           </div>
-          <Link className="button af-support-cta" href="/appeals" onClick={closeMenu} aria-current={isActivePath(pathname, "/appeals") ? "page" : undefined}>Support a verified need</Link>
+          <Link className="button af-support-cta" href="/donate" onClick={closeMenu} aria-current={isActivePath(pathname, "/donate") ? "page" : undefined}>Donate</Link>
         </div>
       </nav>
       </header>
