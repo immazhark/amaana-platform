@@ -1,0 +1,33 @@
+import type { Metadata } from "next";
+import { notFound } from "next/navigation";
+import { AppealLandingCheckout } from "@/components/donation-methods";
+import { donationFormCopy } from "@/components/donation-form-copy";
+
+export const dynamic = "force-dynamic";
+export const metadata: Metadata = {
+  title: "Reviewed Donation Browser Acceptance",
+  robots: { index: false, follow: false },
+};
+
+export default function ReviewedDonationAcceptance() {
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+
+  return <main>
+    <h1>Mocked reviewed donation destinations</h1>
+    <AppealLandingCheckout
+      appeals={[
+        {
+          id: "synthetic-first", slug: "synthetic-first",
+          title: "Synthetic first appeal", maxAmount: 900, zakatEligible: false,
+          copy: donationFormCopy(false),
+        },
+        {
+          id: "synthetic-second", slug: "synthetic-second",
+          title: "Synthetic second appeal", maxAmount: 2500, zakatEligible: true,
+          copy: donationFormCopy(true),
+        },
+      ]}
+      paymentDetails={{ upi: { id: "synthetic-test@upi", qrImageUrl: null }, bank: null }}
+    />
+  </main>;
+}
