@@ -1,6 +1,6 @@
 "use client";
 
-import { getDonationAmountPresets, updateDonationAmountValidity } from "@/lib/donation-amount-input";
+import { getDonationAmountPresets, getWholeRupeeCheckoutRange, updateDonationAmountValidity } from "@/lib/donation-amount-input";
 
 import Script from "next/script";
 import { type FormEvent, useEffect, useRef, useState } from "react";
@@ -177,9 +177,9 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
           }
         }
         setFieldErrors(fields);
-        if (typeof order.remainingAmount === "number" && Number.isSafeInteger(order.remainingAmount) &&
-            order.remainingAmount > 0 && order.remainingAmount <= 1_000_000) {
-          setRemainingHint(order.remainingAmount);
+        if (typeof order.remainingAmount === "number") {
+          const payable = getWholeRupeeCheckoutRange(Math.min(order.remainingAmount, transactionMax));
+          if (payable) setRemainingHint(payable.maximum);
         }
         showError(order.error.trim().slice(0, 500));
         orderLocked.current = false;
@@ -268,7 +268,7 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
     <form ref={formRef} className="v2-premium-form v2-donation-form" onSubmit={submit} onInvalid={handleInvalid} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
       {copy.heading}
       <p id="donation-checkout-status" className={styles.status} role="status" aria-live="polite">{statusText}</p>
-      {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{remainingHint !== null ? <p><button type="button" className="v2-text-link" onClick={() => { const input = formRef.current?.elements.namedItem("amount"); if (input instanceof HTMLInputElement) { input.value = String(remainingHint); updateDonationAmountValidity(input, transactionMin, transactionMax); clearFieldError("amount"); input.focus(); } }}>Use the current remaining amount: ₹{remainingHint.toLocaleString("en-IN")}</button></p> : null}</div>}
+      {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{remainingHint !== null ? <p><button type="button" className="v2-text-link" onClick={() => { const input = formRef.current?.elements.namedItem("amount"); if (input instanceof HTMLInputElement) { input.value = String(remainingHint); updateDonationAmountValidity(input, transactionMin, transactionMax); clearFieldError("amount"); input.focus(); } }}>Use the payable amount: ₹{remainingHint.toLocaleString("en-IN")}</button></p> : null}</div>}
       <div className="form-grid">
         <div className={`field full v2-amount-field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="amount">Donation amount <span>INR</span></label><div className={`${styles.checkoutControl} ${styles.amountControl}`}><b aria-hidden="true">₹</b><input id="amount" name="amount" type="text" inputMode="numeric" pattern="[0-9]+" maxLength={12} onInput={event => updateDonationAmountValidity(event.currentTarget, transactionMin, transactionMax)} placeholder="Enter amount" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("amount")) || undefined} aria-describedby={fieldError("amount") ? "amount-hint amount-error donation-checkout-status" : "amount-hint donation-checkout-status"} onChange={() => clearFieldError("amount")}/></div><small id="amount-hint" className={styles.hint}>{transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small>{presetAmounts.length > 0 && <div style={{ display: "flex", flexWrap: "wrap", gap: ".55rem", margin: ".25rem 0" }} role="group" aria-label="Suggested amounts in INR">
           {presetAmounts.map(amount => <button
