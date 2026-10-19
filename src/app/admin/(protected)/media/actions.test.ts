@@ -90,6 +90,182 @@ describe("identity media creation concurrency", () => {
     }));
   });
 
+  it("rejects repeated and file-valued content targets before any storage or database work", async () => {
+    for (const change of [
+      (form: FormData) => form.append("target", "story:story_2"),
+      (form: FormData) => form.set("target", new File(["fake"], "target.txt")),
+    ]) {
+      const form = new FormData();
+      form.set("target", "initiative:initiative_1");
+      form.set("publicUrl", "https://cdn.example/identity.jpg");
+      form.set("altText", "Reviewed image");
+      change(form);
+      await expect(createMediaAsset(form)).rejects.toThrow(/single text target|single valid content target/i);
+    }
+    expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    "initiative:initiative_1:unexpected",
+    "initiative:",
+    "initiative: ",
+    "unknown:initiative_1",
+  ])("rejects malformed content target %s", async target => {
+    const form = new FormData();
+    form.set("target", target);
+    form.set("publicUrl", "https://cdn.example/identity.jpg");
+    form.set("altText", "Reviewed image");
+    await expect(createMediaAsset(form)).rejects.toThrow(/valid content target|unsupported content target/i);
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+  });
+
+  it("rejects duplicate or file-valued media kind before creating a record", async () => {
+    for (const change of [
+      (form: FormData) => form.append("kind", "DOCUMENT"),
+      (form: FormData) => form.set("kind", new File(["fake"], "kind.txt")),
+      (form: FormData) => form.set("kind", "VIDEO"),
+    ]) {
+      const form = new FormData();
+      form.set("target", "initiative:initiative_1");
+      form.set("kind", "IMAGE");
+      form.set("publicUrl", "https://cdn.example/identity.jpg");
+      form.set("altText", "Reviewed image");
+      change(form);
+      await expect(createMediaAsset(form)).rejects.toThrow(/single text kind|media type/i);
+    }
+    expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+  });
+
+  it("rejects ambiguous public URL, file, and alt text before storage or database effects", async () => {
+    const cases: Array<(form: FormData) => void> = [
+      form => form.append("publicUrl", "https://cdn.example/another.jpg"),
+      form => form.set("publicUrl", new File(["fake"], "url.txt")),
+      form => form.set("altText", new File(["fake"], "alt.txt")),
+      form => form.append("altText", "Different alt"),
+      form => form.set("file", "not-a-file"),
+      form => {
+        form.set("file", new File(["synthetic"], "photo.png", { type: "image/png" }));
+        form.append("file", new File(["synthetic"], "other.png", { type: "image/png" }));
+      },
+    ];
+    for (const change of cases) {
+      const form = new FormData();
+      form.set("target", "initiative:initiative_1");
+      form.set("kind", "IMAGE");
+      form.set("publicUrl", "https://cdn.example/identity.jpg");
+      form.set("altText", "Reviewed image");
+      change(form);
+      await expect(createMediaAsset(form)).rejects.toThrow(/single (text|file)/i);
+    }
+    expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+  });
+
+  it.each(["title", "caption", "sourcePath", "sourceYear", "sortOrder"])(
+    "rejects ambiguous managed-upload %s metadata before uploading",
+    async field => {
+      const form = new FormData();
+      form.set("target", "initiative:initiative_1");
+      form.set("kind", "IMAGE");
+      form.set("file", new File(["synthetic"], "image.png", { type: "image/png" }));
+      form.set("altText", "Documentary photograph");
+      form.set(field, "original");
+      form.append(field, "altered");
+      await expect(createMediaAsset(form)).rejects.toThrow(new RegExp(`single text ${field}`, "i"));
+      expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+      expect(mocks.createRecord).not.toHaveBeenCalled();
+    },
+  );
+
+  it("does not silently reinterpret an uploaded PDF as a document when Image was selected", async () => {
+    const form = new FormData();
+    form.set("target", "initiative:initiative_1");
+    form.set("kind", "IMAGE");
+    form.set("file", new File(["synthetic"], "private.pdf", { type: "application/pdf" }));
+    form.set("altText", "Documentary photograph");
+    await expect(createMediaAsset(form)).rejects.toThrow(/image media must use JPEG, PNG or WebP/i);
+    expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+  });
+
+  it("rejects an ambiguous hero checkbox instead of silently applying a hero change", async () => {
+    const form = new FormData();
+    form.set("target", "initiative:initiative_1");
+    form.set("publicUrl", "https://cdn.example/identity.jpg");
+    form.set("altText", "Reviewed image");
+    form.set("identityImage", "on");
+    form.append("identityImage", "on");
+    await expect(createMediaAsset(form)).rejects.toThrow(/single text identityImage/i);
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+  });
+
+  it.each(["1999", "2101", "-1", "2026.5", "NaN", "2026junk"])(
+    "rejects invalid source year %s before managed storage or database effects",
+    async sourceYear => {
+      const form = new FormData();
+      form.set("target", "initiative:initiative_1");
+      form.set("kind", "IMAGE");
+      form.set("file", new File(["synthetic"], "image.png", { type: "image/png" }));
+      form.set("altText", "Reviewed photograph");
+      form.set("sourceYear", sourceYear);
+
+      await expect(createMediaAsset(form)).rejects.toThrow(/valid sourceYear/i);
+      expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+      expect(mocks.createRecord).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["-1", "1.5", "2147483648", "Infinity", "invalid"])(
+    "rejects invalid supporting image order %s instead of silently resetting it",
+    async sortOrder => {
+      const form = new FormData();
+      form.set("target", "story:story_1");
+      form.set("publicUrl", "https://cdn.example/record.jpg");
+      form.set("altText", "Reviewed documentary photograph");
+      form.set("sortOrder", sortOrder);
+
+      await expect(createMediaAsset(form)).rejects.toThrow(/valid sortOrder/i);
+      expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+      expect(mocks.createRecord).not.toHaveBeenCalled();
+    },
+  );
+
+  it("preserves valid source year and sort order at their supported boundaries", async () => {
+    const form = new FormData();
+    form.set("target", "story:story_1");
+    form.set("publicUrl", "https://cdn.example/record.jpg");
+    form.set("altText", "Reviewed documentary photograph");
+    form.set("sourceYear", "2100");
+    form.set("sortOrder", "2147483647");
+
+    await createMediaAsset(form);
+
+    expect(mocks.createRecord).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ sourceYear: 2100, sortOrder: 2147483647, isPublic: false }),
+    }));
+  });
+
+  it("rejects a document marked as an identity image instead of silently ignoring the request", async () => {
+    const form = new FormData();
+    form.set("target", "initiative:initiative_1");
+    form.set("kind", "DOCUMENT");
+    form.set("publicUrl", "https://cdn.example/archive.pdf");
+    form.set("identityImage", "on");
+
+    await expect(createMediaAsset(form)).rejects.toThrow(/identity image.*IMAGE/i);
+    expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+  });
+
   it("rejects a manual URL that could override an uploaded managed file", async () => {
     const form = new FormData();
     form.set("target", "initiative:initiative_1");
@@ -159,6 +335,102 @@ describe("identity media creation concurrency", () => {
     expect(mocks.createAudit).toHaveBeenCalledWith({
       data: expect.objectContaining({ action: "media.created", entityId: "media_new" }),
     });
+  });
+});
+
+describe("media metadata edit input boundary", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "user_123" });
+  });
+
+  it.each(["id", "expectedUpdatedAt", "publicUrl", "altText", "title", "caption", "sourcePath", "sourceYear", "sortOrder", "identityImage"])(
+    "rejects repeated edit %s fields before database lookup",
+    async field => {
+      const form = updateForm();
+      if (!form.has(field)) {
+        form.set(field, field === "sourceYear" ? "2026" : "on");
+      }
+      form.append(field, String(form.get(field)));
+      await expect(updateMediaAsset(form)).rejects.toThrow(/single text|review version/i);
+      expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+      expect(mocks.createAudit).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(["id", "expectedUpdatedAt", "publicUrl", "altText", "title", "caption", "sourcePath", "sourceYear", "sortOrder", "identityImage"])(
+    "rejects file-valued edit %s fields before database lookup",
+    async field => {
+      const form = updateForm();
+      form.set(field, new File(["not text"], "field.txt"));
+      await expect(updateMediaAsset(form)).rejects.toThrow(/single text|review version/i);
+      expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+      expect(mocks.createAudit).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each([
+    ["sourceYear", "1999"], ["sourceYear", "2101"], ["sourceYear", "2026.5"],
+    ["sourceYear", "Infinity"], ["sourceYear", "not-a-year"],
+    ["sortOrder", "-1"], ["sortOrder", "2.5"], ["sortOrder", "2147483648"],
+    ["sortOrder", "NaN"], ["sortOrder", "not-an-order"],
+  ])("rejects invalid edit %s = %s rather than silently resetting the value", async (field, value) => {
+    const form = updateForm({ [field]: value });
+    await expect(updateMediaAsset(form)).rejects.toThrow(new RegExp(`valid ${field}`));
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+  });
+
+  it.each(["wrong", "false", "", "1"])("rejects invalid edit identity flag %s", async value => {
+    await expect(updateMediaAsset(updateForm({ identityImage: value }))).rejects.toThrow(/identity-image checkbox/i);
+    expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+  });
+
+  it.each(["2026-09-23", "September 23, 2026", "2026-09-23T00:00:00Z", ""])(
+    "rejects noncanonical edit review version %s before lookup",
+    async expectedUpdatedAt => {
+      await expect(updateMediaAsset(updateForm({ expectedUpdatedAt }))).rejects.toThrow(/review version/i);
+      expect(mocks.findUniqueOrThrow).not.toHaveBeenCalled();
+      expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+    },
+  );
+});
+
+describe("media metadata edit valid submissions", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "user_123" });
+    mocks.findUniqueOrThrow.mockResolvedValue({
+      id: "media_123", kind: "IMAGE", isPublic: false,
+      title: null, altText: "Documentary photograph", caption: null, sourcePath: null, sourceYear: null,
+      publicUrl: "https://cdn.example/original.jpg", storageKey: null,
+      sortOrder: 0, causeId: "cause_1", initiativeId: null, storyId: null, faithContentId: null,
+      updatedAt: new Date("2026-09-23T00:00:00.000Z"),
+    });
+    mocks.updateMany.mockResolvedValue({ count: 1 });
+    mocks.createAudit.mockResolvedValue({ id: "audit_123" });
+    mocks.serializableTransaction.mockImplementation(async callback => callback({
+      mediaAsset: { findUniqueOrThrow: mocks.findUniqueOrThrow, updateMany: mocks.updateMany },
+      auditEvent: { create: mocks.createAudit },
+    }));
+  });
+
+  it.each([
+    { year: "2026", order: "7", expectedYear: 2026, expectedOrder: 7 },
+    { year: "", order: "", expectedYear: null, expectedOrder: 0 },
+  ])("preserves valid metadata edits with year '$year' and order '$order'", async ({ year, order, expectedYear, expectedOrder }) => {
+    await updateMediaAsset(updateForm({ title: "Reviewed image", sourceYear: year, sortOrder: order }));
+    expect(mocks.updateMany).toHaveBeenCalledWith(expect.objectContaining({
+      where: expect.objectContaining({ id: "media_123", isPublic: false }),
+      data: expect.objectContaining({ title: "Reviewed image", sourceYear: expectedYear, sortOrder: expectedOrder }),
+    }));
+    expect(mocks.createAudit).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ action: "media.metadata_updated", entityId: "media_123" }),
+    }));
+    expect(mocks.revalidatePath).toHaveBeenCalledWith("/admin/media");
   });
 });
 
