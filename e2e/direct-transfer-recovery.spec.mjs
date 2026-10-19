@@ -219,3 +219,21 @@ test("online pre-write validation permits donor to switch to direct UPI without 
   await expect(page.getByRole("heading", { name: "Pay Amaana directly by UPI." })).toBeVisible();
   expect(calls).toBe(1);
 });
+
+test("switching direct transfer method clears stale UTR, amount and donor claim fields", async ({ page }) => {
+  await page.goto("/browser-acceptance/direct-donation");
+  await page.getByRole("button", { name: "Direct UPI / QR" }).click();
+  await page.getByLabel("Full name").fill("Synthetic UPI Donor");
+  await page.getByLabel("Amount (INR)").fill("250");
+  await page.getByLabel("UTR / transaction reference").fill("UPI-SYNTHETIC-123");
+  await page.getByRole("button", { name: "Bank transfer" }).click();
+
+  await expect(page.getByRole("heading", { name: "Transfer directly to Amaana Foundation." })).toBeVisible();
+  await expect(page.getByLabel("Full name")).toHaveValue("");
+  await expect(page.getByLabel("Amount (INR)")).toHaveValue("");
+  await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("");
+
+  await page.getByLabel("UTR / transaction reference").fill("BANK-SYNTHETIC-456");
+  await page.getByRole("button", { name: "Direct UPI / QR" }).click();
+  await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("");
+});
