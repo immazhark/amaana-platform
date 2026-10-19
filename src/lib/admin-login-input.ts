@@ -23,3 +23,21 @@ export function parseAdminLoginInput(emailValue: FormDataEntryValue | null, pass
     rateLimitSubject: email.slice(0, ADMIN_LOGIN_EMAIL_MAX_LENGTH),
   };
 }
+
+/** Invalid or ambiguous credentials still count toward login admission. */
+export function parseAdminLoginForm(form: FormData) {
+  const emails = form.getAll("email");
+  const passwords = form.getAll("password");
+  const email = emails.length === 1 && typeof emails[0] === "string" ? emails[0] : null;
+  const password = passwords.length === 1 && typeof passwords[0] === "string" ? passwords[0] : null;
+  const input = parseAdminLoginInput(email, password);
+
+  // Keep the first valid email as the rate-limit subject when a request
+  // repeats the email field. Never use a duplicated value to authenticate.
+  if (emails.length > 1 && typeof emails[0] === "string") {
+    const first = parseAdminLoginInput(emails[0], password);
+    return { ...input, valid: false, rateLimitSubject: first.rateLimitSubject };
+  }
+
+  return input;
+}

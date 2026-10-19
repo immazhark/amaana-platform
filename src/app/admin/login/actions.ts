@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { createSession, destroySession, getCurrentUser } from "@/lib/auth";
-import { parseAdminLoginInput } from "@/lib/admin-login-input";
+import { parseAdminLoginForm } from "@/lib/admin-login-input";
 import { reserveLoginAttempt } from "@/lib/auth-rate-limit";
 import { getTrustedClientAddress } from "@/lib/client-address";
 import { hashPassword, passwordNeedsRehash, verifyPassword } from "@/lib/password";
@@ -25,7 +25,7 @@ function authenticationSubjectHash(email: string, address: string) {
 }
 
 export async function login(formData: FormData) {
-  const input = parseAdminLoginInput(formData.get("email"), formData.get("password"));
+  const input = parseAdminLoginForm(formData);
   const { email, password } = input;
   const headerStore = await headers();
   const address = getTrustedClientAddress(
