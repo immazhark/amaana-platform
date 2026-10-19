@@ -90,6 +90,93 @@ describe("identity media creation concurrency", () => {
     }));
   });
 
+  it("rejects repeated and file-valued content targets before any storage or database work", async () => {
+    for (const change of [
+      (form: FormData) => form.append("target", "story:story_2"),
+      (form: FormData) => form.set("target", new File(["fake"], "target.txt")),
+    ]) {
+      const form = new FormData();
+      form.set("target", "initiative:initiative_1");
+      form.set("publicUrl", "https://cdn.example/identity.jpg");
+      form.set("altText", "Reviewed image");
+      change(form);
+      await expect(createMediaAsset(form)).rejects.toThrow(/single text target|single valid content target/i);
+    }
+    expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    "initiative:initiative_1:unexpected",
+    "initiative:",
+    "initiative: ",
+    "unknown:initiative_1",
+  ])("rejects malformed content target %s", async target => {
+    const form = new FormData();
+    form.set("target", target);
+    form.set("publicUrl", "https://cdn.example/identity.jpg");
+    form.set("altText", "Reviewed image");
+    await expect(createMediaAsset(form)).rejects.toThrow(/valid content target|unsupported content target/i);
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+  });
+
+  it("rejects duplicate or file-valued media kind before creating a record", async () => {
+    for (const change of [
+      (form: FormData) => form.append("kind", "DOCUMENT"),
+      (form: FormData) => form.set("kind", new File(["fake"], "kind.txt")),
+      (form: FormData) => form.set("kind", "VIDEO"),
+    ]) {
+      const form = new FormData();
+      form.set("target", "initiative:initiative_1");
+      form.set("kind", "IMAGE");
+      form.set("publicUrl", "https://cdn.example/identity.jpg");
+      form.set("altText", "Reviewed image");
+      change(form);
+      await expect(createMediaAsset(form)).rejects.toThrow(/single text kind|media type/i);
+    }
+    expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+  });
+
+  it("rejects ambiguous public URL, file, and alt text before storage or database effects", async () => {
+    const cases: Array<(form: FormData) => void> = [
+      form => form.append("publicUrl", "https://cdn.example/another.jpg"),
+      form => form.set("publicUrl", new File(["fake"], "url.txt")),
+      form => form.set("altText", new File(["fake"], "alt.txt")),
+      form => form.append("altText", "Different alt"),
+      form => form.set("file", "not-a-file"),
+      form => {
+        form.set("file", new File(["synthetic"], "photo.png", { type: "image/png" }));
+        form.append("file", new File(["synthetic"], "other.png", { type: "image/png" }));
+      },
+    ];
+    for (const change of cases) {
+      const form = new FormData();
+      form.set("target", "initiative:initiative_1");
+      form.set("kind", "IMAGE");
+      form.set("publicUrl", "https://cdn.example/identity.jpg");
+      form.set("altText", "Reviewed image");
+      change(form);
+      await expect(createMediaAsset(form)).rejects.toThrow(/single (text|file)/i);
+    }
+    expect(mocks.uploadPublicMediaFile).not.toHaveBeenCalled();
+    expect(mocks.serializableTransaction).not.toHaveBeenCalled();
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+  });
+
+  it("rejects an ambiguous hero checkbox instead of silently applying a hero change", async () => {
+    const form = new FormData();
+    form.set("target", "initiative:initiative_1");
+    form.set("publicUrl", "https://cdn.example/identity.jpg");
+    form.set("altText", "Reviewed image");
+    form.set("identityImage", "on");
+    form.append("identityImage", "on");
+    await expect(createMediaAsset(form)).rejects.toThrow(/single text identityImage/i);
+    expect(mocks.updateMany).not.toHaveBeenCalled();
+    expect(mocks.createRecord).not.toHaveBeenCalled();
+  });
+
   it("rejects a manual URL that could override an uploaded managed file", async () => {
     const form = new FormData();
     form.set("target", "initiative:initiative_1");
