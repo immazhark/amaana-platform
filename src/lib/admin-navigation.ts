@@ -15,6 +15,7 @@ const ADMIN_HOME_DESTINATIONS = [
   { permission: "assistance.approve", path: "/admin/retention" },
   { permission: "appeal.view", path: "/admin/appeals" },
   { permission: "content.view", path: "/admin/media" },
+  { permission: "content.update", path: "/admin/team" },
   { permission: "content.update", path: "/admin/home-carousel" },
   { permission: "donation.view", path: "/admin/donations" },
   { permission: "notification.view", path: "/admin/notifications" },
