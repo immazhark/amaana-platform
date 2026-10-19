@@ -8,7 +8,7 @@
 }
 
 /* Header */
-.site-header .nav{min-height:var(--af-chrome-height);gap:clamp(1rem,2vw,2rem)}
+.site-header .nav{min-height:var(--af-chrome-height);gap:clamp(.25rem,1vw,2rem)}
 .site-header .brand-official{min-width:var(--af-chrome-logo);min-height:var(--af-chrome-logo)}
 .site-header .brand-lockup{width:var(--af-chrome-logo);max-width:var(--af-chrome-logo);height:auto}
 .site-header .nav-links{gap:clamp(.75rem,1.45vw,1.35rem)}
@@ -159,7 +159,7 @@
 @media(max-width:1100px){
   .site-footer .footer-grid-v2{grid-template-columns:minmax(18rem,1.2fr) repeat(3,minmax(8rem,.7fr));gap:1.5rem}
 }
-@media(max-width:1020px){:root{--af-chrome-height:4.75rem;--af-chrome-logo:4.3rem}}
+@media(max-width:1020px){:root{--af-chrome-height:4.75rem;--af-chrome-logo:min(4.3rem,18vw)}}
 @media(max-width:900px){
   .amaana-reminders{min-height:6.5rem}
   .amaana-reminder-inner{grid-template-columns:1fr}

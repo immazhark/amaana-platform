@@ -96,7 +96,7 @@ export function SiteHeader() {
         <Link
           className="menu-toggle af-support-cta"
           href="/donate"
-          style={{ width: "auto", minWidth: "4.75rem", paddingInline: ".65rem", fontSize: ".875rem" }}
+          style={{ width: "auto", minWidth: 0, paddingInline: "10px", fontSize: ".875rem" }}
           aria-current={isActivePath(pathname, "/donate") ? "page" : undefined}
           onClick={closeMenu}
         >Donate</Link>
