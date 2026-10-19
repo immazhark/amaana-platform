@@ -37,6 +37,23 @@ function singleCreateText(formData: FormData, field: string): string | null {
   return values.length === 0 ? null : values[0] as string;
 }
 
+function optionalCreateInteger(
+  formData: FormData,
+  field: "sourceYear" | "sortOrder",
+  minimum: number,
+  maximum: number,
+): number | null {
+  const text = singleCreateText(formData, field);
+  if (text === null || text.trim() === "") return null;
+  const trimmed = text.trim();
+  const number = Number(trimmed);
+  if (!/^\d+$/.test(trimmed) || !Number.isSafeInteger(number) ||
+      number < minimum || number > maximum) {
+    throw new Error(`Choose a valid ${field}.`);
+  }
+  return number;
+}
+
 function safePublicUrl(value: FormDataEntryValue | null) {
   const raw = String(value ?? "").trim();
   if (!raw) return null;
@@ -78,8 +95,8 @@ export async function createMediaAsset(formData: FormData) {
   const title = optionalText(singleCreateText(formData, "title"), 160);
   const caption = optionalText(singleCreateText(formData, "caption"), 1000);
   const sourcePath = optionalText(singleCreateText(formData, "sourcePath"), 500);
-  const sourceYearRaw = Number(singleCreateText(formData, "sourceYear"));
-  const sortOrderRaw = Number(singleCreateText(formData, "sortOrder"));
+  const sourceYear = optionalCreateInteger(formData, "sourceYear", 2000, 2100);
+  const sortOrder = optionalCreateInteger(formData, "sortOrder", 0, 2147483647) ?? 0;
   const identityValue = singleCreateText(formData, "identityImage");
   if (identityValue !== null && identityValue !== "on") {
     throw new Error("Choose a valid identity-image checkbox value.");
@@ -92,9 +109,7 @@ export async function createMediaAsset(formData: FormData) {
   if (file && inferredKind === "DOCUMENT" && file.type !== "application/pdf") throw new Error("Document media must be uploaded as PDF");
   if (file && inferredKind === "IMAGE" && file.type === "application/pdf") throw new Error("Image media must use JPEG, PNG or WebP");
   if (inferredKind === "IMAGE" && !altText) throw new Error("Image alt text is required");
-  const displayOrder = identityImage
-    ? IDENTITY_MEDIA_SORT_ORDER
-    : Number.isInteger(sortOrderRaw) && sortOrderRaw >= 0 ? sortOrderRaw : 0;
+  const displayOrder = identityImage ? IDENTITY_MEDIA_SORT_ORDER : sortOrder;
 
   const uploaded = file ? await uploadPublicMediaFile(file) : null;
 
@@ -123,7 +138,7 @@ export async function createMediaAsset(formData: FormData) {
           altText,
           caption,
           sourcePath: sourcePath ?? uploaded?.originalName ?? null,
-          sourceYear: Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null,
+          sourceYear,
           width: uploaded?.width ?? null,
           height: uploaded?.height ?? null,
           sortOrder: displayOrder,
