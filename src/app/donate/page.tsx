@@ -7,6 +7,7 @@ import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-bala
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { AppealLandingCheckout, type ReviewedAppealChoice } from "@/components/appeal-landing-checkout";
 import { donationFormCopy } from "@/components/donation-form-copy";
+import { selectReviewedDonationCandidates } from "@/lib/reviewed-donation-candidates";
 import { VerifiedImpactStrip, type VerifiedImpactItem } from "@/components/verified-impact-strip";
 import { logServerError } from "@/lib/server-log";
 import { isAppealOpenForDonations } from "@/lib/appeals";
@@ -56,7 +57,7 @@ export default async function Page() {
   const openAppeals = appealRecords.filter(appeal => isAppealOpenForDonations(appeal) && (isStaging || !isSyntheticStagingAppeal(appeal)));
   // The public listing is not permission to process a payment.
   // Verify the approved appeal and exact balance again for a bounded set.
-  const verifiedCandidates = await Promise.all(openAppeals.slice(0, 4).map(async record => {
+  const eligibleChoices = await selectReviewedDonationCandidates(openAppeals, async record => {
     const appeal = await getDonationPageData(record.slug);
     if (!appeal) return null;
     const remaining = getDonationCheckoutRemainingAmount(appeal);
@@ -69,10 +70,7 @@ export default async function Page() {
       zakatEligible: appeal.zakatEligible,
       copy: donationFormCopy(appeal.zakatEligible),
     } satisfies ReviewedAppealChoice;
-  }));
-  const eligibleChoices: ReviewedAppealChoice[] = verifiedCandidates.filter(
-    (item): item is ReviewedAppealChoice => item !== null,
-  );
+  });
   const hasOpenAppeals = eligibleChoices.length > 0;
   return (
     <CanonicalArticle
