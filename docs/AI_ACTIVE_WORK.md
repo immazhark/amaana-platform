@@ -1,3 +1,7 @@
+## 2026-10-19 — Gallery repository-native verification
+
+State: HANDOFF_PENDING. Branch: fix/public-gallery-dimensions-20261019; runtime code commit d88162712ff4d89fa9b0e0d056b22381526b2db6. Direct GitHub clone and dependency installation succeeded. Repository-native Vitest: 19 tests pass across public-gallery-projection.test.ts and public-image-dimensions.test.tsx; npm run typecheck and focused ESLint on all four runtime/test changes pass. Prisma Client generated locally; no database connection or migration. Initial typecheck ran before generation completed and was rerun successfully after generation. Working tree clean. This supersedes the earlier local-checkout/dependency limitation below. Hosted acceptance, PR and merge remain pending behind PR367; no deployment claimed. Existing hourly guarded integration task now includes this prepared branch after PR367 merges; no duplicate task or extra PR created.
+
 ## 2026-10-19 — Gallery dimension implementation checkpoint
 
 State: HANDOFF_PENDING; no concurrent writer. Release target: main. Branch: fix/public-gallery-dimensions-20261019; implementation commit contains this note. Restored reviewed intrinsic dimensions on the database-backed initiative and story galleries through one server-side projection. Current canRenderPublicMedia/origin checks and database privacy/publication queries are unchanged. Existing bounded dimension fallback reused; duplicate URL/ID records removed; private source/storage fields excluded.
