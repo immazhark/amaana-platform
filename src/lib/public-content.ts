@@ -1,3 +1,4 @@
+import type { Prisma } from "@prisma/client";
 import { unstable_cache } from "next/cache";
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
@@ -7,6 +8,50 @@ import { canExposePublicAppeal, isSyntheticStagingAppeal } from "@/lib/public-en
 const publishedWhere = {
   status: "PUBLISHED" as const,
 };
+
+/** Public story/programme pages render only a curated set of approved media.
+ * Keep the data boundary bounded before serialization and never select private
+ * source-object identifiers, ingest internals or review metadata. Image
+ * eligibility and approved remote-host validation are still rechecked by
+ * PublicMedia and CampaignMediaGallery.
+ *
+ * 48 records cover existing multi-year programme galleries while preventing
+ * a future unbounded upload batch from inflating the HTML/RSC payload.
+ * Larger archives remain accessible through /media-archive/[kind]/[slug].
+ */
+export const PUBLIC_DETAIL_MEDIA_LIMIT = 48;
+
+export const PUBLIC_DETAIL_MEDIA_PROJECTION = {
+  where: {
+    isPublic: true,
+    privacyApprovedAt: { not: null },
+    // Hosted VIDEO is intentionally unsupported until reviewed captions exist.
+    // Exclude assets without renderable URL/alt metadata before applying the
+    // 48-record page limit. The browser independently checks each media URL.
+    OR: [
+      { kind: "IMAGE" as const, publicUrl: { not: null }, altText: { not: "" } },
+      { kind: "DOCUMENT" as const, publicUrl: { not: null } },
+      { kind: "EXTERNAL_VIDEO" as const, externalUrl: { not: null } },
+    ],
+  },
+  orderBy: [{ sortOrder: "asc" as const }, { sourceYear: "desc" as const }, { createdAt: "desc" as const }],
+  take: PUBLIC_DETAIL_MEDIA_LIMIT,
+  select: {
+    id: true,
+    kind: true,
+    title: true,
+    publicUrl: true,
+    externalUrl: true,
+    altText: true,
+    caption: true,
+    sourceYear: true,
+    sortOrder: true,
+    width: true,
+    height: true,
+    blurDataURL: true,
+  },
+} satisfies Prisma.MediaAssetFindManyArgs;
+
 
 export async function getPublishedCauses() {
   return prisma.cause.findMany({
@@ -44,10 +89,7 @@ export async function getPublishedInitiativeBySlug(slug: string) {
     where: { slug, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     include: {
       cause: true,
-      mediaAssets: {
-        where: { isPublic: true, privacyApprovedAt: { not: null } },
-        orderBy: { sortOrder: "asc" },
-      },
+      mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
       stories: {
         where: { status: "PUBLISHED", privacyApprovedAt: { not: null } },
         orderBy: { publishedAt: "desc" },
@@ -89,10 +131,7 @@ export async function getPublishedStoryBySlug(slug: string) {
     include: {
       cause: true,
       initiative: { include: { cause: true } },
-      mediaAssets: {
-        where: { isPublic: true, privacyApprovedAt: { not: null } },
-        orderBy: { sortOrder: "asc" },
-      },
+      mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
     },
   });
 }
@@ -123,10 +162,7 @@ export async function getPublishedFaithContentBySlug(slug: string) {
       topics: { include: { topic: true } },
       cause: true,
       initiative: { include: { cause: true } },
-      mediaAssets: {
-        where: { isPublic: true, privacyApprovedAt: { not: null } },
-        orderBy: { sortOrder: "asc" },
-      },
+      mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
     },
   });
 }
