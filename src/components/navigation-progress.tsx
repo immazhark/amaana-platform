@@ -4,7 +4,7 @@ import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
-type PendingNavigation = { fromPath: string; destination: string };
+type PendingNavigation = { fromPath: string };
 
 export function NavigationProgress() {
   const pathname = usePathname();
@@ -32,8 +32,7 @@ export function NavigationProgress() {
       // Query-only navigation must never lock the page: usePathname does not change.
       if (anchor.pathname === location.pathname) return;
       const expectedFrom = location.pathname;
-      const destination = anchor.pathname;
-      setPending({ fromPath: expectedFrom, destination });
+      setPending({ fromPath: expectedFrom });
 
       // Next Link calls preventDefault in its own bubble handler to perform
       // an actual client transition. Checking defaultPrevented next frame
