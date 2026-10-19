@@ -25,6 +25,7 @@ export const PUBLIC_DETAIL_MEDIA_PROJECTION = {
     { sortOrder: "asc" as const },
     { sourceYear: "desc" as const },
     { createdAt: "desc" as const },
+    { id: "asc" as const },
   ],
   take: PUBLIC_DETAIL_MEDIA_LIMIT,
   select: {
