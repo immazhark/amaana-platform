@@ -1,7 +1,7 @@
 "use client";
 
 import { getUpiPaymentUri, updateDonationAmountValidity } from "@/lib/donation-amount-input";
-import { donationEvidenceUploadIssue } from "@/lib/donation-evidence-header";
+import { donationEvidenceUploadIssue, hasValidDonationEvidenceHeader } from "@/lib/donation-evidence-header";
 
 import Image from "next/image";
 import { type FormEvent, useRef, useState } from "react";
@@ -47,6 +47,10 @@ export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails
       const evidence = values.get("evidence");
       const evidenceIssue = donationEvidenceUploadIssue(evidence instanceof File ? evidence : null);
       if (evidenceIssue) throw new Error(evidenceIssue);
+      if (evidence instanceof File && evidence.size > 0 &&
+          !(await hasValidDonationEvidenceHeader(evidence))) {
+        throw new Error("Receipt contents do not match its PDF, JPEG, PNG or WebP file type.");
+      }
       const localTransferredAt = String(values.get("transferredAt") ?? "").trim();
       if (localTransferredAt) {
         const transferredAt = new Date(localTransferredAt);
