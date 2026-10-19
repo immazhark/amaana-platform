@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isAcknowledgementResponse } from "./private-record-response";
+import { formatAcknowledgementINR, isAcknowledgementResponse } from "./private-record-response";
 
 const reference = "AFD-2026-PRIVATE";
 const valid = {
@@ -58,5 +58,15 @@ describe("private donation acknowledgement read boundary", () => {
     for (const recordDate of ["Invalid Date", "2026-02-30T00:00:00.000Z", "2026-09-22", 123, null]) {
       expect(isAcknowledgementResponse({ ...valid, donation: { ...valid.donation, recordDate } }, reference)).toBe(false);
     }
+  });
+});
+
+describe("private acknowledgement exact monetary display", () => {
+  it("keeps paise for partial refunds without adding cents to whole-rupee amounts", () => {
+    expect(formatAcknowledgementINR(500)).toContain("500");
+    expect(formatAcknowledgementINR(500)).not.toMatch(/500[.,]00/);
+    expect(formatAcknowledgementINR(10.5)).toMatch(/10[.]50/);
+    expect(formatAcknowledgementINR(100.05)).toMatch(/100[.]05/);
+    expect(formatAcknowledgementINR(399.71)).toMatch(/399[.]71/);
   });
 });
