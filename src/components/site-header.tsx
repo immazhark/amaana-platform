@@ -90,6 +90,17 @@ export function SiteHeader() {
           <Image className="brand-lockup" src="/brand/amaana-mark.svg" width={108} height={108} alt="Amaana Foundation — Upholding Trust" priority />
         </Link>
 
+        {/* Keep a real Donate destination visible on narrow screens without
+            opening the menu. The existing responsive menu-toggle display rule
+            hides this quick link on desktop, avoiding an additional stylesheet. */}
+        <Link
+          className="menu-toggle af-support-cta"
+          href="/donate"
+          style={{ width: "auto", minWidth: "4.75rem", paddingInline: ".65rem", fontSize: ".875rem" }}
+          aria-current={isActivePath(pathname, "/donate") ? "page" : undefined}
+          onClick={closeMenu}
+        >Donate</Link>
+
         <button ref={toggleRef} className="menu-toggle" type="button" aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? "Close navigation menu" : "Open navigation menu"} onClick={() => setOpenForPath(current => current === pathname ? null : pathname)}>
           <UIIcon name={open ? "close" : "menu"} />
         </button>
