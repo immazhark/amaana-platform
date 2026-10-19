@@ -8,6 +8,8 @@ Before making any repo change, every agent MUST read:
 2. `docs/AI_ACTIVE_WORK.md`
 3. `docs/AI_HANDOFF_LEDGER.md`
 4. `docs/CURRENT_SOURCE_RECONCILIATION_2026-09-15.md`
+5. `docs/AMAANA_ENGINEERING_DIRECTIVES_2026-10-20.md`
+6. `docs/AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md`
 
 ## Hard rules
 
