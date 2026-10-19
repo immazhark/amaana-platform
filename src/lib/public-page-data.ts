@@ -4,7 +4,7 @@ import { getAppealCoverMediaIssues } from "@/lib/appeal-cover-media";
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
-import { canExposePublicAppeal } from "@/lib/public-environment";
+import { canExposePublicAppeal, canExposeSyntheticStagingContent } from "@/lib/public-environment";
 import { IDENTITY_MEDIA_SORT_ORDER } from "@/lib/public-media";
 import {
   getPublishedFaithContentBySlug,
@@ -383,26 +383,37 @@ export const getDonationPageData = cache(async (slug: string) => {
 });
 
 /**
- * Read donation-eligible candidate records in ONE bounded query, rather than
- * issuing up to twelve separate queries on every visit to dynamic /donate.
- * DB results are not guaranteed to preserve IN (...) input ordering.
- * Reapply visibility, expiry and exact-balance checks after the read.
+ * Read at most 12 payable public appeals in priority order. Use database
+ * filters to avoid an unbounded public index read on every /donate request.
+ * The server still rechecks exact balance and disclosure before rendering.
  */
-export async function getReviewedDonationPageData(slugs: readonly string[]) {
-  const requested = [...new Set(slugs)].slice(0, 12);
-  if (requested.length === 0) return [];
+export async function getReviewedDonationPageData() {
+  const now = new Date();
+  const where: Prisma.AppealWhereInput = {
+    status: "PUBLISHED",
+    amountRaised: { lt: prisma.appeal.fields.goalAmount },
+    OR: [{ closesAt: null }, { closesAt: { gt: now } }],
+  };
+  if (!canExposeSyntheticStagingContent()) {
+    where.NOT = [
+      { slug: { startsWith: "staging-" } },
+      { title: { startsWith: "STAGING TEST" } },
+    ];
+  }
 
   const records = await prisma.appeal.findMany({
-    where: { slug: { in: requested }, status: "PUBLISHED" },
+    where,
+    orderBy: [
+      { isFeatured: "desc" },
+      { featuredOrder: "asc" },
+      { publishedAt: "desc" },
+    ],
+    take: 12,
     select: DONATION_PAGE_SELECT,
   });
-  const payableBySlug = new Map(records.flatMap(record => {
-    const safe = projectPublicDonationAppeal(record);
-    return safe ? [[safe.slug, safe] as const] : [];
-  }));
-  return requested.flatMap(slug => {
-    const appeal = payableBySlug.get(slug);
-    return appeal ? [appeal] : [];
+  return records.flatMap(record => {
+    const payable = projectPublicDonationAppeal(record);
+    return payable ? [payable] : [];
   });
 }
 

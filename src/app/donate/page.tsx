@@ -2,15 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CanonicalArticle } from "@/components/canonical-article";
 import { complianceCopy } from "@/lib/master-copy";
-import { getAppealsIndexData, getReviewedDonationPageData, getDonationImpactHighlights } from "@/lib/public-page-data";
+import { getReviewedDonationPageData, getDonationImpactHighlights } from "@/lib/public-page-data";
 import { getDonationCheckoutRemainingAmount } from "@/lib/donation-checkout-balance";
 import { getDonationPaymentDetails } from "@/lib/donation-payment-details";
 import { AppealLandingCheckout, type ReviewedAppealChoice } from "@/components/donation-methods";
 import { donationFormCopy } from "@/components/donation-form-copy";
 import { VerifiedImpactStrip, type VerifiedImpactItem } from "@/components/verified-impact-strip";
 import { logServerError } from "@/lib/server-log";
-import { isAppealOpenForDonations } from "@/lib/appeals";
-import { canExposeSyntheticStagingContent, isSyntheticStagingAppeal } from "@/lib/public-environment";
 import styles from "./donate-audit.module.css";
 
 const description = "Support a verified appeal or Amaana initiative through currently approved domestic donation options.";
@@ -38,8 +36,8 @@ export const metadata: Metadata = {
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  const [appealRecords, publishedInitiatives] = await Promise.all([
-    getAppealsIndexData(),
+  const [reviewedAppeals, publishedInitiatives] = await Promise.all([
+    getReviewedDonationPageData(),
     getDonationImpactHighlights().catch(error => {
       logServerError("donation.published_impact_unavailable", {
         errorName: error instanceof Error ? error.name : "unknown",
@@ -52,13 +50,7 @@ export default async function Page() {
       ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }]
       : [],
   );
-  const isStaging = canExposeSyntheticStagingContent();
-  const openAppeals = appealRecords.filter(appeal => isAppealOpenForDonations(appeal) && (isStaging || !isSyntheticStagingAppeal(appeal)));
-  // The public listing is not permission to process a payment.
-  // Verify the approved appeal and exact balance again for a bounded set.
-  // One publication-checked read for at most twelve candidates; the final
-  // payment endpoints independently recheck state and exact balances.
-  const reviewedAppeals = await getReviewedDonationPageData(openAppeals.slice(0, 12).map(record => record.slug));
+  // These server-approved records still need a final checkout balance check.
   // The reviewed projection already preserves priority and excludes unpayable
   // records. Keep the live amount guard and display only four destinations.
   const eligibleChoices = reviewedAppeals.flatMap(appeal => {
