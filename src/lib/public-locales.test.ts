@@ -24,6 +24,12 @@ describe("public locale publication", () => {
     ])).toEqual({ en: "/contact" });
   });
 
+  it("never advertises translated private application routes", () => {
+    expect(buildPublishedLanguageAlternates("/admin", [
+      { locale: "ur", path: "/ur/admin", status: "PUBLISHED", reviewed: true },
+    ])).toEqual({});
+  });
+
   it("sets RTL only for Urdu", () => {
     expect(publicLocaleDirection("ur")).toBe("rtl");
     expect(publicLocaleDirection("en")).toBe("ltr");
