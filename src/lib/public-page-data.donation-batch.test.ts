@@ -54,6 +54,7 @@ describe("bounded reviewed donation query", () => {
       { isFeatured: "desc" },
       { featuredOrder: "asc" },
       { publishedAt: "desc" },
+      { id: "asc" },
     ]);
     expect(args.select).toMatchObject({
       id: true, slug: true, title: true, goalAmount: true, amountRaised: true,
@@ -87,6 +88,27 @@ describe("bounded reviewed donation query", () => {
       { closesAt: null },
       { closesAt: { gt: expect.any(Date) } },
     ]);
+  });
+
+  it("continues past fractional last balances without reading the entire listing", async () => {
+    const unpaid = Array.from({ length: 12 }, (_, i) =>
+      appeal(`fractional-${i}`, { amountRaised: "999.99" }));
+    mocks.findMany.mockResolvedValueOnce(unpaid).mockResolvedValueOnce([appeal("payable-next")]);
+
+    const result = await getReviewedDonationPageData();
+    expect(result.map(item => item.slug)).toEqual(["payable-next"]);
+    expect(mocks.findMany).toHaveBeenCalledTimes(2);
+    const continuation = mocks.findMany.mock.calls[1]?.[0];
+    expect(continuation.take).toBe(12);
+    expect(continuation.skip).toBe(1);
+    expect(continuation.cursor).toEqual({ id: "test-fractional-11" });
+  });
+
+  it("caps fractional-balance scans at four bounded database reads", async () => {
+    mocks.findMany.mockResolvedValue(Array.from({ length: 12 }, (_, i) =>
+      appeal(`fractional-${i}`, { amountRaised: "999.99" })));
+    await expect(getReviewedDonationPageData()).resolves.toEqual([]);
+    expect(mocks.findMany).toHaveBeenCalledTimes(4);
   });
 
   it("permits staging-only appeals only in staging", async () => {

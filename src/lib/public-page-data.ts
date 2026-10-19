@@ -383,7 +383,7 @@ export const getDonationPageData = cache(async (slug: string) => {
 });
 
 /**
- * Read at most 12 payable public appeals in priority order. Use database
+ * Read up to four payable public appeals in priority order. Use database
  * filters to avoid an unbounded public index read on every /donate request.
  * The server still rechecks exact balance and disclosure before rendering.
  */
@@ -401,20 +401,32 @@ export async function getReviewedDonationPageData() {
     ];
   }
 
-  const records = await prisma.appeal.findMany({
-    where,
-    orderBy: [
-      { isFeatured: "desc" },
-      { featuredOrder: "asc" },
-      { publishedAt: "desc" },
-    ],
-    take: 12,
-    select: DONATION_PAGE_SELECT,
-  });
-  return records.flatMap(record => {
-    const payable = projectPublicDonationAppeal(record);
-    return payable ? [payable] : [];
-  });
+  const selected: NonNullable<ReturnType<typeof projectPublicDonationAppeal>>[] = [];
+  let cursor: string | undefined;
+  // A rare sub-₹10 fractional balance can pass the SQL comparison but cannot
+  // be checked out. Scan bounded pages so it does not hide a later payable case.
+  for (let scanned = 0; scanned < 48 && selected.length < 4; scanned += 12) {
+    const records = await prisma.appeal.findMany({
+      where,
+      orderBy: [
+        { isFeatured: "desc" },
+        { featuredOrder: "asc" },
+        { publishedAt: "desc" },
+        { id: "asc" },
+      ],
+      take: 12,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      select: DONATION_PAGE_SELECT,
+    });
+    for (const record of records) {
+      const payable = projectPublicDonationAppeal(record);
+      if (payable) selected.push(payable);
+      if (selected.length === 4) break;
+    }
+    if (records.length < 12) break;
+    cursor = records[records.length - 1]?.id;
+  }
+  return selected;
 }
 
 /**
