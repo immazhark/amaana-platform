@@ -26,7 +26,8 @@ export function NavigationProgress() {
           event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
       const anchor = (event.target as Element | null)?.closest("a[href]") as HTMLAnchorElement | null;
       if (!anchor || anchor.target && anchor.target !== "_self" ||
-          anchor.hasAttribute("download") || anchor.getAttribute("aria-disabled") === "true") return;
+          anchor.hasAttribute("download") || anchor.hasAttribute("data-navigation-progress-ignore") ||
+          anchor.getAttribute("aria-disabled") === "true") return;
       if (anchor.getClientRects().length === 0) return;
       // Anchor URL properties are browser-normalized, avoiding duplicate URL
       // parsing on every navigation and rejecting external/unsafe schemes.
@@ -37,14 +38,11 @@ export function NavigationProgress() {
       const destination = anchor.pathname;
       setPending({ fromPath: expectedFrom, destination });
 
-      // The site can prevent navigation in a later bubble listener (such as
-      // a protected donation action). A canceled click must not lock the UI.
-      window.requestAnimationFrame(() => {
-        if (event.defaultPrevented) {
-          setPending(current => current?.fromPath === expectedFrom &&
-            current.destination === destination ? null : current);
-        }
-      });
+      // Next Link calls preventDefault in its own bubble handler to perform
+      // an actual client transition. Checking defaultPrevented next frame
+      // falsely cancels every genuine route loading state. For a bespoke
+      // link that intentionally cancels navigation, opt out explicitly with
+      // data-navigation-progress-ignore on the anchor.
     };
     const reset = () => setPending(null);
     document.addEventListener("click", begin, true);
