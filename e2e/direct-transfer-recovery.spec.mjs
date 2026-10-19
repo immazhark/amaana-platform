@@ -269,7 +269,7 @@ test("invalid PDF signature is caught before donor evidence leaves the browser",
     buffer: Buffer.from("This is not a PDF document"),
   });
   await page.getByRole("button", { name: "Submit transfer for verification" }).click();
-  await expect(page.getByRole("alert")).toContainText("does not match its PDF, JPEG, PNG or WebP file type");
+  await expect(page.getByRole("alert")).toContainText("do not match its PDF, JPEG, PNG or WebP file type");
   await expect(page.getByRole("button", { name: "Submit transfer for verification" })).toBeEnabled();
   await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("UTRTEST9000123");
   expect(calls).toBe(0);
