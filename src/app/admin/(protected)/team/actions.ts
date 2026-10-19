@@ -10,7 +10,7 @@ import { deletePublicMediaObject, uploadPublicMediaFile } from "@/lib/storage";
 import { logServerError } from "@/lib/server-log";
 import {
   parseTeamMemberForm, parseTeamGroupForm, parseTeamCommand,
-  singleTeamId, teamEditVersion, teamPhotoInput,
+  singleTeamId, teamEditVersion, teamPhotoInput, assertTeamPhotoContent,
 } from "@/lib/team-validation";
 
 function refreshTeam() {
@@ -42,6 +42,7 @@ async function perform(change: () => Promise<void>, success: string) {
 
 async function storePortrait(file: File) {
   const input = Buffer.from(await file.arrayBuffer());
+  assertTeamPhotoContent(input, file.type);
   const bytes = await sharp(input, { failOn: "error", limitInputPixels: 25_000_000 })
     .rotate().resize({ width: 960, height: 1200, fit: "inside", withoutEnlargement: true })
     .webp({ quality: 80, effort: 4 }).toBuffer();
