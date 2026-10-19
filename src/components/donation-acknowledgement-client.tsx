@@ -5,29 +5,8 @@ import { useEffect, useRef, useState } from "react";
 import { PrintButton } from "@/components/print-button";
 import { donationIntentLabel } from "@/lib/donation-intent";
 import { parsePrivateDonationAcknowledgementLocation } from "@/lib/private-donation-ack";
+import { isAcknowledgementResponse, type AcknowledgementRecord } from "@/lib/private-record-response";
 
-type AcknowledgementRecord = {
-  found: true;
-  presentation: {
-    tone: "captured" | "pending" | "failed" | "refunded";
-    heading: string;
-    summary: string;
-    statusLabel: string;
-  };
-  donation: {
-    referenceNumber: string;
-    receiptNumber: string | null;
-    donorName: string;
-    givingIntent: string;
-    amount: number;
-    refundedAmount: number;
-    recordDate: string;
-    providerPaymentId: string | null;
-    appeal: { title: string; slug: string };
-  };
-};
-
-type AcknowledgementResponse = AcknowledgementRecord | { found: false };
 const formatINR = (amount: number) => new Intl.NumberFormat("en-IN", { style: "currency", currency: "INR", maximumFractionDigits: 0 }).format(amount);
 
 export function DonationAcknowledgementClient({ reference }: { reference: string }) {
@@ -61,7 +40,10 @@ export function DonationAcknowledgementClient({ reference }: { reference: string
       })
         .then(async response => {
           if (response.status >= 500 || response.status === 429) throw new Error();
-          return response.ok ? await response.json() as AcknowledgementResponse : { found: false } as AcknowledgementResponse;
+          if (!response.ok) return { found: false } as const;
+          const body: unknown = await response.json();
+          if (!isAcknowledgementResponse(body, reference)) throw new Error("Invalid private acknowledgement");
+          return body;
         })
         .then(result => setRecord(result.found ? result : null))
         .catch(error => {
