@@ -116,7 +116,6 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
       <div className={styles.grid} role="group" aria-label="Programme photographs">
         {safeItems.map((item, index) => {
           const descriptor = `${item.alt ?? ""} ${item.caption ?? ""}`;
-          const privacyProtected = /(privacy|blurred|identit(?:y|ies) protected)/i.test(descriptor);
           const graphicAsset = /(graphic|announcement|campaign cover|results update|infographic|carousel)/i.test(descriptor);
           const { width, height } = getPublicImageDimensions(item);
                     return (
@@ -129,7 +128,6 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               aria-label={`Enlarge image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
             >
               {canOptimizeLocally(item.url) ? <Image src={item.url} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
-              {privacyProtected ? <span className={styles.privacyLabel}>Privacy protected</span> : null}
               <span className={styles.openLabel}>Enlarge</span>
             </button>
             {item.caption ? <figcaption>{item.caption}</figcaption> : null}
