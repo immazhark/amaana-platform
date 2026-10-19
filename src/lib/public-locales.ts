@@ -1,3 +1,5 @@
+import { isPrivateRoute } from "./public-routing";
+
 export const PUBLIC_LOCALES = ["en", "ur", "te", "hi"] as const;
 export type PublicLocale = (typeof PUBLIC_LOCALES)[number];
 export type TranslationPublication = {
@@ -19,6 +21,7 @@ export function buildPublishedLanguageAlternates(
   if (!/^\/(?!\/)(?:[a-z0-9-]+(?:\/[a-z0-9-]+)*)?$/.test(canonicalPath)) {
     return {};
   }
+  if (isPrivateRoute(canonicalPath)) return {};
   const result: Partial<Record<PublicLocale, string>> = { en: canonicalPath };
   const seen = new Set<PublicLocale>();
   for (const translation of translations) {
