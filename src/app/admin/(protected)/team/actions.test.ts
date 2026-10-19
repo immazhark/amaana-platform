@@ -9,6 +9,8 @@ const mocks = vi.hoisted(() => ({
   audit: vi.fn(),
   serializableTransaction: vi.fn(),
   deleteObject: vi.fn(),
+  groupFindUnique: vi.fn(),
+  groupUpdateMany: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({ requirePermission: mocks.requirePermission }));
@@ -22,7 +24,7 @@ vi.mock("@/lib/storage", () => ({
 }));
 vi.mock("@/lib/server-log", () => ({ logServerError: vi.fn() }));
 
-import { deleteTeamMember } from "./actions";
+import { deleteTeamMember, updateTeamGroup } from "./actions";
 
 const originalVersion = "2026-10-19T09:00:00.000Z";
 
@@ -92,5 +94,54 @@ describe("team member deletion and production seed safety", () => {
     await expect(deleteTeamMember(deletionForm())).rejects.toThrow(/MOCK_REDIRECT/);
     expect(mocks.updateMany).not.toHaveBeenCalled();
     expect(mocks.audit).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("team governance group identity", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    mocks.requirePermission.mockResolvedValue({ id: "admin_1" });
+    mocks.groupFindUnique.mockResolvedValue({ key: "TRUSTEES" });
+    mocks.groupUpdateMany.mockResolvedValue({ count: 1 });
+    mocks.audit.mockResolvedValue({ id: "audit_2" });
+    mocks.serializableTransaction.mockImplementation(async callback => callback({
+      teamGroup: {
+        findUnique: mocks.groupFindUnique,
+        updateMany: mocks.groupUpdateMany,
+      },
+      auditEvent: { create: mocks.audit },
+    }));
+  });
+
+  function groupForm(key: string) {
+    const form = new FormData();
+    form.set("id", "group_trustees");
+    form.set("expectedUpdatedAt", originalVersion);
+    form.set("key", key);
+    form.set("title", "Trustees");
+    form.set("description", "Governance and accountability.");
+    return form;
+  }
+
+  it("blocks renaming the reserved trustee group key before a database write", async () => {
+    await expect(updateTeamGroup(groupForm("FOUNDATION_LEADERSHIP"))).rejects.toThrow(/MOCK_REDIRECT/);
+    expect(mocks.groupFindUnique).toHaveBeenCalledWith({
+      where: { id: "group_trustees" },
+      select: { key: true },
+    });
+    expect(mocks.groupUpdateMany).not.toHaveBeenCalled();
+    expect(mocks.audit).not.toHaveBeenCalled();
+  });
+
+  it("allows editing the trustee group title and description without changing its identity", async () => {
+    await expect(updateTeamGroup(groupForm("TRUSTEES"))).rejects.toThrow(/MOCK_REDIRECT/);
+    expect(mocks.groupUpdateMany).toHaveBeenCalledWith({
+      where: { id: "group_trustees", updatedAt: new Date(originalVersion) },
+      data: expect.objectContaining({ key: "TRUSTEES", description: "Governance and accountability." }),
+    });
+    expect(mocks.audit).toHaveBeenCalledWith({
+      data: expect.objectContaining({ action: "team.group_updated", entityId: "group_trustees" }),
+    });
   });
 });
