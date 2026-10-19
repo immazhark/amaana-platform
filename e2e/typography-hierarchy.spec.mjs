@@ -336,7 +336,7 @@ for (const width of [390, 1280]) {
           found: true,
           presentation: { tone: 'captured', heading: 'Synthetic acknowledgement', summary: 'Browser-only typography fixture.', statusLabel: 'Captured' },
           donation: { referenceNumber: reference, receiptNumber: 'SYNTHETIC-RECEIPT', donorName: 'Synthetic donor', givingIntent: 'GENERAL', amount: 100,
-            refundedAmount: 0, recordDate: '2026-10-01T00:00:00Z', providerPaymentId: null, appeal: { title: 'Synthetic appeal', slug: 'synthetic-appeal' } },
+            refundedAmount: 0, recordDate: '2026-10-01T00:00:00.000Z', providerPaymentId: null, appeal: { title: 'Synthetic appeal', slug: 'synthetic-appeal' } },
         },
       }));
       const fragment = new URLSearchParams({ reference, token }).toString();
