@@ -17,13 +17,41 @@ import { logServerError } from "@/lib/server-log";
 type TargetFields = { causeId?: string; initiativeId?: string; storyId?: string; faithContentId?: string };
 
 function targetFields(value: string): TargetFields {
-  const [kind, id] = value.split(":", 2);
-  if (!id) throw new Error("Choose a content target");
+  const parts = value.split(":");
+  if (parts.length !== 2 || !parts[1] || parts[1] !== parts[1].trim()) {
+    throw new Error("Choose a single valid content target");
+  }
+  const [kind, id] = parts;
   if (kind === "cause") return { causeId: id };
   if (kind === "initiative") return { initiativeId: id };
   if (kind === "story") return { storyId: id };
   if (kind === "faith") return { faithContentId: id };
   throw new Error("Unsupported content target");
+}
+
+function singleCreateText(formData: FormData, field: string): string | null {
+  const values = formData.getAll(field);
+  if (values.length > 1 || (values.length === 1 && typeof values[0] !== "string")) {
+    throw new Error(`Use a single text ${field} field.`);
+  }
+  return values.length === 0 ? null : values[0] as string;
+}
+
+function optionalCreateInteger(
+  formData: FormData,
+  field: "sourceYear" | "sortOrder",
+  minimum: number,
+  maximum: number,
+): number | null {
+  const text = singleCreateText(formData, field);
+  if (text === null || text.trim() === "") return null;
+  const trimmed = text.trim();
+  const number = Number(trimmed);
+  if (!/^\d+$/.test(trimmed) || !Number.isSafeInteger(number) ||
+      number < minimum || number > maximum) {
+    throw new Error(`Choose a valid ${field}.`);
+  }
+  return number;
 }
 
 function safePublicUrl(value: FormDataEntryValue | null) {
@@ -50,27 +78,41 @@ function usesApprovedManagedDelivery(asset: { storageKey?: string | null; public
 
 export async function createMediaAsset(formData: FormData) {
   const user = await requirePermission("content.update");
-  const target = targetFields(String(formData.get("target") ?? ""));
-  const fileValue = formData.get("file");
+  const target = targetFields(singleCreateText(formData, "target") ?? "");
+  const files = formData.getAll("file");
+  if (files.length > 1 || (files.length === 1 && !(files[0] instanceof File))) {
+    throw new Error("Use a single file field.");
+  }
+  const fileValue = files[0];
   const file = fileValue instanceof File && fileValue.size > 0 ? fileValue : null;
-  const manualUrl = safePublicUrl(formData.get("publicUrl"));
+  const manualUrl = safePublicUrl(singleCreateText(formData, "publicUrl"));
+  const requestedKind = singleCreateText(formData, "kind") ?? "IMAGE";
+  if (requestedKind !== "IMAGE" && requestedKind !== "DOCUMENT") {
+    throw new Error("Choose an IMAGE or DOCUMENT media type.");
+  }
+  const inferredKind: MediaKind = requestedKind;
+  const altText = optionalText(singleCreateText(formData, "altText"), 300);
+  const title = optionalText(singleCreateText(formData, "title"), 160);
+  const caption = optionalText(singleCreateText(formData, "caption"), 1000);
+  const sourcePath = optionalText(singleCreateText(formData, "sourcePath"), 500);
+  const sourceYear = optionalCreateInteger(formData, "sourceYear", 2000, 2100);
+  const sortOrder = optionalCreateInteger(formData, "sortOrder", 0, 2147483647) ?? 0;
+  const identityValue = singleCreateText(formData, "identityImage");
+  if (identityValue !== null && identityValue !== "on") {
+    throw new Error("Choose a valid identity-image checkbox value.");
+  }
+  if (inferredKind !== "IMAGE" && identityValue === "on") {
+    throw new Error("An identity image must use the IMAGE media type.");
+  }
+  const identityImage = inferredKind === "IMAGE" && identityValue === "on";
+
   if (!file && !manualUrl) throw new Error("Upload a file or provide an approved public URL");
   if (file && manualUrl) throw new Error("Choose either a managed upload or a reviewed external URL, not both.");
-
-  const requestedKind = String(formData.get("kind") ?? "IMAGE");
-  const inferredKind: MediaKind = file?.type === "application/pdf" ? "DOCUMENT" : requestedKind === "DOCUMENT" ? "DOCUMENT" : "IMAGE";
   if (file) validatePublicMediaFile(file);
   if (file && inferredKind === "DOCUMENT" && file.type !== "application/pdf") throw new Error("Document media must be uploaded as PDF");
   if (file && inferredKind === "IMAGE" && file.type === "application/pdf") throw new Error("Image media must use JPEG, PNG or WebP");
-
-  const altText = optionalText(formData.get("altText"), 300);
   if (inferredKind === "IMAGE" && !altText) throw new Error("Image alt text is required");
-  const sourceYearRaw = Number(formData.get("sourceYear"));
-  const sortOrderRaw = Number(formData.get("sortOrder"));
-  const identityImage = inferredKind === "IMAGE" && formData.get("identityImage") === "on";
-  const displayOrder = identityImage
-    ? IDENTITY_MEDIA_SORT_ORDER
-    : Number.isInteger(sortOrderRaw) && sortOrderRaw >= 0 ? sortOrderRaw : 0;
+  const displayOrder = identityImage ? IDENTITY_MEDIA_SORT_ORDER : sortOrder;
 
   const uploaded = file ? await uploadPublicMediaFile(file) : null;
 
@@ -93,13 +135,13 @@ export async function createMediaAsset(formData: FormData) {
       const asset = await tx.mediaAsset.create({
         data: {
           kind: inferredKind,
-          title: optionalText(formData.get("title"), 160),
+          title,
           publicUrl: manualUrl ?? uploaded?.publicUrl ?? null,
           storageKey: uploaded?.objectKey ?? null,
           altText,
-          caption: optionalText(formData.get("caption"), 1000),
-          sourcePath: optionalText(formData.get("sourcePath"), 500) ?? uploaded?.originalName ?? null,
-          sourceYear: Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null,
+          caption,
+          sourcePath: sourcePath ?? uploaded?.originalName ?? null,
+          sourceYear,
           width: uploaded?.width ?? null,
           height: uploaded?.height ?? null,
           sortOrder: displayOrder,
@@ -134,32 +176,33 @@ export async function createMediaAsset(formData: FormData) {
 
 export async function updateMediaAsset(formData: FormData) {
   const user = await requirePermission("content.update");
-  const id = String(formData.get("id") ?? "");
-  const expectedUpdatedAtRaw = String(formData.get("expectedUpdatedAt") ?? "");
-  const expectedUpdatedAt = new Date(expectedUpdatedAtRaw);
-  if (!expectedUpdatedAtRaw || Number.isNaN(expectedUpdatedAt.getTime())) {
-    throw new Error("Media edit version is missing or invalid. Refresh before editing.");
+  const id = singleCreateText(formData, "id");
+  if (!id?.trim()) throw new Error("Media record is required.");
+  const expectedUpdatedAt = mediaReviewVersion(formData);
+  const publicUrl = safePublicUrl(singleCreateText(formData, "publicUrl"));
+  const altText = optionalText(singleCreateText(formData, "altText"), 300);
+  const title = optionalText(singleCreateText(formData, "title"), 160);
+  const caption = optionalText(singleCreateText(formData, "caption"), 1000);
+  const sourcePath = optionalText(singleCreateText(formData, "sourcePath"), 500);
+  const sourceYear = optionalCreateInteger(formData, "sourceYear", 2000, 2100);
+  const sortOrder = optionalCreateInteger(formData, "sortOrder", 0, 2147483647) ?? 0;
+  const identityValue = singleCreateText(formData, "identityImage");
+  if (identityValue !== null && identityValue !== "on") {
+    throw new Error("Choose a valid identity-image checkbox value.");
   }
+
   const asset = await prisma.mediaAsset.findUniqueOrThrow({ where: { id } });
   if (asset.isPublic && !hasPermission(user, "content.approve")) throw new Error("Published media requires approval permission to edit");
-
-  const publicUrl = safePublicUrl(formData.get("publicUrl"));
   if (!publicUrl && !asset.storageKey) throw new Error("Media must retain an approved public URL");
-  const altText = optionalText(formData.get("altText"), 300);
   if (asset.kind === "IMAGE" && !altText) throw new Error("Image alt text is required");
-  const sourceYearRaw = Number(formData.get("sourceYear"));
-  const sortOrderRaw = Number(formData.get("sortOrder"));
-  const identityImage = asset.kind === "IMAGE" && formData.get("identityImage") === "on";
-  const displayOrder = identityImage
-    ? IDENTITY_MEDIA_SORT_ORDER
-    : Number.isInteger(sortOrderRaw) && sortOrderRaw >= 0 ? sortOrderRaw : 0;
+  if (asset.kind !== "IMAGE" && identityValue === "on") {
+    throw new Error("An identity image must use the IMAGE media type.");
+  }
+  const identityImage = asset.kind === "IMAGE" && identityValue === "on";
+  const displayOrder = identityImage ? IDENTITY_MEDIA_SORT_ORDER : sortOrder;
   const wasIdentityImage = asset.kind === "IMAGE" && asset.sortOrder === IDENTITY_MEDIA_SORT_ORDER;
   const deliveryUrlChanged = publicUrl !== asset.publicUrl;
   const identityStateChanged = identityImage !== wasIdentityImage;
-  const title = optionalText(formData.get("title"), 160);
-  const caption = optionalText(formData.get("caption"), 1000);
-  const sourcePath = optionalText(formData.get("sourcePath"), 500);
-  const sourceYear = Number.isInteger(sourceYearRaw) && sourceYearRaw >= 2000 && sourceYearRaw <= 2100 ? sourceYearRaw : null;
   const privacyMetadataChanged =
     title !== asset.title ||
     altText !== asset.altText ||
