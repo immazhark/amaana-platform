@@ -94,6 +94,25 @@ test('gallery arrow buttons keep focus after changing the selected image', async
   await expect(page.getByRole('button', { name: /^Enlarge image 1 of 13:/ })).toBeFocused();
 });
 
+test('gallery announces the newly selected photograph without moving keyboard focus', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 1 of 13:/ }).click();
+
+  const dialog = page.getByRole('dialog');
+  const title = dialog.locator('[id^="gallery-dialog-"]');
+  await expect(title).toHaveAttribute('aria-live', 'polite');
+  await expect(title).toHaveAttribute('aria-atomic', 'true');
+  await expect(title).toContainText('Image 1 of 13');
+
+  const next = dialog.getByRole('button', { name: 'Next', exact: true });
+  await next.click();
+  await expect(title).toContainText('Image 2 of 13');
+  await expect(next).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+});
+
 test('initiative gallery lightbox remains contained at 320px and preserves usable controls', async ({ page }) => {
   await openGallery(page, 320);
   await page.getByRole('button', { name: /Enlarge image 2 of 13/ }).click();
