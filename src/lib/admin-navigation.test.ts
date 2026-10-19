@@ -15,6 +15,12 @@ describe("admin landing routing", () => {
     expect(adminHomePathForPermissions(["rbac.manage"])).toBe("/admin/audit");
   });
 
+  it("routes a content-only Team manager to the Team administration page", () => {
+    expect(adminHomePathForPermissions(["content.update"])).toBe("/admin/team");
+    expect(adminNavigationForPermissions(["content.update"]))
+      .toContainEqual({ permission: "content.update", path: "/admin/team", label: "Team" });
+  });
+
   it("fails closed when an account has no recognized admin permission", () => {
     expect(adminHomePathForPermissions([])).toBe("/admin/forbidden");
   });
