@@ -30,7 +30,8 @@ describe("admin transfer reconciliation form boundary", () => {
   it("reconciles one unambiguous authorized request", async () => {
     await reconcileDonationAction(validForm());
     expect(mocks.permission).toHaveBeenCalledWith("donation.reconcile");
-    expect(mocks.reconcile).toHaveBeenCalledExactlyOnceWith({
+    expect(mocks.reconcile).toHaveBeenCalledOnce();
+    expect(mocks.reconcile).toHaveBeenCalledWith({
       donationId: "donation_01",
       actorId: "reviewer_01",
       decision: "VERIFY",
