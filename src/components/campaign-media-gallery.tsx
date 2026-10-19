@@ -5,7 +5,6 @@ import { UIIcon } from "./ui-icon";
 
 import Image from "next/image";
 import { getPublicImageDimensions } from "@/lib/public-image-dimensions";
-import { getPublicImageOptimizationUrl } from "@/lib/public-media";
 import { adjacentGalleryId } from "@/lib/gallery-selection";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
@@ -18,6 +17,10 @@ export type CampaignGalleryItem = {
   width?: number | null;
   height?: number | null;
 };
+
+function canOptimizeLocally(url: string) {
+  return url.startsWith("/media/") || url.startsWith("/brand/");
+}
 
 export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }) {
   const safeItems = useMemo(() => {
@@ -116,8 +119,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
           const privacyProtected = /(privacy|blurred|identit(?:y|ies) protected)/i.test(descriptor);
           const graphicAsset = /(graphic|announcement|campaign cover|results update|infographic|carousel)/i.test(descriptor);
           const { width, height } = getPublicImageDimensions(item);
-          const optimizedUrl = getPublicImageOptimizationUrl(item.url);
-          return (
+                    return (
           <figure className={`${styles.card} ${graphicAsset ? styles.graphicCard : ""}`} key={item.id}>
             <button
               ref={node => { triggerRefs.current[index] = node; }}
@@ -126,7 +128,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               onClick={() => setActiveId(item.id)}
               aria-label={`Enlarge image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
             >
-              {optimizedUrl ? <Image src={optimizedUrl} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
+              {canOptimizeLocally(item.url) ? <Image src={item.url} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
               {privacyProtected ? <span className={styles.privacyLabel}>Privacy protected</span> : null}
               <span className={styles.openLabel}>Enlarge</span>
             </button>
@@ -138,8 +140,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
 
       {active ? (() => {
         const { width, height } = getPublicImageDimensions(active);
-        const optimizedUrl = getPublicImageOptimizationUrl(active.url);
-        return (
+                return (
         <div className={styles.backdrop} role="presentation" onPointerDown={event => {
           if (event.currentTarget === event.target) close();
         }}>
@@ -155,7 +156,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               <span id={dialogTitleId}>Image {activeIndex + 1} of {safeItems.length}: {active.alt ?? "programme photograph"}</span>
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
-            {optimizedUrl ? <Image className={styles.fullImage} src={optimizedUrl} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}
+            {canOptimizeLocally(active.url) ? <Image className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}
             {active.caption ? <p className={styles.caption}>{active.caption}</p> : null}
             {safeItems.length > 1 ? (
               <div className={styles.controls}>
