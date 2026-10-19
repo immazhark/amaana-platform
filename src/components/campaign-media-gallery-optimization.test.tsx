@@ -24,6 +24,19 @@ describe("campaign gallery managed image optimization", () => {
     expect(html).toContain('alt="Volunteers preparing community relief supplies"');
   });
 
+  it("does not claim that faces are blurred from free-form alt or caption text", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[{
+      id: "privacy-claim-unreviewed",
+      url: "/media/approved.webp",
+      alt: "Privacy protected beneficiary photograph",
+      caption: "Blurred faces in approved programme documentation",
+      width: 800,
+      height: 600,
+    }]} />);
+    expect(html).toContain("Blurred faces in approved programme documentation");
+    expect(html).not.toContain(">Privacy protected</span>");
+  });
+
   it("keeps approved external CDN photographs direct, without remote optimizer allowlisting", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://cdn.amaana.example");
