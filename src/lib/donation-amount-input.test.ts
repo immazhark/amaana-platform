@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { donationAmountValidationMessage, updateDonationAmountValidity } from "./donation-amount-input";
+import { donationAmountValidationMessage, getUpiPaymentUri, updateDonationAmountValidity } from "./donation-amount-input";
 
 describe("donation amount input validation", () => {
   const min = 10;
@@ -59,5 +59,23 @@ describe("AF-R083 reviewed checkout amount presets", () => {
     }
     expect(getDonationAmountPresets(500.75)).toEqual([500]);
     expect(getDonationAmountPresets(1_500_000)).toEqual([500, 1_000, 2_500]);
+  });
+});
+
+describe("verified amount-prefilled direct UPI links", () => {
+  it("encodes the confirmed whole-rupee amount without changing the payment destination", () => {
+    const id = "mab.037347029220157@axisbank";
+    expect(getUpiPaymentUri(id, "250", 10, 500)).toBe(
+      "upi://pay?pa=mab.037347029220157%40axisbank&pn=AMAANA%20FOUNDATION&am=250.00&cu=INR",
+    );
+    expect(getUpiPaymentUri(id, "7", 7, 7)).toContain("&am=7.00&cu=INR");
+  });
+
+  it("does not create a payment intent for an unset or invalid amount", () => {
+    const id = "verified@upi";
+    for (const value of ["", "0", "9", "501", "250.75", "1e2", "-1", "Infinity"]) {
+      expect(getUpiPaymentUri(id, value, 10, 500)).toBeNull();
+    }
+    expect(getUpiPaymentUri("verified@upi&am=1000", "250", 10, 500)).toBeNull();
   });
 });

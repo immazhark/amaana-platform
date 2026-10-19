@@ -1,6 +1,6 @@
 "use client";
 
-import { updateDonationAmountValidity } from "@/lib/donation-amount-input";
+import { getUpiPaymentUri, updateDonationAmountValidity } from "@/lib/donation-amount-input";
 
 import Image from "next/image";
 import { type FormEvent, useRef, useState } from "react";
@@ -16,12 +16,13 @@ export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails
   const [error, setError] = useState("");
   const [copyFeedback, setCopyFeedback] = useState<{ method: Method; text: string } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [upiAmount, setUpiAmount] = useState("");
   const [uncertain, setUncertain] = useState(false);
   const submissionRef = useRef(false);
   const transactionMax = Math.min(maxAmount, 1_000_000);
   const transactionMin = transactionMax < 10 ? transactionMax : 10;
   const bankUnavailable = method === "BANK_TRANSFER" && !paymentDetails.bank;
-  const upiUri = `upi://pay?pa=${encodeURIComponent(paymentDetails.upi.id)}&pn=${encodeURIComponent("AMAANA FOUNDATION")}&cu=INR`;
+  const upiUri = getUpiPaymentUri(paymentDetails.upi.id, upiAmount, transactionMin, transactionMax);
 
   async function copyPaymentDetail(value: string, label: string) {
     try {
@@ -87,7 +88,7 @@ export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails
   const locked = busy || uncertain || bankUnavailable;
   return <div className="v2-premium-form v2-donation-form">
     {method === "DIRECT_UPI" ? copy.upiHeading : copy.bankHeading}
-    {method === "DIRECT_UPI" ? <section className="card" aria-label="Verified UPI details"><p><strong>UPI ID</strong><br/><code>{paymentDetails.upi.id}</code></p><p><button type="button" className="v2-text-link" onClick={() => copyPaymentDetail(paymentDetails.upi.id, "UPI ID")}>Copy UPI ID</button> · <a className="v2-text-link" href={upiUri}>Open UPI app</a></p>{paymentDetails.upi.qrImageUrl ? <Image src={paymentDetails.upi.qrImageUrl} alt="Amaana Foundation verified UPI payment QR code" width={240} height={240} priority={false}/> : copy.qrMissing}</section> : paymentDetails.bank ? <section className="card" aria-label="Verified bank transfer details"><dl className="details"><div><dt>Account name</dt><dd>{paymentDetails.bank.accountName}</dd></div><div><dt>Account number</dt><dd>{paymentDetails.bank.accountNumber} <button type="button" className="v2-text-link" onClick={() => copyPaymentDetail(paymentDetails.bank!.accountNumber, "Account number")} aria-label="Copy account number">Copy</button></dd></div><div><dt>IFSC</dt><dd>{paymentDetails.bank.ifsc} <button type="button" className="v2-text-link" onClick={() => copyPaymentDetail(paymentDetails.bank!.ifsc, "IFSC")} aria-label="Copy IFSC">Copy</button></dd></div><div><dt>Bank</dt><dd>{paymentDetails.bank.bankName}</dd></div><div><dt>Branch</dt><dd>{paymentDetails.bank.branch}</dd></div></dl></section> : copy.bankMissing}
+    {method === "DIRECT_UPI" ? <section className="card" aria-label="Verified UPI details"><p><strong>UPI ID</strong><br/><code>{paymentDetails.upi.id}</code></p><p><button type="button" className="v2-text-link" onClick={() => copyPaymentDetail(paymentDetails.upi.id, "UPI ID")}>Copy UPI ID</button> · {upiUri ? <a className="v2-text-link" href={upiUri}>Open UPI app with ₹{Number(upiAmount).toLocaleString("en-IN")}</a> : <span className="muted">Enter the donation amount below to open your UPI app.</span>}</p>{paymentDetails.upi.qrImageUrl ? <Image src={paymentDetails.upi.qrImageUrl} alt="Amaana Foundation verified UPI payment QR code" width={240} height={240} priority={false}/> : copy.qrMissing}</section> : paymentDetails.bank ? <section className="card" aria-label="Verified bank transfer details"><dl className="details"><div><dt>Account name</dt><dd>{paymentDetails.bank.accountName}</dd></div><div><dt>Account number</dt><dd>{paymentDetails.bank.accountNumber} <button type="button" className="v2-text-link" onClick={() => copyPaymentDetail(paymentDetails.bank!.accountNumber, "Account number")} aria-label="Copy account number">Copy</button></dd></div><div><dt>IFSC</dt><dd>{paymentDetails.bank.ifsc} <button type="button" className="v2-text-link" onClick={() => copyPaymentDetail(paymentDetails.bank!.ifsc, "IFSC")} aria-label="Copy IFSC">Copy</button></dd></div><div><dt>Bank</dt><dd>{paymentDetails.bank.bankName}</dd></div><div><dt>Branch</dt><dd>{paymentDetails.bank.branch}</dd></div></dl></section> : copy.bankMissing}
     <p id={`direct-copy-status-${method}`} role="status" aria-live="polite" aria-atomic="true" className="muted">
       {copyFeedback?.method === method ? copyFeedback.text : ""}
     </p>
@@ -96,7 +97,7 @@ export function DirectTransferForm({ appealId, maxAmount, method, paymentDetails
       <div className="field"><label htmlFor={`direct-name-${method}`}>Full name</label><input id={`direct-name-${method}`} name="donorName" autoComplete="name" minLength={2} required disabled={locked}/></div>
       <div className="field"><label htmlFor={`direct-email-${method}`}>Email</label><input id={`direct-email-${method}`} name="donorEmail" type="email" autoComplete="email" required disabled={locked}/></div>
       <div className="field"><label htmlFor={`direct-phone-${method}`}>Phone <span className="muted">optional</span></label><input id={`direct-phone-${method}`} name="donorPhone" type="tel" autoComplete="tel" disabled={locked}/></div>
-      <div className="field"><label htmlFor={`direct-amount-${method}`}>Amount (INR)</label><input id={`direct-amount-${method}`} name="amount" type="text" inputMode="numeric" pattern="[0-9]+" maxLength={12} onInput={event => updateDonationAmountValidity(event.currentTarget, transactionMin, transactionMax)} required aria-describedby={`direct-amount-hint-${method}`} disabled={locked}/><small id={`direct-amount-hint-${method}`}>Whole rupees only. {transactionMax < 10 ? `Enter exactly ₹${transactionMax.toLocaleString("en-IN")}.` : `₹${transactionMin.toLocaleString("en-IN")} to ₹${transactionMax.toLocaleString("en-IN")}.`}</small></div>
+      <div className="field"><label htmlFor={`direct-amount-${method}`}>Amount (INR)</label><input id={`direct-amount-${method}`} name="amount" type="text" inputMode="numeric" pattern="[0-9]+" maxLength={12} onInput={event => { updateDonationAmountValidity(event.currentTarget, transactionMin, transactionMax); if (method === "DIRECT_UPI") setUpiAmount(event.currentTarget.value); }} required aria-describedby={`direct-amount-hint-${method}`} disabled={locked}/><small id={`direct-amount-hint-${method}`}>Whole rupees only. {transactionMax < 10 ? `Enter exactly ₹${transactionMax.toLocaleString("en-IN")}.` : `₹${transactionMin.toLocaleString("en-IN")} to ₹${transactionMax.toLocaleString("en-IN")}.`}</small></div>
       <div className="field"><label htmlFor={`direct-reference-${method}`}>UTR / transaction reference</label><input id={`direct-reference-${method}`} name="transferReference" minLength={6} maxLength={100} required disabled={locked}/></div>
       <div className="field"><label htmlFor={`direct-date-${method}`}>Transfer date and time</label><input id={`direct-date-${method}`} name="transferredAt" type="datetime-local" required disabled={locked}/></div>
       <div className="field full"><label htmlFor={`direct-evidence-${method}`}>Screenshot / receipt <span className="muted">optional, max 5 MB</span></label><input id={`direct-evidence-${method}`} name="evidence" type="file" accept="image/jpeg,image/png,image/webp,application/pdf" disabled={locked}/><small>Supporting evidence only. It does not prove receipt until an Amaana administrator verifies the transfer.</small></div>

@@ -41,3 +41,18 @@ export function getDonationAmountPresets(remaining: number): number[] {
   }
   return presets;
 }
+
+/** Encode only a validated whole-INR amount in a verified UPI destination.
+ * The donor still confirms payment in their app and reports the UTR. */
+export function getUpiPaymentUri(
+  upiId: string,
+  amountText: string,
+  minimum: number,
+  maximum: number,
+): string | null {
+  if (!/^[A-Za-z0-9._-]+@[A-Za-z0-9.-]+$/.test(upiId) ||
+      !amountText || donationAmountValidationMessage(amountText, minimum, maximum)) return null;
+  const amount = Number(amountText);
+  if (!Number.isSafeInteger(amount)) return null;
+  return `upi://pay?pa=${encodeURIComponent(upiId)}&pn=${encodeURIComponent("AMAANA FOUNDATION")}&am=${amount.toFixed(2)}&cu=INR`;
+}
