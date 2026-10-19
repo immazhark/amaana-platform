@@ -23,3 +23,20 @@ export function parseAdminLoginInput(emailValue: FormDataEntryValue | null, pass
     rateLimitSubject: email.slice(0, ADMIN_LOGIN_EMAIL_MAX_LENGTH),
   };
 }
+
+/** Invalid or repeated credentials must still count toward login admission. */
+export function parseAdminLoginForm(form: FormData) {
+  const emails = form.getAll("email");
+  const passwords = form.getAll("password");
+  const input = parseAdminLoginInput(
+    typeof emails[0] === "string" ? emails[0] : null,
+    typeof passwords[0] === "string" ? passwords[0] : null,
+  );
+
+  // Preserve the first email as the rate-limit subject, but never
+  // authenticate using duplicated or file-valued credentials.
+  return {
+    ...input,
+    valid: input.valid && emails.length === 1 && passwords.length === 1,
+  };
+}

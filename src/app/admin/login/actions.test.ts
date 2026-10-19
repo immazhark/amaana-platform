@@ -100,6 +100,42 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllEnvs());
 
 describe("admin login admission", () => {
+  it.each(["email", "password"])("charges a rate-limit reservation for duplicated %s and never authenticates", async field => {
+    const request = form();
+    request.append(field, "alternate-value");
+    await expect(login(request)).rejects.toThrow("redirect:/admin/login?error=invalid");
+    expect(attempts).toHaveLength(1);
+    expect(mocks.userFind).not.toHaveBeenCalled();
+    expect(mocks.verifyPassword).not.toHaveBeenCalled();
+    expect(mocks.createSession).not.toHaveBeenCalled();
+  });
+
+  it("applies the full failure quota to repeated email fields for one subject", async () => {
+    for (let i = 0; i < AUTH_FAILURE_LIMIT; i++) {
+      const request = form("  ADMIN@EXAMPLE.INVALID  ");
+      request.append("email", "alternate@example.invalid");
+      await expect(login(request)).rejects.toThrow("redirect:/admin/login?error=invalid");
+    }
+
+    const locked = form("admin@example.invalid");
+    locked.append("email", "another@example.invalid");
+    await expect(login(locked)).rejects.toThrow("redirect:/admin/login?error=locked");
+    expect(attempts).toHaveLength(AUTH_FAILURE_LIMIT);
+    expect(mocks.userFind).not.toHaveBeenCalled();
+    expect(mocks.verifyPassword).not.toHaveBeenCalled();
+    expect(mocks.createSession).not.toHaveBeenCalled();
+  });
+
+  it.each(["email", "password"])("charges a reservation and rejects file-valued %s before lookup", async field => {
+    const request = form();
+    request.set(field, new File(["invalid"], "credential.txt"));
+    await expect(login(request)).rejects.toThrow("redirect:/admin/login?error=invalid");
+    expect(attempts).toHaveLength(1);
+    expect(mocks.userFind).not.toHaveBeenCalled();
+    expect(mocks.verifyPassword).not.toHaveBeenCalled();
+  });
+
+
   it("admits only the remaining quota while concurrent password checks are pending", async () => {
     let finishPasswordChecks!: (matches: boolean) => void;
     const pendingCheck = new Promise<boolean>(resolve => { finishPasswordChecks = resolve; });
