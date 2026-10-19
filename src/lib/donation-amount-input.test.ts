@@ -75,7 +75,7 @@ describe("verified amount-prefilled direct UPI links", () => {
     for (const [minimum, maximum] of [
       [NaN, 500], [10, NaN], [10, Infinity], [-1, 500],
       [0, 500], [250, 100], [10, 1_000_001],
-    ]) {
+    ] as const) {
       expect(getUpiPaymentUri("verified@upi", "250", minimum, maximum)).toBeNull();
     }
     expect(getUpiPaymentUri("verified@upi", "250", 10, 399.71)).toContain("&am=250.00&cu=INR");
