@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 export default function ReviewedDonationAcceptance() {
   if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
 
-  return <main>
+  return <section aria-label="Synthetic reviewed giving fixture">
     <h1>Mocked reviewed donation destinations</h1>
     <AppealLandingCheckout
       appeals={[
@@ -29,5 +29,5 @@ export default function ReviewedDonationAcceptance() {
       ]}
       paymentDetails={{ upi: { id: "synthetic-test@upi", qrImageUrl: null }, bank: null }}
     />
-  </main>;
+  </section>;
 }
