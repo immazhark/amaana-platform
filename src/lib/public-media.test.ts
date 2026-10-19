@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   IDENTITY_MEDIA_SORT_ORDER,
+  getPublicImageOptimizationUrl,
   canRenderPublicMedia,
   isCspCompatiblePublicImageUrl,
   normalizeSafePublicMediaUrl,
@@ -95,6 +96,34 @@ describe("public media safety", () => {
     expect(canRenderPublicMedia({
       kind: "EXTERNAL_VIDEO", externalUrl: "https://www.youtube.com/watch?v=approved",
     })).toBe(true);
+  });
+
+  it("optimizes only public managed image paths on the configured application origin", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    expect(getPublicImageOptimizationUrl("/media/2026/Eid%20Kits.webp"))
+      .toBe("/media/2026/Eid%20Kits.webp");
+    expect(getPublicImageOptimizationUrl("https://amaanafoundation.org/media/approved.webp?width=small"))
+      .toBe("/media/approved.webp?width=small");
+    expect(getPublicImageOptimizationUrl("https://amaanafoundation.org/brand/mark.svg"))
+      .toBe("/brand/mark.svg");
+
+    // Remote CDN images remain direct until their hosts are configured for Next optimization.
+    expect(getPublicImageOptimizationUrl("https://cdn.example.org/media/approved.webp")).toBeNull();
+    expect(getPublicImageOptimizationUrl("https://www.amaanafoundation.org/media/approved.webp")).toBeNull();
+  });
+
+  it("never optimizes private, recursively encoded or untrusted managed-looking paths", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    for (const url of [
+      "/api/admin/evidence.png",
+      "/_next/image?url=%2Fadmin%2Fprivate",
+      "/media/%252e%252e/admin/private.webp",
+      "https://amaanafoundation.org/media/%252e%252e/admin/private.webp",
+      "https://amaanafoundation.org/api/private.jpg",
+      "https://attacker.example.org/media/photo.jpg",
+    ]) {
+      expect(getPublicImageOptimizationUrl(url), url).toBeNull();
+    }
   });
 
   it("fails closed for hosted video even when descriptive text exists", () => {
