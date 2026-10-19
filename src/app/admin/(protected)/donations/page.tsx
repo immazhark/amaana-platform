@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { DonationIntent, DonationStatus, Prisma } from "@prisma/client";
-import { requirePermission } from "@/lib/auth";
+import { hasPermission, requirePermission } from "@/lib/auth";
 import { formatINR } from "@/lib/appeals";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { donationIntentLabel } from "@/lib/donation-intent";
@@ -10,8 +10,9 @@ import { donationOperationalState } from "@/lib/operational-signals";
 type Props = { searchParams: Promise<{ status?: string; intent?: string; page?: string }> };
 
 export default async function DonationsPage({ searchParams }: Props) {
-  await requirePermission("donation.view");
+  const user = await requirePermission("donation.view");
   const { status, intent, page: pageParam } = await searchParams;
+  const financeMonth = new Date(Date.now() + 330 * 60_000).toISOString().slice(0, 7);
   const selected = Object.values(DonationStatus).includes(status as DonationStatus)
     ? status as DonationStatus
     : undefined;
@@ -125,6 +126,20 @@ export default async function DonationsPage({ searchParams }: Props) {
         </p>
       </div>
     </div>
+    {hasPermission(user, "donation.reconcile") && (
+      <section className="admin-card" aria-labelledby="finance-export-heading" style={{ marginBottom: "1.25rem" }}>
+        <h2 id="finance-export-heading">Internal finance reconciliation</h2>
+        <p className="muted">
+          Download a capture-month snapshot of verified donations and their current refund totals.
+          Donor identity is excluded. This is not a statutory Form 10BD or 10BE.
+        </p>
+        <form action="/admin/donations/finance-export" method="get" className="filter-row">
+          <label htmlFor="finance-export-month">Month (India time)</label>
+          <input id="finance-export-month" type="month" name="month" min="2020-01" max="2100-12" defaultValue={financeMonth} required />
+          <button type="submit" className="button">Download internal CSV</button>
+        </form>
+      </section>
+    )}
     <section className="admin-card" aria-labelledby="donation-health-heading" style={{ marginBottom: "1.25rem" }}>
       <div className="admin-heading">
         <div>
