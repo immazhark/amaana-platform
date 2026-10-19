@@ -66,6 +66,37 @@ describe("public media safety", () => {
     })).toBe(false);
   });
 
+  it("rejects private app routes in public image and document media", () => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
+    for (const url of [
+      "/admin/financial-evidence",
+      "/api/admin/private",
+      "/donations/AF-PRIVATE/acknowledgement",
+      "/request-assistance/status",
+      "/_next/image?url=%2Fadmin%2Fprivate",
+      "/%61dmin/private",
+      "/%2561dmin/private",
+      "/media/%252e%252e/admin/record.webp",
+      "https://www.amaanafoundation.org/api/private.pdf",
+      "https://amaanafoundation.org./admin/private.jpg",
+    ]) {
+      expect(canRenderPublicMedia({ kind: "IMAGE", publicUrl: url, altText: "Test asset" }), url).toBe(false);
+      expect(canRenderPublicMedia({ kind: "DOCUMENT", publicUrl: url, title: "Test asset" }), url).toBe(false);
+    }
+  });
+
+  it("preserves approved public documents and encoded media filenames", () => {
+    expect(canRenderPublicMedia({
+      kind: "IMAGE", publicUrl: "/media/2026/Eid%20Gift%20Kits.webp", altText: "Packing kits",
+    })).toBe(true);
+    expect(canRenderPublicMedia({
+      kind: "DOCUMENT", publicUrl: "/reports/approved.pdf", title: "Impact report",
+    })).toBe(true);
+    expect(canRenderPublicMedia({
+      kind: "EXTERNAL_VIDEO", externalUrl: "https://www.youtube.com/watch?v=approved",
+    })).toBe(true);
+  });
+
   it("fails closed for hosted video even when descriptive text exists", () => {
     expect(canRenderPublicMedia({ kind: "VIDEO", publicUrl: "https://cdn.example.org/update.mp4" })).toBe(false);
     expect(canRenderPublicMedia({ kind: "VIDEO", publicUrl: "https://cdn.example.org/update.mp4", altText: "Packing video" })).toBe(false);
