@@ -31,7 +31,8 @@ export function NavigationProgress() {
       // Anchor URL properties are browser-normalized, avoiding duplicate URL
       // parsing on every navigation and rejecting external/unsafe schemes.
       if (anchor.origin !== location.origin) return;
-      if (anchor.pathname === location.pathname && anchor.search === location.search) return;
+      // Query-only navigation must never lock the page: usePathname does not change.
+      if (anchor.pathname === location.pathname) return;
       const expectedFrom = location.pathname;
       const destination = anchor.pathname;
       setPending({ fromPath: expectedFrom, destination });
