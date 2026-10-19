@@ -15,14 +15,26 @@ export function DonationMethods(props: { appealId: string; appealTitle: string; 
   const [method,setMethod]=useState<Method>("RAZORPAY");
   const [transferLocked,setTransferLocked]=useState(false);
   const [onlineLocked,setOnlineLocked]=useState(false);
+  const methodLockRef = useRef(false);
   const methodLocked = transferLocked || onlineLocked;
-  const onTransferLockChange = (next: boolean) => { setTransferLocked(next); props.onLockChange?.(next); };
-  const onOnlineLockChange = (next: boolean) => { setOnlineLocked(next); props.onLockChange?.(next); };
+  const onTransferLockChange = (next: boolean) => {
+    methodLockRef.current = next;
+    setTransferLocked(next);
+    props.onLockChange?.(next);
+  };
+  const onOnlineLockChange = (next: boolean) => {
+    methodLockRef.current = next;
+    setOnlineLocked(next);
+    props.onLockChange?.(next);
+  };
+  const selectMethod = (next: Method) => {
+    if (!methodLockRef.current) setMethod(next);
+  };
   return <div>
     <div className={styles.methods} role="group" aria-label="Choose donation method">
-      <button type="button" aria-pressed={method==="RAZORPAY"} disabled={methodLocked} onClick={()=>setMethod("RAZORPAY")}>Secure online payment</button>
-      <button type="button" aria-pressed={method==="DIRECT_UPI"} disabled={methodLocked} onClick={()=>setMethod("DIRECT_UPI")}>Direct UPI / QR</button>
-      <button type="button" aria-pressed={method==="BANK_TRANSFER"} disabled={methodLocked} onClick={()=>setMethod("BANK_TRANSFER")}>Bank transfer</button>
+      <button type="button" aria-pressed={method==="RAZORPAY"} disabled={methodLocked} onClick={()=>selectMethod("RAZORPAY")}>Secure online payment</button>
+      <button type="button" aria-pressed={method==="DIRECT_UPI"} disabled={methodLocked} onClick={()=>selectMethod("DIRECT_UPI")}>Direct UPI / QR</button>
+      <button type="button" aria-pressed={method==="BANK_TRANSFER"} disabled={methodLocked} onClick={()=>selectMethod("BANK_TRANSFER")}>Bank transfer</button>
     </div>
     <div>
       {method==="RAZORPAY" ? <DonationForm appealId={props.appealId} appealTitle={props.appealTitle} maxAmount={props.maxAmount} zakatEligible={props.zakatEligible} copy={props.copy} onLockChange={onOnlineLockChange}/> : <DirectTransferForm key={method} appealId={props.appealId} maxAmount={props.maxAmount} method={method} paymentDetails={props.paymentDetails} onLockChange={onTransferLockChange} copy={props.copy.direct}/>} 
