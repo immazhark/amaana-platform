@@ -27,6 +27,18 @@ describe("bounded published media archives", () => {
       kind: "EXTERNAL_VIDEO", externalUrl: { not: null },
     });
   });
+  it("keeps initial detail and archived media order deterministic across timestamp ties", async () => {
+    const { PUBLIC_DETAIL_MEDIA_PROJECTION } = await import("@/lib/public-content");
+    const expectedOrder = [
+      { sortOrder: "asc" },
+      { sourceYear: "desc" },
+      { createdAt: "desc" },
+      { id: "asc" },
+    ];
+    expect(PUBLIC_DETAIL_MEDIA_PROJECTION.orderBy).toEqual(expectedOrder);
+    await getPublicMediaArchive("initiative", parent.slug, 2);
+    expect(mocks.media.mock.calls[0]?.[0].orderBy).toEqual(expectedOrder);
+  });
   it("limits public detail media before serialization", async () => {
     const { PUBLIC_DETAIL_MEDIA_PROJECTION } = await import("@/lib/public-content");
     expect(PUBLIC_DETAIL_MEDIA_PROJECTION.take).toBe(48);
