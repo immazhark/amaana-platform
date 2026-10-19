@@ -215,6 +215,11 @@ export async function updateTeamGroup(formData: FormData) {
     const version = teamEditVersion(formData);
     const input = parseTeamGroupForm(formData);
     await withSerializableTransactionRetry(async tx => {
+      const existing = await tx.teamGroup.findUnique({ where: { id }, select: { key: true } });
+      if (!existing) throw new Error("No such team group.");
+      if (existing.key === "TRUSTEES" && input.key !== "TRUSTEES") {
+        throw new Error("Team trustees group key cannot change.");
+      }
       const updated = await tx.teamGroup.updateMany({ where: { id, updatedAt: version }, data: input });
       if (updated.count !== 1) throw new Error("This team group changed. Refresh before editing.");
       await tx.auditEvent.create({
