@@ -33,6 +33,7 @@ export const directTransferSchema = donationSchema.extend({
 });
 
 export function isDonationAmountAllowedForRemaining(amount: number, remainingAmount: number) {
+  if (!Number.isFinite(remainingAmount) || remainingAmount <= 0) return false;
   if (!Number.isInteger(amount) || amount < 1 || amount > MAX_DONATION_AMOUNT) return false;
   if (amount > remainingAmount) return false;
   return amount >= MIN_DONATION_AMOUNT || amount === remainingAmount;

@@ -4,7 +4,7 @@ import { getAppealCoverMediaIssues } from "@/lib/appeal-cover-media";
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { canExposeAppealArchive } from "@/lib/appeal-update-publication";
-import { canExposePublicAppeal } from "@/lib/public-environment";
+import { canExposePublicAppeal, canExposeSyntheticStagingContent } from "@/lib/public-environment";
 import { IDENTITY_MEDIA_SORT_ORDER } from "@/lib/public-media";
 import {
   getPublishedFaithContentBySlug,
@@ -346,35 +346,88 @@ export const getAppealsIndexData = cache(async () => {
  * Donation page projection. Checkout is available only while the appeal is
  * published, below target and inside any configured fundraising window.
  */
-export const getDonationPageData = cache(async (slug: string) => {
-  const appeal = await prisma.appeal.findFirst({
-    where: { slug, status: "PUBLISHED" },
-    select: {
-      id: true,
-      slug: true,
-      title: true,
-      summary: true,
-      beneficiaryLocation: true,
-      category: true,
-      status: true,
-      goalAmount: true,
-      amountRaised: true,
-      closesAt: true,
-      assistanceRequest: {
-        select: {
-          verification: { select: { zakatStatus: true } },
-        },
-      },
-    },
-  });
+const DONATION_PAGE_SELECT = {
+  id: true,
+  slug: true,
+  title: true,
+  summary: true,
+  beneficiaryLocation: true,
+  category: true,
+  status: true,
+  goalAmount: true,
+  amountRaised: true,
+  closesAt: true,
+  assistanceRequest: {
+    select: { verification: { select: { zakatStatus: true } } },
+  },
+} as const satisfies Prisma.AppealSelect;
 
+type DonationAppealRecord = Prisma.AppealGetPayload<{ select: typeof DONATION_PAGE_SELECT }>;
+
+/** One disclosure boundary for both detail and batch donation projections. */
+function projectPublicDonationAppeal(appeal: DonationAppealRecord | null) {
   if (!appeal || !canExposePublicAppeal(appeal) || !isAppealOpenForDonations(appeal)) return null;
   const { assistanceRequest, ...publicAppeal } = appeal;
   return {
     ...publicAppeal,
     zakatEligible: assistanceRequest?.verification?.zakatStatus === "ELIGIBLE",
   };
+}
+
+export const getDonationPageData = cache(async (slug: string) => {
+  const appeal = await prisma.appeal.findFirst({
+    where: { slug, status: "PUBLISHED" },
+    select: DONATION_PAGE_SELECT,
+  });
+  return projectPublicDonationAppeal(appeal);
 });
+
+/**
+ * Read up to four payable public appeals in priority order. Use database
+ * filters to avoid an unbounded public index read on every /donate request.
+ * The server still rechecks exact balance and disclosure before rendering.
+ */
+export async function getReviewedDonationPageData() {
+  const now = new Date();
+  const where: Prisma.AppealWhereInput = {
+    status: "PUBLISHED",
+    amountRaised: { lt: prisma.appeal.fields.goalAmount },
+    OR: [{ closesAt: null }, { closesAt: { gt: now } }],
+  };
+  if (!canExposeSyntheticStagingContent()) {
+    where.NOT = [
+      { slug: { startsWith: "staging-" } },
+      { title: { startsWith: "STAGING TEST" } },
+    ];
+  }
+
+  const selected: NonNullable<ReturnType<typeof projectPublicDonationAppeal>>[] = [];
+  let cursor: string | undefined;
+  // A rare sub-₹10 fractional balance can pass the SQL comparison but cannot
+  // be checked out. Scan bounded pages so it does not hide a later payable case.
+  for (let scanned = 0; scanned < 48 && selected.length < 4; scanned += 12) {
+    const records = await prisma.appeal.findMany({
+      where,
+      orderBy: [
+        { isFeatured: "desc" },
+        { featuredOrder: "asc" },
+        { publishedAt: "desc" },
+        { id: "asc" },
+      ],
+      take: 12,
+      ...(cursor ? { cursor: { id: cursor }, skip: 1 } : {}),
+      select: DONATION_PAGE_SELECT,
+    });
+    for (const record of records) {
+      const payable = projectPublicDonationAppeal(record);
+      if (payable) selected.push(payable);
+      if (selected.length === 4) break;
+    }
+    if (records.length < 12) break;
+    cursor = records[records.length - 1]?.id;
+  }
+  return selected;
+}
 
 /**
  * A bounded, reviewed projection for donor-facing published programme outcomes.

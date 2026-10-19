@@ -60,12 +60,12 @@ test('Motion feedback restores styles and responds to live preference changes', 
   await open(page);
   const action = page.locator('.nav-donate');
   await action.hover();
-  await expect.poll(() => action.evaluate(n => n.style.translate)).toBe('0px -1px');
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).translate)).toBe('0px -1px');
   await page.mouse.move(500, 400);
-  await expect.poll(() => action.evaluate(n => n.style.translate)).toBe('');
+  await expect.poll(() => action.evaluate(n => { const value = getComputedStyle(n).translate; return value === 'none' || value === '0px 0px' ? '' : value; })).toBe('');
   await action.focus();
   await expect(action).toBeFocused();
-  await expect.poll(() => action.evaluate(n => n.style.translate)).toBe('0px -1px');
+  await expect.poll(() => action.evaluate(n => getComputedStyle(n).translate)).toBe('0px -1px');
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await expect.poll(() => action.evaluate(n => ({ translate: n.style.translate, scale: n.style.scale, animations: n.getAnimations().length }))).toEqual({ translate: '', scale: '', animations: 0 });
   await expect(action).toBeFocused();

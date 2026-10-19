@@ -90,6 +90,17 @@ export function SiteHeader() {
           <Image className="brand-lockup" src="/brand/amaana-mark.svg" width={108} height={108} alt="Amaana Foundation — Upholding Trust" priority />
         </Link>
 
+        {/* Keep a real Donate destination visible on narrow screens without
+            opening the menu. The existing responsive menu-toggle display rule
+            hides this quick link on desktop, avoiding an additional stylesheet. */}
+        <Link
+          className="menu-toggle af-support-cta"
+          href="/donate"
+          style={{ width: "auto", minWidth: 0, paddingInline: "10px", fontSize: ".875rem" }}
+          aria-current={isActivePath(pathname, "/donate") ? "page" : undefined}
+          onClick={closeMenu}
+        >Donate</Link>
+
         <button ref={toggleRef} className="menu-toggle" type="button" aria-expanded={open} aria-controls="mobile-navigation" aria-label={open ? "Close navigation menu" : "Open navigation menu"} onClick={() => setOpenForPath(current => current === pathname ? null : pathname)}>
           <UIIcon name={open ? "close" : "menu"} />
         </button>
@@ -99,7 +110,7 @@ export function SiteHeader() {
             const active = isActivePath(pathname, href);
             return <Link className={active ? "nav-link active" : "nav-link"} href={href} key={href} aria-current={active ? "page" : undefined}>{label}</Link>;
           })}
-          <Link className="button nav-donate af-support-cta" href="/appeals" aria-current={isActivePath(pathname, "/appeals") ? "page" : undefined}>Support a need</Link>
+          <Link className="button nav-donate af-support-cta" href="/donate" aria-current={isActivePath(pathname, "/donate") ? "page" : undefined}>Donate</Link>
         </div>
       </nav>
 
@@ -117,7 +128,7 @@ export function SiteHeader() {
               return <Link className={active ? "active" : undefined} href={href} key={href} onClick={closeMenu} aria-current={active ? "page" : undefined}>{label}</Link>;
             })}
           </div>
-          <Link className="button af-support-cta" href="/appeals" onClick={closeMenu} aria-current={isActivePath(pathname, "/appeals") ? "page" : undefined}>Support a verified need</Link>
+          <Link className="button af-support-cta" href="/donate" onClick={closeMenu} aria-current={isActivePath(pathname, "/donate") ? "page" : undefined}>Donate</Link>
         </div>
       </nav>
       </header>

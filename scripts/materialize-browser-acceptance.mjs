@@ -21,6 +21,7 @@ const routes = [
   "admin",
   "body-carousel",
   "direct-donation",
+  "reviewed-donation",
   "donation",
   "gallery",
   "home-hero",

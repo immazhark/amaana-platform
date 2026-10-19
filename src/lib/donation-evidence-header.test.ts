@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { hasValidDonationEvidenceHeader } from "./donation-evidence-header";
+import { donationEvidenceUploadIssue, hasValidDonationEvidenceHeader, MAX_DONATION_EVIDENCE_BYTES } from "./donation-evidence-header";
 
 function evidence(mime: string, bytes: number[]) {
   return new File([new Uint8Array(bytes).buffer], "synthetic-receipt", { type: mime });
@@ -32,5 +32,18 @@ describe("direct-transfer proof pre-persistence header checks", () => {
       throw new Error("FILE_READ_FAILED");
     };
     expect(await hasValidDonationEvidenceHeader(file)).toBe(false);
+  });
+});
+
+describe("direct transfer evidence preflight", () => {
+  it("accepts optional empty file controls and supported evidence at the 5 MB limit", () => {
+    expect(donationEvidenceUploadIssue(null)).toBeNull();
+    expect(donationEvidenceUploadIssue({ name: "", type: "application/octet-stream", size: 0 })).toBeNull();
+    expect(donationEvidenceUploadIssue({ name: "valid.pdf", type: "application/pdf", size: MAX_DONATION_EVIDENCE_BYTES })).toBeNull();
+  });
+  it("rejects oversized, empty or unsupported uploads", () => {
+    expect(donationEvidenceUploadIssue({ name: "large.png", type: "image/png", size: MAX_DONATION_EVIDENCE_BYTES + 1 })).toMatch(/5 MB/);
+    expect(donationEvidenceUploadIssue({ name: "empty.pdf", type: "application/pdf", size: 0 })).toMatch(/empty/);
+    expect(donationEvidenceUploadIssue({ name: "unsupported.txt", type: "text/plain", size: 5 })).toMatch(/PDF/);
   });
 });

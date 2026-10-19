@@ -219,3 +219,80 @@ test("online pre-write validation permits donor to switch to direct UPI without 
   await expect(page.getByRole("heading", { name: "Pay Amaana directly by UPI." })).toBeVisible();
   expect(calls).toBe(1);
 });
+
+test("switching direct transfer method clears stale UTR, amount and donor claim fields", async ({ page }) => {
+  await page.goto("/browser-acceptance/direct-donation");
+  await page.getByRole("button", { name: "Direct UPI / QR" }).click();
+  await page.getByLabel("Full name").fill("Synthetic UPI Donor");
+  await page.getByLabel("Amount (INR)").fill("250");
+  await page.getByLabel("UTR / transaction reference").fill("UPI-SYNTHETIC-123");
+  await page.getByRole("button", { name: "Bank transfer" }).click();
+
+  await expect(page.getByRole("heading", { name: "Transfer directly to Amaana Foundation." })).toBeVisible();
+  await expect(page.getByLabel("Full name")).toHaveValue("");
+  await expect(page.getByLabel("Amount (INR)")).toHaveValue("");
+  await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("");
+
+  await page.getByLabel("UTR / transaction reference").fill("BANK-SYNTHETIC-456");
+  await page.getByRole("button", { name: "Direct UPI / QR" }).click();
+  await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("");
+});
+
+test("oversized direct-transfer evidence is rejected before a claim request", async ({ page }) => {
+  let requests = 0;
+  await page.route("**/api/donations/direct-transfer", route => {
+    requests++;
+    return route.fulfill({ status: 202, contentType: "application/json", body: "{}" });
+  });
+  await prepareDirectTransfer(page);
+  await page.getByLabel("Screenshot / receipt").setInputFiles({
+    name: "oversized.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.alloc(5 * 1024 * 1024 + 1),
+  });
+  await page.getByRole("button", { name: "Submit transfer for verification" }).click();
+  await expect(page.locator(".v2-donation-form .form-error[role=\"alert\"]")).toContainText("5 MB or smaller");
+  await expect(page.getByRole("button", { name: "Submit transfer for verification" })).toBeEnabled();
+  expect(requests).toBe(0);
+});
+
+test("invalid PDF signature is caught before donor evidence leaves the browser", async ({ page }) => {
+  let calls = 0;
+  await page.route("**/api/donations/direct-transfer", route => {
+    calls++;
+    return route.fulfill({ status: 202, contentType: "application/json", body: "{}" });
+  });
+  await prepareDirectTransfer(page);
+  await page.getByLabel("Screenshot / receipt").setInputFiles({
+    name: "mislabeled.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("This is not a PDF document"),
+  });
+  await page.getByRole("button", { name: "Submit transfer for verification" }).click();
+  await expect(page.locator(".v2-donation-form .form-error[role=\"alert\"]")).toContainText("do not match its PDF, JPEG, PNG or WebP file type");
+  await expect(page.getByRole("button", { name: "Submit transfer for verification" })).toBeEnabled();
+  await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("UTRTEST9000123");
+  expect(calls).toBe(0);
+});
+
+test("same-tick method clicks cannot replace a direct-transfer claim already being submitted", async ({ page }) => {
+  let release;
+  const gate = new Promise(resolve => { release = resolve; });
+  let calls = 0;
+  await page.route("**/api/donations/direct-transfer", async route => {
+    calls++;
+    await gate;
+    await route.fulfill({ status: 503, contentType: "application/json", body: '{"error":"Transfer status uncertain"}' });
+  });
+  await prepareDirectTransfer(page);
+  await page.locator(".v2-donation-form form").evaluate(form => {
+    form.requestSubmit();
+    document.querySelector('[aria-label="Choose donation method"] button:first-child')?.click();
+  });
+  await expect(page.getByRole("button", { name: "Direct UPI / QR" })).toHaveAttribute("aria-pressed", "true");
+  await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("UTRTEST9000123");
+  await expect(page.getByRole("button", { name: "Secure online payment" })).toBeDisabled();
+  release();
+  await expect(page.getByRole("button", { name: "Verification follow-up required" })).toBeDisabled();
+  expect(calls).toBe(1);
+});

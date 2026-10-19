@@ -1,6 +1,6 @@
 "use client";
 
-import { updateDonationAmountValidity } from "@/lib/donation-amount-input";
+import { getDonationAmountPresets, getWholeRupeeCheckoutRange, updateDonationAmountValidity } from "@/lib/donation-amount-input";
 
 import Script from "next/script";
 import { type FormEvent, useEffect, useRef, useState } from "react";
@@ -28,9 +28,18 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
   const [error, setError] = useState("");
   const [fieldErrors, setFieldErrors] = useState<DonationFieldErrors>({});
   const [remainingHint, setRemainingHint] = useState<number | null>(null);
+  const [liveRange, setLiveRange] = useState<{ minimum: number; maximum: number } | null>(null);
   const [phase, setPhase] = useState<CheckoutPhase>("loading");
-  const transactionMax = Math.min(maxAmount, 1_000_000);
-  const transactionMin = transactionMax < 10 ? transactionMax : 10;
+  const transactionMax = liveRange?.maximum ?? Math.min(maxAmount, 1_000_000);
+  const transactionMin = liveRange?.minimum ?? (transactionMax < 10 ? transactionMax : 10);
+  const presetAmounts = getDonationAmountPresets(transactionMax);
+
+  useEffect(() => {
+    const amount = formRef.current?.elements.namedItem("amount");
+    if (amount instanceof HTMLInputElement) {
+      updateDonationAmountValidity(amount, transactionMin, transactionMax);
+    }
+  }, [transactionMin, transactionMax]);
 
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => {
@@ -176,9 +185,12 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
           }
         }
         setFieldErrors(fields);
-        if (typeof order.remainingAmount === "number" && Number.isSafeInteger(order.remainingAmount) &&
-            order.remainingAmount > 0 && order.remainingAmount <= 1_000_000) {
-          setRemainingHint(order.remainingAmount);
+        if (typeof order.remainingAmount === "number") {
+          const payable = getWholeRupeeCheckoutRange(Math.min(order.remainingAmount, maxAmount));
+          if (payable) {
+            setLiveRange(payable);
+            setRemainingHint(payable.maximum);
+          }
         }
         showError(order.error.trim().slice(0, 500));
         orderLocked.current = false;
@@ -267,9 +279,26 @@ export function DonationForm({ appealId, appealTitle, maxAmount, copy, onLockCha
     <form ref={formRef} className="v2-premium-form v2-donation-form" onSubmit={submit} onInvalid={handleInvalid} aria-busy={busy} aria-labelledby="donation-form-heading" aria-describedby="donation-form-description donation-checkout-status">
       {copy.heading}
       <p id="donation-checkout-status" className={styles.status} role="status" aria-live="polite">{statusText}</p>
-      {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{remainingHint !== null ? <p><button type="button" className="v2-text-link" onClick={() => { const input = formRef.current?.elements.namedItem("amount"); if (input instanceof HTMLInputElement) { input.value = String(remainingHint); updateDonationAmountValidity(input, transactionMin, transactionMax); clearFieldError("amount"); input.focus(); } }}>Use the current remaining amount: ₹{remainingHint.toLocaleString("en-IN")}</button></p> : null}</div>}
+      {error && <div ref={errorRef} className="form-error" role="alert" aria-live="assertive" tabIndex={-1}>{error}{remainingHint !== null ? <p><button type="button" className="v2-text-link" onClick={() => { const input = formRef.current?.elements.namedItem("amount"); if (input instanceof HTMLInputElement) { input.value = String(remainingHint); updateDonationAmountValidity(input, transactionMin, transactionMax); clearFieldError("amount"); input.focus(); } }}>Use the payable amount: ₹{remainingHint.toLocaleString("en-IN")}</button></p> : null}</div>}
       <div className="form-grid">
-        <div className={`field full v2-amount-field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="amount">Donation amount <span>INR</span></label><div className={`${styles.checkoutControl} ${styles.amountControl}`}><b aria-hidden="true">₹</b><input id="amount" name="amount" type="text" inputMode="numeric" pattern="[0-9]+" maxLength={12} onInput={event => updateDonationAmountValidity(event.currentTarget, transactionMin, transactionMax)} placeholder="Enter amount" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("amount")) || undefined} aria-describedby={fieldError("amount") ? "amount-hint amount-error donation-checkout-status" : "amount-hint donation-checkout-status"} onChange={() => clearFieldError("amount")}/></div><small id="amount-hint" className={styles.hint}>{transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small>{fieldError("amount") && <small id="amount-error" className="v2-field-error">{fieldError("amount")}</small>}</div>
+        <div className={`field full v2-amount-field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="amount">Donation amount <span>INR</span></label><div className={`${styles.checkoutControl} ${styles.amountControl}`}><b aria-hidden="true">₹</b><input id="amount" name="amount" type="text" inputMode="numeric" pattern="[0-9]+" maxLength={12} onInput={event => updateDonationAmountValidity(event.currentTarget, transactionMin, transactionMax)} placeholder="Enter amount" required disabled={submissionLocked} aria-invalid={Boolean(fieldError("amount")) || undefined} aria-describedby={fieldError("amount") ? "amount-hint amount-error donation-checkout-status" : "amount-hint donation-checkout-status"} onChange={() => clearFieldError("amount")}/></div><small id="amount-hint" className={styles.hint}>{transactionMax < 10 ? `₹${transactionMax.toLocaleString("en-IN")} is the exact amount remaining to complete this appeal.` : `Maximum available for this transaction: ₹${transactionMax.toLocaleString("en-IN")}.`}</small>{presetAmounts.length > 0 && <div style={{ display: "flex", flexWrap: "wrap", gap: ".55rem", margin: ".25rem 0" }} role="group" aria-label="Suggested amounts in INR">
+          {presetAmounts.map(amount => <button
+            key={amount}
+            type="button"
+            className="v2-button v2-button--paper-secondary"
+            disabled={submissionLocked}
+            aria-label={`Use ₹${amount.toLocaleString("en-IN")} for this donation`}
+            onClick={() => {
+              if (orderLocked.current || submissionLocked) return;
+              const input = formRef.current?.elements.namedItem("amount");
+              if (!(input instanceof HTMLInputElement) || input.disabled) return;
+              input.value = String(amount);
+              updateDonationAmountValidity(input, transactionMin, transactionMax);
+              clearFieldError("amount");
+              input.focus();
+            }}
+          >₹{amount.toLocaleString("en-IN")}</button>)}
+        </div>}{fieldError("amount") && <small id="amount-error" className="v2-field-error">{fieldError("amount")}</small>}</div>
         <div className={`field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorName">Full name</label><div className={styles.checkoutControl}><input id="donorName" name="donorName" autoComplete="name" minLength={2} maxLength={120} required disabled={submissionLocked} aria-invalid={Boolean(fieldError("donorName")) || undefined} aria-describedby={fieldError("donorName") ? "donor-name-error donation-checkout-status" : "donation-checkout-status"} onChange={() => clearFieldError("donorName")}/></div>{fieldError("donorName") && <small id="donor-name-error" className="v2-field-error">{fieldError("donorName")}</small>}</div>
         <div className={`field ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorEmail">Email</label><div className={styles.checkoutControl}><input id="donorEmail" name="donorEmail" type="email" autoComplete="email" maxLength={254} required disabled={submissionLocked} aria-invalid={Boolean(fieldError("donorEmail")) || undefined} aria-describedby={fieldError("donorEmail") ? "donor-email-error donation-checkout-status" : "donation-checkout-status"} onChange={() => clearFieldError("donorEmail")}/></div>{fieldError("donorEmail") && <small id="donor-email-error" className="v2-field-error">{fieldError("donorEmail")}</small>}</div>
         <div className={`field full ${styles.checkoutShell}`}><label className={styles.checkoutLabel} htmlFor="donorPhone">Phone <span className="muted">optional</span></label><div className={styles.checkoutControl}><input id="donorPhone" name="donorPhone" type="tel" autoComplete="tel" disabled={submissionLocked} aria-invalid={Boolean(fieldError("donorPhone")) || undefined} aria-describedby={fieldError("donorPhone") ? "donor-phone-error" : undefined} onChange={() => clearFieldError("donorPhone")}/></div>{fieldError("donorPhone") && <small id="donor-phone-error" className="v2-field-error">{fieldError("donorPhone")}</small>}</div>

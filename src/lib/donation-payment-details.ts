@@ -1,4 +1,4 @@
-import { normalizeSafePublicMediaUrl } from "@/lib/public-media";
+import { isCspCompatiblePublicImageUrl, normalizeSafePublicMediaUrl } from "@/lib/public-media";
 
 export type DonationPaymentDetails = {
   upi: { id: string; qrImageUrl: string | null };
@@ -23,7 +23,9 @@ function configuredBankDetails(): DonationPaymentDetails["bank"] {
     branch: process.env.DONATION_BANK_BRANCH?.trim(),
   };
 
-  if (Object.values(configured).every(Boolean)) {
+  if (Object.values(configured).every(Boolean) &&
+      /^[0-9]{9,18}$/.test(configured.accountNumber!) &&
+      /^[A-Z]{4}0[A-Z0-9]{6}$/.test(configured.ifsc!)) {
     return configured as NonNullable<DonationPaymentDetails["bank"]>;
   }
 
@@ -36,7 +38,9 @@ export function getDonationPaymentDetails(): DonationPaymentDetails {
   return {
     upi: {
       id: CANONICAL_UPI_ID,
-      qrImageUrl: configuredQr,
+      // Do not call an arbitrary third-party QR image verified.
+      // Only the official site or configured public media origin is acceptable.
+      qrImageUrl: isCspCompatiblePublicImageUrl(configuredQr) ? configuredQr : null,
     },
     bank: configuredBankDetails(),
   };
