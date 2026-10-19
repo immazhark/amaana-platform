@@ -74,6 +74,26 @@ test('initiative gallery lightbox owns the modal layer, traps focus and restores
   expect(overflow).toBe('');
 });
 
+test('gallery arrow buttons keep focus after changing the selected image', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 1 of 13:/ }).click();
+
+  const dialog = page.getByRole('dialog');
+  const next = dialog.getByRole('button', { name: 'Next', exact: true });
+  await next.click();
+  await expect(dialog).toContainText('Image 2 of 13');
+  await expect(next).toBeFocused();
+
+  const previous = dialog.getByRole('button', { name: 'Previous', exact: true });
+  await previous.click();
+  await expect(dialog).toContainText('Image 1 of 13');
+  await expect(previous).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Enlarge image 1 of 13:/ })).toBeFocused();
+});
+
 test('initiative gallery lightbox remains contained at 320px and preserves usable controls', async ({ page }) => {
   await openGallery(page, 320);
   await page.getByRole('button', { name: /Enlarge image 2 of 13/ }).click();
