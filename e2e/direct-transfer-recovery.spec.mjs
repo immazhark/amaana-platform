@@ -256,6 +256,25 @@ test("oversized direct-transfer evidence is rejected before a claim request", as
   expect(requests).toBe(0);
 });
 
+test("invalid PDF signature is caught before donor evidence leaves the browser", async ({ page }) => {
+  let calls = 0;
+  await page.route("**/api/donations/direct-transfer", route => {
+    calls++;
+    return route.fulfill({ status: 202, contentType: "application/json", body: "{}" });
+  });
+  await prepareDirectTransfer(page);
+  await page.getByLabel("Screenshot / receipt").setInputFiles({
+    name: "mislabeled.pdf",
+    mimeType: "application/pdf",
+    buffer: Buffer.from("This is not a PDF document"),
+  });
+  await page.getByRole("button", { name: "Submit transfer for verification" }).click();
+  await expect(page.getByRole("alert")).toContainText("does not match its PDF, JPEG, PNG or WebP file type");
+  await expect(page.getByRole("button", { name: "Submit transfer for verification" })).toBeEnabled();
+  await expect(page.getByLabel("UTR / transaction reference")).toHaveValue("UTRTEST9000123");
+  expect(calls).toBe(0);
+});
+
 test("same-tick method clicks cannot replace a direct-transfer claim already being submitted", async ({ page }) => {
   let release;
   const gate = new Promise(resolve => { release = resolve; });
