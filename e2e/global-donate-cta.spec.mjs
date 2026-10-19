@@ -15,7 +15,7 @@ for (const width of [390, 1280]) {
     await expect(donate).toBeVisible();
     await expect(donate).toHaveAttribute("href", "/donate");
     await donate.click();
-    await expect(page).toHaveURL(/\\/donate$/);
+    await expect(page).toHaveURL(url => url.pathname === "/donate");
     await expect(page.getByRole("heading", { name: "Domestic donations only" })).toBeVisible();
     if (mobile) {
       await expect(page.getByRole("navigation", { name: "Mobile navigation" })).toBeHidden();
