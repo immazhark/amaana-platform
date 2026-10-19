@@ -117,6 +117,9 @@ function run() {
     process.stdout.write(`App Router pages: ${result.routeCount}; per-route asset attribution unavailable in this build.\n`);
     process.stdout.write(`Aggregate JS: ${result.aggregate.jsBytes} bytes; CSS: ${result.aggregate.cssBytes} bytes; ${result.aggregate.assetCount} files.\n`);
     process.stdout.write("Aggregate assets must not be interpreted as per-route bundle sizes.\n");
+    for (const asset of walkBuildAssets(join(buildDir, "static")).filter(item => item.path.endsWith(".js")).sort((a,b) => b.bytes-a.bytes).slice(0,12)) {
+      process.stdout.write(`Static JS contributor ${asset.bytes} bytes: ${asset.path}\n`);
+    }
   }
   process.stdout.write("Not measured transfer size, LCP, INP, or Core Web Vitals.\n");
 }
