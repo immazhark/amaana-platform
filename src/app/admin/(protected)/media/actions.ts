@@ -101,6 +101,9 @@ export async function createMediaAsset(formData: FormData) {
   if (identityValue !== null && identityValue !== "on") {
     throw new Error("Choose a valid identity-image checkbox value.");
   }
+  if (inferredKind !== "IMAGE" && identityValue === "on") {
+    throw new Error("An identity image must use the IMAGE media type.");
+  }
   const identityImage = inferredKind === "IMAGE" && identityValue === "on";
 
   if (!file && !manualUrl) throw new Error("Upload a file or provide an approved public URL");
