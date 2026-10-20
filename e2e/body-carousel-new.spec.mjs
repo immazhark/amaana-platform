@@ -42,6 +42,18 @@ test('a shrinking carousel clamps selected position and progress to the remainin
 
   await carousel.getByRole('button', { name: 'Previous slide' }).click();
   await expect(progress).toHaveAttribute('aria-valuenow', '1');
+  await carousel.getByRole('button', { name: 'Next slide' }).click();
+  await expect(progress).toHaveAttribute('aria-valuenow', '2');
+
+  // The final slide may start beyond the maximum reachable scroll offset.
+  // Its smooth-navigation target must settle so subsequent native scrolling
+  // can update the active index again.
+  await expect.poll(() => viewport.evaluate(node => Math.abs(
+    node.scrollLeft - (node.scrollWidth - node.clientWidth),
+  ))).toBeLessThan(3);
+  await viewport.evaluate(node => node.scrollTo({ left: 0, behavior: 'instant' }));
+  await expect(progress).toHaveAttribute('aria-valuenow', '1');
+
   await page.getByRole('button', { name: 'Restore seven records' }).click();
   await expect(progress).toHaveAttribute('aria-valuemax', '7');
   await expect(progress).toHaveAttribute('aria-valuenow', '1');
