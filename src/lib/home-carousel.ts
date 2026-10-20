@@ -26,8 +26,16 @@ export const defaultHomeConfig: HomeCarouselConfig = { slides: defaultHomeSlides
 export function safeHomeHref(value: string) {
   if (!/^\/(?!\/)[a-zA-Z0-9/_?=&%#.-]*$/.test(value) || /%(?:25|2f|5c|0[0-9a-f]|1[0-9a-f]|7f)/i.test(value)) throw new HomeCarouselValidationError('Use a safe internal website link.');
   const url = new URL(value, 'https://amaana.invalid');
-  if (url.origin !== 'https://amaana.invalid' || /^\/(?:admin|api)(?:\/|$)/i.test(decodeURIComponent(url.pathname))) throw new HomeCarouselValidationError('Choose a public website destination.');
+  let pathname: string;
+  try { pathname = decodeURIComponent(url.pathname); }
+  catch { throw new HomeCarouselValidationError('Use a safe internal website link.'); }
+  if (url.origin !== 'https://amaana.invalid' || /^\/(?:admin|api)(?:\/|$)/i.test(pathname)) throw new HomeCarouselValidationError('Choose a public website destination.');
   return value;
+}
+/** Accept JSON numbers and nonempty numeric form strings without coercing other values. */
+export function parseHomeNumericInput(value: unknown): number {
+  if (typeof value === 'number') return value;
+  return typeof value === 'string' && value.trim() ? Number(value) : NaN;
 }
 export function validateHomeSlide(raw: unknown): HomeSlide {
   if (!raw || typeof raw !== 'object') throw new HomeCarouselValidationError('Slide details are missing.');
@@ -42,7 +50,7 @@ export function validateHomeSlide(raw: unknown): HomeSlide {
   if (status !== 'DRAFT' && status !== 'PUBLISHED') throw new HomeCarouselValidationError('Choose Draft or Published.');
   const image = text('image', 1, 120);
   if (!HOME_ARTWORK.includes(image as typeof HOME_ARTWORK[number]) && !/^asset:[a-zA-Z0-9_-]+$/.test(image)) throw new HomeCarouselValidationError('Choose approved artwork or a reviewed media image.');
-  const order = Number(v.order), focalX = Number(v.focalX), focalY = Number(v.focalY);
+  const order = parseHomeNumericInput(v.order), focalX = parseHomeNumericInput(v.focalX), focalY = parseHomeNumericInput(v.focalY);
   if (!Number.isInteger(order) || order < 0 || order > 1000 || ![focalX, focalY].every(n => Number.isFinite(n) && n >= 0 && n <= 100)) throw new HomeCarouselValidationError('Order and image focal point are invalid.');
   let startsAt = text('startsAt', 0, 40), endsAt = text('endsAt', 0, 40);
   const appealSlug = text('appealSlug', 0, 160);
@@ -51,7 +59,8 @@ export function validateHomeSlide(raw: unknown): HomeSlide {
   endsAt = endsAt ? new Date(endsAt.endsWith('Z') || /[+-]\d\d:\d\d$/.test(endsAt) ? endsAt : endsAt + 'Z').toISOString() : '';
   if (startsAt && endsAt && Date.parse(startsAt) >= Date.parse(endsAt)) throw new HomeCarouselValidationError('End time must follow start time.');
   if (appealSlug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(appealSlug)) throw new HomeCarouselValidationError('Appeal slug is invalid.');
-  return { id, eyebrow: text('eyebrow', 1, 70), title: text('title', 5, 100), description: text('description', 20, 320), primaryLabel: text('primaryLabel', 2, 42), primaryHref: safeHomeHref(text('primaryHref', 1, 240)), secondaryLabel: text('secondaryLabel', 0, 42), secondaryHref: v.secondaryLabel ? safeHomeHref(text('secondaryHref', 1, 240)) : '', image, imageAlt: text('imageAlt', 0, 200), focalX, focalY, order, status, startsAt, endsAt, appealSlug };
+  const secondaryLabel = text('secondaryLabel', 0, 42);
+  return { id, eyebrow: text('eyebrow', 1, 70), title: text('title', 5, 100), description: text('description', 20, 320), primaryLabel: text('primaryLabel', 2, 42), primaryHref: safeHomeHref(text('primaryHref', 1, 240)), secondaryLabel, secondaryHref: secondaryLabel ? safeHomeHref(text('secondaryHref', 1, 240)) : '', image, imageAlt: text('imageAlt', 0, 200), focalX, focalY, order, status, startsAt, endsAt, appealSlug };
 }
 export function parseHomeConfig(raw: unknown): HomeCarouselConfig {
   if (!raw || typeof raw !== 'object') throw new HomeCarouselValidationError('Carousel configuration is invalid.');
@@ -59,7 +68,7 @@ export function parseHomeConfig(raw: unknown): HomeCarouselConfig {
   if (!Array.isArray(v.slides) || v.slides.length < 1 || v.slides.length > 20) throw new HomeCarouselValidationError('Keep between one and twenty slides.');
   const slides = v.slides.map(validateHomeSlide);
   if (new Set(slides.map(s => s.id)).size !== slides.length) throw new HomeCarouselValidationError('Slide identifiers must be unique.');
-  const appealPosition = Number(v.appealPosition);
+  const appealPosition = parseHomeNumericInput(v.appealPosition);
   if (!Number.isInteger(appealPosition) || appealPosition < 0 || appealPosition > 20) throw new HomeCarouselValidationError('Appeal position must be between zero and twenty.');
   return { slides, appealPosition };
 }

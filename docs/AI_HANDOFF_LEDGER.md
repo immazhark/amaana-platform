@@ -1,3 +1,7 @@
+## 2026-10-21 — Owner-approved ChatGPT implementation takeover
+
+Owner: CHATGPT_ACTIVE — exclusive repository implementation writer as of 2026-10-21 IST. The owner explicitly confirmed Codex/ChatGPT Work stopped and transferred sole writer responsibility to ChatGPT. Owner also approved all pending PR merges; only PRs with completed protected acceptance and review-ready source may merge. PR #374 remains draft pending approved translations. PR #386 passed exact-head CI and merged as `1613d4c274f15160435f0614a695c8dd48dedb11`. PR #387 gallery focus is reconciling its separate historical handoff notes with PR #386; PR #388 image-area guard is awaiting exact-head acceptance. Integration target `main`, always via guarded PR. Never deploy an unaccepted source or apply six unrelated staged Railway notification-worker changes. Historical 149-item totals and AF-R042 closure remain unaltered.
+
 ## 2026-10-20 — Gallery focus correction, PR #387
 
 Owner: CODEX_ACTIVE; sole writer; same independent branch `fix/gallery-reopen-focus-20261020`, base main b917746. Source correction: delayed close cleanup skips thumbnail focus when the same gallery has reopened. Existing ordinary-close and removed-thumbnail fallback logic remains in place.
@@ -10,6 +14,21 @@ Owner: CODEX_ACTIVE, sole writer. Independent branch `fix/gallery-reopen-focus-2
 Current AF-R042 sub-scope: test delayed thumbnail focus after close/reopen. Four hook-lifecycle cases and one real-browser held-frame regression are committed before the runtime correction. Watch the lifecycle failure before changing the production callback; then add the smallest guard. This is not full AF-R042 closure or human screen-reader acceptance.
 Bounded AF-R076 evidence: fresh Contact HTTP200 HTML contains five working mailto anchors, including footer and donation-support subject; no Cloudflare email-decode script or email-protection href. No contact patch justified by this route. Other historical affected-route evidence remains unresolved; no full-item closure.
 Railway's global build outage is a deployment blocker; keep six staged worker changes untouched. PR385 is MERGED at b917746, last verified production919d128. Existing translation PR374 stays draft. No public photos, private records, auth, payments, provider configuration or schema changes. New PR merges require specific owner authorization after protected acceptance.
+
+## 2026-10-20 — Carousel form-cardinality completion, PR #386
+
+Owner: CODEX_ACTIVE; sole writer; same branch `fix/home-carousel-input-validation-20261020`, main remains `b917746c0e5a9de8f51bb3bfee7dab67f762ca17`.
+The initial five-fix source batch at c590b15 passed1740 units, lint, types, build and database; its browser run was still active when this related boundary gap was found. Do not reuse those checks as proof of the new head.
+Added64 action tests: repeated/file-valued command and slide fields, placement, and preserved native add/remove/settings/editor flows. Exact pre-fix hosted run39469594652 failed58 regressions for the expected reasons (unexpected save or configuration read). Correction reads exactly one text value for each relevant field after authorization and before opening the transaction. Existing permissions, review gates, revision comparison, atomic persistence and audits remain intact. New head requires fresh hosted validation.
+Schema check disproved an initial-create revision hypothesis: HomeCarousel.revision already defaults to1. Removed two incorrect proposed tests; production creation/schema unchanged.
+Railway's official status page confirms an all-workspace build outage on20October; deployed services are unaffected by that incident. PR385 is merged at b917746; deployment/live verification remain blocked. Do not retry deployment mutations during the pause or apply staged worker changes. No new master-item closure or historical count change claimed. PR386 merge still needs specific owner authorization after acceptance. Continue source work without provider/pipeline changes.
+
+## 2026-10-20 — Carousel editor scalar-input correction
+
+Owner: CODEX_ACTIVE, sole writer, explicit owner "Continue development". Branch `fix/home-carousel-input-validation-20261020`, base main `b917746c0e5a9de8f51bb3bfee7dab67f762ca17`.
+Prior batch PR #385 is MERGED at that base. All required PR checks passed: 1689 unit tests, 1294 Chromium and24 Firefox/WebKit browser cases, build, database, protected verify. Railway release remains BLOCKED: provider explicitly returned "Deploys have been paused temporarily"; production still serves919d128. Do not retry deployment mutations or apply six staged worker changes until provider pause is resolved.
+Current bounded source task: reject blank/non-scalar numeric carousel values, preserve explicit zeroes, reject missing/unsafe revisions, return validation feedback for malformed percent-encoded CTAs, and normalize cleared secondary labels consistently. Medium-risk editor correctness plan presented before implementation. No authorization/RBAC/media-approval/schema/payment/provider changes.
+Actual validator source, with the unrelated href dependency stubbed, reproduced seven malformed focal inputs accepted through Number coercion. Local execution remains unavailable; focused hosted action/library tests and exact-head acceptance are required. Source work is not deployment or item closure. New PR merge requires specific authorization; do not infer it from permission to continue development.
 
 ## 2026-10-20 — Recovery of unpushed metadata and Back-to-top changes
 

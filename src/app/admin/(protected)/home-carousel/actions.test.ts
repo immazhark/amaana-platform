@@ -41,3 +41,139 @@ describe('carousel admin boundary',()=>{
    await expect(saveHomeCarousel(form())).rejects.toThrow('/admin/home-carousel?error=Unable%20to%20save%20the%20carousel.');
  });
 });
+
+describe('carousel numeric form input', () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    m.permission.mockResolvedValue({ id: 'editor' });
+    m.publish.mockReturnValue(true);
+    m.find.mockResolvedValue({ revision: 1, config: structuredClone(defaultHomeConfig) });
+    m.update.mockResolvedValue({ count: 1 });
+  });
+
+  it.each(['order', 'focalX', 'focalY'])('does not persist a blank %s as zero', async field => {
+    await expect(saveHomeCarousel(form({ [field]: '' }))).rejects.toThrow(/error=/);
+    expect(m.update).not.toHaveBeenCalled();
+    expect(m.create).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+  });
+
+  it('does not persist a blank live appeal position as zero', async () => {
+    await expect(saveHomeCarousel(form({ operation: 'settings', appealPosition: '' }))).rejects.toThrow(/error=/);
+    expect(m.update).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+  });
+
+  it('requires an explicit revision even when the stored revision is zero', async () => {
+    m.find.mockResolvedValue({ revision: 0, config: structuredClone(defaultHomeConfig) });
+    const data = form();
+    data.delete('revision');
+    await expect(saveHomeCarousel(data)).rejects.toThrow(/Refresh/);
+    expect(m.find).not.toHaveBeenCalled();
+    expect(m.update).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+  });
+
+  it.each(['', ' ', '9007199254740992'])('rejects an invalid revision %s before reading stored configuration', async revision => {
+    await expect(saveHomeCarousel(form({ revision }))).rejects.toThrow(/Refresh/);
+    expect(m.find).not.toHaveBeenCalled();
+    expect(m.update).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+  });
+
+  it('preserves valid zero live appeal placement', async () => {
+    await expect(saveHomeCarousel(form({ operation: 'settings', appealPosition: '0' }))).rejects.toThrow('/admin/home-carousel?saved=1');
+    expect(m.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ config: expect.objectContaining({ appealPosition: 0 }) }),
+    }));
+  });
+
+  it('returns actionable feedback rather than a generic failure for malformed CTA escapes', async () => {
+    await expect(saveHomeCarousel(form({ primaryHref: '/about%' }))).rejects.toThrow(/safe%20internal/);
+    expect(m.update).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+  });
+});
+
+describe('carousel form scalar cardinality', () => {
+  const slideFields = ['eyebrow', 'order', 'title', 'description', 'primaryLabel', 'primaryHref', 'secondaryLabel', 'secondaryHref', 'image', 'imageAlt', 'focalX', 'focalY', 'status', 'appealSlug', 'startsAt', 'endsAt'];
+  const commandFields = ['revision', 'operation', 'id'];
+  const file = () => new File(['synthetic field'], 'field.txt', { type: 'text/plain' });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    m.permission.mockResolvedValue({ id: 'editor' });
+    m.publish.mockReturnValue(true);
+    m.find.mockResolvedValue({ revision: 1, config: structuredClone(defaultHomeConfig) });
+    m.update.mockResolvedValue({ count: 1 });
+  });
+
+  async function rejectedBeforeReads(data: FormData) {
+    await expect(saveHomeCarousel(data)).rejects.toThrow('/admin/home-carousel?error=');
+    expect(m.find).not.toHaveBeenCalled();
+    expect(m.update).not.toHaveBeenCalled();
+    expect(m.create).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+    expect(m.media).not.toHaveBeenCalled();
+    expect(m.review).not.toHaveBeenCalled();
+    expect(m.appeal).not.toHaveBeenCalled();
+  }
+
+  for (const field of [...commandFields, ...slideFields]) {
+    it(`rejects repeated string values for ${field} before configuration reads`, async () => {
+      const data = form();
+      const value = data.get(field);
+      if (typeof value !== 'string') throw new Error('Expected a scalar fixture');
+      data.append(field, value);
+      await rejectedBeforeReads(data);
+    });
+
+    it(`rejects a file appended after valid ${field} text`, async () => {
+      const data = form();
+      data.append(field, file());
+      await rejectedBeforeReads(data);
+    });
+
+    it(`rejects a file-valued ${field} before configuration reads`, async () => {
+      const data = form();
+      data.set(field, file());
+      await rejectedBeforeReads(data);
+    });
+  }
+
+  it.each(['repeated', 'appended-file', 'file-only'])('rejects ambiguous settings placement: %s', async mode => {
+    const data = form({ operation: 'settings', appealPosition: '0' });
+    if (mode === 'repeated') data.append('appealPosition', '1');
+    else if (mode === 'appended-file') data.append('appealPosition', file());
+    else data.set('appealPosition', file());
+    await rejectedBeforeReads(data);
+  });
+
+  it.each(['add', 'remove', 'settings'])('preserves the minimal native %s form', async operation => {
+    const data = new FormData();
+    data.set('revision', '1');
+    data.set('operation', operation);
+    if (operation === 'remove') data.set('id', 'origin');
+    if (operation === 'settings') data.set('appealPosition', '0');
+    await expect(saveHomeCarousel(data)).rejects.toThrow('/admin/home-carousel?saved=1');
+    expect(m.update).toHaveBeenCalledTimes(1);
+    expect(m.audit).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ action: `home_carousel.${operation}`, actorId: 'editor' }),
+    }));
+  });
+
+  it('still lets a content editor add a draft without publication permission', async () => {
+    m.publish.mockReturnValue(false);
+    const data = new FormData();
+    data.set('revision', '1');
+    data.set('operation', 'add');
+    await expect(saveHomeCarousel(data)).rejects.toThrow('/admin/home-carousel?saved=1');
+    expect(m.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        config: expect.objectContaining({
+          slides: expect.arrayContaining([expect.objectContaining({ status: 'DRAFT', image: 'logo' })]),
+        }),
+      }),
+    }));
+  });
+});
