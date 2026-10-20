@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPublishedLanguageAlternates, publicLocaleDirection } from "./public-locales";
+import { buildPublishedLanguageAlternates, publicLocaleDirection, type TranslationPublication } from "./public-locales";
 
 describe("public locale publication", () => {
   it("excludes draft and unreviewed translations", () => {
@@ -44,6 +44,15 @@ describe("public locale publication", () => {
     ])).toEqual({ en: "/urgent", te: "/te/urgent" });
   });
 
+  it("ignores unsupported and English locale records even if runtime data is malformed", () => {
+    const forged = ["en", "xx"].map(locale => ({
+      locale,
+      path: `/${locale}/contact`,
+      status: "PUBLISHED",
+      reviewed: true,
+    })) as unknown as TranslationPublication[];
+    expect(buildPublishedLanguageAlternates("/contact", forged)).toEqual({ en: "/contact" });
+  });
   it("sets RTL only for Urdu", () => {
     expect(publicLocaleDirection("ur")).toBe("rtl");
     expect(publicLocaleDirection("en")).toBe("ltr");
