@@ -122,6 +122,23 @@ test('restored carousel viewport resumes resize alignment after all slides disap
   })).toBeLessThan(3);
 });
 
+test('releasing outside before pointer capture does not permanently pause carousel autoplay', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.emulateMedia({ reducedMotion: 'no-preference' });
+  await page.goto('/browser-acceptance/body-carousel');
+
+  const carousel = page.getByRole('region', { name: 'Body carousel acceptance' });
+  const viewport = carousel.locator('[id^="carousel-"]');
+  const box = await viewport.boundingBox();
+  await page.mouse.move(box.x + 5, box.y + box.height - 5);
+  await page.mouse.down();
+  // Move directly outside without a pointermove inside the viewport:
+  // pointer capture has not started, so pointerup is delivered elsewhere.
+  await page.mouse.move(0, 0, { steps: 1 });
+  await page.mouse.up();
+  await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '2', { timeout: 5500 });
+});
+
 test('manual pause survives pointer exit and reduced motion disables autoplay',async({page})=>{
  await page.goto('/browser-acceptance/body-carousel');
  const carousel=page.getByRole('region',{name:'Body carousel acceptance'});
