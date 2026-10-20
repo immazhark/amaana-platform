@@ -121,7 +121,12 @@ export function teamPhotoInput(formData: FormData) {
   if (values.length > 1 || (values.length === 1 && !(values[0] instanceof File))) {
     throw new Error("Provide a single team photo file.");
   }
-  const file = values[0] instanceof File && values[0].size > 0 ? values[0] : null;
+  const submitted = values[0] instanceof File ? values[0] : null;
+  // An untouched native file control submits an unnamed empty file.
+  // A named zero-byte file is a failed upload, not an omitted field.
+  const blankControl = submitted?.size === 0 && submitted.name === "" &&
+    (submitted.type === "" || submitted.type === "application/octet-stream");
+  const file = blankControl ? null : submitted;
   const consent = checkbox(formData, "photoConsent");
   const removePhoto = checkbox(formData, "removePhoto");
   if (file && !consent) throw new Error("Photograph publication requires the member's consent.");
