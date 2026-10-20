@@ -61,6 +61,8 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
   useEffect(() => {
     if (!active) return;
     const dialog = dialogRef.current;
+    // Read the live ref when deferred focus runs, after a possible reopen.
+    const hasOpenDialog = () => dialogRef.current?.isConnected;
     const triggers = triggerRefs.current;
     const trigger = triggers[activeIndex];
     const originalOverflow = document.body.style.overflow;
@@ -106,6 +108,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", onKeyDown);
       if (!dialog?.isConnected) requestAnimationFrame(() => {
+        if (hasOpenDialog()) return;
         const target = trigger?.isConnected ? trigger : triggers.find(node => node?.isConnected);
         target?.focus();
       });
