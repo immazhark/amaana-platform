@@ -1,6 +1,14 @@
+## 2026-10-21 — Integrate public image dimension guard after PR #387
+
+Owner: CHATGPT_ACTIVE. PR #387 is merged into main as `64b3f2652398bb215cb7e3274febb24466064e53`; PR #388 preserves the independently tested image metadata area guard while aligning to this exact main tree. The gallery focus change and prior carousel history remain intact. Owner approved merge of the already-pending #388 subject to new exact-head protected checks. No Railway deployment or master-item live closure asserted.
+
 ## 2026-10-21 — Owner-approved ChatGPT implementation takeover
 
 Owner: CHATGPT_ACTIVE — exclusive repository implementation writer as of 2026-10-21 IST. The owner explicitly confirmed Codex/ChatGPT Work stopped and transferred sole writer responsibility to ChatGPT. Owner also approved all pending PR merges; only PRs with completed protected acceptance and review-ready source may merge. PR #374 remains draft pending approved translations. PR #386 passed exact-head CI and merged as `1613d4c274f15160435f0614a695c8dd48dedb11`. PR #387 gallery focus is reconciling its separate historical handoff notes with PR #386; PR #388 image-area guard is awaiting exact-head acceptance. Integration target `main`, always via guarded PR. Never deploy an unaccepted source or apply six unrelated staged Railway notification-worker changes. Historical 149-item totals and AF-R042 closure remain unaltered.
+
+## 2026-10-21 — ChatGPT continuation: public image dimensions area guard
+
+State: CHATGPT_ACTIVE for the current user-directed development continuation; previous CODEX_ACTIVE task PR #385 is already merged and remote main is unchanged at `b917746c0e5a9de8f51bb3bfee7dab67f762ca17`. Separate branch `fix/public-image-dimensions-cap-20261021` based on this exact commit. Task: reject untrusted image dimension metadata exceeding the existing 40,000,000-pixel ingestion safety limit without importing server-only storage. Local Node 22 exact-source RED reproduced acceptance of 10,000×10,000; corrected helper passes seven isolated cases; repository-native Vitest and protected checks are pending. Add regression tests alongside the two-line predicate correction. No actual media access/change, private files, payment, DB, env, auth, provider, worker, or production actions. PR #386 and #387 retain their accepted heads and require separately scoped owner merge approvals. PR #374 remains draft. Rollback: revert this atomic PR. Do not claim deployed/live.
 
 ## 2026-10-20 — Gallery focus correction, PR #387
 
