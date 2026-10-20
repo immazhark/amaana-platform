@@ -1,3 +1,7 @@
+## 2026-10-21 — Public route own-key resolution
+
+Owner: CHATGPT_ACTIVE, sole repo writer. Atomic branch `fix/public-route-own-key-20261021` from main `40fe2b0a2be12a1a5ca61dc3a2dd9372845a195b`; independent of PR #389 media and PR #390 index origin. Source-backed regression: normal object lookup for public route slug `constructor` returned inherited Object constructor instead of a defined route; `toString` and `__proto__` similarly escape intended table semantics in programme-category lookups. Route callers can mistake prototype properties for redirect targets, potentially returning unexpected redirects or 5xx responses. RED tests first in commit `6dec7e04695079ad5f442b3d97630355544bdef0`. Bounded correction checks `Object.hasOwn` at five lookup sites. No legitimate route entries, canonical destinations, auth, payment, donor, provider config, translations or media altered. Native Vitest, TypeScript, build, browser and protected exact-head CI required. Do not merge a newly introduced PR without specific owner approval. Rollback: revert this atomic PR.
+
 ## 2026-10-21 — Integrate public image dimension guard after PR #387
 
 Owner: CHATGPT_ACTIVE. PR #387 is merged into main as `64b3f2652398bb215cb7e3274febb24466064e53`; PR #388 preserves the independently tested image metadata area guard while aligning to this exact main tree. The gallery focus change and prior carousel history remain intact. Owner approved merge of the already-pending #388 subject to new exact-head protected checks. No Railway deployment or master-item live closure asserted.
