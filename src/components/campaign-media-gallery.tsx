@@ -106,6 +106,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
       document.body.style.overflow = originalOverflow;
       window.removeEventListener("keydown", onKeyDown);
       if (!dialog?.isConnected) requestAnimationFrame(() => {
+        if (dialogRef.current?.isConnected) return;
         const target = trigger?.isConnected ? trigger : triggers.find(node => node?.isConnected);
         target?.focus();
       });

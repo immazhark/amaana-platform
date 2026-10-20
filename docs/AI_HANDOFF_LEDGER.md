@@ -1,3 +1,9 @@
+## 2026-10-20 — Gallery focus correction, PR #387
+
+Owner: CODEX_ACTIVE; sole writer; same independent branch `fix/gallery-reopen-focus-20261020`, base main b917746. Source correction: delayed close cleanup skips thumbnail focus when the same gallery has reopened. Existing ordinary-close and removed-thumbnail fallback logic remains in place.
+RED proof: hosted run39472503567, gallery lifecycle4 cases: reopened-dialog regression FAILED from an unexpected old-thumbnail focus; other3 cases PASS. Overall1692 units PASS,1 expected regression FAIL,15 skips. One-line runtime guard now added; fresh hosted acceptance is required before any source-completion/merge/deployment claim. Real-browser held-frame regression is included.
+AF-R042 remains partial; human screen-reader/zoom and full-item acceptance are not claimed. AF-R076 Contact email anchors passed a fresh bounded live HTML inspection, so no contact code was changed. PR386 source remains untouched at010cf6a; check its protected browser result separately. Railway global build outage remains a release blocker; six worker changes untouched. New merges require specific owner authorization after required acceptance.
+
 ## 2026-10-20 — Gallery reopen focus lifecycle
 
 Owner: CODEX_ACTIVE, sole writer. Independent branch `fix/gallery-reopen-focus-20261020` from main `b917746c0e5a9de8f51bb3bfee7dab67f762ca17`; PR386 remains unchanged at010cf6a while its browser acceptance runs. Source for PR386 passed1804 units, lint, types, database and production build.
