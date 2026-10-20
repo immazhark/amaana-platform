@@ -14,7 +14,11 @@ export function shouldAllowIndexing(
 
   try {
     const url = new URL(appUrl);
-    return url.protocol === "https:" && INDEXABLE_HOSTS.has(url.hostname.toLowerCase());
+    // URL normalizes :443 to an empty port. Reject credentials and custom ports,
+    // which are not part of the official public indexing origin.
+    return url.protocol === "https:"
+      && !url.username && !url.password && !url.port
+      && INDEXABLE_HOSTS.has(url.hostname.toLowerCase());
   } catch {
     return false;
   }

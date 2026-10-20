@@ -1,3 +1,7 @@
+## 2026-10-21 — PR #391 integrated atop PR #390 release candidate
+
+Owner: CHATGPT_ACTIVE, sole writer. User authorized merge after exact-head protected acceptance. This integration commit preserves upstream candidate `53d2a504290fc8bad24294a123dfa188de63758c`, the complete previous implementation for PR #391, and all coordination history. Merge in dependency order #390, #391, #392, #393. No premature production release, payment change, or staged Railway notification-worker change.
+
 ## 2026-10-21 — Artwork lookup inherited-key guard
 
 Owner: CHATGPT_ACTIVE, exclusive implementation writer. PR #391 was extended to close the identical prototype property lookup failure in `src/components/programme-artwork.tsx`. Existing `hasProgrammeArtwork("constructor")` returned true because the plain artwork map inherited `Object.constructor`; dereferencing its absent image URL could cause a rendering error. Test-first commit `190663f0730fa6e95b1507914514145f4d77a7bb` added component-level regression for constructor/toString/valueOf/__proto__ and known canonical artworks. Shared `getProgrammeArtwork` checks `Object.hasOwn` in both alias and artwork maps, preserving all approved source paths and captions. No media assets, donor data, payment, identity approval, services, or deployment settings changed. This invalidates earlier CI certification for PR #391; exact-head verification is mandatory. Rollback: revert scoped PR.
@@ -5,6 +9,26 @@ Owner: CHATGPT_ACTIVE, exclusive implementation writer. PR #391 was extended to 
 ## 2026-10-21 — Public route own-key resolution
 
 Owner: CHATGPT_ACTIVE, sole repo writer. Atomic branch `fix/public-route-own-key-20261021` from main `40fe2b0a2be12a1a5ca61dc3a2dd9372845a195b`; independent of PR #389 media and PR #390 index origin. Source-backed regression: normal object lookup for public route slug `constructor` returned inherited Object constructor instead of a defined route; `toString` and `__proto__` similarly escape intended table semantics in programme-category lookups. Route callers can mistake prototype properties for redirect targets, potentially returning unexpected redirects or 5xx responses. RED tests first in commit `6dec7e04695079ad5f442b3d97630355544bdef0`. Bounded correction checks `Object.hasOwn` at five lookup sites. No legitimate route entries, canonical destinations, auth, payment, donor, provider config, translations or media altered. Native Vitest, TypeScript, build, browser and protected exact-head CI required. Do not merge a newly introduced PR without specific owner approval. Rollback: revert this atomic PR.
+
+## 2026-10-21 — PR #390 integration on merged #389
+
+Owner: CHATGPT_ACTIVE; exclusive repo writer. Owner explicitly approved merge of PR #390. Integrate SEO origin validation on merged PR #389 (`516090e0989c6e4cd78c1b2dfc1c0bb66c25edac`), preserving all shared handoff notes. No additional runtime changes, no railway worker changes. Exact-head checks mandatory before final merge.
+
+## 2026-10-21 — Official indexing origin guard
+
+Owner: CHATGPT_ACTIVE, sole writer. Branch `fix/site-indexing-official-origin-20261021` from main `40fe2b0a2be12a1a5ca61dc3a2dd9372845a195b`; independent of unmerged PR #389. Confirmed with exact Node URL behavior that `shouldAllowIndexing` accepted credential-bearing HTTPS URLs and custom-port URLs of the official hostname (for example `https://amaanafoundation.org:8443`), thereby enabling a misconfigured noncanonical index origin. Test-first commit `dd863fff20d3192aba0daa5cdc8edb23ab530bc8` adds regression coverage for credentials, nonstandard ports and the valid default HTTPS port. Narrow runtime guard refuses credentials and nondefault ports while keeping existing apex/www, HTTPS-only, production-only, and opt-in gates. No hosting settings, robots route, sitemap generator, donor content, payment or database changes. Native protected CI and live SEO acceptance are pending. Rollback: revert this isolated PR. New-PR merge requires explicit specific approval.
+
+## 2026-10-21 — PR #389 main integration after PR #388
+
+Owner: CHATGPT_ACTIVE; sole writer. Parent PR #388 is merged at main SHA `40fe2b0a2be12a1a5ca61dc3a2dd9372845a195b`. This branch preserves only the documentary image-classification/selection corrections and their existing focused tests, rebased through a two-parent integration commit; no carousel, gallery or image-area source overwritten. All prior handoff entries remain intact. Require native exact-head protected verification and separate authorization to merge this new PR. Production release verification remains independent. Railway staged notification-worker patch remains untouched.
+
+## 2026-10-21 — Documentary alt-text fix reconciled with image dimension guard
+
+Owner: CHATGPT_ACTIVE, sole writer. Stacked PR #389 now carries only its scoped classification logic and regression suites on parent PR #388 at `b8d21ff655bba3104c8d589724818dd32c0fc1d3`. The inherited gallery/carousel and image metadata source remain byte-identical to the current PR #388 tree. Merge this PR only after its parent merges, its protected acceptance is complete and its new-PR owner approval is recorded. No deployment or privacy publication changed.
+
+## 2026-10-21 — Documentary image classification honours alternative text
+
+Owner: CHATGPT_ACTIVE, sole writer. Task branch `fix/documentary-image-alt-classification-20261021` based on parent PR #388 at d4aaac2e6957d4410e419ced4e8e52db4177eb04. Confirmed via exact classifier logic that a reviewed graphic labelled only `altText: "Results update"` was classified as documentary media and could outrank a field photograph in initiative banners and gallery discovery. Test-first commit `fd3ae6d0448aa16b51a030baa0ed1398bfb71998` added focused regression coverage in existing `public-media.test.ts` and `initiative-banner-media.test.ts`; direct Node RED reproduced graphic score7 vs photograph score5. Correction appends `altText` to the classifier's existing title/caption descriptor, without modifying publication, authorization, privacy, consent, stored assets, or identity selection. Isolated corrected logic GREEN; hosted exact-head checks pending. This branch is stacked to avoid competing merges while #387 and #388 finish protected CI. No new full-item/live closure or Railway operation. Rollback: revert the scoped selector PR.
 
 ## 2026-10-21 — Integrate public image dimension guard after PR #387
 
