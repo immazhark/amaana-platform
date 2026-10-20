@@ -69,6 +69,28 @@ describe("team member form boundary", () => {
     expect(teamPhotoInput(form).file).toBeInstanceOf(File);
   });
 
+  it("keeps a blank native file control optional", () => {
+    const absent = new FormData();
+    absent.set("photo", new File([], "", { type: "application/octet-stream" }));
+    expect(teamPhotoInput(absent)).toEqual({ file: null, removePhoto: false });
+    expect(teamPhotoInput(new FormData())).toEqual({ file: null, removePhoto: false });
+  });
+
+  it("rejects a selected zero-byte portrait instead of silently omitting it", () => {
+    const form = new FormData();
+    form.set("photo", new File([], "portrait.webp", { type: "image/webp" }));
+    form.set("photoConsent", "on");
+    expect(() => teamPhotoInput(form)).toThrow(/between 1 byte and 2 MB/i);
+  });
+
+  it("rejects an empty selected portrait even when removal is requested", () => {
+    const form = new FormData();
+    form.set("photo", new File([], "portrait.png", { type: "image/png" }));
+    form.set("photoConsent", "on");
+    form.set("removePhoto", "on");
+    expect(() => teamPhotoInput(form)).toThrow(/upload or removal/i);
+  });
+
   it("accepts only JPEG, PNG, WebP and at most two megabytes for photographs", () => {
     const pdf = new File(["pdf"], "portrait.pdf", { type: "application/pdf" });
     expect(() => assertTeamPhoto(pdf)).toThrow(/JPEG|PNG|WebP/);

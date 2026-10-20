@@ -115,3 +115,28 @@ for (const width of [320, 1440]) {
     });
   }
 }
+
+test('returning through router.push never reopens an old navigation overlay', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/browser-acceptance/navigation-origin');
+  await expect(page.getByRole('heading', { name: 'Navigation origin fixture' })).toBeVisible();
+
+  // First transition is an actual client-side Link, so the shared loader
+  // records origin as the route being left.
+  await page.getByRole('link', { name: 'Go to navigation destination' }).click();
+  await expect(page).toHaveURL(/\/browser-acceptance\/navigation-destination$/);
+  await expect(page.getByRole('heading', { name: 'Navigation destination fixture' })).toBeVisible();
+  await expect(page.locator('.amaana-navigation-loading')).toHaveCount(0);
+
+  // Second transition is programmatic, with no click listener to replace
+  // the previous pending-from path. The old code erroneously reactivates
+  // the overlay when we return to the origin pathname.
+  await page.getByRole('button', { name: 'Return programmatically' }).click();
+  await expect(page).toHaveURL(/\/browser-acceptance\/navigation-origin$/);
+  await expect(page.getByRole('heading', { name: 'Navigation origin fixture' })).toBeVisible();
+  await page.evaluate(() => new Promise(resolve => requestAnimationFrame(
+    () => requestAnimationFrame(resolve),
+  )));
+  await expect(page.locator('.amaana-navigation-loading')).toHaveCount(0);
+  await expect(page.locator('body')).not.toHaveClass(/af-navigation-lock/);
+});

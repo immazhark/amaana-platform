@@ -1,0 +1,14 @@
+"use client";
+
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+
+export function NavigationReturnFixture({ destination }: { destination: boolean }) {
+  const router = useRouter();
+  return <main>
+    <h1>{destination ? "Navigation destination fixture" : "Navigation origin fixture"}</h1>
+    {destination
+      ? <button type="button" onClick={() => router.push("/browser-acceptance/navigation-origin")}>Return programmatically</button>
+      : <Link href="/browser-acceptance/navigation-destination">Go to navigation destination</Link>}
+  </main>;
+}

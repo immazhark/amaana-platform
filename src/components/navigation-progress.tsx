@@ -9,7 +9,15 @@ type PendingNavigation = { fromPath: string };
 export function NavigationProgress() {
   const pathname = usePathname();
   const [pending, setPending] = useState<PendingNavigation | null>(null);
-  const visible = pending?.fromPath === pathname;
+  const [observedPath, setObservedPath] = useState(pathname);
+  // An App Router transition has completed when its pathname changes.
+  // Reset before the new route commits so a later programmatic return cannot
+  // replay a stale loading overlay or leave scrolling locked.
+  if (observedPath !== pathname) {
+    setObservedPath(pathname);
+    setPending(null);
+  }
+  const visible = observedPath === pathname && pending?.fromPath === pathname;
 
   useEffect(() => {
     if (!visible) return;

@@ -1,0 +1,9 @@
+import { notFound } from "next/navigation";
+import { NavigationReturnFixture } from "@/components/navigation-return-fixture";
+
+export const dynamic = "force-dynamic";
+
+export default function Destination() {
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+  return <NavigationReturnFixture destination={true} />;
+}
