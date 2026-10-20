@@ -156,6 +156,14 @@ describe("public media safety", () => {
     if (!identity) throw new Error("Expected identity-media fixture.");
     expect(selectGalleryPublicImage([identity])?.publicUrl).toBe("/media/identity.webp");
   });
+  it.each([
+    "Graphic design workshop photograph",
+    "Volunteers mentoring graphic designers",
+  ])("keeps photographs with graphic-design subjects eligible as documentary: %s", altText => {
+    const image = { kind: "IMAGE" as const, publicUrl: "/media/workshop.webp", altText, title: "Training field photograph" };
+    expect(isDocumentaryPublicImage(image)).toBe(true);
+  });
+
   it.each(["Campaign graphic", "Carousel slide", "Volunteer infographic"])("does not mistake an approved %s for documentary photography", description => {
     const graphic = { kind: "IMAGE" as const, publicUrl: "/media/design.webp", altText: description, title: "Activity image" };
     const photo = { kind: "IMAGE" as const, publicUrl: "/media/photo.webp", altText: "Volunteers packing kits", title: "Field photograph" };
