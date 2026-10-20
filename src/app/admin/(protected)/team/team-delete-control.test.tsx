@@ -2,7 +2,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { TeamDeleteControl } from "./team-delete-control";
 
-const action = async (_formData: FormData) => {};
+const action = async (formData: FormData) => { void formData; };
 
 function renderMember(designation: string, id: string) {
   return renderToStaticMarkup(
