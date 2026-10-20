@@ -23,6 +23,25 @@ for(const width of [375,600,768,1024,1440,1920])test(`left alignment and control
  await expect.poll(async()=>Math.abs(v.x-(await carousel.getByRole('group',{name:'7 of 7',exact:true}).boundingBox()).x)).toBeLessThan(2);
 });
 
+test('reordering slides preserves their keyed interactive state', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/browser-acceptance/body-carousel');
+  const carousel = page.getByRole('region', { name: 'Body carousel acceptance' });
+  await carousel.getByRole('button', { name: 'Pause automatic slides' }).click();
+
+  const flag = carousel.getByRole('button', { name: 'Mark programme 1', exact: true });
+  await flag.click();
+  await expect(flag).toHaveAttribute('aria-pressed', 'true');
+
+  await page.getByRole('button', { name: 'Reverse programme order' }).click();
+  await expect(carousel.getByRole('group', { name: '1 of 7', exact: true }))
+    .toContainText('Programme 7');
+  await expect(flag).toHaveAttribute('aria-pressed', 'true');
+
+  await page.getByRole('button', { name: 'Reverse programme order' }).click();
+  await expect(flag).toHaveAttribute('aria-pressed', 'true');
+});
+
 test('a shrinking carousel clamps selected position and progress to the remaining slides', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto('/browser-acceptance/body-carousel');
