@@ -57,6 +57,14 @@ describe("Our Work canonical routing", () => {
     expect(isLegacyOurWorkSlug("winter-relief")).toBe(false);
   });
 
+  it("does not treat inherited object names as documented legacy initiatives", () => {
+    expect(legacyOurWorkRoute("constructor")).toBeNull();
+    expect(isLegacyOurWorkSlug("constructor")).toBe(false);
+    expect(canonicalOurWorkDestination("constructor")).toBe("/our-work/constructor");
+    expect(legacyOurWorkRoute("__proto__")).toBeNull();
+    expect(isLegacyOurWorkSlug("toString")).toBe(false);
+  });
+
   it("fails closed to the Our Work index for malformed or empty slugs", () => {
     for (const slug of ["", "   ", "../admin", "/appeals", "two words", "bad_slug"]) {
       expect(canonicalOurWorkDestination(slug)).toBe("/our-work");
