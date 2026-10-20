@@ -24,18 +24,21 @@ function canOptimizeLocally(url: string) {
 
 export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }) {
   const safeItems = useMemo(() => {
-    const seen = new Set<string>();
-    return items.filter(item => {
+    const seenUrls = new Set<string>();
+    const seenIds = new Set<string>();
+    return items.flatMap(item => {
       const url = item.url.trim();
-      if (!url || seen.has(url)) return false;
-      seen.add(url);
-      return true;
+      if (!url || seenUrls.has(url) || seenIds.has(item.id)) return [];
+      seenUrls.add(url);
+      seenIds.add(item.id);
+      return [{ ...item, url }];
     });
   }, [items]);
   const [activeId, setActiveId] = useState<string | null>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const dialogTitleId = `gallery-dialog-${useId().replaceAll(":", "")}`;
+  const dialogCaptionId = `${dialogTitleId}-caption`;
   const triggerRefs = useRef<Array<HTMLButtonElement | null>>([]);
 
   const activeIndex = safeItems.findIndex(item => item.id === activeId);
@@ -62,7 +65,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     const trigger = triggers[activeIndex];
     const originalOverflow = document.body.style.overflow;
     document.body.style.overflow = "hidden";
-    closeRef.current?.focus();
+    if (!dialog?.contains(document.activeElement)) closeRef.current?.focus();
 
     function onKeyDown(event: KeyboardEvent) {
       if (event.key === "Escape") {
@@ -116,7 +119,6 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
       <div className={styles.grid} role="group" aria-label="Programme photographs">
         {safeItems.map((item, index) => {
           const descriptor = `${item.alt ?? ""} ${item.caption ?? ""}`;
-          const privacyProtected = /(privacy|blurred|identit(?:y|ies) protected)/i.test(descriptor);
           const graphicAsset = /(graphic|announcement|campaign cover|results update|infographic|carousel)/i.test(descriptor);
           const { width, height } = getPublicImageDimensions(item);
                     return (
@@ -129,7 +131,6 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
               aria-label={`Enlarge image ${index + 1} of ${safeItems.length}: ${item.alt ?? "programme photograph"}`}
             >
               {canOptimizeLocally(item.url) ? <Image src={item.url} alt={item.alt ?? ""} width={width} height={height} sizes="(max-width: 900px) 50vw, 33vw" loading="lazy" /> : <img src={item.url} alt={item.alt ?? ""} width={width} height={height} loading="lazy" decoding="async" />}
-              {privacyProtected ? <span className={styles.privacyLabel}>Privacy protected</span> : null}
               <span className={styles.openLabel}>Enlarge</span>
             </button>
             {item.caption ? <figcaption>{item.caption}</figcaption> : null}
@@ -150,14 +151,15 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
             role="dialog"
             aria-modal="true"
             aria-labelledby={dialogTitleId}
+            aria-describedby={active.caption ? dialogCaptionId : undefined}
             tabIndex={-1}
           >
             <div className={styles.dialogTop}>
-              <span id={dialogTitleId}>Image {activeIndex + 1} of {safeItems.length}: {active.alt ?? "programme photograph"}</span>
+              <span id={dialogTitleId} aria-live="polite" aria-atomic="true">Image {activeIndex + 1} of {safeItems.length}: {active.alt ?? "programme photograph"}</span>
               <button ref={closeRef} type="button" onClick={close}>Close</button>
             </div>
             {canOptimizeLocally(active.url) ? <Image className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} sizes="90vw" /> : <img className={styles.fullImage} src={active.url} alt={active.alt ?? ""} width={width} height={height} />}
-            {active.caption ? <p className={styles.caption}>{active.caption}</p> : null}
+            {active.caption ? <p id={dialogCaptionId} className={styles.caption}>{active.caption}</p> : null}
             {safeItems.length > 1 ? (
               <div className={styles.controls}>
                 <button type="button" onClick={previous}><UIIcon name="previous" />Previous</button>

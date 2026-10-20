@@ -24,6 +24,40 @@ describe("campaign gallery managed image optimization", () => {
     expect(html).toContain('alt="Volunteers preparing community relief supplies"');
   });
 
+  it("does not claim that faces are blurred from free-form alt or caption text", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[{
+      id: "privacy-claim-unreviewed",
+      url: "/media/approved.webp",
+      alt: "Privacy protected beneficiary photograph",
+      caption: "Blurred faces in approved programme documentation",
+      width: 800,
+      height: 600,
+    }]} />);
+    expect(html).toContain("Blurred faces in approved programme documentation");
+    expect(html).not.toContain(">Privacy protected</span>");
+  });
+
+  it("keeps media selection stable when malformed input repeats an asset ID", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[
+      { id: "same-id", url: "/media/first.webp", alt: "First reviewed image" },
+      { id: "same-id", url: "/media/second.webp", alt: "Different image with duplicate ID" },
+    ]} />);
+    expect(html).toContain("Enlarge image 1 of 1");
+    expect(html).not.toContain("Enlarge image 2 of 2");
+    expect(html).not.toContain("Different image with duplicate ID");
+  });
+
+  it("normalizes padded media URLs before selecting the image renderer", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[
+      { id: "padded", url: "  /media/approved.webp  ", alt: "Reviewed programme photo" },
+      { id: "duplicate", url: "/media/approved.webp", alt: "Repeated URL" },
+    ]} />);
+    expect(html).toContain("/_next/image?url=%2Fmedia%2Fapproved.webp");
+    expect(html).toContain("Enlarge image 1 of 1");
+    expect(html).not.toContain("Repeated URL");
+    expect(html).not.toContain('src="  /media/approved.webp  "');
+  });
+
   it("keeps approved external CDN photographs direct, without remote optimizer allowlisting", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://cdn.amaana.example");

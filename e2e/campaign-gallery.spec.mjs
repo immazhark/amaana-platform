@@ -74,6 +74,63 @@ test('initiative gallery lightbox owns the modal layer, traps focus and restores
   expect(overflow).toBe('');
 });
 
+test('gallery arrow buttons keep focus after changing the selected image', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 1 of 13:/ }).click();
+
+  const dialog = page.getByRole('dialog');
+  const next = dialog.getByRole('button', { name: 'Next', exact: true });
+  await next.click();
+  await expect(dialog).toContainText('Image 2 of 13');
+  await expect(next).toBeFocused();
+
+  const previous = dialog.getByRole('button', { name: 'Previous', exact: true });
+  await previous.click();
+  await expect(dialog).toContainText('Image 1 of 13');
+  await expect(previous).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+  await expect(page.getByRole('button', { name: /^Enlarge image 1 of 13:/ })).toBeFocused();
+});
+
+test('gallery announces the newly selected photograph without moving keyboard focus', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 1 of 13:/ }).click();
+
+  const dialog = page.getByRole('dialog');
+  const title = dialog.locator('[id^="gallery-dialog-"][aria-live="polite"]');
+  await expect(title).toHaveAttribute('aria-live', 'polite');
+  await expect(title).toHaveAttribute('aria-atomic', 'true');
+  await expect(title).toContainText('Image 1 of 13');
+
+  const next = dialog.getByRole('button', { name: 'Next', exact: true });
+  await next.click();
+  await expect(title).toContainText('Image 2 of 13');
+  await expect(next).toBeFocused();
+
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+});
+
+test('gallery exposes approved captions as dialog descriptions only when present', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 1 of 13:/ }).click();
+
+  const dialog = page.getByRole('dialog');
+  await expect(dialog).toHaveAccessibleDescription(/^Synthetic caption 1 used to verify wrapping/);
+  const describedBy = await dialog.getAttribute('aria-describedby');
+  expect(describedBy).toBeTruthy();
+  await expect(page.locator(`#${describedBy}`)).toBeVisible();
+
+  await dialog.getByRole('button', { name: 'Next', exact: true }).click();
+  await expect(dialog).not.toHaveAttribute('aria-describedby');
+  await expect(dialog).toHaveAccessibleDescription('');
+
+  await dialog.getByRole('button', { name: 'Previous', exact: true }).click();
+  await expect(dialog).toHaveAccessibleDescription(/^Synthetic caption 1 used to verify wrapping/);
+});
+
 test('initiative gallery lightbox remains contained at 320px and preserves usable controls', async ({ page }) => {
   await openGallery(page, 320);
   await page.getByRole('button', { name: /Enlarge image 2 of 13/ }).click();
