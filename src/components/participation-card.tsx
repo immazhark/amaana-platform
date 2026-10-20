@@ -10,7 +10,8 @@ export function ParticipationCards({ paths }: { paths: readonly ParticipationPat
     const ariaLabel = `${path.action}: ${path.title}${/^https:\/\//i.test(path.href) ? " (opens in a new tab)" : ""}`;
     const external = /^https:\/\//i.test(path.href);
     const protocolAction = /^(?:mailto:|tel:)/i.test(path.href);
-    if (external || protocolAction) return <a className={className} data-contact-kind={path.marker} href={path.href} key={path.marker} aria-label={ariaLabel} target={external ? "_blank" : undefined} rel={external ? "noopener noreferrer" : undefined}>{content}</a>;
+    if (external) return <a className={className} data-contact-kind={path.marker} href={path.href} key={path.marker} aria-label={ariaLabel} target="_blank" rel="noopener noreferrer">{content}</a>;
+    if (protocolAction) return <a className={className} data-contact-kind={path.marker} href={path.href} key={path.marker} aria-label={ariaLabel}>{content}</a>;
     return <Link className={className} data-contact-kind={path.marker} href={path.href} key={path.marker} aria-label={ariaLabel}>{content}</Link>;
   })}</div>;
 }
