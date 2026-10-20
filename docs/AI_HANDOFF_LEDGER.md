@@ -1,3 +1,7 @@
+## 2026-10-21 — Official indexing origin guard
+
+Owner: CHATGPT_ACTIVE, sole writer. Branch `fix/site-indexing-official-origin-20261021` from main `40fe2b0a2be12a1a5ca61dc3a2dd9372845a195b`; independent of unmerged PR #389. Confirmed with exact Node URL behavior that `shouldAllowIndexing` accepted credential-bearing HTTPS URLs and custom-port URLs of the official hostname (for example `https://amaanafoundation.org:8443`), thereby enabling a misconfigured noncanonical index origin. Test-first commit `dd863fff20d3192aba0daa5cdc8edb23ab530bc8` adds regression coverage for credentials, nonstandard ports and the valid default HTTPS port. Narrow runtime guard refuses credentials and nondefault ports while keeping existing apex/www, HTTPS-only, production-only, and opt-in gates. No hosting settings, robots route, sitemap generator, donor content, payment or database changes. Native protected CI and live SEO acceptance are pending. Rollback: revert this isolated PR. New-PR merge requires explicit specific approval.
+
 ## 2026-10-21 — Integrate public image dimension guard after PR #387
 
 Owner: CHATGPT_ACTIVE. PR #387 is merged into main as `64b3f2652398bb215cb7e3274febb24466064e53`; PR #388 preserves the independently tested image metadata area guard while aligning to this exact main tree. The gallery focus change and prior carousel history remain intact. Owner approved merge of the already-pending #388 subject to new exact-head protected checks. No Railway deployment or master-item live closure asserted.
