@@ -1,7 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { describe, expect, it } from 'vitest';
-import { HOME_ARTWORK_SRC, composeHomeSlides, defaultHomeConfig, defaultHomeSlides, parseHomeConfig, safeHomeHref, validateHomeSlide, visibleHomeSlides } from './home-carousel';
+import { HomeCarouselValidationError, HOME_ARTWORK_SRC, composeHomeSlides, defaultHomeConfig, defaultHomeSlides, parseHomeConfig, safeHomeHref, validateHomeSlide, visibleHomeSlides } from './home-carousel';
 const now = new Date('2026-10-03T18:00:00Z');
 const origin = defaultHomeSlides[0];
 const eid = defaultHomeSlides[1];
@@ -43,4 +43,33 @@ describe('homepage carousel publication and schedules', () => {
     expect(()=>validateHomeSlide({...origin,image:'https://arbitrary.invalid/photo'})).toThrow(/approved/);
   });
   it.each(['javascript:alert(1)','//evil.invalid','/admin','/api/private','/x/../admin','/%2f%2fevil.invalid','/about%0a','/about\\admin','/%61dmin','/%2561dmin'])('rejects unsafe CTA %s', href => expect(()=>safeHomeHref(href)).toThrow());
+});
+
+describe('homepage editor scalar validation', () => {
+  const invalidNumbers = [null, undefined, '', '   ', false, true, [], [0], {}];
+  for (const field of ['order', 'focalX', 'focalY'] as const) {
+    it.each(invalidNumbers.map((value, index) => [index, value] as const))(`rejects ambiguous ${field} input #%s`, (_index, value) => {
+      expect(() => validateHomeSlide({ ...origin, [field]: value })).toThrow(HomeCarouselValidationError);
+    });
+  }
+
+  it.each(invalidNumbers.map((value, index) => [index, value] as const))('rejects ambiguous appeal placement #%s', (_index, value) => {
+    expect(() => parseHomeConfig({ ...defaultHomeConfig, appealPosition: value })).toThrow(HomeCarouselValidationError);
+  });
+
+  it('accepts ordinary numeric form strings and preserves configured zeroes', () => {
+    const slide = validateHomeSlide({ ...origin, order: '0', focalX: '0', focalY: '100' });
+    expect([slide.order, slide.focalX, slide.focalY]).toEqual([0, 0, 100]);
+    expect(parseHomeConfig({ ...defaultHomeConfig, appealPosition: '0' }).appealPosition).toBe(0);
+  });
+
+  it.each(['/about%', '/about%2', '/about%GG'])('returns field validation feedback for malformed link %s', href => {
+    expect(() => safeHomeHref(href)).toThrow(HomeCarouselValidationError);
+  });
+
+  it('treats a cleared secondary label consistently after trimming', () => {
+    const slide = validateHomeSlide({ ...origin, secondaryLabel: '   ', secondaryHref: '' });
+    expect(slide.secondaryLabel).toBe('');
+    expect(slide.secondaryHref).toBe('');
+  });
 });

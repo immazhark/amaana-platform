@@ -1,3 +1,18 @@
+## 2026-10-20 — Carousel form-cardinality completion, PR #386
+
+Owner: CODEX_ACTIVE; sole writer; same branch `fix/home-carousel-input-validation-20261020`, main remains `b917746c0e5a9de8f51bb3bfee7dab67f762ca17`.
+The initial five-fix source batch at c590b15 passed1740 units, lint, types, build and database; its browser run was still active when this related boundary gap was found. Do not reuse those checks as proof of the new head.
+Added64 action tests: repeated/file-valued command and slide fields, placement, and preserved native add/remove/settings/editor flows. Exact pre-fix hosted run39469594652 failed58 regressions for the expected reasons (unexpected save or configuration read). Correction reads exactly one text value for each relevant field after authorization and before opening the transaction. Existing permissions, review gates, revision comparison, atomic persistence and audits remain intact. New head requires fresh hosted validation.
+Schema check disproved an initial-create revision hypothesis: HomeCarousel.revision already defaults to1. Removed two incorrect proposed tests; production creation/schema unchanged.
+Railway's official status page confirms an all-workspace build outage on20October; deployed services are unaffected by that incident. PR385 is merged at b917746; deployment/live verification remain blocked. Do not retry deployment mutations during the pause or apply staged worker changes. No new master-item closure or historical count change claimed. PR386 merge still needs specific owner authorization after acceptance. Continue source work without provider/pipeline changes.
+
+## 2026-10-20 — Carousel editor scalar-input correction
+
+Owner: CODEX_ACTIVE, sole writer, explicit owner "Continue development". Branch `fix/home-carousel-input-validation-20261020`, base main `b917746c0e5a9de8f51bb3bfee7dab67f762ca17`.
+Prior batch PR #385 is MERGED at that base. All required PR checks passed: 1689 unit tests, 1294 Chromium and24 Firefox/WebKit browser cases, build, database, protected verify. Railway release remains BLOCKED: provider explicitly returned "Deploys have been paused temporarily"; production still serves919d128. Do not retry deployment mutations or apply six staged worker changes until provider pause is resolved.
+Current bounded source task: reject blank/non-scalar numeric carousel values, preserve explicit zeroes, reject missing/unsafe revisions, return validation feedback for malformed percent-encoded CTAs, and normalize cleared secondary labels consistently. Medium-risk editor correctness plan presented before implementation. No authorization/RBAC/media-approval/schema/payment/provider changes.
+Actual validator source, with the unrelated href dependency stubbed, reproduced seven malformed focal inputs accepted through Number coercion. Local execution remains unavailable; focused hosted action/library tests and exact-head acceptance are required. Source work is not deployment or item closure. New PR merge requires specific authorization; do not infer it from permission to continue development.
+
 ## 2026-10-20 — Recovery of unpushed metadata and Back-to-top changes
 
 Owner: CODEX_ACTIVE by explicit user continuation/takeover. Sole writer; branch `fix/public-schema-batch-20261020`, existing PR #385; verified remote head `43866b5c9d8915823063237bf39de4dfe65d3ad0`, main `919d12881465fe3756e50737171d341be9414c57`.
