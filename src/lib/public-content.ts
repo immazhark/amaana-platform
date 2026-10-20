@@ -1,5 +1,6 @@
 import type { Prisma } from "@prisma/client";
 import { unstable_cache } from "next/cache";
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { isAppealOpenForDonations } from "@/lib/appeals";
 import { publicFaithWhere } from "@/lib/faith-publication";
@@ -74,7 +75,7 @@ export async function getPublishedInitiatives() {
   });
 }
 
-export async function getPublishedInitiativeBySlug(slug: string) {
+export const getPublishedInitiativeBySlug = cache(async (slug: string) => {
   return prisma.initiative.findFirst({
     where: { slug, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     include: {
@@ -94,7 +95,7 @@ export async function getPublishedInitiativeBySlug(slug: string) {
       },
     },
   });
-}
+});
 
 export async function getPublishedStories() {
   return prisma.story.findMany({
