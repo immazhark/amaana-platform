@@ -47,7 +47,7 @@ export const viewport: Viewport = {
 };
 
 export const metadata: Metadata = {
-  metadataBase: new URL(appUrl),
+  metadataBase: new URL(new URL(appUrl).origin),
   title: { default: "Amaana Foundation", template: "%s | Amaana Foundation" },
   description: organizationDescription,
   icons: {
