@@ -69,6 +69,29 @@ test('a shrinking carousel clamps selected position and progress to the remainin
   await expect(progress).toHaveAttribute('aria-valuenow', '1');
 });
 
+test('restored carousel viewport resumes resize alignment after all slides disappear', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/browser-acceptance/body-carousel');
+
+  const carousel = page.getByRole('region', { name: 'Body carousel acceptance' });
+  await page.getByRole('button', { name: 'Clear records' }).click();
+  await expect(carousel).toHaveCount(0);
+  await page.getByRole('button', { name: 'Restore seven records' }).click();
+  await expect(carousel).toBeVisible();
+  await carousel.getByRole('button', { name: 'Pause automatic slides' }).click();
+
+  await carousel.locator('[id^="carousel-"]').focus();
+  await page.keyboard.press('End');
+  await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '7');
+
+  await page.setViewportSize({ width: 768, height: 844 });
+  await expect.poll(() => carousel.evaluate(root => {
+    const viewport = root.querySelector('[id^="carousel-"]');
+    const last = root.querySelector('[aria-label="7 of 7"]');
+    return Math.abs(viewport.getBoundingClientRect().left - last.getBoundingClientRect().left);
+  })).toBeLessThan(3);
+});
+
 test('manual pause survives pointer exit and reduced motion disables autoplay',async({page})=>{
  await page.goto('/browser-acceptance/body-carousel');
  const carousel=page.getByRole('region',{name:'Body carousel acceptance'});
