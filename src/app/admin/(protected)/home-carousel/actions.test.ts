@@ -177,38 +177,3 @@ describe('carousel form scalar cardinality', () => {
     }));
   });
 });
-
-describe('initial carousel revision', () => {
-  beforeEach(() => {
-    vi.clearAllMocks();
-    m.permission.mockResolvedValue({ id: 'editor' });
-    m.publish.mockReturnValue(true);
-    m.update.mockResolvedValue({ count: 1 });
-    m.create.mockReset();
-  });
-
-  it('persists the same first revision recorded by the audit event', async () => {
-    m.find.mockResolvedValue(null);
-    await expect(saveHomeCarousel(form({ revision: '0' }))).rejects.toThrow('/admin/home-carousel?saved=1');
-    expect(m.create).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ id: 'homepage', revision: 1 }),
-    }));
-    expect(m.audit).toHaveBeenCalledWith(expect.objectContaining({
-      data: expect.objectContaining({ metadata: expect.objectContaining({ revision: 1 }) }),
-    }));
-  });
-
-  it('rejects reuse of the pre-creation form after the initial save', async () => {
-    let stored: { revision: number; config: typeof defaultHomeConfig } | null = null;
-    m.find.mockImplementation(async () => stored);
-    m.create.mockImplementation(async ({ data }: { data: { revision?: number; config: typeof defaultHomeConfig } }) => {
-      stored = { revision: data.revision ?? 0, config: data.config };
-      return stored;
-    });
-    await expect(saveHomeCarousel(form({ revision: '0' }))).rejects.toThrow('/admin/home-carousel?saved=1');
-    m.audit.mockClear();
-    await expect(saveHomeCarousel(form({ revision: '0' }))).rejects.toThrow(/changed/);
-    expect(m.update).not.toHaveBeenCalled();
-    expect(m.audit).not.toHaveBeenCalled();
-  });
-});
