@@ -136,6 +136,8 @@ test('releasing outside before pointer capture does not permanently pause carous
   // pointer capture has not started, so pointerup is delivered elsewhere.
   await page.mouse.move(0, 0, { steps: 1 });
   await page.mouse.up();
+  // Keyboard focus intentionally pauses autoplay; isolate pointer cleanup.
+  await viewport.evaluate(node => node.blur());
   await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '2', { timeout: 5500 });
 });
 
