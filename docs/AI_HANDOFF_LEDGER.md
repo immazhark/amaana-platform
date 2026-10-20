@@ -1,3 +1,11 @@
+## 2026-10-20 — Carousel form-cardinality completion, PR #386
+
+Owner: CODEX_ACTIVE; sole writer; same branch `fix/home-carousel-input-validation-20261020`, main remains `b917746c0e5a9de8f51bb3bfee7dab67f762ca17`.
+The initial five-fix source batch at c590b15 passed1740 units, lint, types, build and database; its browser run was still active when this related boundary gap was found. Do not reuse those checks as proof of the new head.
+Added64 action tests: repeated/file-valued command and slide fields, placement, and preserved native add/remove/settings/editor flows. Exact pre-fix hosted run39469594652 failed58 regressions for the expected reasons (unexpected save or configuration read). Correction reads exactly one text value for each relevant field after authorization and before opening the transaction. Existing permissions, review gates, revision comparison, atomic persistence and audits remain intact. New head requires fresh hosted validation.
+Schema check disproved an initial-create revision hypothesis: HomeCarousel.revision already defaults to1. Removed two incorrect proposed tests; production creation/schema unchanged.
+Railway's official status page confirms an all-workspace build outage on20October; deployed services are unaffected by that incident. PR385 is merged at b917746; deployment/live verification remain blocked. Do not retry deployment mutations during the pause or apply staged worker changes. No new master-item closure or historical count change claimed. PR386 merge still needs specific owner authorization after acceptance. Continue source work without provider/pipeline changes.
+
 ## 2026-10-20 — Carousel editor scalar-input correction
 
 Owner: CODEX_ACTIVE, sole writer, explicit owner "Continue development". Branch `fix/home-carousel-input-validation-20261020`, base main `b917746c0e5a9de8f51bb3bfee7dab67f762ca17`.
