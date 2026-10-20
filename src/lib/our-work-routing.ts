@@ -67,7 +67,7 @@ export const LEGACY_OUR_WORK_ROUTES: Readonly<Record<string, LegacyOurWorkRoute>
 
 export function legacyOurWorkRoute(slug: string | null | undefined): LegacyOurWorkRoute | null {
   const normalized = typeof slug === "string" ? slug.trim() : "";
-  if (!PUBLIC_SLUG_PATTERN.test(normalized)) return null;
+  if (!PUBLIC_SLUG_PATTERN.test(normalized) || !Object.hasOwn(LEGACY_OUR_WORK_ROUTES, normalized)) return null;
   return LEGACY_OUR_WORK_ROUTES[normalized] ?? null;
 }
 

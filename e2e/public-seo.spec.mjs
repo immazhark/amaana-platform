@@ -151,6 +151,14 @@ for (const [path, expectedName] of programmeCategorySchemaCases) {
   });
 }
 
+test('prototype property slugs do not redirect visitors to invented destinations', async ({ request }) => {
+  for (const path of ['/our-work/constructor', '/programmes/constructor', '/programmes/toString']) {
+    const response = await request.get(path, { maxRedirects: 0 });
+    expect(response.status(), `${path} must be handled as an unknown route, not an inherited redirect`).toBe(404);
+    expect(response.headers().location, `${path} must not redirect to an Object property`).toBeUndefined();
+  }
+});
+
 test('legacy Our Work aliases issue deterministic canonical redirects', async ({ request }) => {
   const cases = [
     ['/our-work/medical-financial-assistance', '/programmes/medical-financial-relief'],

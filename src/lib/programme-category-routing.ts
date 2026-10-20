@@ -43,15 +43,21 @@ export const LEGACY_PROGRAMME_INITIATIVE_ROUTES: Readonly<Record<string, {
 };
 
 export function programmeCategoryPath(categorySlug: string) {
-  return PROGRAMME_CATEGORY_PATHS[categorySlug as ProgrammeCategorySlug] ?? "/our-work";
+  return Object.hasOwn(PROGRAMME_CATEGORY_PATHS, categorySlug)
+    ? PROGRAMME_CATEGORY_PATHS[categorySlug as ProgrammeCategorySlug]
+    : "/our-work";
 }
 
 export function programmeCategoryFromRoute(routeSlug: string) {
-  return PROGRAMME_ROUTE_TO_CATEGORY[routeSlug] ?? null;
+  return Object.hasOwn(PROGRAMME_ROUTE_TO_CATEGORY, routeSlug)
+    ? PROGRAMME_ROUTE_TO_CATEGORY[routeSlug] ?? null
+    : null;
 }
 
 export function legacyProgrammeCategoryDestination(routeSlug: string) {
-  return LEGACY_PROGRAMME_CATEGORY_ROUTES[routeSlug] ?? null;
+  return Object.hasOwn(LEGACY_PROGRAMME_CATEGORY_ROUTES, routeSlug)
+    ? LEGACY_PROGRAMME_CATEGORY_ROUTES[routeSlug] ?? null
+    : null;
 }
 
 export type LegacyProgrammeRoute =
@@ -77,7 +83,9 @@ export function legacyProgrammeRoute(routeSlug: string | null | undefined): Lega
     };
   }
 
-  const initiative = LEGACY_PROGRAMME_INITIATIVE_ROUTES[normalized];
+  const initiative = Object.hasOwn(LEGACY_PROGRAMME_INITIATIVE_ROUTES, normalized)
+    ? LEGACY_PROGRAMME_INITIATIVE_ROUTES[normalized]
+    : undefined;
   if (!initiative) return null;
 
   return {

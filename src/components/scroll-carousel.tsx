@@ -4,6 +4,7 @@ import {
   Children,
   type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
+  isValidElement,
   useCallback,
   useEffect,
   useId,
@@ -251,6 +252,16 @@ export function ScrollCarousel({
           drag.current = null;
           event.currentTarget.style.removeProperty("scroll-snap-type");
         }}
+        onPointerLeave={event => {
+          // Without capture, pointerup may occur outside this viewport.
+          if (event.currentTarget.hasPointerCapture(event.pointerId)) return;
+          drag.current = null;
+          event.currentTarget.style.removeProperty("scroll-snap-type");
+        }}
+        onLostPointerCapture={event => {
+          drag.current = null;
+          event.currentTarget.style.removeProperty("scroll-snap-type");
+        }}
         onPointerCancel={event => { drag.current = null; event.currentTarget.style.removeProperty("scroll-snap-type"); }}
         onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}
         onDragStart={event => { if (mode !== "hero") event.preventDefault(); }}
@@ -265,7 +276,7 @@ export function ScrollCarousel({
               className={`${styles.slide} ${mode === "focus" && index === visibleIndex ? styles.activeSlide : ""}`}
               data-body-card={mode !== "hero" ? "" : undefined}
               data-active={index === visibleIndex ? "true" : undefined}
-              key={index}
+              key={isValidElement(slide) ? (slide.key ?? index) : index}
               ref={node => { slideRefs.current[index] = node; }}
               role="group"
               aria-roledescription="slide"
