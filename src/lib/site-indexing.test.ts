@@ -24,6 +24,20 @@ describe("shouldAllowIndexing", () => {
     expect(shouldAllowIndexing("http://amaanafoundation.org", "true", "production")).toBe(false);
   });
 
+  it.each([
+    "https://wrong:password@amaanafoundation.org",
+    "https://user@www.amaanafoundation.org",
+    "https://amaanafoundation.org:8443",
+    "https://www.amaanafoundation.org:3000",
+  ])("rejects official-looking URLs with credentials or unexpected ports: %s", appUrl => {
+    expect(shouldAllowIndexing(appUrl, "true", "production")).toBe(false);
+  });
+
+  it("keeps the default HTTPS port and trailing slash eligible", () => {
+    expect(shouldAllowIndexing("https://amaanafoundation.org:443/", "true", "production")).toBe(true);
+    expect(shouldAllowIndexing("https://www.amaanafoundation.org/", "true", "production")).toBe(true);
+  });
+
   it("fails closed for invalid URLs", () => {
     expect(shouldAllowIndexing("not-a-url", "true", "production")).toBe(false);
   });

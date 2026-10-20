@@ -7,6 +7,7 @@ import {
   normalizeSafePublicMediaUrl,
   resolvePublicMediaUrl,
   selectGalleryPublicImage,
+  isDocumentaryPublicImage,
   selectIdentityPublicImage,
 } from "./public-media";
 
@@ -155,4 +156,27 @@ describe("public media safety", () => {
     if (!identity) throw new Error("Expected identity-media fixture.");
     expect(selectGalleryPublicImage([identity])?.publicUrl).toBe("/media/identity.webp");
   });
+  it.each([
+    "Graphic design workshop photograph",
+    "Volunteers mentoring graphic designers",
+  ])("keeps photographs with graphic-design subjects eligible as documentary: %s", altText => {
+    const image = { kind: "IMAGE" as const, publicUrl: "/media/workshop.webp", altText, title: "Training field photograph" };
+    expect(isDocumentaryPublicImage(image)).toBe(true);
+  });
+
+  it.each(["Campaign graphic", "Carousel slide", "Volunteer infographic"])("does not mistake an approved %s for documentary photography", description => {
+    const graphic = { kind: "IMAGE" as const, publicUrl: "/media/design.webp", altText: description, title: "Activity image" };
+    const photo = { kind: "IMAGE" as const, publicUrl: "/media/photo.webp", altText: "Volunteers packing kits", title: "Field photograph" };
+    expect(isDocumentaryPublicImage(graphic)).toBe(false);
+    expect(selectGalleryPublicImage([graphic, photo])).toBe(photo);
+  });
+
+  it("uses image alt text to keep a labelled results graphic behind documentary photos", () => {
+    const graphic = { kind: "IMAGE" as const, publicUrl: "/media/results.webp", altText: "Results update", title: "2026 photo", sortOrder: 1 };
+    const photo = { kind: "IMAGE" as const, publicUrl: "/media/volunteers.webp", altText: "Volunteers distributing relief", title: "Field photograph", sortOrder: 2 };
+    expect(isDocumentaryPublicImage(graphic)).toBe(false);
+    expect(selectGalleryPublicImage([graphic, photo])).toBe(photo);
+    expect(selectGalleryPublicImage([graphic])).toBe(graphic);
+  });
+
 });
