@@ -42,6 +42,14 @@ test('a shrinking carousel clamps selected position and progress to the remainin
 
   await carousel.getByRole('button', { name: 'Previous slide' }).click();
   await expect(progress).toHaveAttribute('aria-valuenow', '1');
+  // Simulate a carousel consumer with no trailing track pad: the last
+  // slide starts beyond the maximum scrollLeft the browser will accept.
+  await viewport.locator(':scope > div').evaluate(track => { track.style.paddingRight = '0px'; });
+  const bounds = await viewport.evaluate(node => ({
+    last: node.querySelectorAll('[aria-roledescription="slide"]')[1].offsetLeft,
+    max: node.scrollWidth - node.clientWidth,
+  }));
+  expect(bounds.last).toBeGreaterThan(bounds.max + 5);
   await carousel.getByRole('button', { name: 'Next slide' }).click();
   await expect(progress).toHaveAttribute('aria-valuenow', '2');
 
