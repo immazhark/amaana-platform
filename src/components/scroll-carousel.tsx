@@ -116,6 +116,20 @@ export function ScrollCarousel({
     }
   }, [slideCount]);
 
+  // Reconcile final physical position when another browser-managed scroll
+  // interrupts a smooth carousel move without pointer or wheel input.
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    const onScrollEnd = (event: Event) => {
+      if (event.target !== viewport) return;
+      navigation.current = null;
+      updateActiveFromScroll();
+    };
+    viewport.addEventListener("scrollend", onScrollEnd);
+    return () => viewport.removeEventListener("scrollend", onScrollEnd);
+  }, [slideCount, updateActiveFromScroll]);
+
   useEffect(() => () => {
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
   }, []);
