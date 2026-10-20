@@ -9,7 +9,9 @@ export function selectInitiativeBannerImage<T extends PublicMediaCandidate & { w
     const description = `${asset.title ?? ""} ${asset.caption ?? ""} ${asset.altText ?? ""} ${resolvePublicMediaUrl(asset) ?? ""}`;
     if (/collage|composite|diagonal-v\d|\/programme-artwork\/|\/hero\//i.test(description)) continue;
     const documentary = isDocumentaryPublicImage(asset);
-    const landscape = Boolean(asset.width && asset.height && asset.width >= asset.height);
+    const landscape = typeof asset.width === "number" && Number.isSafeInteger(asset.width) && asset.width > 0
+      && typeof asset.height === "number" && Number.isSafeInteger(asset.height) && asset.height > 0
+      && asset.width >= asset.height;
     const score = (documentary ? 4 : 0) + (isIdentityPublicImage(asset) ? 2 : 0) + (landscape ? 1 : 0);
     if (score > bestScore) { selected = asset; bestScore = score; }
   }
