@@ -126,10 +126,12 @@ export function ScrollCarousel({
     const viewport = viewportRef.current;
     const slide = slideRefs.current[bounded];
     if (!viewport || !slide) return;
-    navigation.current = slide.offsetLeft;
+    const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+    const target = Math.min(Math.max(0, slide.offsetLeft), maxScrollLeft);
+    navigation.current = target;
     activeIndexRef.current = bounded;
     viewport.scrollTo({
-      left: slide.offsetLeft,
+      left: target,
       behavior: prefersReducedMotion.current ? "auto" : "smooth",
     });
     setActiveIndex(bounded);
