@@ -1,6 +1,26 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+test('contact card actions preserve native email, phone, internal and secure external destinations', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  const response = await page.goto('/contact', { waitUntil: 'domcontentloaded' });
+  expect(response?.ok()).toBe(true);
+
+  const email = page.locator('.v2-intent-card[data-contact-kind="01"]');
+  const phone = page.locator('.v2-intent-card[data-contact-kind="02"]');
+  const whatsapp = page.locator('.v2-intent-card[data-contact-kind="02A"]');
+  const assistance = page.locator('.v2-intent-card[data-contact-kind="03"]');
+
+  await expect(email).toHaveAttribute('href', 'mailto:amaanafoundation24@gmail.com');
+  await expect(phone).toHaveAttribute('href', 'tel:+919908002694');
+  await expect(email).not.toHaveAttribute('target', '_blank');
+  await expect(phone).not.toHaveAttribute('target', '_blank');
+  await expect(assistance).toHaveAttribute('href', '/request-assistance');
+  await expect(whatsapp).toHaveAttribute('href', 'https://wa.me/919908002694');
+  await expect(whatsapp).toHaveAttribute('target', '_blank');
+  await expect(whatsapp).toHaveAttribute('rel', /noopener noreferrer/);
+});
+
 for (const width of [320, 390, 768, 1024, 1440, 1920]) {
   test(`participation, contact and completed outcomes at ${width}px`, async ({ page }) => {
     await page.setViewportSize({ width, height: 1000 });
