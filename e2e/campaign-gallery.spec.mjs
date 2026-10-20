@@ -99,7 +99,7 @@ test('gallery announces the newly selected photograph without moving keyboard fo
   await page.getByRole('button', { name: /^Enlarge image 1 of 13:/ }).click();
 
   const dialog = page.getByRole('dialog');
-  const title = dialog.locator('[id^="gallery-dialog-"]');
+  const title = dialog.locator('[id^="gallery-dialog-"][aria-live="polite"]');
   await expect(title).toHaveAttribute('aria-live', 'polite');
   await expect(title).toHaveAttribute('aria-atomic', 'true');
   await expect(title).toContainText('Image 1 of 13');
