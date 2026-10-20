@@ -140,3 +140,24 @@ test('returning through router.push never reopens an old navigation overlay', as
   await expect(page.locator('.amaana-navigation-loading')).toHaveCount(0);
   await expect(page.locator('body')).not.toHaveClass(/af-navigation-lock/);
 });
+
+for (const reducedMotion of ['reduce', 'no-preference']) {
+  test(`Back to top restores the keyboard destination with ${reducedMotion} motion`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.emulateMedia({ reducedMotion });
+    await page.goto('/about');
+    await page.locator('main h1').waitFor();
+    await page.evaluate(() => window.scrollTo({ top: document.documentElement.scrollHeight, behavior: 'instant' }));
+    const button = page.getByRole('button', { name: 'Back to top', exact: true });
+    await expect(button).toBeVisible();
+    await button.focus();
+    await expect(button).toBeFocused();
+    await page.keyboard.press('Enter');
+    await expect(page.locator('main#main')).toBeFocused();
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeLessThanOrEqual(1);
+    await expect(button).toHaveCount(0);
+    await expect(page.locator('main#main')).toBeFocused();
+    await page.keyboard.press('Tab');
+    expect(await page.evaluate(() => document.querySelector('main#main')?.contains(document.activeElement))).toBe(true);
+  });
+}

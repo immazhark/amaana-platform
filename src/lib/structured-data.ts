@@ -28,7 +28,7 @@ const publicStructuredDataInputSchema = z.object({
 
 const DEFAULT_SITE_URL = "https://amaanafoundation.org";
 
-function normalizeSiteUrl(value: string | undefined) {
+export function normalizeStructuredDataSiteUrl(value = process.env.NEXT_PUBLIC_APP_URL) {
   try {
     const url = new URL(value || DEFAULT_SITE_URL);
     if (url.protocol !== "https:" || url.username || url.password) return DEFAULT_SITE_URL;
@@ -91,8 +91,10 @@ export function buildPublicStructuredData(input: PublicStructuredDataInput, conf
   const description = cleanText(safeInput.description);
   if (!path || !title || !description) return null;
 
-  const siteUrl = normalizeSiteUrl(configuredSiteUrl);
-  const url = new URL(path, siteUrl).toString();
+  const siteUrl = normalizeStructuredDataSiteUrl(configuredSiteUrl);
+  const contentUrl = new URL(path, siteUrl);
+  const url = contentUrl.toString();
+  contentUrl.hash = "content";
   const image = normalizeStructuredDataImage(safeInput.imageUrl, siteUrl);
   const published = isoDate(safeInput.publishedAt);
   const modified = isoDate(safeInput.modifiedAt);
@@ -102,7 +104,7 @@ export function buildPublicStructuredData(input: PublicStructuredDataInput, conf
   return {
     "@context": "https://schema.org",
     "@type": safeInput.type,
-    "@id": `${url}#content`,
+    "@id": contentUrl.toString(),
     url,
     name: title,
     headline: title,
@@ -114,7 +116,7 @@ export function buildPublicStructuredData(input: PublicStructuredDataInput, conf
     ...(image ? { image } : {}),
     ...(published ? { datePublished: published } : {}),
     ...(modified ? { dateModified: modified } : {}),
-    ...(section ? { articleSection: section } : {}),
+    ...(safeInput.type === "Article" && section ? { articleSection: section } : {}),
     ...(keywords?.length ? { keywords } : {}),
   };
 }

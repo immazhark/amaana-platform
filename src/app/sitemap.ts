@@ -10,12 +10,12 @@ import { canListAppealInSitemap } from "@/lib/sitemap-privacy";
 import { isLegacyOurWorkSlug } from "@/lib/our-work-routing";
 
 const configuredBase = process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org";
-const base = configuredBase.replace(/\/$/, "");
 
 export const revalidate = 900;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   if (!shouldAllowIndexing(configuredBase, process.env.NEXT_PUBLIC_ALLOW_INDEXING)) return [];
+  const base = new URL(configuredBase).origin;
 
   const [appeals, initiatives, stories, faithContent] = await Promise.all([
     prisma.appeal.findMany({

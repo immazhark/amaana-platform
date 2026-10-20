@@ -36,6 +36,7 @@ export function BackToTop() {
       aria-label="Back to top"
       onClick={() => {
         const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        document.querySelector<HTMLElement>("main#main")?.focus({ preventScroll: true });
         window.scrollTo({ top: 0, behavior: reduced ? "auto" : "smooth" });
       }}
     >

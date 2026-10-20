@@ -1,7 +1,7 @@
-import { serializeStructuredData } from "@/lib/structured-data";
+import { normalizeStructuredDataSiteUrl, serializeStructuredData } from "@/lib/structured-data";
 
 export function StructuredData() {
-  const siteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org").replace(/\/$/, "");
+  const siteUrl = normalizeStructuredDataSiteUrl();
   const data = {
     "@context": "https://schema.org",
     "@graph": [

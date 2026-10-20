@@ -3,6 +3,7 @@ import {
   buildPublicStructuredData,
   normalizeStructuredDataImage,
   normalizeStructuredDataPath,
+  normalizeStructuredDataSiteUrl,
   serializeStructuredData,
 } from "./structured-data";
 
@@ -31,6 +32,42 @@ describe("public structured data", () => {
       articleSection: "Stories of Amanah",
       keywords: ["Dignity", "Community support"],
     });
+  });
+
+  it("omits Article-only section metadata from programme WebPage records", () => {
+    const data = buildPublicStructuredData({
+      type: "WebPage",
+      title: "Education programmes",
+      description: "Documented education support.",
+      path: "/our-work/education",
+      section: "Our Work",
+    }, "https://amaanafoundation.org");
+
+    expect(data).toMatchObject({
+      "@type": "WebPage",
+      name: "Education programmes",
+      url: "https://amaanafoundation.org/our-work/education",
+    });
+    expect(data).not.toHaveProperty("articleSection");
+  });
+
+  it("replaces an existing path fragment when assigning the content entity ID", () => {
+    const data = buildPublicStructuredData({
+      type: "Article", title: "A story", description: "Public summary",
+      path: "/stories/example#details",
+    }, "https://amaanafoundation.org");
+    expect(data).toMatchObject({
+      url: "https://amaanafoundation.org/stories/example#details",
+      "@id": "https://amaanafoundation.org/stories/example#content",
+    });
+  });
+
+  it("normalizes allowed HTTPS origins and rejects unsafe configured origins", () => {
+    expect(normalizeStructuredDataSiteUrl("https://preview.example.org/path?query=1#fragment"))
+      .toBe("https://preview.example.org");
+    for (const configured of ["http://example.org", "javascript:alert(1)", "https://user:secret@example.org", "not-a-url", ""]) {
+      expect(normalizeStructuredDataSiteUrl(configured)).toBe("https://amaanafoundation.org");
+    }
   });
 
   it("fails closed for unsafe route paths and image URLs", () => {
