@@ -3,7 +3,7 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 import { CampaignMediaGallery } from "@/components/campaign-media-gallery";
 import { PublicMedia } from "@/components/public-media";
-import { getPublicImageDimensions } from "./public-image-dimensions";
+import { getPublicImageDimensions, hasValidPublicImageDimensions } from "./public-image-dimensions";
 
 const fallback = { width: 1600, height: 1200 };
 
@@ -38,6 +38,21 @@ describe("approved public image intrinsic dimensions", () => {
     { width: 10000, height: 10000 },
   ])("rejects public image metadata over the 40 MP ingestion cap: %j", input => {
     expect(getPublicImageDimensions(input)).toEqual(fallback);
+  });
+
+  it.each([
+    [{ width: 8000, height: 5000 }, true],
+    [{ width: 8000, height: 5001 }, false],
+    [{ width: 10000, height: 10000 }, false],
+    [{ width: 10001, height: 100 }, false],
+    [{ width: 960, height: 1280 }, true],
+    [{ width: Infinity, height: 1200 }, false],
+    [{ width: 500, height: null }, false],
+    [{ width: 500, height: 0 }, false],
+    [{ width: 500.5, height: 400 }, false],
+  ] as const)("shares the public image metadata predicate for %j", (input, valid) => {
+    expect(hasValidPublicImageDimensions(input)).toBe(valid);
+    expect(getPublicImageDimensions(input)).toEqual(valid ? input : fallback);
   });
 
   it("applies safe intrinsic dimensions in public-media rendering", () => {

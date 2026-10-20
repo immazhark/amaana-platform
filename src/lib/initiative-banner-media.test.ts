@@ -24,4 +24,26 @@ describe("initiative banner image selection", () => {
     expect(selectInitiativeBannerImage([graphic])).toBe(graphic);
     expect(selectInitiativeBannerImage([photo, { ...photo, publicUrl: "/media/second.webp" }])).toBe(photo);
   });
+  it.each([
+    [10001, 1000],
+    [10000, 10000],
+    [8000, 5001],
+  ])("does not promote an image whose metadata area is out of bounds: %i by %i", (width, height) => {
+    const invalid = { ...photo, publicUrl: "/media/invalid.webp", width, height };
+    const valid = { ...photo, publicUrl: "/media/valid.webp", width: 4000, height: 3000 };
+    expect(selectInitiativeBannerImage([invalid, valid])).toBe(valid);
+  });
+
+  it("does not give invalid dimensions an artificial landscape ranking bonus", () => {
+    const invalid = { ...photo, publicUrl: "/media/invalid.webp", width: Infinity };
+    const valid = { ...photo, publicUrl: "/media/valid.webp" };
+    expect(selectInitiativeBannerImage([invalid, valid])).toBe(valid);
+    expect(selectInitiativeBannerImage([invalid])).toBe(invalid);
+  });
+
+  it("does not promote identity artwork labelled only in alt text over a real photo", () => {
+    const graphic = { ...photo, publicUrl: "/media/results.webp", altText: "Results update", title: "Programme photo", sortOrder: -1000 };
+    expect(selectInitiativeBannerImage([graphic, photo])).toBe(photo);
+    expect(selectInitiativeBannerImage([graphic])).toBe(graphic);
+  });
 });
