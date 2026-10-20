@@ -1,6 +1,22 @@
+## 2026-10-21 — PR #390 integration on merged #389
+
+Owner: CHATGPT_ACTIVE; exclusive repo writer. Owner explicitly approved merge of PR #390. Integrate SEO origin validation on merged PR #389 (`516090e0989c6e4cd78c1b2dfc1c0bb66c25edac`), preserving all shared handoff notes. No additional runtime changes, no railway worker changes. Exact-head checks mandatory before final merge.
+
 ## 2026-10-21 — Official indexing origin guard
 
 Owner: CHATGPT_ACTIVE, sole writer. Branch `fix/site-indexing-official-origin-20261021` from main `40fe2b0a2be12a1a5ca61dc3a2dd9372845a195b`; independent of unmerged PR #389. Confirmed with exact Node URL behavior that `shouldAllowIndexing` accepted credential-bearing HTTPS URLs and custom-port URLs of the official hostname (for example `https://amaanafoundation.org:8443`), thereby enabling a misconfigured noncanonical index origin. Test-first commit `dd863fff20d3192aba0daa5cdc8edb23ab530bc8` adds regression coverage for credentials, nonstandard ports and the valid default HTTPS port. Narrow runtime guard refuses credentials and nondefault ports while keeping existing apex/www, HTTPS-only, production-only, and opt-in gates. No hosting settings, robots route, sitemap generator, donor content, payment or database changes. Native protected CI and live SEO acceptance are pending. Rollback: revert this isolated PR. New-PR merge requires explicit specific approval.
+
+## 2026-10-21 — PR #389 main integration after PR #388
+
+Owner: CHATGPT_ACTIVE; sole writer. Parent PR #388 is merged at main SHA `40fe2b0a2be12a1a5ca61dc3a2dd9372845a195b`. This branch preserves only the documentary image-classification/selection corrections and their existing focused tests, rebased through a two-parent integration commit; no carousel, gallery or image-area source overwritten. All prior handoff entries remain intact. Require native exact-head protected verification and separate authorization to merge this new PR. Production release verification remains independent. Railway staged notification-worker patch remains untouched.
+
+## 2026-10-21 — Documentary alt-text fix reconciled with image dimension guard
+
+Owner: CHATGPT_ACTIVE, sole writer. Stacked PR #389 now carries only its scoped classification logic and regression suites on parent PR #388 at `b8d21ff655bba3104c8d589724818dd32c0fc1d3`. The inherited gallery/carousel and image metadata source remain byte-identical to the current PR #388 tree. Merge this PR only after its parent merges, its protected acceptance is complete and its new-PR owner approval is recorded. No deployment or privacy publication changed.
+
+## 2026-10-21 — Documentary image classification honours alternative text
+
+Owner: CHATGPT_ACTIVE, sole writer. Task branch `fix/documentary-image-alt-classification-20261021` based on parent PR #388 at d4aaac2e6957d4410e419ced4e8e52db4177eb04. Confirmed via exact classifier logic that a reviewed graphic labelled only `altText: "Results update"` was classified as documentary media and could outrank a field photograph in initiative banners and gallery discovery. Test-first commit `fd3ae6d0448aa16b51a030baa0ed1398bfb71998` added focused regression coverage in existing `public-media.test.ts` and `initiative-banner-media.test.ts`; direct Node RED reproduced graphic score7 vs photograph score5. Correction appends `altText` to the classifier's existing title/caption descriptor, without modifying publication, authorization, privacy, consent, stored assets, or identity selection. Isolated corrected logic GREEN; hosted exact-head checks pending. This branch is stacked to avoid competing merges while #387 and #388 finish protected CI. No new full-item/live closure or Railway operation. Rollback: revert the scoped selector PR.
 
 ## 2026-10-21 — Integrate public image dimension guard after PR #387
 
