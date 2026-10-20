@@ -29,7 +29,7 @@ export function buildPublishedLanguageAlternates(
   const seen = new Set<PublicLocale>();
   for (const translation of translations) {
     const { locale, path, status, reviewed } = translation;
-    if (!PUBLIC_LOCALES.includes(locale) || locale === "en" || seen.has(locale)) continue;
+    if ((locale !== "ur" && locale !== "te" && locale !== "hi") || seen.has(locale)) continue;
     if (status !== "PUBLISHED" || reviewed !== true) continue;
     if (path !== `/${locale}${canonicalPath === "/" ? "" : canonicalPath}`) continue;
     result[locale] = path;
