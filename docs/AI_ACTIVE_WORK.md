@@ -1,3 +1,7 @@
+## 2026-10-21 — PR #389 main integration after PR #388
+
+Owner: CHATGPT_ACTIVE; sole writer. Parent PR #388 is merged at main SHA `40fe2b0a2be12a1a5ca61dc3a2dd9372845a195b`. This branch preserves only the documentary image-classification/selection corrections and their existing focused tests, rebased through a two-parent integration commit; no carousel, gallery or image-area source overwritten. All prior handoff entries remain intact. Require native exact-head protected verification and separate authorization to merge this new PR. Production release verification remains independent. Railway staged notification-worker patch remains untouched.
+
 ## 2026-10-21 — Documentary alt-text fix reconciled with image dimension guard
 
 Owner: CHATGPT_ACTIVE, sole writer. Stacked PR #389 now carries only its scoped classification logic and regression suites on parent PR #388 at `b8d21ff655bba3104c8d589724818dd32c0fc1d3`. The inherited gallery/carousel and image metadata source remain byte-identical to the current PR #388 tree. Merge this PR only after its parent merges, its protected acceptance is complete and its new-PR owner approval is recorded. No deployment or privacy publication changed.
