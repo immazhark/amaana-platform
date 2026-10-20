@@ -97,7 +97,7 @@ export function ScrollCarousel({
     });
     observer.observe(viewport);
     return () => observer.disconnect();
-  }, []);
+  }, [slideCount]);
 
   // When a live collection shrinks, the previously selected slide may no
   // longer exist. Reset pending smooth navigation and align the new last slide.
