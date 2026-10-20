@@ -12,7 +12,7 @@ export default function robots(): MetadataRoute.Robots {
     };
   }
 
-  const base = appUrl.replace(/\/$/, "");
+  const base = new URL(appUrl).origin;
   return {
     rules: {
       userAgent: "*",
