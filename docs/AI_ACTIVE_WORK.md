@@ -1,3 +1,20 @@
+## 2026-10-21 — Owner-approved ChatGPT implementation takeover
+
+Owner: CHATGPT_ACTIVE — exclusive repository implementation writer as of 2026-10-21 IST. The owner explicitly confirmed Codex/ChatGPT Work stopped and transferred sole writer responsibility to ChatGPT. Owner also approved all pending PR merges; only PRs with completed protected acceptance and review-ready source may merge. PR #374 remains draft pending approved translations. PR #386 passed exact-head CI and merged as `1613d4c274f15160435f0614a695c8dd48dedb11`. PR #387 gallery focus is reconciling its separate historical handoff notes with PR #386; PR #388 image-area guard is awaiting exact-head acceptance. Integration target `main`, always via guarded PR. Never deploy an unaccepted source or apply six unrelated staged Railway notification-worker changes. Historical 149-item totals and AF-R042 closure remain unaltered.
+
+## 2026-10-20 — Gallery focus correction, PR #387
+
+Owner: CODEX_ACTIVE; sole writer; same independent branch `fix/gallery-reopen-focus-20261020`, base main b917746. Source correction: delayed close cleanup skips thumbnail focus when the same gallery has reopened. Existing ordinary-close and removed-thumbnail fallback logic remains in place.
+RED proof: hosted run39472503567, gallery lifecycle4 cases: reopened-dialog regression FAILED from an unexpected old-thumbnail focus; other3 cases PASS. Overall1692 units PASS,1 expected regression FAIL,15 skips. One-line runtime guard now added; fresh hosted acceptance is required before any source-completion/merge/deployment claim. Real-browser held-frame regression is included.
+AF-R042 remains partial; human screen-reader/zoom and full-item acceptance are not claimed. AF-R076 Contact email anchors passed a fresh bounded live HTML inspection, so no contact code was changed. PR386 source remains untouched at010cf6a; check its protected browser result separately. Railway global build outage remains a release blocker; six worker changes untouched. New merges require specific owner authorization after required acceptance.
+
+## 2026-10-20 — Gallery reopen focus lifecycle
+
+Owner: CODEX_ACTIVE, sole writer. Independent branch `fix/gallery-reopen-focus-20261020` from main `b917746c0e5a9de8f51bb3bfee7dab67f762ca17`; PR386 remains unchanged at010cf6a while its browser acceptance runs. Source for PR386 passed1804 units, lint, types, database and production build.
+Current AF-R042 sub-scope: test delayed thumbnail focus after close/reopen. Four hook-lifecycle cases and one real-browser held-frame regression are committed before the runtime correction. Watch the lifecycle failure before changing the production callback; then add the smallest guard. This is not full AF-R042 closure or human screen-reader acceptance.
+Bounded AF-R076 evidence: fresh Contact HTTP200 HTML contains five working mailto anchors, including footer and donation-support subject; no Cloudflare email-decode script or email-protection href. No contact patch justified by this route. Other historical affected-route evidence remains unresolved; no full-item closure.
+Railway's global build outage is a deployment blocker; keep six staged worker changes untouched. PR385 is MERGED at b917746, last verified production919d128. Existing translation PR374 stays draft. No public photos, private records, auth, payments, provider configuration or schema changes. New PR merges require specific owner authorization after protected acceptance.
+
 ## 2026-10-20 — Carousel form-cardinality completion, PR #386
 
 Owner: CODEX_ACTIVE; sole writer; same branch `fix/home-carousel-input-validation-20261020`, main remains `b917746c0e5a9de8f51bb3bfee7dab67f762ca17`.

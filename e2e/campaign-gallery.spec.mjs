@@ -223,3 +223,47 @@ test('emptying an open gallery releases the modal without a dangling focus trap'
   await expect.poll(() => page.evaluate(() => document.body.style.overflow)).toBe('');
   expect(await page.evaluate(() => window.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', cancelable: true })))).toBe(true);
 });
+
+test('closing and reopening before focus restoration keeps keyboard ownership in the new dialog', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 1 of 13:/ }).click();
+  await expect(page.getByRole('dialog').getByRole('button', { name: 'Close', exact: true })).toBeFocused();
+
+  await page.evaluate(() => {
+    window.__galleryOriginalFrame = window.requestAnimationFrame;
+    window.__galleryFocusFrames = [];
+    window.requestAnimationFrame = callback => {
+      window.__galleryFocusFrames.push(callback);
+      return window.__galleryFocusFrames.length;
+    };
+  });
+  try {
+    // Hold the queued callback across real React unmount/remount commits.
+    // Native clicks avoid Playwright's animation-frame stability wait.
+    await page.evaluate(() => document.querySelector('[role="dialog"] button').click());
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect.poll(() => page.evaluate(() => window.__galleryFocusFrames.length)).toBeGreaterThan(0);
+    await page.evaluate(() => document.querySelectorAll('[aria-label="Programme photographs"] button')[1].click());
+    const dialog = page.getByRole('dialog');
+    const close = dialog.getByRole('button', { name: 'Close', exact: true });
+    await expect(dialog).toHaveAccessibleName(/^Image 2 of 13:/);
+    await expect(close).toBeFocused();
+
+    await page.evaluate(() => {
+      window.requestAnimationFrame = window.__galleryOriginalFrame;
+      for (const callback of window.__galleryFocusFrames.splice(0)) callback(performance.now());
+    });
+    await expect(close).toBeFocused();
+    await page.keyboard.press('Shift+Tab');
+    await expect(dialog.getByRole('button', { name: 'Next', exact: true })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(page.getByRole('button', { name: /^Enlarge image 2 of 13:/ })).toBeFocused();
+  } finally {
+    await page.evaluate(() => {
+      window.requestAnimationFrame = window.__galleryOriginalFrame;
+      delete window.__galleryOriginalFrame;
+      delete window.__galleryFocusFrames;
+    });
+  }
+});
