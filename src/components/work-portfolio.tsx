@@ -21,9 +21,9 @@ export function WorkPortfolio({ causes, expanded = false, yearFiltered = false }
                   <h2 className="v2-cause-summary-heading" id={`cause-${cause.slug}`}>
                     <span className="v2-cause-number" aria-hidden="true">{String(causeIndex + 1).padStart(2, "0")}</span>
                     <span className="v2-cause-summary-copy">
-                      <span className="v2-section-label">Umbrella programme</span>
+                      <span className="v2-section-label">Umbrella programme</span>{" "}
                       <span className="v2-cause-summary-title">{cause.title}</span>
-                    </span>
+                    </span>{" "}
                     <span className="v2-cause-summary-count">
                       {cause.initiatives.length} {cause.initiatives.length === 1 ? "initiative" : "initiatives"}
                     </span>
