@@ -1,3 +1,7 @@
+## 2026-10-21 — ChatGPT continuation: public image dimensions area guard
+
+State: CHATGPT_ACTIVE for the current user-directed development continuation; previous CODEX_ACTIVE task PR #385 is already merged and remote main is unchanged at `b917746c0e5a9de8f51bb3bfee7dab67f762ca17`. Separate branch `fix/public-image-dimensions-cap-20261021` based on this exact commit. Task: reject untrusted image dimension metadata exceeding the existing 40,000,000-pixel ingestion safety limit without importing server-only storage. Local Node 22 exact-source RED reproduced acceptance of 10,000×10,000; corrected helper passes seven isolated cases; repository-native Vitest and protected checks are pending. Add regression tests alongside the two-line predicate correction. No actual media access/change, private files, payment, DB, env, auth, provider, worker, or production actions. PR #386 and #387 retain their accepted heads and require separately scoped owner merge approvals. PR #374 remains draft. Rollback: revert this atomic PR. Do not claim deployed/live.
+
 ## 2026-10-20 — Recovery of unpushed metadata and Back-to-top changes
 
 Owner: CODEX_ACTIVE by explicit user continuation/takeover. Sole writer; branch `fix/public-schema-batch-20261020`, existing PR #385; verified remote head `43866b5c9d8915823063237bf39de4dfe65d3ad0`, main `919d12881465fe3756e50737171d341be9414c57`.
