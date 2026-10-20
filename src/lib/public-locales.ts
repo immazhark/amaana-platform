@@ -22,6 +22,9 @@ export function buildPublishedLanguageAlternates(
     return {};
   }
   if (isPrivateRoute(canonicalPath)) return {};
+  if (PUBLIC_LOCALES.some(locale =>
+    canonicalPath === `/${locale}` || canonicalPath.startsWith(`/${locale}/`)
+  )) return {};
   const result: Partial<Record<PublicLocale, string>> = { en: canonicalPath };
   const seen = new Set<PublicLocale>();
   for (const translation of translations) {
