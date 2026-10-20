@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import { hasPermission, requirePermission } from '@/lib/auth';
-import { defaultHomeConfig, HomeCarouselValidationError, parseHomeConfig, validateHomeSlide } from '@/lib/home-carousel';
+import { defaultHomeConfig, HomeCarouselValidationError, parseHomeConfig, parseHomeNumericInput, validateHomeSlide } from '@/lib/home-carousel';
 import { withSerializableTransactionRetry } from '@/lib/prisma-transaction';
 import { getAppealCoverMediaIssues } from '@/lib/appeal-cover-media';
 
@@ -12,8 +12,8 @@ export async function saveHomeCarousel(form: FormData) {
   const user = await requirePermission('content.update');
   let notice = 'Carousel saved.';
   try {
-    const revision = Number(form.get('revision'));
-    if (!Number.isInteger(revision) || revision < 0) throw new HomeCarouselValidationError('Refresh the carousel editor before saving.');
+    const revision = parseHomeNumericInput(form.get('revision'));
+    if (!Number.isSafeInteger(revision) || revision < 0) throw new HomeCarouselValidationError('Refresh the carousel editor before saving.');
     const operation = String(form.get('operation'));
     if (!['save', 'add', 'remove', 'settings'].includes(operation)) throw new HomeCarouselValidationError('Invalid carousel operation.');
     await withSerializableTransactionRetry(async tx => {
@@ -24,7 +24,7 @@ export async function saveHomeCarousel(form: FormData) {
       const current = config.slides.find(s => s.id === id);
       if (operation === 'settings') {
         if (!hasPermission(user, 'content.approve')) throw new HomeCarouselValidationError('Publishing permission is required to change live appeal placement.');
-        config.appealPosition = Number(form.get('appealPosition'));
+        config.appealPosition = parseHomeNumericInput(form.get('appealPosition'));
       } else if (operation === 'add') {
         if (config.slides.length >= 20) throw new HomeCarouselValidationError('Twenty slides is the carousel limit.');
         const template = defaultHomeConfig.slides[0];
