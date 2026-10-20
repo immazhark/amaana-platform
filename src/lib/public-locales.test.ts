@@ -30,6 +30,20 @@ describe("public locale publication", () => {
     ])).toEqual({});
   });
 
+  it("does not reinterpret an already localized path as an English canonical route", () => {
+    for (const path of ["/en/contact", "/ur/contact", "/te/contact", "/hi/contact", "/ur"]) {
+      expect(buildPublishedLanguageAlternates(path, [
+        { locale: "te", path: `/te${path}`, status: "PUBLISHED", reviewed: true },
+      ])).toEqual({});
+    }
+  });
+
+  it("does not confuse route names beginning with language letters for locale prefixes", () => {
+    expect(buildPublishedLanguageAlternates("/urgent", [
+      { locale: "te", path: "/te/urgent", status: "PUBLISHED", reviewed: true },
+    ])).toEqual({ en: "/urgent", te: "/te/urgent" });
+  });
+
   it("sets RTL only for Urdu", () => {
     expect(publicLocaleDirection("ur")).toBe("rtl");
     expect(publicLocaleDirection("en")).toBe("ltr");
