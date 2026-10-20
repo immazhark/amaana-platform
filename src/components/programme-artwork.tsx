@@ -16,12 +16,18 @@ const categoryArtwork: Record<string, string> = {
   "emergency-humanitarian-relief": "hyderabad-flood-relief-2020",
 };
 
+function getProgrammeArtwork(slug: string) {
+  const mapped = Object.hasOwn(categoryArtwork, slug) ? categoryArtwork[slug] : undefined;
+  const artworkSlug = mapped ?? slug;
+  return Object.hasOwn(artworks, artworkSlug) ? artworks[artworkSlug] : undefined;
+}
+
 export function ProgrammeArtwork({ slug, sizes = "(max-width: 700px) 86vw, 30rem" }: { slug: string; sizes?: string }) {
-  const artwork = artworks[categoryArtwork[slug] ?? slug];
+  const artwork = getProgrammeArtwork(slug);
   if (!artwork) return null;
   return <Image src={artwork.src} width={1536} height={1024} alt={artwork.alt} sizes={sizes} data-programme-artwork={slug} />;
 }
 
 export function hasProgrammeArtwork(slug: string) {
-  return Boolean(artworks[categoryArtwork[slug] ?? slug]);
+  return Boolean(getProgrammeArtwork(slug));
 }
