@@ -1,8 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { renderToStaticMarkup } from "react-dom/server";
 import { AppealStructuredData } from "./appeal-structured-data";
 import { BreadcrumbStructuredData } from "./breadcrumb-structured-data";
 import { StructuredData } from "./structured-data";
+
+afterEach(() => vi.unstubAllEnvs());
 
 const harmfulText = "</script><script>alert('x')</script>&>\u2028\u2029";
 
@@ -61,5 +63,47 @@ describe("all public JSON-LD entry points use the reviewed serializer", () => {
     expect(content).toBeTruthy();
     const json = JSON.parse(content || "{}");
     expect(json["@graph"].map((node: { "@type": string | string[] }) => node["@type"])).toContain("WebSite");
+  });
+});
+
+function readSchema(markup: string) {
+  const content = markup.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
+  if (!content) throw new Error("Expected JSON-LD");
+  return JSON.parse(content);
+}
+
+describe("canonical JSON-LD entity identity", () => {
+  it.each([
+    "https://amaanafoundation.org/configured/path?preview=1#settings",
+    "https://amaanafoundation.org///",
+    "not-a-url",
+  ])("uses the same canonical origin for every schema with %s", configured => {
+    vi.stubEnv("NEXT_PUBLIC_APP_URL", configured);
+    const site = readSchema(renderToStaticMarkup(<StructuredData />));
+    const appeal = readSchema(renderToStaticMarkup(<AppealStructuredData
+      slug="synthetic-appeal" title="Public appeal" summary="Reviewed summary" isOpen
+    />));
+    const breadcrumbs = readSchema(renderToStaticMarkup(<BreadcrumbStructuredData items={[
+      { name: "Home", path: "/" }, { name: "Our Work", path: "/our-work" },
+    ]} />));
+
+    expect(site["@graph"][0]["@id"]).toBe("https://amaanafoundation.org/#organization");
+    expect(site["@graph"][1]["@id"]).toBe("https://amaanafoundation.org/#website");
+    expect(appeal["@graph"][0].about).toEqual({ "@id": site["@graph"][0]["@id"] });
+    expect(appeal["@graph"][0].isPartOf).toEqual({ "@id": site["@graph"][1]["@id"] });
+    expect(appeal["@graph"][1].target.urlTemplate).toBe("https://amaanafoundation.org/donate/synthetic-appeal");
+    expect(breadcrumbs.itemListElement.map((item: { item: string }) => item.item)).toEqual([
+      "https://amaanafoundation.org/", "https://amaanafoundation.org/our-work",
+    ]);
+  });
+
+  it("preserves privacy-sensitive appeal redaction and suppresses its donation action", () => {
+    const schema = readSchema(renderToStaticMarkup(<AppealStructuredData
+      slug="synthetic-private" title="Private name" summary="Private diagnosis" isOpen highlySensitive
+    />));
+    expect(schema["@graph"]).toHaveLength(1);
+    expect(schema["@graph"][0].name).toBe("Verified Support Appeal");
+    expect(JSON.stringify(schema)).not.toContain("Private name");
+    expect(JSON.stringify(schema)).not.toContain("Private diagnosis");
   });
 });

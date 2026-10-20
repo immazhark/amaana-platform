@@ -2,7 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
 import { getPublishedTeam } from "@/lib/team-data";
-import { serializeStructuredData } from "@/lib/structured-data";
+import { normalizeStructuredDataSiteUrl, serializeStructuredData } from "@/lib/structured-data";
 
 export const dynamic = "force-dynamic";
 
@@ -26,7 +26,7 @@ function initials(name: string) {
 
 export default async function TeamPage() {
   const groups = await getPublishedTeam();
-  const origin = (process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org").replace(/\/$/, "");
+  const origin = normalizeStructuredDataSiteUrl();
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Organization",

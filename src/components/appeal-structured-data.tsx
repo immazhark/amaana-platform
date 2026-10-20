@@ -1,4 +1,4 @@
-import { serializeStructuredData } from "@/lib/structured-data";
+import { normalizeStructuredDataSiteUrl, serializeStructuredData } from "@/lib/structured-data";
 
 type AppealStructuredDataProps = {
   slug: string;
@@ -15,7 +15,7 @@ export function AppealStructuredData({
   isOpen,
   highlySensitive = false,
 }: AppealStructuredDataProps) {
-  const siteUrl = (process.env.NEXT_PUBLIC_APP_URL ?? "https://amaanafoundation.org").replace(/\/$/, "");
+  const siteUrl = normalizeStructuredDataSiteUrl();
   const appealUrl = `${siteUrl}/appeals/${slug}`;
   const safeTitle = highlySensitive ? "Verified Support Appeal" : title;
   const safeSummary = highlySensitive
