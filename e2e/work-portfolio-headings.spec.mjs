@@ -20,7 +20,7 @@ test("Our Work disclosure headings keep readable boundaries between their labels
     });
     expect(parts.label).toBe("Umbrella programme");
     expect(parts.title.length).toBeGreaterThan(0);
-    expect(parts.count).toMatch(/^\\d+ initiatives?$/);
+    expect(parts.count).toMatch(/^[0-9]+ initiatives?$/);
     expect(parts.combined).toContain(`${parts.label} ${parts.title} ${parts.count}`);
   }
 });
