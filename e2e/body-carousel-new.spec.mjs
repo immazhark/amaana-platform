@@ -64,6 +64,17 @@ test('a shrinking carousel clamps selected position and progress to the remainin
   await expect.poll(() => viewport.evaluate(node => node.scrollLeft)).toBeLessThan(2);
   await expect(progress).toHaveAttribute('aria-valuenow', '1');
 
+  // A separate browser-managed scroll (e.g. focus navigation or script)
+  // can interrupt a smooth carousel transition without a wheel event.
+  // Its final physical position must still become the selected slide.
+  await carousel.getByRole('button', { name: 'Next slide' }).click();
+  await expect.poll(() => viewport.evaluate(node =>
+    Math.abs(node.scrollLeft - (node.scrollWidth - node.clientWidth))
+  )).toBeLessThan(3);
+  await viewport.evaluate(node => node.scrollTo({ left: 0, behavior: 'instant' }));
+  await expect.poll(() => viewport.evaluate(node => node.scrollLeft)).toBeLessThan(2);
+  await expect(progress).toHaveAttribute('aria-valuenow', '1');
+
   await page.getByRole('button', { name: 'Restore seven records' }).click();
   await expect(progress).toHaveAttribute('aria-valuemax', '7');
   await expect(progress).toHaveAttribute('aria-valuenow', '1');
