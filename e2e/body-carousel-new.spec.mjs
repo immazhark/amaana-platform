@@ -23,6 +23,86 @@ for(const width of [375,600,768,1024,1440,1920])test(`left alignment and control
  await expect.poll(async()=>Math.abs(v.x-(await carousel.getByRole('group',{name:'7 of 7',exact:true}).boundingBox()).x)).toBeLessThan(2);
 });
 
+test('a shrinking carousel clamps selected position and progress to the remaining slides', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/browser-acceptance/body-carousel');
+
+  const carousel = page.getByRole('region', { name: 'Body carousel acceptance' });
+  await carousel.getByRole('button', { name: 'Pause automatic slides' }).click();
+  const viewport = carousel.locator('[id^="carousel-"]');
+  await viewport.focus();
+  await page.keyboard.press('End');
+  const progress = carousel.getByRole('progressbar');
+  await expect(progress).toHaveAttribute('aria-valuenow', '7');
+
+  await page.getByRole('button', { name: 'Show two records' }).click();
+  await expect(carousel.getByRole('group', { name: '2 of 2', exact: true })).toBeVisible();
+  await expect(progress).toHaveAttribute('aria-valuemax', '2');
+  await expect(progress).toHaveAttribute('aria-valuenow', '2');
+
+  await carousel.getByRole('button', { name: 'Previous slide' }).click();
+  await expect(progress).toHaveAttribute('aria-valuenow', '1');
+  // Simulate a carousel consumer with no trailing track pad: the last
+  // slide starts beyond the maximum scrollLeft the browser will accept.
+  await viewport.locator(':scope > div').evaluate(track => { track.style.paddingRight = '0px'; });
+  const bounds = await viewport.evaluate(node => ({
+    last: node.querySelectorAll('[aria-roledescription="slide"]')[1].offsetLeft,
+    max: node.scrollWidth - node.clientWidth,
+  }));
+  expect(bounds.last).toBeGreaterThan(bounds.max + 5);
+  await carousel.getByRole('button', { name: 'Next slide' }).click();
+  await expect(progress).toHaveAttribute('aria-valuenow', '2');
+
+  // The final slide may start beyond the maximum reachable scroll offset.
+  // Its smooth-navigation target must settle so subsequent native scrolling
+  // can update the active index again.
+  await expect.poll(() => viewport.evaluate(node => Math.abs(
+    node.scrollLeft - (node.scrollWidth - node.clientWidth),
+  ))).toBeLessThan(3);
+  await viewport.hover();
+  await page.mouse.wheel(-1200, 0);
+  await expect.poll(() => viewport.evaluate(node => node.scrollLeft)).toBeLessThan(2);
+  await expect(progress).toHaveAttribute('aria-valuenow', '1');
+
+  // A separate browser-managed scroll (e.g. focus navigation or script)
+  // can interrupt a smooth carousel transition without a wheel event.
+  // Its final physical position must still become the selected slide.
+  await carousel.getByRole('button', { name: 'Next slide' }).click();
+  await expect.poll(() => viewport.evaluate(node =>
+    Math.abs(node.scrollLeft - (node.scrollWidth - node.clientWidth))
+  )).toBeLessThan(3);
+  await viewport.evaluate(node => node.scrollTo({ left: 0, behavior: 'instant' }));
+  await expect.poll(() => viewport.evaluate(node => node.scrollLeft)).toBeLessThan(2);
+  await expect(progress).toHaveAttribute('aria-valuenow', '1');
+
+  await page.getByRole('button', { name: 'Restore seven records' }).click();
+  await expect(progress).toHaveAttribute('aria-valuemax', '7');
+  await expect(progress).toHaveAttribute('aria-valuenow', '1');
+});
+
+test('restored carousel viewport resumes resize alignment after all slides disappear', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/browser-acceptance/body-carousel');
+
+  const carousel = page.getByRole('region', { name: 'Body carousel acceptance' });
+  await page.getByRole('button', { name: 'Clear records' }).click();
+  await expect(carousel).toHaveCount(0);
+  await page.getByRole('button', { name: 'Restore seven records' }).click();
+  await expect(carousel).toBeVisible();
+  await carousel.getByRole('button', { name: 'Pause automatic slides' }).click();
+
+  await carousel.locator('[id^="carousel-"]').focus();
+  await page.keyboard.press('End');
+  await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '7');
+
+  await page.setViewportSize({ width: 768, height: 844 });
+  await expect.poll(() => carousel.evaluate(root => {
+    const viewport = root.querySelector('[id^="carousel-"]');
+    const last = root.querySelector('[aria-label="7 of 7"]');
+    return Math.abs(viewport.getBoundingClientRect().left - last.getBoundingClientRect().left);
+  })).toBeLessThan(3);
+});
+
 test('manual pause survives pointer exit and reduced motion disables autoplay',async({page})=>{
  await page.goto('/browser-acceptance/body-carousel');
  const carousel=page.getByRole('region',{name:'Body carousel acceptance'});

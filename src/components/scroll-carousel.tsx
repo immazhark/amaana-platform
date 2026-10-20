@@ -45,6 +45,7 @@ export function ScrollCarousel({
   const drag = useRef<{x:number; scroll:number; moved:boolean} | null>(null);
   const suppressClick = useRef(false);
   const [activeIndex, setActiveIndex] = useState(() => Math.min(Math.max(startAt, 0), Math.max(slideCount - 1, 0)));
+  const visibleIndex = Math.min(activeIndex, Math.max(0, slideCount - 1));
   const activeIndexRef = useRef(activeIndex);
   const id = useId().replaceAll(":", "");
   const viewportId = `carousel-${id}`;
@@ -96,7 +97,38 @@ export function ScrollCarousel({
     });
     observer.observe(viewport);
     return () => observer.disconnect();
-  }, []);
+  }, [slideCount]);
+
+  // When a live collection shrinks, the previously selected slide may no
+  // longer exist. Reset pending smooth navigation and align the new last slide.
+  useEffect(() => {
+    if (activeIndexRef.current < slideCount) return;
+    const lastIndex = Math.max(0, slideCount - 1);
+    activeIndexRef.current = lastIndex;
+    navigation.current = null;
+    setActiveIndex(lastIndex);
+    const viewport = viewportRef.current;
+    if (viewport) {
+      viewport.scrollTo({
+        left: slideRefs.current[lastIndex]?.offsetLeft ?? 0,
+        behavior: "auto",
+      });
+    }
+  }, [slideCount]);
+
+  // Reconcile final physical position when another browser-managed scroll
+  // interrupts a smooth carousel move without pointer or wheel input.
+  useEffect(() => {
+    const viewport = viewportRef.current;
+    if (!viewport) return;
+    const onScrollEnd = (event: Event) => {
+      if (event.target !== viewport) return;
+      navigation.current = null;
+      updateActiveFromScroll();
+    };
+    viewport.addEventListener("scrollend", onScrollEnd);
+    return () => viewport.removeEventListener("scrollend", onScrollEnd);
+  }, [slideCount, updateActiveFromScroll]);
 
   useEffect(() => () => {
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
@@ -108,10 +140,12 @@ export function ScrollCarousel({
     const viewport = viewportRef.current;
     const slide = slideRefs.current[bounded];
     if (!viewport || !slide) return;
-    navigation.current = slide.offsetLeft;
+    const maxScrollLeft = Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+    const target = Math.min(Math.max(0, slide.offsetLeft), maxScrollLeft);
+    navigation.current = target;
     activeIndexRef.current = bounded;
     viewport.scrollTo({
-      left: slide.offsetLeft,
+      left: target,
       behavior: prefersReducedMotion.current ? "auto" : "smooth",
     });
     setActiveIndex(bounded);
@@ -163,7 +197,7 @@ export function ScrollCarousel({
       {slideCount > 1 ? (
         <div className={`${styles.toolbar}${cinematic ? " hero-toolbar" : ""}`}>
           <span className={styles.status} aria-live={autoAdvanceMs && !paused && !reducedMotion ? "off" : "polite"} aria-atomic="true">
-            <span className={styles.srOnly}>Slide </span>{activeIndex + 1} / {slideCount}
+            <span className={styles.srOnly}>Slide </span>{visibleIndex + 1} / {slideCount}
           </span>
           <div className={`${styles.controls}${cinematic ? " hero-controls" : ""}`}>
             {autoAdvanceMs && !reducedMotion ? <button type="button" aria-label={paused ? "Resume automatic slides" : "Pause automatic slides"} onClick={() => setPaused(value => !value)}><UIIcon name={paused ? "play" : "pause"} /></button> : null}
@@ -228,17 +262,17 @@ export function ScrollCarousel({
         <div className={styles.track}>
           {slides.map((slide, index) => (
             <div
-              className={`${styles.slide} ${mode === "focus" && index === activeIndex ? styles.activeSlide : ""}`}
+              className={`${styles.slide} ${mode === "focus" && index === visibleIndex ? styles.activeSlide : ""}`}
               data-body-card={mode !== "hero" ? "" : undefined}
-              data-active={index === activeIndex ? "true" : undefined}
+              data-active={index === visibleIndex ? "true" : undefined}
               key={index}
               ref={node => { slideRefs.current[index] = node; }}
               role="group"
               aria-roledescription="slide"
               aria-label={`${index + 1} of ${slideCount}`}
-              aria-current={mode === "focus" && index === activeIndex ? "true" : undefined}
-              aria-hidden={mode === "hero" && index !== activeIndex ? true : undefined}
-              inert={mode === "hero" && index !== activeIndex ? true : undefined}
+              aria-current={mode === "focus" && index === visibleIndex ? "true" : undefined}
+              aria-hidden={mode === "hero" && index !== visibleIndex ? true : undefined}
+              inert={mode === "hero" && index !== visibleIndex ? true : undefined}
 
             >
               {slide}
@@ -246,8 +280,8 @@ export function ScrollCarousel({
           ))}
         </div>
       </div>
-      {cinematic && slideCount > 1 ? <div className="hero-dots" role="group" aria-label="Choose a banner slide">{slides.map((_, index) => <button key={index} type="button" aria-label={`Show slide ${index + 1} of ${slideCount}`} aria-current={index === activeIndex ? "true" : undefined} aria-controls={viewportId} onClick={() => goTo(index)}><span aria-hidden="true" /></button>)}</div> : null}
-      {mode !== "hero" && slideCount > 1 ? <div className={styles.progress} role="progressbar" aria-label="Carousel progress" aria-valuemin={1} aria-valuemax={slideCount} aria-valuenow={activeIndex + 1}><span style={{ transform: `scaleX(${(activeIndex + 1) / slideCount})`, transition: reducedMotion ? "none" : "transform .24s ease" }} /></div> : null}
+      {cinematic && slideCount > 1 ? <div className="hero-dots" role="group" aria-label="Choose a banner slide">{slides.map((_, index) => <button key={index} type="button" aria-label={`Show slide ${index + 1} of ${slideCount}`} aria-current={index === visibleIndex ? "true" : undefined} aria-controls={viewportId} onClick={() => goTo(index)}><span aria-hidden="true" /></button>)}</div> : null}
+      {mode !== "hero" && slideCount > 1 ? <div className={styles.progress} role="progressbar" aria-label="Carousel progress" aria-valuemin={1} aria-valuemax={slideCount} aria-valuenow={visibleIndex + 1}><span style={{ transform: `scaleX(${(visibleIndex + 1) / slideCount})`, transition: reducedMotion ? "none" : "transform .24s ease" }} /></div> : null}
     </section>
   );
 }
