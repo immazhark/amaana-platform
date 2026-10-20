@@ -1,3 +1,10 @@
+## 2026-10-20 — Gallery reopen focus lifecycle
+
+Owner: CODEX_ACTIVE, sole writer. Independent branch `fix/gallery-reopen-focus-20261020` from main `b917746c0e5a9de8f51bb3bfee7dab67f762ca17`; PR386 remains unchanged at010cf6a while its browser acceptance runs. Source for PR386 passed1804 units, lint, types, database and production build.
+Current AF-R042 sub-scope: test delayed thumbnail focus after close/reopen. Four hook-lifecycle cases and one real-browser held-frame regression are committed before the runtime correction. Watch the lifecycle failure before changing the production callback; then add the smallest guard. This is not full AF-R042 closure or human screen-reader acceptance.
+Bounded AF-R076 evidence: fresh Contact HTTP200 HTML contains five working mailto anchors, including footer and donation-support subject; no Cloudflare email-decode script or email-protection href. No contact patch justified by this route. Other historical affected-route evidence remains unresolved; no full-item closure.
+Railway's global build outage is a deployment blocker; keep six staged worker changes untouched. PR385 is MERGED at b917746, last verified production919d128. Existing translation PR374 stays draft. No public photos, private records, auth, payments, provider configuration or schema changes. New PR merges require specific owner authorization after protected acceptance.
+
 ## 2026-10-20 — Recovery of unpushed metadata and Back-to-top changes
 
 Owner: CODEX_ACTIVE by explicit user continuation/takeover. Sole writer; branch `fix/public-schema-batch-20261020`, existing PR #385; verified remote head `43866b5c9d8915823063237bf39de4dfe65d3ad0`, main `919d12881465fe3756e50737171d341be9414c57`.

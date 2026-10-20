@@ -2,12 +2,13 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 afterEach(() => {
   vi.doUnmock("react");
+  vi.doUnmock("next/image");
   vi.unstubAllGlobals();
   vi.resetModules();
 });
 
 async function openFixture() {
-  let effect: (() => (() => void) | undefined) | undefined;
+  const effects: Array<() => (() => void) | undefined> = [];
   let frame: FrameRequestCallback | undefined;
   const triggerFocus = vi.fn();
   const fallbackFocus = vi.fn();
@@ -28,8 +29,9 @@ async function openFixture() {
     useCallback: (callback: unknown) => callback,
     useId: () => "focus-fixture",
     useRef: () => refs[refIndex++],
-    useEffect: (callback: () => (() => void) | undefined) => { effect = callback; },
+    useEffect: (callback: () => (() => void) | undefined) => { effects.push(callback); },
   }));
+  vi.doMock("next/image", () => ({ default: () => null }));
   vi.stubGlobal("document", { body, activeElement: null });
   vi.stubGlobal("window", windowTarget);
   vi.stubGlobal("requestAnimationFrame", vi.fn((callback: FrameRequestCallback) => {
@@ -42,6 +44,7 @@ async function openFixture() {
     { id: "first", url: "/media/first.webp", alt: "First photograph" },
     { id: "second", url: "/media/second.webp", alt: "Second photograph" },
   ] });
+  const effect = effects[0];
   if (!effect) throw new Error("Expected the gallery lifecycle effect");
   const cleanup = effect();
   if (!cleanup) throw new Error("Expected modal cleanup");
