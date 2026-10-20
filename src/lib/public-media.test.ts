@@ -7,6 +7,7 @@ import {
   normalizeSafePublicMediaUrl,
   resolvePublicMediaUrl,
   selectGalleryPublicImage,
+  isDocumentaryPublicImage,
   selectIdentityPublicImage,
 } from "./public-media";
 
@@ -155,4 +156,12 @@ describe("public media safety", () => {
     if (!identity) throw new Error("Expected identity-media fixture.");
     expect(selectGalleryPublicImage([identity])?.publicUrl).toBe("/media/identity.webp");
   });
+  it("uses image alt text to keep a labelled results graphic behind documentary photos", () => {
+    const graphic = { kind: "IMAGE" as const, publicUrl: "/media/results.webp", altText: "Results update", title: "2026 photo", sortOrder: 1 };
+    const photo = { kind: "IMAGE" as const, publicUrl: "/media/volunteers.webp", altText: "Volunteers distributing relief", title: "Field photograph", sortOrder: 2 };
+    expect(isDocumentaryPublicImage(graphic)).toBe(false);
+    expect(selectGalleryPublicImage([graphic, photo])).toBe(photo);
+    expect(selectGalleryPublicImage([graphic])).toBe(graphic);
+  });
+
 });

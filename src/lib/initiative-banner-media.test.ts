@@ -24,4 +24,9 @@ describe("initiative banner image selection", () => {
     expect(selectInitiativeBannerImage([graphic])).toBe(graphic);
     expect(selectInitiativeBannerImage([photo, { ...photo, publicUrl: "/media/second.webp" }])).toBe(photo);
   });
+  it("does not promote identity artwork labelled only in alt text over a real photo", () => {
+    const graphic = { ...photo, publicUrl: "/media/results.webp", altText: "Results update", title: "Programme photo", sortOrder: -1000 };
+    expect(selectInitiativeBannerImage([graphic, photo])).toBe(photo);
+    expect(selectInitiativeBannerImage([graphic])).toBe(graphic);
+  });
 });
