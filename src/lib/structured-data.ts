@@ -114,7 +114,7 @@ export function buildPublicStructuredData(input: PublicStructuredDataInput, conf
     ...(image ? { image } : {}),
     ...(published ? { datePublished: published } : {}),
     ...(modified ? { dateModified: modified } : {}),
-    ...(section ? { articleSection: section } : {}),
+    ...(safeInput.type === "Article" && section ? { articleSection: section } : {}),
     ...(keywords?.length ? { keywords } : {}),
   };
 }

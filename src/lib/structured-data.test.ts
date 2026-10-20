@@ -33,6 +33,23 @@ describe("public structured data", () => {
     });
   });
 
+  it("omits Article-only section metadata from programme WebPage records", () => {
+    const data = buildPublicStructuredData({
+      type: "WebPage",
+      title: "Education programmes",
+      description: "Documented education support.",
+      path: "/our-work/education",
+      section: "Our Work",
+    }, "https://amaanafoundation.org");
+
+    expect(data).toMatchObject({
+      "@type": "WebPage",
+      name: "Education programmes",
+      url: "https://amaanafoundation.org/our-work/education",
+    });
+    expect(data).not.toHaveProperty("articleSection");
+  });
+
   it("fails closed for unsafe route paths and image URLs", () => {
     expect(normalizeStructuredDataPath("//evil.example/path")).toBeNull();
     expect(normalizeStructuredDataPath("/stories/line\\break")).toBeNull();
