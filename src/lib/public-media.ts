@@ -181,7 +181,7 @@ export function canRenderPublicMedia(asset: PublicMediaCandidate) {
 export function isDocumentaryPublicImage(asset: PublicMediaCandidate) {
   if (asset.kind !== "IMAGE" || !canRenderPublicMedia(asset)) return false;
   const descriptor = `${asset.title ?? ""} ${asset.caption ?? ""} ${asset.altText ?? ""}`.toLowerCase();
-  return !/(infographic|impact graphic|announcement|campaign cover|results update|thank-you|thank you|poster)/.test(descriptor);
+  return !/(infographic|impact graphic|announcement|campaign cover|results update|thank-you|thank you|poster|\bgraphic\b|\bcarousel\b)/.test(descriptor);
 }
 
 export function isIdentityPublicImage(asset: PublicMediaCandidate) {
