@@ -31,7 +31,8 @@ describe("root metadata URL identity", () => {
     const { metadata } = await import("./layout");
     const base = metadata.metadataBase;
     expect(base).toBeInstanceOf(URL);
-    expect(base?.href).toBe(new URL(configured).origin + "/");
+    if (!(base instanceof URL)) throw new Error("Expected a URL metadata base");
+    expect(base.href).toBe(new URL(configured).origin + "/");
     expect(new URL("about", base ?? undefined).href).toBe(new URL(configured).origin + "/about");
     expect(new URL("opengraph-image", base ?? undefined).href).toBe(new URL(configured).origin + "/opengraph-image");
     expect(new URL("twitter-image", base ?? undefined).href).toBe(new URL(configured).origin + "/twitter-image");
