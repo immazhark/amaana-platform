@@ -94,3 +94,86 @@ describe('carousel numeric form input', () => {
     expect(m.audit).not.toHaveBeenCalled();
   });
 });
+
+describe('carousel form scalar cardinality', () => {
+  const slideFields = ['eyebrow', 'order', 'title', 'description', 'primaryLabel', 'primaryHref', 'secondaryLabel', 'secondaryHref', 'image', 'imageAlt', 'focalX', 'focalY', 'status', 'appealSlug', 'startsAt', 'endsAt'];
+  const commandFields = ['revision', 'operation', 'id'];
+  const file = () => new File(['synthetic field'], 'field.txt', { type: 'text/plain' });
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    m.permission.mockResolvedValue({ id: 'editor' });
+    m.publish.mockReturnValue(true);
+    m.find.mockResolvedValue({ revision: 1, config: structuredClone(defaultHomeConfig) });
+    m.update.mockResolvedValue({ count: 1 });
+  });
+
+  async function rejectedBeforeReads(data: FormData) {
+    await expect(saveHomeCarousel(data)).rejects.toThrow('/admin/home-carousel?error=');
+    expect(m.find).not.toHaveBeenCalled();
+    expect(m.update).not.toHaveBeenCalled();
+    expect(m.create).not.toHaveBeenCalled();
+    expect(m.audit).not.toHaveBeenCalled();
+    expect(m.media).not.toHaveBeenCalled();
+    expect(m.review).not.toHaveBeenCalled();
+    expect(m.appeal).not.toHaveBeenCalled();
+  }
+
+  for (const field of [...commandFields, ...slideFields]) {
+    it(`rejects repeated string values for ${field} before configuration reads`, async () => {
+      const data = form();
+      const value = data.get(field);
+      if (typeof value !== 'string') throw new Error('Expected a scalar fixture');
+      data.append(field, value);
+      await rejectedBeforeReads(data);
+    });
+
+    it(`rejects a file appended after valid ${field} text`, async () => {
+      const data = form();
+      data.append(field, file());
+      await rejectedBeforeReads(data);
+    });
+
+    it(`rejects a file-valued ${field} before configuration reads`, async () => {
+      const data = form();
+      data.set(field, file());
+      await rejectedBeforeReads(data);
+    });
+  }
+
+  it.each(['repeated', 'appended-file', 'file-only'])('rejects ambiguous settings placement: %s', async mode => {
+    const data = form({ operation: 'settings', appealPosition: '0' });
+    if (mode === 'repeated') data.append('appealPosition', '1');
+    else if (mode === 'appended-file') data.append('appealPosition', file());
+    else data.set('appealPosition', file());
+    await rejectedBeforeReads(data);
+  });
+
+  it.each(['add', 'remove', 'settings'])('preserves the minimal native %s form', async operation => {
+    const data = new FormData();
+    data.set('revision', '1');
+    data.set('operation', operation);
+    if (operation === 'remove') data.set('id', 'origin');
+    if (operation === 'settings') data.set('appealPosition', '0');
+    await expect(saveHomeCarousel(data)).rejects.toThrow('/admin/home-carousel?saved=1');
+    expect(m.update).toHaveBeenCalledTimes(1);
+    expect(m.audit).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({ action: `home_carousel.${operation}`, actorId: 'editor' }),
+    }));
+  });
+
+  it('still lets a content editor add a draft without publication permission', async () => {
+    m.publish.mockReturnValue(false);
+    const data = new FormData();
+    data.set('revision', '1');
+    data.set('operation', 'add');
+    await expect(saveHomeCarousel(data)).rejects.toThrow('/admin/home-carousel?saved=1');
+    expect(m.update).toHaveBeenCalledWith(expect.objectContaining({
+      data: expect.objectContaining({
+        config: expect.objectContaining({
+          slides: expect.arrayContaining([expect.objectContaining({ status: 'DRAFT', image: 'logo' })]),
+        }),
+      }),
+    }));
+  });
+});
