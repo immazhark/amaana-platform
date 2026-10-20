@@ -59,7 +59,9 @@ test('a shrinking carousel clamps selected position and progress to the remainin
   await expect.poll(() => viewport.evaluate(node => Math.abs(
     node.scrollLeft - (node.scrollWidth - node.clientWidth),
   ))).toBeLessThan(3);
-  await viewport.evaluate(node => node.scrollTo({ left: 0, behavior: 'instant' }));
+  await viewport.hover();
+  await page.mouse.wheel(-1200, 0);
+  await expect.poll(() => viewport.evaluate(node => node.scrollLeft)).toBeLessThan(2);
   await expect(progress).toHaveAttribute('aria-valuenow', '1');
 
   await page.getByRole('button', { name: 'Restore seven records' }).click();
