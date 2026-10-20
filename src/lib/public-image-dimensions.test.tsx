@@ -14,6 +14,7 @@ describe("approved public image intrinsic dimensions", () => {
       { width: 800, height: 800 },
       { width: 4032, height: 3024 },
       { width: 10000, height: 500 },
+      { width: 8000, height: 5000 },
     ]) expect(getPublicImageDimensions(valid)).toEqual(valid);
   });
 
@@ -29,6 +30,13 @@ describe("approved public image intrinsic dimensions", () => {
     { width: 10001, height: 100 },
     { width: 300, height: -200 },
   ])("uses a consistent 4:3 fallback for invalid input %j", input => {
+    expect(getPublicImageDimensions(input)).toEqual(fallback);
+  });
+
+  it.each([
+    { width: 8000, height: 5001 },
+    { width: 10000, height: 10000 },
+  ])("rejects public image metadata over the 40 MP ingestion cap: %j", input => {
     expect(getPublicImageDimensions(input)).toEqual(fallback);
   });
 
@@ -59,5 +67,11 @@ describe("approved public image intrinsic dimensions", () => {
     expect(html).toContain('width="1600"');
     expect(html).toContain('height="1200"');
     expect(html).not.toContain('width="800.5"');
+
+    const oversized = renderToStaticMarkup(createElement(CampaignMediaGallery, {
+      items: [{ id: "oversized", url: "/media/2026/oversized.jpg", alt: "Reviewed photograph", width: 10000, height: 10000 }],
+    }));
+    expect(oversized).toContain('width="1600"');
+    expect(oversized).toContain('height="1200"');
   });
 });
