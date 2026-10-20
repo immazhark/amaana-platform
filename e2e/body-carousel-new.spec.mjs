@@ -23,6 +23,30 @@ for(const width of [375,600,768,1024,1440,1920])test(`left alignment and control
  await expect.poll(async()=>Math.abs(v.x-(await carousel.getByRole('group',{name:'7 of 7',exact:true}).boundingBox()).x)).toBeLessThan(2);
 });
 
+test('a shrinking carousel clamps selected position and progress to the remaining slides', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/browser-acceptance/body-carousel');
+
+  const carousel = page.getByRole('region', { name: 'Body carousel acceptance' });
+  await carousel.getByRole('button', { name: 'Pause automatic slides' }).click();
+  const viewport = carousel.locator('[id^="carousel-"]');
+  await viewport.focus();
+  await page.keyboard.press('End');
+  const progress = carousel.getByRole('progressbar');
+  await expect(progress).toHaveAttribute('aria-valuenow', '7');
+
+  await page.getByRole('button', { name: 'Show two records' }).click();
+  await expect(carousel.getByRole('group', { name: '2 of 2', exact: true })).toBeVisible();
+  await expect(progress).toHaveAttribute('aria-valuemax', '2');
+  await expect(progress).toHaveAttribute('aria-valuenow', '2');
+
+  await carousel.getByRole('button', { name: 'Previous slide' }).click();
+  await expect(progress).toHaveAttribute('aria-valuenow', '1');
+  await page.getByRole('button', { name: 'Restore seven records' }).click();
+  await expect(progress).toHaveAttribute('aria-valuemax', '7');
+  await expect(progress).toHaveAttribute('aria-valuenow', '1');
+});
+
 test('manual pause survives pointer exit and reduced motion disables autoplay',async({page})=>{
  await page.goto('/browser-acceptance/body-carousel');
  const carousel=page.getByRole('region',{name:'Body carousel acceptance'});
