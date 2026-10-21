@@ -1,3 +1,7 @@
+## 2026-10-21 — Sensitive appeal outward-share privacy parity prepared
+
+Owner: CHATGPT_ACTIVE. Queued branch `fix/sensitive-appeal-breadcrumb-privacy-20261021` based on `main` `b295d95` to avoid altering release-candidate PR #397. A source discrepancy allowed the real appeal title to enter BreadcrumbList JSON-LD and title/summary to enter visitor WhatsApp sharing despite generic privacy-sensitive metadata. Test-first rendered-page regressions cover masked sensitive cases and unmodified standard cases. Implemented a single server-side outward-share copy helper consumed by `src/app/appeals/[slug]/page.tsx` and `src/components/appeal-structured-data.tsx`, preserving the public content body and publication gates. Validation state IMPLEMENTED_SOURCE, TESTED UNVERIFIED, PR NOT OPENED, NOT MERGED, NOT DEPLOYED. Scope MEDIUM; independent PR + acceptance + owner explicit merge approval required after #397 is finalized.
+
 ## 2026-10-21 — ChatGPT Work portfolio batch and approved carousel release
 
 Owner: CODEX_ACTIVE (ChatGPT Work), sole repository writer. The owner authorized all pending permissions, including publishing these coordination updates and merging PR #395 after required checks. The earlier documentation-publication block is resolved by that explicit authorization.
