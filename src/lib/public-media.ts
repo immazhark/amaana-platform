@@ -1,4 +1,6 @@
 import { isPrivateRoute } from "./public-routing";
+import { isCampaignGraphicDescriptor } from "./campaign-artwork-descriptor";
+export { isCampaignGraphicDescriptor } from "./campaign-artwork-descriptor";
 
 export type PublicMediaCandidate = {
   kind: "IMAGE" | "VIDEO" | "DOCUMENT" | "EXTERNAL_VIDEO";
@@ -178,10 +180,9 @@ export function canRenderPublicMedia(asset: PublicMediaCandidate) {
  * photo and a campaign graphic are both available. This never changes the
  * publication/privacy gate; it only ranks already-public-safe IMAGE assets.
  */
+/** Share reviewed artwork labels across public discovery and gallery presentation. */
 export function isDocumentaryPublicImage(asset: PublicMediaCandidate) {
-  if (asset.kind !== "IMAGE" || !canRenderPublicMedia(asset)) return false;
-  const descriptor = `${asset.title ?? ""} ${asset.caption ?? ""} ${asset.altText ?? ""}`.toLowerCase();
-  return !/(infographic|impact graphic|announcement|campaign cover|results update|thank-you|thank you|poster|\b(?:campaign|results?|update|event|designed) graphic\b|\bgraphic (?:update|artwork|slide|card|asset)\b|\bcarousel\b)/.test(descriptor);
+  return asset.kind === "IMAGE" && canRenderPublicMedia(asset) && !isCampaignGraphicDescriptor(asset);
 }
 
 export function isIdentityPublicImage(asset: PublicMediaCandidate) {

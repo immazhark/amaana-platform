@@ -58,6 +58,33 @@ describe("campaign gallery managed image optimization", () => {
     expect(html).not.toContain('src="  /media/approved.webp  "');
   });
 
+  it("keeps real graphic-design photographs uncropped while containing poster and carousel artwork", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={toPublicGalleryItems([
+      { ...reviewedItem, id: "workshop", publicUrl: "/media/workshop.webp", altText: "Graphic design workshop photograph" },
+      { ...reviewedItem, id: "photo", publicUrl: "/media/field.webp", altText: "Volunteers packing relief kits" },
+      { ...reviewedItem, id: "poster", publicUrl: "/media/poster.webp", altText: "Thank you poster" },
+      { ...reviewedItem, id: "slide", publicUrl: "/media/slide.webp", altText: "Carousel slide" },
+    ])} />);
+
+    const classes = Array.from(html.matchAll(/<figure class="([^"]+)"/g), match => match[1]);
+    expect(classes).toHaveLength(4);
+    expect(classes[0]).toBe(classes[1]);
+    expect(classes[2]).not.toBe(classes[1]);
+    expect(classes[3]).toBe(classes[2]);
+  });
+
+  it("uses the reviewed title when only the title identifies poster artwork", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={toPublicGalleryItems([
+      { ...reviewedItem, id: "poster", publicUrl: "/media/title-poster.webp", title: "Thank you poster", altText: "Annual community update" },
+      { ...reviewedItem, id: "photo", publicUrl: "/media/title-photo.webp", title: "Field photograph", altText: "Volunteers packing support kits" },
+    ])} />);
+
+    const classes = Array.from(html.matchAll(/<figure class="([^"]+)"/g), match => match[1]);
+    expect(classes).toHaveLength(2);
+    expect(classes[0]).not.toBe(classes[1]);
+    expect(html).not.toContain("Thank you poster");
+  });
+
   it("keeps approved external CDN photographs direct, without remote optimizer allowlisting", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://cdn.amaana.example");

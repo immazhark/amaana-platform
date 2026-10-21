@@ -1,5 +1,6 @@
 import { getPublicImageDimensions } from "./public-image-dimensions";
 import { canRenderPublicMedia, getPublicImageOptimizationUrl, resolvePublicMediaUrl, type PublicMediaCandidate } from "./public-media";
+import { isCampaignGraphicDescriptor } from "./campaign-artwork-descriptor";
 
 /** Project already publication/privacy-approved records into public image cards. */
 export function toPublicGalleryItems<T extends PublicMediaCandidate & {
@@ -22,6 +23,9 @@ export function toPublicGalleryItems<T extends PublicMediaCandidate & {
       url: displayUrl,
       alt: asset.altText ?? null,
       caption: asset.caption,
+      // Compute styling from reviewed metadata on the server; never serialize
+      // potentially sensitive asset titles into client gallery props.
+      graphicArtwork: isCampaignGraphicDescriptor(asset),
       ...getPublicImageDimensions(asset),
     }];
   });

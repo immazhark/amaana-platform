@@ -38,6 +38,7 @@ vi.mock("@/lib/public-media", () => ({
   canRenderPublicMedia: () => true,
   resolvePublicMediaUrl: (asset: { publicUrl: string }) => asset.publicUrl,
   getPublicImageOptimizationUrl: (url: string) => url,
+  isCampaignGraphicDescriptor: () => false,
   selectGalleryPublicImage: () => null,
   selectIdentityPublicImage: () => null,
 }));
