@@ -14,6 +14,7 @@ vi.mock("@/lib/prisma", () => ({
 
 import {
   getCompletedAidShowcaseData,
+  getImpactPageData,
   getProgrammeChildMedia,
 } from "./public-page-data";
 import { getPublishedInitiativeBySlug } from "./public-content";
@@ -59,6 +60,33 @@ describe("public page gallery media query contracts", () => {
   it("shows no donor proof on an empty reviewed metric projection", async () => {
     const { getDonationImpactHighlights } = await import("./public-page-data");
     await expect(getDonationImpactHighlights()).resolves.toEqual([]);
+  });
+
+  it("restricts impact images to identity-approved cover candidates before fetching records", async () => {
+    await getImpactPageData();
+
+    const query = mocks.initiativeFindMany.mock.calls[0]?.[0];
+    expect(query).toMatchObject({
+      where: { status: "PUBLISHED", cause: { status: "PUBLISHED" } },
+      select: {
+        mediaAssets: {
+          where: {
+            kind: "IMAGE",
+            isPublic: true,
+            privacyApprovedAt: { not: null },
+            publicUrl: { not: null },
+            altText: { not: "" },
+            sortOrder: -1000,
+          },
+          take: 12,
+          select: { id: true, publicUrl: true, altText: true, sortOrder: true },
+        },
+      },
+    });
+    // Audit: impact must not populate visual surfaces using gallery-only images.
+    expect(query.select.mediaAssets.where).toHaveProperty("sortOrder", -1000);
+    expect(query.select).not.toHaveProperty("financialSummary");
+    expect(query.select).not.toHaveProperty("assistanceRequest");
   });
 
   it("uses bounded approved image sets for completed support and programme child cards", async () => {
