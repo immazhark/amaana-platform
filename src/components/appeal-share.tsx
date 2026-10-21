@@ -37,7 +37,7 @@ export function AppealShare({ title, summary, path }: AppealShareProps) {
   const [feedback, setFeedback] = useState<"idle" | "shared" | "copied" | "manual" | "whatsapp">("idle");
   const actionId = useRef(0);
   // Render an identical canonical URL on the server and on the client.
-  const canonicalUrl = new URL(path, "https://amaanafoundation.org").toString();
+  const canonicalUrl = `https://amaanafoundation.org${path.startsWith("/") && !path.startsWith("//") ? path : "/"}`;
   const whatsappUrl = `https://wa.me/?text=${encodeURIComponent([title, summary, canonicalUrl].filter(Boolean).join("\n\n"))}`;
 
   async function act(action: "share" | "copy") {
