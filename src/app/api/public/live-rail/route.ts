@@ -23,7 +23,7 @@ export async function GET() {
 
     return NextResponse.json(
       { items },
-      { headers: { "Cache-Control": liveHeaders["Cache-Control"] } },
+      { headers: liveHeaders },
     );
   } catch {
     return NextResponse.json({ items: [] }, { status: 200, headers: liveHeaders });
