@@ -202,3 +202,127 @@ test('keyboard focus keeps autoplay paused after the pointer leaves',async({page
  await viewport.evaluate(n=>n.blur());
  await expect(root.getByRole('progressbar')).toHaveAttribute('aria-valuenow','2',{timeout:4000});
 });
+
+async function openPausedCarousel(page) {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/browser-acceptance/body-carousel');
+  const carousel = page.getByRole('region', { name: 'Body carousel acceptance' });
+  await carousel.getByRole('button', { name: 'Pause automatic slides' }).click();
+  return { carousel, viewport: carousel.locator('[id^="carousel-"]'), progress: carousel.getByRole('progressbar') };
+}
+
+async function expectSelectedProgramme(carousel, programme) {
+  const selected = carousel.locator('[data-active="true"]');
+  await expect(selected.getByRole('heading', { name: `Programme ${programme}`, exact: true })).toBeVisible();
+  await expect.poll(() => carousel.evaluate(root => {
+    const viewport = root.querySelector('[id^="carousel-"]');
+    const active = root.querySelector('[data-active="true"]');
+    return Math.abs(viewport.getBoundingClientRect().left - active.getBoundingClientRect().left);
+  })).toBeLessThan(3);
+}
+
+test('reordering the collection keeps the selected programme and its next neighbour', async ({ page }) => {
+  const { carousel, progress } = await openPausedCarousel(page);
+  await carousel.getByRole('button', { name: 'Next slide', exact: true }).click();
+  await expectSelectedProgramme(carousel, 2);
+  await page.getByRole('button', { name: 'Reverse programme order' }).click();
+  await expectSelectedProgramme(carousel, 2);
+  await expect(progress).toHaveAttribute('aria-valuenow', '6');
+  await carousel.getByRole('button', { name: 'Next slide', exact: true }).click();
+  await expectSelectedProgramme(carousel, 1);
+});
+
+test('removing an earlier record keeps the selected programme instead of selecting its neighbour', async ({ page }) => {
+  const { carousel, progress } = await openPausedCarousel(page);
+  await carousel.getByRole('button', { name: 'Next slide', exact: true }).click();
+  await expectSelectedProgramme(carousel, 2);
+  await page.getByRole('button', { name: 'Remove first programme' }).click();
+  await expectSelectedProgramme(carousel, 2);
+  await expect(progress).toHaveAttribute('aria-valuenow', '1');
+  await expect(progress).toHaveAttribute('aria-valuemax', '6');
+});
+
+test('resizing an interrupted smooth move releases its stale target without scrollend support', async ({ page }) => {
+  // Supported older browsers do not emit scrollend. A resize must settle
+  // pending navigation itself before the next native scroll is reconciled.
+  await page.addInitScript(() => {
+    const add = EventTarget.prototype.addEventListener;
+    EventTarget.prototype.addEventListener = function(type, ...args) {
+      if (type !== 'scrollend') return add.call(this, type, ...args);
+    };
+  });
+  const { carousel, viewport, progress } = await openPausedCarousel(page);
+  await viewport.evaluate(node => {
+    const scroll = node.scrollTo.bind(node);
+    node.scrollTo = options => { if (options.behavior !== 'smooth') scroll(options); };
+  });
+  await carousel.getByRole('button', { name: 'Next slide', exact: true }).click();
+  await expect(progress).toHaveAttribute('aria-valuenow', '2');
+  await page.setViewportSize({ width: 768, height: 844 });
+  await expectSelectedProgramme(carousel, 2);
+  await viewport.evaluate(node => node.scrollTo({ left: 0, behavior: 'instant' }));
+  await expect.poll(() => viewport.evaluate(node => node.scrollLeft)).toBeLessThan(2);
+  await expect(progress).toHaveAttribute('aria-valuenow', '1');
+});
+
+test('emptying during a drag releases autoplay when records return', async ({ page }) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/browser-acceptance/body-carousel');
+  const carousel = page.getByRole('region', { name: 'Body carousel acceptance' });
+  const viewport = carousel.locator('[id^="carousel-"]');
+  const box = await viewport.boundingBox();
+  await page.mouse.move(box.x + 180, box.y + 90);
+  await page.mouse.down();
+  await page.mouse.move(box.x + 80, box.y + 90, { steps: 4 });
+  // Remove the viewport while it owns the pointer; this is a data update,
+  // not a click that would deliver pointerup to the old viewport first.
+  await page.getByRole('button', { name: 'Clear records' }).evaluate(button => button.click());
+  await expect(carousel).toHaveCount(0);
+  await page.mouse.up();
+  await page.mouse.move(0, 0);
+  await page.getByRole('button', { name: 'Show two records' }).evaluate(button => button.click());
+  await expect(carousel).toBeVisible();
+  await expectSelectedProgramme(carousel, 1);
+  await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuemax', '2');
+  await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '2', { timeout: 5500 });
+});
+
+test('a collection reorder during pending navigation keeps the requested programme selected', async ({ page }) => {
+  const { carousel, viewport, progress } = await openPausedCarousel(page);
+  await viewport.evaluate(node => {
+    const scroll = node.scrollTo.bind(node);
+    node.scrollTo = options => { if (options.behavior !== 'smooth') scroll(options); };
+  });
+  await carousel.getByRole('button', { name: 'Next slide', exact: true }).click();
+  await expect(progress).toHaveAttribute('aria-valuenow', '2');
+  await page.getByRole('button', { name: 'Reverse programme order' }).click();
+  await expectSelectedProgramme(carousel, 2);
+  await expect(progress).toHaveAttribute('aria-valuenow', '6');
+});
+
+test('offscreen carousels stay still and resume only when visible', async ({ page }) => {
+  const errors = [];
+  page.on('pageerror', error => errors.push(error.message));
+  const { carousel, progress } = await openPausedCarousel(page);
+  await carousel.getByRole('button', { name: 'Resume automatic slides' }).click();
+  await carousel.getByRole('button', { name: 'Pause automatic slides' }).evaluate(button => button.blur());
+  await carousel.evaluate(root => {
+    const spacer = document.createElement('div');
+    spacer.style.height = '2000px';
+    root.after(spacer);
+    window.scrollTo(0, root.getBoundingClientRect().bottom + window.scrollY + 100);
+  });
+  await page.mouse.move(0, 0);
+  await expect.poll(() => carousel.evaluate(root => root.getBoundingClientRect().bottom)).toBeLessThan(0);
+  await page.waitForTimeout(3300);
+  await expect(progress).toHaveAttribute('aria-valuenow', '1');
+  await carousel.scrollIntoViewIfNeeded();
+  await expect(progress).toHaveAttribute('aria-valuenow', '2', { timeout: 5500 });
+  await carousel.getByRole('button', { name: 'Pause automatic slides' }).click();
+  await carousel.evaluate(root => window.scrollTo(0, root.getBoundingClientRect().bottom + window.scrollY + 100));
+  await carousel.scrollIntoViewIfNeeded();
+  await page.mouse.move(0, 0);
+  await page.waitForTimeout(3300);
+  await expect(progress).toHaveAttribute('aria-valuenow', '2');
+  expect(errors).toEqual([]);
+});
