@@ -1,3 +1,7 @@
+## 2026-10-21 — Consistent artwork classification in gallery and public discovery
+
+Owner: CHATGPT_ACTIVE, sole writer. Branch `fix/gallery-graphic-classifier-20261021` based on live main `9d7c8048733d1ff08c229ea0c8c5753392f6d8c0`. Previously gallery thumbnails used broad `/graphic/` class styling, incorrectly containing real graphic-design workshop photographs, and lacked canonical poster styling so an approved `Thank you poster` could be cropped. Test-first `e02cf4751dd8fa1ca4b18f7691487c5c5bcf3426` demonstrates both cases using existing gallery rendering tests. The fix extracts the existing precise descriptor into a shared predicate and reuses it in the gallery; no classification criteria or media gate broadened. Reviewed data, privacy approval, storage, content, payment and Railway settings are unchanged. Exact-head protected checks and visual review required, and this new PR needs scoped owner merge approval. Rollback: revert PR.
+
 ## 2026-10-21 — PR #393 release chain
 
 Owner: CHATGPT_ACTIVE. User approved PR #393 once exact-head protected checks pass. Integrate previously accepted upstream PR #392 (`e6c03745e1c024f957f1c918d8a63e150252eaab`) without altering unrelated source or provider settings. Require full exact-head checks and merge in PR order.

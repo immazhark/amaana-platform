@@ -5,6 +5,7 @@ import { UIIcon } from "./ui-icon";
 
 import Image from "next/image";
 import { getPublicImageDimensions } from "@/lib/public-image-dimensions";
+import { isCampaignGraphicDescriptor } from "@/lib/public-media";
 import { adjacentGalleryId } from "@/lib/gallery-selection";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
@@ -121,8 +122,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     <>
       <div className={styles.grid} role="group" aria-label="Programme photographs">
         {safeItems.map((item, index) => {
-          const descriptor = `${item.alt ?? ""} ${item.caption ?? ""}`;
-          const graphicAsset = /(graphic|announcement|campaign cover|results update|infographic|carousel)/i.test(descriptor);
+          const graphicAsset = isCampaignGraphicDescriptor({ altText: item.alt, caption: item.caption });
           const { width, height } = getPublicImageDimensions(item);
                     return (
           <figure className={`${styles.card} ${graphicAsset ? styles.graphicCard : ""}`} key={item.id}>
