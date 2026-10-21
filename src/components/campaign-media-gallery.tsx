@@ -15,6 +15,7 @@ export type CampaignGalleryItem = {
   url: string;
   alt: string | null;
   caption?: string | null;
+  graphicArtwork?: boolean;
   width?: number | null;
   height?: number | null;
 };
@@ -122,7 +123,7 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     <>
       <div className={styles.grid} role="group" aria-label="Programme photographs">
         {safeItems.map((item, index) => {
-          const graphicAsset = isCampaignGraphicDescriptor({ altText: item.alt, caption: item.caption });
+          const graphicAsset = item.graphicArtwork ?? isCampaignGraphicDescriptor({ altText: item.alt, caption: item.caption });
           const { width, height } = getPublicImageDimensions(item);
                     return (
           <figure className={`${styles.card} ${graphicAsset ? styles.graphicCard : ""}`} key={item.id}>
