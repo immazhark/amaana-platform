@@ -292,7 +292,9 @@ export const getImpactPageData = cache(async () => {
       primaryMetricLabel: true,
       cause: { select: { title: true } },
       mediaAssets: {
-        where: PUBLIC_APPROVED_IMAGE_WHERE,
+        // Only identity-approved images can appear in the hero, tiles or witness carousel.
+        // Keep the bounded candidate window to preserve safe fallback among identity images.
+        where: PUBLIC_IDENTITY_IMAGE_WHERE,
         orderBy: [{ sortOrder: "asc" }, { sourceYear: "desc" }],
         take: 12,
         select: PUBLIC_IMAGE_SELECT,
