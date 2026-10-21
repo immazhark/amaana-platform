@@ -1,5 +1,6 @@
 import { getPublicImageDimensions } from "./public-image-dimensions";
-import { canRenderPublicMedia, getPublicImageOptimizationUrl, isCampaignGraphicDescriptor, resolvePublicMediaUrl, type PublicMediaCandidate } from "./public-media";
+import { canRenderPublicMedia, getPublicImageOptimizationUrl, resolvePublicMediaUrl, type PublicMediaCandidate } from "./public-media";
+import { isCampaignGraphicDescriptor } from "./campaign-artwork-descriptor";
 
 /** Project already publication/privacy-approved records into public image cards. */
 export function toPublicGalleryItems<T extends PublicMediaCandidate & {

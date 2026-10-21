@@ -5,7 +5,7 @@ import { UIIcon } from "./ui-icon";
 
 import Image from "next/image";
 import { getPublicImageDimensions } from "@/lib/public-image-dimensions";
-import { isCampaignGraphicDescriptor } from "@/lib/public-media";
+import { isCampaignGraphicDescriptor } from "@/lib/campaign-artwork-descriptor";
 import { adjacentGalleryId } from "@/lib/gallery-selection";
 import { useCallback, useEffect, useId, useMemo, useRef, useState } from "react";
 import styles from "./campaign-media-gallery.module.css";
