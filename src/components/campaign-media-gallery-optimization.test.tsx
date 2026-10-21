@@ -58,6 +58,21 @@ describe("campaign gallery managed image optimization", () => {
     expect(html).not.toContain('src="  /media/approved.webp  "');
   });
 
+  it("keeps real graphic-design photographs uncropped while containing poster and carousel artwork", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={[
+      { id: "workshop", url: "/media/workshop.webp", alt: "Graphic design workshop photograph" },
+      { id: "photo", url: "/media/field.webp", alt: "Volunteers packing relief kits" },
+      { id: "poster", url: "/media/poster.webp", alt: "Thank you poster" },
+      { id: "slide", url: "/media/slide.webp", alt: "Carousel slide" },
+    ]} />);
+
+    const classes = Array.from(html.matchAll(/<figure class="([^"]+)"/g), match => match[1]);
+    expect(classes).toHaveLength(4);
+    expect(classes[0]).toBe(classes[1]);
+    expect(classes[2]).not.toBe(classes[1]);
+    expect(classes[3]).toBe(classes[2]);
+  });
+
   it("keeps approved external CDN photographs direct, without remote optimizer allowlisting", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://cdn.amaana.example");
