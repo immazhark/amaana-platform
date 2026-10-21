@@ -1,3 +1,9 @@
+## 2026-10-21 — ChatGPT chat sole-writer takeover: appeal sharing recovery
+
+Owner: CHATGPT_ACTIVE (this chat), sole repository implementation writer, explicitly designated by the user. Previous ChatGPT Work writer is superseded for this active session. The latest confirmed `main` SHA at takeover was `b295d95dcc0f97c585cbdaaf7e1373e42cde5c49`; PRs #395/#396 are merged and only draft PR #374 remained open. A new task branch `fix/appeal-sharing-recovery-20261021` is based on that exact SHA.
+
+Source-proven next batch: native share rejection did not fall back to copying, clipboard denial provided no selectable URL, asynchronous feedback could race, and popup-driven WhatsApp action claimed a successful launch without evidence. Tests are created first in `src/components/appeal-share.test.tsx`; implementation and protected CI verification follow. Scope is only public sharing, no payment/auth/privacy/provider/service changes. Owner's 95% coding / 5% process allocation governs. A fresh PR needs scoped owner merge authorization ("merge it") and required checks per 2026-10-20 directive; no new production deployment is claimed.
+
 ## 2026-10-21 — ChatGPT Work portfolio batch and approved carousel release
 
 Owner: CODEX_ACTIVE (ChatGPT Work), sole repository writer. The owner authorized all pending permissions, including publishing these coordination updates and merging PR #395 after required checks. The earlier documentation-publication block is resolved by that explicit authorization.

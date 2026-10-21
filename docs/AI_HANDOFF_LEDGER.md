@@ -1,3 +1,11 @@
+## 2026-10-21 — ChatGPT chat appeal sharing recovery (PR candidate)
+
+Owner: CHATGPT_ACTIVE (sole implementation writer under the user's explicit session takeover). Based on `main` `b295d95dcc0f97c585cbdaaf7e1373e42cde5c49` after verified merges #395/#396. Branch `fix/appeal-sharing-recovery-20261021`. The public sharing component had four reproducible source gaps: native API errors bypassed clipboard fallback, unavailable clipboard exposed no selectable address, late asynchronous responses replaced newer status, and WhatsApp popup-blocking could be reported as successful. A malformed external-relative path could also escape the official share origin.
+
+Implemented the shared native/clipboard result handling, cancellation semantics, last-action feedback guard, safe native WhatsApp anchor, SSR-stable official canonical URL, and selectable manual fallback. Ten Vitest cases committed test-first for native/copy/error/markup/origin behavior. Five isolated Playwright tests exercise fallback, manual selection, out-of-order completion, cancellation and WhatsApp semantics; acceptance fixture is enabled only when `AMAANA_BROWSER_ACCEPTANCE=true`. All source, test, fixture and materializer changes are restricted to this public frontend batch. No Razorpay, protected auth, private data, publication gate, language draft, Railway notification service or deployment change.
+
+Evidence state: IMPLEMENTED_SOURCE; automated test execution, budgets, protected checks, merge and live verification are NOT yet certified at handoff entry time. A new PR requires specific owner `merge it` approval after required exact-head checks. Rollback: revert the scoped PR.
+
 ## 2026-10-21 — ChatGPT Work portfolio batch and approved carousel release
 
 Owner: CODEX_ACTIVE (ChatGPT Work), sole repository writer. The owner authorized all pending permissions, including publishing these coordination updates and merging PR #395 after required checks. The earlier documentation-publication block is resolved by that explicit authorization.
