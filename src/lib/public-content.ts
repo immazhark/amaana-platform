@@ -205,8 +205,8 @@ const getHomepageAppealsCached = unstable_cache(async () => {
 }, ["homepage-appeals"], { revalidate: 300, tags: ["appeals"] });
 
 export async function getHomepageAppeals(limit = 3) {
-  // Eligibility depends on wall-clock expiry; never cache this decision for
-  // five minutes. Cache only the reviewed data, then recheck before display.
+  // Keep clock-sensitive eligibility outside the DB result cache. Revalidate
+  // it on each server render; the route's own HTML TTL remains independent.
   const publicAppeals = await getHomepageAppealsCached();
   return publicAppeals
     .filter(appeal => isAppealOpenForDonations(appeal))
