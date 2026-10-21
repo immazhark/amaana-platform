@@ -304,6 +304,27 @@ export const getImpactPageData = cache(async () => {
 });
 
 /**
+ * Comparison does not render media. Fetching approved gallery records for every
+ * initiative here increases DB reads and SSR payload without a visible result.
+ * Keep the same published/filtered portfolio and stable ordering as /impact.
+ */
+export const getImpactComparisonPageData = cache(async () => {
+  return prisma.initiative.findMany({
+    where: { status: "PUBLISHED", cause: { status: "PUBLISHED" } },
+    orderBy: [{ isFeatured: "desc" }, { displayOrder: "asc" }, { publishedAt: "desc" }],
+    select: {
+      id: true,
+      slug: true,
+      title: true,
+      summary: true,
+      primaryMetric: true,
+      primaryMetricLabel: true,
+      cause: { select: { title: true } },
+    },
+  });
+});
+
+/**
  * Completed-case showcase for /appeals. Keep this intentionally narrow: only
  * published initiatives under the canonical medical/financial relief cause and
  * a bounded set of approved public images per record is used so the card strip can prefer documentary gallery photography.
