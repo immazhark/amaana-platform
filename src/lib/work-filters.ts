@@ -1,4 +1,4 @@
-type DatedInitiative = { year: number | null; startYear: number | null; endYear: number | null };
+type DatedInitiative = { slug?: string; parentSlug?: string | null; year: number | null; startYear: number | null; endYear: number | null };
 type Programme = { slug: string; initiatives: DatedInitiative[] };
 export type WorkSearch = { programme?: string | string[]; year?: string | string[] };
 
@@ -22,7 +22,16 @@ export function filterWork<T extends Programme>(programmes: T[], search: WorkSea
   const active = Boolean(programme || year || invalid);
   const results = invalid ? [] : programmes
     .filter(p => !programme || p.slug === programme)
-    .map(p => ({ ...p, initiatives: p.initiatives.filter(item => !year || yearsFor(item).includes(Number(year))) } as T))
+    .map(p => {
+      const publishedSlugs = new Set(p.initiatives.map(item => item.slug));
+      const matching = p.initiatives.filter(item => year
+        ? yearsFor(item).includes(Number(year))
+        : !item.parentSlug || !publishedSlugs.has(item.parentSlug));
+      // An annual edition replaces its umbrella only when that edition is
+      // published and matches the selected year. Preserve standalone ranges.
+      const representedParents = new Set(year ? matching.map(item => item.parentSlug).filter(Boolean) : []);
+      return { ...p, initiatives: matching.filter(item => !item.slug || !representedParents.has(item.slug)) } as T;
+    })
     .filter(p => p.initiatives.length > 0);
   // A rejected query must not be serialized back into public select values.
   return {

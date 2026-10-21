@@ -43,3 +43,51 @@ describe("published work filter validation", () => {
     expect(filterWork(categories, { programme: "", year: "" }).invalid).toBe(false);
   });
 });
+
+
+describe("programme families in the published portfolio", () => {
+  const programmes = [{ slug: "ramadan-eid", initiatives: [
+    { slug: "dates", year: null, startYear: 2023, endYear: 2026 },
+    { slug: "dates-2025", parentSlug: "dates", year: 2025, startYear: null, endYear: null },
+    { slug: "dates-2026", parentSlug: "dates", year: 2026, startYear: null, endYear: null },
+    { slug: "standalone", year: 2025, startYear: null, endYear: null },
+  ] }, { slug: "education", initiatives: [
+    { slug: "taleem", year: null, startYear: null, endYear: null },
+    { slug: "taleem-2022", parentSlug: "taleem", year: 2022, startYear: null, endYear: null },
+  ] }];
+
+  it("shows umbrella records by default while retaining child-only year choices", () => {
+    const result = filterWork(programmes, {});
+    expect(result.results.flatMap(p => p.initiatives.map(i => i.slug))).toEqual(["dates", "standalone", "taleem"]);
+    expect(result.years).toEqual([2026, 2025, 2024, 2023, 2022]);
+    expect(result.count).toBe(3);
+  });
+
+  it("returns an annual edition once instead of its umbrella as another result", () => {
+    const result = filterWork(programmes, { programme: "ramadan-eid", year: "2025" });
+    expect(result.results[0]?.initiatives.map(i => i.slug)).toEqual(["dates-2025", "standalone"]);
+    expect(result.count).toBe(2);
+    expect(result.years).toEqual(filterWork(programmes, {}).years);
+  });
+
+  it("keeps a matching umbrella when no published edition covers the requested year", () => {
+    const result = filterWork(programmes, { year: "2024" });
+    expect(result.results[0]?.initiatives.map(i => i.slug)).toEqual(["dates"]);
+  });
+
+  it("finds an edition whose umbrella has no dates and preserves the input", () => {
+    const snapshot = structuredClone(programmes);
+    const result = filterWork(programmes, { programme: "education", year: "2022" });
+    expect(result.results[0]?.initiatives.map(i => i.slug)).toEqual(["taleem-2022"]);
+    expect(programmes).toEqual(snapshot);
+  });
+});
+
+
+it("keeps a published edition discoverable when its umbrella is unpublished", () => {
+  const result = filterWork([{ slug: "education", initiatives: [
+    { slug: "taleem-2025", parentSlug: "taleem", year: 2025, startYear: null, endYear: null },
+  ] }], {});
+  expect(result.count).toBe(1);
+  expect(result.results[0]?.initiatives[0]?.slug).toBe("taleem-2025");
+});
