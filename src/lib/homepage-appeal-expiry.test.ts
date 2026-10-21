@@ -28,7 +28,7 @@ afterEach(() => {
   mocks.appealFindMany.mockReset();
 });
 
-it("removes expired homepage appeals immediately even when database results stay cached", async () => {
+it("rechecks expired appeals on a fresh render while database results remain cached", async () => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2026-10-21T15:00:00.000Z"));
   mocks.appealFindMany.mockResolvedValue([{
