@@ -21,6 +21,7 @@ if (!enabled) {
 
 const routes = [
   "admin",
+  "appeal-share",
   "body-carousel",
   "navigation-origin",
   "navigation-destination",
