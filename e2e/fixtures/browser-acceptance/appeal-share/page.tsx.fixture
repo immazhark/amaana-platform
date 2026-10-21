@@ -1,0 +1,23 @@
+import { notFound } from "next/navigation";
+import { AppealShare } from "@/components/appeal-share";
+
+export const dynamic = "force-dynamic";
+export const metadata = {
+  title: "Appeal sharing browser acceptance",
+  robots: { index: false, follow: false },
+  referrer: "no-referrer",
+};
+
+export default function AppealShareFixture() {
+  if (process.env.AMAANA_BROWSER_ACCEPTANCE !== "true") notFound();
+  return (
+    <main className="v2-shell" style={{ minHeight: "600px", paddingTop: "3rem" }}>
+      <h1>Appeal sharing acceptance</h1>
+      <AppealShare
+        title="Verified education appeal"
+        summary="Help provide essential learning materials."
+        path="/appeals/verified-education"
+      />
+    </main>
+  );
+}
