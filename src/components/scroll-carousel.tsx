@@ -3,6 +3,7 @@
 import {
   Children,
   type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
   isValidElement,
   useCallback,
@@ -48,16 +49,16 @@ export function ScrollCarousel({
   const [activeIndex, setActiveIndex] = useState(() => Math.min(Math.max(startAt, 0), Math.max(slideCount - 1, 0)));
   const visibleIndex = Math.min(activeIndex, Math.max(0, slideCount - 1));
   const activeIndexRef = useRef(activeIndex);
+  const activeSlideRef = useRef<HTMLDivElement | null>(null);
+  const inView = useRef(false);
   const id = useId().replaceAll(":", "");
   const viewportId = `carousel-${id}`;
-  const prefersReducedMotion = useRef(false);
   const [paused, setPaused] = useState(false);
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
     const media = window.matchMedia("(prefers-reduced-motion: reduce)");
     const sync = () => {
-      prefersReducedMotion.current = media.matches;
       setReducedMotion(media.matches);
     };
     sync();
@@ -85,6 +86,7 @@ export function ScrollCarousel({
         }
       });
       activeIndexRef.current = closestIndex;
+      activeSlideRef.current = slideRefs.current[closestIndex] ?? null;
       setActiveIndex(closestIndex);
     });
   }, [slideCount]);
@@ -93,47 +95,53 @@ export function ScrollCarousel({
     const viewport = viewportRef.current;
     if (!viewport) return;
     const observer = new ResizeObserver(() => {
+      navigation.current = null;
       const slide = slideRefs.current[activeIndexRef.current];
       if (slide) viewport.scrollTo({ left: slide.offsetLeft, behavior: "auto" });
     });
     observer.observe(viewport);
-    return () => observer.disconnect();
-  }, [slideCount]);
-
-  // When a live collection shrinks, the previously selected slide may no
-  // longer exist. Reset pending smooth navigation and align the new last slide.
-  useEffect(() => {
-    if (activeIndexRef.current < slideCount) return;
-    const lastIndex = Math.max(0, slideCount - 1);
-    activeIndexRef.current = lastIndex;
-    navigation.current = null;
-    setActiveIndex(lastIndex);
-    const viewport = viewportRef.current;
-    if (viewport) {
-      viewport.scrollTo({
-        left: slideRefs.current[lastIndex]?.offsetLeft ?? 0,
-        behavior: "auto",
-      });
-    }
-  }, [slideCount]);
-
-  // Reconcile final physical position when another browser-managed scroll
-  // interrupts a smooth carousel move without pointer or wheel input.
-  useEffect(() => {
-    const viewport = viewportRef.current;
-    if (!viewport) return;
+    // Browser-managed scrolling can interrupt a smooth navigation.
     const onScrollEnd = (event: Event) => {
       if (event.target !== viewport) return;
       navigation.current = null;
       updateActiveFromScroll();
     };
     viewport.addEventListener("scrollend", onScrollEnd);
-    return () => viewport.removeEventListener("scrollend", onScrollEnd);
-  }, [slideCount, updateActiveFromScroll]);
+    const visibility = autoAdvanceMs ? new IntersectionObserver(([entry]) => {
+      inView.current = entry?.isIntersecting ?? false;
+    }) : null;
+    visibility?.observe(viewport);
+    return () => {
+      observer.disconnect();
+      viewport.removeEventListener("scrollend", onScrollEnd);
+      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+      visibility?.disconnect();
+      inView.current = false;
+    };
+  }, [autoAdvanceMs, slideCount, updateActiveFromScroll]);
 
-  useEffect(() => () => {
+  // Keyed slide nodes survive reordering. Keep the selected node, or use the
+  // nearest remaining position if it was removed, even during a smooth move.
+  useEffect(() => {
+    const retainedIndex = activeSlideRef.current ? slideRefs.current.indexOf(activeSlideRef.current) : -1;
+    const index = retainedIndex < 0 ? Math.min(activeIndexRef.current, Math.max(0, slideCount - 1)) : retainedIndex;
+    if (slideCount && retainedIndex === activeIndexRef.current) return;
+    activeIndexRef.current = index;
+    activeSlideRef.current = slideRefs.current[index] ?? null;
+    navigation.current = null;
+    drag.current = null;
+    suppressClick.current = false;
     if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
-  }, []);
+    setActiveIndex(index);
+    const viewport = viewportRef.current;
+    if (viewport) {
+      viewport.style.removeProperty("scroll-snap-type");
+      viewport.scrollTo({
+        left: activeSlideRef.current?.offsetLeft ?? 0,
+        behavior: "auto",
+      });
+    }
+  }, [children, slideCount]);
 
   const goTo = useCallback((index: number) => {
     if (!slideCount) return;
@@ -145,36 +153,38 @@ export function ScrollCarousel({
     const target = Math.min(Math.max(0, slide.offsetLeft), maxScrollLeft);
     navigation.current = target;
     activeIndexRef.current = bounded;
+    activeSlideRef.current = slide;
     viewport.scrollTo({
       left: target,
-      behavior: prefersReducedMotion.current ? "auto" : "smooth",
+      behavior: reducedMotion ? "auto" : "smooth",
     });
     setActiveIndex(bounded);
-  }, [slideCount]);
+  }, [reducedMotion, slideCount]);
 
   useEffect(() => {
     if (!autoAdvanceMs || slideCount < 2 || paused || reducedMotion) return;
     const timer = window.setInterval(() => {
-      if (!document.hidden && !drag.current && !viewportRef.current?.closest("section")?.matches(":hover, :focus-within")) goTo(activeIndexRef.current + 1);
+      if (inView.current && !document.hidden && !drag.current && !viewportRef.current?.closest("section")?.matches(":hover, :focus-within")) goTo(activeIndexRef.current + 1);
     }, autoAdvanceMs);
     return () => window.clearInterval(timer);
   }, [autoAdvanceMs, activeIndex, goTo, paused, reducedMotion, slideCount]);
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
     if (event.currentTarget !== event.target) return;
-    if (event.key === "ArrowLeft") {
-      event.preventDefault();
-      goTo(activeIndexRef.current - 1);
-    } else if (event.key === "ArrowRight") {
-      event.preventDefault();
-      goTo(activeIndexRef.current + 1);
-    } else if (event.key === "Home") {
-      event.preventDefault();
-      goTo(0);
-    } else if (event.key === "End") {
-      event.preventDefault();
-      goTo(slideCount - 1);
-    }
+    const target = {
+      ArrowLeft: activeIndexRef.current - 1,
+      ArrowRight: activeIndexRef.current + 1,
+      Home: 0,
+      End: slideCount - 1,
+    }[event.key];
+    if (target === undefined) return;
+    event.preventDefault();
+    goTo(target);
+  };
+
+  const releaseDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    drag.current = null;
+    event.currentTarget.style.removeProperty("scroll-snap-type");
   };
 
   if (!slideCount) return null;
@@ -249,20 +259,15 @@ export function ScrollCarousel({
         }}
         onPointerUp={event => {
           suppressClick.current = Boolean(drag.current?.moved);
-          drag.current = null;
-          event.currentTarget.style.removeProperty("scroll-snap-type");
+          releaseDrag(event);
         }}
         onPointerLeave={event => {
           // Without capture, pointerup may occur outside this viewport.
           if (event.currentTarget.hasPointerCapture(event.pointerId)) return;
-          drag.current = null;
-          event.currentTarget.style.removeProperty("scroll-snap-type");
+          releaseDrag(event);
         }}
-        onLostPointerCapture={event => {
-          drag.current = null;
-          event.currentTarget.style.removeProperty("scroll-snap-type");
-        }}
-        onPointerCancel={event => { drag.current = null; event.currentTarget.style.removeProperty("scroll-snap-type"); }}
+        onLostPointerCapture={releaseDrag}
+        onPointerCancel={releaseDrag}
         onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}
         onDragStart={event => { if (mode !== "hero") event.preventDefault(); }}
         onWheel={() => { navigation.current = null; }}
