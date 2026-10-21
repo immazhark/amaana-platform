@@ -31,7 +31,7 @@ afterEach(() => {
 it("rechecks expired appeals on a fresh render while database results remain cached", async () => {
   vi.useFakeTimers();
   vi.setSystemTime(new Date("2026-10-21T15:00:00.000Z"));
-  mocks.appealFindMany.mockResolvedValue([{
+  const expiringAppeal = {
     slug: "approved-appeal",
     title: "A reviewed public appeal",
     summary: "Verified need",
@@ -42,11 +42,20 @@ it("rechecks expired appeals on a fresh render while database results remain cac
     amountRaised: 0,
     goalAmount: 1000,
     closesAt: new Date("2026-10-21T15:01:00.000Z"),
-  }]);
+  };
+  mocks.appealFindMany.mockResolvedValue([
+    expiringAppeal,
+    {
+      ...expiringAppeal,
+      slug: "second-approved-appeal",
+      title: "Another reviewed need",
+      closesAt: new Date("2026-10-21T17:00:00.000Z"),
+    },
+  ]);
 
-  expect((await getHomepageAppeals(3)).map(item => item.slug)).toEqual(["approved-appeal"]);
+  expect((await getHomepageAppeals(1)).map(item => item.slug)).toEqual(["approved-appeal"]);
   // The 300-second cache must still hold the same database result at this point.
   vi.setSystemTime(new Date("2026-10-21T15:02:00.000Z"));
-  expect(await getHomepageAppeals(3)).toEqual([]);
+  expect((await getHomepageAppeals(1)).map(item => item.slug)).toEqual(["second-approved-appeal"]);
   expect(mocks.appealFindMany).toHaveBeenCalledTimes(1);
 });
