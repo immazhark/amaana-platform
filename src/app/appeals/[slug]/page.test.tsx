@@ -1,0 +1,85 @@
+import { createElement, type ReactNode } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+const mocks = vi.hoisted(() => ({ appeal: vi.fn(), privacy: vi.fn() }));
+vi.mock("@/lib/public-page-data", () => ({
+  getAppealPageData: mocks.appeal,
+  getAppealCoverMedia: () => null,
+}));
+vi.mock("@/lib/appeal-search-privacy", () => ({ getAppealSearchPrivacy: mocks.privacy }));
+vi.mock("next/link", () => ({
+  default: ({ children, href, ...props }: { children: ReactNode; href: string }) =>
+    createElement("a", { ...props, href }, children),
+}));
+vi.mock("next/navigation", () => ({
+  notFound: () => { throw new Error("NOT_FOUND"); },
+}));
+vi.mock("@/components/page-hero", () => ({
+  PageHero: () => createElement("div", { "data-hero": "true" }),
+}));
+vi.mock("@/components/work-visual-placeholder", () => ({
+  WorkVisualPlaceholder: () => createElement("div"),
+}));
+vi.mock("@/components/appeal-share", () => ({
+  AppealShare: () => createElement("div"),
+}));
+vi.mock("@/components/section-heading", () => ({
+  SectionHeading: () => createElement("h2"),
+}));
+vi.mock("@/components/mobile-support-bar", () => ({
+  MobileSupportBar: () => createElement("div"),
+}));
+
+import AppealPage, { generateMetadata } from "./page";
+
+const appeal = {
+  slug: "reviewed-medical-appeal",
+  title: "Sensitive beneficiary identity in reviewed title",
+  summary: "Reviewed private medical circumstances",
+  status: "CLOSED",
+  coverImageUrl: null,
+  beneficiaryLocation: null,
+  beneficiaryDisplayName: null,
+  category: "MEDICAL",
+  amountRaised: { toNumber: () => 100 },
+  goalAmount: { toNumber: () => 200 },
+  publishedAt: new Date("2026-10-01T00:00:00Z"),
+  story: "A public-safe approved story",
+  updates: [],
+};
+const params = { params: Promise.resolve({ slug: appeal.slug }) };
+
+beforeEach(() => {
+  vi.resetAllMocks();
+  mocks.appeal.mockResolvedValue(appeal);
+  mocks.privacy.mockResolvedValue("STANDARD");
+});
+
+async function breadcrumbName() {
+  const html = renderToStaticMarkup(await AppealPage(params));
+  const scripts = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
+  const breadcrumbs = scripts.map(match => JSON.parse(match[1] || "{}"))
+    .find(data => data["@type"] === "BreadcrumbList");
+  expect(breadcrumbs).toBeDefined();
+  return breadcrumbs.itemListElement[2].name as string;
+}
+
+describe("appeal breadcrumb privacy parity", () => {
+  it("does not repeat the identifiable appeal title in highly sensitive JSON-LD breadcrumbs", async () => {
+    mocks.privacy.mockResolvedValue("HIGHLY_SENSITIVE");
+    expect(await breadcrumbName()).toBe("Verified Support Appeal");
+  });
+
+  it("keeps a reviewed non-sensitive title in its normal breadcrumb", async () => {
+    expect(await breadcrumbName()).toBe(appeal.title);
+  });
+
+  it("uses the same generic title in highly sensitive metadata and breadcrumbs", async () => {
+    mocks.privacy.mockResolvedValue("HIGHLY_SENSITIVE");
+    const metadata = await generateMetadata(params);
+    expect(metadata.title).toBe("Verified Support Appeal");
+    expect(metadata.robots).toEqual({ index: false, follow: true, nocache: true });
+    expect(await breadcrumbName()).toBe(metadata.title);
+  });
+});
