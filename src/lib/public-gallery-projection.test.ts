@@ -16,8 +16,8 @@ describe("public gallery projection", () => {
       ...image, id: "portrait", publicUrl: "/media/portrait.jpg", width: 900, height: 1600,
     }]);
     assert.deepEqual(items, [
-      { id: "landscape", url: "/media/landscape.jpg", alt: image.altText, caption: image.caption, width: 1800, height: 1200 },
-      { id: "portrait", url: "/media/portrait.jpg", alt: image.altText, caption: image.caption, width: 900, height: 1600 },
+      { id: "landscape", url: "/media/landscape.jpg", alt: image.altText, caption: image.caption, graphicArtwork: false, width: 1800, height: 1200 },
+      { id: "portrait", url: "/media/portrait.jpg", alt: image.altText, caption: image.caption, graphicArtwork: false, width: 900, height: 1600 },
     ]);
   });
 
