@@ -74,11 +74,23 @@ describe("public gallery projection", () => {
     ]);
   });
 
-  it("does not forward private server fields", () => {
+  it("projects artwork presentation without forwarding private media titles or server fields", () => {
     const [item] = toPublicGalleryItems([{
-      ...image, storageKey: "private/key", sourcePath: "private/source",
+      ...image, title: "Internal media title",
+      storageKey: "private/key", sourcePath: "private/source",
     }]);
     assert.deepEqual(Object.keys(item ?? {}).sort(),
-      ["alt", "caption", "height", "id", "url", "width"]);
+      ["alt", "caption", "graphicArtwork", "height", "id", "url", "width"]);
+    assert.equal(item?.graphicArtwork, false);
+    assert.equal(JSON.stringify(item).includes("Internal media title"), false);
+    assert.equal(JSON.stringify(item).includes("private/key"), false);
+  });
+
+  it("honours title-only poster labels without exposing the reviewed title", () => {
+    const [item] = toPublicGalleryItems([{
+      ...image, title: "Thank you poster", altText: "Community annual update",
+    }]);
+    assert.equal(item?.graphicArtwork, true);
+    assert.equal(Object.hasOwn(item ?? {}, "title"), false);
   });
 });
