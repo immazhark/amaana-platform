@@ -14,6 +14,7 @@ vi.mock("@/lib/prisma", () => ({
 
 import {
   getCompletedAidShowcaseData,
+  getImpactComparisonPageData,
   getImpactPageData,
   getProgrammeChildMedia,
 } from "./public-page-data";
@@ -60,6 +61,23 @@ describe("public page gallery media query contracts", () => {
   it("shows no donor proof on an empty reviewed metric projection", async () => {
     const { getDonationImpactHighlights } = await import("./public-page-data");
     await expect(getDonationImpactHighlights()).resolves.toEqual([]);
+  });
+
+  it("does not retrieve unused image galleries on impact comparison", async () => {
+    await getImpactComparisonPageData();
+
+    const query = mocks.initiativeFindMany.mock.calls[0]?.[0];
+    expect(query).toMatchObject({
+      where: { status: "PUBLISHED", cause: { status: "PUBLISHED" } },
+      select: {
+        id: true, slug: true, title: true, summary: true,
+        primaryMetric: true, primaryMetricLabel: true,
+        cause: { select: { title: true } },
+      },
+    });
+    expect(query.select).not.toHaveProperty("mediaAssets");
+    expect(query.select).not.toHaveProperty("assistanceRequest");
+    expect(query.select).not.toHaveProperty("financialSummary");
   });
 
   it("restricts impact images to identity-approved cover candidates before fetching records", async () => {
