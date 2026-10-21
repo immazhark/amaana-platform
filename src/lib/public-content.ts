@@ -183,7 +183,7 @@ export async function getFeaturedFaithContent() {
  * this projection narrow lowers database work, serialization and server render
  * cost while preserving the publication/privacy gates used elsewhere.
  */
-const getHomepageAppealsCached = unstable_cache(async (limit: number) => {
+const getHomepageAppealsCached = unstable_cache(async () => {
   const appeals = await prisma.appeal.findMany({
     where: { status: "PUBLISHED" },
     orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
@@ -201,13 +201,16 @@ const getHomepageAppealsCached = unstable_cache(async (limit: number) => {
     },
   });
 
-  return appeals
-    .filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal) && isAppealOpenForDonations(appeal))
-    .slice(0, Math.min(20, Math.max(1, limit)));
+  return appeals.filter(appeal => canExposePublicAppeal(appeal) && !isSyntheticStagingAppeal(appeal));
 }, ["homepage-appeals"], { revalidate: 300, tags: ["appeals"] });
 
 export async function getHomepageAppeals(limit = 3) {
-  return getHomepageAppealsCached(limit);
+  // Eligibility depends on wall-clock expiry; never cache this decision for
+  // five minutes. Cache only the reviewed data, then recheck before display.
+  const publicAppeals = await getHomepageAppealsCached();
+  return publicAppeals
+    .filter(appeal => isAppealOpenForDonations(appeal))
+    .slice(0, Math.min(20, Math.max(1, limit)));
 }
 
 export async function getHomepagePublicContent() {
