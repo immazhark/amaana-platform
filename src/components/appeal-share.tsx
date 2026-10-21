@@ -1,60 +1,63 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
-type AppealShareProps = {
-  title: string;
-  summary: string;
-  path: string;
-};
+type AppealShareProps = { title: string; summary: string; path: string };
+type ShareData = { title: string; summary: string; url: string };
+
+const copyError = "Copy unavailable. Select the URL below.";
+
+export async function runAppealShare(
+  { title, summary, url }: ShareData,
+  action: "share" | "copy",
+): Promise<string> {
+  if (action === "share" && navigator.share) {
+    try {
+      await navigator.share({ title, text: summary, url });
+      return "Share completed.";
+    } catch (error) {
+      if ((error as Error)?.name === "AbortError") return "";
+    }
+  }
+  try {
+    await navigator.clipboard.writeText(url);
+    return "Link copied.";
+  } catch {
+    return copyError;
+  }
+}
 
 export function AppealShare({ title, summary, path }: AppealShareProps) {
   const [status, setStatus] = useState("");
-  const canonicalUrl = typeof window === "undefined" ? path : new URL(path, window.location.origin).toString();
+  const actionId = useRef(0);
+  const canonicalUrl = `https://amaanafoundation.org${path[0] === "/" && path[1] !== "/" ? path : "/"}`;
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(`${title}\n\n${summary}\n\n${canonicalUrl}`)}`;
 
-  async function share() {
+  async function act(action: "share" | "copy") {
+    const id = ++actionId.current;
     setStatus("");
-    try {
-      if (navigator.share) {
-        await navigator.share({ title, text: summary, url: canonicalUrl });
-        setStatus("Share options opened.");
-        return;
-      }
-      await navigator.clipboard.writeText(canonicalUrl);
-      setStatus("Appeal link copied.");
-    } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") return;
-      setStatus("Could not share automatically. Copy the page address from your browser.");
-    }
-  }
-
-  function shareOnWhatsApp() {
-    const message = [title, summary, canonicalUrl].filter(Boolean).join("\n\n");
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
-    setStatus("WhatsApp share opened in a new tab.");
-  }
-
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(canonicalUrl);
-      setStatus("Appeal link copied.");
-    } catch {
-      setStatus("Could not copy automatically. Copy the page address from your browser.");
-    }
+    const result = await runAppealShare({ title, summary, url: canonicalUrl }, action);
+    if (id === actionId.current) setStatus(result);
   }
 
   return (
     <div className="v2-appeal-share" role="group" aria-label="Share this appeal">
       <div>
         <span className="v2-section-label">Share responsibly</span>
-        <p>Help this verified appeal reach someone who may be able to support it.</p>
+        <p>Help someone support this verified appeal.</p>
       </div>
       <div className="v2-appeal-share-actions">
-        <button type="button" className="v2-text-link" onClick={share}>Share appeal ↗</button>
-        <button type="button" className="v2-text-link" onClick={shareOnWhatsApp}>WhatsApp ↗</button>
-        <button type="button" className="v2-text-link" onClick={copy}>Copy link</button>
+        <button type="button" className="v2-text-link" onClick={() => void act("share")}>Share appeal ↗</button>
+        <a className="v2-text-link" href={whatsappUrl} target="_blank" rel="noopener noreferrer"
+          onClick={() => { actionId.current++; setStatus(""); }}>WhatsApp ↗</a>
+        <button type="button" className="v2-text-link" onClick={() => void act("copy")}>Copy link</button>
       </div>
-      <p className="v2-appeal-share-status" role="status" aria-live="polite">{status}</p>
+      <p className="v2-appeal-share-status" role="status">{status}</p>
+      {status === copyError && (
+        <input readOnly aria-label="Appeal URL to copy manually"
+          value={canonicalUrl} onFocus={event => event.currentTarget.select()}
+          style={{ width: "100%" }}/>
+      )}
     </div>
   );
 }
