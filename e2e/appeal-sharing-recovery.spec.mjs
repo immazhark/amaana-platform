@@ -17,7 +17,7 @@ test("native share rejection copies the canonical appeal link", async ({ page })
   });
   await page.goto(fixture);
   await page.getByRole("button", { name: "Share appeal" }).click();
-  await expect(page.locator(".v2-appeal-share-status")).toHaveText("Appeal link copied.");
+  await expect(page.locator(".v2-appeal-share-status")).toHaveText("Link copied.");
   expect(await page.evaluate(() => window.__copiedAppeal)).toBe(url);
 });
 
@@ -31,7 +31,7 @@ test("clipboard refusal exposes an accessible selectable manual URL", async ({ p
   });
   await page.goto(fixture);
   await page.getByRole("button", { name: "Copy link" }).click();
-  await expect(page.locator(".v2-appeal-share-status")).toContainText("Select and copy the appeal URL");
+  await expect(page.locator(".v2-appeal-share-status")).toContainText("Select the URL");
   const manual = page.getByRole("textbox", { name: "Appeal URL to copy manually" });
   await expect(manual).toHaveValue(url);
   await manual.focus();
@@ -57,9 +57,9 @@ test("a late failed copy cannot replace newer successful feedback", async ({ pag
   await copy.click();
   await expect.poll(() => page.evaluate(() => window.__appealCopies.length)).toBe(2);
   await page.evaluate(() => window.__appealCopies[1].resolve());
-  await expect(page.locator(".v2-appeal-share-status")).toHaveText("Appeal link copied.");
+  await expect(page.locator(".v2-appeal-share-status")).toHaveText("Link copied.");
   await page.evaluate(() => window.__appealCopies[0].reject(new Error("Late denial")));
-  await expect(page.locator(".v2-appeal-share-status")).toHaveText("Appeal link copied.");
+  await expect(page.locator(".v2-appeal-share-status")).toHaveText("Link copied.");
   await expect(page.getByRole("textbox", { name: "Appeal URL to copy manually" })).toHaveCount(0);
 });
 
