@@ -36,7 +36,8 @@ describe("appeal sharing recovery", () => {
     vi.stubGlobal("navigator", { share: vi.fn().mockRejectedValue(new Error("Not allowed")), clipboard: { writeText } });
 
     await expect(runAppealShare(appeal, "share")).resolves.toBe("copied");
-    expect(writeText).toHaveBeenCalledExactlyOnceWith(appeal.url);
+    expect(writeText).toHaveBeenCalledTimes(1);
+    expect(writeText).toHaveBeenCalledWith(appeal.url);
   });
 
   it("shows the manual fallback when both native sharing and the clipboard fail", async () => {
@@ -66,12 +67,23 @@ describe("appeal sharing recovery", () => {
     vi.stubGlobal("navigator", { share, clipboard: { writeText } });
     await expect(runAppealShare(appeal, "copy")).resolves.toBe("copied");
     expect(share).not.toHaveBeenCalled();
-    expect(writeText).toHaveBeenCalledExactlyOnceWith(appeal.url);
+    expect(writeText).toHaveBeenCalledTimes(1);
+    expect(writeText).toHaveBeenCalledWith(appeal.url);
   });
 
   it("offers manual copy instead of claiming success when explicit copying fails", async () => {
     vi.stubGlobal("navigator", { clipboard: { writeText: vi.fn().mockRejectedValue(new Error("Denied")) } });
     await expect(runAppealShare(appeal, "copy")).resolves.toBe("manual");
+  });
+
+  it("never shares an external origin when a malformed route path begins with two slashes", () => {
+    const html = renderToStaticMarkup(<AppealShare
+      title={appeal.title}
+      summary={appeal.summary}
+      path="//malicious.example/appeals/fake"
+    />);
+    expect(html).not.toContain("malicious.example");
+    expect(html).toContain("https%3A%2F%2Famaanafoundation.org%2F");
   });
 
   it("renders a safe native WhatsApp link with the fully qualified canonical URL", () => {
