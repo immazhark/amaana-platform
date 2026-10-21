@@ -6,6 +6,13 @@
 **Historical source:** `docs/AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md` on preserved **old** branch `fix/direct-transfer-feedback-20261013` (2026-10-17 snapshot); the old branch is **read-only historical evidence**, NOT current `main`.  
 **Truth precedence:** Live `main` source + current PR/actual Railway release > older docs/PR assertions. User-confirmed legal/campaign evidence remains controlling until explicitly reconciled.
 
+## Current source delta — 21 October 2026
+
+This bounded update supersedes stale release references below without changing the historical 149-entry totals. PR #394 is merged at `fab6143`; PR #395 (`84bde5b`) contains four carousel interaction fixes, owner-approved for merge after protected checks. Its production/budget/fast/database checks passed; browser acceptance is pending after a cancelled run was restarted. These changes contribute to AF-R042 interaction acceptance, not full screen-reader/device closure.
+
+The next source batch, `fix/portfolio-year-selection-20261021`, fixes annual portfolio discovery and duplicate umbrella results, stabilizes overview counts/artwork across filters, and retains published editions with unavailable parents. It is implemented with unit and server-rendered page regressions; protected acceptance, a new PR merge decision and live verification are outstanding. No master entry is promoted to fully closed from this source-only update.
+
+
 ## 1. Immediately observed release and execution state
 
 - Production source: `main` at **`83a8824103a1018d54a448b6202bf343447e9de0`**; Railway production web deployment `e4cef20b-fd53-4c01-82fe-ab81c6144dc6` reported **SUCCESS** for that exact SHA (2026-10-19T22:29Z). This is verified deployment metadata, **not proof of all live journeys**.

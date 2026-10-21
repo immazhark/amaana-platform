@@ -27,9 +27,19 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
   const rawCauses = await getOurWorkIndexData();
   const search = await searchParams;
   const allInitiatives = rawCauses.flatMap(cause => cause.initiatives);
-  const canonicalInitiatives = allInitiatives.filter(item => { const canonical = programmeBySlug(item.slug); if (!canonical) return false; const isChild = 'parentSlug' in canonical && Boolean(canonical.parentSlug); return (typeof search.year === "string" && /^\d{4}$/.test(search.year)) || !isChild; });
-  const visibleCauses = programmeCategories.map(category => ({ id: category.slug, slug: category.slug, title: category.title, summary: category.summary, initiatives: canonicalInitiatives.filter(item => programmeBySlug(item.slug)?.causeSlug === category.slug) })).filter(cause => cause.initiatives.length > 0);
-  const filters = filterWork(visibleCauses, search);
+  const canonicalInitiatives = allInitiatives.flatMap(item => {
+    const canonical = programmeBySlug(item.slug);
+    if (!canonical) return [];
+    return [{ ...item, causeSlug: canonical.causeSlug,
+      parentSlug: "parentSlug" in canonical ? canonical.parentSlug : null }];
+  });
+  const allCauses = programmeCategories.map(category => ({
+    id: category.slug, slug: category.slug, title: category.title, summary: category.summary,
+    initiatives: canonicalInitiatives.filter(item => item.causeSlug === category.slug),
+  })).filter(cause => cause.initiatives.length > 0);
+  // Keep overview artwork and counts stable. Only the results use the query.
+  const visibleCauses = filterWork(allCauses, {}).results;
+  const filters = filterWork(allCauses, search);
   const initiativeCount = visibleCauses.reduce((total, cause) => total + cause.initiatives.length, 0);
   const causeCount = visibleCauses.length;
   const ramadanEidMedia = visibleCauses
@@ -60,7 +70,7 @@ export default async function OurWorkPage({ searchParams }: { searchParams: Prom
         item.primaryMetric && item.primaryMetricLabel ? [{ slug: item.slug, title: item.title, value: item.primaryMetric, label: item.primaryMetricLabel }] : [],
       )} /></div>
       <section className="v2-section paper" id="work-results"><div className="v2-shell"><SectionHeading eyebrow={<>Explore by need</>} title={<>A living portfolio of service.</>} subtitle={<>Start with a programme area, then use the year filter to explore a specific annual edition.</>} />
-        <form key={`${filters.programme}:${filters.year}`} className={`work-filters ${auditStyles.toolbar}`} action="/our-work#work-results" method="get" aria-label="Filter published initiatives"><label className={auditStyles.filterLabel} htmlFor="work-programme">Programme<select className={auditStyles.filterSelect} id="work-programme" name="programme" defaultValue={filters.programme}><option value="">All programmes</option>{visibleCauses.map(cause => <option key={cause.slug} value={cause.slug}>{cause.title}</option>)}</select></label><label className={auditStyles.filterLabel} htmlFor="work-year">Year<select className={auditStyles.filterSelect} id="work-year" name="year" defaultValue={filters.year}><option value="">All years</option>{filters.years.map(year => <option key={year} value={year}>{year}</option>)}</select></label><button className="v2-button" type="submit">Apply filters</button>{filters.active && <Link className={auditStyles.clear} href="/our-work#work-results">Clear filters</Link>}</form>
+        <form key={`${filters.programme}:${filters.year}`} className={`work-filters ${auditStyles.toolbar}`} action="/our-work#work-results" method="get" aria-label="Filter published initiatives"><label className={auditStyles.filterLabel} htmlFor="work-programme">Programme<select className={auditStyles.filterSelect} id="work-programme" name="programme" defaultValue={filters.programme}><option value="">All programmes</option>{allCauses.map(cause => <option key={cause.slug} value={cause.slug}>{cause.title}</option>)}</select></label><label className={auditStyles.filterLabel} htmlFor="work-year">Year<select className={auditStyles.filterSelect} id="work-year" name="year" defaultValue={filters.year}><option value="">All years</option>{filters.years.map(year => <option key={year} value={year}>{year}</option>)}</select></label><button className="v2-button" type="submit">Apply filters</button>{filters.active && <Link className={auditStyles.clear} href="/our-work#work-results">Clear filters</Link>}</form>
         {filters.invalid && <p role="status">These filters could not be read. Choose a published programme and year, or clear the filters.</p>}
         <p className="work-results-count">{filters.count} published {filters.count === 1 ? "initiative" : "initiatives"}{filters.active ? " matching these filters" : " available to explore"}.</p>
         {filters.results.length > 0 ? (
