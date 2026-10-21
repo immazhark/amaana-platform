@@ -1,3 +1,43 @@
+## 2026-10-21 — PR #393 release chain
+
+Owner: CHATGPT_ACTIVE. User approved PR #393 once exact-head protected checks pass. Integrate previously accepted upstream PR #392 (`e6c03745e1c024f957f1c918d8a63e150252eaab`) without altering unrelated source or provider settings. Require full exact-head checks and merge in PR order.
+
+## 2026-10-21 — Shared request-local initiative lookup
+
+Owner: CHATGPT_ACTIVE, exclusive writer. Scoped performance PR based on production main `40fe2b0a2be12a1a5ca61dc3a2dd9372845a195b`. The source used `getInitiativePageData = cache(getPublishedInitiativeBySlug)` while canonical ProgrammeDetail and programmePageMetadata called the uncached getter directly, bypassing sharing and causing duplicate initiative-plus-related-record Prisma queries within one React server render request. Test-first `8c3e0d576428d8e91f2412f41cdede28efe9ffd6` asserts a single lookup identity; original source fails by reference inequality. Fix caches `getPublishedInitiativeBySlug` once at the provider and aliases `getInitiativePageData` to it, sharing metadata/general/canonical lookup. The underlying query, publication/privacy filters, selected relations, call sites and output shape are unchanged. React cache is request-scoped, not a cross-user durable cache. Native exact-head unit, type, build, browser and protected acceptance required. No changes to donor data, finance, auth, database schema, storage, Railway settings or indexing. Do not merge newly created PR without specific owner approval.
+
+## 2026-10-21 — PR #392 release chain
+
+Owner: CHATGPT_ACTIVE. User approved PR #392 after exact-head CI. Integrate previously accepted upstream PR #391 (`bbbdd9e7376156115327e0273b898d03e9a4adb9`) without changing carousel business logic or provider settings. Require full exact-head checks and merge in PR order.
+
+## 2026-10-21 — Carousel uncaptured pointer release
+
+Owner: CHATGPT_ACTIVE. Branch PR #392 also corrects a separate drag-lifecycle defect in the same ScrollCarousel: pointerdown before mouse capture persists `drag.current` when pointer leaves immediately and pointerup occurs outside the viewport. That suppresses automatic slide advance indefinitely. Added guarded browser regression in test-first commit `df71baa05538c0353448f67089dc9208243b4f02` simulating a direct mouse move outside and requiring autoplay to resume. Runtime cleanup on uncaptured pointerleave and lostpointercapture prevents dangling drag state without breaking active captured drags. No animation timing/style/viewport geometry changed; requires renewed exact-head protected acceptance.
+
+## 2026-10-21 — Stable keyed carousel slide identity
+
+Owner: CHATGPT_ACTIVE, sole repo implementation writer. Branch `fix/carousel-stable-slide-identity-20261021` based on main `40fe2b0a2be12a1a5ca61dc3a2dd9372845a195b`, independent of pending PRs #389/#390/#391. React keyed children were wrapped by `ScrollCarousel` with `key={index}`, so a card's interactive child state was destroyed when a programme or appeal slide changed position. Test-first commit `7b9b0a07cf059115f23fb521a68e3039ca6aceab` extends existing isolated body-carousel browser fixture to mark a card, reorder all seven keyed slides, and verify its state survives both reversals; initial code reproduces remount/state loss. Fix uses the child's existing stable React key for the carousel wrapper and falls back to positional key only for unkeyed/text slides. No carousel styles, timing, finance, media permissions, providers, canonical content or live release changes. Exact-head native lint/type, browser, production and protected checks pending; merge only with specific new-PR owner approval. Rollback: revert scoped PR.
+
+## 2026-10-21 — PR #391 integrated atop PR #390 release candidate
+
+Owner: CHATGPT_ACTIVE, sole writer. User authorized merge after exact-head protected acceptance. This integration commit preserves upstream candidate `53d2a504290fc8bad24294a123dfa188de63758c`, the complete previous implementation for PR #391, and all coordination history. Merge in dependency order #390, #391, #392, #393. No premature production release, payment change, or staged Railway notification-worker change.
+
+## 2026-10-21 — Artwork lookup inherited-key guard
+
+Owner: CHATGPT_ACTIVE, exclusive implementation writer. PR #391 was extended to close the identical prototype property lookup failure in `src/components/programme-artwork.tsx`. Existing `hasProgrammeArtwork("constructor")` returned true because the plain artwork map inherited `Object.constructor`; dereferencing its absent image URL could cause a rendering error. Test-first commit `190663f0730fa6e95b1507914514145f4d77a7bb` added component-level regression for constructor/toString/valueOf/__proto__ and known canonical artworks. Shared `getProgrammeArtwork` checks `Object.hasOwn` in both alias and artwork maps, preserving all approved source paths and captions. No media assets, donor data, payment, identity approval, services, or deployment settings changed. This invalidates earlier CI certification for PR #391; exact-head verification is mandatory. Rollback: revert scoped PR.
+
+## 2026-10-21 — Public route own-key resolution
+
+Owner: CHATGPT_ACTIVE, sole repo writer. Atomic branch `fix/public-route-own-key-20261021` from main `40fe2b0a2be12a1a5ca61dc3a2dd9372845a195b`; independent of PR #389 media and PR #390 index origin. Source-backed regression: normal object lookup for public route slug `constructor` returned inherited Object constructor instead of a defined route; `toString` and `__proto__` similarly escape intended table semantics in programme-category lookups. Route callers can mistake prototype properties for redirect targets, potentially returning unexpected redirects or 5xx responses. RED tests first in commit `6dec7e04695079ad5f442b3d97630355544bdef0`. Bounded correction checks `Object.hasOwn` at five lookup sites. No legitimate route entries, canonical destinations, auth, payment, donor, provider config, translations or media altered. Native Vitest, TypeScript, build, browser and protected exact-head CI required. Do not merge a newly introduced PR without specific owner approval. Rollback: revert this atomic PR.
+
+## 2026-10-21 — PR #390 integration on merged #389
+
+Owner: CHATGPT_ACTIVE; exclusive repo writer. Owner explicitly approved merge of PR #390. Integrate SEO origin validation on merged PR #389 (`516090e0989c6e4cd78c1b2dfc1c0bb66c25edac`), preserving all shared handoff notes. No additional runtime changes, no railway worker changes. Exact-head checks mandatory before final merge.
+
+## 2026-10-21 — Official indexing origin guard
+
+Owner: CHATGPT_ACTIVE, sole writer. Branch `fix/site-indexing-official-origin-20261021` from main `40fe2b0a2be12a1a5ca61dc3a2dd9372845a195b`; independent of unmerged PR #389. Confirmed with exact Node URL behavior that `shouldAllowIndexing` accepted credential-bearing HTTPS URLs and custom-port URLs of the official hostname (for example `https://amaanafoundation.org:8443`), thereby enabling a misconfigured noncanonical index origin. Test-first commit `dd863fff20d3192aba0daa5cdc8edb23ab530bc8` adds regression coverage for credentials, nonstandard ports and the valid default HTTPS port. Narrow runtime guard refuses credentials and nondefault ports while keeping existing apex/www, HTTPS-only, production-only, and opt-in gates. No hosting settings, robots route, sitemap generator, donor content, payment or database changes. Native protected CI and live SEO acceptance are pending. Rollback: revert this isolated PR. New-PR merge requires explicit specific approval.
+
 ## 2026-10-21 — PR #389 main integration after PR #388
 
 Owner: CHATGPT_ACTIVE; sole writer. Parent PR #388 is merged at main SHA `40fe2b0a2be12a1a5ca61dc3a2dd9372845a195b`. This branch preserves only the documentary image-classification/selection corrections and their existing focused tests, rebased through a two-parent integration commit; no carousel, gallery or image-area source overwritten. All prior handoff entries remain intact. Require native exact-head protected verification and separate authorization to merge this new PR. Production release verification remains independent. Railway staged notification-worker patch remains untouched.

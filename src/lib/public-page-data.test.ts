@@ -16,11 +16,18 @@ import {
   getCompletedAidShowcaseData,
   getProgrammeChildMedia,
 } from "./public-page-data";
+import { getPublishedInitiativeBySlug } from "./public-content";
+import { getInitiativePageData } from "./public-page-data";
 
 describe("public page gallery media query contracts", () => {
   beforeEach(() => {
     mocks.initiativeFindMany.mockReset();
     mocks.initiativeFindMany.mockResolvedValue([]);
+  });
+
+  it("uses one request-cached lookup identity for metadata, programmes and general pages", () => {
+    // Independent wrapper functions cannot share React's request-local cache.
+    expect(getInitiativePageData).toBe(getPublishedInitiativeBySlug);
   });
 
   it("projects at most eight published initiative outcomes with no financial or private records", async () => {

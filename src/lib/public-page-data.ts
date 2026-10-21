@@ -56,7 +56,7 @@ export const PUBLIC_GALLERY_MEDIA_PROJECTION = {
  * second identical Prisma read during one render request while preserving the
  * existing publication/privacy gates in the underlying getters.
  */
-export const getInitiativePageData = cache(getPublishedInitiativeBySlug);
+export const getInitiativePageData = getPublishedInitiativeBySlug;
 export const getStoryPageData = cache(getPublishedStoryBySlug);
 export const getFaithPageData = cache(getPublishedFaithContentBySlug);
 

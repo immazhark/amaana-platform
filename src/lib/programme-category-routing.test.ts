@@ -63,6 +63,16 @@ describe("programme category canonical routing", () => {
     }
   });
 
+  it.each(["constructor", "toString", "valueOf", "__proto__"])(
+    "does not resolve inherited object properties as public route slugs: %s",
+    slug => {
+      expect(programmeCategoryPath(slug)).toBe("/our-work");
+      expect(programmeCategoryFromRoute(slug)).toBeNull();
+      expect(legacyProgrammeCategoryDestination(slug)).toBeNull();
+      expect(legacyProgrammeRoute(slug)).toBeNull();
+    },
+  );
+
   it("returns null for unrelated programme route slugs", () => {
     expect(legacyProgrammeRoute("ramadan-eid")).toBeNull();
     expect(legacyProgrammeRoute("unknown-route")).toBeNull();
