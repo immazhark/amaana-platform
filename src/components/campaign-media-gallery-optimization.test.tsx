@@ -73,6 +73,17 @@ describe("campaign gallery managed image optimization", () => {
     expect(classes[3]).toBe(classes[2]);
   });
 
+  it("uses the reviewed title when only the title identifies poster artwork", () => {
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={toPublicGalleryItems([
+      { ...reviewedItem, id: "poster", publicUrl: "/media/title-poster.webp", title: "Thank you poster", altText: "Annual community update" },
+      { ...reviewedItem, id: "photo", publicUrl: "/media/title-photo.webp", title: "Field photograph", altText: "Volunteers packing support kits" },
+    ])} />);
+
+    const classes = Array.from(html.matchAll(/<figure class="([^"]+)"/g), match => match[1]);
+    expect(classes).toHaveLength(2);
+    expect(classes[0]).not.toBe(classes[1]);
+  });
+
   it("keeps approved external CDN photographs direct, without remote optimizer allowlisting", () => {
     vi.stubEnv("NEXT_PUBLIC_APP_URL", "https://amaanafoundation.org");
     vi.stubEnv("PUBLIC_MEDIA_BASE_URL", "https://cdn.amaana.example");
