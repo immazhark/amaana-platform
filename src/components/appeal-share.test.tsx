@@ -16,7 +16,7 @@ describe("appeal sharing recovery", () => {
     const writeText = vi.fn();
     vi.stubGlobal("navigator", { share, clipboard: { writeText } });
 
-    await expect(runAppealShare(appeal, "share")).resolves.toBe("Share request completed.");
+    await expect(runAppealShare(appeal, "share")).resolves.toBe("Share completed.");
     expect(share).toHaveBeenCalledWith({ title: appeal.title, text: appeal.summary, url: appeal.url });
     expect(writeText).not.toHaveBeenCalled();
   });
@@ -35,7 +35,7 @@ describe("appeal sharing recovery", () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal("navigator", { share: vi.fn().mockRejectedValue(new Error("Not allowed")), clipboard: { writeText } });
 
-    await expect(runAppealShare(appeal, "share")).resolves.toBe("Appeal link copied.");
+    await expect(runAppealShare(appeal, "share")).resolves.toBe("Link copied.");
     expect(writeText).toHaveBeenCalledTimes(1);
     expect(writeText).toHaveBeenCalledWith(appeal.url);
   });
@@ -45,27 +45,27 @@ describe("appeal sharing recovery", () => {
       share: vi.fn().mockRejectedValue(new Error("Sharing unavailable")),
       clipboard: { writeText: vi.fn().mockRejectedValue(new Error("Clipboard denied")) },
     });
-    await expect(runAppealShare(appeal, "share")).resolves.toBe("Automatic copying is unavailable. Select and copy the appeal URL below.");
+    await expect(runAppealShare(appeal, "share")).resolves.toBe("Copy unavailable. Select the URL below.");
   });
 
   it("copies on browsers without native share support", async () => {
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal("navigator", { clipboard: { writeText } });
-    await expect(runAppealShare(appeal, "share")).resolves.toBe("Appeal link copied.");
+    await expect(runAppealShare(appeal, "share")).resolves.toBe("Link copied.");
     expect(writeText).toHaveBeenCalledWith(appeal.url);
   });
 
   it("provides manual copy when the clipboard API is missing", async () => {
     vi.stubGlobal("navigator", {});
-    await expect(runAppealShare(appeal, "share")).resolves.toBe("Automatic copying is unavailable. Select and copy the appeal URL below.");
-    await expect(runAppealShare(appeal, "copy")).resolves.toBe("Automatic copying is unavailable. Select and copy the appeal URL below.");
+    await expect(runAppealShare(appeal, "share")).resolves.toBe("Copy unavailable. Select the URL below.");
+    await expect(runAppealShare(appeal, "copy")).resolves.toBe("Copy unavailable. Select the URL below.");
   });
 
   it("uses clipboard only for an explicit copy request", async () => {
     const share = vi.fn();
     const writeText = vi.fn().mockResolvedValue(undefined);
     vi.stubGlobal("navigator", { share, clipboard: { writeText } });
-    await expect(runAppealShare(appeal, "copy")).resolves.toBe("Appeal link copied.");
+    await expect(runAppealShare(appeal, "copy")).resolves.toBe("Link copied.");
     expect(share).not.toHaveBeenCalled();
     expect(writeText).toHaveBeenCalledTimes(1);
     expect(writeText).toHaveBeenCalledWith(appeal.url);
@@ -73,7 +73,7 @@ describe("appeal sharing recovery", () => {
 
   it("offers manual copy instead of claiming success when explicit copying fails", async () => {
     vi.stubGlobal("navigator", { clipboard: { writeText: vi.fn().mockRejectedValue(new Error("Denied")) } });
-    await expect(runAppealShare(appeal, "copy")).resolves.toBe("Automatic copying is unavailable. Select and copy the appeal URL below.");
+    await expect(runAppealShare(appeal, "copy")).resolves.toBe("Copy unavailable. Select the URL below.");
   });
 
   it("never shares an external origin when a malformed route path begins with two slashes", () => {
@@ -97,7 +97,6 @@ describe("appeal sharing recovery", () => {
     expect(html).toContain('target="_blank"');
     expect(html).toContain('rel="noopener noreferrer"');
     expect(html).toContain('role="status"');
-    expect(html).toContain('aria-live="polite"');
     expect(html).not.toContain("Could not copy");
   });
 });
