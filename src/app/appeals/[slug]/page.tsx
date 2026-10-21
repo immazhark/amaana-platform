@@ -47,7 +47,7 @@ export default async function AppealDetailPage({ params }: Props) {
   return (
     <div className="v2-home v2-appeal-detail-page">
       <AppealStructuredData slug={appeal.slug} title={appeal.title} summary={appeal.summary} isOpen={isOpen} highlySensitive={highlySensitive} />
-      <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Verified Appeals", path: "/appeals" }, { name: appeal.title, path: `/appeals/${appeal.slug}` }]} />
+      <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Verified Appeals", path: "/appeals" }, { name: highlySensitive ? "Verified Support Appeal" : appeal.title, path: `/appeals/${appeal.slug}` }]} />
       <PageHero
         variant="level2"
         eyebrow={`${appeal.category.replaceAll("_", " ")} · ${appeal.beneficiaryLocation || "Location withheld"} · ${isOpen ? "Open appeal" : "Appeal closed"}`}
