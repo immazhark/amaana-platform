@@ -4,7 +4,7 @@ import { PageHero } from "@/components/page-hero";
 import { SectionHeading } from "@/components/section-heading";
 import { programmeBySlug } from "@/lib/master-copy";
 import { selectImpactComparison, type ImpactComparisonSearch } from "@/lib/impact-comparison";
-import { getImpactPageData } from "@/lib/public-page-data";
+import { getImpactComparisonPageData } from "@/lib/public-page-data";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -24,7 +24,7 @@ export default async function ImpactComparisonPage({
 }: {
   searchParams: Promise<ImpactComparisonSearch>;
 }) {
-  const [records, search] = await Promise.all([getImpactPageData(), searchParams]);
+  const [records, search] = await Promise.all([getImpactComparisonPageData(), searchParams]);
   // Keep the same canonical, non-child, published portfolio as /impact.
   const published = records.filter(item => {
     const canonical = programmeBySlug(item.slug);
