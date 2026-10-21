@@ -1,3 +1,11 @@
+## 2026-10-21 — ChatGPT active writer: public share privacy parity follow-on
+
+Owner: CHATGPT_ACTIVE (sole writer, user-designated in current session). PR #397 public appeal share recovery remains the only active runtime PR at exact head `e440b3a45b0c247864bd31513505756df39f05ad`; its fast, database and production checks passed, browser acceptance pending at this checkpoint. PR #397 is not merged/deployed and requires explicit scoped owner approval and protected checks.
+
+Current queued implementation branch: `fix/sensitive-appeal-breadcrumb-privacy-20261021`, based on latest verified `main` `b295d95dcc0f97c585cbdaaf7e1373e42cde5c49`. Source-proven MEDIUM privacy defect: HIGHLY_SENSITIVE appeals were masked in SEO/OG and AppealStructuredData JSON-LD, but BreadcrumbStructuredData still serialized an unmasked appeal title; visitor WhatsApp sharing likewise received unmasked title and summary. Five rendered-page regression cases were committed first (sensitive and standard breadcrumb, metadata parity, share payload parity), then a narrow server-only shared copy helper was applied to page metadata, breadcrumbs, social share props, and appeal JSON-LD. Public on-page narrative, payment, publication permissions, donor data, database, media and Railway settings remain unchanged.
+
+This queued branch is NOT a second active PR, and tests/CI/deployment have NOT been claimed as verified. Next action: finish PR #397 protected browser acceptance and request owner-specific merge authorization; after release boundary, open this queued branch for independent exact-head protected verification and merge review. Do not merge without a specific owner "merge it" approval.
+
 ## 2026-10-21 — ChatGPT Work portfolio batch and approved carousel release
 
 Owner: CODEX_ACTIVE (ChatGPT Work), sole repository writer. The owner authorized all pending permissions, including publishing these coordination updates and merging PR #395 after required checks. The earlier documentation-publication block is resolved by that explicit authorization.
