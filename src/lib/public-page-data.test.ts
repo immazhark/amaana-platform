@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   initiativeFindMany: vi.fn(),
+  causeFindMany: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -9,12 +10,16 @@ vi.mock("@/lib/prisma", () => ({
     initiative: {
       findMany: mocks.initiativeFindMany,
     },
+    cause: {
+      findMany: mocks.causeFindMany,
+    },
   },
 }));
 
 import {
   getCompletedAidShowcaseData,
   getImpactPageData,
+  getOurWorkIndexData,
   getProgrammeChildMedia,
 } from "./public-page-data";
 import { getPublishedInitiativeBySlug } from "./public-content";
@@ -24,6 +29,8 @@ describe("public page gallery media query contracts", () => {
   beforeEach(() => {
     mocks.initiativeFindMany.mockReset();
     mocks.initiativeFindMany.mockResolvedValue([]);
+    mocks.causeFindMany.mockReset();
+    mocks.causeFindMany.mockResolvedValue([]);
   });
 
   it("uses one request-cached lookup identity for metadata, programmes and general pages", () => {
@@ -60,6 +67,33 @@ describe("public page gallery media query contracts", () => {
   it("shows no donor proof on an empty reviewed metric projection", async () => {
     const { getDonationImpactHighlights } = await import("./public-page-data");
     await expect(getDonationImpactHighlights()).resolves.toEqual([]);
+  });
+
+  it("fetches the approved identity slot instead of a newer gallery photo on the work index", async () => {
+    await getOurWorkIndexData();
+
+    const query = mocks.causeFindMany.mock.calls[0]?.[0];
+    expect(query).toMatchObject({
+      where: { status: "PUBLISHED" },
+      select: {
+        initiatives: {
+          where: { status: "PUBLISHED" },
+          select: {
+            mediaAssets: {
+              where: {
+                kind: "IMAGE",
+                isPublic: true,
+                privacyApprovedAt: { not: null },
+                publicUrl: { not: null },
+                altText: { not: "" },
+                sortOrder: -1000,
+              },
+              take: 1,
+            },
+          },
+        },
+      },
+    });
   });
 
   it("restricts impact images to identity-approved cover candidates before fetching records", async () => {
