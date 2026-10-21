@@ -59,12 +59,12 @@ describe("campaign gallery managed image optimization", () => {
   });
 
   it("keeps real graphic-design photographs uncropped while containing poster and carousel artwork", () => {
-    const html = renderToStaticMarkup(<CampaignMediaGallery items={[
-      { id: "workshop", url: "/media/workshop.webp", alt: "Graphic design workshop photograph" },
-      { id: "photo", url: "/media/field.webp", alt: "Volunteers packing relief kits" },
-      { id: "poster", url: "/media/poster.webp", alt: "Thank you poster" },
-      { id: "slide", url: "/media/slide.webp", alt: "Carousel slide" },
-    ]} />);
+    const html = renderToStaticMarkup(<CampaignMediaGallery items={toPublicGalleryItems([
+      { ...reviewedItem, id: "workshop", publicUrl: "/media/workshop.webp", altText: "Graphic design workshop photograph" },
+      { ...reviewedItem, id: "photo", publicUrl: "/media/field.webp", altText: "Volunteers packing relief kits" },
+      { ...reviewedItem, id: "poster", publicUrl: "/media/poster.webp", altText: "Thank you poster" },
+      { ...reviewedItem, id: "slide", publicUrl: "/media/slide.webp", altText: "Carousel slide" },
+    ])} />);
 
     const classes = Array.from(html.matchAll(/<figure class="([^"]+)"/g), match => match[1]);
     expect(classes).toHaveLength(4);
