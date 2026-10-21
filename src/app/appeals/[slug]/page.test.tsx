@@ -2,7 +2,7 @@ import { createElement, type ReactNode } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ appeal: vi.fn(), privacy: vi.fn() }));
+const mocks = vi.hoisted(() => ({ appeal: vi.fn(), privacy: vi.fn(), share: vi.fn() }));
 vi.mock("@/lib/public-page-data", () => ({
   getAppealPageData: mocks.appeal,
   getAppealCoverMedia: () => null,
@@ -22,7 +22,10 @@ vi.mock("@/components/work-visual-placeholder", () => ({
   WorkVisualPlaceholder: () => createElement("div"),
 }));
 vi.mock("@/components/appeal-share", () => ({
-  AppealShare: () => createElement("div"),
+  AppealShare: (props: { title: string; summary: string }) => {
+    mocks.share(props);
+    return createElement("div");
+  },
 }));
 vi.mock("@/components/section-heading", () => ({
   SectionHeading: () => createElement("h2"),
@@ -69,6 +72,25 @@ describe("appeal breadcrumb privacy parity", () => {
   it("does not repeat the identifiable appeal title in highly sensitive JSON-LD breadcrumbs", async () => {
     mocks.privacy.mockResolvedValue("HIGHLY_SENSITIVE");
     expect(await breadcrumbName()).toBe("Verified Support Appeal");
+  });
+
+  it("does not prefill confidential title or summary into a social share link", async () => {
+    mocks.privacy.mockResolvedValue("HIGHLY_SENSITIVE");
+    renderToStaticMarkup(await AppealPage(params));
+    expect(mocks.share).toHaveBeenCalledWith({
+      title: "Verified Support Appeal",
+      summary: "A privacy-sensitive verified support appeal from Amaana Foundation. Public details are intentionally limited.",
+      path: `/appeals/${appeal.slug}`,
+    });
+  });
+
+  it("shares normal published appeal copy without replacing reviewed text", async () => {
+    renderToStaticMarkup(await AppealPage(params));
+    expect(mocks.share).toHaveBeenCalledWith({
+      title: appeal.title,
+      summary: appeal.summary,
+      path: `/appeals/${appeal.slug}`,
+    });
   });
 
   it("keeps a reviewed non-sensitive title in its normal breadcrumb", async () => {
