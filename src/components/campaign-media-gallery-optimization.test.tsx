@@ -82,6 +82,7 @@ describe("campaign gallery managed image optimization", () => {
     const classes = Array.from(html.matchAll(/<figure class="([^"]+)"/g), match => match[1]);
     expect(classes).toHaveLength(2);
     expect(classes[0]).not.toBe(classes[1]);
+    expect(html).not.toContain("Thank you poster");
   });
 
   it("keeps approved external CDN photographs direct, without remote optimizer allowlisting", () => {
