@@ -8,7 +8,7 @@ const liveHeaders = { "Cache-Control": "no-store" };
 
 export async function GET() {
   try {
-    const appeals = await getHomepageAppeals();
+    const appeals = await getHomepageAppeals(4);
     const items = appeals.slice(0, 4).map(appeal => ({
       id: `appeal-${appeal.slug}`,
       kind: "appeal" as const,
