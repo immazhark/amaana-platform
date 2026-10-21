@@ -3,6 +3,9 @@ import { getHomepageAppeals } from "@/lib/public-content";
 
 export const dynamic = "force-dynamic";
 
+// Eligibility changes with the clock. Keep all response paths out of browser/CDN caches.
+const liveHeaders = { "Cache-Control": "no-store" };
+
 export async function GET() {
   try {
     const appeals = await getHomepageAppeals();
@@ -20,9 +23,9 @@ export async function GET() {
 
     return NextResponse.json(
       { items },
-      { headers: { "Cache-Control": "public, max-age=60, stale-while-revalidate=300" } },
+      { headers: { "Cache-Control": liveHeaders["Cache-Control"] } },
     );
   } catch {
-    return NextResponse.json({ items: [] }, { status: 200 });
+    return NextResponse.json({ items: [] }, { status: 200, headers: liveHeaders });
   }
 }
