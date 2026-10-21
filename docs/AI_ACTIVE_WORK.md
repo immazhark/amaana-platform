@@ -1,3 +1,7 @@
+## 2026-10-21 — Approved release and privacy integration
+
+Owner: CHATGPT_ACTIVE, sole writer by owner direction. Owner authorized pending merges on 21 October 2026. PR #397 has passed exact-head protected checks and merged to `main` at `ec170fe71844f5f2a98ded4c18d98804b92e88db`. This branch (`fix/sensitive-appeal-breadcrumb-privacy-20261021`) now integrates that exact main without discarding prior sharing recovery. PR #398's public metadata and visitor-sharing privacy mask is source-implemented; require fresh exact-head fast, production/budget, database and browser checks after integration before approval-based merge. Draft translations #374 remain gated on professional translations and legal/RTL acceptance, not merely authorization to merge. No live Railway deployment is certified.
+
 ## 2026-10-21 — ChatGPT chat sole-writer takeover: appeal sharing recovery
 
 Owner: CHATGPT_ACTIVE (this chat), sole repository implementation writer, explicitly designated by the user. Previous ChatGPT Work writer is superseded for this active session. The latest confirmed `main` SHA at takeover was `b295d95dcc0f97c585cbdaaf7e1373e42cde5c49`; PRs #395/#396 are merged and only draft PR #374 remained open. A new task branch `fix/appeal-sharing-recovery-20261021` is based on that exact SHA.

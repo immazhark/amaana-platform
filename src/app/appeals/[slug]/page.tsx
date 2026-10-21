@@ -10,6 +10,7 @@ import { PublicMedia } from "@/components/public-media";
 import { MobileSupportBar } from "@/components/mobile-support-bar";
 import { AppealShare } from "@/components/appeal-share";
 import { getAppealSearchPrivacy } from "@/lib/appeal-search-privacy";
+import { publicAppealShareCopy } from "@/lib/public-appeal-share";
 import { normalizeSafePublicMediaUrl } from "@/lib/public-media";
 import { openGraphShareImages, twitterShareImages } from "@/lib/social-share-media";
 import { formatINR, isAppealOpenForDonations } from "@/lib/appeals";
@@ -24,8 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   if (!appeal) return { title: "Appeal not found" };
   const canonical = `/appeals/${appeal.slug}`;
   const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE";
-  const metadataTitle = highlySensitive ? "Verified Support Appeal" : appeal.title;
-  const metadataDescription = highlySensitive ? "A privacy-sensitive verified support appeal from Amaana Foundation. Public details are intentionally limited." : appeal.summary;
+  const { title: metadataTitle, summary: metadataDescription } = publicAppealShareCopy(appeal.title, appeal.summary, highlySensitive);
   return { title: metadataTitle, description: metadataDescription, alternates: { canonical }, robots: highlySensitive ? { index: false, follow: true, nocache: true } : undefined, openGraph: { type: "article", url: canonical, title: `${metadataTitle} | Amaana Foundation`, description: metadataDescription, publishedTime: appeal.publishedAt?.toISOString(), images: openGraphShareImages() }, twitter: { card: "summary_large_image", title: `${metadataTitle} | Amaana Foundation`, description: metadataDescription, images: twitterShareImages() } };
 }
 
@@ -43,11 +43,12 @@ export default async function AppealDetailPage({ params }: Props) {
   const progress = goal > 0 ? Math.min(100, Math.round((raised / goal) * 100)) : 0;
   const isOpen = isAppealOpenForDonations(appeal);
   const highlySensitive = confidentialityLevel === "HIGHLY_SENSITIVE";
+  const shareCopy = publicAppealShareCopy(appeal.title, appeal.summary, highlySensitive);
 
   return (
     <div className="v2-home v2-appeal-detail-page">
       <AppealStructuredData slug={appeal.slug} title={appeal.title} summary={appeal.summary} isOpen={isOpen} highlySensitive={highlySensitive} />
-      <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Verified Appeals", path: "/appeals" }, { name: appeal.title, path: `/appeals/${appeal.slug}` }]} />
+      <BreadcrumbStructuredData items={[{ name: "Home", path: "/" }, { name: "Verified Appeals", path: "/appeals" }, { name: shareCopy.title, path: `/appeals/${appeal.slug}` }]} />
       <PageHero
         variant="level2"
         eyebrow={`${appeal.category.replaceAll("_", " ")} · ${appeal.beneficiaryLocation || "Location withheld"} · ${isOpen ? "Open appeal" : "Appeal closed"}`}
@@ -57,7 +58,7 @@ export default async function AppealDetailPage({ params }: Props) {
         visual={coverMedia ? <PublicMedia asset={coverMedia} priority /> : <WorkVisualPlaceholder label={appeal.title} />}
       />
 
-      <section className="v2-appeal-funding-strip" aria-label="Appeal funding status"><div className="v2-shell"><aside className="v2-appeal-donation-panel" aria-describedby="appeal-payment-boundary"><div><small>Appeal progress</small><strong>{formatINR(raised)}</strong><p>raised of {formatINR(goal)}</p></div><div className="v2-appeal-funding-progress"><div className="v2-appeal-progress" role="progressbar" aria-label={`${appeal.title} funding progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-valuetext={`${formatINR(raised)} raised of ${formatINR(goal)}; ${progress}% supported`}><span style={{ width: `${progress}%` }} /></div><div className="v2-appeal-progress-foot"><span>{progress}% supported</span><span>INR · India only</span></div></div><div>{isOpen ? <Link className="v2-button v2-appeal-donate-button" href={`/donate/${appeal.slug}`}>Support this appeal</Link> : <span className="v2-appeal-closed">This appeal is closed</span>}<p className="v2-appeal-secure-note" id="appeal-payment-boundary">Domestic INR donations are processed securely through Razorpay. Amaana does not accept foreign contributions.</p></div></aside><AppealShare title={appeal.title} summary={appeal.summary} path={`/appeals/${appeal.slug}`} /></div></section>
+      <section className="v2-appeal-funding-strip" aria-label="Appeal funding status"><div className="v2-shell"><aside className="v2-appeal-donation-panel" aria-describedby="appeal-payment-boundary"><div><small>Appeal progress</small><strong>{formatINR(raised)}</strong><p>raised of {formatINR(goal)}</p></div><div className="v2-appeal-funding-progress"><div className="v2-appeal-progress" role="progressbar" aria-label={`${appeal.title} funding progress`} aria-valuemin={0} aria-valuemax={100} aria-valuenow={progress} aria-valuetext={`${formatINR(raised)} raised of ${formatINR(goal)}; ${progress}% supported`}><span style={{ width: `${progress}%` }} /></div><div className="v2-appeal-progress-foot"><span>{progress}% supported</span><span>INR · India only</span></div></div><div>{isOpen ? <Link className="v2-button v2-appeal-donate-button" href={`/donate/${appeal.slug}`}>Support this appeal</Link> : <span className="v2-appeal-closed">This appeal is closed</span>}<p className="v2-appeal-secure-note" id="appeal-payment-boundary">Domestic INR donations are processed securely through Razorpay. Amaana does not accept foreign contributions.</p></div></aside><AppealShare title={shareCopy.title} summary={shareCopy.summary} path={`/appeals/${appeal.slug}`} /></div></section>
 
       <section className="v2-appeal-context-strip" aria-label="How this appeal is handled"><div className="v2-shell"><div><span>01</span><strong>Reviewed need</strong><small>Information assessed before publication</small></div><div><span>02</span><strong>Public-safe story</strong><small>Private proofs remain private</small></div><div><span>03</span><strong>Tracked support</strong><small>Progress stays attached to this appeal</small></div><div><span>04</span><strong>Known updates</strong><small>Only confirmed outcomes are published</small></div></div></section>
 
