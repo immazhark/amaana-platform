@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 type AppealShareProps = {
   title: string;
@@ -8,39 +8,44 @@ type AppealShareProps = {
   path: string;
 };
 
-export function AppealShare({ title, summary, path }: AppealShareProps) {
-  const [status, setStatus] = useState("");
-  const canonicalUrl = typeof window === "undefined" ? path : new URL(path, window.location.origin).toString();
+type ShareData = { title: string; summary: string; url: string };
+type ShareOutcome = "shared" | "copied" | "manual" | "cancelled";
 
-  async function share() {
-    setStatus("");
+/** Use clipboard fallback when native sharing is unavailable or rejects. */
+export async function runAppealShare(data: ShareData, action: "share" | "copy"): Promise<ShareOutcome> {
+  if (action === "share" && typeof navigator.share === "function") {
     try {
-      if (navigator.share) {
-        await navigator.share({ title, text: summary, url: canonicalUrl });
-        setStatus("Share options opened.");
-        return;
-      }
-      await navigator.clipboard.writeText(canonicalUrl);
-      setStatus("Appeal link copied.");
+      await navigator.share({ title: data.title, text: data.summary, url: data.url });
+      return "shared";
     } catch (error) {
-      if (error instanceof DOMException && error.name === "AbortError") return;
-      setStatus("Could not share automatically. Copy the page address from your browser.");
+      if (error && typeof error === "object" && "name" in error && error.name === "AbortError") {
+        return "cancelled";
+      }
     }
   }
 
-  function shareOnWhatsApp() {
-    const message = [title, summary, canonicalUrl].filter(Boolean).join("\n\n");
-    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`, "_blank", "noopener,noreferrer");
-    setStatus("WhatsApp share opened in a new tab.");
+  try {
+    if (typeof navigator.clipboard?.writeText !== "function") return "manual";
+    await navigator.clipboard.writeText(data.url);
+    return "copied";
+  } catch {
+    return "manual";
   }
+}
 
-  async function copy() {
-    try {
-      await navigator.clipboard.writeText(canonicalUrl);
-      setStatus("Appeal link copied.");
-    } catch {
-      setStatus("Could not copy automatically. Copy the page address from your browser.");
-    }
+export function AppealShare({ title, summary, path }: AppealShareProps) {
+  const [feedback, setFeedback] = useState<"idle" | "shared" | "copied" | "manual" | "whatsapp">("idle");
+  const actionId = useRef(0);
+  // Render an identical canonical URL on the server and on the client.
+  const canonicalUrl = new URL(path, "https://amaanafoundation.org").toString();
+  const whatsappUrl = `https://wa.me/?text=${encodeURIComponent([title, summary, canonicalUrl].filter(Boolean).join("\n\n"))}`;
+
+  async function act(action: "share" | "copy") {
+    const currentId = ++actionId.current;
+    setFeedback("idle");
+    const outcome = await runAppealShare({ title, summary, url: canonicalUrl }, action);
+    // Earlier clipboard or native-share promises must not overwrite newer feedback.
+    if (actionId.current === currentId && outcome !== "cancelled") setFeedback(outcome);
   }
 
   return (
@@ -50,11 +55,32 @@ export function AppealShare({ title, summary, path }: AppealShareProps) {
         <p>Help this verified appeal reach someone who may be able to support it.</p>
       </div>
       <div className="v2-appeal-share-actions">
-        <button type="button" className="v2-text-link" onClick={share}>Share appeal ↗</button>
-        <button type="button" className="v2-text-link" onClick={shareOnWhatsApp}>WhatsApp ↗</button>
-        <button type="button" className="v2-text-link" onClick={copy}>Copy link</button>
+        <button type="button" className="v2-text-link" onClick={() => void act("share")}>Share appeal ↗</button>
+        <a
+          className="v2-text-link"
+          href={whatsappUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          onClick={() => { actionId.current += 1; setFeedback("whatsapp"); }}
+        >WhatsApp ↗</a>
+        <button type="button" className="v2-text-link" onClick={() => void act("copy")}>Copy link</button>
       </div>
-      <p className="v2-appeal-share-status" role="status" aria-live="polite">{status}</p>
+      <p className="v2-appeal-share-status" role="status" aria-live="polite" aria-atomic="true">
+        {feedback === "shared" ? "Share request completed." :
+          feedback === "copied" ? "Appeal link copied." :
+          feedback === "manual" ? "Automatic copying is unavailable. Select and copy the appeal URL below." :
+          feedback === "whatsapp" ? "Choose a WhatsApp chat to send the appeal." : ""}
+      </p>
+      {feedback === "manual" && (
+        <input
+          type="text"
+          readOnly
+          aria-label="Appeal URL to copy manually"
+          value={canonicalUrl}
+          onFocus={event => event.currentTarget.select()}
+          style={{ width: "100%", maxWidth: "100%" }}
+        />
+      )}
     </div>
   );
 }
