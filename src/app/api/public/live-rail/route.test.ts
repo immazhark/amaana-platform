@@ -17,6 +17,7 @@ it("does not let CDN caching promote an appeal beyond its eligibility window", a
   }]);
   const response = await GET();
 
+  expect(mocks.getAppeals).toHaveBeenCalledWith(4);
   expect(response.headers.get("Cache-Control")).toMatch(/no-store/i);
   expect(response.headers.get("Cache-Control")).not.toMatch(/stale-while-revalidate|max-age=60/i);
   expect(await response.json()).toMatchObject({
