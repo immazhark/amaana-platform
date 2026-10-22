@@ -79,7 +79,7 @@ export const getPublishedInitiativeBySlug = cache(async (slug: string) => {
   return prisma.initiative.findFirst({
     where: { slug, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     include: {
-      cause: true,
+      cause: { select: { title: true } },
       mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
       stories: {
         where: { status: "PUBLISHED", privacyApprovedAt: { not: null } },
