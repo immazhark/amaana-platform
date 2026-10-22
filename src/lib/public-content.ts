@@ -185,7 +185,18 @@ export async function getFeaturedFaithContent() {
  */
 const getHomepageAppealsCached = unstable_cache(async () => {
   const appeals = await prisma.appeal.findMany({
-    where: { status: "PUBLISHED" },
+    // Exclude permanently ineligible and synthetic records at retrieval.
+    // The request-time check below still rejects an appeal that expires while
+    // this 300-second record projection remains cached.
+    where: {
+      status: "PUBLISHED",
+      amountRaised: { lt: prisma.appeal.fields.goalAmount },
+      OR: [{ closesAt: null }, { closesAt: { gt: new Date() } }],
+      NOT: [
+        { slug: { startsWith: "staging-" } },
+        { title: { startsWith: "STAGING TEST" } },
+      ],
+    },
     orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
     select: {
       slug: true,
@@ -205,8 +216,8 @@ const getHomepageAppealsCached = unstable_cache(async () => {
 }, ["homepage-appeals"], { revalidate: 300, tags: ["appeals"] });
 
 export async function getHomepageAppeals(limit = 3) {
-  // Keep clock-sensitive eligibility outside the DB result cache. Revalidate
-  // it on each server render; the route's own HTML TTL remains independent.
+  // Keep clock-sensitive eligibility outside the bounded DB result cache.
+  // Recheck on each render even when an earlier cached query included a now-expired appeal.
   const publicAppeals = await getHomepageAppealsCached();
   return publicAppeals
     .filter(appeal => isAppealOpenForDonations(appeal))
