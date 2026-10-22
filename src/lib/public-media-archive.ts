@@ -41,7 +41,9 @@ export async function getPublicMediaArchive(kind: string, slug: string, page: nu
   // The extra offset-page count must exist and be positive. Fail closed if an
   // unexpected projection omitted it instead of making an unchecked deep read.
   if (page > 1) {
-    const count = "_count" in parent ? parent._count?.mediaAssets : undefined;
+    const count = "_count" in parent && parent._count && "mediaAssets" in parent._count
+      ? parent._count.mediaAssets
+      : undefined;
     if (typeof count !== "number" || (page - 1) * PUBLIC_ARCHIVE_PAGE_SIZE >= count) return null;
   }
   const relation = kind === "initiative" ? { initiative: { id: parent.id, ...initiativeWhere } }
