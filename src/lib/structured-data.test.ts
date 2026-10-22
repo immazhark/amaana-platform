@@ -87,6 +87,28 @@ describe("public structured data", () => {
     }, "https://amaanafoundation.org")).toBeNull();
   });
 
+  it("never publishes private or encoded-private destinations as public JSON-LD pages", () => {
+    for (const path of [
+      "/admin/appeals",
+      "/api/donations/order",
+      "/donate/reviewed-case",
+      "/donations/receipt",
+      "/request-assistance/status",
+      "/%61dmin/appeals",
+      "/%2561dmin/appeals",
+      "/about/../api/private",
+    ]) {
+      expect(normalizeStructuredDataPath(path), path).toBeNull();
+      expect(buildPublicStructuredData({
+        type: "WebPage", title: "Not a public record",
+        description: "Must not appear in public JSON-LD",
+        path,
+      }, "https://amaanafoundation.org"), path).toBeNull();
+    }
+    expect(normalizeStructuredDataPath("/our-work/eid-gift-kits")).toBe("/our-work/eid-gift-kits");
+    expect(normalizeStructuredDataPath("/donate")).toBe("/donate");
+  });
+
   it("fails closed when runtime JSON-LD input violates the schema", () => {
     expect(buildPublicStructuredData({
       type: "Article",
