@@ -42,6 +42,29 @@ describe('homepage carousel publication and schedules', () => {
     expect(()=>validateHomeSlide({...origin,startsAt:'2026-10-04T00:00Z',endsAt:'2026-10-03T00:00Z'})).toThrow(/follow/);
     expect(()=>validateHomeSlide({...origin,image:'https://arbitrary.invalid/photo'})).toThrow(/approved/);
   });
+  it.each([
+    '/donations',
+    '/donations/receipt',
+    '/request-assistance/status',
+    '/request-assistance/received',
+    '/request-assistance/status?reference=ABC123',
+    '/%72equest-assistance/status',
+    '/request-assistance/%73tatus',
+    '/request-assistance/../donations',
+    '/donations?reference=ABC123',
+  ])('rejects private transactional or assistance CTA %s', href => {
+    expect(() => safeHomeHref(href)).toThrow(HomeCarouselValidationError);
+  });
+  it.each([
+    '/about',
+    '/our-work',
+    '/request-assistance',
+    '/donate',
+    '/donate/reviewed-appeal',
+    '/get-involved/sponsor-education',
+  ])('retains intentional public and fundraising CTA %s', href => {
+    expect(safeHomeHref(href)).toBe(href);
+  });
   it.each(['javascript:alert(1)','//evil.invalid','/admin','/api/private','/x/../admin','/%2f%2fevil.invalid','/about%0a','/about\\admin','/%61dmin','/%2561dmin'])('rejects unsafe CTA %s', href => expect(()=>safeHomeHref(href)).toThrow());
 });
 
