@@ -95,7 +95,10 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
       const first = focusable.item(0);
       const last = focusable.item(focusable.length - 1);
       if (!first || !last) return;
-      if (event.shiftKey && document.activeElement === first) {
+      if (!dialogRef.current?.contains(document.activeElement)) {
+        event.preventDefault();
+        (event.shiftKey ? last : first).focus();
+      } else if (event.shiftKey && document.activeElement === first) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && document.activeElement === last) {
