@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   initiativeFindMany: vi.fn(),
+  causeFindMany: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -9,6 +10,7 @@ vi.mock("@/lib/prisma", () => ({
     initiative: {
       findMany: mocks.initiativeFindMany,
     },
+    cause: { findMany: mocks.causeFindMany },
   },
 }));
 
@@ -16,6 +18,7 @@ import {
   getCompletedAidShowcaseData,
   getImpactComparisonPageData,
   getImpactPageData,
+  getHomepageDiscoveryData,
   getProgrammeChildMedia,
 } from "./public-page-data";
 import { getPublishedInitiativeBySlug } from "./public-content";
@@ -25,6 +28,8 @@ describe("public page gallery media query contracts", () => {
   beforeEach(() => {
     mocks.initiativeFindMany.mockReset();
     mocks.initiativeFindMany.mockResolvedValue([]);
+    mocks.causeFindMany.mockReset();
+    mocks.causeFindMany.mockResolvedValue([]);
   });
 
   it("uses one request-cached lookup identity for metadata, programmes and general pages", () => {
@@ -61,6 +66,36 @@ describe("public page gallery media query contracts", () => {
   it("shows no donor proof on an empty reviewed metric projection", async () => {
     const { getDonationImpactHighlights } = await import("./public-page-data");
     await expect(getDonationImpactHighlights()).resolves.toEqual([]);
+  });
+
+  it("keeps homepage outcome metrics without loading unused initiative media and story fields", async () => {
+    mocks.initiativeFindMany
+      .mockResolvedValueOnce([
+        { slug: "verified-2026", title: "Verified initiative", primaryMetric: "234", primaryMetricLabel: "winter kits" },
+      ])
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([{ slug: "verified-2026" }]);
+    const data = await getHomepageDiscoveryData();
+    expect(data.initiatives).toEqual([
+      { slug: "verified-2026", title: "Verified initiative", primaryMetric: "234", primaryMetricLabel: "winter kits" },
+    ]);
+    expect(data.publishedProgrammeSlugs).toEqual(["verified-2026"]);
+    expect(mocks.initiativeFindMany).toHaveBeenCalledTimes(3);
+    expect(mocks.causeFindMany).toHaveBeenCalledOnce();
+
+    for (const query of mocks.initiativeFindMany.mock.calls.slice(0, 2).map(call => call[0])) {
+      expect(query.select).toEqual({
+        slug: true, title: true, primaryMetric: true, primaryMetricLabel: true,
+      });
+      expect(query.where).toMatchObject({
+        status: "PUBLISHED", cause: { status: "PUBLISHED" },
+      });
+      for (const unused of ["mediaAssets", "summary", "year", "endYear", "isFeatured", "cause", "id", "appeals"]) {
+        expect(query.select).not.toHaveProperty(unused);
+      }
+    }
+    expect(mocks.initiativeFindMany.mock.calls[0]?.[0].where)
+      .toHaveProperty("mediaAssets.some");
   });
 
   it("does not retrieve unused image galleries on impact comparison", async () => {
