@@ -267,3 +267,20 @@ test('closing and reopening before focus restoration keeps keyboard ownership in
     });
   }
 });
+
+for (const backwards of [false, true]) {
+  test(`gallery recovers externally moved focus on ${backwards ? 'Shift+Tab' : 'Tab'}`, async ({ page }) => {
+    await page.goto('/browser-acceptance/gallery');
+    const trigger = page.getByRole('button', { name: /^Enlarge image 1 of 13:/ });
+    await trigger.click();
+    const dialog = page.getByRole('dialog');
+    await expect(dialog).toBeVisible();
+    await trigger.focus();
+    await expect(trigger).toBeFocused();
+    await page.keyboard.press(backwards ? 'Shift+Tab' : 'Tab');
+    await expect(dialog.getByRole('button', { name: backwards ? 'Next' : 'Close', exact: true })).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(dialog).toHaveCount(0);
+    await expect(trigger).toBeFocused();
+  });
+}

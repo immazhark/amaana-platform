@@ -326,3 +326,27 @@ test('offscreen carousels stay still and resume only when visible', async ({ pag
   await expect(progress).toHaveAttribute('aria-valuenow', '2');
   expect(errors).toEqual([]);
 });
+
+test('keyboard activation survives a drag with no generated pointer click', async ({ page }) => {
+  await page.goto('/browser-acceptance/body-carousel');
+  const carousel = page.getByRole('region', { name: 'Body carousel acceptance' });
+  await carousel.getByRole('button', { name: 'Pause automatic slides' }).click();
+  const viewport = carousel.locator('[id^="carousel-"]');
+  await viewport.evaluate(node => {
+    // A cancelled browser gesture may produce pointerup without a click.
+    // Synthetic pointer IDs are not registered for browser capture.
+    const capture = node.setPointerCapture;
+    node.setPointerCapture = () => {};
+    try {
+      node.dispatchEvent(new PointerEvent('pointerdown', { bubbles: true, pointerType: 'mouse', button: 0, buttons: 1, clientX: 100, pointerId: 1 }));
+      node.dispatchEvent(new PointerEvent('pointermove', { bubbles: true, pointerType: 'mouse', buttons: 1, clientX: 70, pointerId: 1 }));
+      node.dispatchEvent(new PointerEvent('pointerup', { bubbles: true, pointerType: 'mouse', button: 0, pointerId: 1 }));
+    } finally {
+      node.setPointerCapture = capture;
+    }
+  });
+  const flag = carousel.getByRole('button', { name: 'Mark programme 1', exact: true });
+  await flag.focus();
+  await page.keyboard.press('Enter');
+  await expect(flag).toHaveAttribute('aria-pressed', 'true');
+});
