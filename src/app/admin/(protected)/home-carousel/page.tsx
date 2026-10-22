@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { hasPermission, requirePermission } from '@/lib/auth';
 import { getHomeCarouselConfig } from '@/lib/home-carousel-data';
-import { HOME_ARTWORK } from '@/lib/home-carousel';
+import { hasSafeHomeSlideLinks, HOME_ARTWORK } from '@/lib/home-carousel';
 import { prisma } from '@/lib/prisma';
 import { saveHomeCarousel } from './actions';
 import styles from './editor.module.css';
@@ -23,7 +23,8 @@ export default async function HomeCarouselEditor({ searchParams }: { searchParam
     </div>
     <p>Images: upload and approve header images in <Link href="/admin/media">Media review</Link>, then select them here. Keep originals, privacy blur and correct programme mapping. An unavailable or revoked image uses the Amaana logo fallback.</p>
     {config.slides.toSorted((a,b) => a.order-b.order || a.id.localeCompare(b.id)).map(slide => <details className={styles.slide} key={slide.id} open={slide.id === 'origin'}>
-      <summary><span>{slide.title}</span><small>{slide.status === 'PUBLISHED' ? 'Published' : 'Draft'} · Position {slide.order + 1}</small></summary>
+      <summary><span>{slide.title}</span><small>{!hasSafeHomeSlideLinks(slide) ? 'Withheld · Fix destinations' : slide.status === 'PUBLISHED' ? 'Published' : 'Draft'} · Position {slide.order + 1}</small></summary>
+      {!hasSafeHomeSlideLinks(slide) ? <p role="alert" className={styles.error}>This slide is hidden from the homepage. Replace its button destinations with public website links, then save.</p> : null}
       <form action={saveHomeCarousel}>
         <input type="hidden" name="revision" value={revision}/><input type="hidden" name="id" value={slide.id}/>
         <fieldset disabled={!canPublish && slide.status === 'PUBLISHED'}><legend>Slide content</legend><div className={styles.fields}>

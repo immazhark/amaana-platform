@@ -37,10 +37,63 @@ describe('homepage carousel publication and schedules', () => {
     expect(composeHomeSlides(config,[appeal],now).filter(s=>s.appealSlug==='live').map(s=>s.id)).toEqual(['custom']);
     expect(composeHomeSlides(config,[],now).map(s=>s.id)).toEqual(defaultHomeSlides.map(s=>s.id));
   });
+  it('withholds stored slides with unsafe primary or secondary destinations without hiding valid slides', () => {
+    const slides = [origin, { ...eid, primaryHref: '/request-assistance/status' }, { ...medical, secondaryHref: '/donations/receipt' }];
+    expect(composeHomeSlides({ slides, appealPosition: 1 }, [], now).map(s => s.id)).toEqual(['origin']);
+    expect(composeHomeSlides({ slides: slides.slice(1), appealPosition: 1 }, [], now)).toEqual([origin]);
+  });
+  it('chooses the first visible custom slide per appeal and retains scheduled alternatives', () => {
+    const appeal = { ...origin, id: 'appeal-live', appealSlug: 'live' };
+    const earlier = { ...appeal, id: 'custom-a', order: 1 };
+    const later = { ...appeal, id: 'custom-b', order: 2 };
+    const config = { slides: [origin, later, earlier], appealPosition: 1 };
+    expect(composeHomeSlides(config, [appeal, appeal], now).filter(s => s.appealSlug)).toEqual([earlier]);
+    expect(composeHomeSlides({ ...config, slides: [origin, later, { ...earlier, endsAt: now.toISOString() }] }, [appeal], now).filter(s => s.appealSlug)).toEqual([later]);
+    expect(composeHomeSlides(defaultHomeConfig, [appeal, appeal], now).filter(s => s.appealSlug)).toEqual([appeal]);
+  });
+  it.each([
+    ['2026-10-22T12:00:00z', '2026-10-22T12:00:00.000Z'],
+    ['2026-10-22T12:00:00+0530', '2026-10-22T06:30:00.000Z'],
+    ['2026-10-22T12:00:00+05:30', '2026-10-22T06:30:00.000Z'],
+  ])('normalizes supported schedule %s without leaking a RangeError', (startsAt, expected) => {
+    expect(validateHomeSlide({ ...origin, startsAt }).startsAt).toBe(expected);
+  });
+  it.each(['2026-02-30T12:00', '2026-10-22T24:00', '2026-10-22T12:00:00+2500', '2026-10-22T12:60'])('rejects invalid schedule %s with field feedback', startsAt => {
+    expect(() => validateHomeSlide({ ...origin, startsAt })).toThrow(HomeCarouselValidationError);
+  });
   it('rejects duplicate identifiers, invalid date windows and unreviewable image addresses', () => {
     expect(()=>parseHomeConfig({...defaultHomeConfig,slides:[origin,origin]})).toThrow(/unique/);
     expect(()=>validateHomeSlide({...origin,startsAt:'2026-10-04T00:00Z',endsAt:'2026-10-03T00:00Z'})).toThrow(/follow/);
     expect(()=>validateHomeSlide({...origin,image:'https://arbitrary.invalid/photo'})).toThrow(/approved/);
+  });
+  it.each([
+    '/donations',
+    '/donations/receipt',
+    '/request-assistance/status',
+    '/request-assistance/received',
+    '/request-assistance/status?reference=ABC123',
+    '/%72equest-assistance/status',
+    '/request-assistance/%73tatus',
+    '/request-assistance/../donations',
+    '/donations?reference=ABC123',
+    '/donations%3Freference=ABC123',
+    '/donations%23private',
+    '/request-assistance/status%3Freference=ABC123',
+    '/request-assistance/status%23private',
+    '/admin%3Fprivate',
+    '/api%23private',
+  ])('rejects private transactional or assistance CTA %s', href => {
+    expect(() => safeHomeHref(href)).toThrow(HomeCarouselValidationError);
+  });
+  it.each([
+    '/about',
+    '/our-work',
+    '/request-assistance',
+    '/donate',
+    '/donate/reviewed-appeal',
+    '/get-involved/sponsor-education',
+  ])('retains intentional public and fundraising CTA %s', href => {
+    expect(safeHomeHref(href)).toBe(href);
   });
   it.each(['javascript:alert(1)','//evil.invalid','/admin','/api/private','/x/../admin','/%2f%2fevil.invalid','/about%0a','/about\\admin','/%61dmin','/%2561dmin'])('rejects unsafe CTA %s', href => expect(()=>safeHomeHref(href)).toThrow());
 });

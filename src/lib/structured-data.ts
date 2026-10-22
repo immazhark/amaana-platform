@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isPrivateAppMediaUrl } from "@/lib/public-media";
 
 export type PublicStructuredDataType = "Article" | "WebPage";
 
@@ -44,7 +45,7 @@ export function normalizeStructuredDataPath(path: string) {
 
   try {
     const url = new URL(value, DEFAULT_SITE_URL);
-    if (url.origin !== DEFAULT_SITE_URL) return null;
+    if (url.origin !== DEFAULT_SITE_URL || isPrivateAppMediaUrl(url.pathname)) return null;
     return `${url.pathname}${url.search}${url.hash}`;
   } catch {
     return null;
@@ -59,12 +60,16 @@ export function normalizeStructuredDataImage(imageUrl: string | null | undefined
     if (value.startsWith("/")) {
       if (value.startsWith("//")) return null;
       const url = new URL(value, siteUrl);
-      if (url.origin !== siteUrl) return null;
+      if (url.origin !== siteUrl || isPrivateAppMediaUrl(url.pathname)) return null;
       return url.toString();
     }
 
     const url = new URL(value);
     if (url.protocol !== "https:" || url.username || url.password) return null;
+    // The configured origin and the apex/www production aliases are app
+    // routes; none may advertise a protected destination as a public image.
+    if (isPrivateAppMediaUrl(url.toString()) ||
+        (url.origin === siteUrl && isPrivateAppMediaUrl(url.pathname))) return null;
     return url.toString();
   } catch {
     return null;

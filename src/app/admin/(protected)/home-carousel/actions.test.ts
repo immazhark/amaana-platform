@@ -16,6 +16,26 @@ describe('carousel admin boundary',()=>{
  it('rejects a private or unreviewed image',async()=>{m.media.mockResolvedValue(null);await expect(saveHomeCarousel(form({image:'asset:private'}))).rejects.toThrow(/error=/);expect(m.update).not.toHaveBeenCalled();});
  it('saves with revision comparison and records the actor',async()=>{await expect(saveHomeCarousel(form())).rejects.toThrow('/admin/home-carousel?saved=1');expect(m.update).toHaveBeenCalledWith(expect.objectContaining({where:{id:'homepage',revision:1},data:expect.objectContaining({revision:{increment:1}})}));expect(m.audit).toHaveBeenCalledWith(expect.objectContaining({data:expect.objectContaining({actorId:'editor',action:'home_carousel.save'})}));});
  it('cannot remove the permanent general fallback',async()=>{m.find.mockResolvedValue({revision:1,config:{slides:[defaultHomeConfig.slides[0],{...defaultHomeConfig.slides[1],status:'DRAFT'}],appealPosition:1}});await expect(saveHomeCarousel(form({operation:'remove'}))).rejects.toThrow(/fallback/);expect(m.update).not.toHaveBeenCalled();});
+ it('repairs one legacy destination while leaving another withheld slide available for its own repair',async()=>{
+   const config=structuredClone(defaultHomeConfig);
+   config.slides[0]!.primaryHref='/request-assistance/status';
+   config.slides[1]!.primaryHref='/donations/receipt';
+   m.find.mockResolvedValue({revision:1,config});
+   await expect(saveHomeCarousel(form({primaryHref:'/request-assistance'}))).rejects.toThrow('/admin/home-carousel?saved=1');
+   const saved=m.update.mock.calls[0]?.[0].data.config;
+   expect(saved.slides[0].primaryHref).toBe('/request-assistance');
+   expect(saved.slides[1].primaryHref).toBe('/donations/receipt');
+ });
+ it('still rejects a newly submitted private destination',async()=>{
+   await expect(saveHomeCarousel(form({primaryHref:'/donations/receipt'}))).rejects.toThrow(/public%20website/);
+   expect(m.update).not.toHaveBeenCalled();
+ });
+ it('does not count an unsafe legacy slide as the permanent fallback',async()=>{
+   const config={slides:[{...defaultHomeConfig.slides[0],primaryHref:'/request-assistance/status'},{...defaultHomeConfig.slides[1],status:'DRAFT'}],appealPosition:1};
+   m.find.mockResolvedValue({revision:1,config});
+   await expect(saveHomeCarousel(form({operation:'settings',appealPosition:'0'}))).rejects.toThrow(/fallback/);
+   expect(m.update).not.toHaveBeenCalled();
+ });
  it('blocks a racing write with a failed revision comparison',async()=>{m.update.mockResolvedValue({count:0});await expect(saveHomeCarousel(form())).rejects.toThrow(/changed/);expect(m.audit).not.toHaveBeenCalled();});
  it.each(['find','media','update','audit'] as const)('does not put unexpected %s diagnostics into the redirect',async boundary=>{
    const diagnostic='synthetic-private-database-diagnostic';

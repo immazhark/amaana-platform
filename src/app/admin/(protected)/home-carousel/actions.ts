@@ -4,7 +4,7 @@ import { redirect } from 'next/navigation';
 import { Prisma } from '@prisma/client';
 import { randomUUID } from 'node:crypto';
 import { hasPermission, requirePermission } from '@/lib/auth';
-import { defaultHomeConfig, HomeCarouselValidationError, parseHomeConfig, parseHomeNumericInput, validateHomeSlide } from '@/lib/home-carousel';
+import { defaultHomeConfig, hasSafeHomeSlideLinks, HomeCarouselValidationError, readStoredHomeConfig, parseHomeNumericInput, validateHomeSlide } from '@/lib/home-carousel';
 import { withSerializableTransactionRetry } from '@/lib/prisma-transaction';
 import { getAppealCoverMediaIssues } from '@/lib/appeal-cover-media';
 
@@ -36,7 +36,7 @@ export async function saveHomeCarousel(form: FormData) {
     await withSerializableTransactionRetry(async tx => {
       const row = await tx.homeCarousel.findUnique({ where: { id: 'homepage' } });
       if ((row?.revision ?? 0) !== revision) throw new HomeCarouselValidationError('The carousel changed in another session. Refresh before saving.');
-      const config = row ? parseHomeConfig(row.config) : structuredClone(defaultHomeConfig);
+      const config = row ? readStoredHomeConfig(row.config) : structuredClone(defaultHomeConfig);
       const current = config.slides.find(s => s.id === id);
       if (operation === 'settings') {
         if (!hasPermission(user, 'content.approve')) throw new HomeCarouselValidationError('Publishing permission is required to change live appeal placement.');
@@ -66,8 +66,10 @@ export async function saveHomeCarousel(form: FormData) {
           config.slides = config.slides.map(s => s.id === id ? slide : s);
         }
       }
-      const validated = parseHomeConfig(config);
-      if (!validated.slides.some(s => s.status === 'PUBLISHED' && !s.appealSlug && !s.startsAt && !s.endsAt)) throw new HomeCarouselValidationError('Keep one published, unscheduled general slide as the permanent fallback.');
+      // Only the submitted slide is changed and strictly validated above. Keep
+      // other legacy links editable, withheld from public composition until fixed.
+      const validated = readStoredHomeConfig(config);
+      if (!validated.slides.some(s => s.status === 'PUBLISHED' && hasSafeHomeSlideLinks(s) && !s.appealSlug && !s.startsAt && !s.endsAt)) throw new HomeCarouselValidationError('Keep one published, unscheduled general slide as the permanent fallback.');
       const json = validated as unknown as Prisma.InputJsonValue;
       if (row) {
         const saved = await tx.homeCarousel.updateMany({ where: { id: 'homepage', revision }, data: { config: json, revision: { increment: 1 } } });

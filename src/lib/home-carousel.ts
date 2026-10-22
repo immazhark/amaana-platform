@@ -24,12 +24,17 @@ export const defaultHomeSlides: HomeSlide[] = [
 ];
 export const defaultHomeConfig: HomeCarouselConfig = { slides: defaultHomeSlides, appealPosition: 1 };
 export function safeHomeHref(value: string) {
-  if (!/^\/(?!\/)[a-zA-Z0-9/_?=&%#.-]*$/.test(value) || /%(?:25|2f|5c|0[0-9a-f]|1[0-9a-f]|7f)/i.test(value)) throw new HomeCarouselValidationError('Use a safe internal website link.');
+  if (!/^\/(?!\/)[a-zA-Z0-9/_?=&%#.-]*$/.test(value) || /%(?:25|2f|5c|3f|23|0[0-9a-f]|1[0-9a-f]|7f)/i.test(value)) throw new HomeCarouselValidationError('Use a safe internal website link.');
   const url = new URL(value, 'https://amaana.invalid');
   let pathname: string;
   try { pathname = decodeURIComponent(url.pathname); }
   catch { throw new HomeCarouselValidationError('Use a safe internal website link.'); }
-  if (url.origin !== 'https://amaana.invalid' || /^\/(?:admin|api)(?:\/|$)/i.test(pathname)) throw new HomeCarouselValidationError('Choose a public website destination.');
+  // The editor must not advertise administrative, receipt, or private case-status
+  // routes as public slide CTAs. Keep donation checkout and assistance entry
+  // routes available for verified fundraising and support journeys.
+  const protectedDestination = /^\/(?:admin|api|donations)(?:\/|$)/i.test(pathname)
+    || /^\/request-assistance\/(?:status|received)(?:\/|$)/i.test(pathname);
+  if (url.origin !== 'https://amaana.invalid' || protectedDestination) throw new HomeCarouselValidationError('Choose a public website destination.');
   return value;
 }
 /** Accept JSON numbers and nonempty numeric form strings without coercing other values. */
@@ -37,7 +42,19 @@ export function parseHomeNumericInput(value: unknown): number {
   if (typeof value === 'number') return value;
   return typeof value === 'string' && value.trim() ? Number(value) : NaN;
 }
-export function validateHomeSlide(raw: unknown): HomeSlide {
+function normalizeHomeSchedule(value: string): string {
+  if (!value) return '';
+  const timestamp = Date.parse(/(?:z|[+-]\d\d:?\d\d)$/i.test(value) ? value : value + 'Z');
+  const day = new Date(value.slice(0, 10) + 'T00:00:00Z');
+  if (!/^\d{4}-\d\d-\d\dT\d\d:\d\d(?::\d\d(?:\.\d{1,3})?)?(?:z|[+-]\d\d:?\d\d)?$/i.test(value)
+    || Number(value.slice(11, 13)) > 23 || !Number.isFinite(timestamp)
+    || !Number.isFinite(day.getTime()) || day.toISOString().slice(0, 10) !== value.slice(0, 10)) {
+    throw new HomeCarouselValidationError('Use a valid date/time.');
+  }
+  return new Date(timestamp).toISOString();
+}
+
+function readHomeSlide(raw: unknown, readHref: (value: string) => string): HomeSlide {
   if (!raw || typeof raw !== 'object') throw new HomeCarouselValidationError('Slide details are missing.');
   const v = raw as Record<string, unknown>;
   const text = (key: string, min: number, max: number) => {
@@ -52,35 +69,59 @@ export function validateHomeSlide(raw: unknown): HomeSlide {
   if (!HOME_ARTWORK.includes(image as typeof HOME_ARTWORK[number]) && !/^asset:[a-zA-Z0-9_-]+$/.test(image)) throw new HomeCarouselValidationError('Choose approved artwork or a reviewed media image.');
   const order = parseHomeNumericInput(v.order), focalX = parseHomeNumericInput(v.focalX), focalY = parseHomeNumericInput(v.focalY);
   if (!Number.isInteger(order) || order < 0 || order > 1000 || ![focalX, focalY].every(n => Number.isFinite(n) && n >= 0 && n <= 100)) throw new HomeCarouselValidationError('Order and image focal point are invalid.');
-  let startsAt = text('startsAt', 0, 40), endsAt = text('endsAt', 0, 40);
+  const startsAt = normalizeHomeSchedule(text('startsAt', 0, 40)), endsAt = normalizeHomeSchedule(text('endsAt', 0, 40));
   const appealSlug = text('appealSlug', 0, 160);
-  for (const date of [startsAt, endsAt]) if (date && (!/^\d{4}-\d\d-\d\dT/.test(date) || !Number.isFinite(Date.parse(date)) || new Date(date.slice(0,10) + 'T00:00:00Z').toISOString().slice(0,10) !== date.slice(0,10))) throw new HomeCarouselValidationError('Use a valid date/time.');
-  startsAt = startsAt ? new Date(startsAt.endsWith('Z') || /[+-]\d\d:\d\d$/.test(startsAt) ? startsAt : startsAt + 'Z').toISOString() : '';
-  endsAt = endsAt ? new Date(endsAt.endsWith('Z') || /[+-]\d\d:\d\d$/.test(endsAt) ? endsAt : endsAt + 'Z').toISOString() : '';
   if (startsAt && endsAt && Date.parse(startsAt) >= Date.parse(endsAt)) throw new HomeCarouselValidationError('End time must follow start time.');
   if (appealSlug && !/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(appealSlug)) throw new HomeCarouselValidationError('Appeal slug is invalid.');
   const secondaryLabel = text('secondaryLabel', 0, 42);
-  return { id, eyebrow: text('eyebrow', 1, 70), title: text('title', 5, 100), description: text('description', 20, 320), primaryLabel: text('primaryLabel', 2, 42), primaryHref: safeHomeHref(text('primaryHref', 1, 240)), secondaryLabel, secondaryHref: secondaryLabel ? safeHomeHref(text('secondaryHref', 1, 240)) : '', image, imageAlt: text('imageAlt', 0, 200), focalX, focalY, order, status, startsAt, endsAt, appealSlug };
+  return { id, eyebrow: text('eyebrow', 1, 70), title: text('title', 5, 100), description: text('description', 20, 320), primaryLabel: text('primaryLabel', 2, 42), primaryHref: readHref(text('primaryHref', 1, 240)), secondaryLabel, secondaryHref: secondaryLabel ? readHref(text('secondaryHref', 1, 240)) : '', image, imageAlt: text('imageAlt', 0, 200), focalX, focalY, order, status, startsAt, endsAt, appealSlug };
 }
-export function parseHomeConfig(raw: unknown): HomeCarouselConfig {
+export function validateHomeSlide(raw: unknown): HomeSlide {
+  return readHomeSlide(raw, safeHomeHref);
+}
+function readHomeConfig(raw: unknown, readSlide: (value: unknown) => HomeSlide): HomeCarouselConfig {
   if (!raw || typeof raw !== 'object') throw new HomeCarouselValidationError('Carousel configuration is invalid.');
   const v = raw as Record<string, unknown>;
   if (!Array.isArray(v.slides) || v.slides.length < 1 || v.slides.length > 20) throw new HomeCarouselValidationError('Keep between one and twenty slides.');
-  const slides = v.slides.map(validateHomeSlide);
+  const slides = v.slides.map(readSlide);
   if (new Set(slides.map(s => s.id)).size !== slides.length) throw new HomeCarouselValidationError('Slide identifiers must be unique.');
   const appealPosition = parseHomeNumericInput(v.appealPosition);
   if (!Number.isInteger(appealPosition) || appealPosition < 0 || appealPosition > 20) throw new HomeCarouselValidationError('Appeal position must be between zero and twenty.');
   return { slides, appealPosition };
 }
+export function parseHomeConfig(raw: unknown): HomeCarouselConfig {
+  return readHomeConfig(raw, validateHomeSlide);
+}
+/** Keep old destinations as editable text. Public composition must withhold them;
+ * new/changed slides still pass validateHomeSlide before persistence. */
+export function readStoredHomeConfig(raw: unknown): HomeCarouselConfig {
+  return readHomeConfig(raw, slide => readHomeSlide(slide, value => value));
+}
+export function hasSafeHomeSlideLinks(slide: HomeSlide): boolean {
+  try {
+    safeHomeHref(slide.primaryHref);
+    if (slide.secondaryLabel) safeHomeHref(slide.secondaryHref);
+    return true;
+  } catch (error) {
+    if (error instanceof HomeCarouselValidationError) return false;
+    throw error;
+  }
+}
 export function visibleHomeSlides(config: HomeCarouselConfig, activeAppealSlugs: ReadonlySet<string>, now = new Date()) {
-  return config.slides.filter(s => s.status === 'PUBLISHED' && (!s.startsAt || Date.parse(s.startsAt) <= now.getTime()) && (!s.endsAt || Date.parse(s.endsAt) > now.getTime()) && (!s.appealSlug || activeAppealSlugs.has(s.appealSlug))).sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
+  return config.slides.filter(s => s.status === 'PUBLISHED' && hasSafeHomeSlideLinks(s) && (!s.startsAt || Date.parse(s.startsAt) <= now.getTime()) && (!s.endsAt || Date.parse(s.endsAt) > now.getTime()) && (!s.appealSlug || activeAppealSlugs.has(s.appealSlug))).sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
 }
 
 /** Insert automatically sourced appeals once; custom linked slides take precedence. */
 export function composeHomeSlides(config: HomeCarouselConfig, appealSlides: HomeSlide[], now = new Date()) {
-  const visible = visibleHomeSlides(config, new Set(appealSlides.map(s => s.appealSlug)), now);
-  const linked = new Set(visible.map(s => s.appealSlug).filter(Boolean));
-  const automatic = appealSlides.filter(s => !linked.has(s.appealSlug));
+  const linked = new Set<string>();
+  const firstForAppeal = (slide: HomeSlide) => {
+    if (!slide.appealSlug) return true;
+    if (linked.has(slide.appealSlug)) return false;
+    linked.add(slide.appealSlug);
+    return true;
+  };
+  const visible = visibleHomeSlides(config, new Set(appealSlides.map(s => s.appealSlug)), now).filter(firstForAppeal);
+  const automatic = appealSlides.filter(s => hasSafeHomeSlideLinks(s) && firstForAppeal(s));
   // Valid admin saves retain an unscheduled fallback. Protect rendering of old/corrupt empty visibility windows too.
   const fallback = defaultHomeSlides[0];
   if (!fallback) throw new HomeCarouselValidationError("Homepage carousel requires a canonical fallback slide.");
