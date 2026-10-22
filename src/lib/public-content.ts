@@ -84,14 +84,22 @@ export const getPublishedInitiativeBySlug = cache(async (slug: string) => {
       stories: {
         where: { status: "PUBLISHED", privacyApprovedAt: { not: null } },
         orderBy: { publishedAt: "desc" },
+        select: { id: true, slug: true, title: true, summary: true },
       },
       appeals: {
         where: { status: { in: ["PUBLISHED", "FUNDED"] } },
         orderBy: { publishedAt: "desc" },
+        // Only the donation-eligibility guard and linked-appeal label use
+        // these fields. Never fetch internal notes or beneficiary details.
+        select: {
+          id: true, slug: true, title: true, status: true,
+          goalAmount: true, amountRaised: true, closesAt: true,
+        },
       },
       faithContent: {
         where: publicFaithWhere,
         orderBy: { publishedAt: "desc" },
+        select: { id: true, slug: true, title: true, excerpt: true },
       },
     },
   });
