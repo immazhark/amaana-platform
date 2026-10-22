@@ -149,23 +149,14 @@ export const getHomepageHeroMedia = cache(async () => {
 export const getHomepageDiscoveryData = cache(async () => {
   const fieldSlugs = ["qurbani-meat-distribution-2026", "dates-distribution-2026"];
 
+  // This projection is used only by the verified-outcomes strip. Programme
+  // artwork comes from the separate reviewed cause/identity-media query below.
+  // Avoid fetching unused image rows, relations, and extended initiative copy.
   const homepageInitiativeSelect = {
-    id: true,
     slug: true,
     title: true,
-    summary: true,
-    year: true,
-    endYear: true,
-    isFeatured: true,
     primaryMetric: true,
     primaryMetricLabel: true,
-    cause: { select: { title: true } },
-    mediaAssets: {
-      where: PUBLIC_IDENTITY_IMAGE_WHERE,
-      orderBy: [{ sourceYear: "desc" }, { createdAt: "desc" }],
-      take: 1,
-      select: PUBLIC_IMAGE_SELECT,
-    },
   } satisfies Prisma.InitiativeSelect;
 
   const [featuredInitiatives, fieldInitiatives, causes, publishedProgrammeRecords] = await Promise.all([
