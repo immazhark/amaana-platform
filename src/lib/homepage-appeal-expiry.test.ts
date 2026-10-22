@@ -18,7 +18,7 @@ vi.mock("next/cache", () => ({
   },
 }));
 vi.mock("@/lib/prisma", () => ({
-  prisma: { appeal: { findMany: mocks.appealFindMany } },
+  prisma: { appeal: { findMany: mocks.appealFindMany, fields: { goalAmount: { _ref: "appeal.goalAmount" } } } },
 }));
 
 import { getHomepageAppeals } from "./public-content";

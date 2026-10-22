@@ -11,7 +11,7 @@ import { WorkVisualPlaceholder } from "@/components/work-visual-placeholder";
 import { getHomepageAppeals } from "@/lib/public-content";
 import { HomeGrowth, HomeTrust } from "@/components/home-evidence";
 import { VerifiedImpactStrip } from "@/components/verified-impact-strip";
-import { getHomepageDiscoveryData, getAppealCoverMediaBatch } from "@/lib/public-page-data";
+import { getHomepageDiscoveryData } from "@/lib/public-page-data";
 import { PublicMedia } from "@/components/public-media";
 import { ScrollCarousel } from "@/components/scroll-carousel";
 import { programmeCategories, programmes } from '@/lib/master-copy';
@@ -49,12 +49,12 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   const [liveAppeals, discovery, { config }] = await Promise.all([getHomepageAppeals(20), getHomepageDiscoveryData(), getHomeCarouselConfig()]);
   const appeals = liveAppeals.slice(0, 3);
-  const [images, appealCoverMedia] = await Promise.all([
-    getHomeCarouselImages(config.slides.map(s => s.image)),
-    getAppealCoverMediaBatch(liveAppeals.map(appeal => appeal.coverImageUrl)),
-  ]);
+  const { images, coverByUrl } = await getHomeCarouselImages(
+    config.slides.map(slide => slide.image),
+    liveAppeals.map(appeal => appeal.coverImageUrl),
+  );
   const appealImages = liveAppeals.map(appeal =>
-    appeal.coverImageUrl ? appealCoverMedia.get(appeal.coverImageUrl) ?? null : null,
+    appeal.coverImageUrl ? coverByUrl.get(appeal.coverImageUrl) ?? null : null,
   );
   const appealTemplate = defaultHomeSlides[0];
   if (!appealTemplate) throw new Error("Homepage carousel requires a default slide template");
