@@ -22,6 +22,8 @@ describe("published initiative detail relation boundary", () => {
       slug: "taleem", status: "PUBLISHED", cause: { status: "PUBLISHED" },
     });
 
+    expect(query.include.cause).toEqual({ select: { title: true } });
+
     expect(query.include.stories).toEqual({
       where: { status: "PUBLISHED", privacyApprovedAt: { not: null } },
       orderBy: { publishedAt: "desc" },
