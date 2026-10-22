@@ -23,7 +23,9 @@ import { programmeCategoryPath } from '@/lib/programme-category-routing';
 import { selectIdentityPublicImage } from '@/lib/public-media';
 import { openGraphShareImages, twitterShareImages } from '@/lib/social-share-media';
 
-export const revalidate = 300;
+// Appeal eligibility changes with time; never serve an expired fundraiser from ISR HTML.
+// Reviewed database projections retain their independent bounded caches.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
   title: { absolute: "Amaana Foundation | Charity & Relief in Hyderabad" },
