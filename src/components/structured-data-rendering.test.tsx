@@ -57,6 +57,34 @@ describe("all public JSON-LD entry points use the reviewed serializer", () => {
     expect(crumb.position).toBe(1);
   });
 
+  it("refuses public breadcrumb schema when any item targets a private or malformed route", () => {
+    for (const path of [
+      "/admin/appeals",
+      "/api/donations/order",
+      "/%61dmin/appeals",
+      "//untrusted.example/redirect",
+      "https://untrusted.example/redirect",
+    ]) {
+      const markup = renderToStaticMarkup(<BreadcrumbStructuredData items={[
+        { name: "Home", path: "/" },
+        { name: "Invalid destination", path },
+      ]} />);
+      expect(markup, path).toBe("");
+    }
+  });
+
+  it("normalizes valid relative breadcrumb destinations and retains sequential positions", () => {
+    const markup = renderToStaticMarkup(<BreadcrumbStructuredData items={[
+      { name: "Home", path: "/" },
+      { name: "Our Work", path: "our-work" },
+    ]} />);
+    const data = readSchema(markup);
+    expect(data.itemListElement.map((item: { item: string; position: number }) => [item.position, item.item])).toEqual([
+      [1, "https://amaanafoundation.org/"],
+      [2, "https://amaanafoundation.org/our-work"],
+    ]);
+  });
+
   it("retains the organization and website schema nodes", () => {
     const markup = renderToStaticMarkup(<StructuredData />);
     const content = markup.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/)?.[1];
