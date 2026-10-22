@@ -29,7 +29,12 @@ export function safeHomeHref(value: string) {
   let pathname: string;
   try { pathname = decodeURIComponent(url.pathname); }
   catch { throw new HomeCarouselValidationError('Use a safe internal website link.'); }
-  if (url.origin !== 'https://amaana.invalid' || /^\/(?:admin|api)(?:\/|$)/i.test(pathname)) throw new HomeCarouselValidationError('Choose a public website destination.');
+  // The editor must not advertise administrative, receipt, or private case-status
+  // routes as public slide CTAs. Keep donation checkout and assistance entry
+  // routes available for verified fundraising and support journeys.
+  const protectedDestination = /^\/(?:admin|api|donations)(?:\/|$)/i.test(pathname)
+    || /^\/request-assistance\/(?:status|received)(?:\/|$)/i.test(pathname);
+  if (url.origin !== 'https://amaana.invalid' || protectedDestination) throw new HomeCarouselValidationError('Choose a public website destination.');
   return value;
 }
 /** Accept JSON numbers and nonempty numeric form strings without coercing other values. */
