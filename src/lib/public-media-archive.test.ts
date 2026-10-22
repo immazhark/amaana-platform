@@ -51,6 +51,33 @@ describe("bounded published media archives", () => {
   it.each(["0", "-1", "01", "1.5", "1e3", " 2", "2 ", "Infinity", "89478487", ["1", "2"]])("rejects ambiguous or unsafe page %s", value => {
     expect(parsePublicArchivePage(value)).toBeNull();
   });
+  it("avoids a total media count on page one while retaining the publication gate", async () => {
+    const result = await getPublicMediaArchive("initiative", parent.slug, 1);
+    expect(result?.media).toHaveLength(24);
+    expect(result?.hasNext).toBe(true);
+
+    const parentQuery = mocks.initiative.mock.calls[0]?.[0];
+    expect(parentQuery.where).toMatchObject({
+      slug: parent.slug, status: "PUBLISHED", cause: { status: "PUBLISHED" },
+    });
+    expect(parentQuery.select).toEqual({ id: true, slug: true, title: true });
+    expect(mocks.media.mock.calls[0]?.[0]).toMatchObject({ skip: 0, take: 25 });
+  });
+
+  it("retains a bounded eligibility count for later pages and fails closed on missing counts", async () => {
+    await getPublicMediaArchive("story", parent.slug, 2);
+    expect(mocks.story.mock.calls[0]?.[0].select._count).toEqual({
+      select: { mediaAssets: { where: expect.objectContaining({ isPublic: true, privacyApprovedAt: { not: null } }) } },
+    });
+
+    mocks.story.mockReset().mockResolvedValue({
+      id: parent.id, slug: parent.slug, title: parent.title,
+    });
+    mocks.media.mockClear();
+    expect(await getPublicMediaArchive("story", parent.slug, 2)).toBeNull();
+    expect(mocks.media).not.toHaveBeenCalled();
+  });
+
   it("returns 24 records and a next-page flag without serializing parent IDs/counts", async () => {
     const result = await getPublicMediaArchive("initiative", parent.slug, 2);
     expect(result?.media).toHaveLength(24);
