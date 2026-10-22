@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   initiativeFindMany: vi.fn(),
@@ -28,6 +28,7 @@ import { getPublishedInitiativeBySlug } from "./public-content";
 import { getInitiativePageData } from "./public-page-data";
 
 describe("public page gallery media query contracts", () => {
+  afterEach(() => vi.unstubAllEnvs());
   beforeEach(() => {
     mocks.initiativeFindMany.mockReset();
     mocks.initiativeFindMany.mockResolvedValue([]);
@@ -103,6 +104,25 @@ describe("public page gallery media query contracts", () => {
     expect(query.select).not.toHaveProperty("assistanceRequest");
     expect(query.select).not.toHaveProperty("story");
     expect(query.select).not.toHaveProperty("updates");
+  });
+
+  it("excludes staging-test appeals from the production SQL projection", async () => {
+    vi.stubEnv("APP_ENVIRONMENT", "production");
+    await getAppealsIndexData();
+
+    const where = mocks.appealFindMany.mock.calls[0]?.[0]?.where;
+    expect(where.NOT).toEqual([
+      { slug: { startsWith: "staging-" } },
+      { title: { startsWith: "STAGING TEST" } },
+    ]);
+  });
+
+  it("keeps staging-test appeal previews available in the staging SQL projection", async () => {
+    vi.stubEnv("APP_ENVIRONMENT", "staging");
+    await getAppealsIndexData();
+
+    const where = mocks.appealFindMany.mock.calls[0]?.[0]?.where;
+    expect(where.NOT).toBeUndefined();
   });
 
   it("does not retrieve unused image galleries on impact comparison", async () => {
