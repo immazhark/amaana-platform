@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isPrivateAppMediaUrl } from "@/lib/public-media";
 
 export type PublicStructuredDataType = "Article" | "WebPage";
 
@@ -44,7 +45,7 @@ export function normalizeStructuredDataPath(path: string) {
 
   try {
     const url = new URL(value, DEFAULT_SITE_URL);
-    if (url.origin !== DEFAULT_SITE_URL) return null;
+    if (url.origin !== DEFAULT_SITE_URL || isPrivateAppMediaUrl(url.pathname)) return null;
     return `${url.pathname}${url.search}${url.hash}`;
   } catch {
     return null;
