@@ -6,6 +6,14 @@
 **Historical source:** `docs/AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md` on preserved **old** branch `fix/direct-transfer-feedback-20261013` (2026-10-17 snapshot); the old branch is **read-only historical evidence**, NOT current `main`.  
 **Truth precedence:** Live `main` source + current PR/actual Railway release > older docs/PR assertions. User-confirmed legal/campaign evidence remains controlling until explicitly reconciled.
 
+## Current source delta — 22 October 2026
+
+Release dependency finding: PR #405 hosted audit identified the existing Next.js 16.3.8 pin as vulnerable under GHSA-2464-fhr4-w9xw / GHSA-p3m5-59mp-jv5r. Exact Next.js/eslint-config-next 16.4.2 pins and lockfile are implemented. Isolated local verification: zero production audit vulnerabilities, 1,936 unit tests passed / 15 skipped, TypeScript/full ESLint and 27 safety checks passed. Fresh protected build/database/browser acceptance is required. Existing bundle caps remain mandatory. This is a source-level dependency remediation, not a production security or master-item closure certificate.
+
+PR #404 public-detail relation minimization is **MERGED** at `d4b1afe341d944a61dbb0cd72c20826b557d8a51`, after exact-head full CI and final promotion checks. Deployment/live acceptance remain **UNVERIFIED** because Railway requires reauthentication.
+
+PR #405 is the combined public release candidate, preserving original #406 through a normal merge. **AF-R052:** skip first-page eligible-media totals while retaining later-page count bounds and privacy gates. **AF-R042:** withhold unsafe stored CTAs without breaking the homepage/editor or blocking sequential correction; retain strict new-slide validation and safe fallback; show editor warnings; deduplicate appeal promotions after schedule selection; normalize lowercase-Z/compact-offset timestamps and reject invalid 24:00 schedules with field feedback. These changes are **IMPLEMENTED_SOURCE / TESTED** (1,936 unit tests passed, 15 skipped), **not yet MERGED / DEPLOYED / LIVE_VERIFIED**. Require fresh protected checks for the combined head. Do not merge original #406 independently without the compatibility correction. No master item is fully closed and the historical 149-item totals are unchanged.
+
 ## Current source delta — 21 October 2026
 
 This bounded update supersedes stale release references below without changing the historical 149-entry totals. PR #394 is merged at `fab6143`; PR #395 (`84bde5b`) contains four carousel interaction fixes, owner-approved for merge after protected checks. Its production/budget/fast/database checks passed; browser acceptance is pending after a cancelled run was restarted. These changes contribute to AF-R042 interaction acceptance, not full screen-reader/device closure.

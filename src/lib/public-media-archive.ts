@@ -20,8 +20,11 @@ export function parsePublicArchivePage(value: string | string[] | undefined): nu
 export async function getPublicMediaArchive(kind: string, slug: string, page: number) {
   if (parsePublicArchivePage(String(page)) !== page || !slug || slug.length > 200) return null;
   const mediaWhere = PUBLIC_DETAIL_MEDIA_PROJECTION.where;
-  const select = {
-    id: true, slug: true, title: true,
+  // Page one already fetches one extra row for hasNext. Avoid an expensive
+  // parent relation count until a visitor requests an offset page.
+  const baseSelect = { id: true, slug: true, title: true } as const;
+  const select = page === 1 ? baseSelect : {
+    ...baseSelect,
     _count: { select: { mediaAssets: { where: mediaWhere } } },
   } as const;
   const initiativeWhere = { slug, status: "PUBLISHED" as const, cause: { status: "PUBLISHED" as const } };
@@ -34,7 +37,16 @@ export async function getPublicMediaArchive(kind: string, slug: string, page: nu
       : kind === "faith"
         ? await prisma.faithContent.findFirst({ where: faithWhere, select })
         : null;
-  if (!parent || (page > 1 && (page - 1) * PUBLIC_ARCHIVE_PAGE_SIZE >= parent._count.mediaAssets)) return null;
+  if (!parent) return null;
+  // The extra offset-page count must exist and be positive. Fail closed if an
+  // unexpected projection omitted it instead of making an unchecked deep read.
+  if (page > 1) {
+    const count = "_count" in parent && typeof parent._count === "object" &&
+      parent._count !== null && "mediaAssets" in parent._count
+      ? parent._count.mediaAssets
+      : undefined;
+    if (typeof count !== "number" || (page - 1) * PUBLIC_ARCHIVE_PAGE_SIZE >= count) return null;
+  }
   const relation = kind === "initiative" ? { initiative: { id: parent.id, ...initiativeWhere } }
     : kind === "story" ? { story: { id: parent.id, ...storyWhere } }
       : { faithContent: { id: parent.id, ...faithWhere } };

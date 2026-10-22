@@ -3,18 +3,32 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const mocks = vi.hoisted(() => ({
   findMedia: vi.fn(),
   reviewMediaBatch: vi.fn(),
+  findConfig: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
   prisma: {
     mediaAsset: { findMany: mocks.findMedia },
+    homeCarousel: { findUnique: mocks.findConfig },
   },
 }));
 vi.mock("@/lib/public-page-data", () => ({
   getAppealCoverMediaBatch: mocks.reviewMediaBatch,
 }));
+vi.mock("next/cache", () => ({ unstable_cache: (read: () => unknown) => read }));
 
-import { getHomeCarouselImages } from "./home-carousel-data";
+import { getHomeCarouselConfig, getHomeCarouselImages } from "./home-carousel-data";
+import { composeHomeSlides, defaultHomeConfig } from "./home-carousel";
+
+it("keeps legacy destinations editable while public composition withholds the affected slides", async () => {
+  const config = structuredClone(defaultHomeConfig);
+  config.slides[1]!.primaryHref = "/request-assistance/status";
+  mocks.findConfig.mockResolvedValueOnce({ config, revision: 7 });
+  const stored = await getHomeCarouselConfig();
+  expect(stored.revision).toBe(7);
+  expect(stored.config.slides[1]?.primaryHref).toBe("/request-assistance/status");
+  expect(composeHomeSlides(stored.config, []).map(s => s.id)).toEqual(["origin", "medical", "taleem", "qurbani"]);
+});
 
 describe("homepage reviewed media batching", () => {
   beforeEach(() => {

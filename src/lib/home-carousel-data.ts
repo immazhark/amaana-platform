@@ -1,12 +1,12 @@
 import { cache } from 'react';
 import { unstable_cache } from 'next/cache';
 import { prisma } from '@/lib/prisma';
-import { defaultHomeConfig, parseHomeConfig } from '@/lib/home-carousel';
+import { defaultHomeConfig, readStoredHomeConfig } from '@/lib/home-carousel';
 import { getAppealCoverMediaBatch, type ApprovedAppealCoverMedia } from '@/lib/public-page-data';
 
 const getHomeCarouselConfigCached = unstable_cache(async () => {
   const row = await prisma.homeCarousel.findUnique({ where: { id: 'homepage' } });
-  return { config: row ? parseHomeConfig(row.config) : structuredClone(defaultHomeConfig), revision: row?.revision ?? 0 };
+  return { config: row ? readStoredHomeConfig(row.config) : structuredClone(defaultHomeConfig), revision: row?.revision ?? 0 };
 }, ['home-carousel-config'], { revalidate: 300, tags: ['home-carousel'] });
 
 export const getHomeCarouselConfig = cache(getHomeCarouselConfigCached);
