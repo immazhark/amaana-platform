@@ -1,3 +1,7 @@
+## 2026-10-22 — First-page media archive query optimization
+
+Owner: CHATGPT_ACTIVE, sole writer. Base main c9b03946b9c5b3921e4a6975ad9c3eef1cc7da1f. Source-proven: getPublicMediaArchive requested a full eligible MediaAsset count on page one despite the existing 25-row lookahead already determining hasNext. New tests first in src/lib/public-media-archive.test.ts demand no _count for page one, preserved parent publication and image approval gates, a 25-row lookahead, later-page filtered _count and fail-closed behavior when a count is absent. The source now selects only parent id, slug and title on page one; later pages request the same eligible-media count before offset reads. No change to media privacy, storage, public response, URLs, page order, page sizes, client JavaScript, payment, schemas, admin, or Railway worker. Exact-head acceptance pending; PRs #403/#404 remain separate. Rollback: revert scoped PR.
+
 ## 2026-10-22 — PR #401 merged, PR #402 integrated for new acceptance
 
 PR #401 protected exact-head check suite passed and owner-authorized merge into `main` at `d4f20174516c7110cc44cfdae05f9b16a7b12d32`. PR #402 now merges this main with its own homepage/query/media changes; preserve both sets of code/tests and all prior audit notes. New merge head requires repeat protected checks; neither PR #402 merge nor Railway deployment is implied by this note. Draft i18n PR #374 remains excluded.
