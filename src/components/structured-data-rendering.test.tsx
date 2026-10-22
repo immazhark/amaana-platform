@@ -78,7 +78,7 @@ describe("all public JSON-LD entry points use the reviewed serializer", () => {
       { name: "Home", path: "/" },
       { name: "Our Work", path: "our-work" },
     ]} />);
-    const data = JSON.parse(markup.match(/<script type="application\\/ld\\+json">([\\s\\S]*?)<\\/script>/)?.[1] ?? "{}");
+    const data = readSchema(markup);
     expect(data.itemListElement.map((item: { item: string; position: number }) => [item.position, item.item])).toEqual([
       [1, "https://amaanafoundation.org/"],
       [2, "https://amaanafoundation.org/our-work"],
