@@ -1,17 +1,21 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const mocks = vi.hoisted(() => ({ findInitiative: vi.fn() }));
+const mocks = vi.hoisted(() => ({ findInitiative: vi.fn(), findStory: vi.fn(), findFaith: vi.fn() }));
 vi.mock("@/lib/prisma", () => ({
-  prisma: { initiative: { findFirst: mocks.findInitiative } },
+  prisma: { initiative: { findFirst: mocks.findInitiative }, story: { findFirst: mocks.findStory }, faithContent: { findFirst: mocks.findFaith } },
 }));
 vi.mock("next/cache", () => ({
   unstable_cache: (read: unknown) => read,
 }));
 
-import { getPublishedInitiativeBySlug, PUBLIC_DETAIL_MEDIA_LIMIT } from "./public-content";
+import { getPublishedInitiativeBySlug, getPublishedStoryBySlug, getPublishedFaithContentBySlug, PUBLIC_DETAIL_MEDIA_LIMIT } from "./public-content";
 
 describe("published initiative detail relation boundary", () => {
-  beforeEach(() => mocks.findInitiative.mockReset().mockResolvedValue(null));
+  beforeEach(() => {
+    mocks.findInitiative.mockReset().mockResolvedValue(null);
+    mocks.findStory.mockReset().mockResolvedValue(null);
+    mocks.findFaith.mockReset().mockResolvedValue(null);
+  });
 
   it("limits related records to only the public fields the detail page renders", async () => {
     await expect(getPublishedInitiativeBySlug("taleem")).resolves.toBeNull();
@@ -57,6 +61,45 @@ describe("published initiative detail relation boundary", () => {
       take: PUBLIC_DETAIL_MEDIA_LIMIT,
       select: { id: true, publicUrl: true, altText: true, sortOrder: true },
     });
+  });
+
+  it("selects only public linkage for published reviewed story pages", async () => {
+    await expect(getPublishedStoryBySlug("reviewed-story")).resolves.toBeNull();
+    const query = mocks.findStory.mock.calls[0]?.[0];
+    expect(query.where).toEqual({
+      slug: "reviewed-story", status: "PUBLISHED", privacyApprovedAt: { not: null },
+    });
+    expect(query.include.cause).toEqual({ select: { title: true, status: true } });
+    expect(query.include.initiative).toEqual({
+      select: {
+        slug: true, title: true, status: true,
+        cause: { select: { status: true } },
+      },
+    });
+    expect(query.include.mediaAssets).toMatchObject({
+      take: PUBLIC_DETAIL_MEDIA_LIMIT, select: { altText: true, publicUrl: true },
+    });
+  });
+
+  it("limits published faith detail linkage without affecting topic or image review", async () => {
+    await expect(getPublishedFaithContentBySlug("reviewed-reflection")).resolves.toBeNull();
+    const query = mocks.findFaith.mock.calls[0]?.[0];
+    expect(query.where).toMatchObject({ slug: "reviewed-reflection", status: "PUBLISHED" });
+    expect(query.include.cause).toEqual({ select: { title: true, status: true } });
+    expect(query.include.initiative).toEqual({
+      select: {
+        slug: true, title: true, status: true,
+        cause: { select: { status: true } },
+      },
+    });
+    expect(query.include.topics).toEqual({ include: { topic: true } });
+    expect(query.include.mediaAssets).toMatchObject({
+      take: PUBLIC_DETAIL_MEDIA_LIMIT, select: { id: true, publicUrl: true, altText: true },
+    });
+    for (const link of ["cause", "initiative"]) {
+      expect(query.include[link]).not.toBe(true);
+      expect(query.include[link]).not.toHaveProperty("include");
+    }
   });
 
   it("retains the original published query and does not swallow database failures", async () => {
