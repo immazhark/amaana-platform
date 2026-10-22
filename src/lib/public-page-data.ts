@@ -349,7 +349,14 @@ export const getCompletedAidShowcaseData = cache(async () => {
  */
 export const getAppealsIndexData = cache(async () => {
   return prisma.appeal.findMany({
-    where: { status: "PUBLISHED" },
+    // Match the existing server-rendered checkout eligibility preconditions
+    // before retrieving card records. The page still applies the full balance,
+    // staging and time checks as the final public presentation guard.
+    where: {
+      status: "PUBLISHED",
+      amountRaised: { lt: prisma.appeal.fields.goalAmount },
+      OR: [{ closesAt: null }, { closesAt: { gt: new Date() } }],
+    },
     orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
     select: {
       slug: true,
