@@ -24,7 +24,7 @@ export const defaultHomeSlides: HomeSlide[] = [
 ];
 export const defaultHomeConfig: HomeCarouselConfig = { slides: defaultHomeSlides, appealPosition: 1 };
 export function safeHomeHref(value: string) {
-  if (!/^\/(?!\/)[a-zA-Z0-9/_?=&%#.-]*$/.test(value) || /%(?:25|2f|5c|0[0-9a-f]|1[0-9a-f]|7f)/i.test(value)) throw new HomeCarouselValidationError('Use a safe internal website link.');
+  if (!/^\/(?!\/)[a-zA-Z0-9/_?=&%#.-]*$/.test(value) || /%(?:25|2f|5c|3f|23|0[0-9a-f]|1[0-9a-f]|7f)/i.test(value)) throw new HomeCarouselValidationError('Use a safe internal website link.');
   const url = new URL(value, 'https://amaana.invalid');
   let pathname: string;
   try { pathname = decodeURIComponent(url.pathname); }
