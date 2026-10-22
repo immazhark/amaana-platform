@@ -79,19 +79,27 @@ export const getPublishedInitiativeBySlug = cache(async (slug: string) => {
   return prisma.initiative.findFirst({
     where: { slug, status: "PUBLISHED", cause: { status: "PUBLISHED" } },
     include: {
-      cause: true,
+      cause: { select: { title: true } },
       mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
       stories: {
         where: { status: "PUBLISHED", privacyApprovedAt: { not: null } },
         orderBy: { publishedAt: "desc" },
+        select: { id: true, slug: true, title: true, summary: true },
       },
       appeals: {
         where: { status: { in: ["PUBLISHED", "FUNDED"] } },
         orderBy: { publishedAt: "desc" },
+        // Only the donation-eligibility guard and linked-appeal label use
+        // these fields. Never fetch internal notes or beneficiary details.
+        select: {
+          id: true, slug: true, title: true, status: true,
+          goalAmount: true, amountRaised: true, closesAt: true,
+        },
       },
       faithContent: {
         where: publicFaithWhere,
         orderBy: { publishedAt: "desc" },
+        select: { id: true, slug: true, title: true, excerpt: true },
       },
     },
   });
@@ -120,8 +128,15 @@ export async function getPublishedStoryBySlug(slug: string) {
       privacyApprovedAt: { not: null },
     },
     include: {
-      cause: true,
-      initiative: { include: { cause: true } },
+      cause: { select: { title: true, status: true } },
+      // Public pages use only publication status and the destination link.
+      // Never retrieve a linked initiative's internal narrative or full cause.
+      initiative: {
+        select: {
+          slug: true, title: true, status: true,
+          cause: { select: { status: true } },
+        },
+      },
       mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
     },
   });
@@ -151,8 +166,15 @@ export async function getPublishedFaithContentBySlug(slug: string) {
     },
     include: {
       topics: { include: { topic: true } },
-      cause: true,
-      initiative: { include: { cause: true } },
+      cause: { select: { title: true, status: true } },
+      // Public pages use only publication status and the destination link.
+      // Never retrieve a linked initiative's internal narrative or full cause.
+      initiative: {
+        select: {
+          slug: true, title: true, status: true,
+          cause: { select: { status: true } },
+        },
+      },
       mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
     },
   });
