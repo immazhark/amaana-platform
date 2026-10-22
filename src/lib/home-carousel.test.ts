@@ -52,6 +52,12 @@ describe('homepage carousel publication and schedules', () => {
     '/request-assistance/%73tatus',
     '/request-assistance/../donations',
     '/donations?reference=ABC123',
+    '/donations%3Freference=ABC123',
+    '/donations%23private',
+    '/request-assistance/status%3Freference=ABC123',
+    '/request-assistance/status%23private',
+    '/admin%3Fprivate',
+    '/api%23private',
   ])('rejects private transactional or assistance CTA %s', href => {
     expect(() => safeHomeHref(href)).toThrow(HomeCarouselValidationError);
   });
