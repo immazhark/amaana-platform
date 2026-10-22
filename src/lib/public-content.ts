@@ -128,8 +128,15 @@ export async function getPublishedStoryBySlug(slug: string) {
       privacyApprovedAt: { not: null },
     },
     include: {
-      cause: true,
-      initiative: { include: { cause: true } },
+      cause: { select: { title: true, status: true } },
+      // Public pages use only publication status and the destination link.
+      // Never retrieve a linked initiative's internal narrative or full cause.
+      initiative: {
+        select: {
+          slug: true, title: true, status: true,
+          cause: { select: { status: true } },
+        },
+      },
       mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
     },
   });
@@ -159,8 +166,15 @@ export async function getPublishedFaithContentBySlug(slug: string) {
     },
     include: {
       topics: { include: { topic: true } },
-      cause: true,
-      initiative: { include: { cause: true } },
+      cause: { select: { title: true, status: true } },
+      // Public pages use only publication status and the destination link.
+      // Never retrieve a linked initiative's internal narrative or full cause.
+      initiative: {
+        select: {
+          slug: true, title: true, status: true,
+          cause: { select: { status: true } },
+        },
+      },
       mediaAssets: PUBLIC_DETAIL_MEDIA_PROJECTION,
     },
   });
