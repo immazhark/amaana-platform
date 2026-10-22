@@ -348,8 +348,22 @@ export const getCompletedAidShowcaseData = cache(async () => {
  * it should not serialize the private-facing story, internal notes or updates.
  */
 export const getAppealsIndexData = cache(async () => {
+  const where: Prisma.AppealWhereInput = {
+    status: "PUBLISHED",
+    amountRaised: { lt: prisma.appeal.fields.goalAmount },
+    OR: [{ closesAt: null }, { closesAt: { gt: new Date() } }],
+  };
+  if (!canExposeSyntheticStagingContent()) {
+    where.NOT = [
+      { slug: { startsWith: "staging-" } },
+      { title: { startsWith: "STAGING TEST" } },
+    ];
+  }
   return prisma.appeal.findMany({
-    where: { status: "PUBLISHED" },
+    // Match the existing server-rendered checkout eligibility preconditions
+    // before retrieving card records. The page still applies the full balance,
+    // staging and time checks as the final public presentation guard.
+    where,
     orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
     select: {
       slug: true,

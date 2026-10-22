@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const mocks = vi.hoisted(() => ({
   initiativeFindMany: vi.fn(),
+  appealFindMany: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -9,10 +10,15 @@ vi.mock("@/lib/prisma", () => ({
     initiative: {
       findMany: mocks.initiativeFindMany,
     },
+    appeal: {
+      findMany: mocks.appealFindMany,
+      fields: { goalAmount: "appeal.goalAmount" },
+    },
   },
 }));
 
 import {
+  getAppealsIndexData,
   getCompletedAidShowcaseData,
   getImpactComparisonPageData,
   getImpactPageData,
@@ -22,9 +28,12 @@ import { getPublishedInitiativeBySlug } from "./public-content";
 import { getInitiativePageData } from "./public-page-data";
 
 describe("public page gallery media query contracts", () => {
+  afterEach(() => vi.unstubAllEnvs());
   beforeEach(() => {
     mocks.initiativeFindMany.mockReset();
     mocks.initiativeFindMany.mockResolvedValue([]);
+    mocks.appealFindMany.mockReset();
+    mocks.appealFindMany.mockResolvedValue([]);
   });
 
   it("uses one request-cached lookup identity for metadata, programmes and general pages", () => {
@@ -61,6 +70,59 @@ describe("public page gallery media query contracts", () => {
   it("shows no donor proof on an empty reviewed metric projection", async () => {
     const { getDonationImpactHighlights } = await import("./public-page-data");
     await expect(getDonationImpactHighlights()).resolves.toEqual([]);
+  });
+
+  it("restricts the public appeals index to unpaid, unexpired published candidates at SQL", async () => {
+    const before = new Date();
+    await getAppealsIndexData();
+    const after = new Date();
+
+    const query = mocks.appealFindMany.mock.calls[0]?.[0];
+    expect(query?.where).toMatchObject({
+      status: "PUBLISHED",
+      amountRaised: { lt: "appeal.goalAmount" },
+      OR: [{ closesAt: null }, { closesAt: { gt: expect.any(Date) } }],
+    });
+    const cutoff = query.where.OR[1].closesAt.gt as Date;
+    expect(cutoff.getTime()).toBeGreaterThanOrEqual(before.getTime());
+    expect(cutoff.getTime()).toBeLessThanOrEqual(after.getTime());
+    expect(query).toMatchObject({
+      orderBy: [{ isFeatured: "desc" }, { featuredOrder: "asc" }, { publishedAt: "desc" }],
+      select: {
+        slug: true,
+        title: true,
+        summary: true,
+        category: true,
+        beneficiaryLocation: true,
+        status: true,
+        goalAmount: true,
+        amountRaised: true,
+        closesAt: true,
+      },
+    });
+    expect(query).not.toHaveProperty("take");
+    expect(query.select).not.toHaveProperty("assistanceRequest");
+    expect(query.select).not.toHaveProperty("story");
+    expect(query.select).not.toHaveProperty("updates");
+  });
+
+  it("excludes staging-test appeals from the production SQL projection", async () => {
+    vi.stubEnv("APP_ENVIRONMENT", "production");
+    await getAppealsIndexData();
+
+    const where = mocks.appealFindMany.mock.calls[0]?.[0]?.where;
+    expect(where.NOT).toEqual([
+      { slug: { startsWith: "staging-" } },
+      { title: { startsWith: "STAGING TEST" } },
+    ]);
+  });
+
+  it("keeps staging-test appeal previews available in the staging SQL projection", async () => {
+    vi.stubEnv("APP_ENVIRONMENT", "staging");
+    await getAppealsIndexData();
+
+    const where = mocks.appealFindMany.mock.calls[0]?.[0]?.where;
+    expect(where.NOT).toBeUndefined();
   });
 
   it("does not retrieve unused image galleries on impact comparison", async () => {
