@@ -109,6 +109,33 @@ describe("public structured data", () => {
     expect(normalizeStructuredDataPath("/donate")).toBe("/donate");
   });
 
+  it("blocks private app image routes from structured data, including encoded and absolute aliases", () => {
+    for (const imageUrl of [
+      "/admin/private-photo.webp",
+      "/api/private/media.jpg",
+      "/donations/receipt.webp",
+      "/%61dmin/secret.webp",
+      "/%2561dmin/secret.webp",
+      "https://amaanafoundation.org/admin/secret.webp",
+      "https://www.amaanafoundation.org/api/private.webp",
+    ]) {
+      expect(normalizeStructuredDataImage(imageUrl, "https://amaanafoundation.org"), imageUrl).toBeNull();
+      const data = buildPublicStructuredData({
+        type: "Article",
+        title: "Reviewed public narrative",
+        description: "Evidence summary",
+        path: "/stories/reviewed",
+        imageUrl,
+      }, "https://amaanafoundation.org");
+      expect(data, imageUrl).not.toHaveProperty("image");
+    }
+
+    expect(normalizeStructuredDataImage("/media/approved.webp", "https://amaanafoundation.org"))
+      .toBe("https://amaanafoundation.org/media/approved.webp");
+    expect(normalizeStructuredDataImage("https://cdn.example.org/public-approved.webp", "https://amaanafoundation.org"))
+      .toBe("https://cdn.example.org/public-approved.webp");
+  });
+
   it("fails closed when runtime JSON-LD input violates the schema", () => {
     expect(buildPublicStructuredData({
       type: "Article",
