@@ -10,19 +10,33 @@ const getHomeCarouselConfigCached = unstable_cache(async () => {
 }, ['home-carousel-config'], { revalidate: 300, tags: ['home-carousel'] });
 
 export const getHomeCarouselConfig = cache(getHomeCarouselConfigCached);
-export const getHomeCarouselImages = cache(async (images: string[]) => {
-  const ids = [...new Set(images.filter(i => i.startsWith('asset:')).map(i => i.slice(6)))];
-  if (!ids.length) return new Map<string, ApprovedAppealCoverMedia>();
-  const assets = await prisma.mediaAsset.findMany({
+export const getHomeCarouselImages = cache(async (
+  images: readonly string[],
+  appealCoverUrls: readonly (string | null | undefined)[] = [],
+) => {
+  const ids = [...new Set(images.filter(image => image.startsWith('asset:')).map(image => image.slice(6)))];
+  const assets = ids.length ? await prisma.mediaAsset.findMany({
     where: { id: { in: ids }, kind: 'IMAGE', isPublic: true, privacyApprovedAt: { not: null } },
     select: { id: true, publicUrl: true },
-  });
-  const approvedByUrl = await getAppealCoverMediaBatch(assets.map(asset => asset.publicUrl));
-  return new Map(
-    assets.flatMap(asset => {
-      if (!asset.publicUrl) return [];
-      const approved = approvedByUrl.get(asset.publicUrl);
-      return approved ? [[asset.id, approved] as const] : [];
-    }),
-  );
+  }) : [];
+
+  // Configured slides and live-appeal covers share the same privacy-review
+  // contract. Fetch the review audit once for the union of their public URLs.
+  const urls = [...new Set([...assets.map(asset => asset.publicUrl), ...appealCoverUrls]
+    .filter((url): url is string => Boolean(url)))];
+  if (!urls.length) {
+    return {
+      images: new Map<string, ApprovedAppealCoverMedia>(),
+      coverByUrl: new Map<string, ApprovedAppealCoverMedia>(),
+    };
+  }
+
+  const coverByUrl = await getAppealCoverMediaBatch(urls);
+  const approvedImages = new Map<string, ApprovedAppealCoverMedia>();
+  for (const asset of assets) {
+    if (!asset.publicUrl) continue;
+    const approved = coverByUrl.get(asset.publicUrl);
+    if (approved) approvedImages.set(asset.id, approved);
+  }
+  return { images: approvedImages, coverByUrl };
 });
