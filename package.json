@@ -37,10 +37,12 @@
     "launch:env:production:indexing-enabled": "PRODUCTION_INDEXING_DECISION=enable NEXT_PUBLIC_ALLOW_INDEXING=true node scripts/check-production-environment.mjs",
     "launch:env:production:indexing-disabled": "PRODUCTION_INDEXING_DECISION=keep_disabled NEXT_PUBLIC_ALLOW_INDEXING=false node scripts/check-production-environment.mjs",
     "artwork:refine": "node scripts/refine-programme-artwork.mjs",
-    "prebuild": "npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
-    "predev": "npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
+    "prebuild": "npm run contracts:check && npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
+    "predev": "npm run contracts:generate && npm run artwork:refine && npm run icons:generate && npm run browser-fixtures:materialize",
     "icons:generate": "node scripts/generate-brand-icons.mjs",
     "icons:verify": "npm run icons:generate && node scripts/verify-brand-icons.mjs",
+    "contracts:generate": "node scripts/build-curated-gallery-contract.mjs",
+    "contracts:check": "node scripts/build-curated-gallery-contract.mjs --check",
     "browser-fixtures:materialize": "node scripts/materialize-browser-acceptance.mjs",
     "audit:prod": "npm audit --omit=dev --audit-level=high",
     "audit:route-bundles": "node scripts/report-route-bundles.mjs",
@@ -57,7 +59,7 @@
     "react": "19.1.1",
     "react-dom": "19.1.1",
     "server-only": "0.0.1",
-    "zod": "4.1.5"
+    "zod": "4.6.7"
   },
   "devDependencies": {
     "@types/node": "22.18.1",
@@ -66,6 +68,7 @@
     "@vitest/coverage-v8": "5.0.5",
     "eslint": "9.35.0",
     "eslint-config-next": "16.4.2",
+    "rolldown": "1.2.15",
     "typescript": "5.9.2",
     "vite": "8.2.4",
     "vitest": "5.0.5",
