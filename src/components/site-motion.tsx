@@ -92,7 +92,8 @@ export function SiteMotion() {
         }
         return;
       }
-      if (event instanceof KeyboardEvent && (event.repeat || !["Enter", " "].includes(event.key))) return;
+      if (event instanceof KeyboardEvent && (event.repeat || event.isComposing || event.defaultPrevented ||
+          event.altKey || event.ctrlKey || event.metaKey || !["Enter", " "].includes(event.key))) return;
       const element = target(event, !pressed);
       if (element) feedback(element, pressed);
     };
