@@ -1,3 +1,4 @@
+import { hasUnsupportedPublicQueryFields } from "./public-navigation-query.mjs";
 /** Privacy-preserving pre-contact preparation. No server submission or
  * volunteer/beneficiary data store is created by this feature. */
 export const VOLUNTEER_SKILLS = [
@@ -48,8 +49,7 @@ export function buildVolunteerEnquiryHref(
 export function parseVolunteerPreferences(
   input: Record<string, string | string[] | undefined>,
 ): { skills: VolunteerSkill[]; availability: VolunteerAvailability | "" } | null {
-  const keys = Object.keys(input);
-  if (keys.some(key => !["intent", "skill", "availability"].includes(key)) || input.intent !== "review") return null;
+  if (hasUnsupportedPublicQueryFields(input, ["intent", "skill", "availability"]) || input.intent !== "review") return null;
   const rawSkills = input.skill === undefined ? [] : Array.isArray(input.skill) ? input.skill : [input.skill];
   if (rawSkills.length > VOLUNTEER_SKILLS.length || new Set(rawSkills).size !== rawSkills.length
     || rawSkills.some(skill => !VOLUNTEER_SKILLS.some(allowed => allowed === skill))) return null;

@@ -1,3 +1,4 @@
+import { hasUnsupportedPublicQueryFields } from "./public-navigation-query.mjs";
 export type ImpactComparisonSearch = Record<string, string | string[] | undefined>;
 
 /** Compare only entries from the already-approved public projection. Never
@@ -12,13 +13,15 @@ export function selectImpactComparison<T extends { slug: string }>(
   selected: readonly [T, T] | null;
 } {
   const keys = Object.keys(search);
-  if (keys.length === 0) {
+  const suppliedSelections = keys.filter(key => key === "left" || key === "right");
+  const unsupported = hasUnsupportedPublicQueryFields(search, ["left", "right"]);
+  if (suppliedSelections.length === 0 && !unsupported) {
     return { options: publicRecords, requested: false, invalid: false, selected: null };
   }
 
   const left = search.left;
   const right = search.right;
-  const validShape = keys.length === 2 && keys.every(key => key === "left" || key === "right")
+  const validShape = !unsupported && suppliedSelections.length === 2
     && typeof left === "string" && typeof right === "string"
     && Boolean(left) && Boolean(right) && left !== right;
 

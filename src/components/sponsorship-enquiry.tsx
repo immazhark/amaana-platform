@@ -1,3 +1,4 @@
+import { hasUnsupportedPublicQueryFields } from "@/lib/public-navigation-query.mjs";
 import Link from "next/link";
 import { buildSponsorshipEnquiry, parseSponsorshipEnquiry, SPONSORSHIP_PATHS, SPONSORSHIP_SUPPORT } from "@/lib/sponsorship-enquiry";
 
@@ -7,7 +8,9 @@ type Preferences = Record<string, string | string[] | undefined>;
  * mandates or site-side storage. Native GET fields contain reviewed categories
  * only; the visitor sends their own message after reviewing it. */
 export function SponsorshipEnquiry({ preferences }: { preferences: Preferences }) {
-  const requested = Object.keys(preferences).length > 0;
+  const hasPreference = ["path", "support", "privateName"].some(key =>
+    Object.prototype.hasOwnProperty.call(preferences, key));
+  const requested = hasPreference || hasUnsupportedPublicQueryFields(preferences, ["path", "support", "privateName"]);
   const selection = requested ? parseSponsorshipEnquiry(preferences) : null;
   const prepared = selection ? buildSponsorshipEnquiry(selection) : null;
 
