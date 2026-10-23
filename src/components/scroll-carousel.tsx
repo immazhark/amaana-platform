@@ -70,8 +70,9 @@ export function ScrollCarousel({
   const updateActiveFromScroll = useCallback(() => {
     const viewport = viewportRef.current;
     if (!viewport || slideCount < 2) return;
-    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    if (frameRef.current !== null) return;
     frameRef.current = requestAnimationFrame(() => {
+      frameRef.current = null;
       const pending = navigation.current;
       if (pending !== null && Math.abs(viewport.scrollLeft - pending) > 2) return;
       navigation.current = null;
