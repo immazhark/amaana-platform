@@ -1,5 +1,23 @@
 import { expect, test } from '@playwright/test';
 
+test('closing the gallery leaves an already-open Companion panel available', async ({ page }) => {
+  await openGallery(page, 1440);
+  await page.locator('.amaana-companion-dock button').click();
+  const companion = page.getByRole('region', { name: 'Today’s reflection', exact: true });
+  await expect(companion).toBeVisible();
+  const first = page.getByRole('button', { name: /^Enlarge image 1 of 13:/ });
+  await first.click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(companion).toBeVisible();
+  await expect(first).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(companion).toHaveCount(0);
+  await expect(page.locator('.amaana-companion-dock button')).toBeFocused();
+});
+
+
 test('gallery preserves modified arrows and composing or handled Escape', async ({ page }) => {
   await openGallery(page, 390);
   await page.getByRole('button', { name: /^Enlarge image 1 of 13:/ }).click();

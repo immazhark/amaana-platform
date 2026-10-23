@@ -19,7 +19,7 @@ function fixture() {
   vi.stubGlobal("HTMLButtonElement", Tab);
   const onPanelChange = vi.fn();
   const onClose = vi.fn();
-  const documentEvents = new EventTarget();
+  const documentEvents = Object.assign(new EventTarget(), { querySelector: vi.fn<() => object | null>(() => null) });
   vi.stubGlobal("document", documentEvents);
   const root = IslamicCompanionPanel({ panel: "readings", date: "", now: null,
     onClose, onPanelChange, onMoonChange: vi.fn() });
@@ -28,7 +28,7 @@ function fixture() {
     .find(child => child.props.role === "tablist");
   if (!tabs) throw new Error("Expected Companion tabs");
   return {
-    onPanelChange, onClose, focus,
+    onPanelChange, onClose, focus, activeDialog: documentEvents.querySelector,
     escape(modifiers: object = {}) {
       const event = new Event("keydown", { cancelable: true });
       Object.defineProperties(event, Object.fromEntries(Object.entries({ key: "Escape", ...modifiers }).map(([name, value]) => [name, { value }])));
@@ -43,6 +43,16 @@ function fixture() {
 }
 
 describe("Companion tab keyboard boundaries", () => {
+  it("leaves Escape to an open dialog above the nonmodal Companion", () => {
+    const panel = fixture();
+    panel.activeDialog.mockReturnValue({});
+    panel.escape();
+    expect(panel.onClose).not.toHaveBeenCalled();
+    panel.activeDialog.mockReturnValue(null);
+    panel.escape();
+    expect(panel.onClose).toHaveBeenCalledOnce();
+  });
+
   it.each([{ isComposing: true }, { defaultPrevented: true }, { altKey: true }, { ctrlKey: true }, { metaKey: true }, { shiftKey: true }])(
     "does not close the panel on browser-owned Escape with %j", modifiers => {
       const panel = fixture();
