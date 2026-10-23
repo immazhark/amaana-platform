@@ -42,8 +42,10 @@ function fixture({ paused = false, reduced = false, count = 2, rerender = false 
   harness.values = [null, null, null, reduced, false, false, items.slice(0, count), 0, paused];
   const interval = vi.fn(() => 1);
   const clearInterval = vi.fn();
-  vi.stubGlobal("window", { setInterval: interval, clearInterval });
-  vi.stubGlobal("document", { hidden: false });
+  const documentEvents = { hidden: false, addEventListener: vi.fn(), removeEventListener: vi.fn() };
+  const motion = { matches: false, addEventListener: vi.fn(), removeEventListener: vi.fn() };
+  vi.stubGlobal("window", { setInterval: interval, clearInterval, matchMedia: () => motion });
+  vi.stubGlobal("document", documentEvents);
   const tree = IslamicCompanion();
   const rotation = harness.effects[2];
   if (!rotation) throw new Error("Expected live rotation effect");
@@ -60,8 +62,29 @@ function fixture({ paused = false, reduced = false, count = 2, rerender = false 
     visit(element.props.children);
   };
   visit(tree);
-  return { interval, clearInterval, buttons, cleanup, elements };
+  return { interval, clearInterval, buttons, cleanup, elements, documentEvents, clockEffect: harness.effects[0] };
 }
+
+describe("visibility-aware site-wide clock", () => {
+  it("skips hidden-tab React clock updates, then refreshes on return", () => {
+    const live = fixture();
+    const stopClock = live.clockEffect?.();
+    expect(stopClock).toBeTypeOf("function");
+    const setNow = harness.setters[1];
+    expect(setNow).toHaveBeenCalledTimes(1);
+    const tick = live.interval.mock.calls.find(([, delay]) => delay === 30_000)?.[0] as (() => void) | undefined;
+    expect(tick).toBeTypeOf("function");
+    live.documentEvents.hidden = true;
+    tick?.();
+    expect(setNow).toHaveBeenCalledTimes(1);
+    live.documentEvents.hidden = false;
+    const visibility = live.documentEvents.addEventListener.mock.calls.find(([name]) => name === "visibilitychange")?.[1] as (() => void) | undefined;
+    visibility?.();
+    expect(setNow).toHaveBeenCalledTimes(2);
+    stopClock?.();
+    live.cleanup?.();
+  });
+});
 
 describe("visitor control of live updates", () => {
   it("offers an explicit pause without requiring hover or focus", () => {
