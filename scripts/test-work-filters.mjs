@@ -22,6 +22,25 @@ test("unknown, malformed and duplicate query values do not silently show all wor
     assert.equal(filterWork(programmes, search).count, 0);
   }
 });
+test("bounded campaign links preserve public filters while unknown and repeated fields stay denied", () => {
+  const valid = filterWork(programmes, {
+    programme: "education", year: "2024", utm_source: "community", gclid: "click-id",
+  });
+  assert.equal(valid.invalid, false);
+  assert.equal(valid.count, 1);
+  assert.equal(JSON.stringify(valid).includes("click-id"), false);
+
+  for (const query of [
+    { programme: "education", utm_source: ["first", "second"] },
+    { programme: "education", utm_source: "x".repeat(257) },
+    { programme: "education", email: "private@example.org" },
+  ]) {
+    const result = filterWork(programmes, query);
+    assert.equal(result.invalid, true);
+    assert.equal(result.count, 0);
+    assert.equal(JSON.stringify(result).includes("private@example.org"), false);
+  }
+});
 test("empty archive and open-ended dates do not invent years", () => {
   assert.deepEqual(filterWork([], {}).years, []);
   assert.deepEqual(filterWork([{ slug: "aid", initiatives: [{ year: null, startYear: 2020, endYear: null }] }], {}).years, [2020]);

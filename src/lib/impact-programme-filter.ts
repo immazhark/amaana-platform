@@ -1,3 +1,4 @@
+import { hasUnsupportedPublicQueryFields } from "./public-navigation-query.mjs";
 export type ImpactProgrammeSearch = Record<string, string | string[] | undefined>;
 
 type ImpactArea = Readonly<{ slug: string; title: string }>;
@@ -20,7 +21,7 @@ export function filterImpactByProgramme<T>(
 
   const value = search.programme;
   const programme = typeof value === "string" ? value : "";
-  const invalid = Object.keys(search).some(key => key !== "programme")
+  const invalid = hasUnsupportedPublicQueryFields(search, ["programme"])
     || Array.isArray(value)
     || Boolean(programme && !options.some(area => area.slug === programme));
 

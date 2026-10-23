@@ -39,6 +39,28 @@ describe("published work filter validation", () => {
     expect(JSON.stringify(result)).not.toContain("private-phone-number");
   });
 
+  it("keeps approved bounded marketing attribution invisible while applying reviewed filters", () => {
+    const result = filterWork(categories, {
+      programme: "ramadan-eid", year: "2026",
+      utm_source: "outreach", utm_campaign: "eid-drive", gclid: "click-token",
+    });
+    expect(result).toMatchObject({ programme: "ramadan-eid", year: "2026", invalid: false, count: 1 });
+    expect(JSON.stringify(result)).not.toContain("outreach");
+    expect(JSON.stringify(result)).not.toContain("click-token");
+  });
+
+  it("still rejects unknown personal fields, repeated tracking values and oversized tokens", () => {
+    for (const search of [
+      { programme: "ramadan-eid", utm_source: ["one", "two"] },
+      { programme: "ramadan-eid", utm_source: "x".repeat(257) },
+      { programme: "ramadan-eid", email: "private@example.org" },
+    ]) {
+      const result = filterWork(categories, search);
+      expect(result).toMatchObject({ invalid: true, results: [], count: 0 });
+      expect(JSON.stringify(result)).not.toContain("private@example.org");
+    }
+  });
+
   it("keeps legitimate empty native GET controls valid", () => {
     expect(filterWork(categories, { programme: "", year: "" }).invalid).toBe(false);
   });
