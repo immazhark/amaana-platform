@@ -180,6 +180,19 @@ describe("site motion press recovery", () => {
     motion.cleanup?.();
   });
 
+  it.each(["focusout", "pointerout"] as const)(
+    "does not override a held touch press on unrelated %s",
+    type => {
+      const motion = fixture();
+      motion.send("pointerdown", 0, "touch", true, 7);
+      motion.leave(type);
+      expect(motion.control.animate).toHaveBeenCalledTimes(1);
+      motion.send("pointercancel", -1, "touch", false, 7);
+      expect(motion.control.animate).toHaveBeenCalledTimes(2);
+      motion.cleanup?.();
+    },
+  );
+
   it("keeps a control pressed until its last owning touch pointer ends", () => {
     const motion = fixture();
     motion.send("pointerdown", 0, "touch", true, 11);
