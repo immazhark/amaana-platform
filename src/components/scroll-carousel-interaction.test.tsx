@@ -34,6 +34,8 @@ function fixture(slideCount = 1) {
     style: { removeProperty: vi.fn(), set scrollSnapType(value: string) { snapWrites(value); } },
     setPointerCapture: vi.fn(),
     scrollTo: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
   };
   if (!viewport) throw new Error("Expected carousel viewport");
   if (references[0]) references[0].current = surface;
@@ -76,6 +78,7 @@ function fixture(slideCount = 1) {
     snapWrites,
     scroll() { props.onScroll(); },
     changeSlides() { effects[2]?.(); },
+    installObserver() { return effects[1]?.(); },
     key(key: string, modifiers: object = {}) {
       const event = { key, nativeEvent: { isComposing: false }, currentTarget: surface, target: surface, preventDefault: vi.fn(), ...modifiers };
       props.onKeyDown(event);
@@ -137,6 +140,30 @@ describe("carousel drag and activation boundaries", () => {
     carousel.scroll();
     expect(request).toHaveBeenCalledTimes(2);
     expect(cancel).not.toHaveBeenCalled();
+  });
+
+  it("rearms frame scheduling after an observer lifecycle cleanup cancels a pending frame", () => {
+    const raf = vi.fn(() => 31);
+    const cancel = vi.fn();
+    const disconnect = vi.fn();
+    vi.stubGlobal("requestAnimationFrame", raf);
+    vi.stubGlobal("cancelAnimationFrame", cancel);
+    vi.stubGlobal("ResizeObserver", class {
+      observe() {}
+      disconnect() { disconnect(); }
+    });
+    const carousel = fixture(2);
+    const cleanup = carousel.installObserver();
+    expect(cleanup).toBeTypeOf("function");
+    carousel.scroll();
+    expect(raf).toHaveBeenCalledTimes(1);
+    cleanup?.();
+    expect(cancel).toHaveBeenCalledWith(31);
+    expect(disconnect).toHaveBeenCalledOnce();
+    // The original frame will never run; a reinstalled effect must not
+    // inherit a permanently occupied scheduling slot.
+    carousel.scroll();
+    expect(raf).toHaveBeenCalledTimes(2);
   });
 
   it("rearms frame scheduling when slides change while a scroll frame is pending", () => {
