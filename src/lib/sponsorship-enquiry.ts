@@ -1,3 +1,4 @@
+import { hasUnsupportedPublicQueryFields } from "./public-navigation-query.mjs";
 /** Fixed-category preparation only. No student inventory, financial promise,
  * personal record or message submission is created here. */
 export const SPONSORSHIP_PATHS = {
@@ -19,7 +20,7 @@ export type SponsorshipEnquiry = {
 };
 
 export function parseSponsorshipEnquiry(input: Record<string, string | string[] | undefined>): SponsorshipEnquiry | null {
-  if (Object.keys(input).some(key => !["path", "support", "privateName"].includes(key))) return null;
+  if (hasUnsupportedPublicQueryFields(input, ["path", "support", "privateName"])) return null;
   const { path, support, privateName } = input;
   if (typeof path !== "string" || !Object.hasOwn(SPONSORSHIP_PATHS, path)
     || typeof support !== "string" || !Object.hasOwn(SPONSORSHIP_SUPPORT, support)

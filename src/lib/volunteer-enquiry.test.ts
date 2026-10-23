@@ -65,3 +65,18 @@ describe("fixed-choice volunteer preference review", () => {
     expect(parseVolunteerPreferences(query)).toBeNull();
   });
 });
+
+describe("campaign-attributed volunteer choices", () => {
+  it("preserves a reviewed explicit enquiry with bounded marketing attribution", () => {
+    expect(parseVolunteerPreferences({ intent: "review", skill: "Event logistics",
+      availability: "Weekends", utm_medium: "email", fbclid: "click-token" }))
+      .toEqual({ skills: ["Event logistics"], availability: "Weekends" });
+  });
+  it("rejects duplicate or oversized tracking values without weakening the consent boundary", () => {
+    for (const query of [
+      { intent: "review", skill: "Event logistics", utm_source: ["x", "y"] },
+      { intent: "review", skill: "Event logistics", utm_source: "x".repeat(257) },
+      { intent: "review", skill: "Event logistics", email: "private@example.org" },
+    ]) expect(parseVolunteerPreferences(query)).toBeNull();
+  });
+});

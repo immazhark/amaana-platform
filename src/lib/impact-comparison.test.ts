@@ -52,3 +52,30 @@ describe("comparison of reviewed published initiative evidence", () => {
     expect(result.invalid).toBe(true);
   });
 });
+
+describe("campaign-attributed comparison links", () => {
+  it("does not treat attribution-only visits as failed comparison submissions", () => {
+    const result = selectImpactComparison(publicRecords, { utm_source: "community", fbclid: "ref-token" });
+    expect(result).toMatchObject({ requested: false, invalid: false, selected: null });
+    expect(JSON.stringify(result)).not.toContain("ref-token");
+  });
+  it("preserves two approved comparison choices behind bounded marketing parameters", () => {
+    const result = selectImpactComparison(publicRecords, {
+      left: "amaana-taleem", right: "eid-gift-kits", utm_campaign: "public-programme",
+    });
+    expect(result.invalid).toBe(false);
+    expect(result.selected?.map(item => item.slug)).toEqual(["amaana-taleem", "eid-gift-kits"]);
+    expect(JSON.stringify(result)).not.toContain("public-programme");
+  });
+  it("rejects malformed attribution and unsupported personal URL fields", () => {
+    for (const query of [
+      { utm_source: ["a", "b"] },
+      { utm_source: "x".repeat(257) },
+      { left: "eid-gift-kits", right: "amaana-taleem", email: "private@example.org" },
+    ]) {
+      const result = selectImpactComparison(publicRecords, query);
+      expect(result).toMatchObject({ requested: true, invalid: true, selected: null });
+      expect(JSON.stringify(result)).not.toContain("private@example.org");
+    }
+  });
+});

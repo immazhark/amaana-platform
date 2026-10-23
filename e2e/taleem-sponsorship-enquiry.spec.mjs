@@ -36,3 +36,15 @@ test("visitor can request anonymity without authorizing a charge or identificati
   expect(body).toContain("does not reserve a student placement or authorize a payment");
   expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1)).toBe(true);
 });
+
+
+test("education sponsor links ignore campaign-only parameters and retain reviewed path choices", async ({ page }) => {
+  await page.goto("/get-involved/sponsor-education?utm_source=LINK_TOKEN_493");
+  await expect(page.locator('main [role="alert"]')).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Open email with these preferences" })).toHaveCount(0);
+  await page.goto("/get-involved/sponsor-education?path=hifdh&support=discuss&utm_source=LINK_TOKEN_493");
+  await expect(page.locator('main [role="alert"]')).toHaveCount(0);
+  const href = await page.getByRole("link", { name: "Open email with these preferences" }).getAttribute("href");
+  expect(new URL(href).searchParams.get("body")).toContain("Hifdh education");
+  await expect(page.locator("main")).not.toContainText("LINK_TOKEN_493");
+});

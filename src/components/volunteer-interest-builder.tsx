@@ -19,7 +19,7 @@ type Preferences = Record<string, string | string[] | undefined>;
 /** Native fixed-choice GET review, then visitor-owned email. No client state,
  * automatic message delivery, user accounts or volunteer database. */
 export function VolunteerInterestBuilder({ preferences = {} }: { preferences?: Preferences }) {
-  const requested = Object.keys(preferences).length > 0;
+  const requested = Object.prototype.hasOwnProperty.call(preferences, "intent");
   const selection = requested ? parseVolunteerPreferences(preferences) : null;
   return (
     <div>

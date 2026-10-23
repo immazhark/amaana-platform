@@ -1,3 +1,4 @@
+import { hasUnsupportedPublicQueryFields } from "./public-navigation-query.mjs";
 /** Privacy-first contact preparation: no server submission, database write,
  * tracking request or public review publication happens on this page.
  * Only the user's explicit email application can transmit their message. */
@@ -54,7 +55,7 @@ export function buildFeedbackEnquiryHref(kind: FeedbackKind, topic: FeedbackTopi
 export function parseFeedbackPreferences(
   input: Record<string, string | string[] | undefined>,
 ): { kind: FeedbackKind; topic: FeedbackTopic } | null {
-  if (Object.keys(input).some(key => !["intent", "kind", "topic"].includes(key)) || input.intent !== "review") return null;
+  if (hasUnsupportedPublicQueryFields(input, ["intent", "kind", "topic"]) || input.intent !== "review") return null;
   const { kind, topic } = input;
   if (typeof kind !== "string" || !FEEDBACK_KINDS.some(item => item.id === kind)
     || typeof topic !== "string" || !FEEDBACK_TOPICS.some(item => item.id === topic)) return null;
