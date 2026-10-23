@@ -44,7 +44,7 @@ export function ScrollCarousel({
   const slideRefs = useRef<Array<HTMLDivElement | null>>([]);
   const frameRef = useRef<number | null>(null);
   const navigation = useRef<number | null>(null);
-  const drag = useRef<{x:number; scroll:number; moved:boolean} | null>(null);
+  const drag = useRef<{pointerId:number; x:number; scroll:number; moved:boolean} | null>(null);
   const suppressClick = useRef(false);
   const [activeIndex, setActiveIndex] = useState(() => Math.min(Math.max(startAt, 0), Math.max(slideCount - 1, 0)));
   const visibleIndex = Math.min(activeIndex, Math.max(0, slideCount - 1));
@@ -185,6 +185,9 @@ export function ScrollCarousel({
   };
 
   const releaseDrag = (event: ReactPointerEvent<HTMLDivElement>) => {
+    const state = drag.current;
+    if (!state || state.pointerId !== event.pointerId) return;
+    if (state.moved) suppressClick.current = true;
     drag.current = null;
     event.currentTarget.style.removeProperty("scroll-snap-type");
   };
@@ -254,12 +257,13 @@ export function ScrollCarousel({
         onPointerDown={event => {
           navigation.current = null;
           if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 || (event.target instanceof Element && event.target.closest("button,video,input,textarea,select,[contenteditable]"))) return;
-          drag.current = {x:event.clientX, scroll:event.currentTarget.scrollLeft, moved:false};
+          if (drag.current) return;
+          drag.current = {pointerId:event.pointerId, x:event.clientX, scroll:event.currentTarget.scrollLeft, moved:false};
           suppressClick.current = false;
         }}
         onPointerMove={event => {
           const state = drag.current;
-          if (!state || !(event.buttons & 1)) return;
+          if (!state || event.pointerId !== state.pointerId || !(event.buttons & 1)) return;
           const delta = event.clientX - state.x;
           if (Math.abs(delta) > 6) { state.moved = true; event.currentTarget.setPointerCapture(event.pointerId); }
           if (!state.moved) return;
@@ -267,10 +271,7 @@ export function ScrollCarousel({
           event.currentTarget.style.scrollSnapType = "none";
           event.currentTarget.scrollLeft = state.scroll - delta;
         }}
-        onPointerUp={event => {
-          suppressClick.current = Boolean(drag.current?.moved);
-          releaseDrag(event);
-        }}
+        onPointerUp={releaseDrag}
         onPointerLeave={event => {
           // Without capture, pointerup may occur outside this viewport.
           if (event.currentTarget.hasPointerCapture(event.pointerId)) return;

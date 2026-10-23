@@ -24,14 +24,30 @@ function fixture() {
     onPointerDown: (event: object) => void;
     onPointerMove: (event: object) => void;
     onPointerUp: (event: object) => void;
+    onPointerCancel: (event: object) => void;
+    onLostPointerCapture: (event: object) => void;
     onClickCapture: (event: object) => void;
     onKeyDown: (event: object) => void;
   };
   return {
     drag(target: object | null = null) {
-      props.onPointerDown({ pointerType: "mouse", button: 0, target, clientX: 100, currentTarget: surface });
+      props.onPointerDown({ pointerType: "mouse", pointerId: 1, button: 0, target, clientX: 100, currentTarget: surface });
       props.onPointerMove({ buttons: 1, clientX: 70, currentTarget: surface, pointerId: 1, preventDefault: vi.fn() });
-      props.onPointerUp({ currentTarget: surface });
+      props.onPointerUp({ pointerId: 1, currentTarget: surface });
+    },
+    start(pointerId = 1) {
+      props.onPointerDown({ pointerType: "mouse", pointerId, button: 0, target: null, clientX: 100, currentTarget: surface });
+    },
+    move(pointerId = 1) {
+      const preventDefault = vi.fn();
+      props.onPointerMove({ pointerId, buttons: 1, clientX: 70, currentTarget: surface, preventDefault });
+      return preventDefault;
+    },
+    end(type: "up" | "cancel" | "lost", pointerId = 1) {
+      const event = { pointerId, currentTarget: surface };
+      if (type === "up") props.onPointerUp(event);
+      else if (type === "cancel") props.onPointerCancel(event);
+      else props.onLostPointerCapture(event);
     },
     click(detail: number) {
       const event = { detail, preventDefault: vi.fn(), stopPropagation: vi.fn() };
@@ -58,6 +74,36 @@ describe("carousel drag and activation boundaries", () => {
 
   it("still handles unmodified carousel navigation", () => {
     expect(fixture().key("ArrowRight").preventDefault).toHaveBeenCalledOnce();
+  });
+
+  it("suppresses a dragged link click even if pointer capture is lost before pointerup", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    carousel.move(7);
+    carousel.end("lost", 7);
+    carousel.end("up", 7);
+    expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
+    expect(carousel.click(1).preventDefault).not.toHaveBeenCalled();
+  });
+
+  it("ignores movement and cancellation from a different pointer during mouse dragging", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    expect(carousel.move(8)).not.toHaveBeenCalled();
+    expect(carousel.surface.setPointerCapture).not.toHaveBeenCalled();
+    carousel.end("cancel", 8);
+    expect(carousel.move(7)).toHaveBeenCalledOnce();
+    carousel.end("up", 7);
+    expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
+  });
+
+  it("does not lose suppression when a foreign pointerup arrives after dragging", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    carousel.move(7);
+    carousel.end("up", 8);
+    carousel.end("up", 7);
+    expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
   });
 
   it("preserves keyboard activation after a pointer drag", () => {
