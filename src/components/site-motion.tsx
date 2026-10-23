@@ -21,8 +21,10 @@ export function SiteMotion() {
     const running = new Map<HTMLElement, Animation>();
     const owned = new Set<HTMLElement>();
     const activePointers = new Map<number, HTMLElement>();
+    const activeKeys = new Map<string, HTMLElement>();
     const isHeld = (element: HTMLElement) => {
       for (const owner of activePointers.values()) if (owner === element) return true;
+      for (const owner of activeKeys.values()) if (owner === element) return true;
       return false;
     };
     let disposed = false;
@@ -35,6 +37,7 @@ export function SiteMotion() {
     };
     const clearAll = () => {
       activePointers.clear();
+      activeKeys.clear();
       for (const element of owned) clear(element);
     };
 
@@ -98,10 +101,26 @@ export function SiteMotion() {
         }
         return;
       }
-      if (event instanceof KeyboardEvent && (event.repeat || event.isComposing || event.defaultPrevented ||
-          event.altKey || event.ctrlKey || event.metaKey || !["Enter", " "].includes(event.key))) return;
-      const element = target(event, !pressed);
-      if (element) feedback(element, pressed);
+      if (!(event instanceof KeyboardEvent) || !["Enter", " "].includes(event.key)) return;
+      if (pressed) {
+        if (event.repeat || event.isComposing || event.defaultPrevented ||
+            event.altKey || event.ctrlKey || event.metaKey) return;
+        const element = target(event);
+        if (!element) return;
+        const previous = activeKeys.get(event.key);
+        activeKeys.set(event.key, element);
+        if (previous && previous !== element && !isHeld(previous)) feedback(previous);
+        feedback(element, true);
+        return;
+      }
+      // A keyup is cleanup only when this effect owns the corresponding press.
+      // Modifiers, IME state and prior handling may change before keyup.
+      const element = activeKeys.get(event.key);
+      activeKeys.delete(event.key);
+      if (element && !isHeld(element)) {
+        if (element.isConnected) feedback(element);
+        else clear(element);
+      }
     };
     const observer = new IntersectionObserver(entries => {
       for (const entry of entries) {
