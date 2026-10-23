@@ -116,7 +116,10 @@ export function ScrollCarousel({
     return () => {
       observer.disconnect();
       viewport.removeEventListener("scrollend", onScrollEnd);
-      if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+      if (frameRef.current !== null) {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = null;
+      }
       visibility?.disconnect();
       inView.current = false;
     };
@@ -133,7 +136,10 @@ export function ScrollCarousel({
     navigation.current = null;
     drag.current = null;
     suppressClick.current = false;
-    if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);
+    if (frameRef.current !== null) {
+      cancelAnimationFrame(frameRef.current);
+      frameRef.current = null;
+    }
     setActiveIndex(index);
     const viewport = viewportRef.current;
     if (viewport) {
@@ -258,13 +264,20 @@ export function ScrollCarousel({
         onPointerDown={event => {
           navigation.current = null;
           if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 || (event.target instanceof Element && event.target.closest("button,video,input,textarea,select,[contenteditable]"))) return;
-          if (drag.current) return;
+          if (drag.current) {
+            if (drag.current.pointerId !== event.pointerId) return;
+            releaseDrag(event);
+          }
           drag.current = {pointerId:event.pointerId, x:event.clientX, scroll:event.currentTarget.scrollLeft, moved:false};
           suppressClick.current = false;
         }}
         onPointerMove={event => {
           const state = drag.current;
-          if (!state || event.pointerId !== state.pointerId || !(event.buttons & 1)) return;
+          if (!state || event.pointerId !== state.pointerId) return;
+          if (!(event.buttons & 1)) {
+            releaseDrag(event);
+            return;
+          }
           const delta = event.clientX - state.x;
           if (!state.moved && Math.abs(delta) > 6) {
             state.moved = true;

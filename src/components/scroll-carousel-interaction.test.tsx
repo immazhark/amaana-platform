@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createElement, type ReactElement } from "react";
 
 const references = vi.hoisted(() => [] as Array<{ current: unknown }>);
+const effects = vi.hoisted(() => [] as Array<() => void | (() => void)>);
 
 vi.mock("react", async original => ({
   ...await original<typeof import("react")>(),
@@ -12,7 +13,7 @@ vi.mock("react", async original => ({
     return ref;
   },
   useCallback: (callback: unknown) => callback,
-  useEffect: vi.fn(),
+  useEffect: (effect: () => void | (() => void)) => { effects.push(effect); },
   useId: () => "interaction-test",
 }));
 import { ScrollCarousel } from "./scroll-carousel";
@@ -22,6 +23,7 @@ afterEach(() => vi.unstubAllGlobals());
 
 function fixture(slideCount = 1) {
   references.length = 0;
+  effects.length = 0;
   const root = ScrollCarousel({ label: "Programmes", children: Array.from({ length: slideCount }, (_, index) =>
     createElement("a", { key: index, href: "/about" }, "Explore")) });
   if (!root) throw new Error("Expected carousel");
@@ -31,6 +33,9 @@ function fixture(slideCount = 1) {
     scrollLeft: 0,
     style: { removeProperty: vi.fn(), set scrollSnapType(value: string) { snapWrites(value); } },
     setPointerCapture: vi.fn(),
+    scrollTo: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
   };
   if (!viewport) throw new Error("Expected carousel viewport");
   if (references[0]) references[0].current = surface;
@@ -53,9 +58,9 @@ function fixture(slideCount = 1) {
     start(pointerId = 1) {
       props.onPointerDown({ pointerType: "mouse", pointerId, button: 0, target: null, clientX: 100, currentTarget: surface });
     },
-    move(pointerId = 1) {
+    move(pointerId = 1, buttons = 1) {
       const preventDefault = vi.fn();
-      props.onPointerMove({ pointerId, buttons: 1, clientX: 70, currentTarget: surface, preventDefault });
+      props.onPointerMove({ pointerId, buttons, clientX: 70, currentTarget: surface, preventDefault });
       return preventDefault;
     },
     end(type: "up" | "cancel" | "lost", pointerId = 1) {
@@ -72,6 +77,8 @@ function fixture(slideCount = 1) {
     surface,
     snapWrites,
     scroll() { props.onScroll(); },
+    changeSlides() { effects[2]?.(); },
+    installObserver() { return effects[1]?.(); },
     key(key: string, modifiers: object = {}) {
       const event = { key, nativeEvent: { isComposing: false }, currentTarget: surface, target: surface, preventDefault: vi.fn(), ...modifiers };
       props.onKeyDown(event);
@@ -103,9 +110,10 @@ describe("carousel drag and activation boundaries", () => {
     expect(carousel.click(1).preventDefault).not.toHaveBeenCalled();
   });
 
-  it("ignores movement and cancellation from a different pointer during mouse dragging", () => {
+  it("ignores a different pointer's press, movement and cancellation during mouse dragging", () => {
     const carousel = fixture();
     carousel.start(7);
+    carousel.start(8);
     expect(carousel.move(8)).not.toHaveBeenCalled();
     expect(carousel.surface.setPointerCapture).not.toHaveBeenCalled();
     carousel.end("cancel", 8);
@@ -133,6 +141,108 @@ describe("carousel drag and activation boundaries", () => {
     carousel.scroll();
     expect(request).toHaveBeenCalledTimes(2);
     expect(cancel).not.toHaveBeenCalled();
+  });
+
+  it("rearms frame scheduling after an observer lifecycle cleanup cancels a pending frame", () => {
+    const raf = vi.fn(() => 31);
+    const cancel = vi.fn();
+    const disconnect = vi.fn();
+    vi.stubGlobal("requestAnimationFrame", raf);
+    vi.stubGlobal("cancelAnimationFrame", cancel);
+    vi.stubGlobal("ResizeObserver", class {
+      observe() {}
+      disconnect() { disconnect(); }
+    });
+    const carousel = fixture(2);
+    const cleanup = carousel.installObserver();
+    expect(cleanup).toBeTypeOf("function");
+    carousel.scroll();
+    expect(raf).toHaveBeenCalledTimes(1);
+    cleanup?.();
+    expect(cancel).toHaveBeenCalledWith(31);
+    expect(disconnect).toHaveBeenCalledOnce();
+    // The original frame will never run; a reinstalled effect must not
+    // inherit a permanently occupied scheduling slot.
+    carousel.scroll();
+    expect(raf).toHaveBeenCalledTimes(2);
+  });
+
+  it("rearms frame scheduling when slides change while a scroll frame is pending", () => {
+    const callbacks: FrameRequestCallback[] = [];
+    const request = vi.fn((callback: FrameRequestCallback) => {
+      callbacks.push(callback);
+      return callbacks.length;
+    });
+    const cancel = vi.fn();
+    vi.stubGlobal("requestAnimationFrame", request);
+    vi.stubGlobal("cancelAnimationFrame", cancel);
+    const carousel = fixture(2);
+    carousel.scroll();
+    expect(request).toHaveBeenCalledTimes(1);
+    carousel.changeSlides();
+    expect(cancel).toHaveBeenCalledWith(1);
+    // The browser never invokes a cancelled callback: stale IDs must not
+    // permanently suppress future scroll updates.
+    carousel.scroll();
+    expect(request).toHaveBeenCalledTimes(2);
+  });
+
+  it("restores snap and accepts a fresh drag after the owner reports its released button", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    carousel.move(7);
+    expect(carousel.surface.scrollLeft).toBe(30);
+    expect(carousel.move(7, 0)).not.toHaveBeenCalled();
+    expect(carousel.surface.style.removeProperty).toHaveBeenCalledWith("scroll-snap-type");
+    expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
+    carousel.start(7);
+    carousel.move(7);
+    expect(carousel.surface.scrollLeft).toBe(60);
+    expect(carousel.surface.setPointerCapture).toHaveBeenCalledTimes(2);
+  });
+
+  it("accepts a fresh press from the same owner even when no release move arrived", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    carousel.move(7);
+    expect(carousel.surface.scrollLeft).toBe(30);
+    carousel.start(7);
+    carousel.move(7);
+    expect(carousel.surface.scrollLeft).toBe(60);
+    expect(carousel.surface.setPointerCapture).toHaveBeenCalledTimes(2);
+    carousel.end("up", 7);
+    expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
+  });
+
+  it("preserves a fresh click from the owner after its previous drag lost pointerup", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    carousel.move(7);
+    carousel.start(7);
+    carousel.end("up", 7);
+    expect(carousel.click(1).preventDefault).not.toHaveBeenCalled();
+  });
+
+  it("does not end an owned drag when a different pointer reports no buttons", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    carousel.move(7);
+    expect(carousel.move(8, 0)).not.toHaveBeenCalled();
+    expect(carousel.surface.style.removeProperty).not.toHaveBeenCalled();
+    carousel.move(7);
+    expect(carousel.surface.setPointerCapture).toHaveBeenCalledOnce();
+    carousel.end("up", 7);
+    expect(carousel.click(1).preventDefault).toHaveBeenCalledOnce();
+  });
+
+  it("clears a released press before the drag threshold without suppressing a click", () => {
+    const carousel = fixture();
+    carousel.start(7);
+    carousel.move(7, 0);
+    expect(carousel.click(1).preventDefault).not.toHaveBeenCalled();
+    carousel.start(8);
+    expect(carousel.move(8)).toHaveBeenCalledOnce();
+    expect(carousel.surface.setPointerCapture).toHaveBeenCalledWith(8);
   });
 
   it("requests pointer capture exactly once while a dragged card continues moving", () => {

@@ -1,7 +1,7 @@
 import { hasUnsupportedPublicQueryFields } from "./public-navigation-query.mjs";
 type DatedInitiative = { slug?: string; parentSlug?: string | null; year: number | null; startYear: number | null; endYear: number | null };
 type Programme = { slug: string; initiatives: DatedInitiative[] };
-export type WorkSearch = { programme?: string | string[]; year?: string | string[] };
+export type WorkSearch = { programme?: string | string[]; year?: string | string[] } & Record<string, string | string[] | undefined>;
 
 function yearsFor(item: DatedInitiative): number[] {
   if (item.year !== null) return [item.year];

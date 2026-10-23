@@ -34,6 +34,70 @@ test('capture loss before pointerup cannot activate a card after dragging', asyn
   expect(suppressed).toBe(true);
 });
 
+test('a released-button move recovers a missing pointerup without blocking the next drag', async ({ page }) => {
+  const { viewport } = await openPausedCarousel(page);
+  const recovered = await viewport.evaluate(node => {
+    const originalCapture = node.setPointerCapture;
+    const captured = [];
+    node.setPointerCapture = id => { captured.push(id); };
+    const pointer = (type, pointerId, clientX, buttons) => node.dispatchEvent(new PointerEvent(type, {
+      bubbles: true, cancelable: true, pointerType: 'mouse', pointerId, button: 0, buttons, clientX,
+    }));
+    try {
+      pointer('pointerdown', 27, 200, 1);
+      pointer('pointermove', 27, 170, 1);
+      // Model an interrupted interaction whose pointerup never reached React.
+      pointer('pointermove', 27, 165, 0);
+      const snapRestored = node.style.scrollSnapType === '';
+      const slide = node.querySelector('[aria-roledescription="slide"]');
+      if (!slide) throw new Error('Carousel slide missing');
+      const click = new MouseEvent('click', { bubbles: true, cancelable: true, detail: 1 });
+      slide.dispatchEvent(click);
+      const before = node.scrollLeft;
+      pointer('pointerdown', 28, 200, 1);
+      pointer('pointermove', 28, 170, 1);
+      const distance = node.scrollLeft - before;
+      pointer('pointerup', 28, 170, 0);
+      return { snapRestored, suppressed: click.defaultPrevented, distance, captured };
+    } finally {
+      node.setPointerCapture = originalCapture;
+    }
+  });
+  expect(recovered.snapRestored).toBe(true);
+  expect(recovered.suppressed).toBe(true);
+  expect(recovered.distance).toBeCloseTo(30, 0);
+  expect(recovered.captured).toEqual([27, 28]);
+});
+
+test('a fresh press from the same pointer recovers a missed release before any hover move', async ({ page }) => {
+  const { viewport } = await openPausedCarousel(page);
+  const recovered = await viewport.evaluate(node => {
+    const originalCapture = node.setPointerCapture;
+    const captured = [];
+    node.setPointerCapture = id => { captured.push(id); };
+    const pointer = (type, clientX) => node.dispatchEvent(new PointerEvent(type, {
+      bubbles: true, cancelable: true, pointerType: 'mouse', pointerId: 27, button: 0, buttons: 1, clientX,
+    }));
+    try {
+      pointer('pointerdown', 200);
+      pointer('pointermove', 170);
+      // A new primary press proves the previous press ended even when
+      // neither pointerup nor a released-button move reached the viewport.
+      pointer('pointerdown', 200);
+      const before = node.scrollLeft;
+      pointer('pointermove', 170);
+      return { distance: node.scrollLeft - before, captured };
+    } finally {
+      node.dispatchEvent(new PointerEvent('pointercancel', {
+        bubbles: true, pointerType: 'mouse', pointerId: 27, buttons: 0,
+      }));
+      node.setPointerCapture = originalCapture;
+    }
+  });
+  expect(recovered.distance).toBeCloseTo(30, 0);
+  expect(recovered.captured).toEqual([27, 27]);
+});
+
 test('carousel leaves modified, composing and handled keys to their owner', async ({ page }) => {
   const { carousel, viewport, progress } = await openPausedCarousel(page);
   await viewport.focus();
@@ -80,6 +144,58 @@ for(const width of [375,600,768,1024,1440,1920])test(`left alignment and control
  await viewport.focus();await page.keyboard.press('End');await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow','7');
  await expect.poll(async()=>Math.abs(v.x-(await carousel.getByRole('group',{name:'7 of 7',exact:true}).boundingBox()).x)).toBeLessThan(2);
 });
+
+for (const update of ['Reverse programme order', 'Show two records']) {
+  test(`scroll selection resumes after ${update} cancels a pending frame`, async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    const { viewport, progress } = await openPausedCarousel(page);
+    // Hold the browser frame callback across a real React consumer update.
+    // No cancelled callback is manually invoked to rescue stale bookkeeping.
+    await viewport.evaluate(node => {
+      const request = window.requestAnimationFrame;
+      const cancel = window.cancelAnimationFrame;
+      const pending = new Map();
+      window.__carouselFrameProbe = { pending, cancelled: 0, restore() {
+        window.requestAnimationFrame = request;
+        window.cancelAnimationFrame = cancel;
+        // A slide update may schedule a fresh frame after cancelling the
+        // original. Resume only callbacks that never received cancellation.
+        for (const [id, callback] of pending) {
+          cancel.call(window, id);
+          callback(performance.now());
+        }
+        delete window.__carouselFrameProbe;
+      } };
+      window.requestAnimationFrame = callback => {
+        const id = request.call(window, () => {});
+        pending.set(id, callback);
+        return id;
+      };
+      window.cancelAnimationFrame = id => {
+        if (pending.delete(id)) window.__carouselFrameProbe.cancelled++;
+        cancel.call(window, id);
+      };
+      node.dispatchEvent(new Event('scroll'));
+    });
+    try {
+      await expect.poll(() => page.evaluate(() => window.__carouselFrameProbe.pending.size)).toBeGreaterThan(0);
+      // DOM click avoids Playwright's animation-frame actionability polling
+      // while the frame callback is deliberately held.
+      await page.getByRole('button', { name: update, exact: true }).evaluate(button => button.click());
+      await expect(progress).toHaveAttribute('aria-valuemax', update === 'Show two records' ? '2' : '7');
+      await expect.poll(() => page.evaluate(() => window.__carouselFrameProbe.cancelled)).toBeGreaterThan(0);
+    } finally {
+      await page.evaluate(() => window.__carouselFrameProbe?.restore());
+    }
+    await viewport.evaluate(node => {
+      const slide = node.querySelectorAll('[aria-roledescription="slide"]')[1];
+      node.scrollTo({ left: slide.offsetLeft, behavior: 'instant' });
+      node.dispatchEvent(new Event('scroll'));
+      node.dispatchEvent(new Event('scrollend'));
+    });
+    await expect(progress).toHaveAttribute('aria-valuenow', '2');
+  });
+}
 
 test('reordering slides preserves their keyed interactive state', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
