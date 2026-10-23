@@ -61,12 +61,10 @@ export function IslamicCompanion() {
   const rotationPointerIntent = useRef<boolean | null>(null);
 
   useEffect(() => {
-    const update = () => setNow(new Date());
+    const update = () => { if (!document.hidden) setNow(new Date()); };
     update();
     const timer = window.setInterval(update, 30_000);
-    const visible = () => {
-      if (!document.hidden) update();
-    };
+    const visible = update;
     document.addEventListener("visibilitychange", visible);
 
     const preference = window.matchMedia("(prefers-reduced-motion: reduce)");

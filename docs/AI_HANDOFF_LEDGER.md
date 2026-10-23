@@ -1,3 +1,15 @@
+## 2026-10-24 — Carousel #417 merged; Companion #418 revalidated head
+
+CHATGPT_ACTIVE sole writer. Protected PR #417 full run 39999238486 passed (2,050 units, 1,335 Chromium, 24 Firefox/WebKit) and ready-state 40003970427 passed. PR #417 merged normally at `1a9b3caada419d7730712527b4c2f2f6a30e24d1`; Railway deployment `87a3255b-64ef-45a1-9c3d-eccac75fa82e` was BUILDING at merge read, so do not claim LIVE_VERIFIED until independent public SHA/ready endpoints match. PR #418 adds a safe day-level Islamic-civil fallback cache and visibility-aware Companion clock with tests. This two-parent reconciliation preserves both histories and carries all four PR #418 source/test files onto latest main. **Fresh full exact-head acceptance and ready-state verify are required; previous branch tests do not certify combined tree.** No protected budget exceptions, FCRA/80G, donor, media, payment, or external settings changes. Historical 149-entry counts unchanged.
+
+## 2026-10-23 — Hidden-tab Companion lifecycle added to cache candidate
+
+PR #418 `perf/companion-daily-calendar-cache-20261023`: same-day estimated lunar cache plus skip hidden-document 30s state updates, with immediate visibility refresh. Node and React regressions written; source-equivalent red/green does not certify actual hosted suite. User authorizes commits/merges subject to protected exact-head checks. Keep #417 independent; no data/provider changes, no historical item closure.
+
+## 2026-10-23 — Daily-calendar calculation optimization prepared
+
+CHATGPT_ACTIVE sole writer. Separate task `perf/companion-daily-calendar-cache-20261023` on live `main` `463bbeec`; PR #417 exact reconciled head `69447d7` browser suite still active at handoff. Perf source change caches same-day fallback Islamic-civil calendar estimate only; confirmed moon/date boundary remain authoritative. Direct source-equivalent before/after Node check 6 → 3 date conversions on repeated same-day reads; repository integration not certified until protected acceptance. No payment, consent/media or content edits. Merge on main only after separately approved gates. Historical 149-count register unchanged.
+
 ## 2026-10-23 — Exact merge from live #416 to PR #417 pending combined acceptance
 
 CHATGPT_ACTIVE sole writer. Source `2bad2521...` passed full protected browser and ready-state; #416 merged to `463bbeecad48b527bec5d73a32083269987077ab` and verified Railway SUCCESS plus public exact SHA/ready/live paymentMode. #417 prior `999aa849` had fast/database/production pass; full browser running at checkpoint. Prepare normal two-parent merge commit to reconcile #417 with current main, using main docs history plus PR #417's scoped carousel notes, preserving both ancestries. A fresh combined full run is mandatory, with no bypass or merge to main before success. Other project scope and 149 historical items unchanged.

@@ -25,6 +25,32 @@ test("known Eid, Tashreeq and Ramadan suppress voluntary fasting prompts", () =>
 test("estimated Ramadan also suppresses optional-fast reminders without an announcement", () => {
   assert.ok(!remindersFor(at("2026-02-23", "08:00")).some(r => r.id === "fasting"));
 });
+test("repeated same-day fasting reminders reuse their lunar-calendar calculation", () => {
+  const original = Intl.DateTimeFormat.prototype.formatToParts;
+  let calculations = 0;
+  Intl.DateTimeFormat.prototype.formatToParts = function (...args) {
+    if (this.resolvedOptions().calendar === "islamic-civil") calculations++;
+    return original.apply(this, args);
+  };
+  const hasFasting = (date, time, hijri = null) =>
+    remindersFor(at(date, time), hijri).some(item => item.id === "fasting");
+  try {
+    assert.equal(hasFasting("2026-09-28", "08:00"), true);
+    const firstDayReads = calculations;
+    assert.equal(firstDayReads, 3, "one three-day calendar safety window is evaluated");
+    assert.equal(hasFasting("2026-09-28", "16:00"), true);
+    assert.equal(calculations, firstDayReads, "same civil day does not recompute lunar dates");
+    assert.equal(hasFasting("2026-09-28", "08:00", { day: 1, month: 10 }), false,
+      "a confirmed Eid announcement overrides the unconfirmed fallback");
+    assert.equal(calculations, firstDayReads, "confirmed dates bypass fallback calculations");
+    assert.equal(hasFasting("2026-10-01", "08:00"), true);
+    assert.equal(calculations, firstDayReads + 3, "a new civil day refreshes the estimate");
+    assert.equal(hasFasting("2026-09-28", "19:00"), false, "the reminder clock window remains independent");
+  } finally {
+    Intl.DateTimeFormat.prototype.formatToParts = original;
+  }
+});
+
 test("night and morning/evening windows include the correct boundaries", () => {
   const ids = time => remindersFor(at("2026-09-15", time)).map(r => r.id);
   assert.ok(!ids("19:59").includes("baqarah"));
