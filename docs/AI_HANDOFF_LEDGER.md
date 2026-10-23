@@ -1,3 +1,9 @@
+## 2026-10-23 — #413 merged after full and promotion acceptance
+
+Railway `b8264a9c-d551-4e67-b38e-f326ea8de9d2` SUCCESS and fresh public version/readiness confirm exact production/main `4e8db34ece2acce771565d56e0f8b2ba4a6d5d53` and ready. Pending deployment/public-verification statements below are superseded. No live transaction or exhaustive device certification inferred.
+
+Accepted #413 source `9886400`: full `39967751762` success (1,326 Chromium + 24 Firefox/WebKit smoke checks, plus fast/production/database/verify); ready-state `39974364680` promotion/verify success. Standing owner-authorized merge `4e8db34ece2acce771565d56e0f8b2ba4a6d5d53`. Railway `b8264a9c-d551-4e67-b38e-f326ea8de9d2` BUILDING, public exact-SHA/readiness pending; last live verification `03bb739`. Normal main merge preserves both source histories and the newer separate zoom/composition checkpoint `2da3f6e`, not included in this release. Require its own future hosted acceptance; no extra PR/deploy now. #413 JS 817,607 / CSS 325,561 aggregate uncompressed bytes, unchanged budgets pass; no transfer/CWV claim. Earlier pending/failure notes superseded, historical totals unchanged.
+
 ## 2026-10-23 — Zoom and composition ownership preserved
 
 CODEX_ACTIVE on existing `fix/native-keyboard-shortcuts-20261023`, separate saved checkpoint from frozen #413 PR branch `9886400`. Run `39967751762` fast/production/database passed; browser still pending. No new PR or deployment; main remains last verified `03bb739`.

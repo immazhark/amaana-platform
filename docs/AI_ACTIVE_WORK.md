@@ -1,3 +1,11 @@
+## 2026-10-23 — #413 accepted and merged; follow-up reconciled
+
+Railway `b8264a9c-d551-4e67-b38e-f326ea8de9d2` is SUCCESS. Fresh public verification confirms exact main `4e8db34ece2acce771565d56e0f8b2ba4a6d5d53`, production, with readiness ready. This supersedes pending deployment/public-identity statements below. Identity/readiness only; no live-payment or exhaustive device acceptance is inferred.
+
+Owner: CODEX_ACTIVE. #413 full exact-head run `39967751762` passed all actual application/build/budget/database/browser/verify gates at `9886400`. Browser results: 1,326 Chromium and 24 Firefox/WebKit smoke checks passed. Ready-state run `39974364680` passed promotion/verify; application skips were intentional on that metadata-only event. Standing owner-authorized merge succeeded at `4e8db34ece2acce771565d56e0f8b2ba4a6d5d53`. Railway deployment `b8264a9c-d551-4e67-b38e-f326ea8de9d2` is BUILDING; exact public release verification remains pending. Earlier #413-pending/failure statements below are historical and superseded by this accepted source.
+
+Normal main reconciliation preserves prepared zoom/composition checkpoint `2da3f6e` separately; those two scroll-handler guards and browser cases are NOT in #413 and still need fresh hosted acceptance in a substantive follow-up batch. No new PR/deployment for them. Compiled #413 aggregate uncompressed JS 817,607 / CSS 325,561 bytes, both unchanged caps pass; transfer/per-route attribution/CWV unmeasured. No complete accessibility/device or historical 149-entry closure inferred.
+
 ## 2026-10-23 — Browser-owned zoom and composition checkpoint
 
 Owner: CODEX_ACTIVE, sole writer continuing on `fix/native-keyboard-shortcuts-20261023`. Keep #413 PR branch frozen at `9886400` while full run `39967751762` executes. Actual fast/production/database gates passed; browser pending. This independent checkpoint stays on the existing saved branch and has no new PR/deployment. Production remains last independently verified `03bb739`.
