@@ -38,7 +38,7 @@ export function SiteMotion() {
       const fromTranslate = current.translate === "none" ? "0px 0px" : current.translate;
       const fromScale = current.scale === "none" ? "1" : current.scale;
       running.get(element)?.cancel();
-      const raised = element.matches(":hover, :focus-visible");
+      const raised = !element.matches(":disabled, [aria-disabled='true']") && element.matches(":hover, :focus-visible");
       owned.add(element);
       const animation = element.animate([
         { translate: fromTranslate, scale: fromScale },
@@ -52,9 +52,9 @@ export function SiteMotion() {
       }).catch(() => undefined);
     };
 
-    const target = (event: Event) => {
+    const target = (event: Event, includeDisabled = false) => {
       const element = event.target instanceof Element ? event.target.closest<HTMLElement>(actions) : null;
-      return element && !element.matches(":disabled, [aria-disabled='true']") ? element : null;
+      return element && (includeDisabled || !element.matches(":disabled, [aria-disabled='true']")) ? element : null;
     };
     const hover = (event: Event) => {
       if (event instanceof PointerEvent && event.pointerType !== "mouse") return;
@@ -65,10 +65,13 @@ export function SiteMotion() {
       feedback(element);
     };
     const press = (event: Event) => {
-      if (event instanceof PointerEvent && event.button !== 0) return;
+      const pressed = event.type === "pointerdown" || event.type === "keydown";
+      // Cancellation/release must restore feedback even when the browser no
+      // longer reports a primary button or the control became disabled.
+      if (event instanceof PointerEvent && pressed && event.button !== 0) return;
       if (event instanceof KeyboardEvent && (event.repeat || !["Enter", " "].includes(event.key))) return;
-      const element = target(event);
-      if (element) feedback(element, event.type === "pointerdown" || event.type === "keydown");
+      const element = target(event, !pressed);
+      if (element) feedback(element, pressed);
     };
     const observer = new IntersectionObserver(entries => {
       for (const entry of entries) {

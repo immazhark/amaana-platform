@@ -38,6 +38,16 @@
   background:#b4432f;
   box-shadow:0 0 0 .24rem rgb(180 67 47 / 10%)
 }
+button.amaana-live-badge{
+  min-height:44px;
+  padding:.25rem .35rem;
+  border:1px solid currentColor;
+  border-radius:.35rem;
+  background:transparent;
+  font-family:inherit;
+  cursor:pointer
+}
+button.amaana-live-badge svg{width:1rem;height:1rem;flex-shrink:0}
 .amaana-reminder-eyebrow{
   color:#8a6715;
   font-size:.75rem;
