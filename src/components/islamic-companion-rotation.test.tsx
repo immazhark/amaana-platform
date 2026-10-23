@@ -72,13 +72,13 @@ describe("visibility-aware site-wide clock", () => {
     expect(stopClock).toBeTypeOf("function");
     const setNow = harness.setters[1];
     expect(setNow).toHaveBeenCalledTimes(1);
-    const tick = live.interval.mock.calls.find(([, delay]) => delay === 30_000)?.[0] as (() => void) | undefined;
+    const tick = (live.interval.mock.calls as unknown as [() => void, number][]).find(([, delay]) => delay === 30_000)?.[0];
     expect(tick).toBeTypeOf("function");
     live.documentEvents.hidden = true;
     tick?.();
     expect(setNow).toHaveBeenCalledTimes(1);
     live.documentEvents.hidden = false;
-    const visibility = live.documentEvents.addEventListener.mock.calls.find(([name]) => name === "visibilitychange")?.[1] as (() => void) | undefined;
+    const visibility = (live.documentEvents.addEventListener.mock.calls as unknown as [string, () => void][]).find(([name]) => name === "visibilitychange")?.[1];
     visibility?.();
     expect(setNow).toHaveBeenCalledTimes(2);
     stopClock?.();
