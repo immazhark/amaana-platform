@@ -38,7 +38,7 @@ describe("visible Amaana verification questions and FAQ markup", () => {
 
 it("uses disclosure controls without scripting or submitting a visitor record", () => {
   const html = renderToStaticMarkup(<VerificationFaq />);
-  expect(html.match(/<details\\b/g)).toHaveLength(VERIFICATION_FAQ.length);
+  expect(html.split("<details").length - 1).toBe(VERIFICATION_FAQ.length);
   expect(html.match(/<summary>/g)).toHaveLength(VERIFICATION_FAQ.length);
   expect(html).not.toContain("<form");
   expect(html).not.toContain("input type=");
