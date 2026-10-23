@@ -76,8 +76,9 @@ export function SiteMotion() {
       if (related instanceof Node && element.contains(related)) return;
       if (event instanceof PointerEvent && event.type === "pointerout" &&
           activePointers.get(event.pointerId) === element) activePointers.delete(event.pointerId);
-      // A focus or unrelated hover change must not cancel a held touch.
-      if (isHeld(element)) return;
+      // Preserve an active touch across ordinary focus/hover changes, but
+      // always release visual feedback when the action became disabled.
+      if (isHeld(element) && !element.matches(":disabled, [aria-disabled='true']")) return;
       feedback(element);
     };
     const press = (event: Event) => {
