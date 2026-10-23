@@ -6,6 +6,14 @@
 **Historical source:** `docs/AMAANA_MASTER_RECONCILED_EXECUTION_PLAN.md` on preserved **old** branch `fix/direct-transfer-feedback-20261013` (2026-10-17 snapshot); the old branch is **read-only historical evidence**, NOT current `main`.  
 **Truth precedence:** Live `main` source + current PR/actual Railway release > older docs/PR assertions. User-confirmed legal/campaign evidence remains controlling until explicitly reconciled.
 
+## Current source delta — 23 October 2026
+
+This section supersedes earlier pending-release statements without changing the historical 149-entry totals. PR #405 is MERGED and DEPLOYED at `75cd3e1`; Railway SUCCESS and a fresh public `/api/health/version` read independently confirmed that exact commit. Includes #404 and original #406 ancestry, archive query optimization, carousel CTA compatibility/deduplication/schedules, and Next.js 16.4.2 remediation. This is deployed-version evidence, not full payment/security/performance acceptance.
+
+PR #407 is MERGED at `00dce4d` after exact-head fast/browser/production/database/verify plus ready-transition promotion readiness/verify passed. AF-R042 interaction progress: keyboard activation after dragging, native editing control exclusions, gallery external-focus recovery. Three new browser regressions passed hosted acceptance. Railway deployment `fb415208-d19a-4770-b10c-830fe1bc562c` reports SUCCESS. Fresh public version and readiness endpoints confirm `00dce4d` in production and status ready. This verifies release identity/readiness, not every live journey.
+
+Next AF-R042 source batch, PR #408 at `9719f74`: mobile-menu external-focus recovery, four passing handler regressions and two durable browser cases. Full unit suite 1,947 passed / 15 skipped, TypeScript/scoped ESLint pass. Not merged/deployed; hosted acceptance required. No complete AF-R042, screen-reader or real-device closure claim.
+
 ## Current source delta — 22 October 2026
 
 Release dependency finding: PR #405 hosted audit identified the existing Next.js 16.3.8 pin as vulnerable under GHSA-2464-fhr4-w9xw / GHSA-p3m5-59mp-jv5r. Exact Next.js/eslint-config-next 16.4.2 pins and lockfile are implemented. Isolated local verification: zero production audit vulnerabilities, 1,936 unit tests passed / 15 skipped, TypeScript/full ESLint and 27 safety checks passed. Fresh protected build/database/browser acceptance is required. Existing bundle caps remain mandatory. This is a source-level dependency remediation, not a production security or master-item closure certificate.

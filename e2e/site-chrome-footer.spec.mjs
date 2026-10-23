@@ -222,3 +222,24 @@ test('Amaana Live rotates independently and pauses for hover, focus and reduced 
   await page.clock.runFor(24_100);
   await expect(title).toHaveText(items[1].title);
 });
+
+for (const backwards of [false, true]) {
+  test(`mobile menu recovers external focus on ${backwards ? 'Shift+Tab' : 'Tab'}`, async ({ page }) => {
+    await openFixture(page, 390);
+    const primary = page.getByRole('navigation', { name: 'Primary navigation', exact: true });
+    const toggle = primary.getByRole('button', { name: 'Open navigation menu', exact: true });
+    await toggle.click();
+    const openToggle = primary.getByRole('button', { name: 'Close navigation menu', exact: true });
+    const menu = page.getByRole('navigation', { name: 'Mobile navigation' });
+    await expect(menu).toBeVisible();
+    const outside = primary.getByRole('link', { name: 'Amaana Foundation home', exact: true });
+    await outside.focus();
+    await expect(outside).toBeFocused();
+    await page.keyboard.press(backwards ? 'Shift+Tab' : 'Tab');
+    await expect(backwards ? menu.getByRole('link', { name: 'Donate', exact: true }) : openToggle).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+    await expect(primary.getByRole('button', { name: 'Open navigation menu', exact: true })).toBeFocused();
+    await expect(page.locator('body')).not.toHaveClass(/af-menu-lock/);
+  });
+}

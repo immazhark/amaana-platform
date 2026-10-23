@@ -66,7 +66,10 @@ export function SiteHeader() {
       if (event.key !== "Tab") return;
       const last = focusable.at(-1)!;
       const active = document.activeElement;
-      if (event.shiftKey && active === toggle) {
+      if (active !== toggle && !nav.contains(active)) {
+        event.preventDefault();
+        (event.shiftKey ? last : toggle).focus();
+      } else if (event.shiftKey && active === toggle) {
         event.preventDefault();
         last.focus();
       } else if (!event.shiftKey && active === last) {

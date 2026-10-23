@@ -3,7 +3,7 @@ import { requirePermission } from "@/lib/auth";
 import { getAdminPagination, parseAdminPage } from "@/lib/admin-pagination";
 import { prisma } from "@/lib/prisma";
 
-type Props = { searchParams: Promise<{ page?: string; action?: string; entityType?: string }> };
+type Props = { searchParams: Promise<{ page?: string | string[]; action?: string | string[]; entityType?: string | string[] }> };
 
 function formatMetadata(metadata: unknown) {
   if (metadata == null) return "—";
@@ -17,8 +17,8 @@ function formatMetadata(metadata: unknown) {
 export default async function AuditHistoryPage({ searchParams }: Props) {
   await requirePermission("rbac.manage");
   const { page: pageParam, action: actionParam, entityType: entityTypeParam } = await searchParams;
-  const action = actionParam?.trim().slice(0, 120) || undefined;
-  const entityType = entityTypeParam?.trim().slice(0, 120) || undefined;
+  const action = typeof actionParam === "string" ? actionParam.trim().slice(0, 120) || undefined : undefined;
+  const entityType = typeof entityTypeParam === "string" ? entityTypeParam.trim().slice(0, 120) || undefined : undefined;
   const where = {
     ...(action ? { action } : {}),
     ...(entityType ? { entityType } : {}),
@@ -65,7 +65,7 @@ export default async function AuditHistoryPage({ searchParams }: Props) {
         {item.entityType} ({item._count._all})
       </Link>)}
     </div>
-    {action && <p className="muted">Showing exact action <strong>{action}</strong>. <Link href={entityHref(entityType)}>Clear action filter</Link></p>}
+    {action && <p className="muted">Showing exact action <strong>{action}</strong>. <Link href={{ pathname: "/admin/audit", query: entityType ? { entityType } : {} }}>Clear action filter</Link></p>}
     <div className="admin-table-wrap" tabIndex={0} role="region" aria-label="Audit events">
       <table>
         <thead><tr><th>Time</th><th>Actor</th><th>Action</th><th>Entity</th><th>Details</th></tr></thead>
