@@ -6,6 +6,8 @@ const harness = vi.hoisted(() => ({
   effects: [] as Array<() => void | (() => void)>,
   setters: [] as ReturnType<typeof vi.fn>[],
   index: 0,
+  refIndex: 0,
+  refs: [] as Array<{ current: unknown }>,
 }));
 vi.mock("react", async original => ({
   ...await original<typeof import("react")>(),
@@ -15,7 +17,7 @@ vi.mock("react", async original => ({
     harness.setters[index] = setter;
     return [index in harness.values ? harness.values[index] : initial, setter];
   },
-  useRef: () => ({ current: null }),
+  useRef: (current: unknown) => harness.refs[harness.refIndex++] ?? (harness.refs[harness.refIndex - 1] = { current }),
   useEffect: (effect: () => void | (() => void)) => harness.effects.push(effect),
   useCallback: (callback: unknown) => callback,
 }));
@@ -29,8 +31,10 @@ const items = ["first", "second"].map(id => ({
 
 afterEach(() => { vi.unstubAllGlobals(); });
 
-function fixture({ paused = false, reduced = false, count = 2 } = {}) {
+function fixture({ paused = false, reduced = false, count = 2, rerender = false } = {}) {
   harness.index = 0;
+  harness.refIndex = 0;
+  if (!rerender) harness.refs = [];
   harness.effects.length = 0;
   harness.setters.length = 0;
   // Preserve component hook order: panel, clock, moon, motion, hover, focus,
@@ -44,17 +48,19 @@ function fixture({ paused = false, reduced = false, count = 2 } = {}) {
   const rotation = harness.effects[2];
   if (!rotation) throw new Error("Expected live rotation effect");
   const cleanup = rotation();
-  type ButtonProps = { children?: unknown; onClick?: () => void; "aria-label"?: string };
+  type ButtonProps = { children?: unknown; onClick?: (event: { detail: number }) => void; "aria-label"?: string };
   const buttons: ReactElement<ButtonProps>[] = [];
+  const elements: ReactElement<Record<string, unknown>>[] = [];
   const visit = (node: unknown) => {
     if (Array.isArray(node)) { node.forEach(visit); return; }
     if (!node || typeof node !== "object" || !("props" in node)) return;
     const element = node as ReactElement<ButtonProps>;
+    elements.push(element as ReactElement<Record<string, unknown>>);
     if (element.type === "button") buttons.push(element);
     visit(element.props.children);
   };
   visit(tree);
-  return { interval, clearInterval, buttons, cleanup };
+  return { interval, clearInterval, buttons, cleanup, elements };
 }
 
 describe("visitor control of live updates", () => {
@@ -63,7 +69,7 @@ describe("visitor control of live updates", () => {
     expect(live.interval).toHaveBeenCalledWith(expect.any(Function), 12_000);
     const pause = live.buttons.find(button => button.props["aria-label"] === "AMAANA LIVE: Pause updates");
     expect(pause).toBeDefined();
-    pause?.props.onClick?.();
+    pause?.props.onClick?.({ detail: 0 });
     expect(harness.setters[8]).toHaveBeenCalledWith(true);
     live.cleanup?.();
     expect(live.clearInterval).toHaveBeenCalledWith(1);
@@ -74,7 +80,7 @@ describe("visitor control of live updates", () => {
     expect(live.interval).not.toHaveBeenCalled();
     const resume = live.buttons.find(button => button.props["aria-label"] === "AMAANA LIVE: Resume updates");
     expect(resume).toBeDefined();
-    resume?.props.onClick?.();
+    resume?.props.onClick?.({ detail: 0 });
     expect(harness.setters[8]).toHaveBeenCalledWith(false);
   });
 
@@ -84,5 +90,31 @@ describe("visitor control of live updates", () => {
       expect(live.interval).not.toHaveBeenCalled();
       expect(live.buttons.some(button => button.props["aria-label"] === "AMAANA LIVE: Pause updates")).toBe(false);
     }
+  });
+
+  it("remembers a keyboard visit after focus leaves the rail", () => {
+    const live = fixture();
+    const rail = live.elements.find(element => element.props.className === "amaana-reminders");
+    (rail?.props.onFocusCapture as () => void)();
+    expect(harness.setters[8]).toHaveBeenCalledWith(true);
+  });
+
+  it("keeps automatic updates quiet and paused content polite", () => {
+    for (const paused of [false, true]) {
+      const live = fixture({ paused });
+      const content = live.elements.find(element => element.props.className === "amaana-live-content");
+      expect(content?.props["aria-live"]).toBe(paused ? "polite" : "off");
+      expect(content?.key).toBeNull();
+    }
+  });
+
+  it("preserves pointer Pause intent across the focus-triggered rerender", () => {
+    const live = fixture();
+    const pause = live.elements.find(element => element.props["aria-label"] === "AMAANA LIVE: Pause updates");
+    (pause?.props.onPointerDown as (event: object) => void)({ button: 0 });
+    const focused = fixture({ paused: true, rerender: true });
+    const resume = focused.elements.find(element => element.props["aria-label"] === "AMAANA LIVE: Resume updates");
+    (resume?.props.onClick as (event: object) => void)({ detail: 1 });
+    expect(harness.setters[8]).toHaveBeenCalledWith(true);
   });
 });

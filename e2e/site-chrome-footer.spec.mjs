@@ -1,5 +1,35 @@
 import { expect, test } from '@playwright/test';
 
+test('mobile menu preserves browser shortcuts and composing or handled Escape', async ({ page }) => {
+  await openFixture(page, 390);
+  const primary = page.getByRole('navigation', { name: 'Primary navigation', exact: true });
+  await primary.getByRole('button', { name: 'Open navigation menu', exact: true }).click();
+  const menu = page.getByRole('navigation', { name: 'Mobile navigation', exact: true });
+  const last = menu.getByRole('link', { name: 'Donate', exact: true });
+  await last.focus();
+  for (const options of [
+    { key: 'Tab', ctrlKey: true }, { key: 'Tab', metaKey: true }, { key: 'Tab', altKey: true },
+    { key: 'Escape', isComposing: true }, { key: 'Escape', handled: true },
+    { key: 'Escape', altKey: true }, { key: 'Escape', shiftKey: true },
+  ]) {
+    const prevented = await last.evaluate((node, { handled, ...input }) => {
+      const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...input });
+      if (handled) event.preventDefault();
+      node.dispatchEvent(event);
+      return event.defaultPrevented;
+    }, options);
+    expect(prevented).toBe(Boolean(options.handled));
+    await expect(menu).toBeVisible();
+    await expect(last).toBeFocused();
+  }
+  await page.keyboard.press('Tab');
+  await expect(primary.getByRole('button', { name: 'Close navigation menu', exact: true })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(menu).toBeHidden();
+  await expect(primary.getByRole('button', { name: 'Open navigation menu', exact: true })).toBeFocused();
+});
+
+
 async function openFixture(page, width = 1440) {
   await page.setViewportSize({ width, height: 900 });
   await page.route('**/api/public/live-rail', route => route.fulfill({
@@ -236,6 +266,7 @@ for (const width of [320, 1440]) {
     await page.goto('/browser-acceptance/home-hero');
     const title = page.locator('.amaana-live-content strong');
     await expect(title).toHaveText(items[0].title);
+    await expect(page.locator('.amaana-live-content')).toHaveAttribute('aria-live', 'off');
     const pause = page.getByRole('button', { name: 'AMAANA LIVE: Pause updates', exact: true });
     await expect(pause).toBeVisible();
     const bounds = await pause.boundingBox();
@@ -244,9 +275,9 @@ for (const width of [320, 1440]) {
     expect(bounds.x).toBeGreaterThanOrEqual(0);
     expect(bounds.x + bounds.width).toBeLessThanOrEqual(width + 1);
     await pause.focus();
-    await page.keyboard.press('Enter');
     const resume = page.getByRole('button', { name: 'AMAANA LIVE: Resume updates', exact: true });
     await expect(resume).toBeFocused();
+    await expect(page.locator('.amaana-live-content')).toHaveAttribute('aria-live', 'polite');
     const leaveRail = async () => {
       await page.mouse.move(1, 500);
       await page.locator('main h1').evaluate(node => { node.tabIndex = -1; node.focus(); });
@@ -258,6 +289,14 @@ for (const width of [320, 1440]) {
     await page.keyboard.press('Enter');
     await leaveRail();
     await page.clock.runFor(12_100);
+    await expect(title).toHaveText(items[1].title);
+    await expect(page.locator('.amaana-live-content')).toHaveAttribute('aria-live', 'off');
+    // A pointer click must still mean Pause even though focusing the button
+    // pauses first and changes its accessible action to Resume.
+    await pause.click();
+    await expect(resume).toBeFocused();
+    await leaveRail();
+    await page.clock.runFor(24_100);
     await expect(title).toHaveText(items[1].title);
     await page.emulateMedia({ reducedMotion: 'reduce' });
     await expect(pause).toHaveCount(0);

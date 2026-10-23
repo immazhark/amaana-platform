@@ -54,6 +54,7 @@ export function ScrollCarousel({
   const id = useId().replaceAll(":", "");
   const viewportId = `carousel-${id}`;
   const [paused, setPaused] = useState(false);
+  const rotationPointerIntent = useRef<boolean | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
 
   useEffect(() => {
@@ -170,6 +171,7 @@ export function ScrollCarousel({
   }, [autoAdvanceMs, activeIndex, goTo, paused, reducedMotion, slideCount]);
 
   const onKeyDown = (event: ReactKeyboardEvent<HTMLDivElement>) => {
+    if (event.defaultPrevented || event.nativeEvent.isComposing || event.altKey || event.ctrlKey || event.metaKey || event.shiftKey) return;
     if (event.currentTarget !== event.target) return;
     const target = {
       ArrowLeft: activeIndexRef.current - 1,
@@ -202,7 +204,7 @@ export function ScrollCarousel({
       aria-roledescription="carousel"
       data-carousel-mode={mode}
       data-cinematic={cinematic || undefined}
-
+      onFocusCapture={() => { if (autoAdvanceMs) setPaused(true); }}
     >
       <div className={styles.header}>{heading ? <div className={styles.heading}>{heading}</div> : null}
       {slideCount > 1 ? (
@@ -211,7 +213,15 @@ export function ScrollCarousel({
             <span className={styles.srOnly}>Slide </span>{visibleIndex + 1} / {slideCount}
           </span>
           <div className={`${styles.controls}${cinematic ? " hero-controls" : ""}`}>
-            {autoAdvanceMs && !reducedMotion ? <button type="button" aria-label={paused ? "Resume automatic slides" : "Pause automatic slides"} onClick={() => setPaused(value => !value)}><UIIcon name={paused ? "play" : "pause"} /></button> : null}
+            {autoAdvanceMs && !reducedMotion ? <button type="button" aria-label={paused ? "Resume automatic slides" : "Pause automatic slides"}
+              onPointerDown={event => { if (event.button === 0) rotationPointerIntent.current = !paused; }}
+              onPointerCancel={() => { rotationPointerIntent.current = null; }}
+              onClick={event => {
+                // Focus pauses rotation before a pointer click. Preserve the
+                // action shown when the press began; keyboard uses the new label.
+                setPaused(event.detail > 0 ? (rotationPointerIntent.current ?? !paused) : !paused);
+                rotationPointerIntent.current = null;
+              }}><UIIcon name={paused ? "play" : "pause"} /></button> : null}
             <button
               type="button"
               aria-controls={viewportId}

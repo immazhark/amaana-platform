@@ -1,5 +1,49 @@
 import { expect, test } from '@playwright/test';
 
+test('closing the gallery leaves an already-open Companion panel available', async ({ page }) => {
+  await openGallery(page, 1440);
+  await page.locator('.amaana-companion-dock button').click();
+  const companion = page.getByRole('region', { name: 'Today’s reflection', exact: true });
+  await expect(companion).toBeVisible();
+  const first = page.getByRole('button', { name: /^Enlarge image 1 of 13:/ });
+  await first.click();
+  await expect(page.getByRole('dialog')).toBeVisible();
+  await page.keyboard.press('Escape');
+  await expect(page.getByRole('dialog')).toHaveCount(0);
+  await expect(companion).toBeVisible();
+  await expect(first).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(companion).toHaveCount(0);
+  await expect(page.locator('.amaana-companion-dock button')).toBeFocused();
+});
+
+
+test('gallery preserves modified arrows and composing or handled Escape', async ({ page }) => {
+  await openGallery(page, 390);
+  await page.getByRole('button', { name: /^Enlarge image 1 of 13:/ }).click();
+  const dialog = page.getByRole('dialog');
+  for (const options of [
+    { key: 'ArrowRight', altKey: true }, { key: 'ArrowRight', ctrlKey: true },
+    { key: 'ArrowRight', metaKey: true }, { key: 'ArrowRight', shiftKey: true },
+    { key: 'Escape', isComposing: true }, { key: 'Escape', handled: true },
+  ]) {
+    const prevented = await dialog.evaluate((node, { handled, ...input }) => {
+      const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...input });
+      if (handled) event.preventDefault();
+      node.dispatchEvent(event);
+      return event.defaultPrevented;
+    }, options);
+    expect(prevented).toBe(Boolean(options.handled));
+    await expect(dialog).toContainText('Image 1 of 13');
+    await expect(dialog.getByRole('button', { name: 'Close', exact: true })).toBeFocused();
+  }
+  await page.keyboard.press('ArrowRight');
+  await expect(dialog).toContainText('Image 2 of 13');
+  await page.keyboard.press('Escape');
+  await expect(dialog).toHaveCount(0);
+});
+
+
 async function openGallery(page, width) {
   await page.setViewportSize({ width, height: width <= 430 ? 844 : 900 });
   await page.route('**/api/analytics/page-view', route => route.fulfill({ status: 204, body: '' }));

@@ -32,10 +32,10 @@ function fixture() {
   first.focus.mockClear();
   return {
     toggle, first, last, cleanup,
-    key(key: string, shiftKey = false, active: unknown = null) {
+    key(key: string, shiftKey = false, active: unknown = null, modifiers: object = {}) {
       documentStub.activeElement = active;
       const event = new Event("keydown", { cancelable: true });
-      Object.defineProperties(event, { key: { value: key }, shiftKey: { value: shiftKey } });
+      Object.defineProperties(event, Object.fromEntries(Object.entries({ key, shiftKey, ...modifiers }).map(([name, value]) => [name, { value }])));
       target.dispatchEvent(event);
       return event;
     },
@@ -43,6 +43,20 @@ function fixture() {
 }
 
 describe("mobile menu keyboard focus containment", () => {
+  it.each([
+    ["Tab", { ctrlKey: true }], ["Tab", { metaKey: true }], ["Tab", { altKey: true }],
+    ["Escape", { isComposing: true }], ["Escape", { defaultPrevented: true }],
+    ["Escape", { altKey: true }], ["Escape", { ctrlKey: true }],
+    ["Escape", { metaKey: true }], ["Escape", { shiftKey: true }],
+  ])("preserves browser-owned %s with %j", (key, modifiers) => {
+    const f = fixture();
+    const event = f.key(key, false, null, modifiers);
+    expect(event.defaultPrevented).toBe(Boolean("defaultPrevented" in modifiers && modifiers.defaultPrevented));
+    expect(f.toggle.focus).not.toHaveBeenCalled();
+    expect(f.last.focus).not.toHaveBeenCalled();
+    f.cleanup?.();
+  });
+
   it.each([false, true])("recovers external focus, backwards=%s", backwards => {
     const f = fixture();
     expect(f.key("Tab", backwards).defaultPrevented).toBe(true);

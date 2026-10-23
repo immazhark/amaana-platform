@@ -1,6 +1,36 @@
 import { expect, test } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 
+test('Companion preserves browser shortcuts and Escape used by composition or a child control', async ({ page }) => {
+  await page.route('**/api/public/islamic-companion?*', route => route.fulfill({ status: 503, json: { error: 'Timings are temporarily unavailable.' } }));
+  await page.goto('/browser-acceptance/home-hero');
+  await page.locator('.amaana-companion-dock button').click();
+  const readings = page.getByRole('tab', { name: 'Ayah & Hadith', exact: true });
+  await readings.focus();
+  for (const options of [
+    { key: 'ArrowRight', altKey: true }, { key: 'End', ctrlKey: true },
+    { key: 'End', metaKey: true }, { key: 'ArrowRight', shiftKey: true },
+    { key: 'ArrowRight', isComposing: true }, { key: 'End', handled: true },
+    { key: 'Escape', isComposing: true }, { key: 'Escape', handled: true },
+  ]) {
+    const prevented = await readings.evaluate((node, { handled, ...input }) => {
+      const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...input });
+      if (handled) event.preventDefault();
+      node.dispatchEvent(event);
+      return event.defaultPrevented;
+    }, options);
+    expect(prevented).toBe(Boolean(options.handled));
+    await expect(readings).toBeFocused();
+    await expect(readings).toHaveAttribute('aria-selected', 'true');
+    await expect(page.getByRole('tabpanel')).toHaveAccessibleName('Ayah & Hadith');
+  }
+  await page.keyboard.press('ArrowRight');
+  await expect(page.getByRole('tab', { name: 'Salah & Hijri', exact: true })).toBeFocused();
+  await page.keyboard.press('Escape');
+  await expect(page.locator('.amaana-companion-panel')).toHaveCount(0);
+});
+
+
 for (const width of [320, 390, 768, 900, 1024, 1440, 1920]) {
   for (const height of [320, 900]) {
     test(`Companion tabs and expanded-panel reachability at ${width}x${height}`, async ({ page }) => {

@@ -58,6 +58,7 @@ export function IslamicCompanion() {
   const [railIndex, setRailIndex] = useState(0);
   const [railPaused, setRailPaused] = useState(false);
   const companionButton = useRef<HTMLButtonElement>(null);
+  const rotationPointerIntent = useRef<boolean | null>(null);
 
   useEffect(() => {
     const update = () => setNow(new Date());
@@ -141,7 +142,7 @@ export function IslamicCompanion() {
         aria-label="Amaana reminder and live updates"
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
-        onFocusCapture={() => setFocused(true)}
+        onFocusCapture={() => { setFocused(true); setRailPaused(true); }}
         onBlurCapture={event => {
           if (!event.currentTarget.contains(event.relatedTarget)) setFocused(false);
         }}
@@ -163,13 +164,18 @@ export function IslamicCompanion() {
                 className="amaana-live-badge"
                 aria-label={`AMAANA LIVE: ${railPaused ? "Resume" : "Pause"} updates`}
                 title={`${railPaused ? "Resume" : "Pause"} updates`}
-                onClick={() => setRailPaused(!railPaused)}
+                onPointerDown={event => { if (event.button === 0) rotationPointerIntent.current = !railPaused; }}
+                onPointerCancel={() => { rotationPointerIntent.current = null; }}
+                onClick={event => {
+                  setRailPaused(event.detail > 0 ? (rotationPointerIntent.current ?? !railPaused) : !railPaused);
+                  rotationPointerIntent.current = null;
+                }}
               >
                 <UIIcon name={railPaused ? "play" : "pause"} />AMAANA LIVE
               </button>
             ) : <span className="amaana-live-badge"><span aria-hidden="true" />AMAANA LIVE</span>}
             {activeLiveItem ? (
-              <div className="amaana-live-content" key={activeLiveItem.id} aria-live="polite" aria-atomic="true">
+              <div className="amaana-live-content" aria-live={!railPaused && !reducedMotion && liveItems.length > 1 ? "off" : "polite"} aria-atomic="true">
                 <span className="amaana-reminder-eyebrow">{activeLiveItem.eyebrow}</span>
                 <strong>{activeLiveItem.title}</strong>
                 <span className="amaana-live-actions">
@@ -180,7 +186,7 @@ export function IslamicCompanion() {
             ) : (
               <div className="amaana-live-content">
                 <span className="amaana-reminder-eyebrow">Foundation updates</span>
-                <strong>No public appeal is open right now.</strong>
+                <strong>Explore Amaana&apos;s public work.</strong>
                 <span className="amaana-live-actions">
                   <Link className="amaana-live-cta" href="/our-work">Explore our work<span aria-hidden="true"> →</span></Link>
                 </span>

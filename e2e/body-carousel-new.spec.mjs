@@ -1,4 +1,28 @@
 import {test,expect} from '@playwright/test';
+
+test('carousel leaves modified, composing and handled keys to their owner', async ({ page }) => {
+  const { carousel, viewport, progress } = await openPausedCarousel(page);
+  await viewport.focus();
+  for (const options of [
+    { key: 'ArrowRight', altKey: true }, { key: 'End', ctrlKey: true },
+    { key: 'End', metaKey: true }, { key: 'ArrowRight', shiftKey: true },
+    { key: 'ArrowRight', isComposing: true }, { key: 'End', handled: true },
+  ]) {
+    const prevented = await viewport.evaluate((node, { handled, ...input }) => {
+      const event = new KeyboardEvent('keydown', { bubbles: true, cancelable: true, ...input });
+      if (handled) event.preventDefault();
+      node.dispatchEvent(event);
+      return event.defaultPrevented;
+    }, options);
+    expect(prevented).toBe(Boolean(options.handled));
+    await expect(progress).toHaveAttribute('aria-valuenow', '1');
+    await expect(viewport).toBeFocused();
+  }
+  await page.keyboard.press('ArrowRight');
+  await expect(progress).toHaveAttribute('aria-valuenow', '2');
+  await expectSelectedProgramme(carousel, 2);
+});
+
 for(const width of [375,600,768,1024,1440,1920])test(`left alignment and controls at ${width}`,async({page})=>{
  await page.setViewportSize({width,height:1000});
  await page.goto('/browser-acceptance/body-carousel');
@@ -129,6 +153,10 @@ test('releasing outside before pointer capture does not permanently pause carous
 
   const carousel = page.getByRole('region', { name: 'Body carousel acceptance' });
   const viewport = carousel.locator('[id^="carousel-"]');
+  // The blank mouse target does not consistently receive focus. Establish
+  // the reading pause explicitly before isolating drag cleanup and restart.
+  await viewport.focus();
+  await expect(carousel.getByRole('button', { name: 'Resume automatic slides' })).toBeVisible();
   const box = await viewport.boundingBox();
   await page.mouse.move(box.x + 5, box.y + box.height - 5);
   await page.mouse.down();
@@ -136,7 +164,8 @@ test('releasing outside before pointer capture does not permanently pause carous
   // pointer capture has not started, so pointerup is delivered elsewhere.
   await page.mouse.move(0, 0, { steps: 1 });
   await page.mouse.up();
-  // Keyboard focus intentionally pauses autoplay; isolate pointer cleanup.
+  // Explicitly restart to isolate drag cleanup from the reading pause.
+  await carousel.getByRole('button', { name: 'Resume automatic slides' }).evaluate(button => button.click());
   await viewport.evaluate(node => node.blur());
   await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '2', { timeout: 5500 });
 });
@@ -192,7 +221,7 @@ test('rapid end-to-start controls finish at the requested card', async ({page}) 
 });
 
 
-test('keyboard focus keeps autoplay paused after the pointer leaves',async({page})=>{
+test('keyboard focus keeps autoplay paused until an explicit restart',async({page})=>{
  await page.goto('/browser-acceptance/body-carousel');
  const root=page.getByRole('region',{name:'Body carousel acceptance'});
  const viewport=root.locator('[id^="carousel-"]');
@@ -200,6 +229,11 @@ test('keyboard focus keeps autoplay paused after the pointer leaves',async({page
  await page.waitForTimeout(3300);
  await expect(root.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1');
  await viewport.evaluate(n=>n.blur());
+ await page.waitForTimeout(3300);
+ await expect(root.getByRole('progressbar')).toHaveAttribute('aria-valuenow','1');
+ const resume=root.getByRole('button',{name:'Resume automatic slides'});
+ await resume.focus();await page.keyboard.press('Enter');
+ await root.getByRole('button',{name:'Pause automatic slides'}).evaluate(n=>n.blur());
  await expect(root.getByRole('progressbar')).toHaveAttribute('aria-valuenow','2',{timeout:4000});
 });
 
@@ -284,6 +318,7 @@ test('emptying during a drag releases autoplay when records return', async ({ pa
   await expect(carousel).toBeVisible();
   await expectSelectedProgramme(carousel, 1);
   await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuemax', '2');
+  await carousel.getByRole('button', { name: 'Resume automatic slides' }).evaluate(button => button.click());
   await expect(carousel.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '2', { timeout: 5500 });
 });
 

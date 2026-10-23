@@ -58,7 +58,9 @@ export function SiteHeader() {
     document.body.classList.add("af-menu-lock");
 
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;
       if (event.key === "Escape") {
+        if (event.shiftKey) return;
         setOpenForPath(null);
         toggle.focus();
         return;

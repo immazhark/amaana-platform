@@ -71,17 +71,18 @@ export function CampaignMediaGallery({ items }: { items: CampaignGalleryItem[] }
     if (!dialog?.contains(document.activeElement)) closeRef.current?.focus();
 
     function onKeyDown(event: KeyboardEvent) {
+      if (event.defaultPrevented || event.isComposing || event.altKey || event.ctrlKey || event.metaKey) return;
       if (event.key === "Escape") {
         event.preventDefault();
         close();
         return;
       }
-      if (event.key === "ArrowLeft") {
+      if (event.key === "ArrowLeft" && !event.shiftKey) {
         event.preventDefault();
         previous();
         return;
       }
-      if (event.key === "ArrowRight") {
+      if (event.key === "ArrowRight" && !event.shiftKey) {
         event.preventDefault();
         next();
         return;
