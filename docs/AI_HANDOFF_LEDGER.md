@@ -1,3 +1,12 @@
+## 2026-10-24 — PR #418 verified merged; #419 normal-main reconciliation
+
+CHATGPT_ACTIVE sole writer. PR #418 protected full `40004240532` and ready-state `40008381073` both SUCCESS; merged exact head `2e8e3f214a19c05c4f18d365941859c10306c0d1` to main `acba777e3eb4c9cf47941fbc36ad679012a80c36`. Railway deployment initially BUILDING, public live not yet claimed. PR #419 pre-reconciliation head `8288bf53` passes fast 2,053 unit tests, database and production budget 819,044 JS / 325,561 CSS; browser earlier in progress. Branch contains additional clock snapshot reuse tests. Reconcile with new main via two-parent non-force merge, require fresh protected combined-source acceptance, ready-state, Railway version/ready check before any further production claim. Do not alter legacy counts or protected #374/#264 items.
+
+## 2026-10-23 — Clock snapshot follow-up prepared, source pending acceptance
+
+CHATGPT_ACTIVE sole writer. PR #418 head `2e8e3f2` full run `40004240532` still in browser acceptance; main live remains #417 `1a9b3caada419d7730712527b4c2f2f6a30e24d1`. New follow-up branch `perf/companion-clock-single-format-20261023` created at PR #418 head, with one-clock-snapshot reuse in `IslamicCompanion` and lazy panel, backwards-compatible parameters in daily helper methods, unit/domain regression tests. Not CI-certified, not merged, not deployed. Preserve protected SHA gates, later normal main reconciliation, no autonomous overriding active writer, current 149-item register. Do not increase aggregate JS/CSS budgets.
+
+
 ## 2026-10-24 — Carousel #417 merged; Companion #418 revalidated head
 
 CHATGPT_ACTIVE sole writer. Protected PR #417 full run 39999238486 passed (2,050 units, 1,335 Chromium, 24 Firefox/WebKit) and ready-state 40003970427 passed. PR #417 merged normally at `1a9b3caada419d7730712527b4c2f2f6a30e24d1`; Railway deployment `87a3255b-64ef-45a1-9c3d-eccac75fa82e` was BUILDING at merge read, so do not claim LIVE_VERIFIED until independent public SHA/ready endpoints match. PR #418 adds a safe day-level Islamic-civil fallback cache and visibility-aware Companion clock with tests. This two-parent reconciliation preserves both histories and carries all four PR #418 source/test files onto latest main. **Fresh full exact-head acceptance and ready-state verify are required; previous branch tests do not certify combined tree.** No protected budget exceptions, FCRA/80G, donor, media, payment, or external settings changes. Historical 149-entry counts unchanged.

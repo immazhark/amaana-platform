@@ -12,7 +12,7 @@ import { IslamicCompanionPanel } from "./islamic-companion-panel";
 
 afterEach(() => vi.unstubAllGlobals());
 
-function fixture() {
+function fixture({ now = null as Date | null } = {}) {
   effects.length = 0;
   const focus = vi.fn();
   class Tab { focus = focus; }
@@ -21,7 +21,7 @@ function fixture() {
   const onClose = vi.fn();
   const documentEvents = Object.assign(new EventTarget(), { querySelector: vi.fn<() => object | null>(() => null) });
   vi.stubGlobal("document", documentEvents);
-  const root = IslamicCompanionPanel({ panel: "readings", date: "", now: null,
+  const root = IslamicCompanionPanel({ panel: "readings", date: now ? "2026-10-23" : "", now,
     onClose, onPanelChange, onMoonChange: vi.fn() });
   effects[0]?.();
   const tabs = (root.props.children as ReactElement<{ role?: string; onKeyDown: (event: object) => void }>[])
@@ -41,6 +41,23 @@ function fixture() {
     },
   };
 }
+
+describe("Companion panel date formatting", () => {
+  it("uses one Hyderabad time snapshot for the panel and daily reading", () => {
+    const original = Intl.DateTimeFormat.prototype.formatToParts;
+    let gregorianFormats = 0;
+    Intl.DateTimeFormat.prototype.formatToParts = function (...args) {
+      if (this.resolvedOptions().calendar === "gregory") gregorianFormats++;
+      return original.apply(this, args);
+    };
+    try {
+      fixture({ now: new Date("2026-10-23T07:00:00Z") });
+      expect(gregorianFormats).toBe(1);
+    } finally {
+      Intl.DateTimeFormat.prototype.formatToParts = original;
+    }
+  });
+});
 
 describe("Companion tab keyboard boundaries", () => {
   it("leaves Escape to an open dialog above the nonmodal Companion", () => {

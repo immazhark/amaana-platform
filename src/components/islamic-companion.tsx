@@ -109,9 +109,11 @@ export function IslamicCompanion() {
     };
   }, []);
 
-  const date = now ? hyderabadClock(now).date : "";
+  // One Hyderabad clock snapshot serves both the date and reminders.
+  const clock = now ? hyderabadClock(now) : null;
+  const date = clock?.date ?? "";
   const currentMoon = confirmedMoon?.date === date ? confirmedMoon.moon : null;
-  const reminders = now ? remindersFor(now, currentMoon) : [];
+  const reminders = now && clock ? remindersFor(now, currentMoon, clock) : [];
   const activeReminder = reminders[0];
   const activeLiveItem = liveItems.length ? liveItems[railIndex % liveItems.length] : null;
 

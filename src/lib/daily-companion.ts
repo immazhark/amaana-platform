@@ -27,8 +27,12 @@ export const PRAYERS = ["Fajr", "Sunrise", "Dhuhr", "Asr", "Maghrib", "Isha"] as
 export type Prayer = typeof PRAYERS[number];
 export type PrayerDay = { date: string; timings: Record<Prayer, string> };
 
-export function nextSalah(today: PrayerDay | null, tomorrow: PrayerDay | null, now: Date) {
-  const clock = hyderabadClock(now);
+export function nextSalah(
+  today: PrayerDay | null,
+  tomorrow: PrayerDay | null,
+  now: Date,
+  clock = hyderabadClock(now),
+) {
   if (!today || today.date !== clock.date) return null;
   for (const prayer of PRAYERS) {
     const minute = timeMinutes(today.timings[prayer]);
@@ -91,8 +95,8 @@ export const HADITHS = [
   { title: "The virtue of Al-Mulk", summary: "A narration describes the thirty-verse Surah Al-Mulk interceding for its reciter until forgiveness.", reference: "Jami at-Tirmidhi 2891", url: "https://sunnah.com/tirmidhi:2891", grade: "Hasan · Darussalam" },
 ] as const;
 
-export function dailyReading(now: Date) {
-  const { dayNumber, date } = hyderabadClock(now);
+export function dailyReading(now: Date, clock = hyderabadClock(now)) {
+  const { dayNumber, date } = clock;
   const ayahIndex = ((dayNumber % AYAHS.length) + AYAHS.length) % AYAHS.length;
   const hadithIndex = ((dayNumber % HADITHS.length) + HADITHS.length) % HADITHS.length;
   return {
@@ -120,8 +124,12 @@ function avoidVoluntaryFast(date: string, confirmed: { day: number; month: numbe
   fastingEstimate = { date, excluded: blocked };
   return blocked;
 }
-export function remindersFor(now: Date, hijri: { day: number; month: number } | null = null): Reminder[] {
-  const { date, weekday, minutes } = hyderabadClock(now);
+export function remindersFor(
+  now: Date,
+  hijri: { day: number; month: number } | null = null,
+  clock = hyderabadClock(now),
+): Reminder[] {
+  const { date, weekday, minutes } = clock;
   const reminders: Reminder[] = [];
   // Clock windows are editorial reminders, not religious definitions of prayer/adhkar times.
   if ((weekday === 1 || weekday === 4) && minutes < 18 * 60 && !avoidVoluntaryFast(date, hijri)) {

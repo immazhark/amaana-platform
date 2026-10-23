@@ -145,8 +145,8 @@ export function IslamicCompanionPanel({
   const maghrib = timeMinutes(currentData?.today.timings.Maghrib);
   const afterSunset = clock !== null && maghrib !== null && clock.minutes >= maghrib;
   const moon = currentData ? (afterSunset ? currentData.eveningMoon : currentData.moon) : null;
-  const reading = now ? dailyReading(now) : null;
-  const upcoming = now && currentData ? nextSalah(currentData.today, currentData.tomorrow, now) : null;
+  const reading = now && clock ? dailyReading(now, clock) : null;
+  const upcoming = now && currentData && clock ? nextSalah(currentData.today, currentData.tomorrow, now, clock) : null;
 
   async function copyReading() {
     if (!reading) return;
