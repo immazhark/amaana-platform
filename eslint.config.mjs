@@ -14,7 +14,8 @@ const eslintConfig = defineConfig([
       "no-console": "error",
     },
   },
-  globalIgnores([".next/**", "node_modules/**", "next-env.d.ts"]),
+  // The generated vendor module is checked by regeneration and schema parity tests.
+  globalIgnores([".next/**", "node_modules/**", "next-env.d.ts", "src/generated/curated-gallery-contract.js"]),
 ]);
 
 export default eslintConfig;

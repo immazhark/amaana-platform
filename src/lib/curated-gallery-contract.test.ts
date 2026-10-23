@@ -2,8 +2,10 @@ import { describe, expect, it } from "vitest";
 import {
   CURATED_GALLERY_EXPECTED_COUNTS,
   CURATED_GALLERY_RECORD_COUNT,
-  curatedGalleryManifestSchema,
+  curatedGalleryManifestSchema as sourceManifestSchema,
 } from "@/lib/curated-gallery-contract";
+import { curatedGalleryManifestSchema as browserManifestSchema } from "@/generated/curated-gallery-contract";
+import { execFileSync } from "node:child_process";
 import { deriveCuratedGalleryStorage } from "@/lib/curated-gallery-server";
 
 const sample = {
@@ -41,7 +43,10 @@ function validManifest() {
   return { version: 1 as const, batch: "owner-curated-2026-09-30" as const, status: "prepared-unpublished" as const, records };
 }
 
-describe("curated gallery contract", () => {
+describe.each([
+  ["server", sourceManifestSchema],
+  ["generated browser", browserManifestSchema],
+])("curated gallery %s contract", (_name, curatedGalleryManifestSchema) => {
   it("locks the owner-approved initiative counts to 154 gallery records", () => {
     const manifest = curatedGalleryManifestSchema.parse(validManifest());
     expect(manifest.records).toHaveLength(CURATED_GALLERY_RECORD_COUNT);
@@ -112,5 +117,21 @@ describe("curated gallery contract", () => {
       storageKey: "2026/decff651-9c5b-7fda-f549-6069e8aeb135.png",
       publicUrl: "/media/2026/decff651-9c5b-7fda-f549-6069e8aeb135.png",
     });
+  });
+});
+
+
+describe("generated browser contract integrity", () => {
+  it("matches the current canonical schema and pinned dependency", () => {
+    execFileSync(process.execPath, ["scripts/build-curated-gallery-contract.mjs", "--check"]);
+  });
+
+  it.each([sourceManifestSchema, browserManifestSchema])("rejects oversized record collections without amplifying element errors", schema => {
+    const result = schema.safeParse({ ...validManifest(), records: Array.from({ length: 1_000 }, () => null) });
+    expect(result.success).toBe(false);
+    if (!result.success) {
+      expect(result.error.issues.length).toBe(1);
+      expect(result.error.issues[0]).toMatchObject({ code: "too_big", path: ["records"] });
+    }
   });
 });

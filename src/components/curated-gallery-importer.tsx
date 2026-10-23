@@ -11,7 +11,7 @@ import {
   archivePathForCuratedRecord,
   curatedGalleryManifestSchema,
   type CuratedGalleryManifest,
-} from "@/lib/curated-gallery-contract";
+} from "@/generated/curated-gallery-contract";
 
 type ZipEntry = {
   name: string;
