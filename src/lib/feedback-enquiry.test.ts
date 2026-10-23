@@ -63,3 +63,18 @@ describe("reviewed private feedback topics", () => {
     expect(parseFeedbackPreferences(query)).toBeNull();
   });
 });
+
+describe("campaign-attributed feedback reviews", () => {
+  it("honours a fixed explicit review with bounded marketing attribution", () => {
+    expect(parseFeedbackPreferences({
+      intent: "review", kind: "concern", topic: "privacy", utm_source: "outreach",
+    })).toEqual({ kind: "concern", topic: "privacy" });
+  });
+  it("rejects repeated, oversized and personal URL parameters", () => {
+    for (const query of [
+      { intent: "review", kind: "concern", topic: "privacy", utm_source: ["x", "y"] },
+      { intent: "review", kind: "concern", topic: "privacy", utm_source: "x".repeat(257) },
+      { intent: "review", kind: "concern", topic: "privacy", phone: "PRIVATE_PHONE" },
+    ]) expect(parseFeedbackPreferences(query)).toBeNull();
+  });
+});

@@ -28,3 +28,20 @@ describe("fixed-category sponsorship enquiries", () => {
     expect(result.body).not.toContain("Please keep my name");
   });
 });
+
+describe("campaign-attributed sponsorship reviews", () => {
+  it("keeps a fixed approved sponsorship choice behind bounded attribution", () => {
+    expect(parseSponsorshipEnquiry({
+      path: "hifdh", support: "discuss", utm_source: "outreach", gclid: "click-token",
+    })).toEqual({ path: "hifdh", support: "discuss", privateName: false });
+  });
+  it("still rejects duplicate, oversized or private campaign parameters", () => {
+    for (const query of [
+      { path: "hifdh", support: "discuss", utm_source: ["one", "two"] },
+      { path: "hifdh", support: "discuss", utm_source: "x".repeat(257) },
+      { path: "hifdh", support: "discuss", beneficiary: "PRIVATE_PERSON" },
+    ]) {
+      expect(parseSponsorshipEnquiry(query)).toBeNull();
+    }
+  });
+});
