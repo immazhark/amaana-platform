@@ -14,7 +14,14 @@ async function openFixture() {
   const fallbackFocus = vi.fn();
   const trigger = { isConnected: true, focus: triggerFocus };
   const fallback = { isConnected: true, focus: fallbackFocus };
-  const dialog = { isConnected: true, contains: () => false };
+  const firstFocus = vi.fn();
+  const lastFocus = vi.fn();
+  const first = { focus: firstFocus };
+  const last = { focus: lastFocus };
+  const dialog = {
+    isConnected: true, contains: (node: unknown) => node === first || node === last,
+    querySelectorAll: () => ({ length: 2, item: (index: number) => [first, last][index] }),
+  };
   const dialogRef: { current: unknown } = { current: dialog };
   const closeFocus = vi.fn();
   const refs = [dialogRef, { current: { focus: closeFocus } }, { current: [trigger, fallback] }];
@@ -52,7 +59,13 @@ async function openFixture() {
   expect(closeFocus).toHaveBeenCalledOnce();
 
   return {
-    dialogRef, dialog, trigger, fallback, triggerFocus, fallbackFocus, body,
+    dialogRef, dialog, trigger, fallback, triggerFocus, fallbackFocus, body, firstFocus, lastFocus,
+    tab(shiftKey: boolean) {
+      const event = new Event("keydown", { cancelable: true });
+      Object.defineProperties(event, { key: { value: "Tab" }, shiftKey: { value: shiftKey } });
+      windowTarget.dispatchEvent(event);
+      return event;
+    },
     close() {
       dialog.isConnected = false;
       dialogRef.current = null;
@@ -101,5 +114,16 @@ describe("gallery delayed focus restoration", () => {
     fixture.flush();
     expect(fixture.triggerFocus).not.toHaveBeenCalled();
     expect(fixture.fallbackFocus).not.toHaveBeenCalled();
+  });
+});
+
+
+describe("gallery focus containment", () => {
+  it.each([false, true])("recovers focus moved outside the modal, backwards=%s", async backwards => {
+    const fixture = await openFixture();
+    // Focus can be moved by browser UI, extensions or another script.
+    expect(fixture.tab(backwards).defaultPrevented).toBe(true);
+    expect(backwards ? fixture.lastFocus : fixture.firstFocus).toHaveBeenCalledOnce();
+    expect(backwards ? fixture.firstFocus : fixture.lastFocus).not.toHaveBeenCalled();
   });
 });

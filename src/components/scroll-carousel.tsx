@@ -243,7 +243,7 @@ export function ScrollCarousel({
         tabIndex={slideCount > 1 ? 0 : -1}
         onPointerDown={event => {
           navigation.current = null;
-          if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 || (event.target instanceof Element && event.target.closest("button,video,input"))) return;
+          if (mode === "hero" || event.pointerType !== "mouse" || event.button !== 0 || (event.target instanceof Element && event.target.closest("button,video,input,textarea,select,[contenteditable]"))) return;
           drag.current = {x:event.clientX, scroll:event.currentTarget.scrollLeft, moved:false};
           suppressClick.current = false;
         }}
@@ -268,7 +268,15 @@ export function ScrollCarousel({
         }}
         onLostPointerCapture={releaseDrag}
         onPointerCancel={releaseDrag}
-        onClickCapture={event => { if (suppressClick.current) { event.preventDefault(); event.stopPropagation(); suppressClick.current = false; } }}
+        onClickCapture={event => {
+          const dragged = suppressClick.current;
+          suppressClick.current = false;
+          // Keyboard and assistive activations have no pointer click count.
+          if (dragged && event.detail > 0) {
+            event.preventDefault();
+            event.stopPropagation();
+          }
+        }}
         onDragStart={event => { if (mode !== "hero") event.preventDefault(); }}
         onWheel={() => { navigation.current = null; }}
         onScroll={updateActiveFromScroll}
